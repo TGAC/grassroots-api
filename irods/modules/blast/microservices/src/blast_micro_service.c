@@ -1,3 +1,7 @@
+#include	<unistd.h>
+#include	<syslog.h>
+
+
 #include "blast_micro_service.h"
 
 #include "reDataObjOpr.hpp"
@@ -37,6 +41,14 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rule_p
 
 
 	return result;
+}
+
+
+void	WriteToLog (const char	*arg1_s,	const char	*arg2_s)
+{
+	openlog ("slog",	LOG_PID | LOG_CONS,	LOG_USER);
+	syslog (LOG_INFO,	"%s	%s	from	micro-service",	arg1_s,	arg2_s);
+	closelog ();
 }
 
 

@@ -10,9 +10,10 @@ CURRENT_DIR := $(notdir $(patsubst %/,%,$(dir $(MKFILE_PATH))))
 
 IRODS_INCLUDES_DIR = /usr/include/irods
 
-myModule=blast
+MODULE_NAME = blast
 ifndef buildDir
-buildDir = /var/lib/irods/iRODS
+#buildDir = /var/lib/irods/iRODS
+buildDir = $(CURDIR)/../..
 endif
 
 
@@ -31,10 +32,13 @@ BLAST_LIBS_DIR = /usr/local/lib
 #
 # Directories
 #
-MSObjDir =	microservices/obj
-MSSrcDir =	microservices/src
-MSIncDir =	microservices/include
+#MSObjDir =	microservices/obj
+#MSSrcDir =	microservices/src
+#MSIncDir =	microservices/include
 
+MSObjDir =     $(modulesDir)/$(MODULE_NAME)/microservices/obj
+MSSrcDir =     $(modulesDir)/$(MODULE_NAME)/microservices/src
+MSIncDir =     $(modulesDir)/$(MODULE_NAME)/microservices/include
 
 #
 # Source files
