@@ -2,9 +2,9 @@
 #define BLAST_MICRO_SERVICE_H
   
   
-#include "msParam.hpp"
-#include "reGlobalsExtern.hpp"
-#include "irods_ms_plugin.hpp"
+#include "msParam.h"
+#include "reGlobalsExtern.h"
+/*#include "irods_ms_plugin.h"*/
 
 
 #ifdef __cplusplus
@@ -14,12 +14,7 @@ extern "C" {
 /*************************************/
 /******** FUNCTION PROTOTYPES ********/
 /*************************************/
-
-int BlastSequenceData (msParam_t *in1_p, msParam_t *out1_p, ruleExecInfo_t *rule_p);
-
-
-void	WriteToLog (const char	*arg1_s,	const char	*arg2_s);
-
+int BlastSequenceData (msParam_t *in1_p, msParam_t *out1_p, ruleExecInfo_t *rei);
 
 #ifdef __cplusplus
 }

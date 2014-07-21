@@ -4,18 +4,10 @@
 # Build the iRODS examples module
 #
 
-# get the current path
-MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-CURRENT_DIR := $(notdir $(patsubst %/,%,$(dir $(MKFILE_PATH))))
-
-IRODS_INCLUDES_DIR = /usr/include/irods
-
-MODULE_NAME = blast
+myModule=blast
 ifndef buildDir
-#buildDir = /var/lib/irods/iRODS
-buildDir = $(CURDIR)/../..
+buildDir = ../../
 endif
-
 
 include $(buildDir)/config/config.mk
 include $(buildDir)/config/platform.mk
@@ -32,19 +24,19 @@ BLAST_LIBS_DIR = /usr/local/lib
 #
 # Directories
 #
-#MSObjDir =	microservices/obj
-#MSSrcDir =	microservices/src
-#MSIncDir =	microservices/include
+MSObjDir =	$(modulesDir)/$(myModule)/microservices/obj
+MSSrcDir =	$(modulesDir)/$(myModule)/microservices/src
+MSIncDir =	$(modulesDir)/$(myModule)/microservices/include
 
-MSObjDir =     $(modulesDir)/$(MODULE_NAME)/microservices/obj
-MSSrcDir =     $(modulesDir)/$(MODULE_NAME)/microservices/src
-MSIncDir =     $(modulesDir)/$(MODULE_NAME)/microservices/include
+
+
+
 
 #
 # Source files
 #
 OBJECTS =	$(MSObjDir)/blast_micro_service.o
-INCLUDE_FLAGS =	-I$(MSIncDir) -I$(IRODS_INCLUDES_DIR)
+INCLUDE_FLAGS =	-I$(MSIncDir) -I$(buildDir)/server/re/include
 
 
 
