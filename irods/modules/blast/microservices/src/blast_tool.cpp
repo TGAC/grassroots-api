@@ -133,7 +133,24 @@ int ConvertArguments (char **argv_ss, msParamArray_t *params_p)
 					for (i = params_p -> len; i > 0; -- i, ++ param_pp)
 						{
 							const msParam_t *param_p = *param_pp;
-							char *key_s = param_p -> label;
+							
+							if (param_p -> label)
+								{
+									size_t key_size = 2 + strlen (param_p -> label);
+									
+									char *key_s = (char *) malloc (key_size * sizeof (char));
+									
+									if (key_s)
+										{
+											*key_s = '-';
+											strcpy (key_s + 1, param_p -> label);
+											
+										}		/* if (key_s) */
+									
+								}
+								
+							
+							
 							
 							if (strcmp (param_p -> type, STR_MS_T) == 0)
 								{
@@ -145,7 +162,7 @@ int ConvertArguments (char **argv_ss, msParamArray_t *params_p)
 								}
 							else if (strcmp (param_p -> type, BOOL_MS_T) == 0)
 								{
-									args.push_back ()
+									args.push_back ();
 								}
 						
 						}		/* for (i = params_p -> len; i > 0; -- i, ++ param_pp) */
