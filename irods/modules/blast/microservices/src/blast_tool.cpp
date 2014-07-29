@@ -1,6 +1,23 @@
 #include "blast_tool.cpp"
 
 
+BlastTool :: BlastTool ()
+{
+}
+
+BlastTool :: ~BlastTool ()
+{	
+	for (size_type i = bt_allocated_args.size (); i >= 0; -- i)
+		{
+			char *data_s = bt_allocated_args.back ();
+			
+			bt_allocated_args.pop_back ();
+			
+			free (data_s);
+		}
+}
+
+
 
 int CreateMakeBlastDbApplication (msParamArray_t *params_p)
 {
@@ -213,6 +230,7 @@ void BlastTool :: AddArgument (char *arg_s, bool newly_allocated_flag)
 			bt_allocated_args.push_back (value_s);			
 		}
 }
+
 
 
 
