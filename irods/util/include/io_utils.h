@@ -2,11 +2,6 @@
 #ifndef IO_UTILS_H
 
 
-typedef struct 
-{
-	char *te_data_s;
-	MEM_FLAG te_mem;	
-} Text;
 
 Text *GetLocalFilename (char * const original_filename_s);
 
@@ -42,6 +37,16 @@ char *CopyFileToLocalFilesystem (const char * const filename_s);
  * @return true on success, false on error with errno set to the appropriate value.
  */ 
 bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ());
+
+
+
+/**
+ * Get a newly allocated char * with the given value.
+ * 
+ * @param value The value to print into the the newly allocated string.
+ * @return The string with the given value or NULL upon error.
+ */
+char *GetIntAsString (const int value);
 
 
 

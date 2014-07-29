@@ -365,3 +365,39 @@ int ReadFile ()
 
 	return 0;	
 }
+
+
+char *GetIntAsString (const int value)
+{
+	char *buffer_s = NULL;
+	bool negative_flag = false;
+	size_t i = 1;
+
+	if (value < 0)
+		{
+			value = -value;
+			negative_flag = true;
+			++ i;
+		}
+
+	if (value == 0)
+		{
+			++ i;
+		}
+	else
+		{			
+			double d = ceil (log10 ((double) value));
+			i += (size_t) d;		
+		}
+			
+	buffer_s = (char *) malloc (i * sizeof (char));
+				
+	if (buffer_s)
+		{
+			sprintf (buffer_s, "%d", value);
+			* (buffer_s + i - 1) = '\0';
+		}
+	
+	return buffer_s;
+}
+

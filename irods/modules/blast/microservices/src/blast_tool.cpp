@@ -1,22 +1,16 @@
 #include "blast_tool.cpp"
 
 
-typedef struct 
-{
-	int cla_num_args;
-	char *cla_args_p [];
-} CommandLineArgs;
-
-
-CommandLineArgs *Cr
-
-
-
 
 int CreateMakeBlastDbApplication (msParamArray_t *params_p)
 {
-	CMakeBlastDBApp *app_p = new CMakeBlastDBApp;
+	CMakeBlastDBApp *app_p = new (std::nothrow) CMakeBlastDBApp;
 	
+	if (app_p)
+		{
+			
+		}
+		
 	const CArgDescriptions *arg_descriptions_p = app_p -> GetArgDescriptions ();
 	
 	if (arg_descriptions_p)
@@ -116,61 +110,110 @@ OPTIONAL ARGUMENTS
    File to which the program log should be redirected
 */
 
-int ConvertArguments (char **argv_ss, msParamArray_t *params_p)
+bool ConvertArguments (BlastInterface *interface_p, msParamArray_t *params_p);
 {
-	int num_converted_args = -1;
+	bool success_flag = false;
+
+	/** Get the C++ class from the C struct */
+	BlastTool *tool_p = dynamic_cast <BlastTool *> (interface_p);
 	
-	if (params_p)
+	if (tool_p)
 		{
-			if (argv_ss)
+			if (params_p)
 				{
-					int i;
-					const msParam_t **param_pp = params_p -> msParam;
-					vector <char *> args;
-			
-			
-
-					for (i = params_p -> len; i > 0; -- i, ++ param_pp)
+					if (interface_p)
 						{
-							const msParam_t *param_p = *param_pp;
+							int i;
+							const msParam_t **param_pp = params_p -> msParam;
 							
-							if (param_p -> label)
+							success_flag = true;
+							
+							for (i = params_p -> len; i > 0; -- i, ++ param_pp)
 								{
-									size_t key_size = 2 + strlen (param_p -> label);
+									const msParam_t *param_p = *param_pp;
 									
-									char *key_s = (char *) malloc (key_size * sizeof (char));
-									
-									if (key_s)
+									if (param_p -> label)
 										{
-											*key_s = '-';
-											strcpy (key_s + 1, param_p -> label);
+											size_t size = 2 + strlen (param_p -> label);
 											
-										}		/* if (key_s) */
-									
-								}
-								
+											char *key_s = (char *) malloc (size * sizeof (char));
+											
+											if (key_s)
+												{
+													*key_s = '-';
+													strcpy (key_s + 1, param_p -> label);
+
+
+													if (strcmp (param_p -> type, STR_MS_T) == 0)
+														{
+															tool_p -> AddArgument (key_s, true);
+															tool_p -> AddArgument ((char *) (param_p -> inOutStruct), false);
+														}
+													else if (strcmp (param_p -> type, INT_MS_T) == 0)
+														{
+															char *value_s = GetIntAsString ((int *) (param_p -> inOutStruct));
+															
+															if (value_s)
+																{
+																	tool_p -> AddArgument (key_s, true);
+																	tool_p -> AddArgument (value_s, true);
+																}
+															else
+																{
+																	/* not enough memory */
+																	free (key_s);
+																	success_flag = false;
+
+																	/* force exit from loop */
+																	i = -1;		
+																}
+															
+														}
+													else if (strcmp (param_p -> type, BOOL_MS_T) == 0)
+														{
+															tool_p -> AddArgument (key_s, true);
+														}
+
+												}		/* if (key_s) */
+										}
+										
+								}		/* for (i = params_p -> len; i > 0; -- i, ++ param_pp) */							
 							
-							
-							
-							if (strcmp (param_p -> type, STR_MS_T) == 0)
-								{
-									
-								}
-							else if (strcmp (param_p -> type, INT_MS_T) == 0)
-								{
-									
-								}
-							else if (strcmp (param_p -> type, BOOL_MS_T) == 0)
-								{
-									args.push_back ();
-								}
+						}		/* if (interface_p) */
 						
-						}		/* for (i = params_p -> len; i > 0; -- i, ++ param_pp) */
-					
-				}		/* if (argv_ss) */
-				
-		}		/* if (params_p) */
-
-
-	return num_converted_args;
+				}		/* if (params_p) */
+			
+		}		/* if (tool_p) */
+	
+	return success_flag;
 }
+
+bool RunBlast (BlastInterface *interface_p)
+{
+	bool success_flag = false;
+
+	/** Get the C++ class from the C struct */
+	BlastTool *tool_p = dynamic_cast <BlastTool *> (interface_p);
+	
+	if (tool_p)
+		{
+			
+		}		/* if (tool_p) */
+		
+	return tool_p;	
+}
+
+
+void BlastTool :: AddArgument (char *arg_s, bool newly_allocated_flag)
+{
+	bt_command_line_args.push_back (value_s);	
+	
+	if (newly_allocated_flag)
+		{
+			bt_allocated_args.push_back (value_s);			
+		}
+}
+
+
+
+
