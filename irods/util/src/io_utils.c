@@ -6,14 +6,32 @@
  *
  */ 
 
+/*
+ * Standard c includes
+ */
+#include <math.h>
+#include <stdarg.h>
+
+/*
+ * os includes
+ */
+#include <syslog.h>
+
+#include <linux/magic.h>
 
 #include <sys/statfs.h>
 
+/*
+ * irods includes
+ */
 #include "dataObjGet.h"
 #include "rodsClient.h" 
 #include "rods.h"
 
-#include "typedefs.h"
+/*
+ * our includes
+ */
+#include "io_utils.h"
 
 
 
@@ -27,7 +45,7 @@ char *GetLocalFilename (char * const original_filename_s)
 	if (GetFileLocation (original_filename_s) != FILE_LOCATION_LOCAL)
 		{
 			/* Copy the file to the local system */
-			local_copy_filename_s = CopyFileToLocalFilesystem (original_filename_s);
+			local_filename_s = CopyFileToLocalFilesystem (original_filename_s);
 		}
 	else
 		{
@@ -171,14 +189,14 @@ bool CopyToNewFile (const char * const src_filename_s, const char * const dest_f
 }
 
 
-
+/*
 int DisposeConnection (rcComm_t *conn_p)
 {
 	return rcDisconnect (conn_p);
 }
 
 
-rcComm_t *GetConnection (rcComm_t **conn_pp, const char *username_s, const char *rods_zone_s)
+rcComm_t *GetConnection (rcComm_t **conn_pp, char *username_s, char *rods_zone_s)
 {
 	rcComm_t *conn_p = NULL;
 	rodsEnv myRodsEnv;
@@ -220,6 +238,7 @@ rcComm_t *GetConnection (rcComm_t **conn_pp, const char *username_s, const char 
 
 	return conn_p;
 }
+
 
 int ReadFile ()
 {
@@ -365,9 +384,9 @@ int ReadFile ()
 
 	return 0;	
 }
+*/
 
-
-char *GetIntAsString (const int value)
+char *GetIntAsString (int value)
 {
 	char *buffer_s = NULL;
 	bool negative_flag = false;
@@ -394,10 +413,44 @@ char *GetIntAsString (const int value)
 				
 	if (buffer_s)
 		{
-			sprintf (buffer_s, "%d", value);
+			if (negative_flag)
+				{
+					sprintf (buffer_s, "-%d", value);						
+				}
+			else
+				{
+					sprintf (buffer_s, "%d", value);	
+				}
+				
 			* (buffer_s + i - 1) = '\0';
 		}
 	
 	return buffer_s;
 }
 
+
+
+
+void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...)
+{
+	va_list args;
+
+	va_start (args, message_s);
+
+	
+	if (!log_ident_s)
+		{
+			log_ident_s = "slog";
+		}
+
+
+	/* Open the log and write to console if we couldn't open it */
+	openlog (log_ident_s, LOG_PID | LOG_CONS, LOG_USER);
+	
+	/* Write the message */
+	vsyslog (log_level, message_s, args);
+	
+	closelog ();
+
+	va_end (args);
+}

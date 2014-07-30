@@ -1,10 +1,8 @@
 #ifndef IO_UTILS_H
-#ifndef IO_UTILS_H
+#define IO_UTILS_H
 
-
-
-Text *GetLocalFilename (char * const original_filename_s);
-
+#include "typedefs.h"
+#include "irods_library.h"
 
 /**
  * Determine whether a file is on the local filesystem or not.
@@ -13,7 +11,7 @@ Text *GetLocalFilename (char * const original_filename_s);
  * @return The type of location of the file or FILE_LOCATION_UNKNOWN if it could
  * not be determined.
  */
-FileLocation GetFileLocation (const char * const filename_s);
+IRODS_LIB_API FileLocation GetFileLocation (const char * const filename_s);
 
 
 /**
@@ -24,7 +22,7 @@ FileLocation GetFileLocation (const char * const filename_s);
  * @param callback_fn The callback_fn to denote progress (currently unused).
  * @return true on success, false on error with errno set to the appropriate value.
  */ 
-char *CopyFileToLocalFilesystem (const char * const filename_s);
+IRODS_LIB_API char *CopyFileToLocalFilesystem (const char * const filename_s);
 
 
 
@@ -36,7 +34,7 @@ char *CopyFileToLocalFilesystem (const char * const filename_s);
  * @param callback_fn The callback_fn to denote progress (currently unused).
  * @return true on success, false on error with errno set to the appropriate value.
  */ 
-bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ());
+IRODS_LIB_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ());
 
 
 
@@ -46,8 +44,27 @@ bool CopyToNewFile (const char * const src_filename_s, const char * const dest_f
  * @param value The value to print into the the newly allocated string.
  * @return The string with the given value or NULL upon error.
  */
-char *GetIntAsString (const int value);
+char *GetIntAsString (int value);
 
+
+/**
+ * Write a logging message to the given logfile.
+ * 
+ * @param log_ident_s The logfile identifer to use. If this is NULL then "slog" will be used.
+ * @param log_level One of the levels defined in syslog.h:
+ * 
+ * LOG_EMERG: The message says the system is unusable.
+ * LOG_ALERT: Action on the message must be taken immediately.
+ * LOG_CRIT: The message states a critical condition.
+ * LOG_ERR: The message describes an error.
+ * LOG_WARNING: The message is a warning.
+ * LOG_NOTICE: The message describes a normal but important event.
+ * LOG_INFO: The message is purely informational.
+ * LOG_DEBUG
+ * 
+ * @param message_s The string to write using standard c printf syntax.
+ */
+IRODS_LIB_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
 
 
 #endif		/* #ifndef IO_UTILS_H */

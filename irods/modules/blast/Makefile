@@ -22,6 +22,12 @@ BLAST_LIBS_DIR = /usr/local/lib
 
 
 #
+# Add our custom libraries
+#
+DIR_CUSTOM_LIBS = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util/debug/irods_library
+CUSTOM_LIBS = -lirods_library
+
+#
 # Directories
 #
 MSObjDir =	$(modulesDir)/$(myModule)/microservices/obj
@@ -30,12 +36,16 @@ MSIncDir =	$(modulesDir)/$(myModule)/microservices/include
 
 
 
+# Build the final list of objects
+C_SRCS = \
+	$(MSSrcDir)/blast_micro_service.c
+
+CXX_SRCS = \
+	$(MSSrcDir)/blast_tool.cpp
 
 
-#
-# Source files
-#
-OBJECTS =	$(MSObjDir)/blast_micro_service.o
+
+
 INCLUDE_FLAGS =	-I$(MSIncDir) -I$(buildDir)/server/re/include
 
 
@@ -45,10 +55,10 @@ INCLUDE_FLAGS =	-I$(MSIncDir) -I$(buildDir)/server/re/include
 #
 # Compile and link flags
 #
-INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES) $(BLAST_INCLUDES_DIR)
+INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES) -I$(BLAST_INCLUDES_DIR)
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
-
+LIBS += -L$(DIR_CUSTOM_LIBS) $(CUSTOM_LIBS)
 
 
 
@@ -71,7 +81,7 @@ client_cflags:
 
 # List module's objects for inclusion in the server
 server_ldflags:
-	@echo $(OBJECTS)
+	@echo $(OBJECTS) $(LIBS)
 
 # List module's includes for inclusion in the server
 server_cflags:
@@ -79,6 +89,7 @@ server_cflags:
 
 # Build microservices
 microservices:	print_cflags $(OBJECTS)
+#microservices:	print_cflags $(C_OBJECTS) $(CXX_OBJECTS)
 	@true
 
 # Build client additions
@@ -108,13 +119,23 @@ print_cflags:
 	@echo "    $(CFLAGS_OPTIONS)"
 
 
-
-
-
 #
 # Compilation targets
 #
-$(OBJECTS): $(MSObjDir)/%.o: $(MSSrcDir)/%.c $(DEPEND)
-	@echo "Compile $(myModule) module `basename $@`..."
-	@$(CC) -c $(CFLAGS) -o $@ $<
 
+#$(OBJECTS): $(MSObjDir)/%.o: $(MSSrcDir)/%.c $(DEPEND)
+#	@echo "Compile $(myModule) module `basename $@`..."
+#	@$(CC) -c $(CFLAGS) -o $@ $<
+
+$(OBJECTS): $(MSObjDir)/%.o: $(C_SRCS)
+	@echo "Compile c code $(myModule) module `basename $@`..."
+	@$(CC) -c $(CFLAGS) -o $@ $<
+	
+$(DIR_OBJS)/%.o : %.c
+	@echo "Compile c code $(myModule) module `basename $@`..."
+	$(CC) $(CFLAGS)  -o $@ $<
+
+
+$(DIR_OBJS)/%.o : %.cpp
+	@echo "Compile cpp code $(myModule) module `basename $@`..."
+	$(CC) $(CFLAGS)  -o $@ $<

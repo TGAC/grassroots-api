@@ -1,6 +1,9 @@
 #ifndef BLAST_TOOL_HPP
 #define BLAST_TOOL_HPP
 
+#include <vector>
+
+
 typedef struct BlastInterface 
 {
 	int bi_num_args;
@@ -22,14 +25,14 @@ public:
 
 private:
 	/** All of the command line arguments */
-	vector <char *> bt_command_line_args;
+	std :: vector <char *> bt_command_line_args;
 
 	/** 
 	 * The arguments that were newly allocated and will
 	 * need freeing to ensure there are not any memory
 	 * leaks.
 	 */
-	vector <char *> bt_allocated_args;
+	std :: vector <char *> bt_allocated_args;
 };
 
 
@@ -85,7 +88,9 @@ extern "C"
 #endif
 
 
+BlastInterface *CreateBlastTool ();
 
+void FreeBlastTool (BlastInterface *interface_p);
 
 /**
  * Convert the iRods arguments into an argc, argv set 

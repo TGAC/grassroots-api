@@ -1,4 +1,20 @@
-#include "blast_tool.cpp"
+
+#include "blast_tool.hpp"
+
+
+
+
+BlastInterface *CreateBlastTool ()
+{
+	return new InlineBlastTool;
+}
+
+
+void FreeBlastTool (BlastInterface *interface_p)
+{
+	delete interface_p;
+}
+
 
 
 BlastTool :: BlastTool ()
@@ -21,7 +37,7 @@ BlastTool :: ~BlastTool ()
 
 int CreateMakeBlastDbApplication (msParamArray_t *params_p)
 {
-	CMakeBlastDBApp *app_p = new (std::nothrow) CMakeBlastDBApp;
+	CMakeBlastDBApp *app_p = new (std :: nothrow) CMakeBlastDBApp;
 	
 	if (app_p)
 		{
@@ -214,7 +230,7 @@ bool RunBlast (BlastInterface *interface_p)
 	
 	if (tool_p)
 		{
-			
+			success_flag = tool_p -> Run ();
 		}		/* if (tool_p) */
 		
 	return tool_p;	
@@ -231,6 +247,38 @@ void BlastTool :: AddArgument (char *arg_s, bool newly_allocated_flag)
 		}
 }
 
+
+
+bool ForkedBlastTool :: Run ()
+{
+	bool success_flag = true;
+	
+	WriteToLog (NULL, LOG_INFO, "ForkedBlastTool :: Run");	
+}
+
+
+bool InlineBlastTool :: Run ()
+{
+	bool success_flag = true;
+	
+	WriteToLog (NULL, LOG_INFO, "InlineBlastTool :: Run");	
+}
+
+
+bool ThreadedBlastTool :: Run ()
+{
+	bool success_flag = true;
+	
+	WriteToLog (NULL, LOG_INFO, "ThreadedBlastTool :: Run");	
+}
+
+
+bool QueuedBlastTool :: Run ()
+{
+	bool success_flag = true;
+	
+	WriteToLog (NULL, LOG_INFO, "QueuedBlastTool :: Run");	
+}
 
 
 

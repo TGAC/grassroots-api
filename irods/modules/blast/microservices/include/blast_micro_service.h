@@ -6,7 +6,6 @@
 #include "reGlobalsExtern.h"
 /*#include "irods_ms_plugin.h"*/
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif	

@@ -1,6 +1,7 @@
 #include "reDataObjOpr.h"
 
 #include "blast_micro_service.h"
+#include "blast_tool.hpp"
 
 /*
 micro service call
@@ -10,6 +11,7 @@ micro service call
 int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 {
 	int result = 0;
+	BlastInterface *blast_p = NULL;
 	
 	/* The	next line is needed	for	loop back	testing	using	the irule	-i option */
 	RE_TEST_MACRO	("				Calling	BlastSequenceData");	
@@ -19,6 +21,16 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 		{
 			char *input_filename_s = (char *) (in_p -> inOutStruct);
 		}
+	
+	blast_p = CreateBlastTool ();
+
+	if (blast_p)
+		{
+			bool result = RunBlast (blast_p);
+
+			FreeBlastTool (blast_p);
+		}	
+	
 			
 	/* Get the input sequence stream */
 	if (msiDataObjOpen	(in_p, out_p, rei) > 0)	
@@ -43,8 +55,4 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 
 	return result;
 }
-
-
-
-int 
 
