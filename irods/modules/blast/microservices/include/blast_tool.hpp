@@ -3,15 +3,17 @@
 
 #include <vector>
 
+#include "msParam.h"
 
+/*
 typedef struct BlastInterface 
 {
 	int bi_num_args;
-	char **bi_args_ss;
+	char **bi_args_ss;	
 } BlastInterface;
+*/
 
-
-class BlastTool : public BlastInterface
+class BlastTool
 {
 public:
 
@@ -22,6 +24,8 @@ public:
 	virtual bool Run ();
 
 	void AddArgument (char *arg_s, bool newly_allocated_flag);
+
+	void PringArgsToLog ();
 
 private:
 	/** All of the command line arguments */
@@ -88,16 +92,16 @@ extern "C"
 #endif
 
 
-BlastInterface *CreateBlastTool ();
+BlastTool *CreateBlastTool ();
 
-void FreeBlastTool (BlastInterface *interface_p);
+void FreeBlastTool (BlastTool *tool_p);
 
 /**
  * Convert the iRods arguments into an argc, argv set 
  */
-bool ConvertArguments (BlastInterface *interface_p, msParamArray_t *params_p);
+bool ConvertArguments (BlastTool *tool_p, msParamArray_t *params_p);
 
-bool RunBlast (BlastInterface *interface_p);
+bool RunBlast (BlastTool *tool_p);
 
 
 #ifdef __cplusplus

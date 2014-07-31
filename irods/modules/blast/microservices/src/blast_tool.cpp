@@ -1,18 +1,22 @@
+#include <cstdlib>
+
+#include <syslog.h>
 
 #include "blast_tool.hpp"
 
+#include "io_utils.h"
 
 
 
-BlastInterface *CreateBlastTool ()
+BlastTool *CreateBlastTool ()
 {
 	return new InlineBlastTool;
 }
 
 
-void FreeBlastTool (BlastInterface *interface_p)
+void FreeBlastTool (BlastTool *tool_p)
 {
-	delete interface_p;
+	delete tool_p;
 }
 
 
@@ -23,7 +27,9 @@ BlastTool :: BlastTool ()
 
 BlastTool :: ~BlastTool ()
 {	
-	for (size_type i = bt_allocated_args.size (); i >= 0; -- i)
+	std :: vector <char *> :: size_type i;
+	
+	for (i = bt_allocated_args.size (); i >= 0; -- i)
 		{
 			char *data_s = bt_allocated_args.back ();
 			
@@ -34,26 +40,6 @@ BlastTool :: ~BlastTool ()
 }
 
 
-
-int CreateMakeBlastDbApplication (msParamArray_t *params_p)
-{
-	CMakeBlastDBApp *app_p = new (std :: nothrow) CMakeBlastDBApp;
-	
-	if (app_p)
-		{
-			
-		}
-		
-	const CArgDescriptions *arg_descriptions_p = app_p -> GetArgDescriptions ();
-	
-	if (arg_descriptions_p)
-		{
-			
-		}
-		
-		
-	delete app_p;	
-}
 
 
 /**
@@ -143,107 +129,93 @@ OPTIONAL ARGUMENTS
    File to which the program log should be redirected
 */
 
-bool ConvertArguments (BlastInterface *interface_p, msParamArray_t *params_p);
+bool ConvertArguments (BlastTool *tool_p, msParamArray_t *params_p)
 {
 	bool success_flag = false;
 
-	/** Get the C++ class from the C struct */
-	BlastTool *tool_p = dynamic_cast <BlastTool *> (interface_p);
-	
-	if (tool_p)
+	if (params_p)
 		{
-			if (params_p)
+			if (tool_p)
 				{
-					if (interface_p)
+					int i;
+					msParam_t **param_pp = params_p -> msParam;
+					
+					success_flag = true;
+					
+					for (i = params_p -> len; i > 0; -- i, ++ param_pp)
 						{
-							int i;
-							const msParam_t **param_pp = params_p -> msParam;
+							const msParam_t *param_p = *param_pp;
 							
-							success_flag = true;
-							
-							for (i = params_p -> len; i > 0; -- i, ++ param_pp)
+							if (param_p -> label)
 								{
-									const msParam_t *param_p = *param_pp;
+									size_t size = 2 + strlen (param_p -> label);
 									
-									if (param_p -> label)
+									char *key_s = (char *) malloc (size * sizeof (char));
+									
+									if (key_s)
 										{
-											size_t size = 2 + strlen (param_p -> label);
-											
-											char *key_s = (char *) malloc (size * sizeof (char));
-											
-											if (key_s)
+											*key_s = '-';
+											strcpy (key_s + 1, param_p -> label);
+
+
+											if (strcmp (param_p -> type, STR_MS_T) == 0)
 												{
-													*key_s = '-';
-													strcpy (key_s + 1, param_p -> label);
-
-
-													if (strcmp (param_p -> type, STR_MS_T) == 0)
+													tool_p -> AddArgument (key_s, true);
+													tool_p -> AddArgument ((char *) (param_p -> inOutStruct), false);
+												}
+											else if (strcmp (param_p -> type, INT_MS_T) == 0)
+												{
+													char *value_s = GetIntAsString (* ((int *) (param_p -> inOutStruct)));
+													
+													if (value_s)
 														{
 															tool_p -> AddArgument (key_s, true);
-															tool_p -> AddArgument ((char *) (param_p -> inOutStruct), false);
+															tool_p -> AddArgument (value_s, true);
 														}
-													else if (strcmp (param_p -> type, INT_MS_T) == 0)
+													else
 														{
-															char *value_s = GetIntAsString ((int *) (param_p -> inOutStruct));
-															
-															if (value_s)
-																{
-																	tool_p -> AddArgument (key_s, true);
-																	tool_p -> AddArgument (value_s, true);
-																}
-															else
-																{
-																	/* not enough memory */
-																	free (key_s);
-																	success_flag = false;
+															/* not enough memory */
+															free (key_s);
+															success_flag = false;
 
-																	/* force exit from loop */
-																	i = -1;		
-																}
-															
+															/* force exit from loop */
+															i = -1;		
 														}
-													else if (strcmp (param_p -> type, BOOL_MS_T) == 0)
-														{
-															tool_p -> AddArgument (key_s, true);
-														}
+													
+												}
+											else if (strcmp (param_p -> type, BOOL_MS_T) == 0)
+												{
+													tool_p -> AddArgument (key_s, true);
+												}
 
-												}		/* if (key_s) */
-										}
-										
-								}		/* for (i = params_p -> len; i > 0; -- i, ++ param_pp) */							
-							
-						}		/* if (interface_p) */
-						
-				}		/* if (params_p) */
+										}		/* if (key_s) */
+								}
+								
+						}		/* for (i = params_p -> len; i > 0; -- i, ++ param_pp) */							
+					
+				}		/* if (tool_p) */
+				
+		}		/* if (params_p) */
 			
-		}		/* if (tool_p) */
 	
 	return success_flag;
 }
 
-bool RunBlast (BlastInterface *interface_p)
+bool RunBlast (BlastTool *tool_p)
 {
-	bool success_flag = false;
-
-	/** Get the C++ class from the C struct */
-	BlastTool *tool_p = dynamic_cast <BlastTool *> (interface_p);
-	
-	if (tool_p)
-		{
-			success_flag = tool_p -> Run ();
-		}		/* if (tool_p) */
+	bool success_flag = tool_p -> Run ();
 		
-	return tool_p;	
+	return success_flag;	
 }
 
 
 void BlastTool :: AddArgument (char *arg_s, bool newly_allocated_flag)
 {
-	bt_command_line_args.push_back (value_s);	
+	bt_command_line_args.push_back (arg_s);	
 	
 	if (newly_allocated_flag)
 		{
-			bt_allocated_args.push_back (value_s);			
+			bt_allocated_args.push_back (arg_s);			
 		}
 }
 
@@ -254,6 +226,8 @@ bool ForkedBlastTool :: Run ()
 	bool success_flag = true;
 	
 	WriteToLog (NULL, LOG_INFO, "ForkedBlastTool :: Run");	
+	
+	return success_flag;
 }
 
 
@@ -262,6 +236,8 @@ bool InlineBlastTool :: Run ()
 	bool success_flag = true;
 	
 	WriteToLog (NULL, LOG_INFO, "InlineBlastTool :: Run");	
+
+	return success_flag;
 }
 
 
@@ -270,6 +246,8 @@ bool ThreadedBlastTool :: Run ()
 	bool success_flag = true;
 	
 	WriteToLog (NULL, LOG_INFO, "ThreadedBlastTool :: Run");	
+
+	return success_flag;
 }
 
 
@@ -278,6 +256,20 @@ bool QueuedBlastTool :: Run ()
 	bool success_flag = true;
 	
 	WriteToLog (NULL, LOG_INFO, "QueuedBlastTool :: Run");	
+
+	return success_flag;
+}
+
+
+void BlastTool :: PringArgsToLog ()
+{
+	std :: vector <char *> :: size_type i;
+	const std :: vector <char *> :: size_type num_args = bt_command_line_args.size ();
+	
+	for (i = 0; i < num_args; ++ i)
+		{
+			WriteToLog (NULL, LOG_INFO, "arg [%d]=\"%s\"\n", (int) i, bt_command_line_args [i]);	
+		}
 }
 
 

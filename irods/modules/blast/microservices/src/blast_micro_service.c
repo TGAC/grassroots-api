@@ -11,7 +11,7 @@ micro service call
 int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 {
 	int result = 0;
-	BlastInterface *blast_p = NULL;
+	BlastTool *blast_p = NULL;
 	
 	/* The	next line is needed	for	loop back	testing	using	the irule	-i option */
 	RE_TEST_MACRO	("				Calling	BlastSequenceData");	
@@ -20,16 +20,37 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 	if (strcmp (in_p -> type, STR_MS_T) == 0)
 		{
 			char *input_filename_s = (char *) (in_p -> inOutStruct);
+
+			if (input_filename_s)
+				{
+					blast_p = CreateBlastTool ();
+
+					if (blast_p)
+						{
+							msParamArray_t params;
+							memset (&params, 0, sizeof (msParamArray_t)); 
+							
+							addMsParamToArray (&params, "in", STR_MS_T, input_filename_s, NULL, 1); 
+							
+							if (ConvertArguments (blast_p, &params))
+								{
+									bool result = RunBlast (blast_p);
+								}
+							else
+								{
+									
+								}
+
+							FreeBlastTool (blast_p);
+						}	
+					else
+						{
+							
+						}
+					
+					
+				}
 		}
-	
-	blast_p = CreateBlastTool ();
-
-	if (blast_p)
-		{
-			bool result = RunBlast (blast_p);
-
-			FreeBlastTool (blast_p);
-		}	
 	
 			
 	/* Get the input sequence stream */
