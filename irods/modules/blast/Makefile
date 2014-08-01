@@ -14,6 +14,19 @@ include $(buildDir)/config/platform.mk
 include $(buildDir)/config/directories.mk
 include $(buildDir)/config/common.mk
 
+
+#
+# Directories
+#
+MSObjDir =	$(modulesDir)/$(myModule)/microservices/obj
+MSSrcDir =	$(modulesDir)/$(myModule)/microservices/src
+MSIncDir =	$(modulesDir)/$(myModule)/microservices/include
+
+
+
+MS_LIB_DIR =	$(modulesDir)/$(myModule)/lib
+
+
 #
 # Add the blast directories 
 #
@@ -24,16 +37,10 @@ BLAST_LIBS_DIR = /usr/local/lib
 #
 # Add our custom libraries
 #
-CUSTOM_LIBS_DIR = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util/debug/irods_library
-CUSTOM_LIBS = -lirods_library
+CUSTOM_LIBS_DIRS = -L$(MS_LIB_DIR)
+CUSTOM_LIBS = -ltgac_irods_util
 CUSTOM_INCLUDES_DIR = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util/include
 
-#
-# Directories
-#
-MSObjDir =	$(modulesDir)/$(myModule)/microservices/obj
-MSSrcDir =	$(modulesDir)/$(myModule)/microservices/src
-MSIncDir =	$(modulesDir)/$(myModule)/microservices/include
 
 
 # Build the final list of objects
@@ -65,8 +72,8 @@ INCLUDE_FLAGS =	-I$(MSIncDir) -I$(buildDir)/server/re/include
 INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES) -I$(BLAST_INCLUDES_DIR) -I$(CUSTOM_INCLUDES_DIR)
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
-LIBS += -L$(DIR_CUSTOM_LIBS) $(CUSTOM_LIBS)
-
+LIBS = $(CUSTOM_LIBS_DIRS) $(CUSTOM_LIBS)
+SO_FLAGS =  -Wl,--no-undefined -Wl,--no-as-needed
 
 .PHONY: all rules microservices server client clean
 .PHONY: server_ldflags client_ldflags server_cflags client_cflags
@@ -86,8 +93,8 @@ client_cflags:
 	@true
 
 # List module's objects for inclusion in the server
-server_ldflags:
-	@echo $(C_OBJECTS) $(CXX_OBJECTS) $(LIBS)
+server_ldflags: #print_ld_flags
+	@echo $(C_OBJECTS) $(CXX_OBJECTS) $(SO_FLAGS) $(LIBS) 
 
 # List module's includes for inclusion in the server
 server_cflags:
@@ -123,8 +130,7 @@ build:	copy_to_irods microservices
 copy_to_irods:
 	@echo "Copying $(myModule) module to $(buildDir)/modules"
 	@echo "cp -r -u -f ../$(myModule) $(buildDir)/modules/"
-	@cp -r -u -f ../$(myModule) $(buildDir)/modules/
-	@true
+	@cp -r -f ../$(myModule) $(buildDir)/modules/
 
 
 # Show compile flags
@@ -138,13 +144,18 @@ print_cflags:
 #	@echo "    $(CXX_SRCS)"
 #	@echo "    $(CXX_OBJECTS)"
 
+
+print_ld_flags:
+	@echo "Linking flags"
+	@echo "----\"$(C_OBJECTS)\" \"$(CXX_OBJECTS)\" \"$(LIBS)\""
+
 #
 # Compilation targets
 #
-$(C_OBJECTS): $(C_SRCS)
+$(C_OBJECTS): $(C_SRCS) $(DEPEND)
 	@echo "Compile $(myModule) module `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<
 
-$(CXX_OBJECTS): $(CXX_SRCS)
+$(CXX_OBJECTS): $(CXX_SRCS) $(DEPEND)
 	@echo "Compile $(myModule) module `basename $@`..."
 	@$(CC) -c $(CFLAGS) -o $@ $<

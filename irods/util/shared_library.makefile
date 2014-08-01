@@ -12,7 +12,7 @@ CPPFLAGS += -DSHARED_LIBRARY $(INCLUDES)
 
 .SUFFIXES: .c
 
-.PHONY:	all clean init
+.PHONY:	lib clean init
 
 # Build a list of the object files to create, based on the .c we find
 OTMP = $(patsubst %.c, %.o, $(SRCS))
@@ -28,7 +28,8 @@ ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
 endif
 
-all: $(DIR_OBJS)/$(LIBNAME)	
+lib: $(DIR_OBJS)/$(LIBNAME)	
+
 
 $(DIR_OBJS)/$(LIBNAME): init $(OBJS) 
 	$(COMP) -o $(DIR_OBJS)/$(LIBNAME) $(OBJS) $(LDFLAGS)

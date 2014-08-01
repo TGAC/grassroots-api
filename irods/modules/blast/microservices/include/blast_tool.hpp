@@ -19,9 +19,9 @@ public:
 
 	BlastTool ();
 
-	~BlastTool ();
+	virtual ~BlastTool ();
 
-	virtual bool Run ();
+	virtual bool Run () = 0;
 
 	void AddArgument (char *arg_s, bool newly_allocated_flag);
 

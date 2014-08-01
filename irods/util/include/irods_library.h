@@ -18,11 +18,11 @@
 */
 
 #ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
-  #ifdef EPR_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
+  #ifdef IRODS_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
     #define IRODS_LIB_API LIB_HELPER_SYMBOL_EXPORT
   #else
     #define IRODS_LIB_API LIB_HELPER_SYMBOL_IMPORT
-  #endif /* #ifdef EPR_LIBRARY_EXPORTS */
+  #endif /* #ifdef IRODS_LIBRARY_EXPORTS */
   #define IRODS_LIB_LOCAL LIB_HELPER_SYMBOL_LOCAL
 #else /* SHARED_LIBRARY is not defined: this means LIB is a static lib. */
   #define IRODS_LIB_API
@@ -34,6 +34,6 @@
 #endif
 
 
-#endif 	/* #ifndef EPR_LIBRARY_H */
+#endif 	/* #ifndef IRODS_LIBRARY_H */
 
 

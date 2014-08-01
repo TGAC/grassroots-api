@@ -4,6 +4,11 @@
 #include "typedefs.h"
 #include "irods_library.h"
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /**
  * Determine whether a file is on the local filesystem or not.
  * 
@@ -65,6 +70,12 @@ char *GetIntAsString (int value);
  * @param message_s The string to write using standard c printf syntax.
  */
 IRODS_LIB_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif		/* #ifndef IO_UTILS_H */
