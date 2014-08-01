@@ -10,6 +10,10 @@
 
 BlastTool *CreateBlastTool ()
 {
+	/**
+	 * In the future, this would query the system to determine which type
+	 * of blast tool to use, probably set by an admin. 
+	 */
 	return new InlineBlastTool;
 }
 
@@ -129,7 +133,7 @@ OPTIONAL ARGUMENTS
    File to which the program log should be redirected
 */
 
-bool ConvertArguments (BlastTool *tool_p, msParamArray_t *params_p)
+bool ConvertArgumentsArray (BlastTool *tool_p, msParamArray_t *params_p)
 {
 	bool success_flag = false;
 
@@ -200,6 +204,99 @@ bool ConvertArguments (BlastTool *tool_p, msParamArray_t *params_p)
 	
 	return success_flag;
 }
+
+
+
+bool ConvertKeyValueArgument (BlastTool *tool_p, msParam_t *param_p)
+{
+	bool success_flag = false;
+
+	if (param_p && (param_p -> inOutStruct))
+		{
+			if (tool_p)
+				{
+					if (strcmp (param_p -> type, KeyValPair_MS_T ) == 0)
+						{
+							char *key_value_pairs_s = (char *) (param_p -> inOutStruct);							
+							parsedMsKeyValStr_t key_value_pair;
+
+							if (initParsedMsKeyValStr (key_value_pairs_s, &key_value_pair) == 0)
+								{
+									int result;
+		
+									success_flag = true;
+									
+									while (((result = getNextKeyValFromMsKeyValStr (&key_value_pair)) == 0) && success_flag)
+										{
+											char *key_s = key_value_pair.kwPtr;
+											char *new_key_s  = NULL;
+											
+											if (*key_s == '-')
+												{	
+													new_key_s = strdup (key_s);													
+												}
+											else
+												{
+													size_t new_key_length = 2 + strlen (key_s);
+													
+													char *new_key_s = (char *) malloc (new_key_length * sizeof (char));
+													
+													if (new_key_s)
+														{
+															*new_key_s = '-';
+															strcpy (new_key_s + 1, key_s);															
+														}
+												}
+												
+											if (new_key_s)
+												{
+													char *new_value_s  = NULL;
+													char *value_s = key_value_pair.valPtr;
+													
+													if (value_s != '\0')
+														{
+															new_value_s = strdup (value_s);
+															
+															if (new_value_s)
+																{
+																	tool_p -> AddArgument (new_key_s, true);
+																	tool_p -> AddArgument (new_value_s, true);																	
+																}
+															else
+																{
+																	/* error */
+																}
+														}	
+													else
+														{
+															/* it's a boolean argument */
+															tool_p -> AddArgument (new_key_s, true);
+														}
+												}
+										}
+
+									/* Did we complete without error? */
+									if (result == NO_MORE_RESULT)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											/* errror */
+											success_flag = false;
+										}
+								}						
+						}
+										
+				}		/* if (tool_p) */
+				
+		}		/* if (params_p) */
+			
+	
+	return success_flag;
+}
+
+
 
 bool RunBlast (BlastTool *tool_p)
 {

@@ -5,14 +5,9 @@
 
 #include "msParam.h"
 
-/*
-typedef struct BlastInterface 
-{
-	int bi_num_args;
-	char **bi_args_ss;	
-} BlastInterface;
-*/
-
+/**
+ * The base class for running Blast.
+ */
 class BlastTool
 {
 public:
@@ -23,6 +18,13 @@ public:
 
 	virtual bool Run () = 0;
 
+	/**
+	 * Add an argument to Blast prior to its run.
+	 * 
+	 * @param arg_s The argument to add.
+	 * @param newly_allocated_flag If arg_s uses a memory allocation outside of iRods management
+	 * set this to <code>true</code> and this BlastTool destructor will deallocate it.
+	 */ 
 	void AddArgument (char *arg_s, bool newly_allocated_flag);
 
 	void PringArgsToLog ();
@@ -53,6 +55,10 @@ private:
 * is subclassing with virtual calls.
 */
 
+
+/**
+ * A class that will run Blast as a forked process.
+ */
 class ForkedBlastTool : public BlastTool 
 {
 public:
@@ -61,6 +67,10 @@ public:
 };
 
 
+/**
+ * A class that will run Blast within the main process
+ * of the iRods server.
+ */
 class InlineBlastTool : public BlastTool 
 {
 public:
@@ -69,6 +79,10 @@ public:
 };
 
 
+/**
+ * A class that will run Blast in a separate thread on
+ * the iRods server.
+ */
 class ThreadedBlastTool : public BlastTool 
 {
 public:
@@ -77,6 +91,10 @@ public:
 };
 
 
+/**
+ * A class that will run Blast as a job sumbmission 
+ * script for the HPC or similar.
+ */
 class QueuedBlastTool : public BlastTool 
 {
 public:
@@ -92,15 +110,43 @@ extern "C"
 #endif
 
 
+/**
+ * Get a newly created BlastTool
+ * 
+ * @return The BlastTool or <code>NULL</code> upon error.
+ */
 BlastTool *CreateBlastTool ();
 
-void FreeBlastTool (BlastTool *tool_p);
 
 /**
- * Convert the iRods arguments into an argc, argv set 
+ * Free a BlastTool
+ * 
+ * @param The BlastTool to deallocate.
  */
-bool ConvertArguments (BlastTool *tool_p, msParamArray_t *params_p);
+void FreeBlastTool (BlastTool *tool_p);
 
+
+/**
+ * Convert the parameters passed in by iRods into a format to 
+ * be used by the BlastTool.
+ * 
+ * @param tool_p The BlastTool to use.
+ * @param params_p The array of iRods parameters.
+ * @return <code>true</code> if the parameters were converted successfully, <code>false</code>
+ * otherwise.
+ */
+bool ConvertArgumentsArray (BlastTool *tool_p, msParamArray_t *params_p);
+
+
+bool ConvertKeyValueArgument (BlastTool *tool_p, msParam_t *param_p);
+
+/**
+ * Run Blast using the parameters that have been previously using ConvertArguments.
+ * 
+ * @param tool_p The BlastTool to use.
+ * @return <code>true</code> if the tool completed successfully, <code>false</code>
+ * otherwise.
+ */
 bool RunBlast (BlastTool *tool_p);
 
 
