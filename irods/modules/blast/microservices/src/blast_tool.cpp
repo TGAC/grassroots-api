@@ -217,7 +217,8 @@ bool ConvertKeyValueArgument (BlastTool *tool_p, msParam_t *param_p)
 		{
 			if (tool_p)
 				{
-					if (strcmp (param_p -> type, KeyValPair_MS_T ) == 0)
+					if ((strcmp (param_p -> type, KeyValPair_MS_T ) == 0) ||
+						(strcmp (param_p -> type, STR_MS_T ) == 0))
 						{
 							char *key_value_pairs_s = (char *) (param_p -> inOutStruct);							
 							parsedMsKeyValStr_t key_value_pair;
@@ -227,51 +228,69 @@ bool ConvertKeyValueArgument (BlastTool *tool_p, msParam_t *param_p)
 									int result;
 		
 									success_flag = true;
+
+									WriteToLog (NULL, LOG_INFO, "%s %d: BlastSequenceData :: key_value_pairs_s \"%s\"", __FILE__, __LINE__, key_value_pairs_s);	
 									
 									while (((result = getNextKeyValFromMsKeyValStr (&key_value_pair)) == 0) && success_flag)
 										{
 											char *key_s = key_value_pair.kwPtr;
 											char *new_key_s  = NULL;
+											char *new_value_s = NULL;
 											
-											if (*key_s == '-')
-												{	
-													new_key_s = strdup (key_s);													
+											WriteToLog (NULL, LOG_INFO, "%s %d: BlastSequenceData :: result %d key \"%s\" value \"%s\"", __FILE__, __LINE__, result, key_value_pair.kwPtr, key_value_pair.valPtr);	
+											
+											if (key_s)
+												{
+													if (*key_s == '-')
+														{	
+															new_key_s = strdup (key_s);													
+														}
+													else
+														{
+															size_t new_key_length = 2 + strlen (key_s);
+															
+															char *new_key_s = (char *) malloc (new_key_length * sizeof (char));
+															
+															if (new_key_s)
+																{
+																	*new_key_s = '-';
+																	strcpy (new_key_s + 1, key_s);															
+																}
+														}
+														
+													if (new_key_s)
+														{
+															char *new_value_s  = NULL;
+															char *value_s = key_value_pair.valPtr;
+															
+															if (value_s != '\0')
+																{
+																	new_value_s = strdup (value_s);	
+																	
+																	if (!new_value_s)
+																		{
+																				// errpr
+																		}
+																}
+														}
 												}
 											else
 												{
-													size_t new_key_length = 2 + strlen (key_s);
-													
-													char *new_key_s = (char *) malloc (new_key_length * sizeof (char));
-													
-													if (new_key_s)
+													/* it's a boolean argument where the key is valPtr */
+													if (key_value_pair.valPtr != '\0')
 														{
-															*new_key_s = '-';
-															strcpy (new_key_s + 1, key_s);															
-														}
+															new_key_s = strdup (key_value_pair.valPtr);
+														}	
 												}
 												
+													
+
 											if (new_key_s)
 												{
-													char *new_value_s  = NULL;
-													char *value_s = key_value_pair.valPtr;
-													
-													if (value_s != '\0')
+													tool_p -> AddArgument (new_key_s, true);
+
+													if (new_value_s)
 														{
-															new_value_s = strdup (value_s);
-															
-															if (new_value_s)
-																{
-																	tool_p -> AddArgument (new_key_s, true);
-																	tool_p -> AddArgument (new_value_s, true);																	
-																}
-															else
-																{
-																	/* error */
-																}
-														}	
-													else
-														{
-															/* it's a boolean argument */
 															tool_p -> AddArgument (new_key_s, true);
 														}
 												}
@@ -325,7 +344,7 @@ bool ForkedBlastTool :: Run ()
 	bool success_flag = true;
 	
 	PreRun ();
-	WriteToLog (NULL, LOG_INFO, "ForkedBlastTool :: Run");	
+	WriteToLog (NULL, LOG_INFO, "%s %d: ForkedBlastTool :: Run", __FILE__, __LINE__);		
 	PostRun ();
 	
 	return success_flag;
@@ -337,7 +356,7 @@ bool InlineBlastTool :: Run ()
 	bool success_flag = true;
 
 	PreRun ();
-	WriteToLog (NULL, LOG_INFO, "InlineBlastTool :: Run");	
+	WriteToLog (NULL, LOG_INFO, "%s %d: InlineBlastTool :: Run", __FILE__, __LINE__);		
 	PostRun ();
 
 	return success_flag;
@@ -349,7 +368,7 @@ bool ThreadedBlastTool :: Run ()
 	bool success_flag = true;
 	
 	PreRun ();
-	WriteToLog (NULL, LOG_INFO, "ThreadedBlastTool :: Run");	
+	WriteToLog (NULL, LOG_INFO, "%s %d: ThreadedBlastTool :: Run", __FILE__, __LINE__);	
 	PostRun ();
 
 	return success_flag;
@@ -361,7 +380,7 @@ bool QueuedBlastTool :: Run ()
 	bool success_flag = true;
 	
 	PreRun ();
-	WriteToLog (NULL, LOG_INFO, "QueuedBlastTool :: Run");		
+	WriteToLog (NULL, LOG_INFO, "%s %d: QueuedBlastTool :: Run", __FILE__, __LINE__);	
 	PostRun ();
 
 	return success_flag;
@@ -388,7 +407,7 @@ void BlastTool :: PringArgsToLog ()
 	
 	for (i = 0; i < num_args; ++ i)
 		{
-			WriteToLog (NULL, LOG_INFO, "arg [%d]=\"%s\"\n", (int) i, bt_command_line_args [i]);	
+			WriteToLog (NULL, LOG_INFO, "%s %d: arg [%d]=\"%s\"\n", __FILE__, __LINE__, (int) i, bt_command_line_args [i]);	
 		}
 }
 
