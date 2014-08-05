@@ -29,7 +29,17 @@ public:
 
 	void PringArgsToLog ();
 
-private:
+	
+	void PreRun ();
+	
+	void PostRun ();
+
+	
+
+protected:
+	bool bt_running_flag;
+
+
 	/** All of the command line arguments */
 	std :: vector <char *> bt_command_line_args;
 
@@ -148,6 +158,9 @@ bool ConvertKeyValueArgument (BlastTool *tool_p, msParam_t *param_p);
  * otherwise.
  */
 bool RunBlast (BlastTool *tool_p);
+
+
+bool IsBlastRunning (BlastTool *tool_p);
 
 
 #ifdef __cplusplus

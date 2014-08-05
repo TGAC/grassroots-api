@@ -73,7 +73,7 @@ INCLUDES +=	$(INCLUDE_FLAGS) $(LIB_INCLUDES) $(SVR_INCLUDES) -I$(BLAST_INCLUDES_
 CFLAGS_OPTIONS := $(CFLAGS) $(MY_CFLAG)
 CFLAGS =	$(CFLAGS_OPTIONS) $(INCLUDES) $(MODULE_CFLAGS)
 LIBS = $(CUSTOM_LIBS_DIRS) $(CUSTOM_LIBS)
-SO_FLAGS =  -Wl,--no-undefined -Wl,--no-as-needed
+SO_FLAGS =  #-Wl,--no-undefined -Wl,--no-as-needed
 
 .PHONY: all rules microservices server client clean
 .PHONY: server_ldflags client_ldflags server_cflags client_cflags

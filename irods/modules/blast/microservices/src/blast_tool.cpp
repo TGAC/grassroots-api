@@ -27,13 +27,15 @@ void FreeBlastTool (BlastTool *tool_p)
 
 BlastTool :: BlastTool ()
 {
+	bt_running_flag = false;
+	
 }
 
 BlastTool :: ~BlastTool ()
 {	
 	std :: vector <char *> :: size_type i;
 	
-	for (i = bt_allocated_args.size (); i >= 0; -- i)
+	for (i = bt_allocated_args.size (); i > 0; -- i)
 		{
 			char *data_s = bt_allocated_args.back ();
 			
@@ -322,7 +324,9 @@ bool ForkedBlastTool :: Run ()
 {
 	bool success_flag = true;
 	
+	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "ForkedBlastTool :: Run");	
+	PostRun ();
 	
 	return success_flag;
 }
@@ -331,8 +335,10 @@ bool ForkedBlastTool :: Run ()
 bool InlineBlastTool :: Run ()
 {
 	bool success_flag = true;
-	
+
+	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "InlineBlastTool :: Run");	
+	PostRun ();
 
 	return success_flag;
 }
@@ -342,7 +348,9 @@ bool ThreadedBlastTool :: Run ()
 {
 	bool success_flag = true;
 	
+	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "ThreadedBlastTool :: Run");	
+	PostRun ();
 
 	return success_flag;
 }
@@ -352,9 +360,24 @@ bool QueuedBlastTool :: Run ()
 {
 	bool success_flag = true;
 	
-	WriteToLog (NULL, LOG_INFO, "QueuedBlastTool :: Run");	
+	PreRun ();
+	WriteToLog (NULL, LOG_INFO, "QueuedBlastTool :: Run");		
+	PostRun ();
 
 	return success_flag;
+}
+
+
+void BlastTool :: PreRun ()
+{
+	bt_running_flag = true;
+	PringArgsToLog ();	
+}
+
+
+void BlastTool :: PostRun ()
+{
+	bt_running_flag = false;
 }
 
 
@@ -368,6 +391,7 @@ void BlastTool :: PringArgsToLog ()
 			WriteToLog (NULL, LOG_INFO, "arg [%d]=\"%s\"\n", (int) i, bt_command_line_args [i]);	
 		}
 }
+
 
 
 

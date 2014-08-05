@@ -32,7 +32,7 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 							
 							addMsParamToArray (&params, "in", STR_MS_T, input_filename_s, NULL, 1); 
 							
-							if (ConvertArguments (blast_p, &params))
+							if (ConvertArgumentsArray (blast_p, &params))
 								{
 									bool result = RunBlast (blast_p);
 								}
