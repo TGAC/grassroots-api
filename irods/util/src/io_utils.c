@@ -25,6 +25,7 @@
  * irods includes
  */
 #include "dataObjGet.h"
+#include "msParam.h"
 #include "rodsClient.h" 
 #include "rods.h"
 
@@ -426,6 +427,27 @@ char *GetIntAsString (int value)
 		}
 	
 	return buffer_s;
+}
+
+
+
+bool NotifyUser (userInfo_t *user_p, const char * const title_s, msParamArray_t *params_p)
+{
+	bool success_flag = true;
+	/*
+	 * depending on the user's preferences, notify them by e.g. email, logfile, etc.
+	 */
+	 
+	 return success_flag;
+}
+
+
+char *GetParamsAsString (const msParamArray_t * const params_p)
+{
+	char *params_s = NULL;
+	
+	
+	return params_s;
 }
 
 

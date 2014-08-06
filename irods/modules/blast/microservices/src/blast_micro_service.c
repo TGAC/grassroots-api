@@ -55,15 +55,19 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 							
 							if (success_flag)
 								{
-									bool result = RunBlast (blast_p);
+									bool success_flag = RunBlast (blast_p);
+									
+									if (success_flag)
+										{
+											
+										}
 								}
 							else
 								{
 									WriteToLog (NULL, LOG_INFO, "%s %d: BlastSequenceData :: Failed to convert input parameter \"%s\"", __FILE__, __LINE__, input_param_s);	
 								}
 							
-							
-
+						
 							FreeBlastTool (blast_p);
 						}		/* if (blast_p) */	
 					else
