@@ -17,10 +17,20 @@
 	#define __bool_true_false_are_defined 1
 #endif
      
+     
+/**
+ * An enum specifying whether a file is located on a 
+ * local or remote filesystem.
+ */
 typedef enum FileLocation
 {
+	/** The file is on a local filesystem */
 	FILE_LOCATION_LOCAL,
+
+	/** The file is on a remote filesystem */
 	FILE_LOCATION_REMOTE,
+
+	/** The file location is unknown */
 	FILE_LOCATION_UNKNOWN
 } FileLocation;
 
