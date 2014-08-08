@@ -476,3 +476,42 @@ void WriteToLog (const char *log_ident_s, const int log_level, const char *messa
 
 	va_end (args);
 }
+
+
+
+int PutAndCheckForServices (rcComm_t **connection_pp, rodsEnv *env_p, rodsArguments_t *args_p, rodsPathInp_t *path_inp_p)
+{
+	int status = putUtil (connection_pp, env_p, args_p, path_inp_p);
+	
+	/* Has the file been put successfully? */
+	if (status == 0)
+		{
+			/* 
+			 * Now we run through our list of potential services
+			 */
+			int i = path_inp_p -> numSrc;
+			rodsPath_t *src_p = path_inp_p -> srcPath;
+			rodsPath_t *dest_p = path_inp_p -> destPath;
+			rodsPath_t *target_p = path_inp_p -> targPath;
+			
+			for ( ; i > 0; ++ src_p, ++ dest_p, ++ target_p)
+				{
+					#ifdef IO_UTILS_DEBUG 
+					printf ("src in \"%s\" out \"%s\"\n", src_p -> inPath, src_p -> outPath);
+					printf ("src in \"%s\" out \"%s\"\n", dest_p -> inPath, dest_p -> outPath);
+					printf ("src in \"%s\" out \"%s\"\n", target_p -> inPath, target_p -> outPath);
+					#endif
+				}
+			 
+		}		/* if (status == 0) */
+		
+
+	return status;
+}
+
+
+
+int PrintRodsPath (FILE *out_f, const rodsPath_t * const rods_path_p, const char * const description_s)
+{
+	return fprintf (out_f, "%s: in \"%s\" out \"%s\"\n", description_s, rods_path_p -> inPath, rods_path_p -> outPath);
+}

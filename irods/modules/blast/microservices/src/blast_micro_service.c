@@ -87,6 +87,48 @@ int BlastSequenceData (msParam_t *in_p, msParam_t *out_p, ruleExecInfo_t *rei)
 }
 
 
+static bool IsFileOfInterest (const char * const filename_s)
+{
+	bool interested_flag = false;
+	
+	/*
+	 * @TODO
+	 * We could check if the file is on a remote filesystem and if so
+	 * make a full or partial local copy for analysis.
+	 */
+	
+	/* 
+	 * We can check on file extension and also the content of the file
+	 * to determine if we want to blast this file.
+	 */
+	if (filename_s)
+		{
+			const char *extension_s = strstr (filename_s, ".");
+			
+			if (extension_s)
+				{
+					/* move past the . */
+					++ extension_s;
+					
+					/* check that the file doesn't end with the . */
+					if (*extension_s != '\0')
+						{
+							if (strcmp (extension_s, "fa") == 0)
+								{
+									interested_flag = true;
+								}
+								
+						}		/* if (*extension_s != '\0') */
+					
+				}		/* if (extension_s) */
+				
+		}		/* if (filename_s) */
+	
+	
+	return interested_flag;
+}
+
+
 //static void do ()
 //{
 //		/* Get the input sequence stream */

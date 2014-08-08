@@ -29,9 +29,9 @@ INCLUDES = \
 SRCS 	= \
 	io_utils.c  
 
-CPPFLAGS += -DIRODS_LIBRARY_EXPORTS
+CPPFLAGS += -DIRODS_LIBRARY_EXPORTS -DUNIX
 
-LDFLAGS += 
+LDFLAGS += -L$(DIR_IRODS)/lib/core/obj -lRodsAPIs
 
 include shared_library.makefile
 
@@ -40,5 +40,5 @@ include shared_library.makefile
 all: lib test
 
 test:
-	$(COMP) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm  $(INCLUDES)  test.c -o test
+	$(COMP) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm  $(INCLUDES)  test.c -o test
 

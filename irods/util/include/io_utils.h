@@ -11,8 +11,22 @@
 #ifndef IO_UTILS_H
 #define IO_UTILS_H
 
+
+#include <stdio.h>
+
+/* 
+ * irods includes
+ */
+#include "putUtil.h"
+
+
+ /*
+  * wheatis includes
+  */
 #include "typedefs.h"
 #include "irods_library.h"
+#include "parameter.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -31,15 +45,26 @@ IRODS_LIB_API FileLocation GetFileLocation (const char * const filename_s);
 
 
 /**
- * Copy a file .
+ * Copy a file to the local filesystem.
  * 
- * @param src_filename_s The name of the the source file.
- * @param dest_filename_s The name of the the source file.
- * @param callback_fn The callback_fn to denote progress (currently unused).
+ * @param filename_s The name of the the source file.
  * @return true on success, false on error with errno set to the appropriate value. 
  * @ingroup io_util 
  */ 
 IRODS_LIB_API char *CopyFileToLocalFilesystem (const char * const filename_s);
+
+
+/**
+ * Copy a file chunk to the local filesystem.
+ * 
+ * @param filename_s The name of the the source file.
+ * @param offset The byte offset to start copying from.
+ * @param chunk_size The size of the chunk to copy.
+ * @return true on success, false on error with errno set to the appropriate value. 
+ * @ingroup io_util 
+ */ 
+IRODS_LIB_API char *CopyFileChunkToLocalFilesystem (const char * const filename_s, size_t offset, size_t chunk_size);
+
 
 
 
@@ -86,6 +111,12 @@ IRODS_LIB_API char *GetIntAsString (int value);
  */
 IRODS_LIB_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
 
+
+
+IRODS_LIB_API int PutAndCheckForServices (rcComm_t **connection_pp, rodsEnv *env_p, rodsArguments_t *args_p, rodsPathInp_t *path_inp_p);
+
+
+IRODS_LIB_LOCAL int PrintRodsPath (FILE *out_f, const rodsPath_t * const rods_path_p, const char * const description_s);
 
 
 #ifdef __cplusplus
