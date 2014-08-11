@@ -136,7 +136,7 @@ IRODS_LIB_API void LinkedListRemove (LinkedList * const list_p, ListNode * const
  * It returns > 0 if node1_p should be after node2_p,
  * It returns  0 if node1_p is equal to node2_p.
  */
-IRODS_LIB_API BOOLEAN LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
+IRODS_LIB_API bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
 
 
 /**

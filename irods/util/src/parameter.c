@@ -57,6 +57,7 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 
 void FreeParameter (Parameter *param_p)
 {
+
 	if (param_p -> pa_key_s)
 		{
 			FreeCopiedString (param_p -> pa_key_s);
@@ -363,263 +364,122 @@ int CompareParameterLevels (const ParameterLevel pl0, const ParameterLevel pl1)
 }
 
 
-void PrintParameter (const Parameter * const param_p, OutputStream * const stream_p)
+bool SetParameter (Parameter * const param_p, const void *value_p)
 {
-	char *type_s = NULL;
-	char *default_s = "";
-	char *level_s = NULL;
-	char *lower_bound_s = NULL;
-	char *upper_bound_s = NULL;
-
+	bool success_flag = false;
 	switch (param_p -> pa_type)
 		{
 			case PT_BOOLEAN:
-				type_s = "Boolean";
-				default_s = (param_p -> pa_default.st_boolean_value)	? "TRUE" : "FALSE";
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = (param_p -> pa_bounds_p -> pb_lower.st_boolean_value)	? "TRUE" : "FALSE";
-						upper_bound_s = (param_p -> pa_bounds_p -> pb_upper.st_boolean_value)	? "TRUE" : "FALSE";
-					}
-
+				{
+					bool b = * ((bool *) value_p);				
+					param_p -> pa_current_value.st_boolean_value = b;
+					success_flag = true;
+				}
 				break;
 
 			case PT_SIGNED_INT:
-				type_s = "Integer";
-				default_s = ConvertIntegerToString (param_p -> pa_default.st_long_value);
+				{
+					int32 i = * ((int32 *) *value_p);
 
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = ConvertIntegerToString (param_p -> pa_bounds_p -> pb_lower.st_long_value);
-						upper_bound_s = ConvertIntegerToString (param_p -> pa_bounds_p -> pb_upper.st_long_value);
-					}
-
+					if (param_p -> pa_bounds_p)
+						{
+							const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+							
+							if ((i >= bounds_p -> pb_lower.st_long_value) &&
+									(i <= pbounds_p -> pb_upper.st_long_value))
+								{
+									param_p -> pa_current_value.st_long_value = i;
+									success_flag = true;					
+								}
+						}
+					else
+						{
+							param_p -> pa_current_value.st_long_value = i;
+							success_flag = true;
+						}
+				}
 				break;
 
 			case PT_UNSIGNED_INT:
-				type_s = "Non-negative integer";
-				default_s = ConvertIntegerToString (param_p -> pa_default.st_ulong_value);
+				{
+					uint32 i = * ((uint32 *) *value_p);
 
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = ConvertIntegerToString (param_p -> pa_bounds_p -> pb_lower.st_ulong_value);
-						upper_bound_s = ConvertIntegerToString (param_p -> pa_bounds_p -> pb_upper.st_ulong_value);
-					}
-
+					if (param_p -> pa_bounds_p)
+						{
+							const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+							
+							if ((i >= bounds_p -> pb_lower.st_ulong_value) &&
+									(i <= pbounds_p -> pb_upper.st_ulong_value))
+								{
+									param_p -> pa_current_value.st_ulong_value = i;
+									success_flag = true;					
+								}
+						}
+					else
+						{
+							param_p -> pa_current_value.st_ulong_value = i;
+							success_flag = true;
+						}
+				}
 				break;
 
 			case PT_SIGNED_REAL:
-				type_s = "Number";
-				default_s = ConvertDoubleToString (param_p -> pa_default.st_data_value);
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = ConvertDoubleToString (param_p -> pa_bounds_p -> pb_lower.st_data_value);
-						upper_bound_s = ConvertDoubleToString (param_p -> pa_bounds_p -> pb_upper.st_data_value);
-					}
-				break;
-
 			case PT_UNSIGNED_REAL:
-				type_s = "Non-negative number";
-				default_s = ConvertDoubleToString (param_p -> pa_default.st_data_value);
+				{
+					double d = * ((double *) *value_p);
 
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = ConvertDoubleToString (param_p -> pa_bounds_p -> pb_lower.st_data_value);
-						upper_bound_s = ConvertDoubleToString (param_p -> pa_bounds_p -> pb_upper.st_data_value);
-					}
+					if (param_p -> pa_bounds_p)
+						{
+							const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+							
+							if ((i >= bounds_p -> pb_lower.st_data_value) &&
+									(i <= pbounds_p -> pb_upper.st_data_value))
+								{
+									param_p -> pa_current_value.st_data_value = d;
+									success_flag = true;					
+								}
+						}
+					else
+						{
+							param_p -> pa_current_value.st_long_value = d;
+							success_flag = true;
+						}
+				}
 				break;
+
 
 			case PT_STRING:
-				type_s = "Text";
-				default_s = param_p -> pa_default.st_string_value_s;
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = param_p -> pa_bounds_p -> pb_lower.st_string_value_s;
-						upper_bound_s = param_p -> pa_bounds_p -> pb_upper.st_string_value_s;
-					}
-
-				break;
-
 			case PT_FILE_TO_WRITE:
-				type_s = "Filename to save to";
-				default_s = param_p -> pa_default.st_string_value_s;
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = param_p -> pa_bounds_p -> pb_lower.st_string_value_s;
-						upper_bound_s = param_p -> pa_bounds_p -> pb_upper.st_string_value_s;
-					}
-				break;
-
 			case PT_FILE_TO_READ:
-				type_s = "Filename to load from";
-				default_s = param_p -> pa_default.st_string_value_s;
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = param_p -> pa_bounds_p -> pb_lower.st_string_value_s;
-						upper_bound_s = param_p -> pa_bounds_p -> pb_upper.st_string_value_s;
-					}
-				break;
-
 			case PT_DIRECTORY:
-				type_s = "Directory";
-				default_s = param_p -> pa_default.st_string_value_s;
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = param_p -> pa_bounds_p -> pb_lower.st_string_value_s;
-						upper_bound_s = param_p -> pa_bounds_p -> pb_upper.st_string_value_s;
-					}
-				break;
-
-			case PT_ATOM_IDS:
-				type_s = "List of atom ids";
-				default_s = param_p -> pa_default.st_string_value_s;
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = param_p -> pa_bounds_p -> pb_lower.st_string_value_s;
-						upper_bound_s = param_p -> pa_bounds_p -> pb_upper.st_string_value_s;
-					}
-				break;
-
-			case PT_DIHEDRAL_IDS:
-				type_s = "List of dihedral ids";
-				default_s = param_p -> pa_default.st_string_value_s;
-
-				if (param_p -> pa_bounds_p)
-					{
-						lower_bound_s = param_p -> pa_bounds_p -> pb_lower.st_string_value_s;
-						upper_bound_s = param_p -> pa_bounds_p -> pb_upper.st_string_value_s;
-					}
-				break;
-
-			default:
-				break;
-		}
-
-	switch (param_p -> pa_level)
-		{
-			case PL_BASIC:
-				level_s = "Basic";
-				break;
-
-			case PL_INTERMEDIATE:
-				level_s = "Intermediate";
-				break;
-
-			case PL_ADVANCED:
-				level_s = "Advanced";
-				break;
-
-			default:
-				break;
-		}
-
-	if (type_s && level_s)
-		{
-			PrintToOutputStream (stream_p, "NAME: \"%s\" ", param_p -> pa_name_s);
-			PrintToOutputStream (stream_p, "KEY: \"%s\" ", param_p -> pa_key_s);
-			PrintToOutputStream (stream_p, "TYPE: \"%s\" ", type_s);
-			PrintToOutputStream (stream_p, "DESCRIPTION: \"%s\" ", param_p -> pa_description_s);
-			PrintToOutputStream (stream_p, "DEFAULT: \"%s\" ", default_s);
-			PrintToOutputStream (stream_p, "LEVEL: \"%s\" ", level_s);
-
-			if (lower_bound_s && upper_bound_s)
 				{
-					PrintToOutputStream (stream_p, "LOWER: \"%s\" ", lower_bound_s);
-					PrintToOutputStream (stream_p, "UPPER: \"%s\" ", upper_bound_s);
-				}		/* if (lower_bound_s && upper_bound_s) */
-
-			if (param_p -> pa_options_p)
-				{
-					const uint32 num_options = param_p -> pa_options_p -> pmoa_num_options;
-					const ParameterMultiOption *option_p = param_p -> pa_options_p -> pmoa_options_p;
-					const ParameterType param_type = param_p -> pa_type;
-					uint32 i;
-					char *option_value_s = NULL;
-					BOOLEAN copied_option_flag = FALSE;
-
-					PrintToOutputStream (stream_p, "OPTIONS: { ");
-					for (i = 0; i < num_options; ++ i, ++ option_p)
+					char *value_s = (char *) value_p;				
+					
+					if (value_s)
 						{
-							PrintToOutputStream (stream_p, "\"%s\"", option_p -> pmo_description_s);
-
-							switch (param_type)
+							char *copied_value_s = strdup (value_s);
+							
+							if (copied_value_s)
 								{
-									case PT_BOOLEAN:
-										option_value_s = (option_p -> pmo_value.st_boolean_value) ? "TRUE" : "FALSE";
-										break;
-
-									case PT_SIGNED_INT:
-										option_value_s = ConvertIntegerToString (option_p -> pmo_value.st_long_value);
-										copied_option_flag = TRUE;
-										break;
-
-									case PT_UNSIGNED_INT:
-										option_value_s = ConvertIntegerToString (option_p -> pmo_value.st_ulong_value);
-										copied_option_flag = TRUE;
-										break;
-
-									case PT_SIGNED_REAL:
-										option_value_s = ConvertDoubleToString (option_p -> pmo_value.st_data_value);
-										copied_option_flag = TRUE;
-										break;
-
-									case PT_UNSIGNED_REAL:
-										option_value_s = ConvertDoubleToString (option_p -> pmo_value.st_data_value);
-										copied_option_flag = TRUE;
-										break;
-
-									case PT_STRING:
-										option_value_s = option_p -> pmo_value.st_string_value_s;
-										break;
-
-									case PT_FILE_TO_WRITE:
-										option_value_s = option_p -> pmo_value.st_string_value_s;
-										break;
-
-									case PT_FILE_TO_READ:
-										option_value_s = option_p -> pmo_value.st_string_value_s;
-										break;
-
-									case PT_DIRECTORY:
-										option_value_s = option_p -> pmo_value.st_string_value_s;
-										break;
-
-									case PT_ATOM_IDS:
-										option_value_s = option_p -> pmo_value.st_string_value_s;
-										break;
-
-									case PT_DIHEDRAL_IDS:
-										option_value_s = option_p -> pmo_value.st_string_value_s;
-										break;
-
-									default:
-										break;
-								}		/* switch (param_type) */
-
-							if (option_value_s)
-								{
-									PrintToOutputStream (stream_p, ":\"%s\" ", option_value_s);
-
-									if (copied_option_flag)
+									/* If we have a previous value, delete it */
+									if (param_p -> pa_current_value.st_string_value_s)
 										{
-											FreeCopiedString (option_value_s);
+											free (param_p -> pa_current_value.st_string_value_s)
 										}
-								}
+										
+									param_p -> pa_current_value.st_string_value_s = copied_value_s;
+									success_flag = true;
+								}							
+						}
+				}				
+			break;
 
-						}		/* for (i = 0; i < num_options; ++ i, ++ option_p) */
-
-					PrintToOutputStream (stream_p, "}");
-				}		/* if (pa_options_p) */
-
-		}		/* if (type_s && level_s && default_s) */
-
+			default:
+				break;
+		}
+		
+	return success_flag;
 }
+
 
 

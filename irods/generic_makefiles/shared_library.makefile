@@ -1,6 +1,6 @@
 .DEFAULT_GOAL = all
 
-DIR_OBJS = $(BUILD)/$(NAME)
+DIR_OBJS = $(BUILD)
 
 LIBNAME = lib$(NAME).so
 
@@ -10,12 +10,13 @@ LDFLAGS += -shared
 
 CPPFLAGS += -DSHARED_LIBRARY $(INCLUDES)
 
-.SUFFIXES: .c
+.SUFFIXES: .c .cpp
 
 .PHONY:	lib clean init
 
-# Build a list of the object files to create, based on the .c we find
+# Build a list of the object files to create, based on the source we find
 OTMP = $(patsubst %.c, %.o, $(SRCS))
+OTMP = $(patsubst %.cpp, %.o, $(SRCS))
  
 # Build the final list of objects
 OBJS = $(patsubst %, $(DIR_OBJS)/%, $(OTMP))
@@ -32,7 +33,7 @@ lib: $(DIR_OBJS)/$(LIBNAME)
 
 
 $(DIR_OBJS)/$(LIBNAME): init $(OBJS) 
-	$(COMP) -o $(DIR_OBJS)/$(LIBNAME) $(OBJS) $(LDFLAGS)
+	$(COMP) -o $(DIR_OBJS)/$(LIBNAME) $(OBJS) $(STATIC_LIBS) $(LDFLAGS)
 
 
 install: all
@@ -51,5 +52,12 @@ clean:
 # 2. Generate dependency information, explicitly specifying the target name
 $(DIR_OBJS)/%.o : %.c
 	$(COMP) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
-	$(MAKEDEPEND) $(basename $@).d -MT $(basename $@).o $(CPPFLAGS) $<  
+	$(MAKEDEPEND) $(basename $@).d -MT $(basename $@).o $(CPPFLAGS) $(CFLAGS) $<  
     	
+
+# Compile and generate dependency info
+# 1. Compile the .cpp file
+# 2. Generate dependency information, explicitly specifying the target name
+$(DIR_OBJS)/%.o : %.cpp
+	$(COMP) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
+	$(MAKEDEPEND) $(basename $@).d -MT $(basename $@).o $(CPPFLAGS) $(CFLAGS) $<  

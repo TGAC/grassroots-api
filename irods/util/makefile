@@ -31,7 +31,9 @@ SRCS 	= \
 
 CPPFLAGS += -DIRODS_LIBRARY_EXPORTS -DUNIX
 
-LDFLAGS += -L$(DIR_IRODS)/lib/core/obj -lRodsAPIs
+LDFLAGS +=
+
+STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
 include shared_library.makefile
 
