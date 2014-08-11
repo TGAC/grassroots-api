@@ -9,11 +9,13 @@ DIR_INSTALL = ../modules/blast/lib/
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 DIR_IRODS	= $$IRODS_HOME
 
-DIR_QT = /usr/users/ga002/tyrrells/Qt
+#DIR_QT = /usr/users/ga002/tyrrells/Qt
+DIR_QT = /home/billy/Qt
 QT_VERSION = 5.3
 DIR_QT_ROOT_INCLUDE = $(DIR_QT)/$(QT_VERSION)/gcc_64/include
 
-DIR_WHEATIS_UTIL = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util
+#DIR_WHEATIS_UTIL = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util
+DIR_WHEATIS_UTIL = /home/billy/Projects/wheatis/irods/util
 
 
 
@@ -21,6 +23,7 @@ DIR_WHEATIS_UTIL = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util
 BUILD		= debug
 
 VPATH	= \
+	$(DIR_SRC) \
 	$(DIR_SRC)/parameter_widgets \
 	$(DIR_SRC)/prefs 
 
@@ -47,12 +50,13 @@ SRCS 	= \
 	qt_parameter_widget.cpp \
 	base_prefs_widget.cpp \
 	prefs_window.cpp \
+	gui.cpp
 
 
 CPPFLAGS += -DWHEATIS_CLIENT_QT_LIBRARY_EXPORTS -DUNIX 
 
 # Ubuntu build qt with -reduce-relocations so we need this flag
-CFLAGS += -fPIE
+#CFLAGS += -fPIE
 
 LDFLAGS +=
 

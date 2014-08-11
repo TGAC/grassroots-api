@@ -5,6 +5,7 @@
 
 #include "parameter.h"
 #include "parameter_library_api.h"
+#include "typedefs.h"
 
 class PrefsWidget;
 
