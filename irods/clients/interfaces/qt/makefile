@@ -52,7 +52,7 @@ SRCS 	= \
 CPPFLAGS += -DWHEATIS_CLIENT_QT_LIBRARY_EXPORTS -DUNIX 
 
 # Ubuntu build qt with -reduce-relocations so we need this flag
-CFLAGS += -fPIE
+#CFLAGS += -fPIE
 
 LDFLAGS +=
 
