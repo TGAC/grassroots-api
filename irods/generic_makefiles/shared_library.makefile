@@ -44,7 +44,7 @@ init:
 	@mkdir -p $(DIR_OBJS)
 
 clean:
-	@rm -fr $(BUILD)/$(NAME)	
+	@rm -fr $(BUILD)/
 
  
 # Compile and generate dependency info
