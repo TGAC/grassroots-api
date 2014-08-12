@@ -9,6 +9,7 @@
 #include "prefs_widget.h"
 #include "parameter_library_api.h"
 
+#include "parameter.h"
 
 class WHEATIS_CLIENT_QT_LIBRARY_API PrefsWindow : public QMainWindow
 {
@@ -21,7 +22,7 @@ public slots:
 
 
 public:
-	PrefsWindow ();
+	PrefsWindow (ParameterSet *param_set_p);
 	~PrefsWindow ();
 
 

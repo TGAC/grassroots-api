@@ -14,7 +14,7 @@
 
 
 
-PrefsWindow :: PrefsWindow ()
+PrefsWindow :: PrefsWindow (ParameterSet *param_set_p)
 {
 	pw_prefs_widget_p = new PrefsWidget (this, PL_BASIC);
 
