@@ -24,7 +24,7 @@ void ParamTextBox :: RemoveConnection ()
 }
 
 
-bool ParamTextBox :: UpdateConfig (const QString &value_r)
+bool ParamTextBox :: UpdateConfig (const QString &valmake ue_r)
 {
 	QByteArray ba = value_r.toLocal8Bit ();
 	const char *value_s = ba.constData ();

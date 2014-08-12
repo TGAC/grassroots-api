@@ -10,6 +10,9 @@
 #include "putUtil.h"
 void usage ();
 
+static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p)
+
+
 int
 main(int argc, char **argv) {
     int status;
@@ -228,3 +231,12 @@ usage ()
    }
    printReleaseInfo("iput");
 }
+
+
+
+static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p)
+{
+	
+}
+
+

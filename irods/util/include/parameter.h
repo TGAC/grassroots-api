@@ -143,11 +143,6 @@ typedef struct ParameterNode
 } ParameterNode;
 
 
-typedef struct ParameterSet
-{
-	LinkedList *ps_params_p;
-} ParameterSet;
-
 
 
 IRODS_LIB_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
