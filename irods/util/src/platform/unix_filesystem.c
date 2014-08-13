@@ -11,14 +11,14 @@
 #include <fcntl.h>
 
 
-#include "filesystem.h"
+#include "filesystem_utils.h"
 #include "linked_list.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "string_linked_list.h"
 
 
-static BOOLEAN CreateSingleLevelDirectory (const char *path_s);
+static bool CreateSingleLevelDirectory (const char *path_s);
 
 
 
@@ -43,7 +43,7 @@ const char *GetPluginPattern (void)
 }
 
 
-BOOLEAN IsPathValid (const char * const path)
+bool IsPathValid (const char * const path)
 {
 	struct stat st;
 
@@ -51,13 +51,13 @@ BOOLEAN IsPathValid (const char * const path)
 }
 
 
-BOOLEAN IsPathAbsolute (const char * const path)
+bool IsPathAbsolute (const char * const path)
 {
 	if (path)
 		{
 			return (*path == '/');
 		}
-	return FALSE;
+	return false;
 }
 
 /*
@@ -67,7 +67,7 @@ char *GetFilenameOnly (const char * const path)
 	if (filename_p)
 		{
 			++ filename_p;
-			return CopyToNewString (filename_p, FALSE);
+			return CopyToNewString (filename_p, false);
 		}
 
 	return NULL;
@@ -154,22 +154,22 @@ LinkedList *GetMatchingFiles (const char * const pattern)
 }
 
 
-static BOOLEAN CreateSingleLevelDirectory (const char *path_s)
+static bool CreateSingleLevelDirectory (const char *path_s)
 {
 	struct stat st;
-	BOOLEAN success_flag = TRUE;
+	bool success_flag = true;
 
 	if (stat (path_s, &st) != 0)
 		{
 			/* Directory does not exist. EEXIST for race condition */
 			if (mkdir (path_s, S_IRWXU) != 0 && errno != EEXIST)
 				{
-					success_flag = FALSE;
+					success_flag = false;
 				}
 			else if (!S_ISDIR (st.st_mode))
 				{
 					errno = ENOTDIR;
-					success_flag = FALSE;
+					success_flag = false;
 				}
 		}
 
@@ -183,17 +183,17 @@ static BOOLEAN CreateSingleLevelDirectory (const char *path_s)
 ** each directory in path exists, rather than optimistically creating
 ** the last element and working backwards.
 */
-BOOLEAN EnsureDirectoryExists (const char * const path_s)
+bool EnsureDirectoryExists (const char * const path_s)
 {
-	BOOLEAN success_flag = FALSE;
-	char *copied_path_s = CopyToNewString (path_s, 0, FALSE);
+	bool success_flag = false;
+	char *copied_path_s = CopyToNewString (path_s, 0, false);
 
 	if (copied_path_s)
 		{
 			char *current_p = copied_path_s;
 			char *next_p = NULL;
 
-			success_flag = TRUE;
+			success_flag = true;
 
 	    while (success_flag && (next_p = strchr (current_p, '/')))
 				{
@@ -222,19 +222,29 @@ BOOLEAN EnsureDirectoryExists (const char * const path_s)
 
 
 
-BOOLEAN CopyToNewFile (const char * const src_filename, const char * const dest_filename, void (*callback_fn) ())
+
+/**
+ * Copy the contents of one named file to another.
+ * 
+ * @param src_filename_s The name of the the source file.
+ * @param dest_filename_s The name of the the source file.
+ * @param callback_fn The callback_fn to denote progress (currently unused).
+ * @return true on success, false on error with errno set to the appropriate value.
+ */ 
+bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ())
 {
-	FILE *in_f = fopen (src_filename, "rb");
-	BOOLEAN success_flag = FALSE;
+	FILE *in_f = fopen (src_filename_s, "rb");
+	bool success_flag = false;
+	int saved_errno = 0;
 
 	if (in_f)
 		{
-			FILE *out_f = fopen (dest_filename, "wb");
+			FILE *out_f = fopen (dest_filename_s, "wb");
 
 			if (out_f)
 				{
 					char buffer [8192];		/* 32 * 256 */
-					success_flag = TRUE;
+					success_flag = true;
 
 					while (success_flag)
 						{
@@ -244,14 +254,15 @@ BOOLEAN CopyToNewFile (const char * const src_filename, const char * const dest_
 								{
 									if (fwrite (buffer, 32, 256, out_f) != num_objs)
 										{
-											success_flag = FALSE;
+											success_flag = false;
+											saved_errno = errno;
 										}
 								}
 						}		/* while (success_flag) */
 
 					if (success_flag)
 						{
-							success_flag = feof (in_f);
+							success_flag = (feof (in_f) != 0) ? true : false;
 						}
 
 					fclose (out_f);
@@ -262,14 +273,18 @@ BOOLEAN CopyToNewFile (const char * const src_filename, const char * const dest_
 
 		}		/* if (in_f) */
 
+	/* In case closing one of the files overwrote it, restore errno */
+	if (saved_errno != 0)
+		{
+			errno = saved_errno;
+		}
 
 	return success_flag;
 }
 
 
 
-
-BOOLEAN SetCurrentWorkingDirectory (const char * const path)
+bool SetCurrentWorkingDirectory (const char * const path)
 {
 	return (chdir	(path) == 0);
 }
@@ -305,7 +320,7 @@ char *GetCurrentWorkingDirectory (void)
 }
 
 
-BOOLEAN IsDirectory (const char * const path)
+bool IsDirectory (const char * const path)
 {
 	struct stat buf;
 
@@ -314,6 +329,6 @@ BOOLEAN IsDirectory (const char * const path)
 			return (S_ISDIR (buf.st_mode));
 		}
 
-	return FALSE;
+	return false;
 }
 

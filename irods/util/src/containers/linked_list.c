@@ -4,8 +4,6 @@
 
 #include "linked_list.h"
 
-#include "streams.h"
-
 
 #ifdef _DEBUG
 	#define LINKED_LIST_DEBUG (STM_LEVEL_INFO)
@@ -311,7 +309,7 @@ void LinkedListRemove (LinkedList * const list_p, ListNode * const node_p)
 }
 
 
-BOOLEAN LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p))
+bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p))
 {
 	const uint32 num_nodes = list_p -> ll_size;
 
@@ -350,12 +348,12 @@ BOOLEAN LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (cons
         }
 			else
 				{
-					return FALSE;
+					return false;
 				}
 
 		}
 
-	return TRUE;
+	return true;
 }
 
 void LinkedListPrioritisedInsert (LinkedList * const list_p, ListNode * const node_to_insert_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p))
@@ -401,7 +399,7 @@ void LinkedListPrioritisedInsert (LinkedList * const list_p, ListNode * const no
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to get prioritised insert postion\n");
+									//PrintErrors (STM_LEVEL_SEVERE, "Failed to get prioritised insert postion\n");
 								}
 						}
 					else
@@ -487,8 +485,8 @@ ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNod
 	int high = ((int) (list_p -> ll_size)) - 1;
 	int middle = 0;
 	int result = 0;
-	BOOLEAN loop_flag = TRUE;
-	BOOLEAN first_time_flag = TRUE;
+	bool loop_flag = true;
+	bool first_time_flag = true;
 
 	while (loop_flag)
 		{
@@ -520,7 +518,7 @@ ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNod
 					if (!first_time_flag)
 						{
 							/* we haven't moved from the last iteration, so finish */
-							loop_flag = FALSE;		/* force exit from loop */
+							loop_flag = false;		/* force exit from loop */
 						}
 				}
 
@@ -532,7 +530,7 @@ ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNod
 
 					if (result == 0)
 						{
-							loop_flag = FALSE;
+							loop_flag = false;
 
 							if (index_p)
 								{
@@ -551,7 +549,7 @@ ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNod
 					loop_flag = (low <= high);
 				}		/* if (loop_flag) */
 
-			first_time_flag = FALSE;
+			first_time_flag = false;
 		}		/* while (loop_flag) */
 
 
@@ -619,7 +617,7 @@ LinkedList *SplitList (LinkedList * const list_p, const uint32 split_list_length
 					node_p = node_p -> ln_next_p;
 				}		/* while (node_p) */
 
-			PrintLog (STM_LEVEL_FINEST, "split list length: %lu list size: %lu explicit size: %lu\n", split_list_length, list_p -> ll_size, i);
+			//PrintLog (STM_LEVEL_FINEST, "split list length: %lu list size: %lu explicit size: %lu\n", split_list_length, list_p -> ll_size, i);
 		}
 	#endif
 

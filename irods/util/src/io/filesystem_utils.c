@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "filesystem.h"
+#include "filesystem_utils.h"
 
 #include "memory_allocations.h"
 #include "string_utils.h"
@@ -19,7 +19,7 @@ char *GetFilenameOnly (const char * const full_path_to_file)
 
 			if (*last_sep_p != '\0')
 				{
-					return CopyToNewString (last_sep_p, 0, FALSE);
+					return CopyToNewString (last_sep_p, 0, false);
 				}
 		}
 
@@ -49,9 +49,9 @@ char *GetPathOnly (const char * const full_path_to_file)
 }
 
 
-BOOLEAN DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss)
+bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss)
 {
-	BOOLEAN success_flag = FALSE;
+	bool success_flag = false;
 	const char FS_SEPARATOR = GetFileSeparatorChar ();
 	const char *last_sep_p = strrchr (full_path_s, FS_SEPARATOR);
 
@@ -76,7 +76,7 @@ BOOLEAN DeterminePathAndFile (const char * const full_path_s, char ** const path
 							*path_ss = path_s;
 							*filename_ss = filename_s;
 
-							success_flag = TRUE;
+							success_flag = true;
 						}		/* if (file_s) */
 					else
 						{
@@ -102,7 +102,7 @@ void UsePlatformFileSeparator (char *value_s)
 	if (FS_SEPARATOR != '/')
 		{
 			char *c_p = value_s;
-			BOOLEAN loop_flag = (c_p != NULL);
+			bool loop_flag = (c_p != NULL);
 
 			while (loop_flag)
 				{
@@ -115,7 +115,7 @@ void UsePlatformFileSeparator (char *value_s)
 						}
 					else 
 						{
-							loop_flag = FALSE;
+							loop_flag = false;
 						}
 				}
 
@@ -127,7 +127,7 @@ char *MakeFilename (const char * const path, const char * const filename)
 {
 	const size_t path_length = strlen (path);
 	const char FS_SEPARATOR = GetFileSeparatorChar ();
-	BOOLEAN needs_separator_flag = ((* (path + path_length - 1) != FS_SEPARATOR) && (* (path + path_length - 1) != '/'));
+	bool needs_separator_flag = ((* (path + path_length - 1) != FS_SEPARATOR) && (* (path + path_length - 1) != '/'));
 	const size_t name_length = path_length + strlen (filename) + (needs_separator_flag ? 2 : 1);
 
 	char *name_p = (char *) AllocMemory (name_length);

@@ -16,7 +16,6 @@ CPPFLAGS += -DSHARED_LIBRARY $(INCLUDES)
 
 # Build a list of the object files to create, based on the source we find
 OTMP = $(patsubst %.c, %.o, $(SRCS))
-OTMP = $(patsubst %.cpp, %.o, $(SRCS))
  
 # Build the final list of objects
 OBJS = $(patsubst %, $(DIR_OBJS)/%, $(OTMP))

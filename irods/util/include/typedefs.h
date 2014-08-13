@@ -59,25 +59,4 @@ typedef enum FileLocation
 } FileLocation;
 
 
-/**
- * An enum specifying the particular status of a piece of dynamically allocated memory for
- * a particular object. Its use is to allow many objects to have a pointer to some memory
- * but only one takes care of deallocating it.
- */
-typedef enum MEM_FLAG
-{
-	/** The memory has already been freed so no action need be taken. */
-	MF_ALREADY_FREED,
-
-	/** Make a separate copy of the object pointed at by the source pointer.  */
-	MF_DEEP_COPY,
-
-	/** Use the pointer value. We will call free on this used value. Nothing else may free this pointer. */
-	MF_SHALLOW_COPY,
-
-	/** Use the pointer value. We will not call free on this used value, another module must free the memory. */
-	MF_SHADOW_USE
-} MEM_FLAG;
-
-
 #endif		/* #ifndef TYPEDEFS_H */

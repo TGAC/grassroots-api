@@ -5,9 +5,8 @@
 #include "typedefs.h"
 #include "memory_allocations.h"
 #include "plugin.h"
-#include "plugin_manager.h"
+#include "service.h"
 #include "string_utils.h"
-#include "hash_table.h"
 
 typedef struct UnixPlugin
 {
@@ -17,28 +16,13 @@ typedef struct UnixPlugin
 
 
 
-Plugin *CopyPlugin (const Plugin * const src_p)
-{
-	Plugin *dest_plugin_p = AllocatePlugin (src_p -> pl_name_s, src_p -> pl_path_s);
-
-	if (dest_plugin_p)
-		{
-			CopyBasePlugin (src_p, dest_plugin_p);
-
-			((UnixPlugin *) dest_plugin_p) -> up_handle_p = ((UnixPlugin *) src_p) -> up_handle_p;
-		}
-
-	return dest_plugin_p;
-}
-
-
-Plugin *AllocatePlugin (const char * const name_s, const char * const path_s)
+Plugin *AllocatePlugin (const char * const path_s)
 {
 	UnixPlugin *plugin_p = (UnixPlugin *) AllocMemory (sizeof (UnixPlugin));
 
 	if (plugin_p)
 		{
-			InitBasePlugin ((Plugin *) plugin_p, name_s, path_s);
+			InitBasePlugin ((Plugin *) plugin_p, path_s);
 			plugin_p -> up_handle_p = NULL;
 		}
 
@@ -68,209 +52,81 @@ void FreePlugin (Plugin * const plugin_p)
 }
 
 
-BOOLEAN OpenPlugin (Plugin * const plugin_p, char * const lib_path)
+bool OpenPlugin (Plugin * const plugin_p)
 {
-	BOOLEAN success_flag = FALSE;
+	bool success_flag = false;
 	UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
-	
-		
-	if (lib_path)
-		{
-			if (plugin_p -> pl_path_s)
-				{
-					ClearPluginPath (plugin_p);
-				}
 
+	unix_plugin_p -> up_handle_p = dlopen (plugin_p -> pl_path_s, RTLD_LAZY);
 
-			plugin_p -> pl_path_s = CopyToNewString (lib_path, 0, FALSE);
-
-			if (plugin_p -> pl_path_s)
-				{
-					plugin_p -> pl_path_mem = MF_DEEP_COPY;
-					success_flag = TRUE;
-				}					
-		}
-
-	if (success_flag)
-		{
-			unix_plugin_p -> up_handle_p = dlopen (plugin_p -> pl_path_s, RTLD_LAZY);
-
-			success_flag = (unix_plugin_p -> up_handle_p != NULL);
-
-			if (success_flag)
-				{
-					AddPluginToPluginManager (plugin_p);				
-				}
-		}
+	success_flag = (unix_plugin_p -> up_handle_p != NULL);
 	
 	return success_flag;
 }
 
 
-BOOLEAN DeallocateModule (Plugin * const plugin_p)
+bool DeallocatePluginService (Plugin * const plugin_p)
 {
-	BOOLEAN success = TRUE;
+	bool success_flag = (plugin_p -> pl_service_p == NULL);
 
-	if (plugin_p -> pl_module_p)
+	if (!success_flag)
 		{
-			char *symbol_name = NULL;
-			success = FALSE;
+			const char *symbol_name_s = "DeallocateService";
+			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
-			switch (plugin_p -> pl_type)
+			if (unix_plugin_p -> up_handle_p)
 				{
-					case PT_LOADER:
-						symbol_name = "DeallocateLoader";
-						break;
+					void (*fn_p) (Service * const) = (void (*) (Service * const)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
 
-					case PT_ALIGNER:
-						symbol_name = "DeallocateAligner";
-						break;
-
-					case PT_MODELLER:
-						symbol_name = "DeallocateModeller";
-						break;
-
-					case PT_SAVER:
-						symbol_name = "DeallocateSaver";
-						break;
-
-					case PT_PREPROCESSOR:
-						symbol_name = "DeallocatePreprocessor";
-						break;
-
-					case PT_CLASSIFIER:
-						symbol_name = "DeallocateClassifier";
-						break;
-
-					case PT_STATS_SAVER:
-						symbol_name = "DeallocateStatisticsSaver";
-						break;
-
-					case PT_STREAMER:
-						symbol_name = "DeallocateStreamer";
-						break;
-
-					case PT_SPECTRA_CALCULATOR:
-						symbol_name = "DeallocateSpectraCalculator";
-						break;
-
-					case PT_DATA_IO:
-						symbol_name = "DeallocateDataIO";
-						break;
-
-					case PT_UNKNOWN:
-					default:
-
-						break;
-				}
-
-			if (symbol_name)
-				{
-					UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
-
-					if (unix_plugin_p -> up_handle_p)
+					if (fn_p)
 						{
-							void (*fn_p) (Module * const) = (void (*) (Module * const)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name));
+							fn_p (plugin_p -> pl_service_p);
 
-							if (fn_p)
-								{
-									fn_p (plugin_p -> pl_module_p);
-
-									plugin_p -> pl_module_p = NULL;
-									success = TRUE;
-								}
+							plugin_p -> pl_service_p = NULL;
+							success_flag = true;
 						}
 				}
 		}
 
-	return success;
+	return success_flag;
 }
 
 
 //
 //	Get Symbol
 //
-Module *GetModuleFromPlugin (Plugin * const plugin_p, const ConfigurationManager * const config_manager_p)
+Service *GetServiceFromPlugin (Plugin * const plugin_p)
 {
-	if (!plugin_p -> pl_module_p)
+	if (!plugin_p -> pl_service_p)
 		{
-			char *symbol_name = NULL;
+			const char *symbol_name_s = "AllocateService";
+			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
-			switch (plugin_p -> pl_type)
+			if (unix_plugin_p -> up_handle_p)
 				{
-					case PT_LOADER:
-						symbol_name = "AllocateLoader";
-						break;
+					Service *(*fn_p) (void) = (Service *(*) (void)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
 
-					case PT_ALIGNER:
-						symbol_name = "AllocateAligner";
-						break;
-
-					case PT_MODELLER:
-						symbol_name = "AllocateModeller";
-						break;
-
-					case PT_SAVER:
-						symbol_name = "AllocateSaver";
-						break;
-
-					case PT_PREPROCESSOR:
-						symbol_name = "AllocatePreprocessor";
-						break;
-
-					case PT_CLASSIFIER:
-						symbol_name = "AllocateClassifier";
-						break;
-
-					case PT_STATS_SAVER:
-						symbol_name = "AllocateStatisticsSaver";
-						break;
-
-					case PT_STREAMER:
-						symbol_name = "AllocateStreamer";
-						break;
-
-					case PT_SPECTRA_CALCULATOR:
-						symbol_name = "AllocateSpectraCalculator";
-						break;
-
-					case PT_DATA_IO:
-						symbol_name = "AllocateDataIO";
-						break;
-
-					case PT_UNKNOWN:
-					default:
-						break;
-				}
-
-			if (symbol_name)
-				{
-					UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
-
-					if (unix_plugin_p -> up_handle_p)
+					if (fn_p)
 						{
-							Module *(*fn_p) (const ConfigurationManager * const) = (Module *(*) (const ConfigurationManager * const)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name));
-
-							if (fn_p)
+							plugin_p -> pl_service_p = fn_p ();
+							
+							if (plugin_p -> pl_service_p)
 								{
-									plugin_p -> pl_module_p = fn_p (config_manager_p);
-									
-									if (plugin_p -> pl_module_p)
-										{
-											plugin_p -> pl_module_p -> mo_plugin_p = plugin_p;
-										}
+									plugin_p -> pl_service_p -> se_plugin_p = plugin_p;
 								}
 						}
 				}
 		}
 
-	return plugin_p -> pl_module_p;
+	return plugin_p -> pl_service_p;
 }
 
 
 char *MakePluginName (const char * const name)
 {
 	const size_t l = strlen (name);
+	
+	/* We need an extra 7 characters for the "lib" and ".so\0" */
 	char *c_p = (char *) AllocMemory ((l + 7) * sizeof (char));
 
 	if (c_p)
@@ -287,16 +143,6 @@ char *MakePluginName (const char * const name)
 
 	return c_p;
 }
-
-
-void PrintPlugin (const Plugin * const plugin_p, OutputStream * const stream_p)
-{
-	UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
-
-	PrintToOutputStream (stream_p, "unix plugin: handle %x\n", (unix_plugin_p -> up_handle_p));
-	PrintBasePlugin (plugin_p, stream_p);
-}
-
 
 
 

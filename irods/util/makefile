@@ -12,10 +12,16 @@ DIR_IRODS	= $$IRODS_HOME
 BUILD		= debug
 
 VPATH	= \
-	$(DIR_SRC)
+	$(DIR_SRC) \
+	$(DIR_SRC)/containers \
+	$(DIR_SRC)/io \
+	$(DIR_SRC)/platform \
+	
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
+	-I$(DIR_INCLUDE)/containers \
+	-I$(DIR_INCLUDE)/io \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -27,15 +33,24 @@ INCLUDES = \
 	
 	
 SRCS 	= \
-	io_utils.c  
+	io_utils.c  \
+	service.c \
+	plugin.c \
+	unix_plugin.c \
+	string_utils.c \
+	filesystem_utils.c \
+	unix_filesystem.c \
+	linked_list.c \
+	string_linked_list.c
+	
 
 CPPFLAGS += -DIRODS_LIBRARY_EXPORTS -DUNIX
 
-LDFLAGS +=
+LDFLAGS += -ldl
 
-STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
+#STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
-include shared_library.makefile
+include ../generic_makefiles/shared_library.makefile
 
 .PHONY:	all test
 

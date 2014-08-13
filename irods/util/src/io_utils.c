@@ -129,67 +129,6 @@ char *CopyFileToLocalFilesystem (const char * const filename_s)
 }
 
 
-
-/**
- * Copy the contents of one named file to another.
- * 
- * @param src_filename_s The name of the the source file.
- * @param dest_filename_s The name of the the source file.
- * @param callback_fn The callback_fn to denote progress (currently unused).
- * @return true on success, false on error with errno set to the appropriate value.
- */ 
-bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ())
-{
-	FILE *in_f = fopen (src_filename_s, "rb");
-	bool success_flag = false;
-	int saved_errno = 0;
-
-	if (in_f)
-		{
-			FILE *out_f = fopen (dest_filename_s, "wb");
-
-			if (out_f)
-				{
-					char buffer [8192];		/* 32 * 256 */
-					success_flag = true;
-
-					while (success_flag)
-						{
-							size_t num_objs = fread (buffer, 32, 256, in_f);
-
-							if (num_objs > 0)
-								{
-									if (fwrite (buffer, 32, 256, out_f) != num_objs)
-										{
-											success_flag = false;
-											saved_errno = errno;
-										}
-								}
-						}		/* while (success_flag) */
-
-					if (success_flag)
-						{
-							success_flag = (feof (in_f) != 0) ? true : false;
-						}
-
-					fclose (out_f);
-
-				}		/* if (out_f) */
-
-			fclose (in_f);
-
-		}		/* if (in_f) */
-
-	/* In case closing one of the files overwrote it, restore errno */
-	if (saved_errno != 0)
-		{
-			errno = saved_errno;
-		}
-
-	return success_flag;
-}
-
-
 /*
 int DisposeConnection (rcComm_t *conn_p)
 {
@@ -478,36 +417,6 @@ void WriteToLog (const char *log_ident_s, const int log_level, const char *messa
 }
 
 
-
-int PutAndCheckForServices (rcComm_t **connection_pp, rodsEnv *env_p, rodsArguments_t *args_p, rodsPathInp_t *path_inp_p)
-{
-	int status = putUtil (connection_pp, env_p, args_p, path_inp_p);
-	
-	/* Has the file been put successfully? */
-	if (status == 0)
-		{
-			/* 
-			 * Now we run through our list of potential services
-			 */
-			int i = path_inp_p -> numSrc;
-			rodsPath_t *src_p = path_inp_p -> srcPath;
-			rodsPath_t *dest_p = path_inp_p -> destPath;
-			rodsPath_t *target_p = path_inp_p -> targPath;
-			
-			for ( ; i > 0; ++ src_p, ++ dest_p, ++ target_p)
-				{
-					#ifdef IO_UTILS_DEBUG 
-					printf ("src in \"%s\" out \"%s\"\n", src_p -> inPath, src_p -> outPath);
-					printf ("src in \"%s\" out \"%s\"\n", dest_p -> inPath, dest_p -> outPath);
-					printf ("src in \"%s\" out \"%s\"\n", target_p -> inPath, target_p -> outPath);
-					#endif
-				}
-			 
-		}		/* if (status == 0) */
-		
-
-	return status;
-}
 
 
 
