@@ -8,9 +8,88 @@
 #include "parseCommandLine.h"
 #include "rodsPath.h"
 #include "putUtil.h"
+#include "rcMisc.h"
+#include "lsUtil.h"
+#include "specificQuery.h"
+#define TGAC_PUT_DEBUG	(1)
+
+
 void usage ();
 
-static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p)
+static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p);
+
+
+static void GetDataIdForFile (rcComm_t *conn_p, const char * const path_s);
+static char *ConcatenateStrings (const char * const first_s, const char * const second_s);
+
+
+void
+printFormatted(char *format, char *args[], int nargs) {
+   if (nargs==1) {
+      printf(format, args[0]);
+   }
+   if (nargs==2) {
+      printf(format, args[0], args[1]);
+   }
+   if (nargs==3) {
+      printf(format, args[0], args[1], args[2]);
+   }
+   if (nargs==4) {
+      printf(format, args[0], args[1], args[2], args[3]);
+   }
+   if (nargs==5) {
+      printf(format, args[0], args[1], args[2], args[3], args[4]);
+   }
+   if (nargs==6) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5]);
+   }
+   if (nargs==7) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6]);
+   }
+   if (nargs==8) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6], args[7]);
+   }
+   if (nargs==9) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6], args[7], args[8]);
+   }
+   if (nargs==10) {
+      printf(format, args[0], args[1], args[2], args[3], args[4],
+                     args[5], args[6], args[7], args[8], args[9]);
+   }
+}
+
+void
+printBasicGenQueryOut(genQueryOut_t *genQueryOut, char *format) {
+   int i, j;
+   if (format==NULL || strlen(format)==0) {
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 if (i>0) printf("----\n");
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    printf("%s\n", tResult);
+	 }
+      }
+   }
+   else {
+      for (i=0;i<genQueryOut->rowCnt;i++) {
+	 char *results[20];
+	 for (j=0;j<genQueryOut->attriCnt;j++) {
+	    char *tResult;
+	    tResult = genQueryOut->sqlResult[j].value;
+	    tResult += i*genQueryOut->sqlResult[j].len;
+	    results[j]=tResult;
+	 }
+	 printFormatted(format, results, j);
+      }
+   }
+}
+
 
 
 int
@@ -79,6 +158,35 @@ main(int argc, char **argv) {
 
     status = putUtil (&conn, &myEnv, &myRodsArgs, &rodsPathInp);
 
+		/* Has the file been put successfully? */
+		printf ("status %d\n", status);
+		if (status == 0)
+			{
+				rodsPathInp_t *path_inp_p = &rodsPathInp;
+				
+				/* 
+				 * Now we run through our list of potential services
+				 */
+				int i = path_inp_p -> numSrc;
+				rodsPath_t *src_p = path_inp_p -> srcPath;
+				rodsPath_t *dest_p = path_inp_p -> destPath;
+				rodsPath_t *target_p = path_inp_p -> targPath;
+			
+				for ( ; i > 0; ++ src_p, ++ dest_p, ++ target_p, -- i)
+					{
+						#if TGAC_PUT_DEBUG > 0
+						printf ("i %d\n", i);
+						printf ("src in \"%s\" out \"%s\"\n", src_p -> inPath, src_p -> outPath);
+						printf ("dest in \"%s\" out \"%s\"\n", dest_p -> inPath, dest_p -> outPath);
+						printf ("target in \"%s\" out \"%s\"\n", target_p -> inPath, target_p -> outPath);
+
+						GetDataIdForFile (conn, target_p -> outPath);
+						#endif
+					}
+				 
+				 
+			}		/* if (status == 0) */
+
     printErrorStack(conn->rError);
 
     rcDisconnect(conn);
@@ -90,6 +198,84 @@ main(int argc, char **argv) {
     }
 
 }
+
+
+
+static void GetDataIdForFile (rcComm_t *conn_p, const char * const path_s)
+{
+	const char * const QUERY_S = "SELECT DATA_FILEMETA_OBJ_ID, DATA_NAME WHERE DATA_NAME = '";
+
+	char *sql_start_s = ConcatenateStrings (QUERY_S, path_s);
+	
+	if (sql_start_s)
+		{
+			char *sql_s = ConcatenateStrings (sql_start_s, "\'");
+		
+			if (sql_s)
+				{
+			specificQueryInp_t in_query;
+			int status, i;
+			genQueryOut_t *out_query_p = NULL;
+		
+			memset (&in_query, 0, sizeof (specificQueryInp_t));
+			in_query.maxRows = MAX_SQL_ROWS;
+			in_query.continueInx =0;
+			in_query.sql = sql_s;
+		
+		
+			printf ("sql: \"%s\"\n", sql_s);
+		
+			status = rcSpecificQuery (conn_p, &in_query, &out_query_p);
+		
+			if (status == CAT_NO_ROWS_FOUND) 
+				{
+					printf ("No rows found\n"); 
+				}
+			else if (status < 0 ) 
+				{
+				 	printf ("error\n");
+				}
+			else
+				{
+					printBasicGenQueryOut (out_query_p, "result: \"%s\" \"%s\"\n");
+				}
+		
+			free (sql_s);
+				
+				}
+
+			free (sql_start_s);		
+		}
+}
+
+
+
+static char *ConcatenateStrings (const char * const first_s, const char * const second_s)
+{
+	const size_t len1 = (first_s != NULL) ? strlen (first_s) : 0;
+	const size_t len2 = (second_s != NULL) ? strlen (second_s) : 0;
+
+	char *result_s = (char *) malloc (sizeof (char) * (len1 + len2 + 1));
+
+	if (result_s)
+		{
+			if (len1 > 0)
+				{
+					strncpy (result_s, first_s, len1);
+				}
+
+			if (len2 > 0)
+				{
+					strcpy (result_s + len1, second_s);
+				}
+
+			* (result_s + len1 + len2) = '\0';
+		}
+
+	return result_s;
+}
+
+
 
 void 
 usage ()
@@ -236,7 +422,9 @@ usage ()
 
 static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p)
 {
+	int result = 0;
 	
+	return result;
 }
 
 
