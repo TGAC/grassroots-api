@@ -15,10 +15,15 @@ typedef struct ServicesManager
 LinkedList *LoadServices (const char * const path_s);
 
 
+char *GetServicesListAsJSON (LinkedList *services_list_p);
 
 
+void FreeServicesString (char *services_json_s);
 
 
+/*
+ * irods ids are 8-byte signed ints = int64_t
+ */
 
 
 
