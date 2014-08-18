@@ -653,10 +653,30 @@ bool IsStringEmpty (const char *value_s)
 
 char *ConvertIntegerToString (const int value)
 {
-	char buffer [1024];
-	sprintf (buffer, "%d", value);
+	char *value_s = NULL;
+	size_t num_digits = 1;
+	
+	if (value < 0)
+		{
+			size_t temp = (size_t) log10 ((double) -value);
+			++ num_digits;
+			
+			num_digits += temp;
+		}
+	else if (value > 0)
+		{
+			num_digits += (size_t) log10 ((double) value);
+		}
+		
+	value_s = (char *) malloc (num_digits + 1);
+	
+	if (value_s)
+		{
+			sprintf (value_s, "%d", value);
+			* (value_s + num_digits) = '\0';
+		}
 
-	return CopyToNewString (buffer, 0, false);
+	return value_s;
 }
 
 

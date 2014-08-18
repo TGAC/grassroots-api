@@ -75,5 +75,8 @@ void FreeServiceNode (ListNode *node_p);
 LinkedList *LoadServices (const char * const path_s);
 
 
+char *GetServiceAsJSONString (const Service * const service_p);
+
+bool WriteServiceJSONStringToByteBuffer (const Service * const service_p, ByteBuffer *buffer_p);
 
 #endif		/* #ifndef WHEATIS_SERVICE_H */

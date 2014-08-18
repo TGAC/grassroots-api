@@ -24,6 +24,7 @@ typedef enum ParameterType
 	PT_FILE_TO_WRITE,
 	PT_FILE_TO_READ,
 	PT_DIRECTORY,
+	PT_CHAR
 } ParameterType;
 
 
@@ -85,12 +86,6 @@ typedef struct Parameter
 
 	/** The user-friendly name of the parameter. */
 	char *pa_name_s;
-
-	/**
-	 * The key to use for this parameter when putting
-	 * it in the configuration hash table.
-	 */
-	char *pa_key_s;
 
 	/** The description for this parameter. */
 	char *pa_description_s;

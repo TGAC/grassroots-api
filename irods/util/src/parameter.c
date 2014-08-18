@@ -10,6 +10,19 @@
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
 
+static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p);
+
+static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p);
+
+static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p);
+
+static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p);
+
+static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p);
+
+static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p);
+
+
 
 Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
@@ -482,4 +495,381 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 }
 
 
+	/** The description for this parameter. */
+	char *pa_description_s;
+
+
+	/**
+	 * If the parameter can only take one of a
+	 * constrained set of values, this will be
+	 * an array of the possible options. If it's
+	 * NULL, then any value can be taken.
+	 */
+	ParameterMultiOptionArray *pa_options_p;
+
+	/**
+	 * Does the parameter have any upper or lower limits?
+	 */
+	ParameterBounds *pa_bounds_p;
+
+	/**
+	 * The level of the parameter.
+	 */
+	 ParameterLevel pa_level;
+
+
+	/** The default value for this parameter. */
+	SharedType pa_current_value;
+	
+
+json_t *GetParameterAsJSON (const Parameter * const parameter_p)
+{
+	json_t *root_p = json_array ();
+	
+	if (root_p)
+		{
+			boolean success_flag = false;
+			
+				
+
+			if (success_flag)
+				{
+					
+					
+					if (success_flag)
+						{
+							
+						}		/* if (success_flag) */
+						
+				}		/* if (success_flag) */
+				
+			if (parameter_p -> pa_options_p)
+				{
+					if (json_array)
+					
+				}
+		}
+	
+	
+	return root_p;
+}
+
+
+static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	return (json_object_set_new (root_p, "name", json_string (param_p -> pa_name_s) == 0);
+}
+
+
+static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	return (json_object_set_new (root_p, "description", json_string (param_p -> pa_description_s) == 0);
+}
+
+
+
+static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = false;
+	
+	/* Set the parameter type */
+	switch (parameter_p -> pa_type)
+		{
+			case PT_BOOLEAN:
+				success_flag = (json_object_set_new (root_p, "type", json_string ("boolean") == 0);
+				break;
+				
+			case PT_SIGNED_INT:
+			case PT_UNSIGNED_INT:
+				success_flag = (json_object_set_new (root_p, "type", json_string ("integer") == 0);
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				success_flag = (json_object_set_new (root_p, "type", json_string ("number") == 0);
+				break;
+
+			case PT_STRING:
+			case PT_FILE_TO_WRITE:
+			case PT_DIRECTORY:
+				success_flag = (json_object_set_new (root_p, "type", json_string ("string") == 0);
+				break;
+
+			case PT_FILE_TO_READ:
+				break;
+				
+			default:
+				break;
+		}		/* switch (parameter_p -> pa_type) */
+
+	return success_flag;
+}
+
+
+static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = false;
+	
+	/* Set the parameter's default value */
+	json_t *default_value_p = NULL;
+	
+	switch (parameter_p -> pa_type)
+		{
+			case PT_BOOLEAN:
+				default_value_p = (parameter_p -> pa_default.st_boolean_value == true) ? json_true () : json_false ();
+				break;
+				
+			case PT_SIGNED_INT:
+				default_value_p = json_integer (parameter_p -> pa_default.st_long_value);
+				break;
+				
+			case PT_UNSIGNED_INT:
+				default_value_p = json_integer (parameter_p -> pa_default.st_ulong_value);
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				default_value_p = json_real (parameter_p -> pa_default.st_data_value);
+				break;
+				
+			case PT_STRING:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+			case PT_DIRECTORY:
+				default_value_p = json_string (parameter_p -> pa_default.st_string_value_s);
+				break;
+				
+			default:
+				break;
+		}		/* switch (parameter_p -> pa_type) */					
+
+	if (default_value_p)
+		{
+			success_flag = (json_array_append (root_p, default_value_p) == 0);
+			json_decref (default_value_p);
+		}		/* if (default_value_p) */
+
+
+	return success_flag;
+}
+
+
+
+static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p)
+{
+	bool success_flag = false;
+	
+	if (param_p -> pa_options_p)
+		{
+			json_t *json_options_p = json_array ();
+			
+			if (json_options_p)
+				{
+					uint32 i = param_p -> pa_options_p -> pmoa_num_options;
+					const ParameterMultiOption *option_p = param_p -> pa_options_p -> pmoa_options_p;
+					
+					for ( ; i > 0; -- i, ++ option_p)
+						{
+							json_t *value_s = NULL;
+							
+							/* 
+							 * Swagger's schema requires that these values must be strings
+							 * and one of them must be the default value for this parameter.
+							 */
+							switch (parameter_p -> pa_type)
+								{
+									case PT_BOOLEAN:
+										value_s = (option_p -> pmo_value.st_boolean_value) ? "true" : "false";
+										break;
+						
+									case PT_SIGNED_INT:
+										{
+											char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_long_value);
+											
+											if (value_s)
+												{
+													min_p = json_string (value_s);
+													FreeCopiedString (value_s);
+												}
+											
+											value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_long_value);
+											if (value_s)
+												{
+													max_p = json_string (value_s);
+													FreeCopiedString (value_s);
+												}
+										}
+										break;
+										
+									case PT_UNSIGNED_INT:
+											char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_ulong_value);
+											
+											if (value_s)
+												{
+													min_p = json_string (value_s);
+													FreeCopiedString (value_s);
+												}
+											
+											value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_ulong_value);
+											if (value_s)
+												{
+													max_p = json_string (value_s);
+													FreeCopiedString (value_s);
+												}
+										break;
+
+									case PT_SIGNED_REAL:
+									case PT_UNSIGNED_REAL:
+											char *value_s = ConvertDoubleToString (bounds_p -> pb_lower.st_data_value);
+											
+											if (value_s)
+												{
+													min_p = json_string (value_s);
+													FreeCopiedString (value_s);
+												}
+											
+											value_s = ConvertDoubleToString (bounds_p -> pb_upper.st_data_value);
+											if (value_s)
+												{
+													max_p = json_string (value_s);
+													FreeCopiedString (value_s);
+												}
+
+										break;
+
+									default:
+										break;
+								}		/* switch (parameter_p -> pa_type) */					
+						
+							if (value_s)
+								{
+									success_flag = (json_array_append_new (json_options_p, json_string (value_s)) == 0); 
+								}
+						
+						}			
+					
+					if (success_flag)
+						{
+							json_array_append (json_p, json_options_p);
+							json_decref (json_options_p);
+						}
+					
+					
+				}		/* if (json_options_p) */
+							
+		}
+	else
+		{
+			/* nothing to do */
+			success_flag = true;
+		}
+		
+	return success_flag;
+}
+
+
+static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p)
+{
+	bool success_flag = false;
+	const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+	
+	if (bounds_p)
+		{
+			json_t *min_p = NULL;
+			json_t *max_p = NULL;
+			
+			switch (parameter_p -> pa_type)
+				{
+					case PT_BOOLEAN:
+						min_p = (bounds_p -> pb_lower.st_boolean_value == true) ? json_true () : json_false ();
+						min_p = (bounds_p -> pb_upper.st_boolean_value == true) ? json_true () : json_false ();
+						break;
+						
+					case PT_SIGNED_INT:
+						{
+							char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_long_value);
+							
+							if (value_s)
+								{
+									min_p = json_string (value_s);
+									FreeCopiedString (value_s);
+								}
+							
+							value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_long_value);
+							if (value_s)
+								{
+									max_p = json_string (value_s);
+									FreeCopiedString (value_s);
+								}
+						}
+						break;
+						
+					case PT_UNSIGNED_INT:
+							char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_ulong_value);
+							
+							if (value_s)
+								{
+									min_p = json_string (value_s);
+									FreeCopiedString (value_s);
+								}
+							
+							value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_ulong_value);
+							if (value_s)
+								{
+									max_p = json_string (value_s);
+									FreeCopiedString (value_s);
+								}
+						break;
+
+					case PT_SIGNED_REAL:
+					case PT_UNSIGNED_REAL:
+							char *value_s = ConvertDoubleToString (bounds_p -> pb_lower.st_data_value);
+							
+							if (value_s)
+								{
+									min_p = json_string (value_s);
+									FreeCopiedString (value_s);
+								}
+							
+							value_s = ConvertDoubleToString (bounds_p -> pb_upper.st_data_value);
+							if (value_s)
+								{
+									max_p = json_string (value_s);
+									FreeCopiedString (value_s);
+								}
+
+						break;
+
+					default:
+						break;
+				}		/* switch (parameter_p -> pa_type) */					
+			
+			if (min_p)
+				{
+					success_flag = (json_array_append (json_p, min_p) == 0);
+					json_decref (min_p);					
+				}
+
+			if (max_p)
+				{
+					if (success_flag)
+						{
+							success_flag = (json_array_append (json_p, max_p) == 0);
+						}
+					else
+						{
+							json_array_append (json_p, max_p);
+						}
+						
+					json_decref (max_p);							
+				}			
+		}
+	else
+		{
+			/* nothing to do */
+			success_flag = true;
+		}
+		
+	return success_flag;
+}
 

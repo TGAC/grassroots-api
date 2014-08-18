@@ -75,9 +75,14 @@ LinkedList *LoadMatchingServices (const char * const path_s, const char * const 
 													
 													if (service_p)
 														{
-															bool using_service_flag = false;
+															bool using_service_flag = true;
 															
-															if (DoesFileMatchService (service_p, filename_s))
+															if (filename_s)
+																{
+																	using_service_flag = DoesFileMatchService (service_p, filename_s);
+																}
+															
+															if (using_service_flag)
 																{
 																	ServiceNode *node_p = AllocateServiceNode (service_p);
 																	
@@ -156,6 +161,42 @@ const char *GetServiceDescription (Service *service_p)
 ParameterSet *GetServiceParameters (Service *service_p)
 {
 	return service_p -> se_get_params_fn ();
+}
+
+
+json_t *GetServiceAsJSONString (const Service * const service_p)
+{
+	char *service_json_s = NULL;
+	json_t *root_p = json_array ();
+	
+	if (root_p)
+		{
+			const char *value_s = GetServiceName (service_p);
+			bool success_flag = true;
+			
+			/* Add the key-value pair */
+			if (value_s)
+				{
+					success_flag = (json_object_set_new (root_p, "path", json_string (value_s) == 0)
+				}
+
+			if (success_flag)
+				{
+					
+				}
+		}		/* if (root_p) */
+		
+		
+	return root_p;
+}
+
+
+bool WriteServiceJSONStringToByteBuffer (const Service * const service_p, ByteBuffer *buffer_p)
+{
+	bool success_flag = false;
+
+	
+	return success_flag;	
 }
 
 
