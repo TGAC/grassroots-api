@@ -3,6 +3,8 @@
 #include <syslog.h>
 
 #include "io_utils.h"
+#include "parameter_set.h"
+
 
 int main (int argc, char *argv [])
 {

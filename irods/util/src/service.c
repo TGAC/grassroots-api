@@ -5,20 +5,38 @@
 #include "string_utils.h"
 #include "filesystem_utils.h"
 
+
+
+
+static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p);
+
+static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p);
+
+static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p);
+
+
+
+
 void InitialiseService (Service * const service_p,
-	const char *(*get_module_name_fn) (void),
-	const char *(*get_module_description_fn) (void),
-	LinkedList *(*get_parameters_fn) (void),
-	ServiceData *data_p,
-	uint32 priority)
+	const char *(*get_service_name_fn) (void),
+	const char *(*get_service_description_fn) (void),
+	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
+	bool (*match_fn) (const char * const filename_s),
+	ParameterSet *(*get_parameters_fn) (void),
+	ServiceData *data_p)
 {
-	
+	service_p -> se_get_service_name_fn = get_service_name_fn;
+	service_p -> se_get_service_description_fn = get_service_description_fn;
+	service_p -> se_run_fn = run_fn;
+	service_p -> se_match_fn = match_fn;
+	service_p -> se_get_params_fn = get_parameters_fn;
+	service_p -> se_data_p = data_p;
 }
 
 
 void FreeService (Service *service_p)
 {
-	
+	FreeMemory (service_p);
 }
 
 
@@ -145,28 +163,27 @@ bool DoesFileMatchService (Service *service_p, const char *filename_s)
 
 
 /** Get the user-friendly name of the service. */
-const char *GetServiceName (Service *service_p)
+const char *GetServiceName (const Service *service_p)
 {
 	return service_p -> se_get_service_name_fn ();
 }
 
 
 /** Get the user-friendly description of the service. */
-const char *GetServiceDescription (Service *service_p)
+const char *GetServiceDescription (const Service *service_p)
 {
 	return service_p -> se_get_service_description_fn ();	
 }
 
 
-ParameterSet *GetServiceParameters (Service *service_p)
+ParameterSet *GetServiceParameters (const Service *service_p)
 {
 	return service_p -> se_get_params_fn ();
 }
 
 
-json_t *GetServiceAsJSONString (const Service * const service_p)
+json_t *GetServiceAsJSON (const Service * const service_p)
 {
-	char *service_json_s = NULL;
 	json_t *root_p = json_array ();
 	
 	if (root_p)
@@ -177,12 +194,54 @@ json_t *GetServiceAsJSONString (const Service * const service_p)
 			/* Add the key-value pair */
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (root_p, "path", json_string (value_s) == 0)
+					success_flag = (json_object_set_new (root_p, "path", json_string (value_s)) == 0);
 				}
 
 			if (success_flag)
 				{
+					value_s = GetServiceDescription (service_p);
 					
+					if (value_s)
+						{
+							success_flag = (json_object_set_new (root_p, "description", json_string (value_s)) == 0);
+						}
+					
+					if (success_flag)
+						{
+							/* Add the operations for this service */
+							json_t *operation_p = json_array ();
+							
+							if (operation_p)
+								{
+									success_flag = false;
+
+									if (AddServiceNameToJSON (service_p, operation_p))
+										{
+											if (AddServiceDescriptionToJSON (service_p, operation_p))
+												{
+													if (AddServiceParameterSetToJSON (service_p, operation_p))
+														{
+															success_flag = true;
+														}
+												}		/* if (AddServiceDescriptionToJSON (service_p, operation_p)) */	
+																						
+										}		/* if (AddServiceNameToJSON (service_p, operation_p)) */
+										
+									if (success_flag)
+										{
+											json_array_append (root_p, operation_p);
+											json_decref (operation_p);
+										}
+									else
+										{
+											json_object_clear (root_p);
+											json_decref (root_p);
+											root_p = NULL;
+										}
+										
+								}		/* if (operation_p) */
+						
+						}
 				}
 		}		/* if (root_p) */
 		
@@ -191,13 +250,62 @@ json_t *GetServiceAsJSONString (const Service * const service_p)
 }
 
 
-bool WriteServiceJSONStringToByteBuffer (const Service * const service_p, ByteBuffer *buffer_p)
+
+static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p)
 {
 	bool success_flag = false;
+	const char *name_s = GetServiceName (service_p);
 
-	
-	return success_flag;	
+	if (name_s)
+		{
+			success_flag = (json_object_set_new (root_p, "nickname", json_string (name_s)) == 0);
+		}
+
+	return success_flag;
 }
+
+
+static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p)
+{
+	bool success_flag = false;
+	const char *description_s = GetServiceDescription (service_p);
+
+	if (description_s)
+		{
+			success_flag = (json_object_set_new (root_p, "summary", json_string (description_s)) == 0);
+		}
+
+	return success_flag;
+}
+
+
+static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p)
+{
+	bool success_flag = false;
+	ParameterSet *param_set_p = GetServiceParameters (service_p);
+	
+	if (param_set_p)
+		{
+			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p);
+			
+			if (param_set_json_p)
+				{
+					json_array_append (root_p, param_set_json_p);
+					json_decref (param_set_json_p);
+
+					success_flag = true;
+				}
+				
+			/* could set this to be cached ... */
+			FreeParameterSet (param_set_p);
+		}
+	
+	
+	return success_flag;
+}
+
+
+
 
 
 

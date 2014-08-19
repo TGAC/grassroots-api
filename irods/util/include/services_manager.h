@@ -10,15 +10,18 @@ typedef struct ServicesManager
 
 
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif	
+
+IRODS_LIB_API LinkedList *LoadServices (const char * const path_s);
 
 
-LinkedList *LoadServices (const char * const path_s);
+IRODS_LIB_API char *GetServicesListAsJSON (LinkedList *services_list_p);
 
 
-char *GetServicesListAsJSON (LinkedList *services_list_p);
-
-
-void FreeServicesString (char *services_json_s);
+IRODS_LIB_API void FreeServicesString (char *services_json_s);
 
 
 /*
@@ -26,6 +29,11 @@ void FreeServicesString (char *services_json_s);
  */
 
 
+
+
+#ifdef __cplusplus
+}
+#endif	
 
 
 

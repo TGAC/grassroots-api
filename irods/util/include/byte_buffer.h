@@ -1,7 +1,9 @@
 #ifndef BYTE_BUFFER_H
 #define BYTE_BUFFER_H
 
-#include "string_linked_list.h"
+#include <sys/types.h>
+
+#include "linked_list.h"
 
 typedef struct 
 {
@@ -14,7 +16,7 @@ typedef struct
 
 typedef struct 
 {
-	bbln_node;
+	ListNode bbln_node;
 	
 	BufferBlock *bbln_buffer_p;
 	

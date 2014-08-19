@@ -2,10 +2,11 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "math_utils.h"
 #include "memory_allocations.h"
 #include "parameter.h"
+#include "math_utils.h"
 #include "string_utils.h"
+
 
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
@@ -24,42 +25,34 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 
 
 
-Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
+Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
-	char *new_name_s = CopyToNewString (name_s, 0, TRUE);
+	char *new_name_s = CopyToNewString (name_s, 0, true);
 
 	if (new_name_s)
 		{
-			char *new_key_s = CopyToNewString (key_s, 0, TRUE);
+			char *new_description_s = CopyToNewString (description_s, 0, true);
 
-			if (new_key_s)
+			if (new_description_s)
 				{
-					char *new_description_s = CopyToNewString (description_s, 0, TRUE);
+					Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
 
-					if (new_description_s)
+					if (param_p)
 						{
-							Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
+							param_p -> pa_type = type;
+							param_p -> pa_name_s = new_name_s;
+							param_p -> pa_description_s = new_description_s;
+							param_p -> pa_options_p = options_p;
+							param_p -> pa_check_value_fn = check_value_fn;
+							param_p -> pa_default = default_value;
+							param_p -> pa_bounds_p = bounds_p;
+							param_p -> pa_level = level;
 
-							if (param_p)
-								{
-									param_p -> pa_type = type;
-									param_p -> pa_name_s = new_name_s;
-									param_p -> pa_key_s = new_key_s;
-									param_p -> pa_description_s = new_description_s;
-									param_p -> pa_options_p = options_p;
-									param_p -> pa_check_value_fn = check_value_fn;
-									param_p -> pa_default = default_value;
-									param_p -> pa_bounds_p = bounds_p;
-									param_p -> pa_level = level;
+							return param_p;
+						}		/* if (param_p) */
 
-									return param_p;
-								}		/* if (param_p) */
-
-							FreeCopiedString (new_description_s);
-						}		/* if (new_description_s) */
-
-					FreeCopiedString (new_key_s);
-				}		/* if (new_key_s) */
+					FreeCopiedString (new_description_s);
+				}		/* if (new_description_s) */
 
 			FreeCopiedString (new_name_s);
 		}		/* if (new_name_s) */
@@ -70,12 +63,6 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 
 void FreeParameter (Parameter *param_p)
 {
-
-	if (param_p -> pa_key_s)
-		{
-			FreeCopiedString (param_p -> pa_key_s);
-		}
-
 	if (param_p -> pa_description_s)
 		{
 			FreeCopiedString (param_p -> pa_description_s);
@@ -98,31 +85,6 @@ void FreeParameter (Parameter *param_p)
 
 	FreeMemory (param_p);
 }
-
-
-ParameterNode *AllocateParameterNode (Parameter *parameter_p)
-{
-	ParameterNode *node_p = (ParameterNode *) AllocMemory (sizeof (ParameterNode));
-
-	if (node_p)
-		{
-			node_p -> pn_parameter_p = parameter_p;
-
-			return node_p;
-		}		/* if (node_p) */
-
-	return NULL;
-}
-
-
-void FreeParameterNode (ListNode * const node_p)
-{
-	ParameterNode *param_node_p = (ParameterNode *) node_p;
-
-	//FreeParameter (param_node_p -> pn_parameter_p);
-	FreeMemory (param_node_p);
-}
-
 
 
 ParameterBounds *AllocateParameterBounds (void)
@@ -151,16 +113,16 @@ ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const
 					case PT_FILE_TO_READ:
 					case PT_FILE_TO_WRITE:
 					case PT_STRING:
-							{
-								bounds_p -> pb_lower.st_string_value_s = CopyToNewString (src_p -> pb_lower.st_string_value_s, 0, FALSE);
-								bounds_p -> pb_upper.st_string_value_s = CopyToNewString (src_p -> pb_upper.st_string_value_s, 0, FALSE);
+						{
+							bounds_p -> pb_lower.st_string_value_s = CopyToNewString (src_p -> pb_lower.st_string_value_s, 0, false);
+							bounds_p -> pb_upper.st_string_value_s = CopyToNewString (src_p -> pb_upper.st_string_value_s, 0, false);
 
-								if (! ((bounds_p -> pb_lower.st_string_value_s) && (bounds_p -> pb_upper.st_string_value_s)))
-									{
-										FreeParameterBounds (bounds_p, pt);
-										bounds_p = NULL;
-									}
-							}
+							if (! ((bounds_p -> pb_lower.st_string_value_s) && (bounds_p -> pb_upper.st_string_value_s)))
+								{
+									FreeParameterBounds (bounds_p, pt);
+									bounds_p = NULL;
+								}
+						}
 						break;
 
 					default:
@@ -193,27 +155,6 @@ void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt)
 
 	FreeMemory (bounds_p);
 }
-
-
-ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
-{
-	Parameter *param_p = AllocateParameter (type, name_s, key_s, description_s, options_p, default_value, bounds_p, level, check_value_fn);
-
-	if (param_p)
-		{
-			ParameterNode *node_p = AllocateParameterNode (param_p);
-
-			if (node_p)
-				{
-					return node_p;
-				}		/* if (node_p) */
-
-			FreeParameter (param_p);
-		}		/* if (param_p) */
-
-	return NULL;
-}
-
 
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options)
@@ -293,11 +234,11 @@ void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
 }
 
 
-BOOLEAN SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value)
+bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value)
 {
 	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + index;
-	char *new_description_s = CopyToNewString (description_s, 0, TRUE);
-	BOOLEAN success_flag = FALSE;
+	char *new_description_s = CopyToNewString (description_s, 0, true);
+	bool success_flag = false;
 
 	if (new_description_s)
 		{
@@ -308,18 +249,18 @@ BOOLEAN SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uin
 
 			if (options_p -> pmoa_values_type == PT_STRING)
 				{
-					char *value_s = CopyToNewString (value.st_string_value_s, 0, FALSE);
+					char *value_s = CopyToNewString (value.st_string_value_s, 0, false);
 
 					if (value_s)
 						{
 							option_p -> pmo_value.st_string_value_s = value_s;
-							success_flag = TRUE;
+							success_flag = true;
 						}
 				}
 			else
 				{
 					option_p -> pmo_value = value;
-					success_flag = TRUE;
+					success_flag = true;
 				}
 
 			if (success_flag)
@@ -392,14 +333,14 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 
 			case PT_SIGNED_INT:
 				{
-					int32 i = * ((int32 *) *value_p);
+					int32 i = * ((int32 *) value_p);
 
 					if (param_p -> pa_bounds_p)
 						{
 							const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
 							
 							if ((i >= bounds_p -> pb_lower.st_long_value) &&
-									(i <= pbounds_p -> pb_upper.st_long_value))
+									(i <= bounds_p -> pb_upper.st_long_value))
 								{
 									param_p -> pa_current_value.st_long_value = i;
 									success_flag = true;					
@@ -415,14 +356,14 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 
 			case PT_UNSIGNED_INT:
 				{
-					uint32 i = * ((uint32 *) *value_p);
+					uint32 i = * ((uint32 *) value_p);
 
 					if (param_p -> pa_bounds_p)
 						{
 							const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
 							
 							if ((i >= bounds_p -> pb_lower.st_ulong_value) &&
-									(i <= pbounds_p -> pb_upper.st_ulong_value))
+									(i <= bounds_p -> pb_upper.st_ulong_value))
 								{
 									param_p -> pa_current_value.st_ulong_value = i;
 									success_flag = true;					
@@ -439,14 +380,14 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 			case PT_SIGNED_REAL:
 			case PT_UNSIGNED_REAL:
 				{
-					double d = * ((double *) *value_p);
+					double d = * ((double *) value_p);
 
 					if (param_p -> pa_bounds_p)
 						{
 							const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
 							
-							if ((i >= bounds_p -> pb_lower.st_data_value) &&
-									(i <= pbounds_p -> pb_upper.st_data_value))
+							if ((d >= bounds_p -> pb_lower.st_data_value) &&
+									(d <= bounds_p -> pb_upper.st_data_value))
 								{
 									param_p -> pa_current_value.st_data_value = d;
 									success_flag = true;					
@@ -477,7 +418,7 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 									/* If we have a previous value, delete it */
 									if (param_p -> pa_current_value.st_string_value_s)
 										{
-											free (param_p -> pa_current_value.st_string_value_s)
+											free (param_p -> pa_current_value.st_string_value_s);
 										}
 										
 									param_p -> pa_current_value.st_string_value_s = copied_value_s;
@@ -495,58 +436,44 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 }
 
 
-	/** The description for this parameter. */
-	char *pa_description_s;
-
-
-	/**
-	 * If the parameter can only take one of a
-	 * constrained set of values, this will be
-	 * an array of the possible options. If it's
-	 * NULL, then any value can be taken.
-	 */
-	ParameterMultiOptionArray *pa_options_p;
-
-	/**
-	 * Does the parameter have any upper or lower limits?
-	 */
-	ParameterBounds *pa_bounds_p;
-
-	/**
-	 * The level of the parameter.
-	 */
-	 ParameterLevel pa_level;
-
-
-	/** The default value for this parameter. */
-	SharedType pa_current_value;
-	
-
 json_t *GetParameterAsJSON (const Parameter * const parameter_p)
 {
 	json_t *root_p = json_array ();
 	
 	if (root_p)
 		{
-			boolean success_flag = false;
+			bool success_flag = false;
 			
-				
-
-			if (success_flag)
+			if (AddParameterNameToJSON (parameter_p, root_p))
 				{
-					
-					
-					if (success_flag)
+					if (AddParameterDescriptionToJSON (parameter_p, root_p))
 						{
-							
-						}		/* if (success_flag) */
-						
-				}		/* if (success_flag) */
-				
-			if (parameter_p -> pa_options_p)
+							if (AddParameterTypeToJSON (parameter_p, root_p))
+								{
+									if (AddDefaultValueToJSON (parameter_p, root_p))
+										{
+											if (AddParameterOptionsToJSON (parameter_p, root_p))
+												{
+													if (AddParameterBoundsToJSON (parameter_p, root_p))
+														{
+															success_flag = true;
+														}					
+												}	
+										}
+								}
+						}
+				}
+			
+			if (!success_flag)
 				{
-					if (json_array)
-					
+					if (json_object_clear (root_p) == 0)
+						{
+							json_decref (root_p);
+						}
+					else
+						{
+							/* @TODO: handle this error */
+						}
 				}
 		}
 	
@@ -557,13 +484,13 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p)
 
 static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	return (json_object_set_new (root_p, "name", json_string (param_p -> pa_name_s) == 0);
+	return (json_object_set_new (root_p, "name", json_string (param_p -> pa_name_s)) == 0);
 }
 
 
 static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	return (json_object_set_new (root_p, "description", json_string (param_p -> pa_description_s) == 0);
+	return (json_object_set_new (root_p, "description", json_string (param_p -> pa_description_s)) == 0);
 }
 
 
@@ -573,26 +500,26 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 	bool success_flag = false;
 	
 	/* Set the parameter type */
-	switch (parameter_p -> pa_type)
+	switch (param_p -> pa_type)
 		{
 			case PT_BOOLEAN:
-				success_flag = (json_object_set_new (root_p, "type", json_string ("boolean") == 0);
+				success_flag = (json_object_set_new (root_p, "type", json_string ("boolean")) == 0);
 				break;
 				
 			case PT_SIGNED_INT:
 			case PT_UNSIGNED_INT:
-				success_flag = (json_object_set_new (root_p, "type", json_string ("integer") == 0);
+				success_flag = (json_object_set_new (root_p, "type", json_string ("integer")) == 0);
 				break;
 
 			case PT_SIGNED_REAL:
 			case PT_UNSIGNED_REAL:
-				success_flag = (json_object_set_new (root_p, "type", json_string ("number") == 0);
+				success_flag = (json_object_set_new (root_p, "type", json_string ("number")) == 0);
 				break;
 
 			case PT_STRING:
 			case PT_FILE_TO_WRITE:
 			case PT_DIRECTORY:
-				success_flag = (json_object_set_new (root_p, "type", json_string ("string") == 0);
+				success_flag = (json_object_set_new (root_p, "type", json_string ("string")) == 0);
 				break;
 
 			case PT_FILE_TO_READ:
@@ -600,7 +527,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				
 			default:
 				break;
-		}		/* switch (parameter_p -> pa_type) */
+		}		/* switch (param_p -> pa_type) */
 
 	return success_flag;
 }
@@ -613,35 +540,35 @@ static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root
 	/* Set the parameter's default value */
 	json_t *default_value_p = NULL;
 	
-	switch (parameter_p -> pa_type)
+	switch (param_p -> pa_type)
 		{
 			case PT_BOOLEAN:
-				default_value_p = (parameter_p -> pa_default.st_boolean_value == true) ? json_true () : json_false ();
+				default_value_p = (param_p -> pa_default.st_boolean_value == true) ? json_true () : json_false ();
 				break;
 				
 			case PT_SIGNED_INT:
-				default_value_p = json_integer (parameter_p -> pa_default.st_long_value);
+				default_value_p = json_integer (param_p -> pa_default.st_long_value);
 				break;
 				
 			case PT_UNSIGNED_INT:
-				default_value_p = json_integer (parameter_p -> pa_default.st_ulong_value);
+				default_value_p = json_integer (param_p -> pa_default.st_ulong_value);
 				break;
 
 			case PT_SIGNED_REAL:
 			case PT_UNSIGNED_REAL:
-				default_value_p = json_real (parameter_p -> pa_default.st_data_value);
+				default_value_p = json_real (param_p -> pa_default.st_data_value);
 				break;
 				
 			case PT_STRING:
 			case PT_FILE_TO_READ:
 			case PT_FILE_TO_WRITE:
 			case PT_DIRECTORY:
-				default_value_p = json_string (parameter_p -> pa_default.st_string_value_s);
+				default_value_p = json_string (param_p -> pa_default.st_string_value_s);
 				break;
 				
 			default:
 				break;
-		}		/* switch (parameter_p -> pa_type) */					
+		}		/* switch (param_p -> pa_type) */					
 
 	if (default_value_p)
 		{
@@ -670,82 +597,47 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 					
 					for ( ; i > 0; -- i, ++ option_p)
 						{
-							json_t *value_s = NULL;
-							
+							char *value_s = NULL;
+							bool alloc_flag = false;
 							/* 
 							 * Swagger's schema requires that these values must be strings
 							 * and one of them must be the default value for this parameter.
 							 */
-							switch (parameter_p -> pa_type)
+							switch (param_p -> pa_type)
 								{
 									case PT_BOOLEAN:
 										value_s = (option_p -> pmo_value.st_boolean_value) ? "true" : "false";
 										break;
 						
 									case PT_SIGNED_INT:
-										{
-											char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_long_value);
-											
-											if (value_s)
-												{
-													min_p = json_string (value_s);
-													FreeCopiedString (value_s);
-												}
-											
-											value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_long_value);
-											if (value_s)
-												{
-													max_p = json_string (value_s);
-													FreeCopiedString (value_s);
-												}
-										}
+										value_s = ConvertIntegerToString (option_p -> pmo_value.st_long_value);		
+										alloc_flag = (value_s != NULL);									
 										break;
 										
 									case PT_UNSIGNED_INT:
-											char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_ulong_value);
-											
-											if (value_s)
-												{
-													min_p = json_string (value_s);
-													FreeCopiedString (value_s);
-												}
-											
-											value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_ulong_value);
-											if (value_s)
-												{
-													max_p = json_string (value_s);
-													FreeCopiedString (value_s);
-												}
+										value_s = ConvertIntegerToString (option_p -> pmo_value.st_ulong_value);											
+										alloc_flag = (value_s != NULL);									
 										break;
 
 									case PT_SIGNED_REAL:
 									case PT_UNSIGNED_REAL:
-											char *value_s = ConvertDoubleToString (bounds_p -> pb_lower.st_data_value);
-											
-											if (value_s)
-												{
-													min_p = json_string (value_s);
-													FreeCopiedString (value_s);
-												}
-											
-											value_s = ConvertDoubleToString (bounds_p -> pb_upper.st_data_value);
-											if (value_s)
-												{
-													max_p = json_string (value_s);
-													FreeCopiedString (value_s);
-												}
-
+										value_s = ConvertDoubleToString (option_p -> pmo_value.st_data_value);
+										alloc_flag = (value_s != NULL);									
 										break;
 
 									default:
 										break;
-								}		/* switch (parameter_p -> pa_type) */					
+								}		/* switch (param_p -> pa_type) */					
 						
 							if (value_s)
 								{
 									success_flag = (json_array_append_new (json_options_p, json_string (value_s)) == 0); 
-								}
-						
+									
+									if (alloc_flag)
+										{
+											FreeCopiedString (value_s);
+										}
+								}						
 						}			
 					
 					if (success_flag)
@@ -753,7 +645,6 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 							json_array_append (json_p, json_options_p);
 							json_decref (json_options_p);
 						}
-					
 					
 				}		/* if (json_options_p) */
 							
@@ -777,8 +668,9 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 		{
 			json_t *min_p = NULL;
 			json_t *max_p = NULL;
+			char *value_s = NULL;
 			
-			switch (parameter_p -> pa_type)
+			switch (param_p -> pa_type)
 				{
 					case PT_BOOLEAN:
 						min_p = (bounds_p -> pb_lower.st_boolean_value == true) ? json_true () : json_false ();
@@ -786,63 +678,60 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 						break;
 						
 					case PT_SIGNED_INT:
-						{
-							char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_long_value);
-							
-							if (value_s)
-								{
-									min_p = json_string (value_s);
-									FreeCopiedString (value_s);
-								}
-							
-							value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_long_value);
-							if (value_s)
-								{
-									max_p = json_string (value_s);
-									FreeCopiedString (value_s);
-								}
-						}
+						value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_long_value);
+						
+						if (value_s)
+							{
+								min_p = json_string (value_s);
+								FreeCopiedString (value_s);
+							}
+						
+						value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_long_value);
+						if (value_s)
+							{
+								max_p = json_string (value_s);
+								FreeCopiedString (value_s);
+							}
 						break;
 						
 					case PT_UNSIGNED_INT:
-							char *value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_ulong_value);
-							
-							if (value_s)
-								{
-									min_p = json_string (value_s);
-									FreeCopiedString (value_s);
-								}
-							
-							value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_ulong_value);
-							if (value_s)
-								{
-									max_p = json_string (value_s);
-									FreeCopiedString (value_s);
-								}
+						value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_ulong_value);
+						
+						if (value_s)
+							{
+								min_p = json_string (value_s);
+								FreeCopiedString (value_s);
+							}
+						
+						value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_ulong_value);
+						if (value_s)
+							{
+								max_p = json_string (value_s);
+								FreeCopiedString (value_s);
+							}
 						break;
 
 					case PT_SIGNED_REAL:
 					case PT_UNSIGNED_REAL:
-							char *value_s = ConvertDoubleToString (bounds_p -> pb_lower.st_data_value);
-							
-							if (value_s)
-								{
-									min_p = json_string (value_s);
-									FreeCopiedString (value_s);
-								}
-							
-							value_s = ConvertDoubleToString (bounds_p -> pb_upper.st_data_value);
-							if (value_s)
-								{
-									max_p = json_string (value_s);
-									FreeCopiedString (value_s);
-								}
-
+						value_s = ConvertDoubleToString (bounds_p -> pb_lower.st_data_value);
+						
+						if (value_s)
+							{
+								min_p = json_string (value_s);
+								FreeCopiedString (value_s);
+							}
+						
+						value_s = ConvertDoubleToString (bounds_p -> pb_upper.st_data_value);
+						if (value_s)
+							{
+								max_p = json_string (value_s);
+								FreeCopiedString (value_s);
+							}
 						break;
 
 					default:
 						break;
-				}		/* switch (parameter_p -> pa_type) */					
+				}		/* switch (param_p -> pa_type) */					
 			
 			if (min_p)
 				{

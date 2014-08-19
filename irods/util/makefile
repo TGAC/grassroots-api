@@ -1,4 +1,4 @@
-NAME 		= tgac_irods_util
+NAME 		= wheatis_util
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= gcc
@@ -33,20 +33,24 @@ INCLUDES = \
 	
 	
 SRCS 	= \
-	io_utils.c  \
-	service.c \
-	plugin.c \
-	unix_plugin.c \
-	string_utils.c \
 	filesystem_utils.c \
-	unix_filesystem.c \
+	io_utils.c  \
 	linked_list.c \
-	string_linked_list.c
+	math_utils.c \
+	parameter.c \
+	parameter_set.c \
+	plugin.c \
+	service.c \
+	string_linked_list.c \
+	string_utils.c \
+	unix_filesystem.c \
+	unix_plugin.c
+	
 	
 
 CPPFLAGS += -DIRODS_LIBRARY_EXPORTS -DUNIX
 
-LDFLAGS += -ldl
+LDFLAGS += -ldl -ljansson
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 

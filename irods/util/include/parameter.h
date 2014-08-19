@@ -4,6 +4,7 @@
 #ifndef PARAMETER_H
 #define PARAMETER_H
 
+#include "jansson.h"
 
 #include "linked_list.h"
 #include "irods_library.h"
@@ -149,16 +150,10 @@ IRODS_LIB_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *opt
 IRODS_LIB_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
-IRODS_LIB_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+IRODS_LIB_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 IRODS_LIB_API void FreeParameter (Parameter *param_p);
-
-
-IRODS_LIB_API ParameterNode *AllocateParameterNode (Parameter *parameter_p);
-
-
-IRODS_LIB_API void FreeParameterNode (ListNode * const node_p);
 
 
 IRODS_LIB_API ParameterBounds *AllocateParameterBounds (void);
@@ -184,6 +179,8 @@ IRODS_LIB_API const char *CheckForNotNull (const Parameter * const parameter_p, 
 
 IRODS_LIB_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
+
+IRODS_LIB_API json_t *GetParameterAsJSON (const Parameter * const parameter_p);
 
 
 #ifdef __cplusplus
