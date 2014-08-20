@@ -2,6 +2,7 @@
 #include "parameter_set.h"
 #include "parameter.h"
 
+#include "json_util.h"
 
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListNode *node_p);
@@ -125,7 +126,11 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p)
 				
 					if (param_json_p)
 						{
-							json_array_append (root_p, param_json_p);
+							#ifdef _DEBUG
+							PrintJSON (stderr, root_p, "GetParameterSetAsJSON - param_json_p :: ");
+							#endif
+
+							success_flag = (json_array_append (root_p, param_json_p) == 0);
 							json_decref (param_json_p);
 							
 							node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);

@@ -4,7 +4,7 @@ DIR_INCLUDE = include
 COMP		= gcc
 MAKEDEPEND 	= gcc -MM -MF
 
-DIR_INSTALL = ../modules/blast/lib/ 
+DIR_INSTALL = ../../../wheatis_demo/lib
 
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 DIR_IRODS	= $$IRODS_HOME
@@ -35,17 +35,29 @@ INCLUDES = \
 SRCS 	= \
 	filesystem_utils.c \
 	io_utils.c  \
+	json_util.c \
 	linked_list.c \
 	math_utils.c \
 	parameter.c \
 	parameter_set.c \
 	plugin.c \
 	service.c \
+	services_manager.c \
 	string_linked_list.c \
 	string_utils.c \
 	unix_filesystem.c \
 	unix_plugin.c
 	
+
+ifeq ($(BUILD),release)
+	CFLAGS 	+= -O3 -s
+ 	LDFLAGS += -s
+else
+#	CFLAGS 	+= -g
+	CFLAGS 	+= -g -pg
+	LDFLAGS += -pg
+	CPPFLAGS += -D_DEBUG
+endif
 	
 
 CPPFLAGS += -DIRODS_LIBRARY_EXPORTS -DUNIX

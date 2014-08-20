@@ -3,11 +3,13 @@
 
 #include <vector>
 
+#include "blast_service.h"
+
 
 /**
  * The base class for running Blast.
  */
-class BlastTool
+class BLAST_SERVICE_LOCAL BlastTool
 {
 public:
 
@@ -68,7 +70,7 @@ protected:
 /**
  * A class that will run Blast as a forked process.
  */
-class ForkedBlastTool : public BlastTool 
+class BLAST_SERVICE_LOCAL ForkedBlastTool : public BlastTool 
 {
 public:
 	
@@ -80,7 +82,7 @@ public:
  * A class that will run Blast within the main process
  * of the iRods server.
  */
-class InlineBlastTool : public BlastTool 
+class BLAST_SERVICE_LOCAL InlineBlastTool : public BlastTool 
 {
 public:
 	
@@ -92,7 +94,7 @@ public:
  * A class that will run Blast in a separate thread on
  * the iRods server.
  */
-class ThreadedBlastTool : public BlastTool 
+class BLAST_SERVICE_LOCAL ThreadedBlastTool : public BlastTool 
 {
 public:
 	
@@ -104,7 +106,7 @@ public:
  * A class that will run Blast as a job sumbmission 
  * script for the HPC or similar.
  */
-class QueuedBlastTool : public BlastTool 
+class BLAST_SERVICE_LOCAL QueuedBlastTool : public BlastTool 
 {
 public:
 	
@@ -124,7 +126,7 @@ extern "C"
  * 
  * @return The BlastTool or <code>NULL</code> upon error.
  */
-BlastTool *CreateBlastTool ();
+BLAST_SERVICE_API BlastTool *CreateBlastTool ();
 
 
 /**
@@ -132,7 +134,7 @@ BlastTool *CreateBlastTool ();
  * 
  * @param The BlastTool to deallocate.
  */
-void FreeBlastTool (BlastTool *tool_p);
+BLAST_SERVICE_API void FreeBlastTool (BlastTool *tool_p);
 
 
 
@@ -143,10 +145,10 @@ void FreeBlastTool (BlastTool *tool_p);
  * @return <code>true</code> if the tool completed successfully, <code>false</code>
  * otherwise.
  */
-bool RunBlast (BlastTool *tool_p);
+BLAST_SERVICE_API bool RunBlast (BlastTool *tool_p);
 
 
-bool IsBlastRunning (BlastTool *tool_p);
+BLAST_SERVICE_API bool IsBlastRunning (BlastTool *tool_p);
 
 
 #ifdef __cplusplus

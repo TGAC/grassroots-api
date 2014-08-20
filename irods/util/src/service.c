@@ -5,8 +5,7 @@
 #include "string_utils.h"
 #include "filesystem_utils.h"
 
-
-
+#include "json_util.h"
 
 static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p);
 
@@ -65,86 +64,97 @@ void FreeServiceNode (ListNode * const node_p)
 
 LinkedList *LoadMatchingServices (const char * const path_s, const char * const filename_s)
 {
-	LinkedList *services_list_p = NULL;
-	const char *plugin_pattern_s = GetPluginPattern ();
+	LinkedList *services_list_p = AllocateLinkedList (FreeServiceNode);
 	
-	if (plugin_pattern_s)
+	if (services_list_p)
 		{
-			char *path_and_pattern_s = MakeFilename (path_s, plugin_pattern_s);
-
-			if (path_and_pattern_s)
+			const char *plugin_pattern_s = GetPluginPattern ();
+			
+			if (plugin_pattern_s)
 				{
-					LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s);
-					
-					if (matching_filenames_p)
+					char *path_and_pattern_s = MakeFilename (path_s, plugin_pattern_s);
+
+					if (path_and_pattern_s)
 						{
-							StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
+							LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
 							
-							while (node_p)
+							if (matching_filenames_p)
 								{
-									Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
-									bool using_service_flag = false;
+									StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
 									
-									if (plugin_p)
+									while (node_p)
 										{
-											if (OpenPlugin (plugin_p))
-												{																							
-													Service *service_p = GetServiceFromPlugin (plugin_p);
-													
-													if (service_p)
-														{
-															bool using_service_flag = true;
+											Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
+											bool using_service_flag = false;
+											
+											if (plugin_p)
+												{
+													if (OpenPlugin (plugin_p))
+														{																							
+															Service *service_p = GetServiceFromPlugin (plugin_p);
 															
-															if (filename_s)
+															if (service_p)
 																{
-																	using_service_flag = DoesFileMatchService (service_p, filename_s);
-																}
-															
-															if (using_service_flag)
-																{
-																	ServiceNode *node_p = AllocateServiceNode (service_p);
+																	using_service_flag = true;
 																	
-																	if (node_p)
+																	if (filename_s)
 																		{
-																			LinkedListAddTail (services_list_p, (ListNode *) node_p);
-																			using_service_flag = true;
+																			using_service_flag = DoesFileMatchService (service_p, filename_s);
 																		}
-																	else
+																	
+																	if (using_service_flag)
 																		{
-																			/* failed to allocate service node */
+																			ServiceNode *node_p = AllocateServiceNode (service_p);
+																			
+																			if (node_p)
+																				{
+																					LinkedListAddTail (services_list_p, (ListNode *) node_p);
+																					using_service_flag = true;
+																				}
+																			else
+																				{
+																					/* failed to allocate service node */
+																				}
 																		}
+																		
+																	if (!using_service_flag)
+																		{
+																			FreeService (service_p);
+																		}
+																}
+															else
+																{
+																	/* failed to get service from plugin */
 																}
 																
-															if (!using_service_flag)
-																{
-																	FreeService (service_p);
-																}
-														}
-													else
+														}		/* if (OpenPlugin (plugin_p)) */
+
+													if (!using_service_flag)
 														{
-															/* failed to get service from plugin */
+															ClosePlugin (plugin_p);
 														}
 														
-												}		/* if (OpenPlugin (plugin_p)) */
-
-											if (!using_service_flag)
-												{
-													ClosePlugin (plugin_p);
-												}
-												
-										}		/* if (plugin_p) */
+												}		/* if (plugin_p) */
+											
+											
+											node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+										}		/* while (node_p) */
 									
-									
-									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-								}		/* while (node_p) */
+									FreeLinkedList (matching_filenames_p);
+								}		/* if (matching_filenames_p) */
 							
-							FreeLinkedList (matching_filenames_p);
-						}		/* if (matching_filenames_p) */
+							FreeCopiedString (path_and_pattern_s);
+						}		/* if (path_and_pattern_s) */
 					
-					FreeCopiedString (path_and_pattern_s);
-				}		/* if (path_and_pattern_s) */
+				}		/* if (plugin_pattern_s) */
 			
-		}		/* if (plugin_pattern_s) */
+		}		/* if (services_list_p) */
+	
+	if (services_list_p -> ll_size == 0)
+		{
+			FreeLinkedList (services_list_p);
+			services_list_p = NULL;
+		}
 	
 	return services_list_p;
 }
@@ -184,7 +194,7 @@ ParameterSet *GetServiceParameters (const Service *service_p)
 
 json_t *GetServiceAsJSON (const Service * const service_p)
 {
-	json_t *root_p = json_array ();
+	json_t *root_p = json_object ();
 	
 	if (root_p)
 		{
@@ -199,6 +209,10 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 
 			if (success_flag)
 				{
+					#ifdef _DEBUG
+					PrintJSON (stderr, root_p, "GetServiceAsJSON - path :: ");
+					#endif
+					
 					value_s = GetServiceDescription (service_p);
 					
 					if (value_s)
@@ -209,8 +223,12 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 					if (success_flag)
 						{
 							/* Add the operations for this service */
-							json_t *operation_p = json_array ();
-							
+							json_t *operation_p = json_object ();
+
+							#ifdef _DEBUG
+							PrintJSON (stderr, root_p, "GetServiceAsJSON - description :: ");
+							#endif
+
 							if (operation_p)
 								{
 									success_flag = false;
@@ -229,7 +247,7 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 										
 									if (success_flag)
 										{
-											json_array_append (root_p, operation_p);
+											success_flag = (json_object_set (root_p, "operations", operation_p) == 0);
 											json_decref (operation_p);
 										}
 									else
@@ -261,6 +279,10 @@ static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_
 			success_flag = (json_object_set_new (root_p, "nickname", json_string (name_s)) == 0);
 		}
 
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddServiceNameToJSON :: nickname -> ");
+	#endif
+
 	return success_flag;
 }
 
@@ -274,6 +296,10 @@ static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t
 		{
 			success_flag = (json_object_set_new (root_p, "summary", json_string (description_s)) == 0);
 		}
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddServiceDescriptionToJSON :: description -> ");
+	#endif
 
 	return success_flag;
 }
@@ -290,16 +316,17 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 			
 			if (param_set_json_p)
 				{
-					json_array_append (root_p, param_set_json_p);
+					success_flag = (json_object_set (root_p, "parameters", param_set_json_p) == 0);
 					json_decref (param_set_json_p);
-
-					success_flag = true;
 				}
 				
 			/* could set this to be cached ... */
 			FreeParameterSet (param_set_p);
 		}
-	
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddServiceParameterSetToJSON :: parameters -> ");
+	#endif
 	
 	return success_flag;
 }

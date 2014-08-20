@@ -96,7 +96,7 @@ char *GetPathOnly (const char * const full_path_to_file)
 
 
 
-LinkedList *GetMatchingFiles (const char * const pattern)
+LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_flag)
 {
 	LinkedList *list_p = AllocateLinkedList (FreeStringListNode);
 
@@ -121,8 +121,22 @@ LinkedList *GetMatchingFiles (const char * const pattern)
 										{
 											if ((fnmatch (filename_p, entry_p -> d_name, 0)) == 0)
 												{
-													StringListNode *node_p = AllocateStringListNode (entry_p -> d_name, MF_DEEP_COPY);
-
+													StringListNode *node_p = NULL;
+													
+													if (full_path_flag)
+														{
+															char *full_filename_s = MakeFilename (path_p, entry_p -> d_name);
+															
+															if (full_filename_s)
+																{
+																	node_p = AllocateStringListNode (full_filename_s, MF_SHALLOW_COPY);
+																}
+														}
+													else
+														{
+															node_p = AllocateStringListNode (entry_p -> d_name, MF_DEEP_COPY);
+														}
+														
 													if (node_p)
 														{
 															LinkedListAddTail (list_p, (ListNode *) node_p);

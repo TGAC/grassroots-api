@@ -15,8 +15,17 @@ DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
 
-DIR_INSTALL = ../../../wheatis_install
+DIR_INSTALL = ../../../wheatis_demo/services
 
+ifeq ($(BUILD),release)
+	CFLAGS 	+= -O3 -s
+ 	LDFLAGS += -s
+else
+#	CFLAGS 	+= -g
+	CFLAGS 	+= -g -pg
+	LDFLAGS += -pg
+	CPPFLAGS += -D_DEBUG
+endif
 
 
 VPATH	= \

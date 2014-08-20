@@ -27,7 +27,7 @@ IRODS_LIB_API void UsePlatformFileSeparator (char *value_s);
 /** Platform-specific functions */
 IRODS_LIB_API bool IsPathValid (const char * const path);
 IRODS_LIB_API bool IsPathAbsolute (const char * const path);
-IRODS_LIB_API LinkedList *GetMatchingFiles (const char * const pattern);
+IRODS_LIB_API LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_flag);
 
 IRODS_LIB_API char GetFileSeparatorChar (void);
 IRODS_LIB_API const char *GetCurrentDirectoryString (void);

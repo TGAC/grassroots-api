@@ -2,6 +2,10 @@
 #define SERVICES_MANAGER_H
 
 
+#include "jansson.h"
+#include "linked_list.h"
+#include "irods_library.h"
+
 typedef struct ServicesManager 
 {
 	
@@ -18,7 +22,7 @@ extern "C"
 IRODS_LIB_API LinkedList *LoadServices (const char * const path_s);
 
 
-IRODS_LIB_API char *GetServicesListAsJSON (LinkedList *services_list_p);
+IRODS_LIB_API json_t *GetServicesListAsJSON (LinkedList *services_list_p);
 
 
 IRODS_LIB_API void FreeServicesString (char *services_json_s);

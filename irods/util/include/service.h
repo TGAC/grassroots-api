@@ -89,7 +89,7 @@ IRODS_LIB_API ServiceNode *AllocateServiceNode (Service *service_p);
 
 IRODS_LIB_API void FreeServiceNode (ListNode *node_p);
 
-IRODS_LIB_API LinkedList *LoadServices (const char * const path_s);
+IRODS_LIB_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
 
 
 IRODS_LIB_API json_t *GetServiceAsJSON (const Service * const service_p);

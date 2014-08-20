@@ -7,6 +7,7 @@
 #include "math_utils.h"
 #include "string_utils.h"
 
+#include "json_util.h"
 
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
@@ -438,7 +439,7 @@ bool SetParameter (Parameter * const param_p, const void *value_p)
 
 json_t *GetParameterAsJSON (const Parameter * const parameter_p)
 {
-	json_t *root_p = json_array ();
+	json_t *root_p = json_object ();
 	
 	if (root_p)
 		{
@@ -469,6 +470,7 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p)
 					if (json_object_clear (root_p) == 0)
 						{
 							json_decref (root_p);
+							root_p = NULL;
 						}
 					else
 						{
@@ -484,13 +486,25 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p)
 
 static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	return (json_object_set_new (root_p, "name", json_string (param_p -> pa_name_s)) == 0);
+	bool success_flag = (json_object_set_new (root_p, "name", json_string (param_p -> pa_name_s)) == 0);
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddParameterNameToJSON - root_p :: ");
+	#endif
+	
+	return success_flag;
 }
 
 
 static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	return (json_object_set_new (root_p, "description", json_string (param_p -> pa_description_s)) == 0);
+	bool success_flag = (json_object_set_new (root_p, "description", json_string (param_p -> pa_name_s)) == 0);
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddParameterDescriptionToJSON - root_p :: ");
+	#endif
+	
+	return success_flag;
 }
 
 
@@ -523,11 +537,16 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				break;
 
 			case PT_FILE_TO_READ:
+				success_flag = (json_object_set_new (root_p, "type", json_string ("string")) == 0);
 				break;
 				
 			default:
 				break;
 		}		/* switch (param_p -> pa_type) */
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddParameterTypeToJSON - root_p :: ");
+	#endif
 
 	return success_flag;
 }
@@ -572,10 +591,17 @@ static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root
 
 	if (default_value_p)
 		{
-			success_flag = (json_array_append (root_p, default_value_p) == 0);
+			success_flag = (json_object_set (root_p, "defaultValue", default_value_p) == 0);
 			json_decref (default_value_p);
 		}		/* if (default_value_p) */
+	else
+		{
+			success_flag = true;
+		}
 
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddDefaultValueToJSON - root_p :: ");
+	#endif
 
 	return success_flag;
 }
@@ -642,7 +668,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 					
 					if (success_flag)
 						{
-							json_array_append (json_p, json_options_p);
+							success_flag = (json_object_set (json_p, "enum", json_options_p) == 0);
 							json_decref (json_options_p);
 						}
 					
@@ -654,6 +680,10 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 			/* nothing to do */
 			success_flag = true;
 		}
+		
+	#ifdef _DEBUG
+	PrintJSON (stderr, json_p, "AddParameterOptionsToJSON - json_p :: ");
+	#endif		
 		
 	return success_flag;
 }
@@ -758,6 +788,10 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 			/* nothing to do */
 			success_flag = true;
 		}
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, json_p, "AddParameterBoundsToJSON - json_p :: ");
+	#endif		
 		
 	return success_flag;
 }
