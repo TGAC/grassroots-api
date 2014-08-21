@@ -4,7 +4,7 @@ DIR_INCLUDE = include
 COMP		= gcc
 MAKEDEPEND 	= gcc -MM -MF
 
-DIR_INSTALL = ../../../wheatis_demo/lib
+DIR_INSTALL = ../../wheatis_demo/lib
 
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 DIR_IRODS	= $$IRODS_HOME

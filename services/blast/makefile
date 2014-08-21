@@ -8,7 +8,7 @@ MAKEDEPEND 	= gcc -MM -MF
 BUILD		= debug
 
 DIR_IRODS	= $$IRODS_HOME
-DIR_WHEATIS_UTIL = ../../irods/util
+DIR_WHEATIS_UTIL = ../../util
 
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
@@ -57,7 +57,7 @@ LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
-include ../../irods/generic_makefiles/shared_library.makefile
+include ../../generic_makefiles/shared_library.makefile
 
 .PHONY:	all test
 
