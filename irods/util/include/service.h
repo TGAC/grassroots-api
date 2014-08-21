@@ -1,7 +1,7 @@
 #ifndef WHEATIS_SERVICE_H
 #define WHEATIS_SERVICE_H
 
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 
 #include "linked_list.h"
 #include "parameter_set.h"
@@ -60,7 +60,7 @@ extern "C"
 {
 #endif	
 
-IRODS_LIB_API void InitialiseService (Service * const service_p,
+WHEATIS_UTIL_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
 	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
@@ -68,31 +68,31 @@ IRODS_LIB_API void InitialiseService (Service * const service_p,
 	ParameterSet *(*get_parameters_fn) (void),
 	ServiceData *data_p);
 
-IRODS_LIB_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);
+WHEATIS_UTIL_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);
 
-IRODS_LIB_API bool DoesFileMatchService (Service *service_p, const char * const filename_s);
+WHEATIS_UTIL_API bool DoesFileMatchService (Service *service_p, const char * const filename_s);
 
 /** Get the user-friendly name of the service. */
-IRODS_LIB_API const char *GetServiceName (const Service *service_p);
+WHEATIS_UTIL_API const char *GetServiceName (const Service *service_p);
 
 /** Get the user-friendly description of the service. */
-IRODS_LIB_API const char *GetServiceDescription (const Service *service_p);
+WHEATIS_UTIL_API const char *GetServiceDescription (const Service *service_p);
 
-IRODS_LIB_API ParameterSet *GetServiceParameters (const Service *service_p);	
-
-
-
-IRODS_LIB_API void FreeService (Service *service_p);
+WHEATIS_UTIL_API ParameterSet *GetServiceParameters (const Service *service_p);	
 
 
-IRODS_LIB_API ServiceNode *AllocateServiceNode (Service *service_p);
 
-IRODS_LIB_API void FreeServiceNode (ListNode *node_p);
-
-IRODS_LIB_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
+WHEATIS_UTIL_API void FreeService (Service *service_p);
 
 
-IRODS_LIB_API json_t *GetServiceAsJSON (const Service * const service_p);
+WHEATIS_UTIL_API ServiceNode *AllocateServiceNode (Service *service_p);
+
+WHEATIS_UTIL_API void FreeServiceNode (ListNode *node_p);
+
+WHEATIS_UTIL_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
+
+
+WHEATIS_UTIL_API json_t *GetServiceAsJSON (const Service * const service_p);
 
 
 #ifdef __cplusplus

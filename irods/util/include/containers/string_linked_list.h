@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 #include "linked_list.h"
 #include "memory_allocations.h"
 
@@ -44,7 +44,7 @@ typedef struct StringListNode
  * @param mem_flag How the StringListNode should store its string..
  * @return The new StringListNode or NULL upon error.
  */
-IRODS_LIB_API StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag);
+WHEATIS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag);
 
 
 /**
@@ -54,7 +54,7 @@ IRODS_LIB_API StringListNode *AllocateStringListNode (const char * const str_p, 
  *
  * @param node_p The ListNode to free.
  */
-IRODS_LIB_API void FreeStringListNode (ListNode * const node_p);
+WHEATIS_UTIL_API void FreeStringListNode (ListNode * const node_p);
 
 
 /**
@@ -62,7 +62,7 @@ IRODS_LIB_API void FreeStringListNode (ListNode * const node_p);
  *
  * @return The new LinkedList or NULL upon error.
  */
-IRODS_LIB_API LinkedList *AllocateStringLinkedList (void);
+WHEATIS_UTIL_API LinkedList *AllocateStringLinkedList (void);
 
 
 /**
@@ -74,7 +74,7 @@ IRODS_LIB_API LinkedList *AllocateStringLinkedList (void);
  * @param src_p The LinkedList of StringListNodes to copy.
  * @result The copied LinkedList or NULL upon error.
  */
-IRODS_LIB_API LinkedList *CopyStringLinkedList (const LinkedList * const src_p);
+WHEATIS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const src_p);
 
 #ifdef __cplusplus
 }

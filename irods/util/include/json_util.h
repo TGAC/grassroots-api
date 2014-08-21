@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 
 #include "jansson.h"
 
@@ -13,7 +13,7 @@ extern "C"
 {
 #endif
 
-IRODS_LIB_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
+WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
 
 #ifdef __cplusplus
 }

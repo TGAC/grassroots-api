@@ -21,20 +21,20 @@ extern "C"
 {
 #endif
 
-IRODS_LIB_API ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s);
+WHEATIS_UTIL_API ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s);
 
-IRODS_LIB_API void FreeParameterSet (ParameterSet *params_p);
+WHEATIS_UTIL_API void FreeParameterSet (ParameterSet *params_p);
 
-IRODS_LIB_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
+WHEATIS_UTIL_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
 
 
-IRODS_LIB_API bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
+WHEATIS_UTIL_API bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
 	const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, 
 	SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, 
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
-IRODS_LIB_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p);
+WHEATIS_UTIL_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p);
 
 #ifdef __cplusplus
 }

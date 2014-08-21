@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #include "typedefs.h"
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 #include "linked_list.h"
 
 #ifdef __cplusplus
@@ -31,7 +31,7 @@
  * the string was successfully created, its deallocation must be done with FreeCopiedString
  * when you are finished with it.
  */
-IRODS_LIB_API char *CopyToNewString (const char * const src_p, const size_t length_to_copy, bool trim);
+WHEATIS_UTIL_API char *CopyToNewString (const char * const src_p, const size_t length_to_copy, bool trim);
 
 
 /**
@@ -39,7 +39,7 @@ IRODS_LIB_API char *CopyToNewString (const char * const src_p, const size_t leng
  *
  * @param str_p The string to deallocate.
  */
-IRODS_LIB_API void FreeCopiedString (char *str_p);
+WHEATIS_UTIL_API void FreeCopiedString (char *str_p);
 
 
 /**
@@ -50,7 +50,7 @@ IRODS_LIB_API void FreeCopiedString (char *str_p);
  * After being used, *buffer_pp muet be freed.
  * @return TRUE if the line was read successfully, false if there was an error.
  */
-IRODS_LIB_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
+WHEATIS_UTIL_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
 
 
 /**
@@ -58,7 +58,7 @@ IRODS_LIB_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
  *
  * @param buffer_p Pointer to a buffer to be freed.
  */
-IRODS_LIB_API void FreeLineBuffer (char *buffer_p);
+WHEATIS_UTIL_API void FreeLineBuffer (char *buffer_p);
 
 
 /**
@@ -70,7 +70,7 @@ IRODS_LIB_API void FreeLineBuffer (char *buffer_p);
  * @return A pointer to a StringLinkedList where each node
  * refers to a token or NULL upon error.
  */
-IRODS_LIB_API LinkedList *ParseStringToStringLinkedList (const char * const format_p, const char * const delimiters_p, const bool treat_whitespace_as_delimiter_flag);
+WHEATIS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * const format_p, const char * const delimiters_p, const bool treat_whitespace_as_delimiter_flag);
 
 
 
@@ -82,7 +82,7 @@ IRODS_LIB_API LinkedList *ParseStringToStringLinkedList (const char * const form
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
  */
-IRODS_LIB_API LinkedList *ParseStringToIntLinkedList (const char * const format_p, const char * const delimiters_p);
+WHEATIS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const format_p, const char * const delimiters_p);
 
 
 /**
@@ -93,7 +93,7 @@ IRODS_LIB_API LinkedList *ParseStringToIntLinkedList (const char * const format_
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
  */
-IRODS_LIB_API LinkedList *ParseStringToDataLinkedList (const char * const format_p, const char * const delimiters_p);
+WHEATIS_UTIL_API LinkedList *ParseStringToDataLinkedList (const char * const format_p, const char * const delimiters_p);
 
 
 /**
@@ -103,7 +103,7 @@ IRODS_LIB_API LinkedList *ParseStringToDataLinkedList (const char * const format
  * @param second_s  The second string to concatenate.
  * @return The newly created string or NULL if there was an error.
  */
-IRODS_LIB_API char *ConcatenateStrings (const char * const first_s, const char * const second_s);
+WHEATIS_UTIL_API char *ConcatenateStrings (const char * const first_s, const char * const second_s);
 
 
 /**
@@ -113,7 +113,7 @@ IRODS_LIB_API char *ConcatenateStrings (const char * const first_s, const char *
  * @param char_to_replace  The character to replace.
  * @param replacement_char The replacement character.
  */
-IRODS_LIB_API void ReplaceExpression (char *value_s, const char char_to_replace, const char replacement_char);
+WHEATIS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_replace, const char replacement_char);
 
 
 /**
@@ -128,7 +128,7 @@ IRODS_LIB_API void ReplaceExpression (char *value_s, const char char_to_replace,
  * line as a comment and do not try to get the key and value.
  * @return TRUE if the key and values were successfully copied, FALSE otherwise.
  */
-IRODS_LIB_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char comment_identifier);
+WHEATIS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char comment_identifier);
 
 
 
@@ -138,7 +138,7 @@ IRODS_LIB_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp
  * @param buffer_p The line to check.
  * @return TRUE if the line is valid, FALSE if it is empty or a comment.
  */
-IRODS_LIB_API bool IsLineValid (const char * const buffer_p);
+WHEATIS_UTIL_API bool IsLineValid (const char * const buffer_p);
 
 
 /**
@@ -149,16 +149,16 @@ IRODS_LIB_API bool IsLineValid (const char * const buffer_p);
  * be where the orginal word  in the buffer ends.
  * @return A copied version of the string.
  */
-IRODS_LIB_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+WHEATIS_UTIL_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
 
 
-IRODS_LIB_API bool GetNextTokenAsRealNumber (const char **start_pp, double *data_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+WHEATIS_UTIL_API bool GetNextTokenAsRealNumber (const char **start_pp, double *data_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
 
 
-IRODS_LIB_API bool GetNextTokenAsInteger (const char **start_pp, int *value_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+WHEATIS_UTIL_API bool GetNextTokenAsInteger (const char **start_pp, int *value_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
 
 
-IRODS_LIB_API void FreeToken (char *token_s);
+WHEATIS_UTIL_API void FreeToken (char *token_s);
 
 
 /**
@@ -170,7 +170,7 @@ IRODS_LIB_API void FreeToken (char *token_s);
  *
  * @param numeric_string_p The string to formatted.
  */
-IRODS_LIB_API void NullifyTrailingZeroes (char *numeric_string_p);
+WHEATIS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
 
 
 /**
@@ -179,16 +179,16 @@ IRODS_LIB_API void NullifyTrailingZeroes (char *numeric_string_p);
  * @param value_s The string to test.
  * @return TRUE If the string is NULL or just whitespace, FALSE otherwise.
  */
-IRODS_LIB_API bool IsStringEmpty (const char *value_s);
+WHEATIS_UTIL_API bool IsStringEmpty (const char *value_s);
 
 
 
-IRODS_LIB_API int Stricmp (const char *c0_s, const char *c1_s);
+WHEATIS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 
 
-IRODS_LIB_API char *ConvertIntegerToString (const int value);
+WHEATIS_UTIL_API char *ConvertIntegerToString (const int value);
 
-IRODS_LIB_API char *ConvertDoubleToString (const double64 value);
+WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
 #ifdef __cplusplus
 }

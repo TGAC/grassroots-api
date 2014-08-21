@@ -11,6 +11,9 @@
 #include "rcMisc.h"
 #include "lsUtil.h"
 #include "specificQuery.h"
+
+#include "string_utils.h"
+
 #define TGAC_PUT_DEBUG	(1)
 
 
@@ -20,8 +23,7 @@ static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p);
 
 
 static void GetDataIdForFile (rcComm_t *conn_p, const char * const path_s);
-static char *ConcatenateStrings (const char * const first_s, const char * const second_s);
-
+static void GetAllUserCollections (rcComm_t *conn_p, const char * const path_s);
 
 void
 printFormatted(char *format, char *args[], int nargs) {
@@ -187,6 +189,9 @@ main(int argc, char **argv) {
 				 
 			}		/* if (status == 0) */
 
+		printf ("*** COLLECTIONS ***\n");
+		GetAllUserCollections (conn, myEnv.rodsUserName);
+
     printErrorStack(conn->rError);
 
     rcDisconnect(conn);
@@ -213,35 +218,34 @@ static void GetDataIdForFile (rcComm_t *conn_p, const char * const path_s)
 		
 			if (sql_s)
 				{
-			specificQueryInp_t in_query;
-			int status, i;
-			genQueryOut_t *out_query_p = NULL;
-		
-			memset (&in_query, 0, sizeof (specificQueryInp_t));
-			in_query.maxRows = MAX_SQL_ROWS;
-			in_query.continueInx =0;
-			in_query.sql = sql_s;
-		
-		
-			printf ("sql: \"%s\"\n", sql_s);
-		
-			status = rcSpecificQuery (conn_p, &in_query, &out_query_p);
-		
-			if (status == CAT_NO_ROWS_FOUND) 
-				{
-					printf ("No rows found\n"); 
-				}
-			else if (status < 0 ) 
-				{
-				 	printf ("error\n");
-				}
-			else
-				{
-					printBasicGenQueryOut (out_query_p, "result: \"%s\" \"%s\"\n");
-				}
-		
-			free (sql_s);
+					specificQueryInp_t in_query;
+					int status, i;
+					genQueryOut_t *out_query_p = NULL;
 				
+					memset (&in_query, 0, sizeof (specificQueryInp_t));
+					in_query.maxRows = MAX_SQL_ROWS;
+					in_query.continueInx =0;
+					in_query.sql = sql_s;
+				
+				
+					printf ("sql: \"%s\"\n", sql_s);
+				
+					status = rcSpecificQuery (conn_p, &in_query, &out_query_p);
+				
+					if (status == CAT_NO_ROWS_FOUND) 
+						{
+							printf ("No rows found\n"); 
+						}
+					else if (status < 0 ) 
+						{
+							printf ("error\n");
+						}
+					else
+						{
+							printBasicGenQueryOut (out_query_p, "result: \"%s\" \"%s\"\n");
+						}
+				
+					free (sql_s);				
 				}
 
 			free (sql_start_s);		
@@ -249,31 +253,53 @@ static void GetDataIdForFile (rcComm_t *conn_p, const char * const path_s)
 }
 
 
-
-static char *ConcatenateStrings (const char * const first_s, const char * const second_s)
+static void GetAllUserCollections (rcComm_t *conn_p, const char * const username_s)
 {
-	const size_t len1 = (first_s != NULL) ? strlen (first_s) : 0;
-	const size_t len2 = (second_s != NULL) ? strlen (second_s) : 0;
+	const char * const QUERY_S = "SELECT COLL_FILEMETA_OBJ_ID, COLL_FILEMETA_SOURCE_PATH WHERE COLL_FILEMETA_OWNER = '";
 
-	char *result_s = (char *) malloc (sizeof (char) * (len1 + len2 + 1));
-
-	if (result_s)
+	char *sql_start_s = ConcatenateStrings (QUERY_S, username_s);
+	
+	if (sql_start_s)
 		{
-			if (len1 > 0)
+			char *sql_s = ConcatenateStrings (sql_start_s, "\'");
+		
+			if (sql_s)
 				{
-					strncpy (result_s, first_s, len1);
+					specificQueryInp_t in_query;
+					int status, i;
+					genQueryOut_t *out_query_p = NULL;
+				
+					memset (&in_query, 0, sizeof (specificQueryInp_t));
+					in_query.maxRows = MAX_SQL_ROWS;
+					in_query.continueInx =0;
+					in_query.sql = sql_s;
+				
+				
+					printf ("sql: \"%s\"\n", sql_s);
+				
+					status = rcSpecificQuery (conn_p, &in_query, &out_query_p);
+				
+					if (status == CAT_NO_ROWS_FOUND) 
+						{
+							printf ("No rows found\n"); 
+						}
+					else if (status < 0 ) 
+						{
+							printf ("error\n");
+						}
+					else
+						{
+							printBasicGenQueryOut (out_query_p, "result: \"%s\" \"%s\"\n");
+						}
+				
+					free (sql_s);
+				
 				}
 
-			if (len2 > 0)
-				{
-					strcpy (result_s + len1, second_s);
-				}
-
-			* (result_s + len1 + len2) = '\0';
+			free (sql_start_s);		
 		}
-
-	return result_s;
 }
+
 
 
 

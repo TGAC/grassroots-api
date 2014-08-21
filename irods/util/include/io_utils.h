@@ -24,7 +24,7 @@
   * wheatis includes
   */
 #include "typedefs.h"
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 #include "parameter.h"
 
 
@@ -41,7 +41,7 @@ extern "C"
  * not be determined.
  * @ingroup io_util
  */
-IRODS_LIB_API FileLocation GetFileLocation (const char * const filename_s);
+WHEATIS_UTIL_API FileLocation GetFileLocation (const char * const filename_s);
 
 
 /**
@@ -51,7 +51,7 @@ IRODS_LIB_API FileLocation GetFileLocation (const char * const filename_s);
  * @return true on success, false on error with errno set to the appropriate value. 
  * @ingroup io_util 
  */ 
-IRODS_LIB_API char *CopyFileToLocalFilesystem (const char * const filename_s);
+WHEATIS_UTIL_API char *CopyFileToLocalFilesystem (const char * const filename_s);
 
 
 /**
@@ -63,7 +63,7 @@ IRODS_LIB_API char *CopyFileToLocalFilesystem (const char * const filename_s);
  * @return true on success, false on error with errno set to the appropriate value. 
  * @ingroup io_util 
  */ 
-IRODS_LIB_API char *CopyFileChunkToLocalFilesystem (const char * const filename_s, size_t offset, size_t chunk_size);
+WHEATIS_UTIL_API char *CopyFileChunkToLocalFilesystem (const char * const filename_s, size_t offset, size_t chunk_size);
 
 
 
@@ -77,7 +77,7 @@ IRODS_LIB_API char *CopyFileChunkToLocalFilesystem (const char * const filename_
  * @return true on success, false on error with errno set to the appropriate value.
  * @ingroup io_util 
  */ 
-IRODS_LIB_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ());
+WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ());
 
 
 
@@ -88,7 +88,7 @@ IRODS_LIB_API bool CopyToNewFile (const char * const src_filename_s, const char 
  * @return The string with the given value or <code>NULL</code> upon error.
  * @ingroup io_util 
  */
-IRODS_LIB_API char *GetIntAsString (int value);
+WHEATIS_UTIL_API char *GetIntAsString (int value);
 
 
 /**
@@ -109,14 +109,14 @@ IRODS_LIB_API char *GetIntAsString (int value);
  * @param message_s The string to write using standard c printf syntax.
  * @ingroup io_util
  */
-IRODS_LIB_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
+WHEATIS_UTIL_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
 
 
 
-IRODS_LIB_API int PutAndCheckForServices (rcComm_t **connection_pp, rodsEnv *env_p, rodsArguments_t *args_p, rodsPathInp_t *path_inp_p);
+WHEATIS_UTIL_API int PutAndCheckForServices (rcComm_t **connection_pp, rodsEnv *env_p, rodsArguments_t *args_p, rodsPathInp_t *path_inp_p);
 
 
-IRODS_LIB_LOCAL int PrintRodsPath (FILE *out_f, const rodsPath_t * const rods_path_p, const char * const description_s);
+WHEATIS_UTIL_LOCAL int PrintRodsPath (FILE *out_f, const rodsPath_t * const rods_path_p, const char * const description_s);
 
 
 #ifdef __cplusplus

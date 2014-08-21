@@ -6,7 +6,7 @@
 
 #include "typedefs.h"
 #include "linked_list.h"
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 
 
 #ifdef __cplusplus
@@ -15,35 +15,35 @@
 
 
 /** Generic functions */
-IRODS_LIB_API char *GetFilenameOnly (const char * const full_path_to_file);
-IRODS_LIB_API char *GetPathOnly (const char * const full_path_to_file);
-IRODS_LIB_API char *MakeFilename (const char * const path, const char * const filename);
+WHEATIS_UTIL_API char *GetFilenameOnly (const char * const full_path_to_file);
+WHEATIS_UTIL_API char *GetPathOnly (const char * const full_path_to_file);
+WHEATIS_UTIL_API char *MakeFilename (const char * const path, const char * const filename);
 
-IRODS_LIB_API bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss);
+WHEATIS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss);
 
 
-IRODS_LIB_API void UsePlatformFileSeparator (char *value_s);
+WHEATIS_UTIL_API void UsePlatformFileSeparator (char *value_s);
 
 /** Platform-specific functions */
-IRODS_LIB_API bool IsPathValid (const char * const path);
-IRODS_LIB_API bool IsPathAbsolute (const char * const path);
-IRODS_LIB_API LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_flag);
+WHEATIS_UTIL_API bool IsPathValid (const char * const path);
+WHEATIS_UTIL_API bool IsPathAbsolute (const char * const path);
+WHEATIS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_flag);
 
-IRODS_LIB_API char GetFileSeparatorChar (void);
-IRODS_LIB_API const char *GetCurrentDirectoryString (void);
-IRODS_LIB_API const char *GetParentDirectory (void);
-IRODS_LIB_API const char *GetPluginPattern (void);
+WHEATIS_UTIL_API char GetFileSeparatorChar (void);
+WHEATIS_UTIL_API const char *GetCurrentDirectoryString (void);
+WHEATIS_UTIL_API const char *GetParentDirectory (void);
+WHEATIS_UTIL_API const char *GetPluginPattern (void);
 
-IRODS_LIB_API bool EnsureDirectoryExists (const char * const path_s);
-IRODS_LIB_API bool CopyToNewFile (const char * const src_filename, const char * const dest_filename, void (*callback_fn) ());
+WHEATIS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
+WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename, const char * const dest_filename, void (*callback_fn) ());
 
 
-IRODS_LIB_API bool SetCurrentWorkingDirectory (const char * const path);
-IRODS_LIB_API char *GetCurrentWorkingDirectory (void);
+WHEATIS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path);
+WHEATIS_UTIL_API char *GetCurrentWorkingDirectory (void);
 
-IRODS_LIB_API bool IsDirectory (const char * const path);
+WHEATIS_UTIL_API bool IsDirectory (const char * const path);
 
-IRODS_LIB_API bool EnsureDirectoryPath (const char * const path_s);
+WHEATIS_UTIL_API bool EnsureDirectoryPath (const char * const path_s);
 
 #ifdef __cplusplus
 }

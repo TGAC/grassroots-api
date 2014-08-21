@@ -20,6 +20,7 @@ VPATH	= \
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL)/include \
+	-I$(DIR_WHEATIS_UTIL)/include/containers \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -37,7 +38,7 @@ CPPFLAGS += -DUNIX
 # Ubuntu build qt with -reduce-relocations so we need this flag
 #CFLAGS += -fPIE
 
-LDFLAGS += -lpthread
+LDFLAGS += -lpthread -L/usr/users/ga002/tyrrells/Projects/wheatis_demo/lib -lwheatis_util
 
 OBJS = $(patsubst %.c,%.o, $(SRCS))
 EXES = $(patsubst %.c,%, $(SRCS))

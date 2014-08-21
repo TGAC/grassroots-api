@@ -4,7 +4,7 @@
 #ifndef MATH_UTILS_H
 #define MATH_UTILS_H
 
-#include "irods_library.h"
+#include "wheatis_util_library.h"
 #include "typedefs.h"
 
 #ifdef __cplusplus
@@ -21,7 +21,7 @@
  * @return -1 if d1 is less than d2, +1 if d1 is
  * greater than d2 and 0 if they are identical.
  */
-IRODS_LIB_API int CompareDoubles (const double d1, const double d2);
+WHEATIS_UTIL_API int CompareDoubles (const double d1, const double d2);
 
 
 /**
@@ -33,7 +33,7 @@ IRODS_LIB_API int CompareDoubles (const double d1, const double d2);
  * @return -1 if f1 is less than f2, +1 if f1 is
  * greater than f2 and 0 if they are identical.
  */
-IRODS_LIB_API int CompareFloats (const float f1, const float f2);
+WHEATIS_UTIL_API int CompareFloats (const float f1, const float f2);
 
 
 /**
@@ -44,7 +44,7 @@ IRODS_LIB_API int CompareFloats (const float f1, const float f2);
  * @param data_p Pointer where the number will be stored if the converesion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-IRODS_LIB_API bool GetValidRealNumber (const char **str_pp, double64 *data_p);
+WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p);
 
 
 /**
@@ -55,10 +55,10 @@ IRODS_LIB_API bool GetValidRealNumber (const char **str_pp, double64 *data_p);
  * @param data_p Pointer where the number will be stored if the converesion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-IRODS_LIB_API bool GetValidInteger (const char **str_pp, int *answer_p);
+WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
 
 
-IRODS_LIB_API int SortDoubles (const void *v1_p, const void *v2_p);
+WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 
 
 
