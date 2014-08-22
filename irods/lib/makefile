@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 NAME 		= irods_util
 DIR_SRC = src
 DIR_INCLUDE = include
@@ -7,8 +9,10 @@ MAKEDEPEND 	= gcc -MM -MF
 
 BUILD		= debug
 
-DIR_IRODS	= $$IRODS_HOME
-DIR_WHEATIS_UTIL = ../util
+#DIR_IRODS = $$IRODS_HOME
+DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
+
+DIR_WHEATIS_UTIL = ../../util
 
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
@@ -30,7 +34,8 @@ endif
 
 VPATH	= \
 	$(DIR_SRC) \
-	
+	$(DIR_IRODS)/lib/core/src \
+	$(DIR_IRODS)/lib/api/src \
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
@@ -46,14 +51,15 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/re/include 
 	
 SRCS 	= \
-	blast_service.c \
-	blast_tool.cpp 
-	
-	
+	connect.c \
+	user.c \
+	query.c \
+	procApiRequest.c \
+	rcSpecificQuery.c
 
 CPPFLAGS += -DIRODS_UTIL_LIBRARY_EXPORTS -DUNIX -fPIC
 
-LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
+LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
@@ -62,3 +68,7 @@ include ../../generic_makefiles/shared_library.makefile
 .PHONY:	all test
 
 all: lib 
+
+
+test:
+		$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -L. -lirods -lm -lpthread $(INCLUDES)  test.c -o test

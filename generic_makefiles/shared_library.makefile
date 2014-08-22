@@ -39,9 +39,13 @@ install: all
 
 init:
 	@mkdir -p $(DIR_OBJS)
+	@echo "-----------------------------------------------" 
 	@echo "objs: $(OBJS)"
 	@echo "c: $(C_SRCS)"	
 	@echo "c++: $(CXX_SRCS)"	
+	@echo "VPATH: $(VPATH)" 
+	@echo "IRODS: =$(DIR_IRODS)=" 
+	@echo "-----------------------------------------------" 
 	
 clean:
 	@rm -fr $(BUILD)/

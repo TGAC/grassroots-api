@@ -2,6 +2,11 @@
 
 
 
+ByteBuffer *AllocateByteBuffer (void)
+{
+	
+}
+
 bool AppendStringToBuffer (ByteBuffer *buffer_p, const char *data_s)
 {
 	BufferBlockListNode *node_p = (BufferBlockListNode *) (byte_buffer_p -> bb_blocks_p -> ll_head_p);
