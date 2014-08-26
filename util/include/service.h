@@ -50,7 +50,7 @@ typedef struct Service
 
 typedef struct 
 {
-	ListNode sn_node;
+	ListItem sn_node;
 	Service *sn_service_p;
 } ServiceNode;
 
@@ -87,7 +87,7 @@ WHEATIS_UTIL_API void FreeService (Service *service_p);
 
 WHEATIS_UTIL_API ServiceNode *AllocateServiceNode (Service *service_p);
 
-WHEATIS_UTIL_API void FreeServiceNode (ListNode *node_p);
+WHEATIS_UTIL_API void FreeServiceNode (ListItem *node_p);
 
 WHEATIS_UTIL_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
 

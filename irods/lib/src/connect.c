@@ -19,6 +19,7 @@ rcComm_t *CreateConnection (void)
 					if (status != 0)
 						{
 							rcDisconnect (connection_p);
+							connection_p = NULL;
 						}
 				}
 		}

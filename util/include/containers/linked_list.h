@@ -15,17 +15,17 @@
 
 
 /******** FORWARD DECLARATION ******/
-struct ListNode;
+typedef struct ListItem ListItem;
 
 /**
  * A doubly-linked node that points to
  * its predecessor and successor.
  */
-typedef struct ListNode
+struct ListItem
 {
-	struct ListNode *ln_prev_p;		/**< A pointer to the previous ListNode */
-	struct ListNode *ln_next_p;		/**< A pointer to the next ListNode */
-} ListNode;
+	ListItem *ln_prev_p;		/**< A pointer to the previous ListItem */
+	ListItem *ln_next_p;		/**< A pointer to the next ListItem */
+};
 
 
 /**
@@ -35,16 +35,16 @@ typedef struct ListNode
 typedef struct LinkedList
 {
 	/** A pointer to the first ListNode on this list */
-  ListNode *ll_head_p;
+  ListItem *ll_head_p;
 
   /** A pointer to the last ListNode on this list */
-  ListNode *ll_tail_p;
+  ListItem *ll_tail_p;
 
   /** The number of ListNodes on this list. */
   uint32 ll_size;
 
   /** Callback function to use when freeing a ListNode */
-  void (*ll_free_node_fn_p) (ListNode * node_p);
+  void (*ll_free_node_fn_p) (ListItem * node_p);
 
 } LinkedList;
 
@@ -59,7 +59,7 @@ typedef struct LinkedList
  * call free ().
  * @return The new LinkedList or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListNode * const node_p));
+WHEATIS_UTIL_API LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListItem * const node_p));
 
 
 /**
@@ -87,7 +87,7 @@ WHEATIS_UTIL_API void InitLinkedList (LinkedList * const list_p);
  * @param list_p The LinkedList to add the ListNode to.
  * @param node_p The ListNode to add.
  */
-WHEATIS_UTIL_API void LinkedListAddHead (LinkedList * const list_p, ListNode * const node_p);
+WHEATIS_UTIL_API void LinkedListAddHead (LinkedList * const list_p, ListItem * const node_p);
 
 
 /**
@@ -96,7 +96,7 @@ WHEATIS_UTIL_API void LinkedListAddHead (LinkedList * const list_p, ListNode * c
  * @param list_p The LinkedList to add the ListNode to.
  * @param node_p The ListNode to add.
  */
-WHEATIS_UTIL_API void LinkedListAddTail (LinkedList * const list_p, ListNode * const node_p);
+WHEATIS_UTIL_API void LinkedListAddTail (LinkedList * const list_p, ListItem * const node_p);
 
 
 /**
@@ -105,7 +105,7 @@ WHEATIS_UTIL_API void LinkedListAddTail (LinkedList * const list_p, ListNode * c
  * @param list_p The LinkedList to remove the first ListNode from.
  * @return The removed ListNode or NULL if the LinkedList is empty.
  */
-WHEATIS_UTIL_API ListNode *LinkedListRemHead (LinkedList * const list_p);
+WHEATIS_UTIL_API ListItem *LinkedListRemHead (LinkedList * const list_p);
 
 
 /**
@@ -114,7 +114,7 @@ WHEATIS_UTIL_API ListNode *LinkedListRemHead (LinkedList * const list_p);
  * @param list_p The LinkedList to remove the last ListNode from.
  * @return The removed ListNode or NULL if the LinkedList is empty.
  */
-WHEATIS_UTIL_API ListNode *LinkedListRemTail (LinkedList * const list_p);
+WHEATIS_UTIL_API ListItem *LinkedListRemTail (LinkedList * const list_p);
 
 
 /**
@@ -123,7 +123,7 @@ WHEATIS_UTIL_API ListNode *LinkedListRemTail (LinkedList * const list_p);
  * @param list_p The LinkedList to remove the ListNode from.
  * @param node_p The ListNode to be removed.
  */
-WHEATIS_UTIL_API void LinkedListRemove (LinkedList * const list_p, ListNode * const node_p);
+WHEATIS_UTIL_API void LinkedListRemove (LinkedList * const list_p, ListItem * const node_p);
 
 
 /**
@@ -145,7 +145,7 @@ WHEATIS_UTIL_API bool LinkedListSort (LinkedList * const list_p, int (*compare_n
  * @param list_p The LinkedList to set the function for.
  * @param free_node_fn The function that will be used to free the ListNodes.
  */
-WHEATIS_UTIL_API void SetLinkedListFreeNodeFunction (LinkedList * const list_p, void (*free_node_fn) (ListNode * const node_p));
+WHEATIS_UTIL_API void SetLinkedListFreeNodeFunction (LinkedList * const list_p, void (*free_node_fn) (ListItem * const node_p));
 
 
 /**
@@ -156,7 +156,7 @@ WHEATIS_UTIL_API void SetLinkedListFreeNodeFunction (LinkedList * const list_p, 
  * @param node_p The ListNode to insert into the list.
  * @param compare_nodes_fn Function used to compare the ListNodes.
  */
-WHEATIS_UTIL_API void LinkedListPrioritisedInsert (LinkedList * const list_p, ListNode * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
+WHEATIS_UTIL_API void LinkedListPrioritisedInsert (LinkedList * const list_p, ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
 
 
 /**
@@ -167,7 +167,7 @@ WHEATIS_UTIL_API void LinkedListPrioritisedInsert (LinkedList * const list_p, Li
  * be inserted at the start of the list.
  * @param node_to_insert_p The ListNode to insert on the list.
  */
-WHEATIS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListNode * const prev_node_p, ListNode * const node_to_insert_p);
+WHEATIS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListItem * const prev_node_p, ListItem * const node_to_insert_p);
 
 
 /**
@@ -179,7 +179,7 @@ WHEATIS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListNode * co
  * @param compare_nodes_fn Function used to compare the ListNodes.
  * @return The matching ListNode or NULL if it could not be found on the LinkedList.
  */
-WHEATIS_UTIL_API ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNode * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p);
+WHEATIS_UTIL_API ListItem *LinkedListBinarySearch (const LinkedList * const list_p, const ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p);
 
 
 /**

@@ -139,7 +139,7 @@ LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_f
 														
 													if (node_p)
 														{
-															LinkedListAddTail (list_p, (ListNode *) node_p);
+															LinkedListAddTail (list_p, (ListItem *) node_p);
 														}
 												}
 										}

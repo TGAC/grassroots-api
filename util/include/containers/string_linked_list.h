@@ -27,7 +27,7 @@
 typedef struct StringListNode
 {
 	/** The ListNode. */
-	ListNode sln_node;
+	ListItem sln_node;
 
 	/** The string value. */
 	char *sln_string_s;
@@ -54,7 +54,7 @@ WHEATIS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_
  *
  * @param node_p The ListNode to free.
  */
-WHEATIS_UTIL_API void FreeStringListNode (ListNode * const node_p);
+WHEATIS_UTIL_API void FreeStringListNode (ListItem * const node_p);
 
 
 /**

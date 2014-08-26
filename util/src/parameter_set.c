@@ -5,7 +5,7 @@
 #include "json_util.h"
 
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
-static void FreeParameterNode (ListNode *node_p);
+static void FreeParameterNode (ListItem *node_p);
 
 
 ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s)
@@ -78,7 +78,7 @@ bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p)
 	
 	if (node_p)
 		{
-			LinkedListAddTail (params_p -> ps_params_p, (ListNode *) node_p);
+			LinkedListAddTail (params_p -> ps_params_p, (ListItem *) node_p);
 			success_flag = true;
 		}		/* if (node_p) */
 	
@@ -102,7 +102,7 @@ ParameterNode *AllocateParameterNode (Parameter *param_p)
 }
 
 
-void FreeParameterNode (ListNode *node_p)
+void FreeParameterNode (ListItem *node_p)
 {
 	ParameterNode *param_node_p = (ParameterNode *) node_p;
 	

@@ -132,7 +132,7 @@ typedef struct Parameter
 
 typedef struct ParameterNode
 {
-	ListNode pn_node;
+	ListItem pn_node;
 
 	Parameter *pn_parameter_p;
 

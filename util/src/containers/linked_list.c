@@ -12,11 +12,11 @@
 #endif
 
 
-static void FreeNode (ListNode  *node_p);
+static void FreeNode (ListItem  *node_p);
 
 
 
-LinkedList *AllocateArrayOfLinkedLists (const uint32 num_lists, void (*free_node_fn_p) (ListNode * const node_p))
+LinkedList *AllocateArrayOfLinkedLists (const uint32 num_lists, void (*free_node_fn_p) (ListItem * const node_p))
 {
 	LinkedList *lists_p = (LinkedList *) AllocMemory (num_lists * sizeof (LinkedList));
 
@@ -40,14 +40,14 @@ LinkedList *AllocateArrayOfLinkedLists (const uint32 num_lists, void (*free_node
 
 
 
-void SetLinkedListFreeNodeFunction (LinkedList * const list_p, void (*free_node_fn) (ListNode * const node_p))
+void SetLinkedListFreeNodeFunction (LinkedList * const list_p, void (*free_node_fn) (ListItem * const node_p))
 {
 	list_p -> ll_free_node_fn_p = free_node_fn;
 }
 
 
 
-LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListNode * const node_p))
+LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListItem * const node_p))
 {
 	LinkedList *list_p = (LinkedList *) AllocMemory (sizeof (LinkedList));
 
@@ -75,16 +75,16 @@ void FreeLinkedList (LinkedList * const list_p)
 
 void ClearLinkedList (LinkedList * const list_p)
 {
-	void (*free_node_fn_p) (ListNode * node_p) = list_p -> ll_free_node_fn_p;
-	ListNode *this_node_p = list_p -> ll_head_p;
-	ListNode *next_node_p = NULL;
+	void (*free_node_fn_p) (ListItem * node_p) = list_p -> ll_free_node_fn_p;
+	ListItem *this_node_p = list_p -> ll_head_p;
+	ListItem *next_node_p = NULL;
 
 	/* if we don't have a given function to free the nodes
 	** use our generic function instead.
 	*/
 	if (free_node_fn_p == NULL)
 		{
-			free_node_fn_p = (void (*) (ListNode *)) FreeNode;
+			free_node_fn_p = (void (*) (ListItem *)) FreeNode;
 		}
 
 	while (this_node_p != NULL)
@@ -102,7 +102,7 @@ void ClearLinkedList (LinkedList * const list_p)
 }
 
 
-static void FreeNode (ListNode  *node_p)
+static void FreeNode (ListItem  *node_p)
 {
 	FreeMemory (node_p);
 }
@@ -122,11 +122,11 @@ void InitLinkedList (LinkedList * const list_p)
 }
 
 
-void LinkedListAddHead (LinkedList * const list_p, ListNode * const node_p)
+void LinkedListAddHead (LinkedList * const list_p, ListItem * const node_p)
 {
 	if (list_p -> ll_size != 0)
 		{
-			ListNode *old_head_p = list_p -> ll_head_p;
+			ListItem *old_head_p = list_p -> ll_head_p;
 			list_p -> ll_head_p = node_p;
 
 			old_head_p -> ln_prev_p = node_p;
@@ -144,11 +144,11 @@ void LinkedListAddHead (LinkedList * const list_p, ListNode * const node_p)
 }
 
 
-void LinkedListAddTail (LinkedList * const list_p, ListNode * const node_p)
+void LinkedListAddTail (LinkedList * const list_p, ListItem * const node_p)
 {
 	if (list_p -> ll_size != 0)
 		{
-			ListNode *old_tail_p = list_p -> ll_tail_p;
+			ListItem *old_tail_p = list_p -> ll_tail_p;
 			list_p -> ll_tail_p = node_p;
 
 			old_tail_p -> ln_next_p = node_p;
@@ -166,11 +166,11 @@ void LinkedListAddTail (LinkedList * const list_p, ListNode * const node_p)
 }
 
 
-void LinkedListInsert (LinkedList * const list_p, ListNode * const prev_node_p, ListNode * const node_to_insert_p)
+void LinkedListInsert (LinkedList * const list_p, ListItem * const prev_node_p, ListItem * const node_to_insert_p)
 {
 	if (prev_node_p != NULL)
 		{
-			ListNode *next_node_p = prev_node_p -> ln_next_p;
+			ListItem *next_node_p = prev_node_p -> ln_next_p;
 
 			node_to_insert_p -> ln_prev_p = prev_node_p;
 			prev_node_p -> ln_next_p = node_to_insert_p;
@@ -201,9 +201,9 @@ void LinkedListInsert (LinkedList * const list_p, ListNode * const prev_node_p, 
 }
 
 
-ListNode *LinkedListRemHead (LinkedList * const list_p)
+ListItem *LinkedListRemHead (LinkedList * const list_p)
 {
-	ListNode *node_p = NULL;
+	ListItem *node_p = NULL;
 
 	switch (list_p -> ll_size)
 		{
@@ -221,7 +221,7 @@ ListNode *LinkedListRemHead (LinkedList * const list_p)
 
 			default:
 				{
-					ListNode *new_head_p;
+					ListItem *new_head_p;
 
 					node_p = list_p -> ll_head_p;
 					new_head_p = node_p -> ln_next_p;
@@ -239,9 +239,9 @@ ListNode *LinkedListRemHead (LinkedList * const list_p)
 }
 
 
-ListNode *LinkedListRemTail (LinkedList * const list_p)
+ListItem *LinkedListRemTail (LinkedList * const list_p)
 {
-	ListNode *node_p = NULL;
+	ListItem *node_p = NULL;
 
 	switch (list_p -> ll_size)
 		{
@@ -259,7 +259,7 @@ ListNode *LinkedListRemTail (LinkedList * const list_p)
 
 			default:
 				{
-					ListNode *new_tail_p;
+					ListItem *new_tail_p;
 
 					node_p = list_p -> ll_tail_p;
 					new_tail_p = node_p -> ln_prev_p;
@@ -278,7 +278,7 @@ ListNode *LinkedListRemTail (LinkedList * const list_p)
 }
 
 
-void LinkedListRemove (LinkedList * const list_p, ListNode * const node_p)
+void LinkedListRemove (LinkedList * const list_p, ListItem * const node_p)
 {
 
 	if (list_p -> ll_size == 0)
@@ -296,8 +296,8 @@ void LinkedListRemove (LinkedList * const list_p, ListNode * const node_p)
     }
   else
     {
-      ListNode *prev_p = node_p -> ln_prev_p;
-      ListNode *next_p = node_p -> ln_next_p;
+      ListItem *prev_p = node_p -> ln_prev_p;
+      ListItem *next_p = node_p -> ln_next_p;
 
       prev_p -> ln_next_p = next_p;
       next_p -> ln_prev_p = prev_p;
@@ -315,12 +315,12 @@ bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const v
 
 	if (num_nodes > 1)
 		{
-			ListNode **node_index_pp = (ListNode **) AllocMemoryArray (num_nodes, sizeof (ListNode *));
+			ListItem **node_index_pp = (ListItem **) AllocMemoryArray (num_nodes, sizeof (ListItem *));
 
 			if (node_index_pp)
         {
-					ListNode **index_pp = node_index_pp;
-					ListNode *node_p = list_p -> ll_head_p;
+					ListItem **index_pp = node_index_pp;
+					ListItem *node_p = list_p -> ll_head_p;
 					uint32 i;
 
 					/* Cache the nodes... */
@@ -331,7 +331,7 @@ bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const v
 						}
 
           /* ... sort the cached nodes... */
-          qsort (node_index_pp, num_nodes, sizeof (ListNode *), compare_nodes_fn);
+          qsort (node_index_pp, num_nodes, sizeof (ListItem *), compare_nodes_fn);
 
           /* ... and then reinsert them into the LinkedList in sorted order */
 					list_p -> ll_head_p = NULL;
@@ -356,12 +356,12 @@ bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const v
 	return true;
 }
 
-void LinkedListPrioritisedInsert (LinkedList * const list_p, ListNode * const node_to_insert_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p))
+void LinkedListPrioritisedInsert (LinkedList * const list_p, ListItem * const node_to_insert_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p))
 {
 	if (list_p -> ll_size > 0)
 		{
 			int index;
-			ListNode *node_p = LinkedListBinarySearch (list_p, node_to_insert_p, compare_nodes_fn, &index);
+			ListItem *node_p = LinkedListBinarySearch (list_p, node_to_insert_p, compare_nodes_fn, &index);
 
 			/* node_to_insert_p is not on our list */
 			if (index < 0)
@@ -417,9 +417,9 @@ void LinkedListPrioritisedInsert (LinkedList * const list_p, ListNode * const no
 }
 
 
-ListNode *SearchUnsortedLinkedList (const LinkedList * const list_p, const ListNode * const node_to_search_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p)
+ListItem *SearchUnsortedLinkedList (const LinkedList * const list_p, const ListItem * const node_to_search_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p)
 {
-	ListNode *node_p = list_p -> ll_head_p;
+	ListItem *node_p = list_p -> ll_head_p;
 
 	while (node_p)
 		{
@@ -437,9 +437,9 @@ ListNode *SearchUnsortedLinkedList (const LinkedList * const list_p, const ListN
 }
 
 
-ListNode *NewLinkedListBinarySearch (const LinkedList * const list_p, const ListNode * const node_to_search_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p)
+ListItem *NewLinkedListBinarySearch (const LinkedList * const list_p, const ListItem * const node_to_search_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p)
 {
-	ListNode *node_p = list_p -> ll_head_p;
+	ListItem *node_p = list_p -> ll_head_p;
   int low = 0;
 	int high = (int) ((list_p -> ll_size) - 1);
 	int i;
@@ -478,9 +478,9 @@ ListNode *NewLinkedListBinarySearch (const LinkedList * const list_p, const List
 }
 
 
-ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNode * const node_to_search_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p)
+ListItem *LinkedListBinarySearch (const LinkedList * const list_p, const ListItem * const node_to_search_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p)
 {
-	ListNode *node_p = list_p -> ll_head_p;
+	ListItem *node_p = list_p -> ll_head_p;
 	int low = 0;
 	int high = ((int) (list_p -> ll_size)) - 1;
 	int middle = 0;
@@ -577,8 +577,8 @@ ListNode *LinkedListBinarySearch (const LinkedList * const list_p, const ListNod
 
 void MoveListContents (LinkedList * const src_list_p, LinkedList * const dest_list_p)
 {
-	ListNode *src_node_p = src_list_p -> ll_head_p;
-	ListNode *dest_node_p = dest_list_p -> ll_tail_p;
+	ListItem *src_node_p = src_list_p -> ll_head_p;
+	ListItem *dest_node_p = dest_list_p -> ll_tail_p;
 
 	/* join the list contents */
 	dest_node_p -> ln_next_p = src_node_p;
@@ -609,7 +609,7 @@ LinkedList *SplitList (LinkedList * const list_p, const uint32 split_list_length
 	#if LINKED_LIST_DEBUG >= STM_LEVEL_FINEST
 		{
 			uint32 i = 0;
-			ListNode *node_p = list_p -> ll_head_p;
+			ListItem *node_p = list_p -> ll_head_p;
 
 			while (node_p)
 				{
@@ -628,8 +628,8 @@ LinkedList *SplitList (LinkedList * const list_p, const uint32 split_list_length
 			if (split_list_p)
 				{
 					uint32 i = split_list_length - 1;
-					ListNode *split_tail_p = list_p -> ll_head_p;
-					ListNode *node_p = NULL;
+					ListItem *split_tail_p = list_p -> ll_head_p;
+					ListItem *node_p = NULL;
 
 					while (i > 0)
 						{

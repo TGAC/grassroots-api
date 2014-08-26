@@ -52,7 +52,7 @@ StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG
 }
 
 
-void FreeStringListNode (ListNode * const node_p)
+void FreeStringListNode (ListItem * const node_p)
 {
 	StringListNode * const str_node_p = (StringListNode * const) node_p;
 
@@ -87,7 +87,7 @@ LinkedList *CopyStringLinkedList (const LinkedList * const src_p)
 					
 					if (dest_node_p)
 						{
-							LinkedListAddTail (dest_p, (ListNode * const) dest_node_p);
+							LinkedListAddTail (dest_p, (ListItem * const) dest_node_p);
 							src_node_p = (StringListNode *) (src_node_p -> sln_node.ln_next_p);
 						}
 					else

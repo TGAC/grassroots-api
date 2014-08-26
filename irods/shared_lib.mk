@@ -1,8 +1,12 @@
-export MY_CFLAG=-fPIC
+export MY_CFLAG=-fPIC -g -pg
 
-include Makefile
+IRODS = $(shell echo "$$IRODS_HOME")
 
 .PHONY:	shared
 
+
+include Makefile
+
 shared: clean all
 	gcc --shared  -o libirods.so $(OBJS) 
+	

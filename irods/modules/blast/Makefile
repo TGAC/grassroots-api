@@ -39,7 +39,7 @@ BLAST_LIBS_DIR = /usr/local/lib
 #
 CUSTOM_LIBS_DIRS = -L$(MS_LIB_DIR)
 CUSTOM_LIBS = -ltgac_irods_util
-CUSTOM_INCLUDES_DIR = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util/include
+CUSTOM_INCLUDES_DIR = /usr/users/ga002/tyrrells/Projects/wheatis/util/include
 
 
 

@@ -55,7 +55,7 @@ typedef struct Plugin
 typedef struct PluginListNode
 {
 	/** The ListNode. */
-	ListNode pln_node;
+	ListItem pln_node;
 
 	/** The plugin. */
 	Plugin *pln_plugin_p;
@@ -128,7 +128,7 @@ WHEATIS_UTIL_LOCAL PluginListNode *AllocatePluginListNode (Plugin * const plugin
  *
  * @param node_p The ListNode to free.
  */
-WHEATIS_UTIL_LOCAL void FreePluginListNode (ListNode * const node_p);
+WHEATIS_UTIL_LOCAL void FreePluginListNode (ListItem * const node_p);
 
 
 

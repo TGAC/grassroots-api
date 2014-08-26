@@ -65,7 +65,7 @@ void ClearBasePlugin (Plugin * const plugin_p)
 }
 
 
-void FreePluginListNode (ListNode * const node_p)
+void FreePluginListNode (ListItem * const node_p)
 {
 	PluginListNode *plugin_node_p = (PluginListNode *) node_p;
 	Plugin *plugin_p = plugin_node_p -> pln_plugin_p;
@@ -76,7 +76,7 @@ void FreePluginListNode (ListNode * const node_p)
 }
 
 
-PluginListNode *AllocatePluginListNode (Plugin * const plugin_p)
+PluginListNode *AllocatePluginListItem (Plugin * const plugin_p)
 {
 	PluginListNode *node_p = (PluginListNode *) AllocMemory (sizeof (PluginListNode));
 

@@ -54,7 +54,7 @@ ServiceNode *AllocateServiceNode (Service *service_p)
 }
 
 
-void FreeServiceNode (ListNode * const node_p)
+void FreeServiceNode (ListItem * const node_p)
 {
 	ServiceNode *service_node_p = (ServiceNode *) node_p;
 
@@ -108,7 +108,7 @@ LinkedList *LoadMatchingServices (const char * const path_s, const char * const 
 																			
 																			if (node_p)
 																				{
-																					LinkedListAddTail (services_list_p, (ListNode *) node_p);
+																					LinkedListAddTail (services_list_p, (ListItem *) node_p);
 																					using_service_flag = true;
 																				}
 																			else

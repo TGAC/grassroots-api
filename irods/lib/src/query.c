@@ -1,42 +1,49 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "specificQuery.h"
+#include "rodsGenQuery.h"
+#include "rcMisc.h"
 
 #include "query.h"
 
 
 genQueryOut_t *ExecuteQuery (rcComm_t *connection_p, char *query_s)
 {
-	specificQueryInp_t in_query;
+	genQueryInp_t in_query;
 	genQueryOut_t *out_query_p = NULL;
 	int status;
 
 	/* Build the query */
-	memset (&in_query, 0, sizeof (specificQueryInp_t));
+	memset (&in_query, 0, sizeof (genQueryInp_t));
 	in_query.maxRows = MAX_SQL_ROWS;
 	in_query.continueInx = 0;
-	in_query.sql = query_s;
 
-	/* Run the query */
-	status = rcSpecificQuery (connection_p, &in_query, &out_query_p);
-
-	/* Did we run it successfully? */
-	if (status == 0)
+	/* Fill in the iRODS query structure */
+	status = fillGenQueryInpFromStrCond (query_s, &in_query);
+	
+	if (status >= 0)
 		{
+			/* Run the query */
+			status = rcGenQuery (connection_p, &in_query, &out_query_p);
+
+			/* Did we run it successfully? */
+			if (status == 0)
+				{
+					
+				}
+			else if (status == CAT_NO_ROWS_FOUND) 
+				{
+					printf ("No rows found\n"); 
+				}
+			else if (status < 0 ) 
+				{
+					printf ("error status: %d\n", status);
+				}
+			else
+				{
+					//printBasicGenQueryOut (out_query_p, "result: \"%s\" \"%s\"\n");
+				}
 			
-		}
-	else if (status == CAT_NO_ROWS_FOUND) 
-		{
-			printf ("No rows found\n"); 
-		}
-	else if (status < 0 ) 
-		{
-			printf ("error status: %d\n", status);
-		}
-	else
-		{
-			//printBasicGenQueryOut (out_query_p, "result: \"%s\" \"%s\"\n");
 		}
 	
 	return out_query_p;

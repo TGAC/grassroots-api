@@ -10,9 +10,9 @@
 #include "typedefs.h"
 
 
-static LinkedList *ParseStringToLinkedList (const char * const format_p, const char * const delimiters_p, LinkedList *(*allocate_list_fn) (void), ListNode *(*allocate_node_fn) (const char *value_s), const bool treat_whitespace_as_delimiter_flag);
+static LinkedList *ParseStringToLinkedList (const char * const format_p, const char * const delimiters_p, LinkedList *(*allocate_list_fn) (void), ListItem *(*allocate_node_fn) (const char *value_s), const bool treat_whitespace_as_delimiter_flag);
 
-static ListNode *GetStringListNode (const char *value_s);
+static ListItem *GetStringListNode (const char *value_s);
 
 
 static const char *ScrollPastSpecificCharacters (const char **value_pp, const char * const delimiters_s, const bool ignore_whitespace_flag, const bool state_flag);
@@ -348,7 +348,7 @@ static const char *ScrollPastSpecificCharacters (const char **value_pp, const ch
  * @return A pointer to a LinkedList where each node
  * refers to a token or NULL upon error.
  */
-static LinkedList *ParseStringToLinkedList (const char * const format_p, const char * const delimiters_p, LinkedList *(*allocate_list_fn) (void), ListNode *(*allocate_node_fn) (const char *value_s), const bool treat_whitespace_as_delimiter_flag)
+static LinkedList *ParseStringToLinkedList (const char * const format_p, const char * const delimiters_p, LinkedList *(*allocate_list_fn) (void), ListItem *(*allocate_node_fn) (const char *value_s), const bool treat_whitespace_as_delimiter_flag)
 {
 	LinkedList *tokens_list_p = NULL;
 	const char *index_p = format_p;
@@ -371,7 +371,7 @@ static LinkedList *ParseStringToLinkedList (const char * const format_p, const c
 
 							if (value_s)
 								{
-									ListNode *node_p = allocate_node_fn (value_s);
+									ListItem *node_p = allocate_node_fn (value_s);
 
 									if (node_p)
 										{
@@ -421,9 +421,9 @@ static LinkedList *ParseStringToLinkedList (const char * const format_p, const c
 }
 
 
-static ListNode *GetStringListNode (const char *value_s)
+static ListItem *GetStringListNode (const char *value_s)
 {
-	ListNode *node_p = (ListNode *) AllocateStringListNode (value_s, MF_DEEP_COPY);
+	ListItem *node_p = (ListItem *) AllocateStringListNode (value_s, MF_DEEP_COPY);
 
 	return node_p;
 }
