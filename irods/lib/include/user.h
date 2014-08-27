@@ -7,6 +7,14 @@
 #include "linked_list.h"
 #include "typedefs.h"
 
+
+typedef struct KeyValue
+{
+	int64 kv_key;
+	char *kv_value_s;
+} KeyValue;
+
+
 #ifdef __cplusplus
 extern "C" 
 {

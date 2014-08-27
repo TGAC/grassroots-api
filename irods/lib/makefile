@@ -70,5 +70,5 @@ include ../../generic_makefiles/shared_library.makefile
 all: lib 
 
 
-test:
+test: all
 		$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -L. -lirods -lm -lpthread $(INCLUDES)  test.c -o test
