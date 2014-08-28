@@ -1,12 +1,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "rodsGenQuery.h"
+#include "rodsGenQueryNames.h"
 #include "rcMisc.h"
 
 #include "query.h"
 
 #include "string_utils.h"
+
+
+
+static const columnName_t *GetColumnById (const int id);
 
 
 genQueryOut_t *ExecuteQuery (rcComm_t *connection_p, genQueryInp_t * const in_query_p)
@@ -182,7 +186,7 @@ bool SetQuerySelectClauses (genQueryInp_t *in_query_p, int num_columns, const in
 }
 
 
-bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss, const bool *quote_clause_p)
+bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss)
 {
 	bool success_flag = false;
 	
@@ -205,29 +209,20 @@ bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int
 					/* we just want default selections, so set all of the values to 1 */
 					while (num_columns > 0)
 						{
-							char *clause_s;
+							char *clause_s = NULL;							
+							char *temp_s = ConcatenateStrings ("= \'", *src_pp);	
 							
-							if (*quote_clause_p)
+							if (temp_s)
 								{
-									char *temp_s = ConcatenateStrings ("= \'", *src_pp);	
-									
-									if (temp_s)
-										{
-											clause_s = ConcatenateStrings (temp_s, "\'");										
-											FreeCopiedString (temp_s);
-										}											
-								}
-							else
-								{
-									clause_s = ConcatenateStrings ("= ", *src_pp);										
-								}
+									clause_s = ConcatenateStrings (temp_s, "\'");										
+									FreeCopiedString (temp_s);
+								}											
 							
 							if (clause_s)	
 								{
 									*dest_pp = clause_s;
 									
 									++ dest_pp;
-									++ quote_clause_p;
 									-- num_columns;											
 								}
 							else
@@ -279,7 +274,7 @@ int PrintQueryOutput (FILE *out_f, const genQueryOut_t *query_result_p)
 					
 					result_s += i * (sql_result_p -> len);
 
-					if (fprintf (out_f, "j = %d -> %s (%d)\n", j, result_s, sql_result_p -> len) < 0)
+					if (fprintf (out_f, "j = %d (%d) -> %s (%d)\n", j, sql_result_p -> attriInx, result_s, sql_result_p -> len) < 0)
 						{
 							return -1;
 						}
@@ -287,6 +282,207 @@ int PrintQueryOutput (FILE *out_f, const genQueryOut_t *query_result_p)
 		}
 
 	return 0;
+}
+
+
+/*
+ * 
+ * 	const columnName_t *qr_column_p;
+	char **qr_values_pp;
+	int qr_num_values;
+	*/
+
+QueryResult *AllocateQueryResult (int num_rows, const columnName_t *column_p)
+{
+	char **values_pp = (char **) calloc (num_rows, sizeof (char *));
+	
+	if (values_pp)
+		{
+			QueryResult *result_p = (QueryResult *) malloc (sizeof (QueryResult));
+			
+			if (result_p)
+				{
+					result_p -> qr_num_values = num_rows;
+					result_p -> qr_column_p = column_p;
+					result_p -> qr_values_pp = values_pp;
+					
+					return result_p;
+				}
+				
+			free (values_pp);
+		}
+
+	return NULL;
+}
+
+
+bool InitQueryResult (QueryResult *result_p, int num_rows, const columnName_t *column_p)
+{
+	bool success_flag = false;
+	char **values_pp = (char **) calloc (num_rows, sizeof (char *));
+	
+	if (values_pp)
+		{
+			result_p -> qr_num_values = num_rows;
+			result_p -> qr_column_p = column_p;
+			result_p -> qr_values_pp = values_pp;
+
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+bool SetQueryResultValue (QueryResult *result_p, int index, const char *value_s)
+{
+	bool success_flag = false;
+	char *copied_value_s = strdup (value_s);
+	
+	if (copied_value_s)
+		{
+			char **value_pp = (result_p -> qr_values_pp) + index;
+			
+			if (*value_pp)
+				{
+					free (*value_pp);
+				}			
+				
+			*value_pp = copied_value_s;
+		
+			success_flag = true;
+		}
+
+	
+	return success_flag;
+}
+
+
+const columnName_t *GetColumnById (const int id)
+{
+	const columnName_t *column_p = columnNames;
+  int i;
+  
+  for (i = NumOfColumnNames; i > 0; -- i, ++ column_p) 
+		{
+			if (column_p -> columnId == id)
+				{
+					return column_p;
+				}
+		}
+
+#ifdef EXTENDED_ICAT
+	column_p = extColumnNames;
+
+  for (i = NumOfExtColumnNames; i > 0; -- i, ++ column_p) 
+		{
+			if (column_p -> columnId == id)
+				{
+					return column_p;
+				}
+		}
+#endif
+
+  return NULL;
+}
+
+
+
+QueryResults *GenerateQueryResults (const genQueryOut_t *query_result_p)
+{
+	QueryResults *results_p = (QueryResults *) malloc (sizeof (QueryResults));
+	
+	if (results_p)
+		{
+			const int num_rows = query_result_p -> rowCnt;
+			const int num_columns = query_result_p -> attriCnt;
+			
+			if (num_rows > 0)
+				{
+					QueryResult *value_p = (QueryResult *) malloc (num_columns * sizeof (QueryResult));
+					
+					if (value_p)
+						{
+							QueryResults *results_p = NULL;
+							const sqlResult_t *sql_result_p = query_result_p -> sqlResult;
+							bool success_flag = true;
+							int i;
+							
+							results_p -> qr_num_results = num_rows;
+							results_p -> qr_values_p = value_p;
+							
+							/* Initialise the query results from the 1st row */							
+							for (i = 0; i < num_columns; ++ i, ++ value_p, ++ sql_result_p)
+								{
+									const columnName_t *column_p = GetColumnById (sql_result_p -> attriInx);
+									
+									if (column_p)
+										{
+											if (InitQueryResult (value_p, num_rows, column_p))
+												{
+													char *result_s = sql_result_p -> value;
+																										
+													value_p = (results_p -> qr_values_p) + i;
+
+													if (!SetQueryResultValue (value_p, 0, result_s))
+														{
+															success_flag = false;
+														}
+												}		
+											else
+												{
+													success_flag = false;
+												}
+										}
+									else
+										{
+											success_flag = false;
+										}
+										
+								}		/* for (i = l; i > 0; -- i, ++ value_p) */
+														
+							
+							/* Now fill in the remaining values */
+							if (success_flag)
+								{
+									for (i = 1; i < num_rows; ++ i, ++ sql_result_p)
+										{
+											int j;
+											
+											for (j = 0; j < num_columns; ++ j) 
+												{
+													char *result_s = sql_result_p -> value;
+													
+													result_s += i * (sql_result_p -> len);
+
+													value_p = (results_p -> qr_values_p) + j;
+
+
+													if (!SetQueryResultValue (value_p, i, result_s))
+														{
+															success_flag = false;
+														}
+												}																					
+											
+										}		/* for (i = num_rows; i > 1; -- i, ++ sql_result_p) */
+										
+								}		/* if (success_flag) */
+							
+							
+							if (!success_flag)
+								{
+									free (value_p);
+								}
+						}		/* if (value_p) */
+					
+				}		/* if (num_rows > 0) */
+			
+						
+			
+		}		/* if (results_p) */
+		
+
+	return NULL;
 }
 
 

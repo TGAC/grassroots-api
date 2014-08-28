@@ -55,7 +55,7 @@ static void TestExecuteQueryString (rcComm_t *connection_p)
 			* (query_args_pp + 1) = "USER_NAME";
 			* (query_args_pp + 2) = " = '";
 			* (query_args_pp + 3) = "tyrrells";
-			* (query_args_pp + 4) = "' AND USER_ID = 10039";
+			* (query_args_pp + 4) = "' AND USER_ID = '10039'";
 			* (query_args_pp + 5) = NULL;
 			
 			full_query_s = BuildQueryString (query_args_pp);

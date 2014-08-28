@@ -8,6 +8,31 @@
 #include "irods_util_library.h"
 #include "linked_list.h"
 
+#include "parameter.h"
+
+
+typedef struct QueryResult
+{
+	/* 
+	 * Due to the columnNames array being in the same file as the
+	 * definition of columnName_t (rodsGenQueryNames.h) we get 
+	 * multiple definition errors if we try to set qr_column_p to be 
+	 * columnName_t, so we need to have it as void in the definition.
+	 * If rodsGenQueryNames.h gets refactored or if the struct that
+	 * columnName_t is a typedef of ceases to be anonymous, then we can
+	 * change this.
+	 */
+	const void *qr_column_p;
+	char **qr_values_pp;
+	int qr_num_values;
+} QueryResult;
+
+
+typedef struct QueryResults
+{
+	int qr_num_results;
+	QueryResult *qr_values_p;
+} QueryResults;
 
 
 
@@ -38,7 +63,7 @@ IRODS_UTIL_API void FreeBuiltQueryString (char *query_s);
 IRODS_UTIL_API bool SetQuerySelectClauses (genQueryInp_t *in_query_p, int num_columns, const int * const columns_p, const int * const values_p);
 
 
-IRODS_UTIL_API bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss, const bool *quote_clause_p);
+IRODS_UTIL_API bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss);
 
 
 IRODS_UTIL_API int PrintQueryOutput (FILE *out_f, const genQueryOut_t *query_result_p);

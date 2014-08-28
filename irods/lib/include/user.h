@@ -6,13 +6,7 @@
 
 #include "linked_list.h"
 #include "typedefs.h"
-
-
-typedef struct KeyValue
-{
-	int64 kv_key;
-	char *kv_value_s;
-} KeyValue;
+#include "query.h"
 
 
 #ifdef __cplusplus
@@ -27,19 +21,19 @@ IRODS_UTIL_API const char *GetUsernameForId (const int64 user_id);
 IRODS_UTIL_API bool FindIdForUsername (const char * const username_s);
 
 
-IRODS_UTIL_API LinkedList *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s);
+IRODS_UTIL_API QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s);
 
 
-IRODS_UTIL_API LinkedList *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
+IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
 
 
-IRODS_UTIL_API LinkedList *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
+IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
 
 
-IRODS_UTIL_API LinkedList *GetAllZoneNames (rcComm_t *connection_p);
+IRODS_UTIL_API QueryResults *GetAllZoneNames (rcComm_t *connection_p);
 
 
-IRODS_UTIL_API LinkedList *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
+IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
 
 
 

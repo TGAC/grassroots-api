@@ -1,4 +1,4 @@
-#include "rodsGenQuery.h"
+//#include "rodsGenQuery.h"
 
 #include "user.h"
 #include "query.h"
@@ -31,9 +31,9 @@ bool FindIdForUsername (rcComm_t *connection_p, const char * const username_s, i
 }
 
 
-LinkedList *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s)
+QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s)
 {
-	LinkedList *result_p = NULL;
+	QueryResults *result_p = NULL;
 	genQueryInp_t in_query;
 	const int select_column_ids [] = { COL_COLL_ID, COL_COLL_NAME };
 
@@ -43,14 +43,15 @@ LinkedList *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * c
 		{
 			const int where_column_ids [] = { COL_USER_NAME };
 			const char *where_columns_p [] = { username_s };
-			const bool where_quote_clauses [] = { true };
 			
-			if (SetQueryWhereClauses (&in_query, 1, where_column_ids, where_columns_p, where_quote_clauses))
+			if (SetQueryWhereClauses (&in_query, 1, where_column_ids, where_columns_p))
 				{
 					genQueryOut_t *output_p = ExecuteQuery (connection_p, &in_query);
 					
 					if (output_p)
 						{
+							
+							
 							PrintQueryOutput (stdout, output_p);
 						}		/* if (output_p) */
 					
@@ -66,9 +67,9 @@ LinkedList *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * c
 
 
 
-LinkedList *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s)
+QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s)
 {
-	LinkedList *result_p = NULL;
+	QueryResults *result_p = NULL;
 	
 	
 	return result_p;	
@@ -76,9 +77,9 @@ LinkedList *GetAllDataForUsername (rcComm_t *connection_p, const char * const us
 
 
 
-LinkedList *GetAllZoneNames (rcComm_t *connection_p)
+QueryResults *GetAllZoneNames (rcComm_t *connection_p)
 {
-	LinkedList *result_p = NULL;
+	QueryResults *result_p = NULL;
 	genQueryInp_t in_query;
 	
 	InitQuery (&in_query);
