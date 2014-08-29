@@ -50,8 +50,15 @@ QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char *
 					
 					if (output_p)
 						{
+							QueryResults *results_p = GenerateQueryResults (output_p);
 							
+							if (results_p)
+								{
+									printf ("\nPrintQueryResults : -----------------------\n\n");
+									PrintQueryResults (stdout, results_p);
+								}
 							
+							printf ("\nPrintQueryOutput : -----------------------\n\n");
 							PrintQueryOutput (stdout, output_p);
 						}		/* if (output_p) */
 					

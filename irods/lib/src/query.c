@@ -388,6 +388,85 @@ const columnName_t *GetColumnById (const int id)
 
 
 
+void PrintQueryResults (FILE *out_f, const QueryResults * const result_p)
+{
+	/*
+	int qr_num_results;
+	QueryResult *qr_values_p;
+	*/
+	
+	int i;
+	QueryResult *qr_p = result_p -> qr_values_p;
+	
+	for (i = 0; i < result_p -> qr_num_results; ++ i, ++ qr_p)
+		{
+			fprintf (out_f, "%d :=\n", i);
+			PrintQueryResult (out_f, qr_p);
+		}
+		
+}
+
+
+void PrintQueryResult (FILE *out_f, const QueryResult * const result_p)
+{
+	/*
+	 * 	const void *qr_column_p;
+	char **qr_values_pp;
+	int qr_num_values;
+	*/
+	
+	const columnName_t *col_p = (const columnName_t *) (result_p -> qr_column_p);
+	int i;
+	char **values_pp = result_p -> qr_values_pp;
+	
+	fprintf (out_f, "col: %d - \"%s\"\n", col_p -> columnId, col_p -> columnName);
+	
+	
+	for (i = 0; i < result_p -> qr_num_values; ++ i, ++ values_pp)
+		{
+			fprintf (out_f, "%d: \"%s\"\n", i, *values_pp);
+		}
+		
+}
+
+
+bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows)
+{
+	bool success_flag = false;
+	const columnName_t *column_p = GetColumnById (sql_result_p -> attriInx);
+	
+	if (column_p)
+		{
+			if (InitQueryResult (query_result_p, num_rows, column_p))
+				{
+					char *result_s = sql_result_p -> value;
+					const int len = sql_result_p -> len;
+					int i;
+					
+					success_flag = true;
+
+					for (i = 0; i < num_rows; ++ i, result_s += len) 
+						{
+							if (!SetQueryResultValue (query_result_p, i, result_s))
+								{
+									success_flag = false;
+									i = num_rows;		/* force exit from loop */
+								}
+						}						
+				}		
+			else
+				{
+				}
+		}
+	else
+		{
+		}
+	
+
+	return success_flag;
+} 
+
+
 QueryResults *GenerateQueryResults (const genQueryOut_t *query_result_p)
 {
 	QueryResults *results_p = (QueryResults *) malloc (sizeof (QueryResults));
@@ -403,86 +482,72 @@ QueryResults *GenerateQueryResults (const genQueryOut_t *query_result_p)
 					
 					if (value_p)
 						{
-							QueryResults *results_p = NULL;
 							const sqlResult_t *sql_result_p = query_result_p -> sqlResult;
 							bool success_flag = true;
-							int i;
+							int i = num_columns;
 							
-							results_p -> qr_num_results = num_rows;
+							results_p -> qr_num_results = num_columns;
 							results_p -> qr_values_p = value_p;
 							
-							/* Initialise the query results from the 1st row */							
-							for (i = 0; i < num_columns; ++ i, ++ value_p, ++ sql_result_p)
+							while ((i > 0) && success_flag)
 								{
-									const columnName_t *column_p = GetColumnById (sql_result_p -> attriInx);
-									
-									if (column_p)
+									if (FillInQueryResult (value_p, sql_result_p, num_rows))
 										{
-											if (InitQueryResult (value_p, num_rows, column_p))
-												{
-													char *result_s = sql_result_p -> value;
-																										
-													value_p = (results_p -> qr_values_p) + i;
-
-													if (!SetQueryResultValue (value_p, 0, result_s))
-														{
-															success_flag = false;
-														}
-												}		
-											else
-												{
-													success_flag = false;
-												}
+											++ sql_result_p;
+											++ value_p;
+											
+											-- i;
 										}
 									else
 										{
 											success_flag = false;
-										}
-										
-								}		/* for (i = l; i > 0; -- i, ++ value_p) */
-														
+										}									
+								}
 							
-							/* Now fill in the remaining values */
+									
 							if (success_flag)
 								{
-									for (i = 1; i < num_rows; ++ i, ++ sql_result_p)
-										{
-											int j;
-											
-											for (j = 0; j < num_columns; ++ j) 
-												{
-													char *result_s = sql_result_p -> value;
-													
-													result_s += i * (sql_result_p -> len);
-
-													value_p = (results_p -> qr_values_p) + j;
-
-
-													if (!SetQueryResultValue (value_p, i, result_s))
-														{
-															success_flag = false;
-														}
-												}																					
-											
-										}		/* for (i = num_rows; i > 1; -- i, ++ sql_result_p) */
-										
-								}		/* if (success_flag) */
-							
-							
-							if (!success_flag)
-								{
-									free (value_p);
+									return results_p;
 								}
 						}		/* if (value_p) */
 					
 				}		/* if (num_rows > 0) */
-			
+					
 						
-			
+			FreeQueryResults (results_p);
 		}		/* if (results_p) */
 		
 
 	return NULL;
 }
 
+
+void FreeQueryResults (QueryResults *results_p)
+{
+	int i = results_p -> qr_num_results;
+	QueryResult *qr_p = results_p -> qr_values_p;
+
+	for ( ; i > 0; -- i, ++ qr_p)
+		{
+			ClearQueryResult (qr_p);
+		}
+ 	
+ 	free (results_p -> qr_values_p);
+ 	free (results_p);
+}
+
+
+void ClearQueryResult (QueryResult *result_p)
+{
+	int i = result_p -> qr_num_values;
+	char ** value_pp = result_p -> qr_values_pp;
+	
+	for ( ; i > 0; -- i, ++ value_pp)
+		{
+			if (*value_pp)
+				{
+					free (*value_pp);
+				}
+		}
+}
 

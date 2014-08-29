@@ -69,6 +69,24 @@ IRODS_UTIL_API bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_col
 IRODS_UTIL_API int PrintQueryOutput (FILE *out_f, const genQueryOut_t *query_result_p);
 
 
+IRODS_UTIL_LOCAL void PrintQueryResults (FILE *out_f, const QueryResults * const result_p);
+
+
+IRODS_UTIL_LOCAL void PrintQueryResult (FILE *out_f, const QueryResult * const result_p);
+
+
+IRODS_UTIL_LOCAL QueryResults *GenerateQueryResults (const genQueryOut_t *results_p);
+
+
+IRODS_UTIL_LOCAL void FreeQueryResults (QueryResults *result_p);
+
+
+IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
+
+
+IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
+
+
 #ifdef __cplusplus
 }
 #endif
