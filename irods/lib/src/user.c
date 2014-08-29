@@ -31,35 +31,22 @@ bool FindIdForUsername (rcComm_t *connection_p, const char * const username_s, i
 }
 
 
-QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s)
+QueryResults *RunQuery (rcComm_t *connection_p, const int *select_column_ids_p, const int num_select_columns, const int *where_column_ids_p, const char **where_column_values_pp, const int num_where_columns)
 {
-	QueryResults *result_p = NULL;
+	QueryResults *results_p = NULL;
 	genQueryInp_t in_query;
-	const int select_column_ids [] = { COL_COLL_ID, COL_COLL_NAME };
 
 	InitQuery (&in_query);	
 	
-	if (SetQuerySelectClauses (&in_query, 2, select_column_ids, NULL))
-		{
-			const int where_column_ids [] = { COL_USER_NAME };
-			const char *where_columns_p [] = { username_s };
-			
-			if (SetQueryWhereClauses (&in_query, 1, where_column_ids, where_columns_p))
+	if (SetQuerySelectClauses (&in_query, num_select_columns, select_column_ids_p, NULL))
+		{			
+			if (SetQueryWhereClauses (&in_query, num_where_columns, where_column_ids_p, where_column_values_pp))
 				{
 					genQueryOut_t *output_p = ExecuteQuery (connection_p, &in_query);
 					
 					if (output_p)
 						{
-							QueryResults *results_p = GenerateQueryResults (output_p);
-							
-							if (results_p)
-								{
-									printf ("\nPrintQueryResults : -----------------------\n\n");
-									PrintQueryResults (stdout, results_p);
-								}
-							
-							printf ("\nPrintQueryOutput : -----------------------\n\n");
-							PrintQueryOutput (stdout, output_p);
+							results_p = GenerateQueryResults (output_p);
 						}		/* if (output_p) */
 					
 				}		/* if (SetQueryWhereClauses (&in_query, 1, where_column_ids, where_columns_p, where_quote_clauses)) */	
@@ -68,7 +55,19 @@ QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char *
 	
 	ClearQuery (&in_query);
 	
-	return result_p;
+	return results_p;	
+}
+
+
+
+
+QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s)
+{
+	const int select_column_ids [] = { COL_COLL_ID, COL_COLL_NAME };
+	const int where_column_ids [] = { COL_USER_NAME };
+	const char *where_columns_pp [] = { username_s };
+
+	return RunQuery (connection_p, select_column_ids, 2, where_column_ids, where_columns_pp, 1);
 }
 
 
@@ -76,23 +75,20 @@ QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char *
 
 QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s)
 {
-	QueryResults *result_p = NULL;
-	
-	
-	return result_p;	
+	const int select_column_ids [] = { COL_D_DATA_ID, COL_COLL_ID, COL_DATA_NAME };
+	const int where_column_ids [] = { COL_USER_NAME };
+	const char *where_columns_pp [] = { username_s };
+
+	return RunQuery (connection_p, select_column_ids, 3, where_column_ids, where_columns_pp, 1);
 }
 
 
 
 QueryResults *GetAllZoneNames (rcComm_t *connection_p)
 {
-	QueryResults *result_p = NULL;
-	genQueryInp_t in_query;
-	
-	InitQuery (&in_query);
-	
-	
-	return result_p;
+	const int select_column_ids [] = { COL_ZONE_ID, COL_ZONE_NAME };
+
+	return RunQuery (connection_p, select_column_ids, 2, NULL, NULL, 0);
 }
 
 

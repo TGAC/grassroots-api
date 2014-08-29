@@ -160,7 +160,7 @@ bool SetQuerySelectClauses (genQueryInp_t *in_query_p, int num_columns, const in
 					
 					in_query_p -> selectInp.len = num_columns;					
 					
-					/* fill in the select columns */
+					/* fill in the columns */
 					memcpy (in_query_p -> selectInp.inx, columns_p, num_columns * sizeof (int));
 					
 					/* we just want default selections, so set all of the values to 1 */
@@ -190,67 +190,75 @@ bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int
 {
 	bool success_flag = false;
 	
-	in_query_p -> sqlCondInp.inx = (int *) malloc (num_columns * sizeof (int));
-
-	if (in_query_p -> sqlCondInp.inx)
+	if ((num_columns > 0) && columns_p && clauses_ss)
 		{
-			in_query_p -> sqlCondInp.value = (char **) malloc (num_columns * sizeof (char *));
+			
+			in_query_p -> sqlCondInp.inx = (int *) malloc (num_columns * sizeof (int));
 
-			if (in_query_p -> sqlCondInp.value)
+			if (in_query_p -> sqlCondInp.inx)
 				{
-					char **dest_pp = in_query_p -> sqlCondInp.value;
-					const char **src_pp = clauses_ss;
+					in_query_p -> sqlCondInp.value = (char **) malloc (num_columns * sizeof (char *));
 
-					in_query_p -> sqlCondInp.len = num_columns;
-					
-					/* fill in the select columns */
-					memcpy (in_query_p -> sqlCondInp.inx, columns_p, num_columns * sizeof (int));
-					
-					/* we just want default selections, so set all of the values to 1 */
-					while (num_columns > 0)
+					if (in_query_p -> sqlCondInp.value)
 						{
-							char *clause_s = NULL;							
-							char *temp_s = ConcatenateStrings ("= \'", *src_pp);	
+							char **dest_pp = in_query_p -> sqlCondInp.value;
+							const char **src_pp = clauses_ss;
+
+							in_query_p -> sqlCondInp.len = num_columns;
 							
-							if (temp_s)
-								{
-									clause_s = ConcatenateStrings (temp_s, "\'");										
-									FreeCopiedString (temp_s);
-								}											
+							/* fill in the select columns */
+							memcpy (in_query_p -> sqlCondInp.inx, columns_p, num_columns * sizeof (int));
 							
-							if (clause_s)	
+							/* we just want default selections, so set all of the values to 1 */
+							while (num_columns > 0)
 								{
-									*dest_pp = clause_s;
+									char *clause_s = NULL;							
+									char *temp_s = ConcatenateStrings ("= \'", *src_pp);	
 									
-									++ dest_pp;
-									-- num_columns;											
+									if (temp_s)
+										{
+											clause_s = ConcatenateStrings (temp_s, "\'");										
+											FreeCopiedString (temp_s);
+										}											
+									
+									if (clause_s)	
+										{
+											*dest_pp = clause_s;
+											
+											++ dest_pp;
+											-- num_columns;											
+										}
+									else
+										{
+											while (dest_pp >= in_query_p -> sqlCondInp.value)
+												{
+													FreeCopiedString (*dest_pp);
+													-- dest_pp;
+												}
+										}
+								}
+							
+							if (num_columns == 0)
+								{
+									success_flag = true;
 								}
 							else
 								{
-									while (dest_pp >= in_query_p -> sqlCondInp.value)
-										{
-											FreeCopiedString (*dest_pp);
-											-- dest_pp;
-										}
+									free (in_query_p -> sqlCondInp.value);
+									in_query_p -> sqlCondInp.value = NULL;
 								}
 						}
 					
-					if (num_columns == 0)
+					if (!success_flag)	
 						{
-							success_flag = true;
-						}
-					else
-						{
-							free (in_query_p -> sqlCondInp.value);
-							in_query_p -> sqlCondInp.value = NULL;
+							free (in_query_p -> sqlCondInp.inx);
+							in_query_p -> sqlCondInp.inx = NULL;
 						}
 				}
-			
-			if (!success_flag)	
-				{
-					free (in_query_p -> sqlCondInp.inx);
-					in_query_p -> sqlCondInp.inx = NULL;
-				}
+		}
+	else
+		{
+			success_flag = true;
 		}
 		
 	return success_flag;
@@ -409,12 +417,6 @@ void PrintQueryResults (FILE *out_f, const QueryResults * const result_p)
 
 void PrintQueryResult (FILE *out_f, const QueryResult * const result_p)
 {
-	/*
-	 * 	const void *qr_column_p;
-	char **qr_values_pp;
-	int qr_num_values;
-	*/
-	
 	const columnName_t *col_p = (const columnName_t *) (result_p -> qr_column_p);
 	int i;
 	char **values_pp = result_p -> qr_values_pp;

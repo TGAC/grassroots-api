@@ -8,6 +8,9 @@
 
 static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s);
 
+static void TestGetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
+
+static void TestGetAllZonenames (rcComm_t *connection_p);
 
 static void TestExecuteQueryString (rcComm_t *connection_p);
 
@@ -24,6 +27,12 @@ int main (int argc, char *argv [])
 			printf ("--- TestGetAllCollectionsForUsername ---\n");
 			TestGetAllCollectionsForUsername (connection_p, "tyrrells");
 
+			printf ("--- TestGetAllDataForUsername ---\n");
+			TestGetAllDataForUsername (connection_p, "tyrrells");
+
+			printf ("--- TestGetAllZonenames ---\n");
+			TestGetAllZonenames (connection_p);
+
 			printf ("--- TestExecuteQueryString ---\n");
 			TestExecuteQueryString (connection_p);
 			
@@ -39,7 +48,39 @@ int main (int argc, char *argv [])
 
 static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s)
 {
-	GetAllCollectionsForUsername (connection_p, username_s);
+	QueryResults *results_p = GetAllCollectionsForUsername (connection_p, username_s);
+	
+	if (results_p)
+		{							
+			printf ("\nPrintQueryResults : -----------------------\n\n");
+			PrintQueryResults (stdout, results_p);
+			FreeQueryResults (results_p);
+		}	
+}
+
+
+static void TestGetAllDataForUsername (rcComm_t *connection_p, const char * const username_s)
+{
+	QueryResults *results_p = GetAllDataForUsername (connection_p, username_s);
+	
+	if (results_p)
+		{							
+			printf ("\nPrintQueryResults : -----------------------\n\n");
+			PrintQueryResults (stdout, results_p);
+			FreeQueryResults (results_p);
+		}	
+}
+
+static void TestGetAllZonenames (rcComm_t *connection_p)
+{
+	QueryResults *results_p = GetAllZoneNames (connection_p);
+	
+	if (results_p)
+		{							
+			printf ("\nPrintQueryResults : -----------------------\n\n");
+			PrintQueryResults (stdout, results_p);
+			FreeQueryResults (results_p);
+		}	
 }
 
 

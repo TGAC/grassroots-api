@@ -32,6 +32,8 @@ else
 endif
 
 
+CFLAGS += -ansi
+
 VPATH	= \
 	$(DIR_SRC) \
 	$(DIR_IRODS)/lib/core/src \

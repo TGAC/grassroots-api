@@ -1,6 +1,8 @@
 #ifndef IRODS_UTIL_USER_H
 #define IRODS_UTIL_USER_H
 
+#include <time.h>
+
 #include "irods_util_library.h"
 #include "rcConnect.h"
 
@@ -33,7 +35,7 @@ IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, cons
 IRODS_UTIL_API QueryResults *GetAllZoneNames (rcComm_t *connection_p);
 
 
-IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
+IRODS_UTIL_API QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char * const username_s, const time_t from);
 
 
 
