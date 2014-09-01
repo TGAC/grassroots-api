@@ -186,7 +186,7 @@ bool SetQuerySelectClauses (genQueryInp_t *in_query_p, int num_columns, const in
 }
 
 
-bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss)
+bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss, const char **where_ops_ss)
 {
 	bool success_flag = false;
 	
@@ -203,17 +203,20 @@ bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int
 						{
 							char **dest_pp = in_query_p -> sqlCondInp.value;
 							const char **src_pp = clauses_ss;
-
+							const char **op_pp = where_ops_ss;
+							
 							in_query_p -> sqlCondInp.len = num_columns;
 							
-							/* fill in the select columns */
+							/* fill in the columns */
 							memcpy (in_query_p -> sqlCondInp.inx, columns_p, num_columns * sizeof (int));
 							
-							/* we just want default selections, so set all of the values to 1 */
+							/* add the operators */
 							while (num_columns > 0)
 								{
 									char *clause_s = NULL;							
-									char *temp_s = ConcatenateStrings ("= \'", *src_pp);	
+									const char *op_s = (op_pp && *op_pp) ? *op_pp : "= \'";
+
+									char *temp_s = ConcatenateStrings (op_s, *src_pp);	
 									
 									if (temp_s)
 										{
@@ -226,6 +229,12 @@ bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int
 											*dest_pp = clause_s;
 											
 											++ dest_pp;
+											
+											++ src_pp;
+											if (op_pp)
+												{
+													++ op_pp;
+												}
 											-- num_columns;											
 										}
 									else

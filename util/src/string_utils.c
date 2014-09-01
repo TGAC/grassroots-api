@@ -652,7 +652,37 @@ bool IsStringEmpty (const char *value_s)
 
 
 
-char *ConvertIntegerToString (const int value)
+char *ConvertIntegerToString (const int32 value)
+{
+	char *value_s = NULL;
+	size_t num_digits = 1;
+	
+	if (value < 0)
+		{
+			size_t temp = (size_t) log10 ((double) -value);
+			++ num_digits;
+			
+			num_digits += temp;
+		}
+	else if (value > 0)
+		{
+			num_digits += (size_t) log10 ((double) value);
+		}
+		
+	value_s = (char *) malloc (num_digits + 1);
+	
+	if (value_s)
+		{
+			sprintf (value_s, "%d", value);
+			* (value_s + num_digits) = '\0';
+		}
+
+	return value_s;
+}
+
+
+
+char *ConvertLongToString (const int64 value)
 {
 	char *value_s = NULL;
 	size_t num_digits = 1;

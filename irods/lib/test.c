@@ -14,6 +14,7 @@ static void TestGetAllZonenames (rcComm_t *connection_p);
 
 static void TestExecuteQueryString (rcComm_t *connection_p);
 
+static void TestGetAllModifiedDataForUsername (rcComm_t *connection_p, const char * const username_s, const time_t from , const time_t to);
 
 /*** METHODS ***/
 
@@ -24,17 +25,42 @@ int main (int argc, char *argv [])
 	
 	if (connection_p)
 		{
-			printf ("--- TestGetAllCollectionsForUsername ---\n");
-			TestGetAllCollectionsForUsername (connection_p, "tyrrells");
+			struct tm from;
+			struct tm to;
+			time_t from_time;
+			time_t to_time;
+			
+			/* 00:00:00 01/08/2014 */
+			from.tm_sec = 0;
+			from.tm_min = 0; 
+			from.tm_hour = 0;   /* hours since midnight (0 to 23) */
+			from.tm_mday = 1;   /* day of the month (1 to 31) */
+			from.tm_mon = 9;    /* months since January (0 to 11) */
+			from.tm_year = 114;   /* years since 1900 */
 
-			printf ("--- TestGetAllDataForUsername ---\n");
-			TestGetAllDataForUsername (connection_p, "tyrrells");
+			
+			/* 00:00:00 02/08/2014 */
+			to.tm_sec = 0;
+			to.tm_min = 0; 
+			to.tm_hour = 0;   /* hours since midnight (0 to 23) */
+			to.tm_mday = 2;   /* day of the month (1 to 31) */
+			to.tm_mon = 8;    /* months since January (0 to 11) */
+			to.tm_year = 114;   /* years since 1900 */
+			
+			
+			from_time = mktime (&from);
+			to_time = mktime (&to);
+			
+//			TestGetAllCollectionsForUsername (connection_p, "tyrrells");
 
-			printf ("--- TestGetAllZonenames ---\n");
+
+//			TestGetAllDataForUsername (connection_p, "tyrrells");
+/*
 			TestGetAllZonenames (connection_p);
+*/
+			TestGetAllModifiedDataForUsername (connection_p, "tyrrells", from_time, to_time);
 
-			printf ("--- TestExecuteQueryString ---\n");
-			TestExecuteQueryString (connection_p);
+			//TestExecuteQueryString (connection_p);
 			
 			CloseConnection (connection_p);
 		}		/* if (connection_p) */
@@ -52,7 +78,7 @@ static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char
 	
 	if (results_p)
 		{							
-			printf ("\nPrintQueryResults : -----------------------\n\n");
+			printf ("\nTestGetAllCollectionsForUsername : -----------------------\n\n");
 			PrintQueryResults (stdout, results_p);
 			FreeQueryResults (results_p);
 		}	
@@ -61,11 +87,11 @@ static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char
 
 static void TestGetAllDataForUsername (rcComm_t *connection_p, const char * const username_s)
 {
-	QueryResults *results_p = GetAllDataForUsername (connection_p, username_s);
+	QueryResults *results_p = GetAllDataForUsername (connection_p, username_s, "10039");
 	
 	if (results_p)
 		{							
-			printf ("\nPrintQueryResults : -----------------------\n\n");
+			printf ("\nTestGetAllDataForUsername : -----------------------\n\n");
 			PrintQueryResults (stdout, results_p);
 			FreeQueryResults (results_p);
 		}	
@@ -77,7 +103,20 @@ static void TestGetAllZonenames (rcComm_t *connection_p)
 	
 	if (results_p)
 		{							
-			printf ("\nPrintQueryResults : -----------------------\n\n");
+			printf ("\nTestGetAllZonenames : -----------------------\n\n");
+			PrintQueryResults (stdout, results_p);
+			FreeQueryResults (results_p);
+		}	
+}
+
+
+static void TestGetAllModifiedDataForUsername (rcComm_t *connection_p, const char * const username_s, const time_t from, const time_t to)
+{
+	QueryResults *results_p = GetAllModifiedDataForUsername (connection_p, username_s, from, to);
+	
+	if (results_p)
+		{							
+			printf ("\nTestGetAllModifiedDataForUsername : -----------------------\n\n");
 			PrintQueryResults (stdout, results_p);
 			FreeQueryResults (results_p);
 		}	
