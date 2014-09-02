@@ -30,21 +30,21 @@ int main (int argc, char *argv [])
 			time_t from_time;
 			time_t to_time;
 			
-			/* 00:00:00 01/08/2014 */
+			/* 00:00:00 21/08/2014 */
 			from.tm_sec = 0;
 			from.tm_min = 0; 
 			from.tm_hour = 0;   /* hours since midnight (0 to 23) */
-			from.tm_mday = 1;   /* day of the month (1 to 31) */
-			from.tm_mon = 9;    /* months since January (0 to 11) */
+			from.tm_mday = 21;   /* day of the month (1 to 31) */
+			from.tm_mon = 7;    /* months since January (0 to 11) */
 			from.tm_year = 114;   /* years since 1900 */
 
 			
-			/* 00:00:00 02/08/2014 */
+			/* 00:00:00 22/08/2014 */
 			to.tm_sec = 0;
 			to.tm_min = 0; 
 			to.tm_hour = 0;   /* hours since midnight (0 to 23) */
-			to.tm_mday = 2;   /* day of the month (1 to 31) */
-			to.tm_mon = 8;    /* months since January (0 to 11) */
+			to.tm_mday = 22;   /* day of the month (1 to 31) */
+			to.tm_mon = 7;    /* months since January (0 to 11) */
 			to.tm_year = 114;   /* years since 1900 */
 			
 			

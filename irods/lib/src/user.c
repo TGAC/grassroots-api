@@ -102,25 +102,26 @@ QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char 
 	QueryResults *results_p = NULL;
 	const int select_column_ids [] = { COL_D_DATA_ID, COL_COLL_ID, COL_DATA_NAME, COL_D_MODIFY_TIME };
 	const int where_column_ids [] = { COL_USER_NAME, COL_D_MODIFY_TIME, COL_D_MODIFY_TIME };	
-	char *from_s = ConvertIntegerToString ((int32) from);
 	
-	if (from_s)
+	/* 
+	 * iRods stores timestamps as strings rather than numbers so we need to convert the times 
+	 * to strings. They are stored as strings of length 11. 
+	 */
+	char from_s [12];
+	
+	if (sprintf (from_s, "%011ld\0", from) >= 0)
 		{
-			char *to_s = ConvertIntegerToString ((int32) to);
-			
-			if (to_s)
+			char to_s [12];
+				
+			if (sprintf (to_s, "%011ld\0", to) >= 0)
 				{
 					const char *where_columns_pp [] = { username_s, from_s, to_s };
 					const char *where_ops_pp [] = { " = \'", " >= \'", " <= \'" };
 					
-					results_p = RunQuery (connection_p, select_column_ids, 3, where_column_ids, where_columns_pp, where_ops_pp, 3);
-					
-					free (to_s);
-				}
-						
-			free (from_s);
+					results_p = RunQuery (connection_p, select_column_ids, 3, where_column_ids, where_columns_pp, where_ops_pp, 3);					
+				}		
 		}
-	
+		
 	return results_p;
 }
 
