@@ -1,27 +1,11 @@
-#include <sys/types.h>   // Types used in sys/socket.h and netinet/in.h
-#include <netinet/in.h>  // Internet domain address structures and functions
-#include <sys/socket.h>  // Structures and functions used for socket API
-#include <netdb.h>       // Used for domain/DNS hostname lookup
-#include <unistd.h>
-#include <stdlib.h>
-#include <errno.h>
+#include "server.h"
 
 
 
-int main (int argc, char *argv [])
+char *ProcessMessage (const char * const request_s)
 {
-	int port;
-	int socket_handle;
-
-	/* create socket */
-	if ((socket_handle = ConnectToSocket ()) >= 0)
-		{
-			if (BindToPort (socket_handle, port))
-				{
-					
-				}
-			
-			close (socket_handle);
-		}
+	char *response_s = NULL;
+	
+	
+	return response_s;
 }
-          

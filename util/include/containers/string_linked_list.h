@@ -76,6 +76,29 @@ WHEATIS_UTIL_API LinkedList *AllocateStringLinkedList (void);
  */
 WHEATIS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const src_p);
 
+
+/**
+ * Get a new string that is the concatenation of all of the entries on a 
+ * StringLinkedList.
+ * 
+ * @param src_p The LinkedList of StringListNodes to generate the value from.
+ * @return The newly-allocated string or NULL upon error.
+ */
+WHEATIS_UTIL_API char *GetStringLinkedListAsString (const LinkedList * const src_p);
+
+
+
+/**
+ * Create and add a new StringListNode to the tail of a LinkedList.
+ *
+ * @param list_p The List to add the node to the end of.
+ * @param str_p The string to store in the newly-created StringListNode.
+ * @param mem_flag How the StringListNode should store its string..
+ * @return true upon success, false on error.
+ */
+WHEATIS_UTIL_API bool AddStringToStringLinkedList (LinkedList *list_p, const char * const str_p, const MEM_FLAG mem_flag);
+
+
 #ifdef __cplusplus
 }
 #endif
