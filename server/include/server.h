@@ -4,6 +4,9 @@
 
 #include "wheatis_service_manager_api.h"
 
+
+#define DEFAULT_SERVER_PORT	("4444")
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
