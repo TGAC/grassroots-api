@@ -28,11 +28,25 @@ INCLUDES = \
 	
 SRCS 	= \
 	server.c \
+	standalone_server.c \
 	thpool.c
 
-CPPFLAGS += -DUNIX
+CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS -DSHARED_LIBRARY
 
-LDFLAGS += -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
+LDFLAGS += -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -ljansson
+
+
+ifeq ($(BUILD),release)
+	CFLAGS 	+= -O3 -s
+ 	LDFLAGS += -s
+else
+#	CFLAGS 	+= -g
+	CFLAGS 	+= -g -pg
+	LDFLAGS += -pg
+	CPPFLAGS += -D_DEBUG
+endif
+
+
 
 OBJS = $(patsubst %.c, $(BUILD)/%.o, $(SRCS))
 

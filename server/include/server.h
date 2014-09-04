@@ -1,8 +1,8 @@
 #ifndef WHEATIS_SERVICE_MANAGER_H
-#ifndef WHEATIS_SERVICE_MANAGER_H
+#define WHEATIS_SERVICE_MANAGER_H
 
 
-#include "wheatis_service_manager_api.h"
+#include "wheatis_service_manager_library.h"
 
 
 #define DEFAULT_SERVER_PORT	("4444")

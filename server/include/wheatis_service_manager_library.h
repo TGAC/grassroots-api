@@ -1,8 +1,8 @@
 /**@file wheatis_util_library.h
 */ 
 
-#ifndef WHEATIS_UTIL_LIBRARY_H
-#define WHEATIS_UTIL_LIBRARY_H
+#ifndef WHEATIS_SERVER_LIBRARY_H
+#define WHEATIS_SERVER_LIBRARY_H
 
 #ifdef __cplusplus
 	extern "C" {
@@ -34,6 +34,6 @@
 #endif
 
 
-#endif 	/* #ifndef WHEATIS_UTIL_LIBRARY_H */
+#endif 	/* #ifndef WHEATIS_SERVER_LIBRARY_H */
 
 

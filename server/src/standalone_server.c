@@ -37,8 +37,6 @@ static void InterruptHandler (int sig);
 
 static void RunServer (int server_socket_fd, int num_threads);
 
-static char *ProcessMessage (const char * const request_s);
-
 
 /**********************/
 /******* GLOBALS ******/ 
@@ -61,8 +59,8 @@ int main (int argc, char *argv [])
 	
 	switch (argc)
 		{
-			case 2:
-				i = atoi (argv [1]);
+			case 3:
+				i = atoi (argv [2]);
 				if (i > 0)
 					{
 						num_threads = i;
@@ -70,8 +68,8 @@ int main (int argc, char *argv [])
 					}
 				
 				/* deliberate fall through */
-				case 1:
-					port_s = argv [0];
+				case 2:
+					port_s = argv [1];
 					break;
 				
 				default:

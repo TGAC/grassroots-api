@@ -11,6 +11,7 @@ DIR_WHEATIS_UTIL = ../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
+DIR_WHEATIS_SERVER_INC = ../server/include
 
 
 BUILD		= debug
@@ -21,7 +22,8 @@ VPATH	= \
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
-	-I$(DIR_WHEATIS_UTIL_INC)/containers
+	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_WHEATIS_SERVER_INC)
 	
 SRCS 	= \
 	client.c \
@@ -31,6 +33,17 @@ SRCS 	= \
 CPPFLAGS += -DUNIX
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson
+
+ifeq ($(BUILD),release)
+	CFLAGS 	+= -O3 -s
+ 	LDFLAGS += -s
+else
+#	CFLAGS 	+= -g
+	CFLAGS 	+= -g -pg
+	LDFLAGS += -pg
+	CPPFLAGS += -D_DEBUG
+endif
+
 
 OBJS = $(patsubst %.c, $(BUILD)/%.o, $(SRCS))
 

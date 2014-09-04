@@ -17,43 +17,45 @@
 
 #include "json_tools.h"
 #include "request_tools.h"
-
+#include "server.h"
 
 int main(int argc, char *argv[])
 {
 	int sock_fd;  
 	struct addrinfo *server_p = NULL;
-	const char *hostname_s = NULL;
-	const char *port_s = NULL;
+	const char *hostname_s = "127.0.0.1";
+	const char *port_s = DEFAULT_SERVER_PORT;
 	
-	if (argc == 2)
+	
+	switch (argc)
 		{
-			switch (argc)
-				{
-					case 2:
-						port_s = argv [1];
-							
-					/* deliberate fall through */
-					case 1:
-						hostname_s = argv [0];
-						break;
-					
-					default:
-						break;
-				}
-			
-			sock_fd = ConnectToServer (hostname_s, port_s, &server_p);
-			if (sock_fd >= 0)
-				{
-					
-
-
-					freeaddrinfo (server_p);
-					close (sock_fd);
-				}
-			
+			case 3:
+				port_s = argv [1];
+				
+			/* deliberate fall through */
+			case 2:
+				hostname_s = argv [0];
+				break;
+				
+			default:
+				break;
 		}
-		
+
+	sock_fd = ConnectToServer (hostname_s, port_s, &server_p);
+	if (sock_fd >= 0)
+		{
+			json_t *json_p = GetLoginJson ("foo", "bar");
+
+			if (json_p)
+				{
+					SendJsonRequest (sock_fd, json_p);
+					json_decref (json_p);
+				}
+
+			freeaddrinfo (server_p);
+			close (sock_fd);
+		}
+					
 	return 0;
 }
 
