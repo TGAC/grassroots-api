@@ -5,7 +5,7 @@
 #include "wheatis_service_manager_library.h"
 
 
-#define DEFAULT_SERVER_PORT	("4444")
+#define DEFAULT_SERVER_PORT	("9991")
 
 #ifdef __cplusplus
 	extern "C" {

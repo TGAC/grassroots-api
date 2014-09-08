@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 {
 	int sock_fd;  
 	struct addrinfo *server_p = NULL;
-	const char *hostname_s = "127.0.0.1";
+	const char *hostname_s = "localhost";
 	const char *port_s = DEFAULT_SERVER_PORT;
 	
 	
@@ -54,6 +54,10 @@ int main(int argc, char *argv[])
 
 			freeaddrinfo (server_p);
 			close (sock_fd);
+		}
+	else
+		{
+			printf ("failed to connect to server with code %d\n", sock_fd);
 		}
 					
 	return 0;

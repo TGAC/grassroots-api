@@ -23,7 +23,7 @@ int SendJsonRequest (int socket_fd, json_t *json_p)
  */
 json_t *GetLoginJson (const char * const username_s, const char *password_s)
 {
-	json_t *json_p = json_pack ("s{s{ssss}}", "irods", "credentials", "user", username_s, "password", password_s);
+	json_t *json_p = json_pack ("s[s[ssss]]", "irods", "credentials", "user", username_s, "password", password_s);
 	
 	return json_p;
 }

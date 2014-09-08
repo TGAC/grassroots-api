@@ -56,6 +56,14 @@ all: init $(BUILD)/$(NAME)
 	@echo "building $(OBJS)"
 
 
+run: all
+	$(BUILD)/$(NAME)
+
+
+debug: all
+	gdb $(BUILD)/$(NAME)
+
+
 init:
 	@mkdir -p $(BUILD)
 

@@ -86,9 +86,14 @@ int main (int argc, char *argv [])
 	
 	int socket_fd = BindToPort (port_s, &address_p);
 
+	freeaddrinfo (address_p); // all done with this structure
+
 	if (socket_fd >= 0)
 		{
-			RunServer (socket_fd, num_threads);
+			if (listen (socket_fd, num_threads) != -1)
+				{
+					RunServer (socket_fd, num_threads);					
+				}
 							
 			close (socket_fd);
 		}		/* if (socket_fd >= 0) */
@@ -145,38 +150,48 @@ static int BindToPort (const char *port_s, struct addrinfo **loaded_address_pp)
 	if (i == 0)
 		{
 			/* success */
-			struct addrinfo *res_p = *loaded_address_pp;
+			struct addrinfo *addr_p = *loaded_address_pp;
+			int loop_flag = 1;
 			
-			// make a socket:
-			sock_fd = socket (res_p -> ai_family, res_p -> ai_socktype, res_p -> ai_protocol);
-			
-			if (sock_fd >= 0)
+			/* loop through all the results and connect to the first we can */
+			while (loop_flag)
 				{
-					if (bind (sock_fd, res_p -> ai_addr, res_p -> ai_addrlen) == 0)
+					sock_fd = socket (addr_p -> ai_family, addr_p -> ai_socktype, addr_p -> ai_protocol);
+
+					if (sock_fd != -1)
 						{
-							/* success */
-						}
-					else
-						{
-							if (close (sock_fd) != 0)
+							int yes = 1;
+							
+							if (setsockopt (sock_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof (int)) != -1)
 								{
-									/* error closing socket */
+									if (bind (sock_fd, addr_p -> ai_addr, addr_p -> ai_addrlen) == 0)
+										{
+											/* success */
+											loop_flag = 0;
+										}
+									else
+										{
+											if (close (sock_fd) != 0)
+												{
+													/* error closing socket */
+													
+												}
+												
+											sock_fd = -1;
+										}
 									
 								}
-								
-							sock_fd = -1;
-						}
-				}
-			else
-				{
 					
-				}
+						}
+						
+					if (loop_flag)	
+						{
+							addr_p = addr_p -> ai_next;
+							loop_flag = (addr_p != NULL);
+						}
+				}		/* while (addr_p) */
 		}
-	else
-		{
-			
-		}
-
+		
 	return sock_fd;
 }
 
@@ -196,7 +211,12 @@ static void *HandleConnection (void *socket_desc_p)
 	
 	if (buffer_p)
 		{
-			bool success_flag = true;
+			bool success_flag = false;
+			const char test_s [] = "hello!";
+			
+			int res = send (socket_fd, test_s, strlen (test_s));
+
+			
 			
 			/* Get the message from the client */
 			while (success_flag && ((read_size = recv (socket_fd, client_buffer_s, BUFFER_SIZE - 1, 0)) > 0))
