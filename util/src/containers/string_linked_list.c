@@ -179,6 +179,7 @@ bool AddStringToStringLinkedList (LinkedList *list_p, const char * const str_p, 
 	if (node_p)
 		{
 			LinkedListAddTail (list_p, (ListItem * const) node_p);
+			success_flag = true;
 		}
 		
 	return success_flag;
