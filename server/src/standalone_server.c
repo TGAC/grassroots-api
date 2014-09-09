@@ -23,6 +23,7 @@
 
 
 #include "server.h"
+#include "request_tools.h"
 
 
 /**********************/
@@ -211,15 +212,14 @@ static void *HandleConnection (void *socket_desc_p)
 	
 	if (buffer_p)
 		{
-			bool success_flag = false;
+			bool success_flag = true;
 			const char test_s [] = "hello!";
+			int id = 1;
 			
-			int res = send (socket_fd, test_s, strlen (test_s));
-
-			
+			//int res = AtomicSendString (socket_fd, test_s);			
 			
 			/* Get the message from the client */
-			while (success_flag && ((read_size = recv (socket_fd, client_buffer_s, BUFFER_SIZE - 1, 0)) > 0))
+			while (success_flag && ((read_size = AtomicReceive (socket_fd, id, client_buffer_s, BUFFER_SIZE - 1)) > 0))
 				{
 					//end of string marker
 					* (client_buffer_s + read_size) = '\0';
