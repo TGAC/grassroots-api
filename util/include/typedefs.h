@@ -32,7 +32,7 @@
 	typedef int16_t int16;
 	typedef uint16_t uint16;
 
-
+/*
 	#define UINT32_FMT_IDENT "u"
 	#define INT32_FMT_IDENT "d"
 	#define DOUBLE64_FMT_IDENT "lf"
@@ -40,6 +40,8 @@
 	#define INT8_FMT_IDENT "c"
 	#define UINT16_FMT_IDENT "hu"
 	#define INT16_FMT_IDENT "hd"
+*/
+
 #endif
 	   
    

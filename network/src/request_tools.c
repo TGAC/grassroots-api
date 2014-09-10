@@ -197,7 +197,7 @@ int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
  * @param socket_fd The socket to send to.
  * @param buffer_p The buffer to send the message from.
  * @param num_to_send The length of the buffer to send.
- * @return A positive integer for the number of bytes sent upon success. When negative,
+ * @return A positive integer for the number of bytes received upon success. When negative,
  * it indicates that there was an error with this value being -(num bytes sent) that were
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.

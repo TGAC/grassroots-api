@@ -5,7 +5,7 @@
 #define PLUGIN_H
 
 #include "typedefs.h"
-#include "wheatis_util_library.h"
+#include "wheatis_service_manager_library.h"
 #include "linked_list.h"
 #include "memory_allocations.h"
 
@@ -70,7 +70,7 @@ typedef struct PluginListNode
 /***********************************/
 
 
-WHEATIS_UTIL_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
+WHEATIS_SERVICE_MANAGER_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
 
 
 /**
@@ -82,7 +82,7 @@ WHEATIS_UTIL_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
  * @result A read-only string containing the config
  * string or NULL upon error.
 */
-WHEATIS_UTIL_API const char *GetPluginConfigName (const Plugin * const plugin_p);
+WHEATIS_SERVICE_MANAGER_API const char *GetPluginConfigName (const Plugin * const plugin_p);
 
 
 /***********************************/

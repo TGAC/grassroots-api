@@ -1,7 +1,7 @@
 
 #include "json_tools.h"
 #include "request_tools.h"
-
+#include "server.h"
 
 int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p)
 {
@@ -48,9 +48,9 @@ json_t *GetModifiedFiles (const char * const username_s, const char * const pass
 /*
  * Obviously for a real system we'd be using encryption, tokens and the like
  */
-json_t *GetAvailableServices (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s)
+json_t *GetAvailableServices (const char * const username_s, const char * const password_s)
 {
-	json_t *json_p = json_pack ("s", "services");
+	json_t *json_p = json_pack ("{s:i}", KEY_OPERATIONS, OP_LIST_SERVICES);
 	return json_p;
 }
 

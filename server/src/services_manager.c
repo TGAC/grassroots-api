@@ -2,6 +2,13 @@
 
 #include "services_manager.h"
 #include "service.h"
+#include "plugin.h"
+#include "filesystem_utils.h"
+#include "string_linked_list.h"
+#include "string_utils.h"
+
+
+
 
 json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 {

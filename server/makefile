@@ -1,10 +1,14 @@
-NAME 		= server
+NAME 		= wheatis_server
+EXE_NAME = server
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+
+DIR_INSTALL_ROOT = ../../wheatis_demo
+DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
 
 DIR_WHEATIS_UTIL = ../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
@@ -30,17 +34,42 @@ INCLUDES = \
 	-I$(DIR_CTHREAD_POOL_DEP) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_NETWORK_INC)
 	
 SRCS 	= \
+	parameter.c \
+	parameter_set.c \
+	plugin.c \
 	server.c \
+	service.c \
+	services_manager.c \
+	unix_plugin.c
+
+EXE_SRCS = \
 	standalone_server.c \
 	thpool.c
 
+
+EXE_OBJS = $(patsubst %.c, $(DIR_OBJS)/%.o, $(EXE_SRCS))
+
 CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS -DSHARED_LIBRARY
 
-LDFLAGS += -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson -L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME)
+BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson -L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME)
 
+
+LDFLAGS += $(BASE_LDFLAGS)
+
+ifeq ($(BUILD),release)
+	CFLAGS 	+= -O3 -s
+ 	LDFLAGS += -s
+else
+#	CFLAGS 	+= -g
+	CFLAGS 	+= -g -pg
+	LDFLAGS += -pg
+	CPPFLAGS += -D_DEBUG
+endif
+	
 
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -O3 -s
@@ -52,38 +81,19 @@ else
 	CPPFLAGS += -D_DEBUG
 endif
 
+include ../generic_makefiles/shared_library.makefile
+
+.PHONY:	all exe
 
 
-OBJS = $(patsubst %.c, $(BUILD)/%.o, $(SRCS))
+install_exe: all
+	chmod u+x $(BUILD)/$(EXE_NAME)
+	cp $(BUILD)/$(EXE_NAME) $(DIR_INSTALL_ROOT)
 
-.PHONY:	all init clean
+all: lib exe
 
-all: init $(BUILD)/$(NAME)
-	@echo "building $(OBJS)"
-
-
-run: all
-	$(BUILD)/$(NAME)
-
-
-debug: all
-	gdb $(BUILD)/$(NAME)
-
-
-init:
-	@mkdir -p $(BUILD)
-
-clean:
-	rm -f $(BUILD)/*
-
-
-$(BUILD)/$(NAME) : $(OBJS)
-	@echo "building exe $(BUILD)/$(NAME) from $(OBJS)"
-	$(COMP) -o $@ $(OBJS) $(STATIC_LIBS) $(LDFLAGS)
-
-$(BUILD)/%.o : %.c
-	@echo "building objs  $(OBJS)"
-	$(COMP) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) -o $@ -c $<
+exe: lib $(EXE_OBJS)
+	$(COMP) $(CFLAGS) -DUNIX -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm -ldl $(INCLUDES) $(EXE_OBJS) $(BASE_LDFLAGS) -o $(BUILD)/$(EXE_NAME)
 
 
 

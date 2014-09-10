@@ -25,7 +25,6 @@
   */
 #include "typedefs.h"
 #include "wheatis_util_library.h"
-#include "parameter.h"
 
 
 #ifdef __cplusplus

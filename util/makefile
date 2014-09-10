@@ -38,15 +38,9 @@ SRCS 	= \
 	json_util.c \
 	linked_list.c \
 	math_utils.c \
-	parameter.c \
-	parameter_set.c \
-	plugin.c \
-	service.c \
-	services_manager.c \
 	string_linked_list.c \
 	string_utils.c \
-	unix_filesystem.c \
-	unix_plugin.c
+	unix_filesystem.c 
 	
 
 ifeq ($(BUILD),release)

@@ -76,7 +76,7 @@ void FreePluginListNode (ListItem * const node_p)
 }
 
 
-PluginListNode *AllocatePluginListItem (Plugin * const plugin_p)
+PluginListNode *AllocatePluginListNode (Plugin * const plugin_p)
 {
 	PluginListNode *node_p = (PluginListNode *) AllocMemory (sizeof (PluginListNode));
 

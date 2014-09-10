@@ -703,7 +703,7 @@ char *ConvertLongToString (const int64 value)
 	
 	if (value_s)
 		{
-			sprintf (value_s, "%d", value);
+			sprintf (value_s, "%" PRId64 , value);
 			* (value_s + num_digits) = '\0';
 		}
 

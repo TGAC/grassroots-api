@@ -4,7 +4,7 @@
 
 #include "jansson.h"
 #include "linked_list.h"
-#include "wheatis_util_library.h"
+#include "wheatis_service_manager_library.h"
 
 typedef struct ServicesManager 
 {
@@ -19,13 +19,11 @@ extern "C"
 {
 #endif	
 
-WHEATIS_UTIL_API LinkedList *LoadServices (const char * const path_s);
+
+WHEATIS_SERVICE_MANAGER_API json_t *GetServicesListAsJSON (LinkedList *services_list_p);
 
 
-WHEATIS_UTIL_API json_t *GetServicesListAsJSON (LinkedList *services_list_p);
-
-
-WHEATIS_UTIL_API void FreeServicesString (char *services_json_s);
+WHEATIS_SERVICE_MANAGER_API void FreeServicesString (char *services_json_s);
 
 
 /*

@@ -25,30 +25,58 @@ int main(int argc, char *argv[])
 	struct addrinfo *server_p = NULL;
 	const char *hostname_s = "localhost";
 	const char *port_s = DEFAULT_SERVER_PORT;
+	const char *username_s = NULL;
+	const char *password_s = NULL;
 	
-	
+	if (argc < 3)
+		{
+			printf ("USAGE: client <username> <password>\n");
+			return 0;
+		}
+		
+		
 	switch (argc)
 		{
-			case 3:
-				port_s = argv [1];
+			case 5:
+				port_s = argv [4];
 				
 			/* deliberate fall through */
-			case 2:
-				hostname_s = argv [0];
-				break;
+			case 4:
+				hostname_s = argv [3];
 				
+			/* deliberate fall through */
 			default:
+				username_s = argv [1];
+				password_s = argv [2];
 				break;
 		}
 
 	sock_fd = ConnectToServer (hostname_s, port_s, &server_p);
 	if (sock_fd >= 0)
 		{
-			json_t *json_p = GetLoginJson ("foo", "bar");
+			json_t *json_p = GetAvailableServices (username_s, password_s);
 
 			if (json_p)
 				{
-					SendJsonRequest (sock_fd, json_p);
+					uint32 id = 1;
+					
+					if (SendJsonRequest (sock_fd, id, json_p) > 0)
+						{
+							char buffer_s [10240] = { 0 };
+							
+							if (AtomicReceive (sock_fd, id, buffer_s, 10239) > 0)
+								{
+									printf ("%s\n", buffer_s);
+								}
+							else
+								{
+									printf ("no buffer\n");
+								}
+							
+							
+						}
+						
+						
 					json_decref (json_p);
 				}
 

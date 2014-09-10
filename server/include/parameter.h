@@ -7,7 +7,7 @@
 #include "jansson.h"
 
 #include "linked_list.h"
-#include "wheatis_util_library.h"
+#include "wheatis_service_manager_library.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -141,46 +141,46 @@ typedef struct ParameterNode
 
 
 
-WHEATIS_UTIL_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
+WHEATIS_SERVICE_MANAGER_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
 
 
-WHEATIS_UTIL_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
+WHEATIS_SERVICE_MANAGER_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
 
 
-WHEATIS_UTIL_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
+WHEATIS_SERVICE_MANAGER_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
-WHEATIS_UTIL_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_SERVICE_MANAGER_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
-WHEATIS_UTIL_API void FreeParameter (Parameter *param_p);
+WHEATIS_SERVICE_MANAGER_API void FreeParameter (Parameter *param_p);
 
 
-WHEATIS_UTIL_API ParameterBounds *AllocateParameterBounds (void);
+WHEATIS_SERVICE_MANAGER_API ParameterBounds *AllocateParameterBounds (void);
 
 
-WHEATIS_UTIL_API int CompareParameterLevels (const ParameterLevel pl0, const ParameterLevel pl1);
+WHEATIS_SERVICE_MANAGER_API int CompareParameterLevels (const ParameterLevel pl0, const ParameterLevel pl1);
 
 
-WHEATIS_UTIL_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
+WHEATIS_SERVICE_MANAGER_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
 
 
-WHEATIS_UTIL_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
+WHEATIS_SERVICE_MANAGER_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
 
 
-WHEATIS_UTIL_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_SERVICE_MANAGER_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
-WHEATIS_UTIL_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
+WHEATIS_SERVICE_MANAGER_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
 
 
-WHEATIS_UTIL_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
+WHEATIS_SERVICE_MANAGER_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
 
 
-WHEATIS_UTIL_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
+WHEATIS_SERVICE_MANAGER_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
 
-WHEATIS_UTIL_API json_t *GetParameterAsJSON (const Parameter * const parameter_p);
+WHEATIS_SERVICE_MANAGER_API json_t *GetParameterAsJSON (const Parameter * const parameter_p);
 
 
 #ifdef __cplusplus

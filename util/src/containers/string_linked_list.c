@@ -115,7 +115,7 @@ char *GetStringLinkedListAsString (const LinkedList * const src_p)
 	
 	if ((src_p != NULL) && (src_p -> ll_size > 0))
 		{
-			size_t *sizes_p = (size_t) AllocMemory ((src_p -> ll_size) * sizeof (size_t));
+			size_t *sizes_p = (size_t *) AllocMemory ((src_p -> ll_size) * sizeof (size_t));
 			
 			if (sizes_p)
 				{			

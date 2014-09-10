@@ -216,36 +216,36 @@ static void *HandleConnection (void *socket_desc_p)
 			const char test_s [] = "hello!";
 			int id = 1;
 			
-			//int res = AtomicSendString (socket_fd, test_s);			
+			//int res = AtomicSendString (socket_fd, test_s);
 			
 			/* Get the message from the client */
-			while (success_flag && ((read_size = AtomicReceive (socket_fd, id, client_buffer_s, BUFFER_SIZE - 1)) > 0))
+
+			read_size = AtomicReceive (socket_fd, id, client_buffer_s, BUFFER_SIZE - 1);
+			
+			if (read_size > 0)
 				{
+					json_t *response_p = NULL;
+
 					//end of string marker
 					* (client_buffer_s + read_size) = '\0';
+
+					response_p = ProcessMessage (client_buffer_s);
 					
-					success_flag = AddStringToStringLinkedList (buffer_p, client_buffer_s, MF_DEEP_COPY);
-				}
-			
-			if (success_flag)
-				{
-					char *message_s = GetStringLinkedListAsString (buffer_p);
-					
-					if (message_s)
+					if (response_p)
 						{
-							char *response_s = ProcessMessage (message_s);
+							char *response_s = json_dumps (response_p, 0);
 							
 							if (response_s)
 								{
+									int result = AtomicSendString (socket_fd, id, response_s);
 									
-									
-								}		/* if (response_s) */
+									free (response_s);
+								}
+								
 							
-							FreeCopiedString (message_s);
-						}		/* if (message_s) */
-					
-				}		/* if (success_flag) */
-			
+						}
+				}
+
 			FreeLinkedList (buffer_p);
 		}
 

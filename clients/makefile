@@ -19,6 +19,8 @@ WHEATIS_NETWORK_LIB_NAME = wheatis_network
 DIR_WHEATIS_SERVER_INC = ../server/include
 
 
+DIR_INSTALL = ../../wheatis_demo
+
 BUILD		= debug
 
 VPATH	= \
@@ -56,6 +58,9 @@ OBJS = $(patsubst %.c, $(BUILD)/%.o, $(SRCS))
 all: init $(BUILD)/$(NAME)
 	@echo "building $(OBJS)"
 
+
+install: all
+	cp $(BUILD)/$(NAME) $(DIR_INSTALL)
 
 init:
 	@mkdir -p $(BUILD)

@@ -1,7 +1,7 @@
 #ifndef WHEATIS_SERVICE_H
 #define WHEATIS_SERVICE_H
 
-#include "wheatis_util_library.h"
+#include "wheatis_service_manager_library.h"
 
 #include "linked_list.h"
 #include "parameter_set.h"
@@ -60,7 +60,7 @@ extern "C"
 {
 #endif	
 
-WHEATIS_UTIL_API void InitialiseService (Service * const service_p,
+WHEATIS_SERVICE_MANAGER_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
 	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
@@ -68,31 +68,31 @@ WHEATIS_UTIL_API void InitialiseService (Service * const service_p,
 	ParameterSet *(*get_parameters_fn) (void),
 	ServiceData *data_p);
 
-WHEATIS_UTIL_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);
+WHEATIS_SERVICE_MANAGER_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);
 
-WHEATIS_UTIL_API bool DoesFileMatchService (Service *service_p, const char * const filename_s);
+WHEATIS_SERVICE_MANAGER_API bool DoesFileMatchService (Service *service_p, const char * const filename_s);
 
 /** Get the user-friendly name of the service. */
-WHEATIS_UTIL_API const char *GetServiceName (const Service *service_p);
+WHEATIS_SERVICE_MANAGER_API const char *GetServiceName (const Service *service_p);
 
 /** Get the user-friendly description of the service. */
-WHEATIS_UTIL_API const char *GetServiceDescription (const Service *service_p);
+WHEATIS_SERVICE_MANAGER_API const char *GetServiceDescription (const Service *service_p);
 
-WHEATIS_UTIL_API ParameterSet *GetServiceParameters (const Service *service_p);	
-
-
-
-WHEATIS_UTIL_API void FreeService (Service *service_p);
+WHEATIS_SERVICE_MANAGER_API ParameterSet *GetServiceParameters (const Service *service_p);	
 
 
-WHEATIS_UTIL_API ServiceNode *AllocateServiceNode (Service *service_p);
 
-WHEATIS_UTIL_API void FreeServiceNode (ListItem *node_p);
-
-WHEATIS_UTIL_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
+WHEATIS_SERVICE_MANAGER_API void FreeService (Service *service_p);
 
 
-WHEATIS_UTIL_API json_t *GetServiceAsJSON (const Service * const service_p);
+WHEATIS_SERVICE_MANAGER_API ServiceNode *AllocateServiceNode (Service *service_p);
+
+WHEATIS_SERVICE_MANAGER_API void FreeServiceNode (ListItem *node_p);
+
+WHEATIS_SERVICE_MANAGER_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
+
+
+WHEATIS_SERVICE_MANAGER_API json_t *GetServiceAsJSON (const Service * const service_p);
 
 
 #ifdef __cplusplus

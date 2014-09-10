@@ -16,7 +16,7 @@ WHEATIS_NETWORK_API json_t *GetLoginJson (const char * const username_s, const c
 
 WHEATIS_NETWORK_API json_t *GetModifiedFiles (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
 
-WHEATIS_NETWORK_API json_t *GetAvailableServices (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
+WHEATIS_NETWORK_API json_t *GetAvailableServices (const char * const username_s, const char * const password_s);
 
 
 #ifdef __cplusplus
