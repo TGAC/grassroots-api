@@ -104,11 +104,11 @@ LinkedList *LoadMatchingServices (const char * const path_s, const char * const 
 																	
 																	if (using_service_flag)
 																		{
-																			ServiceNode *node_p = AllocateServiceNode (service_p);
+																			ServiceNode *service_node_p = AllocateServiceNode (service_p);
 																			
-																			if (node_p)
+																			if (service_node_p)
 																				{
-																					LinkedListAddTail (services_list_p, (ListItem *) node_p);
+																					LinkedListAddTail (services_list_p, (ListItem *) service_node_p);
 																					using_service_flag = true;
 																				}
 																			else
