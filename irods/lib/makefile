@@ -13,13 +13,18 @@ BUILD		= debug
 DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 
 DIR_WHEATIS_UTIL = ../../util
-
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
 
-DIR_INSTALL = ../../../wheatis_demo/irods/lib
+DIR_WHEATIS_SERVER = ../../server
+DIR_WHEATIS_SERVER_INC = $(DIR_WHEATIS_SERVER)/include
+DIR_WHEATIS_SERVER_LIB = $(DIR_WHEATIS_SERVER)/$(BUILD)
+WHEATIS_SERVER_LIB_NAME = wheatis_server
+
+
+DIR_INSTALL = ../../../wheatis_demo/lib
 
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -O3 -s
@@ -43,6 +48,7 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -61,7 +67,7 @@ SRCS 	= \
 
 CPPFLAGS += -DIRODS_UTIL_LIBRARY_EXPORTS -DUNIX -fPIC
 
-LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
+LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME)
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 

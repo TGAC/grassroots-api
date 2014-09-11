@@ -1,10 +1,10 @@
-NAME 		= wheatis_util
+NAME 		= wheatis_qt_client
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= gcc
 MAKEDEPEND 	= gcc -MM -MF
 
-DIR_INSTALL = ../../wheatis_demo/lib
+DIR_INSTALL = ../../wheatis_demo/client-ui
 
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 DIR_IRODS	= $$IRODS_HOME
@@ -40,7 +40,6 @@ SRCS 	= \
 	math_utils.c \
 	string_linked_list.c \
 	string_utils.c \
-	time_util.c \
 	unix_filesystem.c 
 	
 

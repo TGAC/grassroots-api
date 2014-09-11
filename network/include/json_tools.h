@@ -5,6 +5,11 @@
 #include "jansson.h"
 #include "typedefs.h"
 
+
+#define JSON_KEY_USERNAME ("username")
+#define JSON_KEY_PASSWORD ("password")
+
+
 #ifdef __cplusplus
 extern "C" 
 {
@@ -12,12 +17,16 @@ extern "C"
 
 WHEATIS_NETWORK_API int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p);
 
-WHEATIS_NETWORK_API json_t *GetLoginJson (const char * const username_s, const char *password_s);
+WHEATIS_NETWORK_API json_t *GetLoginJsonRequest (const char * const username_s, const char *password_s);
 
-WHEATIS_NETWORK_API json_t *GetModifiedFiles (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
+WHEATIS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
 
-WHEATIS_NETWORK_API json_t *GetAvailableServices (const char * const username_s, const char * const password_s);
+WHEATIS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s);
 
+WHEATIS_NETWORK_API bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
+
+
+WHEATIS_NETWORK_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 
 #ifdef __cplusplus
 }

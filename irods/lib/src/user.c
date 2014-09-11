@@ -109,16 +109,16 @@ QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char 
 	 */
 	char from_s [12];
 	
-	if (sprintf (from_s, "%011ld\0", from) >= 0)
+	if (sprintf (from_s, "%011ld", from) >= 0)
 		{
 			char to_s [12];
 				
-			if (sprintf (to_s, "%011ld\0", to) >= 0)
+			if (sprintf (to_s, "%011ld", to) >= 0)
 				{
 					const char *where_columns_pp [] = { username_s, from_s, to_s };
 					const char *where_ops_pp [] = { " = \'", " >= \'", " <= \'" };
 					
-					results_p = RunQuery (connection_p, select_column_ids, 3, where_column_ids, where_columns_pp, where_ops_pp, 3);					
+					results_p = RunQuery (connection_p, select_column_ids, 3, where_column_ids, where_columns_pp, where_ops_pp, 3);
 				}		
 		}
 		

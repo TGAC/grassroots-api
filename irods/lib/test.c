@@ -21,7 +21,17 @@ static void TestGetAllModifiedDataForUsername (rcComm_t *connection_p, const cha
 int main (int argc, char *argv [])
 {
 	int result = 0;
-	rcComm_t *connection_p = CreateConnection ();
+	char *username_s = NULL;
+	char *password_s = NULL;
+	rcComm_t *connection_p = NULL;
+	
+	if (argc >= 3)
+		{
+			username_s = argv [1];
+			password_s = argv [2];
+		}
+
+	connection_p = CreateConnection (username_s, password_s);
 	
 	if (connection_p)
 		{

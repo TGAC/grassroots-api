@@ -12,8 +12,12 @@
 
 
  enum Operations {
+	/** Get list of all available services */
 	OP_LIST_SERVICES = 0,
 	
+	/** Get list of data objects and collections modified within a given time period */
+	OP_IRODS_MODIFIED_DATA,
+
 	
 	OP_NUM_OPERATIONS
 };

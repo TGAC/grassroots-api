@@ -441,6 +441,84 @@ void PrintQueryResult (FILE *out_f, const QueryResult * const result_p)
 }
 
 
+json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
+{
+	json_t *root_p = json_array ();
+	
+	if (root_p)
+		{
+			/* 
+			 * We know that QueryResults is tabular so we just need
+			 * to query the first result to get the number of rows.
+			 */
+			int num_rows = qrs_p -> qr_values_p -> qr_num_results;
+			int i;
+			QueryResult *qr_p = qrs_p -> qr_values_p;
+			int j = qrs_p -> qr_num_results;
+			
+			/* create all of the jons objects */
+			for ( ; j > 0; -- j, ++ qr_p)
+				{
+					json_t *json_row_p = json_object ();
+					
+					if (json_row_p)
+						{
+							const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
+							bool filled_row_flag = false;
+							
+							json_t *col_name_p = json_string (col_p -> columnName);
+							
+							if (col_name_p)
+								{
+									json_t *col_id_p = json_integer (col_p -> columnId);
+
+									if (col_id_p)
+										{
+											json_t *value_p = json_string (* (qr_p -> qr_values_pp)); 
+											
+											if (value_p)
+												{
+													if ((json_object_set (json_row_p, "ColumnName", col_name_p) == 0) &&
+														(json_object_set (json_row_p, "ColumnId", col_id_p) == 0) &&
+														(json_object_set (json_row_p, "Value", value_p) == 0))
+														{
+															filled_row_flag = true;
+														}
+												}
+										}
+								}
+								
+							
+							if (!filled_row_flag)
+								{
+									json_object_clear (json_row_p);
+									json_decred (json_row_p);
+								}
+							
+						}					
+				}					
+
+
+			for (i = 0; i < num_rows; ++ i)
+				{
+					QueryResult *qr_p = qrs_p -> qr_values_p;
+					int j = qrs_p -> qr_num_results;
+					
+					for ( ; j > 0; -- j, ++ qr_p)
+						{
+							
+							
+						}					
+				}
+
+		}
+	
+	return root_p;
+}
+
+
+
+
 bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows)
 {
 	bool success_flag = false;
