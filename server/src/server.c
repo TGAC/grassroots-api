@@ -4,7 +4,7 @@
 #include "linked_list.h"
 #include "jansson.h"
 #include "json_tools.h"
-
+#include "service.h"
 
 static json_t *GetServices (const char * const path_s, const char * const username_s, const char * const password_s);
 
