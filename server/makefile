@@ -6,6 +6,7 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_IRODS	= $$IRODS_HOME
 
 DIR_INSTALL_ROOT = ../../wheatis_demo
 DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
@@ -19,6 +20,13 @@ DIR_WHEATIS_NETWORK = ../network
 DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
 DIR_WHEATIS_NETWORK_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
 WHEATIS_NETWORK_LIB_NAME = wheatis_network
+
+
+DIR_WHEATIS_IRODS = ../irods/lib
+DIR_WHEATIS_IRODS_INC = $(DIR_WHEATIS_IRODS)/include
+DIR_WHEATIS_IRODS_LIB = $(DIR_WHEATIS_IRODS)/$(BUILD)
+WHEATIS_IRODS_LIB_NAME = wheatis_irods
+
 
 
 DIR_CTHREAD_POOL_DEP = deps/c_thread_pool
@@ -35,7 +43,16 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_NETWORK_INC)
+	-I$(DIR_WHEATIS_NETWORK_INC) \
+	-I$(DIR_WHEATIS_IRODS_INC) \
+	-I$(DIR_IRODS)/lib/api/include \
+	-I$(DIR_IRODS)/lib/core/include \
+	-I$(DIR_IRODS)/lib/md5/include \
+	-I$(DIR_IRODS)/lib/sha1/include \
+	-I$(DIR_IRODS)/server/core/include \
+	-I$(DIR_IRODS)/server/drivers/include \
+	-I$(DIR_IRODS)/server/icat/include \
+	-I$(DIR_IRODS)/server/re/include 	
 	
 SRCS 	= \
 	parameter.c \
@@ -55,10 +72,12 @@ EXE_OBJS = $(patsubst %.c, $(DIR_OBJS)/%.o, $(EXE_SRCS))
 
 CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS -DSHARED_LIBRARY
 
-BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson -L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME)
+BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
+	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
+	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME)
 
 
-LDFLAGS += $(BASE_LDFLAGS)
+LDFLAGS += $(BASE_LDFLAGS) 
 
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -O3 -s
@@ -93,7 +112,7 @@ install_exe: all
 all: lib exe
 
 exe: lib $(EXE_OBJS)
-	$(COMP) $(CFLAGS) -DUNIX -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm -ldl $(INCLUDES) $(EXE_OBJS) $(BASE_LDFLAGS) -o $(BUILD)/$(EXE_NAME)
+	$(COMP) $(CFLAGS) -DUNIX -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm -ldl $(INCLUDES) $(EXE_OBJS) $(BASE_LDFLAGS) -L$(DIR_WHEATIS_IRODS) -lirods -o $(BUILD)/$(EXE_NAME)
 
 
 

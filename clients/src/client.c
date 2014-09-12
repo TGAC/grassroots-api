@@ -27,6 +27,9 @@ int main(int argc, char *argv[])
 	const char *port_s = DEFAULT_SERVER_PORT;
 	const char *username_s = NULL;
 	const char *password_s = NULL;
+	const char *from_s = NULL;
+	const char *to_s = NULL;
+	int api_id = -1;
 	int i;
 	
 	if (argc < 3)
@@ -53,18 +56,18 @@ int main(int argc, char *argv[])
 											}
 										else
 											{
-												error_arg = * (argv [i] + 1);
+												error_arg = * (argv [i] - 1);
 											}
 										break;
 										
-									case 's'
+									case 's':
 										if (++ i < argc)
 											{
-												portname_s = argv [i];
+												port_s = argv [i];
 											}
 										else
 											{
-												error_arg = * (argv [i] + 1);
+												error_arg = * (argv [i] - 1);
 											}
 										break;
 
@@ -75,21 +78,56 @@ int main(int argc, char *argv[])
 											}
 										else
 											{
-												error_arg = * (argv [i] + 1);
+												error_arg = * (argv [i] - 1);
 											}
 										break;
 										
-									case 'p'
+									case 'p':
 										if (++ i < argc)
 											{
 												password_s = argv [i];
 											}
 										else
 											{
-												error_arg = * (argv [i] + 1);
+												error_arg = * (argv [i] - 1);
 											}
 										break;
+
+									case 'a':
+										if (++ i < argc)
+											{
+												api_id = atoi (argv [i]);
+											}
+										else
+											{
+												error_arg = * (argv [i] - 1);
+											}
+										break;
+
+									case 'f':
+										if (++ i < argc)
+											{
+												from_s = argv [i];
+											}
+										else
+											{
+												error_arg = * (argv [i] - 1);
+											}
+										break;
+										
+									case 't':
+										if (++ i < argc)
+											{
+												to_s = argv [i];
+											}
+										else
+											{
+												error_arg = * (argv [i] - 1);
+											}
+										break;										
 									
+									default:
+										break;									
 								}
 						}
 						
@@ -100,7 +138,22 @@ int main(int argc, char *argv[])
 		sock_fd = ConnectToServer (hostname_s, port_s, &server_p);
 		if (sock_fd >= 0)
 			{
-				json_t *json_p = GetAvailableServices (username_s, password_s);
+				json_t *json_p = NULL;
+				
+				switch (api_id)
+					{
+						case OP_LIST_SERVICES:
+							json_p = GetAvailableServicesRequest (username_s, password_s);
+							break;
+							
+							
+						case OP_IRODS_MODIFIED_DATA:
+							json_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+							break;
+							
+						default:
+							break;
+					}
 
 				if (json_p)
 					{

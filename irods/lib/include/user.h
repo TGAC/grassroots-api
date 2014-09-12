@@ -3,6 +3,8 @@
 
 #include <time.h>
 
+#include <jansson.h>
+
 #include "irods_util_library.h"
 #include "rcConnect.h"
 
@@ -36,6 +38,12 @@ IRODS_UTIL_API QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection
 
 
 IRODS_UTIL_LOCAL QueryResults *RunQuery (rcComm_t *connection_p, const int *select_column_ids_p, const int num_select_columns, const int *where_column_ids_p, const char **where_column_values_pp, const char **where_ops_pp, const int num_where_columns);
+
+
+
+IRODS_UTIL_API json_t *GetModifiedIRodsFiles  (char * const username_s, char * const password_s, const time_t from, const time_t to);
+
+
 
 
 

@@ -451,9 +451,10 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 			 * We know that QueryResults is tabular so we just need
 			 * to query the first result to get the number of rows.
 			 */
-			int num_rows = qrs_p -> qr_values_p -> qr_num_results;
+			int num_rows = qrs_p -> qr_values_p -> qr_num_values;
 			int i = 0;
-
+			bool success_flag = true;
+			
 			while ((i < num_rows) && success_flag)
 				{
 					QueryResult *qr_p = qrs_p -> qr_values_p;
@@ -461,6 +462,8 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 
 					while ((j > 0) && success_flag)
 						{
+							json_t *json_row_p = NULL;
+							
 							if (i == 0)
 								{
 									json_row_p = json_object ();
@@ -479,6 +482,8 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 									json_row_p = json_array_get (root_p, i);
 								}
 
+							success_flag = false;
+
 							if (json_row_p)
 								{
 									const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
@@ -495,30 +500,27 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 
 													if (value_p)
 														{
-															if ((json_object_set (json_row_p, "ColumnName", col_name_p) == 0) &&
-																(json_object_set (json_row_p, "ColumnId", col_id_p) == 0) &&
-																(json_object_set (json_row_p, "Value", value_p) == 0))
+															if ((json_object_set_new (json_row_p, "ColumnName", col_name_p) == 0) &&
+																(json_object_set_new (json_row_p, "ColumnId", col_id_p) == 0) &&
+																(json_object_set_new (json_row_p, "Value", value_p) == 0))
 																{
-																	filled_row_flag = true;
+																	success_flag = true;
 																}
 														}
 												}
+																								
 										}		/* if (col_name_p) */
 
+									if (!success_flag)
+										{
+											if (json_object_clear (json_row_p) != 0)
+												{
+													//error
+												}											
+										}
 
-									if (filled_row_flag)
-										{
-										}
-									else
-										{
-											json_object_clear (json_row_p);
-											json_decred (json_row_p);
-										}
 								}		/* if (json_row_p) */
-							else
-								{
-									success_flag = false;
-								}
+
 
 							if (success_flag)
 								{
@@ -526,20 +528,19 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 									++ qr_p;
 								}
 						}		/* while ((j > 0) && success_flag) */
-								}
-						}
 
 
 					++ i;
 				}
-
-			/* create all of the json objects */
-			for (i = 0; i < num_rows; ++ i)
+		
+			if (!success_flag)
 				{
-				}		/* for (i = 0; i < num_rows; ++ i) */
-
-
-		}
+					json_object_clear (root_p);
+					json_decref (root_p);
+					root_p = NULL;
+				}
+		
+		}		/* if (root_p) */
 
 	return root_p;
 }

@@ -1,6 +1,6 @@
 SHELL = /bin/bash
 
-NAME 		= irods_util
+NAME 		= wheatis_irods
 DIR_SRC = src
 DIR_INCLUDE = include
 CC		= g++
@@ -16,13 +16,6 @@ DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
-
-
-DIR_WHEATIS_SERVER = ../../server
-DIR_WHEATIS_SERVER_INC = $(DIR_WHEATIS_SERVER)/include
-DIR_WHEATIS_SERVER_LIB = $(DIR_WHEATIS_SERVER)/$(BUILD)
-WHEATIS_SERVER_LIB_NAME = wheatis_server
-
 
 DIR_INSTALL = ../../../wheatis_demo/lib
 
@@ -48,7 +41,6 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
-	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -67,7 +59,7 @@ SRCS 	= \
 
 CPPFLAGS += -DIRODS_UTIL_LIBRARY_EXPORTS -DUNIX -fPIC
 
-LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME)
+LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L. -lirods
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
@@ -79,4 +71,4 @@ all: lib
 
 
 test: all
-		$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -L. -lirods -lm -lpthread $(INCLUDES)  test.c -o test
+		$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME)  -lm -lpthread $(INCLUDES)  test.c -o test

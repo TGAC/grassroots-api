@@ -9,10 +9,6 @@ static const char * const S_USERNAME_KEY = "user";
 static const char * const S_PASSWORD_KEY = "pass";
 
 
-static bool FillInJSONString (const json_t *json_p, const char * const key_s, const char **value_ss);
-static bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
-
-
 int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p)
 {
 	int res = -1;
@@ -78,9 +74,9 @@ bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **user
 			
 			if (group_p)
 				{
-					if ((*username_ss = FillInJSONString (group_p, S_USERNAME_KEY)) != NULL)
+					if ((*username_ss = GetJSONString (group_p, S_USERNAME_KEY)) != NULL)
 						{
-							if ((*password_ss = FillInJSONString (group_p, S_PASSWORD_KEY)) != NULL)
+							if ((*password_ss = GetJSONString (group_p, S_PASSWORD_KEY)) != NULL)
 								{
 									success_flag = true;
 								}

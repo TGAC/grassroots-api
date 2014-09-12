@@ -7,6 +7,11 @@
 #include "service.h"
 #include "time_util.h"
 
+#include "query.h"
+#include "connect.h"
+#include "user.h"
+
+
 static json_t *GetServices (const char * const path_s, const char * const username_s, const char * const password_s);
 
 
@@ -32,7 +37,6 @@ json_t *ProcessMessage (const char * const request_s)
 									case OP_LIST_SERVICES:
 										{
 											res_p = GetServices ("services", "username", "password");
-											
 										}
 										break;
 									
@@ -67,7 +71,7 @@ json_t *ProcessMessage (const char * const request_s)
 																}
 														}
 													
-													
+													res_p = GetModifiedIRodsFiles (username_s, password_s, from, to);
 													
 												}
 										}
@@ -94,28 +98,6 @@ json_t *ProcessMessage (const char * const request_s)
 
 
 
-static json_t *GetModifiedFiles  (const char * const username_s, const char * const password_s, const time_t from, const time_t to)
-{
-	json_t *json_p = NULL;
-	rcComm_t *connection_p = CreateConnection (username, password_s);
-	
-	if (connection_p)
-		{
-			QueryResults *qr_p = GetAllModifiedDataForUsername (connection_p, username_s, from, to);
-			
-			if (qr_p)
-				{
-					
-					FreeQueryResults (qr_p);
-				}
-			
-			CloseConnection (connection_p);
-		}
-	
-	return json_p;
-}
-
-
 
 static json_t *GetServices (const char * const path_s, const char * const username_s, const char * const password_s)
 {
@@ -130,8 +112,5 @@ static json_t *GetServices (const char * const path_s, const char * const userna
 	
 	return json_p;
 }
-
-
-IRODS_UTIL_API QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char * const username_s, const time_t from, const time_t to);
 
 

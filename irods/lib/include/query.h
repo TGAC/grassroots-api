@@ -2,13 +2,14 @@
 #define IRODS_QUERY_H
 
 
+#include <jansson.h>
+
 #include "rcConnect.h"
 #include "rodsGenQuery.h"
 
 #include "irods_util_library.h"
 #include "linked_list.h"
 
-#include "parameter.h"
 
 
 typedef struct QueryResult
@@ -86,6 +87,8 @@ IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 
 IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
 
+
+IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
 
 #ifdef __cplusplus
 }

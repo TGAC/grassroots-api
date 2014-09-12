@@ -2,7 +2,7 @@
 
 #include "user.h"
 #include "query.h"
-
+#include "connect.h"
 
 #include "string_utils.h"
 
@@ -125,6 +125,29 @@ QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char 
 	return results_p;
 }
 
+
+
+json_t *GetModifiedIRodsFiles (char * const username_s, char * const password_s, const time_t from, const time_t to)
+{
+	json_t *json_p = NULL;
+	rcComm_t *connection_p = CreateConnection (username_s, password_s);
+	
+	if (connection_p)
+		{
+			QueryResults *qr_p = GetAllModifiedDataForUsername (connection_p, username_s, from, to);
+			
+			if (qr_p)
+				{
+					json_p = GetQueryResultAsJSON (qr_p);
+					
+					FreeQueryResults (qr_p);
+				}
+			
+			CloseConnection (connection_p);
+		}
+	
+	return json_p;
+}
 
 
 
