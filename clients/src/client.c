@@ -158,7 +158,8 @@ int main(int argc, char *argv[])
 				if (json_p)
 					{
 						uint32 id = 1;
-						
+						char *json_s = json_dumps (json_p, 0);
+					
 						if (SendJsonRequest (sock_fd, id, json_p) > 0)
 							{
 								char buffer_s [10240] = { 0 };
@@ -171,10 +172,10 @@ int main(int argc, char *argv[])
 									{
 										printf ("no buffer\n");
 									}
-								
-								
 							}
 							
+							
+						free (json_s);
 							
 						json_decref (json_p);
 					}

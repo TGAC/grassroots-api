@@ -3,10 +3,13 @@
 #include "request_tools.h"
 #include "server.h"
 
-static const char * const S_IRODS_KEY = "irods";
 static const char * const S_CREDENTIALS_KEY = "credentials";
 static const char * const S_USERNAME_KEY = "user";
 static const char * const S_PASSWORD_KEY = "pass";
+
+
+static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
+
 
 
 int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p)
@@ -30,7 +33,7 @@ int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p)
 json_t *GetLoginJsonRequest (const char * const username_s, const char *password_s)
 {
 	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:{s:{s:s,s:s}}}", S_IRODS_KEY, S_CREDENTIALS_KEY, S_USERNAME_KEY, username_s, S_PASSWORD_KEY, password_s);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:{s:{s:s,s:s}}}", KEY_IRODS, S_CREDENTIALS_KEY, S_USERNAME_KEY, username_s, S_PASSWORD_KEY, password_s);
 	
 	if (!json_p)
 		{
@@ -45,9 +48,91 @@ json_t *GetLoginJsonRequest (const char * const username_s, const char *password
  */
 json_t *GetModifiedFilesRequest (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s)
 {
-	json_t *json_p = json_pack ("s{s{ssss}s{ssss}}", S_IRODS_KEY, S_CREDENTIALS_KEY, S_USERNAME_KEY, username_s, S_PASSWORD_KEY, password_s, "interval", "from", from_s, "to", to_s);
+	bool success_flag = false;
+	json_error_t error;	
+	json_t *root_p = json_pack_ex (&error, 0, "{s:i}", KEY_OPERATIONS, OP_IRODS_MODIFIED_DATA);
+
+	if (root_p)
+		{
+			json_t *irods_p = json_object ();
+
+			if (irods_p)
+				{
+					if (json_object_set_new (root_p, KEY_IRODS, irods_p) == 0)
+						{	
+							json_t *credentials_p = json_pack_ex (&error, 0, "{s:s,s:s}", S_USERNAME_KEY, username_s, S_PASSWORD_KEY, password_s);
+
+							if (credentials_p)
+								{
+									if (json_object_set_new (irods_p, S_CREDENTIALS_KEY, credentials_p) == 0)
+										{
+											json_t *interval_p = json_object ();
+											
+											if (interval_p)
+												{
+													if (json_object_set_new (irods_p, "interval", interval_p) == 0)
+														{
+															success_flag = true;
+															
+															if (from_s)
+																{
+																	success_flag = AddKeyAndStringValue (interval_p, "from", from_s);
+																}
+
+															if (success_flag && to_s)
+																{
+																	success_flag = AddKeyAndStringValue (interval_p, "to", to_s);
+																}
+
+														}	
+													else
+														{
+															json_decref (interval_p);
+														}
+												}
+										}
+								}
+							else
+								{
+									json_decref (credentials_p);
+								}
+						}
+					else
+						{
+							json_decref (irods_p);
+						}
+				}
+			
+			if (!success_flag)
+				{
+					json_object_clear (root_p);
+					json_decref (root_p);
+					root_p = NULL;
+				}
+		}		/* if (root_p) */
+		
+	return root_p;
+}
+
+
+static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s)
+{
+	bool success_flag = false;
+	json_t *value_p = json_string (value_s);
 	
-	return json_p;
+	if (value_p)
+		{
+			if (json_object_set_new (json_p, key_s, value_p) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					json_decref (value_p);
+				}
+		}
+
+	return success_flag;
 }
 
 
@@ -56,7 +141,14 @@ json_t *GetModifiedFilesRequest (const char * const username_s, const char * con
  */
 json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s)
 {
-	json_t *json_p = json_pack ("{s:i}", KEY_OPERATIONS, OP_LIST_SERVICES);
+	json_error_t error;
+	json_t *json_p = json_pack_ex (&error, 0, "{s:i}", KEY_OPERATIONS, OP_LIST_SERVICES);
+
+	if (!json_p)
+		{
+			
+		}
+	
 	return json_p;
 }
 
@@ -66,7 +158,7 @@ bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **user
 {
 	bool success_flag = false;
 
-	json_t *group_p = json_object_get (root_p, S_IRODS_KEY);
+	json_t *group_p = json_object_get (root_p, KEY_IRODS);
 	
 	if (group_p)
 		{

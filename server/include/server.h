@@ -9,7 +9,8 @@
 
 
 #define KEY_OPERATIONS	("operations")
-
+#define KEY_INTERVAL		("interval")
+#define KEY_IRODS		("irods")
 
  enum Operations {
 	/** Get list of all available services */
@@ -21,6 +22,9 @@
 	
 	OP_NUM_OPERATIONS
 };
+
+
+
 
 
  

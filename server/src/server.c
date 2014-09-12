@@ -45,27 +45,41 @@ json_t *ProcessMessage (const char * const request_s)
 											const char *username_s = NULL;
 											const char *password_s = NULL;
 											
-											if (GetIrodsUsernameAndPassword (op_p, &username_s, &password_s))
+											
+											if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
 												{
+													const char *from_s = NULL;
+													const char *to_s = NULL;
 													/* "from" defaults to the start of time */
 													time_t from = 0;
 
 													/* "to" defaults to now */
 													time_t to = time (NULL);
+
+													json_t *group_p = json_object_get (req_p, KEY_IRODS);
 													
-													const char *date_s = GetJSONString (op_p, "from");
-													if (date_s)
+													if (group_p)
 														{
-															if (!ConvertStringToEpochTime (date_s, &from))
+															json_t *interval_p = json_object_get (group_p, KEY_INTERVAL);
+															
+															if (interval_p)
+																{
+																	from_s = GetJSONString (interval_p, "from");
+																	to_s = GetJSONString (interval_p, "to");
+																}
+														}
+													 													
+													if (from_s)
+														{
+															if (!ConvertStringToEpochTime (from_s, &from))
 																{
 																	// error
 																}
 														}
-
-													date_s = GetJSONString (op_p, "to");
-													if (date_s)
+														
+													if (to_s)
 														{
-															if (!ConvertStringToEpochTime (date_s, &to))
+															if (!ConvertStringToEpochTime (to_s, &to))
 																{
 																	// error
 																}
