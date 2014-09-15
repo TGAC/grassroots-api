@@ -458,13 +458,14 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 			while ((i < num_rows) && success_flag)
 				{
 					QueryResult *qr_p = qrs_p -> qr_values_p;
-					int j = qrs_p -> qr_num_results;
+					int j = 0;
+					const int num_results =  qrs_p -> qr_num_results;
 
-					while ((j > 0) && success_flag)
+					while ((j < num_results) && success_flag)
 						{
 							json_t *json_row_p = NULL;
 							
-							if (i == 0)
+							if (j == 0)
 								{
 									json_row_p = json_object ();
 
@@ -485,30 +486,16 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 							success_flag = false;
 
 							if (json_row_p)
-								{
+								{									
 									const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
+									json_t *value_p = json_string (* ((qr_p -> qr_values_pp) + i));
 
-									json_t *col_name_p = json_string (col_p -> columnName);
-
-									if (col_name_p)
+									if (value_p)
 										{
-											json_t *col_id_p = json_integer (col_p -> columnId);
-
-											if (col_id_p)
+											if (json_object_set_new (json_row_p, col_p -> columnName, value_p) == 0)
 												{
-													json_t *value_p = json_string (* ((qr_p -> qr_values_pp) + i));
-
-													if (value_p)
-														{
-															if ((json_object_set_new (json_row_p, "ColumnName", col_name_p) == 0) &&
-																(json_object_set_new (json_row_p, "ColumnId", col_id_p) == 0) &&
-																(json_object_set_new (json_row_p, "Value", value_p) == 0))
-																{
-																	success_flag = true;
-																}
-														}
-												}
-																								
+													success_flag = true;
+												}																								
 										}		/* if (col_name_p) */
 
 									if (!success_flag)
@@ -524,10 +511,10 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 
 							if (success_flag)
 								{
-									-- j;
+									++ j;
 									++ qr_p;
 								}
-						}		/* while ((j > 0) && success_flag) */
+						}		/* while ((j < num_results) && success_flag) */
 
 
 					++ i;
