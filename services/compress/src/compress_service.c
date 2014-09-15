@@ -1,9 +1,8 @@
 #include <string.h>
 
-#include "blast_service.h"
+#include "compress_service.h"
 #include "memory_allocations.h"
 
-#include "blast_tool.hpp"
 
 /*
  * STATIC DATATYPES
@@ -11,24 +10,23 @@
 typedef struct 
 {
 	ServiceData bsd_base_data;
-	BlastTool *blast_tool_p;
-} BlastServiceData;
+} CompressServiceData;
 
 
 /*
  * STATIC PROTOTYPES
  */
  
-static const char *GetBlastServiceName (void);
+static const char *GetCompressServiceName (void);
 
-static const char *GetBlastServiceDesciption (void);
+static const char *GetCompressServiceDesciption (void);
 
-static ParameterSet *GetBlastServiceParameters (void);
+static ParameterSet *GetCompressServiceParameters (void);
 
 
-static int RunBlastService (const char * const filename_s, ParameterSet *param_set_p);
+static int RunCompressService (const char * const filename_s, ParameterSet *param_set_p);
 
-static bool IsFileForBlastService (const char * const filename_s, FileLocation loc);
+static bool IsFileForCompressService (const char * const filename_s, FileLocation loc);
 
 
 
@@ -40,18 +38,18 @@ static bool IsFileForBlastService (const char * const filename_s, FileLocation l
 
 Service *AllocateService (void)
 {
-	Service *blast_service_p = (Service *) AllocMemory (sizeof (Service));
+	Service *Compress_service_p = (Service *) AllocMemory (sizeof (Service));
 	ServiceData *data_p = NULL;
 	
-	InitialiseService (blast_service_p, 
-		GetBlastServiceName, 
-		GetBlastServiceDesciption, 
-		RunBlastService,
-		IsFileForBlastService,
-		GetBlastServiceParameters, 
+	InitialiseService (Compress_service_p, 
+		GetCompressServiceName, 
+		GetCompressServiceDesciption, 
+		RunCompressService,
+		IsFileForCompressService,
+		GetCompressServiceParameters, 
 		data_p);
 	
-	return blast_service_p;
+	return Compress_service_p;
 }
 
 
@@ -66,21 +64,21 @@ void FreeService (Service *service_p)
  */
  
  
-static const char *GetBlastServiceName (void)
+static const char *GetCompressServiceName (void)
 {
-	return "Blast service";
+	return "Compress service";
 }
 
 
-static const char *GetBlastServiceDesciption (void)
+static const char *GetCompressServiceDesciption (void)
 {
-	return "A service to run the Blast program";
+	return "A service to run the Compress program";
 }
 
 
-static ParameterSet *GetBlastServiceParameters (void)
+static ParameterSet *GetCompressServiceParameters (void)
 {
-	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
+	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 	
 	if (param_set_p)
 		{
@@ -106,26 +104,15 @@ static ParameterSet *GetBlastServiceParameters (void)
 
 
 
-static int RunBlastService (const char * const filename_s, ParameterSet *param_set_p)
+static int RunCompressService (const char * const filename_s, ParameterSet *param_set_p)
 {
 	int result = -1;
-	BlastTool *tool_p = CreateBlastTool ();
 	
-	if (tool_p)
-		{
-			if (RunBlast (tool_p))
-				{
-					result = 0;
-				}
-				
-			FreeBlastTool (tool_p); 
-		}
-		
 	return result;
 }
 
 
-static bool IsFileForBlastService (const char * const filename_s, FileLocation loc)
+static bool IsFileForCompressService (const char * const filename_s, FileLocation loc)
 {
 	bool interested_flag = false;
 	
@@ -137,7 +124,7 @@ static bool IsFileForBlastService (const char * const filename_s, FileLocation l
 	
 	/* 
 	 * We can check on file extension and also the content of the file
-	 * to determine if we want to blast this file.
+	 * to determine if we want to Compress this file.
 	 */
 	if (filename_s)
 		{
@@ -151,10 +138,8 @@ static bool IsFileForBlastService (const char * const filename_s, FileLocation l
 					/* check that the file doesn't end with the . */
 					if (*extension_s != '\0')
 						{
-							if (strcmp (extension_s, "fa") == 0)
-								{
-									interested_flag = true;
-								}
+							interested_flag = ((strcmp (extension_s, "gz") != 0) &&
+								(strcmp (extension_s, "zip") != 0));
 								
 						}		/* if (*extension_s != '\0') */
 					
