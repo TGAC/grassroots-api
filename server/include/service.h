@@ -33,7 +33,7 @@ typedef struct Service
 	
 	int (*se_run_fn) (const char * const filename_s, ParameterSet *param_set_p);
 
-	bool (*se_match_fn) (const char * const filename_s);
+	bool (*se_match_fn) (const char * const filename_s, FileLocation loc);
 
  	/** Get the user-friendly name of the service. */
 	const char *(*se_get_service_name_fn) (void);
@@ -64,13 +64,13 @@ WHEATIS_SERVICE_MANAGER_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
 	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
-	bool (*match_fn) (const char * const filename_s),
+	bool (*match_fn) (const char * const filename_s, FileLocation loc),
 	ParameterSet *(*get_parameters_fn) (void),
 	ServiceData *data_p);
 
 WHEATIS_SERVICE_MANAGER_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);
 
-WHEATIS_SERVICE_MANAGER_API bool DoesFileMatchService (Service *service_p, const char * const filename_s);
+WHEATIS_SERVICE_MANAGER_API bool DoesFileMatchService (Service *service_p, const char * const filename_s, const FileLocation loc);
 
 /** Get the user-friendly name of the service. */
 WHEATIS_SERVICE_MANAGER_API const char *GetServiceName (const Service *service_p);
@@ -89,7 +89,7 @@ WHEATIS_SERVICE_MANAGER_API ServiceNode *AllocateServiceNode (Service *service_p
 
 WHEATIS_SERVICE_MANAGER_API void FreeServiceNode (ListItem *node_p);
 
-WHEATIS_SERVICE_MANAGER_API LinkedList *LoadMatchingServices (const char * const path_s, const char * const pattern_s);
+WHEATIS_SERVICE_MANAGER_API LinkedList *LoadMatchingServices (const char * const services_path_s, const char * const pattern_s, const FileLocation loc);
 
 
 WHEATIS_SERVICE_MANAGER_API json_t *GetServiceAsJSON (const Service * const service_p);

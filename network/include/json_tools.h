@@ -25,6 +25,7 @@ WHEATIS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const user
 
 WHEATIS_NETWORK_API bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
 
+WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const json_t * const file_data_p);
 
 WHEATIS_NETWORK_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 

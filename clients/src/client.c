@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
 				
 				switch (api_id)
 					{
-						case OP_LIST_SERVICES:
+						case OP_LIST_ALL_SERVICES:
 							json_p = GetAvailableServicesRequest (username_s, password_s);
 							break;
 							

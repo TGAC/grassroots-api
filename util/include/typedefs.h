@@ -58,9 +58,14 @@ typedef enum FileLocation
 	/** The file is on a remote filesystem */
 	FILE_LOCATION_REMOTE,
 
+
+	FILE_LOCATION_IRODS,
+
 	/** The file location is unknown */
 	FILE_LOCATION_UNKNOWN
 } FileLocation;
+
+
 
 
 #endif		/* #ifndef TYPEDEFS_H */

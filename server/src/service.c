@@ -20,7 +20,7 @@ void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
 	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
-	bool (*match_fn) (const char * const filename_s),
+	bool (*match_fn) (const char * const filename_s, FileLocation loc),
 	ParameterSet *(*get_parameters_fn) (void),
 	ServiceData *data_p)
 {
@@ -62,7 +62,7 @@ void FreeServiceNode (ListItem * const node_p)
 }
 
 
-LinkedList *LoadMatchingServices (const char * const path_s, const char * const filename_s)
+LinkedList *LoadMatchingServices (const char * const services_path_s, const char * const filename_s, const FileLocation loc)
 {
 	LinkedList *services_list_p = AllocateLinkedList (FreeServiceNode);
 	
@@ -72,7 +72,7 @@ LinkedList *LoadMatchingServices (const char * const path_s, const char * const 
 			
 			if (plugin_pattern_s)
 				{
-					char *path_and_pattern_s = MakeFilename (path_s, plugin_pattern_s);
+					char *path_and_pattern_s = MakeFilename (services_path_s, plugin_pattern_s);
 
 					if (path_and_pattern_s)
 						{
@@ -99,7 +99,7 @@ LinkedList *LoadMatchingServices (const char * const path_s, const char * const 
 																	
 																	if (filename_s)
 																		{
-																			using_service_flag = DoesFileMatchService (service_p, filename_s);
+																			using_service_flag = DoesFileMatchService (service_p, filename_s, loc);
 																		}
 																	
 																	if (using_service_flag)
@@ -166,9 +166,9 @@ int RunService (Service *service_p, const char *filename_s, ParameterSet *param_
 }
 
 
-bool DoesFileMatchService (Service *service_p, const char *filename_s)
+bool DoesFileMatchService (Service *service_p, const char *filename_s, FileLocation loc)
 {
-	return service_p -> se_match_fn (filename_s);	
+	return service_p -> se_match_fn (filename_s, loc);	
 }
 
 

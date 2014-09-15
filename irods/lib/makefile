@@ -52,6 +52,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	connect.c \
+	io.c \
 	user.c \
 	query.c \
 	procApiRequest.c \

@@ -12,7 +12,25 @@
 #include "user.h"
 
 
-static json_t *GetServices (const char * const path_s, const char * const username_s, const char * const password_s);
+/*****************************/
+/***** STATIC PROTOTYPES *****/
+/*****************************/
+
+#define SERVICES_PATH		("services")
+
+
+static json_t *GetAllModifiedData (const json_t * const req_p);
+
+static json_t *GetInterestedServices (const json_t * const req_p);
+
+static json_t *GetAllServices (const json_t * const req_p);
+
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, const FileLocation loc);
+
+
+/***************************/
+/***** API DEFINITIONS *****/
+/***************************/
 
 
 json_t *ProcessMessage (const char * const request_s)
@@ -34,63 +52,18 @@ json_t *ProcessMessage (const char * const request_s)
 							
 							switch (operation_id)
 								{
-									case OP_LIST_SERVICES:
-										{
-											res_p = GetServices ("services", "username", "password");
-										}
+									case OP_LIST_ALL_SERVICES:
+										res_p = GetAllServices (req_p);
 										break;
 									
 									case OP_IRODS_MODIFIED_DATA:
-										{
-											const char *username_s = NULL;
-											const char *password_s = NULL;
-											
-											
-											if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
-												{
-													const char *from_s = NULL;
-													const char *to_s = NULL;
-													/* "from" defaults to the start of time */
-													time_t from = 0;
-
-													/* "to" defaults to now */
-													time_t to = time (NULL);
-
-													json_t *group_p = json_object_get (req_p, KEY_IRODS);
-													
-													if (group_p)
-														{
-															json_t *interval_p = json_object_get (group_p, KEY_INTERVAL);
-															
-															if (interval_p)
-																{
-																	from_s = GetJSONString (interval_p, "from");
-																	to_s = GetJSONString (interval_p, "to");
-																}
-														}
-													 													
-													if (from_s)
-														{
-															if (!ConvertStringToEpochTime (from_s, &from))
-																{
-																	// error
-																}
-														}
-														
-													if (to_s)
-														{
-															if (!ConvertStringToEpochTime (to_s, &to))
-																{
-																	// error
-																}
-														}
-													
-													res_p = GetModifiedIRodsFiles (username_s, password_s, from, to);
-													
-												}
-										}
+										res_p = GetAllModifiedData (req_p);
 										break;
-									
+								
+									case OP_LIST_INTERESTED_SERVICES:
+										res_p = GetInterestedServices (req_p);
+										break;
+										
 									default:
 										break;
 								}
@@ -108,15 +81,120 @@ json_t *ProcessMessage (const char * const request_s)
 }
 
 
+/******************************/
+/***** STATIC DEFINITIONS *****/
+/******************************/
+
+
+static json_t *GetInterestedServices (const json_t * const req_p)
+{
+	json_t *res_p = NULL;
+	const char *username_s = NULL;
+	const char *password_s = NULL;
+												
+	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
+		{
+			/* is it an irods file object? */
+			json_t *group_p = json_object_get (req_p, KEY_IRODS);
+
+			if (group_p)
+				{
+					json_t *file_data_p = json_object_get (group_p, KEY_FILE_DATA);
+					
+					if (file_data_p)
+						{
+							json_t *data_name_p = json_object_get (file_data_p, COL_DATA_NAME);
+							
+							if (data_name_p)
+								{
+									if (json_is_string (data_name_p))
+										{
+											const char *data_name_s = json_string_value (data_name_p);
+
+											res_p = GetServices (SERVICES_PATH, username_s, password_s, data_name_s, FILE_LOCATION_IRODS);
+										}
+								}
+						}					
+				}
+		}
+				
+	
+	return res_p;
+}
+
+
+static json_t *GetAllServices (const json_t * const req_p)
+{
+	json_t *res_p = NULL;
+	const char *username_s = NULL;
+	const char *password_s = NULL;
+												
+	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
+		{
+			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, FILE_LOCATION_UNKNOWN);
+		}
+
+	return res_p;
+}
+
+
+static json_t *GetAllModifiedData (const json_t * const req_p)
+{
+	json_t *res_p = NULL;
+	const char *username_s = NULL;
+	const char *password_s = NULL;
+												
+	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
+		{
+			const char *from_s = NULL;
+			const char *to_s = NULL;
+			/* "from" defaults to the start of time */
+			time_t from = 0;
+
+			/* "to" defaults to now */
+			time_t to = time (NULL);
+
+			json_t *group_p = json_object_get (req_p, KEY_IRODS);
+			
+			if (group_p)
+				{
+					json_t *interval_p = json_object_get (group_p, KEY_INTERVAL);
+					
+					if (interval_p)
+						{
+							from_s = GetJSONString (interval_p, "from");
+							to_s = GetJSONString (interval_p, "to");
+						}
+				}
+																
+			if (from_s)
+				{
+					if (!ConvertStringToEpochTime (from_s, &from))
+						{
+							// error
+						}
+				}
+				
+			if (to_s)
+				{
+					if (!ConvertStringToEpochTime (to_s, &to))
+						{
+							// error
+						}
+				}
+			
+			res_p = GetModifiedIRodsFiles (username_s, password_s, from, to);
+		}
+	
+	return res_p;
+}
 
 
 
-
-
-static json_t *GetServices (const char * const path_s, const char * const username_s, const char * const password_s)
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, const FileLocation loc)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (path_s, NULL);
+	LinkedList *services_list_p = LoadMatchingServices (services_path_s, filename_s, loc);
 	
 	if (services_list_p)
 		{
