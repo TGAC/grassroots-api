@@ -25,7 +25,7 @@ static json_t *GetInterestedServices (const json_t * const req_p);
 
 static json_t *GetAllServices (const json_t * const req_p);
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, const FileLocation loc);
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, Stream *stream_p);
 
 
 /***************************/
@@ -110,8 +110,13 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 									if (json_is_string (data_name_p))
 										{
 											const char *data_name_s = json_string_value (data_name_p);
-
-											res_p = GetServices (SERVICES_PATH, username_s, password_s, data_name_s, FILE_LOCATION_IRODS);
+											Stream *stream_p = GetIRodsStream (username_s, password_s);
+											
+											if (stream_p)
+												{
+													res_p = GetInterestedServicesForIrodsDataObject (SERVICES_PATH, username_s, password_s, data_name_s);
+													ReleaseIRodsStream (stream_p, true);
+												}
 										}
 								}
 						}					
@@ -191,10 +196,10 @@ static json_t *GetAllModifiedData (const json_t * const req_p)
 
 
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, const FileLocation loc)
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, Stream *stream_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (services_path_s, filename_s, loc);
+	LinkedList *services_list_p = LoadMatchingServices (services_path_s, filename_s, stream_p);
 	
 	if (services_list_p)
 		{

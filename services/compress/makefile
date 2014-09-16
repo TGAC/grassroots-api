@@ -6,23 +6,27 @@ CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
 
-DIR_INSTALL = ../../wheatis_demo/services
+DIR_INSTALL = ../../../wheatis_demo/services
 
 BUILD		= debug
 
 DIR_IRODS	= $$IRODS_HOME
 
 DIR_WHEATIS_UTIL = ../../util
-
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
 DIR_WHEATIS_SERVICE_MANAGER = ../../server
-
 DIR_WHEATIS_SERVICE_MANAGER_INC = $(DIR_WHEATIS_SERVICE_MANAGER)/include
 DIR_WHEATIS_SERVICE_MANAGER_LIB = $(DIR_WHEATIS_SERVICE_MANAGER)/$(BUILD)
 WHEATIS_SERVICE_MANAGER_LIB_NAME = wheatis_server
+
+
+DIR_WHEATIS_IRODS = ../../irods/lib
+DIR_WHEATIS_IRODS_INC = $(DIR_WHEATIS_IRODS)/include
+DIR_WHEATIS_IRODS_LIB = $(DIR_WHEATIS_IRODS)/$(BUILD)
+WHEATIS_IRODS_LIB_NAME = wheatis_irods
 
 
 ifeq ($(BUILD),release)
@@ -44,7 +48,9 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_SERVICE_MANAGER_INC) \
+	-I$(DIR_WHEATIS_IRODS_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -55,10 +61,8 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/re/include 
 	
 SRCS 	= \
-	blast_service.c \
-	blast_tool.cpp 
-	
-	
+	compress_service.c 
+
 
 CPPFLAGS += -DCOMPRESS_LIBRARY_EXPORTS -DUNIX -fPIC
 

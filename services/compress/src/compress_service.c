@@ -1,7 +1,12 @@
 #include <string.h>
 
 #include "compress_service.h"
+#include "connect.h"
 #include "memory_allocations.h"
+#include "parameter.h"
+#include "io.h"
+
+#include "rodsDef.h"
 
 
 /*
@@ -26,7 +31,7 @@ static ParameterSet *GetCompressServiceParameters (void);
 
 static int RunCompressService (const char * const filename_s, ParameterSet *param_set_p);
 
-static bool IsFileForCompressService (const char * const filename_s, FileLocation loc);
+static bool IsFileForCompressService (const char * const filename_s, Stream *stream_p);
 
 
 
@@ -92,8 +97,6 @@ static ParameterSet *GetCompressServiceParameters (void)
 					const char *descriptions_pp [] = { "Use Zip", "Use GZip" };
 					SharedType values [2];
 
-					LinkedListAddTail (params_p, (ListNode * const) node_p);
-
 					values [0].st_string_value_s = "zip";
 					values [1].st_string_value_s = "gzip";
 
@@ -108,7 +111,7 @@ static ParameterSet *GetCompressServiceParameters (void)
 									return param_set_p;
 								}
 
-							FreeeParameterMultiOptionArray (options_p);
+							FreeParameterMultiOptionArray (options_p);
 						}
 				}
 
@@ -128,7 +131,7 @@ static int RunCompressService (const char * const filename_s, ParameterSet *para
 }
 
 
-static bool IsFileForCompressService (const char * const filename_s, FileLocation loc)
+static bool IsFileForCompressService (const char * const filename_s, Stream *stream_p)
 {
 	bool interested_flag = true;
 
@@ -144,52 +147,27 @@ static bool IsFileForCompressService (const char * const filename_s, FileLocatio
 				Rather than use the extension, let's check the file header
 			*/
 			uint32 header = 0;
-
-			if (loc == FILE_LOCATION_IRODS)
+			
+			if (OpenStream (stream_p, filename_s, "rb"))
 				{
-					rcComm_t *conn_p = CreateConnection ();
-
-					if (conn_p)
+					size_t l = sizeof (header);
+					
+					if (ReadFromStream (stream_p, &header, l) == l) 
 						{
-							openedDataObjInp_t *data_obj_p = OpenDataOj (conn_p);
-
-							if (data_obj_p)
-								{
-									byteBuffer_t buffer;
-
-									buffer.len = 4;
-									buffer.buffer = &header;
-
-									DataRead (conn_p, data_obj_p, &buffer, 4);
-
-									CloseDataObj (data_obj_p, true);
-								}
-
-							CloseConnection (conn_p);
+							
 						}
-
+						
+					CloseStream (stream_p);
 				}
-			else
-				{
-					FILE *in_f = fopen (filename_s, "rb");
+				
+			
 
-					if (in_f)
-						{
-							if (fread (&header, sizeof (uint32), 1, in_f) == 1)
-								{
-								}
-
-							fclose (in_f);
-						}
-				}
-
-
-			if (data == 0x04034b50)
+			if (header == 0x04034b50)
 				{
 					/* it's already a zip file */
 					interested_flag = false;
 				}
-			else if (data && 0x1F8B0000 == 0x1F8B0000)
+			else if (header && 0x1F8B0000 == 0x1F8B0000)
 				{
 					/* it's a gzip file */
 					interested_flag = false;

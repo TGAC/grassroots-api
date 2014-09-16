@@ -28,7 +28,7 @@ static ParameterSet *GetBlastServiceParameters (void);
 
 static int RunBlastService (const char * const filename_s, ParameterSet *param_set_p);
 
-static bool IsFileForBlastService (const char * const filename_s, FileLocation loc);
+static bool IsFileForBlastService (const char * const filename_s, Stream *stream_p);
 
 
 
@@ -125,7 +125,7 @@ static int RunBlastService (const char * const filename_s, ParameterSet *param_s
 }
 
 
-static bool IsFileForBlastService (const char * const filename_s, FileLocation loc)
+static bool IsFileForBlastService (const char * const filename_s, Stream *stream_p)
 {
 	bool interested_flag = false;
 	

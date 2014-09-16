@@ -150,4 +150,30 @@ json_t *GetModifiedIRodsFiles (char * const username_s, char * const password_s,
 }
 
 
+json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, char * const username_s, char * const password_s, const char *data_name_s)
+{
+	json_t *json_p = NULL;
+	rcComm_t *connection_p = CreateConnection (username_s, password_s);
+	
+	if (connection_p)
+		{
+			Stream *stream_p = AllocateIRodsStream (connection_p);
+			
+			if (stream_p)
+				{
+					json_p = GetQueryResultAsJSON (qr_p);
+					
+					FreeStream (stream_p);
+				}
+			
+			CloseConnection (connection_p);
+		}
+	
+	return json_p;
+	
+	
+}
+
+
+
 

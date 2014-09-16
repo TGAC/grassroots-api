@@ -41,6 +41,7 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -53,6 +54,7 @@ INCLUDES = \
 SRCS 	= \
 	connect.c \
 	io.c \
+	irods_stream.c \
 	user.c \
 	query.c \
 	procApiRequest.c \

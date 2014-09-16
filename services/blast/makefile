@@ -6,7 +6,7 @@ CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
 
-DIR_INSTALL = ../../wheatis_demo/services
+DIR_INSTALL = ../../../wheatis_demo/services
 
 BUILD		= debug
 
@@ -44,6 +44,7 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_SERVICE_MANAGER_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
