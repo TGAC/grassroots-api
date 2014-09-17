@@ -89,8 +89,8 @@ json_t *ProcessMessage (const char * const request_s)
 static json_t *GetInterestedServices (const json_t * const req_p)
 {
 	json_t *res_p = NULL;
-	const char *username_s = NULL;
-	const char *password_s = NULL;
+	char *username_s = NULL;
+	char *password_s = NULL;
 												
 	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
 		{
@@ -115,7 +115,7 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 											if (stream_p)
 												{
 													res_p = GetInterestedServicesForIrodsDataObject (SERVICES_PATH, username_s, password_s, data_name_s);
-													ReleaseIRodsStream (stream_p, true);
+													FreeIRodsStream (stream_p, true);
 												}
 										}
 								}

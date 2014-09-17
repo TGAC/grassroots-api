@@ -2,6 +2,7 @@
 
 #include "irods_stream.h"
 #include "io.h"
+#include "connect.h"
 
 
 Stream *GetIRodsStream (char * const username_s, char * const password_s)

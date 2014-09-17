@@ -5,7 +5,7 @@
 #include "connect.h"
 
 #include "string_utils.h"
-
+#include "irods_stream.h"
 
 
 const char *GetUsernameForId (const int64 user_id)
@@ -161,9 +161,8 @@ json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, ch
 			
 			if (stream_p)
 				{
-					json_p = GetQueryResultAsJSON (qr_p);
 					
-					FreeStream (stream_p);
+					FreeIRodsStream (stream_p);
 				}
 			
 			CloseConnection (connection_p);

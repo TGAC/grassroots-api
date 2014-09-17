@@ -142,7 +142,7 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s)
 {
 	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:i, s:{s}", KEY_OPERATIONS, OP_LIST_SERVICES);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:i, s:{s}", KEY_OPERATIONS, OP_LIST_ALL_SERVICES);
 
 	if (!json_p)
 		{
@@ -154,7 +154,7 @@ json_t *GetAvailableServicesRequest (const char * const username_s, const char *
 
 
 
-json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const json_t * const file_data_p)
+json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const file_data_p)
 {
 	json_error_t error;
 	json_t *root_p = json_pack_ex (&error, 0, "{s:i}", KEY_OPERATIONS, OP_LIST_INTERESTED_SERVICES);
@@ -164,12 +164,12 @@ json_t *GetInterestedServicesRequest (const char * const username_s, const char 
 			if (json_object_set (root_p, KEY_FILE_DATA, file_data_p) != 0)
 				{
 					json_object_clear (root_p);
-					json_object_decref (root_p);
+					json_decref (root_p);
 					root_p = NULL;
 				}
 		}
 	
-	return json_p;
+	return root_p;
 	
 }
 

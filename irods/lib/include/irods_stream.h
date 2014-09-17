@@ -1,5 +1,5 @@
-#ifndef IRODS_UTIL_IO_H
-#define IRODS_UTIL_IO_H
+#ifndef IRODS_STREAM_H
+#define IRODS_STREAM_H
 
 #include <time.h>
 
@@ -16,6 +16,7 @@
 #include "query.h"
 #include "stream.h"
 
+
 typedef struct IRodsStream
 {
 	Stream irs_base_stream;
@@ -31,9 +32,9 @@ extern "C"
 
 
 
-Stream *AllocateIRodsStream (rcComm_t *connection_p);
+IRODS_UTIL_API Stream *AllocateIRodsStream (rcComm_t *connection_p);
 
-void FreeFileStream (Stream *stream_p);
+IRODS_UTIL_API void FreeIRodsStream (Stream *stream_p);
 
 
 /**
@@ -78,4 +79,4 @@ IRODS_UTIL_API int ReadIRodsDataObject (rcComm_t *connection_p, openedDataObjInp
 #endif
 
 
-#endif		/* #ifndef IRODS_UTIL_IO_H */
+#endif		/* #ifndef IRODS_STREAM_H */
