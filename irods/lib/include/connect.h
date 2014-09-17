@@ -11,7 +11,7 @@ extern "C"
 #endif
 
 
-IRODS_UTIL_API rcComm_t *CreateConnection (char *username_s, char *password_s);
+IRODS_UTIL_API rcComm_t *CreateConnection (const char *username_s, const char *password_s);
 
 IRODS_UTIL_API void CloseConnection (rcComm_t *connection_p);
 

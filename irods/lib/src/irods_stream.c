@@ -7,6 +7,7 @@
 #include "fileLseek.h"
 
 #include "irods_stream.h"
+#include "connect.h"
 #include "memory_allocations.h"
 
 
@@ -17,6 +18,27 @@ static size_t ReadFromIRodsStream (struct Stream *stream_p, void *buffer_p, cons
 static bool SeekIRodsStream (struct Stream *stream_p, long offset, int whence);
 
 static bool CloseIRodsStream (struct Stream *stream_p);
+
+
+
+Stream *GetIRodsStream (const char * const username_s, const char * const password_s)
+{
+	rcComm_t *connection_p = CreateConnection ((char *) username_s, (char *) password_s);
+	
+	if (connection_p)
+		{
+			Stream *stream_p = AllocateIRodsStream (connection_p);
+			
+			if (stream_p)
+				{
+					return stream_p;
+				}
+			
+			CloseConnection (connection_p);
+		}
+		
+	return NULL;
+}
 
 
 Stream *AllocateIRodsStream (rcComm_t *connection_p)
@@ -100,11 +122,11 @@ static bool OpenIRodsStream (struct Stream *stream_p, const char *filename_s, co
 									case '+':
 										if (flags & O_RDONLY)
 											{
-												flags = flags & ~O_RDONLY;	
+												flags -= O_RDONLY;	
 											}
 										else if (flags & O_WRONLY)
 											{
-												flags = flags & ~O_WRONLY;	
+												flags -= O_WRONLY;	
 											}
 	
 										flags |= O_WRONLY;										

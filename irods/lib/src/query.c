@@ -375,7 +375,21 @@ bool SetQueryResultValue (QueryResult *result_p, int index, const char *value_s)
 }
 
 
-const columnName_t *GetColumnById (const int id)
+const char *GetColumnNameForId (const int id)
+{
+	char *col_name_s = NULL;
+	const columnName_t *column_p = GetColumnById (id);
+	
+	if (column_p)
+		{
+			col_name_s = column_p -> columnName;
+		}
+
+	return col_name_s;
+}
+
+
+static const columnName_t *GetColumnById (const int id)
 {
 	const columnName_t *column_p = columnNames;
   int i;

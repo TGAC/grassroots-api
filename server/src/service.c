@@ -6,6 +6,8 @@
 #include "filesystem_utils.h"
 
 #include "json_util.h"
+#include "query.h"
+
 
 static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p);
 

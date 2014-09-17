@@ -147,12 +147,15 @@ static bool IsFileForCompressService (const char * const filename_s, Stream *str
 				Rather than use the extension, let's check the file header
 			*/
 			uint32 header = 0;
+			uint32 i;
+			uint32 j;
 			
 			if (OpenStream (stream_p, filename_s, "rb"))
 				{
 					size_t l = sizeof (header);
+					size_t r = ReadFromStream (stream_p, &header, l);
 					
-					if (ReadFromStream (stream_p, &header, l) == l) 
+					if (r == l) 
 						{
 							
 						}
@@ -160,8 +163,9 @@ static bool IsFileForCompressService (const char * const filename_s, Stream *str
 					CloseStream (stream_p);
 				}
 				
+			i = htonl (header);
+			j = ntohl (header);
 			
-
 			if (header == 0x04034b50)
 				{
 					/* it's already a zip file */

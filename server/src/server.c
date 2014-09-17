@@ -11,6 +11,8 @@
 #include "connect.h"
 #include "user.h"
 
+#include "irods_stream.h"
+#include "io.h"
 
 /*****************************/
 /***** STATIC PROTOTYPES *****/
@@ -89,22 +91,23 @@ json_t *ProcessMessage (const char * const request_s)
 static json_t *GetInterestedServices (const json_t * const req_p)
 {
 	json_t *res_p = NULL;
-	char *username_s = NULL;
-	char *password_s = NULL;
+	const char *username_s = NULL;
+	const char *password_s = NULL;
 												
 	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
 		{
-			/* is it an irods file object? */
-			json_t *group_p = json_object_get (req_p, KEY_IRODS);
-
-			if (group_p)
+			json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
+			
+			if (file_data_p)
 				{
-					json_t *file_data_p = json_object_get (group_p, KEY_FILE_DATA);
-					
-					if (file_data_p)
+					/* is it an irods file object? */
+					json_t *group_p = json_object_get (file_data_p, KEY_IRODS);
+
+					if (group_p)
 						{
-							json_t *data_name_p = json_object_get (file_data_p, COL_DATA_NAME);
-							
+							/* is it a single file or a dir? */
+							json_t *data_name_p = json_object_get (group_p, KEY_FILENAME);
+					
 							if (data_name_p)
 								{
 									if (json_is_string (data_name_p))
@@ -114,11 +117,12 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 											
 											if (stream_p)
 												{
-													res_p = GetInterestedServicesForIrodsDataObject (SERVICES_PATH, username_s, password_s, data_name_s);
-													FreeIRodsStream (stream_p, true);
+													res_p = GetServices (SERVICES_PATH, username_s, password_s, data_name_s, stream_p);
+													FreeIRodsStream (stream_p);
 												}
 										}
-								}
+								}									
+																							
 						}					
 				}
 		}
@@ -136,7 +140,7 @@ static json_t *GetAllServices (const json_t * const req_p)
 												
 	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
 		{
-			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, FILE_LOCATION_UNKNOWN);
+			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL);
 		}
 
 	return res_p;

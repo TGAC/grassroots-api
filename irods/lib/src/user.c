@@ -127,7 +127,7 @@ QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char 
 
 
 
-json_t *GetModifiedIRodsFiles (char * const username_s, char * const password_s, const time_t from, const time_t to)
+json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const password_s, const time_t from, const time_t to)
 {
 	json_t *json_p = NULL;
 	rcComm_t *connection_p = CreateConnection (username_s, password_s);

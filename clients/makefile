@@ -5,6 +5,7 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_IRODS	= $$IRODS_HOME
 
 DIR_WHEATIS_UTIL = ../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
@@ -31,7 +32,8 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
-	-I$(DIR_WHEATIS_SERVER_INC)
+	-I$(DIR_WHEATIS_SERVER_INC) \
+	-I$(DIR_IRODS)/lib/core/include 
 	
 SRCS 	= \
 	client.c 

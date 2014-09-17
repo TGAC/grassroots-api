@@ -14,6 +14,10 @@
 #define	KEY_FILE_DATA		("file_data")
 
 
+#define KEY_FILENAME	("file")
+#define KEY_DIRNAME		("dir")
+
+
 enum Operations {
 	/** Get list of all available services */
 	OP_LIST_ALL_SERVICES = 0,

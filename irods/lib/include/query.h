@@ -82,6 +82,9 @@ IRODS_UTIL_LOCAL QueryResults *GenerateQueryResults (const genQueryOut_t *result
 IRODS_UTIL_API void FreeQueryResults (QueryResults *result_p);
 
 
+IRODS_UTIL_API const char *GetColumnNameForId (const int id);
+
+
 IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 
 

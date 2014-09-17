@@ -53,7 +53,6 @@ INCLUDES = \
 	
 SRCS 	= \
 	connect.c \
-	io.c \
 	irods_stream.c \
 	user.c \
 	query.c \

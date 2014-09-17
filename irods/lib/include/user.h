@@ -43,7 +43,7 @@ IRODS_UTIL_LOCAL QueryResults *RunQuery (rcComm_t *connection_p, const int *sele
 
 
 
-IRODS_UTIL_API json_t *GetModifiedIRodsFiles  (char * const username_s, char * const password_s, const time_t from, const time_t to);
+IRODS_UTIL_API json_t *GetModifiedIRodsFiles  (const char * const username_s, const char * const password_s, const time_t from, const time_t to);
 
 
 IRODS_UTIL_API json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, char * const username_s, char * const password_s, const char *data_name_s);
