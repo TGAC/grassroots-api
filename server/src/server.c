@@ -12,7 +12,7 @@
 #include "user.h"
 
 #include "irods_stream.h"
-#include "io.h"
+
 
 /*****************************/
 /***** STATIC PROTOTYPES *****/
@@ -205,9 +205,10 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 	json_t *json_p = NULL;
 	LinkedList *services_list_p = LoadMatchingServices (services_path_s, filename_s, stream_p);
 	
+	json_p = GetServicesListAsJSON (services_list_p);
+
 	if (services_list_p)
 		{
-			json_p = GetServicesListAsJSON (services_list_p);
 			FreeLinkedList (services_list_p);
 		}
 	

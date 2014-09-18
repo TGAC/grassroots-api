@@ -225,7 +225,8 @@ static void *HandleConnection (void *socket_desc_p)
 			if (read_size > 0)
 				{
 					json_t *response_p = NULL;
-
+					char *response_s = NULL;
+				
 					//end of string marker
 					* (client_buffer_s + read_size) = '\0';
 
@@ -233,16 +234,22 @@ static void *HandleConnection (void *socket_desc_p)
 					
 					if (response_p)
 						{
-							char *response_s = json_dumps (response_p, 0);
+							response_s = json_dumps (response_p, 0);
+						}
+					else
+						{
+							json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", client_buffer_s);
 							
-							if (response_s)
-								{
-									int result = AtomicSendString (socket_fd, id, response_s);
-									
-									free (response_s);
-								}
-								
+							response_s = json_dumps (error_p, 0);
+			
+							json_decref (error_p);							
+						}
+					
+					if (response_s)
+						{
+							int result = AtomicSendString (socket_fd, id, response_s);
 							
+							free (response_s);
 						}
 				}
 

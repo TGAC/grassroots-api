@@ -163,7 +163,7 @@ static bool IsFileForCompressService (const char * const filename_s, Stream *str
 				
 			header = htonl (i);
 			
-			if (header == 0x04034b50)
+			if (header == 0x504B0304)
 				{
 					/* it's already a zip file */
 					interested_flag = false;
