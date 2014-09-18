@@ -1,5 +1,4 @@
-NAME 		= wheatis_server
-EXE_NAME = server
+NAME 		= wheatis_service
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= g++

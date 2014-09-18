@@ -1,7 +1,8 @@
 #include <string.h>
 
+#include <arpa/inet.h>
+
 #include "compress_service.h"
-#include "connect.h"
 #include "memory_allocations.h"
 #include "parameter.h"
 #include "stream.h"
