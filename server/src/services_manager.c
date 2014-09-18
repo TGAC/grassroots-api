@@ -20,7 +20,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 			
 			if (root_p)
 				{
-					json_t *operations_p = json_object ();
+					json_t *operations_p = json_array ();
 					
 					if (operations_p)
 						{
@@ -36,8 +36,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 									
 									if (service_json_p)
 										{
-											success_flag = (json_object_set (operations_p, "apis", service_json_p) == 0);
-											json_decref (service_json_p);
+											success_flag = (json_array_append_new (operations_p, service_json_p) == 0);
 											
 											service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 										}

@@ -651,6 +651,10 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										alloc_flag = (value_s != NULL);									
 										break;
 
+									case PT_STRING:
+										value_s = option_p -> pmo_value.st_string_value_s;
+										break;
+
 									default:
 										break;
 								}		/* switch (param_p -> pa_type) */					

@@ -4,9 +4,8 @@
 #include "connect.h"
 #include "memory_allocations.h"
 #include "parameter.h"
-#include "io.h"
+#include "stream.h"
 
-#include "rodsDef.h"
 
 
 /*
@@ -147,13 +146,12 @@ static bool IsFileForCompressService (const char * const filename_s, Stream *str
 				Rather than use the extension, let's check the file header
 			*/
 			uint32 header = 0;
-			uint32 i;
-			uint32 j;
+			uint32 i = 0;
 			
 			if (OpenStream (stream_p, filename_s, "rb"))
 				{
-					size_t l = sizeof (header);
-					size_t r = ReadFromStream (stream_p, &header, l);
+					size_t l = sizeof (i);
+					size_t r = ReadFromStream (stream_p, &i, l);
 					
 					if (r == l) 
 						{
@@ -163,15 +161,14 @@ static bool IsFileForCompressService (const char * const filename_s, Stream *str
 					CloseStream (stream_p);
 				}
 				
-			i = htonl (header);
-			j = ntohl (header);
+			header = htonl (i);
 			
 			if (header == 0x04034b50)
 				{
 					/* it's already a zip file */
 					interested_flag = false;
 				}
-			else if (header && 0x1F8B0000 == 0x1F8B0000)
+			else if ((header | 0x1F8BFFFF) == 0x1F8BFFFF)
 				{
 					/* it's a gzip file */
 					interested_flag = false;
