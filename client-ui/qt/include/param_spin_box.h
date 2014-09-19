@@ -18,7 +18,7 @@ private slots:
 	bool UpdateConfig (int value);
 
 public:
-	ParamSpinBox (const Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
+	ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
 	virtual ~ParamSpinBox ();
 
 	virtual QWidget *GetQWidget ();

@@ -4,7 +4,7 @@
 #include "string_utils.h"
 
 
-ParamCheckBox :: ParamCheckBox (const Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
+ParamCheckBox :: ParamCheckBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 : BaseParamWidget (param_p, options_widget_p)
 {
 	pcb_check_box_p = new QCheckBox (parent_p);
@@ -22,11 +22,7 @@ ParamCheckBox ::	~ParamCheckBox ()
 
 bool ParamCheckBox :: UpdateConfig (int state)
 {
-	bool success_flag = true;
-
-
-
-	return success_flag;
+	return SetParameterValue (bpw_param_p, &state);
 }
 
 

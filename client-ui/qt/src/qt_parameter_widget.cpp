@@ -35,12 +35,12 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 
 	if (qpw_params_p)
 		{
-			//AddParameters (qpw_params_p);
+			AddParameters (qpw_params_p);
 		}		/* if (parameters_p) */
 }
 
 
-void QTParameterWidget :: AddParameters (LinkedList *params_p)
+void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 {
 	ParameterNode *node_p = reinterpret_cast <ParameterNode *> (params_p -> ll_head_p);
 
@@ -108,7 +108,7 @@ void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, cons
 
 
 
-BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (const Parameter * const param_p)
+BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * const param_p)
 {
 	BaseParamWidget *widget_p = NULL;
 

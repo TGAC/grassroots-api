@@ -13,7 +13,7 @@ class BaseParamWidget : public QObject
 	Q_OBJECT
 
 public:
-	BaseParamWidget (const Parameter * const param_p, const PrefsWidget * const prefs_widget_p);
+	BaseParamWidget (Parameter * const param_p, const PrefsWidget * const prefs_widget_p);
 
 	virtual ~BaseParamWidget ();
 
@@ -25,7 +25,7 @@ public:
 	virtual void RemoveConnection ();
 
 protected:
-	const Parameter * const bpw_param_p;
+	Parameter * const bpw_param_p;
 	const PrefsWidget * const bpw_prefs_widget_p;
 	char *bpw_param_name_s;
 };

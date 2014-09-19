@@ -46,13 +46,13 @@ private:
 	/**
 	 * Create widget for parameter.
 	 */
-	BaseParamWidget *CreateWidgetForParameter (const Parameter * const param_p);
+	BaseParamWidget *CreateWidgetForParameter (Parameter * const param_p);
 
 
 	/**
 	 * Get pre-existing widget for parameter.
 	 */
-	BaseParamWidget *GetWidgetForParameter (const Parameter * const param_p);
+	BaseParamWidget *GetWidgetForParameter (Parameter * const param_p);
 };
 
 

@@ -18,7 +18,7 @@ private slots:
 
 
 public:
-	FileChooserWidget (const Parameter * const param_p, const PrefsWidget * const prefs_widget_p, QFileDialog :: FileMode mode);
+	FileChooserWidget (Parameter * const param_p, const PrefsWidget * const prefs_widget_p, QFileDialog :: FileMode mode);
 
 	~FileChooserWidget ();
 

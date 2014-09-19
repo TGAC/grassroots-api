@@ -73,20 +73,46 @@ WHEATIS_SERVICE_API int RunService (Service *service_p, const char * const filen
 
 WHEATIS_SERVICE_API bool DoesFileMatchService (Service *service_p, const char * const filename_s, Stream *stream_p);
 
-/** Get the user-friendly name of the service. */
+
+/** 
+ * Get the user-friendly name of the service. 
+ *
+ * @param service_p The Service to get the name for.
+ * @return The name of Service.
+ */
 WHEATIS_SERVICE_API const char *GetServiceName (const Service *service_p);
 
-/** Get the user-friendly description of the service. */
+
+/** 
+ * Get the user-friendly description of the service. 
+ *
+ * @param service_p The Service to get the description for.
+ * @return The description of Service.
+ */
 WHEATIS_SERVICE_API const char *GetServiceDescription (const Service *service_p);
 
+
+/**
+ * Get a newly-created ParameterSet describing the parameters for a given Service. 
+ * 
+ * @param service_p The Service to get the ParameterSet for.
+ * @return The newly-created ParameterSet or <code>NULL</code> upon error. This 
+ * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
+ * @see FreeParameterSet.
+ */
 WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (const Service *service_p);	
 
 
-
+/**
+ * Free a Service and its associated Parameters and ServiceData.
+ * 
+ * @param service_p The Service to free.
+ */
 WHEATIS_SERVICE_API void FreeService (Service *service_p);
 
 
 WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
+
 
 WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
@@ -94,7 +120,16 @@ WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const services_path_s, const char * const pattern_s, Stream *stream_p);
 
 
+/**
+ * Generate a json-based description of a Service. This uses the Swagger definitions 
+ * as much as possible.
+ * 
+ * @param service_p The Service to generate the description for.
+ * @return The json-based representation of the Service or <code>NULL</code> if there was
+ * an error.
+ */
 WHEATIS_SERVICE_API json_t *GetServiceAsJSON (const Service * const service_p);
+
 
 
 #ifdef __cplusplus

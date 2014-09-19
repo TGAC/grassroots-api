@@ -5,7 +5,7 @@
 #include "string_utils.h"
 
 
-ParamDoubleSpinBox :: ParamDoubleSpinBox (const Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
+ParamDoubleSpinBox :: ParamDoubleSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
 	pdsb_spinner_p = new QDoubleSpinBox (parent_p);
@@ -21,14 +21,21 @@ ParamDoubleSpinBox :: ParamDoubleSpinBox (const Parameter * const param_p, const
 			pdsb_spinner_p -> setMaximum (1000000.0);
 		}
 
+	void (QDoubleSpinBox :: * signal_fn) (double) = &QDoubleSpinBox :: valueChanged;
+	connect (pdsb_spinner_p, signal_fn, this, &ParamDoubleSpinBox :: UpdateConfig);
 
 }
 
 
-ParamDoubleSpinBox ::	~ParamDoubleSpinBox ()
+ParamDoubleSpinBox :: ~ParamDoubleSpinBox ()
 {}
 
 
+
+bool ParamDoubleSpinBox :: UpdateConfig (double value)
+{
+	return SetParameterValue (bpw_param_p, &value);
+}
 
 
 

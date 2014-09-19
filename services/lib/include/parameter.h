@@ -183,6 +183,9 @@ WHEATIS_SERVICE_API bool SetParameterValue (Parameter * const parameter_p, const
 WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const parameter_p);
 
 
+WHEATIS_SERVICE_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
+
+
 #ifdef __cplusplus
 }
 #endif

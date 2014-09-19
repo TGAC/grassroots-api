@@ -1,7 +1,7 @@
 #include "wheatis_ui.h"
 
-WheatISUI::WheatISUI(QWidget *parent) :
-	QWidget(parent)
+WheatISUI :: WheatISUI (QWidget *parent_p)
+: QWidget (parent_p)
 {
 }
 

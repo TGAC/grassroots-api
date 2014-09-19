@@ -5,7 +5,7 @@
 #include "string_utils.h"
 
 
-ParamSpinBox :: ParamSpinBox (const Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
+ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 :	BaseParamWidget (param_p, options_widget_p)
 {
 	psb_spin_box_p = new QSpinBox (parent_p);
@@ -22,7 +22,6 @@ ParamSpinBox :: ParamSpinBox (const Parameter * const param_p, const PrefsWidget
 
 	void (QSpinBox :: * signal_fn) (int) = &QSpinBox :: valueChanged;
 	connect (psb_spin_box_p, signal_fn, this, &ParamSpinBox :: UpdateConfig);
-
 }
 
 
@@ -36,3 +35,10 @@ QWidget *ParamSpinBox :: GetQWidget ()
 {
 	return psb_spin_box_p;
 }
+
+
+bool ParamSpinBox :: UpdateConfig (int value)
+{
+	return SetParameterValue (bpw_param_p, &value);
+}
+

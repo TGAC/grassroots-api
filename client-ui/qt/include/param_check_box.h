@@ -17,7 +17,7 @@ private slots:
 	bool UpdateConfig (int state);
 
 public:
-	ParamCheckBox (const Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
+	ParamCheckBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
 	virtual ~ParamCheckBox ();
 
 	virtual QWidget *GetQWidget ();

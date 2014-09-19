@@ -154,3 +154,71 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p)
 
 	return root_p;
 }
+
+
+ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
+{
+	ParameterSet *params_p =  NULL;
+
+	if (root_p)
+		{
+			const char *name_s = NULL;
+			const char *description_s = NULL;
+
+			/* Get the name */
+			json_t *json_p = json_object_get (root_p, PS_NAME_KEY);
+			if (json_p && json_is_string (json_p))
+				{
+					name_s = json_string_value (json_p);
+				}
+
+			/* Get the description */
+			json_p = json_object_get (root_p, PS_DESCRIPTION_KEY);
+			if (json_p && json_is_string (json_p))
+				{
+					description_s = json_string_value (json_p);
+				}
+
+			params_p = AllocateParameterSet (name_s, description_s);
+			
+			if (params_p)
+				{
+					/* Get the parameters array */
+					json_p = json_object_get (root_p, PS_PARAMS_KEY);
+					if (json_p && json_is_array (json_p))
+						{
+							size_t num_params = json_array_size (json_p);
+							size_t i = 0;
+							bool success_flag = true;
+							
+							/* Loop through the params */
+							while ((i < num_params) && success_flag)
+								{
+									json_t *param_json_p = json_array_get (json_p, i);
+									Parameter *param_p = CreateParameterFromJSON (param_json_p);
+									
+									if (param_p)
+										{
+											success_flag = AddParameterToParameterSet (params_p, param_p);
+										}
+									else
+										{
+											success_flag = false;
+										}
+									
+								}		/* while ((i < num_params) && success_flag) */
+							
+							if (!success_flag)
+								{
+									FreeParameterSet (params_p);
+									params_p = NULL;
+								}
+							
+						}		/* if (json_p && json_is_array (json_p)) */
+					
+				}		/* if (params_p) */
+			
+		}		/* if (root_p) */
+	
+	return params_p;
+}

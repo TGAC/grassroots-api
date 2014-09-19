@@ -29,28 +29,6 @@ QTParameterWidget *ServicePrefsWidget :: GetServiceWidget (Service *service_p)
 }
 
 
-//void stuff ()
-//{
-//	if (module_p -> mo_plugin_p)
-//		{
-//			if (config_key_s)
-//				{
-//					config_name_s = GetPluginConfigName (module_p -> mo_plugin_p);
-
-//					if (config_name_s)
-//						{
-//							ConfigurationManager *config_manager_p = lpw_controller_p -> GetConfigurationManager ();
-
-//							AddConfigurationValue (config_manager_p, config_key_s, config_name_s);
-//							FreeCopiedString (config_name_s);
-//						}		/* if (config_name_s) */
-
-//				}		/* if (config_key_s) */
-//		}
-//}
-
-
-
 ServicePrefsWidget :: ServicePrefsWidget (QString &title_r,const char *plugin_s, const PrefsWidget * const prefs_widget_p)
 : BasePrefsWidget (title_r, prefs_widget_p),
 	spw_chooser_p (NULL),
@@ -62,7 +40,7 @@ ServicePrefsWidget :: ServicePrefsWidget (QString &title_r,const char *plugin_s,
 
 	if (! (path_r.isNull () || path_r.isEmpty()))
 		{
-			spw_config_name_s = CopyToNewString (config_key_s, 0, FALSE);
+			spw_config_name_s = CopyToNewString (config_key_s, 0, false);
 
 			QByteArray ba = path_r.toLocal8Bit ();
 			const char *modules_root_path_s = ba.constData ();

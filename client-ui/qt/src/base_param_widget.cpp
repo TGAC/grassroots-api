@@ -3,7 +3,7 @@
 #include "string_utils.h"
 
 
-BaseParamWidget	:: BaseParamWidget (const Parameter * const param_p, const PrefsWidget * const prefs_widget_p)
+BaseParamWidget	:: BaseParamWidget (Parameter * const param_p, const PrefsWidget * const prefs_widget_p)
 	: bpw_param_p (param_p),
 		bpw_prefs_widget_p (prefs_widget_p)
 {

@@ -52,7 +52,7 @@ bool FileChooserWidget :: UpdateConfig (const QString &value_r)
 }
 
 
-FileChooserWidget :: FileChooserWidget (const Parameter * const param_p, const PrefsWidget * const prefs_widget_p, QFileDialog :: FileMode mode)
+FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWidget * const prefs_widget_p, QFileDialog :: FileMode mode)
 	: BaseParamWidget (param_p, prefs_widget_p),
 		fcw_file_mode (mode)
 {
