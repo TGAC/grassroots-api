@@ -121,7 +121,7 @@ typedef struct Parameter
 	/**
 	 * The level of the parameter.
 	 */
-	 ParameterLevel pa_level;
+	ParameterLevel pa_level;
 
 
 	/** The default value for this parameter. */

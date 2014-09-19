@@ -881,7 +881,6 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 {
 	Parameter *param_p = NULL;
 
-	
 	const char *name_s = GetStringValue (root_p, S_PARAM_NAME_S);				
 
 	if (name_s)
@@ -894,31 +893,29 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 					
 					if (GetParameterTypeFromJSON (root_p, &pt))
 						{
+							/* 
+							 * The default, options and bounds are optional 
+							 */
 							SharedType def;
-							bool default_value_flag = GetDefaultValueFromJSON (root_p, &def);
+							ParameterMultiOptionArray *options_p = NULL;
+							ParameterBounds *bounds_p = NULL;
+							ParameterLevel level = PT_BASIC;
 							
+							bool default_value_flag = GetDefaultValueFromJSON (root_p, &def);
+			
+							if (GetParameterOptionsFromJSON (root_p, &options_p))
+								{
+									if (GetParameterOptionsFromJSON (root_p, &bounds_p))
+										{
+											param_p = AllocateParameter (pt, name_s, description_s, options_p, def, bounds_p, level, NULL);
+										}
+								}
 							
 						}		/* if (GetParameterTypeFromJSON (root_p, &pt)) */
 
 				}		/* if (description_s) */
-				
+		
 		}		/* if (name_s) */
-			
-			
-
-			if (AddParameterOptionsToJSON (parameter_p, root_p))
-				{
-					if (AddParameterBoundsToJSON (parameter_p, root_p))
-						{
-							success_flag = true;
-						}					
-				}	
-			
-			if (!success_flag)
-				{
-					
-				}
-		}
 	
 	return param_p;
 }
