@@ -18,12 +18,6 @@ static ListItem *GetStringListNode (const char *value_s);
 static const char *ScrollPastSpecificCharacters (const char **value_pp, const char * const delimiters_s, const bool ignore_whitespace_flag, const bool state_flag);
 
 
-#ifdef _DEBUG
-	#define STRING_UTILS_DEBUG (STM_LEVEL_FINER)
-#else
-	#define STRING_UTILS_DEBUG (STM_LEVEL_NONE)
-#endif
-
 void FreeCopiedString (char *str_p)
 {
 	if (str_p)
@@ -656,21 +650,21 @@ char *ConvertIntegerToString (const int32 value)
 {
 	char *value_s = NULL;
 	size_t num_digits = 1;
-	
+
 	if (value < 0)
 		{
 			size_t temp = (size_t) log10 ((double) -value);
 			++ num_digits;
-			
+
 			num_digits += temp;
 		}
 	else if (value > 0)
 		{
 			num_digits += (size_t) log10 ((double) value);
 		}
-		
-	value_s = (char *) malloc (num_digits + 1);
-	
+
+	value_s = (char *) AllocMemory (num_digits + 1);
+
 	if (value_s)
 		{
 			sprintf (value_s, "%d", value);
@@ -686,21 +680,21 @@ char *ConvertLongToString (const int64 value)
 {
 	char *value_s = NULL;
 	size_t num_digits = 1;
-	
+
 	if (value < 0)
 		{
 			size_t temp = (size_t) log10 ((double) -value);
 			++ num_digits;
-			
+
 			num_digits += temp;
 		}
 	else if (value > 0)
 		{
 			num_digits += (size_t) log10 ((double) value);
 		}
-		
-	value_s = (char *) malloc (num_digits + 1);
-	
+
+	value_s = (char *) AllocMemory (num_digits + 1);
+
 	if (value_s)
 		{
 			sprintf (value_s, "%" PRId64 , value);

@@ -114,7 +114,7 @@ char *BuildQueryString (const char **args_ss)
 			++ arg_pp;
 		}
 
-	buffer_p = (char *) malloc ((len + 1) * sizeof (char));
+	buffer_p = (char *) AllocMemory ((len + 1) * sizeof (char));
 	if (buffer_p)
 		{
 			char *current_p = buffer_p;
@@ -148,11 +148,11 @@ bool SetQuerySelectClauses (genQueryInp_t *in_query_p, int num_columns, const in
 {
 	bool success_flag = false;
 
-	in_query_p -> selectInp.inx = (int *) malloc (num_columns * sizeof (int));
+	in_query_p -> selectInp.inx = (int *) AllocMemory (num_columns * sizeof (int));
 
 	if (in_query_p -> selectInp.inx)
 		{
-			in_query_p -> selectInp.value = (int *) malloc (num_columns * sizeof (int));
+			in_query_p -> selectInp.value = (int *) AllocMemory (num_columns * sizeof (int));
 
 			if (in_query_p -> selectInp.value)
 				{
@@ -193,11 +193,11 @@ bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int
 	if ((num_columns > 0) && columns_p && clauses_ss)
 		{
 
-			in_query_p -> sqlCondInp.inx = (int *) malloc (num_columns * sizeof (int));
+			in_query_p -> sqlCondInp.inx = (int *) AllocMemory (num_columns * sizeof (int));
 
 			if (in_query_p -> sqlCondInp.inx)
 				{
-					in_query_p -> sqlCondInp.value = (char **) malloc (num_columns * sizeof (char *));
+					in_query_p -> sqlCondInp.value = (char **) AllocMemory (num_columns * sizeof (char *));
 
 					if (in_query_p -> sqlCondInp.value)
 						{
@@ -315,7 +315,7 @@ QueryResult *AllocateQueryResult (int num_rows, const columnName_t *column_p)
 
 	if (values_pp)
 		{
-			QueryResult *result_p = (QueryResult *) malloc (sizeof (QueryResult));
+			QueryResult *result_p = (QueryResult *) AllocMemory (sizeof (QueryResult));
 
 			if (result_p)
 				{
@@ -326,7 +326,7 @@ QueryResult *AllocateQueryResult (int num_rows, const columnName_t *column_p)
 					return result_p;
 				}
 
-			free (values_pp);
+			FreeMemory (values_pp);
 		}
 
 	return NULL;
@@ -379,7 +379,7 @@ const char *GetColumnNameForId (const int id)
 {
 	char *col_name_s = NULL;
 	const columnName_t *column_p = GetColumnById (id);
-	
+
 	if (column_p)
 		{
 			col_name_s = column_p -> columnName;
@@ -468,7 +468,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 			int num_rows = qrs_p -> qr_values_p -> qr_num_values;
 			int i = 0;
 			bool success_flag = true;
-			
+
 			while ((i < num_rows) && success_flag)
 				{
 					QueryResult *qr_p = qrs_p -> qr_values_p;
@@ -478,7 +478,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 					while ((j < num_results) && success_flag)
 						{
 							json_t *json_row_p = NULL;
-							
+
 							if (j == 0)
 								{
 									json_row_p = json_object ();
@@ -500,7 +500,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 							success_flag = false;
 
 							if (json_row_p)
-								{									
+								{
 									const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
 									json_t *value_p = json_string (* ((qr_p -> qr_values_pp) + i));
 
@@ -509,7 +509,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 											if (json_object_set_new (json_row_p, col_p -> columnName, value_p) == 0)
 												{
 													success_flag = true;
-												}																								
+												}
 										}		/* if (col_name_p) */
 
 									if (!success_flag)
@@ -517,7 +517,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 											if (json_object_clear (json_row_p) != 0)
 												{
 													//error
-												}											
+												}
 										}
 
 								}		/* if (json_row_p) */
@@ -533,14 +533,14 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 
 					++ i;
 				}
-		
+
 			if (!success_flag)
 				{
 					json_object_clear (root_p);
 					json_decref (root_p);
 					root_p = NULL;
 				}
-		
+
 		}		/* if (root_p) */
 
 	return root_p;
@@ -588,7 +588,7 @@ bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_resu
 
 QueryResults *GenerateQueryResults (const genQueryOut_t *query_result_p)
 {
-	QueryResults *results_p = (QueryResults *) malloc (sizeof (QueryResults));
+	QueryResults *results_p = (QueryResults *) AllocMemory (sizeof (QueryResults));
 
 	if (results_p)
 		{
@@ -597,7 +597,7 @@ QueryResults *GenerateQueryResults (const genQueryOut_t *query_result_p)
 
 			if (num_rows > 0)
 				{
-					QueryResult *value_p = (QueryResult *) malloc (num_columns * sizeof (QueryResult));
+					QueryResult *value_p = (QueryResult *) AllocMemory (num_columns * sizeof (QueryResult));
 
 					if (value_p)
 						{
