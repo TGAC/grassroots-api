@@ -20,36 +20,58 @@
 /* forward declarations */
 struct Plugin;
 struct Service;
- 
+
 typedef struct ServiceData
 {
 	/** The service that owns this data. */
 	struct Service *md_service_p;
 } ServiceData;
- 
 
+
+/**
+ * A datatype which defines an available service, its capabilities and
+ * its parameters.
+ */
 typedef struct Service
 {
+	/**
+	 * The platform-specific plugin that the code for the Service is
+	 * stored in.
+	 */
 	struct Plugin *se_plugin_p;
-	
+
+
 	int (*se_run_fn) (const char * const filename_s, ParameterSet *param_set_p);
 
 	bool (*se_match_fn) (const char * const filename_s, Stream *stream_p);
 
- 	/** Get the user-friendly name of the service. */
+	bool (*se_has_permissions_fn) (const UserDetails * const user_p);
+
+ 	/**
+ 	 * Function to get the user-friendly name of the service.
+ 	 */
 	const char *(*se_get_service_name_fn) (void);
 
-	/** Get the user-friendly description of the service. */
+	/**
+	 * Function to get the user-friendly description of the service.
+	 */
 	const char *(*se_get_service_description_fn) (void);
 
-	ParameterSet * (*se_get_params_fn) (void);	
-	
+	/**
+	 * Function to get the ParameterSet for this Service.
+	 */
+	ParameterSet * (*se_get_params_fn) (void);
+
+
+	/**
+	 * Any custom data that the service needs to store.
+	 */
 	ServiceData *se_data_p;
-	
+
 } Service;
 
 
-typedef struct 
+typedef struct
 {
 	ListItem sn_node;
 	Service *sn_service_p;
@@ -59,7 +81,7 @@ typedef struct
 #ifdef __cplusplus
 extern "C"
 {
-#endif	
+#endif
 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
@@ -74,8 +96,8 @@ WHEATIS_SERVICE_API int RunService (Service *service_p, const char * const filen
 WHEATIS_SERVICE_API bool DoesFileMatchService (Service *service_p, const char * const filename_s, Stream *stream_p);
 
 
-/** 
- * Get the user-friendly name of the service. 
+/**
+ * Get the user-friendly name of the service.
  *
  * @param service_p The Service to get the name for.
  * @return The name of Service.
@@ -83,8 +105,8 @@ WHEATIS_SERVICE_API bool DoesFileMatchService (Service *service_p, const char * 
 WHEATIS_SERVICE_API const char *GetServiceName (const Service *service_p);
 
 
-/** 
- * Get the user-friendly description of the service. 
+/**
+ * Get the user-friendly description of the service.
  *
  * @param service_p The Service to get the description for.
  * @return The description of Service.
@@ -93,19 +115,19 @@ WHEATIS_SERVICE_API const char *GetServiceDescription (const Service *service_p)
 
 
 /**
- * Get a newly-created ParameterSet describing the parameters for a given Service. 
- * 
+ * Get a newly-created ParameterSet describing the parameters for a given Service.
+ *
  * @param service_p The Service to get the ParameterSet for.
- * @return The newly-created ParameterSet or <code>NULL</code> upon error. This 
+ * @return The newly-created ParameterSet or <code>NULL</code> upon error. This
  * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
  * @see FreeParameterSet.
  */
-WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (const Service *service_p);	
+WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (const Service *service_p);
 
 
 /**
  * Free a Service and its associated Parameters and ServiceData.
- * 
+ *
  * @param service_p The Service to free.
  */
 WHEATIS_SERVICE_API void FreeService (Service *service_p);
@@ -121,9 +143,9 @@ WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const service
 
 
 /**
- * Generate a json-based description of a Service. This uses the Swagger definitions 
+ * Generate a json-based description of a Service. This uses the Swagger definitions
  * as much as possible.
- * 
+ *
  * @param service_p The Service to generate the description for.
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
@@ -134,7 +156,7 @@ WHEATIS_SERVICE_API json_t *GetServiceAsJSON (const Service * const service_p);
 
 #ifdef __cplusplus
 }
-#endif	
+#endif
 
 
 #endif		/* #ifndef WHEATIS_SERVICE_H */

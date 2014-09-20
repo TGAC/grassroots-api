@@ -13,7 +13,9 @@
 	extern "C" {
 #endif
 
-
+/**
+ * The different types that a Parameter can take.
+ */
 typedef enum ParameterType
 {
 	PT_BOOLEAN,
@@ -29,6 +31,12 @@ typedef enum ParameterType
 } ParameterType;
 
 
+/**
+ * The ParameterLevel defines the level that a user
+ * should be to adjust the Parameter. The level of
+ * Parameters that a user wishes to work with can
+ * be adjusted within the user interface.
+ */
 typedef enum ParameterLevel
 {
 	PL_BASIC,
@@ -36,7 +44,9 @@ typedef enum ParameterLevel
 	PL_ADVANCED
 } ParameterLevel;
 
-
+/**
+ * A datatype to store values for a Parameter.
+ */
 typedef union SharedType
 {
 	bool st_boolean_value;
@@ -60,7 +70,7 @@ typedef struct ParameterMultiOption
 	char *pmo_description_s;
 	SharedType pmo_value;
 } ParameterMultiOption;
-	
+
 
 typedef struct ParameterMultiOptionArray
 {
@@ -79,7 +89,10 @@ typedef struct ParameterBounds
 /******* FORWARD DECLARATION *******/
 struct Parameter;
 
-
+/**
+ * The datatype that stores all of the information about a
+ * Parameter.
+ */
 typedef struct Parameter
 {
 	/** The type of the parameter. */
@@ -91,7 +104,10 @@ typedef struct Parameter
 	/** The description for this parameter. */
 	char *pa_description_s;
 
-	/** The default value for this parameter. */
+	/**
+	 * The default value for this parameter. It requires use
+	 * of pa_type to access the correct value.
+	 */
 	SharedType pa_default;
 
 	/**
@@ -124,9 +140,12 @@ typedef struct Parameter
 	ParameterLevel pa_level;
 
 
-	/** The default value for this parameter. */
+	/**
+	 * The current value for this parameter. It requires use
+	 * of pa_type to access the correct value.
+	 */
 	SharedType pa_current_value;
-	
+
 } Parameter;
 
 
@@ -180,9 +199,23 @@ WHEATIS_SERVICE_API const char *CheckForNotNull (const Parameter * const paramet
 WHEATIS_SERVICE_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
 
+/**
+ * Get the json-based representation of a Parameter.
+ *
+ * @param parameter_p The Parameter to get.
+ * @return A newly-allocated json-based description of the Parameter or <code>NULL</code>
+ * upon error. When you no longer require the value you need to call json_decref upon it.
+ */
 WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const parameter_p);
 
 
+/**
+ * Create a Parameter from a json-based representation.
+ *
+ * @param json_p The json-based decription of the Parameter.
+ * @return A newly-allocated Parameter derived from the json-based description
+ * or <code>NULL</code> upon error.
+ */
 WHEATIS_SERVICE_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
 
 
