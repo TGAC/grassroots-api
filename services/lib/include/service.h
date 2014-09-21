@@ -41,11 +41,11 @@ typedef struct Service
 	struct Plugin *se_plugin_p;
 
 
-	int (*se_run_fn) (const char * const filename_s, ParameterSet *param_set_p);
+	int (*se_run_fn) (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p);
 
-	bool (*se_match_fn) (const char * const filename_s, Stream *stream_p);
+	bool (*se_match_fn) (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p);
 
-	bool (*se_has_permissions_fn) (const UserDetails * const user_p);
+	bool (*se_has_permissions_fn) (ServiceData *service_data_p, const UserDetails * const user_p);
 
  	/**
  	 * Function to get the user-friendly name of the service.
@@ -60,7 +60,7 @@ typedef struct Service
 	/**
 	 * Function to get the ParameterSet for this Service.
 	 */
-	ParameterSet * (*se_get_params_fn) (void);
+	ParameterSet * (*se_get_params_fn) (ServiceData *service_data_p);
 
 
 	/**
