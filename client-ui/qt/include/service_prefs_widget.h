@@ -10,7 +10,7 @@
 #include "plugin.h"
 #include "qt_parameter_widget.h"
 #include "prefs_widget.h"
-
+#include "jansson.h"
 
 class ServicePrefsWidget : public QWidget
 {
@@ -24,7 +24,7 @@ protected slots:
 	virtual void CheckInterfaceLevel (ParameterLevel level);
 
 public:
-	ServicePrefsWidget (QString &title_r, QString &path_r);
+	ServicePrefsWidget (const json_t *service_json_p);
 	~ServicePrefsWidget ();
 
 protected:
