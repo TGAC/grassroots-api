@@ -20,9 +20,9 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
-	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
-	bool (*match_fn) (const char * const filename_s, Stream *stream_p),
-	ParameterSet *(*get_parameters_fn) (void),
+	int (*run_fn) (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p),
+	bool (*match_fn) (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p),
+	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p),
 	ServiceData *data_p)
 {
 	service_p -> se_get_service_name_fn = get_service_name_fn;
@@ -165,13 +165,13 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, const char
 
 int RunService (Service *service_p, const char *filename_s, ParameterSet *param_set_p)
 {
-	return service_p -> se_run_fn (filename_s, param_set_p);
+	return service_p -> se_run_fn (service_p -> se_data_p, filename_s, param_set_p);
 }
 
 
 bool DoesFileMatchService (Service *service_p, const char *filename_s, Stream *stream_p)
 {
-	return service_p -> se_match_fn (filename_s, stream_p);	
+	return service_p -> se_match_fn (service_p -> se_data_p, filename_s, stream_p);	
 }
 
 
@@ -191,7 +191,7 @@ const char *GetServiceDescription (const Service *service_p)
 
 ParameterSet *GetServiceParameters (const Service *service_p)
 {
-	return service_p -> se_get_params_fn ();
+	return service_p -> se_get_params_fn (service_p -> se_data_p);
 }
 
 

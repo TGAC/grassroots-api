@@ -7,6 +7,7 @@
 #include "parameter_set.h"
 #include "typedefs.h"
 #include "stream.h"
+#include "user_details.h"
 
 #include "jansson.h"
 
@@ -86,9 +87,9 @@ extern "C"
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
-	int (*run_fn) (const char * const filename_s, ParameterSet *param_set_p),
-	bool (*match_fn) (const char * const filename_s, Stream *stream_p),
-	ParameterSet *(*get_parameters_fn) (void),
+	int (*run_fn) (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p),
+	bool (*match_fn) (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p),
+	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p),
 	ServiceData *data_p);
 
 WHEATIS_SERVICE_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);

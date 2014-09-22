@@ -34,7 +34,7 @@
  */
 #include "io_utils.h"
 
-
+#include "memory_allocations.h"
 
 /**
  *

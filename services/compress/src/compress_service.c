@@ -26,12 +26,12 @@ static const char *GetCompressServiceName (void);
 
 static const char *GetCompressServiceDesciption (void);
 
-static ParameterSet *GetCompressServiceParameters (void);
+static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p);
 
 
-static int RunCompressService (const char * const filename_s, ParameterSet *param_set_p);
+static int RunCompressService (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p);
 
-static bool IsFileForCompressService (const char * const filename_s, Stream *stream_p);
+static bool IsFileForCompressService (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p);
 
 
 
@@ -81,7 +81,7 @@ static const char *GetCompressServiceDesciption (void)
 }
 
 
-static ParameterSet *GetCompressServiceParameters (void)
+static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 
@@ -123,7 +123,7 @@ static ParameterSet *GetCompressServiceParameters (void)
 
 
 
-static int RunCompressService (const char * const filename_s, ParameterSet *param_set_p)
+static int RunCompressService (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p)
 {
 	int result = -1;
 
@@ -131,7 +131,7 @@ static int RunCompressService (const char * const filename_s, ParameterSet *para
 }
 
 
-static bool IsFileForCompressService (const char * const filename_s, Stream *stream_p)
+static bool IsFileForCompressService (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p)
 {
 	bool interested_flag = true;
 

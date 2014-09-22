@@ -7,7 +7,7 @@
 #include "query.h"
 
 #include "string_utils.h"
-
+#include "memory_allocations.h"
 
 
 static const columnName_t *GetColumnById (const int id);

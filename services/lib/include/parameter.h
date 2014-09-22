@@ -27,7 +27,8 @@ typedef enum ParameterType
 	PT_FILE_TO_WRITE,
 	PT_FILE_TO_READ,
 	PT_DIRECTORY,
-	PT_CHAR
+	PT_CHAR,
+	PT_NUM_TYPES
 } ParameterType;
 
 

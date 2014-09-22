@@ -23,12 +23,12 @@ static const char *GetBlastServiceName (void);
 
 static const char *GetBlastServiceDesciption (void);
 
-static ParameterSet *GetBlastServiceParameters (void);
+static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p);
 
 
-static int RunBlastService (const char * const filename_s, ParameterSet *param_set_p);
+static int RunBlastService (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p);
 
-static bool IsFileForBlastService (const char * const filename_s, Stream *stream_p);
+static bool IsFileForBlastService (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p);
 
 
 
@@ -78,7 +78,7 @@ static const char *GetBlastServiceDesciption (void)
 }
 
 
-static ParameterSet *GetBlastServiceParameters (void)
+static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
 	
@@ -106,7 +106,7 @@ static ParameterSet *GetBlastServiceParameters (void)
 
 
 
-static int RunBlastService (const char * const filename_s, ParameterSet *param_set_p)
+static int RunBlastService (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p)
 {
 	int result = -1;
 	BlastTool *tool_p = CreateBlastTool ();
@@ -125,7 +125,7 @@ static int RunBlastService (const char * const filename_s, ParameterSet *param_s
 }
 
 
-static bool IsFileForBlastService (const char * const filename_s, Stream *stream_p)
+static bool IsFileForBlastService (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p)
 {
 	bool interested_flag = false;
 	

@@ -10,9 +10,11 @@
 #include "json_util.h"
 
 
+
 static const char *S_PARAM_NAME_S = "name";
 static const char *S_PARAM_DESCRIPTION_S = "description";
 static const char *S_PARAM_TYPE_S = "type";
+static const char *S_PARAM_WHEATIS_TYPE_INFO_S = "wheatis_type";
 static const char *S_PARAM_DEFAULT_VALUE_S  = "default_value";
 
 
@@ -30,6 +32,8 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p);
 
+
+static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
 
 Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
@@ -613,56 +617,77 @@ static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root
 }
 
 
-static bool GetDefaultValueFromJSON (const json_t * const root_p, SharedType *)
+static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p)
 {
 	bool success_flag = false;
 
-	/* Set the parameter's default value */
-	json_t *default_value_p = NULL;
-
-	switch (param_p -> pa_type)
+	/* Set the parameter's value */
+	json_t *json_value_p = json_object_get (root_p, key_s);
+	
+	if (json_value_p)
 		{
-			case PT_BOOLEAN:
-				default_value_p = (param_p -> pa_default.st_boolean_value == true) ? json_true () : json_false ();
-				break;
+			switch (param_type)
+				{
+					case PT_BOOLEAN:
+						if (json_is_boolean (json_value_p))
+							{
+								value_p -> st_boolean_value = (json_is_true (json_value_p)) ? true : false;
+								success_flag = true;
+							}
+						break;
 
-			case PT_SIGNED_INT:
-				default_value_p = json_integer (param_p -> pa_default.st_long_value);
-				break;
+					case PT_SIGNED_INT:
+						if (json_is_integer (json_value_p))
+							{
+								value_p -> st_long_value = (int32) json_integer_value (json_value_p);
+								success_flag = true;
+							}
+						break;
 
-			case PT_UNSIGNED_INT:
-				default_value_p = json_integer (param_p -> pa_default.st_ulong_value);
-				break;
+					case PT_UNSIGNED_INT:
+						if (json_is_integer (json_value_p))
+							{
+								value_p -> st_ulong_value = (uint32) json_integer_value (json_value_p);
+								success_flag = true;
+							}
+						break;
 
-			case PT_SIGNED_REAL:
-			case PT_UNSIGNED_REAL:
-				default_value_p = json_real (param_p -> pa_default.st_data_value);
-				break;
+					case PT_SIGNED_REAL:
+					case PT_UNSIGNED_REAL:
+						if (json_is_real (json_value_p))
+							{
+								value_p -> st_data_value = (double64) json_real_value (json_value_p);
+								success_flag = true;
+							}
+						break;
 
-			case PT_STRING:
-			case PT_FILE_TO_READ:
-			case PT_FILE_TO_WRITE:
-			case PT_DIRECTORY:
-				default_value_p = json_string (param_p -> pa_default.st_string_value_s);
-				break;
+					case PT_STRING:
+					case PT_FILE_TO_READ:
+					case PT_FILE_TO_WRITE:
+					case PT_DIRECTORY:
+						if (json_is_string (json_value_p))
+							{
+								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
+								
+								if (value_s)
+									{
+										if (value_p -> st_string_value_s)
+											{
+												FreeCopiedString (value_p -> st_string_value_s);
+											}
+										
+										value_p -> st_string_value_s = value_s;
+										success_flag = true;
+									}
+							}
+						break;
 
-			default:
-				break;
-		}		/* switch (param_p -> pa_type) */
-
-	if (default_value_p)
-		{
-			success_flag = (json_object_set (root_p, S_PARAM_DEFAULT_VALUE_S, default_value_p) == 0);
-			json_decref (default_value_p);
-		}		/* if (default_value_p) */
-	else
-		{
-			success_flag = true;
+					default:
+						break;
+				}		/* switch (param_p -> pa_type) */
+			
 		}
 
-	#ifdef _DEBUG
-	PrintJSON (stderr, root_p, "AddDefaultValueToJSON - root_p :: ");
-	#endif
 
 	return success_flag;
 }
@@ -866,7 +891,7 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 static const char *GetStringValue (const json_t * const json_p, const char * const key_s)
 {
 	const char *name_s = NULL;
-	json_t *value_p = json_get_object (root_p, key_s);
+	json_t *value_p = json_object_get (json_p, key_s);
 
 	if (value_p && (json_is_string (value_p)))
 		{
@@ -874,6 +899,43 @@ static const char *GetStringValue (const json_t * const json_p, const char * con
 		}
 
 	return name_s;
+}
+
+
+static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType *param_type_p)
+{
+	bool success_flag = false;
+	json_t *value_p = json_object_get (json_p, S_PARAM_WHEATIS_TYPE_INFO_S);
+	
+	if (value_p && json_is_integer (value_p))
+		{
+			json_int_t subtype = json_integer_value (value_p);
+			
+			if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+				{
+					*param_type_p = subtype;
+					success_flag = true;
+				}
+		}
+		
+		
+	return success_flag;
+}
+
+
+static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterMultiOptionArray **options_pp)
+{
+	bool success_flag = false;		
+		
+	return success_flag;
+}
+
+
+static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp)
+{
+	bool success_flag = false;		
+		
+	return success_flag;
 }
 
 
@@ -899,13 +961,14 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 							SharedType def;
 							ParameterMultiOptionArray *options_p = NULL;
 							ParameterBounds *bounds_p = NULL;
-							ParameterLevel level = PT_BASIC;
+							ParameterLevel level = PL_BASIC;
 
-							bool default_value_flag = GetDefaultValueFromJSON (root_p, &def);
+
+							bool default_value_flag = GetValueFromJSON (root_p, S_PARAM_DEFAULT_VALUE_S, pt, &def);
 
 							if (GetParameterOptionsFromJSON (root_p, &options_p))
 								{
-									if (GetParameterOptionsFromJSON (root_p, &bounds_p))
+									if (GetParameterBoundsFromJSON (root_p, &bounds_p))
 										{
 											param_p = AllocateParameter (pt, name_s, description_s, options_p, def, bounds_p, level, NULL);
 										}
