@@ -155,6 +155,12 @@ WHEATIS_SERVICE_API json_t *GetServiceAsJSON (const Service * const service_p);
 
 
 
+WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
+
+
+WHEATIS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
+
+
 #ifdef __cplusplus
 }
 #endif

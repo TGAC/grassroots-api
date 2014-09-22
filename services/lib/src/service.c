@@ -8,6 +8,9 @@
 #include "json_util.h"
 
 
+static const char *S_SERVICE_NAME_S = "path";
+static const char *S_SERVICE_DESCRIPTION_S = "description";
+
 static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p);
 
 static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p);
@@ -207,7 +210,7 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 			/* Add the key-value pair */
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (root_p, "path", json_string (value_s)) == 0);
+					success_flag = (json_object_set_new (root_p, S_SERVICE_NAME_S, json_string (value_s)) == 0);
 				}
 
 			if (success_flag)
@@ -220,7 +223,7 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 					
 					if (value_s)
 						{
-							success_flag = (json_object_set_new (root_p, "description", json_string (value_s)) == 0);
+							success_flag = (json_object_set_new (root_p, S_SERVICE_DESCRIPTION_S, json_string (value_s)) == 0);
 						}
 					
 					if (success_flag)
@@ -268,6 +271,18 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 		
 		
 	return root_p;
+}
+
+
+const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, S_SERVICE_DESCRIPTION_S);
+}
+
+
+const char *GetServiceNameFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, S_SERVICE_NAME_S);
 }
 
 
@@ -333,6 +348,9 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 	
 	return success_flag;
 }
+
+
+
 
 
 

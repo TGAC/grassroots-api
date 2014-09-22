@@ -42,7 +42,7 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 
 void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 {
-	ParameterNode *node_p = reinterpret_cast <ParameterNode *> (params_p -> ll_head_p);
+	ParameterNode *node_p = reinterpret_cast <ParameterNode *> (params_p -> ps_params_p -> ll_head_p);
 
 	while (node_p)
 		{

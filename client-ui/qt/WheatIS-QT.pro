@@ -81,7 +81,8 @@ HEADERS  += \
     include/param_text_box.h \
     include/prefs_widget.h \
     include/qt_parameter_widget.h \
-    include/base_prefs_widget.h
+    include/base_prefs_widget.h \
+    include/service_prefs_widget.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME

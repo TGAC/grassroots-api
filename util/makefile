@@ -39,6 +39,7 @@ SRCS 	= \
 	file_stream.c \
 	json_util.c \
 	linked_list.c \
+	linked_list_iterator.c \
 	math_utils.c \
 	string_linked_list.c \
 	string_utils.c \

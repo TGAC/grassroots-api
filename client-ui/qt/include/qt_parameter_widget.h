@@ -29,7 +29,7 @@ public:
 	virtual void UpdateParameterLevel (const ParameterLevel level, const QWidget * const parent_widget_p);
 
 
-	void AddParameters (LinkedList *params_p);
+	void AddParameters (ParameterSet *params_p);
 
 
 private:

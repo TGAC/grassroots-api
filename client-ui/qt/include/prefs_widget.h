@@ -40,7 +40,8 @@ public:
 	ParameterLevel GetCurrentParameterLevel () const;
 
 
-	void AddServicePage (QTabWidget *tab_p, QString title_r, const char * const plugin_s);
+	void AddServicePage (QTabWidget *tab_p, const json_t * const service_json_p);
+
 
 private:
 

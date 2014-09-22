@@ -42,13 +42,30 @@ void PrefsWidget :: AddServicePage (QTabWidget *tab_p, const json_t * const serv
 	QWidget *page_p = new QWidget;
 	QLayout *layout_p = new QVBoxLayout;
 
-	QTParameterWidget *module_prefs_widget_p = new QTParameterWidget (title_r, plugin_s, this);
-	QTParameterWidget (const char *name_s, const char * const description_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level);
+	const char *service_name_s = GetServiceNameFromJSON (service_json_p);
 
-	layout_p -> addWidget (module_prefs_widget_p);
-	page_p -> setLayout (layout_p);
+	if (service_name_s)
+		{
+			const char *service_description_s = GetServiceNameFromJSON (service_json_p);
 
-	tab_p -> addTab (page_p, title_r);
+			if (service_description_s)
+				{
+						ParameterSet *params_p = CreateParameterSetFromJSON (service_json_p);
+
+						if (params_p)
+							{
+								QTParameterWidget *widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
+
+								layout_p -> addWidget (widget_p);
+								page_p -> setLayout (layout_p);
+
+								tab_p -> addTab (page_p, QString (service_name_s));
+
+
+							}		/* if (params_p) */
+
+				}		/* if (service_description_s) */
+		}		/* if (service_name_s) */
 }
 
 
@@ -75,7 +92,7 @@ void PrefsWidget :: ShowServiceConfigurationWidget (Service *service_p)
 		{
 			const char * const name_s = service_p -> se_get_service_name_fn ();
 			const char * const description_s = service_p -> se_get_service_description_fn ();
-			ParameterSet *params_p = service_p -> se_get_params_fn ();
+			ParameterSet *params_p = service_p -> se_get_params_fn (service_p -> se_data_p);
 
 			if (params_p)
 				{
