@@ -36,7 +36,7 @@ INCLUDES = \
 	-I$(DIR_IRODS)/lib/core/include 
 	
 SRCS 	= \
-	client.c 
+	standalone_client.c 
 
 CPPFLAGS += -DUNIX
 
