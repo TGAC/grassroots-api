@@ -74,8 +74,8 @@ extern "C"
 #endif
 
 WHEATIS_SERVICE_API void InitialiseClient (Client * const client_p,
-	const char *(*get_service_name_fn) (void),
-	const char *(*get_service_description_fn) (void),
+	const char *(*get_client_name_fn) (void),
+	const char *(*get_client_description_fn) (void),
 	int (*run_fn) (ClientData *client_data_p, const char * const filename_s, ParameterSet *param_set_p),
 	ClientData *data_p);
 
