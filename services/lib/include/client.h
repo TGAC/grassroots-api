@@ -6,7 +6,6 @@
 #include "linked_list.h"
 #include "parameter_set.h"
 #include "typedefs.h"
-#include "stream.h"
 #include "user_details.h"
 
 #include "jansson.h"
@@ -99,6 +98,7 @@ WHEATIS_SERVICE_API void FreeClientNode (ListItem *node_p);
 WHEATIS_SERVICE_API LinkedList *LoadClients (const char * const clients_path_s, const char * const pattern_s);
 
 
+WHEATIS_SERVICE_API Client *LoadClient (const char * const clients_path_s, const char * const client_s);
 
 
 

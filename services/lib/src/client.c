@@ -67,3 +67,35 @@ LinkedList *LoadClients (const char * const clients_path_s, const char * const p
 }
 
 
+Client *LoadClient (const char * const clients_path_s, const char * const client_s)
+{
+	Client *client_p = NULL;
+	const char *plugin_s = MakePluginName (client_s);
+			
+	if (plugin_s)
+		{
+			char *full_filename_s = MakeFilename (clients_path_s, plugin_s);
+			
+			if (full_filename_s)
+				{
+					Plugin *plugin_p = AllocatePlugin (full_filename_s);
+
+					if (OpenPlugin (plugin_p))
+						{																							
+							Client *client_p = GetClientFromPlugin (plugin_p);
+
+							if (!client_p)
+								{
+									ClosePlugin (plugin_p);
+								}
+						}
+					
+				}		/* if (full_filename_s) */				
+
+		}		/* if (plugin_s) */
+
+	return client_p;		
+}
+
+
+

@@ -57,7 +57,6 @@ INCLUDEPATH += include \
 
 
 SOURCES += \
-    src/wheatis_ui.cpp \
     src/base_param_widget.cpp \
     src/file_chooser_widget.cpp \
     src/param_check_box.cpp \
@@ -68,7 +67,8 @@ SOURCES += \
     src/prefs_widget.cpp \
     src/qt_parameter_widget.cpp \
     src/base_prefs_widget.cpp \
-    src/service_prefs_widget.cpp
+    src/service_prefs_widget.cpp \
+    src/client_ui_api.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \

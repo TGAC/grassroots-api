@@ -2,6 +2,7 @@
 #define CLIENT_UI_API_H
 
 #include "wheatis_ui.h"
+#include "client.h"
 
 #ifdef __cplusplus
 extern "C"

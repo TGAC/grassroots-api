@@ -13,10 +13,10 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 static bool AddIrodsCredentials (json_t *root_p, const char * const username_s, const char * const password_s);
 
 
-int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p)
+int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p)
 {
 	int res = -1;
-	char *req_s = json_dumps (json_p, 0);
+	const char *req_s = json_dumps (json_p, 0);
 	
 	if (req_s)
 		{

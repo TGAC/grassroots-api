@@ -15,7 +15,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_NETWORK_API int SendJsonRequest (int socket_fd, uint32 id, json_t *json_p);
+WHEATIS_NETWORK_API int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p);
 
 WHEATIS_NETWORK_API json_t *GetLoginJsonRequest (const char * const username_s, const char *password_s);
 
