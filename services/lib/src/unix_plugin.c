@@ -6,6 +6,7 @@
 #include "memory_allocations.h"
 #include "plugin.h"
 #include "service.h"
+#include "client.h"
 #include "string_utils.h"
 
 typedef struct UnixPlugin
@@ -92,6 +93,7 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
+
 //
 //	Get Symbol
 //
@@ -119,6 +121,65 @@ Service *GetServiceFromPlugin (Plugin * const plugin_p)
 		}
 
 	return plugin_p -> pl_service_p;
+}
+
+//
+//	Get Symbol
+//
+Client *GetClientFromPlugin (Plugin * const plugin_p)
+{
+	if (!plugin_p -> pl_client_p)
+		{
+			const char *symbol_name_s = "AllocateClient";
+			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
+
+			if (unix_plugin_p -> up_handle_p)
+				{
+					Client *(*fn_p) (void) = (Client *(*) (void)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
+
+					if (fn_p)
+						{
+							plugin_p -> pl_client_p = fn_p ();
+							
+							if (plugin_p -> pl_client_p)
+								{
+									plugin_p -> pl_client_p -> cl_plugin_p = plugin_p;
+								}
+						}
+				}
+		}
+
+	return plugin_p -> pl_client_p;
+}
+
+
+
+
+
+bool DeallocatePluginClient (Plugin * const plugin_p)
+{
+	bool success_flag = (plugin_p -> pl_client_p == NULL);
+
+	if (!success_flag)
+		{
+			const char *symbol_name_s = "DeallocateClient";
+			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
+
+			if (unix_plugin_p -> up_handle_p)
+				{
+					void (*fn_p) (Client *) = (void (*) (Client *)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
+
+					if (fn_p)
+						{
+							fn_p (plugin_p -> pl_client_p);
+
+							plugin_p -> pl_client_p = NULL;
+							success_flag = true;
+						}
+				}
+		}
+
+	return success_flag;
 }
 
 

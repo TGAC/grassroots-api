@@ -16,7 +16,7 @@
 
 /*********** FORWARD DECLARATION ****************/
 struct Service;
-
+struct Client;
 
 typedef enum PluginStatus
 {
@@ -44,6 +44,8 @@ typedef struct Plugin
 	PluginStatus pl_status;
 
 	struct Service *pl_service_p;
+	
+	struct Client *pl_client_p;
 } Plugin;
 
 
@@ -70,7 +72,7 @@ typedef struct PluginListNode
 /***********************************/
 
 
-WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
+
 
 
 /**

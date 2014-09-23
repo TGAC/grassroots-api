@@ -1,14 +1,14 @@
 #ifndef LINKED_LIST_ITERATOR_H
 #define LINKED_LIST_ITERATOR_H
 
-#include "wheatis_service_library.h"
+#include "wheatis_util_library.h"
 #include "linked_list.h"
 
 struct Iterator;
 
 typedef struct Iterator 
 {
-	void (*it_get_next_item_fn) (struct Iterator *iterator_p);
+	void *(*it_get_next_item_fn) (struct Iterator *iterator_p);
 } Iterator;
 
 #ifdef __cplusplus

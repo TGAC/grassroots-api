@@ -17,7 +17,6 @@ class ServicePrefsWidget : public QWidget
 	Q_OBJECT
 
 private slots:
-	void ChangeActiveModule (int index);
 	void RefreshConfigValue ();
 
 protected slots:

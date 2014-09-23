@@ -25,7 +25,7 @@ struct Service;
 typedef struct ServiceData
 {
 	/** The service that owns this data. */
-	struct Service *md_service_p;
+	struct Service *sd_service_p;
 } ServiceData;
 
 
@@ -83,6 +83,8 @@ typedef struct
 extern "C"
 {
 #endif
+
+WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p);
 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),

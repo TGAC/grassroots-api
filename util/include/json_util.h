@@ -15,6 +15,9 @@ extern "C"
 
 WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
 
+WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
+
+
 #ifdef __cplusplus
 }
 #endif

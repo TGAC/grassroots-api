@@ -1,22 +1,37 @@
-#ifndef WHEATISUI_H
-#define WHEATISUI_H
 
-#include <QWidget>
+#ifndef WHEATIS_QT_CLIENT_LIBRARY_H
+#define WHEATIS_QT_CLIENT_LIBRARY_H
 
-#include "jansson.h"
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
-class WheatISUI : public QWidget
-{
-	Q_OBJECT
-public:
-	explicit WheatISUI(QWidget *parent = 0);
+#include "library.h"
 
-	bool BuildUI (const json_t *json_p);
+/*
+** Now we use the generic helper definitions above to define LIB_API and LIB_LOCAL.
+** LIB_API is used for the public API symbols. It either DLL imports or DLL exports
+** (or does nothing for static build)
+** LIB_LOCAL is used for non-api symbols.
+*/
 
-signals:
+#ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
+	#ifdef  WHEATIS_QT_CLIENT_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
+		#define WHEATIS_CLIENT_API LIB_HELPER_SYMBOL_EXPORT
+	#else
+		#define WHEATIS_CLIENT_API LIB_HELPER_SYMBOL_IMPORT
+	#endif /* #ifdef WHEATIS_QT_CLIENT_LIBRARY_EXPORTS */
+	#define WHEATIS_CLIENT_LOCAL LIB_HELPER_SYMBOL_LOCAL
+#else /* SHARED_LIBRARY is not defined: this means LIB is a static lib. */
+	#define WHEATIS_CLIENT_API
+	#define WHEATIS_CLIENT_LOCAL
+#endif /* #ifdef SHARED_LIBRARY */
 
-public slots:
+#ifdef __cplusplus
+}
+#endif
 
-};
 
-#endif // WHEATISUI_H
+#endif 	/* #ifndef WHEATIS_QT_CLIENT_LIBRARY_H */
+
+

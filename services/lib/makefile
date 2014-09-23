@@ -27,6 +27,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	
 SRCS 	= \
+	client.c \
 	parameter.c \
 	parameter_set.c \
 	plugin.c \

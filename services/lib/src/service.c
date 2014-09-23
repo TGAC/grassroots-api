@@ -34,6 +34,11 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_match_fn = match_fn;
 	service_p -> se_get_params_fn = get_parameters_fn;
 	service_p -> se_data_p = data_p;
+	
+	if (service_p -> se_data_p)
+		{
+			service_p -> se_data_p -> sd_service_p = service_p;
+		}
 }
 
 
