@@ -34,3 +34,8 @@ ServicePrefsWidget :: ~ServicePrefsWidget ()
 
 }
 
+
+void ServicePrefsWidget :: CheckInterfaceLevel (ParameterLevel level)
+{
+
+}

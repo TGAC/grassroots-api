@@ -24,10 +24,10 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level)
     :	QWidget (parent_p),
 		pw_level (initial_level)
 {
-	QTabWidget *tabs_p = new QTabWidget;
+	pw_tabs_p = new QTabWidget;
 
 	QHBoxLayout *layout_p = new QHBoxLayout;
-	layout_p -> addWidget (tabs_p);
+	layout_p -> addWidget (pw_tabs_p);
 	setLayout (layout_p);
 }
 
@@ -37,11 +37,8 @@ PrefsWidget :: ~PrefsWidget ()
 }
 
 
-void PrefsWidget :: AddServicePage (QTabWidget *tab_p, const json_t * const service_json_p)
+void PrefsWidget :: AddServicePage (const json_t * const service_json_p)
 {
-	QWidget *page_p = new QWidget;
-	QLayout *layout_p = new QVBoxLayout;
-
 	const char *service_name_s = GetServiceNameFromJSON (service_json_p);
 
 	if (service_name_s)
@@ -50,23 +47,31 @@ void PrefsWidget :: AddServicePage (QTabWidget *tab_p, const json_t * const serv
 
 			if (service_description_s)
 				{
-						ParameterSet *params_p = CreateParameterSetFromJSON (service_json_p);
+					ParameterSet *params_p = CreateParameterSetFromJSON (service_json_p);
 
-						if (params_p)
-							{
-								QTParameterWidget *widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
-
-								layout_p -> addWidget (widget_p);
-								page_p -> setLayout (layout_p);
-
-								tab_p -> addTab (page_p, QString (service_name_s));
-
-
-							}		/* if (params_p) */
+					if (params_p)
+						{
+							AddServicePage (service_name_s, service_description_s, params_p);
+						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */
+
 		}		/* if (service_name_s) */
 }
+
+
+void PrefsWidget :: AddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p)
+{
+	QWidget *page_p = new QWidget;
+	QLayout *layout_p = new QVBoxLayout;
+	QTParameterWidget *widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
+
+	layout_p -> addWidget (widget_p);
+	page_p -> setLayout (layout_p);
+
+	pw_tabs_p -> addTab (page_p, QString (service_name_s));
+}
+
 
 
 ParameterLevel PrefsWidget :: GetCurrentParameterLevel () const

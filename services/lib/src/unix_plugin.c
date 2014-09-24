@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include <dlfcn.h>
 
@@ -59,8 +60,16 @@ bool OpenPlugin (Plugin * const plugin_p)
 	UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
 	unix_plugin_p -> up_handle_p = dlopen (plugin_p -> pl_path_s, RTLD_LAZY);
-
-	success_flag = (unix_plugin_p -> up_handle_p != NULL);
+	
+	if (unix_plugin_p -> up_handle_p != NULL)
+		{
+			success_flag = true;
+		}
+	else
+		{
+			char *error_s = dlerror ();
+			fprintf (stderr, "Error opening \"%s\": \"%s\"\n", plugin_p -> pl_path_s, error_s);
+		}
 	
 	return success_flag;
 }
@@ -130,7 +139,7 @@ Client *GetClientFromPlugin (Plugin * const plugin_p)
 {
 	if (!plugin_p -> pl_client_p)
 		{
-			const char *symbol_name_s = "AllocateClient";
+			const char *symbol_name_s = "GetClient";
 			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
 			if (unix_plugin_p -> up_handle_p)
@@ -162,7 +171,7 @@ bool DeallocatePluginClient (Plugin * const plugin_p)
 
 	if (!success_flag)
 		{
-			const char *symbol_name_s = "DeallocateClient";
+			const char *symbol_name_s = "ReleaseClient";
 			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
 			if (unix_plugin_p -> up_handle_p)

@@ -40,7 +40,8 @@ public:
 	ParameterLevel GetCurrentParameterLevel () const;
 
 
-	void AddServicePage (QTabWidget *tab_p, const json_t * const service_json_p);
+	void AddServicePage (const json_t * const service_json_p);
+	void AddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
 
 
 private:
@@ -50,7 +51,7 @@ private:
 	/*********************/
 
 	ParameterLevel pw_level;
-
+	QTabWidget *pw_tabs_p;
 
 
 };

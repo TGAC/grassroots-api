@@ -137,6 +137,12 @@ WHEATIS_UTIL_LOCAL void FreePluginListNode (ListItem * const node_p);
 WHEATIS_UTIL_LOCAL bool IsPluginOpen (const Plugin * const plugin_p);
 
 
+WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
+
+
+WHEATIS_SERVICE_API struct Client *GetClientFromPlugin (Plugin * const plugin_p);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = WheatIS-QT
+TARGET = wheatis-qt-client
 TEMPLATE = lib
 
 VPATH += src include
@@ -87,3 +87,6 @@ HEADERS  += \
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME
+
+target.path = ../../../wheatis_demo/clients/
+INSTALLS += target

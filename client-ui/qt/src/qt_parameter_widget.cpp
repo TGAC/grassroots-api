@@ -1,6 +1,4 @@
-#include <QCheckBox>
-#include <QDoubleSpinBox>
-#include <QLineEdit>
+#include <QLabel>
 
 
 #include "qt_parameter_widget.h"
@@ -16,15 +14,15 @@
 #include "prefs_widget.h"
 
 
-// EPR INCLUDES
+// WHEATIS INCLUDES
 #include "parameter.h"
 #include "string_utils.h"
 
 
 QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
 :	qpw_params_p (parameters_p),
-	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
 	qpw_prefs_widget_p (prefs_widget_p),
+	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
 	qpw_level (initial_level)
 {
 	qpw_form_layout_p = new QFormLayout;
@@ -32,6 +30,9 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 	qpw_form_layout_p -> setLabelAlignment (Qt :: AlignVCenter);
 
 	setLayout (qpw_form_layout_p);
+
+	QLabel *label_p = new QLabel (QString (description_s), this);
+	qpw_form_layout_p -> addRow (QString (name_s), label_p);
 
 	if (qpw_params_p)
 		{

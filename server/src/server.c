@@ -4,6 +4,7 @@
 #include "linked_list.h"
 #include "jansson.h"
 #include "json_tools.h"
+#include "json_util.h"
 #include "service.h"
 #include "time_util.h"
 

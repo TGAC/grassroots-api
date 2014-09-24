@@ -3,20 +3,22 @@
 
 #include "memory_allocations.h"
 #include "linked_list.h"
-
+#include "string_utils.h"
 
 
 void InitialiseClient (Client * const client_p,
 	const char *(*get_client_name_fn) (void),
 	const char *(*get_client_description_fn) (void),
-	int (*run_fn) (ClientData *client_data_p, const char * const filename_s, ParameterSet *param_set_p),
+	int (*run_fn) (ClientData *client_data_p),
+	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p),
 	ClientData *data_p)
 {
 	client_p -> cl_get_client_name_fn = get_client_name_fn;
 	client_p -> cl_get_client_description_fn = get_client_description_fn;
 	client_p -> cl_run_fn = run_fn;
+	client_p -> cl_add_service_fn = add_service_fn;
 	client_p -> cl_data_p = data_p;
-	
+
 	if (client_p -> cl_data_p)
 		{
 			client_p -> cl_data_p -> cd_client_p = client_p;
@@ -24,10 +26,17 @@ void InitialiseClient (Client * const client_p,
 }
 
 
-int RunClient (Client *client_p, const char * const filename_s, ParameterSet *param_set_p)
+int RunClient (Client *client_p)
 {
-	return (client_p -> cl_run_fn (client_p -> cl_data_p, filename_s, param_set_p));
+	return (client_p -> cl_run_fn (client_p -> cl_data_p));
 }
+
+
+int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p)
+{
+	return (client_p -> cl_add_service_fn (client_p -> cl_data_p, service_name_s, service_description_s, params_p));	
+}
+
 
 
 void FreeClient (Client *client_p)
@@ -82,7 +91,7 @@ Client *LoadClient (const char * const clients_path_s, const char * const client
 
 					if (OpenPlugin (plugin_p))
 						{																							
-							Client *client_p = GetClientFromPlugin (plugin_p);
+							client_p = GetClientFromPlugin (plugin_p);
 
 							if (!client_p)
 								{

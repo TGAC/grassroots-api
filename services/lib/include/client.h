@@ -40,8 +40,9 @@ typedef struct Client
 	 */
 	struct Plugin *cl_plugin_p;
 
+	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
 
-	int (*cl_run_fn) (ClientData *client_data_p, const char * const filename_s, ParameterSet *param_set_p);
+	int (*cl_run_fn) (ClientData *client_data_p);
 
  	/**
  	 * Function to get the user-friendly name of the Client.
@@ -76,10 +77,15 @@ extern "C"
 WHEATIS_SERVICE_API void InitialiseClient (Client * const client_p,
 	const char *(*get_client_name_fn) (void),
 	const char *(*get_client_description_fn) (void),
-	int (*run_fn) (ClientData *client_data_p, const char * const filename_s, ParameterSet *param_set_p),
+	int (*run_fn) (ClientData *client_data_p),
+	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p),	
 	ClientData *data_p);
 
-WHEATIS_SERVICE_API int RunClient (Client *client_p, const char * const filename_s, ParameterSet *param_set_p);
+WHEATIS_SERVICE_API int RunClient (Client *client_p);
+
+
+WHEATIS_SERVICE_API	int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
+
 
 /**
  * Free a Service and its associated Parameters and ServiceData.

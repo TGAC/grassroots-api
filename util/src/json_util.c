@@ -1,3 +1,5 @@
+
+#define ALLOCATE_JSON_TAGS
 #include "json_util.h"
 
 

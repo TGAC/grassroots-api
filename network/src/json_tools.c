@@ -2,6 +2,8 @@
 #include "json_tools.h"
 #include "request_tools.h"
 #include "server.h"
+#include "json_util.h"
+
 
 static const char * const S_CREDENTIALS_KEY = "credentials";
 static const char * const S_USERNAME_KEY = "user";
@@ -16,7 +18,7 @@ static bool AddIrodsCredentials (json_t *root_p, const char * const username_s, 
 int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p)
 {
 	int res = -1;
-	const char *req_s = json_dumps (json_p, 0);
+	char *req_s = json_dumps (json_p, 0);
 	
 	if (req_s)
 		{
