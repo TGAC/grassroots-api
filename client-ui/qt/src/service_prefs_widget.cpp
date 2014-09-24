@@ -13,15 +13,15 @@ QTParameterWidget *ServicePrefsWidget :: GetServiceWidget (Service *service_p)
 
 	if (service_p)
 		{
-				const char *module_name_s = service_p -> se_get_service_name_fn ();
-				const char *description_s = service_p -> se_get_service_description_fn ();
-				ParameterSet *params_p = service_p -> se_get_params_fn (service_p -> se_data_p);
-				const ParameterLevel initial_level = PL_BASIC;
+			const char *module_name_s = service_p -> se_get_service_name_fn ();
+			const char *description_s = service_p -> se_get_service_description_fn ();
+			ParameterSet *params_p = service_p -> se_get_params_fn (service_p -> se_data_p);
+			const ParameterLevel initial_level = PL_BASIC;
 
 			if (params_p)
-			{
-				widget_p = new QTParameterWidget (module_name_s, description_s, params_p, NULL, initial_level);
-			}
+				{
+					widget_p = new QTParameterWidget (module_name_s, description_s, params_p, NULL, initial_level);
+				}
 
 		}		/* if (service_p) */
 

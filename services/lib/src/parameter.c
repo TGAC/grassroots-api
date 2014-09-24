@@ -546,6 +546,11 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				break;
 		}		/* switch (param_p -> pa_type) */
 
+	if (success_flag)
+		{
+			success_flag = (json_object_set_new (root_p, PARAM_WHEATIS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0);
+		}
+
 	#ifdef _DEBUG
 	PrintJSON (stderr, root_p, "AddParameterTypeToJSON - root_p :: ");
 	#endif
@@ -615,7 +620,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 	/* Set the parameter's value */
 	json_t *json_value_p = json_object_get (root_p, key_s);
-	
+
 	if (json_value_p)
 		{
 			switch (param_type)
@@ -660,14 +665,14 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 						if (json_is_string (json_value_p))
 							{
 								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
-								
+
 								if (value_s)
 									{
 										if (value_p -> st_string_value_s)
 											{
 												FreeCopiedString (value_p -> st_string_value_s);
 											}
-										
+
 										value_p -> st_string_value_s = value_s;
 										success_flag = true;
 									}
@@ -677,7 +682,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 					default:
 						break;
 				}		/* switch (param_p -> pa_type) */
-			
+
 		}
 
 
@@ -898,35 +903,35 @@ static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType
 {
 	bool success_flag = false;
 	json_t *value_p = json_object_get (json_p, PARAM_WHEATIS_TYPE_INFO_S);
-	
+
 	if (value_p && json_is_integer (value_p))
 		{
 			json_int_t subtype = json_integer_value (value_p);
-			
+
 			if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
 				{
 					*param_type_p = subtype;
 					success_flag = true;
 				}
 		}
-		
-		
+
+
 	return success_flag;
 }
 
 
 static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterMultiOptionArray **options_pp)
 {
-	bool success_flag = false;		
-		
+	bool success_flag = false;
+
 	return success_flag;
 }
 
 
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp)
 {
-	bool success_flag = false;		
-		
+	bool success_flag = false;
+
 	return success_flag;
 }
 

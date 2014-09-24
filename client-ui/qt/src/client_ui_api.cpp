@@ -71,9 +71,9 @@ static QTClientData *AllocateQTClientData (void)
 	if (data_p)
 		{
 			/*
-			 * Before Qt widgets can be created a valid QGUIApplication
+			 * Before Qt widgets can be created a valid QApplication
 			 * must be created. This requires a valid argc, argv pair
-			 * that remain in scope for the entire lifetime of the QGUIApplication
+			 * that remain in scope for the entire lifetime of the QApplication
 			 * object, In addition, argc must be greater than zero and argv must
 			 * contain at least one valid character string.
 			 */
@@ -87,6 +87,7 @@ static QTClientData *AllocateQTClientData (void)
 
 			data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
 			layout_p -> addWidget (data_p -> qcd_prefs_widget_p);
+
 		}
 
 	return data_p;

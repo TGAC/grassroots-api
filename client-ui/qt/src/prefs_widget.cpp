@@ -3,11 +3,13 @@
 #include <QLayout>
 #include <QGroupBox>
 #include <QAction>
+#include <QCheckBox>
 #include <QMenuBar>
 #include <QMenu>
 #include <QDir>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QString>
 #include <QTabWidget>
 
 #include "prefs_widget.h"
@@ -28,6 +30,16 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level)
 
 	QHBoxLayout *layout_p = new QHBoxLayout;
 	layout_p -> addWidget (pw_tabs_p);
+
+	QHBoxLayout *buttons_layout_p = new QVBoxLayout;
+	QPushButton *ok_button_p = new QPushButton (tr ("Ok"), this);
+	QPushButton *cancel_button_p = new QPushButton (tr ("Cancel"), this);
+
+	buttons_layout_p -> addWidget (ok_button_p);
+	buttons_layout_p -> addWidget (cancel_button_p);
+
+	layout_p -> addItem (buttons_layout_p);
+
 	setLayout (layout_p);
 }
 
@@ -67,6 +79,18 @@ void PrefsWidget :: AddServicePage (const char * const service_name_s, const cha
 	QTParameterWidget *widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
 
 	layout_p -> addWidget (widget_p);
+
+	QString s ("Run ");
+	s.append (service_name_s);
+	QCheckBox *run_service_button_p = new QCheckBox (s, page_p);
+	QPushButton *reset_button_p = new QPushButton ("Restore Defaults", page_p);
+
+	QHBoxLayout *buttons_layout_p = new QVBoxLayout;
+	buttons_layout_p -> addWidget (run_service_button_p);
+	buttons_layout_p -> addWidget (reset_button_p);
+
+	layout_p -> addItem (buttons_layout_p);
+
 	page_p -> setLayout (layout_p);
 
 	pw_tabs_p -> addTab (page_p, QString (service_name_s));
