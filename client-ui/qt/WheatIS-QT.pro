@@ -23,7 +23,7 @@ unix {
 }
 
 
-DIR_WHEATIS = /usr/users/ga002/tyrrells/Projects/wheatis
+DIR_WHEATIS = ../../
 
 DIR_WHEATIS_UTIL = $$DIR_WHEATIS/util
 DIR_WHEATIS_UTIL_INC = $$DIR_WHEATIS_UTIL/include
