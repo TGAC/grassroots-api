@@ -9,8 +9,8 @@ MAKEDEPEND 	= gcc -MM -MF
 
 BUILD		= debug
 
-#DIR_IRODS = $$IRODS_HOME
-DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
+DIR_IRODS = $$IRODS_HOME
+#DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 
 DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
@@ -56,8 +56,8 @@ SRCS 	= \
 	irods_stream.c \
 	user.c \
 	query.c \
-	procApiRequest.c \
-	rcSpecificQuery.c
+#	procApiRequest.c \
+#	rcSpecificQuery.c
 
 CPPFLAGS += -DIRODS_UTIL_LIBRARY_EXPORTS -DUNIX -fPIC
 

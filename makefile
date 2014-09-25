@@ -10,7 +10,7 @@ all:
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
 			
-install: 
+install: install_init
 	$(MAKE) -C util install
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C network install
@@ -30,3 +30,10 @@ clean:
 	$(MAKE) -C clients clean
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
+
+install_init:
+	@mkdir -p ../wheatis_demo
+	@mkdir -p ../wheatis_demo/lib
+	@mkdir -p ../wheatis_demo/services
+	@mkdir -p ../wheatis_demo/clients
+
