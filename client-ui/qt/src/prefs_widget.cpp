@@ -28,10 +28,10 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level)
 {
 	pw_tabs_p = new QTabWidget;
 
-	QHBoxLayout *layout_p = new QHBoxLayout;
+	QVBoxLayout *layout_p = new QVBoxLayout;
 	layout_p -> addWidget (pw_tabs_p);
 
-	QHBoxLayout *buttons_layout_p = new QVBoxLayout;
+	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
 	QPushButton *ok_button_p = new QPushButton (tr ("Ok"), this);
 	QPushButton *cancel_button_p = new QPushButton (tr ("Cancel"), this);
 
@@ -41,11 +41,26 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level)
 	layout_p -> addItem (buttons_layout_p);
 
 	setLayout (layout_p);
+
+	connect (ok_button_p, &QAbstractButton :: clicked, 	this, &PrefsWidget :: Accept);
+	connect (cancel_button_p, &QAbstractButton :: clicked, 	this, &PrefsWidget :: Reject);
 }
 
 
 PrefsWidget :: ~PrefsWidget ()
 {
+}
+
+
+void PrefsWidget :: Accept ()
+{
+	emit Finished (QDialog :: Accepted);
+}
+
+
+void PrefsWidget :: Reject ()
+{
+	emit Finished (QDialog :: Rejected);
 }
 
 
@@ -85,7 +100,7 @@ void PrefsWidget :: AddServicePage (const char * const service_name_s, const cha
 	QCheckBox *run_service_button_p = new QCheckBox (s, page_p);
 	QPushButton *reset_button_p = new QPushButton ("Restore Defaults", page_p);
 
-	QHBoxLayout *buttons_layout_p = new QVBoxLayout;
+	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
 	buttons_layout_p -> addWidget (run_service_button_p);
 	buttons_layout_p -> addWidget (reset_button_p);
 

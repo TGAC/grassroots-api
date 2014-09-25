@@ -200,22 +200,29 @@ int main(int argc, char *argv[])
 												
 												if (response_p)
 													{
-														json_t *ops_p = json_object_get (response_p, SERVER_OPERATIONS_S);
+														#ifdef _DEBUG
+														char *response_s = json_dumps (response_p, JSON_INDENT (2));
+														#endif
 														
-														if (ops_p && json_is_array (ops_p))
+														if (json_is_array (response_p))
 															{
 																Client *client_p = LoadClient ("clients", client_s);
 																
 																if (client_p)
 																	{
-																		const size_t num_services = json_array_size (ops_p);
+																		const size_t num_services = json_array_size (response_p);
 																		size_t i = 0;
 																		int res = 0;
 																		
 																		for (i = 0; i < num_services; ++ i)
 																			{
-																				json_t *service_json_p = json_array_get (ops_p, i);																		
+																				json_t *service_json_p = json_array_get (response_p, i);																		
 																				const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+
+																				#ifdef _DEBUG
+																				char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
+																				#endif
+
 
 																				if (service_name_s)
 																					{
@@ -223,17 +230,25 @@ int main(int argc, char *argv[])
 
 																						if (service_description_s)
 																							{
-																								ParameterSet *params_p = CreateParameterSetFromJSON (service_json_p);
+																								json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
 																								
-																								if (params_p)
+																								if (ops_p)
 																									{
-																										int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
-																									}		/* if (params_p) */
-																									
+																										ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
+																										
+																										if (params_p)
+																											{
+																												int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
+																											}		/* if (params_p) */
+																									}
 																							}		/* if (service_description_s)	*/												
 																														
 																					}		/* if (service_name_s) */
 																					
+																				#ifdef _DEBUG
+																				free (service_s);
+																				#endif
+																																									
 																			}		/* for (i = 0; i < num_services; ++ i) */																
 																		
 																		
@@ -245,6 +260,10 @@ int main(int argc, char *argv[])
 
 															}		/* if (json_is_array (response_p)) */
 														
+																																			
+														#ifdef _DEBUG
+														free (response_s);
+														#endif
 													}
 											}
 									}

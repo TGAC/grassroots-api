@@ -4,6 +4,7 @@
 
 #include "json_util.h"
 
+
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListItem *node_p);
 
@@ -164,16 +165,19 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 		{
 			const char *name_s = NULL;
 			const char *description_s = NULL;
-
+			#ifdef _DEBUG
+			char *root_s = json_dumps (root_p, JSON_INDENT (2));
+			#endif
+			
 			/* Get the name */
-			json_t *json_p = json_object_get (root_p, PS_NAME_KEY);
+			json_t *json_p = json_object_get (root_p, PARAM_SET_NAME_S);
 			if (json_p && json_is_string (json_p))
 				{
 					name_s = json_string_value (json_p);
 				}
 
 			/* Get the description */
-			json_p = json_object_get (root_p, PS_DESCRIPTION_KEY);
+			json_p = json_object_get (root_p, PARAM_SET_DESCRIPTION_S);
 			if (json_p && json_is_string (json_p))
 				{
 					description_s = json_string_value (json_p);
@@ -184,7 +188,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 			if (params_p)
 				{
 					/* Get the parameters array */
-					json_p = json_object_get (root_p, PS_PARAMS_KEY);
+					json_p = json_object_get (root_p, PARAM_SET_PARAMS_S);
 					if (json_p && json_is_array (json_p))
 						{
 							size_t num_params = json_array_size (json_p);
@@ -205,8 +209,13 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 										{
 											success_flag = false;
 										}
-									
+										
+									if (success_flag)
+										{
+											++ i;
+										}									
 								}		/* while ((i < num_params) && success_flag) */
+							
 							
 							if (!success_flag)
 								{
@@ -217,6 +226,14 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 						}		/* if (json_p && json_is_array (json_p)) */
 					
 				}		/* if (params_p) */
+			
+			#ifdef DEBUG
+			if (root_s)
+				{
+					free (root_s);
+				}
+			#endif
+		
 			
 		}		/* if (root_p) */
 	

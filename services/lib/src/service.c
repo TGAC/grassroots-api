@@ -336,7 +336,7 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 			
 			if (param_set_json_p)
 				{
-					success_flag = (json_object_set (root_p, "parameters", param_set_json_p) == 0);
+					success_flag = (json_object_set (root_p, PARAM_SET_PARAMS_S, param_set_json_p) == 0);
 					json_decref (param_set_json_p);
 				}
 				

@@ -12,14 +12,13 @@
 
 json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 {
-	json_t *root_p = json_object ();
+	json_t *services_list_json_p = json_array ();
 			
-	if (root_p)
+	if (services_list_json_p)
 		{
 			bool success_flag = true;
-			json_t *operations_p = json_array ();
-			
-			if (operations_p)
+						
+			if (services_list_json_p)
 				{
 					if (services_list_p)
 						{
@@ -31,7 +30,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 									
 									if (service_json_p)
 										{
-											success_flag = (json_array_append_new (operations_p, service_json_p) == 0);
+											success_flag = (json_array_append_new (services_list_json_p, service_json_p) == 0);
 											
 											service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 										}
@@ -43,19 +42,18 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 
 						}		/* if (services_list_p) */
 
-					if (success_flag)
+					if (!success_flag)
 						{
-							if (json_object_set_new (root_p, "operations", operations_p) == 0)
-								{
-									
-								}		/* if (json_object_set_new (root_p, "operations", operations_p) == 0) */
+							json_array_clear (services_list_json_p);
+							json_decref (services_list_json_p);
+							services_list_json_p = NULL;
 						}
 															
 				}		/* if (operations_p) */
 				
-		}		/* if (root_p) */
+		}		/* if (services_list_json_p) */
 
-	return root_p;
+	return services_list_json_p;
 }
 
 

@@ -745,7 +745,26 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 							if (value_s)
 								{
-									success_flag = (json_array_append_new (json_options_p, json_string (value_s)) == 0);
+									json_t *item_p = json_object ();
+									
+									success_flag = false;
+									
+									if (item_p)
+										{											
+											if (json_object_set_new (item_p, SHARED_TYPE_DESCRIPTION_S, json_string (option_p -> pmo_description_s)) == 0)
+												{
+													if (json_object_set_new (item_p, SHARED_TYPE_VALUE_S, json_string (value_s)) == 0)
+														{
+															success_flag = (json_array_append_new (json_options_p, item_p) == 0);
+														}												
+												}
+												
+											if (!success_flag)
+												{
+													json_object_clear (item_p);
+													json_decref (item_p);
+												}													
+										}
 
 									if (alloc_flag)
 										{
@@ -756,7 +775,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 					if (success_flag)
 						{
-							success_flag = (json_object_set (json_p, "enum", json_options_p) == 0);
+							success_flag = (json_object_set (json_p, PARAM_OPTIONS_S, json_options_p) == 0);
 							json_decref (json_options_p);
 						}
 
@@ -853,22 +872,19 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 
 			if (min_p)
 				{
-					success_flag = (json_array_append (json_p, min_p) == 0);
-					json_decref (min_p);
+					success_flag = (json_object_set_new (json_p, PARAM_MIN_S, min_p) == 0);
 				}
 
 			if (max_p)
 				{
 					if (success_flag)
 						{
-							success_flag = (json_array_append (json_p, max_p) == 0);
+							success_flag = (json_object_set_new (json_p, PARAM_MAX_S, max_p) == 0);
 						}
 					else
 						{
-							json_array_append (json_p, max_p);
+							json_decref (max_p);
 						}
-
-					json_decref (max_p);
 				}
 		}
 	else
@@ -920,17 +936,184 @@ static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType
 }
 
 
-static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterMultiOptionArray **options_pp)
+static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterMultiOptionArray **options_pp, const ParameterType pt)
 {
-	bool success_flag = false;
+	bool success_flag = true;
 
+	json_t *options_json_p = json_object_get (json_p, PARAM_OPTIONS_S);
+	
+	if (options_json_p)
+		{
+			success_flag = false;
+				
+			if (json_is_array (options_json_p))
+				{
+					const size_t num_options = json_array_size (options_json_p);
+					
+					const char **descriptions_ss = (const char **) AllocMemoryArray (num_options, sizeof (const char *));
+					
+					if (descriptions_ss)
+						{
+							SharedType *values_p = (SharedType *) AllocMemoryArray (num_options, sizeof (SharedType));
+							
+							if (values_p)
+								{
+									/* fill in the values */
+									const char **description_ss = descriptions_ss;
+									SharedType *value_p = values_p;
+									size_t i = 0;
+									
+									success_flag = true;
+															
+									while (success_flag && (i < num_options))
+										{
+											json_t *json_value_p = json_array_get (options_json_p, i);
+											
+											if (json_value_p)
+												{
+													success_flag = GetValueFromJSON (json_value_p, SHARED_TYPE_VALUE_S, pt, value_p);
+
+													if (success_flag)
+														{
+															json_t *desc_p = json_object_get (json_value_p, SHARED_TYPE_DESCRIPTION_S);
+															
+															if (desc_p && json_is_string (desc_p))
+																{
+																	*description_ss = json_string_value (desc_p);
+																}
+															else
+																{
+																	success_flag = false;
+																}															
+														}
+														
+													/*
+													switch (pt)
+														{
+															case PT_BOOLEAN:
+																if (strcmp (value_s, "true))
+																	{
+																		value_p -> st_boolean_value = true;
+																	}
+																else if (strcmp (value_s, "false"))
+																	{
+																		value_p -> st_boolean_value = false;																		
+																	}
+																else
+																	{
+																		success_flag = false;
+																	}
+																break;
+
+															case PT_SIGNED_INT:
+																{
+																	int value;
+																	
+																	if (GetValidInteger (&value_s, &value))
+																		{
+																			value_p -> st_long_value = value;
+																		}
+																	else
+																		{
+																			success_flag = false;
+																		}
+																}
+																break;
+
+															case PT_UNSIGNED_INT:
+																{
+																	uint32 value;
+																	
+																	if (GetValidInteger (&value_s, &value))
+																		{
+																			value_p -> st_ulong_value = value;
+																		}
+																	else
+																		{
+																			success_flag = false;
+																		}
+																}
+																break;
+
+															case PT_SIGNED_REAL:
+															case PT_UNSIGNED_REAL:
+																{
+																	double64 value;
+																	
+																	if (GetValidRealNumber (&value_s, &value))
+																		{
+																			value_p -> st_ulong_value = value;
+																		}
+																	else
+																		{
+																			success_flag = false;
+																		}
+																}
+																break;
+
+															case PT_STRING:
+															case PT_FILE_TO_WRITE:
+															case PT_FILE_TO_READ:
+															case PT_DIRECTORY:
+																value_p -> st_string_value_s = value_s;
+																break;
+
+															case PT_CHAR:
+																if (strlen (value_s) == 1)
+																	{
+																		value_p -> st_char_value = *value_s;
+																	}
+																else
+																	{
+																		success_flag = false;
+																	}
+																break;
+
+															default:
+																success_flag = false;
+																break;
+														}
+													*/
+												}
+																						
+											if (success_flag)
+												{
+													++ i;
+													++ description_ss;
+													++ value_p;
+												}
+												
+										}		/* while (success_flag && (i > 0)) */
+									
+									if (success_flag)
+										{
+											ParameterMultiOptionArray *options_array_p = AllocateParameterMultiOptionArray (num_options, descriptions_ss, values_p, pt);
+											
+											if (options_array_p)
+												{
+													*options_pp = options_array_p;
+												}
+											else
+												{
+													success_flag = false;
+												}
+										}
+																		
+									FreeMemory (values_p);
+								}		/* if (values_p) */
+							
+							FreeMemory (descriptions_ss);
+						}		/* if (descriptions_ss) */
+				}
+		}
+	
 	return success_flag;
 }
 
 
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp)
 {
-	bool success_flag = false;
+	bool success_flag = true;
 
 	return success_flag;
 }
@@ -960,10 +1143,11 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 							ParameterBounds *bounds_p = NULL;
 							ParameterLevel level = PL_BASIC;
 
-
+							memset (&def, 0, sizeof (SharedType));
+							
 							bool default_value_flag = GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def);
 
-							if (GetParameterOptionsFromJSON (root_p, &options_p))
+							if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
 								{
 									if (GetParameterBoundsFromJSON (root_p, &bounds_p))
 										{

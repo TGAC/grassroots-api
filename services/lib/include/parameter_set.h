@@ -5,10 +5,7 @@
 
 #include "linked_list.h"
 #include "parameter.h"
-
-#define PS_NAME_KEY		("name")
-#define PS_DESCRIPTION_KEY		("description")
-#define PS_PARAMS_KEY		("params")
+#include "json_util.h"
 
 /**
  * A set of Parameters along with an optional name

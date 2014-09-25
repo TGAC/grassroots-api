@@ -9,6 +9,7 @@
 #include "prefs_widget.h"
 
 #include "memory_allocations.h"
+#include "string_utils.h"
 
 typedef struct QTClientData
 {
@@ -16,10 +17,10 @@ typedef struct QTClientData
 	QApplication *qcd_app_p;
 	QDialog *qcd_window_p;
 	PrefsWidget *qcd_prefs_widget_p;
+	char *qcd_dummy_arg_s;
 }QTClientData;
 
 static int s_dummy_argc = 1;
-static char *s_dummy_arg_s = "WheatIS";
 
 static QTClientData *AllocateQTClientData (void);
 static void FreeQTClientData (QTClientData *qt_data_p);
@@ -77,17 +78,28 @@ static QTClientData *AllocateQTClientData (void)
 			 * object, In addition, argc must be greater than zero and argv must
 			 * contain at least one valid character string.
 			 */
+			data_p -> qcd_dummy_arg_s = CopyToNewString ("WheatIS", 0, false);
 
-			data_p -> qcd_app_p = new QApplication (s_dummy_argc, &s_dummy_arg_s);
+			if (data_p -> qcd_dummy_arg_s)
+				{
+					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
 
-			QHBoxLayout *layout_p = new QHBoxLayout;
+					QHBoxLayout *layout_p = new QHBoxLayout;
 
-			data_p -> qcd_window_p = new QDialog;
-			data_p -> qcd_window_p -> setLayout (layout_p);
+					data_p -> qcd_window_p = new QDialog;
+					data_p -> qcd_window_p -> setLayout (layout_p);
 
-			data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
-			layout_p -> addWidget (data_p -> qcd_prefs_widget_p);
+					data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
+					layout_p -> addWidget (data_p -> qcd_prefs_widget_p);
 
+					QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QDialog :: done);
+
+				}
+			else
+				{
+					FreeMemory (data_p);
+					data_p = NULL;
+				}
 		}
 
 	return data_p;
@@ -98,6 +110,7 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 {
 	delete (qt_data_p -> qcd_window_p);
 	delete (qt_data_p -> qcd_app_p);
+	FreeCopiedString (qt_data_p -> qcd_dummy_arg_s);
 
 	FreeMemory (qt_data_p);
 }
@@ -111,7 +124,7 @@ static const char *GetQTClientName (void)
 
 static const char *GetQTClientDescription (void)
 {
-	return "Qt-based WheatIS client";
+	return "A Qt-based WheatIS client user interface";
 }
 
 
@@ -119,6 +132,8 @@ static int RunQTClient (ClientData *client_data_p)
 {
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 	int res = qt_data_p -> qcd_window_p -> exec ();
+
+	printf ("res %d\n", res);
 
 	return res;
 }
