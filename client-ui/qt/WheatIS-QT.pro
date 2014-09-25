@@ -66,8 +66,6 @@ SOURCES += \
     src/param_text_box.cpp \
     src/prefs_widget.cpp \
     src/qt_parameter_widget.cpp \
-    src/base_prefs_widget.cpp \
-    src/service_prefs_widget.cpp \
     src/client_ui_api.cpp
 
 HEADERS  += \
@@ -81,8 +79,6 @@ HEADERS  += \
     include/param_text_box.h \
     include/prefs_widget.h \
     include/qt_parameter_widget.h \
-    include/base_prefs_widget.h \
-    include/service_prefs_widget.h \
     include/client_ui_api.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
