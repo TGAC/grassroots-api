@@ -23,7 +23,7 @@ unix {
 }
 
 
-DIR_WHEATIS = ../../..
+DIR_WHEATIS = ../..
 
 DIR_WHEATIS_UTIL = $$DIR_WHEATIS/util
 DIR_WHEATIS_UTIL_INC = $$DIR_WHEATIS_UTIL/include
@@ -84,7 +84,8 @@ HEADERS  += \
     include/service_prefs_widget.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
- -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME
+ -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \
+   -lpthread -ljansson
 
 target.path = ../../../wheatis_demo/clients/
 INSTALLS += target

@@ -256,6 +256,11 @@ int main(int argc, char *argv[])
 																		client_results_p = RunClient (client_p);
 																		if (client_results_p)
 																			{
+																				char *client_results_s = json_dumps (client_results_p, 0);
+																				
+																				printf ("%s\n", client_results_s);
+																				
+																				free (client_results_s);
 																			}
 																		else
 																			{

@@ -55,7 +55,11 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 							param_p -> pa_default = default_value;
 							param_p -> pa_bounds_p = bounds_p;
 							param_p -> pa_level = level;
-
+							
+							//memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
+							memcpy (& (param_p -> pa_current_value), & (param_p -> pa_default), sizeof (SharedType));
+							
+							
 							return param_p;
 						}		/* if (param_p) */
 

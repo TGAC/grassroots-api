@@ -140,7 +140,7 @@ static json_t *RunQTClient (ClientData *client_data_p)
 	/* Did the user choose to run anything? */
 	if (res == QDialog :: Accepted)
 		{
-
+			res_p = qt_data_p -> qcd_prefs_widget_p -> GetUserValuesAsJSON ();
 		}
 
 

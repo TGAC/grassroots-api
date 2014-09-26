@@ -34,6 +34,12 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 }
 
 
+ServicePrefsWidget :: ~ServicePrefsWidget ()
+{
+
+}
+
+
 void ServicePrefsWidget :: SetRunFlag (int state)
 {
 	spw_run_flag = (state == Qt :: Checked);
