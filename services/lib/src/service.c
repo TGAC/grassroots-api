@@ -12,7 +12,7 @@ static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_
 
 static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p);
 
-static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p);
+static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag);
 
 
 
@@ -245,7 +245,7 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 										{
 											if (AddServiceDescriptionToJSON (service_p, operation_p))
 												{
-													if (AddServiceParameterSetToJSON (service_p, operation_p))
+													if (AddServiceParameterSetToJSON (service_p, operation_p, true))
 														{
 															success_flag = true;
 														}
@@ -325,14 +325,14 @@ static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t
 }
 
 
-static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p)
+static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag)
 {
 	bool success_flag = false;
 	ParameterSet *param_set_p = GetServiceParameters (service_p);
 	
 	if (param_set_p)
 		{
-			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p);
+			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p, full_definition_flag);
 			
 			if (param_set_json_p)
 				{

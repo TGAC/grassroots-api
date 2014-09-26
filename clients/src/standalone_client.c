@@ -213,6 +213,7 @@ int main(int argc, char *argv[])
 																		const size_t num_services = json_array_size (response_p);
 																		size_t i = 0;
 																		int res = 0;
+																		json_t *client_results_p = NULL;
 																		
 																		for (i = 0; i < num_services; ++ i)
 																			{
@@ -251,11 +252,15 @@ int main(int argc, char *argv[])
 																																									
 																			}		/* for (i = 0; i < num_services; ++ i) */																
 																		
-																		
-																		res = RunClient (client_p);
-																		if (res < 0)
+																		/* Get the results of the user's configuration */																		
+																		client_results_p = RunClient (client_p);
+																		if (client_results_p)
 																			{
 																			}
+																		else
+																			{
+																			}
+																		
 																	}		/* if (client_p) */
 
 															}		/* if (json_is_array (response_p)) */

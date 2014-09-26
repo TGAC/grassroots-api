@@ -18,6 +18,9 @@
 #include "qt_parameter_widget.h"
 
 
+#include "service.h"
+
+
 using namespace std;
 
 
@@ -64,7 +67,7 @@ void PrefsWidget :: Reject ()
 }
 
 
-void PrefsWidget :: AddServicePage (const json_t * const service_json_p)
+void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p)
 {
 	const char *service_name_s = GetServiceNameFromJSON (service_json_p);
 
@@ -78,7 +81,7 @@ void PrefsWidget :: AddServicePage (const json_t * const service_json_p)
 
 					if (params_p)
 						{
-							AddServicePage (service_name_s, service_description_s, params_p);
+							CreateAndAddServicePage (service_name_s, service_description_s, params_p);
 						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */
@@ -87,28 +90,12 @@ void PrefsWidget :: AddServicePage (const json_t * const service_json_p)
 }
 
 
-void PrefsWidget :: AddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p)
+void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p)
 {
-	QWidget *page_p = new QWidget;
-	QLayout *layout_p = new QVBoxLayout;
-	QTParameterWidget *widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
+	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, params_p, this);
 
-	layout_p -> addWidget (widget_p);
-
-	QString s ("Run ");
-	s.append (service_name_s);
-	QCheckBox *run_service_button_p = new QCheckBox (s, page_p);
-	QPushButton *reset_button_p = new QPushButton ("Restore Defaults", page_p);
-
-	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
-	buttons_layout_p -> addWidget (run_service_button_p);
-	buttons_layout_p -> addWidget (reset_button_p);
-
-	layout_p -> addItem (buttons_layout_p);
-
-	page_p -> setLayout (layout_p);
-
-	pw_tabs_p -> addTab (page_p, QString (service_name_s));
+	pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
+	pw_service_widgets.append (service_widget_p);
 }
 
 
@@ -129,29 +116,36 @@ void PrefsWidget :: SetInterfaceLevel (ParameterLevel level)
 }
 
 
-
-void PrefsWidget :: ShowServiceConfigurationWidget (Service *service_p)
+json_t *PrefsWidget :: GetUserValuesAsJSON () const
 {
-	if (service_p)
+	json_t *root_p = json_array ();
+
+	if (root_p)
 		{
-			const char * const name_s = service_p -> se_get_service_name_fn ();
-			const char * const description_s = service_p -> se_get_service_description_fn ();
-			ParameterSet *params_p = service_p -> se_get_params_fn (service_p -> se_data_p);
+			const int num_services = pw_service_widgets.size ();
+			int i = 0;
+			bool success_flag = true;
 
-			if (params_p)
+			while (success_flag && (i < num_services))
 				{
-					QTParameterWidget *widget_p = new QTParameterWidget (name_s, description_s, params_p, this, pw_level);
+					ServicePrefsWidget *spw_p = pw_service_widgets.at (i);
+					json_t *service_json_p = spw_p -> GetServiceParamsAsJSON ();
 
-					if (widget_p)
+					if (service_json_p)
 						{
-							layout()->addWidget (widget_p);
+							success_flag = (json_array_append_new (root_p, service_json_p) == 0);
+						}
 
-						}		/* if (widget_p) */
+					if (success_flag)
+						{
+							++ i;
+						}
+				}
 
-					FreeParameterSet (params_p);
-				}		/* if (params_p) */
+		}		/* if (root_p) */
 
-		}		/* if (service_p) */
 
+	return root_p;
 }
+
 

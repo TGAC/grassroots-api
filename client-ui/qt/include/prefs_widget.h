@@ -1,15 +1,17 @@
-#ifndef EPRMAIN_H
-#define EPRMAIN_H
+#ifndef PREFS_WIDGET_H
+#define PREFS_WIDGET_H
 
+#include <QList>
 #include <QMainWindow>
 #include <QTabWidget>
 #include <QWidget>
 
 #include "parameter.h"
-#include "service.h"
 
-// forward class declaration
-class LibraryPrefsWidget;
+#include "jansson.h"
+
+#include "service_prefs_widget.h"
+
 
 /**
  * @brief The PrefsWidget class
@@ -37,15 +39,14 @@ public:
 
 	~PrefsWidget ();
 
-
-	void ShowServiceConfigurationWidget (Service *service_p);
-
 	ParameterLevel GetCurrentParameterLevel () const;
 
 
-	void AddServicePage (const json_t * const service_json_p);
-	void AddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
+	void CreateAndAddServicePage (const json_t * const service_json_p);
+	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
 
+
+	json_t *GetUserValuesAsJSON () const;
 
 private:
 
@@ -55,9 +56,9 @@ private:
 
 	ParameterLevel pw_level;
 	QTabWidget *pw_tabs_p;
-
+	QList <ServicePrefsWidget *> pw_service_widgets;
 
 };
 
 
-#endif // EPRMAIN_H
+#endif // PREFS_WIDGET_H

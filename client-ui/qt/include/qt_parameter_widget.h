@@ -31,6 +31,8 @@ public:
 
 	void AddParameters (ParameterSet *params_p);
 
+	json_t *GetParameterValuesAsJSON () const;
+
 
 private:
 	ParameterSet *qpw_params_p;

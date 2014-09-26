@@ -112,7 +112,7 @@ void FreeParameterNode (ListItem *node_p)
 }
 
 
-json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p)
+json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag)
 {
 	json_t *root_p = json_array ();
 
@@ -123,7 +123,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p)
 			
 			while (success_flag && node_p)
 				{
-					json_t *param_json_p = GetParameterAsJSON (node_p -> pn_parameter_p);
+					json_t *param_json_p = GetParameterAsJSON (node_p -> pn_parameter_p, full_definition_flag);
 				
 					if (param_json_p)
 						{

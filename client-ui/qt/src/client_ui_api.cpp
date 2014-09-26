@@ -4,6 +4,7 @@
 #include <QDialog>
 
 
+
 #include "client_ui_api.h"
 
 #include "prefs_widget.h"
@@ -27,7 +28,7 @@ static void FreeQTClientData (QTClientData *qt_data_p);
 
 static const char *GetQTClientName (void);
 static const char *GetQTClientDescription (void);
-static int RunQTClient (ClientData *client_data_p);
+static json_t *RunQTClient (ClientData *client_data_p);
 static int AddServiceToQTClient (ClientData *client_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
 
 
@@ -128,14 +129,22 @@ static const char *GetQTClientDescription (void)
 }
 
 
-static int RunQTClient (ClientData *client_data_p)
+static json_t *RunQTClient (ClientData *client_data_p)
 {
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
+	json_t *res_p = NULL;
 	int res = qt_data_p -> qcd_window_p -> exec ();
 
 	printf ("res %d\n", res);
 
-	return res;
+	/* Did the user choose to run anything? */
+	if (res == QDialog :: Accepted)
+		{
+
+		}
+
+
+	return res_p;
 }
 
 
@@ -144,7 +153,7 @@ static int AddServiceToQTClient (ClientData *client_data_p, const char * const s
 	int res = -1;
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 
-	qt_data_p -> qcd_prefs_widget_p -> AddServicePage (service_name_s, service_description_s, params_p);
+	qt_data_p -> qcd_prefs_widget_p -> CreateAndAddServicePage (service_name_s, service_description_s, params_p);
 
 
 	return res;

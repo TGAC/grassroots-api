@@ -1,8 +1,7 @@
+#include <QDebug>
+
 #include "param_spin_box.h"
 #include "prefs_widget.h"
-
-#include "math_utils.h"
-#include "string_utils.h"
 
 
 ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
@@ -39,6 +38,10 @@ QWidget *ParamSpinBox :: GetQWidget ()
 
 bool ParamSpinBox :: UpdateConfig (int value)
 {
-	return SetParameterValue (bpw_param_p, &value);
+	bool b = SetParameterValue (bpw_param_p, &value);
+
+	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
+
+	return b;
 }
 

@@ -1,3 +1,5 @@
+#include <QDebug>
+
 #include "param_combo_box.h"
 #include "prefs_widget.h"
 
@@ -52,13 +54,76 @@ bool ParamComboBox :: UpdateConfig (int index)
 	bool success_flag = false;
 	QVariant v = pcb_combo_box_p -> itemData (index);
 
-	if (bpw_param_p -> pa_type == PT_STRING)
+	switch (bpw_param_p -> pa_type)
 		{
-			QString s (v.toString ());
-			QByteArray ba = s.toLocal8Bit ();
+			case PT_STRING:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+			case PT_DIRECTORY:
+				{
+					QString s (v.toString ());
+					QByteArray ba = s.toLocal8Bit ();
 
+					const char *value_s = ba.constData ();
 
+					success_flag = SetParameterValue (bpw_param_p, value_s);
+
+					qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
+				}
+				break;
+
+			case PT_CHAR:
+				{
+					QChar qc = v.toChar ();
+					char c = qc.toLatin1 ();
+					success_flag = SetParameterValue (bpw_param_p, &c);
+
+					qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << c;
+				}
+				break;
+
+			case PT_BOOLEAN:
+				{
+					bool b = v.toBool ();
+					success_flag = SetParameterValue (bpw_param_p, &b);
+
+					qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << b;
+				}
+				break;
+
+			case PT_SIGNED_INT:
+			case PT_UNSIGNED_INT:
+				{
+					bool conv_flag = false;
+					int i = v.toInt (&conv_flag);
+
+					if (conv_flag)
+						{
+							success_flag = SetParameterValue (bpw_param_p, &i);
+							qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << i;
+						}
+				}
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				{
+					bool conv_flag = false;
+					double d = v.toDouble (&conv_flag);
+
+					if (conv_flag)
+						{
+							success_flag = SetParameterValue (bpw_param_p, &d);
+
+							qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << d;
+						}
+				}
+				break;
+
+			default:
+				break;
 		}
+
 
 	return success_flag;
 }

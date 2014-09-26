@@ -204,10 +204,14 @@ WHEATIS_SERVICE_API bool SetParameterValue (Parameter * const parameter_p, const
  * Get the json-based representation of a Parameter.
  *
  * @param parameter_p The Parameter to get.
+ * @param full_definition_flag If this is <code>true</code> then all of the details for this
+ * Parameter will get added. If this is <code>false</code> then just the name and current value
+ * will get added. This is useful is you just want to send the values to use when running a 
+ * service.
  * @return A newly-allocated json-based description of the Parameter or <code>NULL</code>
  * upon error. When you no longer require the value you need to call json_decref upon it.
  */
-WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const parameter_p);
+WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
 
 
 /**

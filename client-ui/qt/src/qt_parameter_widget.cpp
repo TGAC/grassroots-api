@@ -177,3 +177,8 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 	return NULL;
 }
 
+
+json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
+{
+	return GetParameterSetAsJSON (qpw_params_p, false);
+}

@@ -77,10 +77,14 @@ WHEATIS_SERVICE_API bool CreateAndAddParameterToParameterSet (ParameterSet *para
  * as much as possible.
  * 
  * @param param_set_p The ParameterSet to generate the description for.
+ * @param full_definition_flag If this is <code>true</code> then all of the details for each of
+ * the Parameters will get added. If this is <code>false</code> then just the name and 
+ * current value of each Parameter will get added. This is useful is you just want to send 
+ * the values to use when running a service. 
  * @return The json-based representation of the ParameterSet or <code>NULL</code> if there was
  * an error.
  */
-WHEATIS_SERVICE_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p);
+WHEATIS_SERVICE_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
 
 
 /**

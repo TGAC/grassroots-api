@@ -1,3 +1,5 @@
+#include <QDebug>
+
 #include "param_check_box.h"
 #include "prefs_widget.h"
 
@@ -22,7 +24,11 @@ ParamCheckBox ::	~ParamCheckBox ()
 
 bool ParamCheckBox :: UpdateConfig (int state)
 {
-	return SetParameterValue (bpw_param_p, &state);
+	bool b = SetParameterValue (bpw_param_p, &state);
+
+	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << state;
+
+	return b;
 }
 
 
