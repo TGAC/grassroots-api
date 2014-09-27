@@ -57,6 +57,8 @@ PREFIX const char *PARAM_MAX_S  VAL("max");
 PREFIX const char *SHARED_TYPE_DESCRIPTION_S  VAL("descrtiption");
 PREFIX const char *SHARED_TYPE_VALUE_S  VAL("value");
 
+PREFIX const char *TAG_INPUT_NAME_S VAL("input");
+PREFIX const char *TAG_OUTPUT_NAME_S VAL("output");
 
 
 #ifdef __cplusplus

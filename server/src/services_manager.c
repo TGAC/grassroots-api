@@ -10,7 +10,7 @@
 
 
 
-json_t *GetServicesListAsJSON (LinkedList *services_list_p)
+json_t *GetServicesListAsJSON (LinkedList *services_list_p, TagItem *tags_p)
 {
 	json_t *services_list_json_p = json_array ();
 			
@@ -26,7 +26,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p)
 
 							while (success_flag && service_node_p)
 								{
-									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p);
+									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, tags_p);
 									
 									if (service_json_p)
 										{

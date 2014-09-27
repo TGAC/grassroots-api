@@ -26,12 +26,12 @@ static const char *GetCompressServiceName (void);
 
 static const char *GetCompressServiceDesciption (void);
 
-static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p);
+static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, TagItem *tags_p);
 
 
-static int RunCompressService (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p);
+static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-static bool IsFileForCompressService (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p);
+static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p);
 
 
 
@@ -81,7 +81,7 @@ static const char *GetCompressServiceDesciption (void)
 }
 
 
-static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p)
+static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, TagItem *tags_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 
@@ -123,7 +123,7 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p)
 
 
 
-static int RunCompressService (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p)
+static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p)
 {
 	int result = -1;
 
@@ -131,10 +131,17 @@ static int RunCompressService (ServiceData *service_data_p, const char * const f
 }
 
 
-static bool IsFileForCompressService (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p)
+static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p)
 {
 	bool interested_flag = true;
-
+	const char *filename_s = NULL;
+	TagItem *input_filename_tag_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
+	
+	if (input_filename_tag_p)
+		{
+			filename_s = input_filename_tag_p -> ti_value.st_string_value_s;
+		}
+	
 	/*
 	 * @TODO
 	 * We could check if the file is on a remote filesystem and if so

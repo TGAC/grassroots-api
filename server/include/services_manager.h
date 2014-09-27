@@ -5,6 +5,8 @@
 #include "jansson.h"
 #include "linked_list.h"
 #include "wheatis_service_manager_library.h"
+#include "tag_item.h"
+
 
 typedef struct ServicesManager 
 {
@@ -20,7 +22,7 @@ extern "C"
 #endif	
 
 
-WHEATIS_SERVICE_MANAGER_API json_t *GetServicesListAsJSON (LinkedList *services_list_p);
+WHEATIS_SERVICE_MANAGER_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, TagItem *tags_p);
 
 
 WHEATIS_SERVICE_MANAGER_API void FreeServicesString (char *services_json_s);

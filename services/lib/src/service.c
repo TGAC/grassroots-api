@@ -12,7 +12,7 @@ static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_
 
 static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p);
 
-static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag);
+static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag, TagItem *tags_p);
 
 
 
@@ -20,9 +20,9 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
-	int (*run_fn) (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p),
-	bool (*match_fn) (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p),
-	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p),
+	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p),
+	bool (*match_fn) (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p),
+	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, TagItem *tags_p),
 	ServiceData *data_p)
 {
 	service_p -> se_get_service_name_fn = get_service_name_fn;
@@ -70,7 +70,7 @@ void FreeServiceNode (ListItem * const node_p)
 
 
 
-LinkedList *LoadMatchingServices (const char * const services_path_s, const char * const filename_s, Stream *stream_p)
+LinkedList *LoadMatchingServices (const char * const services_path_s, TagItem *tags_p, Stream *stream_p)
 {
 	LinkedList *services_list_p = AllocateLinkedList (FreeServiceNode);
 	
@@ -105,9 +105,9 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, const char
 																{
 																	using_service_flag = true;
 																	
-																	if (filename_s)
+																	if (tags_p && (tags_p -> ti_tag != TAG_DONE))
 																		{
-																			using_service_flag = DoesFileMatchService (service_p, filename_s, stream_p);
+																			using_service_flag = IsServiceMatch (service_p, tags_p, stream_p);
 																		}
 																	
 																	if (using_service_flag)
@@ -168,15 +168,15 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, const char
 }
 
 
-int RunService (Service *service_p, const char *filename_s, ParameterSet *param_set_p)
+int RunService (Service *service_p, ParameterSet *param_set_p)
 {
-	return service_p -> se_run_fn (service_p -> se_data_p, filename_s, param_set_p);
+	return service_p -> se_run_fn (service_p -> se_data_p, param_set_p);
 }
 
 
-bool DoesFileMatchService (Service *service_p, const char *filename_s, Stream *stream_p)
+bool IsServiceMatch (Service *service_p, TagItem *tags_p, Stream *stream_p)
 {
-	return service_p -> se_match_fn (service_p -> se_data_p, filename_s, stream_p);	
+	return service_p -> se_match_fn (service_p -> se_data_p, tags_p, stream_p);	
 }
 
 
@@ -194,13 +194,13 @@ const char *GetServiceDescription (const Service *service_p)
 }
 
 
-ParameterSet *GetServiceParameters (const Service *service_p)
+ParameterSet *GetServiceParameters (const Service *service_p, TagItem *tags_p)
 {
-	return service_p -> se_get_params_fn (service_p -> se_data_p);
+	return service_p -> se_get_params_fn (service_p -> se_data_p, tags_p);
 }
 
 
-json_t *GetServiceAsJSON (const Service * const service_p)
+json_t *GetServiceAsJSON (const Service * const service_p, TagItem *tags_p)
 {
 	json_t *root_p = json_object ();
 	
@@ -245,7 +245,7 @@ json_t *GetServiceAsJSON (const Service * const service_p)
 										{
 											if (AddServiceDescriptionToJSON (service_p, operation_p))
 												{
-													if (AddServiceParameterSetToJSON (service_p, operation_p, true))
+													if (AddServiceParameterSetToJSON (service_p, operation_p, true, tags_p))
 														{
 															success_flag = true;
 														}
@@ -325,10 +325,10 @@ static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t
 }
 
 
-static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag)
+static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag, TagItem *tags_p)
 {
 	bool success_flag = false;
-	ParameterSet *param_set_p = GetServiceParameters (service_p);
+	ParameterSet *param_set_p = GetServiceParameters (service_p, tags_p);
 	
 	if (param_set_p)
 		{
@@ -350,13 +350,3 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 	
 	return success_flag;
 }
-
-
-
-
-
-
-
-
-
-

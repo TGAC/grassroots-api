@@ -10,6 +10,7 @@
 #include "user_details.h"
 
 #include "jansson.h"
+#include "tag_item.h"
 
 
 /**
@@ -42,9 +43,9 @@ typedef struct Service
 	struct Plugin *se_plugin_p;
 
 
-	int (*se_run_fn) (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p);
+	int (*se_run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-	bool (*se_match_fn) (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p);
+	bool (*se_match_fn) (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p);
 
 	bool (*se_has_permissions_fn) (ServiceData *service_data_p, const UserDetails * const user_p);
 
@@ -61,7 +62,7 @@ typedef struct Service
 	/**
 	 * Function to get the ParameterSet for this Service.
 	 */
-	ParameterSet * (*se_get_params_fn) (ServiceData *service_data_p);
+	ParameterSet * (*se_get_params_fn) (ServiceData *service_data_p, TagItem *tags_p);
 
 
 	/**
@@ -89,14 +90,14 @@ WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
-	int (*run_fn) (ServiceData *service_data_p, const char * const filename_s, ParameterSet *param_set_p),
-	bool (*match_fn) (ServiceData *service_data_p, const char * const filename_s, Stream *stream_p),
-	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p),
+	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p),
+	bool (*match_fn) (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p),
+	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, TagItem *tags_p),
 	ServiceData *data_p);
 
-WHEATIS_SERVICE_API int RunService (Service *service_p, const char * const filename_s, ParameterSet *param_set_p);
+WHEATIS_SERVICE_API int RunService (Service *service_p, ParameterSet *param_set_p);
 
-WHEATIS_SERVICE_API bool DoesFileMatchService (Service *service_p, const char * const filename_s, Stream *stream_p);
+WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, TagItem *tags_p, Stream *stream_p);
 
 
 /**
@@ -125,7 +126,7 @@ WHEATIS_SERVICE_API const char *GetServiceDescription (const Service *service_p)
  * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
  * @see FreeParameterSet.
  */
-WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (const Service *service_p);
+WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (const Service *service_p, TagItem *tags_p);
 
 
 /**
@@ -142,7 +143,7 @@ WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
 WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
 
-WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const services_path_s, const char * const pattern_s, Stream *stream_p);
+WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const services_path_s, TagItem *tags_p, Stream *stream_p);
 
 
 /**
@@ -153,7 +154,7 @@ WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const service
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
  */
-WHEATIS_SERVICE_API json_t *GetServiceAsJSON (const Service * const service_p);
+WHEATIS_SERVICE_API json_t *GetServiceAsJSON (const Service * const service_p, TagItem *tags_p);
 
 
 

@@ -28,7 +28,7 @@ static json_t *GetInterestedServices (const json_t * const req_p);
 
 static json_t *GetAllServices (const json_t * const req_p);
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, Stream *stream_p);
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Stream *stream_p);
 
 
 /***************************/
@@ -108,9 +108,9 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 						{
 							/* is it a single file or a dir? */
 							json_t *data_name_p = json_object_get (group_p, KEY_FILENAME);
-					
+							
 							if (data_name_p)
-								{
+								{									
 									if (json_is_string (data_name_p))
 										{
 											const char *data_name_s = json_string_value (data_name_p);
@@ -118,7 +118,12 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 											
 											if (stream_p)
 												{
-													res_p = GetServices (SERVICES_PATH, username_s, password_s, data_name_s, stream_p);
+													SharedType filename;
+													TagItem tags [2] = { { TAG_INPUT_FILE, filename}, { TAG_DONE, 0} };
+													
+													filename.st_string_value_s = data_name_s;
+													
+													res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, stream_p);
 													FreeIRodsStream (stream_p);
 												}
 										}
@@ -201,12 +206,12 @@ static json_t *GetAllModifiedData (const json_t * const req_p)
 
 
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, const char * const filename_s, Stream *stream_p)
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Stream *stream_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (services_path_s, filename_s, stream_p);
+	LinkedList *services_list_p = LoadMatchingServices (services_path_s, tags_p, stream_p);
 	
-	json_p = GetServicesListAsJSON (services_list_p);
+	json_p = GetServicesListAsJSON (services_list_p, tags_p);
 
 	if (services_list_p)
 		{

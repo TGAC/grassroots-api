@@ -32,6 +32,7 @@ SRCS 	= \
 	parameter_set.c \
 	plugin.c \
 	service.c \
+	tag_item.c \
 	user_details.c \
 	unix_plugin.c
 
