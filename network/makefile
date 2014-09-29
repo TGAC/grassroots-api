@@ -34,8 +34,9 @@ INCLUDES = \
 	
 	
 SRCS 	= \
+	byte_buffer.c \
 	json_tools.c \
-	request_tools.c
+	request_tools.c 
 	
 
 ifeq ($(BUILD),release)

@@ -4,6 +4,8 @@
 #include "memory_allocations.h"
 #include "linked_list.h"
 #include "string_utils.h"
+#include "filesystem_utils.h"
+
 
 
 void InitialiseClient (Client * const client_p,

@@ -7,7 +7,7 @@ BaseParamWidget	:: BaseParamWidget (Parameter * const param_p, const PrefsWidget
 	: bpw_param_p (param_p),
 		bpw_prefs_widget_p (prefs_widget_p)
 {
-	bpw_param_name_s = CopyToNewString (param_p -> pa_name_s, 0, false);
+	bpw_param_name_s = CopyToNewString (param_p -> pa_name_s, 0, false);	
 }
 
 

@@ -25,6 +25,7 @@ public:
 
 	virtual QWidget *GetQWidget ();
 
+	virtual void SetDefaultValue ();
 
 private:
 	QWidget *fcw_widget_p;

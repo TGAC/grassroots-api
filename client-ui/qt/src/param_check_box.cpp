@@ -32,6 +32,15 @@ bool ParamCheckBox :: UpdateConfig (int state)
 }
 
 
+void ParamCheckBox :: SetDefaultValue ()
+{
+	bool b = bpw_param_p -> pa_default.st_boolean_value;
+
+	pcb_check_box_p -> setChecked (b);
+}
+
+
+
 QWidget *ParamCheckBox :: GetQWidget ()
 {
 	return pcb_check_box_p;

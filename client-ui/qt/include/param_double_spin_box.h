@@ -24,6 +24,8 @@ public:
 	virtual ~ParamDoubleSpinBox ();
 
 
+	virtual void SetDefaultValue ();
+
 	virtual QWidget *GetQWidget ();
 
 private:

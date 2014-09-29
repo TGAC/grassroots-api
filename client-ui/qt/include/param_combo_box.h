@@ -23,6 +23,10 @@ public:
 
 	virtual QWidget *GetQWidget ();
 
+
+	virtual void SetDefaultValue ();
+
+
 private:
 	QComboBox *pcb_combo_box_p;
 };

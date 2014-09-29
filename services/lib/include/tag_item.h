@@ -15,8 +15,6 @@ typedef struct TagItem
 } TagItem;
 
 
-WHEATIS_UTIL_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
-
 
 #define TAG_DONE 						(0L)
 
@@ -25,6 +23,17 @@ WHEATIS_UTIL_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
 #define TAG_INPUT_FILE 			(1)
 #define TAG_INPUT_DIR 			(2)
 #define TAG_OUTPUT_FILE 		(3)
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+WHEATIS_UTIL_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif		/* #ifndef TAG_ITEM_H */

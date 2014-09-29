@@ -5,6 +5,7 @@
 
 #include "blast_tool.hpp"
 
+
 /*
  * STATIC DATATYPES
  */
@@ -84,8 +85,16 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Tag
 	if (param_set_p)
 		{
 			SharedType def;
-			
-			def.st_string_value_s = NULL;
+			TagItem *tag_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
+				
+			if (tag_p)
+				{
+					def.st_string_value_s = tag_p -> ti_value.st_string_value_s;					
+				}
+			else
+				{
+					def.st_string_value_s = NULL;										
+				}
 
 			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", NULL, def, NULL, PL_BASIC, NULL))
 				{

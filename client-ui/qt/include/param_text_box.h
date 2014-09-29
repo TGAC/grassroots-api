@@ -27,6 +27,10 @@ public:
 
 	virtual void RemoveConnection ();
 
+
+	virtual void SetDefaultValue ();
+
+
 protected:
 	QLineEdit *ptb_text_box_p;
 };

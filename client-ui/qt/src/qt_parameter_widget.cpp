@@ -92,6 +92,22 @@ QTParameterWidget :: ~QTParameterWidget ()
 }
 
 
+
+void QTParameterWidget :: ResetToDefaults ()
+{
+	QList <Parameter *> keys = qpw_widgets_map.keys ();
+
+	for (int i = keys.size () - 1; i >= 0; --i)
+		{
+			Parameter *param_p = keys.at (i);
+			BaseParamWidget *widget_p = qpw_widgets_map.value (param_p);
+			widget_p -> SetDefaultValue ();
+		}
+
+}
+
+
+
 void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, const QWidget * const parent_widget_p)
 {
 	QHash <Parameter *, BaseParamWidget *> :: const_iterator i;
@@ -151,8 +167,11 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						break;
 
 					case PT_SIGNED_INT:
+						widget_p = new ParamSpinBox (param_p, qpw_prefs_widget_p, true);
+						break;
+
 					case PT_UNSIGNED_INT:
-						widget_p = new ParamSpinBox (param_p, qpw_prefs_widget_p);
+						widget_p = new ParamSpinBox (param_p, qpw_prefs_widget_p, false);
 						break;
 
 					case PT_DIRECTORY:
@@ -170,6 +189,8 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 			QWidget *w_p = widget_p -> GetQWidget ();
 
 			w_p -> setToolTip (param_p -> pa_description_s);
+
+			widget_p -> SetDefaultValue ();
 
 			return widget_p;
 		}		/* if (widget_p) */

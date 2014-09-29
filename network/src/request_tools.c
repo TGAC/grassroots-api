@@ -202,7 +202,7 @@ int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicReceive (int socket_fd, uint32 id, char *buffer_p, uint32 max_buffer_size)
+int AtomicReceive (int socket_fd, uint32 id, char **buffer_pp, uint32 current_buffer_size)
 {
 	int num_received = 0;
 	const int header_size = sizeof (uint32);	

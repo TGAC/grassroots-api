@@ -518,7 +518,7 @@ static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *roo
 
 static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	bool success_flag = (json_object_set_new (root_p, PARAM_DESCRIPTION_S, json_string (param_p -> pa_name_s)) == 0);
+	bool success_flag = (json_object_set_new (root_p, PARAM_DESCRIPTION_S, json_string (param_p -> pa_description_s)) == 0);
 
 	#ifdef _DEBUG
 	PrintJSON (stderr, root_p, "AddParameterDescriptionToJSON - root_p :: ");

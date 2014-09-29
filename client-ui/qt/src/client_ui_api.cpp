@@ -2,7 +2,7 @@
 #include <QWidget>
 #include <QApplication>
 #include <QDialog>
-
+#include <QStyleFactory>
 
 
 #include "client_ui_api.h"
@@ -84,6 +84,18 @@ static QTClientData *AllocateQTClientData (void)
 			if (data_p -> qcd_dummy_arg_s)
 				{
 					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
+
+
+					/*
+					 * Ubuntu 12.04 has some theme bugs with various styles giving messages such as
+					 *
+					 * (client:1574): Gtk-CRITICAL **: IA__gtk_widget_style_get: assertion
+					 * `GTK_IS_WIDGET (widget)' failed
+					 *
+					 * The solution is to use a theme that isn't broken on Ubuntu such as Plastique.
+					 */
+					QStyle *style_p = QStyleFactory :: create ("fusion");
+					data_p -> qcd_app_p -> setStyle (style_p);
 
 					QHBoxLayout *layout_p = new QHBoxLayout;
 

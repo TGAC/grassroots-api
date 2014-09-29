@@ -130,6 +130,67 @@ bool ParamComboBox :: UpdateConfig (int index)
 
 
 
+void ParamComboBox :: SetDefaultValue ()
+{
+	switch (bpw_param_p -> pa_type)
+		{
+			case PT_STRING:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+			case PT_DIRECTORY:
+				{
+					pcb_combo_box_p -> setCurrentText (bpw_param_p -> pa_default.st_string_value_s);
+				}
+				break;
+
+			case PT_CHAR:
+				{
+					pcb_combo_box_p -> setCurrentText (& (bpw_param_p -> pa_default.st_char_value));
+				}
+				break;
+
+			case PT_BOOLEAN:
+				{
+					const char *value_s = (bpw_param_p -> pa_default.st_boolean_value) ? "True" : "False";
+					pcb_combo_box_p -> setCurrentText (value_s);
+				}
+				break;
+
+			case PT_SIGNED_INT:
+				{
+					QString s;
+
+					s.setNum (bpw_param_p -> pa_default.st_long_value);
+					pcb_combo_box_p -> setCurrentText (s);
+				}
+				break;
+
+
+			case PT_UNSIGNED_INT:
+				{
+					QString s;
+
+					s.setNum (bpw_param_p -> pa_default.st_ulong_value);
+					pcb_combo_box_p -> setCurrentText (s);
+				}
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				{
+					QString s;
+
+					s.setNum (bpw_param_p -> pa_default.st_data_value);
+					pcb_combo_box_p -> setCurrentText (s);
+				}
+				break;
+
+			default:
+				break;
+		}
+}
+
+
 QWidget *ParamComboBox :: GetQWidget ()
 {
 	return pcb_combo_box_p;

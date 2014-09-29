@@ -18,14 +18,17 @@ private slots:
 	bool UpdateConfig (int value);
 
 public:
-	ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
+	ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, bool signed_flag, QWidget *parent_p = 0);
 	virtual ~ParamSpinBox ();
 
 	virtual QWidget *GetQWidget ();
 
+
+	virtual void SetDefaultValue ();
+
 private:
 	QSpinBox *psb_spin_box_p;
-
+	bool psb_signed_flag;
 };
 
 

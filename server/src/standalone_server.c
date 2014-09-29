@@ -207,8 +207,7 @@ static void *HandleConnection (void *socket_desc_p)
 	//Get the socket descriptor
 	int socket_fd = * (int *) socket_desc_p;
 	ssize_t read_size;
-	char client_buffer_s [BUFFER_SIZE];
-	LinkedList *buffer_p = AllocateStringLinkedList ();
+	char *client_buffer_s = NULL;
 	
 	if (buffer_p)
 		{
@@ -220,7 +219,7 @@ static void *HandleConnection (void *socket_desc_p)
 			
 			/* Get the message from the client */
 
-			read_size = AtomicReceive (socket_fd, id, client_buffer_s, BUFFER_SIZE - 1);
+			read_size = AtomicReceive (socket_fd, id, &client_buffer_s);
 			
 			if (read_size > 0)
 				{
@@ -252,8 +251,6 @@ static void *HandleConnection (void *socket_desc_p)
 							free (response_s);
 						}
 				}
-
-			FreeLinkedList (buffer_p);
 		}
 
 	return NULL;

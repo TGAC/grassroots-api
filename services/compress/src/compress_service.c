@@ -88,23 +88,31 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 	if (param_set_p)
 		{
 			SharedType def;
-
-			def.st_string_value_s = NULL;
+			TagItem *tag_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
+				
+			if (tag_p)
+				{
+					def.st_string_value_s = tag_p -> ti_value.st_string_value_s;					
+				}
+			else
+				{
+					def.st_string_value_s = NULL;										
+				}
 
 			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", NULL, def, NULL, PL_BASIC, NULL))
 				{
 					ParameterMultiOptionArray *options_p = NULL;
-					const char *descriptions_pp [] = { "Use Zip", "Use GZip" };
+					const char *descriptions_pp [] = { "Use GZip", "Use Zip" };
 					SharedType values [2];
 
-					values [0].st_string_value_s = "zip";
-					values [1].st_string_value_s = "gzip";
+					values [0].st_string_value_s = "gzip";
+					values [1].st_string_value_s = "zip";
 
 					options_p = AllocateParameterMultiOptionArray (2, descriptions_pp, values, PT_STRING);
 
 					if (options_p)
 						{
-							def.st_string_value_s = values [0].st_string_value_s;
+							def.st_string_value_s = values [1].st_string_value_s;
 
 							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Compression algorithm", "The algorithm to use to compress the data with", options_p, def, NULL, PL_BASIC, NULL))
 								{

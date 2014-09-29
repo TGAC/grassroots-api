@@ -22,6 +22,8 @@ public:
 
 	virtual QWidget *GetQWidget ();
 
+	virtual void SetDefaultValue ();
+
 private:
 	QCheckBox *pcb_check_box_p;
 

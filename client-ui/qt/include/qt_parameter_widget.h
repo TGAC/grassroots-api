@@ -33,6 +33,10 @@ public:
 
 	json_t *GetParameterValuesAsJSON () const;
 
+public slots:
+	void ResetToDefaults ();
+
+
 
 private:
 	ParameterSet *qpw_params_p;

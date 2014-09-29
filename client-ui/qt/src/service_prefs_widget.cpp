@@ -4,6 +4,7 @@
 #include <QPushButton>
 #include <QString>
 #include <QVBoxLayout>
+#include <QIcon>
 
 #include "service_prefs_widget.h"
 
@@ -22,13 +23,15 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 	QCheckBox *run_service_button_p = new QCheckBox (s, this);
 	connect (run_service_button_p, &QCheckBox :: stateChanged, this, &ServicePrefsWidget :: SetRunFlag);
 
-	QPushButton *reset_button_p = new QPushButton ("Restore Defaults", this);
+	QPushButton *reset_button_p = new QPushButton (QIcon ("images/reload"), "Restore Defaults", this);
+	connect (reset_button_p, &QAbstractButton :: clicked, spw_params_widget_p, &QTParameterWidget :: ResetToDefaults);
 
 	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
 	buttons_layout_p -> addWidget (run_service_button_p);
 	buttons_layout_p -> addWidget (reset_button_p);
 
 	layout_p -> addItem (buttons_layout_p);
+
 
 	setLayout (layout_p);
 }

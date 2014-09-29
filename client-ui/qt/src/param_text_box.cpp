@@ -28,6 +28,13 @@ void ParamTextBox :: RemoveConnection ()
 }
 
 
+void ParamTextBox :: SetDefaultValue ()
+{
+	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
+
+	ptb_text_box_p -> setText (value_s);
+}
+
 
 QWidget *ParamTextBox :: GetQWidget ()
 {

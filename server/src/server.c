@@ -118,11 +118,13 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 											
 											if (stream_p)
 												{
-													SharedType filename;
-													TagItem tags [2] = { { TAG_INPUT_FILE, filename}, { TAG_DONE, 0} };
+													TagItem tags [2];
 													
-													filename.st_string_value_s = data_name_s;
-													
+													tags [0].ti_tag = TAG_INPUT_FILE;
+													tags [0].ti_value.st_string_value_s = data_name_s;
+
+													tags [1].ti_tag = TAG_DONE;
+																										
 													res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, stream_p);
 													FreeIRodsStream (stream_p);
 												}

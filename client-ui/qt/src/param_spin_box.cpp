@@ -4,8 +4,9 @@
 #include "prefs_widget.h"
 
 
-ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
-:	BaseParamWidget (param_p, options_widget_p)
+ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, bool signed_flag, QWidget *parent_p)
+:	BaseParamWidget (param_p, options_widget_p),
+	psb_signed_flag (signed_flag)
 {
 	psb_spin_box_p = new QSpinBox (parent_p);
 
@@ -33,6 +34,19 @@ ParamSpinBox ::	~ParamSpinBox ()
 QWidget *ParamSpinBox :: GetQWidget ()
 {
 	return psb_spin_box_p;
+}
+
+
+void ParamSpinBox :: SetDefaultValue ()
+{
+	if (psb_signed_flag)
+		{
+			psb_spin_box_p -> setValue (bpw_param_p -> pa_default.st_long_value);
+		}
+	else
+		{
+			psb_spin_box_p -> setValue (bpw_param_p -> pa_default.st_ulong_value);
+		}
 }
 
 

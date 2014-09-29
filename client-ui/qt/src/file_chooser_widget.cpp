@@ -52,6 +52,14 @@ bool FileChooserWidget :: UpdateConfig (const QString &value_r)
 }
 
 
+void FileChooserWidget :: SetDefaultValue ()
+{
+	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
+
+	fcw_chooser_p -> setCurrentText (value_s);
+}
+
+
 FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWidget * const prefs_widget_p, QFileDialog :: FileMode mode)
 	: BaseParamWidget (param_p, prefs_widget_p),
 		fcw_file_mode (mode)

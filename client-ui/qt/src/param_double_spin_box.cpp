@@ -31,6 +31,11 @@ ParamDoubleSpinBox :: ~ParamDoubleSpinBox ()
 {}
 
 
+void ParamDoubleSpinBox :: SetDefaultValue ()
+{
+	pdsb_spinner_p -> setValue (bpw_param_p -> pa_default.st_data_value);
+}
+
 
 bool ParamDoubleSpinBox :: UpdateConfig (double value)
 {
