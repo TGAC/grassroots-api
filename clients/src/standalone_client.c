@@ -21,12 +21,14 @@
 #include "parameter_set.h"
 #include "client.h"
 #include "server.h"
+#include "byte_buffer.h"
+
 
 /*********************************/
 /******* STATIC PROTOTYPES *******/
 /*********************************/
 
-static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id);
+static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p);
 
 
 /*************************************/
@@ -168,129 +170,132 @@ int main(int argc, char *argv[])
 				json_t *req_p = NULL;
 				json_t *response_p = NULL;
 				uint32 id = 1;
+
+				ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 				
-				switch (api_id)
-					{
-						case OP_LIST_ALL_SERVICES:
-							req_p = GetAvailableServicesRequest (username_s, password_s);
-							response_p = SendRequest (sock_fd, req_p, id);						
-							break;
-							
-							
-						case OP_IRODS_MODIFIED_DATA:
-							req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
-							response_p = SendRequest (sock_fd, req_p, id);						
-							break;
-							
-						case OP_LIST_INTERESTED_SERVICES:
+				if (buffer_p)
+					{				
+						switch (api_id)
 							{
-								if (filename_s)
-									{					
-										json_error_t error;										
-										json_t *irods_file_p = json_pack_ex (&error, 0, "{s: {s:s}}", KEY_IRODS, KEY_FILENAME, filename_s);
-										
-										if (irods_file_p)
-											{
-												req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);																
-											}
-											
-										if (req_p)
-											{
-												response_p = SendRequest (sock_fd, req_p, id);						
+								case OP_LIST_ALL_SERVICES:
+									req_p = GetAvailableServicesRequest (username_s, password_s);
+									response_p = SendRequest (sock_fd, req_p, id, buffer_p);						
+									break;
+									
+									
+								case OP_IRODS_MODIFIED_DATA:
+									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+									response_p = SendRequest (sock_fd, req_p, id, buffer_p);						
+									break;
+									
+								case OP_LIST_INTERESTED_SERVICES:
+									{
+										if (filename_s)
+											{					
+												json_error_t error;										
+												json_t *irods_file_p = json_pack_ex (&error, 0, "{s: {s:s}}", KEY_IRODS, KEY_FILENAME, filename_s);
 												
-												if (response_p)
+												if (irods_file_p)
 													{
-														#ifdef _DEBUG
-														char *response_s = json_dumps (response_p, JSON_INDENT (2));
-														#endif
-														
-														if (json_is_array (response_p))
-															{
-																Client *client_p = LoadClient ("clients", client_s);
-																
-																if (client_p)
-																	{
-																		const size_t num_services = json_array_size (response_p);
-																		size_t i = 0;
-																		int res = 0;
-																		json_t *client_results_p = NULL;
-																		
-																		for (i = 0; i < num_services; ++ i)
-																			{
-																				json_t *service_json_p = json_array_get (response_p, i);																		
-																				const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
-
-																				#ifdef _DEBUG
-																				char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
-																				#endif
-
-
-																				if (service_name_s)
-																					{
-																						const char *service_description_s = GetJSONString (service_json_p, SERVICE_DESCRIPTION_S);
-
-																						if (service_description_s)
-																							{
-																								json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
-																								
-																								if (ops_p)
-																									{
-																										ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
-																										
-																										if (params_p)
-																											{
-																												int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
-																											}		/* if (params_p) */
-																									}
-																							}		/* if (service_description_s)	*/												
-																														
-																					}		/* if (service_name_s) */
-																					
-																				#ifdef _DEBUG
-																				free (service_s);
-																				#endif
-																																									
-																			}		/* for (i = 0; i < num_services; ++ i) */																
-																		
-																		/* Get the results of the user's configuration */																		
-																		client_results_p = RunClient (client_p);
-																		if (client_results_p)
-																			{
-																				char *client_results_s = json_dumps (client_results_p, 0);
-																				
-																				printf ("%s\n", client_results_s);
-																				
-																				free (client_results_s);
-																			}
-																		else
-																			{
-																			}
-																		
-																	}		/* if (client_p) */
-
-															}		/* if (json_is_array (response_p)) */
-														
-																																			
-														#ifdef _DEBUG
-														free (response_s);
-														#endif
+														req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);																
 													}
+													
+												if (req_p)
+													{
+														response_p = SendRequest (sock_fd, req_p, id, buffer_p);						
+														
+														if (response_p)
+															{
+																#ifdef _DEBUG
+																char *response_s = json_dumps (response_p, JSON_INDENT (2));
+																#endif
+																
+																if (json_is_array (response_p))
+																	{
+																		Client *client_p = LoadClient ("clients", client_s);
+																		
+																		if (client_p)
+																			{
+																				const size_t num_services = json_array_size (response_p);
+																				size_t i = 0;
+																				int res = 0;
+																				json_t *client_results_p = NULL;
+																				
+																				for (i = 0; i < num_services; ++ i)
+																					{
+																						json_t *service_json_p = json_array_get (response_p, i);																		
+																						const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+
+																						#ifdef _DEBUG
+																						char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
+																						#endif
+
+
+																						if (service_name_s)
+																							{
+																								const char *service_description_s = GetJSONString (service_json_p, SERVICE_DESCRIPTION_S);
+
+																								if (service_description_s)
+																									{
+																										json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
+																										
+																										if (ops_p)
+																											{
+																												ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
+																												
+																												if (params_p)
+																													{
+																														int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
+																													}		/* if (params_p) */
+																											}
+																									}		/* if (service_description_s)	*/												
+																																
+																							}		/* if (service_name_s) */
+																							
+																						#ifdef _DEBUG
+																						free (service_s);
+																						#endif
+																																											
+																					}		/* for (i = 0; i < num_services; ++ i) */																
+																				
+																				/* Get the results of the user's configuration */																		
+																				client_results_p = RunClient (client_p);
+																				if (client_results_p)
+																					{
+																						char *client_results_s = json_dumps (client_results_p, 0);
+																						
+																						printf ("%s\n", client_results_s);
+																						
+																						free (client_results_s);
+																					}
+																				else
+																					{
+																					}
+																				
+																			}		/* if (client_p) */
+
+																	}		/* if (json_is_array (response_p)) */
+																
+																																					
+																#ifdef _DEBUG
+																free (response_s);
+																#endif
+															}		/* if (response_p) */														
+					
+													}		/* if (req_p) */
 											}
-									}
-							}		
-							break;
-							
-						default:
-							break;
-					}
+									}		
+									break;
+									
+								default:
+									break;
+							}
 
-				if (req_p)
-					{
-						
-					}
-
-				freeaddrinfo (server_p);
-				close (sock_fd);
+						freeaddrinfo (server_p);
+						close (sock_fd);
+				
+						FreeByteBuffer (buffer_p);
+					}		/* if (buffer_p) */				
 			}
 		else
 			{
@@ -322,7 +327,7 @@ static void RunServicesOnFile ()
 }
 */
 
-static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id)
+static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p)
 {
 	char *req_s = json_dumps (req_p, 0);
 	json_t *response_p = NULL;
@@ -331,13 +336,13 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id)
 		{
 			char buffer_s [10240] = { 0 };
 			
-			if (AtomicReceive (sock_fd, id, buffer_s, 10239) > 0)
+			if (AtomicReceive (sock_fd, id, buffer_p) > 0)
 				{						
 					json_error_t err;
 														
-					printf ("%s\n", buffer_s);
+					printf ("%s\n", buffer_p -> bb_data_p);
 
-					response_p = json_loads (buffer_s, 0, &err);
+					response_p = json_loads (buffer_p -> bb_data_p, 0, &err);
 
 					if (!response_p)
 						{

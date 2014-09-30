@@ -6,6 +6,8 @@
 #include "network_library.h"
 #include "typedefs.h"
 
+#include "byte_buffer.h"
+
 #ifdef __cplusplus
 extern "C" 
 {
@@ -15,7 +17,7 @@ extern "C"
 WHEATIS_NETWORK_API int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
 
 
-WHEATIS_NETWORK_API int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p);
+//WHEATIS_NETWORK_API int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p);
 
 
 /**
@@ -24,13 +26,12 @@ WHEATIS_NETWORK_API int AtomicReceiveString (int socket_fd, uint32 id, char *buf
  * 
  * @param socket_fd The socket to receive the data from.
  * @param buffer_p The buffer to store the received message to.
- * @param num_to_send The length of the message..
  * @return A positive integer for the number of bytes received upon success. When negative,
  * it indicates that there was an error with this value being -(num bytes received) that were
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-WHEATIS_NETWORK_API int AtomicReceive (int socket_fd, uint32 id, char *buffer_p, uint32 num_to_receive);
+WHEATIS_NETWORK_API int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p);
 
 
 WHEATIS_NETWORK_API int AtomicSendString (int socket_fd, uint32 id, const char *buffer_p);

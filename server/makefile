@@ -64,9 +64,7 @@ SRCS 	= \
 	services_manager.c \
 
 EXE_SRCS = \
-	standalone_server.c \
-	thpool.c
-
+	standalone_server.c
 
 EXE_OBJS = $(patsubst %.c, $(DIR_OBJS)/%.o, $(EXE_SRCS))
 

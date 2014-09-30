@@ -13,6 +13,12 @@ size_t ReadFromStream (struct Stream *stream_p, void *buffer_p, const size_t len
 }
 
 
+size_t WriteToStream (struct Stream *stream_p, void *buffer_p, const size_t length)
+{
+	return (stream_p -> st_write_fn (stream_p, buffer_p, length));
+}
+
+
 bool CloseStream (struct Stream *stream_p)
 {
 	return (stream_p -> st_close_fn (stream_p));
@@ -22,4 +28,10 @@ bool CloseStream (struct Stream *stream_p)
 size_t SeekStream (struct Stream *stream_p, size_t offset, int whence)
 {
 	return (stream_p -> st_seek_fn (stream_p, offset, whence));
+}
+
+
+bool IsStreamGood (struct Stream *stream_p)
+{
+	return (stream_p -> st_status_fn (stream_p));	
 }

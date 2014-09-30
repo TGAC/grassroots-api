@@ -13,14 +13,17 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 	spw_service_name_s (service_name_s)
 {
 	QLayout *layout_p = new QVBoxLayout;
-	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
 
+	spw_run_flag = false;
+
+	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
 	layout_p -> addWidget (spw_params_widget_p);
 
 	QString s ("Run ");
 	s.append (service_name_s);
 
 	QCheckBox *run_service_button_p = new QCheckBox (s, this);
+	run_service_button_p -> setChecked (spw_run_flag);
 	connect (run_service_button_p, &QCheckBox :: stateChanged, this, &ServicePrefsWidget :: SetRunFlag);
 
 	QPushButton *reset_button_p = new QPushButton (QIcon ("images/reload"), "Restore Defaults", this);
@@ -31,7 +34,6 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 	buttons_layout_p -> addWidget (reset_button_p);
 
 	layout_p -> addItem (buttons_layout_p);
-
 
 	setLayout (layout_p);
 }

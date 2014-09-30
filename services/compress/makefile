@@ -46,7 +46,8 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_SERVICE_INC) \
 	
 SRCS 	= \
-	compress_service.c \ 
+	compress_service.c \
+	zip.c
 	
 	
 

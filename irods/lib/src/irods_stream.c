@@ -3,6 +3,7 @@
 #include "dataObjOpen.h"
 #include "dataObjClose.h"
 #include "dataObjRead.h"
+#include "dataObjWrite.h"
 #include "dataObjLseek.h"
 #include "fileLseek.h"
 
@@ -15,10 +16,13 @@ static bool OpenIRodsStream (struct Stream *stream_p, const char * const filenam
 
 static size_t ReadFromIRodsStream (struct Stream *stream_p, void *buffer_p, const size_t length);
 
+static size_t WriteToIRodsStream (struct Stream *stream_p, void *buffer_p, const size_t length);
+
 static bool SeekIRodsStream (struct Stream *stream_p, long offset, int whence);
 
 static bool CloseIRodsStream (struct Stream *stream_p);
 
+static bool IsIRodsStreamGood (struct Stream *stream_p);
 
 
 Stream *GetIRodsStream (const char * const username_s, const char * const password_s)
@@ -50,10 +54,13 @@ Stream *AllocateIRodsStream (rcComm_t *connection_p)
 			stream_p -> irs_base_stream.st_open_fn = OpenIRodsStream;
 			stream_p -> irs_base_stream.st_close_fn = CloseIRodsStream;
 			stream_p -> irs_base_stream.st_read_fn = ReadFromIRodsStream;
+			stream_p -> irs_base_stream.st_write_fn = WriteToIRodsStream;
 			stream_p -> irs_base_stream.st_seek_fn = SeekIRodsStream;
+			stream_p -> irs_base_stream.st_status_fn = IsIRodsStreamGood;
 
 			stream_p -> irs_connection_p = connection_p;
 			stream_p -> irs_obj_p = NULL;
+			stream_p -> irs_error = 0;
 		}
 
 	return ((Stream *) stream_p);
@@ -71,8 +78,6 @@ void FreeIRodsStream (Stream *stream_p)
 
 	FreeMemory (stream_p);
 }
-
-
 
 
 static bool OpenIRodsStream (struct Stream *stream_p, const char *filename_s, const char *mode_s)
@@ -178,16 +183,54 @@ static size_t ReadFromIRodsStream (struct Stream *stream_p, void *buffer_p, cons
 {
 	IRodsStream *irods_stream_p = (IRodsStream *) stream_p;
 	bytesBuf_t buffer;
-
+	int i;
+	size_t res = 0;
+	
 	buffer.buf = buffer_p;
 	buffer.len = length;
 
 	irods_stream_p -> irs_obj_p -> len = length;
 
-	return rcDataObjRead (irods_stream_p -> irs_connection_p, irods_stream_p -> irs_obj_p, &buffer);
+	i = rcDataObjRead (irods_stream_p -> irs_connection_p, irods_stream_p -> irs_obj_p, &buffer);
+	if (i > 0)
+		{
+			res = (size_t) i;
+		}
+	else
+		{
+			irods_stream_p -> stm_error_flag = true;
+		}
+		
+	return res;
+	
 }
 
 
+static size_t WriteToIRodsStream (struct Stream *stream_p, void *buffer_p, const size_t length)
+{
+	IRodsStream *irods_stream_p = (IRodsStream *) stream_p;
+	bytesBuf_t buffer;
+	int i;
+	size_t res = 0;
+	
+	buffer.buf = buffer_p;
+	buffer.len = length;
+
+	irods_stream_p -> irs_obj_p -> len = length;
+
+	i = rcDataObjWrite (irods_stream_p -> irs_connection_p, irods_stream_p -> irs_obj_p, &buffer);
+	
+	if (i > 0)
+		{
+			res = (size_t) i;
+		}
+	else
+		{
+			irods_stream_p -> stm_error_flag = true;
+		}
+		
+	return res;
+}
 
 
 static bool SeekIRodsStream (struct Stream *stream_p, long offset, int whence)
@@ -204,3 +247,10 @@ static bool SeekIRodsStream (struct Stream *stream_p, long offset, int whence)
 	return success_flag;
 }
 
+
+static bool IsIRodsStreamGood (struct Stream *stream_p)
+{
+	IRodsStream *irods_stream_p = (IRodsStream *) stream_p;
+
+	return (irods_stream_p -> stm_error_flag);
+}

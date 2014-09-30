@@ -74,3 +74,9 @@ bool AppendToByteBuffer (ByteBuffer *buffer_p, char *value_s)
 		
 	return success_flag;
 }
+
+
+void ResetByteBuffer (ByteBuffer *buffer_p)
+{
+	buffer_p -> bb_current_index = 0;
+}

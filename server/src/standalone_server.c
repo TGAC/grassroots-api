@@ -16,7 +16,7 @@
 
 #include <unistd.h>    //write
 
-#include "thpool.h"
+//#include "thpool.h"
  
 #include "string_linked_list.h"
 #include "string_utils.h"
@@ -36,7 +36,7 @@ static void *HandleConnection (void *socket_desc_p);
 
 static void InterruptHandler (int sig);
 
-static void RunServer (int server_socket_fd, int num_threads);
+static void RunServer (int server_socket_fd);
 
 
 /**********************/
@@ -55,7 +55,7 @@ int main (int argc, char *argv [])
 	struct addrinfo *address_p = NULL;
 	const char *port_s = DEFAULT_SERVER_PORT;
 	int max_queue_size;
-	int num_threads = 4;
+	int backlog = 4;
 	int i = 0;
 	
 	switch (argc)
@@ -64,7 +64,7 @@ int main (int argc, char *argv [])
 				i = atoi (argv [2]);
 				if (i > 0)
 					{
-						num_threads = i;
+						backlog = i;
 						i = 0;
 					}
 				
@@ -91,9 +91,9 @@ int main (int argc, char *argv [])
 
 	if (socket_fd >= 0)
 		{
-			if (listen (socket_fd, num_threads) != -1)
+			if (listen (socket_fd, backlog) != -1)
 				{
-					RunServer (socket_fd, num_threads);					
+					RunServer (socket_fd);					
 				}
 							
 			close (socket_fd);
@@ -103,27 +103,24 @@ int main (int argc, char *argv [])
 }
  
  
-static void RunServer (int server_socket_fd, int num_threads)
+static void RunServer (int server_socket_fd)
 {
-	thpool_t *thread_pool_p = thpool_init (num_threads);
-	
-	if (thread_pool_p)
+	while (g_running_flag)
 		{
-			while (g_running_flag)
+			struct sockaddr remote;
+			socklen_t t = sizeof (remote);
+			int client_socket_fd;
+			
+			if ((client_socket_fd = accept (server_socket_fd, (struct sockaddr *) &remote, &t)) != -1) 
 				{
-					struct sockaddr remote;
-					socklen_t t = sizeof (remote);
-					int client_socket_fd;
+					pthread_t worker_thread;
 					
-					if ((client_socket_fd = accept (server_socket_fd, (struct sockaddr *) &remote, &t)) != -1) 
+					if (pthread_create (&worker_thread, NULL, HandleConnection, (void *) &client_socket_fd) != 0)
 						{
-							void *(*worker_fn) (void *) = HandleConnection;
-							
-							thpool_add_work (thread_pool_p, worker_fn, (void *) &client_socket_fd);
+							perror ("Could not create thread");
+							return;
 						}
 				}
-				
-			thpool_destroy (thread_pool_p);
 		}
 }
 	
@@ -202,56 +199,67 @@ static int BindToPort (const char *port_s, struct addrinfo **loaded_address_pp)
  * */
 static void *HandleConnection (void *socket_desc_p)
 {
-	#define BUFFER_SIZE (1024)
-	
 	//Get the socket descriptor
 	int socket_fd = * (int *) socket_desc_p;
 	ssize_t read_size;
-	char *client_buffer_s = NULL;
+
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 	
 	if (buffer_p)
 		{
 			bool success_flag = true;
 			const char test_s [] = "hello!";
 			int id = 1;
-			
+			bool connected_flag = true;
 			//int res = AtomicSendString (socket_fd, test_s);
 			
 			/* Get the message from the client */
-
-			read_size = AtomicReceive (socket_fd, id, &client_buffer_s);
-			
-			if (read_size > 0)
+			while (connected_flag && g_running_flag)
 				{
-					json_t *response_p = NULL;
-					char *response_s = NULL;
+					read_size = AtomicReceive (socket_fd, id, buffer_p);
 				
-					//end of string marker
-					* (client_buffer_s + read_size) = '\0';
-
-					response_p = ProcessMessage (client_buffer_s);
-					
-					if (response_p)
+					if (read_size > 0)
 						{
-							response_s = json_dumps (response_p, 0);
+							char *request_s = buffer_p -> bb_data_p;
+
+							if (strcmp (request_s, "QUIT") == 0)
+								{
+									connected_flag = false;
+								}
+							else
+								{
+									json_t *response_p = ProcessMessage (request_s);
+									char *response_s = NULL;									
+									
+									if (response_p)
+										{
+											response_s = json_dumps (response_p, 0);
+										}
+									else
+										{
+											json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", buffer_p -> bb_data_p);
+											
+											response_s = json_dumps (error_p, 0);
+							
+											json_decref (error_p);							
+										}
+									
+									if (response_s)
+										{
+											int result = AtomicSendString (socket_fd, id, response_s);
+											
+											free (response_s);
+										}
+								}
 						}
 					else
 						{
-							json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", client_buffer_s);
-							
-							response_s = json_dumps (error_p, 0);
-			
-							json_decref (error_p);							
-						}
-					
-					if (response_s)
-						{
-							int result = AtomicSendString (socket_fd, id, response_s);
-							
-							free (response_s);
+							connected_flag = false;
 						}
 				}
-		}
+				
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
 
 	return NULL;
 } 

@@ -183,12 +183,12 @@ static int SendData (int socket_fd, const char *buffer_p, uint32 num_to_send)
 
 
 
-
+/*
 int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
 {
 	return AtomicReceive (socket_fd, id, buffer_p, strlen (buffer_p));
 }
-
+*/
 
 /**
  * Make sure that we keep sending until the complete message has been
@@ -202,7 +202,7 @@ int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicReceive (int socket_fd, uint32 id, char **buffer_pp, uint32 current_buffer_size)
+int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p)
 {
 	int num_received = 0;
 	const int header_size = sizeof (uint32);	
@@ -224,15 +224,18 @@ int AtomicReceive (int socket_fd, uint32 id, char **buffer_pp, uint32 current_bu
 					val_p = (uint32 *) header_s;
 					uint32 id_val = ntohl (*val_p);
 
+					ResetByteBuffer (buffer_p);
+
 					/* Receive the message */
-					if (message_size < max_buffer_size)
+					if (message_size >= buffer_p -> bb_size)
 						{
-							num_received = ReceiveData (socket_fd, buffer_p, message_size);
-						}
-					else
-						{
-							num_received = -num_received;
-						}
+							if (!ResizeByteBuffer (buffer_p, message_size))
+								{
+									return 0;
+								}
+						}						
+					
+					num_received = ReceiveData (socket_fd, buffer_p -> bb_data_p, message_size);
 				}
 		}
 

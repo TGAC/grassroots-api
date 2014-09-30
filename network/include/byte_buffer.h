@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "network_library.h"
 #include "typedefs.h"
 
 typedef struct ByteBuffer 
@@ -17,16 +18,20 @@ extern "C"
 {
 #endif
 
-ByteBuffer *AllocateByteBuffer (size_t initial_size);
+
+WHEATIS_NETWORK_API ByteBuffer *AllocateByteBuffer (size_t initial_size);
 
 
-void FreeByteBuffer (ByteBuffer *buffer_p);
+WHEATIS_NETWORK_API void FreeByteBuffer (ByteBuffer *buffer_p);
 
 
-bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
+WHEATIS_NETWORK_API bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
 
 
-bool AppendToByteBuffer (ByteBuffer *buffer_p, char *value_s);
+WHEATIS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, char *value_s);
+
+
+WHEATIS_NETWORK_API void ResetByteBuffer (ByteBuffer *buffer_p);
 
 
 #ifdef __cplusplus
