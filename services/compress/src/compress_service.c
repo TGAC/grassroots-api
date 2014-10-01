@@ -7,7 +7,7 @@
 #include "parameter.h"
 #include "stream.h"
 
-
+#include "zip.h"
 
 /*
  * STATIC DATATYPES

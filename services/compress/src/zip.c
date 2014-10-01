@@ -29,15 +29,72 @@
 
 #define CHUNK_SIZE (16384)
 
+
+#include "zip.h"
+
+
+
+int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
+{
+    int ret, flush;
+    unsigned have;
+    z_stream strm;
+    unsigned char in[CHUNK_SIZE];
+    unsigned char out[CHUNK_SIZE];
+
+    /* allocate deflate state */
+    strm.zalloc = Z_NULL;
+    strm.zfree = Z_NULL;
+    strm.opaque = Z_NULL;
+    ret = deflateInit(&strm, level);
+    if (ret != Z_OK)
+        return ret;
+
+    /* compress until end of file */
+    do {
+        strm.avail_in =  ReadFromStream (in_stm_p, in, CHUNK_SIZE);
+        if (GetStreamStatus (in_stm_p) == SS_BAD) {
+            (void)deflateEnd(&strm);
+            return Z_ERRNO;
+        }
+        flush = (GetStreamStatus (in_stm_p) == SS_FINISHED) ? Z_FINISH : Z_NO_FLUSH;
+        strm.next_in = in;
+
+        /* run deflate() on input until output buffer not full, finish
+           compression if all of source has been read in */
+        do {
+            strm.avail_out = CHUNK_SIZE;
+            strm.next_out = out;
+            ret = deflate(&strm, flush);    /* no bad return value */
+            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+            have = CHUNK_SIZE - strm.avail_out;
+            
+            if ((WriteToStream (out_stm_p, out, have) != have) || (GetStreamStatus (out_stm_p) == SS_BAD)) {
+                (void)deflateEnd(&strm);
+                return Z_ERRNO;
+            }
+        } while (strm.avail_out == 0);
+        assert(strm.avail_in == 0);     /* all input will be used */
+
+        /* done when last data in file processed */
+    } while (flush != Z_FINISH);
+    assert(ret == Z_STREAM_END);        /* stream will be complete */
+
+    /* clean up and return */
+    (void)deflateEnd(&strm);
+    return Z_OK;
+}
+
+
 /* Compress from file source to file dest until EOF on source.
    def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_STREAM_ERROR if an invalid compression
    level is supplied, Z_VERSION_ERROR if the version of zlib.h and the
    version of the library linked do not match, or Z_ERRNO if there is
    an error reading or writing the files. */
-int def(FILE *source, FILE *dest, int level)
+//int def(FILE *source, FILE *dest, int level)
 
-int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
+int CompressAsZip1 (Stream *in_stm_p, Stream *out_stm_p, int level)
 {
 	int ret, flush;
 	unsigned have;
@@ -53,40 +110,71 @@ int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
 
 	if (ret == Z_OK)
 		{
+			bool loop_flag = true;
 			
-			/* compress until end of file */
-			do {
-				/* Read in the next input chunk */
-				strm.avail_in = ReadFromStream (in_stm_p, in, 1, CHUNK, input_buffer);
+			while (loop_flag && (ret != Z_ERRNO))
+				{
+					/* Read in the next input chunk */
+					strm.avail_in = ReadFromStream (in_stm_p, input_buffer, CHUNK_SIZE);
 
-				/* Is the input stream still good? */
-				if (IsStreamGood (in_stm_p))
-					{
-						deflateEnd (&strm);
-						return Z_ERRNO;
-					}
+					switch (GetStreamStatus (in_stm_p))
+						{
+							case SS_BAD:
+								deflateEnd (&strm);
+								ret = Z_ERRNO;	
+								loop_flag = false;			
+								break;
+								
+							case SS_FINISHED:
+								flush = Z_FINISH;
+								break;
+								
+							case SS_GOOD:
+								flush = Z_NO_FLUSH;
+								break;							
+						}
 
-				flush = feof(source) ? Z_FINISH : Z_NO_FLUSH;
-				strm.next_in = in;
+					if (loop_flag && (ret != Z_ERRNO))
+						{
+							bool write_loop_flag = true;
+							
+							strm.next_in = input_buffer;
 
-				/* Compress the input buffer into the output buffer */
-				/* run deflate() on input until output buffer not full, finish
-					 compression if all of source has been read in */
-				do {
-					strm.avail_out = CHUNK;
-					strm.next_out = out;
-					ret = deflate(&strm, flush);	/* no bad return value */
-					assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-					have = CHUNK - strm.avail_out;
-					if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
-						(void)deflateEnd(&strm);
-						return Z_ERRNO;
-					}
-				} while (strm.avail_out == 0);
-				assert(strm.avail_in == 0);	 /* all input will be used */
+							
+							while (write_loop_flag && (ret != Z_ERRNO))
+								{
+									size_t i;
+									
+									strm.avail_out = CHUNK_SIZE;
+									strm.next_out = output_buffer;
 
-				/* done when last data in file processed */
-			} while (flush != Z_FINISH);
+									ret = deflate (&strm, flush);	/* no bad return value */
+
+									assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+
+									have = CHUNK_SIZE - strm.avail_out;
+									
+									i = WriteToStream (out_stm_p, output_buffer, have);
+									
+									if ((i != have) || (GetStreamStatus (out_stm_p) == SS_BAD))
+										{
+											ret = Z_ERRNO;
+										}
+									
+									write_loop_flag = (strm.avail_out == 0);									
+								}		/* while (write_loop_flag) */
+
+
+							/* has all input been used? */
+							if (strm.avail_in != 0)
+								{
+									ret = Z_ERRNO;
+								}
+					
+							loop_flag = (flush != Z_FINISH);
+						}		/* if (loop_flag) */
+				}
+			
 
 			if (ret != Z_STREAM_END)
 				{
@@ -115,8 +203,8 @@ int inf(FILE *source, FILE *dest)
 	int ret;
 	unsigned have;
 	z_stream strm;
-	unsigned char in[CHUNK];
-	unsigned char out[CHUNK];
+	unsigned char in[CHUNK_SIZE];
+	unsigned char out[CHUNK_SIZE];
 
 	/* allocate inflate state */
 	strm.zalloc = Z_NULL;
@@ -130,7 +218,7 @@ int inf(FILE *source, FILE *dest)
 
 	/* decompress until deflate stream ends or end of file */
 	do {
-		strm.avail_in = fread(in, 1, CHUNK, source);
+		strm.avail_in = fread(in, 1, CHUNK_SIZE, source);
 		if (ferror(source)) {
 			(void)inflateEnd(&strm);
 			return Z_ERRNO;
@@ -141,7 +229,7 @@ int inf(FILE *source, FILE *dest)
 
 		/* run inflate() on input until output buffer not full */
 		do {
-			strm.avail_out = CHUNK;
+			strm.avail_out = CHUNK_SIZE;
 			strm.next_out = out;
 			ret = inflate(&strm, Z_NO_FLUSH);
 			assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
@@ -153,7 +241,7 @@ int inf(FILE *source, FILE *dest)
 				(void)inflateEnd(&strm);
 				return ret;
 			}
-			have = CHUNK - strm.avail_out;
+			have = CHUNK_SIZE - strm.avail_out;
 			if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
 				(void)inflateEnd(&strm);
 				return Z_ERRNO;
@@ -193,34 +281,3 @@ void zerr(int ret)
 	}
 }
 
-/* compress or decompress from stdin to stdout */
-int main(int argc, char **argv)
-{
-	int ret;
-
-	/* avoid end-of-line conversions */
-	SET_BINARY_MODE(stdin);
-	SET_BINARY_MODE(stdout);
-
-	/* do compression if no arguments */
-	if (argc == 1) {
-		ret = def(stdin, stdout, Z_DEFAULT_COMPRESSION);
-		if (ret != Z_OK)
-			zerr(ret);
-		return ret;
-	}
-
-	/* do decompression if -d specified */
-	else if (argc == 2 && strcmp(argv[1], "-d") == 0) {
-		ret = inf(stdin, stdout);
-		if (ret != Z_OK)
-			zerr(ret);
-		return ret;
-	}
-
-	/* otherwise, report usage */
-	else {
-		fputs("zpipe usage: zpipe [-d] < source > dest\n", stderr);
-		return 1;
-	}
-}

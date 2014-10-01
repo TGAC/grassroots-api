@@ -11,7 +11,7 @@ static bool SeekFileStream (struct Stream *stream_p, long offset, int whence);
 
 static bool CloseFileStream (struct Stream *stream_p);
 
-static bool IsFileStreamGood (struct Stream *stream_p);
+static StreamStatus GetFileStreamStatus (struct Stream *stream_p);
 
 
 Stream *AllocateFileStream (void)
@@ -25,7 +25,7 @@ Stream *AllocateFileStream (void)
 			stream_p -> fs_base_stream.st_read_fn = ReadFromFileStream;
 			stream_p -> fs_base_stream.st_write_fn = WriteToFileStream;
 			stream_p -> fs_base_stream.st_seek_fn = SeekFileStream;
-			stream_p -> fs_base_stream.st_status_fn = IsFileStreamGood;
+			stream_p -> fs_base_stream.st_status_fn = GetFileStreamStatus;
 			
 			stream_p -> fs_stream_f = NULL;
 		}
@@ -120,9 +120,19 @@ static bool CloseFileStream (struct Stream *stream_p)
 }
 
 
-static bool IsFileStreamGood (struct Stream *stream_p)
+static StreamStatus GetFileStreamStatus (struct Stream *stream_p)
 {
 	FileStream *file_stream_p = (FileStream *) stream_p;
+	StreamStatus status = SS_GOOD;
 	
-	return (ferror (file_stream_p -> fs_stream_f) == 0);
+	if (feof (file_stream_p -> fs_stream_f))
+		{
+			status = SS_FINISHED;
+		}
+	else if (ferror (file_stream_p -> fs_stream_f))
+		{
+			status = SS_BAD;
+		}
+				
+	return status;
 }

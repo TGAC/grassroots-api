@@ -31,7 +31,7 @@ size_t SeekStream (struct Stream *stream_p, size_t offset, int whence)
 }
 
 
-bool IsStreamGood (struct Stream *stream_p)
+StreamStatus GetStreamStatus (struct Stream *stream_p)
 {
 	return (stream_p -> st_status_fn (stream_p));	
 }

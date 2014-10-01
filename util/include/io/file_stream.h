@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#include "wheatis_util_library.h"
 #include "stream.h"
 
 
@@ -18,9 +19,9 @@ extern "C"
 {
 #endif
 
-Stream *AllocateFileStream (void);
+WHEATIS_UTIL_API Stream *AllocateFileStream (void);
 
-void FreeFileStream (Stream *stream_p);
+WHEATIS_UTIL_API void FreeFileStream (Stream *stream_p);
 
 #ifdef __cplusplus
 }

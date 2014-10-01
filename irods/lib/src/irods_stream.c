@@ -22,7 +22,7 @@ static bool SeekIRodsStream (struct Stream *stream_p, long offset, int whence);
 
 static bool CloseIRodsStream (struct Stream *stream_p);
 
-static bool IsIRodsStreamGood (struct Stream *stream_p);
+static StreamStatus GetIRodsStreamStatus (struct Stream *stream_p);
 
 
 Stream *GetIRodsStream (const char * const username_s, const char * const password_s)
@@ -56,11 +56,11 @@ Stream *AllocateIRodsStream (rcComm_t *connection_p)
 			stream_p -> irs_base_stream.st_read_fn = ReadFromIRodsStream;
 			stream_p -> irs_base_stream.st_write_fn = WriteToIRodsStream;
 			stream_p -> irs_base_stream.st_seek_fn = SeekIRodsStream;
-			stream_p -> irs_base_stream.st_status_fn = IsIRodsStreamGood;
+			stream_p -> irs_base_stream.st_status_fn = GetIRodsStreamStatus;
 
 			stream_p -> irs_connection_p = connection_p;
 			stream_p -> irs_obj_p = NULL;
-			stream_p -> irs_error = 0;
+			stream_p -> irs_status = SS_GOOD;
 		}
 
 	return ((Stream *) stream_p);
@@ -188,17 +188,23 @@ static size_t ReadFromIRodsStream (struct Stream *stream_p, void *buffer_p, cons
 	
 	buffer.buf = buffer_p;
 	buffer.len = length;
-
+	
 	irods_stream_p -> irs_obj_p -> len = length;
-
+	
 	i = rcDataObjRead (irods_stream_p -> irs_connection_p, irods_stream_p -> irs_obj_p, &buffer);
+
 	if (i > 0)
 		{
 			res = (size_t) i;
+			
+			if (res != length)
+				{
+					irods_stream_p -> irs_status = SS_FINISHED;
+				}
 		}
 	else
 		{
-			irods_stream_p -> stm_error_flag = true;
+			irods_stream_p -> irs_status = SS_BAD;
 		}
 		
 	return res;
@@ -226,8 +232,9 @@ static size_t WriteToIRodsStream (struct Stream *stream_p, void *buffer_p, const
 		}
 	else
 		{
-			irods_stream_p -> stm_error_flag = true;
+			irods_stream_p -> irs_status = SS_BAD;
 		}
+
 		
 	return res;
 }
@@ -248,9 +255,10 @@ static bool SeekIRodsStream (struct Stream *stream_p, long offset, int whence)
 }
 
 
-static bool IsIRodsStreamGood (struct Stream *stream_p)
+static StreamStatus GetIRodsStreamStatus (struct Stream *stream_p)
 {
 	IRodsStream *irods_stream_p = (IRodsStream *) stream_p;
 
-	return (irods_stream_p -> stm_error_flag);
+	return (irods_stream_p -> irs_status);	
 }
+

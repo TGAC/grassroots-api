@@ -5,7 +5,6 @@ CC		= g++
 CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
-
 DIR_INSTALL = ../../../wheatis_demo/services
 
 BUILD		= debug
@@ -35,7 +34,7 @@ endif
 
 
 VPATH	= \
-	$(DIR_SRC) \
+	$(DIR_SRC) 
 	
 
 INCLUDES = \
@@ -43,24 +42,33 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_SERVICE_INC) \
+	-I$(DIR_WHEATIS_SERVICE_INC) 
 	
 SRCS 	= \
 	compress_service.c \
 	zip.c
 	
 	
+BASE_CPPFLAGS = -DUNIX 
+CPPFLAGS += $(BASE_CPPFLAGS) -fPIC -DCOMPRESS_LIBRARY_EXPORTS 
 
-CPPFLAGS += -DCOMPRESS_LIBRARY_EXPORTS -DUNIX -fPIC
-
-LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+BASE_LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICE_LIB) -l$(WHEATIS_SERVICE_LIB_NAME)
+
+LDFLAGS += $(BASE_LDFLAGS)
+
 
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
 include ../../generic_makefiles/shared_library.makefile
 
-.PHONY:	all test
+.PHONY:	all test exe
 
 all: lib 
+
+
+exe: all
+	gcc $(BASE_CPPFLAGS) $(CFLAGS)-DUNIX -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm -ldl -lz $(INCLUDES) $(EXE_OBJS) $(BASE_LDFLAGS)  src/unit_test.c  -o $(BUILD)/compress_test
+	
+

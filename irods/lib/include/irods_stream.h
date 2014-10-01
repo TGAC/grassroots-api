@@ -22,7 +22,7 @@ typedef struct IRodsStream
 	Stream irs_base_stream;
 	rcComm_t *irs_connection_p;
 	openedDataObjInp_t *irs_obj_p;
-	int irs_error;
+	StreamStatus irs_status;
 } IRodsStream;
 
 

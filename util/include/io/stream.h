@@ -6,6 +6,14 @@
 #include "typedefs.h"
 #include "wheatis_util_library.h"
 
+
+typedef enum
+{
+	SS_GOOD,
+	SS_FINISHED,
+	SS_BAD
+} StreamStatus;
+
 struct Stream;
 
 typedef struct Stream
@@ -15,7 +23,7 @@ typedef struct Stream
 	size_t (*st_write_fn) (struct Stream *stream_p, void *buffer_p, const size_t length);	
 	bool (*st_seek_fn) (struct Stream *stream_p, long offset, int whence);
 	bool (*st_close_fn) (struct Stream *stream_p);
-	bool (*st_status_fn) (struct Stream *stream_p);
+	StreamStatus (*st_status_fn) (struct Stream *stream_p);
 } Stream;
 
 #ifdef __cplusplus
@@ -33,7 +41,7 @@ WHEATIS_UTIL_API size_t SeekStream (struct Stream *stream_p, size_t offset, int 
 
 WHEATIS_UTIL_API bool CloseStream (struct Stream *stream_p);
 
-WHEATIS_UTIL_API bool IsStreamGood (struct Stream *stream_p);
+WHEATIS_UTIL_API StreamStatus GetStreamStatus (struct Stream *stream_p);
 
 #ifdef __cplusplus
 }
