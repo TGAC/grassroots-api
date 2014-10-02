@@ -96,11 +96,11 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Tag
 					def.st_string_value_s = NULL;										
 				}
 
-			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", NULL, def, NULL, PL_BASIC, NULL))
+			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
 				{
 					def.st_string_value_s = NULL;
 
-					if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, "Output", "The output file to write", NULL, def, NULL, PL_BASIC, NULL))
+					if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, "Output", "The output file to write", TAG_OUTPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
 						{
 							return param_set_p;
 						}

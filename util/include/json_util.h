@@ -47,6 +47,7 @@ PREFIX const char *PARAM_SET_PARAMS_S VAL("params");
 
 PREFIX const char *PARAM_NAME_S VAL("name");
 PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
+PREFIX const char *PARAM_TAG_S VAL("tag");
 PREFIX const char *PARAM_TYPE_S VAL("type");
 PREFIX const char *PARAM_WHEATIS_TYPE_INFO_S VAL("wheatis_type");
 PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default_value");
@@ -54,8 +55,12 @@ PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
 PREFIX const char *PARAM_MIN_S  VAL("min");
 PREFIX const char *PARAM_MAX_S  VAL("max");
 
-PREFIX const char *SHARED_TYPE_DESCRIPTION_S  VAL("descrtiption");
+PREFIX const char *SHARED_TYPE_DESCRIPTION_S  VAL("description");
 PREFIX const char *SHARED_TYPE_VALUE_S  VAL("value");
+
+PREFIX const char *RESOURCE_PROTOCOL_S  VAL("protocol");
+PREFIX const char *RESOURCE_VALUE_S  VAL("value");
+
 
 PREFIX const char *TAG_INPUT_NAME_S VAL("input");
 PREFIX const char *TAG_OUTPUT_NAME_S VAL("output");

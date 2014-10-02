@@ -16,7 +16,7 @@
 
 #include <unistd.h>    //write
 
-//#include "thpool.h"
+#include <pthread.h>
  
 #include "string_linked_list.h"
 #include "string_utils.h"
@@ -54,7 +54,6 @@ int main (int argc, char *argv [])
 {
 	struct addrinfo *address_p = NULL;
 	const char *port_s = DEFAULT_SERVER_PORT;
-	int max_queue_size;
 	int backlog = 4;
 	int i = 0;
 	
@@ -208,10 +207,8 @@ static void *HandleConnection (void *socket_desc_p)
 	if (buffer_p)
 		{
 			bool success_flag = true;
-			const char test_s [] = "hello!";
 			int id = 1;
 			bool connected_flag = true;
-			//int res = AtomicSendString (socket_fd, test_s);
 			
 			/* Get the message from the client */
 			while (connected_flag && g_running_flag)

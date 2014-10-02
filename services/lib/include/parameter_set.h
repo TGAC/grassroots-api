@@ -67,7 +67,7 @@ WHEATIS_SERVICE_API bool AddParameterToParameterSet (ParameterSet *params_p, Par
 
 
 WHEATIS_SERVICE_API bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
-	const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, 
+	const char * const name_s, const char * const description_s, uint32 tag, ParameterMultiOptionArray *options_p, 
 	SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, 
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
@@ -96,6 +96,17 @@ WHEATIS_SERVICE_API json_t *GetParameterSetAsJSON (const ParameterSet * const pa
  * an error.
  */
 WHEATIS_SERVICE_API ParameterSet *CreateParameterSetFromJSON (const json_t * const json_p);
+
+
+
+WHEATIS_SERVICE_API uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p);
+
+
+WHEATIS_SERVICE_API Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
+
+
+WHEATIS_SERVICE_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
+
 
 
 #ifdef __cplusplus

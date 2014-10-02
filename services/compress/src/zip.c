@@ -33,59 +33,6 @@
 #include "zip.h"
 
 
-
-int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
-{
-    int ret, flush;
-    unsigned have;
-    z_stream strm;
-    unsigned char in[CHUNK_SIZE];
-    unsigned char out[CHUNK_SIZE];
-
-    /* allocate deflate state */
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    ret = deflateInit(&strm, level);
-    if (ret != Z_OK)
-        return ret;
-
-    /* compress until end of file */
-    do {
-        strm.avail_in =  ReadFromStream (in_stm_p, in, CHUNK_SIZE);
-        if (GetStreamStatus (in_stm_p) == SS_BAD) {
-            (void)deflateEnd(&strm);
-            return Z_ERRNO;
-        }
-        flush = (GetStreamStatus (in_stm_p) == SS_FINISHED) ? Z_FINISH : Z_NO_FLUSH;
-        strm.next_in = in;
-
-        /* run deflate() on input until output buffer not full, finish
-           compression if all of source has been read in */
-        do {
-            strm.avail_out = CHUNK_SIZE;
-            strm.next_out = out;
-            ret = deflate(&strm, flush);    /* no bad return value */
-            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-            have = CHUNK_SIZE - strm.avail_out;
-            
-            if ((WriteToStream (out_stm_p, out, have) != have) || (GetStreamStatus (out_stm_p) == SS_BAD)) {
-                (void)deflateEnd(&strm);
-                return Z_ERRNO;
-            }
-        } while (strm.avail_out == 0);
-        assert(strm.avail_in == 0);     /* all input will be used */
-
-        /* done when last data in file processed */
-    } while (flush != Z_FINISH);
-    assert(ret == Z_STREAM_END);        /* stream will be complete */
-
-    /* clean up and return */
-    (void)deflateEnd(&strm);
-    return Z_OK;
-}
-
-
 /* Compress from file source to file dest until EOF on source.
    def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_STREAM_ERROR if an invalid compression
@@ -94,7 +41,7 @@ int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
    an error reading or writing the files. */
 //int def(FILE *source, FILE *dest, int level)
 
-int CompressAsZip1 (Stream *in_stm_p, Stream *out_stm_p, int level)
+int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
 {
 	int ret, flush;
 	unsigned have;

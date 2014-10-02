@@ -3,7 +3,7 @@
 #include "parameter.h"
 
 #include "json_util.h"
-
+#include "tag_item.h"
 
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListItem *node_p);
@@ -47,12 +47,12 @@ void FreeParameterSet (ParameterSet *params_p)
 
 
 bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
-	const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, 
+	const char * const name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, 
 	SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, 
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	bool success_flag = false;
-	Parameter *param_p = AllocateParameter (type, name_s, description_s, options_p, default_value, bounds_p, level, check_value_fn);
+	Parameter *param_p = AllocateParameter (type, name_s, description_s, tag, options_p, default_value, bounds_p, level, check_value_fn);
 	
 	if (param_p)
 		{
@@ -155,6 +155,70 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 	return root_p;
 }
+
+
+
+uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p)
+{
+	uint32 matched_count = 0;
+	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+	
+	while (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+			TagItem *tag_p = FindMatchingTag (tags_p, param_p -> pa_tag);
+			
+			if (tag_p)
+				{
+					tag_p -> ti_value = param_p -> pa_current_value;
+					++ matched_count;
+				}
+
+			node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+		}		/* while (node_p) */
+		
+	return matched_count;
+}
+
+
+Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag)
+{
+	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+	
+	while (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+						
+			if (param_p -> pa_tag == tag)
+				{
+					return param_p;
+				}
+			else
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+				}
+		}		/* while (node_p) */
+		
+	return NULL;	
+}
+
+
+
+bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag)
+{
+	bool success_flag = false;
+	Parameter *param_p = GetParameterFromParameterSetByTag (params_p, tag);
+
+	if (param_p)
+		{
+			*value_p = current_value_flag ? param_p -> pa_current_value : param_p -> pa_default;
+			success_flag = true;
+		}
+		
+	return success_flag;
+	
+}
+
 
 
 ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)

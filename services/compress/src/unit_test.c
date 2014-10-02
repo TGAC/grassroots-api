@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "zip.h"
 #include "file_stream.h"
 
@@ -20,8 +22,16 @@ int main(int argc, char **argv)
 								{
 									if (OpenStream (out_p, argv [2], "w"))
 										{
-											ret = CompressAsZip (in_p, out_p, Z_DEFAULT_COMPRESSION);
-																						
+											if (strcmp (argv [3], "new") == 0)
+												{
+													puts ("running new");
+													ret = CompressAsZip1 (in_p, out_p, Z_DEFAULT_COMPRESSION);
+												}
+											else
+												{
+													ret = CompressAsZip (in_p, out_p, Z_DEFAULT_COMPRESSION);
+												}
+																					
 											CloseStream (out_p);
 										}
 			

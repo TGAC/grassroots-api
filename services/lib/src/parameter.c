@@ -16,6 +16,8 @@ static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *roo
 
 static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p);
 
+static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root_p);
+
 static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p);
 
 static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p);
@@ -31,9 +33,13 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p);
 
+static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp);
+
+static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
 
 
-Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
+
+Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, uint32 tag, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	char *new_name_s = CopyToNewString (name_s, 0, true);
 
@@ -55,6 +61,7 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 							param_p -> pa_default = default_value;
 							param_p -> pa_bounds_p = bounds_p;
 							param_p -> pa_level = level;
+							param_p -> pa_tag = tag;
 							
 							//memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
 							memcpy (& (param_p -> pa_current_value), & (param_p -> pa_default), sizeof (SharedType));
@@ -124,6 +131,9 @@ ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const
 					case PT_DIRECTORY:
 					case PT_FILE_TO_READ:
 					case PT_FILE_TO_WRITE:
+					
+						break;
+					
 					case PT_STRING:
 						{
 							bounds_p -> pb_lower.st_string_value_s = CopyToNewString (src_p -> pb_lower.st_string_value_s, 0, false);
@@ -415,9 +425,6 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 
 
 			case PT_STRING:
-			case PT_FILE_TO_WRITE:
-			case PT_FILE_TO_READ:
-			case PT_DIRECTORY:
 				{
 					char *value_s = (char *) value_p;
 
@@ -434,6 +441,34 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 										}
 
 									param_p -> pa_current_value.st_string_value_s = copied_value_s;
+									success_flag = true;
+								}
+						}
+				}
+				break;
+
+			case PT_FILE_TO_WRITE:
+			case PT_FILE_TO_READ:
+			case PT_DIRECTORY:
+				{
+					Resource *new_res_p = (Resource *) value_p;
+					
+					if (new_res_p -> re_value_s)
+						{
+							char *copied_value_s = strdup (new_res_p -> re_value_s);
+
+							if (copied_value_s)
+								{
+									/* If we have a previous value, delete it */
+									if (param_p -> pa_current_value.st_resource.re_value.s)
+										{
+											free (param_p -> pa_current_value.st_resource.re_value.s;
+										}
+
+									param_p -> pa_current_value.st_resource.re_value.s = copied_value_s;
+									param_p -> pa_current_value.st_resource.re_protocol = new_res_p -> re_protocol;
+									
+									
 									success_flag = true;
 								}
 						}
@@ -464,15 +499,18 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 								{
 									if (AddParameterDescriptionToJSON (parameter_p, root_p))
 										{
-											if (AddParameterTypeToJSON (parameter_p, root_p))
+											if (AddParameterTagToJSON (parameter_p, root_p))
 												{
-													if (AddDefaultValueToJSON (parameter_p, root_p))
+													if (AddParameterTypeToJSON (parameter_p, root_p))
 														{
-															if (AddParameterOptionsToJSON (parameter_p, root_p))
+															if (AddDefaultValueToJSON (parameter_p, root_p))
 																{
-																	if (AddParameterBoundsToJSON (parameter_p, root_p))
+																	if (AddParameterOptionsToJSON (parameter_p, root_p))
 																		{
-																			success_flag = true;
+																			if (AddParameterBoundsToJSON (parameter_p, root_p))
+																				{
+																					success_flag = true;
+																				}
 																		}
 																}
 														}
@@ -527,6 +565,17 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 	return success_flag;
 }
 
+
+static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_description_s)) == 0);
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddParameterTagToJSON - root_p :: ");
+	#endif
+
+	return success_flag;	
+}
 
 
 static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p)
@@ -614,10 +663,32 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				break;
 
 			case PT_STRING:
+				value_p = json_string (val_p -> st_string_value_s);
+				break;
+
 			case PT_FILE_TO_READ:
 			case PT_FILE_TO_WRITE:
 			case PT_DIRECTORY:
-				value_p = json_string (val_p -> st_string_value_s);
+				{
+					value_p = json_object ();
+					
+					if (value_p)
+						{
+							success_flag = false;
+							
+							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_integer (val_p -> st_resource.re_protocol)) == 0)
+								{
+									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_integer (val_p -> st_resource.re_value_s)) == 0);
+								}
+
+							if (!success_flag)
+								{
+									json_object_clear (value_p);
+									json_decref (value_p);
+									value_p = NULL;
+								}							
+						}					
+				}
 				break;
 
 			default:
@@ -630,7 +701,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 		}		/* if (default_value_p) */
 	else
 		{
-			success_flag = true;
+			success_flag = false;
 		}
 
 	#ifdef _DEBUG
@@ -686,10 +757,40 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 							}
 						break;
 
-					case PT_STRING:
+					
+					case PT_DIRECTORY:
 					case PT_FILE_TO_READ:
 					case PT_FILE_TO_WRITE:
-					case PT_DIRECTORY:
+						{
+							json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
+							
+							if ((protocol_p) && (json_is_integer (protocol_p)))
+								{
+									json_t *value_json_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
+									
+									if (value_json_p && (json_is_string (value_json_p)))
+										{
+											const char *value_s = json_string_value (protocol_p);
+											
+											value_p -> st_resource_value.re_protocol = json_integer_value (protocol_p);
+											
+											if (value_s)
+												{
+													value_p -> st_resource_value.re_value_s = strdup (json_string_value (protocol_p));
+													
+													success_flag = (value_p -> st_resource_value.re_value_s != NULL);
+												}
+											else
+												{
+													value_p -> st_resource_value.re_value_s = NULL;
+													success_flag = true;
+												}												
+										}					
+								}					
+						}
+						break;
+					
+					case PT_STRING:
 						if (json_is_string (json_value_p))
 							{
 								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
@@ -1059,6 +1160,32 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 }
 
 
+
+static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
+{
+	bool success_flag = false;
+	json_t *tag_json_p = json_object_get (json_p, PARAM_TAG_S);
+
+	if (tag_json_p)
+		{
+			if (json_is_integer (tag_json_p))
+				{
+					*tag_p = json_integer_value (tag_json_p);
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+void ClearSharedType (SharedType *st_p)
+{
+	
+}
+
+
+
 Parameter *CreateParameterFromJSON (const json_t * const root_p)
 {
 	Parameter *param_p = NULL;
@@ -1075,26 +1202,32 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 					if (GetParameterTypeFromJSON (root_p, &pt))
 						{
-							/*
-							 * The default, options and bounds are optional
-							 */
-							SharedType def;
-							ParameterMultiOptionArray *options_p = NULL;
-							ParameterBounds *bounds_p = NULL;
-							ParameterLevel level = PL_BASIC;
-
-							memset (&def, 0, sizeof (SharedType));
+							Tag tag;
 							
-							bool default_value_flag = GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def);
-
-							if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+							if (GetParameterTagFromJSON (root_p, &tag))
 								{
-									if (GetParameterBoundsFromJSON (root_p, &bounds_p))
-										{
-											param_p = AllocateParameter (pt, name_s, description_s, options_p, def, bounds_p, level, NULL);
-										}
-								}
+									/*
+									 * The default, options and bounds are optional
+									 */
+									SharedType def;
+									ParameterMultiOptionArray *options_p = NULL;
+									ParameterBounds *bounds_p = NULL;
+									ParameterLevel level = PL_BASIC;
 
+									memset (&def, 0, sizeof (SharedType));
+									
+									bool default_value_flag = GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def);
+
+									if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+										{
+											if (GetParameterBoundsFromJSON (root_p, &bounds_p))
+												{											
+													param_p = AllocateParameter (pt, name_s, description_s, tag, options_p, def, bounds_p, level, NULL);
+												}
+										}
+									
+								}		/* if (GetParameterTagFromJSON (root_p, &tag)) */
+							
 						}		/* if (GetParameterTypeFromJSON (root_p, &pt)) */
 
 				}		/* if (description_s) */

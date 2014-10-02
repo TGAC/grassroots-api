@@ -5,7 +5,6 @@
 #define PARAMETER_H
 
 #include "jansson.h"
-
 #include "linked_list.h"
 #include "wheatis_service_library.h"
 
@@ -45,6 +44,16 @@ typedef enum ParameterLevel
 	PL_ADVANCED
 } ParameterLevel;
 
+
+typedef struct Resource
+{
+	FileLocation re_protocol;
+	
+	char *re_value_s;
+	
+} Resource;
+
+
 /**
  * A datatype to store values for a Parameter.
  */
@@ -61,6 +70,8 @@ typedef union SharedType
 	char *st_string_value_s;
 
 	char st_char_value;
+	
+	Resource st_resource;
 
 } SharedType;
 
@@ -86,6 +97,16 @@ typedef struct ParameterBounds
 	SharedType pb_lower;
 	SharedType pb_upper;
 } ParameterBounds;
+
+
+typedef uint32 Tag;
+
+typedef struct TagItem
+{
+	Tag ti_tag;
+	SharedType ti_value;
+} TagItem;
+
 
 /******* FORWARD DECLARATION *******/
 struct Parameter;
@@ -147,6 +168,10 @@ typedef struct Parameter
 	 */
 	SharedType pa_current_value;
 
+	
+	uint32 pa_tag;
+
+
 } Parameter;
 
 
@@ -170,7 +195,7 @@ WHEATIS_SERVICE_API void FreeParameterMultiOptionArray (ParameterMultiOptionArra
 WHEATIS_SERVICE_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
-WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 WHEATIS_SERVICE_API void FreeParameter (Parameter *param_p);
@@ -188,7 +213,7 @@ WHEATIS_SERVICE_API ParameterBounds *CopyParameterBounds (const ParameterBounds 
 WHEATIS_SERVICE_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
 
 
-WHEATIS_SERVICE_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_SERVICE_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 WHEATIS_SERVICE_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
@@ -223,6 +248,9 @@ WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const paramete
  */
 WHEATIS_SERVICE_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
 
+
+
+WHEATIS_SERVICE_API void ClearSharedType (SharedType *st_p);
 
 #ifdef __cplusplus
 }

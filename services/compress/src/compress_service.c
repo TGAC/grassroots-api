@@ -18,6 +18,27 @@ typedef struct
 } CompressServiceData;
 
 
+static enum
+{
+	CA_ZIP,
+	CA_GZIP,
+	CA_NUM_ALGORITHMS
+} CompressionAlgorithms;
+
+
+static const char *s_algorithm_names_pp [CA_NUM_ALGORITHMS] =
+{
+	"zip",
+	"gzip"
+};
+
+
+#define TAG_COMPRESS_ALGORITHM 	(TAG_USER |	0x00000001)
+
+static const char *S_INPUT_PARAM_NAME_S = "Input";
+
+
+
 /*
  * STATIC PROTOTYPES
  */
@@ -99,22 +120,22 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 					def.st_string_value_s = NULL;										
 				}
 
-			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", NULL, def, NULL, PL_BASIC, NULL))
+			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
 				{
 					ParameterMultiOptionArray *options_p = NULL;
-					const char *descriptions_pp [] = { "Use GZip", "Use Zip" };
-					SharedType values [2];
+					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Zip", "Use GZip" };
+					SharedType values [CA_NUM_ALGORITHMS];
 
-					values [0].st_string_value_s = "gzip";
-					values [1].st_string_value_s = "zip";
+					values [CA_ZIP].st_string_value_s = s_algorithm_names_pp [CA_ZIP];
+					values [CA_GZIP].st_string_value_s = s_algorithm_names_pp [CA_GZIP];
 
-					options_p = AllocateParameterMultiOptionArray (2, descriptions_pp, values, PT_STRING);
+					options_p = AllocateParameterMultiOptionArray (CA_NUM_ALGORITHMS, descriptions_pp, values, PT_STRING);
 
 					if (options_p)
 						{
-							def.st_string_value_s = values [1].st_string_value_s;
+							def.st_string_value_s = values [0].st_string_value_s;
 
-							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Compression algorithm", "The algorithm to use to compress the data with", options_p, def, NULL, PL_BASIC, NULL))
+							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Compression algorithm", "The algorithm to use to compress the data with", TAG_COMPRESS_ALGORITHM, options_p, def, NULL, PL_BASIC, NULL))
 								{
 									return param_set_p;
 								}
@@ -134,6 +155,26 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p)
 {
 	int result = -1;
+	SharedType value;
+	
+	if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value, true))
+		{
+			const char *input_name_s = value.st_string_value_s;
+			
+			if (GetParameterValueFromParameterSet (param_set_p, TAG_COMPRESS_ALGORITHM, &value, true))
+				{
+					/*
+					 * need to have a way to check whether the filename points to a local, remote, irods,
+					 * url, etc.
+					 */
+					if ()
+					
+					
+					
+				}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */			
+			
+		}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */
+	
 
 	return result;
 }
