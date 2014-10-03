@@ -32,9 +32,6 @@ DIR_WHEATIS_IRODS_LIB = $(DIR_WHEATIS_IRODS)/$(BUILD)
 WHEATIS_IRODS_LIB_NAME = wheatis_irods
 
 
-
-DIR_CTHREAD_POOL_DEP = deps/c_thread_pool
-
 BUILD		= debug
 
 VPATH	= \
@@ -43,7 +40,6 @@ VPATH	= \
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
-	-I$(DIR_CTHREAD_POOL_DEP) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \

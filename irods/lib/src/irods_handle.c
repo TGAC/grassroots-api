@@ -12,6 +12,7 @@
 #include "memory_allocations.h"
 
 
+
 static bool OpenIRodsHandle (struct Handle *handle_p, const char * const filename_s, const char * const mode_s);
 
 static size_t ReadFromIRodsHandle (struct Handle *handle_p, void *buffer_p, const size_t length);

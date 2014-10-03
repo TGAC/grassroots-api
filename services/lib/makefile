@@ -28,10 +28,10 @@ INCLUDES = \
 	
 SRCS 	= \
 	client.c \
-	handle_utils.c \
 	parameter.c \
 	parameter_set.c \
 	plugin.c \
+	resource.c \
 	service.c \
 	tag_item.c \
 	user_details.c \

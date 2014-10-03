@@ -5,6 +5,7 @@ all:
 	$(MAKE) -C irods/lib
 	$(MAKE) -C network
 	$(MAKE) -C services/lib
+	$(MAKE) -C handle
 	$(MAKE) -C server
 	$(MAKE) -C clients
 	$(MAKE) -C services/blast
@@ -15,6 +16,7 @@ install: install_init
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C network install
 	$(MAKE) -C services/lib install
+	$(MAKE) -C handle install
 	$(MAKE) -C server install install_exe
 	$(MAKE) -C clients install
 	$(MAKE) -C services/blast install
@@ -26,6 +28,7 @@ clean:
 	$(MAKE) -C irods/lib clean
 	$(MAKE) -C network clean
 	$(MAKE) -C services/lib clean
+	$(MAKE) -C handle clean
 	$(MAKE) -C server clean 
 	$(MAKE) -C clients clean
 	$(MAKE) -C services/blast clean

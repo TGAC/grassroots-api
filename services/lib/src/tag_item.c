@@ -1,7 +1,7 @@
 #include "tag_item.h"
 
 
-TagItem *FindMatchingTag (TagItem *tags_p, Tag tag)
+TagItem *FindMatchingTag (const TagItem *tags_p, Tag tag)
 {
 	TagItem *ti_p = tags_p;
 	

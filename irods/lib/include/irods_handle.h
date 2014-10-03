@@ -15,6 +15,7 @@
 #include "typedefs.h"
 #include "query.h"
 #include "handle.h"
+#include "tags.h"
 
 
 typedef struct IRodsHandle
@@ -26,10 +27,24 @@ typedef struct IRodsHandle
 } IRodsHandle;
 
 
+
+#define TAG_IRODS_BASE 	(TAG_USER | 0x000000F0)
+
+#define TAG_IRODS_USER  (TAG_IRODS_BASE | 0x00000001)
+#define TAG_IRODS_PASSWORD  (TAG_IRODS_BASE | 0x00000002)
+#define TAG_IRODS_CONNECTION  (TAG_IRODS_BASE | 0x00000003)
+
+
+
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
+
+
+IRODS_UTIL IRodsResource *AllocateIRodsResource (void);
+
+IRODS_UTIL void AllocateIRodsResource (IRodsResource *resource_p);
 
 
 IRODS_UTIL_API Handle *GetIRodsHandle (const char * const username_s, const char * const password_s);

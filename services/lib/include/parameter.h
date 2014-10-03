@@ -7,6 +7,8 @@
 #include "jansson.h"
 #include "linked_list.h"
 #include "wheatis_service_library.h"
+#include "tags.h"
+#include "resource.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -45,15 +47,6 @@ typedef enum ParameterLevel
 } ParameterLevel;
 
 
-typedef struct Resource
-{
-	FileLocation re_protocol;
-	
-	char *re_value_s;
-	
-} Resource;
-
-
 /**
  * A datatype to store values for a Parameter.
  */
@@ -71,9 +64,7 @@ typedef union SharedType
 
 	char st_char_value;
 	
-	Resource st_resource_value;
-
-	void *st_generic_value_p;
+	Resource *st_resource_value_p;
 
 } SharedType;
 
@@ -99,9 +90,6 @@ typedef struct ParameterBounds
 	SharedType pb_lower;
 	SharedType pb_upper;
 } ParameterBounds;
-
-
-typedef uint32 Tag;
 
 typedef struct TagItem
 {
