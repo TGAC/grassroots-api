@@ -28,7 +28,7 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Tag
 
 static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p);
+static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p);
 
 
 
@@ -133,7 +133,7 @@ static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set
 }
 
 
-static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Stream *stream_p)
+static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p)
 {
 	bool interested_flag = false;
 	const char *filename_s = NULL;

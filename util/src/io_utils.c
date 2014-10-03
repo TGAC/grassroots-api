@@ -381,16 +381,6 @@ bool NotifyUser (userInfo_t *user_p, const char * const title_s, msParamArray_t 
 }
 
 
-char *GetParamsAsString (const msParamArray_t * const params_p)
-{
-	char *params_s = NULL;
-
-
-	return params_s;
-}
-
-
-
 
 void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...)
 {

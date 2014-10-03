@@ -53,7 +53,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	connect.c \
-	irods_stream.c \
+	irods_handle.c \
 	user.c \
 	query.c \
 #	procApiRequest.c \

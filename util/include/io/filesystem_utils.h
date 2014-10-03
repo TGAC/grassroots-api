@@ -22,6 +22,8 @@ WHEATIS_UTIL_API char *MakeFilename (const char * const path, const char * const
 WHEATIS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss);
 
 
+WHEATIS_UTIL_API char *SetFileExtension (const char * const filename_s, const char * const extension_s);
+
 WHEATIS_UTIL_API void UsePlatformFileSeparator (char *value_s);
 
 /** Platform-specific functions */

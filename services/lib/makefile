@@ -28,6 +28,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	client.c \
+	handle_utils.c \
 	parameter.c \
 	parameter_set.c \
 	plugin.c \

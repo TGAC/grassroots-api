@@ -12,7 +12,7 @@
 #include "connect.h"
 #include "user.h"
 
-#include "irods_stream.h"
+#include "irods_handle.h"
 
 
 /*****************************/
@@ -28,7 +28,7 @@ static json_t *GetInterestedServices (const json_t * const req_p);
 
 static json_t *GetAllServices (const json_t * const req_p);
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Stream *stream_p);
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handle *handle_p);
 
 
 /***************************/
@@ -114,9 +114,9 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 									if (json_is_string (data_name_p))
 										{
 											const char *data_name_s = json_string_value (data_name_p);
-											Stream *stream_p = GetIRodsStream (username_s, password_s);
+											Handle *handle_p = GetIRodsHandle (username_s, password_s);
 											
-											if (stream_p)
+											if (handle_p)
 												{
 													TagItem tags [2];
 													
@@ -125,8 +125,8 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 
 													tags [1].ti_tag = TAG_DONE;
 																										
-													res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, stream_p);
-													FreeIRodsStream (stream_p);
+													res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, handle_p);
+													FreeIRodsHandle (handle_p);
 												}
 										}
 								}									
@@ -208,10 +208,10 @@ static json_t *GetAllModifiedData (const json_t * const req_p)
 
 
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Stream *stream_p)
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handle *handle_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (services_path_s, tags_p, stream_p);
+	LinkedList *services_list_p = LoadMatchingServices (services_path_s, tags_p, handle_p);
 	
 	json_p = GetServicesListAsJSON (services_list_p, tags_p);
 

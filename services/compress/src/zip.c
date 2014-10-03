@@ -41,7 +41,7 @@
    an error reading or writing the files. */
 //int def(FILE *source, FILE *dest, int level)
 
-int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
+int CompressAsZip (Handle *in_p, Handle *out_p, int level)
 {
 	int ret, flush;
 	unsigned have;
@@ -62,21 +62,21 @@ int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
 			while (loop_flag && (ret != Z_ERRNO))
 				{
 					/* Read in the next input chunk */
-					strm.avail_in = ReadFromStream (in_stm_p, input_buffer, CHUNK_SIZE);
+					strm.avail_in = ReadFromHandle (in_p, input_buffer, CHUNK_SIZE);
 
-					switch (GetStreamStatus (in_stm_p))
+					switch (GetHandleStatus (in_p))
 						{
-							case SS_BAD:
+							case HS_BAD:
 								deflateEnd (&strm);
 								ret = Z_ERRNO;	
 								loop_flag = false;			
 								break;
 								
-							case SS_FINISHED:
+							case HS_FINISHED:
 								flush = Z_FINISH;
 								break;
 								
-							case SS_GOOD:
+							case HS_GOOD:
 								flush = Z_NO_FLUSH;
 								break;							
 						}
@@ -101,9 +101,9 @@ int CompressAsZip (Stream *in_stm_p, Stream *out_stm_p, int level)
 
 									have = CHUNK_SIZE - strm.avail_out;
 									
-									i = WriteToStream (out_stm_p, output_buffer, have);
+									i = WriteToHandle (out_p, output_buffer, have);
 									
-									if ((i != have) || (GetStreamStatus (out_stm_p) == SS_BAD))
+									if ((i != have) || (GetHandleStatus (out_p) == HS_BAD))
 										{
 											ret = Z_ERRNO;
 										}

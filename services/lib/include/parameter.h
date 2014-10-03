@@ -71,7 +71,9 @@ typedef union SharedType
 
 	char st_char_value;
 	
-	Resource st_resource;
+	Resource st_resource_value;
+
+	void *st_generic_value_p;
 
 } SharedType;
 

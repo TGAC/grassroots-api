@@ -123,6 +123,37 @@ void UsePlatformFileSeparator (char *value_s)
 }
 
 
+char *SetFileExtension (const char * const filename_s, const char * const extension_s)
+{
+	char *new_filename_s = NULL;
+	char *dot_p = strrchr (filename_s, '.');
+	size_t l;
+	const size_t extension_length = strlen (extension_s);
+	
+	if (dot_p)
+		{
+			l = dot_p - filename_s;
+		}
+	else
+		{
+			l = strlen (filename_s);
+		}
+		
+		
+	new_filename_s = AllocMemory (sizeof (char) * (l + extension_length + 2));
+	
+	if (new_filename_s)
+		{
+			strncpy (new_filename_s, filename_s, l);
+			dot_p = new_filename_s + l;
+			*dot_p = '.';
+			strcpy (dot_p + 1, extension_s);
+		}
+		
+	return new_filename_s;
+}
+
+
 char *MakeFilename (const char * const path, const char * const filename)
 {
 	const size_t path_length = strlen (path);

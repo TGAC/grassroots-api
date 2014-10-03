@@ -460,13 +460,13 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 							if (copied_value_s)
 								{
 									/* If we have a previous value, delete it */
-									if (param_p -> pa_current_value.st_resource.re_value.s)
+									if (param_p -> pa_current_value.st_resource_value.re_value_s)
 										{
-											free (param_p -> pa_current_value.st_resource.re_value.s;
+											free (param_p -> pa_current_value.st_resource_value.re_value_s);
 										}
 
-									param_p -> pa_current_value.st_resource.re_value.s = copied_value_s;
-									param_p -> pa_current_value.st_resource.re_protocol = new_res_p -> re_protocol;
+									param_p -> pa_current_value.st_resource_value.re_value_s = copied_value_s;
+									param_p -> pa_current_value.st_resource_value.re_protocol = new_res_p -> re_protocol;
 									
 									
 									success_flag = true;
@@ -568,7 +568,7 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 
 static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_description_s)) == 0);
+	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_tag)) == 0);
 
 	#ifdef _DEBUG
 	PrintJSON (stderr, root_p, "AddParameterTagToJSON - root_p :: ");
@@ -676,9 +676,9 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 						{
 							success_flag = false;
 							
-							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_integer (val_p -> st_resource.re_protocol)) == 0)
+							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_integer (val_p -> st_resource_value.re_protocol)) == 0)
 								{
-									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_integer (val_p -> st_resource.re_value_s)) == 0);
+									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_integer (val_p -> st_resource_value.re_value_s)) == 0);
 								}
 
 							if (!success_flag)
