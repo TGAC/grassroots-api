@@ -28,7 +28,7 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Tag
 
 static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p);
+static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p);
 
 
 
@@ -89,11 +89,11 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Tag
 				
 			if (tag_p)
 				{
-					def.st_string_value_s = tag_p -> ti_value.st_string_value_s;					
+					def.st_string_value_s = tag_p -> ti_value.st_string_value_s;
 				}
 			else
 				{
-					def.st_string_value_s = NULL;										
+					def.st_string_value_s = NULL;
 				}
 
 			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
@@ -133,7 +133,7 @@ static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set
 }
 
 
-static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p)
+static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p)
 {
 	bool interested_flag = false;
 	const char *filename_s = NULL;

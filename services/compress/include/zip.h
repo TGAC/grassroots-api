@@ -3,7 +3,7 @@
 
 
 #include "zlib.h"
-#include "handle.h"
+#include "handler.h"
 
 
 #include "compress_service_library.h"
@@ -15,9 +15,9 @@ extern "C"
 {
 #endif
 
-COMPRESS_SERVICE_API int CompressAsZip (Handle *in_p, Handle *out_p, int level);
+COMPRESS_SERVICE_API int CompressAsZip (Handler*in_p, Handler *out_p, int level);
 
-COMPRESS_SERVICE_API int CompressAsZip1 (Handle *in_p, Handle *out_p, int level);
+COMPRESS_SERVICE_API int CompressAsZip1 (Handler *in_p, Handler *out_p, int level);
 
 #ifdef __cplusplus
 }
