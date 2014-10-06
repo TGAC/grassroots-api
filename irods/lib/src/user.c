@@ -5,7 +5,7 @@
 #include "connect.h"
 
 #include "string_utils.h"
-#include "irods_handle.h"
+//#include "irods_handler.h"
 
 
 const char *GetUsernameForId (const int64 user_id)
@@ -157,6 +157,7 @@ json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, ch
 	
 	if (connection_p)
 		{
+		/*
 			Handle *handle_p = AllocateIRodsHandle (connection_p);
 			
 			if (handle_p)
@@ -164,13 +165,11 @@ json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, ch
 					
 					FreeIRodsHandle (handle_p);
 				}
-			
+			*/
 			CloseConnection (connection_p);
 		}
 	
 	return json_p;
-	
-	
 }
 
 

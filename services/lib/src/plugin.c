@@ -12,7 +12,9 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 	plugin_p -> pl_path_mem = MF_ALREADY_FREED;
 	plugin_p -> pl_service_p = NULL;
 	plugin_p -> pl_client_p = NULL;
+	plugin_p -> pl_handler_p = NULL;
 	plugin_p -> pl_status = PS_UNSET;
+	plugin_p -> pl_type = PN_UNKNOWN;
 	
 	if (path_s)
 		{

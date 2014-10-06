@@ -4,8 +4,10 @@ all:
 	$(MAKE) -C util 
 	$(MAKE) -C irods/lib
 	$(MAKE) -C network
+	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib
-	$(MAKE) -C handle
+	$(MAKE) -C handlers/file
+	$(MAKE) -C handlers/irods
 	$(MAKE) -C server
 	$(MAKE) -C clients
 	$(MAKE) -C services/blast
@@ -15,8 +17,10 @@ install: install_init
 	$(MAKE) -C util install
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C network install
+	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
-	$(MAKE) -C handle install
+	$(MAKE) -C handlers/file install
+	$(MAKE) -C handlers/irods install
 	$(MAKE) -C server install install_exe
 	$(MAKE) -C clients install
 	$(MAKE) -C services/blast install
@@ -27,8 +31,10 @@ clean:
 	$(MAKE) -C util clean
 	$(MAKE) -C irods/lib clean
 	$(MAKE) -C network clean
+	$(MAKE) -C handlers/lib clean
 	$(MAKE) -C services/lib clean
-	$(MAKE) -C handle clean
+	$(MAKE) -C handlers/file clean
+	$(MAKE) -C handlers/irods clean
 	$(MAKE) -C server clean 
 	$(MAKE) -C clients clean
 	$(MAKE) -C services/blast clean
@@ -39,4 +45,5 @@ install_init:
 	@mkdir -p ../wheatis_demo/lib
 	@mkdir -p ../wheatis_demo/services
 	@mkdir -p ../wheatis_demo/clients
+	@mkdir -p ../wheatis_demo/handlers
 

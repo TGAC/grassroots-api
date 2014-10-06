@@ -1,5 +1,4 @@
-NAME 		= wheatis_server
-EXE_NAME = server
+NAME 		= wheatis_handler
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= g++
@@ -8,39 +7,34 @@ MAKEDEPEND 	= g++ -MM -MF
 
 DIR_IRODS	= $$IRODS_HOME
 
-DIR_INSTALL_ROOT = ../../wheatis_demo
+DIR_INSTALL_ROOT = ../../../wheatis_demo
 DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
 
-DIR_WHEATIS_UTIL = ../util
+DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
-DIR_WHEATIS_NETWORK = ../network
+DIR_WHEATIS_NETWORK = ../../network
 DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
 DIR_WHEATIS_NETWORK_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
 WHEATIS_NETWORK_LIB_NAME = wheatis_network
 
-DIR_WHEATIS_SERVICES = ../services/lib
+DIR_WHEATIS_SERVICES = ../../services/lib
 DIR_WHEATIS_SERVICES_INC = $(DIR_WHEATIS_SERVICES)/include
 DIR_WHEATIS_SERVICES_LIB = $(DIR_WHEATIS_SERVICES)/$(BUILD)
 WHEATIS_SERVICES_LIB_NAME = wheatis_service
 
-DIR_WHEATIS_IRODS = ../irods/lib
+DIR_WHEATIS_IRODS = ../../irods/lib
 DIR_WHEATIS_IRODS_INC = $(DIR_WHEATIS_IRODS)/include
 DIR_WHEATIS_IRODS_LIB = $(DIR_WHEATIS_IRODS)/$(BUILD)
 WHEATIS_IRODS_LIB_NAME = wheatis_irods
 
-DIR_WHEATIS_HANDLER = ../handlers/lib
-DIR_WHEATIS_HANDLER_INC = $(DIR_WHEATIS_HANDLER)/include
-DIR_WHEATIS_HANDLER_LIB = $(DIR_WHEATIS_HANDLER)/$(BUILD)
-WHEATIS_HANDLER_LIB_NAME = wheatis_handler
 
 BUILD		= debug
 
 VPATH	= \
-	$(DIR_SRC) \
-	$(DIR_CTHREAD_POOL_DEP)
+	$(DIR_SRC) 
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
@@ -50,7 +44,6 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_IRODS_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
-	-I$(DIR_WHEATIS_HANDLER_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -61,21 +54,15 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/re/include 	
 	
 SRCS 	= \
-	server.c \
-	services_manager.c \
+	handler_utils.c \
+	handler.c
 
-EXE_SRCS = \
-	standalone_server.c
-
-EXE_OBJS = $(patsubst %.c, $(DIR_OBJS)/%.o, $(EXE_SRCS))
-
-CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS -DSHARED_LIBRARY
+CPPFLAGS += -DUNIX -DWHEATIS_HANDLELIBRARY_EXPORTS
 
 BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
-	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
-	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
+#	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 
 
 LDFLAGS += $(BASE_LDFLAGS) 
@@ -101,19 +88,9 @@ else
 	CPPFLAGS += -D_DEBUG
 endif
 
-include ../generic_makefiles/shared_library.makefile
+include ../../generic_makefiles/shared_library.makefile
 
-.PHONY:	all exe
+.PHONY:	all 
 
-
-install_exe: all
-	chmod u+x $(BUILD)/$(EXE_NAME)
-	cp $(BUILD)/$(EXE_NAME) $(DIR_INSTALL_ROOT)
-
-all: lib exe
-
-exe: lib $(EXE_OBJS)
-	$(COMP) $(CFLAGS) -DUNIX -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm -ldl $(INCLUDES) $(EXE_OBJS) $(BASE_LDFLAGS) -L$(DIR_WHEATIS_IRODS) -lirods -o $(BUILD)/$(EXE_NAME)
-
-
+all: lib 
 

@@ -11,10 +11,10 @@ extern "C"
 #endif
 
 
-COMPRESS_SERVICE_API Service *AllocateService (void);
+COMPRESS_SERVICE_API Service *GetService (void);
 
 
-COMPRESS_SERVICE_API void FreeService (Service *service_p);
+COMPRESS_SERVICE_API void ReleaseService (Service *service_p);
 
 #ifdef __cplusplus
 }

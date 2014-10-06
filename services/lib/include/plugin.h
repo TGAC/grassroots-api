@@ -17,6 +17,8 @@
 /*********** FORWARD DECLARATION ****************/
 struct Service;
 struct Client;
+struct Handler;
+
 
 typedef enum PluginStatus
 {
@@ -35,17 +37,36 @@ typedef enum PluginStatus
 } PluginStatus;
 
 
+typedef enum PluginNature
+{
+	PN_UNKNOWN = -1,
+	
+	PN_SERVICE,
+	
+	PN_CLIENT,
+	
+	PN_HANDLER,
+
+	PN_NUM_TYPES
+} PluginNature;
+
+
 typedef struct Plugin
 {
 	/* path of the plugin */
 	char *pl_path_s;
+	
 	MEM_FLAG pl_path_mem;
 
 	PluginStatus pl_status;
+	
+	PluginNature pl_type;
 
 	struct Service *pl_service_p;
 	
 	struct Client *pl_client_p;
+	
+	struct Handler *pl_handler_p;
 } Plugin;
 
 

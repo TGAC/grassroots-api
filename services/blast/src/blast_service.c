@@ -38,7 +38,7 @@ static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p,
  * API FUNCTIONS
  */
 
-Service *AllocateService (void)
+Service *GetService (void)
 {
 	Service *blast_service_p = (Service *) AllocMemory (sizeof (Service));
 	ServiceData *data_p = NULL;
@@ -55,7 +55,7 @@ Service *AllocateService (void)
 }
 
 
-void FreeService (Service *service_p)
+void ReleaseService (Service *service_p)
 {
 	FreeMemory (service_p);
 }

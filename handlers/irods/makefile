@@ -1,26 +1,36 @@
-SHELL = /bin/bash
-
-NAME 		= wheatis_irods
+NAME 		= irods_handler
 DIR_SRC = src
 DIR_INCLUDE = include
 CC		= g++
 CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
+DIR_INSTALL = ../../../wheatis_demo/handlers
+
 BUILD		= debug
 
-DIR_IRODS = $$IRODS_HOME
-#DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
+DIR_IRODS	= $$IRODS_HOME
+
+
+DIR_WHEATIS_SERVICES = ../../services/lib
+DIR_WHEATIS_SERVICES_INC = $(DIR_WHEATIS_SERVICES)/include
+DIR_WHEATIS_SERVICES_LIB = $(DIR_WHEATIS_SERVICES)/$(BUILD)
+WHEATIS_SERVICES_LIB_NAME = wheatis_services
 
 DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
+DIR_WHEATIS_IRODS = ../../irods/lib
+DIR_WHEATIS_IRODS_INC = $(DIR_WHEATIS_IRODS)/include
+DIR_WHEATIS_IRODS_LIB = $(DIR_WHEATIS_IRODS)/$(BUILD)
+WHEATIS_IRODS_LIB_NAME = wheatis_irods
 
-
-
-DIR_INSTALL = ../../../wheatis_demo/lib
+DIR_WHEATIS_HANDLE = ../lib
+DIR_WHEATIS_HANDLE_INC = $(DIR_WHEATIS_HANDLE)/include
+DIR_WHEATIS_HANDLE_LIB = $(DIR_WHEATIS_HANDLE)/$(BUILD)
+WHEATIS_HANDLE_LIB_NAME = wheatis_handler
 
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -O3 -s
@@ -33,18 +43,18 @@ else
 endif
 
 
-CFLAGS += -ansi
-
 VPATH	= \
-	$(DIR_SRC) \
-	$(DIR_IRODS)/lib/core/src \
-	$(DIR_IRODS)/lib/api/src \
+	$(DIR_SRC) 
+	
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
+	-I$(DIR_WHEATIS_HANDLE_INC) \
+	-I$(DIR_WHEATIS_IRODS_INC) \
+	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -55,24 +65,19 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/re/include 
 	
 SRCS 	= \
-	connect.c \
-	user.c \
-	query.c \
-#	procApiRequest.c \
-#	rcSpecificQuery.c
+	irods_handler.c \
+	irods_resource.c
+	
+CPPFLAGS = -DUNIX -DIRODS_HANDLER_EXPORTS
 
-CPPFLAGS += -DIRODS_HANDLER_EXPORTS -DUNIX 
-
-LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L. -lirods
+LDFLAGS += \
+	-L$(DIR_WHEATIS_HANDLE_LIB) -l$(WHEATIS_HANDLE_LIB_NAME) \
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
 include ../../generic_makefiles/shared_library.makefile
 
-.PHONY:	all test
+.PHONY:	all 
 
 all: lib 
 
-
-test: all
-		$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME)  -lm -lpthread $(INCLUDES)  test.c -o test
