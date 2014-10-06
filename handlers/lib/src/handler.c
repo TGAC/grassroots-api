@@ -35,3 +35,39 @@ HandlerStatus GetHandlerStatus (struct Handler *handler_p)
 {
 	return (handler_p -> ha_status_fn (handler_p));	
 }
+
+
+void FreeHandler (struct Handler *handler_p)
+{
+	handler_p -> ha_free_handler_fn (handler_p);
+}
+
+
+const char *GetHandlerProtocol (struct Handler *handler_p)
+{
+	return (handler_p -> ha_get_protocol_fn (handler_p));
+}
+
+
+
+HandlerNode *AllocateHandlerNode (struct Handler *handler_p)
+{
+	HandlerNode *node_p = (HandlerNode *) AllocMemory (sizeof (HandlerNode));
+	
+	if (node_p)
+		{
+			node_p -> hn_node.ln_prev_p = NULL;
+			node_p -> hn_node.ln_next_p = NULL;
+			node_p -> hn_handler_p = handler_p;
+		}
+	
+	return node_p;
+}
+
+void FreeHandlerNode (ListItem *node_p)
+{
+	HandlerNode *handler_node_p = (HandlerNode *) node_p;
+
+	FreeHandler (handler_node_p -> hn_handler_p);
+	FreeMemory (handler_node_p);
+}

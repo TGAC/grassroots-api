@@ -14,6 +14,7 @@ extern "C"
 
 WHEATIS_HANDLE_API Handler *GetResourceHandler (const Resource *resource_p, const TagItem *tags_p);
 
+
 #ifdef __cplusplus
 }
 #endif
