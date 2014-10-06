@@ -12,12 +12,13 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 	plugin_p -> pl_path_mem = MF_ALREADY_FREED;
 	plugin_p -> pl_service_p = NULL;
 	plugin_p -> pl_client_p = NULL;
+	plugin_p -> pl_handler_p = NULL;
 	plugin_p -> pl_status = PS_UNSET;
-	
+
 	if (path_s)
 		{
 			plugin_p -> pl_path_s = CopyToNewString (path_s, 0, true);
-	
+
 			if (plugin_p -> pl_path_s)
 				{
 					plugin_p -> pl_path_mem = MF_DEEP_COPY;

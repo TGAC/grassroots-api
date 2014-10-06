@@ -1,5 +1,5 @@
 /**@file plugin.h
-*/ 
+*/
 
 #ifndef PLUGIN_H
 #define PLUGIN_H
@@ -17,6 +17,7 @@
 /*********** FORWARD DECLARATION ****************/
 struct Service;
 struct Client;
+struct Handle;
 
 typedef enum PluginStatus
 {
@@ -44,8 +45,10 @@ typedef struct Plugin
 	PluginStatus pl_status;
 
 	struct Service *pl_service_p;
-	
+
 	struct Client *pl_client_p;
+
+	struct Handler *pl_handler_p;
 } Plugin;
 
 
