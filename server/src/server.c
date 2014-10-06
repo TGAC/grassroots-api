@@ -12,7 +12,9 @@
 #include "connect.h"
 #include "user.h"
 
-#include "irods_handle.h"
+#include "handler.h"
+
+//#include "irods_handle.h"
 
 
 /*****************************/
@@ -28,7 +30,7 @@ static json_t *GetInterestedServices (const json_t * const req_p);
 
 static json_t *GetAllServices (const json_t * const req_p);
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handle *handle_p);
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handler *handler_p);
 
 
 /***************************/
@@ -114,7 +116,7 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 									if (json_is_string (data_name_p))
 										{
 											const char *data_name_s = json_string_value (data_name_p);
-											Handle *handle_p = GetIRodsHandle (username_s, password_s);
+											Handler *handle_p = NULL; //GetIRodsHandle (username_s, password_s);
 											
 											if (handle_p)
 												{
@@ -126,7 +128,7 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 													tags [1].ti_tag = TAG_DONE;
 																										
 													res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, handle_p);
-													FreeIRodsHandle (handle_p);
+													//FreeIRodsHandle (handle_p);
 												}
 										}
 								}									
@@ -208,10 +210,10 @@ static json_t *GetAllModifiedData (const json_t * const req_p)
 
 
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handle *handle_p)
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handler *handler_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (services_path_s, tags_p, handle_p);
+	LinkedList *services_list_p = LoadMatchingServices (services_path_s, tags_p, handler_p);
 	
 	json_p = GetServicesListAsJSON (services_list_p, tags_p);
 

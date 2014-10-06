@@ -21,7 +21,7 @@ void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
 	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p),
-	bool (*match_fn) (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p),
+	bool (*match_fn) (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, TagItem *tags_p),
 	ServiceData *data_p)
 {
@@ -70,7 +70,7 @@ void FreeServiceNode (ListItem * const node_p)
 
 
 
-LinkedList *LoadMatchingServices (const char * const services_path_s, TagItem *tags_p, Handle *handle_p)
+LinkedList *LoadMatchingServices (const char * const services_path_s, TagItem *tags_p, Handler *handler_p)
 {
 	LinkedList *services_list_p = AllocateLinkedList (FreeServiceNode);
 	
@@ -107,7 +107,7 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, TagItem *t
 																	
 																	if (tags_p && (tags_p -> ti_tag != TAG_DONE))
 																		{
-																			using_service_flag = IsServiceMatch (service_p, tags_p, handle_p);
+																			using_service_flag = IsServiceMatch (service_p, tags_p, handler_p);
 																		}
 																	
 																	if (using_service_flag)
@@ -174,9 +174,9 @@ int RunService (Service *service_p, ParameterSet *param_set_p)
 }
 
 
-bool IsServiceMatch (Service *service_p, TagItem *tags_p, Handle *handle_p)
+bool IsServiceMatch (Service *service_p, TagItem *tags_p, Handler *handler_p)
 {
-	return service_p -> se_match_fn (service_p -> se_data_p, tags_p, handle_p);	
+	return service_p -> se_match_fn (service_p -> se_data_p, tags_p, handler_p);	
 }
 
 

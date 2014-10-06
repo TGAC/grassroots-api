@@ -34,10 +34,10 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_API Service *AllocateService (void);
+BLAST_SERVICE_API Service *GetService (void);
 
 
-BLAST_SERVICE_API void FreeService (Service *service_p);
+BLAST_SERVICE_API void ReleaseService (Service *service_p);
 
 #ifdef __cplusplus
 }

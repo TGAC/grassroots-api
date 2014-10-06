@@ -452,26 +452,8 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 			case PT_DIRECTORY:
 				{
 					Resource *new_res_p = (Resource *) value_p;
-					
-					if (new_res_p -> re_value_s)
-						{
-							char *copied_value_s = strdup (new_res_p -> re_value_s);
 
-							if (copied_value_s)
-								{
-									/* If we have a previous value, delete it */
-									if (param_p -> pa_current_value.st_resource_value.re_value_s)
-										{
-											free (param_p -> pa_current_value.st_resource_value.re_value_s);
-										}
-
-									param_p -> pa_current_value.st_resource_value.re_value_s = copied_value_s;
-									param_p -> pa_current_value.st_resource_value.re_protocol = new_res_p -> re_protocol;
-									
-									
-									success_flag = true;
-								}
-						}
+					success_flag = CopyResource (new_res_p, param_p -> pa_current_value.st_resource_value_p);
 				}
 			break;
 
@@ -676,9 +658,9 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 						{
 							success_flag = false;
 							
-							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_integer (val_p -> st_resource_value.re_protocol)) == 0)
+							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_integer (val_p -> st_resource_value_p -> re_protocol)) == 0)
 								{
-									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_integer (val_p -> st_resource_value.re_value_s)) == 0);
+									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_string (val_p -> st_resource_value_p -> re_value_s)) == 0);
 								}
 
 							if (!success_flag)
@@ -772,17 +754,17 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 										{
 											const char *value_s = json_string_value (protocol_p);
 											
-											value_p -> st_resource_value.re_protocol = json_integer_value (protocol_p);
+											value_p -> st_resource_value_p -> re_protocol = json_integer_value (protocol_p);
 											
 											if (value_s)
 												{
-													value_p -> st_resource_value.re_value_s = strdup (json_string_value (protocol_p));
+													value_p -> st_resource_value_p -> re_value_s = strdup (json_string_value (protocol_p));
 													
-													success_flag = (value_p -> st_resource_value.re_value_s != NULL);
+													success_flag = (value_p -> st_resource_value_p -> re_value_s != NULL);
 												}
 											else
 												{
-													value_p -> st_resource_value.re_value_s = NULL;
+													value_p -> st_resource_value_p -> re_value_s = NULL;
 													success_flag = true;
 												}												
 										}					

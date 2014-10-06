@@ -14,6 +14,7 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 	plugin_p -> pl_client_p = NULL;
 	plugin_p -> pl_handler_p = NULL;
 	plugin_p -> pl_status = PS_UNSET;
+	plugin_p -> pl_type = PN_UNKNOWN;
 
 	if (path_s)
 		{
@@ -31,10 +32,6 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 
 	return success_flag;
 }
-
-
-
-
 
 
 void ClearPluginPath (Plugin * const plugin_p)

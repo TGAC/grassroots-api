@@ -9,22 +9,24 @@
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
 
-#include "irods_util_library.h"
+#include "irods_handler_library.h"
+#include "irods_resource.h"
+
 
 #include "linked_list.h"
 #include "typedefs.h"
 #include "query.h"
-#include "handle.h"
+#include "handler.h"
 #include "tags.h"
 
 
-typedef struct IRodsHandle
+typedef struct IRodsHandler
 {
-	Handle irh_base_handle;
+	Handler irh_base_handler;
 	rcComm_t *irh_connection_p;
 	openedDataObjInp_t *irh_obj_p;
-	HandleStatus irh_status;
-} IRodsHandle;
+	HandlerStatus irh_status;
+} IRodsHandler;
 
 
 
@@ -41,17 +43,11 @@ extern "C"
 {
 #endif
 
+IRODS_HANDLER_API Handler *GetIRodsHandler (const char * const username_s, const char * const password_s);
 
-IRODS_UTIL IRodsResource *AllocateIRodsResource (void);
+IRODS_HANDLER_API Handler *AllocateIRodsHandler (rcComm_t *connection_p);
 
-IRODS_UTIL void AllocateIRodsResource (IRodsResource *resource_p);
-
-
-IRODS_UTIL_API Handle *GetIRodsHandle (const char * const username_s, const char * const password_s);
-
-IRODS_UTIL_API Handle *AllocateIRodsHandle (rcComm_t *connection_p);
-
-IRODS_UTIL_API void FreeIRodsHandle (Handle *handle_p);
+IRODS_HANDLER_API void FreeIRodsHandler (Handler *handler_p);
 
 #ifdef __cplusplus
 }

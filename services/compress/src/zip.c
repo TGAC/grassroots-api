@@ -41,7 +41,7 @@
    an error reading or writing the files. */
 //int def(FILE *source, FILE *dest, int level)
 
-int CompressAsZip (Handle *in_p, Handle *out_p, int level)
+int CompressAsZip (Handler *in_p, Handler *out_p, int level)
 {
 	int ret, flush;
 	unsigned have;
@@ -62,9 +62,9 @@ int CompressAsZip (Handle *in_p, Handle *out_p, int level)
 			while (loop_flag && (ret != Z_ERRNO))
 				{
 					/* Read in the next input chunk */
-					strm.avail_in = ReadFromHandle (in_p, input_buffer, CHUNK_SIZE);
+					strm.avail_in = ReadFromHandler (in_p, input_buffer, CHUNK_SIZE);
 
-					switch (GetHandleStatus (in_p))
+					switch (GetHandlerStatus (in_p))
 						{
 							case HS_BAD:
 								deflateEnd (&strm);
@@ -101,9 +101,9 @@ int CompressAsZip (Handle *in_p, Handle *out_p, int level)
 
 									have = CHUNK_SIZE - strm.avail_out;
 									
-									i = WriteToHandle (out_p, output_buffer, have);
+									i = WriteToHandler (out_p, output_buffer, have);
 									
-									if ((i != have) || (GetHandleStatus (out_p) == HS_BAD))
+									if ((i != have) || (GetHandlerStatus (out_p) == HS_BAD))
 										{
 											ret = Z_ERRNO;
 										}

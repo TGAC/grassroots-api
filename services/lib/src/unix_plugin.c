@@ -8,8 +8,10 @@
 #include "plugin.h"
 #include "service.h"
 #include "client.h"
-#include "handle.h"
+#include "handler.h"
 #include "string_utils.h"
+
+
 
 typedef struct UnixPlugin
 {
@@ -76,13 +78,48 @@ bool OpenPlugin (Plugin * const plugin_p)
 }
 
 
+
+
+
+
+//
+//	Get Symbol
+//
+Service *GetServiceFromPlugin (Plugin * const plugin_p)
+{
+	if (!plugin_p -> pl_service_p)
+		{
+			const char *symbol_name_s = "GetService";
+			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
+
+			if (unix_plugin_p -> up_handle_p)
+				{
+					Service *(*fn_p) (void) = (Service *(*) (void)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
+
+					if (fn_p)
+						{
+							plugin_p -> pl_service_p = fn_p ();
+
+							if (plugin_p -> pl_service_p)
+								{
+									plugin_p -> pl_service_p -> se_plugin_p = plugin_p;
+									plugin_p -> pl_type = PN_SERVICE;
+								}
+						}
+				}
+		}
+
+	return plugin_p -> pl_service_p;
+}
+
+
 bool DeallocatePluginService (Plugin * const plugin_p)
 {
 	bool success_flag = (plugin_p -> pl_service_p == NULL);
 
 	if (!success_flag)
 		{
-			const char *symbol_name_s = "DeallocateService";
+			const char *symbol_name_s = "ReleaseService";
 			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
 			if (unix_plugin_p -> up_handle_p)
@@ -100,37 +137,6 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 		}
 
 	return success_flag;
-}
-
-
-
-//
-//	Get Symbol
-//
-Service *GetServiceFromPlugin (Plugin * const plugin_p)
-{
-	if (!plugin_p -> pl_service_p)
-		{
-			const char *symbol_name_s = "AllocateService";
-			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
-
-			if (unix_plugin_p -> up_handle_p)
-				{
-					Service *(*fn_p) (void) = (Service *(*) (void)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
-
-					if (fn_p)
-						{
-							plugin_p -> pl_service_p = fn_p ();
-
-							if (plugin_p -> pl_service_p)
-								{
-									plugin_p -> pl_service_p -> se_plugin_p = plugin_p;
-								}
-						}
-				}
-		}
-
-	return plugin_p -> pl_service_p;
 }
 
 //
@@ -154,6 +160,7 @@ Client *GetClientFromPlugin (Plugin * const plugin_p)
 							if (plugin_p -> pl_client_p)
 								{
 									plugin_p -> pl_client_p -> cl_plugin_p = plugin_p;
+									plugin_p -> pl_type = PN_CLIENT;
 								}
 						}
 				}
@@ -188,56 +195,54 @@ bool DeallocatePluginClient (Plugin * const plugin_p)
 	return success_flag;
 }
 
-
 //
 //	Get Symbol
 //
-Handle *GetHandleFromPlugin (Plugin * const plugin_p)
+Handler *GetHandlerFromPlugin (Plugin * const plugin_p)
 {
 	if (!plugin_p -> pl_client_p)
 		{
-			const char *symbol_name_s = "GetHandle";
+			const char *symbol_name_s = "GetHandler";
 			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
 			if (unix_plugin_p -> up_handle_p)
 				{
-					Handle *(*fn_p) (void) = (Handle *(*) (void)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
+					Handler *(*fn_p) (void) = (Handler *(*) (void)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
 
 					if (fn_p)
 						{
-							plugin_p -> pl_client_p = fn_p ();
+							plugin_p -> pl_handler_p = fn_p ();
 
-							if (plugin_p -> pl_client_p)
+							if (plugin_p -> pl_handler_p)
 								{
-									plugin_p -> pl_client_p -> cl_plugin_p = plugin_p;
+									plugin_p -> pl_handler_p -> ha_plugin_p = plugin_p;
+									plugin_p -> pl_type = PN_HANDLER;
 								}
 						}
 				}
 		}
 
-	return plugin_p -> pl_client_p;
+	return plugin_p -> pl_handler_p;
 }
 
-
-
-bool DeallocatePluginHandle (Plugin * const plugin_p)
+bool DeallocatePluginHandler (Plugin * const plugin_p)
 {
-	bool success_flag = (plugin_p -> pl_handle_p == NULL);
+	bool success_flag = (plugin_p -> pl_handler_p == NULL);
 
 	if (!success_flag)
 		{
-			const char *symbol_name_s = "ReleaseHandle";
+			const char *symbol_name_s = "ReleaseHandler";
 			UnixPlugin *unix_plugin_p = (UnixPlugin *) plugin_p;
 
 			if (unix_plugin_p -> up_handle_p)
 				{
-					void (*fn_p) (Handle *) = (void (*) (Handle *)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
+					void (*fn_p) (Handler *) = (void (*) (Handler *)) (dlsym (unix_plugin_p -> up_handle_p, symbol_name_s));
 
 					if (fn_p)
 						{
-							fn_p (plugin_p -> pl_handle_p);
+							fn_p (plugin_p -> pl_handler_p);
 
-							plugin_p -> pl_handle_p = NULL;
+							plugin_p -> pl_handler_p = NULL;
 							success_flag = true;
 						}
 				}

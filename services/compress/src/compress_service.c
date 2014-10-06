@@ -5,8 +5,8 @@
 #include "compress_service.h"
 #include "memory_allocations.h"
 #include "parameter.h"
-#include "handle.h"
-#include "handle_utils.h"
+#include "handler.h"
+#include "handler_utils.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
 
@@ -37,7 +37,7 @@ static const char *s_algorithm_names_pp [CA_NUM_ALGORITHMS] =
 };
 
 
-typedef int (*CompressFunction) (Handle *in_p, Handle *out_p, int level);
+typedef int (*CompressFunction) (Handler *in_p, Handler *out_p, int level);
 
 static CompressFunction s_compress_fns [CA_NUM_ALGORITHMS] = 
 {
@@ -66,7 +66,7 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 
 static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p);
+static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p);
 
 
 
@@ -76,7 +76,7 @@ static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags
  * API FUNCTIONS
  */
 
-Service *AllocateService (void)
+Service *GetService (void)
 {
 	Service *compress_service_p = (Service *) AllocMemory (sizeof (Service));
 	ServiceData *data_p = NULL;
@@ -93,7 +93,7 @@ Service *AllocateService (void)
 }
 
 
-void FreeService (Service *service_p)
+void ReleaseService (Service *service_p)
 {
 	FreeMemory (service_p);
 }
@@ -174,7 +174,7 @@ static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_
 	
 	if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &input_resource, true))
 		{
-			Resource *input_resource_p = & (input_resource.st_resource_value);
+			Resource *input_resource_p = input_resource.st_resource_value_p;
 			SharedType value;
 			
 			if (GetParameterValueFromParameterSet (param_set_p, TAG_COMPRESS_ALGORITHM, &value, true))
@@ -219,27 +219,27 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 			
 			if (output_name_s)
 				{
-					Handle *input_handle_p = GetResourceHandle (input_resource_p);
+					Handler *input_handler_p = GetResourceHandler (input_resource_p, NULL);
 
-					if (input_handle_p)
+					if (input_handler_p)
 						{
 							Resource output_resource;
-							Handle *output_handle_p = NULL;
+							Handler *output_handler_p = NULL;
 							
 							output_resource.re_protocol = input_resource_p -> re_protocol;
 							output_resource.re_value_s = output_name_s;
 							
-							output_handle_p = GetResourceHandle (&output_resource);
+							output_handler_p = GetResourceHandler (&output_resource, NULL);
 
-							if (output_handle_p)
+							if (output_handler_p)
 								{
-									res = s_compress_fns [algo_index] (input_handle_p, output_handle_p, 0);
+									res = s_compress_fns [algo_index] (input_handler_p, output_handler_p, 0);
 									
-									CloseHandle (output_handle_p);
- 								}		/* if (output_handle_p) */
+									CloseHandler (output_handler_p);
+ 								}		/* if (output_handler_p) */
 							
-							CloseHandle (input_handle_p);
-						}		/* if (input_handle_p) */
+							CloseHandler (input_handler_p);
+						}		/* if (input_handler_p) */
 								
 					FreeCopiedString (output_name_s);
 				}		/* if (output_name_s) */
@@ -252,7 +252,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 }
 
 
-static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handle *handle_p)
+static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p)
 {
 	bool interested_flag = true;
 	const char *filename_s = NULL;
@@ -277,17 +277,17 @@ static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags
 			uint32 header = 0;
 			uint32 i = 0;
 			
-			if (OpenHandle (handle_p, filename_s, "rb"))
+			if (OpenHandler(handler_p, filename_s, "rb"))
 				{
 					size_t l = sizeof (i);
-					size_t r = ReadFromHandle (handle_p, &i, l);
+					size_t r = ReadFromHandler (handler_p, &i, l);
 					
 					if (r == l) 
 						{
 							
 						}
 						
-					CloseHandle (handle_p);
+					CloseHandler (handler_p);
 				}
 				
 			header = htonl (i);

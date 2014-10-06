@@ -35,6 +35,7 @@ void ClearResource (Resource *resource_p)
 	if (resource_p -> re_value_s)
 		{
 			FreeCopiedString (resource_p -> re_value_s);
+			resource_p -> re_value_s = NULL;
 		}
 		
 	resource_p -> re_protocol = FILE_LOCATION_UNKNOWN;
@@ -58,3 +59,23 @@ bool SetResourceValue (Resource *resource_p, const FileLocation fl, const char *
 	
 	return success_flag;
 }
+
+
+bool CopyResource (const Resource * const src_p, Resource * const dest_p)
+{
+	bool success_flag = false;
+	
+	if (dest_p -> re_value_s)
+		{
+			success_flag = SetResourceValue (dest_p, src_p -> re_protocol, src_p -> re_value_s);
+		}
+	else
+		{
+			ClearResource (dest_p);
+			dest_p -> re_protocol = src_p -> re_protocol;
+		}
+	
+	
+	return success_flag;
+}
+
