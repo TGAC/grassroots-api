@@ -13,6 +13,7 @@
 #include "user.h"
 
 #include "handler.h"
+#include "handler_utils.h"
 
 //#include "irods_handle.h"
 
@@ -90,49 +91,56 @@ json_t *ProcessMessage (const char * const request_s)
 /***** STATIC DEFINITIONS *****/
 /******************************/
 
-
 static json_t *GetInterestedServices (const json_t * const req_p)
 {
 	json_t *res_p = NULL;
 	const char *username_s = NULL;
 	const char *password_s = NULL;
-												
+
 	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
 		{
 			json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
 			
 			if (file_data_p)
 				{
-					/* is it an irods file object? */
-					json_t *group_p = json_object_get (file_data_p, KEY_IRODS);
+					json_t *protocol_p = json_object_get (file_data_p, KEY_PROTOCOL);
 
-					if (group_p)
+					if (protocol_p)
 						{
-							/* is it a single file or a dir? */
-							json_t *data_name_p = json_object_get (group_p, KEY_FILENAME);
-							
-							if (data_name_p)
-								{									
-									if (json_is_string (data_name_p))
+							if (json_is_string (protocol_p))
+								{
+									/* is it a single file or a dir? */
+									json_t *data_name_p = json_object_get (protocol_p, KEY_FILENAME);
+									
+									if (data_name_p && (json_is_string (data_name_p)))
 										{
+											const char *protocol_s = json_string_value (protocol_p);
 											const char *data_name_s = json_string_value (data_name_p);
-											Handler *handle_p = NULL; //GetIRodsHandle (username_s, password_s);
 											
-											if (handle_p)
-												{
-													TagItem tags [2];
-													
-													tags [0].ti_tag = TAG_INPUT_FILE;
-													tags [0].ti_value.st_string_value_s = data_name_s;
+											Resource *resource_p = AllocateResource (protocol_s, data_name_s);
 
-													tags [1].ti_tag = TAG_DONE;
-																										
-													res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, handle_p);
-													//FreeIRodsHandle (handle_p);
+											if (resource_p)
+												{
+													Handler *handler_p = GetResourceHandler (resource_p, protocol_p);
+
+													if (handler_p)
+														{
+															TagItem tags [2];
+															
+															tags [0].ti_tag = TAG_INPUT_FILE;
+															tags [0].ti_value.st_string_value_s = data_name_s;
+
+															tags [1].ti_tag = TAG_DONE;
+																												
+															res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, handler_p);
+															
+															FreeHandler (handler_p);
+														}
 												}
-										}
-								}									
-																							
+										}									
+									
+								}		/* if (json_is_string (protocol_p)) */
+							
 						}					
 				}
 		}

@@ -16,6 +16,7 @@ extern "C"
 
 WHEATIS_SERVICE_API TagItem *FindMatchingTag (const TagItem *tags_p, Tag tag);
 
+
 #ifdef __cplusplus
 }
 #endif

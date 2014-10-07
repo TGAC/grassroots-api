@@ -5,19 +5,37 @@
 #include "filesystem_utils.h"
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, TagItem *tags_p);
+LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, json_t *tags_p);
 
 
-Handler *GetResourceHandler (const Resource *resource_p, const TagItem *tags_p)
+Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 {
 	Handler *handler_p = NULL;
+	LinkedList *matching_handlers_p = LoadMatchingHandlers ("handlers", resource_p, tags_p);
 	
+	if (matching_handlers_p) 
+		{
+			if (matching_handlers_p -> ll_size == 1)
+				{
+					HandlerNode *node_p = (HandlerNode *) (matching_handlers_p -> ll_head_p);
+
+					/* 
+					 * Detach the handler from the node so that it stays in scope when
+					 * we deallocate the list.
+					 */
+					handler_p = node_p -> hn_handler_p;
+					node_p -> hn_handler_p = NULL;
+					
+					FreeLinkedList (matching_handlers_p);
+					
+				}
+		}
 	
 	return handler_p;
 }
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, TagItem *tags_p)
+LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, json_t *tags_p)
 {
 	LinkedList *handlers_list_p = AllocateLinkedList (FreeHandlerNode);
 	
@@ -50,8 +68,8 @@ LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Reso
 															
 															if (handler_p)
 																{
-																	
-																	if (IsHandlerForResource (handler_p, resource_p))
+																	/* If resource_p is NULL or it matches, then add it */
+																	if ((!resource_p) || IsHandlerForResource (handler_p, resource_p))
 																		{
 																			HandlerNode *node_p = AllocateHandlerNode (handler_p);
 																			

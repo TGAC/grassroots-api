@@ -11,6 +11,7 @@
 #define KEY_OPERATIONS	("operations")
 #define KEY_INTERVAL		("interval")
 #define KEY_IRODS				("irods")
+#define KEY_PROTOCOL		("protocol")
 #define	KEY_FILE_DATA		("file_data")
 
 

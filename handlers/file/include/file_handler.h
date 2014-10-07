@@ -20,7 +20,7 @@ extern "C"
 #endif
 
 
-FILE_HANDLER_API Handler *GetHandler (TagItem *tags_p);
+FILE_HANDLER_API Handler *GetHandler (json_t *tags_p);
 
 FILE_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

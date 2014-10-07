@@ -179,13 +179,13 @@ int main(int argc, char *argv[])
 							{
 								case OP_LIST_ALL_SERVICES:
 									req_p = GetAvailableServicesRequest (username_s, password_s);
-									response_p = SendRequest (sock_fd, req_p, id, buffer_p);						
+									response_p = SendRequest (sock_fd, req_p, id, buffer_p);
 									break;
 									
 									
 								case OP_IRODS_MODIFIED_DATA:
 									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
-									response_p = SendRequest (sock_fd, req_p, id, buffer_p);						
+									response_p = SendRequest (sock_fd, req_p, id, buffer_p);
 									break;
 									
 								case OP_LIST_INTERESTED_SERVICES:
@@ -197,12 +197,12 @@ int main(int argc, char *argv[])
 												
 												if (irods_file_p)
 													{
-														req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);																
+														req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);
 													}
 													
 												if (req_p)
 													{
-														response_p = SendRequest (sock_fd, req_p, id, buffer_p);						
+														response_p = SendRequest (sock_fd, req_p, id, buffer_p);
 														
 														if (response_p)
 															{
@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
 																				
 																				for (i = 0; i < num_services; ++ i)
 																					{
-																						json_t *service_json_p = json_array_get (response_p, i);																		
+																						json_t *service_json_p = json_array_get (response_p, i);
 																						const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
 
 																						#ifdef _DEBUG

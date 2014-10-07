@@ -61,7 +61,7 @@ Handler *GetIRodsHandler (const char * const username_s, const char * const pass
 }
 */
 
-Handler *GetHandler (TagItem *tags_p)
+Handler *GetHandler (json_t *tags_p)
 {
 	IRodsHandler *handler_p = (IRodsHandler *) AllocMemory (sizeof (IRodsHandler));
 

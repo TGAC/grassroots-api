@@ -8,6 +8,7 @@
 #include "plugin.h"
 #include "resource.h"
 #include "parameter.h"
+#include "jansson.h"
 
 typedef enum
 {
@@ -96,7 +97,7 @@ WHEATIS_HANDLER_API HandlerNode *AllocateHandlerNode (struct Handler *handler_p)
 
 WHEATIS_HANDLER_API void FreeHandlerNode (ListItem *node_p);
 
-WHEATIS_HANDLER_API Handler *GetHandlerFromPlugin (Plugin * const plugin_p, TagItem *tags_p);
+WHEATIS_HANDLER_API Handler *GetHandlerFromPlugin (Plugin * const plugin_p, json_t *tags_p);
 
 WHEATIS_HANDLER_API bool DeallocatePluginHandler (Plugin * const plugin_p);
 

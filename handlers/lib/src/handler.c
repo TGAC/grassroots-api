@@ -117,7 +117,11 @@ void FreeHandlerNode (ListItem *node_p)
 {
 	HandlerNode *handler_node_p = (HandlerNode *) node_p;
 
-	FreeHandler (handler_node_p -> hn_handler_p);
+	if (handler_node_p -> hn_handler_p)
+		{
+			FreeHandler (handler_node_p -> hn_handler_p);
+		}
+		
 	FreeMemory (handler_node_p);
 }
 
@@ -126,7 +130,7 @@ void FreeHandlerNode (ListItem *node_p)
 //
 //	Get Symbol
 //
-Handler *GetHandlerFromPlugin (Plugin * const plugin_p, TagItem *tags_p)
+Handler *GetHandlerFromPlugin (Plugin * const plugin_p, json_t *tags_p)
 {
 	if (!plugin_p -> pl_client_p)
 		{
@@ -134,7 +138,7 @@ Handler *GetHandlerFromPlugin (Plugin * const plugin_p, TagItem *tags_p)
 
 			if (symbol_p)
 				{
-					Handler *(*fn_p) (TagItem *) = (Handler *(*) (TagItem *)) symbol_p;
+					Handler *(*fn_p) (json_t *) = (Handler *(*) (json_t *)) symbol_p;
 
 					plugin_p -> pl_handler_p = fn_p (tags_p);
 

@@ -12,7 +12,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const TagItem *tags_p);
+WHEATIS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p);
 
 
 #ifdef __cplusplus

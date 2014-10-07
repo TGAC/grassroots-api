@@ -31,7 +31,7 @@ static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource 
 
 
 
-Handler *GetHandler (TagItem *tags_p)
+Handler *GetHandler (json_t *tags_p)
 {
 	FileHandler *handler_p = (FileHandler *) AllocMemory (sizeof (FileHandler));
 	

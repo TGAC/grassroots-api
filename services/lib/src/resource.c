@@ -1,3 +1,6 @@
+#include <string.h>
+
+#define ALLOCATE_RESOURCE_TAGS
 #include "resource.h"
 #include "string_utils.h"
 #include "memory_allocations.h"
@@ -8,13 +11,63 @@ static bool ReplaceValue (const char * const src_s, char **dest_ss);
 
 
 
-Resource *AllocateResource (void)
+Resource *ParseStringToResource (const char * const resource_s)
+{
+	if (resource_s)
+		{
+			char *delimiter_p = strstr (resource_s, RESOURCE_DELIMITER_S);
+			
+			if (delimiter_p)
+				{
+					const size_t resource_length = strlen (resource_s);
+					const size_t delimiter_length = strlen (RESOURCE_DELIMITER_S);
+
+					/* check that resource_s has valid data after the delimiter */
+					if (delimiter_p + delimiter_length < resource_s + resource_length)
+						{
+							char *protocol_s = CopyToNewString (resource_s, delimiter_p - resource_s, false);
+							
+							if (protocol_s)
+								{
+									char *value_s = CopyToNewString (resource_s, delimiter_p + delimiter_length, false);
+									
+									if (value_s)
+										{
+											Resource *resource_p = AllocateResource (NULL, NULL);
+											
+											if (resource_p)
+												{
+													resource_p -> re_protocol_s = protocol_s;
+													resource_p -> re_value_s = value_s;
+													
+													return resource_p;
+												}
+											
+											FreeCopiedString (value_s);
+										}		/* if (value_s) */
+									
+									FreeCopiedString (protocol_s);
+								}		/* if (protocol_s) */
+						}
+				}
+		}
+	
+	return NULL;
+}
+
+Resource *AllocateResource (const char *protocol_s, const char *value_s)
 {
 	Resource *resource_p = (Resource *) AllocMemory (sizeof (Resource));
 	
 	if (resource_p)
 		{
 			InitResource (resource_p);
+			
+			if (!SetResourceValue (resource_p, protocol_s, value_s))
+				{
+					FreeResource (resource_p);
+					resource_p = NULL;
+				}
 		}
 	
 	return resource_p;
@@ -68,7 +121,6 @@ bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char 
 					success_flag = true;
 				}
 		}
-			
 	
 	return success_flag;
 }

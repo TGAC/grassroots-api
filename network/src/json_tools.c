@@ -233,4 +233,3 @@ bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **user
 
 
 
-
