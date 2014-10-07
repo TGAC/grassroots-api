@@ -5,17 +5,19 @@
 #include "filesystem_utils.h"
 
 
+LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, TagItem *tags_p);
+
 
 Handler *GetResourceHandler (const Resource *resource_p, const TagItem *tags_p)
 {
+	Handler *handler_p = NULL;
 	
+	
+	return handler_p;
 }
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p);
-
-
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p)
+LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, TagItem *tags_p)
 {
 	LinkedList *handlers_list_p = AllocateLinkedList (FreeHandlerNode);
 	
@@ -44,7 +46,7 @@ LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Reso
 												{
 													if (OpenPlugin (plugin_p))
 														{
-															Handler *handler_p = GetHandlerFromPlugin (plugin_p);
+															Handler *handler_p = GetHandlerFromPlugin (plugin_p, tags_p);
 															
 															if (handler_p)
 																{

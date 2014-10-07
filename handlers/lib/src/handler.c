@@ -126,7 +126,7 @@ void FreeHandlerNode (ListItem *node_p)
 //
 //	Get Symbol
 //
-Handler *GetHandlerFromPlugin (Plugin * const plugin_p)
+Handler *GetHandlerFromPlugin (Plugin * const plugin_p, TagItem *tags_p)
 {
 	if (!plugin_p -> pl_client_p)
 		{
@@ -134,9 +134,9 @@ Handler *GetHandlerFromPlugin (Plugin * const plugin_p)
 
 			if (symbol_p)
 				{
-					Handler *(*fn_p) (void) = (Handler *(*) (void)) symbol_p;
+					Handler *(*fn_p) (TagItem *) = (Handler *(*) (TagItem *)) symbol_p;
 
-					plugin_p -> pl_handler_p = fn_p ();
+					plugin_p -> pl_handler_p = fn_p (tags_p);
 
 					if (plugin_p -> pl_handler_p)
 						{

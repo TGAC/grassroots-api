@@ -658,7 +658,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 						{
 							success_flag = false;
 							
-							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_integer (val_p -> st_resource_value_p -> re_protocol)) == 0)
+							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_string (val_p -> st_resource_value_p -> re_protocol_s)) == 0)
 								{
 									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_string (val_p -> st_resource_value_p -> re_value_s)) == 0);
 								}
@@ -746,15 +746,16 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 						{
 							json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
 							
-							if ((protocol_p) && (json_is_integer (protocol_p)))
+							if ((protocol_p) && (json_is_string (protocol_p)))
 								{
-									json_t *value_json_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
+									json_t *json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
 									
-									if (value_json_p && (json_is_string (value_json_p)))
+									if (json_value_p && (json_is_string (json_value_p)))
 										{
-											const char *value_s = json_string_value (protocol_p);
+											const char *protocol_s = json_string_value (protocol_p);
+											const char *value_s = json_string_value (json_value_p);
 											
-											value_p -> st_resource_value_p -> re_protocol = json_integer_value (protocol_p);
+											success_flag = SetResourceValue (value_p, protocol_s, value_s);
 											
 											if (value_s)
 												{

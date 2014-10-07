@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "file_handler.h"
 #include "memory_allocations.h"
 #include "resource.h"
@@ -29,7 +31,7 @@ static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource 
 
 
 
-Handler *GetHandler (void)
+Handler *GetHandler (TagItem *tags_p)
 {
 	FileHandler *handler_p = (FileHandler *) AllocMemory (sizeof (FileHandler));
 	
@@ -156,7 +158,10 @@ static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource 
 {
 	bool match_flag = false;
 	
-	match_flag = (resource_p -> re_protocol == FILE_LOCATION_LOCAL) || (resource_p -> re_protocol == FILE_LOCATION_REMOTE);
+	if (resource_p -> re_protocol_s)
+		{
+			match_flag = (strcmp (GetFileHandlerProtocol (handler_p), resource_p -> re_protocol_s) == 0);
+		}
 		
 	return match_flag;
 }

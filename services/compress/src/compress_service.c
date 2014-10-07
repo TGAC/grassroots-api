@@ -226,7 +226,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 							Resource output_resource;
 							Handler *output_handler_p = NULL;
 							
-							output_resource.re_protocol = input_resource_p -> re_protocol;
+							output_resource.re_protocol_s = input_resource_p -> re_protocol_s;
 							output_resource.re_value_s = output_name_s;
 							
 							output_handler_p = GetResourceHandler (&output_resource, NULL);

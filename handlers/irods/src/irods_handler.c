@@ -61,7 +61,7 @@ Handler *GetIRodsHandler (const char * const username_s, const char * const pass
 }
 */
 
-Handler *GetHandler (void)
+Handler *GetHandler (TagItem *tags_p)
 {
 	IRodsHandler *handler_p = (IRodsHandler *) AllocMemory (sizeof (IRodsHandler));
 
@@ -314,7 +314,10 @@ static bool IsResourceForIRodsHandler (struct Handler *handler_p, const Resource
 {
 	bool match_flag = false;
 	
-	match_flag = (resource_p -> re_protocol == FILE_LOCATION_IRODS);
+	if (resource_p -> re_protocol_s)
+		{
+			match_flag = (strcmp (GetIRodsHandlerProtocol (handler_p), resource_p -> re_protocol_s) == 0);
+		}
 		
 	return match_flag;
 }

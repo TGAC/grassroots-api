@@ -3,6 +3,11 @@
 #include "memory_allocations.h"
 
 
+
+static bool ReplaceValue (const char * const src_s, char **dest_ss);
+
+
+
 Resource *AllocateResource (void)
 {
 	Resource *resource_p = (Resource *) AllocMemory (sizeof (Resource));
@@ -18,44 +23,52 @@ Resource *AllocateResource (void)
 
 void InitResource (Resource *resource_p)
 {
-	resource_p -> re_protocol = FILE_LOCATION_UNKNOWN;
+	resource_p -> re_protocol_s = NULL;
 	resource_p -> re_value_s = NULL;
 }
 
 
 void FreeResource (Resource *resource_p)
 {
-	ClearResource (resource_p);		
+	ClearResource (resource_p);
 	FreeMemory (resource_p);
 }
 
 
 void ClearResource (Resource *resource_p)
 {
+	if (resource_p -> re_protocol_s)
+		{
+			FreeCopiedString (resource_p -> re_protocol_s);
+			resource_p -> re_protocol_s = NULL;
+		}
+
 	if (resource_p -> re_value_s)
 		{
 			FreeCopiedString (resource_p -> re_value_s);
 			resource_p -> re_value_s = NULL;
 		}
-		
-	resource_p -> re_protocol = FILE_LOCATION_UNKNOWN;
+
 }
 
 
-bool SetResourceValue (Resource *resource_p, const FileLocation fl, const char *value_s)
+bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char *value_s)
 {
 	bool success_flag = false;
-	char *new_value_s = CopyToNewString (value_s, 0, false);
+	char *new_value_s = NULL;
+	char *new_protocol_s = NULL;
 	
-	if (new_value_s)
+	if (ReplaceValue (protocol_s, &new_protocol_s))
 		{
-			ClearResource (resource_p);
-			
-			resource_p -> re_protocol = fl;
-			resource_p -> re_value_s = new_value_s;
-			
-			success_flag = true;
+			if (ReplaceValue (value_s, &new_value_s))
+				{
+					resource_p -> re_protocol_s = new_protocol_s;
+					resource_p -> re_value_s = new_value_s;
+
+					success_flag = true;
+				}
 		}
+			
 	
 	return success_flag;
 }
@@ -63,19 +76,42 @@ bool SetResourceValue (Resource *resource_p, const FileLocation fl, const char *
 
 bool CopyResource (const Resource * const src_p, Resource * const dest_p)
 {
-	bool success_flag = false;
-	
-	if (dest_p -> re_value_s)
-		{
-			success_flag = SetResourceValue (dest_p, src_p -> re_protocol, src_p -> re_value_s);
-		}
-	else
-		{
-			ClearResource (dest_p);
-			dest_p -> re_protocol = src_p -> re_protocol;
-		}
-	
+	bool success_flag = SetResourceValue (dest_p, src_p -> re_protocol_s, src_p -> re_value_s);
 	
 	return success_flag;
 }
 
+
+
+static bool ReplaceValue (const char * const src_s, char **dest_ss)
+{
+	bool success_flag = false;
+		
+	if (src_s)
+		{
+			char *new_value_s = CopyToNewString (src_s, 0, false);
+			
+			if (new_value_s)
+				{
+					if (*dest_ss)
+						{
+							FreeCopiedString (*dest_ss);
+						}
+						
+					*dest_ss = new_value_s;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			if (*dest_ss)
+				{
+					FreeCopiedString (*dest_ss);
+					*dest_ss = NULL;
+				}
+				
+			success_flag = true;
+		}
+		
+	return success_flag;
+}

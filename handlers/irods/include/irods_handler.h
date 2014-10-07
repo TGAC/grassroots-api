@@ -43,7 +43,7 @@ extern "C"
 {
 #endif
 
-IRODS_HANDLER_API Handler *GetHandler (void);
+IRODS_HANDLER_API Handler *GetHandler (TagItem *tags_p);
 
 IRODS_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
