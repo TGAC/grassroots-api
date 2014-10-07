@@ -110,3 +110,50 @@ Client *LoadClient (const char * const clients_path_s, const char * const client
 
 
 
+//
+//	Get Symbol
+//
+Client *GetClientFromPlugin (Plugin * const plugin_p)
+{
+	if (!plugin_p -> pl_client_p)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetClient");
+
+			if (symbol_p)
+				{
+					Client *(*fn_p) (void) = (Client *(*) (void)) symbol_p;
+
+					plugin_p -> pl_client_p = fn_p ();
+
+					if (plugin_p -> pl_client_p)
+						{
+							plugin_p -> pl_client_p -> cl_plugin_p = plugin_p;
+							plugin_p -> pl_type = PN_CLIENT;
+						}
+				}
+		}
+
+	return plugin_p -> pl_client_p;
+}
+
+bool DeallocatePluginClient (Plugin * const plugin_p)
+{
+	bool success_flag = (plugin_p -> pl_client_p == NULL);
+
+	if (!success_flag)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "ReleaseClient");
+
+			if (symbol_p)
+				{
+					void (*fn_p) (Client *) = (void (*) (Client *)) symbol_p;
+
+					fn_p (plugin_p -> pl_client_p);
+
+					plugin_p -> pl_client_p = NULL;
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}

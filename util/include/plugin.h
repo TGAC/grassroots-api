@@ -5,7 +5,7 @@
 #define PLUGIN_H
 
 #include "typedefs.h"
-#include "wheatis_service_library.h"
+#include "wheatis_util_library.h"
 #include "linked_list.h"
 #include "memory_allocations.h"
 
@@ -104,14 +104,15 @@ typedef struct PluginListNode
  * @result A read-only string containing the config
  * string or NULL upon error.
 */
-WHEATIS_SERVICE_API const char *GetPluginConfigName (const Plugin * const plugin_p);
+WHEATIS_UTIL_API const char *GetPluginConfigName (const Plugin * const plugin_p);
+
 
 
 /***********************************/
 /*********  LOCAL METHODS  *********/
 /***********************************/
 
-WHEATIS_UTIL_LOCAL char *MakePluginName (const char * const name);
+WHEATIS_UTIL_API char *MakePluginName (const char * const name);
 
 
 WHEATIS_UTIL_LOCAL bool InitBasePlugin (Plugin * const plugin_p, const char * const path_p);
@@ -121,19 +122,18 @@ WHEATIS_UTIL_LOCAL void ClearBasePlugin (Plugin * const plugin_p);
  * The following functions are platform-specific
  */
 
-WHEATIS_UTIL_LOCAL Plugin *AllocatePlugin (const char * const path_s);
-WHEATIS_UTIL_LOCAL void FreePlugin (Plugin * const plugin_data_p);
+WHEATIS_UTIL_API Plugin *AllocatePlugin (const char * const path_s);
+WHEATIS_UTIL_API void FreePlugin (Plugin * const plugin_data_p);
 
 
-WHEATIS_UTIL_LOCAL bool OpenPlugin (Plugin * const plugin_p);
-WHEATIS_UTIL_LOCAL void ClosePlugin (Plugin * const plugin_p);
+WHEATIS_UTIL_API bool OpenPlugin (Plugin * const plugin_p);
+WHEATIS_UTIL_API void ClosePlugin (Plugin * const plugin_p);
 
 
 WHEATIS_UTIL_LOCAL void ClearPluginPath (Plugin * const plugin_p);
 
 
-WHEATIS_UTIL_LOCAL bool DeallocatePluginService (Plugin * const plugin_p);
-
+WHEATIS_UTIL_API void *GetSymbolFromPlugin (Plugin *plugin_p, const char * const symbol_s);
 
 
 /**
@@ -142,7 +142,7 @@ WHEATIS_UTIL_LOCAL bool DeallocatePluginService (Plugin * const plugin_p);
  * @param plugin_p The Plugin to store in the newly-created PluginListNode.
  * @return The new PluginListNode or NULL upon error.
  */
-WHEATIS_UTIL_LOCAL PluginListNode *AllocatePluginListNode (Plugin * const plugin_p);
+WHEATIS_UTIL_API PluginListNode *AllocatePluginListNode (Plugin * const plugin_p);
 
 
 /**
@@ -150,17 +150,11 @@ WHEATIS_UTIL_LOCAL PluginListNode *AllocatePluginListNode (Plugin * const plugin
  *
  * @param node_p The ListNode to free.
  */
-WHEATIS_UTIL_LOCAL void FreePluginListNode (ListItem * const node_p);
+WHEATIS_UTIL_API void FreePluginListNode (ListItem * const node_p);
 
 
 
-WHEATIS_UTIL_LOCAL bool IsPluginOpen (const Plugin * const plugin_p);
-
-
-WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
-
-
-WHEATIS_SERVICE_API struct Client *GetClientFromPlugin (Plugin * const plugin_p);
+WHEATIS_UTIL_API bool IsPluginOpen (const Plugin * const plugin_p);
 
 
 #ifdef __cplusplus

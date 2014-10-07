@@ -1,6 +1,37 @@
 #include "handler.h"
 
 
+
+void InitialiseHandler (Handler * const handler_p,
+	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
+	const char *(*get_protocol_fn) (struct Handler *handler_p),
+	const char *(*get_name_fn) (struct Handler *handler_p),
+	const char *(*get_description_fn) (struct Handler *handler_p),
+	bool (*open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s),
+	size_t (*read_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
+	size_t (*write_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
+	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
+	bool (*close_fn) (struct Handler *handler_p),
+	HandlerStatus (*status_fn) (struct Handler *handler_p),
+	void (*free_handler_fn) (struct Handler *handler_p))
+{
+	handler_p -> ha_match_fn = match_fn;
+	handler_p -> ha_get_protocol_fn = get_protocol_fn;
+	handler_p -> ha_get_name_fn = get_name_fn;
+	handler_p -> ha_get_description_fn = get_description_fn;
+	handler_p -> ha_open_fn = open_fn;
+	handler_p -> ha_read_fn = read_fn;
+	handler_p -> ha_write_fn = write_fn;
+	handler_p -> ha_seek_fn = seek_fn;
+	handler_p -> ha_close_fn = close_fn;
+	handler_p -> ha_status_fn = status_fn;
+	handler_p -> ha_free_handler_fn = free_handler_fn;
+
+	handler_p -> ha_plugin_p = NULL;
+}
+
+
+
 bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)
 {
 	return (handler_p -> ha_open_fn (handler_p, filename_s, mode_s));
@@ -61,6 +92,12 @@ const char *GetHandlerProtocol (struct Handler *handler_p)
 }
 
 
+bool IsHandlerForResource (struct Handler *handler_p, const Resource * resource_p)
+{
+	return (handler_p -> ha_match_fn (handler_p, resource_p));
+}
+
+
 HandlerNode *AllocateHandlerNode (struct Handler *handler_p)
 {
 	HandlerNode *node_p = (HandlerNode *) AllocMemory (sizeof (HandlerNode));
@@ -75,6 +112,7 @@ HandlerNode *AllocateHandlerNode (struct Handler *handler_p)
 	return node_p;
 }
 
+
 void FreeHandlerNode (ListItem *node_p)
 {
 	HandlerNode *handler_node_p = (HandlerNode *) node_p;
@@ -82,3 +120,54 @@ void FreeHandlerNode (ListItem *node_p)
 	FreeHandler (handler_node_p -> hn_handler_p);
 	FreeMemory (handler_node_p);
 }
+
+
+//
+//
+//	Get Symbol
+//
+Handler *GetHandlerFromPlugin (Plugin * const plugin_p)
+{
+	if (!plugin_p -> pl_client_p)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetHandler");
+
+			if (symbol_p)
+				{
+					Handler *(*fn_p) (void) = (Handler *(*) (void)) symbol_p;
+
+					plugin_p -> pl_handler_p = fn_p ();
+
+					if (plugin_p -> pl_handler_p)
+						{
+							plugin_p -> pl_handler_p -> ha_plugin_p = plugin_p;
+							plugin_p -> pl_type = PN_HANDLER;
+						}
+				}
+		}
+
+	return plugin_p -> pl_handler_p;
+}
+
+bool DeallocatePluginHandler (Plugin * const plugin_p)
+{
+	bool success_flag = (plugin_p -> pl_handler_p == NULL);
+
+	if (!success_flag)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "ReleaseHandler");
+
+			if (symbol_p)
+				{
+					void (*fn_p) (Handler *) = (void (*) (Handler *)) symbol_p;
+
+					fn_p (plugin_p -> pl_handler_p);
+
+					plugin_p -> pl_handler_p = NULL;
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+

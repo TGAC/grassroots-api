@@ -1,5 +1,7 @@
 #include "file_handler.h"
 #include "memory_allocations.h"
+#include "resource.h"
+
 
 static bool OpenFileHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
@@ -13,20 +15,39 @@ static bool CloseFileHandler (struct Handler *handler_p);
 
 static HandlerStatus GetFileHandlerStatus (struct Handler *handler_p);
 
+static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource * resource_p);
 
-Handler *AllocateFileHandler (void)
+static const char *GetFileHandlerProtocol (struct Handler *handler_p);
+
+static const char *GetFileHandlerName (struct Handler *handler_p);
+
+static const char *GetFileHandlerDescription (struct Handler *handler_p);
+
+static void FreeFileHandler (struct Handler *handler_p);
+
+static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource * resource_p);
+
+
+
+Handler *GetHandler (void)
 {
 	FileHandler *handler_p = (FileHandler *) AllocMemory (sizeof (FileHandler));
 	
 	if (handler_p)
 		{
-			handler_p -> fh_base_handler.ha_open_fn = OpenFileHandler;
-			handler_p -> fh_base_handler.ha_close_fn = CloseFileHandler;
-			handler_p -> fh_base_handler.ha_read_fn = ReadFromFileHandler;
-			handler_p -> fh_base_handler.ha_write_fn = WriteToFileHandler;
-			handler_p -> fh_base_handler.ha_seek_fn = SeekFileHandler;
-			handler_p -> fh_base_handler.ha_status_fn = GetFileHandlerStatus;
-			
+			InitialiseHandler (& (handler_p -> fh_base_handler),
+				IsResourceForFileHandler,
+				GetFileHandlerProtocol,
+				GetFileHandlerName,
+				GetFileHandlerDescription,
+				OpenFileHandler,
+				ReadFromFileHandler,
+				WriteToFileHandler,
+				SeekFileHandler,
+				CloseFileHandler,
+				GetFileHandlerStatus,
+				FreeFileHandler);
+
 			handler_p -> fh_handler_f = NULL;
 		}
 		
@@ -34,16 +55,9 @@ Handler *AllocateFileHandler (void)
 }
 
 
-void FreeFileHandler (Handler *handler_p)
+void ReleaseHandler (Handler *handler_p)
 {
-	FileHandler *file_handler_p = (FileHandler *) handler_p;
-	
-	if (file_handler_p -> fh_handler_f)
-		{
-			CloseFileHandler (handler_p);
-		}
-		
-	FreeMemory (handler_p);
+	FreeFileHandler (handler_p);
 }
 
 
@@ -136,3 +150,41 @@ static HandlerStatus GetFileHandlerStatus (struct Handler *handler_p)
 				
 	return status;
 }
+
+
+static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource * resource_p)
+{
+	bool match_flag = false;
+	
+	match_flag = (resource_p -> re_protocol == FILE_LOCATION_LOCAL) || (resource_p -> re_protocol == FILE_LOCATION_REMOTE);
+		
+	return match_flag;
+}
+
+
+static const char *GetFileHandlerProtocol (struct Handler *handler_p)
+{
+	return "file";
+}
+
+
+static const char *GetFileHandlerName (struct Handler *handler_p)
+{
+	return "File Handler";
+}
+
+
+static const char *GetFileHandlerDescription (struct Handler *handler_p)
+{
+	return "A Handler for files mounted locally and remotely";
+}
+
+
+static void FreeFileHandler (struct Handler *handler_p)
+{
+	FileHandler *file_handler_p = (FileHandler *) handler_p;
+	
+	CloseFileHandler (handler_p);
+	FreeMemory (file_handler_p);
+}
+

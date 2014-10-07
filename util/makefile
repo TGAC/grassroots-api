@@ -39,10 +39,12 @@ SRCS 	= \
 	linked_list.c \
 	linked_list_iterator.c \
 	math_utils.c \
+	plugin.c \
 	string_linked_list.c \
 	string_utils.c \
 	time_util.c \
-	unix_filesystem.c 
+	unix_filesystem.c \
+	unix_plugin.c
 	
 
 ifeq ($(BUILD),release)

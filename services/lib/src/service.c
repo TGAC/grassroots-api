@@ -200,6 +200,58 @@ ParameterSet *GetServiceParameters (const Service *service_p, TagItem *tags_p)
 }
 
 
+
+
+//
+//	Get Symbol
+//
+Service *GetServiceFromPlugin (Plugin * const plugin_p)
+{
+	if (!plugin_p -> pl_service_p)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetService");
+
+			if (symbol_p)
+				{
+					Service *(*fn_p) (void) = (Service *(*) (void)) symbol_p;
+
+					plugin_p -> pl_service_p = fn_p ();
+
+					if (plugin_p -> pl_service_p)
+						{
+							plugin_p -> pl_service_p -> se_plugin_p = plugin_p;
+							plugin_p -> pl_type = PN_SERVICE;
+						}
+				}
+		}
+
+	return plugin_p -> pl_service_p;
+}
+
+
+bool DeallocatePluginService (Plugin * const plugin_p)
+{
+	bool success_flag = (plugin_p -> pl_service_p == NULL);
+
+	if (!success_flag)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "ReleaseService");
+
+			if (symbol_p)
+				{
+					void (*fn_p) (Service * const) = (void (*) (Service * const)) symbol_p;
+
+					fn_p (plugin_p -> pl_service_p);
+
+					plugin_p -> pl_service_p = NULL;
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
 json_t *GetServiceAsJSON (const Service * const service_p, TagItem *tags_p)
 {
 	json_t *root_p = json_object ();

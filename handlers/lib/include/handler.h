@@ -4,7 +4,9 @@
 #include <stddef.h>
 
 #include "typedefs.h"
-#include "wheatis_util_library.h"
+#include "wheatis_handler_library.h"
+#include "plugin.h"
+#include "resource.h"
 
 
 typedef enum
@@ -17,12 +19,6 @@ typedef enum
 struct Handler;
 
 
-typedef struct HandlerData
-{
-	/** The Client that owns this data. */
-	struct Handler *hd_handler_p;
-} HandlerData;
-
 typedef struct Handler
 {
 	/**
@@ -31,10 +27,11 @@ typedef struct Handler
 	 */
 	struct Plugin *ha_plugin_p;
 
-	const char (*ha_get_protocol_fn) (struct Handler *handler_p);
+	bool (*ha_match_fn) (struct Handler *handler_p, const Resource * resource_p);
 
-	const char (*ha_get_name_fn) (struct Handler *handler_p);
-	const char (*ha_get_description_fn) (struct Handler *handler_p);
+	const char *(*ha_get_protocol_fn) (struct Handler *handler_p);
+	const char *(*ha_get_name_fn) (struct Handler *handler_p);
+	const char *(*ha_get_description_fn) (struct Handler *handler_p);
 
 
 	bool (*ha_open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
@@ -43,10 +40,7 @@ typedef struct Handler
 	bool (*ha_seek_fn) (struct Handler *handler_p, long offset, int whence);
 	bool (*ha_close_fn) (struct Handler *handler_p);
 	HandlerStatus (*ha_status_fn) (struct Handler *handler_p);
-
 	void (*ha_free_handler_fn) (struct Handler *handler_p);
-
-	HandlerData *ha_data_p;
 } Handler;
 
 
@@ -62,31 +56,49 @@ extern "C"
 {
 #endif
 
-WHEATIS_UTIL_API bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
-
-WHEATIS_UTIL_API size_t ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
-
-WHEATIS_UTIL_API size_t WriteToHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
-
-WHEATIS_UTIL_API size_t SeekHandler (struct Handler *handler_p, size_t offset, int whence);
-
-WHEATIS_UTIL_API bool CloseHandler (struct Handler *handler_p);
-
-WHEATIS_UTIL_API const char *GetHandlerName (struct Handler *handler_p);
-
-WHEATIS_UTIL_API const char *GetHandlerDescription (struct Handler *handler_p);
-
-WHEATIS_UTIL_API const char *GetHandlerProtocol (struct Handler *handler_p);
-
-WHEATIS_UTIL_API HandlerStatus GetHandlerStatus (struct Handler *handler_p);
-
-WHEATIS_UTIL_API void FreeHandler (struct Handler *handler_p);
+WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
+	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
+	const char *(*get_protocol_fn) (struct Handler *handler_p),
+	const char *(*get_name_fn) (struct Handler *handler_p),
+	const char *(*get_description_fn) (struct Handler *handler_p),
+	bool (*open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s),
+	size_t (*read_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
+	size_t (*write_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
+	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
+	bool (*close_fn) (struct Handler *handler_p),
+	HandlerStatus (*status_fn) (struct Handler *handler_p),
+	void (*free_handler_fn) (struct Handler *handler_p));
 
 
-WHEATIS_UTIL_API HandlerNode *AllocateHandlerNode (struct Handler *handler_p);
+WHEATIS_HANDLER_API bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
-WHEATIS_UTIL_API void FreeHandlerNode (ListItem *node_p);
+WHEATIS_HANDLER_API size_t ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
+WHEATIS_HANDLER_API size_t WriteToHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
+
+WHEATIS_HANDLER_API size_t SeekHandler (struct Handler *handler_p, size_t offset, int whence);
+
+WHEATIS_HANDLER_API bool CloseHandler (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API bool IsHandlerForResource (struct Handler *handler_p, const Resource * resource_p);
+
+WHEATIS_HANDLER_API const char *GetHandlerName (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API const char *GetHandlerDescription (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API const char *GetHandlerProtocol (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API HandlerStatus GetHandlerStatus (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API void FreeHandler (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API HandlerNode *AllocateHandlerNode (struct Handler *handler_p);
+
+WHEATIS_HANDLER_API void FreeHandlerNode (ListItem *node_p);
+
+WHEATIS_HANDLER_API Handler *GetHandlerFromPlugin (Plugin * const plugin_p);
+
+WHEATIS_HANDLER_API bool DeallocatePluginHandler (Plugin * const plugin_p);
 
 #ifdef __cplusplus
 }

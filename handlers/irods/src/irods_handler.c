@@ -13,6 +13,7 @@
 
 
 
+
 static bool OpenIRodsHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
 static size_t ReadFromIRodsHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
@@ -25,7 +26,21 @@ static bool CloseIRodsHandler (struct Handler *handler_p);
 
 static HandlerStatus GetIRodsHandlerStatus (struct Handler *handler_p);
 
+static bool IsResourceForIRodsHandler (struct Handler *handler_p, const Resource * resource_p);
 
+static const char *GetIRodsHandlerProtocol (struct Handler *handler_p);
+
+static const char *GetIRodsHandlerName (struct Handler *handler_p);
+
+static const char *GetIRodsHandlerDescription (struct Handler *handler_p);
+
+static void FreeIRodsHandler (struct Handler *handler_p);
+
+static bool IsResourceForIRodsHandler (struct Handler *handler_p, const Resource * resource_p);
+
+
+
+/*
 Handler *GetIRodsHandler (const char * const username_s, const char * const password_s)
 {
 	rcComm_t *connection_p = CreateConnection ((char *) username_s, (char *) password_s);
@@ -44,27 +59,39 @@ Handler *GetIRodsHandler (const char * const username_s, const char * const pass
 
 	return NULL;
 }
+*/
 
-
-Handler *AllocateIRodsHandler (rcComm_t *connection_p)
+Handler *GetHandler (void)
 {
 	IRodsHandler *handler_p = (IRodsHandler *) AllocMemory (sizeof (IRodsHandler));
 
 	if (handler_p)
 		{
-			handler_p -> irh_base_handler.ha_open_fn = OpenIRodsHandler;
-			handler_p -> irh_base_handler.ha_close_fn = CloseIRodsHandler;
-			handler_p -> irh_base_handler.ha_read_fn = ReadFromIRodsHandler;
-			handler_p -> irh_base_handler.ha_write_fn = WriteToIRodsHandler;
-			handler_p -> irh_base_handler.ha_seek_fn = SeekIRodsHandler;
-			handler_p -> irh_base_handler.ha_status_fn = GetIRodsHandlerStatus;
+			InitialiseHandler (& (handler_p -> irh_base_handler),
+				IsResourceForIRodsHandler,
+				GetIRodsHandlerProtocol,
+				GetIRodsHandlerName,
+				GetIRodsHandlerDescription,
+				OpenIRodsHandler,
+				ReadFromIRodsHandler,
+				WriteToIRodsHandler,
+				SeekIRodsHandler,
+				CloseIRodsHandler,
+				GetIRodsHandlerStatus,
+				FreeIRodsHandler);
 
-			handler_p -> irh_connection_p = connection_p;
+			handler_p -> irh_connection_p = NULL;
 			handler_p -> irh_obj_p = NULL;
 			handler_p -> irh_status = HS_GOOD;
 		}
 
 	return ((Handler *) handler_p);
+}
+
+
+void ReleaseHandler (Handler *handler_p)
+{
+	FreeIRodsHandler (handler_p);
 }
 
 
@@ -262,4 +289,34 @@ static HandlerStatus GetIRodsHandlerStatus (struct Handler *handler_p)
 
 	return (irods_handler_p -> irh_status);	
 }
+
+
+
+static const char *GetIRodsHandlerProtocol (struct Handler *handler_p)
+{
+	return "irods";
+}
+
+
+static const char *GetIRodsHandlerName (struct Handler *handler_p)
+{
+	return "iRODS Handler";
+}
+
+
+static const char *GetIRodsHandlerDescription (struct Handler *handler_p)
+{
+	return "A Handler for files using iRODS";
+}
+
+
+static bool IsResourceForIRodsHandler (struct Handler *handler_p, const Resource * resource_p)
+{
+	bool match_flag = false;
+	
+	match_flag = (resource_p -> re_protocol == FILE_LOCATION_IRODS);
+		
+	return match_flag;
+}
+
 

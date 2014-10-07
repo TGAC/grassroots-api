@@ -43,11 +43,9 @@ extern "C"
 {
 #endif
 
-IRODS_HANDLER_API Handler *GetIRodsHandler (const char * const username_s, const char * const password_s);
+IRODS_HANDLER_API Handler *GetHandler (void);
 
-IRODS_HANDLER_API Handler *AllocateIRodsHandler (rcComm_t *connection_p);
-
-IRODS_HANDLER_API void FreeIRodsHandler (Handler *handler_p);
+IRODS_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus
 }

@@ -107,6 +107,10 @@ WHEATIS_SERVICE_API LinkedList *LoadClients (const char * const clients_path_s, 
 WHEATIS_SERVICE_API Client *LoadClient (const char * const clients_path_s, const char * const client_s);
 
 
+WHEATIS_SERVICE_API Client *GetClientFromPlugin (struct Plugin * const plugin_p);
+
+
+WHEATIS_SERVICE_API bool DeallocatePluginClient (struct Plugin * const plugin_p);
 
 
 #ifdef __cplusplus

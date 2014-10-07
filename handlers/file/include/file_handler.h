@@ -19,9 +19,10 @@ extern "C"
 {
 #endif
 
-FILE_HANDLER_API Handler *AllocateFileHandler (void);
 
-FILE_HANDLER_API void FreeFileHandler (Handler *handler_p);
+FILE_HANDLER_API Handler *GetHandler (void);
+
+FILE_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus
 }

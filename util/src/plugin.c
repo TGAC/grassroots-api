@@ -1,5 +1,4 @@
 #include "plugin.h"
-#include "service.h"
 
 #include "string_utils.h"
 
@@ -59,7 +58,7 @@ void ClearPluginPath (Plugin * const plugin_p)
 void ClearBasePlugin (Plugin * const plugin_p)
 {
 	/* this must be before resetting plugin_p -> pl_type */
-	DeallocatePluginService (plugin_p);
+	//DeallocatePluginService (plugin_p);
 
 	ClearPluginPath (plugin_p);
 }

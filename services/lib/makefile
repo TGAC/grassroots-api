@@ -37,12 +37,10 @@ SRCS 	= \
 	client.c \
 	parameter.c \
 	parameter_set.c \
-	plugin.c \
 	resource.c \
 	service.c \
 	tag_item.c \
-	user_details.c \
-	unix_plugin.c
+	user_details.c 
 
 CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_LIBRARY_EXPORTS
 

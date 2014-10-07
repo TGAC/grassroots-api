@@ -2,7 +2,7 @@
 #define HANDLE_UTILS_H
 
 
-#include "wheatis_handle_library.h"
+#include "wheatis_handler_library.h"
 #include "parameter.h"
 #include "handler.h"
 
@@ -12,7 +12,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_HANDLE_API Handler *GetResourceHandler (const Resource *resource_p, const TagItem *tags_p);
+WHEATIS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const TagItem *tags_p);
 
 
 #ifdef __cplusplus
