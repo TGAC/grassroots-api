@@ -33,6 +33,14 @@
 #include "zip.h"
 
 
+int CompressAsZip (Handler *in_p, Handler *out_p, int level)
+{
+	/* @TODO add zip header writing */
+	
+	return CompressAsZipNoHeader (in_p, out_p, level);
+}
+
+
 /* Compress from file source to file dest until EOF on source.
    def() returns Z_OK on success, Z_MEM_ERROR if memory could not be
    allocated for processing, Z_STREAM_ERROR if an invalid compression
@@ -41,7 +49,7 @@
    an error reading or writing the files. */
 //int def(FILE *source, FILE *dest, int level)
 
-int CompressAsZip (Handler *in_p, Handler *out_p, int level)
+int CompressAsZipNoHeader (Handler *in_p, Handler *out_p, int level)
 {
 	int ret, flush;
 	unsigned have;

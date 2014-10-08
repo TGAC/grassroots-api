@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
 	const char *to_s = NULL;
 	const char *filename_s = NULL;
 	const char *client_s = "wheatis-qt-client";
+	const char *protocol_s = NULL;
 	int api_id = -1;
 	int i;
 	
@@ -154,6 +155,17 @@ int main(int argc, char *argv[])
 												error_arg = * (argv [i] - 1);
 											}
 										break;										
+
+									case 'P':
+										if (++ i < argc)
+											{
+												protocol_s = argv [i];
+											}
+										else
+											{
+												error_arg = * (argv [i] - 1);
+											}
+										break;			
 									
 									default:
 										break;									
@@ -190,10 +202,10 @@ int main(int argc, char *argv[])
 									
 								case OP_LIST_INTERESTED_SERVICES:
 									{
-										if (filename_s)
+										if (protocol_s && filename_s)
 											{					
 												json_error_t error;										
-												json_t *irods_file_p = json_pack_ex (&error, 0, "{s: {s:s}}", KEY_IRODS, KEY_FILENAME, filename_s);
+												json_t *irods_file_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
 												
 												if (irods_file_p)
 													{

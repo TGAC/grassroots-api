@@ -10,7 +10,7 @@
 #include "irods_handler.h"
 #include "connect.h"
 #include "memory_allocations.h"
-
+#include "json_tools.h"
 
 
 
@@ -61,31 +61,48 @@ Handler *GetIRodsHandler (const char * const username_s, const char * const pass
 }
 */
 
-Handler *GetHandler (json_t *tags_p)
+Handler *GetHandler (json_t *credentials_p)
 {
 	IRodsHandler *handler_p = (IRodsHandler *) AllocMemory (sizeof (IRodsHandler));
 
 	if (handler_p)
 		{
-			InitialiseHandler (& (handler_p -> irh_base_handler),
-				IsResourceForIRodsHandler,
-				GetIRodsHandlerProtocol,
-				GetIRodsHandlerName,
-				GetIRodsHandlerDescription,
-				OpenIRodsHandler,
-				ReadFromIRodsHandler,
-				WriteToIRodsHandler,
-				SeekIRodsHandler,
-				CloseIRodsHandler,
-				GetIRodsHandlerStatus,
-				FreeIRodsHandler);
+			const char *tags_s = json_dumps (credentials_p, 0);
+			const char *username_s = NULL;
+			const char *password_s = NULL; 
+			
+			if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
+				{
+					rcComm_t *connection_p = CreateConnection ((char *) username_s, (char *) password_s);
 
-			handler_p -> irh_connection_p = NULL;
-			handler_p -> irh_obj_p = NULL;
-			handler_p -> irh_status = HS_GOOD;
-		}
+					if (connection_p)
+						{
+							InitialiseHandler (& (handler_p -> irh_base_handler),
+								IsResourceForIRodsHandler,
+								GetIRodsHandlerProtocol,
+								GetIRodsHandlerName,
+								GetIRodsHandlerDescription,
+								OpenIRodsHandler,
+								ReadFromIRodsHandler,
+								WriteToIRodsHandler,
+								SeekIRodsHandler,
+								CloseIRodsHandler,
+								GetIRodsHandlerStatus,
+								FreeIRodsHandler);
 
-	return ((Handler *) handler_p);
+								handler_p -> irh_connection_p = connection_p;
+								handler_p -> irh_obj_p = NULL;
+								handler_p -> irh_status = HS_GOOD;
+								
+								return ((Handler *) handler_p);
+						}		/* if (connection_p) */
+													
+				}		/* if (GetUsernameAndPassword (credentials_p, &username_s, &password_s)) */
+				
+			FreeMemory (handler_p);
+		}		/* if (handler_p) */
+
+	return NULL;
 }
 
 
@@ -201,6 +218,8 @@ static bool CloseIRodsHandler (struct Handler *handler_p)
 		{
 			success_flag = (rcDataObjClose (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p) == 0);
 		}
+
+	CloseConnection (irods_handler_p -> irh_connection_p);
 
 	return success_flag;
 }

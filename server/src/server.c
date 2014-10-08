@@ -97,7 +97,7 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 	const char *username_s = NULL;
 	const char *password_s = NULL;
 
-	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
+	if (GetUsernameAndPassword (req_p, &username_s, &password_s))
 		{
 			json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
 			
@@ -110,7 +110,7 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 							if (json_is_string (protocol_p))
 								{
 									/* is it a single file or a dir? */
-									json_t *data_name_p = json_object_get (protocol_p, KEY_FILENAME);
+									json_t *data_name_p = json_object_get (file_data_p, KEY_FILENAME);
 									
 									if (data_name_p && (json_is_string (data_name_p)))
 										{
@@ -121,14 +121,15 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 
 											if (resource_p)
 												{
-													Handler *handler_p = GetResourceHandler (resource_p, protocol_p);
+													json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
+													Handler *handler_p = GetResourceHandler (resource_p, credentials_p);
 
 													if (handler_p)
 														{
 															TagItem tags [2];
 															
 															tags [0].ti_tag = TAG_INPUT_FILE;
-															tags [0].ti_value.st_string_value_s = data_name_s;
+															tags [0].ti_value.st_resource_value_p = resource_p;
 
 															tags [1].ti_tag = TAG_DONE;
 																												
@@ -136,6 +137,8 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 															
 															FreeHandler (handler_p);
 														}
+														
+													FreeResource (resource_p);
 												}
 										}									
 									
@@ -156,7 +159,7 @@ static json_t *GetAllServices (const json_t * const req_p)
 	const char *username_s = NULL;
 	const char *password_s = NULL;
 												
-	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
+	if (GetUsernameAndPassword (req_p, &username_s, &password_s))
 		{
 			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL);
 		}
@@ -171,7 +174,7 @@ static json_t *GetAllModifiedData (const json_t * const req_p)
 	const char *username_s = NULL;
 	const char *password_s = NULL;
 												
-	if (GetIrodsUsernameAndPassword (req_p, &username_s, &password_s))
+	if (GetUsernameAndPassword (req_p, &username_s, &password_s))
 		{
 			const char *from_s = NULL;
 			const char *to_s = NULL;

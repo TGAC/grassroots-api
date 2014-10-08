@@ -5,15 +5,9 @@
 #include "json_util.h"
 
 
-static const char * const S_CREDENTIALS_KEY = "credentials";
-static const char * const S_USERNAME_KEY = "user";
-static const char * const S_PASSWORD_KEY = "pass";
 
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
-
-static bool AddIrodsCredentials (json_t *root_p, const char * const username_s, const char * const password_s);
-
 
 int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p)
 {
@@ -30,52 +24,22 @@ int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p)
 }
 
 
-/*
- * Obviously for a real system we'd be using encryption, tokens and the like
- */
-json_t *GetLoginJsonRequest (const char * const username_s, const char *password_s)
-{
-	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:{s:{s:s,s:s}}}", KEY_IRODS, S_CREDENTIALS_KEY, S_USERNAME_KEY, username_s, S_PASSWORD_KEY, password_s);
-	
-	if (!json_p)
-		{
-			
-		}
-	
-	return json_p;
-}
 
-
-static bool AddIrodsCredentials (json_t *root_p, const char * const username_s, const char * const password_s)
+bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s)
 {
 	bool success_flag = false;
 	json_error_t error;
-	json_t *irods_p = json_object ();
+	json_t *credentials_p = json_pack_ex (&error, 0, "{s:s,s:s}", CREDENTIALS_USERNAME_S, username_s, CREDENTIALS_PASSWORD_S, password_s);
 
-	if (irods_p)
+	if (credentials_p)
 		{
-			json_t *credentials_p = json_pack_ex (&error, 0, "{s:s,s:s}", S_USERNAME_KEY, username_s, S_PASSWORD_KEY, password_s);
-
-			if (credentials_p)
+			if (json_object_set_new (root_p, CREDENTIALS_S, credentials_p) == 0)
 				{
-					if (json_object_set_new (irods_p, S_CREDENTIALS_KEY, credentials_p) == 0)
-						{
-							if (json_object_set_new (root_p, KEY_IRODS, irods_p) == 0)
-								{	
-									success_flag = true;
-								}								
-						}
-					else
-						{
-							json_decref (credentials_p);
-						}
-				}
-
-			if (!success_flag)
+					success_flag = true;
+				}								
+			else
 				{
-					json_object_clear (irods_p);
-					json_decref (irods_p);
+					json_decref (credentials_p);
 				}
 		}
 
@@ -95,7 +59,7 @@ json_t *GetModifiedFilesRequest (const char * const username_s, const char * con
 
 	if (root_p)
 		{
-			if (AddIrodsCredentials (root_p, username_s, password_s))
+			if (AddCredentialsToJson (root_p, username_s, password_s))
 				{
 					json_t *interval_p = json_object ();
 					
@@ -176,7 +140,7 @@ json_t *GetAvailableServicesRequest (const char * const username_s, const char *
 
 
 
-json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const file_data_p)
+json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const protocol_p)
 {
 	json_error_t error;
 	json_t *root_p = json_pack_ex (&error, 0, "{s:i}", KEY_OPERATIONS, OP_LIST_INTERESTED_SERVICES);
@@ -184,9 +148,9 @@ json_t *GetInterestedServicesRequest (const char * const username_s, const char 
 	
 	if (root_p)
 		{
-			if (AddIrodsCredentials (root_p, username_s, password_s))
+			if (AddCredentialsToJson (root_p, username_s, password_s))
 				{
-					if (json_object_set (root_p, KEY_FILE_DATA, file_data_p) == 0)
+					if (json_object_set (root_p, KEY_FILE_DATA, protocol_p) == 0)
 						{
 							success_flag = true;
 						}
@@ -205,28 +169,27 @@ json_t *GetInterestedServicesRequest (const char * const username_s, const char 
 }
 
 
-bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss)
+bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss)
 {
 	bool success_flag = false;
 
-	json_t *group_p = json_object_get (root_p, KEY_IRODS);
-	
-	if (group_p)
+	/* 
+	 * Take care of whether we have been passed the credentials group
+	 * or its parent.
+	 */
+	json_t *group_p = json_object_get (root_p, CREDENTIALS_S);
+	if (!group_p)
 		{
-			group_p = json_object_get (group_p, S_CREDENTIALS_KEY);
-			
-			if (group_p)
-				{
-					if ((*username_ss = GetJSONString (group_p, S_USERNAME_KEY)) != NULL)
-						{
-							if ((*password_ss = GetJSONString (group_p, S_PASSWORD_KEY)) != NULL)
-								{
-									success_flag = true;
-								}
-						}
-				}
+			group_p = root_p;
 		}
-	
+
+	if ((*username_ss = GetJSONString (group_p, CREDENTIALS_USERNAME_S)) != NULL)
+		{
+			if ((*password_ss = GetJSONString (group_p, CREDENTIALS_PASSWORD_S)) != NULL)
+				{
+					success_flag = true;
+				}
+		}	
 
 	return success_flag;
 }

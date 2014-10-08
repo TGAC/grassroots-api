@@ -15,6 +15,8 @@ extern "C"
 {
 #endif
 
+COMPRESS_SERVICE_API int CompressAsZipNoHeader (Handler*in_p, Handler *out_p, int level);
+
 COMPRESS_SERVICE_API int CompressAsZip (Handler*in_p, Handler *out_p, int level);
 
 COMPRESS_SERVICE_API int CompressAsZip1 (Handler *in_p, Handler *out_p, int level);

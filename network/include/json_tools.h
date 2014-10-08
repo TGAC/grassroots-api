@@ -24,9 +24,13 @@ WHEATIS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username
 
 WHEATIS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s);
 
-WHEATIS_NETWORK_API bool GetIrodsUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
+WHEATIS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
 
 WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const file_data_p);
+
+
+WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s);
+
 
 
 #ifdef __cplusplus

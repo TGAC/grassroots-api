@@ -24,6 +24,7 @@ typedef struct
 
 typedef enum
 {
+	CA_Z,
 	CA_ZIP,
 	CA_GZIP,
 	CA_NUM_ALGORITHMS
@@ -32,6 +33,7 @@ typedef enum
 
 static const char *s_algorithm_names_pp [CA_NUM_ALGORITHMS] =
 {
+	"z",
 	"zip",
 	"gzip"
 };
@@ -41,6 +43,7 @@ typedef int (*CompressFunction) (Handler *in_p, Handler *out_p, int level);
 
 static CompressFunction s_compress_fns [CA_NUM_ALGORITHMS] = 
 {
+	CompressAsZipNoHeader,
 	CompressAsZip,
 	CompressAsGZip
 };
@@ -68,6 +71,8 @@ static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_
 
 static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p);
 
+
+static int Compress (Resource *input_resource_p, const char * const algorithm_s);
 
 
 
@@ -127,7 +132,7 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 				
 			if (tag_p)
 				{
-					def.st_string_value_s = tag_p -> ti_value.st_string_value_s;					
+					def.st_string_value_s = tag_p -> ti_value.st_resource_value_p -> re_value_s;					
 				}
 			else
 				{
@@ -137,9 +142,10 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
 				{
 					ParameterMultiOptionArray *options_p = NULL;
-					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Zip", "Use GZip" };
+					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Raw", "Use Zip", "Use GZip" };
 					SharedType values [CA_NUM_ALGORITHMS];
 
+					values [CA_Z].st_string_value_s = (char *) s_algorithm_names_pp [CA_Z];
 					values [CA_ZIP].st_string_value_s = (char *) s_algorithm_names_pp [CA_ZIP];
 					values [CA_GZIP].st_string_value_s = (char *) s_algorithm_names_pp [CA_GZIP];
 
@@ -165,7 +171,7 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 }
 
 
-static int Compress (Resource *input_resource_p, const char * const algorithm_s);
+
 
 static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p)
 {

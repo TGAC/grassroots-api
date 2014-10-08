@@ -53,6 +53,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	compress_service.c \
+	gzip.c \
 	zip.c
 	
 	

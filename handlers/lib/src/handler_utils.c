@@ -54,7 +54,8 @@ LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Reso
 							if (matching_filenames_p)
 								{
 									StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
-									
+									const char *tags_s = (tags_p != NULL) ? json_dumps (tags_p, 0) : NULL;
+
 									while (node_p)
 										{
 											Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
