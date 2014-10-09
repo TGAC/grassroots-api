@@ -5,7 +5,7 @@
 #include "filesystem_utils.h"
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, json_t *tags_p);
+LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p);
 
 
 Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
@@ -35,7 +35,7 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 }
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, json_t *tags_p)
+LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p)
 {
 	LinkedList *handlers_list_p = AllocateLinkedList (FreeHandlerNode);
 	

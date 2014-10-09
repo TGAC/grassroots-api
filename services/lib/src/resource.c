@@ -26,10 +26,14 @@ Resource *ParseStringToResource (const char * const resource_s)
 					if (delimiter_p + delimiter_length < resource_s + resource_length)
 						{
 							char *protocol_s = CopyToNewString (resource_s, delimiter_p - resource_s, false);
-							
+														
 							if (protocol_s)
 								{
-									char *value_s = CopyToNewString (resource_s, delimiter_p + delimiter_length, false);
+									char *value_s = NULL;
+									
+									delimiter_p += delimiter_length;
+
+									value_s = CopyToNewString (delimiter_p, resource_s + resource_length - delimiter_p, false);
 									
 									if (value_s)
 										{

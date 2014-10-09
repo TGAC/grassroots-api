@@ -61,8 +61,7 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/re/include 	
 	
 SRCS 	= \
-	server.c \
-	services_manager.c \
+	server.c 
 
 EXE_SRCS = \
 	standalone_server.c

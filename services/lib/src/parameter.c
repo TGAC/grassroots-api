@@ -748,26 +748,14 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 							
 							if ((protocol_p) && (json_is_string (protocol_p)))
 								{
-									json_t *json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
+									json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
 									
 									if (json_value_p && (json_is_string (json_value_p)))
 										{
 											const char *protocol_s = json_string_value (protocol_p);
 											const char *value_s = json_string_value (json_value_p);
 											
-											success_flag = SetResourceValue (value_p, protocol_s, value_s);
-											
-											if (value_s)
-												{
-													value_p -> st_resource_value_p -> re_value_s = strdup (json_string_value (protocol_p));
-													
-													success_flag = (value_p -> st_resource_value_p -> re_value_s != NULL);
-												}
-											else
-												{
-													value_p -> st_resource_value_p -> re_value_s = NULL;
-													success_flag = true;
-												}												
+											success_flag = SetResourceValue (value_p -> st_resource_value_p, protocol_s, value_s);										
 										}					
 								}					
 						}

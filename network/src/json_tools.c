@@ -177,7 +177,7 @@ bool GetUsernameAndPassword (const json_t * const root_p, const char **username_
 	 * Take care of whether we have been passed the credentials group
 	 * or its parent.
 	 */
-	json_t *group_p = json_object_get (root_p, CREDENTIALS_S);
+	const json_t *group_p = json_object_get (root_p, CREDENTIALS_S);
 	if (!group_p)
 		{
 			group_p = root_p;

@@ -130,7 +130,7 @@ void FreeHandlerNode (ListItem *node_p)
 //
 //	Get Symbol
 //
-Handler *GetHandlerFromPlugin (Plugin * const plugin_p, json_t *tags_p)
+Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p)
 {
 	if (!plugin_p -> pl_client_p)
 		{
@@ -138,7 +138,7 @@ Handler *GetHandlerFromPlugin (Plugin * const plugin_p, json_t *tags_p)
 
 			if (symbol_p)
 				{
-					Handler *(*fn_p) (json_t *) = (Handler *(*) (json_t *)) symbol_p;
+					Handler *(*fn_p) (const json_t *) = (Handler *(*) (const json_t *)) symbol_p;
 
 					plugin_p -> pl_handler_p = fn_p (tags_p);
 

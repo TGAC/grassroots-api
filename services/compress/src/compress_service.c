@@ -64,12 +64,12 @@ static const char *GetCompressServiceName (void);
 
 static const char *GetCompressServiceDesciption (void);
 
-static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, TagItem *tags_p);
+static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
 
 
 static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p);
+static bool IsFileForCompressService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
 
 
 static int Compress (Resource *input_resource_p, const char * const algorithm_s);
@@ -121,23 +121,15 @@ static const char *GetCompressServiceDesciption (void)
 }
 
 
-static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, TagItem *tags_p)
+static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 
 	if (param_set_p)
 		{
 			SharedType def;
-			TagItem *tag_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
 				
-			if (tag_p)
-				{
-					def.st_string_value_s = tag_p -> ti_value.st_resource_value_p -> re_value_s;					
-				}
-			else
-				{
-					def.st_string_value_s = NULL;										
-				}
+			def.st_resource_value_p = resource_p;		
 
 			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
 				{
@@ -258,16 +250,11 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 }
 
 
-static bool IsFileForCompressService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p)
+static bool IsFileForCompressService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = true;
-	const char *filename_s = NULL;
-	TagItem *input_filename_tag_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
-	
-	if (input_filename_tag_p)
-		{
-			filename_s = input_filename_tag_p -> ti_value.st_string_value_s;
-		}
+	const char *filename_s = resource_p -> re_value_s;
+
 	
 	/*
 	 * @TODO

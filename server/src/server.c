@@ -31,7 +31,7 @@ static json_t *GetInterestedServices (const json_t * const req_p);
 
 static json_t *GetAllServices (const json_t * const req_p);
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handler *handler_p);
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
 
 /***************************/
@@ -126,14 +126,8 @@ static json_t *GetInterestedServices (const json_t * const req_p)
 
 													if (handler_p)
 														{
-															TagItem tags [2];
-															
-															tags [0].ti_tag = TAG_INPUT_FILE;
-															tags [0].ti_value.st_resource_value_p = resource_p;
-
-															tags [1].ti_tag = TAG_DONE;
-																												
-															res_p = GetServices (SERVICES_PATH, username_s, password_s, tags, handler_p);
+															json_t *config_p = NULL;
+															res_p = GetServices (SERVICES_PATH, username_s, password_s, resource_p, handler_p, config_p);
 															
 															FreeHandler (handler_p);
 														}
@@ -161,7 +155,7 @@ static json_t *GetAllServices (const json_t * const req_p)
 												
 	if (GetUsernameAndPassword (req_p, &username_s, &password_s))
 		{
-			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL);
+			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL, NULL);
 		}
 
 	return res_p;
@@ -221,12 +215,12 @@ static json_t *GetAllModifiedData (const json_t * const req_p)
 
 
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, TagItem *tags_p, Handler *handler_p)
+static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (services_path_s, tags_p, handler_p);
+	LinkedList *services_list_p = LoadMatchingServices (services_path_s, resource_p, handler_p);
 	
-	json_p = GetServicesListAsJSON (services_list_p, tags_p);
+	json_p = GetServicesListAsJSON (services_list_p, resource_p, config_p);
 
 	if (services_list_p)
 		{

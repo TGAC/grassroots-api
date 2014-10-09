@@ -24,11 +24,11 @@ static const char *GetBlastServiceName (void);
 
 static const char *GetBlastServiceDesciption (void);
 
-static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, TagItem *tags_p);
+static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
 
 static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p);
 
-static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p);
+static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
 
 
 
@@ -78,23 +78,15 @@ static const char *GetBlastServiceDesciption (void)
 }
 
 
-static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, TagItem *tags_p)
+static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *config_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
 	
 	if (param_set_p)
 		{
 			SharedType def;
-			TagItem *tag_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
-				
-			if (tag_p)
-				{
-					def.st_string_value_s = tag_p -> ti_value.st_string_value_s;
-				}
-			else
-				{
-					def.st_string_value_s = NULL;
-				}
+							
+			def.st_resource_value_p = resource_p;
 
 			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, PL_BASIC, NULL))
 				{
@@ -133,16 +125,10 @@ static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set
 }
 
 
-static bool IsFileForBlastService (ServiceData *service_data_p, TagItem *tags_p, Handler *handler_p)
+static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = false;
-	const char *filename_s = NULL;
-	TagItem *tag_item_p = FindMatchingTag (tags_p, TAG_INPUT_FILE);
-	
-	if (tag_item_p)
-		{
-			filename_s = tag_item_p -> ti_value.st_string_value_s;
-		}
+	const char *filename_s = resource_p -> re_value_s;
 	
 	
 	/*
