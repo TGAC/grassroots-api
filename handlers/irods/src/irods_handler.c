@@ -217,9 +217,13 @@ static bool CloseIRodsHandler (struct Handler *handler_p)
 	if (irods_handler_p -> irh_obj_p)
 		{
 			success_flag = (rcDataObjClose (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p) == 0);
+			irods_handler_p -> irh_obj_p = NULL;
 		}
 
 	CloseConnection (irods_handler_p -> irh_connection_p);
+	irods_handler_p -> irh_connection_p = NULL;
+	
+	irods_handler_p -> irh_status = HS_NONE;
 
 	return success_flag;
 }

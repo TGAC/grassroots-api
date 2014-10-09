@@ -14,7 +14,8 @@ typedef enum
 {
 	HS_GOOD,
 	HS_FINISHED,
-	HS_BAD
+	HS_BAD,
+	HS_NONE
 } HandlerStatus;
 
 struct Handler;

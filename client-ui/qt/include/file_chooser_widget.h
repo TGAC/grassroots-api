@@ -5,6 +5,7 @@
 #include <QGroupBox>
 #include <QPushButton>
 #include <QFileDialog>
+#include <QLabel>
 
 #include "base_param_widget.h"
 
@@ -30,6 +31,7 @@ public:
 private:
 	QWidget *fcw_widget_p;
 	QComboBox *fcw_chooser_p;
+	QLabel *fcw_protocol_label_p;
 	QString fcw_title;
 	QFileDialog :: FileMode fcw_file_mode;
 	QFileDialog :: AcceptMode fcw_accept_mode;

@@ -754,8 +754,10 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 										{
 											const char *protocol_s = json_string_value (protocol_p);
 											const char *value_s = json_string_value (json_value_p);
+
+											value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
 											
-											success_flag = SetResourceValue (value_p -> st_resource_value_p, protocol_s, value_s);										
+											success_flag = (value_p -> st_resource_value_p != NULL);										
 										}					
 								}					
 						}

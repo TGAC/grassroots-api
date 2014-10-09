@@ -54,9 +54,13 @@ bool FileChooserWidget :: UpdateConfig (const QString &value_r)
 
 void FileChooserWidget :: SetDefaultValue ()
 {
-	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
+	const Resource *resource_p = bpw_param_p -> pa_default.st_resource_value_p;
 
-	fcw_chooser_p -> setCurrentText (value_s);
+	if (resource_p)
+		{
+			fcw_chooser_p -> setCurrentText (resource_p -> re_value_s);
+			fcw_protocol_label_p -> setText (resource_p -> re_protocol_s);
+		}
 }
 
 
@@ -77,6 +81,11 @@ FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWi
 	fcw_widget_p = new QWidget;
 	QHBoxLayout *layout_p = new QHBoxLayout;
 
+	fcw_protocol_label_p = new QLabel;
+	fcw_protocol_label_p -> setBuddy (fcw_chooser_p);
+	fcw_protocol_label_p -> setToolTip ("The protocol for the given file");
+
+	layout_p -> addWidget (fcw_protocol_label_p);
 	layout_p -> addWidget (fcw_chooser_p);
 	layout_p -> addWidget (browse_button_p);
 
