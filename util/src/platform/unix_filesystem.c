@@ -122,11 +122,11 @@ LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_f
 											if ((fnmatch (filename_p, entry_p -> d_name, 0)) == 0)
 												{
 													StringListNode *node_p = NULL;
-													
+
 													if (full_path_flag)
 														{
 															char *full_filename_s = MakeFilename (path_p, entry_p -> d_name);
-															
+
 															if (full_filename_s)
 																{
 																	node_p = AllocateStringListNode (full_filename_s, MF_SHALLOW_COPY);
@@ -136,7 +136,7 @@ LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_f
 														{
 															node_p = AllocateStringListNode (entry_p -> d_name, MF_DEEP_COPY);
 														}
-														
+
 													if (node_p)
 														{
 															LinkedListAddTail (list_p, (ListItem *) node_p);
@@ -239,12 +239,12 @@ bool EnsureDirectoryExists (const char * const path_s)
 
 /**
  * Copy the contents of one named file to another.
- * 
+ *
  * @param src_filename_s The name of the the source file.
  * @param dest_filename_s The name of the the source file.
  * @param callback_fn The callback_fn to denote progress (currently unused).
  * @return true on success, false on error with errno set to the appropriate value.
- */ 
+ */
 bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ())
 {
 	FILE *in_f = fopen (src_filename_s, "rb");
@@ -341,6 +341,23 @@ bool IsDirectory (const char * const path)
 	if (stat (path, &buf) == 0)
 	  {
 			return (S_ISDIR (buf.st_mode));
+		}
+
+	return false;
+}
+
+
+
+bool CalculateFileInformation (const char * const path_s, FileInformation *info_p)
+{
+	struct stat buf;
+
+	if (stat (path, &buf) == 0)
+	  {
+			info_p -> fi_last_modified = buf.st_mtime;
+			info_p -> fi_size = buf.st_size;
+
+			return true;
 		}
 
 	return false;
