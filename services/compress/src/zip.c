@@ -58,9 +58,7 @@ int CompressAsZipNoHeader (Handler *in_p, Handler *out_p, int level)
 	unsigned char output_buffer [CHUNK_SIZE];
 
 	/* Initialise the zip options */
-	strm.zalloc = Z_NULL;
-	strm.zfree = Z_NULL;
-	strm.opaque = Z_NULL;
+	memset (&strm, 0, sizeof (strm));
 	ret = deflateInit (&strm, level);
 
 	if (ret == Z_OK)

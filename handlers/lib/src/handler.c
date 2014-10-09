@@ -1,5 +1,11 @@
 #include "handler.h"
 
+#include "string_utils.h"
+
+static bool SetFilename (struct Handler *handler_p, const char * const filename_s);
+
+static void FreeFilename (struct Handler *handler_p);
+
 
 
 void InitialiseHandler (Handler * const handler_p,
@@ -13,6 +19,7 @@ void InitialiseHandler (Handler * const handler_p,
 	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
 	bool (*close_fn) (struct Handler *handler_p),
 	HandlerStatus (*status_fn) (struct Handler *handler_p),
+	bool (*file_info_fn) (struct Handler *handler_p, FileInformation *info_p),
 	void (*free_handler_fn) (struct Handler *handler_p))
 {
 	handler_p -> ha_match_fn = match_fn;
@@ -25,8 +32,10 @@ void InitialiseHandler (Handler * const handler_p,
 	handler_p -> ha_seek_fn = seek_fn;
 	handler_p -> ha_close_fn = close_fn;
 	handler_p -> ha_status_fn = status_fn;
+	handler_p -> ha_file_info_fn = file_info_fn;
 	handler_p -> ha_free_handler_fn = free_handler_fn;
 
+	handler_p -> ha_filename_s = NULL;
 	handler_p -> ha_plugin_p = NULL;
 }
 
@@ -34,7 +43,14 @@ void InitialiseHandler (Handler * const handler_p,
 
 bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)
 {
-	return (handler_p -> ha_open_fn (handler_p, filename_s, mode_s));
+	bool success_flag = false;
+	
+	if (handler_p -> ha_open_fn (handler_p, filename_s, mode_s))
+		{
+			success_flag = SetFilename (handler_p, filename_s);
+		}
+
+	return success_flag;
 }
 
 
@@ -52,7 +68,11 @@ size_t WriteToHandler (struct Handler *handler_p, void *buffer_p, const size_t l
 
 bool CloseHandler (struct Handler *handler_p)
 {
-	return (handler_p -> ha_close_fn (handler_p));
+	bool success_flag = (handler_p -> ha_close_fn (handler_p));
+	
+	FreeFilename (handler_p);
+	
+	return success_flag;
 }
 
 
@@ -71,6 +91,7 @@ HandlerStatus GetHandlerStatus (struct Handler *handler_p)
 void FreeHandler (struct Handler *handler_p)
 {
 	handler_p -> ha_free_handler_fn (handler_p);
+	FreeFilename (handler_p);
 }
 
 
@@ -96,6 +117,13 @@ bool IsHandlerForResource (struct Handler *handler_p, const Resource * resource_
 {
 	return (handler_p -> ha_match_fn (handler_p, resource_p));
 }
+
+
+bool CalculateFileInformationFromHandler (struct Handler *handler_p, FileInformation *info_p)
+{
+	return (handler_p -> ha_file_info_fn (handler_p, info_p));
+}
+
 
 
 HandlerNode *AllocateHandlerNode (struct Handler *handler_p)
@@ -175,3 +203,25 @@ bool DeallocatePluginHandler (Plugin * const plugin_p)
 	return success_flag;
 }
 
+
+static bool SetFilename (struct Handler *handler_p, const char * const filename_s)
+{
+	if (handler_p -> ha_filename_s)
+		{
+			FreeCopiedString (handler_p -> ha_filename_s);
+		}
+		
+	handler_p -> ha_filename_s = CopyToNewString (filename_s, 0, false);
+
+	return (handler_p -> ha_filename_s != NULL);	
+}
+
+
+static void FreeFilename (struct Handler *handler_p)
+{
+	if (handler_p -> ha_filename_s)
+		{
+			FreeCopiedString (handler_p -> ha_filename_s);
+			handler_p -> ha_filename_s = NULL;
+		}
+}

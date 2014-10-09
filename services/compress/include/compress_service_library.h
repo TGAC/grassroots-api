@@ -1,6 +1,8 @@
 #ifndef COMPRESS_SERVICE_LIBRARY_H
 #define COMPRESS_SERVICE_LIBRARY_H
 
+#include "library.h"
+
 /*
 ** Now we use the generic helper definitions above to define LIB_API and LIB_LOCAL.
 ** LIB_API is used for the public API symbols. It either DLL imports or DLL exports

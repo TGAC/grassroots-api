@@ -29,6 +29,7 @@ static void FreeFileHandler (struct Handler *handler_p);
 
 static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource * resource_p);
 
+static bool CalculateFileInformationFromFileHandler (struct Handler *handler_p, FileInformation *info_p);
 
 
 Handler *GetHandler (const json_t *tags_p)
@@ -182,6 +183,20 @@ static const char *GetFileHandlerName (struct Handler *handler_p)
 static const char *GetFileHandlerDescription (struct Handler *handler_p)
 {
 	return "A Handler for files mounted locally and remotely";
+}
+
+
+static bool CalculateFileInformationFromFileHandler (struct Handler *handler_p, FileInformation *info_p)
+{
+	FileHandler *file_handler_p = (FileHandler *) handler_p;
+	bool success_flag = false;
+	
+	if (handler_p -> ha_filename_s)
+		{
+			
+		}
+		
+	return success_flag;
 }
 
 

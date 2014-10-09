@@ -9,6 +9,15 @@
 #include "wheatis_util_library.h"
 
 
+
+typedef struct FileInformation
+{
+	time_t fi_last_modified;
+	size_t fi_size;
+} FileInformation;
+
+
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -46,6 +55,10 @@ WHEATIS_UTIL_API char *GetCurrentWorkingDirectory (void);
 WHEATIS_UTIL_API bool IsDirectory (const char * const path);
 
 WHEATIS_UTIL_API bool EnsureDirectoryPath (const char * const path_s);
+
+
+WHEATIS_UTIL_API bool CalculateFileInformation (const char * const path_s, FileInformation *info_p);
+
 
 #ifdef __cplusplus
 }

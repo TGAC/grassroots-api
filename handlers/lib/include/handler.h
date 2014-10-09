@@ -2,6 +2,7 @@
 #define WHEATIS_HANDLE_H
 
 #include <stddef.h>
+#include <time.h>
 
 #include "typedefs.h"
 #include "wheatis_handler_library.h"
@@ -9,6 +10,8 @@
 #include "resource.h"
 #include "parameter.h"
 #include "jansson.h"
+#include "filesystem_utils.h"
+
 
 typedef enum
 {
@@ -17,6 +20,7 @@ typedef enum
 	HS_BAD,
 	HS_NONE
 } HandlerStatus;
+
 
 struct Handler;
 
@@ -42,7 +46,10 @@ typedef struct Handler
 	bool (*ha_seek_fn) (struct Handler *handler_p, long offset, int whence);
 	bool (*ha_close_fn) (struct Handler *handler_p);
 	HandlerStatus (*ha_status_fn) (struct Handler *handler_p);
+	bool (*file_info_fn) (struct Handler *handler_p, FileInformation *info_p);	
 	void (*ha_free_handler_fn) (struct Handler *handler_p);
+	
+	char *ha_filename_s;
 } Handler;
 
 
@@ -69,6 +76,7 @@ WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
 	bool (*close_fn) (struct Handler *handler_p),
 	HandlerStatus (*status_fn) (struct Handler *handler_p),
+	bool (*file_info_fn) (struct Handler *handler_p, FileInformation *info_p),	
 	void (*free_handler_fn) (struct Handler *handler_p));
 
 
@@ -92,6 +100,8 @@ WHEATIS_HANDLER_API const char *GetHandlerProtocol (struct Handler *handler_p);
 
 WHEATIS_HANDLER_API HandlerStatus GetHandlerStatus (struct Handler *handler_p);
 
+WHEATIS_HANDLER_API bool CalculateFileInformationFromHandler (struct Handler *handler_p, FileInformation *info_p);
+
 WHEATIS_HANDLER_API void FreeHandler (struct Handler *handler_p);
 
 WHEATIS_HANDLER_API HandlerNode *AllocateHandlerNode (struct Handler *handler_p);
@@ -101,6 +111,7 @@ WHEATIS_HANDLER_API void FreeHandlerNode (ListItem *node_p);
 WHEATIS_HANDLER_API Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p);
 
 WHEATIS_HANDLER_API bool DeallocatePluginHandler (Plugin * const plugin_p);
+
 
 #ifdef __cplusplus
 }
