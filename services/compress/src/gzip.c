@@ -25,55 +25,81 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 			if (WriteGZipHeader (out_p, file_info.fi_last_modified))
 				{
 					#define BUFFER_SIZE (4096)
-					
+					size_t output_buffer_size = BUFFER_SIZE;
+					Bytef *output_buffer_p = (Bytef *) AllocMemory (output_buffer_size * sizeof (Bytef));
 					uint32 crc = 0;
-					bool loop_flag = true;
-					Bytef input_buffer [BUFFER_SIZE];
-					Bytef output_buffer [BUFFER_SIZE];
-					uLongf output_size;
 					
-					while (loop_flag && success_flag)
+					if (output_buffer_p)
 						{
-							size_t num_read = ReadFromHandler (in_p, input_buffer, BUFFER_SIZE);
-							
-							crc = crc32 (crc, input_buffer, num_read);
-							
-							if (compress (output_buffer, &output_size, input_buffer, BUFFER_SIZE) == Z_OK)
+							bool loop_flag = true;							
+							Bytef input_buffer [BUFFER_SIZE];
+							uLongf output_size;
+																					
+							/*
+								Loop whilst there is input data to compress and
+								it is being compressed successfully
+							*/
+
+							while (loop_flag && success_flag)
 								{
-									if (WriteToHandler (out_p, output_buffer, output_size) == output_size)
+									size_t num_read = ReadFromHandler (in_p, input_buffer, BUFFER_SIZE);
+									int res;
+									
+									crc = crc32 (crc, input_buffer, num_read);
+									
+									/* Compress the data */
+									res = compress (output_buffer_p, &output_size, input_buffer, BUFFER_SIZE);
+									while ((res == Z_BUF_ERROR) && success_flag)
 										{
-											HandlerStatus hs = GetHandlerStatus (in_p);
+											FreeMemory (output_buffer_p);
+											output_buffer_size <<= 1;
 											
-											switch (hs)
+											output_buffer_p = (Bytef *) AllocMemory (output_buffer_size * sizeof (Bytef));
+											
+											if (output_buffer_p)
 												{
-													case HS_FINISHED:
-														loop_flag = false;
-														break;
-														
-													case HS_BAD:
-														success_flag = false;
-														break;
-													
-													default:
-														break;
+													res = compress (output_buffer_p, &output_size, input_buffer, BUFFER_SIZE);
+												}
+											else
+												{
+													success_flag = false;
 												}
 										}
-									else
+
+									if (success_flag)
 										{
-											success_flag = false;
+											if (WriteToHandler (out_p, output_buffer_p, output_size) == output_size)
+												{
+													HandlerStatus hs = GetHandlerStatus (in_p);
+													
+													switch (hs)
+														{
+															case HS_FINISHED:
+																loop_flag = false;
+																break;
+																
+															case HS_BAD:
+																success_flag = false;
+																break;
+															
+															default:
+																break;
+														}
+												}
+											else
+												{
+													success_flag = false;
+												}
 										}
-								}
-							else
+
+								}		/* while (loop_flag && success_flag) */							
+							
+							if (output_buffer_p)
 								{
-									success_flag = false;
+									FreeMemory (output_buffer_p);
 								}
-						}
-					
-					
-					/*
-						Loop whilst there is input data to compress and
-						it is being compressed successfully
-					*/
+							
+						}		/* if (output_buffer_p) */
 
 
 					if (success_flag)

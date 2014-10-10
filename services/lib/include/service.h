@@ -146,6 +146,8 @@ WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *resource_p, Handler *handler_p);
 
 
+WHEATIS_SERVICE_API LinkedList *LoadMatchingServicesByName (const char * const services_path_s, const char *service_name_s);
+
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions
  * as much as possible.

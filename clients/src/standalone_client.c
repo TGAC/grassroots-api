@@ -274,9 +274,18 @@ int main(int argc, char *argv[])
 																				client_results_p = RunClient (client_p);
 																				if (client_results_p)
 																					{
+																						json_t *response_p;
 																						char *client_results_s = json_dumps (client_results_p, 0);
-																						
 																						printf ("%s\n", client_results_s);
+																						
+																						response_p = SendRequest (sock_fd, client_results_p, id, buffer_p);
+																						
+																						if (response_p)
+																							{
+																								char *response_s = json_dumps (response_p, 0);
+																								printf ("%s\n", response_s);
+																								
+																							}
 																						
 																						free (client_results_s);
 																					}

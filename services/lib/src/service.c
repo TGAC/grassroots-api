@@ -4,6 +4,7 @@
 #include "string_linked_list.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
+#include "service_matcher.h"
 
 #include "json_util.h"
 
@@ -14,6 +15,7 @@ static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t
 
 static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p);
 
+static LinkedList *GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p);
 
 
 
@@ -69,8 +71,7 @@ void FreeServiceNode (ListItem * const node_p)
 
 
 
-
-LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *resource_p, Handler *handler_p)
+static LinkedList *GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p)
 {
 	LinkedList *services_list_p = AllocateLinkedList (FreeServiceNode);
 	
@@ -103,12 +104,7 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *
 															
 															if (service_p)
 																{
-																	using_service_flag = true;
-																	
-																	if (resource_p)
-																		{
-																			using_service_flag = IsServiceMatch (service_p, resource_p, handler_p);
-																		}
+																	using_service_flag = RunServiceMatcher (matcher_p, service_p);
 																	
 																	if (using_service_flag)
 																		{
@@ -165,6 +161,27 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *
 		}
 	
 	return services_list_p;
+}
+
+
+LinkedList *LoadMatchingServicesByName (const char * const services_path_s, const char *service_name_s)
+{
+	NameServiceMatcher matcher;
+	
+	InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);
+	
+	return GetMatchingServices (services_path_s, &matcher);
+}
+
+
+
+LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *resource_p, Handler *handler_p)
+{
+	ResourceServiceMatcher matcher;
+	
+	InitResourceServiceMatcher (&matcher, MatchServiceByResource, resource_p, handler_p);
+	
+	return GetMatchingServices (services_path_s, &matcher);
 }
 
 

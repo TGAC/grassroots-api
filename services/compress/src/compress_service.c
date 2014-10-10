@@ -245,7 +245,6 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 		}		/* if (algo_index) */
 	
 	
-	
 	return success_flag;
 }
 

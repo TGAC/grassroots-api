@@ -14,6 +14,8 @@
 #include "handler.h"
 #include "handler_utils.h"
 
+#include "parameter_set.h"
+
 //#include "irods_handle.h"
 
 
@@ -74,6 +76,56 @@ json_t *ProcessMessage (const char * const request_s)
 								}
 						}
 				}
+			else 
+				{
+					/*
+					 * Is there a request to run a service?
+					 */
+					op_p = json_object_get (req_p, SERVICE_RUN_S);
+					
+					if (op_p && json_is_true (op_p))
+						{
+							const char *service_name_s = GetServiceNameFromJSON (op_p);
+							
+							if (service_name_s)
+								{
+									LinkedList *services_list_p = LoadMatchingServicesByName (SERVICES_PATH, service_name_s);
+									
+									if (services_list_p)
+										{
+											if (services_list_p -> ll_size == 1)
+												{	
+													Service *service_p = ((ServiceNode *) (services_list_p -> ll_head_p)) -> sn_service_p;
+											
+													if (service_p)
+														{
+															/* 
+															 * Convert the json parameter set into a ParameterSet
+															 * to run the Service with.
+															 */
+															ParameterSet *params_p = CreateParameterSetFromJSON (op_p);
+
+															if (params_p)
+																{
+																	int res = RunService (service_p, params_p);
+																	
+																	
+																	
+																}		/* if (params_p) */
+
+														}		/* if (service_p) */
+
+												}		/* if (services_list_p -> ll_size == 1)) */
+								
+											FreeLinkedList (services_list_p);
+										}		/* if (services_list_p) */
+								
+								}		/* if (service_name_s) */
+						
+						}		/* if (op_p && json_is_true (op_p)) */
+						
+				}	
+							
 		}
 	else
 		{
