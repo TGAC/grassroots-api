@@ -25,6 +25,7 @@ typedef struct IRodsHandler
 	Handler irh_base_handler;
 	rcComm_t *irh_connection_p;
 	openedDataObjInp_t *irh_obj_p;
+	rodsObjStat_t *irh_stat_p;
 	HandlerStatus irh_status;
 } IRodsHandler;
 

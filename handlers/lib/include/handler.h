@@ -42,11 +42,11 @@ typedef struct Handler
 
 	bool (*ha_open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 	size_t (*ha_read_fn) (struct Handler *handler_p, void *buffer_p, const size_t length);
-	size_t (*ha_write_fn) (struct Handler *handler_p, void *buffer_p, const size_t length);
+	size_t (*ha_write_fn) (struct Handler *handler_p, const void *buffer_p, const size_t length);
 	bool (*ha_seek_fn) (struct Handler *handler_p, long offset, int whence);
 	bool (*ha_close_fn) (struct Handler *handler_p);
 	HandlerStatus (*ha_status_fn) (struct Handler *handler_p);
-	bool (*file_info_fn) (struct Handler *handler_p, FileInformation *info_p);	
+	bool (*ha_file_info_fn) (struct Handler *handler_p, FileInformation *info_p);	
 	void (*ha_free_handler_fn) (struct Handler *handler_p);
 	
 	char *ha_filename_s;
@@ -72,7 +72,7 @@ WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	const char *(*get_description_fn) (struct Handler *handler_p),
 	bool (*open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s),
 	size_t (*read_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
-	size_t (*write_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
+	size_t (*write_fn) (struct Handler *handler_p, const void *buffer_p, const size_t length),
 	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
 	bool (*close_fn) (struct Handler *handler_p),
 	HandlerStatus (*status_fn) (struct Handler *handler_p),
@@ -84,7 +84,7 @@ WHEATIS_HANDLER_API bool OpenHandler (struct Handler *handler_p, const char * co
 
 WHEATIS_HANDLER_API size_t ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
-WHEATIS_HANDLER_API size_t WriteToHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
+WHEATIS_HANDLER_API size_t WriteToHandler (struct Handler *handler_p, const void *buffer_p, const size_t length);
 
 WHEATIS_HANDLER_API size_t SeekHandler (struct Handler *handler_p, size_t offset, int whence);
 

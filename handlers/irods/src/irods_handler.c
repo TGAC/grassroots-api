@@ -18,7 +18,7 @@ static bool OpenIRodsHandler (struct Handler *handler_p, const char * const file
 
 static size_t ReadFromIRodsHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
-static size_t WriteToIRodsHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
+static size_t WriteToIRodsHandler (struct Handler *handler_p, const void *buffer_p, const size_t length);
 
 static bool SeekIRodsHandler (struct Handler *handler_p, long offset, int whence);
 
@@ -38,6 +38,7 @@ static void FreeIRodsHandler (struct Handler *handler_p);
 
 static bool IsResourceForIRodsHandler (struct Handler *handler_p, const Resource * resource_p);
 
+static bool CalculateFileInformationFromIRodsHandler (struct Handler *handler_p, FileInformation *info_p);
 
 
 /*
@@ -88,10 +89,12 @@ Handler *GetHandler (const json_t *credentials_p)
 								SeekIRodsHandler,
 								CloseIRodsHandler,
 								GetIRodsHandlerStatus,
+								CalculateFileInformationFromIRodsHandler,
 								FreeIRodsHandler);
 
 								handler_p -> irh_connection_p = connection_p;
 								handler_p -> irh_obj_p = NULL;
+								handler_p -> irh_stat_p = NULL;
 								handler_p -> irh_status = HS_GOOD;
 								
 								return ((Handler *) handler_p);
@@ -194,9 +197,16 @@ static bool OpenIRodsHandler (struct Handler *handler_p, const char *filename_s,
 
 			if (handler >= 0)
 				{
+					rodsObjStat_t *stat_p = NULL;
+					
 					memset (opened_obj_p, 0, sizeof (openedDataObjInp_t));
 					opened_obj_p -> l1descInx = handler;
 
+					if (rcObjStat (irods_handler_p -> irh_connection_p, &data_obj, &stat_p) >= 0)
+						{
+							irods_handler_p -> irh_stat_p = stat_p;
+						}
+						
 					irods_handler_p -> irh_obj_p = opened_obj_p;
 
 				}		/* if (handler >= 0)) */
@@ -218,6 +228,12 @@ static bool CloseIRodsHandler (struct Handler *handler_p)
 		{
 			success_flag = (rcDataObjClose (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p) == 0);
 			irods_handler_p -> irh_obj_p = NULL;
+		}
+
+	if (irods_handler_p -> irh_stat_p)
+		{
+			free (irods_handler_p -> irh_stat_p);
+			irods_handler_p -> irh_stat_p = NULL;
 		}
 
 	CloseConnection (irods_handler_p -> irh_connection_p);
@@ -263,14 +279,14 @@ static size_t ReadFromIRodsHandler (struct Handler *handler_p, void *buffer_p, c
 }
 
 
-static size_t WriteToIRodsHandler (struct Handler *handler_p, void *buffer_p, const size_t length)
+static size_t WriteToIRodsHandler (struct Handler *handler_p, const void *buffer_p, const size_t length)
 {
 	IRodsHandler *irods_handler_p = (IRodsHandler *) handler_p;
 	bytesBuf_t buffer;
 	int i;
 	size_t res = 0;
 	
-	buffer.buf = buffer_p;
+	buffer.buf = (void *) buffer_p;
 	buffer.len = length;
 
 	irods_handler_p -> irh_obj_p -> len = length;
@@ -346,3 +362,18 @@ static bool IsResourceForIRodsHandler (struct Handler *handler_p, const Resource
 }
 
 
+
+static bool CalculateFileInformationFromIRodsHandler (struct Handler *handler_p, FileInformation *info_p)
+{
+	IRodsHandler *irods_handler_p = (IRodsHandler *) handler_p;
+	bool success_flag = false;
+
+	if (irods_handler_p -> irh_stat_p)
+		{
+			info_p -> fi_size = irods_handler_p -> irh_stat_p -> objSize;
+			
+			success_flag = true;
+		}
+
+	return success_flag;
+}

@@ -4,6 +4,8 @@
 #ifndef FILESYSTEM_H
 #define FILESYSTEM_H
 
+#include <time.h>
+
 #include "typedefs.h"
 #include "linked_list.h"
 #include "wheatis_util_library.h"

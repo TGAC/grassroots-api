@@ -334,11 +334,11 @@ char *GetCurrentWorkingDirectory (void)
 }
 
 
-bool IsDirectory (const char * const path)
+bool IsDirectory (const char * const path_s)
 {
 	struct stat buf;
 
-	if (stat (path, &buf) == 0)
+	if (stat (path_s, &buf) == 0)
 	  {
 			return (S_ISDIR (buf.st_mode));
 		}
@@ -352,7 +352,7 @@ bool CalculateFileInformation (const char * const path_s, FileInformation *info_
 {
 	struct stat buf;
 
-	if (stat (path, &buf) == 0)
+	if (stat (path_s, &buf) == 0)
 	  {
 			info_p -> fi_last_modified = buf.st_mtime;
 			info_p -> fi_size = buf.st_size;

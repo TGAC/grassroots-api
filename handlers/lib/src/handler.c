@@ -15,7 +15,7 @@ void InitialiseHandler (Handler * const handler_p,
 	const char *(*get_description_fn) (struct Handler *handler_p),
 	bool (*open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s),
 	size_t (*read_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
-	size_t (*write_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
+	size_t (*write_fn) (struct Handler *handler_p, const void *buffer_p, const size_t length),
 	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
 	bool (*close_fn) (struct Handler *handler_p),
 	HandlerStatus (*status_fn) (struct Handler *handler_p),
@@ -60,7 +60,7 @@ size_t ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t 
 }
 
 
-size_t WriteToHandler (struct Handler *handler_p, void *buffer_p, const size_t length)
+size_t WriteToHandler (struct Handler *handler_p, const void *buffer_p, const size_t length)
 {
 	return (handler_p -> ha_write_fn (handler_p, buffer_p, length));
 }

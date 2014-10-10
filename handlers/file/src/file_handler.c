@@ -9,7 +9,7 @@ static bool OpenFileHandler (struct Handler *handler_p, const char * const filen
 
 static size_t ReadFromFileHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
-static size_t WriteToFileHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
+static size_t WriteToFileHandler (struct Handler *handler_p, const void *buffer_p, const size_t length);
 
 static bool SeekFileHandler (struct Handler *handler_p, long offset, int whence);
 
@@ -49,6 +49,7 @@ Handler *GetHandler (const json_t *tags_p)
 				SeekFileHandler,
 				CloseFileHandler,
 				GetFileHandlerStatus,
+				CalculateFileInformationFromFileHandler,
 				FreeFileHandler);
 
 			handler_p -> fh_handler_f = NULL;
@@ -93,7 +94,7 @@ static size_t ReadFromFileHandler (struct Handler *handler_p, void *buffer_p, co
 }
 
 
-static size_t WriteToFileHandler (struct Handler *handler_p, void *buffer_p, const size_t length)
+static size_t WriteToFileHandler (struct Handler *handler_p, const void *buffer_p, const size_t length)
 {
 	size_t res = 0;
 	FileHandler *file_handler_p = (FileHandler *) handler_p;

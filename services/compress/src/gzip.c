@@ -17,16 +17,59 @@ static bool WriteGZipFooter (Handler *out_p, const uint32 crc, const uint32 orig
 
 int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 {
-	int res = Z_OK;
+	bool success_flag = true;
 	FileInformation file_info;
 
-	if (CalculateFileInformation (in_p, &file_info))
+	if (CalculateFileInformationFromHandler (in_p, &file_info))
 		{
-			if (WriteGZipHeader (out_p, file_info.fi_last_modified)
+			if (WriteGZipHeader (out_p, file_info.fi_last_modified))
 				{
+					#define BUFFER_SIZE (4096)
+					
 					uint32 crc = 0;
-					bool success_flag = true;
-
+					bool loop_flag = true;
+					Bytef input_buffer [BUFFER_SIZE];
+					Bytef output_buffer [BUFFER_SIZE];
+					uLongf output_size;
+					
+					while (loop_flag && success_flag)
+						{
+							size_t num_read = ReadFromHandler (in_p, input_buffer, BUFFER_SIZE);
+							
+							crc = crc32 (crc, input_buffer, num_read);
+							
+							if (compress (output_buffer, &output_size, input_buffer, BUFFER_SIZE) == Z_OK)
+								{
+									if (WriteToHandler (out_p, output_buffer, output_size) == output_size)
+										{
+											HandlerStatus hs = GetHandlerStatus (in_p);
+											
+											switch (hs)
+												{
+													case HS_FINISHED:
+														loop_flag = false;
+														break;
+														
+													case HS_BAD:
+														success_flag = false;
+														break;
+													
+													default:
+														break;
+												}
+										}
+									else
+										{
+											success_flag = false;
+										}
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+					
+					
 					/*
 						Loop whilst there is input data to compress and
 						it is being compressed successfully
@@ -39,10 +82,18 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 						}
 
 				}		/* if (WriteGZipHeader (out_p, file_info.fi_last_modified) */
-
+			else
+				{
+					success_flag = false;
+				}
+			
 		}		/* if (CalculateFileInformation (in_p, &file_info))*/
+	else
+		{
+			success_flag = false;
+		}
 
-	return res;
+	return (success_flag ? Z_OK : Z_STREAM_ERROR);
 }
 
 
