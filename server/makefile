@@ -90,16 +90,6 @@ else
 endif
 	
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-
 include ../generic_makefiles/shared_library.makefile
 
 .PHONY:	all exe

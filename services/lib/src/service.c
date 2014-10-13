@@ -170,7 +170,7 @@ LinkedList *LoadMatchingServicesByName (const char * const services_path_s, cons
 	
 	InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);
 	
-	return GetMatchingServices (services_path_s, &matcher);
+	return GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher));
 }
 
 
@@ -181,7 +181,7 @@ LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *
 	
 	InitResourceServiceMatcher (&matcher, MatchServiceByResource, resource_p, handler_p);
 	
-	return GetMatchingServices (services_path_s, &matcher);
+	return GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher));
 }
 
 

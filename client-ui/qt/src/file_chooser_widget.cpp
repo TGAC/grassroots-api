@@ -1,3 +1,4 @@
+#include <QDebug>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QGridLayout>
@@ -46,9 +47,13 @@ void FileChooserWidget :: ChooseFile ()
 bool FileChooserWidget :: UpdateConfig (const QString &value_r)
 {
 	QByteArray ba = value_r.toLocal8Bit ();
+	const char * value_s = ba.constData ();
 
-	return false;
+	bool b = SetParameterValue (bpw_param_p, value_s);
 
+	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
+
+	return b;
 }
 
 

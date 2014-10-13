@@ -48,11 +48,11 @@ void FreeParameterSet (ParameterSet *params_p)
 
 bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
 	const char * const name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, 
-	SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, 
+	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, 
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	bool success_flag = false;
-	Parameter *param_p = AllocateParameter (type, name_s, description_s, tag, options_p, default_value, bounds_p, level, check_value_fn);
+	Parameter *param_p = AllocateParameter (type, name_s, description_s, tag, options_p, default_value, current_value_p, bounds_p, level, check_value_fn);
 	
 	if (param_p)
 		{
@@ -119,7 +119,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 	if (root_p)
 		{
 			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
-			bool success_flag = true;
+			bool success_flag = true;			
 			
 			while (success_flag && node_p)
 				{

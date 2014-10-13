@@ -39,7 +39,7 @@ static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
 
 
 
-Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, uint32 tag, ParameterMultiOptionArray *options_p, SharedType default_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
+Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, uint32 tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	char *new_name_s = CopyToNewString (name_s, 0, true);
 
@@ -63,9 +63,7 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 							param_p -> pa_level = level;
 							param_p -> pa_tag = tag;
 							
-							//memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
-							memcpy (& (param_p -> pa_current_value), & (param_p -> pa_default), sizeof (SharedType));
-							
+							memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
 							
 							return param_p;
 						}		/* if (param_p) */
@@ -453,7 +451,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 				{
 					Resource *new_res_p = (Resource *) value_p;
 
-					success_flag = CopyResource (new_res_p, param_p -> pa_current_value.st_resource_value_p);
+					success_flag = CopyResource (param_p -> pa_current_value.st_resource_value_p, new_res_p);
 				}
 			break;
 
@@ -477,13 +475,13 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 				{
 					if (AddCurrentValueToJSON (parameter_p, root_p))
 						{
-							if (full_definition_flag)
+							if (AddParameterTagToJSON (parameter_p, root_p))
 								{
-									if (AddParameterDescriptionToJSON (parameter_p, root_p))
+									if (AddParameterTypeToJSON (parameter_p, root_p))
 										{
-											if (AddParameterTagToJSON (parameter_p, root_p))
+											if (full_definition_flag)
 												{
-													if (AddParameterTypeToJSON (parameter_p, root_p))
+													if (AddParameterDescriptionToJSON (parameter_p, root_p))
 														{
 															if (AddDefaultValueToJSON (parameter_p, root_p))
 																{
@@ -501,7 +499,7 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 								}		/* if (full_definition_flag) */
 							else
 								{
-									success_flag = true;
+									success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
 								}
 						}
 				}
@@ -1158,6 +1156,25 @@ void ClearSharedType (SharedType *st_p)
 }
 
 
+bool IsJSONParameterConcise (const json_t * const json_p)
+{
+	bool concise_flag = false;
+	json_t *value_p = json_object_get (json_p, PARAM_CONCISE_DEFINITION_S);
+	
+	concise_flag = (value_p && json_is_true (value_p));
+	
+	return concise_flag;
+}
+
+
+/*
+ 
+ 				if (AddCurrentValueToJSON (parameter_p, root_p))
+						{
+							if (AddParameterTagToJSON (parameter_p, root_p))
+								{
+									if (AddParameterTypeToJSON (parameter_p, root_p))
+*/
 
 Parameter *CreateParameterFromJSON (const json_t * const root_p)
 {
@@ -1167,44 +1184,67 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 	if (name_s)
 		{
-			const char *description_s = GetStringValue (root_p, PARAM_DESCRIPTION_S);
+			ParameterType pt;
 
-			if (description_s)
+			if (GetParameterTypeFromJSON (root_p, &pt))
 				{
-					ParameterType pt;
-
-					if (GetParameterTypeFromJSON (root_p, &pt))
+					Tag tag;
+					
+					if (GetParameterTagFromJSON (root_p, &tag))
 						{
-							Tag tag;
+							SharedType current_value;
 							
-							if (GetParameterTagFromJSON (root_p, &tag))
+							if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &current_value))
 								{
 									/*
 									 * The default, options and bounds are optional
 									 */
+									const char *description_s = NULL;
 									SharedType def;
 									ParameterMultiOptionArray *options_p = NULL;
 									ParameterBounds *bounds_p = NULL;
 									ParameterLevel level = PL_BASIC;
+									bool success_flag = false;
 
 									memset (&def, 0, sizeof (SharedType));
-									
-									bool default_value_flag = GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def);
 
-									if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+									if (!IsJSONParameterConcise (root_p))
 										{
-											if (GetParameterBoundsFromJSON (root_p, &bounds_p))
-												{											
-													param_p = AllocateParameter (pt, name_s, description_s, tag, options_p, def, bounds_p, level, NULL);
-												}
+											description_s = GetStringValue (root_p, PARAM_DESCRIPTION_S);
+											
+											if (description_s)
+												{
+													if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+														{
+															if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+																{
+																	if (GetParameterBoundsFromJSON (root_p, &bounds_p))
+																		{											
+																			success_flag = true;
+																		}
+																		
+																}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */		
+																
+														}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
+													
+												}		/* if (description_s) */
+										}
+									else
+										{
+											success_flag = true;
+										}
+										
+									if (success_flag)
+										{
+											param_p = AllocateParameter (pt, name_s, description_s, tag, options_p, def, &current_value, bounds_p, level, NULL);
 										}
 									
-								}		/* if (GetParameterTagFromJSON (root_p, &tag)) */
-							
-						}		/* if (GetParameterTypeFromJSON (root_p, &pt)) */
-
-				}		/* if (description_s) */
-
+								}		/* if (GetParameterCurrentValueFromJSON (root_p, &tag)) */
+					
+						}		/* if (GetParameterTagFromJSON (root_p, &tag)) */
+				
+				}		/* if (GetParameterTypeFromJSON (root_p, &pt)) */	
+				
 		}		/* if (name_s) */
 
 	return param_p;

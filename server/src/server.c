@@ -19,6 +19,13 @@
 //#include "irods_handle.h"
 
 
+#ifdef _DEBUG
+	#define SERVER_DEBUG	(DL_INFO)
+#else
+	#define SERVER_DEBUG	(DL_NONE)
+#endif
+
+
 /*****************************/
 /***** STATIC PROTOTYPES *****/
 /*****************************/
@@ -34,6 +41,8 @@ static json_t *GetAllServices (const json_t * const req_p);
 
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
+static json_t *ProcessJSONRequest (json_t *req_p);
+
 
 /***************************/
 /***** API DEFINITIONS *****/
@@ -43,95 +52,60 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 json_t *ProcessMessage (const char * const request_s)
 {
 	json_error_t error;
-	json_t *req_p = json_loads (request_s, 0, &error);
+	json_t *req_p = json_loads (request_s, JSON_PRESERVE_ORDER, &error);
 	json_t *res_p = NULL;
 	
 	if (req_p)
 		{
-			/* Get the requested operation */
-			json_t *op_p = json_object_get (req_p, KEY_OPERATIONS);
-			
-			if (op_p)
+			if (json_is_array (req_p))
 				{
-					if (json_is_integer (op_p))
+					res_p = json_array ();
+					
+					if (res_p)
 						{
-							json_int_t operation_id = json_integer_value (op_p);
-							
-							switch (operation_id)
+							size_t i;
+							json_t *value_p;
+														
+							json_array_foreach (req_p, i, value_p) 
 								{
-									case OP_LIST_ALL_SERVICES:
-										res_p = GetAllServices (req_p);
-										break;
+									json_t *json_p = ProcessJSONRequest (value_p);
 									
-									case OP_IRODS_MODIFIED_DATA:
-										res_p = GetAllModifiedData (req_p);
-										break;
-								
-									case OP_LIST_INTERESTED_SERVICES:
-										res_p = GetInterestedServices (req_p);
-										break;
-										
-									default:
-										break;
-								}
+									if (json_p)
+										{
+											if (json_array_append_new (res_p, json_p) != 0)
+												{
+													// error
+													
+												}
+										}
+									else
+										{
+											// error
+										}
+								}				
+							
+						}
+					else
+						{
+							
+						}
+					
+				}
+			else
+				{
+					res_p = ProcessJSONRequest (req_p);
+
+					if (!res_p)
+						{
+							// error
 						}
 				}
-			else 
-				{
-					/*
-					 * Is there a request to run a service?
-					 */
-					op_p = json_object_get (req_p, SERVICE_RUN_S);
-					
-					if (op_p && json_is_true (op_p))
-						{
-							const char *service_name_s = GetServiceNameFromJSON (op_p);
-							
-							if (service_name_s)
-								{
-									LinkedList *services_list_p = LoadMatchingServicesByName (SERVICES_PATH, service_name_s);
-									
-									if (services_list_p)
-										{
-											if (services_list_p -> ll_size == 1)
-												{	
-													Service *service_p = ((ServiceNode *) (services_list_p -> ll_head_p)) -> sn_service_p;
-											
-													if (service_p)
-														{
-															/* 
-															 * Convert the json parameter set into a ParameterSet
-															 * to run the Service with.
-															 */
-															ParameterSet *params_p = CreateParameterSetFromJSON (op_p);
-
-															if (params_p)
-																{
-																	int res = RunService (service_p, params_p);
-																	
-																	
-																	
-																}		/* if (params_p) */
-
-														}		/* if (service_p) */
-
-												}		/* if (services_list_p -> ll_size == 1)) */
-								
-											FreeLinkedList (services_list_p);
-										}		/* if (services_list_p) */
-								
-								}		/* if (service_name_s) */
-						
-						}		/* if (op_p && json_is_true (op_p)) */
-						
-				}	
-							
 		}
 	else
 		{
 			/* error decoding the request */
 			
-		}
+		}	
 	
 	
 	return res_p;
@@ -141,6 +115,99 @@ json_t *ProcessMessage (const char * const request_s)
 /******************************/
 /***** STATIC DEFINITIONS *****/
 /******************************/
+
+static json_t *ProcessJSONRequest (json_t *req_p)
+{
+	/* Get the requested operation */
+	json_t *op_p = json_object_get (req_p, KEY_OPERATIONS);
+	json_t *res_p = NULL;
+	
+	#if SERVER_DEBUG >= DL_INFO
+	char *req_s = json_dumps (req_p, JSON_PRESERVE_ORDER | JSON_INDENT (2));
+	#endif
+	
+	if (op_p)
+		{
+			if (json_is_integer (op_p))
+				{
+					json_int_t operation_id = json_integer_value (op_p);
+					
+					switch (operation_id)
+						{
+							case OP_LIST_ALL_SERVICES:
+								res_p = GetAllServices (req_p);
+								break;
+							
+							case OP_IRODS_MODIFIED_DATA:
+								res_p = GetAllModifiedData (req_p);
+								break;
+						
+							case OP_LIST_INTERESTED_SERVICES:
+								res_p = GetInterestedServices (req_p);
+								break;
+								
+							default:
+								break;
+						}
+				}
+		}
+	else 
+		{
+			/*
+			 * Is there a request to run a service?
+			 */
+			op_p = json_object_get (req_p, SERVICE_RUN_S);
+			
+			if (op_p && json_is_true (op_p))
+				{
+					const char *service_name_s = GetServiceNameFromJSON (req_p);
+					
+					if (service_name_s)
+						{
+							LinkedList *services_list_p = LoadMatchingServicesByName (SERVICES_PATH, service_name_s);
+							
+							if (services_list_p)
+								{
+									if (services_list_p -> ll_size == 1)
+										{	
+											Service *service_p = ((ServiceNode *) (services_list_p -> ll_head_p)) -> sn_service_p;
+									
+											if (service_p)
+												{
+													/* 
+													 * Convert the json parameter set into a ParameterSet
+													 * to run the Service with.
+													 */
+													ParameterSet *params_p = CreateParameterSetFromJSON (req_p);
+
+													if (params_p)
+														{
+															int res = RunService (service_p, params_p);
+														}		/* if (params_p) */
+
+												}		/* if (service_p) */
+
+										}		/* if (services_list_p -> ll_size == 1)) */
+						
+									FreeLinkedList (services_list_p);
+								}		/* if (services_list_p) */
+						
+						}		/* if (service_name_s) */
+				
+				}		/* if (op_p && json_is_true (op_p)) */
+				
+		}	
+
+	#if SERVER_DEBUG >= DL_INFO
+	if (req_s)
+		{
+			free (req_s);
+		}
+	#endif
+		
+	return res_p;				
+}
+
 
 static json_t *GetInterestedServices (const json_t * const req_p)
 {

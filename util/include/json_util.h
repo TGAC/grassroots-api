@@ -41,16 +41,18 @@ PREFIX const char *SERVICE_NAME_S VAL("path");
 PREFIX const char *SERVICE_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");
 
-PREFIX const char *PARAM_SET_NAME_S VAL("name");
+PREFIX const char *PARAM_SET_NAME_S VAL("param_set");
 PREFIX const char *PARAM_SET_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_SET_PARAMS_S VAL("params");
 
-PREFIX const char *PARAM_NAME_S VAL("name");
+PREFIX const char *PARAM_NAME_S VAL("param");
+PREFIX const char *PARAM_CONCISE_DEFINITION_S VAL("concise");
 PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_TAG_S VAL("tag");
 PREFIX const char *PARAM_TYPE_S VAL("type");
 PREFIX const char *PARAM_WHEATIS_TYPE_INFO_S VAL("wheatis_type");
 PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default_value");
+PREFIX const char *PARAM_CURRENT_VALUE_S  VAL("current_value");
 PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
 PREFIX const char *PARAM_MIN_S  VAL("min");
 PREFIX const char *PARAM_MAX_S  VAL("max");
