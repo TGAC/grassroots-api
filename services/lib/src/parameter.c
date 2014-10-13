@@ -1193,6 +1193,8 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 					if (GetParameterTagFromJSON (root_p, &tag))
 						{
 							SharedType current_value;
+
+							memset (&current_value, 0, sizeof (SharedType));
 							
 							if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &current_value))
 								{
