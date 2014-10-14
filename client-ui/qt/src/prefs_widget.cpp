@@ -126,6 +126,13 @@ json_t *PrefsWidget :: GetUserValuesAsJSON () const
 			int i = 0;
 			bool success_flag = true;
 
+			char *dump_s = json_dumps (root_p, 0);
+
+			if (dump_s)
+				{
+					free (dump_s);
+				}
+
 			while (success_flag && (i < num_services))
 				{
 					ServicePrefsWidget *spw_p = pw_service_widgets.at (i);
@@ -133,7 +140,19 @@ json_t *PrefsWidget :: GetUserValuesAsJSON () const
 
 					if (service_json_p)
 						{
+							dump_s = json_dumps (service_json_p, 0);
+							if (dump_s)
+								{
+									free (dump_s);
+								}
+
 							success_flag = (json_array_append_new (root_p, service_json_p) == 0);
+
+							dump_s = json_dumps (root_p, 0);
+							if (dump_s)
+								{
+									free (dump_s);
+								}
 						}
 
 					if (success_flag)
@@ -144,6 +163,23 @@ json_t *PrefsWidget :: GetUserValuesAsJSON () const
 
 		}		/* if (root_p) */
 
+	char *client_results_s = json_dumps (root_p, 0);
+	size_t l = json_array_size (root_p);
+	for (size_t i = 0; i < l; ++ i)
+		{
+			json_t *json_p = json_array_get (root_p, i);
+			char *dump_s = json_dumps (json_p, 0);
+
+			if (dump_s)
+				{
+					free (dump_s);
+				}
+		}
+
+	if (client_results_s)
+		{
+			free (client_results_s);
+		}
 
 	return root_p;
 }

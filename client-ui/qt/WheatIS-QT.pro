@@ -19,6 +19,7 @@ unix {
  }
  CONFIG(debug, debug|release) {
 	BUILD = debug
+	DEFINES += "_DEBUG"
  }
 }
 

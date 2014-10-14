@@ -131,8 +131,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 							PrintJSON (stderr, root_p, "GetParameterSetAsJSON - param_json_p :: ");
 							#endif
 
-							success_flag = (json_array_append (root_p, param_json_p) == 0);
-							json_decref (param_json_p);
+							success_flag = (json_array_append_new (root_p, param_json_p) == 0);
 							
 							node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 						}

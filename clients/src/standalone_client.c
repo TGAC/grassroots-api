@@ -292,13 +292,22 @@ int main(int argc, char *argv[])
 																								if (response_s)
 																									{
 																										printf ("%s\n", response_s);
+																										free (response_s);
 																									}
 																							}
-																						
-																						free (client_results_s);
+																						else
+																							{
+																								printf ("no response\n");
+																							}
+																							
+																						if (client_results_s)
+																							{
+																								free (client_results_s);
+																							}
 																					}
 																				else
 																					{
+																						printf ("no results from client\n");
 																					}
 																				
 																			}		/* if (client_p) */
