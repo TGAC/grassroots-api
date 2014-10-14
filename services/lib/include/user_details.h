@@ -6,6 +6,8 @@
 typedef struct UserDetails
 {
 	char *ud_username_s;
+	char *ud_password_s;
+	char *ud_oath_totp_token_s;
 } UserDetails;
 
 #ifdef __cplusplus

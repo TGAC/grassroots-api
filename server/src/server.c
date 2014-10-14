@@ -44,12 +44,13 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 static json_t *ProcessJSONRequest (json_t *req_p);
 
 
+
 /***************************/
 /***** API DEFINITIONS *****/
 /***************************/
 
 
-json_t *ProcessMessage (const char * const request_s)
+json_t *ProcessMessage (const char * const request_s, const int socket_fd)
 {
 	json_error_t error;
 	json_t *req_p = json_loads (request_s, JSON_PRESERVE_ORDER, &error);
@@ -182,7 +183,9 @@ static json_t *ProcessJSONRequest (json_t *req_p)
 
 													if (params_p)
 														{
-															int res = RunService (service_p, params_p);
+															json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
+
+															int res = RunService (service_p, params_p, credentials_p);
 														}		/* if (params_p) */
 
 												}		/* if (service_p) */

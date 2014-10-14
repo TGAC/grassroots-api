@@ -37,6 +37,7 @@
 
 PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
 
+PREFIX const char *SERVICES_NAME_S VAL("services");
 PREFIX const char *SERVICE_NAME_S VAL("path");
 PREFIX const char *SERVICE_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");

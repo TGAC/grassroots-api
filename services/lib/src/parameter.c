@@ -31,7 +31,7 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
-static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p);
+static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s);
 
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp);
 
@@ -45,9 +45,16 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 
 	if (new_name_s)
 		{
-			char *new_description_s = CopyToNewString (description_s, 0, true);
+			bool success_flag = true;
+			char *new_description_s = NULL;
+			
+			if (description_s)
+				{
+					new_description_s = CopyToNewString (description_s, 0, true);
+					success_flag = (new_description_s != NULL);
+				}
 
-			if (new_description_s)
+			if (success_flag)
 				{
 					Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
 
@@ -68,8 +75,12 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 							return param_p;
 						}		/* if (param_p) */
 
-					FreeCopiedString (new_description_s);
-				}		/* if (new_description_s) */
+					if (new_description_s)
+						{
+							FreeCopiedString (new_description_s);
+						}		/* if (new_description_s) */	
+						
+				}		/* if (success_flag) */
 
 			FreeCopiedString (new_name_s);
 		}		/* if (new_name_s) */
@@ -608,17 +619,17 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 
 static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_default));
+	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_default), PARAM_DEFAULT_VALUE_S);
 }
 
 
 static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_current_value));
+	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_current_value), PARAM_CURRENT_VALUE_S);
 }
 
 
-static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p)
+static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s)
 {
 	bool success_flag = false;
 	json_t *value_p = NULL;
@@ -677,7 +688,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 
 	if (value_p)
 		{
-			success_flag = (json_object_set_new (root_p, PARAM_DEFAULT_VALUE_S, value_p) == 0);
+			success_flag = (json_object_set_new (root_p, key_s, value_p) == 0);
 		}		/* if (default_value_p) */
 	else
 		{
@@ -1196,7 +1207,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 							memset (&current_value, 0, sizeof (SharedType));
 							
-							if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &current_value))
+							if (GetValueFromJSON (root_p, PARAM_CURRENT_VALUE_S, pt, &current_value))
 								{
 									/*
 									 * The default, options and bounds are optional

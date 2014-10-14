@@ -225,7 +225,7 @@ static void *HandleConnection (void *socket_desc_p)
 								}
 							else
 								{
-									json_t *response_p = ProcessMessage (request_s);
+									json_t *response_p = ProcessMessage (request_s, socket_fd);
 									char *response_s = NULL;									
 									
 									if (response_p)

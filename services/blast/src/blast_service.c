@@ -26,7 +26,7 @@ static const char *GetBlastServiceDesciption (void);
 
 static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
 
-static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p);
+static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
 
@@ -106,7 +106,7 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Res
 
 
 
-static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p)
+static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	int result = -1;
 	BlastTool *tool_p = CreateBlastTool ();

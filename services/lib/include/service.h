@@ -43,7 +43,7 @@ typedef struct Service
 	struct Plugin *se_plugin_p;
 
 
-	int (*se_run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p);
+	int (*se_run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 	bool (*se_match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
 
@@ -90,12 +90,12 @@ WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
 	const char *(*get_service_description_fn) (void),
-	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p),
+	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p),
 	ServiceData *data_p);
 
-WHEATIS_SERVICE_API int RunService (Service *service_p, ParameterSet *param_set_p);
+WHEATIS_SERVICE_API int RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 

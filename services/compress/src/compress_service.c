@@ -67,12 +67,12 @@ static const char *GetCompressServiceDesciption (void);
 static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
 
 
-static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p);
+static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForCompressService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
 
 
-static int Compress (Resource *input_resource_p, const char * const algorithm_s);
+static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
 
 
 
@@ -165,7 +165,7 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 
 
 
-static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p)
+static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	int result = -1;
 	SharedType input_resource;
@@ -181,7 +181,7 @@ static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_
 					
 					if (algorithm_s)
 						{
-							result = Compress (input_resource_p, algorithm_s);
+							result = Compress (input_resource_p, algorithm_s, credentials_p);
 								
 						}		/* if (algorithm_s) */
 										
@@ -194,7 +194,7 @@ static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_
 }
 
 
-static int Compress (Resource *input_resource_p, const char * const algorithm_s)
+static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p)
 {
 	bool success_flag = false;
 	int i;
@@ -217,7 +217,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 			
 			if (output_name_s)
 				{
-					Handler *input_handler_p = GetResourceHandler (input_resource_p, NULL);
+					Handler *input_handler_p = GetResourceHandler (input_resource_p, credentials_p);
 
 					if (input_handler_p)
 						{
@@ -227,11 +227,13 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s)
 							output_resource.re_protocol_s = input_resource_p -> re_protocol_s;
 							output_resource.re_value_s = output_name_s;
 							
-							output_handler_p = GetResourceHandler (&output_resource, NULL);
+							output_handler_p = GetResourceHandler (&output_resource, credentials_p);
 
 							if (output_handler_p)
 								{
 									res = s_compress_fns [algo_index] (input_handler_p, output_handler_p, 0);
+									
+									success_flag = (res == Z_OK);
 									
 									CloseHandler (output_handler_p);
  								}		/* if (output_handler_p) */

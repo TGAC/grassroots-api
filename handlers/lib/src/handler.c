@@ -160,7 +160,7 @@ void FreeHandlerNode (ListItem *node_p)
 //
 Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p)
 {
-	if (!plugin_p -> pl_client_p)
+	if (!plugin_p -> pl_handler_p)
 		{
 			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetHandler");
 

@@ -274,36 +274,47 @@ int main(int argc, char *argv[])
 																				client_results_p = RunClient (client_p);
 																				if (client_results_p)
 																					{
-																						json_t *response_p;
 																						char *client_results_s = json_dumps (client_results_p, 0);
-
+																						json_t *new_req_p = json_object ();
+																						
+																						if (new_req_p)
+																							{
+																								if (!AddCredentialsToJson (new_req_p, username_s, password_s))
+																									{
+																										printf ("failed to add credentials to request\n");
+																									}
+																									
+																								if (json_object_set_new (new_req_p, SERVICES_S, client_results_p)
+																									{
+																										response_p = SendRequest (sock_fd, client_results_p, id, buffer_p);
+																						
+																										if (response_p)
+																											{
+																												char *response_s = json_dumps (response_p, 0);
+																												
+																												if (response_s)
+																													{
+																														printf ("%s\n", response_s);
+																														free (response_s);
+																													}
+																											}
+																										else
+																											{
+																												printf ("no response\n");
+																											}																									
+																									
+																									}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
+																									
+																								json_decref (new_req_p);
+																								
+																							}		/* if (new_req_p) */
+																						
 																						if (client_results_s)
 																							{
 																								printf ("%s\n", client_results_s);
-																							}
-
-																						
-																						response_p = SendRequest (sock_fd, client_results_p, id, buffer_p);
-																						
-																						if (response_p)
-																							{
-																								char *response_s = json_dumps (response_p, 0);
-																								
-																								if (response_s)
-																									{
-																										printf ("%s\n", response_s);
-																										free (response_s);
-																									}
-																							}
-																						else
-																							{
-																								printf ("no response\n");
-																							}
-																							
-																						if (client_results_s)
-																							{
 																								free (client_results_s);
 																							}
+
 																					}
 																				else
 																					{
