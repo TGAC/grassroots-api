@@ -284,9 +284,9 @@ int main(int argc, char *argv[])
 																										printf ("failed to add credentials to request\n");
 																									}
 																									
-																								if (json_object_set_new (new_req_p, SERVICES_S, client_results_p)
+																								if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
 																									{
-																										response_p = SendRequest (sock_fd, client_results_p, id, buffer_p);
+																										response_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
 																						
 																										if (response_p)
 																											{

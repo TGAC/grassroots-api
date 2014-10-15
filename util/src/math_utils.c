@@ -109,6 +109,22 @@ bool GetValidInteger (const char **str_pp, int *answer_p)
 }
 
 
+bool GetValidLong (const char **str_pp, long *answer_p)
+{
+	double d;
+
+	if (GetNumber (str_pp, &d, false))
+		{
+			*answer_p = (long) d;
+			return true;
+		}
+	else
+		{
+			return false;
+		}
+}
+
+
 static bool GetNumber (const char **str_pp, double64 *answer_p, bool fractions_flag)
 {
 	const char *str_p = *str_pp;

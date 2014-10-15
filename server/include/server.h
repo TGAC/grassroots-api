@@ -7,34 +7,12 @@
 
 #define DEFAULT_SERVER_PORT	("9991")
 
-
-#define KEY_OPERATIONS	("operations")
-#define KEY_INTERVAL		("interval")
 #define KEY_IRODS				("irods")
-#define KEY_PROTOCOL		("protocol")
 #define	KEY_FILE_DATA		("file_data")
-
-
 #define KEY_FILENAME	("file")
 #define KEY_DIRNAME		("dir")
-
-
-enum Operations {
-	/** Get list of all available services */
-	OP_LIST_ALL_SERVICES = 0,
-	
-	/** Get list of data objects and collections modified within a given time period */
-	OP_IRODS_MODIFIED_DATA,
-
-	/** Query services to see if they can work on file */
-	OP_LIST_INTERESTED_SERVICES,
-	
-	OP_NUM_OPERATIONS
-};
-
-
-
-
+#define KEY_PROTOCOL	("protocol")
+#define KEY_INTERVAL	("interval")
 
  
 #ifdef __cplusplus

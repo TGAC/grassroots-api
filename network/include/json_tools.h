@@ -4,7 +4,7 @@
 #include "network_library.h"
 #include "jansson.h"
 #include "typedefs.h"
-
+#include "operation.h"
 
 
 #define JSON_KEY_USERNAME ("username")
@@ -28,9 +28,9 @@ WHEATIS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, co
 
 WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const file_data_p);
 
-
 WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s);
 
+WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
 
 
 #ifdef __cplusplus

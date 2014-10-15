@@ -5,13 +5,31 @@
 #include "filesystem_utils.h"
 
 
+#ifdef _DEBUG
+	#define HANDLER_UTILS_DEBUG	(DL_FINE)
+#else
+	#define HANDLER_UTILS_DEBUG	(DL_NONE)
+#endif
+
+
 LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p);
 
 
 Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 {
 	Handler *handler_p = NULL;
-	LinkedList *matching_handlers_p = LoadMatchingHandlers ("handlers", resource_p, tags_p);
+	LinkedList *matching_handlers_p = NULL;
+	
+	#if HANDLER_UTILS_DEBUG >= DL_FINE
+		{
+			char *dump_s = json_dumps (tags_p, 0);
+			
+			free (dump_s);
+		}
+	#endif
+	
+	
+	matching_handlers_p = LoadMatchingHandlers ("handlers", resource_p, tags_p);
 	
 	if (matching_handlers_p) 
 		{

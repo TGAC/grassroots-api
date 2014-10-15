@@ -11,7 +11,7 @@
 #include "connect.h"
 #include "memory_allocations.h"
 #include "json_tools.h"
-
+#include "math_utils.h"
 
 
 static bool OpenIRodsHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
@@ -370,8 +370,20 @@ static bool CalculateFileInformationFromIRodsHandler (struct Handler *handler_p,
 
 	if (irods_handler_p -> irh_stat_p)
 		{
-			info_p -> fi_size = irods_handler_p -> irh_stat_p -> objSize;
+			time_t t;
+			const char *time_s = irods_handler_p -> irh_stat_p -> modifyTime;
 			
+			info_p -> fi_size = irods_handler_p -> irh_stat_p -> objSize;
+
+			if (GetValidLong (&time_s, &t))
+				{
+					info_p -> fi_last_modified = t;
+				}
+			else
+				{
+					info_p -> fi_last_modified = 0;
+				}
+
 			success_flag = true;
 		}
 

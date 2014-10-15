@@ -231,11 +231,20 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 
 							if (output_handler_p)
 								{
-									res = s_compress_fns [algo_index] (input_handler_p, output_handler_p, 0);
-									
-									success_flag = (res == Z_OK);
-									
-									CloseHandler (output_handler_p);
+									if (OpenHandler (input_handler_p, input_resource_p -> re_value_s, "rb"))
+										{											
+											if (OpenHandler (output_handler_p, output_name_s, "wb"))
+												{
+													int level = Z_DEFAULT_COMPRESSION;	/* gzip default */
+													res = s_compress_fns [algo_index] (input_handler_p, output_handler_p, level);
+													
+													success_flag = (res == Z_OK);
+													
+													CloseHandler (output_handler_p);											
+												}		/* if (OpenHandler (output_handler_p, output_name_s "wb")) */
+												
+										}		/* if (OpenHandler (input_handler_p, input_resource_p -> re_value_s, "rb")) */
+								
  								}		/* if (output_handler_p) */
 							
 							CloseHandler (input_handler_p);

@@ -58,6 +58,19 @@ WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p)
 WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
 
 
+
+
+/**
+ * Since atof, atoi, etc. return 0 on error we need to do our own
+ * "number getting" routine that notifies us of any errors.
+ *
+ * @param str_pp Pointer to char * where we start getting the number from.
+ * @param data_p Pointer where the number will be stored if the converesion was successful.
+ * @return TRUE if the conversion was successful, FALSE otherwise.
+ */
+WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p);
+
+
 WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 
 

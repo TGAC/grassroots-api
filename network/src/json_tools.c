@@ -47,15 +47,14 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 }
 
 
+
 /*
  * Obviously for a real system we'd be using encryption, tokens and the like
  */
 json_t *GetModifiedFilesRequest (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s)
 {
 	bool success_flag = false;
-	json_error_t error;	
-	json_t *root_p = json_pack_ex (&error, 0, "{s:i}", KEY_OPERATIONS, OP_IRODS_MODIFIED_DATA);
-
+	json_t *root_p = GetOperationAsJSON (OP_IRODS_MODIFIED_DATA);
 
 	if (root_p)
 		{
@@ -122,18 +121,14 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 }
 
 
+
+
 /*
  * Obviously for a real system we'd be using encryption, tokens and the like
  */
 json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s)
-{
-	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:i, s:{s}", KEY_OPERATIONS, OP_LIST_ALL_SERVICES);
-
-	if (!json_p)
-		{
-			
-		}
+{	
+	json_t *json_p = GetOperationAsJSON (OP_LIST_ALL_SERVICES);
 	
 	return json_p;
 }
@@ -142,8 +137,7 @@ json_t *GetAvailableServicesRequest (const char * const username_s, const char *
 
 json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const protocol_p)
 {
-	json_error_t error;
-	json_t *root_p = json_pack_ex (&error, 0, "{s:i}", KEY_OPERATIONS, OP_LIST_INTERESTED_SERVICES);
+	json_t *root_p = GetOperationAsJSON (OP_LIST_INTERESTED_SERVICES);
 	bool success_flag = false;
 	
 	if (root_p)
@@ -172,6 +166,7 @@ json_t *GetInterestedServicesRequest (const char * const username_s, const char 
 bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss)
 {
 	bool success_flag = false;
+	char *dump_s = json_dumps (root_p, 0);
 
 	/* 
 	 * Take care of whether we have been passed the credentials group
@@ -191,7 +186,23 @@ bool GetUsernameAndPassword (const json_t * const root_p, const char **username_
 				}
 		}	
 
+	free (dump_s);
+
 	return success_flag;
+}
+
+
+json_t *GetOperationAsJSON (Operation op)
+{
+	json_error_t error;
+	json_t *json_p = json_pack_ex (&error, 0, "{s:{s:i}}", SERVER_OPERATIONS_S, SERVER_OPERATION_S, op);
+
+	if (!json_p)
+		{
+			
+		}
+	
+	return json_p;
 }
 
 
