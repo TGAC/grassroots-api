@@ -10,7 +10,7 @@ static bool WriteGZipHeader (Handler *out_p, const char * const filename_s, cons
 
 static bool WriteGZipFooter (Handler *out_p, uint32 crc, uint32 original_file_size);
 
-static size_t GzipData (z_stream *strm_p, Bytef *output_buffer_p, size_t *output_buffer_size_p);
+static size_t GzipData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p);
 
 static bool InitGzipCompressor (z_stream *strm_p, int level);
 
@@ -42,27 +42,34 @@ static bool InitGzipCompressor (z_stream *strm_p, int level)
 }
 
 
-static size_t GzipData (z_stream *strm_p, Bytef *output_buffer_p, size_t *output_buffer_size_p)
+static size_t GzipData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p)
 {
 	int res;
 	bool success_flag = true;
 	size_t output_size = 0;
-	
-	strm_p -> next_out = output_buffer_p;
-	strm_p -> avail_out = *output_buffer_size_p;
-	
+	Bytef *output_buffer_p = *output_buffer_pp;
+	size_t output_buffer_size = *output_buffer_size_p;
+
+		
+	output_size =	strm_p -> total_out;
+		
 	res = deflate (strm_p, Z_NO_FLUSH);
 
 	while ((res == Z_BUF_ERROR) && success_flag)
 		{
 			FreeMemory (output_buffer_p);
-			(*output_buffer_size_p) <<= 1;
 			
-			output_buffer_p = (Bytef *) AllocMemory ((*output_buffer_size_p) * sizeof (Bytef));
+			output_buffer_size <<= 1;
+			output_buffer_p = (Bytef *) AllocMemory (output_buffer_size * sizeof (Bytef));
 			
 			if (output_buffer_p)
 				{
-					output_size = (*output_buffer_size_p);
+					*output_buffer_pp = output_buffer_p;
+					*output_buffer_size_p = output_buffer_size;
+					
+					strm_p -> next_out = output_buffer_p;
+					strm_p -> avail_out = output_buffer_size;
+					
 					res = deflate (strm_p, Z_NO_FLUSH);
 				}
 			else
@@ -71,12 +78,15 @@ static size_t GzipData (z_stream *strm_p, Bytef *output_buffer_p, size_t *output
 				}
 		}
 	
+	output_size =	(strm_p -> total_out) - output_size;
+	
 	if (! (success_flag && (res == Z_OK)))
 		{
 			output_size = -output_size;
 		}
+
 		
-	return success_flag;
+	return output_size;
 }
 
 
@@ -118,27 +128,39 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 									strm.next_in = input_buffer;
 									strm.avail_in = num_read;
 									
+									strm.next_out = output_buffer_p;
+									strm.avail_out = output_buffer_size;
+
 									/* Compress the data */
-									output_size = GzipData (&strm, output_buffer_p, &output_buffer_size);
-									
-									if (output_size > 0)
+									do 
 										{
-											if (WriteToHandler (out_p, output_buffer_p, output_size) == output_size)
+											output_size = GzipData (&strm, &output_buffer_p, &output_buffer_size);
+									
+											if (output_size > 0)
 												{
-													HandlerStatus hs = GetHandlerStatus (in_p);
-													
-													switch (hs)
+													if (WriteToHandler (out_p, output_buffer_p, output_size) == output_size)
 														{
-															case HS_FINISHED:
-																loop_flag = false;
-																break;
-																
-															case HS_BAD:
-																success_flag = false;
-																break;
+															HandlerStatus hs = GetHandlerStatus (in_p);
 															
-															default:
-																break;
+															switch (hs)
+																{
+																	case HS_FINISHED:
+																		loop_flag = (strm.avail_out != 0);
+																		break;
+																		
+																	case HS_BAD:
+																		success_flag = false;
+																		break;
+																	
+																	default:
+																		break;
+																}
+																
+															output_size = 0;
+														}
+													else
+														{
+															success_flag = false;
 														}
 												}
 											else
@@ -146,10 +168,7 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 													success_flag = false;
 												}
 										}
-									else
-										{
-											success_flag = false;
-										}
+									while (strm.avail_out == 0);	
 
 								}		/* while (loop_flag && success_flag) */							
 							
@@ -157,9 +176,12 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 								{
 									FreeMemory (output_buffer_p);
 								}
+
+							success_flag = (deflateEnd (&strm) == Z_OK);
 							
 						}		/* if (output_buffer_p) */
 
+					
 
 					if (success_flag)
 						{
