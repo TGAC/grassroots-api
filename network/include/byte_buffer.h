@@ -28,11 +28,19 @@ WHEATIS_NETWORK_API void FreeByteBuffer (ByteBuffer *buffer_p);
 WHEATIS_NETWORK_API bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
 
 
-WHEATIS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, char *value_s);
+WHEATIS_NETWORK_API bool ExtendByteBuffer (ByteBuffer *buffer_p, size_t increment);
+
+
+WHEATIS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t data_length);
 
 
 WHEATIS_NETWORK_API void ResetByteBuffer (ByteBuffer *buffer_p);
 
+
+WHEATIS_NETWORK_API bool MakeByteBufferDataValidString (ByteBuffer *buffer_p);
+
+
+WHEATIS_NETWORK_API size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * const buffer_p);
 
 #ifdef __cplusplus
 }

@@ -383,20 +383,22 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 
 	if (SendJsonRequest (sock_fd, id, req_p) > 0)
 		{
-			char buffer_s [10240] = { 0 };
-			
 			if (AtomicReceive (sock_fd, id, buffer_p) > 0)
 				{						
-					json_error_t err;
-														
-					printf ("%s\n", buffer_p -> bb_data_p);
-
-					response_p = json_loads (buffer_p -> bb_data_p, 0, &err);
-
-					if (!response_p)
+					if (MakeByteBufferDataValidString (buffer_p))
 						{
-							printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
-						}										
+							json_error_t err;
+																
+							printf ("%s\n", buffer_p -> bb_data_p);
+
+							response_p = json_loads (buffer_p -> bb_data_p, 0, &err);
+
+							if (!response_p)
+								{
+									printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
+								}										
+								
+						}		/* if (MakeByteBufferDataValidString (buffer_p)) */
 				}
 			else
 				{

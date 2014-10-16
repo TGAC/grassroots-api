@@ -19,11 +19,11 @@
 /***** STATIC PROTOTYPES *****/
 /*****************************/
 
-static int SendData (int socket_fd, const char *buffer_p, uint32 num_to_send);
+static int SendData (int socket_fd, const void *buffer_p, const size_t num_to_send);
 
-static int ReceiveData (int socket_fd, char *buffer_p, uint32 num_to_receive);
+static int ReceiveData (int socket_fd, void *buffer_p, const uint32 num_to_receive);
 
-
+static int ReceiveDataIntoByteBuffer (int socket_fd, ByteBuffer *buffer_p, const uint32 num_to_receive, bool append_flag);
 
 /******************************/
 /***** METHOD DEFINITIONS *****/
@@ -99,10 +99,10 @@ int AtomicSendString (int socket_fd, uint32 id, const char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, uint32 num_to_send)
+int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, const uint32 num_to_send)
 {
 	int num_sent = 0;
-	const int header_size = sizeof (uint32);
+	const size_t header_size = sizeof (uint32);
 	char header_s [header_size];	
 	
 	/* Get the length of the message */
@@ -114,8 +114,8 @@ int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, uint32 num_to_se
 	 * terminated.
 	 */
 	memcpy (header_s, &i, header_size);	
-	num_sent = SendData (socket_fd, header_s, header_size);
-					
+	num_sent = SendData (socket_fd, (const void *) header_s, header_size);
+
 	if (num_sent == header_size)
 		{
 			
@@ -152,7 +152,7 @@ int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, uint32 num_to_se
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-static int SendData (int socket_fd, const char *buffer_p, uint32 num_to_send)
+static int SendData (int socket_fd, const void *buffer_p, const size_t num_to_send)
 {
 	int num_sent = 0;
 	int i;	
@@ -165,7 +165,6 @@ static int SendData (int socket_fd, const char *buffer_p, uint32 num_to_send)
 			if (i != -1)
 				{
 					num_sent += i;
-					num_to_send -= i;
 					buffer_p += i;
 					
 					loop_flag = (num_sent < num_to_send);
@@ -223,19 +222,8 @@ int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p)
 				{
 					val_p = (uint32 *) header_s;
 					uint32 id_val = ntohl (*val_p);
-
-					ResetByteBuffer (buffer_p);
-
-					/* Receive the message */
-					if (message_size >= buffer_p -> bb_size)
-						{
-							if (!ResizeByteBuffer (buffer_p, message_size))
-								{
-									return 0;
-								}
-						}						
-					
-					num_received = ReceiveData (socket_fd, buffer_p -> bb_data_p, message_size);
+										
+					num_received = ReceiveDataIntoByteBuffer (socket_fd, buffer_p, message_size, false);
 				}
 		}
 
@@ -255,7 +243,7 @@ int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-static int ReceiveData (int socket_fd, char *buffer_p, uint32 num_to_receive)
+static int ReceiveData (int socket_fd, void *buffer_p, const uint32 num_to_receive)
 {
 	int num_received = 0;
 	int i;	
@@ -268,7 +256,6 @@ static int ReceiveData (int socket_fd, char *buffer_p, uint32 num_to_receive)
 			if (i != -1)
 				{
 					num_received += i;
-					num_to_receive -= i;
 					buffer_p += i;
 					
 					loop_flag = (num_received < num_to_receive);
@@ -285,3 +272,76 @@ static int ReceiveData (int socket_fd, char *buffer_p, uint32 num_to_receive)
 
 
 
+/**
+ * Make sure that we keep sending until the complete message has been
+ * transferred.
+ * 
+ * @param socket_fd The socket to send to.
+ * @param buffer_p The buffer to send the message from.
+ * @param num_to_send The length of the buffer to send.
+ * @return A positive integer for the number of bytes sent upon success. When negative,
+ * it indicates that there was an error with this value being -(num bytes sent) that were
+ * sent successfully before the error occurred. If this is zero, it means that there was 
+ * an error sending the initial message containing the length header.
+ */
+static int ReceiveDataIntoByteBuffer (int socket_fd, ByteBuffer *buffer_p, const uint32 num_to_receive, bool append_flag)
+{
+	int num_received = 0;
+	int i;	
+	bool loop_flag = true;
+
+
+	if (append_flag)
+		{
+			size_t space = GetRemainingSpaceInByteBuffer (buffer_p);
+			
+			if (num_to_receive >= space)
+				{
+					if (!ExtendByteBuffer (buffer_p, num_to_receive - space + 1))
+						{
+							return 0;
+						}
+				}		
+		}
+	else
+		{
+			ResetByteBuffer (buffer_p);
+
+			/* Receive the message */
+			if (num_to_receive >= buffer_p -> bb_size)
+				{
+					if (!ResizeByteBuffer (buffer_p, num_to_receive + 1))
+						{
+							return 0;
+						}
+				}									
+		}
+	
+	while (loop_flag)
+		{
+			char buffer [1024];
+			i = recv (socket_fd, buffer, 1024, 0);
+			
+			if (i != -1)
+				{
+					num_received += i;
+					
+					if (AppendToByteBuffer (buffer_p, buffer, i))
+						{					
+							loop_flag = (num_received < num_to_receive);
+						}
+					else
+						{
+							loop_flag = false;
+							num_received = -num_received;							
+						}
+				}
+			else
+				{
+					loop_flag = false;
+					num_received = -num_received;
+				}
+		}
+		
+	return num_received;
+}

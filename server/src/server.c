@@ -41,7 +41,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
-static bool RunServiceFromJSON (const json_t *req_p, const json_t *credentials_p, json_t *res_p);
+static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
 
 static Operation GetOperation (json_t *ops_p);
 
@@ -157,7 +157,7 @@ json_t *ProcessMessage (const char * const request_s, const int socket_fd)
 /***** STATIC DEFINITIONS *****/
 /******************************/
 
-static bool RunServiceFromJSON (const json_t *req_p, const json_t *credentials_p, json_t *res_p)
+static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p)
 {
 	/* Get the requested operation */
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);

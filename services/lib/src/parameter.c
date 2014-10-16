@@ -654,7 +654,14 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				break;
 
 			case PT_STRING:
-				value_p = json_string (val_p -> st_string_value_s);
+				if (val_p -> st_string_value_s)
+					{
+						value_p = json_string (val_p -> st_string_value_s);
+					}
+				else
+					{
+						value_p = json_string ("");
+					}
 				break;
 
 			case PT_FILE_TO_READ:
@@ -665,11 +672,25 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 					
 					if (value_p)
 						{
+							char *protocol_s = NULL;
+							char *value_s = NULL;
+
 							success_flag = false;
 							
-							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_string (val_p -> st_resource_value_p -> re_protocol_s)) == 0)
+							if (val_p -> st_resource_value_p)
+								{ 		
+									protocol_s = val_p -> st_resource_value_p -> re_protocol_s;
+									value_s = val_p -> st_resource_value_p -> re_value_s;
+								}			
+							else
 								{
-									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_string (val_p -> st_resource_value_p -> re_value_s)) == 0);
+									protocol_s = "";
+									value_s = "";
+								}
+
+							if (json_object_set_new (value_p, RESOURCE_PROTOCOL_S, json_string (protocol_s)) == 0)
+								{
+									success_flag = (json_object_set_new (value_p, RESOURCE_VALUE_S, json_string (value_s)) == 0);
 								}
 
 							if (!success_flag)
@@ -678,7 +699,8 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 									json_decref (value_p);
 									value_p = NULL;
 								}							
-						}					
+															
+						}		/* if (val_p -> st_resource_value_p) */
 				}
 				break;
 

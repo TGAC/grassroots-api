@@ -217,37 +217,41 @@ static void *HandleConnection (void *socket_desc_p)
 				
 					if (read_size > 0)
 						{
-							char *request_s = buffer_p -> bb_data_p;
+							if (MakeByteBufferDataValidString (buffer_p))
+								{
+									char *request_s = buffer_p -> bb_data_p;
 
-							if (strcmp (request_s, "QUIT") == 0)
-								{
-									connected_flag = false;
-								}
-							else
-								{
-									json_t *response_p = ProcessMessage (request_s, socket_fd);
-									char *response_s = NULL;									
-									
-									if (response_p)
+									if (strcmp (request_s, "QUIT") == 0)
 										{
-											response_s = json_dumps (response_p, 0);
+											connected_flag = false;
 										}
 									else
 										{
-											json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", buffer_p -> bb_data_p);
+											json_t *response_p = ProcessMessage (request_s, socket_fd);
+											char *response_s = NULL;									
 											
-											response_s = json_dumps (error_p, 0);
-							
-											json_decref (error_p);							
+											if (response_p)
+												{
+													response_s = json_dumps (response_p, 0);
+												}
+											else
+												{
+													json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", buffer_p -> bb_data_p);
+													
+													response_s = json_dumps (error_p, 0);
+									
+													json_decref (error_p);							
+												}
+											
+											if (response_s)
+												{
+													int result = AtomicSendString (socket_fd, id, response_s);
+													
+													free (response_s);
+												}
 										}
 									
-									if (response_s)
-										{
-											int result = AtomicSendString (socket_fd, id, response_s);
-											
-											free (response_s);
-										}
-								}
+								}		/* if (MakeByteBufferDataValidString (buffer_p)) */
 						}
 					else
 						{
