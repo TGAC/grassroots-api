@@ -1,7 +1,7 @@
 #include <string.h>
 
 #include "zip.h"
-#include "file_stream.h"
+#include "file_handler.h"
 
 /* compress or decompress from stdin to stdout */
 int main(int argc, char **argv)
@@ -10,26 +10,22 @@ int main(int argc, char **argv)
 
 	if (argc == 4)
 		{
-			Stream *in_p = AllocateFileStream ();
+			Handler *in_p = AllocateFileHandler ();
 			
 			if (in_p)
 				{
-					Stream *out_p = AllocateFileStream ();
+					Handler *out_p = AllocateFileHandler ();
 					
 					if (out_p)
 						{
-							if (OpenStream (in_p, argv [1], "rb"))
+							if (OpenHandler (in_p, argv [1], "rb"))
 								{
-									if (OpenStream (out_p, argv [2], "w"))
+									if (OpenHandler (out_p, argv [2], "w"))
 										{
-											if (strcmp (argv [3], "new") == 0)
+											if (strcmp (argv [3], "gzip") == 0)
 												{
-													puts ("running new");
-													ret = CompressAsZip1 (in_p, out_p, Z_DEFAULT_COMPRESSION);
-												}
-											else
-												{
-													ret = CompressAsZip (in_p, out_p, Z_DEFAULT_COMPRESSION);
+													puts ("running gzip");
+													ret = CompressAsGZip (in_p, out_p, Z_DEFAULT_COMPRESSION);
 												}
 																					
 											CloseStream (out_p);

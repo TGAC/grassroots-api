@@ -305,13 +305,13 @@ static size_t WriteToIRodsHandler (struct Handler *handler_p, const void *buffer
 			size_t j = 0;
 			const char *ptr = (const char *) buffer_p;
 
-			fprintf (stdout, "--------\n");
+			fprintf (stdout, " WRITING --------\n");
 			for (j = 0; j < length; ++ j, ++ ptr)
 				{
 					int k = *ptr;
 					fprintf (stdout, "j %lu = \'%x\'\n", j, k);
 				}
-			fprintf (stdout, "--------\n\n");
+			fprintf (stdout, "WRITING --------\n\n");
 			fflush (stdout);
 		}
 	#endif
