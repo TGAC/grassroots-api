@@ -14,6 +14,15 @@
 #include "math_utils.h"
 
 
+
+#ifdef _DEBUG
+	#define IRODS_HANDLER_DEBUG	(DL_FINER)
+#else
+	#define IRODS_HANDLER_DEBUG	(DL_NONE)
+#endif
+
+
+
 static bool OpenIRodsHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
 static size_t ReadFromIRodsHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
@@ -291,6 +300,22 @@ static size_t WriteToIRodsHandler (struct Handler *handler_p, const void *buffer
 
 	irods_handler_p -> irh_obj_p -> len = length;
 
+	#if IRODS_HANDLER_DEBUG >= DL_FINER
+		{
+			size_t j = 0;
+			const char *ptr = (const char *) buffer_p;
+
+			fprintf (stdout, "--------\n");
+			for (j = 0; j < length; ++ j, ++ ptr)
+				{
+					int k = *ptr;
+					fprintf (stdout, "j %lu = \'%x\'\n", j, k);
+				}
+			fprintf (stdout, "--------\n\n");
+			fflush (stdout);
+		}
+	#endif
+	
 	i = rcDataObjWrite (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p, &buffer);
 	
 	if (i > 0)
