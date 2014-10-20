@@ -18,4 +18,6 @@ typedef enum Operation {
 
 
 
+
+
 #endif		/* #ifndef OPERATION_H */		

@@ -163,7 +163,11 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						break;
 
 					case PT_STRING:
-						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p);
+						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p, QLineEdit :: Normal);
+						break;
+
+					case PT_PASSWORD:
+						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p, QLineEdit :: Password);
 						break;
 
 					case PT_SIGNED_INT:
