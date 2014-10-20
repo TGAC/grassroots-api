@@ -7,9 +7,9 @@
 typedef enum DirEntryType
 {
 	DET_FILE,
-	
+
 	DET_DIR,
-	
+
 	DET_NUM_TYPES
 }  DirEntryType;
 
@@ -34,15 +34,34 @@ struct BaseDirEntryNode
 typedef struct DirEntry
 {
 	BaseDirEntry *de_base;
-	LinkedList de_entries;
-} BaseDirEntry;
 
+	/** List of all of the child entries for this dir */
+	LinkedList de_entries;
+} DirEntry;
+
+
+WHEATIS_UTIL BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type);
+
+
+WHEATIS_UTIL void FreeBaseDirEntry (BaseDirEntry *entry_p);
+
+
+WHEATIS_UTIL DirEntry *AllocateDirEntry (char *filename_s);
+
+
+WHEATIS_UTIL BaseDirEntryNode *AllocateBaseDirEntryNode (char *filename_s, DirEntryType entry_type);
+
+
+WHEATIS_UTIL void FreeBaseDirEntry (ListItems *node_p);
+
+
+WHEATIS_UTIL bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_entry_p);
 
 
 
 typedef DirectoryInfo
 {
-	
+
 	LinkedList *
 }
 
