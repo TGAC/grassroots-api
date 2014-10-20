@@ -38,6 +38,9 @@ extern "C"
 COMPRESS_SERVICE_API int CompressAsGZip (Handler *in_p, Handler *out_p, int level);
 
 
+COMPRESS_SERVICE_LOCAL bool InitGzipCompressor (z_stream *strm_p, int level, gz_header *gzip_header_p, const char *filename_s, const time_t last_modified);
+
+
 #ifdef __cplusplus
 }
 #endif

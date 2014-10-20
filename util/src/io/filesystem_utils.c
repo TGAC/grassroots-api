@@ -123,10 +123,10 @@ void UsePlatformFileSeparator (char *value_s)
 }
 
 
-char *SetFileExtension (const char * const filename_s, const char * const extension_s)
+char *SetFileExtension (const char * const filename_s, const char * const extension_s, bool replace_flag)
 {
 	char *new_filename_s = NULL;
-	char *dot_p = strrchr (filename_s, '.');
+	char *dot_p = replace_flag ? strrchr (filename_s, '.') : NULL;
 	size_t l;
 	const size_t extension_length = strlen (extension_s);
 	

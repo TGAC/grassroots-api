@@ -16,7 +16,7 @@
 
 
 #ifdef _DEBUG
-	#define IRODS_HANDLER_DEBUG	(DL_FINER)
+	#define IRODS_HANDLER_DEBUG	(DL_INFO)
 #else
 	#define IRODS_HANDLER_DEBUG	(DL_NONE)
 #endif
