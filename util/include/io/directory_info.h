@@ -33,7 +33,7 @@ struct BaseDirEntryNode
 
 typedef struct DirEntry
 {
-	BaseDirEntry *de_base;
+	BaseDirEntry de_base;
 
 	/** List of all of the child entries for this dir */
 	LinkedList de_entries;

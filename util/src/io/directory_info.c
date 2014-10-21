@@ -3,7 +3,7 @@
 
 
 
-BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type)
+BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type, BaseDirEntryNode *parent_node_p)
 {
 	char *copied_filename_s = CopyToNewString (filename_s, 0, false);
 
@@ -39,7 +39,8 @@ BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type)
 				{
 					entry_p -> bde_filename_s = copied_filename_s;
 					entry_p -> bde_type = entry_type;
-
+					entry_p -> bden_parent_p = parent_node_p;
+					
 					return entry_p;
 				}		/* if (entry_p) */
 
@@ -69,25 +70,62 @@ void FreeBaseDirEntry (BaseDirEntry *entry_p)
 }
 
 
-DirEntry *AllocateDirEntry (char *filename_s)
-{
 
+BaseDirEntryNode *AllocateBaseDirEntryAndNode (char *filename_s, DirEntryType entry_type, BaseDirEntryNode *parent_node_p)
+{
+	BaseDirEntry *entry_p = AllocateBaseDirEntry (filename_s, entry_type, parent_node_p);
+	
+	if (entry_p)
+		{
+			BaseDirEntryNode *node_p = AllocateBaseDirEntryNode (entry_p);
+			
+			if (node_p)
+				{
+					return node_p;
+				}
+				
+			FreeBaseDirEntry (entry_p);
+		}
+	
+	return NULL;
 }
 
 
-BaseDirEntryNode *AllocateBaseDirEntryNode (char *filename_s, DirEntryType entry_type)
+BaseDirEntryNode *AllocateBaseDirEntryNode (BaseDirEntry *entry_p)
 {
-
+	BaseDirEntryNode *node_p = (BaseDirEntryNode *) AllocMemory (sizeof (BaseDirEntryNode));
+	
+	if (node_p)
+		{
+			node_p -> bden_entry_p = entry_p;
+			
+			return node_p;
+		}
+					
+	return NULL;
 }
 
 
-void FreeBaseDirEntry (ListItems *node_p)
+void FreeBaseDirEntryNode (ListItem *node_p)
 {
+	BaseDirEntryNode *dir_node_p = (BaseDirEntryNode *) node_p;
 
+	FreeBaseDirEntry (dir_node_p -> bden_entry_p);
+	FreeMemory (node_p);
 }
 
 
-bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_entry_p)
+bool AddDirEntry (BaseDirEntryNode *parent_node_p, BaseDirEntry *child_entry_p)
 {
+	bool success_flag = false;
+	BaseDirEntryNode *child_node_p = AllocateBaseDirEntryNode (child_entry_p);
 
+	if (child_node_p)
+		{
+			
+		}
+
+	
+	
+	return sucecss_flag;
 }
