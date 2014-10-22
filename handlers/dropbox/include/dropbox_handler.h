@@ -2,8 +2,11 @@
 #define DROPBOX_HANDLER_H
 
 #include <jansson.h>
+#include <stdlib.h>
 
 #include "dropbox_handler_library.h"
+#include "handler.h"
+#include "dropbox.h"
 
 /* 
  * This handler uses thte library available from 
@@ -15,6 +18,17 @@
 typedef struct DropboxHandler
 {
 	Handler dh_base_handler;
+
+	drbClient *dh_client_p;
+	
+	HandlerStatus dh_status;
+	
+	FILE *dh_local_copy_f;
+	
+	char *dh_dropbox_filename_s;
+	
+	bool dh_updated_flag;
+	
 } DropboxHandler;
 
 /*
@@ -34,15 +48,18 @@ typedef struct DropboxHandler
  * json_util.c.
  */
 #ifdef ALLOCATE_DROPBOX_TAGS
-	#define PREFIX DROPBOX_HANDLER_LOCAL
-	#define VAL(x)	= x
+	#define DROPBOX_HANDLER_DECLARE DROPBOX_HANDLER_LOCAL
+	#define DROPBOX_HANDLER_VAL(x)	= x
 #else
-	#define PREFIX extern
-	#define VAL(x)	
+	#define DROPBOX_HANDLER_DECLARE extern
+	#define DROPBOX_HANDLER_VAL(x)
 #endif
 
-PREFIX const char *DROPBOX_APP_KEY_S VAL("65viide1m1ye7pd");
-PREFIX const char *DROPBOX_APP_SECRET_S VAL("kwd6z8djlcd3g5k");
+DROPBOX_HANDLER_DECLARE const char *DROPBOX_APP_KEY_S DROPBOX_HANDLER_VAL("65viide1m1ye7pd");
+DROPBOX_HANDLER_DECLARE const char *DROPBOX_APP_SECRET_S DROPBOX_HANDLER_VAL("kwd6z8djlcd3g5k");
+
+DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_KEY_S DROPBOX_HANDLER_VAL("token_key");
+DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_SECRET_S DROPBOX_HANDLER_VAL("token_secret");
 
 
  
