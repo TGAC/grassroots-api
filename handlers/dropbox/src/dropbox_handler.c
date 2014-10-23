@@ -262,6 +262,13 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 									dropbox_handler_p -> dh_local_copy_f = temp_f;
 									success_flag = true;
 								}		/* if (res != DBERR_OK) */
+												
+							/* If we're not appending, then rewind to the start */
+							if (*mode_s != 'a')
+								{
+									rewind (dropbox_handler_p -> dh_local_copy_f);
+								}
+												
 																
 						}		/* if (temp_f) */							
 					
