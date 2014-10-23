@@ -189,7 +189,6 @@ static const char *GetFileHandlerDescription (struct Handler *handler_p)
 
 static bool CalculateFileInformationFromFileHandler (struct Handler *handler_p, FileInformation *info_p)
 {
-	FileHandler *file_handler_p = (FileHandler *) handler_p;
 	bool success_flag = false;
 
 	if (handler_p -> ha_filename_s)

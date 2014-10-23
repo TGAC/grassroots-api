@@ -5,6 +5,14 @@
 #include "json_util.h"
 
 
+#ifdef _DEBUG
+	#define JSON_TOOLS_DEBUG	(DL_FINE)
+#else
+	#define JSON_TOOLS_DEBUG	(DL_NONE)
+#endif
+
+
+json_t *LoadConfig (const char *path_s);
 
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
@@ -25,6 +33,19 @@ int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p)
 
 
 
+/*
+ {
+	credentials:
+		{
+			dropbox:
+				{
+					token_key:    onr78fxbbne0gzfy,
+					token_secret: bnr6bfxwgy995su
+				}
+		}
+}
+* */
+
 bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s)
 {
 	bool success_flag = false;
@@ -33,6 +54,27 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 
 	if (credentials_p)
 		{
+			json_t *config_p = LoadConfig (".wheatis");
+			
+			if (config_p)
+				{
+					json_t *loaded_credentials_p = json_object_get (config_p, CREDENTIALS_S);
+					
+					if (loaded_credentials_p)
+						{
+							const char *key_s;
+							json_t *value_p;
+
+							json_object_foreach (loaded_credentials_p, key_s, value_p) 
+								{
+									json_object_set_new (credentials_p, key_s, value_p);
+								}
+						}		
+						
+					json_decref (config_p);
+				}
+			
+			
 			if (json_object_set_new (root_p, CREDENTIALS_S, credentials_p) == 0)
 				{
 					success_flag = true;
@@ -43,7 +85,40 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 				}
 		}
 
+
+	#if JSON_TOOLS_DEBUG >= DL_FINE
+		{
+			char *value_s = json_dumps (root_p, JSON_INDENT (2));
+			free (value_s);
+		}
+	#endif
+
 	return success_flag;
+}
+
+
+json_t *LoadConfig (const char *path_s)
+{
+	bool success_flag = true;
+	json_error_t error;
+	json_t *config_json_p = json_load_file (path_s, 0, &error);	
+
+	#if JSON_TOOLS_DEBUG >= DL_FINE
+	char *value_s = json_dumps (config_json_p, JSON_INDENT (2));
+	#endif
+
+
+	if (!config_json_p)
+		{
+			success_flag = false;
+		}		/* if (config_json_p) */
+
+	#if JSON_TOOLS_DEBUG >= DL_FINE
+	free (value_s);
+	#endif
+
+
+	return config_json_p;
 }
 
 

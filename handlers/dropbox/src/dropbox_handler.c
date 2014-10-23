@@ -1,4 +1,5 @@
 #include <fcntl.h>
+#include <string.h>
 
 #define ALLOCATE_DROPBOX_TAGS
 #include "dropbox_handler.h"
@@ -33,8 +34,12 @@ static bool IsResourceForDropboxHandler (struct Handler *handler_p, const Resour
 
 static bool CalculateFileInformationFromDropboxHandler (struct Handler *handler_p, FileInformation *info_p);
 
+static bool FlushCachedFile (DropboxHandler *dropbox_handler_p);
 
 static drbClient *CreateClient (char *token_key_s, char *token_secret_s);
+
+
+/**********************************/
 
 
 static drbClient *CreateClient (char *token_key_s, char *token_secret_s)
@@ -110,8 +115,16 @@ Handler *GetHandler (const json_t *credentials_p)
 	if (handler_p)
 		{
 			const char *tags_s = json_dumps (credentials_p, 0);
-			const char *token_key_s = GetJSONString (credentials_p, DROPBOX_TOKEN_KEY_S);
-			const char *token_secret_s = GetJSONString (credentials_p, DROPBOX_TOKEN_SECRET_S);
+			const char *token_key_s = NULL;
+			const char *token_secret_s = NULL;
+			
+			json_t *dropbox_p = json_object_get (credentials_p, GetDropboxHandlerName (NULL));
+			
+			if (dropbox_p)
+				{
+					token_key_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_KEY_S);
+					token_secret_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_SECRET_S);
+				}			
 		
 			handler_p -> dh_client_p = CreateClient ((char *) token_key_s, (char *) token_secret_s);
 			
@@ -166,20 +179,34 @@ void FreeDropboxHandler (Handler *handler_p)
 }
 
 
-static void FlushCachedFile (void)
+static bool FlushCachedFile (DropboxHandler *dropbox_handler_p)
 {
-	if (dropbox_handler_p -> dh_local_copy_f)
+	bool success_flag = true;
+	
+	/* If there are any changes, upload them */
+	if (dropbox_handler_p -> dh_updated_flag)
 		{
-			if (fclose (dropbox_handler_p -> dh_local_copy_f) != EOF)
-				{
-					if (handler_p -> dh_dropbox_filename_s)
-						{
-							
-						}
-						
-				}		/* if (fclose (dropbox_handler_p -> dh_local_copy_f) != EOF) */
-								
-		}		/* if (dropbox_handler_p -> dh_local_copy_f) */
+			int res;
+			
+			rewind (dropbox_handler_p -> dh_local_copy_f);
+			
+			res = drbPutFile (dropbox_handler_p -> dh_client_p, 
+				NULL,
+				DRBOPT_PATH, dropbox_handler_p -> dh_dropbox_filename_s,
+				DRBOPT_IO_DATA, dropbox_handler_p -> dh_local_copy_f,
+				DRBOPT_IO_FUNC, fread,
+				DRBOPT_END);
+
+			success_flag = (res == DRBERR_OK);
+
+			fclose (dropbox_handler_p -> dh_local_copy_f);
+			dropbox_handler_p -> dh_local_copy_f = NULL;
+
+			FreeMemory (dropbox_handler_p -> dh_dropbox_filename_s);
+			dropbox_handler_p -> dh_dropbox_filename_s = NULL;
+		}
+		
+	return success_flag;
 }
 
 
@@ -193,17 +220,16 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 			/* 
 			 * If we need to access the file, cache a local copy
 			 */
-			const char c = *mode_s;
 			char *buffer_s = NULL;
 			
-			FlushCachedFile ();
+			FlushCachedFile (dropbox_handler_p);
 
 			buffer_s = (char *) AllocMemory (L_tmpnam);
 
 			if (buffer_s)
 				{
 					FILE *temp_f = NULL;
-`
+
 					tmpnam (buffer_s);
 					
 					temp_f = fopen (buffer_s, "wb+");
@@ -211,15 +237,26 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 					if (temp_f)
 						{
 							void *output_p = NULL;
+			/*				
+	    // Try to download a file named hello.txt
+    FILE *file = fopen("/tmp/hello.txt", "w"); // Write it in this file
+    output = NULL;
+    err = drbGetFile(cli, &output,
+                     DRBOPT_PATH, "/hello.txt",
+                     DRBOPT_IO_DATA, file,
+                     DRBOPT_IO_FUNC, fwrite,
+                     DRBOPT_END);
+    fclose(file);
+    */						
 							
 							int res = drbGetFile (dropbox_handler_p -> dh_client_p, 
 								&output_p,
-								DRBOPT_PATH, buffer_s,
+								DRBOPT_PATH, filename_s,
 								DRBOPT_IO_DATA, temp_f,
 								DRBOPT_IO_FUNC, fwrite,
 								DRBOPT_END);
 							
-							if (res == DBERR_OK)
+							if (res == DRBERR_OK)
 								{
 									dropbox_handler_p -> dh_dropbox_filename_s = buffer_s;
 									dropbox_handler_p -> dh_local_copy_f = temp_f;
@@ -242,24 +279,7 @@ static bool CloseDropboxHandler (struct Handler *handler_p)
 	bool success_flag = true;
 	DropboxHandler *dropbox_handler_p = (DropboxHandler *) handler_p;
 
-	/* If there are any changes, upload them */
-	if (dropbox_handler_p -> dh_updated_flag)
-		{
-			memStream stream; 
-			memStreamInit (&stream);
-			stream.data = "hello world!";
-			stream.size = strlen(stream.data);
-			
-			err = drbPutFile (dropbox_handler_p -> dh_client_p, 
-				NULL,
-				DRBOPT_PATH, "/hello.txt",
-				DRBOPT_IO_DATA, &stream,
-				DRBOPT_IO_FUNC, memStreamRead,
-				DRBOPT_END);
-
-			printf("File upload: %s\n", err ? "Failed" : "Successful");
-		}
-
+	FlushCachedFile (dropbox_handler_p);
 
 	/* Free all client allocated memory */
 	if (dropbox_handler_p -> dh_client_p)
@@ -335,7 +355,7 @@ static HandlerStatus GetDropboxHandlerStatus (struct Handler *handler_p)
 {
 	DropboxHandler *dropbox_handler_p = (DropboxHandler *) handler_p;
 
-	return (dropbox_handler_p -> irh_status);	
+	return (dropbox_handler_p -> dh_status);	
 }
 
 
@@ -374,9 +394,12 @@ static bool IsResourceForDropboxHandler (struct Handler *handler_p, const Resour
 
 static bool CalculateFileInformationFromDropboxHandler (struct Handler *handler_p, FileInformation *info_p)
 {
-	DropboxHandler *dropbox_handler_p = (DropboxHandler *) handler_p;
 	bool success_flag = false;
 
+	if (handler_p -> ha_filename_s)
+		{
+			success_flag = CalculateFileInformation (handler_p -> ha_filename_s, info_p);
+		}
 
 	return success_flag;
 }
