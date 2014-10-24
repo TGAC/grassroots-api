@@ -12,7 +12,60 @@
 #endif
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p);
+/**
+ * This is a json array which contains elements where
+ * the keys are the protocol names of the Handlers given 
+ * by GetHandlerName () and the values are json objects. 
+ * These values contain the key value pairs mapping any 
+ * remote filename to a local copy where needed. 
+ * 
+ * For example if the dropbox handler had downloaded "/hello.txt"
+ * to a temporary file at "/tmp/file90wsef" then this variable 
+ * would be
+ * 
+ * 	[
+ * 		{ "dropbox handler":
+ * 			{
+ * 				"/hello.txt": "/tmp/file90wsef",
+ * 			}
+ *		} 
+ * 	]
+ */
+static json_t *s_mapped_filenames_p = NULL;
+
+
+static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p);
+
+
+bool InitHandlerUtil (void)
+{
+	s_mapped_filenames_p = json_array ();
+	
+	return (s_mapped_filenames_p != NULL);
+}
+
+
+bool DestoyHandlerUtil (void)
+{
+	bool success_flag = true;
+	
+	if (s_mapped_filenames_p)
+		{
+			if (json_array_clear (s_mapped_filenames_p) == 0)
+				{
+					json_decref (s_mapped_filenames_p);
+				}
+			else
+				{
+					success_flag = false;
+				}
+		}
+			
+	return success_flag;
+}
+
+
+
 
 
 Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
@@ -53,7 +106,7 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 }
 
 
-LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p)
+static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p)
 {
 	LinkedList *handlers_list_p = AllocateLinkedList (FreeHandlerNode);
 	
@@ -144,4 +197,19 @@ LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Reso
 	
 	return handlers_list_p;
 }
+
+
+
+const char *GetMappedFilename (const char *protocol_s, const char *filename_s)
+{
+	
+}
+
+
+bool GetMappedFilename (const char *protocol_s, const char *filename_s, const char *mapped_filename_s)
+{
+	
+}
+
+
 
