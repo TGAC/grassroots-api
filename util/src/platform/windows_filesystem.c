@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include <windows.h>
+#include <WinBase.h>
 #include <Dbghelp.h>
 
 #include "filesystem.h"
@@ -361,3 +362,9 @@ void WindowsFileSystem :: appendSeparator (STRING &str) const
 		}
 }
 */
+
+
+bool RemoveFile (const char * const path_s)
+{
+	return (DeleteFile (path_s) != 0);
+}

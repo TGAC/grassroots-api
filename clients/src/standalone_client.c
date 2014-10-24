@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
 																				client_results_p = RunClient (client_p);
 																				if (client_results_p)
 																					{
-																						char *client_results_s = json_dumps (client_results_p, 0);
+																						char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
 																						json_t *new_req_p = json_object ();
 																						
 																						if (new_req_p)
@@ -286,11 +286,13 @@ int main(int argc, char *argv[])
 																									
 																								if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
 																									{
+																										char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
+																										
 																										response_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
 																						
 																										if (response_p)
 																											{
-																												char *response_s = json_dumps (response_p, 0);
+																												char *response_s = json_dumps (response_p, JSON_INDENT (2));
 																												
 																												if (response_s)
 																													{
@@ -303,6 +305,11 @@ int main(int argc, char *argv[])
 																												printf ("no response\n");
 																											}																									
 																									
+																										if (new_req_s)
+																											{
+																												free (new_req_s);
+																											}
+																										
 																									}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
 																									
 																								json_decref (new_req_p);

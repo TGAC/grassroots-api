@@ -363,3 +363,9 @@ bool CalculateFileInformation (const char * const path_s, FileInformation *info_
 	return false;
 }
 
+
+bool RemoveFile (const char * const path_s)
+{
+	return (unlink (path_s) == 0);
+}
+

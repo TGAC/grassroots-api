@@ -5,7 +5,7 @@
 #include "dropbox_handler.h"
 
 #include "json_util.h"
-
+#include "filesystem_utils.h"
 
 
 static bool OpenDropboxHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
@@ -173,7 +173,23 @@ void FreeDropboxHandler (Handler *handler_p)
 	if (dropbox_handler_p -> dh_client_p)
 		{
 			CloseDropboxHandler (handler_p);
+			
+			fclose (dropbox_handler_p -> dh_local_copy_f);
+			dropbox_handler_p -> dh_local_copy_f = NULL;
+
+			RemoveFile (handler_p -> ha_filename_s);
+
+			FreeMemory (dropbox_handler_p -> dh_dropbox_filename_s);
+			dropbox_handler_p -> dh_dropbox_filename_s = NULL;
+
+
+			drbDestroyClient (dropbox_handler_p -> dh_client_p);
+			dropbox_handler_p -> dh_client_p = NULL;
 		}
+		
+	/* Global Cleanup */
+	drbCleanup ();
+
 
 	FreeMemory (handler_p);
 }
@@ -198,13 +214,8 @@ static bool FlushCachedFile (DropboxHandler *dropbox_handler_p)
 				DRBOPT_END);
 
 			success_flag = (res == DRBERR_OK);
-
-			fclose (dropbox_handler_p -> dh_local_copy_f);
-			dropbox_handler_p -> dh_local_copy_f = NULL;
-
-			FreeMemory (dropbox_handler_p -> dh_dropbox_filename_s);
-			dropbox_handler_p -> dh_dropbox_filename_s = NULL;
 		}
+
 		
 	return success_flag;
 }
@@ -261,15 +272,14 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 									dropbox_handler_p -> dh_dropbox_filename_s = buffer_s;
 									dropbox_handler_p -> dh_local_copy_f = temp_f;
 									success_flag = true;
+
+									/* If we're not appending, then rewind to the start */
+									if (*mode_s != 'a')
+										{
+											rewind (dropbox_handler_p -> dh_local_copy_f);
+										}
 								}		/* if (res != DBERR_OK) */
-												
-							/* If we're not appending, then rewind to the start */
-							if (*mode_s != 'a')
-								{
-									rewind (dropbox_handler_p -> dh_local_copy_f);
-								}
-												
-																
+																																								
 						}		/* if (temp_f) */							
 					
 				}		/* if (buffer_s) */
@@ -288,16 +298,6 @@ static bool CloseDropboxHandler (struct Handler *handler_p)
 
 	FlushCachedFile (dropbox_handler_p);
 
-	/* Free all client allocated memory */
-	if (dropbox_handler_p -> dh_client_p)
-		{
-			drbDestroyClient (dropbox_handler_p -> dh_client_p);
-			dropbox_handler_p -> dh_client_p = NULL;
-		}
-		
-	/* Global Cleanup */
-	drbCleanup ();
-
 	return success_flag;
 }
 
@@ -310,7 +310,7 @@ static size_t ReadFromDropboxHandler (struct Handler *handler_p, void *buffer_p,
 			
 	if (dropbox_handler_p -> dh_local_copy_f)
 		{
-			res = fread (buffer_p, length, 1, dropbox_handler_p -> dh_local_copy_f);
+			res = fread (buffer_p, 1, length, dropbox_handler_p -> dh_local_copy_f);
 		}
 					
 	return res;
@@ -324,7 +324,7 @@ static size_t WriteToDropboxHandler (struct Handler *handler_p, const void *buff
 
 	if (dropbox_handler_p -> dh_local_copy_f)
 		{
-			res = fwrite (buffer_p, length, 1, dropbox_handler_p -> dh_local_copy_f);
+			res = fwrite (buffer_p, 1, length, dropbox_handler_p -> dh_local_copy_f);
 			
 			if (res == length)
 				{

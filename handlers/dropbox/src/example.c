@@ -16,6 +16,74 @@ void displayAccountInfo(drbAccountInfo *info);
 void displayMetadata(drbMetadata *meta, char *title);
 void displayMetadataList(drbMetadataList* list, char* title);
 
+
+static drbClient *CreateClient (char *app_key_s, char *app_secret_s, char *token_key_s, char *token_secret_s)
+{
+	drbClient *client_p = NULL;
+	
+	/* Global initialisation */
+	drbInit ();
+    
+	client_p = drbCreateClient (app_key_s, app_secret_s, token_key_s, token_secret_s);
+	
+	if (client_p)
+		{
+			// Request a AccessToken if undefined (NULL)
+			if (! (token_key_s && token_secret_s))
+				{
+					bool success_flag = false;
+					drbOAuthToken *req_token_p = drbObtainRequestToken (client_p);
+					
+					if (req_token_p) 
+						{
+							drbOAuthToken *acc_token_p = NULL;
+							char *url_s = drbBuildAuthorizeUrl (req_token_p);
+							printf("Please visit %s\nThen press Enter...\n", url_s);
+							free (url_s);
+							fgetc (stdin);
+							
+							acc_token_p = drbObtainAccessToken (client_p);
+							
+							if (acc_token_p) 
+								{
+									// This key and secret can replace the NULL value in t_key and
+									// t_secret for the next time.
+									printf("key:    %s\nsecret: %s\n", acc_token_p -> key, acc_token_p -> secret);
+									success_flag = true;
+								} 
+							else
+								{
+									fprintf(stderr, "Failed to obtain an AccessToken...\n");
+								}
+						} 
+					else 
+						{
+							fprintf(stderr, "Failed to obtain a RequestToken...\n");
+						}
+
+					if (!success_flag)
+						{
+							drbDestroyClient (client_p);
+							client_p = NULL;
+						}		
+
+				}		/* if (! (token_key_s && token_secret_s) */
+
+    
+			/* Set default arguments to not repeat them on each API call */
+			if (client_p)
+				{
+					drbSetDefault (client_p, DRBOPT_ROOT, DRBVAL_ROOT_AUTO, DRBOPT_END);
+				}
+				
+		}		/* if (client_p) */
+	
+	return client_p;
+}
+
+
+
+
 int main (int argc, char **argv) {
     
     int err;
@@ -53,36 +121,7 @@ int main (int argc, char **argv) {
     drbInit();
     
     // Create a Dropbox client
-    drbClient* cli = drbCreateClient(c_key, c_secret, t_key, t_secret);
-    
-    // Request a AccessToken if undefined (NULL)
-    if(!t_key || !t_secret) {
-        drbOAuthToken* reqTok = drbObtainRequestToken(cli);
-        
-        if (reqTok) {
-            char* url = drbBuildAuthorizeUrl(reqTok);
-            printf("Please visit %s\nThen press Enter...\n", url);
-            free(url);
-            fgetc(stdin);
-            
-            drbOAuthToken* accTok = drbObtainAccessToken(cli);
-            
-            if (accTok) {
-                // This key and secret can replace the NULL value in t_key and
-                // t_secret for the next time.
-                printf("key:    %s\nsecret: %s\n", accTok->key, accTok->secret);
-            } else{
-                fprintf(stderr, "Failed to obtain an AccessToken...\n");
-                return EXIT_FAILURE;
-            }
-        } else {
-            fprintf(stderr, "Failed to obtain a RequestToken...\n");
-            return EXIT_FAILURE;
-        }
-    }
-    
-    // Set default arguments to not repeat them on each API call
-    drbSetDefault(cli, DRBOPT_ROOT, DRBVAL_ROOT_AUTO, DRBOPT_END);
+    drbClient* cli = CreateClient (c_key, c_secret, t_key, t_secret);
     
     // Read account Informations
     output = NULL;
@@ -111,6 +150,15 @@ int main (int argc, char **argv) {
         displayMetadata(meta, "Metadata");
         drbDestroyMetadata(meta, true);
     }
+
+    
+    // Free all client allocated memory
+    drbDestroyClient(cli);
+
+    // Global Cleanup
+    drbCleanup();
+
+		cli = CreateClient(c_key, c_secret, t_key, t_secret);
     
     // Try to download a file named hello.txt
     FILE *file = fopen("/tmp/hello.txt", "w"); // Write it in this file

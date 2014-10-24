@@ -67,7 +67,8 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 
 							json_object_foreach (loaded_credentials_p, key_s, value_p) 
 								{
-									json_object_set_new (credentials_p, key_s, value_p);
+									json_object_set (credentials_p, key_s, value_p);
+									json_object_del (config_p, key_s);
 								}
 						}		
 						

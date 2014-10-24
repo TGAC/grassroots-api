@@ -62,6 +62,9 @@ WHEATIS_UTIL_API bool EnsureDirectoryPath (const char * const path_s);
 WHEATIS_UTIL_API bool CalculateFileInformation (const char * const path_s, FileInformation *info_p);
 
 
+WHEATIS_UTIL_API bool RemoveFile (const char * const path_s);
+
+
 #ifdef __cplusplus
 }
 #endif
