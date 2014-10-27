@@ -30,15 +30,13 @@ WHEATIS_HANDLER_API bool InitHandlerUtil (void);
  *
  * @return true upon success, false on failure.
  */
-WHEATIS_HANDLER_API bool DestoyHandlerUtil (void);
+WHEATIS_HANDLER_API bool DestroyHandlerUtil (void);
 
 
 
-WHEATIS_HANDLER_LOCAL const char *GetMappedFilename (const char *protocol_s, const char *filename_s);
+WHEATIS_HANDLER_API const char *GetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, time_t *time_p);
 
-
-WHEATIS_HANDLER_LOCAL bool SetMappedFilename (const char *protocol_s, const char *filename_s, const char *mapped_filename_s);
-
+WHEATIS_HANDLER_API bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, const char *mapped_filename_s, const time_t last_mod_time);
 
 
 

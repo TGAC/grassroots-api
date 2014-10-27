@@ -7,6 +7,7 @@
 #include "dropbox_handler_library.h"
 #include "handler.h"
 #include "dropbox.h"
+#include "dropboxOAuth.h"
 
 /* 
  * This handler uses thte library available from 

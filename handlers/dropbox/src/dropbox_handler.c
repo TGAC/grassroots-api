@@ -3,8 +3,10 @@
 
 #define ALLOCATE_DROPBOX_TAGS
 #include "dropbox_handler.h"
+#include "handler_utils.h"
 
 #include "json_util.h"
+#include "time_util.h"
 #include "filesystem_utils.h"
 
 
@@ -37,6 +39,9 @@ static bool CalculateFileInformationFromDropboxHandler (struct Handler *handler_
 static bool FlushCachedFile (DropboxHandler *dropbox_handler_p);
 
 static drbClient *CreateClient (char *token_key_s, char *token_secret_s);
+
+static bool GetLastModifiedTime (struct DropboxHandler *handler_p, const char * const filename_s, time_t *time_p);
+
 
 
 /**********************************/
@@ -248,19 +253,17 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 					if (temp_f)
 						{
 							void *output_p = NULL;
-			/*				
-	    // Try to download a file named hello.txt
-    FILE *file = fopen("/tmp/hello.txt", "w"); // Write it in this file
-    output = NULL;
-    err = drbGetFile(cli, &output,
-                     DRBOPT_PATH, "/hello.txt",
-                     DRBOPT_IO_DATA, file,
-                     DRBOPT_IO_FUNC, fwrite,
-                     DRBOPT_END);
-    fclose(file);
-    */						
+							time_t last_modified = 0;
+							const char *cached_filename_s = NULL;
+							char *user_id_s = dropbox_handler_p -> dh_client_p -> t.secret;
+							int res;
 							
-							int res = drbGetFile (dropbox_handler_p -> dh_client_p, 
+							if (GetLastModifiedTime (dropbox_handler_p, filename_s, &last_modified))
+								{
+									cached_filename_s = GetMappedFilename (GetDropboxHandlerProtocol (handler_p), user_id_s, filename_s, &last_modified);
+								}
+							
+							res = drbGetFile (dropbox_handler_p -> dh_client_p, 
 								&output_p,
 								DRBOPT_PATH, filename_s,
 								DRBOPT_IO_DATA, temp_f,
@@ -408,5 +411,38 @@ static bool CalculateFileInformationFromDropboxHandler (struct Handler *handler_
 			success_flag = CalculateFileInformation (handler_p -> ha_filename_s, info_p);
 		}
 
+	return success_flag;
+}
+
+
+static bool GetLastModifiedTime (struct DropboxHandler *handler_p, const char * const filename_s, time_t *time_p)
+{
+	bool success_flag = false;
+	void *output_p = NULL;
+	
+	/* Get the last modified time of the file on the server */
+	int res = drbGetMetadata (handler_p -> dh_client_p, &output_p, DRBOPT_PATH, filename_s, DRBOPT_END);
+
+	if (res != DRBERR_OK) 
+		{
+			drbMetadata *meta_p = (drbMetadata*) output_p;
+			
+			/*
+			 * Tue, 17 Jun 2014 14:26:52 +0000
+			 * "%a, %d %b %Y %H:%M:%S %z"
+			 */
+			if (meta_p -> modified)
+				{
+					success_flag = ConvertDropboxStringToEpochTime (meta_p -> modified, time_p);
+				}
+			
+			drbDestroyMetadata (meta_p, true);
+		} 
+	else 
+		{
+			printf ("Metadata error (%d): %s\n", res, (char *) output_p);
+			free (output_p);
+		}
+	
 	return success_flag;
 }

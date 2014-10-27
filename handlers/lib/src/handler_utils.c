@@ -20,21 +20,47 @@
  * remote filename to a local copy where needed.
  *
  * For example if the dropbox handler had downloaded "/hello.txt"
+ * from user "bob" 
  * to a temporary file at "/tmp/file90wsef" then this variable
  * would be
  *
  * 	[
  * 		{ "dropbox handler":
- * 			{
- * 				"/hello.txt": "/tmp/file90wsef",
+ * 			{ "bob":
+ * 				{ "/hello.txt": 
+ * 					{ "filename": "/tmp/file90wsef",
+ * 						"socket": 1,
+ * 						"timestamp": 1231231231,
+ * 						"write_count": 1,
+ * 						"open_count": 1,
+ * 					}
+ *				} 
  * 			}
  *		}
  * 	]
+ * 
+ * filename: The mapped filename,
+ * socket: The socket number, this is so that two different people can work on the same file.
+ * timestamp: The last modified time of the remote file when it was downloaded.
+ * write_count: The current number of processes writing to the file.
+ * open_count: The current number of processes writing to the file.
  */
+ 
+static const char * const S_FILENAME_KEY_S = "filename"; 
+static const char * const S_SOCKET_KEY_S = "socket"; 
+static const char * const S_TIME_KEY_S = "timestamp"; 
+static const char * const S_WRITE_COUNT_KEY_S = "write_count"; 
+static const char * const S_OPEN_COUNT_KEY_S = "open_count"; 
+ 
 static json_t *s_mapped_filenames_p = NULL;
 
 
 static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p);
+
+static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, const char *filename_s, const bool create_flag);
+
+
+/***************************************/
 
 
 bool InitHandlerUtil (void)
@@ -45,7 +71,7 @@ bool InitHandlerUtil (void)
 }
 
 
-bool DestoyHandlerUtil (void)
+bool DestroyHandlerUtil (void)
 {
 	bool success_flag = true;
 
@@ -66,75 +92,76 @@ bool DestoyHandlerUtil (void)
 
 
 
-const char *GetMappedFilename (const char *protocol_s, const char *filename_s)
+const char *GetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, time_t *time_p)
 {
 	const char *value_s = NULL;
+	json_t *obj_p = GetMappedObject (protocol_s, user_id_s, filename_s, false);
 
-	if (s_mapped_filenames_p)
+	if (obj_p)
 		{
-			json_t *protocol_obj_p = json_object_get (s_mapped_filenames_p, protocol_s);
-
-			if (protocol_obj_p)
+			json_t *filename_p = json_object_get (obj_p, S_FILENAME_KEY_S);
+			
+			if (time_p)
 				{
-					json_t *value_p = json_object_get (protocol_obj_p, filename_s);
-
-					if (value_p && (json_is_string (value_p)))
-						{
-							value_s = json_string_value (value_p);
-						}		/* if (value_p && (json_is_string (value_p))) */
-
-				}		/* if (protocol_obj_p) */
-
-		}		/* if (s_mapped_filenames_p) */
+					
+				}
+			
+			
+			if (filename_p && json_is_string (filename_p))
+				{
+					value_s = json_string_value (filename_p);
+				}		/* if (filename_p && json_is_string (filename_p)) */
+		}		/* if (obj_p) */
 
 	return value_s;
 }
 
 
-bool SetMappedFilename (const char *protocol_s, const char *filename_s, const char *mapped_filename_s)
+bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, const char *mapped_filename_s, const time_t last_mod_time)
 {
 	bool success_flag = false;
 
 	if (s_mapped_filenames_p)
-		{
-			json_t *protocol_obj_p = json_object_get (s_mapped_filenames_p, protocol_s);
+		{	
+			json_t *obj_p = GetMappedObject (protocol_s, user_id_s, filename_s, true);
 
-			if (protocol_obj_p)
+			if (obj_p)
 				{
-					success_flag = true;
-				}
-			else
-				{
-					protocol_obj_p = json_object ();
-
-					if (protocol_obj_p)
+					json_t *filename_value_p = json_string (mapped_filename_s);
+					
+					if (filename_value_p)
 						{
-							success_flag = (json_object_set_new (s_mapped_filenames_p, protocol_s, protocol_obj_p) == 0);
-						}
-
-				}		/* if (!protocol_obj_p) */
-
-			if (success_flag)
-				{
-					json_t *mapping_p = json_string (mapped_filename_s);
-
-					if (mapping_p)
-						{
-							success_flag = (json_object_set_new (protocol_obj_p, filename_s, mapping_p) == 0);
-						}
-					else
-						{
-							success_flag = false;
-						}
-
-				}		/* if (success_flag) */
+							if (json_object_set_new (obj_p, S_FILENAME_KEY_S, filename_value_p) == 0)
+								{
+									json_t *timestamp_p = json_integer (last_mod_time);
+									
+									if (timestamp_p)
+										{
+											if (json_object_set_new (obj_p, S_TIME_KEY_S, timestamp_p) == 0)
+												{
+													success_flag = true;
+												}
+										}
+									else
+										{
+											json_decref (timestamp_p);
+											timestamp_p = NULL;
+										}
+								}
+							else
+								{
+									json_decref (filename_value_p);
+									filename_value_p = NULL;
+								}
+								
+						}		/* if (filename_value_p) */
+						
+				}		/* if (obj_p) */
 
 		}		/* if (s_mapped_filenames_p) */
 
 	return success_flag;
 }
-
-
 
 
 
@@ -267,4 +294,79 @@ static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, con
 
 	return handlers_list_p;
 }
+
+
+static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, const char *filename_s, const bool create_flag)
+{
+	json_t *value_p = NULL;
+
+	if (s_mapped_filenames_p)
+		{
+			json_t *protocol_obj_p = json_object_get (s_mapped_filenames_p, protocol_s);
+
+			if ((!protocol_obj_p) && create_flag)
+				{
+					protocol_obj_p = json_object ();
+					
+					if (protocol_obj_p)
+						{
+							if (json_object_set_new (s_mapped_filenames_p, protocol_s, protocol_obj_p) != 0)
+								{
+									json_decref (protocol_obj_p);
+									protocol_obj_p = NULL;
+								}		/* if (json_object_set_new (s_mapped_filenames_p, protocol_s, protocol_obj_p) != 0) */
+
+						}		/* if (protocol_obj_p) */
+
+				}		/* if ((!protocol_obj_p) && create_flag) */
+
+			if (protocol_obj_p)
+				{
+					json_t *user_p = json_object_get (protocol_obj_p, user_id_s);
+					
+					if ((!user_p) && create_flag)
+						{
+							user_p = json_object ();
+					
+							if (user_p)
+								{
+									if (json_object_set_new (protocol_obj_p, user_id_s, user_p) != 0)
+										{
+											json_decref (user_p);
+											user_p = NULL;
+										}		/* if (json_object_set_new (protocol_obj_p, user_id_s, user_p) != 0) */
+								}
+								
+						}		/* if ((!user_p) && create_flag) */
+
+					if (user_p)
+						{
+							value_p = json_object_get (user_p, filename_s);
+								
+							if ((!value_p) && create_flag)
+								{
+									value_p = json_object ();
+							
+									if (value_p)
+										{
+											if (json_object_set_new (user_p, filename_s, value_p) != 0)
+												{
+													json_decref (value_p);
+													value_p = NULL;
+												}		/* if (json_object_set_new (protocol_obj_p, filename_s, value_p) != 0) */
+												
+										}		/* if (value_p) */							
+										
+								}		/* if ((!value_p) && create_flag) */										
+												
+						}		/* if (user_p) */		
+						
+				}		/* if (protocol_obj_p) */
+
+		}		/* if (s_mapped_filenames_p) */
+
+	return value_p;
+}
+
+
 

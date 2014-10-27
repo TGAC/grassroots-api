@@ -1,14 +1,66 @@
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "time_util.h"
 
 
 static bool ConvertNumber (const char * const buffer_s, size_t from, size_t to, int *result_p);
 
+static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p));
 
-bool ConvertStringToTime (const char * const time_s, struct tm *time_p)
+/***************************************/
+
+
+/*
+ * Tue, 17 Jun 2014 14:26:52 +0000
+ * "%a, %d %b %Y %H:%M:%S %z"
+ */
+bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p)
+{
+	bool success_flag = false;
+	
+	if (time_s)
+		{
+			char month [4];
+			int offset;
+			
+			int res = sscanf (time_s, "%*s %d %3s %d %2d%*c%2d%*c%2d %d", 
+				& (time_p -> tm_mday),
+				month,
+				& (time_p -> tm_year),				
+				& (time_p -> tm_hour),				
+				& (time_p -> tm_min),				
+				& (time_p -> tm_sec),				
+				&offset);
+			
+			/* Did we match all eight arguments? */
+			if (res == 8)
+				{
+					const char *months_ss [12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+					int j;
+					
+					for (j = 12; j >= 0; -- j)
+						{
+							if (strcmp (month, months_ss [j]) == 0)	
+								{
+									time_p -> tm_mon = j;
+									
+									success_flag = true;
+									j = -1;
+								}
+						}
+										
+				}		/* if (res == 8) */			
+			
+		}		/* if (time_s) */
+
+	return success_flag;
+}
+
+
+bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p)
 {
 	bool success_flag = false;
 	
@@ -75,19 +127,16 @@ bool ConvertStringToTime (const char * const time_s, struct tm *time_p)
 }
 
 
-bool ConvertStringToEpochTime (const char * const time_s, time_t *time_p)
-{
-	struct tm t;
-	bool success_flag = false;
-	
-	memset (&t, 0, sizeof (struct tm));
 
-	if (ConvertStringToTime (time_s, &t))
-		{
-			*time_p = mktime (&t);
-		}
-		
-	return success_flag;
+bool ConvertCompactStringToEpochTime (const char * const time_s, time_t *time_p)
+{
+	return ConvertStringToTime (time_s, time_p, ConvertCompactStringToTime);
+}
+
+
+bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p)
+{
+	return ConvertStringToTime (time_s, time_p, ConvertDropboxStringToTime);
 }
 
 
@@ -124,3 +173,21 @@ static bool ConvertNumber (const char * const buffer_s, size_t from, size_t to, 
 	
 	return success_flag;
 }
+
+
+
+static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p))
+{
+	struct tm t;
+	bool success_flag = false;
+	
+	memset (&t, 0, sizeof (struct tm));
+
+	if (conv_fn (time_s, &t))
+		{
+			*time_p = mktime (&t);
+		}
+		
+	return success_flag;
+}
+

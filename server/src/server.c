@@ -342,7 +342,7 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 																
 			if (from_s)
 				{
-					if (!ConvertStringToEpochTime (from_s, &from))
+					if (!ConvertCompactStringToEpochTime (from_s, &from))
 						{
 							// error
 						}
@@ -350,7 +350,7 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 				
 			if (to_s)
 				{
-					if (!ConvertStringToEpochTime (to_s, &to))
+					if (!ConvertCompactStringToEpochTime (to_s, &to))
 						{
 							// error
 						}

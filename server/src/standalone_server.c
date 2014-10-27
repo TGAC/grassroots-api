@@ -92,7 +92,15 @@ int main (int argc, char *argv [])
 		{
 			if (listen (socket_fd, backlog) != -1)
 				{
-					RunServer (socket_fd);					
+					if (InitHandlerUtil ())
+						{
+							RunServer (socket_fd);					
+							
+							if (!DestroyHandlerUtil ())
+								{
+									fprintf (stderr, "Failed to destory handler util");
+								}
+						}					
 				}
 							
 			close (socket_fd);
