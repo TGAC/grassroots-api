@@ -423,7 +423,7 @@ static bool GetLastModifiedTime (struct DropboxHandler *handler_p, const char * 
 	/* Get the last modified time of the file on the server */
 	int res = drbGetMetadata (handler_p -> dh_client_p, &output_p, DRBOPT_PATH, filename_s, DRBOPT_END);
 
-	if (res != DRBERR_OK) 
+	if (res == DRBERR_OK) 
 		{
 			drbMetadata *meta_p = (drbMetadata*) output_p;
 			

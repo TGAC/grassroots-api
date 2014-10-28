@@ -19,9 +19,10 @@ extern "C"
  * 
  * @time_s The string to convert.
  * @time_p The struct tm to store the converted time in.
+ * @offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm. 
  * @return true if the value was converted successfully, false otherwise.
  */
-WHEATIS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p);
+WHEATIS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
 
 /**
@@ -42,9 +43,10 @@ WHEATIS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s
  * 
  * @time_s The string to convert.
  * @time_p The struct tm to store the converted time in.
+ * @offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm. 
  * @return true if the value was converted successfully, false otherwise.
  */
-WHEATIS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p);
+WHEATIS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
 
 /**

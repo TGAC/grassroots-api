@@ -77,6 +77,44 @@ bool DestroyHandlerUtil (void)
 
 	if (s_mapped_filenames_p)
 		{
+			size_t handler_index;
+			json_t *handler_p;
+
+			json_array_foreach (s_mapped_filenames_p, handler_index, handler_p) 
+				{
+					size_t user_index;
+					json_t *user_p;
+
+					json_object_foreach (handler_p, user_index, user_p) 
+						{
+							size_t obj_index;
+							json_t *obj_p;
+
+							json_object_foreach (user_p, obj_index, obj_p) 
+								{
+									json_t *filename_p = json_object_get (obj_p, S_FILENAME_KEY_S);
+									
+									if (filename_p)
+										{
+											if (json_is_string (filename_p))
+												{
+													const char *filename_s = json_string_value (filename_p);
+													
+													if (!RemoveFile (filename_s))
+														{
+															
+														}
+												}
+										}		/* if (filename_p) */
+									
+								}		/* json_object_foreach (user_p, obj_index, obj_p) */					
+							
+						}		/* json_object_foreach (handler_p, user_index, user_p) */					
+						
+				}		/* json_array_foreach (s_mapped_filenames_p, handler_index, handler_p) */
+
+			
+			
 			if (json_array_clear (s_mapped_filenames_p) == 0)
 				{
 					json_decref (s_mapped_filenames_p);
@@ -302,6 +340,10 @@ static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, c
 
 	if (s_mapped_filenames_p)
 		{
+			#if HANDLER_UTILS_DEBUG >= DL_FINE
+			char *mappings_s = json_dumps (s_mapped_filenames_p, JSON_INDENT (2));
+			#endif
+			
 			json_t *protocol_obj_p = json_object_get (s_mapped_filenames_p, protocol_s);
 
 			if ((!protocol_obj_p) && create_flag)
@@ -362,6 +404,13 @@ static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, c
 						}		/* if (user_p) */		
 						
 				}		/* if (protocol_obj_p) */
+
+			#if HANDLER_UTILS_DEBUG >= DL_FINE
+			if (mappings_s)
+				{
+					free (mappings_s);
+				}
+			#endif
 
 		}		/* if (s_mapped_filenames_p) */
 

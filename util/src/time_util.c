@@ -2,13 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "time_util.h"
 
 
 static bool ConvertNumber (const char * const buffer_s, size_t from, size_t to, int *result_p);
 
-static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p));
+static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p, int *offset_p));
 
 /***************************************/
 
@@ -17,15 +18,14 @@ static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool
  * Tue, 17 Jun 2014 14:26:52 +0000
  * "%a, %d %b %Y %H:%M:%S %z"
  */
-bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p)
+bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p)
 {
 	bool success_flag = false;
 	
 	if (time_s)
 		{
 			char month [4];
-			int offset;
-			
+
 			int res = sscanf (time_s, "%*s %d %3s %d %2d%*c%2d%*c%2d %d", 
 				& (time_p -> tm_mday),
 				month,
@@ -33,15 +33,15 @@ bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p)
 				& (time_p -> tm_hour),				
 				& (time_p -> tm_min),				
 				& (time_p -> tm_sec),				
-				&offset);
+				offset_p);
 			
-			/* Did we match all eight arguments? */
-			if (res == 8)
+			/* Did we match all seven arguments? */
+			if (res == 7)
 				{
 					const char *months_ss [12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 					int j;
 					
-					for (j = 12; j >= 0; -- j)
+					for (j = 11; j >= 0; -- j)
 						{
 							if (strcmp (month, months_ss [j]) == 0)	
 								{
@@ -52,7 +52,7 @@ bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p)
 								}
 						}
 										
-				}		/* if (res == 8) */			
+				}		/* if (res == 7) */			
 			
 		}		/* if (time_s) */
 
@@ -60,7 +60,7 @@ bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p)
 }
 
 
-bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p)
+bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p)
 {
 	bool success_flag = false;
 	
@@ -176,16 +176,34 @@ static bool ConvertNumber (const char * const buffer_s, size_t from, size_t to, 
 
 
 
-static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p))
+static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p, int *offset_p))
 {
 	struct tm t;
 	bool success_flag = false;
+	int offset = 0;
 	
 	memset (&t, 0, sizeof (struct tm));
 
-	if (conv_fn (time_s, &t))
-		{
+	if (conv_fn (time_s, &t, &offset))
+		{			
 			*time_p = mktime (&t);
+		
+			if (offset != 0)
+				{
+					double d = floor (offset * 0.010);
+					int h = (int) d; 
+					int m = offset - (d * 100);
+					time_t offset_time = (3600 * h) + (60 * m);
+					
+					if (offset > 0)
+						{
+							time_p += offset_time; 
+						}
+					else
+						{
+							time_p -= offset_time; 							
+						}
+				}	
 		}
 		
 	return success_flag;
