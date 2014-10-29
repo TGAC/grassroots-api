@@ -125,6 +125,10 @@ bool DestroyHandlerUtil (void)
 				}
 		}
 
+	#if HANDLER_UTILS_DEBUG >= DL_FINE
+	printf ("exit DestroyHandlerUtil %d\n", success_flag);
+	#endif
+
 	return success_flag;
 }
 

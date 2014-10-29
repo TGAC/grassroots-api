@@ -118,7 +118,7 @@ static void RunServer (int server_socket_fd)
 			socklen_t t = sizeof (remote);
 			int client_socket_fd;
 			
-			if ((client_socket_fd = accept (server_socket_fd, (struct sockaddr *) &remote, &t)) != -1) 
+			if (g_running_flag && (client_socket_fd = accept (server_socket_fd, (struct sockaddr *) &remote, &t)) != -1) 
 				{
 					pthread_t worker_thread;
 					

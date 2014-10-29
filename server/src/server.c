@@ -20,7 +20,7 @@
 
 
 #ifdef _DEBUG
-	#define SERVER_DEBUG	(DL_INFO)
+	#define SERVER_DEBUG	(DL_FINE)
 #else
 	#define SERVER_DEBUG	(DL_NONE)
 #endif
@@ -148,6 +148,21 @@ json_t *ProcessMessage (const char * const request_s, const int socket_fd)
 			
 		}	
 	
+	
+	#if SERVER_DEBUG >= DL_FINE
+		{
+			if (res_p)
+				{
+					char *dump_s = json_dumps (res_p, JSON_INDENT (2));
+					
+					if (dump_s)
+						{
+							printf ("ProcessMessage - response: \n%s\n\n", dump_s);
+							free (dump_s);
+						}
+				}
+		}
+	#endif
 	
 	return res_p;
 }
@@ -302,10 +317,8 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 	const char *username_s = NULL;
 	const char *password_s = NULL;
 												
-	if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
-		{
-			res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL, NULL);
-		}
+
+	res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL, NULL);
 
 	return res_p;
 }

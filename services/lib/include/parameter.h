@@ -50,6 +50,8 @@ typedef enum ParameterLevel
 
 /**
  * A datatype to store values for a Parameter.
+ * Use the ParameterType to access the correct
+ * value.
  */
 typedef union SharedType
 {

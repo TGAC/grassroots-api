@@ -179,14 +179,22 @@ void FreeDropboxHandler (Handler *handler_p)
 		{
 			CloseDropboxHandler (handler_p);
 			
-			fclose (dropbox_handler_p -> dh_local_copy_f);
-			dropbox_handler_p -> dh_local_copy_f = NULL;
-
-			RemoveFile (handler_p -> ha_filename_s);
-
-			FreeMemory (dropbox_handler_p -> dh_dropbox_filename_s);
-			dropbox_handler_p -> dh_dropbox_filename_s = NULL;
-
+			if (dropbox_handler_p -> dh_local_copy_f)
+				{
+					fclose (dropbox_handler_p -> dh_local_copy_f);
+					dropbox_handler_p -> dh_local_copy_f = NULL;
+				}
+				
+			if (handler_p -> ha_filename_s)
+				{
+					RemoveFile (handler_p -> ha_filename_s);
+				}
+				
+			if (dropbox_handler_p -> dh_dropbox_filename_s)
+				{
+					FreeMemory (dropbox_handler_p -> dh_dropbox_filename_s);
+					dropbox_handler_p -> dh_dropbox_filename_s = NULL;
+				}
 
 			drbDestroyClient (dropbox_handler_p -> dh_client_p);
 			dropbox_handler_p -> dh_client_p = NULL;
@@ -233,59 +241,109 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 
 	if (mode_s)
 		{
-			/* 
-			 * If we need to access the file, cache a local copy
-			 */
-			char *buffer_s = NULL;
+			const char *cached_filename_s = NULL;
+			char *user_id_s = dropbox_handler_p -> dh_client_p -> t.secret;
+			time_t last_modified = 0;
+			const char * const protocol_s = GetDropboxHandlerProtocol (handler_p);
 			
-			FlushCachedFile (dropbox_handler_p);
-
-			buffer_s = (char *) AllocMemory (L_tmpnam);
-
-			if (buffer_s)
+			if (*mode_s != 'w')
 				{
-					FILE *temp_f = NULL;
-
-					tmpnam (buffer_s);
-					
-					temp_f = fopen (buffer_s, "wb+");
-					
-					if (temp_f)
+					/* Get the timestamp of the file (if it exists) on the server */
+					if (!GetLastModifiedTime (dropbox_handler_p, filename_s, &last_modified))
 						{
-							void *output_p = NULL;
-							time_t last_modified = 0;
-							const char *cached_filename_s = NULL;
-							char *user_id_s = dropbox_handler_p -> dh_client_p -> t.secret;
-							int res;
-							
-							if (GetLastModifiedTime (dropbox_handler_p, filename_s, &last_modified))
-								{
-									cached_filename_s = GetMappedFilename (GetDropboxHandlerProtocol (handler_p), user_id_s, filename_s, &last_modified);
-								}
-							
-							res = drbGetFile (dropbox_handler_p -> dh_client_p, 
-								&output_p,
-								DRBOPT_PATH, filename_s,
-								DRBOPT_IO_DATA, temp_f,
-								DRBOPT_IO_FUNC, fwrite,
-								DRBOPT_END);
-							
-							if (res == DRBERR_OK)
-								{
-									dropbox_handler_p -> dh_dropbox_filename_s = buffer_s;
-									dropbox_handler_p -> dh_local_copy_f = temp_f;
-									success_flag = true;
+							printf ("Couldn't get last modified time for %s\n", filename_s);
+						}
+				}
 
-									/* If we're not appending, then rewind to the start */
-									if (*mode_s != 'a')
-										{
-											rewind (dropbox_handler_p -> dh_local_copy_f);
-										}
-								}		/* if (res != DBERR_OK) */
-																																								
-						}		/* if (temp_f) */							
+			cached_filename_s = GetMappedFilename (protocol_s, user_id_s, filename_s, &last_modified);
+			
+			if (cached_filename_s)
+				{
+					success_flag = true;
+				}
+			else			
+				{
+					/* 
+					 * If we need to access the file, cache a local copy
+					 */
+					char *buffer_s = NULL;
 					
-				}		/* if (buffer_s) */
+					FlushCachedFile (dropbox_handler_p);
+
+					buffer_s = (char *) AllocMemory (L_tmpnam);
+
+					if (buffer_s)
+						{
+							FILE *temp_f = NULL;
+
+							tmpnam (buffer_s);
+							
+							temp_f = fopen (buffer_s, "wb+");
+							
+							if (temp_f)
+								{
+									void *output_p = NULL;
+									int res;
+									
+									/* 
+									 * If we're not creating a file from scratch, then download 
+									 * any existing file from the server
+									 */
+									if (*mode_s != 'w')
+										{
+											res = drbGetFile (dropbox_handler_p -> dh_client_p, 
+												&output_p,
+												DRBOPT_PATH, filename_s,
+												DRBOPT_IO_DATA, temp_f,
+												DRBOPT_IO_FUNC, fwrite,
+												DRBOPT_END);
+											
+													
+											if (res == DRBERR_OK)
+												{
+													dropbox_handler_p -> dh_dropbox_filename_s = buffer_s;
+
+													/* If we're not appending, then rewind to the start */
+													if (*mode_s != 'a')
+														{
+															rewind (dropbox_handler_p -> dh_local_copy_f);
+														}
+														
+													success_flag = true;
+												}		/* if (res != DBERR_OK) */
+											else if ((res == 404) && (*mode_s == 'a'))
+												{
+													/* file doesn't exist, but it's ok as we're writing to it */
+													success_flag = true;
+												}
+											else
+												{
+													
+												}
+											
+											
+										}		/* if (*mode_s != 'w') */
+									else
+										{
+											success_flag = true;
+										}
+										
+									if (success_flag)
+										{
+											if (!SetMappedFilename (protocol_s, user_id_s, filename_s, buffer_s, last_modified))
+												{
+													printf ("failed to set filename for handler cache\n");
+													success_flag = false;
+												}
+
+										}		/* if (success_flag) */
+										
+								}		/* if (temp_f) */							
+							
+						}		/* if (buffer_s) */
+
+					
+				}		/* if (!cached_filename_s) */
 
 		}
 

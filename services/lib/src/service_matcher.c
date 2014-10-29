@@ -45,9 +45,13 @@ bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p)
 
 bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p)
 {
+	bool match_flag = true;
 	ResourceServiceMatcher *resource_matcher_p = (ResourceServiceMatcher *) matcher_p;
 	
-	bool match_flag = IsServiceMatch (service_p, resource_matcher_p -> rsm_resource_p, resource_matcher_p -> rsm_handler_p);
+	if ((resource_matcher_p -> rsm_resource_p) && (resource_matcher_p -> rsm_handler_p))
+		{
+			match_flag = IsServiceMatch (service_p, resource_matcher_p -> rsm_resource_p, resource_matcher_p -> rsm_handler_p);
+		}
 		
 	return match_flag;
 }
