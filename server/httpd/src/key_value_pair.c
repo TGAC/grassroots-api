@@ -1,4 +1,7 @@
+#include "apr_strings.h"
+
 #include "key_value_pair.h"
+
 
 
 KeyValuePair *GetPostParameters (request_rec *req_p)
@@ -12,7 +15,7 @@ KeyValuePair *GetPostParameters (request_rec *req_p)
 
   if ((res == OK) && pairs_p) 
   	{
-			key_value_pairs_p = apr_pcalloc (r->pool, sizeof (KeyValuePair) * (pairs->nelts + 1));
+			key_value_pairs_p = apr_pcalloc (req_p -> pool, sizeof (KeyValuePair) * ((pairs_p -> nelts) + 1));
 			
 			if (key_value_pairs_p)
 				{
@@ -30,12 +33,12 @@ KeyValuePair *GetPostParameters (request_rec *req_p)
 							buffer_s = apr_palloc (req_p -> pool, size + 1);
 							if (buffer_s)
 								{
-									char *name_s = apr_pstrdup (rec_p -> pool, pair_p -> name);
+									char *name_s = apr_pstrdup (req_p -> pool, pair_p -> name);
 									
 									if (name_s)
 										{
 											apr_brigade_flatten (pair_p -> value, buffer_s, &size);
-											* (buffer + len) = '\0';
+											* (buffer_s + len) = '\0';
 											key_value_pair_p -> kvp_key_s = name_s;
 											key_value_pair_p -> kvp_value_s = buffer_s;										
 											

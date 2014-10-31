@@ -41,7 +41,7 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 static void RegisterHooks (apr_pool_t *pool_p) 
 {
   /* Hook the request handler */
-  ap_hook_handler (WheatISHandler NULL, NULL, APR_HOOK_LAST);
+  ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_LAST);
 }
 
 
