@@ -9,6 +9,8 @@ DIR_INSTALL = ../../../wheatis_demo/handlers
 
 BUILD		= debug
 
+DIR_ROOT = ../..
+
 DIR_IRODS	= $$IRODS_HOME
 
 
@@ -29,15 +31,6 @@ DIR_WHEATIS_SERVICE_LIB = $(DIR_WHEATIS_SERVICE)/$(BUILD)
 WHEATIS_SERVICE_LIB_NAME = wheatis_services
 
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
 
 
 VPATH	= \
@@ -63,9 +56,6 @@ LDFLAGS += \
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
-include ../../generic_makefiles/shared_library.makefile
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	all 
-
-all: lib 
 

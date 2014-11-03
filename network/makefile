@@ -10,10 +10,10 @@ DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
-DIR_WHEATIS_SERVER = ../server
+DIR_WHEATIS_SERVER = ../server/lib
 DIR_WHEATIS_SERVER_INC = $(DIR_WHEATIS_SERVER)/include
 
-
+DIR_ROOT = ..
 
 DIR_INSTALL = ../../wheatis_demo/lib
 
@@ -39,26 +39,15 @@ SRCS 	= \
 	request_tools.c 
 	
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-	
 
-CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -DUNIX
+CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS
 
 LDFLAGS += -ldl -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
 
-include ../generic_makefiles/shared_library.makefile
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	all test
+.PHONY:	test
 
-all: lib test
 
 test:
 	$(COMP) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm $(LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -o $(BUILD)/test

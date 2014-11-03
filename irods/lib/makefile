@@ -9,6 +9,9 @@ MAKEDEPEND 	= gcc -MM -MF
 
 BUILD		= debug
 
+DIR_ROOT = ../..
+
+
 DIR_IRODS = $$IRODS_HOME
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 
@@ -21,16 +24,6 @@ WHEATIS_UTIL_LIB_NAME = wheatis_util
 
 
 DIR_INSTALL = ../../../wheatis_demo/lib
-
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
 
 
 CFLAGS += -ansi
@@ -61,18 +54,15 @@ SRCS 	= \
 #	procApiRequest.c \
 #	rcSpecificQuery.c
 
-CPPFLAGS += -DIRODS_HANDLER_EXPORTS -DUNIX 
+CPPFLAGS += -DIRODS_HANDLER_EXPORTS
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L. -lirods
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
-include ../../generic_makefiles/shared_library.makefile
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	all test
-
-all: lib 
-
+.PHONY:	test
 
 test: all
 		$(CC) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME)  -lm -lpthread $(INCLUDES)  test.c -o test

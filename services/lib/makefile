@@ -5,6 +5,8 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_ROOT = ../..
+
 DIR_IRODS	= $$IRODS_HOME
 
 DIR_INSTALL_ROOT = ../../../wheatis_demo
@@ -62,20 +64,8 @@ else
 endif
 	
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-include ../../generic_makefiles/shared_library.makefile
 
-.PHONY:	all 
-
-all: lib
 
 

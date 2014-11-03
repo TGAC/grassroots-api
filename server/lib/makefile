@@ -6,6 +6,8 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_ROOT = ../..
+
 DIR_IRODS	= $$IRODS_HOME
 
 DIR_INSTALL_ROOT = ../../../wheatis_demo
@@ -39,9 +41,8 @@ WHEATIS_HANDLER_LIB_NAME = wheatis_handler
 BUILD		= debug
 
 VPATH	= \
-	$(DIR_SRC) \
-	$(DIR_CTHREAD_POOL_DEP)
-
+	$(DIR_SRC) 
+	
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
@@ -63,37 +64,14 @@ INCLUDES = \
 SRCS 	= \
 	server.c 
 
-EXE_SRCS = \
-	standalone_server.c
+CPPFLAGS += -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS 
 
-EXE_OBJS = $(patsubst %.c, $(DIR_OBJS)/%.o, $(EXE_SRCS))
-
-CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS -DSHARED_LIBRARY
-
-BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
+LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 
-
-LDFLAGS += $(BASE_LDFLAGS) 
-
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
 	
-
-include ../../generic_makefiles/shared_library.makefile
-
-.PHONY:	all 
-
-all: lib
-
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile	
 

@@ -5,30 +5,31 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_ROOT = ../..
 DIR_IRODS	= $$IRODS_HOME
 
-DIR_WHEATIS_UTIL = ../util
+DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
 
-DIR_WHEATIS_NETWORK = ../network
+DIR_WHEATIS_NETWORK = ../../network
 DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
 DIR_WHEATIS_NETWORK_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
 WHEATIS_NETWORK_LIB_NAME = wheatis_network
 
 
-DIR_WHEATIS_SERVICES = ../services/lib
+DIR_WHEATIS_SERVICES = ../../services/lib
 DIR_WHEATIS_SERVICES_INC = $(DIR_WHEATIS_SERVICES)/include
 DIR_WHEATIS_SERVICES_LIB = $(DIR_WHEATIS_SERVICES)/$(BUILD)
 WHEATIS_SERVICES_LIB_NAME = wheatis_service
 
 
-DIR_WHEATIS_SERVER_INC = ../server/include
+DIR_WHEATIS_SERVER_INC = ../../server/lib/include
 
 
-DIR_INSTALL = ../../wheatis_demo
+DIR_INSTALL = ../../../wheatis_demo
 
 BUILD		= debug
 
@@ -47,50 +48,20 @@ INCLUDES = \
 SRCS 	= \
 	standalone_client.c 
 
-CPPFLAGS += -DUNIX
-
 LDFLAGS += -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-ldl 
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
+.PHONY:	all 
+
+include $(DIR_ROOT)/generic_makefiles/executable.makefile
 
 
-OBJS = $(patsubst %.c, $(BUILD)/%.o, $(SRCS))
-
-.PHONY:	all init clean
-
-all: init $(BUILD)/$(NAME)
-	@echo "building $(OBJS)"
+all: exe
 
 
 install: all
 	cp $(BUILD)/$(NAME) $(DIR_INSTALL)
-
-init:
-	@mkdir -p $(BUILD)
-
-clean:
-	rm -f $(BUILD)/*
-
-
-$(BUILD)/$(NAME) : $(OBJS)
-	@echo "building exe $(BUILD)/$(NAME) from $(OBJS)"
-	$(COMP) -o $@ $(OBJS) $(STATIC_LIBS) $(LDFLAGS)
-
-$(BUILD)/%.o : %.c
-	@echo "building objs  $(OBJS)"
-	$(COMP) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) -o $@ -c $<
-
-
 

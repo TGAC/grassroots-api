@@ -1,10 +1,11 @@
-NAME 		= wheatis_server
-EXE_NAME = server
+NAME = server
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
+
+DIR_ROOT = ../..
 
 DIR_IRODS	= $$IRODS_HOME
 
@@ -70,32 +71,21 @@ SRCS = \
 	standalone_server.c
 
 
-OBJS = $(patsubst %.c, $(DIR_OBJS)/%.o, $(SRCS))
-
 CPPFLAGS += -DUNIX
 
-BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
+LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
+	-L$(DIR_WHEATIS_IRODS) -lirods \
 
 
-LDFLAGS += $(BASE_LDFLAGS) 
-
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
 
 .PHONY:	all 
 
-all: $(OBJS)
-	$(COMP) $(CFLAGS) -DUNIX -Wl,--no-as-needed -lm -ldl $(INCLUDES) $(OBJS) $(BASE_LDFLAGS) -L$(DIR_WHEATIS_IRODS) -lirods -o $(BUILD)/$(EXE_NAME)
+include $(DIR_ROOT)/generic_makefiles/executable.makefile
+
+all: exe
 

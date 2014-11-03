@@ -5,6 +5,7 @@ CC		= g++
 CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
+DIR_ROOT = ../..
 DIR_INSTALL = ../../../wheatis_demo/services
 
 BUILD		= debug
@@ -28,16 +29,6 @@ DIR_WHEATIS_HANDLER_LIB = $(DIR_WHEATIS_HANDLER)/$(BUILD)
 WHEATIS_HANDLER_LIB_NAME = wheatis_handler
 
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-
 
 VPATH	= \
 	$(DIR_SRC) 
@@ -57,29 +48,15 @@ SRCS 	= \
 	gzip.c \
 	zip.c
 	
-	
-BASE_CPPFLAGS = -DUNIX 
-CPPFLAGS += $(BASE_CPPFLAGS) -fPIC -DCOMPRESS_LIBRARY_EXPORTS 
+	 
+CPPFLAGS += -DCOMPRESS_LIBRARY_EXPORTS 
 
-BASE_LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICE_LIB) -l$(WHEATIS_SERVICE_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLE_LIB) -l$(WHEATIS_HANDLE_LIB_NAME) \
 	-lz
 
-LDFLAGS += $(BASE_LDFLAGS)
 
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-
-#STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
-
-include ../../generic_makefiles/shared_library.makefile
-
-.PHONY:	all test exe
-
-all: lib 
-
-
-exe: all
-	gcc $(BASE_CPPFLAGS) $(CFLAGS)-DUNIX -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm -ldl -lz $(INCLUDES) $(EXE_OBJS) $(BASE_LDFLAGS)  src/unit_test.c  -o $(BUILD)/compress_test
-	
 

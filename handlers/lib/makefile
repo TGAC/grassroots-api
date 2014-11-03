@@ -5,6 +5,8 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_ROOT = ../..
+
 DIR_IRODS	= $$IRODS_HOME
 
 DIR_INSTALL_ROOT = ../../../wheatis_demo
@@ -57,40 +59,14 @@ SRCS 	= \
 	handler_utils.c \
 	handler.c
 
-CPPFLAGS += -DUNIX -DWHEATIS_HANDLELIBRARY_EXPORTS
+CPPFLAGS += -DWHEATIS_HANDLELIBRARY_EXPORTS
 
-BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
+LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 #	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 
 
-LDFLAGS += $(BASE_LDFLAGS) 
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-	
-
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-
-include ../../generic_makefiles/shared_library.makefile
-
-.PHONY:	all 
-
-all: lib 
 

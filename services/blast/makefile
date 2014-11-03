@@ -5,7 +5,7 @@ CC		= g++
 CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
-
+DIR_ROOT = ../..
 DIR_INSTALL = ../../../wheatis_demo/services
 
 BUILD		= debug
@@ -27,17 +27,6 @@ DIR_WHEATIS_HANDLER = ../../handlers/lib
 DIR_WHEATIS_HANDLER_INC = $(DIR_WHEATIS_HANDLER)/include
 DIR_WHEATIS_HANDLER_LIB = $(DIR_WHEATIS_HANDLER)/$(BUILD)
 WHEATIS_HANDLER_LIB_NAME = wheatis_handler
-
-
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
 
 
 VPATH	= \
@@ -66,16 +55,11 @@ SRCS 	= \
 	
 	
 
-CPPFLAGS += -DBLAST_LIBRARY_EXPORTS -DUNIX -fPIC
+CPPFLAGS += -DBLAST_LIBRARY_EXPORTS 
 
 LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICE_LIB) -l$(WHEATIS_SERVICE_LIB_NAME)
 
 
-#STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-include ../../generic_makefiles/shared_library.makefile
-
-.PHONY:	all test
-
-all: lib 

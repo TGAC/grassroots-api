@@ -4,6 +4,8 @@ DIR_INCLUDE = include
 COMP		= gcc
 MAKEDEPEND 	= gcc -MM -MF
 
+DIR_ROOT = ..
+
 DIR_INSTALL = ../../wheatis_demo/lib
 
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
@@ -64,11 +66,10 @@ LDFLAGS += -ldl -ljansson
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
-include ../generic_makefiles/shared_library.makefile
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	all test
 
-all: lib test
 
 test:
 	$(COMP) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm  $(INCLUDES)  test.c -o test

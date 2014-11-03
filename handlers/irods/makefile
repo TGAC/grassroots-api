@@ -9,6 +9,8 @@ DIR_INSTALL = ../../../wheatis_demo/handlers
 
 BUILD		= debug
 
+DIR_ROOT = ../..
+
 DIR_IRODS	= $$IRODS_HOME
 
 
@@ -37,16 +39,6 @@ DIR_WHEATIS_HANDLE_INC = $(DIR_WHEATIS_HANDLE)/include
 DIR_WHEATIS_HANDLE_LIB = $(DIR_WHEATIS_HANDLE)/$(BUILD)
 WHEATIS_HANDLE_LIB_NAME = wheatis_handler
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-
 
 VPATH	= \
 	$(DIR_SRC) 
@@ -74,7 +66,7 @@ SRCS 	= \
 	irods_handler.c \
 	irods_resource.c
 	
-CPPFLAGS = -DUNIX -DIRODS_HANDLER_EXPORTS
+CPPFLAGS = -DIRODS_HANDLER_EXPORTS
 
 LDFLAGS += \
 	-L$(DIR_WHEATIS_HANDLE_LIB) -l$(WHEATIS_HANDLE_LIB_NAME) \
@@ -82,11 +74,4 @@ LDFLAGS += \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) 
 	
 	
-#STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
-
-include ../../generic_makefiles/shared_library.makefile
-
-.PHONY:	all 
-
-all: lib 
-
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile

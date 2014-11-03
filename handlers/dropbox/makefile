@@ -9,6 +9,8 @@ DIR_INSTALL = ../../../wheatis_demo/handlers
 
 BUILD		= debug
 
+DIR_ROOT = ../..
+
 DIR_IRODS	= $$IRODS_HOME
 
 
@@ -32,16 +34,6 @@ DIR_WHEATIS_HANDLE_INC = $(DIR_WHEATIS_HANDLE)/include
 DIR_WHEATIS_HANDLE_LIB = $(DIR_WHEATIS_HANDLE)/$(BUILD)
 WHEATIS_HANDLE_LIB_NAME = wheatis_handler
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
-
 
 VPATH	= \
 	$(DIR_SRC) 
@@ -60,7 +52,7 @@ INCLUDES = \
 SRCS 	= \
 	dropbox_handler.c 
 	
-CPPFLAGS = -DUNIX -DDROPBOX_HANDLER_EXPORTS
+CPPFLAGS = -DDROPBOX_HANDLER_EXPORTS
 
 LDFLAGS += \
 	-L$(DIR_WHEATIS_HANDLE_LIB) -l$(WHEATIS_HANDLE_LIB_NAME) \
@@ -69,9 +61,5 @@ LDFLAGS += \
 	-ldropbox
 	
 
-include ../../generic_makefiles/shared_library.makefile
-
-.PHONY:	all 
-
-all: lib 
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 

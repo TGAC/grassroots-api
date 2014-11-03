@@ -6,6 +6,8 @@ MAKEDEPEND 	= g++ -MM -MF
 
 DIR_INSTALL = ../modules/blast/lib/ 
 
+DIR_ROOT == ../../..
+
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 DIR_IRODS	= $$IRODS_HOME
 
@@ -53,7 +55,7 @@ SRCS 	= \
 	gui.cpp
 
 
-CPPFLAGS += -DWHEATIS_CLIENT_QT_LIBRARY_EXPORTS -DUNIX 
+CPPFLAGS += -DWHEATIS_CLIENT_QT_LIBRARY_EXPORTS
 
 # Ubuntu build qt with -reduce-relocations so we need this flag
 #CFLAGS += -fPIE
@@ -62,11 +64,9 @@ LDFLAGS +=
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
-include ../../../generic_makefiles/shared_library.makefile
+include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	all test
-
-all: lib test
+.PHONY:	 test
 
 test:
 	$(COMP) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm  $(INCLUDES)  test.c -o test

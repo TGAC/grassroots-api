@@ -13,7 +13,7 @@ all:
 	$(MAKE) -C server/standalone
 	$(MAKE) -C server/httpd
 	$(MAKE) -C clients/standalone
-	$(MAKE) -C clients/web-server-client	
+#	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
 			
@@ -30,7 +30,7 @@ install: install_init
 	$(MAKE) -C server/standalone install 
 	$(MAKE) -C server/httpd install
 	$(MAKE) -C clients/standalone install
-	$(MAKE) -C clients/web-server-client install	
+#	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
 
@@ -48,7 +48,7 @@ clean:
 	$(MAKE) -C server/standalone clean 
 	$(MAKE) -C server/httpd clean
 	$(MAKE) -C clients/standalone clean
-	$(MAKE) -C clients/web-server-client clean	
+#	$(MAKE) -C clients/web-server-client clean	
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
 
