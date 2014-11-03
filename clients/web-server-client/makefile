@@ -1,10 +1,11 @@
-NAME 		= client
+NAME 		= web_server_client
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
+DIR_ROOT = ../..
 DIR_IRODS	= $$IRODS_HOME
 
 DIR_WHEATIS_UTIL = ../util
@@ -47,7 +48,6 @@ INCLUDES = \
 SRCS 	= \
 	web_server_client.c 
 
-CPPFLAGS += -DUNIX
 
 LDFLAGS += -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  \
@@ -55,42 +55,13 @@ LDFLAGS += -ljansson \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-ldl 
 
-ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
-else
-#	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
-endif
+
+include $(DIR_ROOT)/generic_makefiles/executable.makefile
+
+.PHONY: all
 
 
-OBJS = $(patsubst %.c, $(BUILD)/%.o, $(SRCS))
-
-.PHONY:	all init clean
-
-all: init $(BUILD)/$(NAME)
-	@echo "building $(OBJS)"
-
-
-install: all
-	cp $(BUILD)/$(NAME) $(DIR_INSTALL)
-
-init:
-	@mkdir -p $(BUILD)
-
-clean:
-	rm -f $(BUILD)/*
-
-
-$(BUILD)/$(NAME) : $(OBJS)
-	@echo "building exe $(BUILD)/$(NAME) from $(OBJS)"
-	$(COMP) -o $@ $(OBJS) $(STATIC_LIBS) $(LDFLAGS)
-
-$(BUILD)/%.o : %.c
-	@echo "building objs  $(OBJS)"
-	$(COMP) $(CFLAGS) $(CPPFLAGS) $(INCLUDES) -o $@ -c $<
+all: exe
 
 
 
