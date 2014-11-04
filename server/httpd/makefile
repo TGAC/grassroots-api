@@ -53,9 +53,9 @@ ifeq ($(BUILD),release)
  	LDFLAGS += -s
 else
 #	CFLAGS 	+= -g
-	CFLAGS 	+= -g -pg
-	LDFLAGS += -pg
-	CPPFLAGS += -D_DEBUG
+	CFLAGS 	+= -Wc,-g -Wc,-pg
+	LDFLAGS += -Wl,pg
+	CPPFLAGS += -Wc,-D_DEBUG
 endif
 
 CPPFLAGS += -DUNIX
@@ -92,7 +92,12 @@ SRCS 	= \
 	../lib/src/server.c \
  
 
-LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L. -lirods
+LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
+	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
+	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
+	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
+	-L$(DIR_IRODS)/lib -lirods
 
  
 # Compile and generate dependency info
@@ -111,7 +116,7 @@ $(DIR_OBJS)/%.o : %.c
 .PHONY:	all
 
 all: 
-		apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) -c $(SRCS)
+		apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la

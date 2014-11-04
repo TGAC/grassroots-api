@@ -51,9 +51,7 @@ static Operation GetOperation (json_t *ops_p);
 /***************************/
 
 
-
-
-json_t *ProcessMessage (const char * const request_s, const int socket_fd)
+json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd)
 {
 	json_error_t error;
 	json_t *req_p = json_loads (request_s, JSON_PRESERVE_ORDER, &error);
@@ -61,86 +59,7 @@ json_t *ProcessMessage (const char * const request_s, const int socket_fd)
 	
 	if (req_p)
 		{
-			json_t *op_p = NULL;
-			json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
-			
-			if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
-				{
-					Operation op = GetOperation (op_p);
-					
-					switch (op)
-						{
-							case OP_LIST_ALL_SERVICES:
-								res_p = GetAllServices (req_p, credentials_p);
-								break;
-							
-							case OP_IRODS_MODIFIED_DATA:
-								res_p = GetAllModifiedData (req_p, credentials_p);
-								break;
-						
-							case OP_LIST_INTERESTED_SERVICES:
-								res_p = GetInterestedServices (req_p, credentials_p);
-								break;
-								
-							default:
-								break;
-						}		/* switch (op) */
-						
-				}
-			else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
-				{
-					
-					if (json_is_array (op_p))
-						{
-							res_p = json_array ();
-							
-							if (res_p)
-								{
-									size_t i;
-									json_t *value_p;
-																
-									json_array_foreach (op_p, i, value_p) 
-										{
-											bool success_flag = RunServiceFromJSON (value_p, credentials_p, res_p);
-											
-											if (!success_flag)
-												{
-													// error
-												}
-										}				
-									
-								}
-							else
-								{
-									// error
-								}
-							
-						}
-					else
-						{
-							bool success_flag;
-							
-							res_p = json_object ();
-							
-							if (res_p)
-								{
-									success_flag = RunServiceFromJSON (op_p, credentials_p, res_p);
-									
-									if (!success_flag)
-										{
-											// error
-										}
-								}
-							else
-								{
-									// error
-								}
-					
-						}					
-				}
-			
-			
-
+			res_p = ProcessServerJSONMessage (req_p, socket_fd);
 		}
 	else
 		{
@@ -148,7 +67,94 @@ json_t *ProcessMessage (const char * const request_s, const int socket_fd)
 			
 		}	
 	
+
 	
+	return res_p;
+}
+
+
+json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
+{
+	json_t *res_p = NULL;
+	json_t *op_p = NULL;
+	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
+
+	if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
+		{
+			Operation op = GetOperation (op_p);
+			
+			switch (op)
+				{
+					case OP_LIST_ALL_SERVICES:
+						res_p = GetAllServices (req_p, credentials_p);
+						break;
+					
+					case OP_IRODS_MODIFIED_DATA:
+						res_p = GetAllModifiedData (req_p, credentials_p);
+						break;
+				
+					case OP_LIST_INTERESTED_SERVICES:
+						res_p = GetInterestedServices (req_p, credentials_p);
+						break;
+						
+					default:
+						break;
+				}		/* switch (op) */
+				
+		}
+	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
+		{
+			
+			if (json_is_array (op_p))
+				{
+					res_p = json_array ();
+					
+					if (res_p)
+						{
+							size_t i;
+							json_t *value_p;
+														
+							json_array_foreach (op_p, i, value_p) 
+								{
+									bool success_flag = RunServiceFromJSON (value_p, credentials_p, res_p);
+									
+									if (!success_flag)
+										{
+											// error
+										}
+								}				
+							
+						}
+					else
+						{
+							// error
+						}
+					
+				}
+			else
+				{
+					bool success_flag;
+					
+					res_p = json_object ();
+					
+					if (res_p)
+						{
+							success_flag = RunServiceFromJSON (op_p, credentials_p, res_p);
+							
+							if (!success_flag)
+								{
+									// error
+								}
+						}
+					else
+						{
+							// error
+						}
+			
+				}					
+		}
+
+		
 	#if SERVER_DEBUG >= DL_FINE
 		{
 			if (res_p)

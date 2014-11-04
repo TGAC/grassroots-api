@@ -26,7 +26,10 @@
  * @param request_s The message from the client.
  * @return The response from the server.
  */
-WHEATIS_SERVICE_MANAGER_API json_t *ProcessMessage (const char * const request_s, const int socket_fd);
+WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd);
+
+
+WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd);
 
 
 #ifdef __cplusplus
