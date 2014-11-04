@@ -69,7 +69,7 @@ static int WheatISHandler (request_rec *req_p)
 					while (params_p -> kvp_key_s)
 						{
 							/* Do we need to even care about the key name? */
-							json_t *res_p =  ProcessMessage (params_p -> kvp_value_s, 0);
+							json_t *res_p = ProcessMessage (params_p -> kvp_value_s, 0);
 							
 							if (res_p)
 								{
