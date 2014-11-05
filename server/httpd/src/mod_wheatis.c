@@ -18,6 +18,7 @@
 
 
 #include "key_value_pair.h"
+#include "server.h"
 #include "jansson.h"
 
 /* Define prototypes of our functions in this module */
@@ -60,32 +61,30 @@ static int WheatISHandler (request_rec *req_p)
   if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) 
   	{
  			/* Get the posted json data */
-			KeyValuePair *params_p = GetPostParameters (req_p);
+			json_t *json_req_p = GetRequestParameters (req_p);
 			
-			if (params_p)
+			if (json_req_p)
 				{
+					int socket_fd = -1;
+					
 					res = OK;
 
-					while (params_p -> kvp_key_s)
+					json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
+					
+					if (res_p)
 						{
-							/* Do we need to even care about the key name? */
-							json_t *res_p = ProcessMessage (params_p -> kvp_value_s, 0);
+							char *res_s = json_dumps (res_p, JSON_INDENT (2));
 							
-							if (res_p)
+							if (res_s)
 								{
-									char *res_s = json_dumps (res_p, JSON_INDENT (2));
-									
-									if (res_s)
-										{
-											ap_rputs (res_s, req_p);
-										}		/* if (res_s) */
-
-								}		/* if (res_p) */
+									ap_rputs (res_s, req_p);
+								}		/* if (res_s) */
 							
-							++ params_p;	
-						}		/* while (params_p) */
+							json_decref (res_p);
+						}		/* if (res_p) */
 				
-				}		/* if (params_p) */
+					json_decref (json_req_p);
+				}		/* if (json_req_p) */
 
   	}		/* if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) */
 	 

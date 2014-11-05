@@ -1,13 +1,71 @@
-#include "apr_strings.h"
+/* Include the required headers from httpd */
+#include "httpd.h"
+#include "http_core.h"
+#include "http_protocol.h"
+#include "http_request.h"
 #include "http_log.h"
+
+#include "apr_strings.h"
+#include "apr_tables.h"
+#include "util_script.h"
 
 
 #include "key_value_pair.h"
 #include "typedefs.h"
-#include "jansson.h"
+
+typedef struct JsonRequest
+{
+	json_t *jr_json_p;
+	request_rec *jr_req_p;
+} JsonRequest;
 
 
-static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value_s, request_rec *req_p);
+/**********************************/
+/******** STATIC PROTOTYPES *******/
+/**********************************/
+
+
+static bool ConvertFormPairToKeyValuePair (request_rec *req_p, ap_form_pair_t *pair_p, KeyValuePair *key_value_pair_p);
+
+static json_t *ConvertGetParametersToJSON (request_rec *req_p);
+
+static json_t *ConvertPostParametersToJSON (request_rec *req_p);
+
+static int AddParameter (void *rec_p, char *key_s, const char *value_s);
+
+static bool AddJsonChild (json_t *parent_p, char *key_s, const char *value_s, request_rec *req_p);
+
+
+/**********************************/
+/********** API METHODS ***********/
+/**********************************/
+
+
+json_t *GetRequestParameters (request_rec *req_p)
+{
+	json_t *params_p = NULL;
+	
+	switch (req_p -> method_number)
+		{
+			case M_GET:
+				params_p = ConvertGetParametersToJSON (req_p);			
+				break;
+				
+			case M_POST:
+				params_p = ConvertPostParametersToJSON (req_p);
+				break;
+				
+			default:
+				break;
+		}
+		
+	return params_p;
+}
+
+
+/**********************************/
+/********* STATIC METHODS *********/
+/**********************************/
 
 
 static bool ConvertFormPairToKeyValuePair (request_rec *req_p, ap_form_pair_t *pair_p, KeyValuePair *key_value_pair_p)
@@ -43,48 +101,40 @@ static bool ConvertFormPairToKeyValuePair (request_rec *req_p, ap_form_pair_t *p
 }
 
 
-KeyValuePair *GetRawPostParameters (request_rec *req_p)
+static json_t *ConvertGetParametersToJSON (request_rec *req_p)
 {
-  KeyValuePair *key_value_pairs_p = NULL;
-	apr_array_header_t *pairs_p = NULL;
-  int res;
- 
- 	/* get the form parameters */
-  res = ap_parse_form_data (req_p, NULL, &pairs_p, -1, HUGE_STRING_LEN);
-
-  if ((res == OK) && pairs_p) 
-  	{
-			key_value_pairs_p = apr_pcalloc (req_p -> pool, sizeof (KeyValuePair) * ((pairs_p -> nelts) + 1));
+	json_t *root_p = json_object ();
+	
+	if (root_p)
+		{
+			apr_table_t *params_p = NULL;
+			JsonRequest json_req;
 			
-			if (key_value_pairs_p)
+			json_req.jr_req_p = req_p;
+			json_req.jr_json_p = root_p;
+						
+			ap_args_to_table (req_p, &params_p);  
+
+			if (apr_table_do (AddParameter, &json_req, params_p, NULL) == TRUE)
 				{
-					char *buffer_s;
-					apr_off_t len;
-					KeyValuePair *key_value_pair_p = key_value_pairs_p;
 					
-					/* Pop each parameter pair and add it to our list */
-					while (pairs_p && !apr_is_empty_array (pairs_p)) 
-						{
-							ap_form_pair_t *pair_p = (ap_form_pair_t *) apr_array_pop (pairs_p);
-							
-							if (ConvertFormPairToKeyValuePair (req_p, pair_p, key_value_pair_p))
-								{
-									++ key_value_pair_p;
-								}
-						}
-				
-				}		/* if (key_value_pairs_p) */
+				}
+			else
+				{
+					
+				}
 			
-
-		}		/* if ((res == OK) && pairs_p) */
-
-  	
-  return key_value_pairs_p;
+		}		/* if (root_p) */
+	else
+		{
+			
+		}
+		
+	return root_p;
 }
 
 
-
-json_t *ConvertPostParametersToJSON (request_rec *req_p)
+static json_t *ConvertPostParametersToJSON (request_rec *req_p)
 {
   json_t *root_p = NULL;
 	apr_array_header_t *pairs_p = NULL;
@@ -115,8 +165,8 @@ json_t *ConvertPostParametersToJSON (request_rec *req_p)
 
 									if (!root_p)
 										{
-											ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Failed to parse \"%s\", error: %s, source %s line %d columd %d offset %lu", 
-												pair_p -> value, error.text, error.source, error.line, error.column, error.position);																		
+											ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Failed to parse \"%s\", error: %s, source %s line %d columd %d offset %d", 
+												kvp.kvp_value_s, error.text, error.source, error.line, error.column, error.position);																		
 										}
 								}
 							else
@@ -146,8 +196,6 @@ json_t *ConvertPostParametersToJSON (request_rec *req_p)
 					if (root_p)
 						{
 							bool success_flag = true;
-							char *buffer_s;
-							apr_off_t len;							
 
 							/* Pop each parameter pair and add it to our json array */
 							while (pairs_p && !apr_is_empty_array (pairs_p)) 
@@ -185,11 +233,73 @@ json_t *ConvertPostParametersToJSON (request_rec *req_p)
 }
 
 
-
-static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value_s, request_rec *req_p)
+static int AddParameter (void *rec_p, char *key_s, const char *value_s)
 {
-	bool success_flag = false;	
-	json_t *child_p = json_string (value_s);
+	int res = FALSE;
+	JsonRequest *json_req_p = (JsonRequest *) rec_p;
+
+	if (AddJsonChild (json_req_p -> jr_json_p, key_s, value_s, json_req_p -> jr_req_p))
+		{
+			res = TRUE;
+		}
+
+	return res;
+}	
+
+
+static bool AddJsonChild (json_t *parent_p, char *key_s, const char *value_s, request_rec *req_p)
+{
+	bool success_flag = true;		
+	char *key_p = key_s;
+	char *next_dot_p = strchr (key_p, ".");
+	bool loop_flag = (next_dot_p != NULL);
+	
+	/* 
+	 * break 
+	 * 	
+	 * 	foo.bar.stuff = bob 
+	 * 
+	 * into 
+	 * 
+	 * 	foo {
+	 * 		bar {
+	 * 			stuff = bob
+	 *		}
+	 * 	}
+	 */  
+	while (loop_flag && success_flag)
+		{			
+			json_t *child_p = json_object ();
+			
+			if (child_p)
+				{
+					*next_dot_p = '\0';
+
+					if (json_object_set (parent_p, key_p, child_p) == 0)
+						{
+							loop_flag = 
+						}
+					else
+						{
+							success_flag = false;
+						}
+
+					*next_dot_p = '.';
+
+					if (success_flag)
+						{
+							key_p = next_dot_p + 1;
+							next_dot_p = key_p;
+						
+							loop_flag = ((*next_dot_p != '\0') && ((next_dot_p = strchr (key_p, '.')) != NULL));
+						}
+				}		/* if (child_p) */
+			else
+				{
+					success_flag = false;
+				}
+		}
+	
 	
 	if (child_p)
 		{

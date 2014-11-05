@@ -48,19 +48,18 @@ DIR_ROOT = ../..
 
 DIR_INSTALL = ../../../wheatis_demo/lib
 
+CFLAGS 	+=  -Wc,-Wall  -Wc,-fpic
+
 ifeq ($(BUILD),release)
-	CFLAGS 	+= -O3 -s
- 	LDFLAGS += -s
+	CFLAGS 	+= -Wc,-O3 -Wc,-s
+ 	LDFLAGS += Wl,-s
 else
 #	CFLAGS 	+= -g
-	CFLAGS 	+= -Wc,-g -Wc,-pg
+	CFLAGS 	+= -Wc,-g -Wc,-pg -Wc,-Wall
 	LDFLAGS += -Wl,pg
 	CPPFLAGS += -Wc,-D_DEBUG
 endif
 
-CPPFLAGS += -DUNIX
-
-CFLAGS += -ansi -fpic
 
 VPATH	= \
 	$(DIR_SRC) \
@@ -116,7 +115,7 @@ $(DIR_OBJS)/%.o : %.c
 .PHONY:	all
 
 all: 
-		apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(LDFLAGS) -c $(SRCS)
+		apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la

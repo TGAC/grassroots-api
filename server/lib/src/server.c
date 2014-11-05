@@ -79,6 +79,24 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	json_t *op_p = NULL;
 	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
 
+
+		
+	#if SERVER_DEBUG >= DL_FINE
+		{
+			if (req_p)
+				{
+					char *dump_s = json_dumps (req_p, JSON_INDENT (2));
+					
+					if (dump_s)
+						{
+							printf ("ProcessMessage - request: \n%s\n\n", dump_s);
+							free (dump_s);
+						}
+				}
+		}
+	#endif
+
+
 	if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
 		{
 			Operation op = GetOperation (op_p);

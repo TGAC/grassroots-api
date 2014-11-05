@@ -9,8 +9,7 @@ DIR_ROOT = ../..
 
 DIR_IRODS	= $$IRODS_HOME
 
-DIR_INSTALL_ROOT = ../../../wheatis_demo
-DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
+DIR_INSTALL = ../../../wheatis_demo
 
 DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
