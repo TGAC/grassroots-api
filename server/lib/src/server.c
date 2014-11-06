@@ -14,6 +14,8 @@
 #include "handler.h"
 #include "handler_utils.h"
 
+#include "math_utils.h"
+#include "string_utils.h"
 #include "parameter_set.h"
 
 //#include "irods_handle.h"
@@ -29,6 +31,9 @@
 /*****************************/
 /***** STATIC PROTOTYPES *****/
 /*****************************/
+
+static char S_DEFAULT_ROOT_PATH_S [] = "";
+static char *s_root_path_s = S_DEFAULT_ROOT_PATH_S;
 
 #define SERVICES_PATH		("services")
 
@@ -192,9 +197,60 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 }
 
 
+void FreeServerResources (void)
+{
+	if (s_root_path_s != S_DEFAULT_ROOT_PATH_S)
+		{
+			FreeCopiedString (s_root_path_s);
+		}
+}
+
+
+bool SetServerRootDirectory (const char * const path_s)
+{
+	bool success_flag = false;
+	
+	if (path_s)
+		{
+			char *copied_path_s = CopyToNewString (path_s, 0, false);
+			
+			if (copied_path_s)
+				{
+					if (s_root_path_s != S_DEFAULT_ROOT_PATH_S)
+						{
+							FreeCopiedString (s_root_path_s);
+						}
+						
+					s_root_path_s = copied_path_s;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			if (s_root_path_s != S_DEFAULT_ROOT_PATH_S)
+				{
+					FreeCopiedString (s_root_path_s);
+				}
+				
+			s_root_path_s = S_DEFAULT_ROOT_PATH_S;
+		}
+	
+	return success_flag;
+}
+
+
+
+char *GetServerRootDirectory (void)
+{
+	return s_root_path_s;
+}
+
+
+
 /******************************/
 /***** STATIC DEFINITIONS *****/
 /******************************/
+
 
 static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p)
 {
@@ -270,10 +326,23 @@ static Operation GetOperation (json_t *ops_p)
 	Operation op = OP_NONE;
 	json_t *op_p = json_object_get (ops_p, SERVER_OPERATION_S);
 		
-	if (op_p && json_is_integer (op_p))
+	if (op_p)
 		{
-			op = json_integer_value (op_p);
-		}		
+			if (json_is_integer (op_p))
+				{
+					op = json_integer_value (op_p);
+				}
+			else if (json_is_string (op_p))
+				{
+					const char *value_s = json_string_value (op_p);
+					int i;
+					
+					if (GetValidInteger (&value_s, &i))
+						{
+							op = i;
+						}
+				}
+		}
 	
 	return op;
 }

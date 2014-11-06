@@ -54,11 +54,16 @@ int main (int argc, char *argv [])
 {
 	struct addrinfo *address_p = NULL;
 	const char *port_s = DEFAULT_SERVER_PORT;
+	char *root_dir_s = NULL;
 	int backlog = 4;
 	int i = 0;
 	
 	switch (argc)
 		{
+			case 4:
+				SetServerRootDirectory (argv [3]);
+							
+			/* deliberate fall through */
 			case 3:
 				i = atoi (argv [2]);
 				if (i > 0)
@@ -105,6 +110,10 @@ int main (int argc, char *argv [])
 							
 			close (socket_fd);
 		}		/* if (socket_fd >= 0) */
+
+
+	
+	FreeServerResources ();
 
 	return 0;
 }

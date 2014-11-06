@@ -1,7 +1,7 @@
 #ifndef WHEATIS_SERVICE_MANAGER_H
 #define WHEATIS_SERVICE_MANAGER_H
 
-
+#include "typedefs.h"
 #include "wheatis_service_manager_library.h"
 #include "jansson.h"
 
@@ -30,6 +30,16 @@ WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const 
 
 
 WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd);
+
+
+WHEATIS_SERVICE_MANAGER_API void FreeServerResources (void);
+
+
+WHEATIS_SERVICE_MANAGER_API bool SetServerRootDirectory (const char * const path_s);
+
+
+WHEATIS_SERVICE_MANAGER_API char *GetServerRootDirectory (void);
+
 
 
 #ifdef __cplusplus

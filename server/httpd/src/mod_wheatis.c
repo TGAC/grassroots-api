@@ -24,6 +24,26 @@
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
+static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
+
+
+static const command_rec s_wheatis_directives [] =
+{
+    AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, RSRC_CONF, "The path to the WheatIS installation"),
+    { NULL }
+};
+
+
+
+typedef struct
+{
+	const char *wisc_root_path_s;
+} WheatISConfig;
+
+
+
+static WheatISConfig s_config;
+
 
 /* Define our module as an entity and assign a function for registering hooks  */
 module AP_MODULE_DECLARE_DATA wheatis_module =
@@ -45,6 +65,14 @@ static void RegisterHooks (apr_pool_t *pool_p)
   ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_LAST);
 }
 
+
+/* Handler for the "WheatISRoot" directive */
+static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s)
+{
+	SetServerRootDirectory (arg_s);
+
+	return NULL;
+}
 
 
 /* The handler function for our module.
