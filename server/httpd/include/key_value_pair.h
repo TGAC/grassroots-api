@@ -6,8 +6,8 @@
 
 typedef struct KeyValuePair
 {
-  const char *kvp_key_s;
-  const char *kvp_value_s;
+  char *kvp_key_s;
+  char *kvp_value_s;
 } KeyValuePair;
 
 

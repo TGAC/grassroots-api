@@ -31,9 +31,9 @@ static json_t *ConvertGetParametersToJSON (request_rec *req_p);
 
 static json_t *ConvertPostParametersToJSON (request_rec *req_p);
 
-static int AddParameter (void *rec_p, char *key_s, const char *value_s);
+static int AddParameter (void *rec_p, const char *key_s, const char *value_s);
 
-static bool AddJsonChild (json_t *parent_p, char *key_s, const char *value_s, request_rec *req_p);
+static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value_s, request_rec *req_p);
 
 
 /**********************************/
@@ -233,7 +233,7 @@ static json_t *ConvertPostParametersToJSON (request_rec *req_p)
 }
 
 
-static int AddParameter (void *rec_p, char *key_s, const char *value_s)
+static int AddParameter (void *rec_p, const char *key_s, const char *value_s)
 {
 	int res = FALSE;
 	JsonRequest *json_req_p = (JsonRequest *) rec_p;
@@ -247,13 +247,7 @@ static int AddParameter (void *rec_p, char *key_s, const char *value_s)
 }	
 
 
-static bool AddJsonChild (json_t *parent_p, char *key_s, const char *value_s, request_rec *req_p)
-{
-	bool success_flag = true;		
-	char *key_p = key_s;
-	char *next_dot_p = strchr (key_p, ".");
-	bool loop_flag = (next_dot_p != NULL);
-	
+
 	/* 
 	 * break 
 	 * 	
@@ -267,56 +261,82 @@ static bool AddJsonChild (json_t *parent_p, char *key_s, const char *value_s, re
 	 *		}
 	 * 	}
 	 */  
-	while (loop_flag && success_flag)
-		{			
-			json_t *child_p = json_object ();
+	
+static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value_s, request_rec *req_p)
+{
+	bool success_flag = true;		
+	char *copied_key_s = apr_pstrdup (req_p -> pool, key_s);
+	
+	if (copied_key_s)
+		{
+			char *last_p = NULL;
+			char *this_token_p = apr_strtok (copied_key_s, ".", &last_p);
+			char *next_token_p = NULL;
+			bool loop_flag = (this_token_p != NULL);
+			json_t *child_p = NULL;
 			
-			if (child_p)
+			while (loop_flag && success_flag)
 				{
-					*next_dot_p = '\0';
-
-					if (json_object_set (parent_p, key_p, child_p) == 0)
-						{
-							loop_flag = 
-						}
-					else
+					next_token_p = apr_strtok (NULL, ".", &last_p);
+					
+					child_p = json_object_get (parent_p, this_token_p);
+					
+					if (!child_p)
 						{
 							success_flag = false;
-						}
+							
+							if (next_token_p)
+								{
+									child_p = json_object ();
+								}
+							else
+								{
+									child_p = json_string (value_s);									
+								}
 
-					*next_dot_p = '.';
-
+							
+							if (child_p)
+								{
+									if (json_object_set (parent_p, this_token_p, child_p) == 0)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Couldn't add json value for %s to json parameters", this_token_p);
+											
+											json_decref (child_p);
+											child_p = NULL;
+										}
+								}
+							else
+								{
+									ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Not enough memory to allocate json child  for %s", this_token_p);
+								}
+						}		/* if (!child_p) */
+					
 					if (success_flag)
 						{
-							key_p = next_dot_p + 1;
-							next_dot_p = key_p;
-						
-							loop_flag = ((*next_dot_p != '\0') && ((next_dot_p = strchr (key_p, '.')) != NULL));
+							parent_p = child_p;
+
+							if (next_token_p)
+								{
+									this_token_p = next_token_p;
+									loop_flag = (this_token_p != NULL);									
+								}
+							else
+								{
+									loop_flag = false;
+								}
 						}
-				}		/* if (child_p) */
-			else
-				{
-					success_flag = false;
-				}
-		}
-	
-	
-	if (child_p)
-		{
-			if (json_object_set_new (parent_p, key_s, child_p) == 0)
-				{
-					success_flag = true;
-				}
-			else
-				{
-					ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Couldn't add json value for %s to json parameters", key_s);
-					json_decref (child_p);
-				}
-		}
+
+				}		/* while (loop_flag) */
+									
+		}		/* if (copied_key_s) */
 	else
 		{
-			ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Not enough memory to allocate json child object for %s", key_s);									
+			ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Not enough memory to copy %s", key_s);
+			success_flag = false;
 		}
-	
 	return success_flag;
 }
