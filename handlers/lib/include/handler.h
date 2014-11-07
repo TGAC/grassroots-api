@@ -33,6 +33,8 @@ typedef struct Handler
 	 */
 	struct Plugin *ha_plugin_p;
 
+	bool (*ha_init_fn) (struct Handler *handler_p);
+
 	bool (*ha_match_fn) (struct Handler *handler_p, const Resource * resource_p);
 
 	const char *(*ha_get_protocol_fn) (struct Handler *handler_p);
@@ -66,6 +68,7 @@ extern "C"
 #endif
 
 WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
+	bool (*init_fn) (struct Handler *handler_p),
 	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
 	const char *(*get_protocol_fn) (struct Handler *handler_p),
 	const char *(*get_name_fn) (struct Handler *handler_p),
@@ -79,6 +82,8 @@ WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	bool (*file_info_fn) (struct Handler *handler_p, FileInformation *info_p),	
 	void (*free_handler_fn) (struct Handler *handler_p));
 
+
+WHEATIS_HANDLER_API bool InitHandler (struct Handler *handler_p);
 
 WHEATIS_HANDLER_API bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 

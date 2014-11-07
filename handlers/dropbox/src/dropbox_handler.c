@@ -10,6 +10,8 @@
 #include "filesystem_utils.h"
 
 
+static bool InitDropboxHandler (struct Handler *handler_p);
+
 static bool OpenDropboxHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
 static size_t ReadFromDropboxHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
@@ -136,6 +138,7 @@ Handler *GetHandler (const json_t *credentials_p)
 			if (handler_p -> dh_client_p)
 				{
 					InitialiseHandler (& (handler_p -> dh_base_handler),
+						InitDropboxHandler,
 						IsResourceForDropboxHandler,
 						GetDropboxHandlerProtocol,
 						GetDropboxHandlerName,
@@ -205,6 +208,14 @@ void FreeDropboxHandler (Handler *handler_p)
 
 
 	FreeMemory (handler_p);
+}
+
+
+static bool InitDropboxHandler (struct Handler *handler_p)
+{
+	bool success_flag = true;
+	
+	return success_flag;
 }
 
 

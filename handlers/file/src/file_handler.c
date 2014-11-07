@@ -4,6 +4,8 @@
 #include "memory_allocations.h"
 #include "resource.h"
 
+static bool InitFileHandler (struct Handler *handler_p);
+
 
 static bool OpenFileHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
@@ -39,6 +41,7 @@ Handler *GetHandler (const json_t *tags_p)
 	if (handler_p)
 		{
 			InitialiseHandler (& (handler_p -> fh_base_handler),
+				InitFileHandler,
 				IsResourceForFileHandler,
 				GetFileHandlerProtocol,
 				GetFileHandlerName,
@@ -63,6 +66,16 @@ void ReleaseHandler (Handler *handler_p)
 {
 	FreeFileHandler (handler_p);
 }
+
+
+
+static bool InitFileHandler (struct Handler *handler_p)
+{
+	bool success_flag = true;
+	
+	return success_flag;
+}
+
 
 
 static bool OpenFileHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)

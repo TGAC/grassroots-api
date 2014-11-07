@@ -22,6 +22,7 @@
 #endif
 
 
+static bool InitIRodsHandler (struct Handler *handler_p);
 
 static bool OpenIRodsHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
@@ -88,6 +89,7 @@ Handler *GetHandler (const json_t *credentials_p)
 					if (connection_p)
 						{
 							InitialiseHandler (& (handler_p -> irh_base_handler),
+								InitIRodsHandler,
 								IsResourceForIRodsHandler,
 								GetIRodsHandlerProtocol,
 								GetIRodsHandlerName,
@@ -134,6 +136,14 @@ void FreeIRodsHandler (Handler *handler_p)
 		}
 
 	FreeMemory (handler_p);
+}
+
+
+static bool InitIRodsHandler (struct Handler *handler_p)
+{
+	bool success_flag = true;
+	
+	return success_flag;
 }
 
 

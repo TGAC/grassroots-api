@@ -41,6 +41,12 @@ void InitialiseHandler (Handler * const handler_p,
 
 
 
+bool InitHandler (struct Handler *handler_p)
+{
+	return (handler_p -> ha_init_fn (handler_p));
+}
+
+
 bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)
 {
 	bool success_flag = false;
