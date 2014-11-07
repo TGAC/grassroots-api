@@ -32,15 +32,6 @@ WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const 
 WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd);
 
 
-WHEATIS_SERVICE_MANAGER_API void FreeServerResources (void);
-
-
-WHEATIS_SERVICE_MANAGER_API bool SetServerRootDirectory (const char * const path_s);
-
-
-WHEATIS_SERVICE_MANAGER_API char *GetServerRootDirectory (void);
-
-
 
 #ifdef __cplusplus
 }

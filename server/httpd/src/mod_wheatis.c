@@ -20,6 +20,8 @@
 #include "key_value_pair.h"
 #include "server.h"
 #include "jansson.h"
+#include "service_config.h"
+
 
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
@@ -29,7 +31,7 @@ static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char
 
 static const command_rec s_wheatis_directives [] =
 {
-    AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, RSRC_CONF, "The path to the WheatIS installation"),
+    AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),
     { NULL }
 };
 
@@ -49,12 +51,12 @@ static WheatISConfig s_config;
 module AP_MODULE_DECLARE_DATA wheatis_module =
 {
     STANDARD20_MODULE_STUFF,
-    NULL,            // Per-directory configuration handler
-    NULL,            // Merge handler for per-directory configurations
-    NULL,            // Per-server configuration handler
-    NULL,            // Merge handler for per-server configurations
-    NULL,            // Any directives we may have for httpd
-    RegisterHooks    // Our hook registering function
+    NULL,            			// Per-directory configuration handler
+    NULL,            			// Merge handler for per-directory configurations
+    NULL,            			// Per-server configuration handler
+    NULL,            			// Merge handler for per-server configurations
+    s_wheatis_directives,	// Any directives we may have for httpd
+    RegisterHooks    			// Our hook registering function
 };
 
 

@@ -5,7 +5,7 @@
 #include "string_utils.h"
 #include "filesystem_utils.h"
 #include "service_matcher.h"
-
+#include "service_config.h"
 #include "json_util.h"
 
 
@@ -81,74 +81,82 @@ static LinkedList *GetMatchingServices (const char * const services_path_s, Serv
 			
 			if (plugin_pattern_s)
 				{
-					char *path_and_pattern_s = MakeFilename (services_path_s, plugin_pattern_s);
-
-					if (path_and_pattern_s)
+					const char *root_path_s = GetServerRootDirectory ();
+					char *full_services_path_s = MakeFilename (root_path_s, services_path_s);
+					
+					if (full_services_path_s)
 						{
-							LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
-							
-							if (matching_filenames_p)
+							char *path_and_pattern_s = MakeFilename (full_services_path_s, plugin_pattern_s);
+
+							if (path_and_pattern_s)
 								{
-									StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
+									LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
 									
-									while (node_p)
+									if (matching_filenames_p)
 										{
-											Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
-											bool using_service_flag = false;
+											StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
 											
-											if (plugin_p)
+											while (node_p)
 												{
-													if (OpenPlugin (plugin_p))
-														{																							
-															Service *service_p = GetServiceFromPlugin (plugin_p);
-															
-															if (service_p)
-																{
-																	using_service_flag = RunServiceMatcher (matcher_p, service_p);
+													Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
+													bool using_service_flag = false;
+													
+													if (plugin_p)
+														{
+															if (OpenPlugin (plugin_p))
+																{																							
+																	Service *service_p = GetServiceFromPlugin (plugin_p);
 																	
-																	if (using_service_flag)
+																	if (service_p)
 																		{
-																			ServiceNode *service_node_p = AllocateServiceNode (service_p);
+																			using_service_flag = RunServiceMatcher (matcher_p, service_p);
 																			
-																			if (service_node_p)
+																			if (using_service_flag)
 																				{
-																					LinkedListAddTail (services_list_p, (ListItem *) service_node_p);
-																					using_service_flag = true;
+																					ServiceNode *service_node_p = AllocateServiceNode (service_p);
+																					
+																					if (service_node_p)
+																						{
+																							LinkedListAddTail (services_list_p, (ListItem *) service_node_p);
+																							using_service_flag = true;
+																						}
+																					else
+																						{
+																							/* failed to allocate service node */
+																						}
 																				}
-																			else
+																				
+																			if (!using_service_flag)
 																				{
-																					/* failed to allocate service node */
+																					FreeService (service_p);
 																				}
+																		}
+																	else
+																		{
+																			/* failed to get service from plugin */
 																		}
 																		
-																	if (!using_service_flag)
-																		{
-																			FreeService (service_p);
-																		}
-																}
-															else
+																}		/* if (OpenPlugin (plugin_p)) */
+
+															if (!using_service_flag)
 																{
-																	/* failed to get service from plugin */
+																	ClosePlugin (plugin_p);
 																}
 																
-														}		/* if (OpenPlugin (plugin_p)) */
-
-													if (!using_service_flag)
-														{
-															ClosePlugin (plugin_p);
-														}
-														
-												}		/* if (plugin_p) */
+														}		/* if (plugin_p) */
+													
+													
+													node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+												}		/* while (node_p) */
 											
-											
-											node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-										}		/* while (node_p) */
+											FreeLinkedList (matching_filenames_p);
+										}		/* if (matching_filenames_p) */
 									
-									FreeLinkedList (matching_filenames_p);
-								}		/* if (matching_filenames_p) */
+									FreeCopiedString (path_and_pattern_s);
+								}		/* if (path_and_pattern_s) */
 							
-							FreeCopiedString (path_and_pattern_s);
-						}		/* if (path_and_pattern_s) */
+							FreeCopiedString (full_services_path_s);
+						}		/* if (full_services_path_s) */
 					
 				}		/* if (plugin_pattern_s) */
 			

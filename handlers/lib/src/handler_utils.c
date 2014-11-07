@@ -3,7 +3,7 @@
 #include "string_linked_list.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
-
+#include "service_config.h"
 
 #ifdef _DEBUG
 	#define HANDLER_UTILS_DEBUG	(DL_FINE)
@@ -82,15 +82,15 @@ bool DestroyHandlerUtil (void)
 
 			json_array_foreach (s_mapped_filenames_p, handler_index, handler_p) 
 				{
-					size_t user_index;
+					const char *user_key_s;
 					json_t *user_p;
 
-					json_object_foreach (handler_p, user_index, user_p) 
+					json_object_foreach (handler_p, user_key_s, user_p) 
 						{
-							size_t obj_index;
+							const char *obj_key_s;
 							json_t *obj_p;
 
-							json_object_foreach (user_p, obj_index, obj_p) 
+							json_object_foreach (user_p, obj_key_s, obj_p) 
 								{
 									json_t *filename_p = json_object_get (obj_p, S_FILENAME_KEY_S);
 									
@@ -211,6 +211,8 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 {
 	Handler *handler_p = NULL;
 	LinkedList *matching_handlers_p = NULL;
+	const char *root_path_s = GetServerRootDirectory ();
+	char *handlers_path_s = MakeFilename (root_path_s, "handlers");
 
 	#if HANDLER_UTILS_DEBUG >= DL_FINE
 		{
@@ -219,27 +221,32 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 			free (dump_s);
 		}
 	#endif
-
-
-	matching_handlers_p = LoadMatchingHandlers ("handlers", resource_p, tags_p);
-
-	if (matching_handlers_p)
+	
+	if (handlers_path_s)
 		{
-			if (matching_handlers_p -> ll_size == 1)
+			matching_handlers_p = LoadMatchingHandlers (handlers_path_s, resource_p, tags_p);
+
+			if (matching_handlers_p)
 				{
-					HandlerNode *node_p = (HandlerNode *) (matching_handlers_p -> ll_head_p);
+					if (matching_handlers_p -> ll_size == 1)
+						{
+							HandlerNode *node_p = (HandlerNode *) (matching_handlers_p -> ll_head_p);
 
-					/*
-					 * Detach the handler from the node so that it stays in scope when
-					 * we deallocate the list.
-					 */
-					handler_p = node_p -> hn_handler_p;
-					node_p -> hn_handler_p = NULL;
+							/*
+							 * Detach the handler from the node so that it stays in scope when
+							 * we deallocate the list.
+							 */
+							handler_p = node_p -> hn_handler_p;
+							node_p -> hn_handler_p = NULL;
 
-					FreeLinkedList (matching_handlers_p);
+							FreeLinkedList (matching_handlers_p);
 
-				}
-		}
+						}
+						
+				}		/* if (matching_handlers_p) */
+
+			FreeCopiedString (handlers_path_s);
+		}		/* if (handlers_path_s) */
 
 	return handler_p;
 }

@@ -24,6 +24,8 @@
 
 #include "server.h"
 #include "request_tools.h"
+#include "service_config.h"
+#include "handler_utils.h"
 
 
 /**********************/
@@ -105,6 +107,7 @@ int main (int argc, char *argv [])
 								{
 									fprintf (stderr, "Failed to destory handler util");
 								}
+	
 						}					
 				}
 							
