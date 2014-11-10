@@ -207,7 +207,7 @@ bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const cha
 
 
 
-Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
+uint32 GetResourceHandler (const Resource *resource_p, Handler **handler_pp, const json_t *tags_p)
 {
 	Handler *handler_p = NULL;
 	LinkedList *matching_handlers_p = NULL;
