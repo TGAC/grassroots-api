@@ -296,6 +296,42 @@ static Operation GetOperation (json_t *ops_p)
 }
 
 
+static Handler *
+
+
+static Resource *GetResourceOfInterest (const json_t * const req_p)
+{
+	Resource *resource_p = NULL;
+	json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
+	
+	if (file_data_p)
+		{
+			json_t *protocol_p = json_object_get (file_data_p, KEY_PROTOCOL);
+
+			if (protocol_p)
+				{
+					if (json_is_string (protocol_p))
+						{
+							/* is it a single file or a dir? */
+							json_t *data_name_p = json_object_get (file_data_p, KEY_FILENAME);
+							
+							if (data_name_p && (json_is_string (data_name_p)))
+								{
+									const char *protocol_s = json_string_value (protocol_p);
+									const char *data_name_s = json_string_value (data_name_p);
+									
+									resource_p = AllocateResource (protocol_s, data_name_s);
+								}
+							
+						}		/* if (json_is_string (protocol_p)) */
+					
+				}		/* if (protocol_p) */
+								
+		}		/* if (file_data_p) */
+
+	return resource_p;
+}
+
 static json_t *GetInterestedServices (const json_t * const req_p, const json_t * const credentials_p)
 {
 	json_t *res_p = NULL;
@@ -304,28 +340,9 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 
 	if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
 		{
-			json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
-			
-			if (file_data_p)
-				{
-					json_t *protocol_p = json_object_get (file_data_p, KEY_PROTOCOL);
-
-					if (protocol_p)
-						{
-							if (json_is_string (protocol_p))
-								{
-									/* is it a single file or a dir? */
-									json_t *data_name_p = json_object_get (file_data_p, KEY_FILENAME);
-									
-									if (data_name_p && (json_is_string (data_name_p)))
-										{
-											const char *protocol_s = json_string_value (protocol_p);
-											const char *data_name_s = json_string_value (data_name_p);
-											
-											Resource *resource_p = AllocateResource (protocol_s, data_name_s);
-
 											if (resource_p)
 												{
+													Handler *handler_p = NULL;
 													json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
 													Handler *handler_p = GetResourceHandler (resource_p, credentials_p);
 
@@ -340,11 +357,7 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 													FreeResource (resource_p);
 												}
 										}									
-									
-								}		/* if (json_is_string (protocol_p)) */
-							
-						}					
-				}
+
 		}
 				
 	

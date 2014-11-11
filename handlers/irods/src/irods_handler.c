@@ -22,7 +22,7 @@
 #endif
 
 
-static bool InitIRodsHandler (struct Handler *handler_p);
+static bool InitIRodsHandler (struct Handler *handler_p, json_t *credentials_p);
 
 static bool OpenIRodsHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
@@ -139,7 +139,7 @@ void FreeIRodsHandler (Handler *handler_p)
 }
 
 
-static bool InitIRodsHandler (struct Handler *handler_p)
+static bool InitIRodsHandler (struct Handler *handler_p, json_t *credentials_p)
 {
 	bool success_flag = true;
 	

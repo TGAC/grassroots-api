@@ -10,7 +10,7 @@
 #include "filesystem_utils.h"
 
 
-static bool InitDropboxHandler (struct Handler *handler_p);
+static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p);
 
 static bool OpenDropboxHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
@@ -211,7 +211,7 @@ void FreeDropboxHandler (Handler *handler_p)
 }
 
 
-static bool InitDropboxHandler (struct Handler *handler_p)
+static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p)
 {
 	bool success_flag = true;
 	

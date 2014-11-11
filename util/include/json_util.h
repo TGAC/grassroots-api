@@ -71,7 +71,10 @@ PREFIX const char *TAG_OUTPUT_NAME_S VAL("output");
 PREFIX const char *CREDENTIALS_S VAL("credentials");
 PREFIX const char *CREDENTIALS_USERNAME_S VAL("user");
 PREFIX const char *CREDENTIALS_PASSWORD_S VAL("pass");
-PREFIX const char *CREDENTIALS_TOKEN_S VAL("token");
+PREFIX const char *CREDENTIALS_TOKEN_KEY_S VAL("token_key");
+PREFIX const char *CREDENTIALS_TOKEN_SECRET_S VAL("token_secret");
+PREFIX const char *CREDENTIALS_APP_KEY_S VAL("app_key");
+PREFIX const char *CREDENTIALS_APP_SECRET_S VAL("app_secret");
 PREFIX const char *CREDENTIALS_ENCRYPTION_METHOD_S VAL("encrypt_method");
 PREFIX const char *CREDENTIALS_ENCRYPTION_KEY_S VAL("encrypt_key");
 

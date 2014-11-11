@@ -5,6 +5,15 @@ Service - Object
 }
 
 
+Authentication - Object
+{
+	name:
+	url:
+	key:
+	secret:
+	username:
+	password:
+}
 
 Provider - Object
 {

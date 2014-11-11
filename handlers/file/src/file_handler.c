@@ -4,7 +4,8 @@
 #include "memory_allocations.h"
 #include "resource.h"
 
-static bool InitFileHandler (struct Handler *handler_p);
+
+static bool InitFileHandler (struct Handler *handler_p, json_t *credentials_p);
 
 
 static bool OpenFileHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
@@ -69,7 +70,7 @@ void ReleaseHandler (Handler *handler_p)
 
 
 
-static bool InitFileHandler (struct Handler *handler_p)
+static bool InitFileHandler (struct Handler *handler_p, json_t *credentials_p)
 {
 	bool success_flag = true;
 	
