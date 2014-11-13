@@ -213,8 +213,17 @@ void FreeDropboxHandler (Handler *handler_p)
 
 static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p)
 {
-	bool success_flag = true;
+	bool success_flag = (handler_p -> dh_client_p != NULL);
 	
+	if (!success_flag)
+		{
+			handler_p -> dh_client_p = CreateClient ((char *) token_key_s, (char *) token_secret_s);
+			
+			if (handler_p -> dh_client_p)
+				{
+				}
+		}
+			
 	return success_flag;
 }
 

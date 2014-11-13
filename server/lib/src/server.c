@@ -296,6 +296,8 @@ static Operation GetOperation (json_t *ops_p)
 }
 
 
+
+
 static Handler *
 
 
@@ -335,31 +337,24 @@ static Resource *GetResourceOfInterest (const json_t * const req_p)
 static json_t *GetInterestedServices (const json_t * const req_p, const json_t * const credentials_p)
 {
 	json_t *res_p = NULL;
-	const char *username_s = NULL;
-	const char *password_s = NULL;
+	Resource *resource_p = GetResourceOfInterest (req_p)
 
-	if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
+	if (resource_p)
 		{
-											if (resource_p)
-												{
-													Handler *handler_p = NULL;
-													json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
-													Handler *handler_p = GetResourceHandler (resource_p, credentials_p);
+			Handler *handler_p = NULL;
+			json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
+			Handler *handler_p = GetResourceHandler (resource_p, credentials_p);
 
-													if (handler_p)
-														{
-															json_t *config_p = NULL;
-															res_p = GetServices (SERVICES_PATH, username_s, password_s, resource_p, handler_p, config_p);
-															
-															FreeHandler (handler_p);
-														}
-														
-													FreeResource (resource_p);
-												}
-										}									
-
-		}
+			if (handler_p)
+				{
+					json_t *config_p = NULL;
+					res_p = GetServices (SERVICES_PATH, username_s, password_s, resource_p, handler_p, config_p);
+					
+					FreeHandler (handler_p);
+				}
 				
+			FreeResource (resource_p);
+		}				
 	
 	return res_p;
 }
