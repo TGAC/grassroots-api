@@ -1,9 +1,27 @@
 { 
-	"$schema": "http://json-schema.org/draft-04/schema#",
+	"$schema": "http://json-schema.org/schema#",
 
 	"definitions": {
 	
+		"services": {
+			"type": "object",
+			"description": "A list of services that this node provides",
+			"properties": {
+				"provider": {
+					"$ref": "#/definitions/provider"
+				},
+				"service_list": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/service"
+					}
+				},
+				"required": [ "provider" ]
+			}
+		},
+		
 		"provider": {
+			"type": "object",
 			"description": "The description of a Provider of Services, i.e. a server node",
 			"properties": {
 				"name": { 
@@ -24,6 +42,7 @@
 		},
 		
 		"service": {
+			"type": "object",
 			"description": "The description of a service",
 			"properties": {
 				"name": { 
@@ -49,6 +68,7 @@
 		},
 		
 		"resource": {
+			"type": "object",
 			"description": "The description for the location and type of a data object e.g. file, url,  etc.",
 			"properties": {
 				"protocol": { 
@@ -64,6 +84,7 @@
 		},
 		
 		"parameter": {
+			"type": "object",
 			"description": "The full description of a parameter, this extends upon the API used by Swagger. See http://swagger.io/ for more information.",
 			"properties": {
 				"param": { 
@@ -106,6 +127,7 @@
 		},
 
 		"operation": {
+			"type": "object",
 			"description": "The description of an Operation. See http://swagger.io/ for more information.",
 			"properties": {
 				"summary": { 
@@ -120,11 +142,12 @@
 					"type": "string",
 					"description":  "A longer description of the operation, github-flavored markdown is allowed."
 				},
-				"required": [ "summary", "operationId", "description" ]
+				"required": ["summary", "operationId", "description"]
 			}
 		},
 		
 		"credentials": {
+			"type": "object",
 			"description": "A collection describing a user's access tokens, passwords, etc. for given handlers/services",
 			"properties": {
 				"name": { 
