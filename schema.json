@@ -1,0 +1,161 @@
+{ 
+	"$schema": "http://json-schema.org/draft-04/schema#",
+
+	"definitions": {
+	
+		"provider": {
+			"description": "The description of a Provider of Services, i.e. a server node",
+			"properties": {
+				"name": { 
+					"type": "string",
+					"description": "Name of the provider"
+				},
+				"description": {
+					"type": "string",
+					"description": "More detailed information about the provider"			
+				},
+				"url": {
+					"type": "string",
+					"description": "Web address for more information",
+					"format": "uri"
+				},
+				"required": [ "name", "description" ]
+			}
+		},
+		
+		"service": {
+			"description": "The description of a service",
+			"properties": {
+				"name": { 
+					"type": "string",
+					"description": "Name of the service"
+				},
+				"description": {
+					"type": "string",
+					"description": "More detailed information about the service"			
+				},
+				"url": {
+					"type": "string",
+					"description": "Web address for more information about the service",
+					"format": "uri"
+				},
+				"operations": {
+					"type": "array",
+					"description": "List of the available operations"
+				},
+				
+				"required": [ "name", "description" ]
+			}
+		},
+		
+		"resource": {
+			"description": "The description for the location and type of a data object e.g. file, url,  etc.",
+			"properties": {
+				"protocol": { 
+					"type": "string",
+					"description": "The protocol identifier e.g. http, file, dropbox, etc."
+				},
+				"value": {
+					"type": "string",
+					"description": "The path of the data object"			
+				},
+				"required": [ "protocol", "value" ]
+			}
+		},
+		
+		"parameter": {
+			"description": "The full description of a parameter, this extends upon the API used by Swagger. See http://swagger.io/ for more information.",
+			"properties": {
+				"param": { 
+					"type": "string",
+					"description": "The name of the parameter."
+				},
+				"description": {
+					"type": "string",
+					"description": "The description of the parameter"			
+				},
+				"type": {
+					"type": "string",
+					"description":  "The type of the parameter as defined by Swagger", 
+					"enum": [
+						"string",
+						"number",
+						"integer",
+						"boolean",
+						"array"
+					]			
+				},
+				"wheatis_type": {
+					"type": "integer",
+					"description": "A more finely-grained description of the parameter type. See ParameterType in services/lib/include/parameter.h"
+				},
+				"current_value": {
+					"type": "object",
+					"description": "The current value of the Parameter"
+				},
+				"default": {
+					"type": "object",
+					"description": "The default value of the Parameter"
+				},
+				"enum": {
+					"type": "object",
+					"description": "A list of the only valid values that this Parameter can take" 
+				},
+				"required": [ "param", "description", "type", "wheatis_type", "current_value" ]
+			}
+		},
+
+		"operation": {
+			"description": "The description of an Operation. See http://swagger.io/ for more information.",
+			"properties": {
+				"summary": { 
+					"type": "string",
+					"description": "A brief summary of the operation"
+				},
+				"operationId": {
+					"type": "string",
+					"description": "A friendly name of the operation"
+				},
+				"description": {
+					"type": "string",
+					"description":  "A longer description of the operation, github-flavored markdown is allowed."
+				},
+				"required": [ "summary", "operationId", "description" ]
+			}
+		},
+		
+		"credentials": {
+			"description": "A collection describing a user's access tokens, passwords, etc. for given handlers/services",
+			"properties": {
+				"name": { 
+					"type": "string",
+					"description": "The name of the handler or authentication provider "
+				},
+				"url": {
+					"type": "string",
+					"format": "uri",
+					"description": "The web "
+				},
+				"key": {
+					"type": "string",
+					"description":  "A longer description of the operation, github-flavored markdown is allowed."
+				},
+				"secret": { 
+					"type": "string",
+					"description": "A brief summary of the operation"
+				},
+				"username": {
+					"type": "string",
+					"description": "A friendly name of the operation"
+				},
+				"password": {
+					"type": "string",
+					"description":  "A longer description of the operation, github-flavored markdown is allowed."
+				}
+			}
+		}		
+				
+	}
+}
+	
+

@@ -53,7 +53,7 @@ PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_TAG_S VAL("tag");
 PREFIX const char *PARAM_TYPE_S VAL("type");
 PREFIX const char *PARAM_WHEATIS_TYPE_INFO_S VAL("wheatis_type");
-PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default_value");
+PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default");
 PREFIX const char *PARAM_CURRENT_VALUE_S  VAL("current_value");
 PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
 PREFIX const char *PARAM_MIN_S  VAL("min");
