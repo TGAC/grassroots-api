@@ -60,7 +60,10 @@
 				},
 				"operations": {
 					"type": "array",
-					"description": "List of the available operations"
+					"description": "List of the available operations",
+					"items": {
+						"$ref": "#/definitions/operation"
+					}
 				},
 				
 				"required": [ "name", "description" ]
@@ -142,42 +145,48 @@
 					"type": "string",
 					"description":  "A longer description of the operation, github-flavored markdown is allowed."
 				},
+				"parameters": {
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/parameter"
+					}					
+				},
+				
 				"required": ["summary", "operationId", "description"]
 			}
 		},
 		
-		"credentials": {
-			"type": "object",
-			"description": "A collection describing a user's access tokens, passwords, etc. for given handlers/services",
-			"properties": {
-				"name": { 
-					"type": "string",
-					"description": "The name of the handler or authentication provider "
-				},
-				"url": {
-					"type": "string",
-					"format": "uri",
-					"description": "The web "
-				},
-				"key": {
-					"type": "string",
-					"description":  "A longer description of the operation, github-flavored markdown is allowed."
-				},
-				"secret": { 
-					"type": "string",
-					"description": "A brief summary of the operation"
-				},
-				"username": {
-					"type": "string",
-					"description": "A friendly name of the operation"
-				},
-				"password": {
-					"type": "string",
-					"description":  "A longer description of the operation, github-flavored markdown is allowed."
-				}
-			}
-		}		
-				
+    "credentials": {
+      "type": "object",
+      "description": "A collection describing a user's access tokens, passwords, etc. for given handlers/services",
+      "properties": {
+        "name": { 
+          "type": "string",
+          "description": "The name of the handler or authentication provider "
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The web address of the authentication provider"
+        },
+        "key": {
+          "type": "string",
+          "description":  "If using OAuth2, this is the client key token."
+        },
+        "secret": { 
+          "type": "string",
+          "description": "If using OAuth2, this is the client secret token."
+        },
+        "username": {
+          "type": "string",
+          "description": "The encrypted username to use"
+        },
+        "password": {
+          "type": "string",
+          "description":  "The encyrpyted password to go with the username"
+        }
+      }
+		}						
 	}
 }
 	
