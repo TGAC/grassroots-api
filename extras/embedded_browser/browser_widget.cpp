@@ -1,5 +1,5 @@
 #include <QHBoxLayout>
-
+#include <QtNetwork>
 #include "browser_widget.h"
 
 BrowserWidget::BrowserWidget(QWidget *parent)
@@ -46,6 +46,9 @@ void  BrowserWidget :: ChangeTitle (const QString &title_r)
 {
 	QByteArray ba = title_r.toLocal8Bit ();
 	const char *title_s = ba.constData ();
+	const char * const google_code_prefix_s = "Success code=";
 
+
+	if (title_s.startsWith ("Success code=")
 	emit TitleChanged (title_s);
 }
