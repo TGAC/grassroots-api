@@ -9,6 +9,7 @@ static void FreeFilename (struct Handler *handler_p);
 
 
 void InitialiseHandler (Handler * const handler_p,
+	bool (*init_fn) (struct Handler *handler_p, json_t *credentials_p),
 	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
 	const char *(*get_protocol_fn) (struct Handler *handler_p),
 	const char *(*get_name_fn) (struct Handler *handler_p),
@@ -22,6 +23,7 @@ void InitialiseHandler (Handler * const handler_p,
 	bool (*file_info_fn) (struct Handler *handler_p, FileInformation *info_p),
 	void (*free_handler_fn) (struct Handler *handler_p))
 {
+	handler_p -> ha_init_fn = init_fn;
 	handler_p -> ha_match_fn = match_fn;
 	handler_p -> ha_get_protocol_fn = get_protocol_fn;
 	handler_p -> ha_get_name_fn = get_name_fn;
@@ -41,9 +43,9 @@ void InitialiseHandler (Handler * const handler_p,
 
 
 
-bool InitHandler (struct Handler *handler_p)
+bool InitHandler (struct Handler *handler_p, json_t *credentials_p)
 {
-	return (handler_p -> ha_init_fn (handler_p));
+	return (handler_p -> ha_init_fn (handler_p, credentials_p));
 }
 
 

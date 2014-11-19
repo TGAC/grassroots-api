@@ -36,13 +36,14 @@ INCLUDES = \
 SRCS 	= \
 	byte_buffer.c \
 	json_tools.c \
-	request_tools.c 
+	request_tools.c \
+	polar_ssl_connection.c
 	
 
 
 CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS
 
-LDFLAGS += -ldl -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)
+LDFLAGS += -ldl -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L/usr/local/lib/ -lpolarssl
 
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 

@@ -213,13 +213,14 @@ void FreeDropboxHandler (Handler *handler_p)
 
 static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p)
 {
-	bool success_flag = (handler_p -> dh_client_p != NULL);
+	DropboxHandler *dropbox_handler_p = (DropboxHandler *) handler_p;	
+	bool success_flag = (dropbox_handler_p -> dh_client_p != NULL);
 	
 	if (!success_flag)
 		{
-			handler_p -> dh_client_p = CreateClient ((char *) token_key_s, (char *) token_secret_s);
+			dropbox_handler_p -> dh_client_p = NULL; //CreateClient ((char *) token_key_s, (char *) token_secret_s);
 			
-			if (handler_p -> dh_client_p)
+			if (dropbox_handler_p -> dh_client_p)
 				{
 				}
 		}

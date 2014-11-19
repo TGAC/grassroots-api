@@ -36,6 +36,9 @@ static int AddParameter (void *rec_p, const char *key_s, const char *value_s);
 static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value_s, request_rec *req_p);
 
 
+static int ReadRequestBody (request_rec *req_p, const char **buffer_pp, apr_off_t *size_p);
+
+
 /**********************************/
 /********** API METHODS ***********/
 /**********************************/
@@ -57,6 +60,23 @@ json_t *GetRequestParameters (request_rec *req_p)
 				
 			default:
 				break;
+		}
+		
+	return params_p;
+}
+
+
+json_t *GetRequestBodyAsJSON (request_rec *req_p)
+{
+	json_t *params_p = NULL;
+	const char *buffer_p = NULL;
+	apr_off_t buffer_size = 0;
+	
+	int res = ReadRequestBody (eq_p, &buffer_p, buffer_size);
+	
+	if (res == 0)
+		{
+				
 		}
 		
 	return params_p;
@@ -340,3 +360,46 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 		}
 	return success_flag;
 }
+
+
+
+static int ReadRequestBody (request_rec *req_p, const char **buffer_pp, apr_off_t *size_p)
+{
+	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
+	
+	if (ret) 
+		{
+			return ret;
+		}
+
+	if (ap_should_client_block (req_p)) 
+		{
+			char argsbuffer [HUGE_STRING_LEN];
+			apr_off_t rsize;
+			apr_off_t len_read;
+			apr_off_t rpos = 0;
+			apr_off_t length = req_p -> remaining;
+			
+
+			*buffer_pp = (const char *) apr_pcalloc (req_p -> pool, (apr_size_t) (length + 1));
+			*size_p = length;
+			
+			while ((len_read = ap_get_client_block (req_p, argsbuffer, sizeof (argsbuffer))) > 0) 
+				{
+					if ((rpos + len_read) > length) 
+						{
+							rsize = length - rpos;
+						}
+					else 
+						{
+							rsize = len_read;
+						}
+
+					memcpy ((char *) ((*buffer_pp) + rpos), argsbuffer, (size_t) rsize);
+					rpos += rsize;
+				}
+		}
+	
+	return ret;
+}
+

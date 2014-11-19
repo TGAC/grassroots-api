@@ -1,6 +1,13 @@
 #ifndef POLAR_SSL_CONNECTION_H
 #define POLAR_SSL_CONNECTION_H
 
+
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include "network_library.h"
+
 #ifndef POLARSSL_CONFIG_FILE
 	#include "polarssl/config.h"
 #else
@@ -22,6 +29,7 @@ typedef struct PolarSSLConnection
 	ctr_drbg_context psc_ctr_drbg;
 	ssl_context psc_ssl;
 	x509_crt psc_cacert;
+	int psc_server_fd;
 } PolarSSLConnection;
 
 
