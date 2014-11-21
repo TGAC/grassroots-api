@@ -4,28 +4,73 @@
 #include "file_output_stream.h"
 
 
-static OutputStream *s_stdout_stream_p = NULL;
+static OutputStream *s_log_stream_p = NULL;
+static OutputStream *s_error_stream_p = NULL;
 
-int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...)
+
+
+bool InitDefaultOutputStream (void)
 {
-	int result = -1;
-
-	va_list args;
-
-	va_start (args, message_s);
-
-	if (stream_p)
+	s_log_stream_p = AllocateFileOutputStream (NULL);
+	
+	if (s_log_stream_p)
 		{
-			result = stream_p -> st_print_fn (stream_p, STM_LEVEL_ALL, message_s, args);
+			s_error_stream_p = AllocateFileOutputStream (NULL);
+			
+			if (s_error_stream_p)
+				{
+					return true;
+				}
+				
+			FreeOutputStream (s_log_stream_p);
+			s_log_stream_p = NULL;
 		}
-	else
+		
+	return false;
+}
+
+
+void FreeDefaultOutputStream (void)
+{
+	if (s_log_stream_p)
 		{
-			result = vfprintf (stdout, message_s, args); 
+			FreeOutputStream (s_log_stream_p);
+			s_log_stream_p = NULL;
+		}		
+
+	if (s_error_stream_p)
+		{
+			FreeOutputStream (s_error_stream_p);
+			s_error_stream_p = NULL;
+		}		
+}
+
+
+void SetDefaultErrorStream (OutputStream *stream_p)
+{
+	if (s_error_stream_p)
+		{
+			FreeOutputStream (s_error_stream_p);
 		}
+		
+	s_error_stream_p = stream_p;
+}
 
-	va_end (args);
 
-	return result;
+void SetDefaultLogStream (OutputStream *stream_p)
+{
+	if (s_log_stream_p)
+		{
+			FreeOutputStream (s_log_stream_p);
+		}
+		
+	s_log_stream_p = stream_p;
+}
+
+
+void FreeOutputStream (struct OutputStream *stream_p)
+{
+	stream_p -> st_free_stream_fn (stream_p);
 }
 
 
@@ -43,19 +88,9 @@ int PrintErrors (const uint32 level, const char *message_s, ...)
 	int result = -1;
 	va_list args;
 
-	OutputStreamerModule *streamer_p = GetStreamer ();
-	OutputStream *stream_p = NULL;
-
-	if (streamer_p)
+	if (s_error_stream_p)
 		{
-			stream_p = streamer_p -> osm_get_errors_stream_fn (streamer_p);
-		}
-
-	va_start (args, message_s);
-
-	if (stream_p)
-		{
-			result = stream_p -> st_print_fn (stream_p, level, message_s, args);
+			result = s_error_stream_p -> st_print_fn (s_error_stream_p, level, message_s, args);
 		}
 	else
 		{
@@ -81,19 +116,11 @@ int PrintLog (const uint32 level, const char *message_s, ...)
 	int result = -1;
 	va_list args;
 
-	OutputStreamerModule *streamer_p = GetStreamer ();
-	OutputStream *stream_p = NULL;
-
-	if (streamer_p)
-		{
-			stream_p = streamer_p -> osm_get_log_stream_fn (streamer_p);
-		}
-
 	va_start (args, message_s);
 
-	if (stream_p)
+	if (s_log_stream_p)
 		{
-			result = stream_p -> st_print_fn (stream_p, level, message_s, args);
+			result = s_log_stream_p -> st_print_fn (s_log_stream_p, level, message_s, args);
 		}
 	else
 		{
@@ -106,119 +133,14 @@ int PrintLog (const uint32 level, const char *message_s, ...)
 }
 
 
-/**
- * Print to the results FILE.
- *
- * @param message A char * using the same format as printf, etc.
- * @return On success, the total number of characters written is returned.
- * On failure, a negative number is returned. If the results FILE is NULL, then
- * this will return 0.
- */
-int PrintResults (const uint32 level, const char *message_s, ...)
+bool FlushLog (OutputStream *stream_p)
 {
-	int result = -1;
-	va_list args;
-
-	OutputStreamerModule *streamer_p = GetStreamer ();
-	OutputStream *stream_p = NULL;
-
-	if (streamer_p)
-		{
-			stream_p = streamer_p -> osm_get_results_stream_fn (streamer_p);
-		}
-
-	va_start (args, message_s);
-
-	if (stream_p)
-		{
-			result = stream_p -> st_print_fn (stream_p, level, message_s, args);
-		}
-	else
-		{
-			result = vfprintf (stdout, message_s, args); 
-		}
-
-	va_end (args);
-
-	return result;
+	return (s_log_stream_p -> st_flush_fn (stream_p));
 }
 
 
-/**
- * Get where result messages will be sent.
- *
- * @return The FILE to send results to.
- */
-OutputStream *GetResultsOutput (void)
+
+bool FlushErrors (OutputStream *stream_p)
 {
-	OutputStreamerModule *streamer_p = GetStreamer ();
-
-	if (streamer_p)
-		{
-			return streamer_p -> osm_get_results_stream_fn (streamer_p);
-		}
-	else
-		{
-			if (!s_stdout_stream_p)
-				{
-					s_stdout_stream_p = (OutputStream *) AllocateFileOutputStream (NULL);
-				}
-
-			return s_stdout_stream_p;
-		}
-}
-
-
-/**
- * Get where logging messages will be sent.
- *
- * @return The FILE to send results to.
- */
-OutputStream *GetLogOutput (void)
-{
-	OutputStreamerModule *streamer_p = GetStreamer ();
-
-	if (streamer_p)
-		{
-			return streamer_p -> osm_get_log_stream_fn (streamer_p);
-		}
-	else
-		{
-			if (!s_stdout_stream_p)
-				{
-					s_stdout_stream_p = (OutputStream *) AllocateFileOutputStream (NULL);
-				}
-
-			return s_stdout_stream_p;
-		}
-}
-
-/**
- * Get where error messages will be sent.
- *
- * @return The FILE to send results to.
- */
-OutputStream *GetErrorsOutput (void)
-{
-	OutputStreamerModule *streamer_p = GetStreamer ();
-
-	if (streamer_p)
-		{
-			return streamer_p -> osm_get_errors_stream_fn (streamer_p);
-		}
-	else
-		{
-			if (!s_stdout_stream_p)
-				{
-					s_stdout_stream_p = (OutputStream *) AllocateFileOutputStream (NULL);
-				}
-
-			return s_stdout_stream_p;
-		}
-}
-
-
-bool FlushOutputStream (OutputStream *stream_p)
-{
-	return (stream_p -> st_flush_fn (stream_p));
+	return (s_error_stream_p -> st_flush_fn (stream_p));
 }

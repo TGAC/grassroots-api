@@ -25,7 +25,7 @@
 #include "server.h"
 #include "request_tools.h"
 #include "service_config.h"
-#include "handler_utils.h"
+#include "system_util.h"
 
 
 /**********************/
@@ -99,11 +99,11 @@ int main (int argc, char *argv [])
 		{
 			if (listen (socket_fd, backlog) != -1)
 				{
-					if (InitHandlerUtil ())
+					if (InitInformationSystem ())
 						{
 							RunServer (socket_fd);					
 							
-							if (!DestroyHandlerUtil ())
+							if (!DestroyInformationSystem ())
 								{
 									fprintf (stderr, "Failed to destory handler util");
 								}

@@ -62,7 +62,8 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/re/include 	
 	
 SRCS 	= \
-	server.c 
+	server.c \
+	system_util.c
 
 CPPFLAGS += -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS 
 

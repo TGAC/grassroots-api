@@ -88,7 +88,7 @@ int ConnectPolarSSL (PolarSSLConnection *connection_p, const char *hostname_s, c
 					ssl_set_bio (ssl_p, net_recv, & (connection_p -> psc_server_fd), net_send, & (connection_p -> psc_server_fd));					
 					
 					/* Only accept strong ciphers */
-				//	ssl_set_ciphersuites (ssl_p, ssl_default_ciphersuites);
+					ssl_set_ciphersuites (ssl_p, ssl_list_ciphersuites ());
 
 
 					/* Perform the SSL/TLS handshake */				

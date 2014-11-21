@@ -186,7 +186,34 @@
           "description":  "The encyrpyted password to go with the username"
         }
       }
-		}						
+		},
+		
+		"response": {
+      "type": "object",
+      "description": "The server's response from having run a service",
+      "properties": {
+        "service": { 
+          "type": "string",
+          "description": "The name of the service"
+        },
+        "status": { 
+          "type": "string",
+          "description": "The status of the job on the service",
+					"enum": [
+						"waiting",
+						"failed to start",
+						"started",
+						"finished",
+						"failed"
+					]		
+        },
+        "result": { 
+          "type": "string",
+          "description": "A value to be shown to the user"
+        },
+      }
+		
+		}
 	}
 }
 	

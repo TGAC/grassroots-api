@@ -65,6 +65,8 @@ static void RegisterHooks (apr_pool_t *pool_p)
 {
   /* Hook the request handler */
   ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_LAST);
+  
+  InitInformationSystem ();
 }
 
 
@@ -91,7 +93,7 @@ static int WheatISHandler (request_rec *req_p)
   if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) 
   	{
  			/* Get the posted json data */
-			json_t *json_req_p = GetRequestParameters (req_p);
+			json_t *json_req_p = GetAllRequestDataAsJSON (req_p);
 			
 			if (json_req_p)
 				{

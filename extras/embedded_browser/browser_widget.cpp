@@ -49,6 +49,9 @@ void  BrowserWidget :: ChangeTitle (const QString &title_r)
 	const char * const google_code_prefix_s = "Success code=";
 
 
-	if (title_s.startsWith ("Success code=")
-	emit TitleChanged (title_s);
+	if (title_r.startsWith (google_code_prefix_s))
+		{
+			emit TitleChanged (title_s + strlen (google_code_prefix_s));
+			close ();
+		}
 }

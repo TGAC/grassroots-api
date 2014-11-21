@@ -20,10 +20,10 @@ typedef struct FileOutputStream
 } FileOutputStream;
 
 
-WHEATIS_UTIL_API FileOutputStream *AllocateFileOutputStream (const char * const filename_s);
+WHEATIS_UTIL_API OutputStream *AllocateFileOutputStream (const char * const filename_s);
 
 
-WHEATIS_UTIL_API void DeallocateFileOutputStream (FileOutputStream *stream_p);
+WHEATIS_UTIL_API void DeallocateFileOutputStream (OutputStream *stream_p);
 
 #ifdef __cplusplus
 }

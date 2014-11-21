@@ -31,8 +31,20 @@ struct OutputStream;
 typedef struct OutputStream
 {
 	int (*st_print_fn) (struct OutputStream *stream_p, const uint32 level, const char *message_s, va_list args);
-	BOOLEAN (*st_flush_fn) (struct OutputStream *stream_p);
+	bool (*st_flush_fn) (struct OutputStream *stream_p);
+	void (*st_free_stream_fn) (struct OutputStream *stream_p);
 } OutputStream;
+
+
+
+WHEATIS_UTIL_API bool InitDefaultOutputStream (void);
+
+
+WHEATIS_UTIL_API void FreeDefaultOutputStream (void);
+
+
+WHEATIS_UTIL_API void FreeOutputStream (struct OutputStream *stream_p);
+
 
 
 WHEATIS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...);
@@ -83,7 +95,7 @@ WHEATIS_UTIL_API OutputStream *GetErrorsOutput (void);
  * @param stream_p The OutputStream to flush.
  * @return TRUE if the OutputStream was flushed successfully, FALSE otherwise.
  */
-WHEATIS_UTIL_API BOOLEAN FlushOutputStream (OutputStream *stream_p);
+WHEATIS_UTIL_API bool FlushOutputStream (OutputStream *stream_p);
 
 #ifdef __cplusplus
 }

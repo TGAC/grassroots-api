@@ -44,6 +44,38 @@ static int ReadRequestBody (request_rec *req_p, const char **buffer_pp, apr_off_
 /**********************************/
 
 
+json_t *GetAllRequestDataAsJSON (request_rec *req_p)
+{
+	json_t *params_p = GetRequestParameters (req_p);
+	json_t *body_p = GetRequestBodyAsJSON (req_p);
+	json_t *res_p = NULL;
+
+	if (params_p)
+		{
+			if (body_p)
+				{					
+					int i = json_object_update (params_p, body_p);
+
+					if (i != 0)
+						{
+							// error
+						}						
+
+					json_object_clear (body_p);
+					json_decref (body_p);
+				}
+
+			res_p = params_p;
+		}
+	else
+		{
+			res_p = body_p;
+		}
+		
+	return res_p;
+}
+
+
 json_t *GetRequestParameters (request_rec *req_p)
 {
 	json_t *params_p = NULL;
@@ -72,11 +104,18 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 	const char *buffer_p = NULL;
 	apr_off_t buffer_size = 0;
 	
-	int res = ReadRequestBody (eq_p, &buffer_p, buffer_size);
+	int res = ReadRequestBody (req_p, &buffer_p, &buffer_size);
 	
 	if (res == 0)
 		{
-				
+			json_error_t error;
+			
+			params_p = json_loads (buffer_p, 0, &error);
+			
+			if (!params_p)
+				{
+					
+				}
 		}
 		
 	return params_p;

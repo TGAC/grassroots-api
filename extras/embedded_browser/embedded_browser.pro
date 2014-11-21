@@ -14,6 +14,8 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        browser_widget.cpp
+        browser_widget.cpp \
+    proxy_object.cpp
 
-HEADERS  += browser_widget.h
+HEADERS  += browser_widget.h \
+    proxy_object.h
