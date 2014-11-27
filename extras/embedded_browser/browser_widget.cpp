@@ -6,6 +6,7 @@ BrowserWidget::BrowserWidget(QWidget *parent)
 	: QWidget(parent)
 {
 	bw_browser_p = new QWebView;
+
 	QHBoxLayout *layout_p = new QHBoxLayout;
 
 	layout_p -> addWidget (bw_browser_p);
@@ -15,20 +16,26 @@ BrowserWidget::BrowserWidget(QWidget *parent)
 	connect (bw_browser_p, &QWebView :: titleChanged, this, &BrowserWidget :: ChangeTitle);
 
 
+	bw_network_manager_p = new QNetworkAccessManager (parent);
+	connect  (bw_network_manager_p, &QNetworkAccessManager :: finished, this, &BrowserWidget :: ReponseFinished);
+
 	setLayout (layout_p);
 }
 
 
 BrowserWidget::~BrowserWidget()
 {
-
+	delete bw_browser_p;
+	delete bw_network_manager_p;
 }
 
 
 void BrowserWidget  :: SetUrl (char *url_s)
 {
 	QUrl url (url_s);
-	bw_browser_p -> setUrl (url);
+	QNetworkRequest req (url);
+
+	bw_network_manager_p -> get (req);
 }
 
 
@@ -54,4 +61,22 @@ void  BrowserWidget :: ChangeTitle (const QString &title_r)
 			emit TitleChanged (title_s + strlen (google_code_prefix_s));
 			close ();
 		}
+}
+
+
+
+void  BrowserWidget :: ReponseFinished (QNetworkReply *reply_p)
+{
+	QByteArray response = reply_p -> readAll ();
+	QString html (response);
+	QString auth_header ("Authorization");
+	QByteArray ba = auth_header.toLocal8Bit ();
+
+	if (reply_p -> hasRawHeader (ba ))
+		{
+			QByteArray header_value = reply_p -> rawHeader ("Authorization: Bearer");
+		}
+
+	bw_browser_p -> setHtml (html, reply_p -> request ().url ());
+
 }

@@ -1,5 +1,7 @@
 #include "system_util.h"
 
+#include "curl/curl.h"
+
 #include "handler_utils.h"
 #include "streams.h"
 
@@ -10,8 +12,13 @@ bool InitInformationSystem ()
 	if (InitHandlerUtil ())
 		{
 			if (InitDefaultOutputStream ())
-				{
-					return true;
+				{					
+					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT)
+					
+					if (c == 0)
+						{
+							return true;
+						}
 				}
 		}
 
@@ -25,6 +32,8 @@ bool DestroyInformationSystem ()
 	
 	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
+
+	curl_global_cleanup ();
 
 	return res_flag;
 }

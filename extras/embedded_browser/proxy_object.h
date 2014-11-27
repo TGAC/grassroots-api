@@ -16,9 +16,12 @@ class ProxyObject : public QObject
 
 signals:
 	void TextChanged (const char *value_s);
+	bool AccessTokenSet ();
 
 public slots:
 	void ChangeText (const char *value_s);
+	void SetAccessToken (QByteArray ba);
+	const QByteArray &GetAccessToken () const;
 
 public:
 	ProxyObject ();
@@ -29,6 +32,7 @@ public:
 
 private:
 	char *po_text_s;
+	QByteArray po_access_token;
 };
 
 

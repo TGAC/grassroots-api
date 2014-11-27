@@ -15,24 +15,14 @@ int main(int argc, char *argv[])
 	w.SetUrl (google_tgac_wheatis_s);
 
  QObject :: connect (&w, &BrowserWidget :: TitleChanged, &po, &ProxyObject :: ChangeText);
+ QObject :: connect (&po, &ProxyObject :: AccessTokenSet, &w, &BrowserWidget :: close);
 
 	w.show ();
 
-
-
 	res = a.exec();
 
-	const char *code_s = po.GetText ();
-
-
+	const QByteArray &access_token_r  = po.GetAccessToken();
 
 	return res;
 }
 
-
-char *GetAccessToken ()
-{
-	char *token_s = NULL;
-
-	return token_s;
-}

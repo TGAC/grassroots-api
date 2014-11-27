@@ -16,6 +16,18 @@ ProxyObject :: ~ProxyObject ()
 }
 
 
+void ProxyObject :: SetAccessToken (QByteArray ba)
+{
+	po_access_token = ba;
+	emit AccessTokenSet ();
+}
+
+
+const QByteArray &ProxyObject :: GetAccessToken () const
+{
+	return po_access_token;
+}
+
 
 void ProxyObject :: SetText (const char *value_s)
 {

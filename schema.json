@@ -214,57 +214,6 @@
       }
 		},
 		
-		
-		"snp": {
-			"type": "object",
-      "description": "A snp",
-      "properties": {
-        "id": { 
-          "type": "string",
-          "description": "The name of the snp"
-        },
-        "position": { 
-          "type": "integer",
-          "description": "The position of the snp within its contig"
-        },
-        "code": {
-          "type": "string",
-          "description": "The ambiguity code used for this snp"        
-        },
-        "translations": {
-          "type": "array",
-          "description": "The possible values of the nucleotide"
-					"items": {
-						"type": "string",
-					}										
-        },
-      }
-		},
-
-	
-		"snp_map": {
-			"type": "object",
-      "description": "A snp's location on a contig",
-      "properties": {
-				"snp": {
-					"$ref": "#/definitions/snp"				
-				},
-        "map name": { 
-          "type": "string",
-          "description": "The name of this location e.g. AxC, SxR, etc."  
-        },
-        "location": { 
-          "type": "number",
-          "description": "The location of this snp on the contig"  
-        },
-        "cm": {
-          "type": "number",
-          "description": "The cM for this snp"        
-        },
-			}
-		},
-		
-		
 		"snp": {
 			"type": "object",
       "description": "A snp's location on a contig",
@@ -284,11 +233,21 @@
 						"type": "string",
 					}										
         },
-      }
-		
-		
-		}
-		
+        "map name": { 
+          "type": "string",
+          "description": "The name of this location e.g. AxC, SxR, etc."  
+        },
+        "location": { 
+          "type": "number",
+          "description": "The location of this snp on the contig"  
+        },
+        "cm": {
+          "type": "number",
+          "description": "The cM for this snp"        
+        },        
+      }		
+		},
+				
 		"contig": {
 			"type": "object",
       "description": "A contig sequence",
@@ -309,10 +268,8 @@
 						"$ref": "#/definitions/snp"
 					}	
         },
-      }
-			
-		},
-		
+      }	
+		}
 	}
 }
 	
