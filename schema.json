@@ -188,6 +188,30 @@
       }
 		},
 		
+		"web_service": {
+      "type": "object",
+      "description": "A description of how to call a webservice",
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The url to call for this webservice"
+        }
+        "format": {
+          "type": "string",
+          "description": "How the webservice parameters will be set",
+					"enum": [
+						"get",
+						"post",
+						"json"
+					]			
+        }
+			},
+			"service": {
+				"$ref": "#/definitions/service"			
+			}      
+		},
+		
 		"response": {
       "type": "object",
       "description": "The server's response from having run a service",

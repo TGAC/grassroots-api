@@ -13,7 +13,7 @@ bool InitInformationSystem ()
 		{
 			if (InitDefaultOutputStream ())
 				{					
-					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT)
+					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
 					
 					if (c == 0)
 						{

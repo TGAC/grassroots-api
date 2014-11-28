@@ -11,7 +11,7 @@ all:
 	$(MAKE) -C handlers/dropbox
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
-	$(MAKE) -C server/httpd
+	$(MAKE) -C server/httpd/mod_wheatis
 	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
@@ -28,7 +28,7 @@ install: install_init
 	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
-	$(MAKE) -C server/httpd install
+	$(MAKE) -C server/httpd/mod_wheatis install
 	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
@@ -46,7 +46,7 @@ clean:
 	$(MAKE) -C handlers/dropbox clean
 	$(MAKE) -C server/lib clean 
 	$(MAKE) -C server/standalone clean 
-	$(MAKE) -C server/httpd clean
+	$(MAKE) -C server/httpd/mod_wheatis clean
 	$(MAKE) -C clients/standalone clean
 #	$(MAKE) -C clients/web-server-client clean	
 	$(MAKE) -C services/blast clean

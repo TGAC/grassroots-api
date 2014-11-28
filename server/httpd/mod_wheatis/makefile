@@ -14,7 +14,7 @@ DIR_OBJS = $(BUILD)
 DIR_IRODS	= $$IRODS_HOME
 DIR_APACHE_MODULES = /usr/local/apache2/modules
 
-DIR_ROOT_REL = ../../
+DIR_ROOT_REL = ../../..
 DIR_ROOT = $(realpath $(DIR_ROOT_REL))
 
 
@@ -45,10 +45,10 @@ WHEATIS_HANDLER_LIB_NAME = wheatis_handler
 
 DIR_WHEATIS_SERVER = $(DIR_ROOT)/server/lib
 DIR_WHEATIS_SERVER_INC = $(DIR_WHEATIS_SERVER)/include
-DIR_WHEATIS_SERVER_SRC = $(DIR_WHEATIS_SERVER)/src
+DIR_WHEATIS_SERVER_LIB = $(DIR_WHEATIS_SERVER)/$(BUILD)
+WHEATIS_SERVER_LIB_NAME = wheatis_server
 
-
-DIR_INSTALL = $(DIR_ROOT)../wheatis_demo/lib
+DIR_INSTALL = $(DIR_ROOT)/../wheatis_demo/lib
 
 CFLAGS 	+=  -Wc,-Wall  -Wc,-fpic
 
@@ -89,15 +89,14 @@ INCLUDES = \
 		
 SRCS 	= \
 	src/mod_wheatis.c \
-	src/key_value_pair.c \
-	../lib/src/server.c \
- 
+	src/key_value_pair.c  
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
+	-L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
 	-L$(DIR_IRODS)/lib -lirods
 
  

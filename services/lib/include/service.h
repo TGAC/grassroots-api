@@ -85,7 +85,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p);
+WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p, const json_t *service_config_p);
 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (void),
@@ -164,9 +164,6 @@ WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * co
 
 
 WHEATIS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
-
-
-WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (Plugin * const plugin_p);
 
 
 WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
