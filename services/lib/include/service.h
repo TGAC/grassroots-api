@@ -42,6 +42,7 @@ typedef struct Service
 	 */
 	struct Plugin *se_plugin_p;
 
+	bool se_is_specific_service_flag;
 
 	int (*se_run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
 
@@ -52,12 +53,12 @@ typedef struct Service
  	/**
  	 * Function to get the user-friendly name of the service.
  	 */
-	const char *(*se_get_service_name_fn) (void);
+	const char *(*se_get_service_name_fn) (ServiceData *service_data_p);
 
 	/**
 	 * Function to get the user-friendly description of the service.
 	 */
-	const char *(*se_get_service_description_fn) (void);
+	const char *(*se_get_service_description_fn) (ServiceData *service_data_p);
 
 	/**
 	 * Function to get the ParameterSet for this Service.
@@ -88,11 +89,12 @@ extern "C"
 WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p, const json_t *service_config_p);
 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
-	const char *(*get_service_name_fn) (void),
-	const char *(*get_service_description_fn) (void),
+	const char *(*get_service_name_fn) (ServiceData *service_data_p),
+	const char *(*get_service_description_fn) (ServiceData *service_data_p),
 	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p),
+	bool specific_flag,
 	ServiceData *data_p);
 
 WHEATIS_SERVICE_API int RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);

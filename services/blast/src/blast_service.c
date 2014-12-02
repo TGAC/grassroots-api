@@ -20,9 +20,9 @@ typedef struct
  * STATIC PROTOTYPES
  */
  
-static const char *GetBlastServiceName (void);
+static const char *GetBlastServiceName (ServiceData *service_data_p);
 
-static const char *GetBlastServiceDesciption (void);
+static const char *GetBlastServiceDesciption (ServiceData *service_data_p);
 
 static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
 
@@ -66,13 +66,13 @@ void ReleaseService (Service *service_p)
  */
  
  
-static const char *GetBlastServiceName (void)
+static const char *GetBlastServiceName (ServiceData *service_data_p)
 {
 	return "Blast service";
 }
 
 
-static const char *GetBlastServiceDesciption (void)
+static const char *GetBlastServiceDesciption (ServiceData *service_data_p)
 {
 	return "A service to run the Blast program";
 }

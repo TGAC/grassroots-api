@@ -7,7 +7,7 @@
 #include "wheatis_util_library.h"
 
 #include "jansson.h"
-
+#include "linked_list.h"
 
 /*
  * The following preprocessor macros allow us to declare
@@ -79,6 +79,12 @@ PREFIX const char *CREDENTIALS_ENCRYPTION_METHOD_S VAL("encrypt_method");
 PREFIX const char *CREDENTIALS_ENCRYPTION_KEY_S VAL("encrypt_key");
 
 
+typedef struct JsonNode
+{
+	ListItem jn_node;
+	json_t *jn_json_p;
+} JsonNode;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -88,6 +94,11 @@ extern "C"
 WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
 
 WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
+
+WHEATIS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
+
+WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
+
 
 
 #ifdef __cplusplus

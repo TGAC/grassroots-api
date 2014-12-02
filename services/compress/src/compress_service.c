@@ -60,9 +60,9 @@ static const char *S_INPUT_PARAM_NAME_S = "Input";
  * STATIC PROTOTYPES
  */
 
-static const char *GetCompressServiceName (void);
+static const char *GetCompressServiceName (ServiceData *service_data_p);
 
-static const char *GetCompressServiceDesciption (void);
+static const char *GetCompressServiceDesciption (ServiceData *service_data_p);
 
 static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
 
@@ -248,13 +248,13 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
  */
 
 
-static const char *GetCompressServiceName (void)
+static const char *GetCompressServiceName (ServiceData *service_data_p)
 {
 	return "Compress service";
 }
 
 
-static const char *GetCompressServiceDesciption (void)
+static const char *GetCompressServiceDesciption (ServiceData *service_data_p)
 {
 	return "A service to compress data";
 }

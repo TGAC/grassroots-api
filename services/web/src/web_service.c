@@ -11,6 +11,15 @@
 #include "filesystem_utils.h"
 
 
+typedef struct WebServiceData
+{
+	ServiceData wsd_base_data;
+	json_t *wsd_config_p;
+	const char *wsd_name_s;
+	const char *wsd_description_s;
+	ParameterSet *wsd_params_p;
+} WebServiceData;
+
 /*
  * STATIC PROTOTYPES
  */
@@ -30,29 +39,49 @@ static bool IsResourceForWebService (ServiceData *service_data_p, Resource *reso
 static int Web (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
 
 
+
+static WebServiceData *AllocateWebServiceData (json_t *config_p);
+
+
+static void FreeWebServiceData (WebServiceData *data_p);
+
+
 /*
  * API FUNCTIONS
  */
 
-Service *GetService (void)
+Service *GetService (json_t *config_p)
 {
 	Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
-	ServiceData *data_p = NULL;
+	
+	if (web_service_p)
+		{
+			ServiceData *data_p = AllocateWebServiceData (config_p);
 
-	InitialiseService (compress_service_p,
-		GetWebServiceName,
-		GetWebServiceDesciption,
-		RunWebService,
-		IsResourceForWebService,
-		GetWebServiceParameters,
-		data_p);
+			if (data_p)
+				{
+					InitialiseService (compress_service_p,
+						GetWebServiceName,
+						GetWebServiceDesciption,
+						RunWebService,
+						IsResourceForWebService,
+						GetWebServiceParameters,
+						data_p);
 
-	return web_service_p;
+					
+					return web_service_p;
+				}
+			
+			FreeMemory (web_service_p);
+		}
+	
+	return NULL;
 }
 
 
 void ReleaseService (Service *service_p)
 {
+	FreeWebServiceData ((WebServiceData *) (service_p -> se_data_p));
 	FreeMemory (service_p);
 }
 
@@ -62,15 +91,61 @@ void ReleaseService (Service *service_p)
  */
 
 
-static const char *GetWebServiceName (void)
+static WebServiceData *AllocateWebServiceData (json_t *config_p)
 {
-	return "CerealsDB Web service";
+	WebServiceData *data_p = (WebServiceData *) AllocMemory (sizeof (WebServiceData));
+	
+	if (data_p)
+		{
+			data_p -> wsd_config_p = config_p;
+			data_p -> wsd_name_s = GetServiceNameFromJSON (config_p);
+			
+			if (data_p -> wsd_name_s)
+				{
+					data_p -> wsd_description_s = GetServiceDescriptionFromJSON (config_p);
+					
+					if (data_p -> wsd_description_s)
+						{
+							data_p -> wsd_params_p = CreateParameterSetFromJSON (config_p);
+							
+							if (data_p -> wsd_params_p)
+								{
+									return data_p;
+								}
+						}
+					
+				}
+				
+			FreeMemory (data_p);
+		}
+		
+	return NULL;
 }
 
 
-static const char *GetWebServiceDesciption (void)
+static void FreeWebServiceData (WebServiceData *data_p)
 {
-	return "A service to call the web service";
+	FreeParameterSet (data_p -> wsd_params_p);
+
+	json_decref (data_p -> wsd_config_p);
+	
+	FreeMemory (data_p);
+}
+
+
+static const char *GetWebServiceName (ServiceData *service_data_p)
+{
+	WebServiceData *data_p = (WebServiceData *) service_data_p;
+	
+	return (data_p -> wsd_name_s);
+}
+
+
+static const char *GetWebServiceDesciption (ServiceData *service_data_p)
+{
+	WebServiceData *data_p = (WebServiceData *) service_data_p;
+
+	return (data_p -> wsd_description_s);
 }
 
 

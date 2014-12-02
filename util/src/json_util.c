@@ -1,6 +1,29 @@
 
 #define ALLOCATE_JSON_TAGS
 #include "json_util.h"
+#include "memory_allocations.h"
+
+
+JsonNode *AllocateJsonNode (json_t *json_p)
+{
+	JsonNode *json_node_p = (JsonNode *) AllocMemory (sizeof (JsonNode));
+	
+	if (json_node_p)
+		{
+			json_node_p -> jn_json_p = json_p;
+		}
+	
+	return json_node_p;
+}
+
+
+void FreeJsonNode (ListItem *node_p)
+{
+	JsonNode *json_node_p = (JsonNode *) node_p;
+	
+	json_decref (json_node_p -> jn_json_p);
+	FreeMemory (json_node_p);
+}
 
 
 int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s)

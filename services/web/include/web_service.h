@@ -11,7 +11,7 @@ extern "C"
 #endif
 
 
-WEB_SERVICE_API Service *GetService (void);
+WEB_SERVICE_API Service *GetService (json_t *config_p);
 
 
 WEB_SERVICE_API void ReleaseService (Service *service_p);

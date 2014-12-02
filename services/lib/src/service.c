@@ -7,7 +7,7 @@
 #include "service_matcher.h"
 #include "service_config.h"
 #include "json_util.h"
-
+#include "streams.h"
 
 static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p);
 
@@ -20,11 +20,12 @@ static LinkedList *GetMatchingServices (const char * const services_path_s, Serv
 
 
 void InitialiseService (Service * const service_p,
-	const char *(*get_service_name_fn) (void),
-	const char *(*get_service_description_fn) (void),
+	const char *(*get_service_name_fn) (ServiceData *service_data_p),
+	const char *(*get_service_description_fn) (ServiceData *service_data_p),
 	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p),
+	bool specific_flag,
 	ServiceData *data_p)
 {
 	service_p -> se_get_service_name_fn = get_service_name_fn;
@@ -33,6 +34,8 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_match_fn = match_fn;
 	service_p -> se_get_params_fn = get_parameters_fn;
 	service_p -> se_data_p = data_p;
+	
+	service_p -> se_is_specific_service_flag = specific_flag;
 	
 	if (service_p -> se_data_p)
 		{
@@ -70,22 +73,161 @@ void FreeServiceNode (ListItem * const node_p)
 }
 
 
+json_t *GetServiceConfig (const char * const filename_s)
+{
+	json_t *config_p = NULL;
+	FILE *config_f = fopen (filename_s, "r");
+	
+	if (config_f)
+		{
+			json_error_t error;
+			
+			config_p = json_loadf (config_f, 0, &error);
+			
+			if (!config_p)
+				{
+					
+				}
+				
+			if (fclose (config_f) != 0)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to close service config file \"%s\"", filename_s);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to open service config file \"%s\"", filename_s);			
+		}
+	
+	
+	return config_p;
+}
+
+
 /**
  * Load any json stubs for external services that are used to configure generic services, 
  * e.g. web services
  */
-static LinkedList *GetServiceReferenceServices (const char * const references_path_s)
+void AddReferenceServices (const char * const references_path_s, LinkedList *services_p)
 {
-	LinkedList *services_list_p = AllocateLinkedList (FreeStringNode);
+	const char *root_path_s = GetServerRootDirectory ();
+	char *full_references_path_s = MakeFilename (root_path_s, references_path_s);
 	
-	if (services_list_p)
+	if (full_references_path_s)
+		{
+			char *path_and_pattern_s = MakeFilename (full_references_path_s, ".json");
+
+			if (path_and_pattern_s)
+				{
+					LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
+					
+					if (matching_filenames_p)
+						{
+							StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
+							NameServiceMatcher matcher;
+	
+							while (node_p)
+								{
+									json_t *config_p = GetServiceConfig (node_p -> sln_string_s);
+
+									if (config_p)
+										{
+											const char * const plugin_name_s = GetServiceNameFromJSON (config_p);
+											
+											if (plugin_name_s)
+												{
+													InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);			
+													
+													GetMatchingServices (services_path_s, &matcher, config_p, services_p, false);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, "Failed to get plugin name from \"%s\"", node_p -> sln_string_s);
+												}
+																						
+										}		/* if (config_p) */
+																				
+									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+								}		/* while (node_p) */
+							
+							FreeLinkedList (matching_filenames_p);
+						}		/* if (matching_filenames_p) */
+					
+					FreeCopiedString (path_and_pattern_s);
+				}		/* if (path_and_pattern_s) */
+			
+			FreeCopiedString (full_references_path_s);
+		}		/* if (full_services_path_s) */			
+}
+
+
+bool GetService (const char * const plugin_name_s, Service **service_pp, ServiceMatcher *matcher_p)
+{
+	Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
+	bool success_flag = false;
+	
+	if (plugin_p)
+		{
+			if (OpenPlugin (plugin_p))
+				{																							
+					Service *service_p = GetServiceFromPlugin (plugin_p, config_p);
+					
+					if (service_p)
+						{
+							bool using_service_flag = true;
+							
+							success_flag = true;
+							
+							if (matcher_p)
+								{
+									using_service_flag = RunServiceMatcher (matcher_p, service_p);
+								}
+								
+							if (using_service_flag)
+								{
+									*service_pp = services_p;
+								}
+							else
+								{
+									FreeService (service_p);
+								}
+						}
+					else
+						{
+							/* failed to get service from plugin */
+							PrintErrors (STM_LEVEL_WARNING, "Failed to get service from plugin with name \"%s\"", plugin_name_s);	
+						}
+						
+				}		/* if (OpenPlugin (plugin_p)) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to open plugin with name \"%s\"", plugin_name_s);
+				}
+				
+		}		/* if (plugin_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to allocate plugin with name \"%s\"", plugin_name_s);
+		}
+
+		
+	return success_flag;
+}
+
+
+
+void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag)
+{
+	const char *plugin_pattern_s = GetPluginPattern ();
+	
+	if (plugin_pattern_s)
 		{
 			const char *root_path_s = GetServerRootDirectory ();
-			char *full_references_path_s = MakeFilename (root_path_s, references_path_s);
+			char *full_services_path_s = MakeFilename (root_path_s, services_path_s);
 			
-			if (full_references_path_s)
+			if (full_services_path_s)
 				{
-					char *path_and_pattern_s = MakeFilename (full_references_path_s, ".json");
+					char *path_and_pattern_s = MakeFilename (full_services_path_s, plugin_pattern_s);
 
 					if (path_and_pattern_s)
 						{
@@ -118,6 +260,11 @@ static LinkedList *GetServiceReferenceServices (const char * const references_pa
 																				{
 																					LinkedListAddTail (services_list_p, (ListItem *) service_node_p);
 																					using_service_flag = true;
+																					
+																					if (!multiple_match_flag)
+																						{
+																							node_p = NULL;
+																						}
 																				}
 																			else
 																				{
@@ -144,8 +291,10 @@ static LinkedList *GetServiceReferenceServices (const char * const references_pa
 														
 												}		/* if (plugin_p) */
 											
-											
-											node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+											if (node_p)
+												{
+													node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+												}
 										}		/* while (node_p) */
 									
 									FreeLinkedList (matching_filenames_p);
@@ -154,120 +303,11 @@ static LinkedList *GetServiceReferenceServices (const char * const references_pa
 							FreeCopiedString (path_and_pattern_s);
 						}		/* if (path_and_pattern_s) */
 					
-					FreeCopiedString (full_references_path_s);
+					FreeCopiedString (full_services_path_s);
 				}		/* if (full_services_path_s) */
 			
+		}		/* if (plugin_pattern_s) */
 
-		}		/* if (services_list_p) */
-	
-	if (services_list_p -> ll_size == 0)
-		{
-			FreeLinkedList (services_list_p);
-			services_list_p = NULL;
-		}
-	
-	return services_list_p;
-}
-
-
-static LinkedList *GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p)
-{
-	LinkedList *services_list_p = AllocateLinkedList (FreeServiceNode);
-	
-	if (services_list_p)
-		{
-			const char *plugin_pattern_s = GetPluginPattern ();
-			
-			if (plugin_pattern_s)
-				{
-					const char *root_path_s = GetServerRootDirectory ();
-					char *full_services_path_s = MakeFilename (root_path_s, services_path_s);
-					
-					if (full_services_path_s)
-						{
-							char *path_and_pattern_s = MakeFilename (full_services_path_s, plugin_pattern_s);
-
-							if (path_and_pattern_s)
-								{
-									LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
-									
-									if (matching_filenames_p)
-										{
-											StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
-											
-											while (node_p)
-												{
-													Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
-													bool using_service_flag = false;
-													
-													if (plugin_p)
-														{
-															if (OpenPlugin (plugin_p))
-																{																							
-																	Service *service_p = GetServiceFromPlugin (plugin_p, const json_t *config_p);
-																	
-																	if (service_p)
-																		{
-																			using_service_flag = RunServiceMatcher (matcher_p, service_p);
-																			
-																			if (using_service_flag)
-																				{
-																					ServiceNode *service_node_p = AllocateServiceNode (service_p);
-																					
-																					if (service_node_p)
-																						{
-																							LinkedListAddTail (services_list_p, (ListItem *) service_node_p);
-																							using_service_flag = true;
-																						}
-																					else
-																						{
-																							/* failed to allocate service node */
-																						}
-																				}
-																				
-																			if (!using_service_flag)
-																				{
-																					FreeService (service_p);
-																				}
-																		}
-																	else
-																		{
-																			/* failed to get service from plugin */
-																		}
-																		
-																}		/* if (OpenPlugin (plugin_p)) */
-
-															if (!using_service_flag)
-																{
-																	ClosePlugin (plugin_p);
-																}
-																
-														}		/* if (plugin_p) */
-													
-													
-													node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-												}		/* while (node_p) */
-											
-											FreeLinkedList (matching_filenames_p);
-										}		/* if (matching_filenames_p) */
-									
-									FreeCopiedString (path_and_pattern_s);
-								}		/* if (path_and_pattern_s) */
-							
-							FreeCopiedString (full_services_path_s);
-						}		/* if (full_services_path_s) */
-					
-				}		/* if (plugin_pattern_s) */
-			
-		}		/* if (services_list_p) */
-	
-	if (services_list_p -> ll_size == 0)
-		{
-			FreeLinkedList (services_list_p);
-			services_list_p = NULL;
-		}
-	
-	return services_list_p;
 }
 
 
@@ -307,14 +347,14 @@ bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_
 /** Get the user-friendly name of the service. */
 const char *GetServiceName (const Service *service_p)
 {
-	return service_p -> se_get_service_name_fn ();
+	return service_p -> se_get_service_name_fn (service_p -> se_data_p);
 }
 
 
 /** Get the user-friendly description of the service. */
 const char *GetServiceDescription (const Service *service_p)
 {
-	return service_p -> se_get_service_description_fn ();	
+	return service_p -> se_get_service_description_fn (service_p -> se_data_p);	
 }
 
 
@@ -339,7 +379,7 @@ Service *GetServiceFromPlugin (Plugin * const plugin_p, const json_t *service_co
 				{
 					Service *(*fn_p) (const json_t *) = (Service *(*) (const json_t *)) symbol_p;
 
-					plugin_p -> pl_service_p = fn_p ();
+					plugin_p -> pl_service_p = fn_p (service_config_p);
 
 					if (plugin_p -> pl_service_p)
 						{
