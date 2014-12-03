@@ -15,8 +15,7 @@ static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t
 
 static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p);
 
-static LinkedList *GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p);
-
+static void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
 
 
 void InitialiseService (Service * const service_p,
@@ -108,7 +107,7 @@ json_t *GetServiceConfig (const char * const filename_s)
  * Load any json stubs for external services that are used to configure generic services, 
  * e.g. web services
  */
-void AddReferenceServices (const char * const references_path_s, LinkedList *services_p)
+void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 {
 	const char *root_path_s = GetServerRootDirectory ();
 	char *full_references_path_s = MakeFilename (root_path_s, references_path_s);
@@ -132,13 +131,13 @@ void AddReferenceServices (const char * const references_path_s, LinkedList *ser
 
 									if (config_p)
 										{
-											const char * const plugin_name_s = GetServiceNameFromJSON (config_p);
+											const char * const service_name_s = GetServiceNameFromJSON (config_p);
 											
-											if (plugin_name_s)
+											if (service_name_s)
 												{
 													InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);			
 													
-													GetMatchingServices (services_path_s, &matcher, config_p, services_p, false);
+													GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, config_p, services_p, false);
 												}
 											else
 												{
@@ -161,9 +160,9 @@ void AddReferenceServices (const char * const references_path_s, LinkedList *ser
 }
 
 
-bool GetService (const char * const plugin_name_s, Service **service_pp, ServiceMatcher *matcher_p)
+bool GetService (const char * const plugin_name_s, Service **service_pp, ServiceMatcher *matcher_p, const json_t *config_p)
 {
-	Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
+	Plugin *plugin_p = AllocatePlugin (plugin_name_s);
 	bool success_flag = false;
 	
 	if (plugin_p)
@@ -185,7 +184,7 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 								
 							if (using_service_flag)
 								{
-									*service_pp = services_p;
+									*service_pp = service_p;
 								}
 							else
 								{
@@ -246,7 +245,7 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 												{
 													if (OpenPlugin (plugin_p))
 														{																							
-															Service *service_p = GetServiceFromPlugin (plugin_p, const json_t *config_p);
+															Service *service_p = GetServiceFromPlugin (plugin_p, config_p);
 															
 															if (service_p)
 																{
@@ -311,24 +310,24 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 }
 
 
-LinkedList *LoadMatchingServicesByName (const char * const services_path_s, const char *service_name_s)
+void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p)
 {
 	NameServiceMatcher matcher;
 	
 	InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);
 	
-	return GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher));
+	return GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), json_config_p, services_p, true);
 }
 
 
 
-LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *resource_p, Handler *handler_p)
+void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p)
 {
 	ResourceServiceMatcher matcher;
 	
 	InitResourceServiceMatcher (&matcher, MatchServiceByResource, resource_p, handler_p);
 	
-	return GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher));
+	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), json_config_p, services_p, true);
 }
 
 

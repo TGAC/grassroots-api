@@ -21,7 +21,7 @@
 #include "server.h"
 #include "jansson.h"
 #include "service_config.h"
-
+#include "system_util.h"
 
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);

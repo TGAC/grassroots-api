@@ -92,6 +92,7 @@ Service *GetService (void)
 		RunCompressService,
 		IsFileForCompressService,
 		GetCompressServiceParameters,
+		true,
 		data_p);
 
 	return compress_service_p;

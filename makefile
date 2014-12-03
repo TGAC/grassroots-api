@@ -16,7 +16,8 @@ all:
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
-			
+	$(MAKE) -C services/web
+					
 install: install_init
 	$(MAKE) -C util install
 	$(MAKE) -C irods/lib install
@@ -33,7 +34,7 @@ install: install_init
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
-
+	$(MAKE) -C services/web install
 
 clean: 
 	$(MAKE) -C util clean
@@ -51,7 +52,8 @@ clean:
 #	$(MAKE) -C clients/web-server-client clean	
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
-
+	$(MAKE) -C services/web clean
+	
 install_init:
 	@mkdir -p ../wheatis_demo
 	@mkdir -p ../wheatis_demo/lib

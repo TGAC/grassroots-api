@@ -32,8 +32,6 @@ static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resour
 
 
 
-
-
 /*
  * API FUNCTIONS
  */
@@ -49,6 +47,7 @@ Service *GetService (void)
 		RunBlastService,
 		IsFileForBlastService,
 		GetBlastServiceParameters, 
+		true,
 		data_p);
 	
 	return blast_service_p;

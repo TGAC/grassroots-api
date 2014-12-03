@@ -6,7 +6,7 @@
 
 ByteBuffer *AllocateByteBuffer (size_t initial_size)
 {
-	char *data_p = (char *) AllocMemory (initial_size);
+	char *data_p = (char *) AllocMemoryArray (initial_size, sizeof (char));
 	
 	if (data_p)
 		{
@@ -45,7 +45,7 @@ bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size)
 {
 	bool success_flag = false;
 		
-	char *new_data_p = (char *) AllocMemory (new_size);
+	char *new_data_p = (char *) AllocMemoryArray (new_size, sizeof (char));
 	
 	if (new_data_p)
 		{
@@ -92,6 +92,7 @@ bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t 
 void ResetByteBuffer (ByteBuffer *buffer_p)
 {
 	buffer_p -> bb_current_index = 0;
+	memset (buffer_p, 0, buffer_p -> bb_size);
 }
 
 
@@ -100,20 +101,3 @@ size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * const buffer_p)
 	return (buffer_p -> bb_size) - (buffer_p -> bb_current_index);
 }
 
-
-bool MakeByteBufferDataValidString (ByteBuffer *buffer_p)
-{
-	bool success_flag = true;
-	
-	if (buffer_p -> bb_current_index == (buffer_p -> bb_size)- 1)
-		{
-			success_flag = ResizeByteBuffer (buffer_p, (buffer_p -> bb_size) + 1);
-		}
-		
-	if (success_flag)
-		{
-			* ((buffer_p -> bb_data_p) + (buffer_p -> bb_current_index)) = '\0';
-		}
-	
-	return success_flag;
-}

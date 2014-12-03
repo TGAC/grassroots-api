@@ -33,6 +33,7 @@
 /*****************************/
 
 #define SERVICES_PATH		("services")
+#define REFERENCES_PATH		("references")
 
 
 static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *credentials_p);
@@ -217,13 +218,17 @@ static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 			
 			if (service_name_s)
 				{
-					LinkedList *services_list_p = LoadMatchingServicesByName (SERVICES_PATH, service_name_s);
+					LinkedList *services_p = AllocateLinkedList  (FreeServiceNode);
 					
-					if (services_list_p)
+					if (services_p)
 						{
-							if (services_list_p -> ll_size == 1)
+							json_t *json_config_p = NULL;
+
+							LoadMatchingServicesByName (services_p, SERVICES_PATH, service_name_s, json_config_p);
+
+							if (services_p -> ll_size == 1)
 								{	
-									Service *service_p = ((ServiceNode *) (services_list_p -> ll_head_p)) -> sn_service_p;
+									Service *service_p = ((ServiceNode *) (services_p -> ll_head_p)) -> sn_service_p;
 							
 									if (service_p)
 										{
@@ -245,10 +250,10 @@ static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 										}		/* if (service_p) */
 
-								}		/* if (services_list_p -> ll_size == 1)) */
+								}		/* if (services_p -> ll_size == 1)) */
 				
-							FreeLinkedList (services_list_p);
-						}		/* if (services_list_p) */
+							FreeLinkedList (services_p);
+						}		/* if (services_p) */
 				
 				}		/* if (service_name_s) */
 		
@@ -430,15 +435,23 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_list_p = LoadMatchingServices (services_path_s, resource_p, handler_p);
 	
-	json_p = GetServicesListAsJSON (services_list_p, resource_p, config_p);
-
-	if (services_list_p)
+	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
+	
+	if (services_p)
 		{
-			FreeLinkedList (services_list_p);
-		}
-	
+			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, config_p);
+
+			AddReferenceServices (services_p, REFERENCES_PATH, services_path_s, resource_p, handler_p, config_p);
+
+			if (services_p -> ll_size > 0)
+				{
+					json_p = GetServicesListAsJSON (services_p, resource_p, config_p);
+				}
+				
+			FreeLinkedList (services_p);
+		}		/* if (services_p) */
+		
 	return json_p;
 }
 

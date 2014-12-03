@@ -145,10 +145,13 @@ WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
 WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
 
-WHEATIS_SERVICE_API LinkedList *LoadMatchingServices (const char * const services_path_s, Resource *resource_p, Handler *handler_p);
+WHEATIS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p);
+
+WHEATIS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p);
 
 
-WHEATIS_SERVICE_API LinkedList *LoadMatchingServicesByName (const char * const services_path_s, const char *service_name_s);
+WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
+
 
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions
