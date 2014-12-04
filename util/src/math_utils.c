@@ -12,6 +12,8 @@
 #define MY_FLT_EPSILON (FLT_EPSILON)
 
 #include "math_utils.h"
+#include "memory_allocations.h"
+
 
 static const double64 S_RANDOM_FACTOR = 1.0 / (RAND_MAX + 1.0);
 
@@ -85,6 +87,92 @@ int CompareFloats (const float f1, const float f2)
 }
 
 
+char *ConvertNumberToString (double d, int8 num_dps)
+{
+	char *value_s = NULL;
+	size_t l = 1;	/* init size for terminating null */
+	double f = 1; 
+	bool minus_flag = false;
+	int num_digits = 0;
+	
+	if (CompareDoubles (d, 0.0) < 0)
+		{
+			d = -d;
+			++ l;
+			minus_flag = true;
+		}
+	
+	
+	if (CompareDoubles (d, 0.0) != 0)
+		{
+			num_digits = (int) log10 (d);
+			l += (size_t) num_digits;
+		}
+
+	++ l;
+	
+	if (minus_flag)
+		{
+			d = -d;
+		}
+	
+	
+	if (num_dps > 0)
+		{
+			l += num_dps;
+		}
+	
+	value_s = (char *) AllocMemory (l);
+	
+	if (value_s)
+		{
+			char *value_p = value_s;
+			char *format_s = NULL;   
+			size_t num_digits = 5;		/* "%%xlf\0" */
+			int i = 0;
+			
+			if (num_dps > 0)
+				{
+					i = log10 (num_dps);
+					num_digits += (i + 2);					
+				}
+				
+			format_s = (char *) AllocMemory (num_digits);
+	
+			if (format_s)
+				{
+					char *temp_p = format_s;
+					
+					*temp_p = "%";
+					++ temp_p;
+					
+					if (i > 0)
+						{
+							sprintf (temp_p, ".%dlf", i);
+						}
+					else
+						{
+							sprintf (temp_p, "lf", i);
+						}
+					
+					if (minus_flag)
+						{
+							*value_p = '-';
+							++ value_p;
+						}
+
+					sprintf (value_p, format_s, d);					
+				}
+			else
+				{
+					FreeCopiedString (value_s);
+					value_s = NULL;
+				}
+		}
+
+	
+	return value_s;
+}
 
 
 bool GetValidRealNumber (const char **str_pp, double *answer_p)

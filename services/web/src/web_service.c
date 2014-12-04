@@ -8,6 +8,7 @@
 #include "handler.h"
 #include "handler_utils.h"
 #include "string_utils.h"
+#include "math_utils.h"
 #include "filesystem_utils.h"
 #include "byte_buffer.h"
 
@@ -189,140 +190,81 @@ static ParameterSet *GetWebServiceParameters (ServiceData *service_data_p, Resou
 
 
 
-static char *GetParameterValueAsString (const Parameter *param_p)
+static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p)
 {
+	bool success_flag = false;
 	char *value_s = NULL;
 	const SharedType * const value_p = & (param_p -> pa_current_value);
+	bool alloc_flag = false;
 	
-	switch (param_type)
+	switch (param_p -> pa_type)
 		{
 			case PT_BOOLEAN:
-				if (value_p -> st_boolean_value == true)
-					{
-						
-					}
-				else
-					{
-						
-					}
+				value_s = (char *) ((value_p -> st_boolean_value == true) ? "true" : "false");
 				break;
 
 			case PT_SIGNED_INT:
-				if (json_is_integer (json_value_p))
-					{
-						value_p -> st_long_value = (int32) json_integer_value (json_value_p);
-						success_flag = true;
-					}
+				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
+				alloc_flag = true;
 				break;
 
 			case PT_UNSIGNED_INT:
-				if (json_is_integer (json_value_p))
-					{
-						value_p -> st_ulong_value = (uint32) json_integer_value (json_value_p);
-						success_flag = true;
-					}
+				value_s = ConvertNumberToString ((double) (value_p -> st_ulong_value), 0);
+				alloc_flag = true;
 				break;
 
 			case PT_SIGNED_REAL:
 			case PT_UNSIGNED_REAL:
-				if (json_is_real (json_value_p))
-					{
-						value_p -> st_data_value = (double64) json_real_value (json_value_p);
-						success_flag = true;
-					}
+				value_s = ConvertNumberToString (value_p -> st_data_value, 0);
+				alloc_flag = true;
 				break;
-
 			
 			case PT_DIRECTORY:
 			case PT_FILE_TO_READ:
 			case PT_FILE_TO_WRITE:
-				{
-					json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
-					
-					if ((protocol_p) && (json_is_string (protocol_p)))
-						{
-							json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
-							
-							if (json_value_p && (json_is_string (json_value_p)))
-								{
-									const char *protocol_s = json_string_value (protocol_p);
-									const char *value_s = json_string_value (json_value_p);
-
-									value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
-									
-									success_flag = (value_p -> st_resource_value_p != NULL);										
-								}					
-						}					
-				}
+				value_s = value_p -> st_resource_value_p -> re_value_s;
 				break;
-			
+
 			case PT_STRING:
 			case PT_PASSWORD:
-				if (json_is_string (json_value_p))
-					{
-						char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
-
-						if (value_s)
-							{
-								if (value_p -> st_string_value_s)
-									{
-										FreeCopiedString (value_p -> st_string_value_s);
-									}
-
-								value_p -> st_string_value_s = value_s;
-								success_flag = true;
-							}
-					}
+				value_s = value_p -> st_string_value_s;
 				break;
 
 			default:
 				break;
 		}		/* switch (param_p -> pa_type) */
 
-	return value_s;
+	if (value_s)
+		{
+			success_flag = AppendToByteBuffer (buffer_p, value_s, strlen (value_s));
+			
+			if (alloc_flag)
+				{
+					FreeCopiedString (value_s);
+				}
+		}
+
+	return success_flag;
 }
 
 
 static bool AddParameterToWebService (WebServiceData *service_data_p, Parameter *param_p)
 {
-	bool success_flag = true;
+	bool success_flag = false;
 	
-	if (AppendToByteBuffer (param_p -> pa_name_s))
+	if (AppendToByteBuffer (service_data_p -> wsd_buffer_p, param_p -> pa_name_s, strlen (param_p -> pa_name_s)))
 		{
-			if (AppendToByteBuffer ("=")
+			const char * const equal_s = "=";
+			
+			if (AppendToByteBuffer (service_data_p -> wsd_buffer_p, equal_s, strlen (equal_s)))
 				{
-					switch (param_p -> pa_type)
+					if (AppendParameterValue (service_data_p -> wsd_buffer_p, param_p))
 						{
-							
-							
+							success_flag = true;
 						}
-						
-					if (AppendToByteBuffer (param_p -> pa_current_value))
-						{
-							
-						}					
 				}
 		}
-	
-	switch (service_data_p -> wsd_method)
-		{
-			case SM_POST:
-			
-				break;
-				
-			case SM_GET:
-			
-				break;
-				
-			case SM_BODY:
-			
-				break;
-		
-			default:
-				success_flag = false;
-				break;			
-		}
-	
+
 	return success_flag;
 }
 

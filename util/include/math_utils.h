@@ -75,6 +75,9 @@ WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 
 
 
+WHEATIS_UTIL_API char *ConvertNumberToString (double d, int8 num_dps);
+
+
 #ifdef __cplusplus
 }
 #endif
