@@ -167,24 +167,9 @@ static const char *GetWebServiceDesciption (ServiceData *service_data_p)
 
 static ParameterSet *GetWebServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p)
 {
-	ParameterSet *param_set_p = AllocateParameterSet ("web service parameters", "The parameters used for the web service");
+	WebServiceData *data_p = (WebServiceData *) service_data_p;
 
-	if (param_set_p)
-		{
-			/*
-			SharedType def;
-				
-			def.st_string_value_s = resource_p;		
-
-			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
-				{
-					return param_set_p;
-				}
-			*/
-			FreeParameterSet (param_set_p);
-		}		/* if (param_set_p) */
-
-	return NULL;
+	return (data_p -> wsd_params_p);
 }
 
 

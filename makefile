@@ -1,3 +1,5 @@
+COPY	= cp
+
 
 all: 	
 	@echo "BUILD = " $(BUILD)
@@ -18,7 +20,7 @@ all:
 	$(MAKE) -C services/compress
 	$(MAKE) -C services/web
 					
-install: install_init
+install: install_init install_references
 	$(MAKE) -C util install
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C network install
@@ -58,6 +60,11 @@ install_init:
 	@mkdir -p ../wheatis_demo
 	@mkdir -p ../wheatis_demo/lib
 	@mkdir -p ../wheatis_demo/services
+	@mkdir -p ../wheatis_demo/references
 	@mkdir -p ../wheatis_demo/clients
 	@mkdir -p ../wheatis_demo/handlers
+
+
+install_references:
+	$(COPY) references/* ../wheatis_demo/references/
 
