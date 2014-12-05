@@ -166,7 +166,7 @@ char *MakeFilename (const char * const path, const char * const filename)
 		{
 			 needs_separator_flag = ((* (path + path_length - 1) != FS_SEPARATOR) && (* (path + path_length - 1) != '/'));
 			 
-			 name_length += (needs_separator_flag ? 2 : 1);
+			 name_length += (needs_separator_flag ? 3: 2);
 		}
 
 	name_p = (char *) AllocMemory (name_length);

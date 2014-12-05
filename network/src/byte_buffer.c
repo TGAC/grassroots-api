@@ -52,7 +52,6 @@ bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size)
 			if (new_size > buffer_p -> bb_current_index)
 				{
 					memcpy (new_data_p, buffer_p -> bb_data_p, buffer_p -> bb_current_index);
-					* (buffer_p -> bb_data_p + (buffer_p -> bb_current_index)) = '\0';
 				}
 				
 			FreeMemory (buffer_p -> bb_data_p);			
@@ -92,7 +91,7 @@ bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t 
 void ResetByteBuffer (ByteBuffer *buffer_p)
 {
 	buffer_p -> bb_current_index = 0;
-	memset (buffer_p, 0, buffer_p -> bb_size);
+	memset (buffer_p -> bb_data_p, 0, buffer_p -> bb_size);
 }
 
 
