@@ -98,6 +98,48 @@ char *MakePluginName (const char * const name)
 }
 
 
+char *DeterminePluginName (const char * const full_plugin_path_s)
+{
+	char *name_s = NULL;
+	const char * const prefix_s = "lib";
+	const char * const suffix_s = ".so";
+	
+	const char *start_p = strrchr (full_plugin_path_s, '/');
+
+	if (!start_p)
+		{
+			start_p = full_plugin_path_s;
+		}
+
+	start_p = strstr (start_p, "prefix_s);
+	
+	if (start_p)
+		{
+			const char *end_p = NULL;
+			start_p += (strlen (prefix_s));
+			
+			end_p = strstr (start_p, suffix_s);
+			
+			if (end_p)
+				{
+					size_t l = end_p - start_p - 1;
+					
+					name_s = AllocMemory (l + 1);
+					
+					if (name_s)
+						{
+							strncpy (name_s, start_p, l);
+							* (name_s + l) = '\0';
+						}
+				}							
+		}
+
+	return name_s;
+}
+
+
+
+
 void *GetSymbolFromPlugin (Plugin *plugin_p, const char * const symbol_s)
 {
 	void *symbol_p = NULL;

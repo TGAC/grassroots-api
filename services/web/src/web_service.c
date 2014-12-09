@@ -61,29 +61,48 @@ static void FreeWebServiceData (WebServiceData *data_p);
 
 Service *GetService (json_t *config_p)
 {
-	Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
-	
-	if (web_service_p)
+	/* Make sure that the config refers to our service, in this case "Web Service" */
+
+	json_t *value_p = json_object_get (config_p, PLUGIN_NAME_S);
+
+	if (value_p)
 		{
-			ServiceData *data_p = (ServiceData *) AllocateWebServiceData (config_p);
-
-			if (data_p)
+			if (json_is_string (value_p))
 				{
-					InitialiseService (web_service_p,
-						GetWebServiceName,
-						GetWebServiceDesciption,
-						RunWebService,
-						IsResourceForWebService,
-						GetWebServiceParameters,
-						false,
-						data_p);
+					const char *value_s = json_string_value (value_p);
+					
+					if (strcmp (value_s, "Web Service") == 0)
+						{
+							Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
+							
+							if (web_service_p)
+								{
+									ServiceData *data_p = (ServiceData *) AllocateWebServiceData (config_p);
+									
+									if (data_p)
+										{
+											InitialiseService (web_service_p,
+												GetWebServiceName,
+												GetWebServiceDesciption,
+												RunWebService,
+												IsResourceForWebService,
+												GetWebServiceParameters,
+												false,
+												data_p);
 
-					return web_service_p;
-				}
-			
-			FreeMemory (web_service_p);
-		}
-	
+											return web_service_p;
+										}
+									
+									FreeMemory (web_service_p);
+								}		/* if (web_service_p) */
+								
+						}		/* if (strcmp (value_s, "Web Service") == 0) */						
+						
+				}		/* if (json_is_string (value_p)) */
+
+		}		/* if (value_p) */
+				
+		
 	return NULL;
 }
 

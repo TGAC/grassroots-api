@@ -57,6 +57,10 @@ typedef struct Plugin
 
 	MEM_FLAG pl_path_mem;
 
+	char *pl_name_s;
+
+	MEM_FLAG pl_path_mem;
+
 	PluginStatus pl_status;
 
 	PluginNature pl_type;
@@ -156,6 +160,8 @@ WHEATIS_UTIL_API void FreePluginListNode (ListItem * const node_p);
 
 WHEATIS_UTIL_API bool IsPluginOpen (const Plugin * const plugin_p);
 
+
+WHEATIS_UTIL_API char *DeterminePluginName (const char * const full_plugin_path_s);
 
 #ifdef __cplusplus
 }

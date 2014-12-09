@@ -146,6 +146,7 @@ static void RunServer (int server_socket_fd)
  
 static void InterruptHandler (int sig)
 {
+	printf ("InterruptHandler %d\n", sig);
 	g_running_flag = 0;
 	signal (sig, SIG_IGN);
 } 

@@ -17,6 +17,9 @@ static bool AddServiceParameterSetToJSON (const Service * const service_p, json_
 
 static void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
 
+static const char *GetPluginNameFromJSON (const json_t * const root_p);
+
+
 
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (ServiceData *service_data_p),
@@ -114,7 +117,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 	
 	if (full_references_path_s)
 		{
-			char *path_and_pattern_s = MakeFilename (full_references_path_s, ".json");
+			char *path_and_pattern_s = MakeFilename (full_references_path_s, "*.json");
 
 			if (path_and_pattern_s)
 				{
@@ -131,19 +134,33 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 
 									if (config_p)
 										{
-											const char * const service_name_s = GetServiceNameFromJSON (config_p);
+											char *json_s = json_dumps (config_p, JSON_INDENT (2));
+
+											json_t *services_json_p = json_object_get (config_p, SERVICES_NAME_S);
 											
-											if (service_name_s)
+											if (services_json_p)
 												{
-													InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);			
+													const char * const service_name_s = GetPluginNameFromJSON (services_json_p);
 													
-													GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, config_p, services_p, false);
-												}
-											else
+													if (service_name_s)
+														{
+															InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);			
+															
+															GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, services_json_p, services_p, false);
+														}
+													else
+														{
+															//PrintErrors (STM_LEVEL_WARNING, "Failed to get service name from", node_p -> sln_string_s);
+															printf ("Failed to get service name from \"%s\"", node_p -> sln_string_s);
+														}
+													
+												}		/* if (services_json_p) */
+																																
+											if (json_s)
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to get plugin name from \"%s\"", node_p -> sln_string_s);
+													free (json_s);
 												}
-																						
+																							
 										}		/* if (config_p) */
 																				
 									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
@@ -363,6 +380,10 @@ ParameterSet *GetServiceParameters (const Service *service_p, Resource *resource
 }
 
 
+static const char *GetPluginNameFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, PLUGIN_NAME_S);
+}
 
 
 //
@@ -501,6 +522,7 @@ const char *GetServiceNameFromJSON (const json_t * const root_p)
 {
 	return GetJSONString (root_p, SERVICE_NAME_S);
 }
+
 
 
 

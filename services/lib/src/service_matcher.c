@@ -43,6 +43,16 @@ bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p)
 }
 
 
+bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p)
+{
+	PluginNameServiceMatcher *name_matcher_p = (PluginNameServiceMatcher *) matcher_p;	
+	
+	return (strcmp (service_p -> se_plugin_p -> pl_name_s, name_matcher_p -> nspm_plugin_name_s) == 0);
+}
+
+
+
+
 bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p)
 {
 	bool match_flag = true;

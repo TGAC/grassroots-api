@@ -7,6 +7,7 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 {
 	bool success_flag = false;
 
+	plugin_p -> pl_name_s = NULL;
 	plugin_p -> pl_path_s = NULL;
 	plugin_p -> pl_path_mem = MF_ALREADY_FREED;
 	plugin_p -> pl_service_p = NULL;
@@ -22,10 +23,13 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 			if (plugin_p -> pl_path_s)
 				{
 					plugin_p -> pl_path_mem = MF_DEEP_COPY;
-				}
-			else
-				{
-					success_flag = false;
+					
+					plugin_p -> pl_name_s = DeterminePluginName (path_s);
+					
+					if (plugin_p -> pl_name_s)
+						{
+							success_flag = true;
+						}
 				}
 		}
 
@@ -59,6 +63,12 @@ void ClearBasePlugin (Plugin * const plugin_p)
 {
 	/* this must be before resetting plugin_p -> pl_type */
 	//DeallocatePluginService (plugin_p);
+
+	if (plugin_p -> pl_name_s)
+		{
+			FreeCopiedString (plugin_p -> pl_name_s);
+			plugin_p -> pl_name_s = NULL;
+		}
 
 	ClearPluginPath (plugin_p);
 }

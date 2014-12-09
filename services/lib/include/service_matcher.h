@@ -30,6 +30,13 @@ typedef struct NameServiceMatcher
 } NameServiceMatcher;
 
 
+typedef struct PluginNameServiceMatcher
+{
+	ServiceMatcher nspm_base_matcher;
+	const char *nspm_plugin_name_s;
+} PluginNameServiceMatcher;
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -41,11 +48,15 @@ WHEATIS_SERVICE_API void InitResourceServiceMatcher (ResourceServiceMatcher *mat
 
 WHEATIS_SERVICE_API void InitNameServiceMatcher (NameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *name_s);
 
+WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (NameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *plugin_name_s);
+
 WHEATIS_SERVICE_API bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p);
 
 WHEATIS_SERVICE_API bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p);
 
 WHEATIS_SERVICE_API bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p);
+
+WHEATIS_SERVICE_API bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p);
 
 
 #ifdef __cplusplus

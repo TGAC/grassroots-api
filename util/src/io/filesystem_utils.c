@@ -159,15 +159,21 @@ char *MakeFilename (const char * const path, const char * const filename)
 	const size_t path_length = strlen (path);
 	const char FS_SEPARATOR = GetFileSeparatorChar ();
 	bool needs_separator_flag = false;
-	size_t name_length = path_length + strlen (filename);
+	size_t name_length = path_length + strlen (filename) + 1;
 	char *name_p = NULL;
 
 	if (path_length > 0)
 		{
-			 needs_separator_flag = ((* (path + path_length - 1) != FS_SEPARATOR) && (* (path + path_length - 1) != '/'));
-			 
-			 name_length += (needs_separator_flag ? 3: 2);
+			const char c = * (path + path_length - 1);
+			
+			if ((c != FS_SEPARATOR) && (c != '/'))
+				{
+					needs_separator_flag = true;
+					++ name_length;
+				}
 		}
+
+	//printf ("path: \"%s\", filename: \"%s\" name_length: %lu\n", path, filename, name_length);
 
 	name_p = (char *) AllocMemory (name_length);
 	if (name_p)
