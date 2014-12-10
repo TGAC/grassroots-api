@@ -61,48 +61,51 @@ static void FreeWebServiceData (WebServiceData *data_p);
 
 Service *GetService (json_t *config_p)
 {
-	/* Make sure that the config refers to our service, in this case "Web Service" */
-
-	json_t *value_p = json_object_get (config_p, PLUGIN_NAME_S);
-
-	if (value_p)
+	if (config_p)
 		{
-			if (json_is_string (value_p))
+			/* Make sure that the config refers to our service */
+			const char * const plugin_name_s = "web_service";
+			json_t *value_p = json_object_get (config_p, PLUGIN_NAME_S);
+
+			if (value_p)
 				{
-					const char *value_s = json_string_value (value_p);
-					
-					if (strcmp (value_s, "Web Service") == 0)
+					if (json_is_string (value_p))
 						{
-							Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
+							const char *value_s = json_string_value (value_p);
 							
-							if (web_service_p)
+							if (strcmp (value_s, plugin_name_s) == 0)
 								{
-									ServiceData *data_p = (ServiceData *) AllocateWebServiceData (config_p);
+									Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
 									
-									if (data_p)
+									if (web_service_p)
 										{
-											InitialiseService (web_service_p,
-												GetWebServiceName,
-												GetWebServiceDesciption,
-												RunWebService,
-												IsResourceForWebService,
-												GetWebServiceParameters,
-												false,
-												data_p);
+											ServiceData *data_p = (ServiceData *) AllocateWebServiceData (config_p);
+											
+											if (data_p)
+												{
+													InitialiseService (web_service_p,
+														GetWebServiceName,
+														GetWebServiceDesciption,
+														RunWebService,
+														IsResourceForWebService,
+														GetWebServiceParameters,
+														false,
+														data_p);
 
-											return web_service_p;
-										}
-									
-									FreeMemory (web_service_p);
-								}		/* if (web_service_p) */
+													return web_service_p;
+												}
+											
+											FreeMemory (web_service_p);
+										}		/* if (web_service_p) */
+										
+								}		/* if (strcmp (value_s, plugin_name_s) == 0) */						
 								
-						}		/* if (strcmp (value_s, "Web Service") == 0) */						
-						
-				}		/* if (json_is_string (value_p)) */
+						}		/* if (json_is_string (value_p)) */
 
-		}		/* if (value_p) */
-				
-		
+				}		/* if (value_p) */
+			
+		}		/* if (config_p) */
+						
 	return NULL;
 }
 
@@ -138,13 +141,39 @@ static WebServiceData *AllocateWebServiceData (json_t *config_p)
 							
 							if (data_p -> wsd_buffer_p)
 								{							
-									data_p -> wsd_params_p = CreateParameterSetFromJSON (config_p);
+									json_t *ops_p = json_object_get (config_p, SERVER_OPERATIONS_S);
 									
-									if (data_p -> wsd_params_p)
+									if (ops_p)
 										{
-											return data_p;
-										}
+											json_t *params_p = NULL;
+											
+											if (json_is_array (ops_p))	
+												{
+													const size_t num_ops = json_array_size (ops_p);
+													
+													if (num_ops > 0)
+														{
+															params_p = json_array_get (ops_p, 0);
+														}
+												}
+											else
+												{
+													params_p = json_object_get (ops_p, PARAM_SET_PARAMS_S);
+												}
 
+											if (params_p)
+												{
+													data_p -> wsd_params_p = CreateParameterSetFromJSON (params_p);
+													
+													if (data_p -> wsd_params_p)
+														{
+															return data_p;
+														}
+																										
+												}		/* if (params_p) */
+																								
+										}		/* if (ops_p) */
+									
 									FreeByteBuffer (data_p -> wsd_buffer_p);
 								}
 						}

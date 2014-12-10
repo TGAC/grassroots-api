@@ -111,7 +111,7 @@ char *DeterminePluginName (const char * const full_plugin_path_s)
 			start_p = full_plugin_path_s;
 		}
 
-	start_p = strstr (start_p, "prefix_s);
+	start_p = strstr (start_p, prefix_s);
 	
 	if (start_p)
 		{
@@ -122,7 +122,7 @@ char *DeterminePluginName (const char * const full_plugin_path_s)
 			
 			if (end_p)
 				{
-					size_t l = end_p - start_p - 1;
+					size_t l = end_p - start_p;
 					
 					name_s = AllocMemory (l + 1);
 					

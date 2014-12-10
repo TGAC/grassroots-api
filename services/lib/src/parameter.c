@@ -734,94 +734,100 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 {
 	bool success_flag = false;
 
-	/* Set the parameter's value */
-	json_t *json_value_p = json_object_get (root_p, key_s);
+	/* Get the parameter's value */
+	json_t *json_p = json_object_get (root_p, key_s);
 
-	if (json_value_p)
+	if (json_p)
 		{
-			switch (param_type)
+			json_t *json_value_p = json_object_get (json_p, SHARED_TYPE_VALUE_S);
+			
+			if (json_value_p)
 				{
-					case PT_BOOLEAN:
-						if (json_is_boolean (json_value_p))
-							{
-								value_p -> st_boolean_value = (json_is_true (json_value_p)) ? true : false;
-								success_flag = true;
-							}
-						break;
-
-					case PT_SIGNED_INT:
-						if (json_is_integer (json_value_p))
-							{
-								value_p -> st_long_value = (int32) json_integer_value (json_value_p);
-								success_flag = true;
-							}
-						break;
-
-					case PT_UNSIGNED_INT:
-						if (json_is_integer (json_value_p))
-							{
-								value_p -> st_ulong_value = (uint32) json_integer_value (json_value_p);
-								success_flag = true;
-							}
-						break;
-
-					case PT_SIGNED_REAL:
-					case PT_UNSIGNED_REAL:
-						if (json_is_real (json_value_p))
-							{
-								value_p -> st_data_value = (double64) json_real_value (json_value_p);
-								success_flag = true;
-							}
-						break;
-
-					
-					case PT_DIRECTORY:
-					case PT_FILE_TO_READ:
-					case PT_FILE_TO_WRITE:
+					switch (param_type)
 						{
-							json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
-							
-							if ((protocol_p) && (json_is_string (protocol_p)))
-								{
-									json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
-									
-									if (json_value_p && (json_is_string (json_value_p)))
-										{
-											const char *protocol_s = json_string_value (protocol_p);
-											const char *value_s = json_string_value (json_value_p);
-
-											value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
-											
-											success_flag = (value_p -> st_resource_value_p != NULL);										
-										}					
-								}					
-						}
-						break;
-					
-					case PT_STRING:
-					case PT_PASSWORD:
-						if (json_is_string (json_value_p))
-							{
-								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
-
-								if (value_s)
+							case PT_BOOLEAN:
+								if (json_is_boolean (json_value_p))
 									{
-										if (value_p -> st_string_value_s)
-											{
-												FreeCopiedString (value_p -> st_string_value_s);
-											}
-
-										value_p -> st_string_value_s = value_s;
+										value_p -> st_boolean_value = (json_is_true (json_value_p)) ? true : false;
 										success_flag = true;
 									}
-							}
-						break;
+								break;
 
-					default:
-						break;
-				}		/* switch (param_p -> pa_type) */
+							case PT_SIGNED_INT:
+								if (json_is_integer (json_value_p))
+									{
+										value_p -> st_long_value = (int32) json_integer_value (json_value_p);
+										success_flag = true;
+									}
+								break;
 
-		}
+							case PT_UNSIGNED_INT:
+								if (json_is_integer (json_value_p))
+									{
+										value_p -> st_ulong_value = (uint32) json_integer_value (json_value_p);
+										success_flag = true;
+									}
+								break;
+
+							case PT_SIGNED_REAL:
+							case PT_UNSIGNED_REAL:
+								if (json_is_real (json_value_p))
+									{
+										value_p -> st_data_value = (double64) json_real_value (json_value_p);
+										success_flag = true;
+									}
+								break;
+
+							
+							case PT_DIRECTORY:
+							case PT_FILE_TO_READ:
+							case PT_FILE_TO_WRITE:
+								{
+									json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
+									
+									if ((protocol_p) && (json_is_string (protocol_p)))
+										{
+											json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
+											
+											if (json_value_p && (json_is_string (json_value_p)))
+												{
+													const char *protocol_s = json_string_value (protocol_p);
+													const char *value_s = json_string_value (json_value_p);
+
+													value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
+													
+													success_flag = (value_p -> st_resource_value_p != NULL);										
+												}					
+										}					
+								}
+								break;
+							
+							case PT_STRING:
+							case PT_PASSWORD:
+								if (json_is_string (json_value_p))
+									{
+										char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
+
+										if (value_s)
+											{
+												if (value_p -> st_string_value_s)
+													{
+														FreeCopiedString (value_p -> st_string_value_s);
+													}
+
+												value_p -> st_string_value_s = value_s;
+												success_flag = true;
+											}
+									}
+								break;
+
+							default:
+								break;
+						}		/* switch (param_p -> pa_type) */
+					
+				}		/* if (json_value_p) */
+
+		}		/* if (json_p) */
 
 
 	return success_flag;

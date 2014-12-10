@@ -33,6 +33,13 @@ typedef struct ParameterSet
 } ParameterSet;
 
 
+typedef struct ParameterSetNode
+{
+	ListItem psn_node;
+	ParameterSet *psn_param_set_p;
+} ParameterSetNode;
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -106,6 +113,12 @@ WHEATIS_SERVICE_API Parameter *GetParameterFromParameterSetByTag (const Paramete
 
 
 WHEATIS_SERVICE_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
+
+
+WHEATIS_SERVICE_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *params_p);
+
+
+WHEATIS_SERVICE_API void FreeParameterSetNode (ListItem *node_p);
 
 
 

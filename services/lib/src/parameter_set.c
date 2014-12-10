@@ -302,3 +302,32 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 	
 	return params_p;
 }
+
+
+ParameterSetNode *AllocateParameterSetNode (ParameterSet *params_p)
+{
+	ParameterSetNode *node_p = AllocMemory (sizeof (ParameterSetNode));
+	
+	if (node_p)
+		{
+			node_p -> psn_node.ln_prev_p = NULL;
+			node_p -> psn_node.ln_next_p = NULL;
+			node_p -> psn_param_set_p = params_p;
+		}
+	
+	return node_p;
+}
+
+
+void FreeParameterSetNode (ListItem *node_p)
+{
+	ParameterSetNode *param_set_node_p = (ParameterSetNode *) node_p;
+
+	if (param_set_node_p -> psn_param_set_p)
+		{
+			FreeParameterSet (param_set_node_p -> psn_param_set_p);
+		}
+	
+	FreeMemory (param_set_node_p);
+}
+

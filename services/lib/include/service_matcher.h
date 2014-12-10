@@ -32,8 +32,8 @@ typedef struct NameServiceMatcher
 
 typedef struct PluginNameServiceMatcher
 {
-	ServiceMatcher nspm_base_matcher;
-	const char *nspm_plugin_name_s;
+	ServiceMatcher pnsm_base_matcher;
+	const char *pnsm_plugin_name_s;
 } PluginNameServiceMatcher;
 
 
@@ -48,7 +48,7 @@ WHEATIS_SERVICE_API void InitResourceServiceMatcher (ResourceServiceMatcher *mat
 
 WHEATIS_SERVICE_API void InitNameServiceMatcher (NameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *name_s);
 
-WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (NameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *plugin_name_s);
+WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *plugin_name_s);
 
 WHEATIS_SERVICE_API bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p);
 

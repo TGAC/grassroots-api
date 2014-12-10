@@ -126,7 +126,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 					if (matching_filenames_p)
 						{
 							StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
-							NameServiceMatcher matcher;
+							PluginNameServiceMatcher matcher;
 	
 							while (node_p)
 								{
@@ -144,7 +144,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 													
 													if (service_name_s)
 														{
-															InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);			
+															InitPluginNameServiceMatcher (&matcher, MatchServiceByPluginName, service_name_s);			
 															
 															GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, services_json_p, services_p, false);
 														}

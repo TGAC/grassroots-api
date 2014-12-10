@@ -26,6 +26,14 @@ void InitNameServiceMatcher (NameServiceMatcher *matcher_p, bool (*match_fn) (Se
 }
 
 
+void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *name_s)
+{
+	InitServiceMatcher (& (matcher_p -> pnsm_base_matcher), match_fn);
+
+	matcher_p -> pnsm_plugin_name_s = name_s;
+}
+
+
 bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p)
 {
 	return (matcher_p -> sm_match_fn (matcher_p, service_p));
@@ -47,10 +55,8 @@ bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p)
 {
 	PluginNameServiceMatcher *name_matcher_p = (PluginNameServiceMatcher *) matcher_p;	
 	
-	return (strcmp (service_p -> se_plugin_p -> pl_name_s, name_matcher_p -> nspm_plugin_name_s) == 0);
+	return (strcmp (service_p -> se_plugin_p -> pl_name_s, name_matcher_p -> pnsm_plugin_name_s) == 0);
 }
-
-
 
 
 bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p)

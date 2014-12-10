@@ -59,8 +59,6 @@ typedef struct Plugin
 
 	char *pl_name_s;
 
-	MEM_FLAG pl_path_mem;
-
 	PluginStatus pl_status;
 
 	PluginNature pl_type;

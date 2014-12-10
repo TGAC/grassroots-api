@@ -45,9 +45,9 @@ PREFIX const char *SERVICE_RUN_S VAL("run");
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
 
-PREFIX const char *PARAM_SET_NAME_S VAL("param_set");
+PREFIX const char *PARAM_SET_NAME_S VAL("parameter_set");
 PREFIX const char *PARAM_SET_DESCRIPTION_S VAL("description");
-PREFIX const char *PARAM_SET_PARAMS_S VAL("params");
+PREFIX const char *PARAM_SET_PARAMS_S VAL("parameters");
 
 PREFIX const char *PARAM_NAME_S VAL("param");
 PREFIX const char *PARAM_CONCISE_DEFINITION_S VAL("concise");
