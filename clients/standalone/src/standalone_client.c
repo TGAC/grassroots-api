@@ -30,6 +30,7 @@
 
 static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p);
 
+static bool ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
 
 /*************************************/
 /******* FUNCTION DEFINITIONS  *******/
@@ -192,6 +193,11 @@ int main(int argc, char *argv[])
 								case OP_LIST_ALL_SERVICES:
 									req_p = GetAvailableServicesRequest (username_s, password_s);
 									response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+									
+									if (response_p)
+										{
+											ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);					
+										}
 									break;
 									
 									
@@ -218,124 +224,7 @@ int main(int argc, char *argv[])
 														
 														if (response_p)
 															{
-																#ifdef _DEBUG
-																char *response_s = json_dumps (response_p, JSON_INDENT (2));
-																#endif
-																
-																if (json_is_array (response_p))
-																	{
-																		Client *client_p = LoadClient ("clients", client_s);
-																		
-																		if (client_p)
-																			{
-																				const size_t num_services = json_array_size (response_p);
-																				size_t i = 0;
-																				int res = 0;
-																				json_t *client_results_p = NULL;
-																				
-																				for (i = 0; i < num_services; ++ i)
-																					{
-																						json_t *service_json_p = json_array_get (response_p, i);
-																						const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
-
-																						#ifdef _DEBUG
-																						char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
-																						#endif
-
-
-																						if (service_name_s)
-																							{
-																								const char *service_description_s = GetJSONString (service_json_p, SERVICE_DESCRIPTION_S);
-
-																								if (service_description_s)
-																									{
-																										json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
-																										
-																										if (ops_p)
-																											{
-																												ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
-																												
-																												if (params_p)
-																													{
-																														int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
-																													}		/* if (params_p) */
-																											}
-																									}		/* if (service_description_s)	*/												
-																																
-																							}		/* if (service_name_s) */
-																							
-																						#ifdef _DEBUG
-																						free (service_s);
-																						#endif
-																																											
-																					}		/* for (i = 0; i < num_services; ++ i) */																
-																				
-																				/* Get the results of the user's configuration */																		
-																				client_results_p = RunClient (client_p);
-																				if (client_results_p)
-																					{
-																						char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
-																						json_t *new_req_p = json_object ();
-																						
-																						if (new_req_p)
-																							{
-																								if (!AddCredentialsToJson (new_req_p, username_s, password_s))
-																									{
-																										printf ("failed to add credentials to request\n");
-																									}
-																									
-																								if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
-																									{
-																										char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
-																										
-																										response_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
-																						
-																										if (response_p)
-																											{
-																												char *response_s = json_dumps (response_p, JSON_INDENT (2));
-																												
-																												if (response_s)
-																													{
-																														printf ("%s\n", response_s);
-																														free (response_s);
-																													}
-																											}
-																										else
-																											{
-																												printf ("no response\n");
-																											}																									
-																									
-																										if (new_req_s)
-																											{
-																												free (new_req_s);
-																											}
-																										
-																									}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
-																									
-																								json_decref (new_req_p);
-																								
-																							}		/* if (new_req_p) */
-																						
-																						if (client_results_s)
-																							{
-																								printf ("%s\n", client_results_s);
-																								free (client_results_s);
-																							}
-
-																					}
-																				else
-																					{
-																						printf ("no results from client\n");
-																					}
-																				
-																			}		/* if (client_p) */
-
-																	}		/* if (json_is_array (response_p)) */
-																
-																																					
-																#ifdef _DEBUG
-																free (response_s);
-																#endif
+																ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);					
 															}		/* if (response_p) */														
 					
 													}		/* if (req_p) */
@@ -420,5 +309,131 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 
 
 
+
+static bool ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
+{
+	bool success_flag = false;
+	
+	#ifdef _DEBUG
+	char *response_s = json_dumps (response_p, JSON_INDENT (2));
+	#endif
+	
+	if (json_is_array (response_p))
+		{
+			Client *client_p = LoadClient ("clients", client_s);
+			
+			if (client_p)
+				{
+					const size_t num_services = json_array_size (response_p);
+					size_t i = 0;
+					int res = 0;
+					json_t *client_results_p = NULL;
+					
+					for (i = 0; i < num_services; ++ i)
+						{
+							json_t *service_json_p = json_array_get (response_p, i);
+							const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+
+							#ifdef _DEBUG
+							char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
+							#endif
+
+
+							if (service_name_s)
+								{
+									const char *service_description_s = GetJSONString (service_json_p, SERVICE_DESCRIPTION_S);
+
+									if (service_description_s)
+										{
+											json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
+											
+											if (ops_p)
+												{
+													ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
+													
+													if (params_p)
+														{
+															int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
+														}		/* if (params_p) */
+												}
+										}		/* if (service_description_s)	*/												
+																	
+								}		/* if (service_name_s) */
+								
+							#ifdef _DEBUG
+							free (service_s);
+							#endif
+																												
+						}		/* for (i = 0; i < num_services; ++ i) */																
+					
+					/* Get the results of the user's configuration */																		
+					client_results_p = RunClient (client_p);
+					if (client_results_p)
+						{
+							char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
+							json_t *new_req_p = json_object ();
+							
+							if (new_req_p)
+								{
+									if (!AddCredentialsToJson (new_req_p, username_s, password_s))
+										{
+											printf ("failed to add credentials to request\n");
+										}
+										
+									if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
+										{
+											char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
+											
+											response_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
+							
+											if (response_p)
+												{
+													char *response_s = json_dumps (response_p, JSON_INDENT (2));
+													
+													if (response_s)
+														{
+															printf ("%s\n", response_s);
+															free (response_s);
+														}
+												}
+											else
+												{
+													printf ("no response\n");
+												}																									
+										
+											if (new_req_s)
+												{
+													free (new_req_s);
+												}
+											
+										}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
+										
+									json_decref (new_req_p);
+									
+								}		/* if (new_req_p) */
+							
+							if (client_results_s)
+								{
+									printf ("%s\n", client_results_s);
+									free (client_results_s);
+								}
+
+						}
+					else
+						{
+							printf ("no results from client\n");
+						}
+					
+				}		/* if (client_p) */
+
+		}		/* if (json_is_array (response_p)) */
+	
+																						
+	#ifdef _DEBUG
+	free (response_s);
+	#endif
+	
+	return success_flag;
+}
 
 
