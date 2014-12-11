@@ -9,6 +9,12 @@
 
 #include "json_util.h"
 
+#ifdef _DEBUG
+	#define PARAMETER_DEBUG	(DL_FINE)
+#else
+	#define PARAMETER_DEBUG	(DL_NONE)
+#endif
+
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
 
@@ -539,7 +545,7 @@ static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *roo
 {
 	bool success_flag = (json_object_set_new (root_p, PARAM_NAME_S, json_string (param_p -> pa_name_s)) == 0);
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, root_p, "AddParameterNameToJSON - root_p :: ");
 	#endif
 
@@ -551,7 +557,7 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 {
 	bool success_flag = (json_object_set_new (root_p, PARAM_DESCRIPTION_S, json_string (param_p -> pa_description_s)) == 0);
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, root_p, "AddParameterDescriptionToJSON - root_p :: ");
 	#endif
 
@@ -563,7 +569,7 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 {
 	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_tag)) == 0);
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, root_p, "AddParameterTagToJSON - root_p :: ");
 	#endif
 
@@ -612,7 +618,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 			success_flag = (json_object_set_new (root_p, PARAM_WHEATIS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0);
 		}
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, root_p, "AddParameterTypeToJSON - root_p :: ");
 	#endif
 
@@ -721,7 +727,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 			success_flag = false;
 		}
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, root_p, "AddValueToJSON - root_p :: ");
 	#endif
 
@@ -735,99 +741,97 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 	bool success_flag = false;
 
 	/* Get the parameter's value */
-	json_t *json_p = json_object_get (root_p, key_s);
+	json_t *json_value_p = json_object_get (root_p, key_s);
 
-	if (json_p)
-		{
-			json_t *json_value_p = json_object_get (json_p, SHARED_TYPE_VALUE_S);
-			
-			if (json_value_p)
+	if (json_value_p)
+		{			
+			#if SERVER_DEBUG >= DL_FINER
+			PrintJSON (stderr, json_value_p, "json_value_p -> ");
+			#endif
+
+			switch (param_type)
 				{
-					switch (param_type)
-						{
-							case PT_BOOLEAN:
-								if (json_is_boolean (json_value_p))
-									{
-										value_p -> st_boolean_value = (json_is_true (json_value_p)) ? true : false;
-										success_flag = true;
-									}
-								break;
+					case PT_BOOLEAN:
+						if (json_is_boolean (json_value_p))
+							{
+								value_p -> st_boolean_value = (json_is_true (json_value_p)) ? true : false;
+								success_flag = true;
+							}
+						break;
 
-							case PT_SIGNED_INT:
-								if (json_is_integer (json_value_p))
-									{
-										value_p -> st_long_value = (int32) json_integer_value (json_value_p);
-										success_flag = true;
-									}
-								break;
+					case PT_SIGNED_INT:
+						if (json_is_integer (json_value_p))
+							{
+								value_p -> st_long_value = (int32) json_integer_value (json_value_p);
+								success_flag = true;
+							}
+						break;
 
-							case PT_UNSIGNED_INT:
-								if (json_is_integer (json_value_p))
-									{
-										value_p -> st_ulong_value = (uint32) json_integer_value (json_value_p);
-										success_flag = true;
-									}
-								break;
+					case PT_UNSIGNED_INT:
+						if (json_is_integer (json_value_p))
+							{
+								value_p -> st_ulong_value = (uint32) json_integer_value (json_value_p);
+								success_flag = true;
+							}
+						break;
 
-							case PT_SIGNED_REAL:
-							case PT_UNSIGNED_REAL:
-								if (json_is_real (json_value_p))
-									{
-										value_p -> st_data_value = (double64) json_real_value (json_value_p);
-										success_flag = true;
-									}
-								break;
+					case PT_SIGNED_REAL:
+					case PT_UNSIGNED_REAL:
+						if (json_is_real (json_value_p))
+							{
+								value_p -> st_data_value = (double64) json_real_value (json_value_p);
+								success_flag = true;
+							}
+						break;
 
-							
-							case PT_DIRECTORY:
-							case PT_FILE_TO_READ:
-							case PT_FILE_TO_WRITE:
-								{
-									json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
-									
-									if ((protocol_p) && (json_is_string (protocol_p)))
-										{
-											json_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);
-											
-											if (json_value_p && (json_is_string (json_value_p)))
-												{
-													const char *protocol_s = json_string_value (protocol_p);
-													const char *value_s = json_string_value (json_value_p);
-
-													value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
-													
-													success_flag = (value_p -> st_resource_value_p != NULL);										
-												}					
-										}					
-								}
-								break;
-							
-							case PT_STRING:
-							case PT_PASSWORD:
-								if (json_is_string (json_value_p))
-									{
-										char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
-
-										if (value_s)
-											{
-												if (value_p -> st_string_value_s)
-													{
-														FreeCopiedString (value_p -> st_string_value_s);
-													}
-
-												value_p -> st_string_value_s = value_s;
-												success_flag = true;
-											}
-									}
-								break;
-
-							default:
-								break;
-						}		/* switch (param_p -> pa_type) */
 					
-				}		/* if (json_value_p) */
+					case PT_DIRECTORY:
+					case PT_FILE_TO_READ:
+					case PT_FILE_TO_WRITE:
+						{
+							json_t *protocol_p = json_object_get (json_value_p, RESOURCE_PROTOCOL_S);
+							
+							if ((protocol_p) && (json_is_string (protocol_p)))
+								{		
+									json_t *res_value_p = json_object_get (json_value_p, RESOURCE_VALUE_S);									
+									if (res_value_p && json_is_string (res_value_p))
+										{
+											const char *protocol_s = json_string_value (protocol_p);
+											const char *value_s = json_string_value (res_value_p);
 
-		}		/* if (json_p) */
+											value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
+											
+											success_flag = (value_p -> st_resource_value_p != NULL);										
+										}					
+								}					
+						}
+						break;
+					
+					case PT_STRING:
+					case PT_PASSWORD:
+						if (json_is_string (json_value_p))
+							{
+								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
+
+								if (value_s)
+									{
+										if (value_p -> st_string_value_s)
+											{
+												FreeCopiedString (value_p -> st_string_value_s);
+											}
+
+										value_p -> st_string_value_s = value_s;
+										success_flag = true;
+									}
+							}
+						break;
+
+					default:
+						break;
+				}		/* switch (param_p -> pa_type) */
+			
+
+		}		/* if (json_value_p) */
 
 
 	return success_flag;
@@ -933,7 +937,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 			success_flag = true;
 		}
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, json_p, "AddParameterOptionsToJSON - json_p :: ");
 	#endif
 
@@ -1038,7 +1042,7 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 			success_flag = true;
 		}
 
-	#ifdef _DEBUG
+	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, json_p, "AddParameterBoundsToJSON - json_p :: ");
 	#endif
 
@@ -1224,8 +1228,11 @@ bool IsJSONParameterConcise (const json_t * const json_p)
 Parameter *CreateParameterFromJSON (const json_t * const root_p)
 {
 	Parameter *param_p = NULL;
-
 	const char *name_s = GetStringValue (root_p, PARAM_NAME_S);
+
+	#if SERVER_DEBUG >= DL_FINE
+	char *root_s = json_dumps (root_p, JSON_INDENT (2));
+	#endif
 
 	if (name_s)
 		{
@@ -1293,6 +1300,15 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 				}		/* if (GetParameterTypeFromJSON (root_p, &pt)) */	
 				
 		}		/* if (name_s) */
+
+
+	#if SERVER_DEBUG >= DL_FINE
+	if (root_s)
+		{
+			free (root_s);
+		}
+	#endif
+
 
 	return param_p;
 }

@@ -47,12 +47,12 @@ typedef struct Client
  	/**
  	 * Function to get the user-friendly name of the Client.
  	 */
-	const char *(*cl_get_client_name_fn) (void);
+	const char *(*cl_get_client_name_fn) (ClientData *client_data_p);
 
 	/**
 	 * Function to get the user-friendly description of the Client.
 	 */
-	const char *(*cl_get_client_description_fn) (void);
+	const char *(*cl_get_client_description_fn) (ClientData *client_data_p);
 
 	/**
 	 * Any custom data that the Client needs to store.

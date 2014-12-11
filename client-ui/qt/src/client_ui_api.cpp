@@ -26,8 +26,8 @@ static int s_dummy_argc = 1;
 static QTClientData *AllocateQTClientData (void);
 static void FreeQTClientData (QTClientData *qt_data_p);
 
-static const char *GetQTClientName (void);
-static const char *GetQTClientDescription (void);
+static const char *GetQTClientName (ClientData *client_data_p);
+static const char *GetQTClientDescription (ClientData *client_data_p);
 static json_t *RunQTClient (ClientData *client_data_p);
 static int AddServiceToQTClient (ClientData *client_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
 
@@ -129,13 +129,13 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 }
 
 
-static const char *GetQTClientName (void)
+static const char *GetQTClientName (ClientData *client_data_p)
 {
 	return "Qt-based WheatIS client";
 }
 
 
-static const char *GetQTClientDescription (void)
+static const char *GetQTClientDescription (ClientData *client_data_p)
 {
 	return "A Qt-based WheatIS client user interface";
 }
