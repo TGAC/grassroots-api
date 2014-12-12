@@ -746,7 +746,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 	if (json_value_p)
 		{			
 			#if SERVER_DEBUG >= DL_FINER
-			PrintJSON (stderr, json_value_p, "json_value_p -> ");
+			PrintJSON (stderr, json_value_p, key_s);
 			#endif
 
 			switch (param_type)

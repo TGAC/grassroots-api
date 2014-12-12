@@ -2,6 +2,7 @@
 #include "parameter_set.h"
 #include "parameter.h"
 
+#include "streams.h"
 #include "json_util.h"
 #include "tag_item.h"
 
@@ -270,6 +271,18 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 										}
 									else
 										{
+											char *dump_s = json_dumps (param_json_p, JSON_INDENT (2));
+											
+											if (dump_s)
+												{
+													PrintErrors (STM_LEVEL_WARNING, "failed to create param from:\n%s\n", dump_s);
+													free (dump_s);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, "failed to create param\n");
+												}
+												
 											success_flag = false;
 										}
 										

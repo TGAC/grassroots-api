@@ -88,6 +88,8 @@ int PrintErrors (const uint32 level, const char *message_s, ...)
 	int result = -1;
 	va_list args;
 
+	va_start (args, message_s);
+
 	if (s_error_stream_p)
 		{
 			result = s_error_stream_p -> st_print_fn (s_error_stream_p, level, message_s, args);

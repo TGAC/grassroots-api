@@ -88,7 +88,7 @@ json_t *GetServiceConfig (const char * const filename_s)
 			
 			if (!config_p)
 				{
-					
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
 				}
 				
 			if (fclose (config_f) != 0)
@@ -150,8 +150,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 														}
 													else
 														{
-															//PrintErrors (STM_LEVEL_WARNING, "Failed to get service name from", node_p -> sln_string_s);
-															printf ("Failed to get service name from \"%s\"", node_p -> sln_string_s);
+															PrintErrors (STM_LEVEL_WARNING, "Failed to get service name from", node_p -> sln_string_s);
 														}
 													
 												}		/* if (services_json_p) */
