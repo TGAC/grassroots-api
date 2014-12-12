@@ -113,8 +113,12 @@ typedef struct Parameter
 	/** The type of the parameter. */
 	ParameterType pa_type;
 
-	/** The user-friendly name of the parameter. */
+	/** The name of the parameter. */
 	char *pa_name_s;
+
+	/** An optional user-friendly name of the parameter to use for client user interfaces. */
+	char *pa_display_name_s;
+
 
 	/** The description for this parameter. */
 	char *pa_description_s;
@@ -188,7 +192,7 @@ WHEATIS_SERVICE_API void FreeParameterMultiOptionArray (ParameterMultiOptionArra
 WHEATIS_SERVICE_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
-WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 WHEATIS_SERVICE_API void FreeParameter (Parameter *param_p);
@@ -247,6 +251,10 @@ WHEATIS_SERVICE_API bool IsJSONParameterConcise (const json_t * const json_p);
 
 
 WHEATIS_SERVICE_API void ClearSharedType (SharedType *st_p);
+
+
+WHEATIS_SERVICE_API const char *GetUIName (const Parameter * const parameter_p);
+
 
 #ifdef __cplusplus
 }

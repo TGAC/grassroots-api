@@ -54,7 +54,7 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 				{
 					QWidget *widget_p = child_p -> GetQWidget ();
 
-					qpw_form_layout_p -> addRow (param_p -> pa_name_s, widget_p);
+					qpw_form_layout_p -> addRow (GetUIName (param_p), widget_p);
 					qpw_widgets_map.insert (param_p, child_p);
 
 					if (CompareParameterLevels (param_p -> pa_level, qpw_level) > 0)

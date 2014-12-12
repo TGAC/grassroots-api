@@ -2,6 +2,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /*
 #define MY_DBL_EPSILON 1.0e-08
@@ -13,7 +14,7 @@
 
 #include "math_utils.h"
 #include "memory_allocations.h"
-
+#include "string_utils.h"
 
 static const double64 S_RANDOM_FACTOR = 1.0 / (RAND_MAX + 1.0);
 
@@ -91,7 +92,6 @@ char *ConvertNumberToString (double d, int8 num_dps)
 {
 	char *value_s = NULL;
 	size_t l = 1;	/* init size for terminating null */
-	double f = 1; 
 	bool minus_flag = false;
 	int num_digits = 0;
 	
@@ -143,7 +143,7 @@ char *ConvertNumberToString (double d, int8 num_dps)
 				{
 					char *temp_p = format_s;
 					
-					*temp_p = "%";
+					*temp_p = '%';
 					++ temp_p;
 					
 					if (i > 0)
