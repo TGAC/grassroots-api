@@ -142,7 +142,7 @@ WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
  * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
  * @see FreeParameterSet.
  */
-WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (const Service *service_p, Resource *resource_p, const json_t *json_p);
+WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
 /**

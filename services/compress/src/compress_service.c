@@ -107,7 +107,7 @@ ServicesArray *GetServices (void)
 					return services_p;
 				}
 				
-			FreeService (blast_service_p);
+			FreeService (compress_service_p);
 		}
 
 	return NULL;

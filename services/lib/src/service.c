@@ -9,11 +9,11 @@
 #include "json_util.h"
 #include "streams.h"
 
-static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p);
+static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p);
 
-static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p);
+static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root_p);
 
-static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p);
+static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p);
 
 static void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
 
@@ -243,6 +243,52 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 }
 
 
+void AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag)
+{
+	Service **service_pp = services_p -> sa_services_pp;
+	uint32 i = services_p -> sa_num_services;
+	bool loop_flag = (i > 0);
+	
+	while (loop_flag)
+		{
+			bool using_service_flag = RunServiceMatcher (matcher_p, *service_pp);
+			
+			if (using_service_flag)
+				{
+					ServiceNode *service_node_p = AllocateServiceNode (*service_pp);
+					
+					if (service_node_p)
+						{
+							LinkedListAddTail (matching_services_p, (ListItem *) service_node_p);
+							using_service_flag = true;
+							
+							if (!multiple_match_flag)
+								{
+									loop_flag = false;	
+								}
+						}
+					else
+						{
+							/* failed to allocate service node */
+						}
+				}
+				
+			if (!using_service_flag)
+				{
+					FreeService (*service_pp);
+				}	
+			
+			if (loop_flag)
+				{
+					-- i;
+					++ service_pp;
+					
+					loop_flag = (i > 0);
+				}
+			
+		}		/* while (loop_flag) */
+	
+}
 
 void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag)
 {
@@ -274,36 +320,13 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 												{
 													if (OpenPlugin (plugin_p))
 														{																							
-															Service *service_p = GetServiceFromPlugin (plugin_p, config_p);
+															ServicesArray *services_p = GetServicesFromPlugin (plugin_p, config_p);
 															
-															if (service_p)
+															if (services_p)
 																{
-																	using_service_flag = RunServiceMatcher (matcher_p, service_p);
-																	
-																	if (using_service_flag)
-																		{
-																			ServiceNode *service_node_p = AllocateServiceNode (service_p);
-																			
-																			if (service_node_p)
-																				{
-																					LinkedListAddTail (services_list_p, (ListItem *) service_node_p);
-																					using_service_flag = true;
-																					
-																					if (!multiple_match_flag)
-																						{
-																							node_p = NULL;
-																						}
-																				}
-																			else
-																				{
-																					/* failed to allocate service node */
-																				}
-																		}
-																		
-																	if (!using_service_flag)
-																		{
-																			FreeService (service_p);
-																		}
+																	AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag);
+
+																	FreeServicesArray (services_p);
 																}
 															else
 																{
@@ -386,7 +409,7 @@ const char *GetServiceDescription (Service *service_p)
 }
 
 
-ParameterSet *GetServiceParameters (const Service *service_p, Resource *resource_p, const json_t *json_p)
+ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
 {
 	return service_p -> se_get_params_fn (service_p, resource_p, json_p);
 }
@@ -538,7 +561,7 @@ const char *GetServiceNameFromJSON (const json_t * const root_p)
 
 
 
-static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_p)
+static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p)
 {
 	bool success_flag = false;
 	const char *name_s = GetServiceName (service_p);
@@ -556,7 +579,7 @@ static bool AddServiceNameToJSON (const Service * const service_p, json_t *root_
 }
 
 
-static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t *root_p)
+static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root_p)
 {
 	bool success_flag = false;
 	const char *description_s = GetServiceDescription (service_p);
@@ -574,7 +597,7 @@ static bool AddServiceDescriptionToJSON (const Service * const service_p, json_t
 }
 
 
-static bool AddServiceParameterSetToJSON (const Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p)
+static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p)
 {
 	bool success_flag = false;
 	ParameterSet *param_set_p = GetServiceParameters (service_p, resource_p, json_p);
