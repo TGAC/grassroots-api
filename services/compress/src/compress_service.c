@@ -60,16 +60,16 @@ static const char *S_INPUT_PARAM_NAME_S = "Input";
  * STATIC PROTOTYPES
  */
 
-static const char *GetCompressServiceName (ServiceData *service_data_p);
+static const char *GetCompressServiceName (Service *service_p);
 
-static const char *GetCompressServiceDesciption (ServiceData *service_data_p);
+static const char *GetCompressServiceDesciption (Service *service_p);
 
-static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
+static int RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForCompressService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
+static bool IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
@@ -81,27 +81,50 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
  * API FUNCTIONS
  */
 
-Service *GetService (void)
+ServicesArray *GetServices (void)
 {
 	Service *compress_service_p = (Service *) AllocMemory (sizeof (Service));
-	ServiceData *data_p = NULL;
 
-	InitialiseService (compress_service_p,
-		GetCompressServiceName,
-		GetCompressServiceDesciption,
-		RunCompressService,
-		IsFileForCompressService,
-		GetCompressServiceParameters,
-		true,
-		data_p);
+	if (compress_service_p)
+		{
+			ServicesArray *services_p = AllocateServicesArray (1);
+			
+			if (services_p)
+				{		
+					ServiceData *data_p = NULL;
+					
+					InitialiseService (compress_service_p,
+						GetCompressServiceName,
+						GetCompressServiceDesciption,
+						RunCompressService,
+						IsFileForCompressService,
+						GetCompressServiceParameters,
+						true,
+						data_p);
+					
+					* (services_p -> sa_services_pp) = compress_service_p;
+							
+					return services_p;
+				}
+				
+			FreeService (blast_service_p);
+		}
 
-	return compress_service_p;
+	return NULL;
 }
 
 
-void ReleaseService (Service *service_p)
+void ReleaseServices (ServicesArray *services_p)
 {
-	FreeMemory (service_p);
+	FreeServicesArray (services_p);
+}
+
+
+bool CloseService (Service *service_p)
+{
+	bool success_flag = true;
+	
+	return success_flag;
 }
 
 
@@ -249,19 +272,19 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
  */
 
 
-static const char *GetCompressServiceName (ServiceData *service_data_p)
+static const char *GetCompressServiceName (Service *service_p)
 {
 	return "Compress service";
 }
 
 
-static const char *GetCompressServiceDesciption (ServiceData *service_data_p)
+static const char *GetCompressServiceDesciption (Service *service_p)
 {
 	return "A service to compress data";
 }
 
 
-static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p)
+static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 
@@ -305,7 +328,7 @@ static ParameterSet *GetCompressServiceParameters (ServiceData *service_data_p, 
 
 
 
-static int RunCompressService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p)
+static int RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	int result = -1;
 	SharedType input_resource;
@@ -406,7 +429,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 }
 
 
-static bool IsFileForCompressService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p)
+static bool IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = true;
 	const char *filename_s = resource_p -> re_value_s;

@@ -37,16 +37,16 @@ typedef struct WebServiceData
  * STATIC PROTOTYPES
  */
 
-static const char *GetWebServiceName (ServiceData *service_data_p);
+static const char *GetWebServiceName (Service *service_p);
 
-static const char *GetWebServiceDesciption (ServiceData *service_data_p);
+static const char *GetWebServiceDesciption (Service *service_p);
 
-static ParameterSet *GetWebServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-static int RunWebService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
+static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsResourceForWebService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
+static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static WebServiceData *AllocateWebServiceData (json_t *config_p);
@@ -197,25 +197,25 @@ static void FreeWebServiceData (WebServiceData *data_p)
 }
 
 
-static const char *GetWebServiceName (ServiceData *service_data_p)
+static const char *GetWebServiceName (Service *service_p)
 {
-	WebServiceData *data_p = (WebServiceData *) service_data_p;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 	
 	return (data_p -> wsd_name_s);
 }
 
 
-static const char *GetWebServiceDesciption (ServiceData *service_data_p)
+static const char *GetWebServiceDesciption (Service *service_p)
 {
-	WebServiceData *data_p = (WebServiceData *) service_data_p;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 
 	return (data_p -> wsd_description_s);
 }
 
 
-static ParameterSet *GetWebServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p)
+static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
 {
-	WebServiceData *data_p = (WebServiceData *) service_data_p;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 
 	return (data_p -> wsd_params_p);
 }
@@ -281,7 +281,7 @@ static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p
 }
 
 
-static bool AddParameterToWebService (WebServiceData *service_data_p, Parameter *param_p)
+static bool AddParameterToWebService (WebService *service_p, Parameter *param_p)
 {
 	bool success_flag = false;
 	
@@ -302,9 +302,9 @@ static bool AddParameterToWebService (WebServiceData *service_data_p, Parameter 
 }
 
 
-static int RunWebService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p)
+static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
-	WebServiceData *data_p = (WebServiceData *) service_data_p;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 	int result = -1;
 	
 	if (param_set_p)
@@ -327,7 +327,7 @@ static int RunWebService (ServiceData *service_data_p, ParameterSet *param_set_p
 
 
 
-static bool IsResourceForWebService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p)
+static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = false;
 

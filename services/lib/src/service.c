@@ -22,11 +22,11 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p);
 
 
 void InitialiseService (Service * const service_p,
-	const char *(*get_service_name_fn) (ServiceData *service_data_p),
-	const char *(*get_service_description_fn) (ServiceData *service_data_p),
-	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p),
-	bool (*match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p),
-	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p),
+	const char *(*get_service_name_fn) (Service *service_p),
+	const char *(*get_service_description_fn) (Service *service_p),
+	int (*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
+	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
+	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	bool specific_flag,
 	ServiceData *data_p)
 {
@@ -49,6 +49,11 @@ void InitialiseService (Service * const service_p,
 void FreeService (Service *service_p)
 {
 	FreeMemory (service_p);
+}
+
+bool CloseService (Service *service_p)
+{
+	return service_p -> se_close_fn (service_p);
 }
 
 
@@ -176,6 +181,8 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 }
 
 
+
+
 bool GetService (const char * const plugin_name_s, Service **service_pp, ServiceMatcher *matcher_p, const json_t *config_p)
 {
 	Plugin *plugin_p = AllocatePlugin (plugin_name_s);
@@ -185,26 +192,32 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 		{
 			if (OpenPlugin (plugin_p))
 				{																							
-					Service *service_p = GetServiceFromPlugin (plugin_p, config_p);
+					ServicesArray *services_p = GetServicesFromPlugin (plugin_p, config_p);
 					
-					if (service_p)
+					if (services_p)
 						{
-							bool using_service_flag = true;
+							Service *service_p = NULL;
+							uint32 i = services_p -> sa_num_services;
+							Service **s_pp = services_p -> sa_services_pp;
 							
-							success_flag = true;
+							for ( ; i > 0; -- i, ++ s_pp)
+								{
+									bool using_service_flag = true;
 							
-							if (matcher_p)
-								{
-									using_service_flag = RunServiceMatcher (matcher_p, service_p);
-								}
-								
-							if (using_service_flag)
-								{
-									*service_pp = service_p;
-								}
-							else
-								{
-									FreeService (service_p);
+									if (matcher_p)
+										{
+											using_service_flag = RunServiceMatcher (matcher_p, *s_pp);
+										}
+										
+									if (using_service_flag)
+										{
+											*service_pp = *s_pp;
+										}
+									else
+										{
+											CloseService (*s_pp);
+											*s_pp = NULL;
+										}
 								}
 						}
 					else
@@ -349,33 +362,33 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 
 int RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
-	return service_p -> se_run_fn (service_p -> se_data_p, param_set_p, credentials_p);
+	return service_p -> se_run_fn (service_p, param_set_p, credentials_p);
 }
 
 
 bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	return service_p -> se_match_fn (service_p -> se_data_p, resource_p, handler_p);	
+	return service_p -> se_match_fn (service_p, resource_p, handler_p);	
 }
 
 
 /** Get the user-friendly name of the service. */
-const char *GetServiceName (const Service *service_p)
+const char *GetServiceName (Service *service_p)
 {
-	return service_p -> se_get_service_name_fn (service_p -> se_data_p);
+	return service_p -> se_get_service_name_fn (service_p);
 }
 
 
 /** Get the user-friendly description of the service. */
-const char *GetServiceDescription (const Service *service_p)
+const char *GetServiceDescription (Service *service_p)
 {
-	return service_p -> se_get_service_description_fn (service_p -> se_data_p);	
+	return service_p -> se_get_service_description_fn (service_p);	
 }
 
 
 ParameterSet *GetServiceParameters (const Service *service_p, Resource *resource_p, const json_t *json_p)
 {
-	return service_p -> se_get_params_fn (service_p -> se_data_p, resource_p, json_p);
+	return service_p -> se_get_params_fn (service_p, resource_p, json_p);
 }
 
 
@@ -388,45 +401,45 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p)
 //
 //	Get Symbol
 //
-Service *GetServiceFromPlugin (Plugin * const plugin_p, const json_t *service_config_p)
+ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p)
 {
-	if (!plugin_p -> pl_service_p)
+	if (!plugin_p -> pl_services_p)
 		{
-			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetService");
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetServices");
 
 			if (symbol_p)
 				{
-					Service *(*fn_p) (const json_t *) = (Service *(*) (const json_t *)) symbol_p;
+					ServicesArray *(*fn_p) (const json_t *) = (ServicesArray *(*) (const json_t *)) symbol_p;
 
-					plugin_p -> pl_service_p = fn_p (service_config_p);
+					plugin_p -> pl_services_p = fn_p (service_config_p);
 
-					if (plugin_p -> pl_service_p)
+					if (plugin_p -> pl_services_p)
 						{
-							plugin_p -> pl_service_p -> se_plugin_p = plugin_p;
+							AssignPluginForServicesArray (plugin_p -> pl_services_p, plugin_p);
 							plugin_p -> pl_type = PN_SERVICE;
 						}
 				}
 		}
 
-	return plugin_p -> pl_service_p;
+	return plugin_p -> pl_services_p;
 }
 
 
 bool DeallocatePluginService (Plugin * const plugin_p)
 {
-	bool success_flag = (plugin_p -> pl_service_p == NULL);
+	bool success_flag = (plugin_p -> pl_services_p == NULL);
 
 	if (!success_flag)
 		{
-			void *symbol_p = GetSymbolFromPlugin (plugin_p, "ReleaseService");
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "ReleaseServices");
 
 			if (symbol_p)
 				{
-					void (*fn_p) (Service * const) = (void (*) (Service * const)) symbol_p;
+					void (*fn_p) (ServicesArray * const) = (void (*) (ServicesArray * const)) symbol_p;
 
-					fn_p (plugin_p -> pl_service_p);
+					fn_p (plugin_p -> pl_services_p);
 
-					plugin_p -> pl_service_p = NULL;
+					plugin_p -> pl_services_p = NULL;
 					success_flag = true;
 				}
 		}
@@ -435,7 +448,7 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
-json_t *GetServiceAsJSON (const Service * const service_p, Resource *resource_p, const json_t *json_p)
+json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p)
 {
 	json_t *root_p = json_object ();
 	
@@ -633,3 +646,59 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 
 	return services_list_json_p;
 }
+
+
+ServicesArray *AllocateServicesArray (const uint32 num_services)
+{
+	Service **services_pp = (Service **) AllocMemoryArray (num_services, sizeof (Service *));
+	
+	if (services_pp)
+		{
+			ServicesArray *services_array_p = (ServicesArray *) AllocMemory (sizeof (ServicesArray));
+
+			if (services_array_p)
+				{
+					services_array_p -> sa_services_pp = services_pp;
+					services_array_p -> sa_num_services = num_services;
+
+					return services_array_p;					
+				}
+			
+			FreeMemory (services_pp);
+		}
+	
+	return NULL;
+}
+
+
+void FreeServicesArray (ServicesArray *services_p)
+{
+	uint32 i = services_p -> sa_num_services;
+	Service **service_pp = services_p -> sa_services_pp;
+	
+	for ( ; i > 0; -- i, ++ service_pp)
+		{
+			if (*service_pp)
+				{
+					FreeService (*service_pp);
+				}
+		}
+	
+	FreeMemory (services_p -> sa_services_pp);
+	FreeMemory (services_p);	
+}
+
+
+
+void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
+{
+	Service **service_pp = services_p -> sa_services_pp;
+	int i = services_p -> sa_num_services;
+
+	for ( ; i > 0; -- i, ++ service_pp)
+		{
+			(*service_pp) -> se_plugin_p = plugin_p;
+		}
+}
+
+

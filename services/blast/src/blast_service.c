@@ -20,15 +20,15 @@ typedef struct
  * STATIC PROTOTYPES
  */
  
-static const char *GetBlastServiceName (ServiceData *service_data_p);
+static const char *GetBlastServiceName (Service *service_p);
 
-static const char *GetBlastServiceDesciption (ServiceData *service_data_p);
+static const char *GetBlastServiceDesciption (Service *service_p);
 
-static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
-static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
+static int RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
+static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 
@@ -36,27 +36,42 @@ static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resour
  * API FUNCTIONS
  */
 
-Service *GetService (void)
+ServicesArray *GetServices (void)
 {
 	Service *blast_service_p = (Service *) AllocMemory (sizeof (Service));
-	ServiceData *data_p = NULL;
-	
-	InitialiseService (blast_service_p, 
-		GetBlastServiceName, 
-		GetBlastServiceDesciption, 
-		RunBlastService,
-		IsFileForBlastService,
-		GetBlastServiceParameters, 
-		true,
-		data_p);
-	
-	return blast_service_p;
+
+	if (blast_service_p)
+		{
+			ServicesArray *services_p = AllocateServicesArray (1);
+			
+			if (services_p)
+				{		
+					ServiceData *data_p = NULL;
+					
+					InitialiseService (blast_service_p, 
+						GetBlastServiceName, 
+						GetBlastServiceDesciption, 
+						RunBlastService,
+						IsFileForBlastService,
+						GetBlastServiceParameters, 
+						true,
+						data_p);
+					
+					* (services_p -> sa_services_pp) = blast_service_p;
+							
+					return services_p;
+				}
+				
+			FreeService (blast_service_p);
+		}
+
+	return NULL;
 }
 
 
-void ReleaseService (Service *service_p)
+void ReleaseServices (ServicesArray *services_p)
 {
-	FreeMemory (service_p);
+	FreeServicesArray (services_p);
 }
 
 
@@ -65,19 +80,19 @@ void ReleaseService (Service *service_p)
  */
  
  
-static const char *GetBlastServiceName (ServiceData *service_data_p)
+static const char *GetBlastServiceName (Service *service_p)
 {
 	return "Blast service";
 }
 
 
-static const char *GetBlastServiceDesciption (ServiceData *service_data_p)
+static const char *GetBlastServiceDesciption (Service *service_p)
 {
 	return "A service to run the Blast program";
 }
 
 
-static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Resource *resource_p, const json_t *config_p)
+static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, const json_t *config_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
 	
@@ -105,7 +120,7 @@ static ParameterSet *GetBlastServiceParameters (ServiceData *service_data_p, Res
 
 
 
-static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p)
+static int RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	int result = -1;
 	BlastTool *tool_p = CreateBlastTool ();
@@ -124,7 +139,7 @@ static int RunBlastService (ServiceData *service_data_p, ParameterSet *param_set
 }
 
 
-static bool IsFileForBlastService (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p)
+static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = false;
 	const char *filename_s = resource_p -> re_value_s;

@@ -152,7 +152,7 @@ char *ConvertNumberToString (double d, int8 num_dps)
 						}
 					else
 						{
-							sprintf (temp_p, "lf", i);
+							sprintf (temp_p, "lf");
 						}
 					
 					if (minus_flag)

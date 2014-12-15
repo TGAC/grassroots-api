@@ -15,7 +15,7 @@
 
 
 /*********** FORWARD DECLARATION ****************/
-struct Service;
+struct ServicesArray;
 struct Client;
 struct Handler;
 
@@ -63,7 +63,7 @@ typedef struct Plugin
 
 	PluginNature pl_type;
 
-	struct Service *pl_service_p;
+	struct ServicesArray *pl_services_p;
 
 	struct Client *pl_client_p;
 

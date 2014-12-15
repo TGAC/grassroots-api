@@ -27,6 +27,9 @@ typedef struct ServiceData
 {
 	/** The service that owns this data. */
 	struct Service *sd_service_p;
+
+	/** Is the service currently in an open state? */
+	bool sd_open_flag;
 } ServiceData;
 
 
@@ -44,27 +47,30 @@ typedef struct Service
 
 	bool se_is_specific_service_flag;
 
-	int (*se_run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p);
+	int (*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-	bool (*se_match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p);
+	bool (*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
-	bool (*se_has_permissions_fn) (ServiceData *service_data_p, const UserDetails * const user_p);
+	bool (*se_has_permissions_fn) (struct Service *service_p, const UserDetails * const user_p);
 
  	/**
  	 * Function to get the user-friendly name of the service.
  	 */
-	const char *(*se_get_service_name_fn) (ServiceData *service_data_p);
+	const char *(*se_get_service_name_fn) (struct Service *service_p);
 
 	/**
 	 * Function to get the user-friendly description of the service.
 	 */
-	const char *(*se_get_service_description_fn) (ServiceData *service_data_p);
+	const char *(*se_get_service_description_fn) (struct Service *service_p);
 
 	/**
 	 * Function to get the ParameterSet for this Service.
 	 */
-	ParameterSet *(*se_get_params_fn) (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p);
+	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
 
+
+
+	bool (*se_close_fn) (struct Service *service_p); 
 
 	/**
 	 * Any custom data that the service needs to store.
@@ -81,19 +87,27 @@ typedef struct
 } ServiceNode;
 
 
+typedef struct ServicesArray
+{
+	Service **sa_services_pp;
+	uint32 sa_num_services;	
+} ServicesArray;
+
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p, const json_t *service_config_p);
+WHEATIS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
+
 
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
-	const char *(*get_service_name_fn) (ServiceData *service_data_p),
-	const char *(*get_service_description_fn) (ServiceData *service_data_p),
-	int (*run_fn) (ServiceData *service_data_p, ParameterSet *param_set_p, json_t *credentials_p),
-	bool (*match_fn) (ServiceData *service_data_p, Resource *resource_p, Handler *handler_p),
-	ParameterSet *(*get_parameters_fn) (ServiceData *service_data_p, Resource *resource_p, const json_t *json_p),
+	const char *(*get_service_name_fn) (Service *service_p),
+	const char *(*get_service_description_fn) (Service *service_p),
+	int (*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
+	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
+	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	bool specific_flag,
 	ServiceData *data_p);
 
@@ -108,7 +122,7 @@ WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_
  * @param service_p The Service to get the name for.
  * @return The name of Service.
  */
-WHEATIS_SERVICE_API const char *GetServiceName (const Service *service_p);
+WHEATIS_SERVICE_API const char *GetServiceName (Service *service_p);
 
 
 /**
@@ -117,7 +131,7 @@ WHEATIS_SERVICE_API const char *GetServiceName (const Service *service_p);
  * @param service_p The Service to get the description for.
  * @return The description of Service.
  */
-WHEATIS_SERVICE_API const char *GetServiceDescription (const Service *service_p);
+WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
 
 
 /**
@@ -153,6 +167,10 @@ WHEATIS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const cha
 WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
 
+WHEATIS_SERVICE_API bool CloseService (Service *service_p);
+
+
+
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions
  * as much as possible.
@@ -161,7 +179,7 @@ WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const cha
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
  */
-WHEATIS_SERVICE_API json_t *GetServiceAsJSON (const Service * const service_p, Resource *resource_p, const json_t *json_p);
+WHEATIS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p);
 
 
 
@@ -175,6 +193,41 @@ WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 
 WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p);
+
+
+
+/**
+ * Free a ServicesArray and each of its Services.
+ *
+ * @param services_p The ServicesArray to free.
+ */
+WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
+
+
+/**
+ * Allocate an empty ServicesArray.
+ *
+ * @param num_services The number of potential Services that the ServicesArray will hold.
+ */
+WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
+
+/**
+ * Free a ServicesArray and each of its Services.
+ *
+ * @param services_p The ServicesArray to free.
+ */
+WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
+
+
+/**
+ * Allocate an empty ServicesArray.
+ *
+ * @param num_services The number of potential Services that the ServicesArray will hold.
+ */
+WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
+
+
+WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
 
 #ifdef __cplusplus

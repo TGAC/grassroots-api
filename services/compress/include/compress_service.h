@@ -12,10 +12,10 @@ extern "C"
 #endif
 
 
-COMPRESS_SERVICE_API Service *GetService (void);
+COMPRESS_SERVICE_API ServicesArray *GetServices (void);
 
 
-COMPRESS_SERVICE_API void ReleaseService (Service *service_p);
+COMPRESS_SERVICE_API void ReleaseServices (ServicesArray *service_p);
 
 
 COMPRESS_SERVICE_LOCAL bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p, const int flush);
