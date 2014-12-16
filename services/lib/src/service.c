@@ -253,33 +253,37 @@ void AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList
 	
 	while (loop_flag)
 		{
-			bool using_service_flag = RunServiceMatcher (matcher_p, *service_pp);
-			
-			if (using_service_flag)
+			if (*service_pp)
 				{
-					ServiceNode *service_node_p = AllocateServiceNode (*service_pp);
+					bool using_service_flag = RunServiceMatcher (matcher_p, *service_pp);
 					
-					if (service_node_p)
+					if (using_service_flag)
 						{
-							LinkedListAddTail (matching_services_p, (ListItem *) service_node_p);
-							using_service_flag = true;
+							ServiceNode *service_node_p = AllocateServiceNode (*service_pp);
 							
-							if (!multiple_match_flag)
+							if (service_node_p)
 								{
-									loop_flag = false;	
+									LinkedListAddTail (matching_services_p, (ListItem *) service_node_p);
+									using_service_flag = true;
+									
+									if (!multiple_match_flag)
+										{
+											loop_flag = false;	
+										}
+								}
+							else
+								{
+									/* failed to allocate service node */
 								}
 						}
-					else
+						
+					if (!using_service_flag)
 						{
-							/* failed to allocate service node */
-						}
+							FreeService (*service_pp);
+							*service_pp = NULL;
+						}	
 				}
 				
-			if (!using_service_flag)
-				{
-					FreeService (*service_pp);
-				}	
-			
 			if (loop_flag)
 				{
 					-- i;
@@ -485,7 +489,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 			/* Add the key-value pair */
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (root_p, SERVICE_NAME_S, json_string (value_s)) == 0);
+					success_flag = (json_object_set_new (root_p, SERVICES_NAME_S, json_string (value_s)) == 0);
 				}
 
 			if (success_flag)
@@ -498,7 +502,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 					
 					if (value_s)
 						{
-							success_flag = (json_object_set_new (root_p, SERVICE_DESCRIPTION_S, json_string (value_s)) == 0);
+							success_flag = (json_object_set_new (root_p, SERVICES_DESCRIPTION_S, json_string (value_s)) == 0);
 						}
 					
 					if (success_flag)
@@ -551,13 +555,25 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 
 const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
 {
-	return GetJSONString (root_p, SERVICE_DESCRIPTION_S);
+	return GetJSONString (root_p, SERVICES_DESCRIPTION_S);
 }
 
 
 const char *GetServiceNameFromJSON (const json_t * const root_p)
 {
-	return GetJSONString (root_p, SERVICE_NAME_S);
+	return GetJSONString (root_p, SERVICES_NAME_S);
+}
+
+
+const char *GetOperationDescriptionFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_DESCRIPTION_S);
+}
+
+
+const char *GetOperationNameFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_ID_S);
 }
 
 
@@ -722,7 +738,10 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
 
 	for ( ; i > 0; -- i, ++ service_pp)
 		{
-			(*service_pp) -> se_plugin_p = plugin_p;
+			if (*service_pp)
+				{
+					(*service_pp) -> se_plugin_p = plugin_p;
+				}
 		}
 }
 

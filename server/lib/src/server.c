@@ -277,7 +277,7 @@ static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 static Operation GetOperation (json_t *ops_p)
 {
 	Operation op = OP_NONE;
-	json_t *op_p = json_object_get (ops_p, SERVER_OPERATION_S);
+	json_t *op_p = json_object_get (ops_p, SERVER_OPERATIONS_S);
 		
 	if (op_p)
 		{

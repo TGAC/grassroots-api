@@ -182,18 +182,18 @@ static Service *GetService (json_t *operation_json_p)
 }
 
 
-static WebServiceData *AllocateWebServiceData (json_t *config_p)
+static WebServiceData *AllocateWebServiceData (json_t *op_json_p)
 {
 	WebServiceData *data_p = (WebServiceData *) AllocMemory (sizeof (WebServiceData));
 	
 	if (data_p)
 		{
-			data_p -> wsd_config_p = config_p;
-			data_p -> wsd_name_s = GetServiceNameFromJSON (config_p);
+			data_p -> wsd_config_p = op_json_p;
+			data_p -> wsd_name_s = GetOperationNameFromJSON (op_json_p);
 			
 			if (data_p -> wsd_name_s)
 				{
-					data_p -> wsd_description_s = GetServiceDescriptionFromJSON (config_p);
+					data_p -> wsd_description_s = GetOperationDescriptionFromJSON (op_json_p);
 					
 					if (data_p -> wsd_description_s)
 						{
@@ -201,39 +201,19 @@ static WebServiceData *AllocateWebServiceData (json_t *config_p)
 							
 							if (data_p -> wsd_buffer_p)
 								{							
-									json_t *ops_p = json_object_get (config_p, SERVER_OPERATIONS_S);
-									
-									if (ops_p)
-										{
-											json_t *params_p = NULL;
-											
-											if (json_is_array (ops_p))	
-												{
-													const size_t num_ops = json_array_size (ops_p);
-													
-													if (num_ops > 0)
-														{
-															params_p = json_array_get (ops_p, 0);
-														}
-												}
-											else
-												{
-													params_p = json_object_get (ops_p, PARAM_SET_PARAMS_S);
-												}
+									json_t *params_p = json_object_get (op_json_p, PARAM_SET_PARAMS_S);
 
-											if (params_p)
+									if (params_p)
+										{
+											data_p -> wsd_params_p = CreateParameterSetFromJSON (params_p);
+											
+											if (data_p -> wsd_params_p)
 												{
-													data_p -> wsd_params_p = CreateParameterSetFromJSON (params_p);
-													
-													if (data_p -> wsd_params_p)
-														{
-															return data_p;
-														}
-																										
-												}		/* if (params_p) */
+													return data_p;
+												}
 																								
-										}		/* if (ops_p) */
-									
+										}		/* if (params_p) */
+																								
 									FreeByteBuffer (data_p -> wsd_buffer_p);
 								}
 						}

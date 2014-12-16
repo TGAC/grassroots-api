@@ -271,7 +271,7 @@ bool GetUsernameAndPassword (const json_t * const root_p, const char **username_
 json_t *GetOperationAsJSON (Operation op)
 {
 	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:{s:i}}", SERVER_OPERATIONS_S, SERVER_OPERATION_S, op);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, op);
 
 	if (!json_p)
 		{

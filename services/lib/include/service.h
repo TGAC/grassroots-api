@@ -190,6 +190,12 @@ WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * co
 WHEATIS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
 
 
+WHEATIS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
+
+
+WHEATIS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
+
+
 WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 

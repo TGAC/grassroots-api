@@ -332,7 +332,7 @@ static bool ShowServices (json_t *response_p, const char *client_s, const char *
 					for (i = 0; i < num_services; ++ i)
 						{
 							json_t *service_json_p = json_array_get (response_p, i);
-							const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+							const char *service_name_s = GetJSONString (service_json_p, SERVICES_NAME_S);
 
 							#ifdef _DEBUG
 							char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
@@ -341,7 +341,7 @@ static bool ShowServices (json_t *response_p, const char *client_s, const char *
 
 							if (service_name_s)
 								{
-									const char *service_description_s = GetJSONString (service_json_p, SERVICE_DESCRIPTION_S);
+									const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
 
 									if (service_description_s)
 										{

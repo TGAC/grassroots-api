@@ -36,12 +36,14 @@
 
 
 PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
-PREFIX const char *SERVER_OPERATION_S VAL("operation");
+PREFIX const char *OPERATION_ID_S VAL("operationId");
+PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
 
 PREFIX const char *SERVICES_NAME_S VAL("services");
-PREFIX const char *SERVICE_NAME_S VAL("path");
-PREFIX const char *SERVICE_DESCRIPTION_S VAL("description");
+PREFIX const char *SERVICES_ID_S VAL("path");
+PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");
+
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
 
