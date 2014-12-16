@@ -11,7 +11,7 @@
 #include "math_utils.h"
 #include "filesystem_utils.h"
 #include "byte_buffer.h"
-
+#include "streams.h"
 
 typedef enum SubmissionMethod
 {
@@ -37,6 +37,8 @@ typedef struct WebServiceData
  * STATIC PROTOTYPES
  */
 
+static Service *GetService (json_t *operation_json_p);
+
 static const char *GetWebServiceName (Service *service_p);
 
 static const char *GetWebServiceDesciption (Service *service_p);
@@ -54,12 +56,15 @@ static WebServiceData *AllocateWebServiceData (json_t *config_p);
 
 static void FreeWebServiceData (WebServiceData *data_p);
 
+static bool CloseWebService (Service *service_p);
 
 /*
  * API FUNCTIONS
  */
+ 
 
-Service *GetService (json_t *config_p)
+ 
+ServicesArray *GetServices (json_t *config_p)
 {
 	if (config_p)
 		{
@@ -75,29 +80,52 @@ Service *GetService (json_t *config_p)
 							
 							if (strcmp (value_s, plugin_name_s) == 0)
 								{
-									Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
+									json_t *ops_p = json_object_get (config_p, SERVER_OPERATIONS_S);
 									
-									if (web_service_p)
+									if (ops_p)
 										{
-											ServiceData *data_p = (ServiceData *) AllocateWebServiceData (config_p);
+											size_t num_ops = json_is_array (ops_p) ? json_array_size (ops_p) : 1;											
+											ServicesArray *services_p = AllocateServicesArray (num_ops);
 											
-											if (data_p)
+											if (services_p)
 												{
-													InitialiseService (web_service_p,
-														GetWebServiceName,
-														GetWebServiceDesciption,
-														RunWebService,
-														IsResourceForWebService,
-														GetWebServiceParameters,
-														false,
-														data_p);
-
-													return web_service_p;
+													size_t i = 0;
+													Service **service_pp = services_p -> sa_services_pp;
+													
+													while (i < num_ops)
+														{
+															json_t *op_p =  json_array_get (ops_p, i);															
+															Service *service_p = GetService (op_p);
+															
+															if (service_p)
+																{
+																	*service_pp = service_p;
+																}
+															else
+																{
+																	char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+																	
+																	if (dump_s)
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create servce %lu from:\n%s\n", i, dump_s);
+																			free (dump_s);
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create servce %lu\n", i);																			
+																		}
+																	
+																}
+																														
+															++ i;
+															++ service_pp;
+														}
+														
+														return services_p;
 												}
 											
-											FreeMemory (web_service_p);
-										}		/* if (web_service_p) */
-										
+										}
+
 								}		/* if (strcmp (value_s, plugin_name_s) == 0) */						
 								
 						}		/* if (json_is_string (value_p)) */
@@ -120,6 +148,38 @@ void ReleaseService (Service *service_p)
 /*
  * STATIC FUNCTIONS
  */
+
+
+
+
+static Service *GetService (json_t *operation_json_p)
+{									
+	Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
+	
+	if (web_service_p)
+		{
+			ServiceData *data_p = (ServiceData *) AllocateWebServiceData (operation_json_p);
+			
+			if (data_p)
+				{
+					InitialiseService (web_service_p,
+						GetWebServiceName,
+						GetWebServiceDesciption,
+						RunWebService,
+						IsResourceForWebService,
+						GetWebServiceParameters,
+						CloseWebService,
+						false,
+						data_p);
+
+					return web_service_p;
+				}
+			
+			FreeMemory (web_service_p);
+		}		/* if (web_service_p) */
+			
+	return NULL;
+}
 
 
 static WebServiceData *AllocateWebServiceData (json_t *config_p)
@@ -281,23 +341,33 @@ static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p
 }
 
 
-static bool AddParameterToWebService (WebService *service_p, Parameter *param_p)
+static bool AddParameterToWebService (Service *service_p, Parameter *param_p)
 {
 	bool success_flag = false;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
+	ByteBuffer *buffer_p = data_p -> wsd_buffer_p;
 	
-	if (AppendToByteBuffer (service_data_p -> wsd_buffer_p, param_p -> pa_name_s, strlen (param_p -> pa_name_s)))
+	if (AppendToByteBuffer (buffer_p, param_p -> pa_name_s, strlen (param_p -> pa_name_s)))
 		{
 			const char * const equal_s = "=";
 			
-			if (AppendToByteBuffer (service_data_p -> wsd_buffer_p, equal_s, strlen (equal_s)))
+			if (AppendToByteBuffer (buffer_p, equal_s, strlen (equal_s)))
 				{
-					if (AppendParameterValue (service_data_p -> wsd_buffer_p, param_p))
+					if (AppendParameterValue (buffer_p, param_p))
 						{
 							success_flag = true;
 						}
 				}
 		}
 
+	return success_flag;
+}
+
+
+static bool CloseWebService (Service *service_p)
+{
+	bool success_flag = true;
+	
 	return success_flag;
 }
 
@@ -315,7 +385,7 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 			
 			while (node_p)
 				{
-					AddParameterToWebService (data_p, node_p -> pn_parameter_p);
+					AddParameterToWebService (service_p, node_p -> pn_parameter_p);
 					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 				}
 			

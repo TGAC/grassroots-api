@@ -30,7 +30,7 @@ static int RunBlastService (Service *service_p, ParameterSet *param_set_p, json_
 
 static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
-
+static bool CloseBlastService (Service *service_p);
 
 /*
  * API FUNCTIONS
@@ -53,7 +53,8 @@ ServicesArray *GetServices (void)
 						GetBlastServiceDesciption, 
 						RunBlastService,
 						IsFileForBlastService,
-						GetBlastServiceParameters, 
+						GetBlastServiceParameters,
+						CloseBlastService,
 						true,
 						data_p);
 					
@@ -78,6 +79,12 @@ void ReleaseServices (ServicesArray *services_p)
 /*
  * STATIC FUNCTIONS 
  */
+ 
+ 
+static bool CloseBlastService (Service *service_p)
+{
+	return true;
+}
  
  
 static const char *GetBlastServiceName (Service *service_p)

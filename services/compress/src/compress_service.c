@@ -74,6 +74,7 @@ static bool IsFileForCompressService (Service *service_p, Resource *resource_p, 
 
 static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
 
+static bool CloseCompressService (Service *service_p);
 
 
 
@@ -99,6 +100,7 @@ ServicesArray *GetServices (void)
 						RunCompressService,
 						IsFileForCompressService,
 						GetCompressServiceParameters,
+						CloseCompressService,
 						true,
 						data_p);
 					
@@ -120,7 +122,7 @@ void ReleaseServices (ServicesArray *services_p)
 }
 
 
-bool CloseService (Service *service_p)
+static bool CloseCompressService (Service *service_p)
 {
 	bool success_flag = true;
 	

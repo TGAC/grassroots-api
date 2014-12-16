@@ -108,6 +108,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	int (*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
+	bool (*close_fn) (struct Service *service_p),
 	bool specific_flag,
 	ServiceData *data_p);
 

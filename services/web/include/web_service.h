@@ -11,10 +11,10 @@ extern "C"
 #endif
 
 
-WEB_SERVICE_API Service *GetService (json_t *config_p);
+WEB_SERVICE_API ServicesArray *GetServices (json_t *config_p);
 
 
-WEB_SERVICE_API void ReleaseService (Service *service_p);
+WEB_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 
 #ifdef __cplusplus
