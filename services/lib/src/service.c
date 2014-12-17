@@ -19,6 +19,7 @@ static void GetMatchingServices (const char * const services_path_s, ServiceMatc
 
 static const char *GetPluginNameFromJSON (const json_t * const root_p);
 
+static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag);
 
 
 void InitialiseService (Service * const service_p,
@@ -45,6 +46,9 @@ void InitialiseService (Service * const service_p,
 		{
 			service_p -> se_data_p -> sd_service_p = service_p;
 		}
+		
+	service_p -> se_plugin_p = NULL;
+	service_p -> se_has_permissions_fn = NULL;
 }
 
 
@@ -245,11 +249,12 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 }
 
 
-void AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag)
+static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag)
 {
 	Service **service_pp = services_p -> sa_services_pp;
 	uint32 i = services_p -> sa_num_services;
 	bool loop_flag = (i > 0);
+	uint32 num_matched_services = 0;
 	
 	while (loop_flag)
 		{
@@ -266,6 +271,8 @@ void AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList
 									LinkedListAddTail (matching_services_p, (ListItem *) service_node_p);
 									using_service_flag = true;
 									
+									++ num_matched_services;
+									
 									if (!multiple_match_flag)
 										{
 											loop_flag = false;	
@@ -277,9 +284,8 @@ void AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList
 								}
 						}
 						
-					if (!using_service_flag)
+					if (using_service_flag)
 						{
-							FreeService (*service_pp);
 							*service_pp = NULL;
 						}	
 				}
@@ -294,6 +300,7 @@ void AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList
 			
 		}		/* while (loop_flag) */
 	
+	return num_matched_services;
 }
 
 void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag)
@@ -320,17 +327,18 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 									while (node_p)
 										{
 											Plugin *plugin_p = AllocatePlugin (node_p -> sln_string_s);
-											bool using_service_flag = false;
-											
+										
 											if (plugin_p)
 												{
+													bool using_plugin_flag = false;
+													
 													if (OpenPlugin (plugin_p))
 														{																							
 															ServicesArray *services_p = GetServicesFromPlugin (plugin_p, config_p);
 															
 															if (services_p)
 																{
-																	AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag);
+																	using_plugin_flag = (AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag) > 0);
 
 																	FreeServicesArray (services_p);
 																}
@@ -341,7 +349,7 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 																
 														}		/* if (OpenPlugin (plugin_p)) */
 
-													if (!using_service_flag)
+													if (!using_plugin_flag)
 														{
 															ClosePlugin (plugin_p);
 														}
