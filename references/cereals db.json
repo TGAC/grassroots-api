@@ -1,0 +1,63 @@
+{
+	"schema_version": 0.1,
+	"provider": {
+		"name": "CerealsDB",
+		"description": "A service to give information about SNP markers; e.g., the sequence upon which they are based, obtain primers used for their identification, identify the haplotypes of common UK varieties.",
+		"url": "http://www.cerealsdb.uk.net/cerealgenomics/CerealsDB/indexNEW.php"
+	},
+	"services": {
+    "path": "Contig service",
+    "summary": "A service to obtain contig information",
+		"description": "A service to obtain contig information using SNP names, contig names or generic search terms",    
+    "plugin": "web_service",
+    "operations": [
+			{
+				"operationId": "Contig service",
+				"summary": "An operation to obtain contig information using SNP or Contig names",
+				"description": "An operation to obtain contig information using SNP or Contig names",
+				"uri": "www.cerealsdb.uk.net/cerealgenomics/CerealsDB/contig_wheatis.php",
+				"method": "POST",
+				"parameters": [
+					{
+						"param": "SNP_id",
+						"name": "SNP id",
+						"default": "BS00003643",
+						"current_value": "BS00003643",
+						"type": "string",
+						"tag": 1,
+						"wheatis_type": 5,
+						"description": "The SNP name (a 10 character alphanumeric beginning with 'BS' or 'BA'; e.g., BS00010624 or BA0033400) to find the contig to which it maps and all other putative SNPs, validated or not, that have been mapped to it. SNP names (IDs) may take different forms depending on the platform on which the assay was developed"
+					},
+					{
+						"param": "contig_name",
+						"name": "Contig name",
+						"default": "",
+						"current_value": "",
+						"type": "string",
+						"tag": 1,
+						"wheatis_type": 5,
+						"description": "The contig name (e.g. BC000000280)"
+					}     
+				]
+			}, {
+				"operationId": "Search service",
+				"summary": "An operation to obtain contig information using generic search terms",
+				"description": "An operation to obtain contig information generic search terms",
+				"uri": "www.cerealsdb.uk.net/cerealgenomics/CerealsDB/contig_wheatis.php",
+				"method": "POST",
+				"parameters": [
+					{
+						"param": "Search_term",
+						"name": "Search term",
+						"default": "",
+						"current_value": "",
+						"type": "string",
+						"tag": 1,
+						"wheatis_type": 5,
+						"description": "Any keywords  (e.g., 'disease', 'cold') "
+					}        
+				]			
+			}
+		]
+  }
+}

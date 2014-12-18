@@ -157,7 +157,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 														{
 															InitPluginNameServiceMatcher (&matcher, MatchServiceByPluginName, service_name_s);			
 															
-															GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, services_json_p, services_p, false);
+															GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, services_json_p, services_p, true);
 														}
 													else
 														{

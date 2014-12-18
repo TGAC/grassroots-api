@@ -79,7 +79,7 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON () const
 
 					if (success_flag)
 						{
-							success_flag = (json_object_set_new (service_json_p, SERVICE_NAME_S, json_string (spw_service_name_s)) == 0);
+							success_flag = (json_object_set_new (service_json_p, SERVICES_NAME_S, json_string (spw_service_name_s)) == 0);
 						}
 
 					#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE

@@ -205,7 +205,7 @@ static WebServiceData *AllocateWebServiceData (json_t *op_json_p)
 
 									if (params_p)
 										{
-											data_p -> wsd_params_p = CreateParameterSetFromJSON (params_p);
+											data_p -> wsd_params_p = CreateParameterSetFromJSON (op_json_p);
 											
 											if (data_p -> wsd_params_p)
 												{
