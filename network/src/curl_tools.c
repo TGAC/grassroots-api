@@ -81,7 +81,7 @@ bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 }
 
 
-bool CallUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s)
+bool CallUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const bool verify_certs)
 {
 	bool success_flag = false;
 	CURL *curl_p = curl_easy_init ();
@@ -132,7 +132,7 @@ bool CallUrl (const char *url_s, const char *header_data_s, const char *cryptogr
 							{ CURLOPT_SSLKEYTYPE, key_type_s },
 							{ CURLOPT_SSLKEY, key_name_s },
 							{ CURLOPT_CAINFO, ca_cert_file_s },
-							{ CURLOPT_SSL_VERIFYPEER, 1L },
+							{ CURLOPT_SSL_VERIFYPEER, verify_certs ? 1L : 0L },
 							NULL
 						};
 					const CURLParam *param_p = params;
