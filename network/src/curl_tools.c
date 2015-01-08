@@ -81,7 +81,7 @@ bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 }
 
 
-bool CallUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const bool verify_certs)
+bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const char * const certificate_name_s, const bool verify_certs)
 {
 	bool success_flag = false;
 	CURL *curl_p = curl_easy_init ();
@@ -98,15 +98,21 @@ bool CallUrl (const char *url_s, const char *header_data_s, const char *cryptogr
 			const char *key_name_s = NULL;
 			const char *key_type_s = NULL;
 
-		#ifdef USE_ENGINE
-			key_name_s  = "rsa_test";
-			key_type_s  = "ENG";
-			cryptograph_engine_name_s   = "chil";            /* for nChiper HSM... */
-		#else
-			key_name_s  = "testkey.pem";
-			key_type_s  = "PEM";
-			cryptograph_engine_name_s   = NULL;
-		#endif
+			if (certificate_name_s)
+				{
+					key_name_s = certificate_name_s;
+					
+					/* get key type from file extension */
+//					key_name_s  = "testkey.pem";
+//				key_type_s  = "PEM";
+
+				}
+			else if (cryptograph_engine_name_s)
+				{
+					key_name_s  = "rsa_test";
+					key_type_s  = "ENG";
+//					cryptograph_engine_name_s   = "chil";            /* for nChiper HSM... */				
+				}
 
 			
       if (cryptograph_engine_name_s)             /* use crypto engine */

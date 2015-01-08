@@ -14,7 +14,7 @@
 
 WHEATIS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s);
 
-WHEATIS_NETWORK_API bool CallUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s);
+WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const bool verify_certs);
 
 
 #ifdef __cplusplus

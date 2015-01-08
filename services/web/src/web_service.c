@@ -368,6 +368,25 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 					AddParameterToWebService (service_p, node_p -> pn_parameter_p);
 					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 				}
+	
+			switch (data_p -> wsd_method)
+				{
+					case SM_POST:
+					
+						break;
+						
+					case SM_GET:
+					
+						break;
+						
+					case SM_BODY:
+						
+						break;
+						
+					default:
+						break;
+				}
+
 			
 		}		/* if (param_set_p) */
 
