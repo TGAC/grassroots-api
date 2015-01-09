@@ -35,21 +35,28 @@ INCLUDES = \
 	
 SRCS 	= \
 	byte_buffer.c \
+	curl_tools.c \
 	json_tools.c \
 	request_tools.c \
 	polar_ssl_connection.c
 	
 
+BASE_LDFLAGS = -ldl -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L/usr/local/lib/ -lpolarssl 	-L/usr/lib/x86_64-linux-gnu/ -lcurl 
 
-CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS
+CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -I/usr/include
 
-LDFLAGS += -ldl -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L/usr/local/lib/ -lpolarssl
+LDFLAGS += $(BASE_LDFLAGS)
 
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	test
+.PHONY:	test test_install
 
 
 test:
-	$(COMP) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm $(LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -o $(BUILD)/test
+	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -o $(BUILD)/network_test
+
+
+test_install: test
+	@echo "Installing network_test to $(DIR_INSTALL)"
+	cp $(BUILD)/network_test $(DIR_INSTALL)/  
 

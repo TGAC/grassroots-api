@@ -5,7 +5,7 @@
 
 #include "typedefs.h"
 #include "network_library.h"
-
+#include "byte_buffer.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -14,7 +14,7 @@
 
 WHEATIS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s);
 
-WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const bool verify_certs);
+WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const char * const certificate_name_s, const bool verify_certs, ByteBuffer *buffer_p);
 
 
 #ifdef __cplusplus

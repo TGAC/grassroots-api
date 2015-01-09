@@ -22,7 +22,7 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- 
+ */
 /* some requirements for this to work:
    1.   set pCertFile to the file with the client certificate
    2.   if the key is passphrase protected, set pPassphrase to the
@@ -43,14 +43,20 @@
  
 /***************************************************************************/
 
-#include "curl_tools.h"
+#include <curl/curl.h>
+#include <curl/easy.h>
 
+#include "curl_tools.h"
+#include "streams.h"
 
 typedef struct CURLParam
 {
-	CURLOption cp_opt;
+	CURLoption cp_opt;
 	const char *cp_value_s;
 } CURLParam;
+
+
+static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
 
 
 bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
@@ -69,7 +75,6 @@ bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 			else
 				{ 
 					PrintErrors (STM_LEVEL_SEVERE, "can't set crypto engine as default\n");
-					break;
 				}
 		}
 	else
@@ -81,7 +86,7 @@ bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 }
 
 
-bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const char * const certificate_name_s, const bool verify_certs)
+bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const char * const certificate_name_s, const bool verify_certs, ByteBuffer *buffer_p)
 {
 	bool success_flag = false;
 	CURL *curl_p = curl_easy_init ();
@@ -128,23 +133,29 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 							{ CURLOPT_URL, url_s },
 							{ CURLOPT_HEADERDATA, header_data_s },
 
+					//		{ CURLOPT_POSTFIELDS, post_data_s },
 							/* cert is stored PEM coded in file... */
 							/* since PEM is default, we needn't set it for PEM */
-							{ CURLOPT_SSLCERTTYPE, "PEM" },
+//							{ CURLOPT_SSLCERTTYPE, "PEM" },
 							
 							/* set the cert for client authentication */
-							{ CURLOPT_SSLCERT, cert_file_s },
-							
+//							{ CURLOPT_SSLCERT, cert_file_s },
+
+/*							
 							{ CURLOPT_SSLKEYTYPE, key_type_s },
 							{ CURLOPT_SSLKEY, key_name_s },
 							{ CURLOPT_CAINFO, ca_cert_file_s },
-							{ CURLOPT_SSL_VERIFYPEER, verify_certs ? 1L : 0L },
-							NULL
+*/ 
+							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
+
+							{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },
+							{ CURLOPT_WRITEDATA, (const char *) buffer_p },
+							{ CURLOPT_LASTENTRY, (const char *) NULL }
 						};
 					const CURLParam *param_p = params;
 					
 					
-					while (continue_flag && param_p)
+					while (continue_flag && (param_p -> cp_value_s))
 						{
 							if (curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s) == CURLE_OK)
 								{
@@ -194,3 +205,27 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 	return success_flag;
 }
 
+
+static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p)
+{
+	size_t result = CURLE_OK;
+	size_t total_size = block_size * num_blocks;
+	ByteBuffer *buffer_p = (ByteBuffer *) store_p;
+
+	size_t remaining_space = GetRemainingSpaceInByteBuffer (buffer_p);
+
+	if (remaining_space < total_size)
+		{
+			if (!ExtendByteBuffer (buffer_p, total_size - remaining_space + 1))
+				{
+					result = CURLE_OUT_OF_MEMORY;
+				}
+		}
+
+	if (result == CURLE_OK)
+		{
+			result = AppendToByteBuffer (buffer_p, response_data_p, total_size);
+		}
+	
+	return result;
+}

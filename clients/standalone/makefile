@@ -52,6 +52,7 @@ LDFLAGS += -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
+	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
 	-ldl 
 
 .PHONY:	all 
