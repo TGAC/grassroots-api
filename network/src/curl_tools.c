@@ -144,8 +144,9 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 /*							
 							{ CURLOPT_SSLKEYTYPE, key_type_s },
 							{ CURLOPT_SSLKEY, key_name_s },
-							{ CURLOPT_CAINFO, ca_cert_file_s },
 */ 
+							{ CURLOPT_CAINFO, ca_cert_file_s },
+ 
 							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
 
 							{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },

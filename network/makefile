@@ -15,7 +15,10 @@ DIR_WHEATIS_SERVER_INC = $(DIR_WHEATIS_SERVER)/include
 
 DIR_ROOT = ..
 
-DIR_INSTALL = ../../wheatis_demo/lib
+DIR_INSTALL_ROOT = ../../wheatis_demo
+DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
+
+TEST_EXE_NAME = network_test
 
 BUILD		= debug
 
@@ -53,10 +56,10 @@ include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 
 test:
-	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -o $(BUILD)/network_test
+	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -o $(BUILD)/$(TEST_EXE_NAME)
 
 
-test_install: test
-	@echo "Installing network_test to $(DIR_INSTALL)"
-	cp $(BUILD)/network_test $(DIR_INSTALL)/  
+test_install: test install
+	@echo "Installing $(TEST_EXE_NAME) to $(DIR_INSTALL_ROOT)"
+	cp $(BUILD)/$(TEST_EXE_NAME) $(DIR_INSTALL_ROOT)/  
 
