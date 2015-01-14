@@ -97,8 +97,8 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 			CURLcode res;
 			const char *pass_phrase_s = NULL;
 
-			static const char *cert_file_s = "testcert.pem";
-			static const char *ca_cert_file_s = "cacert.pem";
+			const char *cert_file_s = "testcert.pem";
+			const char *ca_cert_file_s = certificate_name_s;
 
 			const char *key_name_s = NULL;
 			const char *key_type_s = NULL;
@@ -119,12 +119,12 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 //					cryptograph_engine_name_s   = "chil";            /* for nChiper HSM... */				
 				}
 
-			
-      if (cryptograph_engine_name_s)             /* use crypto engine */
+/*			
+      if (cryptograph_engine_name_s)             // use crypto engine 
 				{
 					continue_flag = SetSSLEngine (curl_p, cryptograph_engine_name_s);
 				}
-			
+*/			
 			if (continue_flag)
 				{
 					const CURLParam params [] = 
@@ -136,10 +136,10 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 					//		{ CURLOPT_POSTFIELDS, post_data_s },
 							/* cert is stored PEM coded in file... */
 							/* since PEM is default, we needn't set it for PEM */
-//							{ CURLOPT_SSLCERTTYPE, "PEM" },
+							{ CURLOPT_SSLCERTTYPE, "PEM" },
 							
 							/* set the cert for client authentication */
-//							{ CURLOPT_SSLCERT, cert_file_s },
+						//	{ CURLOPT_SSLCERT, cert_file_s },
 
 /*							
 							{ CURLOPT_SSLKEYTYPE, key_type_s },
@@ -158,7 +158,9 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 					
 					while (continue_flag && (param_p -> cp_value_s))
 						{
-							if (curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s) == CURLE_OK)
+							CURLcode ret = curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s);
+							
+							if (ret == CURLE_OK)
 								{
 									++ param_p;
 								}
