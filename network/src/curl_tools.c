@@ -86,7 +86,7 @@ bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 }
 
 
-bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cryptograph_engine_name_s, const char * const certificate_name_s, const bool verify_certs, ByteBuffer *buffer_p)
+bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca_cert_name_s, const char * const cert_name_s, const char *key_name_s, const bool verify_certs, ByteBuffer *buffer_p)
 {
 	bool success_flag = false;
 	CURL *curl_p = curl_easy_init ();
@@ -95,62 +95,35 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 		{
 			bool continue_flag = true;
 			CURLcode res;
-			const char *pass_phrase_s = NULL;
 
-			const char *cert_file_s = "testcert.pem";
-			const char *ca_cert_file_s = certificate_name_s;
-
-			const char *key_name_s = NULL;
-			const char *key_type_s = NULL;
-
-			if (certificate_name_s)
-				{
-					key_name_s = certificate_name_s;
-					
-					/* get key type from file extension */
-//					key_name_s  = "testkey.pem";
-//				key_type_s  = "PEM";
-
-				}
-			else if (cryptograph_engine_name_s)
-				{
-					key_name_s  = "rsa_test";
-					key_type_s  = "ENG";
-//					cryptograph_engine_name_s   = "chil";            /* for nChiper HSM... */				
-				}
-
-/*			
-      if (cryptograph_engine_name_s)             // use crypto engine 
-				{
-					continue_flag = SetSSLEngine (curl_p, cryptograph_engine_name_s);
-				}
-*/			
 			if (continue_flag)
 				{
 					const CURLParam params [] = 
 						{
+//							{ CURLOPT_CAINFO, ca_cert_name_s },
+
 							/* what call to write: */
 							{ CURLOPT_URL, url_s },
-							{ CURLOPT_HEADERDATA, header_data_s },
 
 					//		{ CURLOPT_POSTFIELDS, post_data_s },
 							/* cert is stored PEM coded in file... */
 							/* since PEM is default, we needn't set it for PEM */
-							{ CURLOPT_SSLCERTTYPE, "PEM" },
 							
 							/* set the cert for client authentication */
-						//	{ CURLOPT_SSLCERT, cert_file_s },
+							{ CURLOPT_SSLCERT, cert_name_s },							
+							{ CURLOPT_SSLCERTTYPE, "PEM" },
 
-/*							
-							{ CURLOPT_SSLKEYTYPE, key_type_s },
 							{ CURLOPT_SSLKEY, key_name_s },
-*/ 
-							{ CURLOPT_CAINFO, ca_cert_file_s },
+							{ CURLOPT_SSLKEYTYPE, "PEM" },
  
-							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
+//							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
 
 							{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },
 							{ CURLOPT_WRITEDATA, (const char *) buffer_p },
+							
+							{ CURLOPT_VERBOSE,  1L},
+//							{ CURLOPT_CERTINFO,  1L},
+							
 							{ CURLOPT_LASTENTRY, (const char *) NULL }
 						};
 					const CURLParam *param_p = params;
@@ -174,30 +147,25 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *cr
 					
 					if (continue_flag)
 						{
-							/* sorry, for engine we must set the passphrase
-								 (if the key has one...) */
-							if (pass_phrase_s)
-								{
-									continue_flag = (curl_easy_setopt (curl_p, CURLOPT_KEYPASSWD, pass_phrase_s) == CURLE_OK);
-								}
-
-							if (continue_flag)
-								{
-									/* Perform the request, res will get the return code */
-									res = curl_easy_perform (curl_p);
-
-									/* Check for errors */
-									if (res == CURLE_OK)
-										{
-											success_flag = true;
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to access %s with curl error: %s\n", url_s, curl_easy_strerror (res));
-										}																							
-														
-								}		/* if (continue_flag) */
+							struct curl_certinfo cert_info;
 							
+							/* Perform the request, res will get the return code */
+							res = curl_easy_perform (curl_p);
+
+							/* Check for errors */
+							if (res == CURLE_OK)
+								{
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to access %s with curl error: %s\n", url_s, curl_easy_strerror (res));
+								}																							
+																					
+							res = curl_easy_getinfo (curl_p, CURLINFO_CERTINFO, &cert_info);													
+																				
+							printf ("here\n");
+																					
 						}		/* if (continue_flag) */
 					
 				}		/* if (continue_flag) */

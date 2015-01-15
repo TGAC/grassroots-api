@@ -44,7 +44,12 @@ SRCS 	= \
 	polar_ssl_connection.c
 	
 
-BASE_LDFLAGS = -ldl -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -L/usr/local/lib/ -lpolarssl 	-L/usr/lib/x86_64-linux-gnu/ -lcurl 
+BASE_LDFLAGS = -ldl -ljansson \
+	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L/usr/local/lib/ -lpolarssl \
+	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
+	-Wl,-Bsymbolic-functions -Wl,-z,relro \
+	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp
 
 CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -I/usr/include
 
