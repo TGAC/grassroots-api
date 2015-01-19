@@ -110,11 +110,11 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 							/* since PEM is default, we needn't set it for PEM */
 							
 							/* set the cert for client authentication */
-							{ CURLOPT_SSLCERT, cert_name_s },							
-							{ CURLOPT_SSLCERTTYPE, "PEM" },
+//							{ CURLOPT_SSLCERT, cert_name_s },							
+//							{ CURLOPT_SSLCERTTYPE, "PEM" },
 
-							{ CURLOPT_SSLKEY, key_name_s },
-							{ CURLOPT_SSLKEYTYPE, "PEM" },
+//							{ CURLOPT_SSLKEY, key_name_s },
+//							{ CURLOPT_SSLKEYTYPE, "PEM" },
  
 //							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
 
@@ -179,8 +179,8 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 
 static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p)
 {
-	size_t result = CURLE_OK;
 	size_t total_size = block_size * num_blocks;
+	size_t result = CURLE_OK;
 	ByteBuffer *buffer_p = (ByteBuffer *) store_p;
 
 	size_t remaining_space = GetRemainingSpaceInByteBuffer (buffer_p);
@@ -195,7 +195,10 @@ static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, siz
 
 	if (result == CURLE_OK)
 		{
-			result = AppendToByteBuffer (buffer_p, response_data_p, total_size);
+			if (AppendToByteBuffer (buffer_p, response_data_p, total_size))
+				{
+					result = total_size;
+				}
 		}
 	
 	return result;
