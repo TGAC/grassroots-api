@@ -481,25 +481,58 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 			
 			ResetByteBuffer (data_p -> wsd_buffer_p);
 						
-			/* 
-			 * POST and GET can be run as CURL calls, the BODY
-			 * option might need to be something different
-			 */
+						
+/*
+  curl's project page on SourceForge.net
+
+Sponsors:
+Haxx
+	cURL > Mailing List > Monthly Index > Single Mail
+curl-library Archives
+
+Re: HTTP Post with json body and client SSL certificate validation
+
+    This message: [ Message body ] [ More options ]
+    Related messages: [ Next message ] [ Previous message ] [ In reply to ]
+
+From: C�dric Deltheil <cedric_at_moodstocks.com>
+Date: Fri, 27 Sep 2013 14:31:48 +0200
+
+Le 27 sept. 2013 � 13:28, Victor Dodon <dodonvictor_at_gmail.com> a �crit :
+
+> Q1. I need to set some custom headers for each request. The list of custom headers can be freed imediately after curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist) or only after the curl_easy_perform has returned?
+
+After. See the HTTP custom header example[1].
+
+> Q2. How to do a post request with json HTTP body? Is something like this:
+>
+> char *post_body = json_dumps(json, 0);
+> struct curl_slist *slist=NULL;
+> slist = curl_slist_append(slist, "Content-Type: application/json");
+> curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+> curl_easy_setopt(curl, CURLOPT_POST, 1);
+> curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post_body);
+> curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(post_body);
+>
+> ?
+
+Yes. You do not even need to pass the CURLOPT_POSTFIELDSIZE since by default libcurl will do the strlen() for you.
+
+Also, I would say CURLOPT_POST is redundant: you can omit it.
+
+> Q3. Microsoft and Apple server require client SSL certificate validation. Assuming that I have a suitable SSL certififcate, what options I need to set on curl handles to achieve this? CURLOPT_SSLCERT and CURLOPT_SSLCERTTYPE are enough?
+
+Don't know about that :) 
+*/						
+
 			switch (data_p -> wsd_method)
 				{
 					case SM_POST:
-						if (AddParametersToPostWebService (service_p, param_set_p))
-							{
-								
-							}
+						success_flag = AddParametersToPostWebService (service_p, param_set_p))
 						break;
 						
 					case SM_GET:
-						if (AddParametersToGetWebService (service_p, param_set_p))
-							{
-								
-							}
-											
+						success_flag = AddParametersToGettWebService (service_p, param_set_p))
 						break;
 						
 					case SM_BODY:
@@ -509,7 +542,12 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 					default:
 						break;
 				}
-									
+							
+			if (success_flag)
+				{
+					success_flag = CallCurlWebservice (data_p);
+				}
+						
 		}		/* if (param_set_p) */
 
 
