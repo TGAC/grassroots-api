@@ -100,3 +100,8 @@ size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * const buffer_p)
 	return (buffer_p -> bb_size) - (buffer_p -> bb_current_index);
 }
 
+
+size_t GetByteBufferSize (const ByteBuffer * const buffer_p)
+{
+	return (buffer_p -> bb_current_index);
+}

@@ -256,6 +256,9 @@ WHEATIS_SERVICE_API void ClearSharedType (SharedType *st_p);
 WHEATIS_SERVICE_API const char *GetUIName (const Parameter * const parameter_p);
 
 
+WHEATIS_SERVICE_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -2,6 +2,8 @@
 
 #include <arpa/inet.h>
 
+#include <curl/curl.h>
+
 #include "web_service.h"
 #include "memory_allocations.h"
 #include "parameter.h"
@@ -57,6 +59,16 @@ static WebServiceData *AllocateWebServiceData (json_t *config_p);
 static void FreeWebServiceData (WebServiceData *data_p);
 
 static bool CloseWebService (Service *service_p);
+
+
+static bool AddParametersToPostWebService (Service *service_p, ParameterSet *param_set_p);
+
+static bool AddParametersToGetWebService (Service *service_p, ParameterSet *param_set_p);
+
+static bool AddParametersToBodyWebService (Service *service_p, ParameterSet *param_set_p);
+
+static bool CallCurlWebservice (WebServiceData *data_p);
+
 
 /*
  * API FUNCTIONS
@@ -321,27 +333,132 @@ static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p
 }
 
 
-static bool AddParameterToWebService (Service *service_p, Parameter *param_p)
+static bool AddParametersToGetWebService (Service *service_p, ParameterSet *param_set_p)
 {
-	bool success_flag = false;
+	bool success_flag = true;
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 	ByteBuffer *buffer_p = data_p -> wsd_buffer_p;
-	
-	if (AppendToByteBuffer (buffer_p, param_p -> pa_name_s, strlen (param_p -> pa_name_s)))
-		{
-			const char * const equal_s = "=";
+	char c = '?';
+	ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
 			
-			if (AppendToByteBuffer (buffer_p, equal_s, strlen (equal_s)))
+	ResetByteBuffer (data_p -> wsd_buffer_p);
+						
+	while (node_p && success_flag)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+			success_flag = false;
+			
+			if (AppendToByteBuffer (buffer_p, &c, 1))
 				{
-					if (AppendParameterValue (buffer_p, param_p))
+					if (c == '?')
 						{
-							success_flag = true;
+							c = '&';
 						}
+					
+					if (AppendToByteBuffer (buffer_p, param_p -> pa_name_s, strlen (param_p -> pa_name_s)))
+						{
+							const char * const equal_s = "=";
+							
+							if (AppendToByteBuffer (buffer_p, equal_s, strlen (equal_s)))
+								{
+									if (AppendParameterValue (buffer_p, param_p))
+										{
+											success_flag = true;
+										}
+								}
+						}
+					
+				}		/* if (AppendToByteBuffer (buffer_p, &c, 1)) */
+
+			if (success_flag)
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 				}
 		}
 
 	return success_flag;
 }
+
+
+
+static bool AddPostParameter (const Parameter * const param_p, struct curl_httppost *form_p, struct curl_httppost *last_field_p)
+{
+	bool success_flag = false;
+	bool alloc_flag = false;
+	char *value_s = GetParameterValueAsString (param_p, &alloc_flag);
+	
+	if (value_s)
+		{
+			CURLFORMcode res;
+			CURLformoption opt;			
+			
+			switch (param_p -> pa_type)
+				{
+					case PT_DIRECTORY:
+					case PT_FILE_TO_READ:
+					case PT_FILE_TO_WRITE:
+						opt = CURLFORM_FILE;
+						break;
+
+					default:					
+						opt = CURLFORM_COPYCONTENTS;
+						break;
+				}		/* switch (param_p -> pa_type) */
+			
+			res = curl_formadd (&form_p, &last_field_p, CURLFORM_COPYNAME, param_p -> pa_name_s, opt, value_s, CURLFORM_END);
+			
+			if (res == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to add post parameter %s=%s to web service\n", param_p -> pa_name_s, value_s);
+				}
+			
+			if (alloc_flag)
+				{
+					FreeCopiedString (value_s);
+				}
+				
+		}		/* if (value_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to get post parameter value for %s\n", param_p -> pa_name_s);
+		}
+
+	return success_flag;
+}
+
+
+static bool AddParametersToPostWebService (Service *service_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
+	ByteBuffer *buffer_p = data_p -> wsd_buffer_p;
+  struct curl_httppost *form_p = NULL;
+  struct curl_httppost *last_field_p = NULL;
+  struct curl_slist *headers_list_p = NULL;
+	ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+			
+	ResetByteBuffer (data_p -> wsd_buffer_p);
+						
+	while (node_p && success_flag)
+		{
+			success_flag = AddPostParameter (node_p -> pn_parameter_p, form_p, last_field_p);
+		}
+
+	return success_flag;
+}
+
+
+static bool AddParametersToBodyWebService (Service *service_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	
+	return success_flag;
+}
+
 
 
 static bool CloseWebService (Service *service_p)
@@ -360,34 +477,39 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 	if (param_set_p)
 		{
 			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+			bool success_flag = true;
 			
 			ResetByteBuffer (data_p -> wsd_buffer_p);
-			
-			while (node_p)
-				{
-					AddParameterToWebService (service_p, node_p -> pn_parameter_p);
-					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-				}
-	
+						
+			/* 
+			 * POST and GET can be run as CURL calls, the BODY
+			 * option might need to be something different
+			 */
 			switch (data_p -> wsd_method)
 				{
 					case SM_POST:
-					
+						if (AddParametersToPostWebService (service_p, param_set_p))
+							{
+								
+							}
 						break;
 						
 					case SM_GET:
-					
+						if (AddParametersToGetWebService (service_p, param_set_p))
+							{
+								
+							}
+											
 						break;
 						
 					case SM_BODY:
-						
+						success_flag = AddParametersToBodyWebService (service_p, param_set_p);												
 						break;
 						
 					default:
 						break;
 				}
-
-			
+									
 		}		/* if (param_set_p) */
 
 
@@ -395,6 +517,14 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 }
 
 
+static bool CallCurlWebservice (WebServiceData *data_p)
+{
+	bool success_flag = false;
+	
+	return success_flag;
+}
+	
+	
 
 static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {

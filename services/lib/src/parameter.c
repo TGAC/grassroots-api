@@ -1371,3 +1371,58 @@ const char *GetUIName (const Parameter * const parameter_p)
 	
 }
 
+
+
+char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p)
+{
+	char *value_s = NULL;
+	const SharedType * const value_p = & (param_p -> pa_current_value);
+
+	switch (param_p -> pa_type)
+		{
+			case PT_BOOLEAN:
+				{
+					const char *src_s = (value_p -> st_boolean_value == true) ? "true" : "false";
+					value_s = CopyToNewString (src_s, 0, false);
+					*alloc_flag_p = true;	
+				}
+				break;
+
+			case PT_SIGNED_INT:
+				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
+				*alloc_flag_p = true;
+				break;
+
+			case PT_UNSIGNED_INT:
+				value_s = ConvertNumberToString ((double) (value_p -> st_ulong_value), 0);
+				*alloc_flag_p = true;
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				value_s = ConvertNumberToString (value_p -> st_data_value, 0);
+				*alloc_flag_p = true;
+				break;
+			
+			case PT_DIRECTORY:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+				value_s = value_p -> st_resource_value_p -> re_value_s;
+				*alloc_flag_p = false;
+				break;
+
+			case PT_STRING:
+			case PT_PASSWORD:
+				value_s = value_p -> st_string_value_s;
+				*alloc_flag_p = false;
+				break;
+
+			default:
+				break;
+		}		/* switch (param_p -> pa_type) */
+
+
+	return value_s;
+}
+
+

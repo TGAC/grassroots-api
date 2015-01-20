@@ -39,6 +39,9 @@ WHEATIS_NETWORK_API void ResetByteBuffer (ByteBuffer *buffer_p);
 
 WHEATIS_NETWORK_API size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * const buffer_p);
 
+
+WHEATIS_NETWORK_API size_t GetByteBufferSize (const ByteBuffer * const buffer_p);
+
 #ifdef __cplusplus
 }
 #endif
