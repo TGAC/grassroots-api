@@ -93,10 +93,9 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 	
 	if (curl_p)
 		{
-			bool continue_flag = true;
 			CURLcode res;
 
-			if (continue_flag)
+			if (AddCurlCallback (curl_p, buffer_p))
 				{
 					const CURLParam params [] = 
 						{
@@ -117,10 +116,6 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 //							{ CURLOPT_SSLKEYTYPE, "PEM" },
  
 //							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
-
-							{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },
-							{ CURLOPT_WRITEDATA, (const char *) buffer_p },
-							
 							{ CURLOPT_VERBOSE,  1L},
 //							{ CURLOPT_CERTINFO,  1L},
 							
@@ -128,8 +123,9 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 						};
 					const CURLParam *param_p = params;
 					
+					success_flag = true;
 					
-					while (continue_flag && (param_p -> cp_value_s))
+					while (success_flag && (param_p -> cp_value_s))
 						{
 							CURLcode ret = curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s);
 							
@@ -139,13 +135,13 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 								}
 							else
 								{
-									continue_flag = false;
+									success_flag = false;
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
 								}
 								
 						}		/* while (continue_flag && param_p) */
 					
-					if (continue_flag)
+					if (success_flag)
 						{
 							struct curl_certinfo cert_info;
 							
@@ -153,13 +149,10 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 							res = curl_easy_perform (curl_p);
 
 							/* Check for errors */
-							if (res == CURLE_OK)
-								{
-									success_flag = true;
-								}
-							else
+							if (res != CURLE_OK)
 								{
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to access %s with curl error: %s\n", url_s, curl_easy_strerror (res));
+									success_flag = false;
 								}																							
 																					
 							res = curl_easy_getinfo (curl_p, CURLINFO_CERTINFO, &cert_info);													
@@ -168,13 +161,50 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 																					
 						}		/* if (continue_flag) */
 					
-				}		/* if (continue_flag) */
-			
+				}		/* if (AddCurlCallback (curl_p, buffer_p)) */
+						
 			curl_easy_cleanup (curl_p);
 		}		/* if (curl_p) */
 	
 	return success_flag;
 }
+
+
+
+
+bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
+{
+	bool success_flag = true;
+	CURLcode res;
+	const CURLParam params [] = 
+		{
+			{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },
+			{ CURLOPT_WRITEDATA, (const char *) buffer_p },
+			{ CURLOPT_LASTENTRY, (const char *) NULL }
+		};
+	const CURLParam *param_p = params;
+					
+					
+	while (success_flag && (param_p -> cp_value_s))
+		{
+			CURLcode ret = curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s);
+			
+			if (ret == CURLE_OK)
+				{
+					++ param_p;
+				}
+			else
+				{
+					success_flag = false;
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+				}
+				
+		}		/* while (continue_flag && param_p) */
+				
+	
+	return success_flag;
+}
+
 
 
 static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p)
