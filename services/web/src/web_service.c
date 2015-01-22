@@ -26,15 +26,6 @@ typedef enum SubmissionMethod
 } SubmissionMethod;
 
 
-typedef struct CurlData
-{
-	CURL *cd_curl_p;
-	struct curl_httppost *cd_form_p;
-	struct curl_httppost *cd_last_field_p;
-	struct curl_slist *cd_headers_list_p;
-} CurlData;
-
-
 typedef struct WebServiceData
 {
 	ServiceData wsd_base_data;
@@ -44,7 +35,7 @@ typedef struct WebServiceData
 	ParameterSet *wsd_params_p;
 	ByteBuffer *wsd_buffer_p;
 	SubmissionMethod wsd_method;	
-	CurlData *wsd_curl_data_p;
+	CurlTool *wsd_curl_data_p;
 } WebServiceData;
 
 /*
@@ -79,13 +70,11 @@ static bool AddParametersToGetWebService (Service *service_p, ParameterSet *para
 
 static bool AddParametersToBodyWebService (Service *service_p, ParameterSet *param_set_p);
 
-static bool AddPostParameter (const Parameter * const param_p, CurlData *curl_data_p);
+static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_data_p);
 
 static bool CallCurlWebservice (WebServiceData *data_p);
 
-static CurlData *AllocateCurlData (void);
 
-static void FreeCurlData (CurlData *curl_p);
 
 
 /*
@@ -239,7 +228,7 @@ static WebServiceData *AllocateWebServiceData (json_t *op_json_p)
 											
 											if (data_p -> wsd_params_p)
 												{
-													data_p -> wsd_curl_data_p = AllocateCurlData ();
+													data_p -> wsd_curl_data_p = AllocateCurlTool ();
 													
 													if (data_p -> wsd_curl_data_p)
 														{
@@ -268,7 +257,7 @@ static void FreeWebServiceData (WebServiceData *data_p)
 	FreeParameterSet (data_p -> wsd_params_p);
 	FreeByteBuffer (data_p -> wsd_buffer_p);
 
-	FreeCurlData (data_p -> wsd_curl_data_p);
+	FreeCurlTool (data_p -> wsd_curl_data_p);
 
 	json_decref (data_p -> wsd_config_p);
 	
@@ -298,28 +287,6 @@ static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *reso
 
 	return (data_p -> wsd_params_p);
 }
-
-
-static CurlData *AllocateCurlData (void)
-{
-	CurlData *curl_data_p = (CurlData *) AllocMemory (sizeof (CurlData));
-	
-	if (curl_data_p)
-		{
-			curl_data_p -> cd_form_p = NULL;
-			curl_data_p -> cd_last_field_p = NULL;			
-			curl_data_p -> cd_headers_list_p = NULL;
-		}
-	
-	return curl_data_p;
-}
-
-
-static void FreeCurlData (CurlData *curl_data_p)
-{
-	FreeMemory (curl_data_p);
-}
-
 
 
 static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p)
@@ -428,7 +395,7 @@ static bool AddParametersToGetWebService (Service *service_p, ParameterSet *para
 
 
 
-static bool AddPostParameter (const Parameter * const param_p, CurlData *curl_data_p)
+static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_data_p)
 {
 	bool success_flag = false;
 	bool alloc_flag = false;
@@ -452,7 +419,7 @@ static bool AddPostParameter (const Parameter * const param_p, CurlData *curl_da
 						break;
 				}		/* switch (param_p -> pa_type) */
 			
-			res = curl_formadd (& (curl_data_p -> cd_form_p), & (curl_data_p -> cd_last_field_p), CURLFORM_COPYNAME, param_p -> pa_name_s, opt, value_s, CURLFORM_END);
+			res = curl_formadd (& (curl_data_p -> ct_form_p), & (curl_data_p -> ct_last_field_p), CURLFORM_COPYNAME, param_p -> pa_name_s, opt, value_s, CURLFORM_END);
 			
 			if (res == 0)
 				{
@@ -536,12 +503,12 @@ Also, I would say CURLOPT_POST is redundant: you can omit it.
 
 > Q3. Microsoft and Apple server require client SSL certificate validation. Assuming that I have a suitable SSL certififcate, what options I need to set on curl handles to achieve this? CURLOPT_SSLCERT and CURLOPT_SSLCERTTYPE are enough?
 
-typedef struct CurlData
+typedef struct CurlTool
 {
-	struct curl_httppost *cd_form_p;
-	struct curl_httppost *cd_last_field_p;
-	struct curl_slist *cd_headers_list_p;
-} CurlData;
+	struct curl_httppost *ct_form_p;
+	struct curl_httppost *ct_last_field_p;
+	struct curl_slist *ct_headers_list_p;
+} CurlTool;
 
 
 Don't know about that :) 
@@ -562,16 +529,16 @@ static bool AddParametersToBodyWebService (Service *service_p, ParameterSet *par
 				{
 					if (AppendToByteBuffer (buffer_p, dump_s, strlen (dump_s)))
 						{
-							CurlData *curl_data_p = data_p -> wsd_curl_data_p;							
-							curl_data_p -> cd_headers_list_p = curl_slist_append (curl_data_p -> cd_headers_list_p, "Content-Type: application/json");
+							CurlTool *curl_data_p = data_p -> wsd_curl_data_p;							
+							curl_data_p -> ct_headers_list_p = curl_slist_append (curl_data_p -> ct_headers_list_p, "Content-Type: application/json");
 							
-							if (curl_data_p -> cd_headers_list_p)
+							if (curl_data_p -> ct_headers_list_p)
 								{
-									CURLcode res = curl_easy_setopt (curl_data_p -> cd_curl_p, CURLOPT_POSTFIELDS, buffer_p -> bb_data_p);
+									CURLcode res = curl_easy_setopt (curl_data_p -> ct_curl_p, CURLOPT_POSTFIELDS, buffer_p -> bb_data_p);
 									
 									if (res == CURLE_OK)
 										{
-											res = curl_easy_setopt (curl_data_p -> cd_curl_p, CURLOPT_POSTFIELDSIZE, GetByteBufferSize (buffer_p));
+											res = curl_easy_setopt (curl_data_p -> ct_curl_p, CURLOPT_POSTFIELDSIZE, GetByteBufferSize (buffer_p));
 											
 											if (res == CURLE_OK)
 												{
@@ -658,12 +625,18 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 
 static bool CallCurlWebservice (WebServiceData *data_p)
 {
-	bool success_flag = false;
-	
-	if (AddCurlCallback (data_p -> wsd_curl_data_p -> cd_curl_p, data_p -> wsd_buffer_p))
+	bool success_flag = false;	
+	CURLcode res = curl_easy_perform (data_p -> wsd_curl_data_p -> ct_curl_p);
+
+	if (res == CURLE_OK)
 		{
-			
-		}		/* if (AddCurlCallback (data_p -> wsd_curl_data_p -> cd_curl_p, data_p -> wsd_buffer_p)) */
+			success_flag = true;
+		}
+	else
+		{
+			const char *service_name_s = GetServiceName (data_p -> wsd_base_data.sd_service_p);
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to call webservice for %s\n", service_name_s);
+		}
 	
 	return success_flag;
 }

@@ -48,6 +48,7 @@
 
 #include "curl_tools.h"
 #include "streams.h"
+#include "memory_allocations.h"
 
 typedef struct CURLParam
 {
@@ -57,6 +58,89 @@ typedef struct CURLParam
 
 
 static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
+
+
+
+CurlTool *AllocateCurlTool (void)
+{
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+	
+	if (buffer_p)
+		{
+			CURL *curl_p = curl_easy_init ();
+			
+			if (curl_p)
+				{
+					if (AddCurlCallback (curl_p, buffer_p))
+						{
+							CurlTool *curl_tool_p = (CurlTool *) AllocMemory (sizeof (CurlTool));
+						
+							if (curl_tool_p)
+								{
+									curl_tool_p -> ct_curl_p = GetCurl (buffer_p);
+
+									if (curl_tool_p -> ct_curl_p)
+										{
+											curl_tool_p -> ct_buffer_p = buffer_p;
+											curl_tool_p -> ct_form_p = NULL;
+											curl_tool_p -> ct_last_field_p = NULL;			
+											curl_tool_p -> ct_headers_list_p = NULL;					
+											
+											return curl_tool_p;
+										}
+								
+									FreeMemory (curl_tool_p);
+								}		/* if (curl_tool_p) */			
+																
+						}		/* if (AddCurlCallback (curl_p, buffer_p)) */
+					
+					curl_easy_cleanup (curl_p);
+				}		/* if (curl_p) */
+				
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
+		
+	return NULL;
+}
+
+
+void FreeCurlTool (CurlTool *curl_tool_p)
+{
+	FreeCurl (curl_tool_p -> ct_curl_p);
+	FreeByteBuffer (curl_tool_p -> ct_buffer_p);
+	FreeMemory (curl_tool_p);
+}
+
+
+CURL *GetCurl (ByteBuffer *buffer_p)
+{
+	CURL *curl_p = curl_easy_init ();
+	
+	if (curl_p)
+		{
+			if (buffer_p)
+				{
+					if (!AddCurlCallback (curl_p, buffer_p))
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to add buffer callback for curl object\n");
+							FreeCurl (curl_p);
+							curl_p = NULL;
+						}
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to create curl object\n");			
+		}
+
+	return curl_p;
+}
+
+
+void FreeCurl (CURL *curl_p)
+{
+	curl_easy_cleanup (curl_p);
+}
 
 
 bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
@@ -116,7 +200,7 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 //							{ CURLOPT_SSLKEYTYPE, "PEM" },
  
 //							{ CURLOPT_SSL_VERIFYPEER, (const char *) (verify_certs ? 1L : 0L) },
-							{ CURLOPT_VERBOSE,  1L},
+							{ CURLOPT_VERBOSE,  (const char *) 1L},
 //							{ CURLOPT_CERTINFO,  1L},
 							
 							{ CURLOPT_LASTENTRY, (const char *) NULL }
