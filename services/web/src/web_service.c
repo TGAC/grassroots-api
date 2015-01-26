@@ -51,7 +51,7 @@ static const char *GetWebServiceDesciption (Service *service_p);
 static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -581,16 +581,16 @@ static bool CloseWebService (Service *service_p)
 }
 
 
-static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
-	int result = -1;
+	OperationStatus res = OS_FAILED_TO_START;
+	json_t *res_json_p = NULL;
 	
 	if (param_set_p)
 		{
-			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
 			bool success_flag = true;
-			
+
 			ResetByteBuffer (data_p -> wsd_buffer_p);					
 
 			switch (data_p -> wsd_method)
@@ -613,13 +613,30 @@ static int RunWebService (Service *service_p, ParameterSet *param_set_p, json_t 
 							
 			if (success_flag)
 				{
-					success_flag = CallCurlWebservice (data_p);
+					json_error_t error;
+					json_t *web_service_response_json_p = NULL;
+					const char *service_name_s = GetServiceName (service_p);
+					
+					res = (CallCurlWebservice (data_p)) ? OS_SUCCEEDED : OS_FAILED;	
+					
+					web_service_response_json_p = json_loads (GetByteBufferData (data_p -> wsd_curl_data_p -> ct_buffer_p), 0, &error);
+					
+					if (!web_service_response_json_p)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s\n", service_name_s, error.text);
+						}
+					
+					res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, web_service_response_json_p);
+				}
+			else
+				{
+					res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, NULL);					
 				}
 						
 		}		/* if (param_set_p) */
 
 
-	return result;
+	return res_json_p;
 }
 
 

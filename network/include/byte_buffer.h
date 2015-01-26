@@ -42,6 +42,10 @@ WHEATIS_NETWORK_API size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * con
 
 WHEATIS_NETWORK_API size_t GetByteBufferSize (const ByteBuffer * const buffer_p);
 
+
+WHEATIS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buffer_p);
+
+
 #ifdef __cplusplus
 }
 #endif

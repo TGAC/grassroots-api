@@ -25,7 +25,7 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
-	int (*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
+	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	bool (*close_fn) (struct Service *service_p),
@@ -397,7 +397,7 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 }
 
 
-int RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	return service_p -> se_run_fn (service_p, param_set_p, credentials_p);
 }
@@ -753,4 +753,62 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
 		}
 }
 
+
+
+
+/*
+ "response": {
+      "type": "object",
+      "description": "The server's response from having run a service",
+      "properties": {
+        "service": { 
+          "type": "string",
+          "description": "The name of the service"
+        },
+        "status": { 
+          "type": "string",
+          "description": "The status of the job on the service",
+          "enum": [
+            "waiting",
+            "failed to start",
+            "started",
+            "finished",
+            "failed"
+          ]    
+        },
+        "result": { 
+          "type": "string",
+          "description": "A value to be shown to the user"
+        },
+      }
+    }, 
+*/
+json_t *CreateServiceResponseAsJSON (const char * const service_name_s, OperationStatus status, json_t *result_json_p)
+{
+	json_error_t error;
+	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:i,s:o}", SERVICE_NAME_S, service_name_s, SERVICE_STATUS_S, status);
+
+	if (json_p)
+		{
+			if (result_json_p)
+				{
+					if (!json_object_set_new (json_p, SERVICE_RESULT_S, result_json_p) == 0)
+						{
+							char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to service response for %s\n", dump_s, service_name_s);
+
+							free (dump_s);
+							json_decref (json_p);
+							json_p = NULL;
+						}
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to create json service response for %s\n", service_name_s);			
+		}
+	
+	return json_p;
+	
+}
 

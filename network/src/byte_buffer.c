@@ -105,3 +105,10 @@ size_t GetByteBufferSize (const ByteBuffer * const buffer_p)
 {
 	return (buffer_p -> bb_current_index);
 }
+
+
+const char *GetByteBufferData (const ByteBuffer * const buffer_p)
+{
+	return buffer_p -> bb_data_p;
+}
+

@@ -3,6 +3,7 @@
 #include "request_tools.h"
 #include "server.h"
 #include "json_util.h"
+#include "streams.h"
 
 
 #ifdef _DEBUG
@@ -275,11 +276,10 @@ json_t *GetOperationAsJSON (Operation op)
 
 	if (!json_p)
 		{
-			
+			PrintErrors (STM_LEVEL_WARNING, "Failed to get Operation %d as JSON, %s\n", op, error.text);
 		}
 	
 	return json_p;
 }
-
 
 

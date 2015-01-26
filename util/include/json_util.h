@@ -45,6 +45,11 @@ PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");
 
 
+PREFIX const char *SERVICE_NAME_S VAL("service");
+PREFIX const char *SERVICE_STATUS_S VAL("status");
+PREFIX const char *SERVICE_RESULT_S VAL("result");
+
+
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
 
 PREFIX const char *PARAM_SET_NAME_S VAL("parameter_set");

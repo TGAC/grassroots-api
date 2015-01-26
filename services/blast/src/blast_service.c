@@ -26,7 +26,7 @@ static const char *GetBlastServiceDesciption (Service *service_p);
 
 static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
-static int RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -127,22 +127,22 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 
 
 
-static int RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
-	int result = -1;
+	OperationStatus res = OS_FAILED_TO_START;
 	BlastTool *tool_p = CreateBlastTool ();
+	json_t *res_json_p = NULL;
 	
 	if (tool_p)
 		{
-			if (RunBlast (tool_p))
-				{
-					result = 0;
-				}
-				
+			res = (RunBlast (tool_p)) ? OS_SUCCEEDED : OS_FAILED;
+
 			FreeBlastTool (tool_p); 
 		}
 		
-	return result;
+	res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, NULL);
+		
+	return res_json_p;
 }
 
 

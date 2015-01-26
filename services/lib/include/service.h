@@ -47,7 +47,7 @@ typedef struct Service
 
 	bool se_is_specific_service_flag;
 
-	int (*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+	json_t *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 	bool (*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -94,6 +94,17 @@ typedef struct ServicesArray
 } ServicesArray;
 
 
+typedef enum OperationStatus
+{
+	OS_IDLE,
+	OS_FAILED_TO_START,
+	OS_STARTED,
+	OS_FINISHED,
+	OS_FAILED,
+	OS_SUCCEEDED
+} OperationStatus;
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -105,14 +116,14 @@ WHEATIS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
-	int (*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
+	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	bool (*close_fn) (struct Service *service_p),
 	bool specific_flag,
 	ServiceData *data_p);
 
-WHEATIS_SERVICE_API int RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+WHEATIS_SERVICE_API json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -236,6 +247,8 @@ WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_servi
 
 WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
+
+WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (const char * const service_name_s, OperationStatus status, json_t *result_json_p);
 
 #ifdef __cplusplus
 }
