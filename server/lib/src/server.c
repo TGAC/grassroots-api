@@ -44,7 +44,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
-static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
+static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
 
 static Operation GetOperation (json_t *ops_p);
 
@@ -81,8 +81,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	json_t *res_p = NULL;
 	json_t *op_p = NULL;
 	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
-
-
 		
 	#if SERVER_DEBUG >= DL_FINE
 		{
@@ -125,6 +123,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
 		{
+			bool success_flag = false;
 			
 			if (json_is_array (op_p))
 				{
@@ -137,9 +136,20 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 														
 							json_array_foreach (op_p, i, value_p) 
 								{
-									bool success_flag = RunServiceFromJSON (value_p, credentials_p, res_p);
+									json_t *service_res_p = RunServiceFromJSON (value_p, credentials_p, res_p);
 									
-									if (!success_flag)
+									if (service_res_p)
+										{
+											if (json_array_append_new (res_p, service_res_p) == 0)
+												{
+													success_flag = true;
+												}
+											else
+												{
+													// error
+												}
+										}
+									else
 										{
 											// error
 										}
@@ -160,9 +170,22 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 					
 					if (res_p)
 						{
-							success_flag = RunServiceFromJSON (op_p, credentials_p, res_p);
+							json_t *service_res_p = RunServiceFromJSON (op_p, credentials_p, res_p);
 							
-							if (!success_flag)
+							if (service_res_p)
+								{
+									const char *service_name_s = GetServiceNameFromJSON (req_p);
+
+									if (json_object_set_new (res_p, service_name_s, service_res_p) == 0)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											// error
+										}
+								}
+							else
 								{
 									// error
 								}
@@ -201,7 +224,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 /******************************/
 
 
-static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p)
+static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p)
 {
 	/* Get the requested operation */
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);
@@ -240,9 +263,9 @@ static bool RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 											if (params_p)
 												{
-													int res = RunService (service_p, params_p, credentials_p);
+													json_t *service_result_p = RunService (service_p, params_p, credentials_p);
 													
-													if (res >= 0)
+													if (service_result_p)
 														{
 															success_flag = true;
 														}
