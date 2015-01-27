@@ -1,4 +1,7 @@
 
+/* Allocate the global constants in service.h */
+#define ALLOCATE_PATH_TAGS (1)
+
 #include "service.h"
 #include "plugin.h"
 #include "string_linked_list.h"
@@ -372,7 +375,6 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 				}		/* if (full_services_path_s) */
 			
 		}		/* if (plugin_pattern_s) */
-
 }
 
 
@@ -382,7 +384,11 @@ void LoadMatchingServicesByName (LinkedList *services_p, const char * const serv
 	
 	InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);
 	
-	return GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), json_config_p, services_p, true);
+	GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), json_config_p, services_p, true);
+	
+	/* @TODO Add an AddReferenceServicesByName function to be called here */
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, NULL, json_config_p);
+
 }
 
 
@@ -394,6 +400,9 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 	InitResourceServiceMatcher (&matcher, MatchServiceByResource, resource_p, handler_p);
 	
 	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), json_config_p, services_p, true);
+	
+	
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, resource_p, handler_p, json_config_p);
 }
 
 

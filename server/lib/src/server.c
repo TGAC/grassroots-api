@@ -32,8 +32,7 @@
 /***** STATIC PROTOTYPES *****/
 /*****************************/
 
-#define SERVICES_PATH		("services")
-#define REFERENCES_PATH		("references")
+
 
 
 static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *credentials_p);
@@ -247,7 +246,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 						{
 							json_t *json_config_p = NULL;
 
-							LoadMatchingServicesByName (services_p, SERVICES_PATH, service_name_s, json_config_p);
+							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, json_config_p);
 
 							if (services_p -> ll_size == 1)
 								{	
@@ -376,7 +375,7 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 												
 					if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
 						{
-							res_p = GetServices (SERVICES_PATH, username_s, password_s, resource_p, handler_p, config_p);
+							res_p = GetServices (SERVICES_PATH_S, username_s, password_s, resource_p, handler_p, config_p);
 						}
 						
 					FreeHandler (handler_p);
@@ -396,7 +395,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 	const char *password_s = NULL;
 												
 
-	res_p = GetServices (SERVICES_PATH, username_s, password_s, NULL, NULL, NULL);
+	res_p = GetServices (SERVICES_PATH_S, username_s, password_s, NULL, NULL, NULL);
 
 	return res_p;
 }
@@ -464,8 +463,6 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 	if (services_p)
 		{
 			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, config_p);
-
-			AddReferenceServices (services_p, REFERENCES_PATH, services_path_s, resource_p, handler_p, config_p);
 
 			if (services_p -> ll_size > 0)
 				{

@@ -13,6 +13,37 @@
 #include "tag_item.h"
 
 
+
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to 
+ * 
+ * 		extern const char *SERVICE_NAME_S;
+ * 
+ * however if ALLOCATE_JSON_TAGS is defined then it will 
+ * become
+ * 
+ * 		const char *SERVICE_NAME_S = "path";
+ * 
+ * ALLOCATE_JSON_TAGS must be defined only once prior to 
+ * including this header file. Currently this happens in
+ * json_util.c.
+ */
+#ifdef ALLOCATE_PATH_TAGS
+	#define PATH_PREFIX WHEATIS_SERVICE_API
+	#define PATH_VAL(x)	= x
+#else
+	#define PATH_PREFIX extern
+	#define PATH_VAL(x)	
+#endif
+
+
+
+PATH_PREFIX const char *SERVICES_PATH_S PATH_VAL("services");
+PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
+
+
 /**
  * A datatype detailing the addon services
  * that the wheatis offers. These are the
