@@ -4,9 +4,9 @@ IRODS = $(shell echo "$$IRODS_HOME")
 
 .PHONY:	shared
 
+buildDir = $(IRODS)
+include lib/Makefile
 
-include Makefile
-
-shared: clean all
-	gcc --shared  -o libirods.so $(OBJS) 
+shared: lib
+	gcc --shared  -o libirods.so $(LIB_CORE_OBJS) 
 	

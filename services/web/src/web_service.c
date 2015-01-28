@@ -41,6 +41,7 @@ typedef struct WebServiceData
 
 
 static const char *S_METHOD_S = "method";
+static const char *S_URI_S = "uri";
 
 
 /*
@@ -82,6 +83,9 @@ static bool CallCurlWebservice (WebServiceData *data_p);
 
 
 static SubmissionMethod GetSubmissionMethod (const json_t *op_json_p);
+
+static bool SetURI (const json_t *op_json_p, CURL *curl_p);
+
 
 
 /*
@@ -243,7 +247,10 @@ static WebServiceData *AllocateWebServiceData (json_t *op_json_p)
 
 															if (data_p -> wsd_method != SM_UNKNOWN)
 																{
-																	return data_p;
+																	if (SetURI (op_json_p, data_p -> wsd_curl_data_p -> ct_curl_p))
+																		{
+																			return data_p;
+																		}
 																}
 
 															FreeCurlTool (data_p -> wsd_curl_data_p);
@@ -461,7 +468,7 @@ static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_da
 
 static bool AddParametersToPostWebService (Service *service_p, ParameterSet *param_set_p)
 {
-	bool success_flag = false;
+	bool success_flag = true;
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 	ByteBuffer *buffer_p = data_p -> wsd_buffer_p;
 	ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
@@ -471,6 +478,13 @@ static bool AddParametersToPostWebService (Service *service_p, ParameterSet *par
 	while (node_p && success_flag)
 		{
 			success_flag = AddPostParameter (node_p -> pn_parameter_p, data_p -> wsd_curl_data_p);
+
+			if (success_flag)
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+				}
+
+
 		}
 
 	return success_flag;
@@ -666,7 +680,7 @@ static bool CallCurlWebservice (WebServiceData *data_p)
 	else
 		{
 			const char *service_name_s = GetServiceName (data_p -> wsd_base_data.sd_service_p);
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to call webservice for %s\n", service_name_s);
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to call webservice for %s, error %s\n", service_name_s, curl_easy_strerror (res));
 		}
 	
 	return success_flag;
@@ -719,3 +733,21 @@ static SubmissionMethod GetSubmissionMethod (const json_t *op_json_p)
 	return sm;
 }
 
+
+static bool SetURI (const json_t *op_json_p, CURL *curl_p)
+{
+	bool success_flag = false;
+	const char *uri_s = GetJSONString (op_json_p, S_URI_S);
+
+	if (uri_s)
+		{
+			CURLcode res = curl_easy_setopt (curl_p, CURLOPT_URL, uri_s);
+
+			if (res == CURLE_OK)
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
