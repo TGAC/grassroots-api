@@ -19,6 +19,7 @@
 
 typedef enum SubmissionMethod
 {
+	SM_UNKNOWN = -1,
 	SM_POST,
 	SM_GET,
 	SM_BODY,
@@ -37,6 +38,10 @@ typedef struct WebServiceData
 	SubmissionMethod wsd_method;	
 	CurlTool *wsd_curl_data_p;
 } WebServiceData;
+
+
+static const char *S_METHOD_S = "method";
+
 
 /*
  * STATIC PROTOTYPES
@@ -75,6 +80,8 @@ static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_da
 static bool CallCurlWebservice (WebServiceData *data_p);
 
 
+
+static SubmissionMethod GetSubmissionMethod (const json_t *op_json_p);
 
 
 /*
@@ -232,7 +239,14 @@ static WebServiceData *AllocateWebServiceData (json_t *op_json_p)
 													
 													if (data_p -> wsd_curl_data_p)
 														{
-															return data_p;															
+															data_p -> wsd_method = GetSubmissionMethod (op_json_p);
+
+															if (data_p -> wsd_method != SM_UNKNOWN)
+																{
+																	return data_p;
+																}
+
+															FreeCurlTool (data_p -> wsd_curl_data_p);
 														}
 																										
 													FreeParameterSet (data_p -> wsd_params_p);
@@ -670,5 +684,38 @@ static bool IsResourceForWebService (Service *service_p, Resource *resource_p, H
 		}
 
 	return interested_flag;
+}
+
+
+static SubmissionMethod GetSubmissionMethod (const json_t *op_json_p)
+{
+	SubmissionMethod sm = SM_UNKNOWN;
+	json_t *method_json_p = json_object_get (op_json_p, S_METHOD_S);
+	
+	if (method_json_p)
+		{
+			if (json_is_string (method_json_p))
+				{
+					const char *method_s = json_string_value (method_json_p);
+						
+					if (method_s)
+						{
+							if (strcmp (method_s, "POST") == 0)
+								{
+									sm = SM_POST;
+								}
+							else if (strcmp (method_s, "GET") == 0)
+								{
+									sm = SM_GET;
+								}
+							else if (strcmp (method_s, "BODY") == 0)
+								{
+									sm = SM_BODY;
+								}
+						}		
+				}				
+		}
+
+	return sm;
 }
 

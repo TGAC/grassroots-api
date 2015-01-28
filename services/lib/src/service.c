@@ -124,7 +124,7 @@ json_t *GetServiceConfig (const char * const filename_s)
  * Load any json stubs for external services that are used to configure generic services, 
  * e.g. web services
  */
-void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
+void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p)
 {
 	const char *root_path_s = GetServerRootDirectory ();
 	char *full_references_path_s = MakeFilename (root_path_s, references_path_s);
@@ -139,45 +139,63 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 					
 					if (matching_filenames_p)
 						{
-							StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
-							PluginNameServiceMatcher matcher;
+							StringListNode *reference_file_node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
+							PluginNameServiceMatcher *matcher_p = NULL;				
 	
-							while (node_p)
+							if (operation_name_s)
 								{
-									json_t *config_p = GetServiceConfig (node_p -> sln_string_s);
-
-									if (config_p)
+									matcher_p = (PluginNameServiceMatcher *) AllocatePluginOperationNameServiceMatcher (NULL, operation_name_s);
+								}
+							else
+								{
+									matcher_p = (PluginNameServiceMatcher *) AllocatePluginNameServiceMatcher (NULL);											
+								}
+								
+							if (matcher_p)
+								{
+									while (reference_file_node_p)
 										{
-											char *json_s = json_dumps (config_p, JSON_INDENT (2));
+											json_t *config_p = GetServiceConfig (reference_file_node_p -> sln_string_s);
 
-											json_t *services_json_p = json_object_get (config_p, SERVICES_NAME_S);
-											
-											if (services_json_p)
+											if (config_p)
 												{
-													const char * const service_name_s = GetPluginNameFromJSON (services_json_p);
+													char *json_s = json_dumps (config_p, JSON_INDENT (2));
+
+													json_t *services_json_p = json_object_get (config_p, SERVICES_NAME_S);
 													
-													if (service_name_s)
+													if (services_json_p)
 														{
-															InitPluginNameServiceMatcher (&matcher, MatchServiceByPluginName, service_name_s);			
+															const char * const plugin_name_s = GetPluginNameFromJSON (services_json_p);
 															
-															GetMatchingServices (services_path_s, (ServiceMatcher *) &matcher, services_json_p, services_p, true);
-														}
-													else
+															if (plugin_name_s)
+																{
+																	SetPluginNameForServiceMatcher (matcher_p, plugin_name_s);		
+																	
+																	GetMatchingServices (services_path_s, (ServiceMatcher *) matcher_p, services_json_p, services_p, true);
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_WARNING, "Failed to get service name from", reference_file_node_p -> sln_string_s);
+																}
+															
+														}		/* if (services_json_p) */
+																																		
+													if (json_s)
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to get service name from", node_p -> sln_string_s);
+															free (json_s);
 														}
-													
-												}		/* if (services_json_p) */
-																																
-											if (json_s)
-												{
-													free (json_s);
-												}
-																							
-										}		/* if (config_p) */
-																				
-									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-								}		/* while (node_p) */
+																									
+												}		/* if (config_p) */
+																						
+											reference_file_node_p = (StringListNode *) (reference_file_node_p -> sln_node.ln_next_p);
+										}		/* while (reference_file_node_p) */
+									
+									FreeServiceMatcher ((ServiceMatcher *) matcher_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to allocate memory for references service matcher\n");
+								}
 							
 							FreeLinkedList (matching_filenames_p);
 						}		/* if (matching_filenames_p) */
@@ -382,13 +400,12 @@ void LoadMatchingServicesByName (LinkedList *services_p, const char * const serv
 {
 	NameServiceMatcher matcher;
 	
-	InitNameServiceMatcher (&matcher, MatchServiceByName, service_name_s);
+	InitOperationNameServiceMatcher (&matcher, service_name_s);
 	
 	GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), json_config_p, services_p, true);
 	
 	/* @TODO Add an AddReferenceServicesByName function to be called here */
-	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, NULL, json_config_p);
-
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, service_name_s, json_config_p);
 }
 
 
@@ -397,12 +414,11 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 {
 	ResourceServiceMatcher matcher;
 	
-	InitResourceServiceMatcher (&matcher, MatchServiceByResource, resource_p, handler_p);
+	InitResourceServiceMatcher (&matcher, resource_p, handler_p);
 	
 	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), json_config_p, services_p, true);
-	
-	
-	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, resource_p, handler_p, json_config_p);
+		
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
 }
 
 
@@ -592,8 +608,6 @@ const char *GetOperationNameFromJSON (const json_t * const root_p)
 {
 	return GetJSONString (root_p, OPERATION_ID_S);
 }
-
-
 
 
 static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p)

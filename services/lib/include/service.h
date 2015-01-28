@@ -207,7 +207,7 @@ WHEATIS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, con
 WHEATIS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p);
 
 
-WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
+WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
 
 
 WHEATIS_SERVICE_API bool CloseService (Service *service_p);

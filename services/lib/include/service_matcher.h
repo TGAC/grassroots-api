@@ -12,6 +12,7 @@ struct ServiceMatcher;
 typedef struct ServiceMatcher
 {
 	bool (*sm_match_fn) (struct ServiceMatcher *matcher_p, Service *service_p);
+	void (*sm_destroy_fn) (struct ServiceMatcher *matcher_p);
 } ServiceMatcher;
 
 
@@ -37,18 +38,50 @@ typedef struct PluginNameServiceMatcher
 } PluginNameServiceMatcher;
 
 
+typedef struct PluginOperationNameServiceMatcher
+{
+	PluginNameServiceMatcher ponsm_base_matcher;
+	const char *ponsm_operation_name_s;
+} PluginOperationNameServiceMatcher;
+
+
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+
+WHEATIS_SERVICE_API ServiceMatcher *AllocateServiceMatcher (void);
+
+WHEATIS_SERVICE_API ServiceMatcher *AllocateResourceServiceMatcher (Resource *resource_p, Handler *handler_p);
+
+WHEATIS_SERVICE_API ServiceMatcher *AllocateOperationNameServiceMatcher (const char *name_s);
+
+WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginNameServiceMatcher (const char *plugin_name_s);
+
+
+WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginOperationNameServiceMatcher (const char *plugin_name_s, const char *service_name_s);
+
+
+
+
+
 WHEATIS_SERVICE_API void InitServiceMatcher (ServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p));
 
-WHEATIS_SERVICE_API void InitResourceServiceMatcher (ResourceServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), Resource *resource_p, Handler *handler_p);
+WHEATIS_SERVICE_API void InitResourceServiceMatcher (ResourceServiceMatcher *matcher_p, Resource *resource_p, Handler *handler_p);
 
-WHEATIS_SERVICE_API void InitNameServiceMatcher (NameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *name_s);
+WHEATIS_SERVICE_API void InitOperationNameServiceMatcher (NameServiceMatcher *matcher_p, const char *name_s);
 
-WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p), const char *plugin_name_s);
+WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
+
+
+WHEATIS_SERVICE_API void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *matcher_p, const char *plugin_name_s, const char *operation_name_s);
+
+
+WHEATIS_SERVICE_API void SetPluginNameForServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
+
+
 
 WHEATIS_SERVICE_API bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p);
 
@@ -57,6 +90,21 @@ WHEATIS_SERVICE_API bool MatchServiceByName (ServiceMatcher *matcher_p, Service 
 WHEATIS_SERVICE_API bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p);
 
 WHEATIS_SERVICE_API bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p);
+
+WHEATIS_SERVICE_API bool MatchServiceByPluginAndOperationsName (ServiceMatcher *matcher_p, Service *service_p);
+
+
+WHEATIS_SERVICE_LOCAL void FreeServiceMatcher (ServiceMatcher *matcher_p);
+
+WHEATIS_SERVICE_LOCAL void FreeResourceServiceMatcher (ServiceMatcher *matcher_p);
+
+WHEATIS_SERVICE_LOCAL void FreeNameServiceMatcher (ServiceMatcher *matcher_p);
+
+WHEATIS_SERVICE_LOCAL void FreePluginNameServiceMatcher (ServiceMatcher *matcher_p);
+
+WHEATIS_SERVICE_LOCAL void FreePluginOperationNameServiceMatcher (ServiceMatcher *matcher_p);
+
+
 
 
 #ifdef __cplusplus

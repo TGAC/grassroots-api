@@ -248,6 +248,24 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, json_config_p);
 
+							#if SERVER_DEBUG >= DL_FINE
+								{
+									ServiceNode * node_p = (ServiceNode *) (services_p -> ll_head_p);
+
+									while (node_p)
+										{
+											Service *service_p = node_p -> sn_service_p;
+											const char *name_s = GetServiceName (service_p);
+
+											printf ("matched service \"%s\"\n", name_s);
+
+											node_p = (ServiceNode *) (node_p -> sn_node.ln_next_p);
+										}
+								}
+							#endif
+
+
+
 							if (services_p -> ll_size == 1)
 								{	
 									Service *service_p = ((ServiceNode *) (services_p -> ll_head_p)) -> sn_service_p;
