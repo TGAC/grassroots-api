@@ -483,8 +483,13 @@ static bool AddParametersToPostWebService (Service *service_p, ParameterSet *par
 				{
 					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 				}
+		}
 
+	if (success_flag)
+		{
+			CURLcode res = curl_easy_setopt (data_p -> wsd_curl_data_p -> ct_curl_p, CURLOPT_HTTPPOST, data_p -> wsd_curl_data_p -> ct_form_p);
 
+			success_flag = (res == CURLE_OK);
 		}
 
 	return success_flag;
@@ -647,22 +652,23 @@ static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, jso
 					
 					res = (CallCurlWebservice (data_p)) ? OS_SUCCEEDED : OS_FAILED;	
 					
-					web_service_response_json_p = json_loads (GetByteBufferData (data_p -> wsd_curl_data_p -> ct_buffer_p), 0, &error);
-					
-					if (!web_service_response_json_p)
+					if (res == OS_SUCCEEDED)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s\n", service_name_s, error.text);
-						}
-					
-					res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, web_service_response_json_p);
-				}
-			else
-				{
-					res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, NULL);					
-				}
+							const char *buffer_data_p = GetByteBufferData (data_p -> wsd_curl_data_p -> ct_buffer_p);
+							web_service_response_json_p = json_loads (buffer_data_p, 0, &error);
+
+							if (!web_service_response_json_p)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\n%s\n", service_name_s, error.text, buffer_data_p);
+								}
+
+							res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, web_service_response_json_p);
+
+						}		/* if (res == OS_SUCCEEDED) */
+
+				}		/* if (success_flag) */
 						
 		}		/* if (param_set_p) */
-
 
 	return res_json_p;
 }

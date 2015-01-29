@@ -78,3 +78,13 @@ const char *GetJSONString (const json_t *json_p, const char * const key_s)
 	return value_s;
 }
 
+
+
+bool SetJSONHTML (json_t *json_p, const char *key_s, const char *html_s)
+{
+	bool success_flag = false;
+
+
+	return success_flag;
+}
+

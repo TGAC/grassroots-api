@@ -17,7 +17,7 @@ old_library='mod_wheatis.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/home/billy/Projects/wheatis/util/debug -L/home/billy/Projects/wheatis/services/lib/debug -L/home/billy/Projects/wheatis/handlers/lib/debug -L/home/billy/Projects/wheatis/irods/lib/debug -L/home/billy/Projects/wheatis/network/debug -L/home/billy/Projects/wheatis/server/lib/debug -L/home/billy/Projects/iRODS//lib -lwheatis_util -lwheatis_service -lwheatis_handler -lwheatis_irods -lwheatis_network -lwheatis_server -lirods'
+dependency_libs=' -L/usr/users/ga002/tyrrells/Projects/wheatis/util/debug -L/usr/users/ga002/tyrrells/Projects/wheatis/services/lib/debug -L/usr/users/ga002/tyrrells/Projects/wheatis/handlers/lib/debug -L/usr/users/ga002/tyrrells/Projects/wheatis/irods/lib/debug -L/usr/users/ga002/tyrrells/Projects/wheatis/network/debug -L/usr/users/ga002/tyrrells/Projects/wheatis/server/lib/debug -L/usr/users/ga002/tyrrells/Projects/iRODS-3.3.1/lib -lwheatis_util -lwheatis_service -lwheatis_handler -lwheatis_irods -lwheatis_network -lwheatis_server -lirods'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
