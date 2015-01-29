@@ -3,6 +3,19 @@
 
 #include "typedefs.h"
 
+
+/*
+  1898  imeta add -d barley crop barley
+ 1899  imeta add -d wheat_and_barley crop barley
+ 1900  imeta add -d wheat_and_barley crop wheat
+ 1901  imeta add -d wheat crop wheat
+ 1902  imeta au -d crop wheat
+ 1903  imeta au -d crop = wheat
+ 1904  imeta qu -d crop = wheat
+ 1905  imeta qu -d crop =  barley
+
+ *
+ */
 int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 num_columns, const char **search_tags_pp, bool upper_case_flag )
 {
 	#define CLAUSE_SIZE (20)
