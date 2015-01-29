@@ -228,7 +228,6 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 	/* Get the requested operation */
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);
 	json_t *service_res_p = NULL;
-	bool success_flag = false;
 	
 	#if SERVER_DEBUG >= DL_INFO
 	char *req_s = json_dumps (req_p, JSON_PRESERVE_ORDER | JSON_INDENT (2));
@@ -280,12 +279,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 											if (params_p)
 												{
-													json_t *service_result_p = RunService (service_p, params_p, credentials_p);
-													
-													if (service_result_p)
-														{
-															success_flag = true;
-														}
+													service_res_p = RunService (service_p, params_p, credentials_p);
 												}		/* if (params_p) */
 
 										}		/* if (service_p) */
@@ -298,10 +292,6 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 				}		/* if (service_name_s) */
 		
 		}		/* if (op_p && json_is_true (op_p)) */
-	else
-		{
-			success_flag = true;
-		}	
 
 	#if SERVER_DEBUG >= DL_INFO
 	if (req_s)
@@ -310,7 +300,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 		}
 	#endif
 		
-	return success_flag;				
+	return service_res_p;
 }
 
 
