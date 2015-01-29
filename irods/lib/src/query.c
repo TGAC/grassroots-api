@@ -10,8 +10,6 @@
 #include "memory_allocations.h"
 
 
-static const columnName_t *GetColumnById (const int id);
-
 
 genQueryOut_t *ExecuteQuery (rcComm_t *connection_p, genQueryInp_t * const in_query_p)
 {
@@ -389,7 +387,7 @@ const char *GetColumnNameForId (const int id)
 }
 
 
-static const columnName_t *GetColumnById (const int id)
+const columnName_t *GetColumnById (const int id)
 {
 	const columnName_t *column_p = columnNames;
   int i;

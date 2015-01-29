@@ -91,7 +91,12 @@ IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
 
 
+IRODS_UTIL_LOCAL const columnName_t *GetColumnById (const int id);
+
+
 IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
+
+
 
 #ifdef __cplusplus
 }
