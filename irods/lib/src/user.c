@@ -40,7 +40,7 @@ QueryResults *RunQuery (rcComm_t *connection_p, const int *select_column_ids_p, 
 	QueryResults *results_p = NULL;
 	genQueryInp_t in_query;
 
-	InitQuery (&in_query);	
+	InitGenQuery (&in_query);	
 	
 	if (SetQuerySelectClauses (&in_query, num_select_columns, select_column_ids_p, NULL))
 		{			

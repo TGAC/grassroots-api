@@ -41,7 +41,7 @@ genQueryOut_t *ExecuteQuery (rcComm_t *connection_p, genQueryInp_t * const in_qu
 }
 
 
-void InitQuery (genQueryInp_t *query_p)
+void InitGenQuery (genQueryInp_t *query_p)
 {
 	memset (query_p, 0, sizeof (genQueryInp_t));
 	query_p -> maxRows = MAX_SQL_ROWS;
@@ -84,7 +84,7 @@ genQueryOut_t *ExecuteQueryString (rcComm_t *connection_p, char *query_s)
 	int status;
 
 	/* Build the query */
-	InitQuery (&in_query);
+	InitGenQuery (&in_query);
 
 	/* Fill in the iRODS query structure */
 	status = fillGenQueryInpFromStrCond (query_s, &in_query);

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdarg.h>
 
 #include "byte_buffer.h"
 #include "memory_allocations.h"
@@ -86,6 +87,34 @@ bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t 
 		
 	return success_flag;
 }
+
+
+bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...)
+{
+	bool success_flag = true;
+	bool loop_flag = true;
+	va_list args;
+	va_start (args, value_s);
+
+	while (success_flag && loop_flag)
+		{
+			char *arg_s = va_arg (args, char *);
+
+			if (arg_s)
+				{
+					success_flag = AppendToByteBuffer (buffer_p, arg_s, strlen (arg_s));
+				}
+			else
+				{
+					loop_flag = false;
+				}
+		}
+
+	va_end (args);
+
+	return success_flag;
+}
+
 
 
 void ResetByteBuffer (ByteBuffer *buffer_p)

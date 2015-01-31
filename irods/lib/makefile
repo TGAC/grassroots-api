@@ -51,6 +51,7 @@ SRCS 	= \
 	connect.c \
 	user.c \
 	query.c \
+	meta_search.c
 #	procApiRequest.c \
 #	rcSpecificQuery.c
 

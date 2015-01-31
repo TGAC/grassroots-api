@@ -1,12 +1,12 @@
 eclipse.preferences.version=1
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/delimiter=\:
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/operation=append
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/value=/usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
+environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/operation=replace
+environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/value=/home/billy/Projects/iRODS
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/LD_LIBRARY_PATH/delimiter=\:
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/LD_LIBRARY_PATH/operation=append
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/LD_LIBRARY_PATH/value=$LD_LIBRARY_PATH\:/opt/iRods-3.3.1/lib\:/usr/users/ga002/tyrrells/Projects/wheatis_demo/lib
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/PATH/delimiter=\:
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/PATH/operation=append
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/PATH/value=$PATH\:$IRODS_HOME/clients/icommands/bin\:/usr/local/apache2/bin
+environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/PATH/operation=replace
+environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/PATH/value=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/usr/games\:/usr/local/games\:$PATH\:$IRODS_HOME/clients/icommands/bin\:/usr/local/apache2/bin
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/append=true
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/appendContributed=true

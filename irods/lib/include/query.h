@@ -6,6 +6,7 @@
 
 #include "rcConnect.h"
 #include "rodsGenQuery.h"
+#include "rodsGenQueryNames.h"
 
 #include "irods_util_library.h"
 #include "linked_list.h"
@@ -37,22 +38,23 @@ typedef struct QueryResults
 
 
 
+
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
 
 
-IRODS_UTIL_API void InitQuery (genQueryInp_t *query_p);
+IRODS_UTIL_API void InitGenQuery (genQueryInp_t *query_p);
 
 
-IRODS_UTIL_API void ClearQuery (genQueryInp_t *query_p);
+IRODS_UTIL_API void ClearGenQuery (genQueryInp_t *query_p);
 
 
 IRODS_UTIL_API genQueryOut_t *ExecuteQueryString (rcComm_t *connection_p, char *query_s);
 
 
-IRODS_UTIL_API genQueryOut_t *ExecuteQuery (rcComm_t *connection_p, genQueryInp_t * const query_p);
+IRODS_UTIL_API genQueryOut_t *ExecuteGenQuery (rcComm_t *connection_p, genQueryInp_t * const query_p);
 
 
 IRODS_UTIL_API char *BuildQueryString (const char **args_ss);
