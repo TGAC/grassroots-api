@@ -1,16 +1,112 @@
-#include "rodsGenQueryNames.h"
+//#include "rodsGenQueryNames.h"
 #include "rcMisc.h"
 
 #include "typedefs.h"
 #include "byte_buffer.h"
+#include "meta_search.h"
+#include "streams.h"
+#include "memory_allocations.h"
 
 
-int32 DetermineSearchTerms (LinkedList *terms_p, const char **args_ss)
+static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p);
+
+
+
+SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
 {
+	SearchTermNode *node_p = (SearchTermNode *) AllocMemory (sizeof (SearchTermNode));
 
+	if (node_p)
+		{
+			node_p -> stn_node.ln_prev_p = node_p -> stn_node.ln_next_p = NULL;
+
+			node_p -> stn_term.st_clause_s = clause_s;
+			node_p -> stn_term.st_key_s = clause_s;
+			node_p -> stn_term.st_op_s = op_s;
+			node_p -> stn_term.st_value_s = value_s;
+		}
+
+	return node_p;
 }
 
 
+int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
+{
+	int32 res = 0;
+
+	if (json_is_array (json_p))
+		{
+			/* array is a JSON array */
+			size_t index;
+			json_t *json_value_p;
+
+			json_array_foreach (json_p, index, json_value_p)
+				{
+					if (AddSearchTermNodeFromJSON (terms_p, json_value_p))
+						{
+							++ res;
+						}
+				}
+		}
+	else
+		{
+			if (AddSearchTermNodeFromJSON (terms_p, json_p))
+				{
+					++ res;
+				}
+		}
+
+	return res;
+}
+
+
+static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p)
+{
+	bool success_flag = false;
+	SearchTermNode *node_p = NULL;
+	json_t *child_json_p = json_object_get (json_p, "operation");
+
+	if (child_json_p  && json_is_string (child_json_p))
+		{
+			const char *op_s = json_string_value (child_json_p);
+
+			child_json_p = json_object_get (json_p, "key");
+
+			if (child_json_p && json_is_string (child_json_p))
+				{
+					const char *key_s = json_string_value (child_json_p);
+
+					child_json_p = json_object_get (json_p, "value");
+
+					if (child_json_p && json_is_string (child_json_p))
+						{
+							const char *value_s = json_string_value (child_json_p);
+							const char *clause_s = NULL;
+
+							child_json_p = json_object_get (json_p, "value");
+
+							if (child_json_p && json_is_string (child_json_p))
+								{
+									clause_s = json_string_value (child_json_p);
+								}
+
+							node_p = AllocateSearchTermNode (clause_s, key_s, op_s, value_s);
+
+							if (node_p)
+								{
+									LinkedListAddTail (terms_p, & (node_p -> stn_node));
+									success_flag = true;
+								}
+							else
+								{
+
+								}
+						}
+				}
+		}
+
+	return success_flag;
+}
 
 /*
   1898  imeta add -d barley crop barley
@@ -24,10 +120,10 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const char **args_ss)
 
  *
  */
-int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 num_columns, const char **search_tags_pp, bool upper_case_flag, const char * const zone_s)
+int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 num_columns, const char **search_tags_pp, bool upper_case_flag, char * const zone_s)
 {
 	#define CLAUSE_SIZE (20)
-
+#define BIG_STR (300)
   genQueryInp_t input_query;
   genQueryOut_t *query_output_p = NULL;
   int i1a[CLAUSE_SIZE];
@@ -37,6 +133,8 @@ int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 
   char v1[BIG_STR];
   char v2[BIG_STR];
   char v3[BIG_STR];
+
+  ByteBuffer *condition_values_p;
 
   ByteBuffer *v1_p;
   ByteBuffer *v2_p;
@@ -65,9 +163,9 @@ int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 
 
   i2a[0]=COL_META_DATA_ATTR_NAME;
 
-  if (AppendStringsToByteBuffer (v1_p, "='", cmdToken [2], "'", NULL))
+  if (AppendStringsToByteBuffer (v1_p, "='", search_tags_pp [2], "'", NULL))
   	{
-  	  if (AppendStringsToByteBuffer (v2_p, cmdToken [3], " '", cmdToken [4], "'", NULL))
+  	  if (AppendStringsToByteBuffer (v2_p, search_tags_pp [3], " '", search_tags_pp [4], "'", NULL))
   	  	{
 
   	  	}
@@ -83,9 +181,9 @@ int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 
   input_query.sqlCondInp.value = condVal;
   input_query.sqlCondInp.len = num_columns;
 
-  if (strcmp(cmdToken[5], "or")==0)
+  if (strcmp(search_tags_pp[5], "or")==0)
   	{
-  		if (AppendStringsToByteBuffer (v2_p, "|| ", cmdToken [6], "'", cmdToken [7], "'", NULL))
+  		if (AppendStringsToByteBuffer (v2_p, "|| ", search_tags_pp [6], "'", search_tags_pp [7], "'", NULL))
   			{
 
   			}
@@ -95,23 +193,23 @@ int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 
 
   cmdIx = 5;
   condIx = 2;
-  while (strcmp(cmdToken[cmdIx], "and")==0) {
+  while (strcmp(search_tags_pp[cmdIx], "and")==0) {
      i2a[condIx]=COL_META_DATA_ATTR_NAME;
      cmdIx++;
-     snprintf(vstr[condIx],BIG_STR,"='%s'", cmdToken[cmdIx]);
+     snprintf(vstr[condIx],BIG_STR,"='%s'", search_tags_pp[cmdIx]);
      condVal[condIx]=vstr[condIx];
      condIx++;
 
      i2a[condIx]=COL_META_DATA_ATTR_VALUE;
      snprintf(vstr[condIx], BIG_STR,
-	       "%s '%s'", cmdToken[cmdIx+1], cmdToken[cmdIx+2]);
+	       "%s '%s'", search_tags_pp[cmdIx+1], search_tags_pp[cmdIx+2]);
      cmdIx+=3;
      condVal[condIx]=vstr[condIx];
      condIx++;
      input_query.sqlCondInp.len+=2;
   }
 
-  if (*cmdToken[cmdIx] != '\0') {
+  if (*search_tags_pp[cmdIx] != '\0') {
      printf("Unrecognized input\n");
      return(-2);
   }
@@ -129,12 +227,11 @@ int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 
 
   //printGenQueryResults(Conn, status, genQueryOut, columnNames);
 
-  while (status==0 && genQueryOut->continueInx > 0) {
-     genQueryInp.continueInx=genQueryOut->continueInx;
-     status = rcGenQuery(Conn, &genQueryInp, &genQueryOut);
-     if (genQueryOut->rowCnt>0) printf("----\n");
-     printGenQueryResults(Conn, status, genQueryOut,
-					columnNames);
+  while (status==0 && query_output_p->continueInx > 0) {
+  		input_query.continueInx=query_output_p->continueInx;
+     status = rcGenQuery(connection_p, &input_query, &query_output_p);
+     if (query_output_p->rowCnt>0) printf("----\n");
+     //printQueryResults(connection_p, status, query_output_p, NULL);
   }
 
   return (0);
@@ -143,7 +240,7 @@ int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 
 
 
 
-
+#if 0
 
 /*
 Do a query on AVUs for dataobjs and show the results
@@ -533,3 +630,4 @@ int queryUser(char *attribute, char *op, char *value) {
 }
 
 
+#endif

@@ -6,7 +6,7 @@
 
 #include "rcConnect.h"
 #include "rodsGenQuery.h"
-#include "rodsGenQueryNames.h"
+//#include "rodsGenQueryNames.h"
 
 #include "irods_util_library.h"
 #include "linked_list.h"
@@ -93,7 +93,7 @@ IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
 
 
-IRODS_UTIL_LOCAL const columnName_t *GetColumnById (const int id);
+//IRODS_UTIL_LOCAL const columnName_t *GetColumnById (const int id);
 
 
 IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);

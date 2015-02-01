@@ -4,8 +4,8 @@ COPY	= cp
 all: 	
 	@echo "BUILD = " $(BUILD)
 	$(MAKE) -C util 
-	$(MAKE) -C irods/lib
 	$(MAKE) -C network
+	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib
 	$(MAKE) -C handlers/file
@@ -22,8 +22,8 @@ all:
 					
 install: install_init install_references
 	$(MAKE) -C util install
-	$(MAKE) -C irods/lib install
 	$(MAKE) -C network install
+	$(MAKE) -C irods/lib install
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
 	$(MAKE) -C handlers/file install
@@ -40,8 +40,8 @@ install: install_init install_references
 
 clean: 
 	$(MAKE) -C util clean
-	$(MAKE) -C irods/lib clean
 	$(MAKE) -C network clean
+	$(MAKE) -C irods/lib clean
 	$(MAKE) -C handlers/lib clean
 	$(MAKE) -C services/lib clean
 	$(MAKE) -C handlers/file clean

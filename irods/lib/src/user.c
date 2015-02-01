@@ -46,7 +46,7 @@ QueryResults *RunQuery (rcComm_t *connection_p, const int *select_column_ids_p, 
 		{			
 			if (SetQueryWhereClauses (&in_query, num_where_columns, where_column_ids_p, where_column_values_pp, where_ops_pp))
 				{
-					genQueryOut_t *output_p = ExecuteQuery (connection_p, &in_query);
+					genQueryOut_t *output_p = ExecuteGenQuery (connection_p, &in_query);
 					
 					if (output_p)
 						{
@@ -57,7 +57,7 @@ QueryResults *RunQuery (rcComm_t *connection_p, const int *select_column_ids_p, 
 			
 		}		/* if (SetQuerySelectClauses (&in_query, 2, select_column_ids, NULL)) */
 	
-	ClearQuery (&in_query);
+	ClearGenQuery (&in_query);
 	
 	return results_p;	
 }

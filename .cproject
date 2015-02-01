@@ -31,6 +31,7 @@
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtCore"/>
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtGui"/>
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -42,6 +43,7 @@
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/core/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/sha1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/re/include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1332274428" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -56,6 +58,7 @@
 								<option id="gnu.both.asm.option.include.paths.1593502275" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtWidgets"/>
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtCore"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1492231850" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>

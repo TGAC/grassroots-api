@@ -10,8 +10,10 @@
 #include "memory_allocations.h"
 
 
+static const columnName_t *GetColumnById (const int id);
 
-genQueryOut_t *ExecuteQuery (rcComm_t *connection_p, genQueryInp_t * const in_query_p)
+
+genQueryOut_t *ExecuteGenQuery (rcComm_t *connection_p, genQueryInp_t * const in_query_p)
 {
 	genQueryOut_t *out_query_p = NULL;
 	int status;
@@ -49,7 +51,7 @@ void InitGenQuery (genQueryInp_t *query_p)
 }
 
 
-void ClearQuery (genQueryInp_t *query_p)
+void ClearGenQuery (genQueryInp_t *query_p)
 {
 	if (query_p -> selectInp.len)
 		{
@@ -91,7 +93,7 @@ genQueryOut_t *ExecuteQueryString (rcComm_t *connection_p, char *query_s)
 
 	if (status >= 0)
 		{
-			out_query_p = ExecuteQuery (connection_p, &in_query);
+			out_query_p = ExecuteGenQuery (connection_p, &in_query);
 		}
 
 	return out_query_p;
