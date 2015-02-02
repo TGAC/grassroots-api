@@ -12,7 +12,7 @@ extern "C"
 #endif
 
 
-COMPRESS_SERVICE_API ServicesArray *GetServices (void);
+COMPRESS_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
 
 COMPRESS_SERVICE_API void ReleaseServices (ServicesArray *service_p);

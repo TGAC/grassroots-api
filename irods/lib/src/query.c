@@ -10,6 +10,8 @@
 #include "memory_allocations.h"
 
 
+static QueryResults *GetAllMetadataAttributes (rcComm_t *connection_p, const int col_id);
+
 static const columnName_t *GetColumnById (const int id);
 
 
@@ -76,6 +78,24 @@ void ClearGenQuery (genQueryInp_t *query_p)
 			query_p -> sqlCondInp.len = 0;
 		}
 
+}
+
+
+QueryResults *GetAllMetadataDataAttributes (rcComm_t *connection_p)
+{
+	return GetAllMetadataAttributes (connection_p, COL_META_DATA_ATTR_NAME);
+}
+
+
+QueryResults *GetAllMetadataCollectionAttributes (rcComm_t *connection_p)
+{
+	return GetAllMetadataAttributes (connection_p, COL_META_COLL_ATTR_NAME);
+}
+
+
+QueryResults *GetAllMetadataUserAttributes (rcComm_t *connection_p)
+{
+	return GetAllMetadataAttributes (connection_p, COL_META_USER_ATTR_NAME);
 }
 
 
@@ -669,4 +689,32 @@ void ClearQueryResult (QueryResult *result_p)
 				}
 		}
 }
+
+
+
+static QueryResults *GetAllMetadataAttributes (rcComm_t *connection_p, const int col_id)
+{
+	QueryResults *results_p = NULL;
+	const char *col_s = GetColumnNameForId (COL_META_DATA_ATTR_NAME);
+
+	if (col_s)
+		{
+			char *query_s = ConcatenateStrings ("SELECT", col_s);
+
+			if (query_s)
+				{
+					genQueryOut_t *out_p = ExecuteQueryString (connection_p, query_s);
+
+					if (out_p)
+						{
+							results_p  = GenerateQueryResults (out_p);
+						}
+
+					FreeCopiedString (query_s);
+				}
+		}
+
+	return results_p;
+}
+
 

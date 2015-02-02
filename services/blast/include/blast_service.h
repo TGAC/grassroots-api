@@ -34,7 +34,7 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_API ServicesArray *GetServices (void);
+BLAST_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
 
 BLAST_SERVICE_API void ReleaseServices (ServicesArray *services_p);

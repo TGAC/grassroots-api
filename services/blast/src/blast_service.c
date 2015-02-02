@@ -35,8 +35,7 @@ static bool CloseBlastService (Service *service_p);
 /*
  * API FUNCTIONS
  */
-
-ServicesArray *GetServices (void)
+ServicesArray *GetServices (const json_t *config_p)
 {
 	Service *blast_service_p = (Service *) AllocMemory (sizeof (Service));
 

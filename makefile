@@ -19,6 +19,7 @@ all:
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
 	$(MAKE) -C services/web
+	$(MAKE) -C services/irods_search
 					
 install: install_init install_references
 	$(MAKE) -C util install
@@ -37,6 +38,7 @@ install: install_init install_references
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
 	$(MAKE) -C services/web install
+	$(MAKE) -C services/irods_search install
 
 clean: 
 	$(MAKE) -C util clean
@@ -55,6 +57,7 @@ clean:
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
 	$(MAKE) -C services/web clean
+	$(MAKE) -C services/irods_search clean
 	
 install_init:
 	@mkdir -p ../wheatis_demo

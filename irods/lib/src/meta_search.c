@@ -46,6 +46,16 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
 						{
 							++ res;
 						}
+					else
+						{
+							char *dump_s = json_dumps (json_value_p, JSON_INDENT (2));
+
+							if (dump_s)
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to get search term node from %s\n", dump_s);
+									free (dump_s);
+								}
+						}
 				}
 		}
 	else
@@ -53,6 +63,16 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
 			if (AddSearchTermNodeFromJSON (terms_p, json_p))
 				{
 					++ res;
+				}
+			else
+				{
+					char *dump_s = json_dumps (json_p, JSON_INDENT (2));
+
+					if (dump_s)
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to get search term node from %s\n", dump_s);
+							free (dump_s);
+						}
 				}
 		}
 
@@ -83,7 +103,7 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
 							const char *value_s = json_string_value (child_json_p);
 							const char *clause_s = NULL;
 
-							child_json_p = json_object_get (json_p, "value");
+							child_json_p = json_object_get (json_p, "clause");
 
 							if (child_json_p && json_is_string (child_json_p))
 								{
@@ -99,10 +119,22 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
 								}
 							else
 								{
-
+									PrintErrors (STM_LEVEL_WARNING, "Failed to allocate search term node\n");
 								}
 						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to get search term value from json\n");
+						}
 				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to get search term key from json\n");
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to get search term operation from json\n");
 		}
 
 	return success_flag;

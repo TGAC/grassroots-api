@@ -82,7 +82,7 @@ static bool CloseCompressService (Service *service_p);
  * API FUNCTIONS
  */
 
-ServicesArray *GetServices (void)
+ServicesArray *GetServices (const json_t *config_p)
 {
 	Service *compress_service_p = (Service *) AllocMemory (sizeof (Service));
 
