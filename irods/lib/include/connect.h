@@ -2,7 +2,7 @@
 #define IRODS_CONNECT_H
 
 #include "rcConnect.h"
-
+#include "jansson.h"
 #include "irods_util_library.h"
 
 #ifdef __cplusplus
@@ -10,6 +10,8 @@ extern "C"
 {
 #endif
 
+
+IRODS_UTIL_API rcComm_t *CreateConnectionFromJSON (const json_t *credentials_json_p);
 
 IRODS_UTIL_API rcComm_t *CreateConnection (const char *username_s, const char *password_s);
 

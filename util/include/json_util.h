@@ -79,6 +79,7 @@ PREFIX const char *TAG_INPUT_NAME_S VAL("input");
 PREFIX const char *TAG_OUTPUT_NAME_S VAL("output");
 
 PREFIX const char *CREDENTIALS_S VAL("credentials");
+PREFIX const char *CREDENTIALS_NAME_S VAL("name");
 PREFIX const char *CREDENTIALS_USERNAME_S VAL("user");
 PREFIX const char *CREDENTIALS_PASSWORD_S VAL("pass");
 PREFIX const char *CREDENTIALS_TOKEN_KEY_S VAL("token_key");

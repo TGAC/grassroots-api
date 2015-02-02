@@ -1,4 +1,32 @@
 #include "connect.h"
+#include "json_util.h"
+
+
+rcComm_t *CreateConnectionFromJSON (const json_t *credentials_json_p)
+{
+	rcComm_t *connection_p = NULL;
+	const char *provider_s = GetJSONString (credentials_json_p, CREDENTIALS_NAME_S);
+
+	if (provider_s)
+		{
+			if (strcmp ("irods", provider_s) == 0)
+				{
+					const char *username_s = GetJSONString (credentials_json_p, CREDENTIALS_USERNAME_S);
+
+					if (username_s)
+						{
+							const char *password_s = GetJSONString (credentials_json_p, CREDENTIALS_PASSWORD_S);
+
+							if (password_s)
+								{
+									connection_p = CreateConnection (username_s, password_s);
+								}
+						}
+				}
+		}
+
+	return connection_p;
+}
 
 
 rcComm_t *CreateConnection (const char *username_s, const char *password_s)
