@@ -251,9 +251,17 @@ ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_o
 
 			array_p -> pmoa_values_type = pt;
 
-			for (i = 0; i < num_options; ++ i, ++ option_p, ++ description_pp, ++ value_p)
+			for (i = 0; i < num_options; ++ i, ++ option_p, ++ value_p)
 				{
-					if (!SetParameterMultiOption (array_p, i, *description_pp, *value_p))
+					const char *description_s = NULL;
+
+					if (description_pp)
+						{
+							description_s = *description_pp;
+							++ description_pp;
+						}
+
+					if (!SetParameterMultiOption (array_p, i, description_s, *value_p))
 						{
 							FreeParameterMultiOptionArray (array_p);
 							array_p = NULL;
@@ -603,7 +611,12 @@ static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json
 
 static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
 {
-	bool success_flag = (json_object_set_new (root_p, PARAM_DESCRIPTION_S, json_string (param_p -> pa_description_s)) == 0);
+	bool success_flag = true;
+
+	if (param_p -> pa_description_s)
+		{
+			success_flag = (json_object_set_new (root_p, PARAM_DESCRIPTION_S, json_string (param_p -> pa_description_s)) == 0);
+		}
 
 	#if SERVER_DEBUG >= DL_FINER
 	PrintJSON (stderr, root_p, "AddParameterDescriptionToJSON - root_p :: ");
