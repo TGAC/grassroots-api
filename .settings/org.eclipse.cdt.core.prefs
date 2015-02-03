@@ -1,7 +1,4 @@
 eclipse.preferences.version=1
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/delimiter=\:
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/operation=replace
-environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/IRODS_HOME/value=/usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/LD_LIBRARY_PATH/delimiter=\:
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/LD_LIBRARY_PATH/operation=replace
 environment/project/cdt.managedbuild.toolchain.gnu.base.77732421/LD_LIBRARY_PATH/value=/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/amd64/server\:/usr/lib/jvm/java-6-openjdk-amd64/jre/lib/amd64\:/usr/lib/jvm/java-6-openjdk-amd64/jre/../lib/amd64\:$LD_LIBRARY_PATH\:/opt/iRods-3.3.1/lib\:/usr/users/ga002/tyrrells/Projects/wheatis_demo/lib
