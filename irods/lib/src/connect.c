@@ -1,26 +1,50 @@
 #include "connect.h"
 #include "json_util.h"
 
+#ifdef _DEBUG
+	#define CONNECT_DEBUG	(DL_FINE)
+#else
+	#define CONNECT_DEBUG	(DL_NONE)
+#endif
 
-rcComm_t *CreateConnectionFromJSON (const json_t *credentials_json_p)
+
+rcComm_t *CreateConnectionFromJSON (const json_t *config_p)
 {
 	rcComm_t *connection_p = NULL;
-	const char *provider_s = GetJSONString (credentials_json_p, CREDENTIALS_NAME_S);
+	const json_t *irods_credentials_p = NULL;
+	/*
+	 * The config might have the credentials child or it might be the
+	 * credentials object itself so check for both
+	 */
+	const json_t *credentials_p = json_object_get (config_p, CREDENTIALS_S);
 
-	if (provider_s)
+	if (!credentials_p)
 		{
-			if (strcmp ("irods", provider_s) == 0)
+			credentials_p = config_p;
+		}
+
+	#if JSON_TOOLS_DEBUG >= DL_FINE
+		{
+			char *value_s = json_dumps (credentials_p, JSON_INDENT (2));
+			printf ("connection credentials:\n%s\n", value_s);
+			free (value_s);
+		}
+	#endif
+
+
+	irods_credentials_p = json_object_get (credentials_p, "irods");
+
+	if (irods_credentials_p)
+		{
+			const char *username_s = GetJSONString (irods_credentials_p, CREDENTIALS_USERNAME_S);
+
+			if (username_s)
 				{
-					const char *username_s = GetJSONString (credentials_json_p, CREDENTIALS_USERNAME_S);
+					const char *password_s = GetJSONString (irods_credentials_p, CREDENTIALS_PASSWORD_S);
 
-					if (username_s)
+					if (password_s)
 						{
-							const char *password_s = GetJSONString (credentials_json_p, CREDENTIALS_PASSWORD_S);
-
-							if (password_s)
-								{
-									connection_p = CreateConnection (username_s, password_s);
-								}
+							connection_p = CreateConnection (username_s, password_s);
 						}
 				}
 		}

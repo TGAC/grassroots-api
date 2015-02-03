@@ -13,6 +13,6 @@ typedef uint32 Tag;
 #define TAG_INPUT_FILE 			(1)
 #define TAG_INPUT_DIR 			(2)
 #define TAG_OUTPUT_FILE 		(3)
-
+#define TAG_KEYWORD					(4)
 
 #endif		/* #ifndef TAGS_H */

@@ -295,16 +295,30 @@ void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
 bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value)
 {
 	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + index;
-	char *new_description_s = CopyToNewString (description_s, 0, true);
-	bool success_flag = false;
+	bool success_flag = true;
 
-	if (new_description_s)
+
+	if (description_s)
 		{
-			if (option_p -> pmo_description_s)
-				{
-					FreeCopiedString (option_p -> pmo_description_s);
-				}
+			char *new_description_s = CopyToNewString (description_s, 0, true);
 
+			if (new_description_s)
+				{
+					if (option_p -> pmo_description_s)
+						{
+							FreeCopiedString (option_p -> pmo_description_s);
+						}
+
+					option_p -> pmo_description_s = new_description_s;
+				}
+			else
+				{
+					success_flag = false;
+				}
+		}
+
+	if (success_flag)
+		{
 			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD))
 				{
 					char *value_s = CopyToNewString (value.st_string_value_s, 0, false);
@@ -312,22 +326,16 @@ bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32
 					if (value_s)
 						{
 							option_p -> pmo_value.st_string_value_s = value_s;
-							success_flag = true;
+						}
+					else
+						{
+							success_flag = false;
 						}
 				}
 			else
 				{
 					option_p -> pmo_value = value;
 					success_flag = true;
-				}
-
-			if (success_flag)
-				{
-					option_p -> pmo_description_s = new_description_s;
-				}
-			else
-				{
-					FreeCopiedString (new_description_s);
 				}
 		}
 

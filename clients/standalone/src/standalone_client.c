@@ -192,11 +192,20 @@ int main(int argc, char *argv[])
 							{
 								case OP_LIST_ALL_SERVICES:
 									req_p = GetAvailableServicesRequest (username_s, password_s);
-									response_p = SendRequest (sock_fd, req_p, id, buffer_p);
 									
-									if (response_p)
+									if (req_p)
 										{
-											ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);					
+											if (!AddCredentialsToJson (req_p, username_s, password_s))
+												{
+													printf ("Failed to add credentials\n");
+												}
+
+											response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+
+											if (response_p)
+												{
+													ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);
+												}
 										}
 									break;
 									

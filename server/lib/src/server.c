@@ -403,7 +403,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 	const char *password_s = NULL;
 												
 
-	res_p = GetServices (SERVICES_PATH_S, username_s, password_s, NULL, NULL, NULL);
+	res_p = GetServices (SERVICES_PATH_S, username_s, password_s, NULL, NULL, credentials_p);
 
 	return res_p;
 }

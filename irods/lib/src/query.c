@@ -695,11 +695,11 @@ void ClearQueryResult (QueryResult *result_p)
 static QueryResults *GetAllMetadataAttributes (rcComm_t *connection_p, const int col_id)
 {
 	QueryResults *results_p = NULL;
-	const char *col_s = GetColumnNameForId (COL_META_DATA_ATTR_NAME);
+	const char *col_s = GetColumnNameForId (col_id);
 
 	if (col_s)
 		{
-			char *query_s = ConcatenateStrings ("SELECT", col_s);
+			char *query_s = ConcatenateStrings ("SELECT ", col_s);
 
 			if (query_s)
 				{

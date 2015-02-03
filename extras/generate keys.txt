@@ -1,0 +1,6 @@
+openssl genrsa -des3 -out n79610.nbi.ac.uk.key 1024
+openssl req -new -key n79610.nbi.ac.uk.key -out n79610.nbi.ac.uk.csr
+openssl rsa -in n79610.nbi.ac.uk.key.original -out n79610.nbi.ac.uk.key
+openssl x509 -req -days 365 -in n79610.nbi.ac.uk.csr -signkey n79610.nbi.ac.uk.key -out n79610.nbi.ac.uk.crt
+cat n79610.nbi.ac.uk.crt n79610.nbi.ac.uk.key > n79610.nbi.ac.uk.pem
+
