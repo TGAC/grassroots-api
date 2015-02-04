@@ -26,6 +26,8 @@ static const char *GetBlastServiceDesciption (Service *service_p);
 
 static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
+static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
+
 static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
@@ -53,6 +55,7 @@ ServicesArray *GetServices (const json_t *config_p)
 						RunBlastService,
 						IsFileForBlastService,
 						GetBlastServiceParameters,
+						ReleaseBlastServiceParameters,
 						CloseBlastService,
 						true,
 						data_p);
@@ -124,6 +127,12 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 	return NULL;
 }
 
+
+
+static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p)
+{
+	FreeParameterSet (params_p);
+}
 
 
 static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)

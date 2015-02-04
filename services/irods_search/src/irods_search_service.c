@@ -49,6 +49,10 @@ static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p);
 
+static void ReleaseIrodsSearchServiceParameters (Service *service_p, ParameterSet *params_p);
+
+static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p);
+
 
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p)
@@ -89,6 +93,21 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 }
 
 
+static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p)
+{
+	if (data_p -> issd_connection_p)
+		{
+			CloseConnection (data_p -> issd_connection_p);
+			data_p -> issd_connection_p = NULL;
+		}
+
+	if (data_p -> issd_params_p)
+		{
+			FreeParameterSet (data_p -> issd_params_p);
+		}
+}
+
+
 /*
  * API FUNCTIONS
  */
@@ -113,6 +132,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								RunIrodsSearchService,
 								IsFileForIrodsSearchService,
 								GetIrodsSearchServiceParameters,
+								ReleaseIrodsSearchServiceParameters,
 								CloseIrodsSearchService,
 								true,
 								data_p);
@@ -141,6 +161,9 @@ void ReleaseServices (ServicesArray *services_p)
 static bool CloseIrodsSearchService (Service *service_p)
 {
 	bool success_flag = true;
+	IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
+
+	FreeIrodsSearchServiceData (data_p);
 	
 	return success_flag;
 }
@@ -181,41 +204,67 @@ static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (
 							SharedType *option_p = param_options_p;
 							ParameterMultiOptionArray *options_array_p = NULL;
 
-							for ( ; i > 0; -- i, ++ value_ss, ++ option_p)
+							success_flag = true;
+
+							/* Copy all of the values into our options array */
+							while (success_flag && (i > 0))
 								{
-									option_p -> st_string_value_s = *value_ss;
+									option_p -> st_string_value_s = CopyToNewString (*value_ss, 0, false);
+
+									if (option_p -> st_string_value_s)
+										{
+											-- i;
+											++ value_ss;
+											++ option_p;
+										}
+									else
+										{
+											success_flag = false;
+										}
 								}
 
 
-							options_array_p = AllocateParameterMultiOptionArray (result_p -> qr_num_values, NULL, param_options_p, PT_STRING);
-
-							if (options_array_p)
+							if (success_flag)
 								{
-									SharedType def;
+									success_flag = false;
+									options_array_p = AllocateParameterMultiOptionArray (result_p -> qr_num_values, NULL, param_options_p, PT_STRING);
 
-									def.st_string_value_s = param_options_p -> st_string_value_s;
-
-									if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, name_s, display_name_s, description_s, TAG_KEYWORD, options_array_p, def, NULL, NULL, PL_BASIC, NULL))
+									if (options_array_p)
 										{
-											success_flag = true;
+											SharedType def;
+
+											def.st_string_value_s = param_options_p -> st_string_value_s;
+
+											if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, name_s, display_name_s, description_s, TAG_KEYWORD, options_array_p, def, NULL, NULL, PL_BASIC, NULL))
+												{
+													success_flag = true;
+												}
+
+											if (!success_flag)
+												{
+													FreeParameterMultiOptionArray (options_array_p);
+												}
 										}
 
 									if (!success_flag)
 										{
-											FreeParameterMultiOptionArray (options_array_p);
+											FreeMemory (param_options_p);
 										}
 								}
-
-							if (!success_flag)
+							else
 								{
-									FreeMemory (param_options_p);
+									/* If we failed to fill the array, clean up */
+									for ( ; i > 0; -- i, -- option_p)
+										{
+											FreeCopiedString (option_p -> st_string_value_s);
+										}
 								}
 
 						}		/* if (param_options_p) */
 
 				}		/* if (results_p -> qr_num_results == 1) */
 
-			FreeQueryResults (results_p);
+			 FreeQueryResults (results_p);
 		}		/* if (results_p) */
 
 	return success_flag;
@@ -244,6 +293,15 @@ static ParameterSet *GetIrodsSearchServiceParameters (Service *service_p, Resour
 	IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
 
 	return data_p -> issd_params_p;
+}
+
+
+static void ReleaseIrodsSearchServiceParameters (Service *service_p, ParameterSet *params_p)
+{
+	/*
+	 * As the parameters are cached, we release the parameters when the service is destroyed
+	 * so we need to do anything here.
+	 */
 }
 
 

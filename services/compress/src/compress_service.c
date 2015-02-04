@@ -66,6 +66,7 @@ static const char *GetCompressServiceDesciption (Service *service_p);
 
 static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
+static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p);
 
 static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
@@ -100,6 +101,7 @@ ServicesArray *GetServices (const json_t *config_p)
 						RunCompressService,
 						IsFileForCompressService,
 						GetCompressServiceParameters,
+						ReleaseCompressServiceParameters,
 						CloseCompressService,
 						true,
 						data_p);
@@ -325,6 +327,12 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 		}		/* if (param_set_p) */
 
 	return NULL;
+}
+
+
+static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p)
+{
+	FreeParameterSet (params_p);
 }
 
 

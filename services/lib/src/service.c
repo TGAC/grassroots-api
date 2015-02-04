@@ -31,6 +31,7 @@ void InitialiseService (Service * const service_p,
 	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
+	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
 	bool specific_flag,
 	ServiceData *data_p)
@@ -40,6 +41,7 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_run_fn = run_fn;
 	service_p -> se_match_fn = match_fn;
 	service_p -> se_get_params_fn = get_parameters_fn;
+	service_p -> se_release_params_fn = release_parameters_fn;
 	service_p -> se_close_fn = close_fn;
 	service_p -> se_data_p = data_p;
 	
@@ -454,6 +456,12 @@ ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, co
 }
 
 
+void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p)
+{
+	return service_p -> se_release_params_fn (service_p, params_p);
+}
+
+
 static const char *GetPluginNameFromJSON (const json_t * const root_p)
 {
 	return GetJSONString (root_p, PLUGIN_NAME_S);
@@ -662,7 +670,7 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 				}
 				
 			/* could set this to be cached ... */
-			FreeParameterSet (param_set_p);
+			ReleaseServiceParameters (service_p, param_set_p);
 		}
 
 	#ifdef _DEBUG

@@ -12,7 +12,8 @@ BUILD		= debug
 DIR_OBJS = $(BUILD)
 
 DIR_IRODS	= $$IRODS_HOME
-DIR_APACHE_MODULES = /usr/local/apache2/modules
+DIR_APACHE_MODULES = $$APACHE_HOME/modules
+DIR_APACHE_INC = $$APACHE_HOME/include
 
 DIR_ROOT_REL = ../../..
 DIR_ROOT = $(realpath $(DIR_ROOT_REL))

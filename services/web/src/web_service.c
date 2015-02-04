@@ -56,6 +56,7 @@ static const char *GetWebServiceDesciption (Service *service_p);
 
 static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
+static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *params_p);
 
 static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
@@ -198,6 +199,7 @@ static Service *GetService (json_t *operation_json_p)
 						RunWebService,
 						IsResourceForWebService,
 						GetWebServiceParameters,
+						ReleaseWebServiceParameters,
 						CloseWebService,
 						false,
 						data_p);
@@ -308,6 +310,16 @@ static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *reso
 
 	return (data_p -> wsd_params_p);
 }
+
+
+static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *params_p)
+{
+	/*
+	 * As the parameters are cached, we release the parameters when the service is destroyed
+	 * so we need to do anything here.
+	 */
+}
+
 
 
 static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p)

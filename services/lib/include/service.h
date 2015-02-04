@@ -100,6 +100,11 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
+	/**
+	 * Function to release the ParameterSet for this Service.
+	 */
+	void (*se_release_params_fn) (struct Service *service_p, ParameterSet *params_p);
+
 
 	bool (*se_close_fn) (struct Service *service_p); 
 
@@ -150,6 +155,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
+	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
 	bool specific_flag,
 	ServiceData *data_p);
