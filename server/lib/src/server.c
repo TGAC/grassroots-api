@@ -231,6 +231,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 	
 	#if SERVER_DEBUG >= DL_INFO
 	char *req_s = json_dumps (req_p, JSON_PRESERVE_ORDER | JSON_INDENT (2));
+	printf ("RunServiceFromJSON:\n%s\n", req_s);
 	#endif
 	
 	if (op_p && json_is_true (op_p))
