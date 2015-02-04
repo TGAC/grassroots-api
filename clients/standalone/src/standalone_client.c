@@ -393,6 +393,8 @@ static bool ShowServices (json_t *response_p, const char *client_s, const char *
 										{
 											char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
 											
+											printf ("client sending:\n%s\n", new_req_s);
+
 											response_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
 							
 											if (response_p)

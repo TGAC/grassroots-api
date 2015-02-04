@@ -205,7 +205,7 @@ static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
-							if (AddParam (connection_p, get_metadata_values_fn, param_set_p, *value_ss, NULL, NULL))
+							if (AddParam (connection_p, get_metadata_values_fn, param_set_p, *value_ss, display_name_s, NULL))
 								{
 									++ res;
 								}

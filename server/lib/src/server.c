@@ -246,7 +246,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 						{
 							json_t *json_config_p = NULL;
 
-							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, json_config_p);
+							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, credentials_p);
 
 							#if SERVER_DEBUG >= DL_FINE
 								{

@@ -50,6 +50,8 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
 	QueryResults *results_p = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
+
+
 	if (buffer_p)
 		{
 			SearchTermNode *node_p = (SearchTermNode *) (search_p -> is_search_terms_p -> ll_head_p);
@@ -137,7 +139,7 @@ static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char 
 			node_p -> stn_node.ln_prev_p = node_p -> stn_node.ln_next_p = NULL;
 
 			node_p -> stn_term.st_clause_s = clause_s;
-			node_p -> stn_term.st_key_s = clause_s;
+			node_p -> stn_term.st_key_s = key_s;
 			node_p -> stn_term.st_op_s = op_s;
 			node_p -> stn_term.st_value_s = value_s;
 		}
