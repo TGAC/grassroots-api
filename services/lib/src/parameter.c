@@ -960,8 +960,15 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 									success_flag = false;
 									
 									if (item_p)
-										{											
-											if (json_object_set_new (item_p, SHARED_TYPE_DESCRIPTION_S, json_string (option_p -> pmo_description_s)) == 0)
+										{
+											bool res_flag = true;
+
+											if (option_p -> pmo_description_s)
+												{
+													res_flag = (json_object_set_new (item_p, SHARED_TYPE_DESCRIPTION_S, json_string (option_p -> pmo_description_s)) == 0);
+												}
+
+											if (res_flag)
 												{
 													if (json_object_set_new (item_p, SHARED_TYPE_VALUE_S, json_string (value_s)) == 0)
 														{
@@ -1191,10 +1198,6 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterM
 																{
 																	*description_ss = json_string_value (desc_p);
 																}
-															else
-																{
-																	success_flag = false;
-																}															
 														}
 												}
 																						
@@ -1327,25 +1330,20 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									if (!IsJSONParameterConcise (root_p))
 										{
 											description_s = GetStringValue (root_p, PARAM_DESCRIPTION_S);
-											
-											if (description_s)
-												{
-													display_name_s = GetStringValue (root_p, PARAM_DISPLAY_NAME_S);
+											display_name_s = GetStringValue (root_p, PARAM_DISPLAY_NAME_S);
 
-													if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+											if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+												{
+													if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
 														{
-															if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+															if (GetParameterBoundsFromJSON (root_p, &bounds_p))
 																{
-																	if (GetParameterBoundsFromJSON (root_p, &bounds_p))
-																		{											
-																			success_flag = true;
-																		}
-																		
-																}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */		
+																	success_flag = true;
+																}
 																
-														}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
-													
-												}		/* if (description_s) */
+														}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */
+
+												}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
 										}
 									else
 										{

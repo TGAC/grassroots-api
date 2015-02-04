@@ -20,12 +20,18 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 	for (int i = 0; i < num_options; ++ i, ++ option_p)
 		{
 			char *option_s = option_p -> pmo_description_s;
+			QString display_str;
 			QVariant *v_p;
 
 			switch (bpw_param_p -> pa_type)
 				{
 				case PT_STRING:
 					v_p = new QVariant (option_p -> pmo_value.st_string_value_s);
+					if (!option_s)
+						{
+							option_s =	option_p -> pmo_value.st_string_value_s;
+						}
+					display_str = QString (option_s);
 					break;
 
 					default:
@@ -34,7 +40,7 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 
 			if (v_p)
 				{
-					pcb_combo_box_p -> insertItem (i, QString (option_s), *v_p);
+					pcb_combo_box_p -> insertItem (i, display_str, *v_p);
 					delete v_p;
 				}
 		}

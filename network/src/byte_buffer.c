@@ -95,14 +95,14 @@ bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...)
 	bool loop_flag = true;
 	va_list args;
 	va_start (args, value_s);
+	char *arg_s = value_s;
 
 	while (success_flag && loop_flag)
 		{
-			char *arg_s = va_arg (args, char *);
-
 			if (arg_s)
 				{
 					success_flag = AppendToByteBuffer (buffer_p, arg_s, strlen (arg_s));
+					arg_s = va_arg (args, char *);
 				}
 			else
 				{

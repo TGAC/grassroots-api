@@ -8,9 +8,12 @@
 
 #include "string_utils.h"
 #include "memory_allocations.h"
+#include "byte_buffer.h"
 
 
-static QueryResults *GetAllMetadataAttributes (rcComm_t *connection_p, const int col_id);
+static QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const int col_id);
+
+static QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id);
 
 static const columnName_t *GetColumnById (const int id);
 
@@ -81,21 +84,27 @@ void ClearGenQuery (genQueryInp_t *query_p)
 }
 
 
-QueryResults *GetAllMetadataDataAttributes (rcComm_t *connection_p)
+QueryResults *GetAllMetadataDataAttributeNames (rcComm_t *connection_p)
 {
-	return GetAllMetadataAttributes (connection_p, COL_META_DATA_ATTR_NAME);
+	return GetAllMetadataAttributeNames (connection_p, COL_META_DATA_ATTR_NAME);
 }
 
 
-QueryResults *GetAllMetadataCollectionAttributes (rcComm_t *connection_p)
+QueryResults *GetAllMetadataDataAttributeValues (rcComm_t *connection_p, const char * const name_s)
 {
-	return GetAllMetadataAttributes (connection_p, COL_META_COLL_ATTR_NAME);
+	return GetAllMetadataAttributeValues (connection_p, COL_META_DATA_ATTR_NAME, name_s, COL_META_DATA_ATTR_VALUE);
 }
 
 
-QueryResults *GetAllMetadataUserAttributes (rcComm_t *connection_p)
+QueryResults *GetAllMetadataCollectionAttributeNames (rcComm_t *connection_p)
 {
-	return GetAllMetadataAttributes (connection_p, COL_META_USER_ATTR_NAME);
+	return GetAllMetadataAttributeNames (connection_p, COL_META_COLL_ATTR_NAME);
+}
+
+
+QueryResults *GetAllMetadataUserAttributeNames (rcComm_t *connection_p)
+{
+	return GetAllMetadataAttributeNames (connection_p, COL_META_USER_ATTR_NAME);
 }
 
 
@@ -692,7 +701,7 @@ void ClearQueryResult (QueryResult *result_p)
 
 
 
-static QueryResults *GetAllMetadataAttributes (rcComm_t *connection_p, const int col_id)
+static QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const int col_id)
 {
 	QueryResults *results_p = NULL;
 	const char *col_s = GetColumnNameForId (col_id);
@@ -713,6 +722,42 @@ static QueryResults *GetAllMetadataAttributes (rcComm_t *connection_p, const int
 					FreeCopiedString (query_s);
 				}
 		}
+
+	return results_p;
+}
+
+
+static QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id)
+{
+	QueryResults *results_p = NULL;
+	const char *key_col_s = GetColumnNameForId (key_id);
+
+	if (key_col_s)
+		{
+			const char *value_col_s = GetColumnNameForId (value_id);
+
+			if (value_col_s)
+				{
+					ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+					if (buffer_p)
+						{
+							if (AppendStringsToByteBuffer (buffer_p, "SELECT ", value_col_s, " WHERE ", key_col_s, " = '", key_s, "';", NULL))
+								{
+									genQueryOut_t *out_p = ExecuteQueryString (connection_p, (char *) GetByteBufferData (buffer_p));
+
+									if (out_p)
+										{
+											results_p  = GenerateQueryResults (out_p);
+										}
+
+								}
+							FreeByteBuffer (buffer_p);
+						}
+
+				}		/* if (value_col_s) */
+
+		}		/* if (key_col_s) */
 
 	return results_p;
 }

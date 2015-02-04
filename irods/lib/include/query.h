@@ -99,13 +99,16 @@ IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlR
 IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
 
 
-IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributes (rcComm_t *connection_p);
+IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeNames (rcComm_t *connection_p);
 
 
-IRODS_UTIL_API QueryResults *GetAllMetadataCollectionAttributes (rcComm_t *connection_p);
+IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeValues (rcComm_t *connection_p, const char * const names_s);
 
 
-IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributes (rcComm_t *connection_p);
+IRODS_UTIL_API QueryResults *GetAllMetadataCollectionAttributeNames (rcComm_t *connection_p);
+
+
+IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributeNames (rcComm_t *connection_p);
 
 
 #ifdef __cplusplus

@@ -9,7 +9,7 @@
 
 #include "query.h"
 #include "connect.h"
-
+#include "streams.h"
 
 /*
  * STATIC DATATYPES
@@ -21,6 +21,8 @@ typedef struct
 	ParameterSet *issd_params_p;
 } IrodsSearchServiceData;
 
+
+static const char S_UNSET_VALUE_S [] = "<NONE>";
 
 /*
  * STATIC PROTOTYPES
@@ -45,7 +47,9 @@ static bool CloseIrodsSearchService (Service *service_p);
 
 static rcComm_t *GetIRODSConnection (const json_t *config_p);
 
-static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (rcComm_t *connection_p), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (rcComm_t *connection_p), QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+
+static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p);
 
@@ -69,15 +73,12 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 
 					if (params_p)
 						{
-							if (AddParam (connection_p, GetAllMetadataDataAttributes, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects"))
+							if (AddParams (connection_p, GetAllMetadataDataAttributeNames, GetAllMetadataDataAttributeValues, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
 								{
-									if (AddParam (connection_p, GetAllMetadataCollectionAttributes, params_p, "Collections metadata", NULL, "The metadata tags available for iRODS collections"))
-										{
-											data_p -> issd_connection_p = connection_p;
-											data_p -> issd_params_p = params_p;
+									data_p -> issd_connection_p = connection_p;
+									data_p -> issd_params_p = params_p;
 
-											return data_p;
-										}
+									return data_p;
 								}
 
 							FreeParameterSet (params_p);
@@ -185,9 +186,13 @@ static rcComm_t *GetIRODSConnection (const json_t *config_p)
 
 
 
-static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (rcComm_t *connection_p), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (rcComm_t *connection_p), QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
-	bool success_flag = false;
+	size_t res = 0;
+
+	/*
+	 * Get the attibute keys
+	 */
 	QueryResults *results_p = get_metadata_fn (connection_p);
 
 	if (results_p)
@@ -196,18 +201,56 @@ static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (
 				{
 					QueryResult *result_p = results_p -> qr_values_p;
 					int i = result_p -> qr_num_values;
-					SharedType *param_options_p = (SharedType *) AllocMemoryArray (i, sizeof (SharedType));
+					char **value_ss = result_p -> qr_values_pp;
+
+					for ( ; i > 0; --i, ++ value_ss)
+						{
+							if (AddParam (connection_p, get_metadata_values_fn, param_set_p, *value_ss, NULL, NULL))
+								{
+									++ res;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to get metadata values for \"%s\"\n", *value_ss);
+								}
+						}
+
+				}		/* if (results_p -> qr_num_results == 1) */
+
+			 FreeQueryResults (results_p);
+		}		/* if (results_p) */
+
+	return res;
+}
+
+
+static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+{
+	bool success_flag = false;
+
+	/*
+	 * Get the attibute values
+	 */
+	QueryResults *results_p = get_metadata_values_fn (connection_p, name_s);
+
+	if (results_p)
+		{
+			if (results_p -> qr_num_results == 1)
+				{
+					QueryResult *result_p = results_p -> qr_values_p;
+					const int num_opts = (result_p -> qr_num_values) + 1;
+					SharedType *param_options_p = (SharedType *) AllocMemoryArray (num_opts, sizeof (SharedType));
 
 					if (param_options_p)
 						{
 							char **value_ss = result_p -> qr_values_pp;
 							SharedType *option_p = param_options_p;
 							ParameterMultiOptionArray *options_array_p = NULL;
-
+							int i = num_opts;
 							success_flag = true;
 
 							/* Copy all of the values into our options array */
-							while (success_flag && (i > 0))
+							while (success_flag && (i > 1))
 								{
 									option_p -> st_string_value_s = CopyToNewString (*value_ss, 0, false);
 
@@ -223,11 +266,19 @@ static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (
 										}
 								}
 
+							/* Add the empty option */
+							if (success_flag)
+								{
+									option_p -> st_string_value_s = CopyToNewString (S_UNSET_VALUE_S, 0, false);
+
+									success_flag = (option_p -> st_string_value_s != NULL);
+								}
+
 
 							if (success_flag)
 								{
 									success_flag = false;
-									options_array_p = AllocateParameterMultiOptionArray (result_p -> qr_num_values, NULL, param_options_p, PT_STRING);
+									options_array_p = AllocateParameterMultiOptionArray (num_opts, NULL, param_options_p, PT_STRING);
 
 									if (options_array_p)
 										{
@@ -269,6 +320,7 @@ static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (
 
 	return success_flag;
 }
+
 
 
 /*
