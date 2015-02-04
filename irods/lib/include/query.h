@@ -96,6 +96,7 @@ IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlR
 //IRODS_UTIL_LOCAL const columnName_t *GetColumnById (const int id);
 
 
+
 IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
 
 

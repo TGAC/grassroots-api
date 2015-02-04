@@ -13,6 +13,14 @@
 
 #include "linked_list.h"
 #include "typedefs.h"
+#include "query.h"
+
+
+typedef struct IrodsSearch
+{
+	LinkedList *is_search_terms_p;
+} IrodsSearch;
+
 
 typedef struct SearchTerm
 {
@@ -36,13 +44,23 @@ extern "C"
 #endif
 
 
-IRODS_UTIL_API SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
+IRODS_UTIL_API IrodsSearch *AllocateIrodsSearch (void);
+
+
+IRODS_UTIL_API void FreeIrodsSearch (IrodsSearch *search_p);
+
+
+IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p);
+
+
+IRODS_UTIL_API bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
 
 
 IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p);
 
 
 IRODS_UTIL_API int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 num_columns, const char **search_tags_pp, bool upper_case_flag, char * const zone_s);
+
 
 
 #ifdef __cplusplus

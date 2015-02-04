@@ -10,6 +10,8 @@
 #include "query.h"
 #include "connect.h"
 #include "streams.h"
+#include "meta_search.h"
+
 
 /*
  * STATIC DATATYPES
@@ -39,8 +41,6 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 
 static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
-
-static int IrodsSearch (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
 
 static bool CloseIrodsSearchService (Service *service_p);
 
@@ -361,20 +361,49 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 {
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *res_json_p = NULL;
-	SharedType input_resource;
-	
-	res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, NULL);
+	IrodsSearch *search_p = AllocateIrodsSearch ();
+
+	if (search_p)
+		{
+			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+			bool success_flag = true;
+			const char *clause_s = NULL;
+			json_t *query_results_json_p = NULL;
+
+			while (node_p && success_flag)
+				{
+					Parameter *param_p = node_p -> pn_parameter_p;
+
+					success_flag = AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, "=", param_p -> pa_current_value.st_string_value_s);
+
+					if (success_flag)
+						{
+							node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+
+							if (clause_s == NULL)
+								{
+									clause_s = "AND";
+								}
+						}
+				}
+
+			if (success_flag)
+				{
+					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
+					QueryResults *results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+
+					if (results_p)
+						{
+							query_results_json_p = GetQueryResultAsJSON (results_p);
+						}
+				}
+
+			FreeIrodsSearch (search_p);
+
+			res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, query_results_json_p);
+		}		/* if (search_p) */
 
 	return res_json_p;
-}
-
-
-static int IrodsSearch (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p)
-{
-	int res = 0;
-
-	
-	return res;
 }
 
 

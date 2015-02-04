@@ -10,9 +10,125 @@
 
 static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p);
 
+static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
+
+static void FreeSearchTermNode (ListItem *node_p);
 
 
-SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
+
+IrodsSearch *AllocateIrodsSearch (void)
+{
+	LinkedList *list_p = AllocateLinkedList (FreeSearchTermNode);
+
+	if (list_p)
+		{
+			IrodsSearch *search_p = (IrodsSearch *) AllocMemory (sizeof (IrodsSearch));
+
+			if (search_p)
+				{
+					search_p -> is_search_terms_p = list_p;
+
+					return search_p;
+				}
+
+			FreeLinkedList (list_p);
+		}		/* if (list_p) */
+
+	return NULL;
+}
+
+
+void FreeIrodsSearch (IrodsSearch *search_p)
+{
+	FreeLinkedList (search_p -> is_search_terms_p);
+	FreeMemory (search_p);
+}
+
+
+QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
+{
+	QueryResults *results_p = NULL;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+	if (buffer_p)
+		{
+			SearchTermNode *node_p = (SearchTermNode *) (search_p -> is_search_terms_p -> ll_head_p);
+			bool success_flag = true;
+
+			while (node_p && success_flag)
+				{
+					SearchTerm *term_p = & (node_p -> stn_term);
+
+					if (term_p -> st_clause_s)
+						{
+							success_flag = AppendStringsToByteBuffer (buffer_p, " ", term_p -> st_clause_s, NULL);
+						}
+
+					if (success_flag)
+						{
+							success_flag = AppendStringsToByteBuffer (buffer_p, " ", term_p -> st_key_s, " ", term_p -> st_op_s, " '", term_p -> st_value_s, "'", NULL);
+						}
+
+					if (success_flag)
+						{
+							node_p = (SearchTermNode *) (node_p -> stn_node.ln_next_p);
+						}
+
+				}		/* while (node_p && success_flag) */
+
+
+			if (success_flag)
+				{
+					const char terminator_s [] = ";";
+
+					if (AppendToByteBuffer (buffer_p, terminator_s, strlen (terminator_s)))
+						{
+							const char *sql_s = GetByteBufferData (buffer_p);
+							genQueryOut_t *out_p = ExecuteQueryString (connection_p, (char *) sql_s);
+
+							if (out_p)
+								{
+									results_p  = GenerateQueryResults (out_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to execute irods meta search \"%s\"\n", sql_s);
+								}
+
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to terminate search buffer\n");
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to fill in search buffer \"%s\"\n", GetByteBufferData (buffer_p));
+				}
+
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
+
+	return results_p;
+}
+
+
+bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
+{
+	bool success_flag = false;
+	SearchTermNode *node_p = AllocateSearchTermNode (clause_s, key_s, op_s, value_s);
+
+	if (node_p)
+		{
+			LinkedListAddTail (search_p -> is_search_terms_p, (ListItem *) node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
 {
 	SearchTermNode *node_p = (SearchTermNode *) AllocMemory (sizeof (SearchTermNode));
 
@@ -77,6 +193,12 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
 		}
 
 	return res;
+}
+
+
+static void FreeSearchTermNode (ListItem *node_p)
+{
+	FreeMemory (node_p);
 }
 
 
