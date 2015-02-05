@@ -37,6 +37,7 @@ INCLUDES = \
 SRCS 	= \
 	file_output_stream.c \
 	filesystem_utils.c \
+	hash_table.c \
 	io_utils.c  \
 	json_util.c \
 	linked_list.c \
@@ -44,6 +45,7 @@ SRCS 	= \
 	math_utils.c \
 	plugin.c \
 	streams.c \
+	string_hash_table.c \
 	string_linked_list.c \
 	string_utils.c \
 	time_util.c \

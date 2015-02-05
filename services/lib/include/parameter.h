@@ -9,6 +9,7 @@
 #include "wheatis_service_library.h"
 #include "tags.h"
 #include "resource.h"
+#include "hash_table.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -168,7 +169,7 @@ typedef struct Parameter
 	
 	uint32 pa_tag;
 
-
+	HashTable *pa_store_p;
 } Parameter;
 
 
@@ -220,6 +221,15 @@ WHEATIS_SERVICE_API const char *CheckForNotNull (const Parameter * const paramet
 
 
 WHEATIS_SERVICE_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
+
+
+WHEATIS_SERVICE_API bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s);
+
+
+WHEATIS_SERVICE_API void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s);
+
+
+WHEATIS_SERVICE_API const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s);
 
 
 /**

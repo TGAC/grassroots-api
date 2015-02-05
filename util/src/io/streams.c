@@ -74,6 +74,30 @@ void FreeOutputStream (struct OutputStream *stream_p)
 }
 
 
+int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...)
+{
+	int result = -1;
+
+	va_list args;
+
+	va_start (args, message_s);
+
+	if (stream_p)
+		{
+			result = stream_p -> st_print_fn (stream_p, STM_LEVEL_ALL, message_s, args);
+		}
+	else
+		{
+			result = vfprintf (stdout, message_s, args);
+		}
+
+	va_end (args);
+
+	return result;
+}
+
+
+
 /**
  * Print to the error FILE. If this has not
  * previously been set, it will default to stderr.

@@ -5,6 +5,7 @@
 #include "memory_allocations.h"
 #include "parameter.h"
 #include "string_utils.h"
+#include "math_utils.h"
 #include "service.h"
 
 #include "query.h"
@@ -25,6 +26,10 @@ typedef struct
 
 
 static const char S_UNSET_VALUE_S [] = "<NONE>";
+
+static const char S_KEY_ID_S [] = "key column id";
+static const char S_VALUE_ID_S [] = "value column id";
+
 
 /*
  * STATIC PROTOTYPES
@@ -57,6 +62,9 @@ static void ReleaseIrodsSearchServiceParameters (Service *service_p, ParameterSe
 
 static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p);
 
+static bool GetColumnId (const Parameter * const param_p, const char *key_s, int *id_p);
+
+static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, rcComm_t *connection_p);
 
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p)
@@ -357,6 +365,27 @@ static void ReleaseIrodsSearchServiceParameters (Service *service_p, ParameterSe
 }
 
 
+static bool GetColumnId (const Parameter * const param_p, const char *key_s, int *id_p)
+{
+	bool success_flag = false;
+	const char *column_s = GetParameterKeyValue (param_p, key_s);
+
+	if (column_s)
+		{
+			int i;
+
+			if (GetValidInteger (&column_s, &i))
+				{
+					*id_p = i;
+					success_flag = true;
+				}
+
+		}		/* if (column_s) */
+
+	return success_flag;
+}
+
+
 static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	OperationStatus res = OS_FAILED_TO_START;
@@ -373,8 +402,28 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 			while (node_p && success_flag)
 				{
 					Parameter *param_p = node_p -> pn_parameter_p;
+					int key_id;
 
-					success_flag = AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, "=", param_p -> pa_current_value.st_string_value_s);
+					if (GetColumnId (param_p, S_KEY_ID_S, &key_id))
+						{
+							int value_id;
+
+							if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
+								{
+									if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_display_name_s, key_id, "=", param_p -> pa_current_value.st_string_value_s, value_id))
+										{
+											success_flag = false;
+										}
+								}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
+							else
+								{
+									success_flag = false;
+								}
+						}		/* if (GetColumnId (param_p, S_KEY_ID_S, &key_id)) */
+					else
+						{
+							success_flag = false;
+						}
 
 					if (success_flag)
 						{
@@ -390,7 +439,10 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 			if (success_flag)
 				{
 					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
-					QueryResults *results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+					QueryResults *results_p = NULL;
+
+					//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+					results_p = DoIrodsMetaSearch (search_p, data_p -> issd_connection_p);
 
 					if (results_p)
 						{
@@ -404,6 +456,17 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 		}		/* if (search_p) */
 
 	return res_json_p;
+}
+
+
+static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, rcComm_t *connection_p)
+{
+	bool upper_case_flag = true;
+	char *zone_s = NULL;
+	int columns [] = { COL_COLL_NAME, COL_DATA_NAME };
+	QueryResults *results_p = DoMetaSearch (search_p,  connection_p, columns, 2, upper_case_flag, zone_s);
+
+	return results_p;
 }
 
 

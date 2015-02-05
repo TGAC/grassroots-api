@@ -116,7 +116,6 @@ bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...)
 }
 
 
-
 void ResetByteBuffer (ByteBuffer *buffer_p)
 {
 	buffer_p -> bb_current_index = 0;

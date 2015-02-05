@@ -60,6 +60,7 @@ PREFIX const char *PARAM_NAME_S VAL("param");
 PREFIX const char *PARAM_DISPLAY_NAME_S VAL("name");
 PREFIX const char *PARAM_CONCISE_DEFINITION_S VAL("concise");
 PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
+PREFIX const char *PARAM_STORE_S VAL("store");
 PREFIX const char *PARAM_TAG_S VAL("tag");
 PREFIX const char *PARAM_TYPE_S VAL("type");
 PREFIX const char *PARAM_WHEATIS_TYPE_INFO_S VAL("wheatis_type");

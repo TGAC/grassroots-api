@@ -6,11 +6,12 @@
 #include "meta_search.h"
 #include "streams.h"
 #include "memory_allocations.h"
+#include "string_utils.h"
 
 
 static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p);
 
-static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
+static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id);
 
 static void FreeSearchTermNode (ListItem *node_p);
 
@@ -49,7 +50,6 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
 {
 	QueryResults *results_p = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
 
 
 	if (buffer_p)
@@ -115,10 +115,10 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
 }
 
 
-bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
+bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id)
 {
 	bool success_flag = false;
-	SearchTermNode *node_p = AllocateSearchTermNode (clause_s, key_s, op_s, value_s);
+	SearchTermNode *node_p = AllocateSearchTermNode (clause_s, key_s, key_id, op_s, value_s, value_id);
 
 	if (node_p)
 		{
@@ -130,19 +130,98 @@ bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char
 }
 
 
-static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
+
+static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id)
 {
 	SearchTermNode *node_p = (SearchTermNode *) AllocMemory (sizeof (SearchTermNode));
 
 	if (node_p)
 		{
+			ByteBuffer *buffer_p = NULL;
+			bool success_flag = true;
+
 			node_p -> stn_node.ln_prev_p = node_p -> stn_node.ln_next_p = NULL;
 
 			node_p -> stn_term.st_clause_s = clause_s;
 			node_p -> stn_term.st_key_s = key_s;
+			node_p -> stn_term.st_key_column_id = key_id;
 			node_p -> stn_term.st_op_s = op_s;
 			node_p -> stn_term.st_value_s = value_s;
-		}
+			node_p -> stn_term.st_value_column_id = value_id;
+
+			if (key_s)
+				{
+					buffer_p = AllocateByteBuffer (1024);
+
+					if (buffer_p)
+						{
+							if (AppendStringsToByteBuffer (buffer_p, "='", key_s, "'", NULL))
+								{
+									node_p -> stn_term.st_key_buffer_s = CopyToNewString (GetByteBufferData (buffer_p), 0, false);
+
+									success_flag = (node_p -> stn_term.st_key_buffer_s != NULL);
+								}
+							else
+								{
+									success_flag = false;
+								}
+
+						}		/* if (buffer_p) */
+					else
+						{
+							success_flag = false;
+						}
+
+				}		/* if (key_s) */
+
+
+			if (success_flag)
+				{
+					if (value_s && op_s)
+						{
+							if (buffer_p)
+								{
+									ResetByteBuffer (buffer_p);
+								}
+							else
+								{
+									buffer_p = AllocateByteBuffer (1024);
+								}
+
+							if (buffer_p)
+								{
+									if (AppendStringsToByteBuffer (buffer_p, op_s, " '", value_s, "'", NULL))
+										{
+											node_p -> stn_term.st_value_buffer_s = CopyToNewString (GetByteBufferData (buffer_p), 0, false);
+
+											success_flag = (node_p -> stn_term.st_value_buffer_s != NULL);
+										}
+									else
+										{
+											success_flag = false;
+										}
+
+								}		/* if (buffer_p) */
+							else
+								{
+									success_flag = false;
+								}
+
+						}		/* if (key_s) */
+
+				}		/* if (success_flag) */
+
+			if (!success_flag)
+				{
+					FreeSearchTermNode ((ListItem *) node_p);
+					node_p = NULL;
+				}
+
+			if (buffer_p)
+				{
+					FreeByteBuffer (buffer_p);
+				}
+		}		/* if (node_p) */
 
 	return node_p;
 }
@@ -200,6 +279,18 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
 
 static void FreeSearchTermNode (ListItem *node_p)
 {
+	SearchTermNode *search_node_p = (SearchTermNode *) node_p;
+
+	if (search_node_p -> stn_term.st_key_buffer_s)
+		{
+			FreeCopiedString (search_node_p -> stn_term.st_key_buffer_s);
+		}
+
+	if (search_node_p -> stn_term.st_value_buffer_s)
+		{
+			FreeCopiedString (search_node_p -> stn_term.st_value_buffer_s);
+		}
+
 	FreeMemory (node_p);
 }
 
@@ -220,35 +311,59 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
 				{
 					const char *key_s = json_string_value (child_json_p);
 
-					child_json_p = json_object_get (json_p, "value");
+					child_json_p = json_object_get (json_p, "key_id");
 
-					if (child_json_p && json_is_string (child_json_p))
+					if (child_json_p && json_is_integer (child_json_p))
 						{
-							const char *value_s = json_string_value (child_json_p);
-							const char *clause_s = NULL;
+							int key_id = json_integer_value (child_json_p);
 
-							child_json_p = json_object_get (json_p, "clause");
+							child_json_p = json_object_get (json_p, "value");
 
 							if (child_json_p && json_is_string (child_json_p))
 								{
-									clause_s = json_string_value (child_json_p);
-								}
+									const char *value_s = json_string_value (child_json_p);
 
-							node_p = AllocateSearchTermNode (clause_s, key_s, op_s, value_s);
+									child_json_p = json_object_get (json_p, "value_id");
 
-							if (node_p)
-								{
-									LinkedListAddTail (terms_p, & (node_p -> stn_node));
-									success_flag = true;
+									if (child_json_p && json_is_integer (child_json_p))
+										{
+											int value_id = json_integer_value (child_json_p);
+											const char *clause_s = NULL;
+
+											child_json_p = json_object_get (json_p, "clause");
+
+											if (child_json_p && json_is_string (child_json_p))
+												{
+													clause_s = json_string_value (child_json_p);
+												}
+
+											node_p = AllocateSearchTermNode (clause_s, key_s, key_id, op_s, value_s, value_id);
+
+											if (node_p)
+												{
+													LinkedListAddTail (terms_p, & (node_p -> stn_node));
+													success_flag = true;
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, "Failed to allocate search term node\n");
+												}
+
+										}		/* if (child_json_p && json_is_integer (child_json_p)) */
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Failed to get search term value column id from json\n");
+										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to allocate search term node\n");
+									PrintErrors (STM_LEVEL_WARNING, "Failed to get search term value from json\n");
 								}
-						}
+
+						}		/* if (child_json_p && json_is_integer (child_json_p)) */
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to get search term value from json\n");
+							PrintErrors (STM_LEVEL_WARNING, "Failed to get search term key column id from json\n");
 						}
 				}
 			else
@@ -273,125 +388,119 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
  1903  imeta au -d crop = wheat
  1904  imeta qu -d crop = wheat
  1905  imeta qu -d crop =  barley
-
  *
  */
-int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 num_columns, const char **search_tags_pp, bool upper_case_flag, char * const zone_s)
+QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s)
 {
-	#define CLAUSE_SIZE (20)
-#define BIG_STR (300)
+	QueryResults *results_p = NULL;
   genQueryInp_t input_query;
   genQueryOut_t *query_output_p = NULL;
-  int i1a[CLAUSE_SIZE];
-  int i1b[CLAUSE_SIZE];
-  int i2a[CLAUSE_SIZE];
-  char *condVal[CLAUSE_SIZE];
-  char v1[BIG_STR];
-  char v2[BIG_STR];
-  char v3[BIG_STR];
 
-  ByteBuffer *condition_values_p;
+	/*
+	 * Set up the SELECT criteria
+	 */
+	int *select_options_p = (int *) AllocMemoryArray (num_select_columns, sizeof (int));
 
-  ByteBuffer *v1_p;
-  ByteBuffer *v2_p;
-  ByteBuffer *v3_p;
+	if (select_options_p)
+		{
+			const uint32 num_clauses = search_p -> is_search_terms_p -> ll_size;
 
-  int status;
-  //char *columnNames[]={"collection", "dataObj"};
-  int cmdIx;
-  int condIx;
-  char vstr[CLAUSE_SIZE] [BIG_STR];
-  uint32 i;
+			memset (&input_query, 0, sizeof (genQueryInp_t));
 
-  memset (&input_query, 0, sizeof (genQueryInp_t));
+			input_query.selectInp.inx = select_column_ids_p;
+			input_query.selectInp.value = select_options_p;
+			input_query.selectInp.len = num_select_columns;
 
-  if (upper_case_flag)
-  	{
-  		input_query.options = UPPER_CASE_WHERE;
-  	}
+			if (num_clauses > 0)
+				{
+					/*
+					 * Set up the WHERE criteria
+					 */
+					int *where_options_p = (int *) AllocMemoryArray (num_clauses << 1, sizeof (int));
 
-  memcpy (i1a, column_ids_p, num_columns * sizeof (int));
-  memset (i1b, 0, num_columns * sizeof (int));
+					if (where_options_p)
+						{
+							ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
-  input_query.selectInp.inx = i1a;
-  input_query.selectInp.value = i1b;
-  input_query.selectInp.len = num_columns;
+							if (buffer_p)
+								{
+									char **conditions_ss = (char **) AllocMemoryArray (num_clauses << 1, sizeof (char *));
 
-  i2a[0]=COL_META_DATA_ATTR_NAME;
+									if (conditions_ss)
+										{
+											SearchTermNode *node_p = (SearchTermNode *) (search_p -> is_search_terms_p -> ll_head_p);
+											int *where_p = where_options_p;
+											char **condition_ss = conditions_ss;
+											int status = 0;
 
-  if (AppendStringsToByteBuffer (v1_p, "='", search_tags_pp [2], "'", NULL))
-  	{
-  	  if (AppendStringsToByteBuffer (v2_p, search_tags_pp [3], " '", search_tags_pp [4], "'", NULL))
-  	  	{
+											/*
+											 * Add the initial condition
+											 */
+											*where_p = node_p -> stn_term.st_key_column_id;
+											*condition_ss = node_p -> stn_term.st_key_buffer_s;
 
-  	  	}
+											* (++ where_p) = node_p -> stn_term.st_value_column_id;
+											* (++ condition_ss) = node_p -> stn_term.st_value_buffer_s;
 
-  	}
+											node_p = (SearchTermNode *) (node_p -> stn_node.ln_next_p);
 
-  condVal[0]=v1;
+											while (node_p)
+												{
+													/* The key clause */
+													* (++ where_p) = node_p -> stn_term.st_key_column_id;
+													* (++ condition_ss) = node_p -> stn_term.st_key_buffer_s;
 
-  i2a[1]=COL_META_DATA_ATTR_VALUE;
-  condVal[1]=v2;
+													* (++ where_p) = node_p -> stn_term.st_value_column_id;
+													* (++ condition_ss) = node_p -> stn_term.st_value_buffer_s;
 
-  input_query.sqlCondInp.inx = i2a;
-  input_query.sqlCondInp.value = condVal;
-  input_query.sqlCondInp.len = num_columns;
-
-  if (strcmp(search_tags_pp[5], "or")==0)
-  	{
-  		if (AppendStringsToByteBuffer (v2_p, "|| ", search_tags_pp [6], "'", search_tags_pp [7], "'", NULL))
-  			{
-
-  			}
-  }
+													node_p = (SearchTermNode *) (node_p -> stn_node.ln_next_p);
+												}
 
 
+											input_query.sqlCondInp.inx = where_options_p;
+											input_query.sqlCondInp.value = conditions_ss;
+											input_query.sqlCondInp.len = num_clauses << 1;
 
-  cmdIx = 5;
-  condIx = 2;
-  while (strcmp(search_tags_pp[cmdIx], "and")==0) {
-     i2a[condIx]=COL_META_DATA_ATTR_NAME;
-     cmdIx++;
-     snprintf(vstr[condIx],BIG_STR,"='%s'", search_tags_pp[cmdIx]);
-     condVal[condIx]=vstr[condIx];
-     condIx++;
+											/*
+											 * Add extra options if needed
+											 */
+											if (upper_case_flag)
+												{
+													input_query.options = UPPER_CASE_WHERE;
+												}
 
-     i2a[condIx]=COL_META_DATA_ATTR_VALUE;
-     snprintf(vstr[condIx], BIG_STR,
-	       "%s '%s'", search_tags_pp[cmdIx+1], search_tags_pp[cmdIx+2]);
-     cmdIx+=3;
-     condVal[condIx]=vstr[condIx];
-     condIx++;
-     input_query.sqlCondInp.len+=2;
-  }
+											if (zone_s)
+												{
+													addKeyVal (&input_query.condInput, ZONE_KW, zone_s);
+												}
 
-  if (*search_tags_pp[cmdIx] != '\0') {
-     printf("Unrecognized input\n");
-     return(-2);
-  }
+											input_query.maxRows = 10;
+											input_query.continueInx = 0;
+											input_query.condInput.len = 0;
 
-  input_query.maxRows=10;
-  input_query.continueInx=0;
-  input_query.condInput.len=0;
+											/* Do the search */
+											status = rcGenQuery (connection_p, &input_query, &query_output_p);
 
-  if (zone_s)
-  	{
-  		addKeyVal (&input_query.condInput, ZONE_KW, zone_s);
-  	}
+											if (status == 0)
+												{
+													results_p = GenerateQueryResults (query_output_p);
+												}		/* if (status == 0) */
 
-  status = rcGenQuery (connection_p, &input_query, &query_output_p);
+											FreeMemory (conditions_ss);
+										}		/* if (conditions_ss) */
 
-  //printGenQueryResults(Conn, status, genQueryOut, columnNames);
+									FreeByteBuffer (buffer_p);
+								}		/* if (buffer_p) */
 
-  while (status==0 && query_output_p->continueInx > 0) {
-  		input_query.continueInx=query_output_p->continueInx;
-     status = rcGenQuery(connection_p, &input_query, &query_output_p);
-     if (query_output_p->rowCnt>0) printf("----\n");
-     //printQueryResults(connection_p, status, query_output_p, NULL);
-  }
+							FreeMemory (where_options_p);
+						}		/* if (where_options_p) */
 
-  return (0);
+				}		/* if (num_clauses > 0) */
 
+			FreeMemory (select_options_p);
+		}		/* if (select_options_p) */
+
+	return results_p;
 }
 
 

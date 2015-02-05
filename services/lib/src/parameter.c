@@ -6,6 +6,7 @@
 #include "parameter.h"
 #include "math_utils.h"
 #include "string_utils.h"
+#include "string_hash_table.h"
 
 #include "json_util.h"
 
@@ -36,6 +37,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p);
 
+static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p);
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
@@ -44,6 +46,8 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp);
 
 static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
+
+static bool *GetParameterStoreFromJSON (const json_t * const json_p, HashTable *store_p);
 
 
 
@@ -74,25 +78,34 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 					
 					if (success_flag)
 						{
-							Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
+							HashTable *store_p = GetHashTableOfStrings (8, 75);
 
-							if (param_p)
+							if (store_p)
 								{
-									param_p -> pa_type = type;
-									param_p -> pa_name_s = new_name_s;
-									param_p -> pa_display_name_s = new_display_name_s;
-									param_p -> pa_description_s = new_description_s;
-									param_p -> pa_options_p = options_p;
-									param_p -> pa_check_value_fn = check_value_fn;
-									param_p -> pa_default = default_value;
-									param_p -> pa_bounds_p = bounds_p;
-									param_p -> pa_level = level;
-									param_p -> pa_tag = tag;
-									
-									memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
-									
-									return param_p;
-								}		/* if (param_p) */
+									Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
+
+									if (param_p)
+										{
+											param_p -> pa_type = type;
+											param_p -> pa_name_s = new_name_s;
+											param_p -> pa_display_name_s = new_display_name_s;
+											param_p -> pa_description_s = new_description_s;
+											param_p -> pa_options_p = options_p;
+											param_p -> pa_check_value_fn = check_value_fn;
+											param_p -> pa_default = default_value;
+											param_p -> pa_bounds_p = bounds_p;
+											param_p -> pa_level = level;
+											param_p -> pa_tag = tag;
+											param_p -> pa_store_p = store_p;
+
+											memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
+
+											return param_p;
+										}		/* if (param_p) */
+
+									FreeHashTable (store_p);
+								}		/* if (store_p) */
+
 						}
 						
 					if (new_display_name_s)
@@ -136,6 +149,9 @@ void FreeParameter (Parameter *param_p)
 		{
 			FreeParameterBounds (param_p -> pa_bounds_p, param_p -> pa_type);
 		}
+
+
+	FreeHashTable (param_p -> pa_store_p);
 
 	FreeMemory (param_p);
 }
@@ -392,6 +408,24 @@ int CompareParameterLevels (const ParameterLevel pl0, const ParameterLevel pl1)
 }
 
 
+bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s)
+{
+	return PutInHashTable (parameter_p -> pa_store_p, key_s, value_s);
+}
+
+
+void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s)
+{
+	RemoveFromHashTable (parameter_p -> pa_store_p, key_s);
+}
+
+
+const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s)
+{
+	return ((const char *) GetFromHashTable (parameter_p -> pa_store_p, key_s));
+}
+
+
 bool SetParameterValue (Parameter * const param_p, const void *value_p)
 {
 	bool success_flag = false;
@@ -544,9 +578,12 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 																		{
 																			if (AddParameterOptionsToJSON (parameter_p, root_p))
 																				{
-																					if (AddParameterBoundsToJSON (parameter_p, root_p))
+																					if (AddParameterStoreToJSON (parameter_p, root_p))
 																						{
-																							success_flag = true;
+																							if (AddParameterBoundsToJSON (parameter_p, root_p))
+																								{
+																									success_flag = true;
+																								}
 																						}
 																				}
 																		}
@@ -635,6 +672,63 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 	#endif
 
 	return success_flag;	
+}
+
+
+static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = true;
+	uint32 i = GetHashTableSize (param_p -> pa_store_p);
+
+	if (i > 0)
+		{
+			void **keys_pp = GetKeysIndexFromHashTable (param_p -> pa_store_p);
+
+			if (keys_pp)
+				{
+					json_t *store_json_p = json_object ();
+
+					if (store_json_p)
+						{
+							void **key_pp = keys_pp;
+
+							while (success_flag && (i > 0))
+								{
+									const char *key_s = *key_pp;
+									const char *value_s = GetParameterKeyValue (param_p -> pa_store_p, key_s);
+
+									if (json_object_set_new (store_json_p, key_s, json_string (value_s)) == 0)
+										{
+											++ key_pp;
+											-- i;
+										}
+									else
+										{
+											success_flag = false;
+										}
+								}
+
+							if (success_flag)
+								{
+									if (json_object_set_new (root_p, PARAM_STORE_S, store_json_p) == 0)
+										{
+											success_flag = true;
+										}
+								}
+
+							if (!success_flag)
+								{
+									json_object_clear (store_json_p);
+									json_decref (store_json_p);
+								}
+
+						}		/* if (store_json_p) */
+
+					FreeKeysIndex (keys_pp);
+				}
+		}
+
+	return success_flag;
 }
 
 
@@ -1239,6 +1333,32 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterM
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp)
 {
 	bool success_flag = true;
+
+	return success_flag;
+}
+
+
+static bool *GetParameterStoreFromJSON (const json_t * const json_p, HashTable *store_p)
+{
+	bool success_flag = true;
+	json_t *store_json_p = json_object_get (json_p, PARAM_STORE_S);
+
+	if (store_json_p)
+		{
+			const char *key_s;
+			json_t *value_p;
+
+			json_object_foreach (store_json_p, key_s, value_p)
+				{
+					if (json_is_string (value_p))
+						{
+							const char *value_s = json_string_value (value_p);
+							PutInHashTable (store_p, key_s, value_s);
+						}
+
+				}		/* json_object_foreach (store_json_p, key_s, value_p) */
+
+		}		/* if (store_json_p) */
 
 	return success_flag;
 }

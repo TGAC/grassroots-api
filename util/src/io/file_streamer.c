@@ -321,7 +321,7 @@ static int PrintResultsToFile (const OutputStreamerModule * const module_p, cons
  */
 static char *GetStreamName (const char * const output_dir_s, const char *output_filename_s, char *stream_name_s, const char * const suffix_s)
 {
-	BOOLEAN allocated_stream_name_flag = FALSE;
+	bool allocated_stream_name_flag = false;
 	char *filename_s = NULL;
 
 
@@ -365,7 +365,7 @@ static char *GetStreamName (const char * const output_dir_s, const char *output_
 					if (allocated_stream_name_flag)
 						{
 							filename_s = stream_name_s;
-							allocated_stream_name_flag = FALSE;
+							allocated_stream_name_flag = false;
 						}
 					else
 						{
@@ -389,11 +389,6 @@ static const char *GetFileStreamerDescription (void)
 	return "Save all error, log and results messages to files.";
 }
 
-
-static const char *GetFileStreamerConfigKeyPrefix (void)
-{
-	return FILE_OUTPUT_STREAMER_CONFIG_KEY;
-}
 
 
 static LinkedList *GetFileStreamerPreprocessorParameters (void)

@@ -22,12 +22,18 @@ typedef struct IrodsSearch
 } IrodsSearch;
 
 
+
 typedef struct SearchTerm
 {
 	const char *st_clause_s;
+	int st_key_column_id;
 	const char *st_key_s;
 	const char *st_op_s;
+	int st_value_column_id;
 	const char *st_value_s;
+
+	char *st_key_buffer_s;
+	char *st_value_buffer_s;
 } SearchTerm;
 
 
@@ -53,14 +59,13 @@ IRODS_UTIL_API void FreeIrodsSearch (IrodsSearch *search_p);
 IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p);
 
 
-IRODS_UTIL_API bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
+IRODS_UTIL_API bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id);
 
 
 IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p);
 
 
-IRODS_UTIL_API int DoMetaSearch (rcComm_t *connection_p, const int *column_ids_p, const uint32 num_columns, const char **search_tags_pp, bool upper_case_flag, char * const zone_s);
-
+IRODS_UTIL_API QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s);
 
 
 #ifdef __cplusplus
