@@ -52,9 +52,9 @@ static bool CloseIrodsSearchService (Service *service_p);
 
 static rcComm_t *GetIRODSConnection (const json_t *config_p);
 
-static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (rcComm_t *connection_p), QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
-static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p);
 
@@ -65,6 +65,8 @@ static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p);
 static bool GetColumnId (const Parameter * const param_p, const char *key_s, int *id_p);
 
 static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, rcComm_t *connection_p);
+
+static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val);
 
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p)
@@ -81,7 +83,7 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 
 					if (params_p)
 						{
-							if (AddParams (connection_p, GetAllMetadataDataAttributeNames, GetAllMetadataDataAttributeValues, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
+							if (AddParams (connection_p, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
 								{
 									data_p -> issd_connection_p = connection_p;
 									data_p -> issd_params_p = params_p;
@@ -178,7 +180,6 @@ static bool CloseIrodsSearchService (Service *service_p)
 }
 
 
-
 static rcComm_t *GetIRODSConnection (const json_t *config_p)
 {
 	rcComm_t *connection_p = NULL;
@@ -192,16 +193,15 @@ static rcComm_t *GetIRODSConnection (const json_t *config_p)
 }
 
 
-
-
-static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn) (rcComm_t *connection_p), QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	size_t res = 0;
 
 	/*
 	 * Get the attibute keys
 	 */
-	QueryResults *results_p = get_metadata_fn (connection_p);
+	QueryResults *results_p = GetAllMetadataAttributeNames (connection_p, key_col_id);
+
 
 	if (results_p)
 		{
@@ -213,7 +213,7 @@ static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
-							if (AddParam (connection_p, get_metadata_values_fn, param_set_p, *value_ss, display_name_s, NULL))
+							if (AddParam (connection_p, key_col_id, value_col_id, param_set_p, *value_ss, display_name_s, NULL))
 								{
 									++ res;
 								}
@@ -232,14 +232,33 @@ static size_t AddParams (rcComm_t *connection_p, QueryResults *(*get_metadata_fn
 }
 
 
-static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_values_fn) (rcComm_t *connection_p, const char * const name_s), ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val)
+{
+	bool success_flag = false;
+	char *val_s = ConvertIntegerToString (val);
+
+	if (val_s)
+		{
+			if (AddParameterKeyValuePair (param_p, key_s, val_s))
+				{
+					success_flag = true;
+				}
+
+			FreeCopiedString (val_s);
+		}
+
+	return success_flag;
+}
+
+
+static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	bool success_flag = false;
 
 	/*
 	 * Get the attibute values
 	 */
-	QueryResults *results_p = get_metadata_values_fn (connection_p, name_s);
+	QueryResults *results_p = GetAllMetadataAttributeValues (connection_p, key_col_id, name_s, value_col_id);
 
 	if (results_p)
 		{
@@ -290,16 +309,32 @@ static bool AddParam (rcComm_t *connection_p, QueryResults *(*get_metadata_value
 
 									if (options_array_p)
 										{
+											Parameter *param_p = NULL;
 											SharedType def;
 
 											def.st_string_value_s = param_options_p -> st_string_value_s;
 
-											if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, name_s, display_name_s, description_s, TAG_KEYWORD, options_array_p, def, NULL, NULL, PL_BASIC, NULL))
-												{
-													success_flag = true;
-												}
+											param_p = AllocateParameter (PT_STRING, name_s, display_name_s, description_s, TAG_KEYWORD, options_array_p, def, NULL, NULL, PL_BASIC, NULL);
 
-											if (!success_flag)
+											if (param_p)
+												{
+													if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
+														{
+															if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
+																{
+																	if (AddParameterToParameterSet (param_set_p, param_p))
+																		{
+																			success_flag = true;
+																		}
+																}
+														}
+
+													if (!success_flag)
+														{
+															FreeParameter (param_p);
+														}
+												}		/* if (param_p) */
+											else
 												{
 													FreeParameterMultiOptionArray (options_array_p);
 												}

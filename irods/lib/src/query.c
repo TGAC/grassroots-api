@@ -11,9 +11,6 @@
 #include "byte_buffer.h"
 
 
-static QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const int col_id);
-
-static QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id);
 
 static const columnName_t *GetColumnById (const int id);
 
@@ -701,7 +698,7 @@ void ClearQueryResult (QueryResult *result_p)
 
 
 
-static QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const int col_id)
+QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const int col_id)
 {
 	QueryResults *results_p = NULL;
 	const char *col_s = GetColumnNameForId (col_id);
@@ -727,7 +724,7 @@ static QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const
 }
 
 
-static QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id)
+QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id)
 {
 	QueryResults *results_p = NULL;
 	const char *key_col_s = GetColumnNameForId (key_id);

@@ -568,17 +568,17 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 								{
 									if (AddParameterTypeToJSON (parameter_p, root_p))
 										{
-											if (full_definition_flag)
+											if (AddParameterStoreToJSON (parameter_p, root_p))
 												{
-													if (AddParameterDescriptionToJSON (parameter_p, root_p))
+													if (full_definition_flag)
 														{
-															if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+															if (AddParameterDescriptionToJSON (parameter_p, root_p))
 																{
-																	if (AddDefaultValueToJSON (parameter_p, root_p))
+																	if (AddParameterDisplayNameToJSON (parameter_p, root_p))
 																		{
-																			if (AddParameterOptionsToJSON (parameter_p, root_p))
+																			if (AddDefaultValueToJSON (parameter_p, root_p))
 																				{
-																					if (AddParameterStoreToJSON (parameter_p, root_p))
+																					if (AddParameterOptionsToJSON (parameter_p, root_p))
 																						{
 																							if (AddParameterBoundsToJSON (parameter_p, root_p))
 																								{
@@ -695,7 +695,7 @@ static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *ro
 							while (success_flag && (i > 0))
 								{
 									const char *key_s = *key_pp;
-									const char *value_s = GetParameterKeyValue (param_p -> pa_store_p, key_s);
+									const char *value_s = GetParameterKeyValue (param_p, key_s);
 
 									if (json_object_set_new (store_json_p, key_s, json_string (value_s)) == 0)
 										{

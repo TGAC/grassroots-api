@@ -112,6 +112,12 @@ IRODS_UTIL_API QueryResults *GetAllMetadataCollectionAttributeNames (rcComm_t *c
 IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributeNames (rcComm_t *connection_p);
 
 
+IRODS_UTIL_API QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_p, const int col_id);
+
+
+IRODS_UTIL_API QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id);
+
+
 #ifdef __cplusplus
 }
 #endif
