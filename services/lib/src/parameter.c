@@ -47,7 +47,7 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 
 static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
 
-static bool *GetParameterStoreFromJSON (const json_t * const json_p, HashTable *store_p);
+static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p);
 
 
 
@@ -589,11 +589,11 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 																		}
 																}
 														}
+													else
+														{
+															success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
+														}
 												}		/* if (full_definition_flag) */
-											else
-												{
-													success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
-												}		
 										}
 								}													
 						}
@@ -1226,6 +1226,44 @@ static const char *GetStringValue (const json_t * const json_p, const char * con
 }
 
 
+static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p)
+{
+	bool success_flag = true;
+	const json_t *store_json_p = json_object_get (root_p, PARAM_STORE_S);
+
+	if (store_json_p)
+		{
+			const char *key_s;
+			json_t *value_p;
+
+			json_object_foreach (store_json_p, key_s, value_p)
+				{
+					if (json_is_string (value_p))
+						{
+							const char *value_s = json_string_value (value_p);
+
+							if (!PutInHashTable (store_p, key_s, value_s))
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add \"%s\"=\"%s\" to parameter store\n", key_s, value_s);
+									success_flag = false;
+								}
+						}
+					else
+						{
+							char *dump_s = json_dumps (value_p, JSON_INDENT (2));
+							PrintErrors (STM_LEVEL_SEVERE, "json value is not a string \"%s\"\n", dump_s);
+							free (dump_s);
+							success_flag = false;
+						}
+
+				}		/* json_object_foreach (store_json_p, key_s, value_p) */
+
+		}		/* if (store_json_p) */
+
+	return success_flag;
+}
+
+
 static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType *param_type_p)
 {
 	bool success_flag = false;
@@ -1473,6 +1511,15 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									if (success_flag)
 										{
 											param_p = AllocateParameter (pt, name_s, display_name_s, description_s, tag, options_p, def, &current_value, bounds_p, level, NULL);
+
+											if (param_p)
+												{
+													if (!InitParameterStoreFromJSON (root_p, param_p -> pa_store_p))
+														{
+															FreeParameter (param_p);
+															param_p = NULL;
+														}
+												}
 										}
 									
 								}		/* if (GetParameterCurrentValueFromJSON (root_p, &tag)) */
