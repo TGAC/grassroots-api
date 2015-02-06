@@ -320,7 +320,7 @@ static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, 
 												{
 													if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
 														{
-															if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
+															if (AddIdToParameterStore (param_p, S_VALUE_ID_S, value_col_id))
 																{
 																	if (AddParameterToParameterSet (param_set_p, param_p))
 																		{
