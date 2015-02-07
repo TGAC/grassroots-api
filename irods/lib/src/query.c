@@ -9,7 +9,13 @@
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "byte_buffer.h"
+#include "streams.h"
 
+#ifdef _DEBUG
+	#define QUERY_DEBUG	(DL_FINE)
+#else
+	#define QUERY_DEBUG	(DL_NONE)
+#endif
 
 
 static const columnName_t *GetColumnById (const int id);
@@ -523,6 +529,14 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 									json_row_p = json_array_get (root_p, i);
 								}
 
+							#if QUERY_DEBUG >= DL_FINE
+							{
+								char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+								PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+								free (dump_s);
+							}
+							#endif
+
 							success_flag = false;
 
 							if (json_row_p)
@@ -548,6 +562,13 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 
 								}		/* if (json_row_p) */
 
+							#if QUERY_DEBUG >= DL_FINE
+							{
+								char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+								PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+								free (dump_s);
+							}
+							#endif
 
 							if (success_flag)
 								{
@@ -568,6 +589,14 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 				}
 
 		}		/* if (root_p) */
+
+	#if QUERY_DEBUG >= DL_FINE
+	{
+		char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+		PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+		free (dump_s);
+	}
+	#endif
 
 	return root_p;
 }

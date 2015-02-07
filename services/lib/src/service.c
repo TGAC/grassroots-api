@@ -12,6 +12,14 @@
 #include "json_util.h"
 #include "streams.h"
 
+
+#ifdef _DEBUG
+	#define SERVICE_DEBUG	(DL_FINE)
+#else
+	#define SERVICE_DEBUG	(DL_NONE)
+#endif
+
+
 static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p);
 
 static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root_p);
@@ -817,7 +825,18 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
 json_t *CreateServiceResponseAsJSON (const char * const service_name_s, OperationStatus status, json_t *result_json_p)
 {
 	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:i,s:o}", SERVICE_NAME_S, service_name_s, SERVICE_STATUS_S, status);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICE_STATUS_S, status);
+
+	#if SERVICE_DEBUG >= DL_FINE
+	char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));
+	PrintLog (STM_LEVEL_FINE, "result json:\n%s", dump_s);
+	free (dump_s);
+
+	dump_s = json_dumps (json_p, JSON_INDENT (2));
+	PrintLog (STM_LEVEL_FINE, "resp json:\n%s", dump_s);
+	free (dump_s);
+	#endif
+
 
 	if (json_p)
 		{
@@ -839,7 +858,13 @@ json_t *CreateServiceResponseAsJSON (const char * const service_name_s, Operatio
 			PrintErrors (STM_LEVEL_WARNING, "Failed to create json service response for %s\n", service_name_s);			
 		}
 	
-	return json_p;
+	#if SERVICE_DEBUG >= DL_FINE
+	dump_s = json_dumps (json_p, JSON_INDENT (2));
+	PrintLog (STM_LEVEL_FINE, "final resp json:\n%s", dump_s);
+	free (dump_s);
+	#endif
+
 	
+	return json_p;
 }
 
