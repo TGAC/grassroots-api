@@ -64,7 +64,7 @@ static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p);
 
 static bool GetColumnId (const Parameter * const param_p, const char *key_s, int *id_p);
 
-static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, rcComm_t *connection_p);
+static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServiceData *data_p);
 
 static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val);
 
@@ -445,7 +445,7 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 
 							if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
 								{
-									if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_display_name_s, key_id, "=", param_p -> pa_current_value.st_string_value_s, value_id))
+									if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", param_p -> pa_current_value.st_string_value_s, value_id))
 										{
 											success_flag = false;
 										}
@@ -477,10 +477,13 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 					QueryResults *results_p = NULL;
 
 					//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
-					results_p = DoIrodsMetaSearch (search_p, data_p -> issd_connection_p);
+					results_p = DoIrodsMetaSearch (search_p, data_p);
 
 					if (results_p)
 						{
+							PrintQueryResults (stdout, results_p);
+							fflush (stdout);
+
 							query_results_json_p = GetQueryResultAsJSON (results_p);
 						}
 				}
@@ -494,12 +497,12 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 }
 
 
-static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, rcComm_t *connection_p)
+static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServiceData *data_p)
 {
-	bool upper_case_flag = true;
+	bool upper_case_flag = false;
 	char *zone_s = NULL;
 	int columns [] = { COL_COLL_NAME, COL_DATA_NAME };
-	QueryResults *results_p = DoMetaSearch (search_p,  connection_p, columns, 2, upper_case_flag, zone_s);
+	QueryResults *results_p = DoMetaSearch (search_p, data_p -> issd_connection_p, columns, 2, upper_case_flag, zone_s);
 
 	return results_p;
 }

@@ -9,6 +9,20 @@
 #include "string_utils.h"
 
 
+#ifdef _DEBUG
+	#define META_SEARCH_DEBUG	(DL_FINE)
+#else
+	#define META_SEARCH_DEBUG	(DL_NONE)
+#endif
+
+/**
+ * This is defined in the irods libs but not declared in an
+ * accessible header file as far as I can see, so simply
+ * declare it extern here.
+ */
+extern int printGenQI (genQueryInp_t *input_query_p);
+
+
 static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p);
 
 static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id);
@@ -478,13 +492,29 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 											input_query.continueInx = 0;
 											input_query.condInput.len = 0;
 
+											#if META_SEARCH_DEBUG >= DL_FINE
+											printf ("BEGIN input_query\n");
+											printGenQI (&input_query);
+											printf ("END input_query\n");
+											fflush (stdout);
+											#endif
+
 											/* Do the search */
 											status = rcGenQuery (connection_p, &input_query, &query_output_p);
 
-											if (status == 0)
-												{
+											switch (status)
+											{
+												case 0:
 													results_p = GenerateQueryResults (query_output_p);
-												}		/* if (status == 0) */
+													break;
+
+												case CAT_NO_ROWS_FOUND:
+													PrintLog (STM_LEVEL_INFO, "No results for meta search\n");
+													break;
+
+												default:
+													break;
+											}
 
 											FreeMemory (conditions_ss);
 										}		/* if (conditions_ss) */
