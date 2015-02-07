@@ -30,7 +30,10 @@
 
 static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p);
 
-static bool ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
+static json_t *ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
+
+static bool ShowResults (json_t *response_p);
+
 
 /*************************************/
 /******* FUNCTION DEFINITIONS  *******/
@@ -204,9 +207,16 @@ int main(int argc, char *argv[])
 
 											if (response_p)
 												{
-													ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);
-												}
-										}
+													json_t *run_services_response_p = ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);
+
+													if (run_services_response_p)
+														{
+															ShowResults (run_services_response_p);
+														}		/* if (run_services_response_p) */
+
+												}		/* if (response_p) */
+
+										}		/* if (req_p) */
 									break;
 									
 									
@@ -264,6 +274,14 @@ int main(int argc, char *argv[])
 }
 
 
+static bool ShowResults (json_t *response_p)
+{
+	bool success_flag = false;
+
+	return success_flag;
+}
+
+
 /*
 static void RunServicesOnFile ()
 {
@@ -317,12 +335,10 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 	
 
 
-
-
-static bool ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
+static json_t *ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
 {
-	bool success_flag = false;
-	
+	json_t *services_json_p = NULL;
+
 	#ifdef _DEBUG
 	char *response_s = json_dumps (response_p, JSON_INDENT (2));
 	#endif
@@ -395,11 +411,11 @@ static bool ShowServices (json_t *response_p, const char *client_s, const char *
 											
 											printf ("client sending:\n%s\n", new_req_s);
 
-											response_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
+											services_json_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
 							
-											if (response_p)
+											if (services_json_p)
 												{
-													char *response_s = json_dumps (response_p, JSON_INDENT (2));
+													char *response_s = json_dumps (services_json_p, JSON_INDENT (2));
 													
 													if (response_s)
 														{
@@ -444,7 +460,7 @@ static bool ShowServices (json_t *response_p, const char *client_s, const char *
 	free (response_s);
 	#endif
 	
-	return success_flag;
+	return services_json_p;
 }
 
 

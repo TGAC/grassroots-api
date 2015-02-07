@@ -54,9 +54,17 @@ typedef struct Client
 	 */
 	const char *(*cl_get_client_description_fn) (ClientData *client_data_p);
 
+
+	/**
+	 * Function to get the user-friendly description of the Client.
+	 */
+	json_t *(*cl_display_results_fn) (ClientData *client_data_p);
+
 	/**
 	 * Any custom data that the Client needs to store.
 	 */
+
+
 	ClientData *cl_data_p;
 
 } Client;
@@ -78,6 +86,7 @@ WHEATIS_SERVICE_API void InitialiseClient (Client * const client_p,
 	const char *(*get_client_name_fn) (ClientData *client_data_p),
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
+	json_t *(*display_results_fn) (ClientData *client_data_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p),	
 	ClientData *data_p);
 
@@ -89,6 +98,7 @@ WHEATIS_SERVICE_API	int AddServiceToClient (Client *client_p, const char * const
 
 /**
  * Free a Service and its associated Parameters and ServiceData.
+
  *
  * @param service_p The Service to free.
  */

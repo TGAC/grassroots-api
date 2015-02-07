@@ -12,12 +12,14 @@ void InitialiseClient (Client * const client_p,
 	const char *(*get_client_name_fn) (ClientData *client_data_p),
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
+	json_t *(*display_results_fn) (ClientData *client_data_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p),
 	ClientData *data_p)
 {
 	client_p -> cl_get_client_name_fn = get_client_name_fn;
 	client_p -> cl_get_client_description_fn = get_client_description_fn;
 	client_p -> cl_run_fn = run_fn;
+	client_p -> cl_display_results_fn = display_results_fn;
 	client_p -> cl_add_service_fn = add_service_fn;
 	client_p -> cl_data_p = data_p;
 
@@ -39,6 +41,11 @@ int AddServiceToClient (Client *client_p, const char * const service_name_s, con
 	return (client_p -> cl_add_service_fn (client_p -> cl_data_p, service_name_s, service_description_s, params_p));	
 }
 
+
+json_t *DisplayResultsInClient (Client *client_p)
+{
+	return (client_p -> cl_display_results_fn (client_p -> cl_data_p));
+}
 
 
 void FreeClient (Client *client_p)
