@@ -505,9 +505,9 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 				{
 					QueryResult *qr_p = qrs_p -> qr_values_p;
 					int j = 0;
-					const int num_results =  qrs_p -> qr_num_results;
+					const int num_columns =  qrs_p -> qr_num_results;
 
-					while ((j < num_results) && success_flag)
+					while ((j < num_columns) && success_flag)
 						{
 							json_t *json_row_p = NULL;
 
@@ -575,7 +575,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 									++ j;
 									++ qr_p;
 								}
-						}		/* while ((j < num_results) && success_flag) */
+						}		/* while ((j < num_columns) && success_flag) */
 
 
 					++ i;
@@ -601,6 +601,102 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 	return root_p;
 }
 
+
+json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
+{
+	json_t *root_p = json_array ();
+
+	if (root_p)
+		{
+			/*
+			 * Find the collection and data columns
+			 */
+			QueryResult *collection_results_p = NULL;
+			QueryResult *data_results_p = NULL;
+			QueryResult *qr_p = qrs_p -> qr_values_p;
+			int i = qrs_p -> qr_num_results;
+			bool success_flag = false;
+
+			while ((i > 0) && ((data_results_p == NULL) || (collection_results_p == NULL)))
+				{
+					const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
+
+					if (col_p -> columnId == COL_COLL_NAME)
+						{
+							collection_results_p = qr_p;
+						}
+					else if (col_p -> columnId == COL_DATA_NAME)
+						{
+							data_results_p = qr_p;
+						}
+
+					++ qr_p;
+					-- i;
+
+				}		/* while ((i > 0) && ((data_results_p == NULL) || (collection_results_p == NULL))) */
+
+			if (collection_results_p && data_results_p)
+				{
+					ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+					if (buffer_p)
+						{
+							/*
+							 * We know that QueryResults is tabular so we just need
+							 * to query the first result to get the number of rows.
+							 */
+							int num_rows = data_results_p -> qr_num_values;
+							char **collection_values_pp = collection_results_p -> qr_values_pp;
+							char **data_values_pp = data_results_p -> qr_values_pp;
+
+							success_flag = true;
+
+							for (i = 0; i < num_rows; ++ i, ++ collection_values_pp, ++ data_values_pp)
+								{
+									if (AppendStringsToByteBuffer (buffer_p, *collection_values_pp, "/", *data_values_pp))
+										{
+											char *value_s = GetByteBufferData (buffer_p);
+
+											if (json_array_append_new (root_p, json_string (value_s)) == 0)
+												{
+													ResetByteBuffer (buffer_p);
+												}
+											else
+												{
+													success_flag = false;
+													i = num_rows;
+												}
+										}
+									else
+										{
+											success_flag = false;
+											i = num_rows;
+										}
+								}
+
+						}		/* if (buffer_p) */
+
+				}		/* if (collection_results_p && data_results_p) */
+
+			if (!success_flag)
+				{
+					json_object_clear (root_p);
+					json_decref (root_p);
+					root_p = NULL;
+				}
+
+		}		/* if (root_p) */
+
+	#if QUERY_DEBUG >= DL_FINE
+	{
+		char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+		PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+		free (dump_s);
+	}
+	#endif
+
+	return root_p;
+}
 
 
 

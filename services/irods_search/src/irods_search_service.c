@@ -484,7 +484,7 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 							PrintQueryResults (stdout, results_p);
 							fflush (stdout);
 
-							query_results_json_p = GetQueryResultAsJSON (results_p);
+							query_results_json_p = GetQueryResultAsResourcesJSON (results_p);
 							res = OS_SUCCEEDED;
 						}
 				}

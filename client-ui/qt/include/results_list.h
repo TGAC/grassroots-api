@@ -1,6 +1,11 @@
 #ifndef RESULTS_LIST_HPP
 #define RESULTS_LIST_HPP
 
+#include <QListWidget>
+
+#include "jansson.h"
+
+
 class ResultsList : public QWidget
 {
 	Q_OBJECT
@@ -18,7 +23,7 @@ public:
 
 	ResultsList (QWidget *parent_p);
 
-	~PrefsWidget ();
+	~ResultsList ();
 
 
 private:
@@ -26,11 +31,7 @@ private:
 	/*********************/
 	/***** VARIABLES *****/
 	/*********************/
-
-	ParameterLevel pw_level;
-	QTabWidget *pw_tabs_p;
-	QList <ServicePrefsWidget *> pw_service_widgets;
-
+	QListWidget *rl_list_p;
 };
 
 #endif		/* #ifndef RESULTS_LIST_HPP */
