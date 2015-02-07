@@ -602,6 +602,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 }
 
 
+
 json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 {
 	json_t *root_p = json_array ();
@@ -653,23 +654,29 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 
 							for (i = 0; i < num_rows; ++ i, ++ collection_values_pp, ++ data_values_pp)
 								{
+									success_flag = false;
+
 									if (AppendStringsToByteBuffer (buffer_p, *collection_values_pp, "/", *data_values_pp))
 										{
-											char *value_s = GetByteBufferData (buffer_p);
+											const char *value_s = GetByteBufferData (buffer_p);
+											json_t *resource_p = GetResourceAsJSON (PROTOCOL_IRODS_S, value_s);
 
-											if (json_array_append_new (root_p, json_string (value_s)) == 0)
+											if (resource_p)
 												{
-													ResetByteBuffer (buffer_p);
-												}
-											else
-												{
-													success_flag = false;
-													i = num_rows;
+													if (json_array_append_new (root_p, resource_p) == 0)
+														{
+															ResetByteBuffer (buffer_p);
+															success_flag = true;
+														}
+													else
+														{
+															json_decref (resource_p);
+														}
 												}
 										}
-									else
+
+									if (!success_flag)
 										{
-											success_flag = false;
 											i = num_rows;
 										}
 								}
