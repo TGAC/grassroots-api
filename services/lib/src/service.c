@@ -842,7 +842,7 @@ json_t *CreateServiceResponseAsJSON (const char * const service_name_s, Operatio
 		{
 			if (result_json_p)
 				{
-					if (!json_object_set_new (json_p, SERVICE_RESULT_S, result_json_p) == 0)
+					if (!json_object_set_new (json_p, SERVICE_RESULTS_S, result_json_p) == 0)
 						{
 							char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));
 							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to service response for %s\n", dump_s, service_name_s);

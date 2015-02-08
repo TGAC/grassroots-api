@@ -8,6 +8,7 @@
 #include "client_ui_api.h"
 
 #include "prefs_widget.h"
+#include "results_list.h"
 
 #include "memory_allocations.h"
 #include "string_utils.h"
@@ -18,6 +19,7 @@ typedef struct QTClientData
 	QApplication *qcd_app_p;
 	QDialog *qcd_window_p;
 	PrefsWidget *qcd_prefs_widget_p;
+	ResultsList *qcd_results_p;
 	char *qcd_dummy_arg_s;
 }QTClientData;
 
@@ -30,7 +32,7 @@ static const char *GetQTClientName (ClientData *client_data_p);
 static const char *GetQTClientDescription (ClientData *client_data_p);
 static json_t *RunQTClient (ClientData *client_data_p);
 static int AddServiceToQTClient (ClientData *client_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
-static json_t *DisplayResultsInQTClient (ClientData *client_data_p);
+static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t *response_p);
 
 
 Client *GetClient (void)
@@ -105,6 +107,8 @@ static QTClientData *AllocateQTClientData (void)
 					data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
 					layout_p -> addWidget (data_p -> qcd_prefs_widget_p);
 
+					data_p -> qcd_results_p = new ResultsList (NULL);
+
 					QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QDialog :: done);
 
 				}
@@ -173,9 +177,21 @@ static int AddServiceToQTClient (ClientData *client_data_p, const char * const s
 
 
 
-static json_t *DisplayResultsInQTClient (ClientData *client_data_p)
+static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t *response_p)
 {
 	json_t *res_p = NULL;
+	const json_t *results_p = json_object_get (response_p, SERVICE_RESULTS_S);
+	char *dump_s = json_dumps (response_p, JSON_INDENT (2));
 
+	if (results_p)
+		{
+			QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
+
+			qt_data_p -> qcd_results_p -> SetListFromJSON (results_p);
+			qt_data_p -> qcd_results_p -> show ();
+		}
+
+
+	free (dump_s);
 	return res_p;
 }

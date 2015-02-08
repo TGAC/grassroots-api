@@ -32,6 +32,10 @@ private:
 	/***** VARIABLES *****/
 	/*********************/
 	QListWidget *rl_list_p;
+
+
+	bool AddItemFromJSON (const json_t *json_p);
+
 };
 
 #endif		/* #ifndef RESULTS_LIST_HPP */

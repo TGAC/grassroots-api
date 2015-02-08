@@ -30,9 +30,11 @@
 
 static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p);
 
-static json_t *ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
 
-static bool ShowResults (json_t *response_p);
+static bool ShowResults (json_t *response_p, Client *client_p);
+
+
+static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
 
 
 /*************************************/
@@ -191,75 +193,81 @@ int main(int argc, char *argv[])
 				
 				if (buffer_p)
 					{				
-						switch (api_id)
+						Client *client_p = LoadClient ("clients", client_s);
+
+						if (client_p)
 							{
-								case OP_LIST_ALL_SERVICES:
-									req_p = GetAvailableServicesRequest (username_s, password_s);
-									
-									if (req_p)
-										{
-											if (!AddCredentialsToJson (req_p, username_s, password_s))
-												{
-													printf ("Failed to add credentials\n");
-												}
-
-											response_p = SendRequest (sock_fd, req_p, id, buffer_p);
-
-											if (response_p)
-												{
-													json_t *run_services_response_p = ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);
-
-													if (run_services_response_p)
-														{
-															ShowResults (run_services_response_p);
-														}		/* if (run_services_response_p) */
-
-												}		/* if (response_p) */
-
-										}		/* if (req_p) */
-									break;
-									
-									
-								case OP_IRODS_MODIFIED_DATA:
-									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
-									response_p = SendRequest (sock_fd, req_p, id, buffer_p);
-									break;
-									
-								case OP_LIST_INTERESTED_SERVICES:
+								switch (api_id)
 									{
-										if (protocol_s && filename_s)
-											{					
-												json_error_t error;										
-												json_t *irods_file_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
-												
-												if (irods_file_p)
+										case OP_LIST_ALL_SERVICES:
+											req_p = GetAvailableServicesRequest (username_s, password_s);
+
+											if (req_p)
+												{
+													if (!AddCredentialsToJson (req_p, username_s, password_s))
+														{
+															printf ("Failed to add credentials\n");
+														}
+
+													response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+
+													if (response_p)
+														{
+															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, sock_fd, id, buffer_p);
+
+															if (run_services_response_p)
+																{
+																	ShowResults (run_services_response_p, client_p);
+																}		/* if (run_services_response_p) */
+
+														}		/* if (response_p) */
+
+												}		/* if (req_p) */
+											break;
+
+
+										case OP_IRODS_MODIFIED_DATA:
+											req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+											response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+											break;
+
+										case OP_LIST_INTERESTED_SERVICES:
+											{
+												if (protocol_s && filename_s)
 													{
-														req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);
-													}
-													
-												if (req_p)
-													{
-														response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+														json_error_t error;
+														json_t *irods_file_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
 														
-														if (response_p)
+														if (irods_file_p)
 															{
-																ShowServices (response_p, client_s, username_s, password_s, sock_fd, id, buffer_p);					
-															}		/* if (response_p) */														
-					
-													}		/* if (req_p) */
+																req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);
+															}
+
+														if (req_p)
+															{
+																response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+
+																if (response_p)
+																	{
+																		ShowServices (response_p, client_p, username_s, password_s, sock_fd, id, buffer_p);
+																	}		/* if (response_p) */
+
+															}		/* if (req_p) */
+													}
 											}
-									}		
-									break;
-									
-								default:
-									break;
+											break;
+
+										default:
+											break;
+									}
 							}
 
-						freeaddrinfo (server_p);
-						close (sock_fd);
-				
 						FreeByteBuffer (buffer_p);
 					}		/* if (buffer_p) */				
+
+				freeaddrinfo (server_p);
+				close (sock_fd);
+
 			}
 		else
 			{
@@ -274,9 +282,11 @@ int main(int argc, char *argv[])
 }
 
 
-static bool ShowResults (json_t *response_p)
+static bool ShowResults (json_t *response_p, Client *client_p)
 {
 	bool success_flag = false;
+
+	DisplayResultsInClient (client_p, response_p);
 
 	return success_flag;
 }
@@ -333,9 +343,10 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 	return response_p;
 }
 	
+static bool ShowResults (json_t *response_p, Client *client_p);
 
 
-static json_t *ShowServices (json_t *response_p, const char *client_s, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
+static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
 {
 	json_t *services_json_p = NULL;
 
@@ -345,114 +356,108 @@ static json_t *ShowServices (json_t *response_p, const char *client_s, const cha
 	
 	if (json_is_array (response_p))
 		{
-			Client *client_p = LoadClient ("clients", client_s);
+			const size_t num_services = json_array_size (response_p);
+			size_t i = 0;
+			int res = 0;
+			json_t *client_results_p = NULL;
 			
-			if (client_p)
+			for (i = 0; i < num_services; ++ i)
 				{
-					const size_t num_services = json_array_size (response_p);
-					size_t i = 0;
-					int res = 0;
-					json_t *client_results_p = NULL;
-					
-					for (i = 0; i < num_services; ++ i)
+					json_t *service_json_p = json_array_get (response_p, i);
+					const char *service_name_s = GetJSONString (service_json_p, SERVICES_NAME_S);
+
+					#ifdef _DEBUG
+					char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
+					#endif
+
+
+					if (service_name_s)
 						{
-							json_t *service_json_p = json_array_get (response_p, i);
-							const char *service_name_s = GetJSONString (service_json_p, SERVICES_NAME_S);
+							const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
 
-							#ifdef _DEBUG
-							char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
-							#endif
-
-
-							if (service_name_s)
+							if (service_description_s)
 								{
-									const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
+									json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
 
-									if (service_description_s)
+									if (ops_p)
 										{
-											json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
+											ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
 											
-											if (ops_p)
+											if (params_p)
 												{
-													ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
-													
-													if (params_p)
-														{
-															int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
-														}		/* if (params_p) */
-												}
-										}		/* if (service_description_s)	*/												
-																	
-								}		/* if (service_name_s) */
-								
-							#ifdef _DEBUG
-							free (service_s);
-							#endif
-																												
-						}		/* for (i = 0; i < num_services; ++ i) */																
-					
-					/* Get the results of the user's configuration */																		
-					client_results_p = RunClient (client_p);
-					if (client_results_p)
-						{
-							char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
-							json_t *new_req_p = json_object ();
-							
-							if (new_req_p)
-								{
-									if (!AddCredentialsToJson (new_req_p, username_s, password_s))
-										{
-											printf ("failed to add credentials to request\n");
+													int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
+												}		/* if (params_p) */
 										}
-										
-									if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
-										{
-											char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
-											
-											printf ("client sending:\n%s\n", new_req_s);
+								}		/* if (service_description_s)	*/
 
-											services_json_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
-							
-											if (services_json_p)
-												{
-													char *response_s = json_dumps (services_json_p, JSON_INDENT (2));
-													
-													if (response_s)
-														{
-															printf ("%s\n", response_s);
-															free (response_s);
-														}
-												}
-											else
-												{
-													printf ("no response\n");
-												}																									
-										
-											if (new_req_s)
-												{
-													free (new_req_s);
-												}
-											
-										}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
-										
-									json_decref (new_req_p);
-									
-								}		/* if (new_req_p) */
-							
-							if (client_results_s)
+						}		/* if (service_name_s) */
+
+					#ifdef _DEBUG
+					free (service_s);
+					#endif
+
+				}		/* for (i = 0; i < num_services; ++ i) */
+
+			/* Get the results of the user's configuration */
+			client_results_p = RunClient (client_p);
+			if (client_results_p)
+				{
+					char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
+					json_t *new_req_p = json_object ();
+					
+					if (new_req_p)
+						{
+							if (!AddCredentialsToJson (new_req_p, username_s, password_s))
 								{
-									printf ("%s\n", client_results_s);
-									free (client_results_s);
+									printf ("failed to add credentials to request\n");
 								}
 
-						}
-					else
-						{
-							printf ("no results from client\n");
-						}
-					
-				}		/* if (client_p) */
+							if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
+								{
+									char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
 
+									printf ("client sending:\n%s\n", new_req_s);
+
+									services_json_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
+
+									if (services_json_p)
+										{
+											char *response_s = json_dumps (services_json_p, JSON_INDENT (2));
+											
+											if (response_s)
+												{
+													printf ("%s\n", response_s);
+													free (response_s);
+												}
+										}
+									else
+										{
+											printf ("no response\n");
+										}
+
+									if (new_req_s)
+										{
+											free (new_req_s);
+										}
+									
+								}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
+
+							json_decref (new_req_p);
+							
+						}		/* if (new_req_p) */
+
+					if (client_results_s)
+						{
+							printf ("%s\n", client_results_s);
+							free (client_results_s);
+						}
+
+				}
+			else
+				{
+					printf ("no results from client\n");
+				}
+					
 		}		/* if (json_is_array (response_p)) */
 	
 																						

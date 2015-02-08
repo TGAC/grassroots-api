@@ -15,6 +15,12 @@ DIR_ROOT = ../..
 DIR_IRODS = $$IRODS_HOME
 #DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
 
+
+DIR_WHEATIS_SERVICES = ../../services/lib
+DIR_WHEATIS_SERVICES_INC = $(DIR_WHEATIS_SERVICES)/include
+DIR_WHEATIS_SERVICES_LIB = $(DIR_WHEATIS_SERVICES)/$(BUILD)
+WHEATIS_SERVICES_LIB_NAME = wheatis_services
+
 DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
@@ -43,6 +49,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
+	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \

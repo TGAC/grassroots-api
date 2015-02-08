@@ -12,7 +12,7 @@ void InitialiseClient (Client * const client_p,
 	const char *(*get_client_name_fn) (ClientData *client_data_p),
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
-	json_t *(*display_results_fn) (ClientData *client_data_p),
+	json_t *(*display_results_fn) (ClientData *client_data_p, const json_t *response_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p),
 	ClientData *data_p)
 {
@@ -42,9 +42,9 @@ int AddServiceToClient (Client *client_p, const char * const service_name_s, con
 }
 
 
-json_t *DisplayResultsInClient (Client *client_p)
+json_t *DisplayResultsInClient (Client *client_p, const json_t *response_p)
 {
-	return (client_p -> cl_display_results_fn (client_p -> cl_data_p));
+	return (client_p -> cl_display_results_fn (client_p -> cl_data_p, response_p));
 }
 
 

@@ -4,7 +4,7 @@
 #include "resource.h"
 #include "string_utils.h"
 #include "memory_allocations.h"
-
+#include "json_util.h"
 
 
 static bool ReplaceValue (const char * const src_s, char **dest_ss);
@@ -144,9 +144,9 @@ json_t *GetResourceAsJSON (const char * const protocol_s, const char * const pat
 
 	if (json_p)
 		{
-			if (json_object_set_new (json_p, RESOURCE_PROTOCOL_S, protocol_s) == 0)
+			if (json_object_set_new (json_p, RESOURCE_PROTOCOL_S, json_string (protocol_s)) == 0)
 				{
-					if (json_object_set_new (json_p, RESOURCE_VALUE_S, path_s) == 0)
+					if (json_object_set_new (json_p, RESOURCE_VALUE_S, json_string (path_s)) == 0)
 						{
 							return json_p;
 						}

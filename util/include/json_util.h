@@ -47,7 +47,7 @@ PREFIX const char *SERVICE_RUN_S VAL("run");
 
 PREFIX const char *SERVICE_NAME_S VAL("service");
 PREFIX const char *SERVICE_STATUS_S VAL("status");
-PREFIX const char *SERVICE_RESULT_S VAL("result");
+PREFIX const char *SERVICE_RESULTS_S VAL("results");
 
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
@@ -75,6 +75,7 @@ PREFIX const char *SHARED_TYPE_VALUE_S  VAL("value");
 
 PREFIX const char *RESOURCE_PROTOCOL_S  VAL("protocol");
 PREFIX const char *RESOURCE_VALUE_S  VAL("value");
+PREFIX const char *RESOURCE_DESCRIPTION_S  VAL("description");
 
 PREFIX const char *TAG_INPUT_NAME_S VAL("input");
 PREFIX const char *TAG_OUTPUT_NAME_S VAL("output");

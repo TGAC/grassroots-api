@@ -1,15 +1,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "resource.h"
+#include "query.h"
+
+
 #include "rodsGenQueryNames.h"
 #include "rcMisc.h"
 
-#include "query.h"
 
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "byte_buffer.h"
 #include "streams.h"
+#include "json_util.h"
 
 #ifdef _DEBUG
 	#define QUERY_DEBUG	(DL_FINE)
@@ -656,13 +660,22 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 								{
 									success_flag = false;
 
-									if (AppendStringsToByteBuffer (buffer_p, *collection_values_pp, "/", *data_values_pp))
+									if (AppendStringsToByteBuffer (buffer_p, *collection_values_pp, "/", *data_values_pp, NULL))
 										{
 											const char *value_s = GetByteBufferData (buffer_p);
 											json_t *resource_p = GetResourceAsJSON (PROTOCOL_IRODS_S, value_s);
 
 											if (resource_p)
 												{
+													#if QUERY_DEBUG >= DL_FINE
+													{
+														char *dump_s = json_dumps (resource_p, JSON_INDENT (2));
+														PrintLog (STM_LEVEL_FINE, "resource:\n%s\n", dump_s);
+														free (dump_s);
+													}
+													#endif
+
+
 													if (json_array_append_new (root_p, resource_p) == 0)
 														{
 															ResetByteBuffer (buffer_p);
@@ -672,6 +685,15 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 														{
 															json_decref (resource_p);
 														}
+
+													#if QUERY_DEBUG >= DL_FINE
+													{
+														char *dump_s = json_dumps (resource_p, JSON_INDENT (2));
+														PrintLog (STM_LEVEL_FINE, "resource:\n%s\n", dump_s);
+														free (dump_s);
+													}
+													#endif
+
 												}
 										}
 
@@ -679,6 +701,16 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 										{
 											i = num_rows;
 										}
+
+									#if QUERY_DEBUG >= DL_FINE
+									{
+										size_t size = json_array_size (root_p);
+										char *dump_s = json_dumps (root_p, JSON_INDENT (2));
+										PrintLog (STM_LEVEL_FINE, "root:\n%s\n", dump_s);
+										free (dump_s);
+									}
+									#endif
+
 								}
 
 						}		/* if (buffer_p) */
@@ -696,7 +728,8 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 
 	#if QUERY_DEBUG >= DL_FINE
 	{
-		char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+		size_t size = json_array_size (root_p);
+		char *dump_s = json_dumps (root_p, JSON_INDENT (2));
 		PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
 		free (dump_s);
 	}

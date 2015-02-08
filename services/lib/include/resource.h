@@ -1,5 +1,5 @@
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#ifndef WHEATIS_RESOURCE_H
+#define WHEATIS_RESOURCE_H
 
 #include "jansson.h"
 
@@ -71,4 +71,4 @@ WHEATIS_SERVICE_API json_t *GetResourceAsJSON (const char * const protocol_s, co
 
 
 
-#endif		/* #ifndef RESOURCE_H */
+#endif		/* #ifndef WHEATIS_RESOURCE_H */
