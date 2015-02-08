@@ -23,11 +23,14 @@ ResultsList :: ~ResultsList ()
 }
 
 
-void ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
+bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 {
+	bool success_flag = false;
+
 	if (json_is_array (results_list_json_p))
 		{
 			const size_t size = json_array_size (results_list_json_p);
+			size_t count = 0;
 
 			rl_list_p -> clear ();
 
@@ -35,11 +38,17 @@ void ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 				{
 					json_t *value_p = json_array_get (results_list_json_p, i);
 
-					AddItemFromJSON (value_p);
+					if (AddItemFromJSON (value_p))
+						{
+							++ count;
+						}
 
 				}		/* for (size_t i = 0; i < size; ++ i) */
 
+			success_flag = (count == size);
 		}		/* if (json_is_array (results_list_json_p)) */
+
+	return success_flag;
 }
 
 

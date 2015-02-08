@@ -76,7 +76,8 @@ SOURCES += \
     src/qt_parameter_widget.cpp \
     src/client_ui_api.cpp \
     src/service_prefs_widget.cpp \
-    src/results_list.cpp
+    src/results_list.cpp \
+    src/results_widget.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -91,7 +92,8 @@ HEADERS  += \
     include/qt_parameter_widget.h \
     include/client_ui_api.h \
     include/service_prefs_widget.h \
-    include/results_list.h
+    include/results_list.h \
+    include/results_widget.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \

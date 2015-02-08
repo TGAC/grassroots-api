@@ -1,5 +1,6 @@
 #include <QHBoxLayout>
 #include <QWidget>
+#include <QMessageBox>
 #include <QApplication>
 #include <QDialog>
 #include <QStyleFactory>
@@ -8,7 +9,7 @@
 #include "client_ui_api.h"
 
 #include "prefs_widget.h"
-#include "results_list.h"
+#include "results_widget.h"
 
 #include "memory_allocations.h"
 #include "string_utils.h"
@@ -19,7 +20,7 @@ typedef struct QTClientData
 	QApplication *qcd_app_p;
 	QDialog *qcd_window_p;
 	PrefsWidget *qcd_prefs_widget_p;
-	ResultsList *qcd_results_p;
+	ResultsWidget *qcd_results_p;
 	char *qcd_dummy_arg_s;
 }QTClientData;
 
@@ -107,7 +108,7 @@ static QTClientData *AllocateQTClientData (void)
 					data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
 					layout_p -> addWidget (data_p -> qcd_prefs_widget_p);
 
-					data_p -> qcd_results_p = new ResultsList (NULL);
+					data_p -> qcd_results_p = new ResultsWidget;
 
 					QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QDialog :: done);
 
@@ -166,11 +167,10 @@ static json_t *RunQTClient (ClientData *client_data_p)
 
 static int AddServiceToQTClient (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p)
 {
-	int res = -1;
+	int res = 0;
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 
 	qt_data_p -> qcd_prefs_widget_p -> CreateAndAddServicePage (service_name_s, service_description_s, params_p);
-
 
 	return res;
 }
@@ -180,17 +180,21 @@ static int AddServiceToQTClient (ClientData *client_data_p, const char * const s
 static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t *response_p)
 {
 	json_t *res_p = NULL;
-	const json_t *results_p = json_object_get (response_p, SERVICE_RESULTS_S);
 	char *dump_s = json_dumps (response_p, JSON_INDENT (2));
 
-	if (results_p)
-		{
-			QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
+	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 
-			qt_data_p -> qcd_results_p -> SetListFromJSON (results_p);
-			qt_data_p -> qcd_results_p -> show ();
-		}
+	uint32 res = qt_data_p -> qcd_results_p -> AddAllResultsPagesFromJSON (response_p);
+	//qt_data_p -> qcd_results_p -> show ();
 
+
+	QDialog dialog;
+	QVBoxLayout *layout_p = new QVBoxLayout;
+
+	layout_p -> addWidget (qt_data_p -> qcd_results_p);
+	dialog.setLayout (layout_p);
+
+	dialog.exec ();
 
 	free (dump_s);
 	return res_p;

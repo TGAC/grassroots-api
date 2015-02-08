@@ -13,7 +13,7 @@ class ResultsList : public QWidget
 signals:
 
 public slots:
-	void SetListFromJSON (const json_t *results_list_json_p);
+	bool SetListFromJSON (const json_t *results_list_json_p);
 
 public:
 
