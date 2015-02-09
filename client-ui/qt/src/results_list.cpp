@@ -75,7 +75,6 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 							icon_path_s = "images/list_internet";
 						}
 
-
 					QListWidgetItem *item_p = new QListWidgetItem (value_s, rl_list_p);;
 
 					if (icon_path_s)

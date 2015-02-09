@@ -5,7 +5,7 @@
 #include <QDialog>
 #include <QStyleFactory>
 #include <QDialogButtonBox>
-
+#include <QPushButton>
 
 #include "client_ui_api.h"
 
@@ -208,6 +208,13 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t
 
 	QDialogButtonBox *buttons_p = new QDialogButtonBox (QDialogButtonBox :: Ok);
 	QObject :: connect (buttons_p, &QDialogButtonBox :: accepted, &dialog, &QDialog :: accept);
+
+	QPushButton *btn_p = buttons_p -> button (QDialogButtonBox::Ok);
+	if (btn_p)
+		{
+			btn_p -> setIcon (QIcon ("images/ok"));
+		}
+
 	layout_p -> addWidget (buttons_p);
 
 	dialog.setLayout (layout_p);

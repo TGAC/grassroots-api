@@ -445,10 +445,20 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 
 							if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
 								{
-									if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", param_p -> pa_current_value.st_string_value_s, value_id))
+									const char *value_s = param_p -> pa_current_value.st_string_value_s;
+
+									if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
 										{
-											success_flag = false;
+											if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", value_s, value_id))
+												{
+													success_flag = false;
+												}
 										}
+									else
+										{
+											success_flag = true;
+										}
+
 								}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
 							else
 								{
