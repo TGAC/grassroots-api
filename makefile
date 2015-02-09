@@ -1,5 +1,5 @@
 COPY	= cp
-
+WHEATIS_INSTALL = ../wheatis_demo
 
 all: 	
 	@echo "BUILD = " $(BUILD)
@@ -21,7 +21,7 @@ all:
 	$(MAKE) -C services/web
 	$(MAKE) -C services/irods_search
 					
-install: install_init install_references
+install: install_init install_references install_images
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 	$(MAKE) -C irods/lib install
@@ -60,14 +60,17 @@ clean:
 	$(MAKE) -C services/irods_search clean
 	
 install_init:
-	@mkdir -p ../wheatis_demo
-	@mkdir -p ../wheatis_demo/lib
-	@mkdir -p ../wheatis_demo/services
-	@mkdir -p ../wheatis_demo/references
-	@mkdir -p ../wheatis_demo/clients
-	@mkdir -p ../wheatis_demo/handlers
+	@mkdir -p $(WHEATIS_INSTALL)
+	@mkdir -p $(WHEATIS_INSTALL)/lib
+	@mkdir -p $(WHEATIS_INSTALL)/services
+	@mkdir -p $(WHEATIS_INSTALL)/references
+	@mkdir -p $(WHEATIS_INSTALL)/images
+	@mkdir -p $(WHEATIS_INSTALL)/clients
+	@mkdir -p $(WHEATIS_INSTALL)/handlers
 
 
 install_references:
-	$(COPY) references/* ../wheatis_demo/references/
+	$(COPY) references/* $(WHEATIS_INSTALL)/references/
 
+install_images:
+	$(COPY) images/* $(WHEATIS_INSTALL)/images

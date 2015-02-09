@@ -343,7 +343,6 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 	return response_p;
 }
 	
-static bool ShowResults (json_t *response_p, Client *client_p);
 
 
 static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)

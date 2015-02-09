@@ -66,12 +66,17 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 				{
 					const char *icon_path_s = NULL;
 
-					if (strcmp (protocol_s, PROTOCOL_IRODS_S) == 0)
+					if ((strcmp (protocol_s, PROTOCOL_IRODS_S) == 0)  || (strcmp (protocol_s, PROTOCOL_FILE_S) == 0))
 						{
-							icon_path_s = "images/irods_list.png";
+							icon_path_s = "images/list_file";
+						}
+					else	if (strcmp (protocol_s, PROTOCOL_IRODS_S) == 0)
+						{
+							icon_path_s = "images/list_internet";
 						}
 
-					QListWidgetItem *item_p = new QListWidgetItem (value_s, rl_list_p);
+
+					QListWidgetItem *item_p = new QListWidgetItem (value_s, rl_list_p);;
 
 					if (icon_path_s)
 						{

@@ -1,3 +1,4 @@
+
 #include "results_widget.h"
 
 #include "results_list.h"
@@ -6,7 +7,6 @@
 ResultsWidget :: ResultsWidget (QWidget *parent_p)
  : QTabWidget (parent_p)
 {
-
 }
 
 ResultsWidget :: ~ResultsWidget ()

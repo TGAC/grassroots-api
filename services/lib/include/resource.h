@@ -31,17 +31,17 @@ typedef struct Resource
  * resource.c.
  */
 #ifdef ALLOCATE_RESOURCE_TAGS
-	#define PREFIX WHEATIS_SERVICE_API
-	#define VAL(x)	= x
+	#define RESOURCE_PREFIX WHEATIS_SERVICE_API
+	#define RESOURCE_VAL(x)	= x
 #else
-	#define PREFIX extern
-	#define VAL(x)
+	#define RESOURCE_PREFIX extern
+	#define RESOURCE_VAL(x)
 #endif
 
-PREFIX const char *RESOURCE_DELIMITER_S VAL(":");
+RESOURCE_PREFIX const char *RESOURCE_DELIMITER_S RESOURCE_VAL(":");
 
-PREFIX const char *PROTOCOL_IRODS_S VAL("irods");
-PREFIX const char *PROTOCOL_FILE_S VAL("file");
+RESOURCE_PREFIX const char *PROTOCOL_IRODS_S RESOURCE_VAL("irods");
+RESOURCE_PREFIX const char *PROTOCOL_FILE_S RESOURCE_VAL("file");
 
 
 #ifdef __cplusplus

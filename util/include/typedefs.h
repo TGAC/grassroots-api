@@ -65,7 +65,7 @@ typedef enum FileLocation
 	FILE_LOCATION_UNKNOWN
 } FileLocation;
 
-
+/*
 typedef enum DebugLevel
 {
 	DL_NONE,
@@ -75,6 +75,6 @@ typedef enum DebugLevel
 	DL_FINE,
 	DL_FINER
 } DebugLevel;
-
+*/
 
 #endif		/* #ifndef TYPEDEFS_H */
