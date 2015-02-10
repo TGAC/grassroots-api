@@ -259,7 +259,6 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 {
 	bool success_flag = true;
-	CURLcode res;
 	const CURLParam params [] = 
 		{
 			{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },

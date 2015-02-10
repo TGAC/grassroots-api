@@ -95,7 +95,7 @@ bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...)
 	bool loop_flag = true;
 	va_list args;
 	va_start (args, value_s);
-	char *arg_s = value_s;
+	const char *arg_s = value_s;
 
 	while (success_flag && loop_flag)
 		{

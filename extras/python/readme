@@ -1,0 +1,12 @@
+Initially you can run this like
+
+PYTHONPATH=.  ./call_python wheatis_scholar main -A wheat --citation bt
+
+to make it permanently runnable we need 
+
+import sys
+sys.path.insert(0, "./path/to/your/modules/")
+
+You can do it probably in python in your interpreter or on C level. This will add search path in very similar manner as PYTHONPATH but it is more persistant and elegant (IMHO).
+
+see http://stackoverflow.com/questions/24492327/python-embedding-in-c-importerror-no-module-named-pyfunction

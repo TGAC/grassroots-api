@@ -357,7 +357,6 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 		{
 			const size_t num_services = json_array_size (response_p);
 			size_t i = 0;
-			int res = 0;
 			json_t *client_results_p = NULL;
 			
 			for (i = 0; i < num_services; ++ i)

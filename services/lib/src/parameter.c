@@ -50,7 +50,6 @@ static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
 static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p);
 
 
-
 Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	char *new_name_s = CopyToNewString (name_s, 0, true);
@@ -1234,7 +1233,7 @@ static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p
 	if (store_json_p)
 		{
 			const char *key_s;
-			json_t *value_p;
+			const json_t *value_p;
 
 			json_object_foreach (store_json_p, key_s, value_p)
 				{
@@ -1374,33 +1373,6 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 
 	return success_flag;
 }
-
-
-static bool *GetParameterStoreFromJSON (const json_t * const json_p, HashTable *store_p)
-{
-	bool success_flag = true;
-	json_t *store_json_p = json_object_get (json_p, PARAM_STORE_S);
-
-	if (store_json_p)
-		{
-			const char *key_s;
-			json_t *value_p;
-
-			json_object_foreach (store_json_p, key_s, value_p)
-				{
-					if (json_is_string (value_p))
-						{
-							const char *value_s = json_string_value (value_p);
-							PutInHashTable (store_p, key_s, value_s);
-						}
-
-				}		/* json_object_foreach (store_json_p, key_s, value_p) */
-
-		}		/* if (store_json_p) */
-
-	return success_flag;
-}
-
 
 
 static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
