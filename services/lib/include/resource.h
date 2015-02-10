@@ -12,6 +12,7 @@ typedef struct Resource
 
 	char *re_value_s;
 
+	char *re_title_s;
 } Resource;
 
 /*

@@ -5,6 +5,8 @@
 #include <QWidget>
 #include <QWebView>
 #include <QUrl>
+#include <QWebElementCollection>
+
 
 class BrowserWidget : public QWidget
 {
@@ -16,15 +18,20 @@ public:
 
 	void SetUrl (char *url_s);
 
+	QWebElementCollection Find (const char * const query_s);
+
+
 signals:
 	void UrlChanged (QString &str_r);
 	void TitleChanged (const char *title_s);
-
+	void FinishedLoading (BrowserWidget *w_p);
+	void FinishedResponse (BrowserWidget *w_p);
 
 private slots:
 	void ChangeTitle (const QString &title_r);
 	void ChangeUrl (const QUrl &url_r);
 	void  ReponseFinished (QNetworkReply *reply_p);
+void  LoadingComplete (bool ok);
 
 protected:
 	QWebView *bw_browser_p;

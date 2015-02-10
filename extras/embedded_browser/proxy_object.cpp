@@ -1,9 +1,13 @@
+#include <QWebElementCollection>
+#include <QWebElement>
+
 #include "proxy_object.h"
 
 
 ProxyObject :: ProxyObject ()
 {
 	po_text_s = NULL;
+	po_query_s  = NULL;
 }
 
 
@@ -26,6 +30,34 @@ void ProxyObject :: SetAccessToken (QByteArray ba)
 const QByteArray &ProxyObject :: GetAccessToken () const
 {
 	return po_access_token;
+}
+
+
+void ProxyObject :: SetSelector (const char  *query_s)
+{
+	po_query_s = query_s;
+}
+
+
+void ProxyObject :: FindElements (BrowserWidget *w_p)
+{
+	QWebElementCollection c = w_p -> Find (po_query_s);
+
+	int size = c.count();
+
+	for (int i = 0; i < size; ++ i)
+		{
+			QWebElement el = c.at (i);
+
+			if (el.hasAttribute ("href"))
+				{
+					QString s  = el.attribute ("href");
+				QString title = el.toInnerXml().trimmed().replace (QRegExp ("\\s+"), " ");
+
+					qDebug () << s.trimmed() << " -> " << title;
+				}
+		}
+
 }
 
 
@@ -93,3 +125,5 @@ const char *ProxyObject :: GetText () const
 {
 	return po_text_s;
 }
+
+

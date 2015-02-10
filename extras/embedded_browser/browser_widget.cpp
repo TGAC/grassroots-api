@@ -1,5 +1,7 @@
 #include <QHBoxLayout>
 #include <QtNetwork>
+#include <QWebFrame>
+
 #include "browser_widget.h"
 
 BrowserWidget::BrowserWidget(QWidget *parent)
@@ -15,9 +17,12 @@ BrowserWidget::BrowserWidget(QWidget *parent)
 
 	connect (bw_browser_p, &QWebView :: titleChanged, this, &BrowserWidget :: ChangeTitle);
 
+	connect (bw_browser_p, &QWebView :: loadFinished, this, &BrowserWidget :: LoadingComplete);
 
 	bw_network_manager_p = new QNetworkAccessManager (parent);
 	connect  (bw_network_manager_p, &QNetworkAccessManager :: finished, this, &BrowserWidget :: ReponseFinished);
+
+
 
 	setLayout (layout_p);
 }
@@ -64,6 +69,20 @@ void  BrowserWidget :: ChangeTitle (const QString &title_r)
 }
 
 
+QWebElementCollection BrowserWidget :: Find (const char * const query_s)
+{
+	QWebFrame *frame_p = bw_browser_p -> page () -> mainFrame ();
+	QWebElementCollection collection = frame_p -> findAllElements (query_s);
+
+	return collection;
+}
+
+
+
+void  BrowserWidget :: LoadingComplete (bool ok)
+{
+	emit FinishedLoading (this);
+}
 
 void  BrowserWidget :: ReponseFinished (QNetworkReply *reply_p)
 {
@@ -79,4 +98,5 @@ void  BrowserWidget :: ReponseFinished (QNetworkReply *reply_p)
 
 	bw_browser_p -> setHtml (html, reply_p -> request ().url ());
 
+	emit FinishedResponse (this);
 }
