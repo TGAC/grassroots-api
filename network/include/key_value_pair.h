@@ -24,7 +24,7 @@ extern "C"
 
 WHEATIS_NETWORK_API KeyValuePair *AllocateKeyValuePair (const char *key_s, const char *value_s);
 
-WHEATIS_NETWORK_API void FreeKeyValuePair (KeyValuePair *kvp_p)
+WHEATIS_NETWORK_API void FreeKeyValuePair (KeyValuePair *kvp_p);
 
 #ifdef __cplusplus
 }

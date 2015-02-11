@@ -1,6 +1,6 @@
-#include "key_value_pair.h"
 #include "memory_allocations.h"
-
+#include "key_value_pair.h"
+#include "string_utils.h"
 
 KeyValuePair *AllocateKeyValuePair (const char *key_s, const char *value_s)
 {
