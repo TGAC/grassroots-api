@@ -30,7 +30,11 @@ bool IsSelectorMatch (GumboNode *node_p, GumboSelector *selector_p)
 
 			if (!match_flag)
 				{
+					/* check for matching element */
+					if (selector_p -> gs_tag == el_p -> tag)
+						{
 
+						}
 				}
 
 		}
