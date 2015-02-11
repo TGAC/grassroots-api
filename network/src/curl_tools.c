@@ -143,6 +143,26 @@ void FreeCurl (CURL *curl_p)
 }
 
 
+bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s)
+{
+	bool success_flag = false;
+	CURLcode res = curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_URL, uri_s);
+
+	if (res == CURLE_OK)
+		{
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+CURLcode RunCurlTool (CurlTool *tool_p)
+{
+	return curl_easy_perform (tool_p -> ct_curl_p);
+}
+
+
 bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 {
 	bool success_flag = false;
@@ -286,6 +306,13 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 				
 	
 	return success_flag;
+}
+
+
+
+const char *GetCurlToolData (const CurlTool * const tool_p)
+{
+	return (GetByteBufferData (tool_p -> ct_buffer_p));
 }
 
 

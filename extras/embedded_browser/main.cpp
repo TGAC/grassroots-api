@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 	char * const agris_s = "http://agris.fao.org/agris-search/searchIndex.do?query=wheat";
 
 	w.SetUrl (agris_s);
-	po.SetSelector ("li.result-item h3 a");
+	po.SetSelector ("ul.result-list li.result-item h3 a");
 
  QObject :: connect (&w, &BrowserWidget :: TitleChanged, &po, &ProxyObject :: ChangeText);
  QObject :: connect (&po, &ProxyObject :: AccessTokenSet, &w, &BrowserWidget :: close);
@@ -24,9 +24,6 @@ int main(int argc, char *argv[])
 	w.show ();
 
 	res = a.exec();
-
-
-
 
 	const QByteArray &access_token_r  = po.GetAccessToken();
 

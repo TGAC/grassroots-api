@@ -63,6 +63,16 @@ WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_da
  */
 WHEATIS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
 
+
+WHEATIS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s);
+
+
+WHEATIS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
+
+
+WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
+
+
 #ifdef __cplusplus
 }
 #endif

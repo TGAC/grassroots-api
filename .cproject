@@ -46,6 +46,7 @@
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/sha1/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/re/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/usr/local/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1332274428" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -68,12 +69,13 @@
 					</folderInfo>
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.77732421.805542789" name="/" resourcePath="extras">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.459862496" name="cdt.managedbuild.toolchain.gnu.base" superClass="cdt.managedbuild.toolchain.gnu.base" unusedChildren="">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.770973003" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.2021463785"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.500730769" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063">
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.189615451" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2046251557" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base.797115336">
-								<option id="gnu.c.compiler.option.include.paths.1555926832" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.1555926832" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/core/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/md5/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/api/include&quot;"/>
@@ -139,10 +141,10 @@
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063;cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.c.compiler.base.797115336;cdt.managedbuild.tool.gnu.c.compiler.input.1332274428">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.c.compiler.base.797115336;cdt.managedbuild.tool.gnu.c.compiler.input.1332274428">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063;cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>

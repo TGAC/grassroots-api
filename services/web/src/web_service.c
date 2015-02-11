@@ -666,7 +666,7 @@ static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, jso
 					
 					if (res == OS_SUCCEEDED)
 						{
-							const char *buffer_data_p = GetByteBufferData (data_p -> wsd_curl_data_p -> ct_buffer_p);
+							const char *buffer_data_p = GetCurlToolData (data_p -> wsd_curl_data_p);
 							web_service_response_json_p = json_loads (buffer_data_p, 0, &error);
 
 							if (!web_service_response_json_p)
