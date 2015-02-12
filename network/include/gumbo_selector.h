@@ -13,10 +13,13 @@
 #include "network_library.h"
 
 
+
+
 typedef struct GumboSelector
 {
 	GumboTag gs_tag;
 	const char *gs_id_s;
+	const char *gs_class_s;
 	KeyValuePair *gs_attrs_p;
 	size_t gs_num_attrs;
 } GumboSelector;
@@ -45,6 +48,9 @@ WHEATIS_NETWORK_API GumboSelectorNode *AllocateGumboSelectorNode (GumboSelector 
 
 
 WHEATIS_NETWORK_API void FreeGumboSelectorNode (ListItem *node_p);
+
+
+WHEATIS_NETWORK_API const char *GetGumboSelectorAttributeValue (const GumboSelector * const selector_p, const char * const key_s);
 
 
 #ifdef __cplusplus

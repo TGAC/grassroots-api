@@ -39,22 +39,23 @@ INCLUDES = \
 SRCS 	= \
 	byte_buffer.c \
 	curl_tools.c \
-	gumbo_selector.h \
 	json_tools.c \
 	key_value_pair.c \
 	request_tools.c \
-	polar_ssl_connection.c
+	polar_ssl_connection.c \
+	selector.cpp
 	
 
 BASE_LDFLAGS = -ldl -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L/usr/local/lib/ -lpolarssl \
 	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
-	-lgumbo \
+	-L../extras/hcxselect-1.1 -lhcxselect \
+	-lhtmlcxx \
 	-Wl,-Bsymbolic-functions -Wl,-z,relro \
 	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp
 
-CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -I/usr/include
+CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I../extras/hcxselect-1.1/src
 
 LDFLAGS += $(BASE_LDFLAGS)
 

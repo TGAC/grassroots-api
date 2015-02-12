@@ -34,6 +34,7 @@
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtGui"/>
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/extras/hcxselect-1.1/src}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -141,10 +142,10 @@
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.c.compiler.base.797115336;cdt.managedbuild.tool.gnu.c.compiler.input.1332274428">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063;cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063;cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591">
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.c.compiler.base.797115336;cdt.managedbuild.tool.gnu.c.compiler.input.1332274428">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>

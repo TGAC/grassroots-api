@@ -1,0 +1,1061 @@
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>AGRIS results</title>
+		
+		<!-- Block Robots -->
+		<meta name="robots" content="noindex, nofollow">
+		
+		<!-- struts-jquery header -->
+		
+
+
+
+
+<script type="text/javascript" src="/agris-search/struts/js/base/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" src="/agris-search/struts/js/base/jquery.ui.core.min.js?s2j=3.7.1"></script>
+<script type="text/javascript" src="/agris-search/struts/js/plugins/jquery.subscribe.min.js?s2j=3.7.1"></script>
+
+<script type="text/javascript" src="/agris-search/struts/js/struts2/jquery.struts2.min.js?s2j=3.7.1"></script>
+
+<script type="text/javascript">
+    $(function () {
+        jQuery.struts2_jquery.version = "3.7.1";
+        jQuery.scriptPath = "/agris-search/struts/";
+        jQuery.struts2_jquery.gridLocal = "en";
+        jQuery.struts2_jquery.timeLocal = "en";
+        jQuery.ajaxSettings.traditional = true;
+
+        jQuery.ajaxSetup({
+            cache: false
+        });
+
+        jQuery.struts2_jquery.require("js/struts2/jquery.ui.struts2.min.js?s2j=3.7.1");
+
+    });
+</script>
+
+    <link id="jquery_theme_link" rel="stylesheet"
+          href="/agris-search/struts/themes/smoothness/jquery-ui.css?s2j=3.7.1" type="text/css"/>
+
+		<link rel="stylesheet" type="text/css" href="/agris-search/search/css/toolbar.css" />
+		<link rel="stylesheet" type="text/css" href="/agris-search/search/css/main.css" />
+		<link rel="icon" href="/agris-search/search/img/favicon.ico" type="image/x-icon" />  
+		<link rel="shortcut icon" href="/agris-search/search/img/favicon.ico" type="image/x-icon" /> 
+		
+		<!-- placeholder compatibility -->
+		<script type='text/javascript' src='/agris-search/search/js/placeholder.js'></script>
+		
+		<!-- Autocomplete -->
+		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+		
+		<!-- dropdown toolbar -->
+		<link rel="stylesheet" href="/agris-search/search/css/tinydropdown.css" type="text/css" />
+		<script type="text/javascript" src='/agris-search/search/js/tinydropdown.js'></script>
+		
+	</head>
+	
+	<!-- ********************************** -->
+	<!-- ************** BODY ************** -->
+	<!-- ********************************** -->
+	<body>
+	
+		<!-- ********************************** -->
+		<!-- ********* LANGUAGE BAR *********** -->
+		
+
+
+
+		<div>
+			<table width="85%">
+			<tr>
+			<td width="50%"><img alt="fao_logo" border="0" src="search/img/FAO-logo.png" height="50px"/></td>
+			<td width="30%">
+				<div id="langs">
+				<div class="NO">
+							
+					   	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					   	
+					   	<a href="/agris-search/searchIndex.do?request_locale=en&amp;recordID=&amp;sourceQuery=wheat&amp;query=wheat&amp;sortField=Relevance&amp;sortOrder=Descending&amp;agrovocString=&amp;advQuery=&amp;centerString=&amp;enableField=Disable">English</a>
+				</div>
+				<div class="NO">
+							
+						
+							
+							
+							
+					        
+					        
+					        
+					        
+					      	
+					      	
+					      	
+						
+						<a href="/agris-search/searchIndex.do?request_locale=es&amp;recordID=&amp;sourceQuery=wheat&amp;query=wheat&amp;sortField=Relevance&amp;sortOrder=Descending&amp;agrovocString=&amp;advQuery=&amp;centerString=&amp;enableField=Disable">Español</a>
+				</div>
+				<div class="NO">
+							
+						
+							
+							
+					      	
+					      	
+					     	
+					      	
+					      	
+					      	
+					      	
+					      	
+						
+						<a href="/agris-search/searchIndex.do?request_locale=fr&amp;recordID=&amp;query=wheat&amp;sourceQuery=wheat&amp;sortField=Relevance&amp;sortOrder=Descending&amp;agrovocString=&amp;advQuery=&amp;centerString=&amp;enableField=Disable">Français</a>
+				</div>
+				<div class="NO">
+							
+						
+							
+							
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+					      	
+						
+						<a href="/agris-search/searchIndex.do?request_locale=ar&amp;recordID=&amp;query=wheat&amp;sourceQuery=wheat&amp;sortField=Relevance&amp;sortOrder=Descending&amp;agrovocString=&amp;advQuery=&amp;centerString=&amp;enableField=Disable">العربية</a>
+				</div>
+				<div class="NO">
+							
+						
+							
+							
+					     	
+					     	
+					     	
+					    	
+					    	
+					      	
+					      	
+					      	
+						
+						<a href="/agris-search/searchIndex.do?request_locale=zh_CN&amp;recordID=&amp;query=wheat&amp;sourceQuery=wheat&amp;sortField=Relevance&amp;sortOrder=Descending&amp;agrovocString=&amp;advQuery=&amp;centerString=&amp;enableField=Disable">中文</a>
+				</div>
+				<div class="NO">
+							
+						
+							
+							
+					    	
+					    	
+					    	
+					    	
+					    	
+					      	
+					      	
+					      	
+						
+						<a href="/agris-search/searchIndex.do?request_locale=ru&amp;recordID=&amp;query=wheat&amp;sourceQuery=wheat&amp;sortField=Relevance&amp;sortOrder=Descending&amp;agrovocString=&amp;advQuery=&amp;centerString=&amp;enableField=Disable">Русский</a>
+				</div>
+				</div>
+			</td>
+			</tr>
+			</table>
+		</div>
+	
+		<!-- ********************************** -->
+		<!-- ************ TOOLBAR ************* -->
+		
+
+
+
+<div class="clear" id="page-header">
+
+			<!-- logo -->
+		    <div id="logo">
+		        <a href="."><img alt="agris" border="0" height="25px" src="search/img/logo.png"/></a>
+		    </div>
+		
+			<!-- Search bar -->
+		    <div class="site-search" id="SearchBox">
+		      <form id="searchIndex" name="search" action="/agris-search/searchIndex.do" method="get" class="SearchBox-form">
+		        <fieldset class="search-form-header">
+		        	<input type="text" name="query" value="" id="global-search-input" class="SearchBox-input AutocompleteInput-input" title="AGRIS Search" placeholder="Find resources..."/>	       
+		        </fieldset>
+		        <div id="div-search-submit">
+		        	<!-- Import the popup.js and add onclick="checkCount()" to add a popup -->
+		        	<input type="image" alt="Search" src="search/img/search_button_green.png" id="global-search-submit" value="Search" title="Search AGRIS"/>
+
+		        </div>
+		      </form>
+
+
+
+
+		    </div>
+		    
+		    <!-- Dropdown menu -->
+		    <ul id="menu" class="menu">
+			        <li>
+			        	<a target="_blank" href="http://agris.fao.org/content/about">About</a>
+			            <ul>
+			                <li><a class="submenu" target="_blank" href="http://agris.fao.org/content/how-it-works">How it works</a></li>
+			                <li><a class="submenu" target="_blank" href="http://agris.fao.org/content/agris-centers">AGRIS centers</a></li>
+			                <li><a class="submenu" target="_blank" href="http://agris.fao.org/content/contributors">For contributors</a></li>
+			                <li><a class="submenu" target="_blank" href="http://agris.fao.org/content/acceptable-use-policy">Acceptable use policy</a></li>
+			            </ul>
+			        </li>
+			        
+			        <li>
+			        	<a target="_blank" href="http://agris.fao.org/contact">Feedback</a>
+			            <ul>
+			               <!-- <li><a class="submenu" target="_blank" href="#">F.A.Q.</a></li> -->
+			               <!-- <li><a class="submenu" target="_blank" href="#">Contact</a></li>-->
+			            </ul>
+			        </li>
+		   </ul>
+
+		   <span class="div_right_toolbar">
+		   		<a target="_blank" href="search/search_help.html" /><img border="0" height="27px" src="search/img/help-green.png" title="Search help" alt="Search help"/></a>
+		   </span>
+</div>
+
+<!-- Autocomplete -->
+<script type='text/javascript' src='/agris-search/search/js/autocomplete.js'></script>
+
+<!-- Tiny Dropdown --> 
+<script type="text/javascript">
+    var dropdown=new TINY.dropdown.init("dropdown", {id:'menu', active:'menuhover'});
+</script>
+		
+		<!-- ********************************** -->
+		<!-- ******** DYNAMIC BANNER ********** -->
+		
+
+
+
+<!-- Old code for the survey: it can be used for any banners -->
+<div id="div_1145802416"
+
+ class="page_banner"
+
+
+>
+	<br/>
+	<div><img style="vertical-align:middle" border="0" height="29px" src="search/img/right_red_arrow.jpg" alt="red_arrow"/>
+	<b>Would you like to help us to get improved? Please fill in the <a href="http://goo.gl/forms/WG1EEfDweX" target="_blank">survey</a>!</b></div>
+	<br/>
+</div><script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_div_1145802416 = {};
+	options_div_1145802416.jqueryaction = "container";
+	options_div_1145802416.id = "div_1145802416";
+	options_div_1145802416.href = "#";
+	options_div_1145802416.effect = "shake";
+	options_div_1145802416.effectduration = 1000;
+	options_div_1145802416.effectoptions = {};
+  
+
+jQuery.struts2_jquery.bind(jQuery('#div_1145802416'),options_div_1145802416);
+
+ });  
+</script>
+
+  
+  		<!-- ********************************** -->
+		<!-- ************ CONTENT ************* -->
+		<!-- ********************************** -->
+		<table width="100%">
+			<tr>
+				<td class="contentLeft">
+					<div id="wrapperResults" class="full-page">
+						<div id="content" class="clear">
+							
+							<div id="title" class="header clear">
+							  
+							  <h1 id="page-title">
+							    <span class="page-title-content">Search Results</span>
+							     <!-- **** GET BIBLIOGRAPHY **** -->
+							     
+									
+									
+									
+									
+								
+								(<a class="goBiblio" href="/agris-search/biblio.do?advQuery=wheat&amp;enableField=Disable"/>
+									Get Classical View
+								</a>)
+							  </h1>
+							 
+							  <h3>
+							  	<i>Query:&nbsp;&nbsp;</i>
+							  	
+								  	wheat
+							  	
+							  	
+							  	
+							  	<!-- Build URL to copy -->
+							  	
+									
+									
+									
+									
+								&nbsp;
+								<a href="/agris-search/searchIndex.do?query=wheat&amp;startIndexSearch=0">
+									<img title="Copy URL" alt="CopyURL" border="0" height="20" src="search/img/clipboard.png"/>
+								</a>
+							  </h3>
+							  
+							  <!-- Add/Remove filters -->
+							  <p>
+							  	
+							  	
+													
+							  </p>
+							  <p>
+							  	
+							  	
+													
+							  </p>
+							  <p>
+							  	<b>Results 1 - 10 of 163,624</b>
+							  </p>
+							</div>
+							
+							<!-- ******************************** -->
+							<!-- ****** PREV/NEXT BUTTONS ******* -->
+							<!-- ******************************** -->
+							
+								<p align="right">	
+										
+									
+									
+										
+										
+										
+										
+										
+										
+										
+									
+									<a href="/agris-search/searchIndex.do?query=wheat&amp;startIndexSearch=10&amp;sortField=Relevance&amp;sortOrder=Descending&amp;enableField=Disable">next »</a>
+								</p>
+										
+							
+							<!-- ****** SHOW RESULTS ******* -->
+							<div id="content-wrapper">
+				    			<div id="content-main" class="content-box">
+									<ul class="result-list">
+										
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=IR2010000398">
+																Study of effects of economical factors on water use Efficiency in irrigated cereals under farmers Condition in areas of lower KRB in Khuzestan province.
+																
+																 [2009]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Asadi, Hormoz; A`bbasi, A`li Reza; Seyyedi Niyasar, Mas`ud; Heydari, Nader; A`bbasi, Fariborz; Mo`ayyeri, Mansur; Lotf A`li Ayeneh, A`bbas; Qamari Nezhad, Mas`ud; Mazra`eh, Sabah; Absalan, Shokr Ol-Lah; Shadid, Kamal; Shomu, Faruq; Farahani, Hamid; Nuri, Qumars; Qorbani, Mohammad</i></div>
+														
+														
+															<p class="res_prev">The purposes of this study were to: Socio-economic characteristics in target regions, Different water uses and water price for cereals in target regions, Situation of irrigated cereals in the Azadegan and Sorkheh plain, Socio-economic characteristics of sample farmers, determination of Profitability in irrigated cereals production between sample farmers ,Determination of average Water use efficiency in irrigated cereals between sample farmers , Estimation of production value in irrigated for one ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=IR2008001320">
+																Prediction of metabolizable energy in poultry feedstuffs basis on their chemical composition
+																
+																 [2007]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Yaqub Far, Akbar; Yusefi, Mohammad</i></div>
+														
+														
+															<p class="res_prev">Determination and knowledge quality and nutrient content in poultry feed resources are necessary for proper use of them in scientific poultry diet. In order to prepare chemical composition tables of feedstuffs in the country, this research was carried out on the most consuming poultry feed resources including corn, wheat, barley grains and wheat bran, produced in Iran. All of the samples were analyzed for crud protein, crud fiber ether extract and gross energy by the standard methods. Therefore, ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=CN2013001081">
+																A Study on Water Use of Two Fruit Tree-Wheat Intercropping Systems in the  Rocky Hilly Region of North China with Stable Carbon Isotope Technique
+																
+																 [May.2012]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>He Chunxia, Chinese Academy of Forestry; Meng Ping, Chinese Academy of Forestry; Zhang Jingsong, Chinese Academy of Forestry</i></div>
+														
+														
+															<p class="res_prev">在冬小麦返青期、拔节期、扬花-灌浆期和成熟期4个生育期采用稳定碳同位素技术研究华北石质山区4年生株行距3m&times;4m的核桃-小麦和石榴-小麦复合系统以及单作小麦的水分利用。研究得出核桃间作小麦（WIW）、石榴间作小麦（MIW）和单作小麦（MW）的&delta;13C和WUE分别为-27.151&permil;,-26.788&permil;,-27.338&permil;和12.780,13.285,12.622mmolC・mol-1H2O。在整个小麦生育期,&delta;13C和WUE都以石榴间作小麦的最大。WIW和MIW的WUE在拔节期分别比MW显著提高13.84%和10.86%。产量和总生物量都是MW显著高于WIW和MIW。WIW和MIW的总耗水量为185.92mm和175.27mm,分别比MW（253.81mm）少耗26.75%和30.94%,间作系统可显著降低小麦的耗水量,比单作小麦分别减产26.79%和32.19%。产量和生物量呈正相关且两者都与耗水量呈显著正相关,但与WUE相关性不显著,表明小麦耗水越多形成的生物量和产量越多。核桃-小麦和石榴-小麦间作系统在果树的第4年果实收获与清耕果园差异不明显,间作小麦尽管减产但仍有较好的作物收益并且耗 ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=CN2011000332">
+																Effect of phosphorus and zinc application on growth and nutrients uptake and distribution of wheat and rye
+																
+																 [Oct. 2010]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Yang Xiwen, Northwest Agriculture and Forestry University; Tian Xiaohong, Northwest Agriculture and Forestry University; Lu Xinchun, Northwest Agriculture and Forestry University</i></div>
+														
+														
+															<p class="res_prev">探讨供P和Zn对小麦与黑麦P-Zn关系以及小麦籽粒中锌与植酸含量的影响，为通过农艺措施提高小麦籽粒Zn含量及其生物有效性提供理论依据。在螯合-缓冲营养液中分别添加0.1，0.6，3.0，6.0 mmol/L P及0，3.0 &mu;mol/L Zn，采用营养液培养方法对小麦和黑麦进行了培养试验，分别在培养72和45 d收获小麦、黑麦，测定根部与地上部的干质量，P、Zn含量以及小麦籽粒的植酸含量，研究P及Zn对小麦、黑麦生长及养分吸收、分配的影响。供Zn后，小麦籽粒Zn含量、Zn吸收量分别是不供Zn处理的2.74和3.64倍，植酸含量及植酸与Zn物质的量比分别降低了9.64%和68.19%，供Zn还增加了小麦籽粒干质量，提高了小麦籽粒中的P含量，促进了P向籽粒中转运，同时也提高了籽粒中Zn的分配率；供Zn与否对小麦生长和黑麦地上部生长没有显著影响，但供Zn显著抑制了黑麦根部的生长。小麦、黑麦根部存在明显的P-Zn拮抗作用，但在相同环境中，黑麦根部对Zn的摄取能力明显较小麦强。小麦籽粒中植酸含量随着P供应浓度的增大而增加；过量供P抑制了小麦和黑麦对Zn的吸收，阻碍了Zn向小麦籽粒中转运；小麦籽粒 ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=IR2010000168">
+																Effect of crop rotation on Hordeum spontaneum C. koch control in wheat fields of Fars province.
+																
+																 [2006]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Jamali, Mohammad; Jukar, Ladan; Salimi, Homeyra; Shaker, Mohammad</i></div>
+														
+														
+															<p class="res_prev">An experiment was carried out during four years ( 2002 2006 ) with eight treatments and four replications to evaluate effects of crop rotations in wild barley control under RCBD in research site of Fars Agri. Research station . Treatments included:1-wheatwheat- wheat- wheat.2-wheat-fallow-maize(no herbicide) wheat.3-wheat-fallowmaize( with herbicide)-wheat.4-wheat-fallow-sugerbeet(no herbicide)-wheat.5- wheatfallow- sugar beet(with herbicide)-wheat.6-wheat-fallow-sunflower(no herbicide)- wheat.7 ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=QY9000063">
+																An overview of economic issues in wheat research and development in Sub-Saharan Africa
+																
+																 [1990]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Byerlee, D.; Morris, M.L. </i></div>
+														
+														
+															<p class="res_prev">From 1961 to 1987, wheat consumption in sub-Saharan Africa increased rapidly at 5.7 % per year, while production rose only 2.3 % per year from a very low base. About 90 % of increased consumption in the past two decades has been provided by imports, and sub-Saharan Africa is now only 25 % self-sufficient in wheat. Rising wheat consumption occurred at the same time that consumption of traditional staples was falling, indicating substantial substitution of wheat for these staples. To some extent,  ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=US9437092">
+																Nitrogen nutrition of rainfed winter wheat in tilled and no-till sorghum and wheat residues
+																
+																 [Jul-Aug 1993]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Knowles, T.C.; Hipp, B.W.; Graff, P.S.; Marshall, D.S.</i></div>
+														
+														
+															<p class="res_prev">Decomposition of sorghum [Sorghum bicolor (L.) Moench] and wheat (Triticum aestivum L.) plant residues can immobilize enough surface-applied N to cause a deficiency in successive winter wheat crops. This experiment examined the effects of conventional and no-till grain sorghum and wheat residues on N requirements of dryland winter wheat. Field experiments conducted from 1987-1991 on an Austin silty clay (fine-silty, carbonatic, thermic Udorthentic Haplustoll) soil included sorghum and wheat resi ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=QY2001000078">
+																A study of the adoption of bread wheat production technologies in Arsi Zone
+																
+																 [2000]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Ferede, S. ; Tanner, D.G. ; Verkuijl, H. ; Gebre, T. </i></div>
+														
+														
+															<p class="res_prev">Tremendous efforts have been exerted towards the development and dissemination of improved bread wheat (Triticum aestivum) production technologies in Arsi Zone of Ethiopia since the inception of comprehensive integrated package projects in the late 1960s. The current study examined the rate of adoption of wheat production technology and identified factors influencing the adoption of those technologies. A total of 300 farm households were surveyed in the five major wheat growing areas of Arsi Zon ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=PK2013000513">
+																Technical efficiency of wheat production in Punjab (Pakistan). A cropping zone wise analysis
+																
+																 [2012]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Hussain, A. ; Saboor, A. ; Khan, M.A. ; Mohsin, A.Q. ; Fayyaz-ul-Hassan ; Anwar, M.Z.</i></div>
+														
+														
+															<p class="res_prev">The study was conducted to analyze the technical efficiency in wheat production across major cropping zones of the Punjab (Pakistan) through Cobb-Douglas production frontier. It was based on the cross sectional data of the wheat crop for the year 2009-10, collected from a random sample of seventy households each from mixed, cotton-wheat, rice-wheat and rain-fed zones. The mean technical efficiency of wheat production was 76.2, 83.5, 76.9 and 57.4 per cent in mixed, cotton-wheat, rice-wheat and r ...</p>
+														
+														
+													
+												</li>	
+											
+												<li class="result-item">
+													
+														
+															<h3><a target="_blank" href="search.do?recordID=SD2010000091">
+																Effect of wheat production location and addition of guar gum on bread quality
+																
+																 [2008]
+																
+															</a></h3>
+														
+														
+															<div class="res_prev"><i>Ali, S.A.</i></div>
+														
+														
+															<p class="res_prev">This study was carried out to see the effect of environment and location on the quality of wheat grain from variety Debera (season 2005/2006). Two samples of wheat (Debera) were collected from two locations (Hudieba Research Station North Sudan)  and Wad Madeni Research Station (Central Sudan). Guar gum was used with different levels as recommended improver of Sudanese wheat flour.  Results obtained showed that the wheat location has a significant (P 0.05) impact on the physiochemical properties ...</p>
+														
+														
+													
+												</li>	
+											
+										
+									</ul>
+								</div>
+							</div>
+							
+							<!-- ******************************** -->
+							<!-- ****** PREV/NEXT BUTTONS ******* -->
+							<!-- ******************************** -->
+							
+								<p align="right">	
+										
+									
+									
+										
+										
+										
+										
+										
+										
+										
+									
+									<a href="/agris-search/searchIndex.do?query=wheat&amp;startIndexSearch=10&amp;sortField=Relevance&amp;sortOrder=Descending&amp;enableField=Disable">next »</a>
+								</p>
+												
+						</div>
+					</div>
+				</td>
+				
+				<td class="contentRight mashups_record" valign="top">
+					<table cellpadding="10" cellspacing="5" width="100%">
+							<tr>
+								<td>
+									<!-- ******************************* -->
+									<!-- **** MULTILINGUAL SEARCH ****** -->
+									<!-- ******************************* -->
+									<div id="accordionMultilang"
+ class="mashups_record">
+											<h3
+        id="accordionItem_1032873600"    >        <a id="accordionItem_1032873600_a" href="#">
+		    Multilingual search
+        </a>
+	</h3>
+	<div id="accordionItem_1032873600_div">
+											<form id="searchIndex" name="search-multi" action="/agris-search/searchIndex.do" method="get">
+												<div>
+													<input type="radio" name="enableField" id="searchIndex_enableFieldEnable" value="Enable"/><label for="searchIndex_enableFieldEnable">Enable</label>
+<input type="radio" name="enableField" id="searchIndex_enableFieldDisable" checked="checked" value="Disable"/><label for="searchIndex_enableFieldDisable">Disable</label>
+
+												</div>
+												<input type="hidden" name="query" value="wheat" id="searchIndex_query"/>
+												<input type="hidden" name="sourceQuery" value="wheat" id="searchIndex_sourceQuery"/>
+												<input type="hidden" name="agrovocString" value="" id="searchIndex_agrovocString"/>
+												<input type="hidden" name="typeString" value="" id="searchIndex_typeString"/>
+												<input type="hidden" name="sortField" value="Relevance" id="searchIndex_sortField"/>
+												<input type="hidden" name="sortOrder" value="Descending" id="searchIndex_sortOrder"/>
+												<br/>
+												<input type="submit" id="searchIndex_0" value="Go"/>
+
+											</form>
+
+
+
+
+											</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionItem_1032873600 = {};
+	options_accordionItem_1032873600.header = "h3";
+	options_accordionItem_1032873600.jqueryaction = "accordionItem";
+	options_accordionItem_1032873600.id = "accordionItem_1032873600";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionItem_1032873600'),options_accordionItem_1032873600);
+
+ });  
+</script>
+
+									</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionMultilang = {};
+	options_accordionMultilang.collapsible = true;
+	options_accordionMultilang.heightStyle = "content";
+	options_accordionMultilang.jqueryaction = "accordion";
+	options_accordionMultilang.id = "accordionMultilang";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionMultilang'),options_accordionMultilang);
+
+ });  
+</script>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<!-- ************************* -->
+									<!-- **** REFINE SEARCH ****** -->
+									<!-- ************************* -->
+									<div id="accordionRefine"
+ class="mashups_record">
+											<h3
+        id="accordionItem_835908948"    >        <a id="accordionItem_835908948_a" href="#">
+		    Refine your search
+        </a>
+	</h3>
+	<div id="accordionItem_835908948_div">
+											<form id="searchIndex" name="search" action="/agris-search/searchIndex.do" method="get">
+												<div><b>Sort by:</b></div>
+												<div>
+													<input type="radio" name="sortField" id="searchIndex_sortFieldRelevance" checked="checked" value="Relevance"/><label for="searchIndex_sortFieldRelevance">Relevance</label>
+<input type="radio" name="sortField" id="searchIndex_sortFieldSubmission Date" value="Submission Date"/><label for="searchIndex_sortFieldSubmission Date">Submission Date</label>
+
+												</div>
+												<br/>
+												<div><b>Order:</b></div>
+												<div>
+													<input type="radio" name="sortOrder" id="searchIndex_sortOrderAscending" value="Ascending"/><label for="searchIndex_sortOrderAscending">Ascending</label>
+<input type="radio" name="sortOrder" id="searchIndex_sortOrderDescending" checked="checked" value="Descending"/><label for="searchIndex_sortOrderDescending">Descending</label>
+
+												</div>
+												<input type="hidden" name="query" value="wheat" id="searchIndex_query"/>
+												<input type="hidden" name="sourceQuery" value="wheat" id="searchIndex_sourceQuery"/>
+												<input type="hidden" name="agrovocString" value="" id="searchIndex_agrovocString"/>
+												<input type="hidden" name="typeString" value="" id="searchIndex_typeString"/>
+												<input type="hidden" name="enableField" value="Disable" id="searchIndex_enableField"/>
+												<br/>
+												<input type="submit" id="searchIndex_0" value="Change order"/>
+
+											</form>
+
+
+
+
+											</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionItem_835908948 = {};
+	options_accordionItem_835908948.header = "h3";
+	options_accordionItem_835908948.jqueryaction = "accordionItem";
+	options_accordionItem_835908948.id = "accordionItem_835908948";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionItem_835908948'),options_accordionItem_835908948);
+
+ });  
+</script>
+
+									</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionRefine = {};
+	options_accordionRefine.collapsible = true;
+	options_accordionRefine.heightStyle = "content";
+	options_accordionRefine.jqueryaction = "accordion";
+	options_accordionRefine.id = "accordionRefine";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionRefine'),options_accordionRefine);
+
+ });  
+</script>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<!-- ******************************** -->
+									<!-- **** AGROVOC TOP CONCEPTS ****** -->
+									<!-- ******************************** -->
+									
+									
+										<div id="accordionAgrovocTop"
+ class="mashups_record">
+												<h3
+        id="accordionItem_1584567228"    >        <a id="accordionItem_1584567228_a" href="#">
+		    Up to 10 AGROVOC descriptors most used in this result set. Click on keywords to refine your search.
+        </a>
+	</h3>
+	<div id="accordionItem_1584567228_div">
+												<ul>
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=triticum aestivum (22691)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																triticum aestivum (22691)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=wheats (12645)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																wheats (12645)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=triticum (9762)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																triticum (9762)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=varieties (7686)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																varieties (7686)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=crop yield (6726)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																crop yield (6726)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=winter crops (4739)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																winter crops (4739)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=yields (3997)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																yields (3997)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=quality (3820)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																quality (3820)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=grain (3332)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																grain (3332)</a></li>		
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=disease resistance (2931)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																disease resistance (2931)</a></li>		
+													
+												</ul>
+												</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionItem_1584567228 = {};
+	options_accordionItem_1584567228.header = "h3";
+	options_accordionItem_1584567228.jqueryaction = "accordionItem";
+	options_accordionItem_1584567228.id = "accordionItem_1584567228";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionItem_1584567228'),options_accordionItem_1584567228);
+
+ });  
+</script>
+
+										</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionAgrovocTop = {};
+	options_accordionAgrovocTop.collapsible = true;
+	options_accordionAgrovocTop.heightStyle = "content";
+	options_accordionAgrovocTop.jqueryaction = "accordion";
+	options_accordionAgrovocTop.id = "accordionAgrovocTop";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionAgrovocTop'),options_accordionAgrovocTop);
+
+ });  
+</script> 
+									
+									
+								</td> 
+							</tr>
+							<tr>
+								<td>
+									<!-- ******************************** -->
+									<!-- **** COUNTRY TOP CONCEPTS ****** -->
+									<!-- ******************************** -->
+									
+									
+										<div id="accordionCountryTop"
+ class="mashups_record">
+												<h3
+        id="accordionItem_1644085381"    >        <a id="accordionItem_1644085381_a" href="#">
+		    Countries available in this result set. Click on keywords to refine your search by Country.
+        </a>
+	</h3>
+	<div id="accordionItem_1644085381_div">
+												<ul>
+													
+														<li><a href="searchIndex.action?query=wheat&agrovocToAdd=pakistan (1106)&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+																pakistan (1106)</a></li>		
+													
+												</ul>
+												</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionItem_1644085381 = {};
+	options_accordionItem_1644085381.header = "h3";
+	options_accordionItem_1644085381.jqueryaction = "accordionItem";
+	options_accordionItem_1644085381.id = "accordionItem_1644085381";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionItem_1644085381'),options_accordionItem_1644085381);
+
+ });  
+</script>
+
+										</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionCountryTop = {};
+	options_accordionCountryTop.collapsible = true;
+	options_accordionCountryTop.heightStyle = "content";
+	options_accordionCountryTop.jqueryaction = "accordion";
+	options_accordionCountryTop.id = "accordionCountryTop";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionCountryTop'),options_accordionCountryTop);
+
+ });  
+</script> 
+									
+									
+								</td> 
+							</tr>
+							<tr>
+								<td>
+									<!-- *********************** -->
+									<!-- **** AGRIS TYPES ****** -->
+									<!-- *********************** -->
+									<div id="accordionTypesTop"
+ class="mashups_record">
+											<h3
+        id="accordionItem_1422187721"    >        <a id="accordionItem_1422187721_a" href="#">
+		    Content types in this result set. Click on keywords to refine your search.
+        </a>
+	</h3>
+	<div id="accordionItem_1422187721_div">
+											<ul>
+												<li><a href="searchIndex.action?query=wheat&typeToAdd=bibliography&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+														Bibliography</a></li>
+												<li><a href="searchIndex.action?query=wheat&typeToAdd=book&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+														Book</a></li>
+												<li><a href="searchIndex.action?query=wheat&typeToAdd=conference&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+														Conference</a></li>
+												<li><a href="searchIndex.action?query=wheat&typeToAdd=journal_article&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+														Journal Article</a></li>
+												<li><a href="searchIndex.action?query=wheat&typeToAdd=thesis&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+														Thesis</a></li>
+												<li><a href="searchIndex.action?query=wheat&typeToAdd=other&enableField=Disable&sortField=Relevance&sortOrder=Descending&agrovocString=&typeString=">
+														Other</a></li>		
+											</ul>
+											</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionItem_1422187721 = {};
+	options_accordionItem_1422187721.header = "h3";
+	options_accordionItem_1422187721.jqueryaction = "accordionItem";
+	options_accordionItem_1422187721.id = "accordionItem_1422187721";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionItem_1422187721'),options_accordionItem_1422187721);
+
+ });  
+</script>
+
+									</div>
+<script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_accordionTypesTop = {};
+	options_accordionTypesTop.collapsible = true;
+	options_accordionTypesTop.heightStyle = "content";
+	options_accordionTypesTop.jqueryaction = "accordion";
+	options_accordionTypesTop.id = "accordionTypesTop";
+
+jQuery.struts2_jquery_ui.bind(jQuery('#accordionTypesTop'),options_accordionTypesTop);
+
+ });  
+</script> 
+								</td> 
+							</tr>
+							<tr>
+								<td width="100%" align="left">
+									<!-- *********** -->
+									<!--  EUROPEANA  -->
+									<!-- *********** -->
+									
+									<div align="left">
+										<div id="div_200657592"
+
+
+
+
+>
+											<img id="indicator" src="search/img/loading.gif" border="0" alt="Loading..."/>
+										</div><script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_div_200657592 = {};
+	options_div_200657592.jqueryaction = "container";
+	options_div_200657592.id = "div_200657592";
+	options_div_200657592.href = "/agris-search/europeana.do";
+	options_div_200657592.hrefparameter = "sourceQuery=wheat";
+	options_div_200657592.indicatorid = "indicator";
+	options_div_200657592.timeout = 10000;
+  
+
+jQuery.struts2_jquery.bind(jQuery('#div_200657592'),options_div_200657592);
+
+ });  
+</script>
+
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td width="100%" align="left">
+									<!-- ****************** -->
+									<!-- Nature Open Search -->
+									<!-- ****************** -->
+									
+									<div align="left">
+										<div id="div_1081565494"
+
+
+
+
+>
+											<img id="indicator" src="search/img/loading.gif" border="0" alt="Loading..."/>
+										</div><script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_div_1081565494 = {};
+	options_div_1081565494.jqueryaction = "container";
+	options_div_1081565494.id = "div_1081565494";
+	options_div_1081565494.href = "/agris-search/nature.do";
+	options_div_1081565494.hrefparameter = "sourceQuery=wheat";
+	options_div_1081565494.indicatorid = "indicator";
+	options_div_1081565494.timeout = 10000;
+  
+
+jQuery.struts2_jquery.bind(jQuery('#div_1081565494'),options_div_1081565494);
+
+ });  
+</script>
+
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td width="100%" align="left">
+									<!-- ************* -->
+									<!--  CASDD Record -->
+									<!-- ************* -->
+									
+									<div id="casddRetrResult" align="left">
+										<div id="div_1373531535"
+
+
+
+
+>
+											<img id="indicator" src="search/img/loading.gif" border="0" alt="Loading..."/>
+										</div><script type='text/javascript'>
+jQuery(document).ready(function () { 
+	var options_div_1373531535 = {};
+	options_div_1373531535.jqueryaction = "container";
+	options_div_1373531535.id = "div_1373531535";
+	options_div_1373531535.href = "/agris-search/casdd.do";
+	options_div_1373531535.hrefparameter = "sourceQuery=wheat";
+	options_div_1373531535.indicatorid = "indicator";
+	options_div_1373531535.timeout = 60000;
+  
+
+jQuery.struts2_jquery.bind(jQuery('#div_1373531535'),options_div_1373531535);
+
+ });  
+</script>
+
+									</div>
+								</td>
+							</tr>
+						</table>
+				</td>
+			</tr>
+		</table>
+		
+		<!-- ********************************* -->
+		<!-- ************ FOOTER ************* -->
+		
+
+
+
+<div id="page-footer">
+	<table cellpadding="3">
+		<tr valign="middle">
+			<td width="5%">
+				<a href="http://www.fao.org/home/en/" target="_blank"><img alt="fao" border="0" height="43" src="search/img/fao.png"/></a></td>
+			<td width="10%">
+				<a href="http://www.ciard.net/" target="_blank"><img alt="ciard" border="0" height="40" src="search/img/ciard_transparent.gif"/></a></td>
+			<td width="5%">
+				<a href="http://aims.fao.org/" target="_blank"><img alt="aims" border="0" height="26" src="search/img/aims-logo-footer.png"/></a></td>
+			<td width="70%">AGRIS: International Information System for the Agricultural Science and Technology</td>
+			<td width="10%">
+				<a href="http://aginfra.eu/" target="_blank"><img alt="aginfra" border="0" height="43" src="search/img/aginfra.png"/></a></td>
+		</tr>
+	</table>
+</div>
+		
+		<!-- ********************************** -->
+		<!-- placeholder browsers compatibility -->
+		<!-- ********************************** -->
+	  	<script>
+	  		$.fn.placeholder();
+	  	</script>
+		
+		<!-- ************************************************ -->
+		<!-- ********** FAO Google Analytics code *********** -->
+		<!-- ************************************************ -->
+		<!-- Google Analytics -->
+		<script>
+		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+		})(window,document,'script','//www.google-analytics.com/analytics.js','_gaTracker');
+		  _gaTracker('create', 'UA-16953388-1', 'fao.org');
+		  _gaTracker('send', 'pageview');
+		  _gaTracker('create', 'UA-16957552-1', {'name':'allSites'});
+		  _gaTracker('allSites.send', 'pageview');
+		</script>
+		<!-- End Google Analytics -->
+		
+	</body>
+</html>
