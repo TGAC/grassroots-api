@@ -163,6 +163,42 @@ CURLcode RunCurlTool (CurlTool *tool_p)
 }
 
 
+json_t *GetLinksAsJSON (CurlTool *tool_p, const char * const uri_s, const char * const selector_s)
+{
+	json_t *links_json_p = NULL;
+	HtmlLinkArray *links_p = GetLinks (tool_p, uri_s, selector_s);
+
+	if (links_p)
+		{
+		}
+
+	return links_p;
+}
+
+
+HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s)
+{
+	HtmlLinkArray *links_p = NULL;
+
+	if (uri_s)
+		{
+			if (!SetUriForCurlTool (tool_p, uri_s))
+				{
+					return NULL;
+				}
+		}
+
+	if (RunCurlTool (tool_p) == CURLE_OK)
+		{
+			const char *data_s = GetCurlToolData (tool_p);
+
+			links_p = GetMatchingLinks (data_s, selector_s);
+		}
+
+	return links_p;
+}
+
+
 bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 {
 	bool success_flag = false;

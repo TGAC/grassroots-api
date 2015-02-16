@@ -3,10 +3,11 @@
 
 #include <curl/curl.h>
 
+
 #include "typedefs.h"
 #include "network_library.h"
 #include "byte_buffer.h"
-
+#include "selector.hpp"
 
 typedef struct CurlTool
 {
@@ -72,6 +73,8 @@ WHEATIS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
 
 WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
 
+
+WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s);
 
 #ifdef __cplusplus
 }

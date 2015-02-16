@@ -7,6 +7,7 @@ MAKEDEPEND 	= g++ -MM -MF
 
 DIR_ROOT = ../..
 DIR_IRODS	= $$IRODS_HOME
+DIR_EXTERNAL_LIBS = ../../external_libs
 
 DIR_WHEATIS_UTIL = ../../util
 DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
@@ -54,7 +55,8 @@ LDFLAGS += -ljansson \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-L/usr/lib/x86_64-linux-gnu/ -lcurl\
-	-ldl 
+	-ldl \
+	-L$(DIR_EXTERNAL_LIBS) -l hcxselect
 
 .PHONY:	all 
 

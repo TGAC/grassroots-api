@@ -9,6 +9,9 @@ DIR_ROOT = ../..
 
 DIR_IRODS	= $$IRODS_HOME
 
+DIR_EXTERNAL_LIBS = ../../external_libs
+
+
 DIR_INSTALL = ../../../wheatis_demo
 
 DIR_WHEATIS_UTIL = ../../util
@@ -79,7 +82,7 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljans
 	-L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS) -lirods \
-
+	-L$(DIR_EXTERNAL_LIBS) -l hcxselect
 
 
 .PHONY:	all 

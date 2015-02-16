@@ -3,11 +3,12 @@
 #include <curl/curl.h>
 
 #include "curl_tools.h"
+#include "selector.hpp"
  
- 
-CURLcode SimpleTest (CURL *curl_p, const char * const url_s);
-CURLcode ComplexTest (CURL *curl_p, const char * const url_s, const char * const ca_certificate_s, const char * const certificate_s, const char *key_name_s);
-CURLcode Test1 (CURL *curl_p);
+CURLcode SimpleTest (CurlTool *tool_p, const char * const url_s);
+CURLcode ComplexTest (CurlTool *tool_p, const char * const url_s, const char * const ca_certificate_s, const char * const certificate_s, const char *key_name_s);
+CURLcode Test1 (CurlTool *tool_p);
+HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s);
 
 //#define SKIP_PEER_VERIFICATION (1)
 
@@ -15,28 +16,38 @@ int main (int argc, char *argv [])
 {
 	if (argc == 5)
 		{
-			CURL *curl_p;
+			CurlTool *tool_p = AllocateCurlTool ();
 
-			curl_p = curl_easy_init ();
-			if (curl_p) 
+			if (tool_p)
 				{
-					CURLcode res = SimpleTest (curl_p, argv [1]);
-					
-					res = Test1 (curl_p);
-					
-					res = ComplexTest (curl_p, argv [1], argv [2], argv [3], argv [4]);
-					
-					curl_easy_cleanup (curl_p);
-				}		/* if (curl_p) */
+					HtmlLinkArray *links_p = GetLinks (tool_p, "http://agris.fao.org/agris-search/searchIndex.do?query=wheat", "li.result-item h3 a");
 
+					if (links_p)
+						{
+							size_t i = links_p -> hla_num_entries;
+							HtmlLink *link_p = links_p -> hla_data_p;
+
+							for ( ; i > 0; -- i, ++ link_p)
+								{
+									printf ("link -> uri_s \"%s\" data \"%s\" title \"%s\"\n", link_p -> hl_uri_s, link_p -> hl_data_s, link_p -> hl_title_s);
+								}
+
+							FreeHtmlLinkArray (links_p);
+						}
+
+					FreeCurlTool (tool_p);
+				}
 		}
 		
 	return 0;
 }
 
 
-CURLcode ComplexTest (CURL *curl_p, const char * const url_s, const char * const ca_certificate_s, const char * const certificate_s, const char *key_name_s)
+
+CURLcode ComplexTest (CurlTool *tool_p, const char * const url_s, const char * const ca_certificate_s, const char * const certificate_s, const char *key_name_s)
 {
+	CURL *curl_p = tool_p -> ct_curl_p;
+
 	CURLcode res = CURLE_OK;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
@@ -49,6 +60,8 @@ CURLcode ComplexTest (CURL *curl_p, const char * const url_s, const char * const
 			bool success_flag = CallSecureUrl (url_s, header_data_s, ca_certificate_s, certificate_s, key_name_s, verify_certs, buffer_p);
 
 			printf ("%d\n%s\n", (int) success_flag, buffer_p -> bb_data_p);
+
+
 
 			FreeByteBuffer (buffer_p);
 		}		/* if (buffer_p) */
@@ -63,8 +76,9 @@ CURLcode ComplexTest (CURL *curl_p, const char * const url_s, const char * const
 }
 
 
-CURLcode SimpleTest (CURL *curl_p, const char * const url_s)
+CURLcode SimpleTest (CurlTool *tool_p, const char * const url_s)
 {
+	CURL *curl_p = tool_p -> ct_curl_p;
 	CURLcode res;
 	curl_easy_setopt (curl_p, CURLOPT_URL, url_s);
  
@@ -113,8 +127,9 @@ CURLcode SimpleTest (CURL *curl_p, const char * const url_s)
 }
 
 
-CURLcode Test1 (CURL *curl_p)
+CURLcode Test1 (CurlTool *tool_p)
 {
+	CURL *curl_p = tool_p -> ct_curl_p;
   CURLcode ret;
 
 	printf ("Test1 init\n");

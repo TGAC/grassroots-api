@@ -3,11 +3,12 @@
 #
 
 LEX = flex
-CXXFLAGS += -Wall -Wno-unused-function -g
+CXXFLAGS += -Wall -Wno-unused-function -g -fPIC  -DSHARED_LIBRARY -DHCXSELECT_LIBRARY_EXPORTS -I../../../util/include
 CXXFLAGS += $(shell pkg-config --cflags htmlcxx)
-LFLAGS += --reentrant
+LFLAGS += --reentrant 
 
-all: lib
+
+all: lib 
 
 .cpp.o: lexer.h
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -18,7 +19,11 @@ lexer.h: lexer.l
 libhcxselect.a: hcxselect.o
 	$(AR) rcs libhcxselect.a hcxselect.o
 
-lib: lexer.h libhcxselect.a
+libhcxselect.so: hcxselect.o
+	$(LD) -shared -o libhcxselect.so hcxselect.o 
+
+lib: lexer.h libhcxselect.a libhcxselect.so
+
 
 clean:
 	$(RM) *.o *.a lexer.h

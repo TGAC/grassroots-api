@@ -1,0 +1,36 @@
+{
+	"schema_version": 0.1,
+	"provider": {
+		"name": "Agris",
+		"description": "A service to search for academic articles.",
+		"url": "http://agris.fao.org/agris-search/index.do"
+	},
+	"services": {
+    "path": "Search service",
+    "summary": "A service to obtain articles",
+		"description": "A service to obtain articles using search terms",    
+    "plugin": "web_search_service",
+    "operations": [
+			{
+				"operationId": "Contig service",
+				"summary": "An operation to obtain contig information using SNP or Contig names",
+				"description": "An operation to obtain contig information using SNP or Contig names",
+				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
+				"method": "GET",
+				"selector": "li.result-item h3 a",
+				"parameters": [
+					{
+						"param": "query",
+						"name": "query",
+						"default": "",
+						"current_value": "",
+						"type": "string",
+						"tag": 1,
+						"wheatis_type": 5,
+						"description": "The search term"
+					},
+				]
+			}
+		]
+  }
+}

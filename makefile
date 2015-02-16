@@ -19,6 +19,7 @@ all:
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
 	$(MAKE) -C services/web
+	$(MAKE) -C services/web_search
 	$(MAKE) -C services/irods_search
 					
 install: install_init install_references install_images
@@ -38,6 +39,7 @@ install: install_init install_references install_images
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
 	$(MAKE) -C services/web install
+	$(MAKE) -C services/web_search install
 	$(MAKE) -C services/irods_search install
 
 clean: 
@@ -57,6 +59,7 @@ clean:
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
 	$(MAKE) -C services/web clean
+	$(MAKE) -C services/web_search clean	
 	$(MAKE) -C services/irods_search clean
 	
 install_init:

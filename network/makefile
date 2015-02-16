@@ -50,7 +50,7 @@ BASE_LDFLAGS = -ldl -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L/usr/local/lib/ -lpolarssl \
 	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
-	-L../extras/hcxselect-1.1 -lhcxselect \
+	-L../extras/hcxselect-1.1/src -lhcxselect \
 	-lhtmlcxx \
 	-Wl,-Bsymbolic-functions -Wl,-z,relro \
 	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp
@@ -59,13 +59,14 @@ CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -I/usr/include -I/usr/local/includ
 
 LDFLAGS += $(BASE_LDFLAGS)
 
+
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	test test_install
 
 
 test:
-	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -o $(BUILD)/$(TEST_EXE_NAME)
+	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -g -o $(BUILD)/$(TEST_EXE_NAME)
 
 
 test_install: test install
