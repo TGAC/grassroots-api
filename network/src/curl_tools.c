@@ -172,7 +172,7 @@ json_t *GetLinksAsJSON (CurlTool *tool_p, const char * const uri_s, const char *
 		{
 		}
 
-	return links_p;
+	return links_json_p;
 }
 
 
