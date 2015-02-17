@@ -112,7 +112,7 @@ static int CallPython (int argc, char *argv [])
 											else
 												{
 													PyErr_Print ();
-													fprintf (stderr, "Failed to buile args list\n");
+													fprintf (stderr, "Failed to build args list\n");
 												}
 										}
 									else

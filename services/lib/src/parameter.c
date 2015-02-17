@@ -953,7 +953,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 											const char *protocol_s = json_string_value (protocol_p);
 											const char *value_s = json_string_value (res_value_p);
 
-											value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s);
+											value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s, NULL);
 											
 											success_flag = (value_p -> st_resource_value_p != NULL);										
 										}					
@@ -1228,7 +1228,7 @@ static const char *GetStringValue (const json_t * const json_p, const char * con
 static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p)
 {
 	bool success_flag = true;
-	const json_t *store_json_p = json_object_get (root_p, PARAM_STORE_S);
+	json_t *store_json_p = json_object_get (root_p, PARAM_STORE_S);
 
 	if (store_json_p)
 		{

@@ -9,7 +9,7 @@
 #define CSS_SELECTOR_HPP
 
 #include "network_library.h"
-
+#include "jansson.h"
 
 typedef struct HtmlLink
 {
@@ -31,6 +31,7 @@ extern "C"
 {
 #endif
 
+WHEATIS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const selector_s);
 
 WHEATIS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const selector_s);
 

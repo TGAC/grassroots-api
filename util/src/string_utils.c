@@ -216,7 +216,6 @@ void FreeLineBuffer (char *buffer_p)
 }
 
 
-
 char *ConcatenateStrings (const char * const first_s, const char * const second_s)
 {
 	const size_t len1 = (first_s != NULL) ? strlen (first_s) : 0;

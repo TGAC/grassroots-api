@@ -7,6 +7,7 @@
 #include "string_utils.h"
 #include "math_utils.h"
 #include "service.h"
+#include "resource.h"
 
 #include "query.h"
 #include "connect.h"

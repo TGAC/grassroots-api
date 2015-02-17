@@ -70,12 +70,12 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 						{
 							icon_path_s = "images/list_file";
 						}
-					else	if (strcmp (protocol_s, PROTOCOL_IRODS_S) == 0)
+					else	if ((strcmp (protocol_s, PROTOCOL_HTTP_S) == 0) || (strcmp (protocol_s, PROTOCOL_HTTPS_S) == 0))
 						{
 							icon_path_s = "images/list_internet";
 						}
 
-					QListWidgetItem *item_p = new QListWidgetItem (value_s, rl_list_p);;
+					QListWidgetItem *item_p = new QListWidgetItem (value_s, rl_list_p);
 
 					if (icon_path_s)
 						{

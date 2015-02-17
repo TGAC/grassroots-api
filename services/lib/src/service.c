@@ -2,6 +2,8 @@
 /* Allocate the global constants in service.h */
 #define ALLOCATE_PATH_TAGS (1)
 
+#include <string.h>
+
 #include "service.h"
 #include "plugin.h"
 #include "string_linked_list.h"
@@ -866,5 +868,79 @@ json_t *CreateServiceResponseAsJSON (const char * const service_name_s, Operatio
 
 	
 	return json_p;
+}
+
+
+
+ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s)
+{
+	if (config_p)
+		{
+			/* Make sure that the config refers to our service */
+			json_t *value_p = json_object_get (config_p, PLUGIN_NAME_S);
+
+			if (value_p)
+				{
+					if (json_is_string (value_p))
+						{
+							const char *value_s = json_string_value (value_p);
+
+							if (strcmp (value_s, plugin_name_s) == 0)
+								{
+									json_t *ops_p = json_object_get (config_p, SERVER_OPERATIONS_S);
+
+									if (ops_p)
+										{
+											size_t num_ops = json_is_array (ops_p) ? json_array_size (ops_p) : 1;
+											ServicesArray *services_p = AllocateServicesArray (num_ops);
+
+											if (services_p)
+												{
+													size_t i = 0;
+													Service **service_pp = services_p -> sa_services_pp;
+
+													while (i < num_ops)
+														{
+															json_t *op_p =  json_array_get (ops_p, i);
+															Service *service_p = NULL; // GetService (op_p);
+
+															if (service_p)
+																{
+																	*service_pp = service_p;
+																}
+															else
+																{
+																	char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																	if (dump_s)
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create service %lu from:\n%s\n", i, dump_s);
+																			free (dump_s);
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create service %lu\n", i);
+																		}
+
+																}
+
+															++ i;
+															++ service_pp;
+														}
+
+														return services_p;
+												}
+
+										}
+
+								}		/* if (strcmp (value_s, plugin_name_s) == 0) */
+
+						}		/* if (json_is_string (value_p)) */
+
+				}		/* if (value_p) */
+
+		}		/* if (config_p) */
+
+	return NULL;
 }
 

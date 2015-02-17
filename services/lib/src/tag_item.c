@@ -1,9 +1,9 @@
 #include "tag_item.h"
 
 
-const TagItem *FindMatchingTag (const TagItem *tags_p, Tag tag)
+TagItem *FindMatchingTag (TagItem *tags_p, Tag tag)
 {
-	const TagItem *ti_p = tags_p;
+	TagItem *ti_p = tags_p;
 	
 	if (ti_p)
 		{

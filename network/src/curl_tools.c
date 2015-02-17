@@ -46,6 +46,8 @@
 #include <curl/curl.h>
 #include <curl/easy.h>
 
+#include "jansson.h"
+
 #include "curl_tools.h"
 #include "streams.h"
 #include "memory_allocations.h"
@@ -160,19 +162,6 @@ bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s)
 CURLcode RunCurlTool (CurlTool *tool_p)
 {
 	return curl_easy_perform (tool_p -> ct_curl_p);
-}
-
-
-json_t *GetLinksAsJSON (CurlTool *tool_p, const char * const uri_s, const char * const selector_s)
-{
-	json_t *links_json_p = NULL;
-	HtmlLinkArray *links_p = GetLinks (tool_p, uri_s, selector_s);
-
-	if (links_p)
-		{
-		}
-
-	return links_json_p;
 }
 
 

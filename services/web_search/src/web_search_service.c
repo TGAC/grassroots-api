@@ -16,28 +16,12 @@
 #include "streams.h"
 #include "curl_tools.h"
 #include "selector.hpp"
-
-
-typedef enum SubmissionMethod
-{
-	SM_UNKNOWN = -1,
-	SM_POST,
-	SM_GET,
-	SM_BODY,
-	SM_NUM_METHODS
-} SubmissionMethod;
+#include "web_service_util.h"
 
 
 typedef struct WebSearchServiceData
 {
-	ServiceData wssd_base_data;
-	json_t *wssd_config_p;
-	const char *wssd_name_s;
-	const char *wssd_description_s;
-	ParameterSet *wssd_params_p;
-	ByteBuffer *wssd_buffer_p;
-	SubmissionMethod wssd_method;
-	CurlTool *wssd_curl_data_p;
+	WebServiceData wssd_base_data;
 	const char *wssd_css_selector_s;
 } WebSearchServiceData;
 
@@ -50,7 +34,7 @@ static const char *S_URI_S = "uri";
  * STATIC PROTOTYPES
  */
 
-static Service *GetService (json_t *operation_json_p);
+static Service *GetWebSearchService (json_t *operation_json_p);
 
 static const char *GetWebSearchServiceName (Service *service_p);
 
@@ -84,13 +68,6 @@ static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_da
 static bool CallCurlWebservice (WebSearchServiceData *data_p);
 
 
-
-static SubmissionMethod GetSubmissionMethod (const json_t *op_json_p);
-
-static bool SetURI (const json_t *op_json_p, CURL *curl_p);
-
-
-
 /*
  * API FUNCTIONS
  */
@@ -99,75 +76,7 @@ static bool SetURI (const json_t *op_json_p, CURL *curl_p);
  
 ServicesArray *GetServices (json_t *config_p)
 {
-	if (config_p)
-		{
-			/* Make sure that the config refers to our service */
-			const char * const plugin_name_s = "web_service";
-			json_t *value_p = json_object_get (config_p, PLUGIN_NAME_S);
-
-			if (value_p)
-				{
-					if (json_is_string (value_p))
-						{
-							const char *value_s = json_string_value (value_p);
-							
-							if (strcmp (value_s, plugin_name_s) == 0)
-								{
-									json_t *ops_p = json_object_get (config_p, SERVER_OPERATIONS_S);
-									
-									if (ops_p)
-										{
-											size_t num_ops = json_is_array (ops_p) ? json_array_size (ops_p) : 1;											
-											ServicesArray *services_p = AllocateServicesArray (num_ops);
-											
-											if (services_p)
-												{
-													size_t i = 0;
-													Service **service_pp = services_p -> sa_services_pp;
-													
-													while (i < num_ops)
-														{
-															json_t *op_p =  json_array_get (ops_p, i);															
-															Service *service_p = GetService (op_p);
-															
-															if (service_p)
-																{
-																	*service_pp = service_p;
-																}
-															else
-																{
-																	char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-																	
-																	if (dump_s)
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create servce %lu from:\n%s\n", i, dump_s);
-																			free (dump_s);
-																		}
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create servce %lu\n", i);																			
-																		}
-																	
-																}
-																														
-															++ i;
-															++ service_pp;
-														}
-														
-														return services_p;
-												}
-											
-										}
-
-								}		/* if (strcmp (value_s, plugin_name_s) == 0) */						
-								
-						}		/* if (json_is_string (value_p)) */
-
-				}		/* if (value_p) */
-			
-		}		/* if (config_p) */
-						
-	return NULL;
+	return GetReferenceServicesFromJSON (config_p, "web_search_service");
 }
 
 
@@ -185,7 +94,7 @@ void ReleaseService (Service *service_p)
 
 
 
-static Service *GetService (json_t *operation_json_p)
+static Service *GetWebSearchService (json_t *operation_json_p)
 {									
 	Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
 	
@@ -218,64 +127,25 @@ static Service *GetService (json_t *operation_json_p)
 
 static WebSearchServiceData *AllocateWebSearchServiceData (json_t *op_json_p)
 {
-	WebSearchServiceData *data_p = (WebSearchServiceData *) AllocMemory (sizeof (WebSearchServiceData));
+	WebSearchServiceData *service_data_p = (WebSearchServiceData *) AllocMemory (sizeof (WebSearchServiceData));
 	
-	if (data_p)
+	if (service_data_p)
 		{
-			data_p -> wssd_config_p = op_json_p;
-			data_p -> wssd_name_s = GetOperationNameFromJSON (op_json_p);
-			
-			if (data_p -> wssd_name_s)
+			WebServiceData *data_p = & (service_data_p -> wssd_base_data);
+
+			if (InitWebServiceData (data_p, op_json_p))
 				{
-					data_p -> wssd_description_s = GetOperationDescriptionFromJSON (op_json_p);
-					
-					if (data_p -> wssd_description_s)
+					service_data_p -> wssd_css_selector_s = GetJSONString (op_json_p, "selector");
+
+					if (service_data_p -> wssd_css_selector_s)
 						{
-							data_p -> wssd_buffer_p = AllocateByteBuffer (1024);
-							
-							if (data_p -> wssd_buffer_p)
-								{							
-									json_t *params_p = json_object_get (op_json_p, PARAM_SET_PARAMS_S);
-
-									if (params_p)
-										{
-											data_p -> wssd_params_p = CreateParameterSetFromJSON (op_json_p);
-											
-											if (data_p -> wssd_params_p)
-												{
-													data_p -> wssd_curl_data_p = AllocateCurlTool ();
-													
-													if (data_p -> wssd_curl_data_p)
-														{
-															data_p -> wssd_method = GetSubmissionMethod (op_json_p);
-
-															if (data_p -> wssd_method != SM_UNKNOWN)
-																{
-																	if (SetURI (op_json_p, data_p -> wssd_curl_data_p -> ct_curl_p))
-																		{
-																			data_p -> wssd_css_selector_s = GetJSONString (op_json_p, "selector");
-
-																			if (data_p -> wssd_css_selector_s)
-																				{
-																					return data_p;
-																				}
-																		}
-																}
-
-															FreeCurlTool (data_p -> wssd_curl_data_p);
-														}
-																										
-													FreeParameterSet (data_p -> wssd_params_p);
-												}
-																								
-										}		/* if (params_p) */
-																								
-									FreeByteBuffer (data_p -> wssd_buffer_p);
-								}
+							return data_p;
 						}
+
+					ClearWebServiceData (data_p);
 				}
-				
-			FreeMemory (data_p);
+
+			FreeMemory (service_data_p);
 		}
 		
 	return NULL;
@@ -284,12 +154,7 @@ static WebSearchServiceData *AllocateWebSearchServiceData (json_t *op_json_p)
 
 static void FreeWebSearchServiceData (WebSearchServiceData *data_p)
 {
-	FreeParameterSet (data_p -> wssd_params_p);
-	FreeByteBuffer (data_p -> wssd_buffer_p);
-
-	FreeCurlTool (data_p -> wssd_curl_data_p);
-
-	json_decref (data_p -> wssd_config_p);
+	ClearWebServiceData (& (data_p -> wssd_base_data));
 	
 	FreeMemory (data_p);
 }
@@ -662,26 +527,24 @@ static json_t *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 					default:
 						break;
 				}
-							
+
 			if (success_flag)
 				{
-					json_error_t error;
-					json_t *web_service_response_json_p = NULL;
-					const char *service_name_s = GetServiceName (service_p);
-					HtmlLinkArray *links_p = GetLinks (data_p -> wssd_curl_data_p, NULL, data_p -> wssd_css_selector_s);
-					
-					if (links_p)
+					if (CallCurlWebservice (data_p))
 						{
-							web_service_response_json_p = json_loads (buffer_data_p, 0, &error);
+							json_error_t error;
+							const char * const data_s = GetCurlToolData (data_p -> wssd_curl_data_p);
+							json_t *web_service_response_json_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_css_selector_s);
+							const char *service_name_s = GetServiceName (service_p);
 
 							if (!web_service_response_json_p)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\n%s\n", service_name_s, error.text, buffer_data_p);
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\n", service_name_s, error.text);
 								}
 
 							res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, web_service_response_json_p);
 
-						}		/* if (res == OS_SUCCEEDED) */
+						}		/* if (CallCurlWebservice (data_p)) */
 
 				}		/* if (success_flag) */
 						
@@ -723,54 +586,3 @@ static bool IsResourceForWebSearchService (Service *service_p, Resource *resourc
 	return interested_flag;
 }
 
-
-static SubmissionMethod GetSubmissionMethod (const json_t *op_json_p)
-{
-	SubmissionMethod sm = SM_UNKNOWN;
-	json_t *method_json_p = json_object_get (op_json_p, S_METHOD_S);
-	
-	if (method_json_p)
-		{
-			if (json_is_string (method_json_p))
-				{
-					const char *method_s = json_string_value (method_json_p);
-						
-					if (method_s)
-						{
-							if (strcmp (method_s, "POST") == 0)
-								{
-									sm = SM_POST;
-								}
-							else if (strcmp (method_s, "GET") == 0)
-								{
-									sm = SM_GET;
-								}
-							else if (strcmp (method_s, "BODY") == 0)
-								{
-									sm = SM_BODY;
-								}
-						}		
-				}				
-		}
-
-	return sm;
-}
-
-
-static bool SetURI (const json_t *op_json_p, CURL *curl_p)
-{
-	bool success_flag = false;
-	const char *uri_s = GetJSONString (op_json_p, S_URI_S);
-
-	if (uri_s)
-		{
-			CURLcode res = curl_easy_setopt (curl_p, CURLOPT_URL, uri_s);
-
-			if (res == CURLE_OK)
-				{
-					success_flag = true;
-				}
-		}
-
-	return success_flag;
-}

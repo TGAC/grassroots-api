@@ -17,6 +17,11 @@ DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
 DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
 WHEATIS_UTIL_LIB_NAME = wheatis_util
 
+DIR_WHEATIS_NETWORK = ../../network
+DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
+DIR_WHEATIS_NETWORKL_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
+WHEATIS_NETWORK_LIB_NAME = wheatis_network
+
 DIR_WHEATIS_HANDLER = ../../handlers/lib
 DIR_WHEATIS_HANDLER_INC = $(DIR_WHEATIS_HANDLER)/include
 DIR_WHEATIS_HANDLER_LIB = $(DIR_WHEATIS_HANDLER)/$(BUILD)
@@ -34,22 +39,26 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
+	-I$(DIR_WHEATIS_NETWORK_INC)
 	
 SRCS 	= \
 	client.c \
 	parameter.c \
 	parameter_set.c \
-	resource.c \
 	service.c \
 	service_config.c \
 	service_matcher.c \
 	tag_item.c \
-	user_details.c 
+	user_details.c \
+	web_service_util.c
 
 CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_LIBRARY_EXPORTS
 
-BASE_LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
-	 -L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME)  -ljansson 
+BASE_LDFLAGS = -lpthread \
+	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
+	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
+	-ljansson 
 
 
 LDFLAGS += $(BASE_LDFLAGS) 

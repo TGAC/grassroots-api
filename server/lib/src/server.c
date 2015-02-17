@@ -354,7 +354,7 @@ static Resource *GetResourceOfInterest (const json_t * const req_p)
 									const char *protocol_s = json_string_value (protocol_p);
 									const char *data_name_s = json_string_value (data_name_p);
 									
-									resource_p = AllocateResource (protocol_s, data_name_s);
+									resource_p = AllocateResource (protocol_s, data_name_s, NULL);
 								}
 							
 						}		/* if (json_is_string (protocol_p)) */
