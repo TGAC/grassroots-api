@@ -2,6 +2,8 @@
 #define RESULTS_LIST_HPP
 
 #include <QListWidget>
+#include <QList>
+#include <QWebView>
 
 #include "jansson.h"
 
@@ -36,6 +38,7 @@ private:
 	/*********************/
 	QListWidget *rl_list_p;
 
+	QList <QWebView* > rl_browsers;
 
 	bool AddItemFromJSON (const json_t *json_p);
 

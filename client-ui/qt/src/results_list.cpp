@@ -1,4 +1,8 @@
+#include <QDesktopServices>
+#include <QUrl>
 #include <QVBoxLayout>
+#include <QWebView>
+#include <QErrorMessage>
 
 #include "results_list.h"
 #include "json_util.h"
@@ -21,14 +25,43 @@ ResultsList :: ResultsList (QWidget *parent_p)
 
 ResultsList :: ~ResultsList ()
 {
-
+	for (int i = rl_browsers.size(); i > 0;-- i)
+		{
+			QWebView *browser_p = rl_browsers.back ();
+			rl_browsers.pop_back ();
+			delete browser_p;
+		}
 }
 
 
 void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 {
-	QString s = item_p -> data (Qt :: UserRole);
+	QVariant v = item_p -> data (Qt :: UserRole);
+	QString s = v.toString ();
+	QByteArray ba = s.toLocal8Bit ();
+	const char *value_s = ba.constData ();
 
+	if ((s.startsWith (PROTOCOL_IRODS_S))  || (s.startsWith (PROTOCOL_FILE_S)))
+			{
+
+			}
+		else if ((s.startsWith (PROTOCOL_HTTP_S))  || (s.startsWith (PROTOCOL_HTTPS_S)))
+			{
+/*
+				QWebView *browser_p = new QWebView;
+
+				browser_p -> load (QUrl (s));
+				browser_p -> show ();
+*/
+				if (!QDesktopServices :: openUrl (QUrl (s)))
+					{
+						QWebView *browser_p = new QWebView;
+
+						rl_browsers.append (browser_p);
+						browser_p -> load (QUrl (s));
+						browser_p -> show ();
+					}
+			}
 }
 
 
@@ -90,8 +123,9 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 					QString s (protocol_s);
 					s.append ("://");
 					s.append (value_s);
+					QVariant v (s);
 
-					item_p -> setData (Qt :: UserRole, s);
+					item_p -> setData (Qt :: UserRole, v);
 
 					if (icon_path_s)
 						{

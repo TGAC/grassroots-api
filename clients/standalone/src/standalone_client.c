@@ -337,8 +337,7 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 								
 		}
 	
-	free (req_s);							
-	json_decref (req_p);
+	free (req_s);
 
 	return response_p;
 }

@@ -247,6 +247,11 @@ static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *b
 
 					ResetByteBuffer (buffer_p);
 
+					while (isspace (*start_p) != 0)
+						{
+							++ start_p;
+						}
+
 					/*
 					 * Make a copy of the inner text whilst reduces any occurrences
 					 * of 2 or more consecutive spaces with a single space.
@@ -259,7 +264,7 @@ static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *b
 								{
 									if (!space_flag)
 										{
-											success_flag = AppendToByteBuffer (buffer_p, &c, 1);
+											success_flag = AppendToByteBuffer (buffer_p, " ", 1);
 											space_flag = true;
 										}
 								}
