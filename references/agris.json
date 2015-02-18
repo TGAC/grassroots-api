@@ -12,7 +12,7 @@
     "plugin": "web_search_service",
     "operations": [
 			{
-				"operationId": "Search service",
+				"operationId": "Web Search service",
 				"summary": "An operation to obtain matching articles",
 				"description": "An operation to obtain matching articles from AGRIS",
 				"uri": "http://agris.fao.org/agris-search/searchIndex.do",

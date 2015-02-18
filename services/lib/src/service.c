@@ -871,8 +871,7 @@ json_t *CreateServiceResponseAsJSON (const char * const service_name_s, Operatio
 }
 
 
-
-ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s)
+ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i))
 {
 	if (config_p)
 		{
@@ -902,7 +901,7 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 													while (i < num_ops)
 														{
 															json_t *op_p =  json_array_get (ops_p, i);
-															Service *service_p = NULL; // GetService (op_p);
+															Service *service_p = get_service_fn (op_p, i);
 
 															if (service_p)
 																{

@@ -11,6 +11,8 @@ ResultsList :: ResultsList (QWidget *parent_p)
 
 	rl_list_p = new QListWidget;
 
+	connect (rl_list_p, &QListWidget :: itemDoubleClicked, this,  &ResultsList :: OpenItemLink);
+
 	layout_p -> addWidget (rl_list_p);
 
 	setLayout (layout_p);
@@ -19,6 +21,13 @@ ResultsList :: ResultsList (QWidget *parent_p)
 
 ResultsList :: ~ResultsList ()
 {
+
+}
+
+
+void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
+{
+	QString s = item_p -> data (Qt :: UserRole);
 
 }
 
@@ -59,8 +68,9 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 	if (protocol_s)
 		{
+			const char *title_s = GetJSONString (resource_json_p, RESOURCE_TITLE_S);
 			const char *value_s = GetJSONString (resource_json_p, RESOURCE_VALUE_S);
-			const char *tooltip_s = GetJSONString (resource_json_p, RESOURCE_DESCRIPTION_S);
+			const char *description_s = GetJSONString (resource_json_p, RESOURCE_DESCRIPTION_S);
 
 			if (value_s)
 				{
@@ -75,17 +85,20 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 							icon_path_s = "images/list_internet";
 						}
 
-					QListWidgetItem *item_p = new QListWidgetItem (value_s, rl_list_p);
+					QListWidgetItem *item_p = new QListWidgetItem (title_s ? title_s : value_s, rl_list_p);
+
+					QString s (protocol_s);
+					s.append ("://");
+					s.append (value_s);
+
+					item_p -> setData (Qt :: UserRole, s);
 
 					if (icon_path_s)
 						{
 							item_p -> setIcon (QIcon (icon_path_s));
 						}
 
-					if (tooltip_s)
-						{
-							item_p -> setToolTip (tooltip_s);
-						}
+					item_p -> setToolTip (description_s ? description_s : value_s);
 
 					success_flag = true;
 				}		/* if (value_s) */

@@ -288,7 +288,7 @@ WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services
 WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (const char * const service_name_s, OperationStatus status, json_t *result_json_p);
 
 
-WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s);
+WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 #ifdef __cplusplus
 }

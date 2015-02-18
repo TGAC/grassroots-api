@@ -69,36 +69,25 @@ CurlTool *AllocateCurlTool (void)
 	
 	if (buffer_p)
 		{
-			CURL *curl_p = curl_easy_init ();
-			
-			if (curl_p)
-				{
-					if (AddCurlCallback (curl_p, buffer_p))
-						{
-							CurlTool *curl_tool_p = (CurlTool *) AllocMemory (sizeof (CurlTool));
-						
-							if (curl_tool_p)
-								{
-									curl_tool_p -> ct_curl_p = GetCurl (buffer_p);
+			CurlTool *curl_tool_p = (CurlTool *) AllocMemory (sizeof (CurlTool));
 
-									if (curl_tool_p -> ct_curl_p)
-										{
-											curl_tool_p -> ct_buffer_p = buffer_p;
-											curl_tool_p -> ct_form_p = NULL;
-											curl_tool_p -> ct_last_field_p = NULL;			
-											curl_tool_p -> ct_headers_list_p = NULL;					
-											
-											return curl_tool_p;
-										}
-								
-									FreeMemory (curl_tool_p);
-								}		/* if (curl_tool_p) */			
-																
-						}		/* if (AddCurlCallback (curl_p, buffer_p)) */
-					
-					curl_easy_cleanup (curl_p);
-				}		/* if (curl_p) */
-				
+			if (curl_tool_p)
+				{
+					curl_tool_p -> ct_curl_p = GetCurl (buffer_p);
+
+					if (curl_tool_p -> ct_curl_p)
+						{
+							curl_tool_p -> ct_buffer_p = buffer_p;
+							curl_tool_p -> ct_form_p = NULL;
+							curl_tool_p -> ct_last_field_p = NULL;
+							curl_tool_p -> ct_headers_list_p = NULL;
+
+							return curl_tool_p;
+						}
+
+					FreeMemory (curl_tool_p);
+				}		/* if (curl_tool_p) */
+
 			FreeByteBuffer (buffer_p);
 		}		/* if (buffer_p) */
 		
@@ -181,7 +170,7 @@ HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char 
 		{
 			const char *data_s = GetCurlToolData (tool_p);
 
-			links_p = GetMatchingLinks (data_s, selector_s);
+			links_p = GetMatchingLinks (data_s, selector_s, uri_s);
 		}
 
 	return links_p;

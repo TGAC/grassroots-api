@@ -26,27 +26,27 @@ using namespace htmlcxx :: HTML;
 
 static HtmlLinkArray *AllocateHtmlLinksArray (const size_t num_links);
 
-static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s);
+static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s, const char * const base_uri_s);
 
 static void ClearHtmlLink (HtmlLink *link_p);
 static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p);
 
-static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s);
+static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s, const char *base_uri_s);
 
 static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p);
 
 
-json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const selector_s)
+json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const selector_s, const char *uri_s)
 {
 	json_t *res_p = NULL;
-	HtmlLinkArray *links_p = GetMatchingLinks (data_s, selector_s);
+	HtmlLinkArray *links_p = GetMatchingLinks (data_s, selector_s, uri_s);
 
 	if (links_p)
 		{
 			size_t i = links_p -> hla_num_entries;
 			HtmlLink *link_p = links_p -> hla_data_p;
 
-			json_t *res_p = json_array ();
+			 res_p = json_array ();
 
 			if (res_p)
 				{
@@ -81,14 +81,14 @@ static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p)
 
 	if (GetResourceProtocolAndPath (link_p -> hl_uri_s, &protocol_s, &path_s))
 		{
-			return GetResourceAsJSON (protocol_s, path_s, link_p -> hl_data_s);
+			json_p = GetResourceAsJSON (protocol_s, path_s, link_p -> hl_data_s);
 		}
 
 	return json_p;
 }
 
 
-HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const selector_s)
+HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const selector_s, const char * const base_uri_s)
 {
 	string source (data_s);
 	ParserDom parser;
@@ -113,7 +113,7 @@ HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const s
 
 	if (success_flag)
 		{
-			links_p = AllocateHtmlLinksArrayFromSet (s, data_s);
+			links_p = AllocateHtmlLinksArrayFromSet (s, data_s, base_uri_s);
 
 		}
 
@@ -143,7 +143,7 @@ static HtmlLinkArray *AllocateHtmlLinksArray (const size_t num_links)
 	return NULL;
 }
 
-static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s)
+static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s, const char * const base_uri_s)
 {
 	const size_t num_links = selector_r.size ();
 	HtmlLinkArray *links_p = AllocateHtmlLinksArray (num_links);
@@ -194,7 +194,7 @@ static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector
 															title_s = title_attr.second.c_str ();
 														}
 
-													if (!InitHtmlLink (link_p, title_s, uri_r.c_str (), inner_text_s))
+													if (!InitHtmlLink (link_p, title_s, uri_r.c_str (), inner_text_s, base_uri_s))
 														{
 
 														}
@@ -321,9 +321,38 @@ static void ClearHtmlLink (HtmlLink *link_p)
 }
 
 
-static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s)
+static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s, const char *base_uri_s)
 {
-	char *value_s = CopyToNewString (uri_s, 0, false);
+	char *value_s = NULL;
+
+	if (base_uri_s)
+		{
+			if (*uri_s == '/')
+				{
+					/* it's an absolute address */
+					value_s = CopyToNewString (uri_s, 0, false);
+				}
+			else
+				{
+					const char *last_slash_p = strrchr (base_uri_s, '/');
+
+					if (last_slash_p)
+						{
+							char *root_path_s = CopyToNewString (base_uri_s, last_slash_p - base_uri_s + 1, false);
+
+							if (root_path_s)
+								{
+									value_s = ConcatenateStrings (root_path_s, uri_s);
+									FreeCopiedString (root_path_s);
+								}
+						}
+				}
+		}
+	else
+		{
+			value_s = CopyToNewString (uri_s, 0, false);
+		}
+
 
 	link_p -> hl_uri_s = NULL;
 	link_p -> hl_data_s = NULL;

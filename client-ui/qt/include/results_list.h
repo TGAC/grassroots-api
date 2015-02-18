@@ -15,6 +15,9 @@ signals:
 public slots:
 	bool SetListFromJSON (const json_t *results_list_json_p);
 
+private slots:
+	void OpenItemLink (QListWidgetItem *item_p);
+
 public:
 
 	/*********************/

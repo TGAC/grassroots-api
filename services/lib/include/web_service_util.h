@@ -35,6 +35,7 @@ typedef struct WebServiceData
 	const char *wsd_description_s;
 	ParameterSet *wsd_params_p;
 	ByteBuffer *wsd_buffer_p;
+	const char *wsd_base_uri_s;
 	SubmissionMethod wsd_method;
 	CurlTool *wsd_curl_data_p;
 } WebServiceData;
@@ -52,6 +53,18 @@ WHEATIS_SERVICE_API bool InitWebServiceData (WebServiceData * const data_p, json
 
 
 WHEATIS_SERVICE_API void ClearWebServiceData (WebServiceData * const data_p);
+
+
+WHEATIS_SERVICE_API bool CallCurlWebservice (WebServiceData *data_p);
+
+
+WHEATIS_SERVICE_API bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_set_p);
+
+
+WHEATIS_SERVICE_API bool AddParametersToPostWebService (WebServiceData *data_p, ParameterSet *param_set_p);
+
+
+WHEATIS_SERVICE_API bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_set_p);
 
 
 #ifdef __cplusplus

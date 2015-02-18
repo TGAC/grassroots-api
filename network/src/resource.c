@@ -10,9 +10,8 @@
 static bool ReplaceValue (const char * const src_s, char **dest_ss);
 
 
-bool GetResourceProtocolAndPath (const char * const resource_s, char ** const path_ss, char ** const protocol_ss)
+bool GetResourceProtocolAndPath (const char * const resource_s, char ** const protocol_ss, char ** const path_ss)
 {
-	bool success_flag = false;
 	char *delimiter_p = strstr (resource_s, RESOURCE_DELIMITER_S);
 
 	if (delimiter_p)
@@ -38,7 +37,7 @@ bool GetResourceProtocolAndPath (const char * const resource_s, char ** const pa
 									*protocol_ss = protocol_s;
 									*path_ss = path_s;
 
-									success_flag = true;
+									return true;
 								}		/* if (path_s) */
 
 							FreeCopiedString (protocol_s);
@@ -46,7 +45,7 @@ bool GetResourceProtocolAndPath (const char * const resource_s, char ** const pa
 				}
 		}
 
-	return success_flag;
+	return false;
 }
 
 
