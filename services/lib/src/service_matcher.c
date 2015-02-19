@@ -80,7 +80,7 @@ ServiceMatcher *AllocateKeywordServiceMatcher (void)
 
 	if (matcher_p)
 		{
-			InitOperationNameServiceMatcher (matcher_p);
+			InitServiceMatcher (& (matcher_p -> ksm_base_matcher), MatchServiceByKeyword);
 			matcher_p -> ksm_base_matcher.sm_destroy_fn = FreeKeywordServiceMatcher;
 		}
 

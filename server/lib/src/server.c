@@ -45,7 +45,7 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
 
-static json_t *RunKeywordServices (const json_t * const req_p, const json_t * const credentials_p);
+static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p);
 
 static Operation GetOperation (json_t *ops_p);
 
@@ -492,11 +492,33 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 }
 
 
-
-static json_t *RunKeywordServices (const json_t * const req_p, const json_t * const credentials_p)
+static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p)
 {
+	json_t *json_p = NULL;
 
-}
+	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
 
+	if (services_p)
+		{
+			LoadKeywordServices (services_p, SERVICES_PATH_S, config_p);
+
+			if (services_p -> ll_size > 0)
+				{
+					/* For each service, set its keyword parameter */
+					ServiceNode *service_node_p = (ServiceNode *) (services_p -> ll_head_p);
+
+					while (service_node_p)
+						{
+							/* set the keyowrd parameter */
+							service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
+						}		/* while (service_node_p) */
+
+					/* Now run the services */
+				}
+
+			FreeLinkedList (services_p);
+		}		/* if (services_p) */
+
+	return json_p;
 }
 
