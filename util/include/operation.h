@@ -13,6 +13,9 @@ typedef enum Operation {
 	/** Query services to see if they can work on file */
 	OP_LIST_INTERESTED_SERVICES,
 	
+	/** Call any services that have a keyword parameter with a given keyword */
+	OP_RUN_KEYWORD_SERVICES,
+
 	OP_NUM_OPERATIONS
 } Operation;
 

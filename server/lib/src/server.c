@@ -45,6 +45,8 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
 
+static json_t *RunKeywordServices (const json_t * const req_p, const json_t * const credentials_p);
+
 static Operation GetOperation (json_t *ops_p);
 
 
@@ -115,6 +117,10 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						res_p = GetInterestedServices (req_p, credentials_p);
 						break;
 						
+					case OP_RUN_KEYWORD_SERVICES:
+						res_p = RunKeywordServices (req_p, credentials_p);
+						break;
+
 					default:
 						break;
 				}		/* switch (op) */
@@ -366,6 +372,7 @@ static Resource *GetResourceOfInterest (const json_t * const req_p)
 	return resource_p;
 }
 
+
 static json_t *GetInterestedServices (const json_t * const req_p, const json_t * const credentials_p)
 {
 	json_t *res_p = NULL;
@@ -484,4 +491,12 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 	return json_p;
 }
 
+
+
+static json_t *RunKeywordServices (const json_t * const req_p, const json_t * const credentials_p)
+{
+
+}
+
+}
 

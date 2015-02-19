@@ -74,6 +74,19 @@ ServiceMatcher *AllocatePluginOperationNameServiceMatcher (const char *plugin_na
 
 
 
+ServiceMatcher *AllocateKeywordServiceMatcher (void)
+{
+	KeywordServiceMatcher *matcher_p = (KeywordServiceMatcher *) AllocMemory (sizeof (KeywordServiceMatcher));
+
+	if (matcher_p)
+		{
+			InitOperationNameServiceMatcher (matcher_p);
+			matcher_p -> ksm_base_matcher.sm_destroy_fn = FreeKeywordServiceMatcher;
+		}
+
+	return (ServiceMatcher *) matcher_p;
+}
+
 
 void InitServiceMatcher (ServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p))
 {
@@ -178,6 +191,38 @@ bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p)
 }
 
 
+bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Service *service_p)
+{
+	bool match_flag = false;
+	KeywordServiceMatcher *keyword_matcher_p = (KeywordServiceMatcher *) matcher_p;
+
+	ParameterSet *params_p = GetServiceParameters (service_p, NULL, NULL);
+
+	if (params_p)
+		{
+			ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+
+			while (param_node_p)
+				{
+					Parameter *param_p = param_node_p -> pn_parameter_p;
+
+					if (param_p -> pa_type == PT_KEYWORD)
+						{
+							match_flag = true;
+							param_node_p = NULL;
+						}
+					else
+						{
+							param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
+						}
+
+				}		/* while (param_node_p && (match_flag == false)) */
+
+			ReleaseServiceParameters (service_p, params_p);
+		}		/* if (params_p) */
+
+	return match_flag;
+}
 
 
 void SetPluginNameForServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s)
@@ -229,3 +274,10 @@ void FreePluginOperationNameServiceMatcher (ServiceMatcher *matcher_p)
 }
 
 
+void FreeKeywordServiceMatcher (ServiceMatcher *matcher_p)
+{
+	KeywordServiceMatcher *keyword_matcher_p = (KeywordServiceMatcher *) matcher_p;
+
+	FreeMemory (keyword_matcher_p);
+	matcher_p = NULL;
+}

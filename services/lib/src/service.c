@@ -434,6 +434,19 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 }
 
 
+void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p)
+{
+	KeywordServiceMatcher matcher;
+
+	InitKeywordServiceMatcher (&matcher);
+
+	GetMatchingServices (services_path_s, & (matcher.ksm_base_matcher), json_config_p, services_p, true);
+
+	/* @TODO Add an AddReferenceServicesByName function to be called here */
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
+}
+
+
 json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	return service_p -> se_run_fn (service_p, param_set_p, credentials_p);

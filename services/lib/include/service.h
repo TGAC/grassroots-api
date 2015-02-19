@@ -250,6 +250,8 @@ WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p);
 
 
+WHEATIS_SERVICE_API void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p);
+
 
 /**
  * Free a ServicesArray and each of its Services.

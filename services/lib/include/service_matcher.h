@@ -45,6 +45,11 @@ typedef struct PluginOperationNameServiceMatcher
 } PluginOperationNameServiceMatcher;
 
 
+typedef struct KeywordServiceMatcher
+{
+	ServiceMatcher ksm_base_matcher;
+} KeywordServiceMatcher;
+
 
 #ifdef __cplusplus
 extern "C"
@@ -60,11 +65,9 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocateOperationNameServiceMatcher (const c
 
 WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginNameServiceMatcher (const char *plugin_name_s);
 
-
 WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginOperationNameServiceMatcher (const char *plugin_name_s, const char *service_name_s);
 
-
-
+WHEATIS_SERVICE_API ServiceMatcher *AllocateKeywordServiceMatcher (void);
 
 
 WHEATIS_SERVICE_API void InitServiceMatcher (ServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p));
@@ -93,6 +96,8 @@ WHEATIS_SERVICE_API bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Se
 
 WHEATIS_SERVICE_API bool MatchServiceByPluginAndOperationsName (ServiceMatcher *matcher_p, Service *service_p);
 
+WHEATIS_SERVICE_API bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Service *service_p);
+
 
 WHEATIS_SERVICE_LOCAL void FreeServiceMatcher (ServiceMatcher *matcher_p);
 
@@ -104,7 +109,7 @@ WHEATIS_SERVICE_LOCAL void FreePluginNameServiceMatcher (ServiceMatcher *matcher
 
 WHEATIS_SERVICE_LOCAL void FreePluginOperationNameServiceMatcher (ServiceMatcher *matcher_p);
 
-
+WHEATIS_SERVICE_LOCAL void FreeKeywordServiceMatcher (ServiceMatcher *matcher_p);
 
 
 #ifdef __cplusplus
