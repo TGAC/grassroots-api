@@ -398,25 +398,6 @@ bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_
 
 
 
-static bool SetURI (const json_t *op_json_p, CURL *curl_p)
-{
-	bool success_flag = false;
-	const char *uri_s = GetJSONString (op_json_p, S_URI_S);
-
-	if (uri_s)
-		{
-			CURLcode res = curl_easy_setopt (curl_p, CURLOPT_URL, uri_s);
-
-			if (res == CURLE_OK)
-				{
-					success_flag = true;
-				}
-		}
-
-	return success_flag;
-}
-
-
 static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p)
 {
 	bool success_flag = false;
@@ -454,6 +435,7 @@ static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p
 
 			case PT_STRING:
 			case PT_PASSWORD:
+			case PT_KEYWORD:
 				value_s = value_p -> st_string_value_s;
 				break;
 

@@ -29,7 +29,7 @@ static HtmlLinkArray *AllocateHtmlLinksArray (const size_t num_links);
 static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s, const char * const base_uri_s);
 
 static void ClearHtmlLink (HtmlLink *link_p);
-static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p);
+static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p, const bool include_child_text_flag);
 
 static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s, const char *base_uri_s);
 
@@ -183,7 +183,7 @@ static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector
 										{
 											const string &uri_r = p.second;
 											const char *title_s = NULL;
-											char *inner_text_s = GetInnerText (node_p, data_s, buffer_p);
+											char *inner_text_s = GetInnerText (node_p, data_s, buffer_p, false);
 
 											if (inner_text_s)
 												{
@@ -217,7 +217,7 @@ static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector
 
 
 
-static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p)
+static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p, const bool include_child_text_flag)
 {
 	char *inner_text_s = NULL;
 	const char *start_p = data_s + (node_p -> offset ()) + 1;
@@ -240,6 +240,7 @@ static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *b
 				{
 					bool space_flag = false;
 					bool success_flag = true;
+					uint32 child_tag_count = 0;
 
 					/* scroll past the < and > */
 					-- end_p;
@@ -270,12 +271,27 @@ static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *b
 								}
 							else
 								{
-									if (space_flag)
-										{
-											space_flag = false;
-										}
 
-									success_flag = AppendToByteBuffer (buffer_p, &c, 1);
+									if (c == '<')
+										{
+											++ child_tag_count;
+										}
+									else if (c == '>')
+										{
+											-- child_tag_count;
+										}
+									else
+										{
+											if (include_child_text_flag || (child_tag_count == 0))
+												{
+													if (space_flag)
+														{
+															space_flag = false;
+														}
+
+													success_flag = AppendToByteBuffer (buffer_p, &c, 1);
+												}
+										}
 								}
 
 							++ start_p;
@@ -334,8 +350,33 @@ static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri
 		{
 			if (*uri_s == '/')
 				{
-					/* it's an absolute address */
-					value_s = CopyToNewString (uri_s, 0, false);
+					/* skip past the "://" in the base uri */
+					const char delim_s [] = "://";
+					const char *slash_p = strstr (base_uri_s, delim_s);
+
+					if (slash_p)
+						{
+							slash_p += strlen (delim_s);
+						}
+					else
+						{
+							slash_p = base_uri_s;
+						}
+
+					/* Now find the next slash and append our uri to it */
+					slash_p = strchr (slash_p, '/');
+
+					if (slash_p)
+						{
+							char *root_s = CopyToNewString (base_uri_s, slash_p - base_uri_s, false);
+
+							if (root_s)
+								{
+									value_s = ConcatenateStrings (root_s, uri_s);
+									FreeCopiedString (root_s);
+								}		/* if (root_s) */
+
+						}		/* if (slash_p) */
 				}
 			else
 				{

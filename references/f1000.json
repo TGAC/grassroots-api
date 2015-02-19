@@ -1,26 +1,26 @@
 {
 	"schema_version": 0.1,
 	"provider": {
-		"name": "Agris",
+		"name": "f1000 research",
 		"description": "A service to search for academic articles.",
-		"url": "http://agris.fao.org/agris-search/index.do"
+		"url": "http://f1000research.com/"
 	},
 	"services": {
-    "path": "Agris Search service",
+    "path": "f1000 Search service",
     "summary": "A service to obtain articles",
 		"description": "A service to obtain articles using search terms",    
     "plugin": "web_search_service",
     "operations": [
 			{
-				"operationId": "Web Search service",
-				"summary": "An operation to obtain matching articles",
-				"description": "An operation to obtain matching articles from AGRIS",
-				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
+				"operationId": "f1000 Web Search service",
+				"summary": "An operation to obtain matching research",
+				"description": "An operation to obtain matching resarch from f1000",
+				"uri": "http://f1000research.com/search",
 				"method": "GET",
-				"selector": "li.result-item h3 a",
+				"selector": "div.six div.article-title-and-info > a",
 				"parameters": [
 					{
-						"param": "query",
+						"param": "q",
 						"name": "query",
 						"default": "",
 						"current_value": "",

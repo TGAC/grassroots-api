@@ -20,10 +20,6 @@
 #define STM_LEVEL_ALL		(0xFFFFFFFF)
 
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
 
 /******** FORWARD DECLARATION ******/
 struct OutputStream;
@@ -36,6 +32,9 @@ typedef struct OutputStream
 } OutputStream;
 
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 WHEATIS_UTIL_API bool InitDefaultOutputStream (void);
 

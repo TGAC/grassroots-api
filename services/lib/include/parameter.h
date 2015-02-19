@@ -31,6 +31,7 @@ typedef enum ParameterType
 	PT_DIRECTORY,
 	PT_CHAR,
 	PT_PASSWORD,
+	PT_KEYWORD,
 	PT_NUM_TYPES
 } ParameterType;
 

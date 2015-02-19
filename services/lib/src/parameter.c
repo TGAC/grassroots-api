@@ -186,6 +186,7 @@ ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const
 					
 					case PT_STRING:
 					case PT_PASSWORD:
+					case PT_KEYWORD:
 						{
 							bounds_p -> pb_lower.st_string_value_s = CopyToNewString (src_p -> pb_lower.st_string_value_s, 0, false);
 							bounds_p -> pb_upper.st_string_value_s = CopyToNewString (src_p -> pb_upper.st_string_value_s, 0, false);
@@ -511,6 +512,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 
 			case PT_STRING:
 			case PT_PASSWORD:
+			case PT_KEYWORD:
 				{
 					char *value_s = (char *) value_p;
 
@@ -756,6 +758,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 			case PT_PASSWORD:
 			case PT_FILE_TO_WRITE:
 			case PT_DIRECTORY:
+			case PT_KEYWORD:
 				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
 				break;
 
@@ -818,6 +821,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 
 			case PT_STRING:
 			case PT_PASSWORD:
+			case PT_KEYWORD:
 				if (val_p -> st_string_value_s)
 					{
 						value_p = json_string (val_p -> st_string_value_s);
@@ -963,6 +967,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 					
 					case PT_STRING:
 					case PT_PASSWORD:
+					case PT_KEYWORD:
 						if (json_is_string (json_value_p))
 							{
 								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
@@ -1039,6 +1044,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 									case PT_STRING:
 									case PT_PASSWORD:
+									case PT_KEYWORD:
 										value_s = option_p -> pmo_value.st_string_value_s;
 										break;
 
@@ -1571,6 +1577,7 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 
 			case PT_STRING:
 			case PT_PASSWORD:
+			case PT_KEYWORD:
 				value_s = value_p -> st_string_value_s;
 				*alloc_flag_p = false;
 				break;

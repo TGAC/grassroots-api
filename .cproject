@@ -48,6 +48,7 @@
 									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/re/include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
 									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/apache2/include/"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1332274428" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
