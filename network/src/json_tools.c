@@ -211,32 +211,69 @@ json_t *GetAvailableServicesRequest (const char * const username_s, const char *
 }
 
 
-
-json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, json_t * const protocol_p)
+json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const char * const protocol_s, const char * const *filename_s)
 {
-	json_t *root_p = GetOperationAsJSON (OP_LIST_INTERESTED_SERVICES);
+
+	json_t *res_p = NULL;
+	json_error_t error;
+	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
+
+	if (op_data_p)
+		{
+			res_p = GetServicesRequest (username_s, password_s, OP_LIST_INTERESTED_SERVICES, KEY_FILE_DATA, op_data_p);
+		}
+	else
+		{
+
+		}
+
+	return res_p;
+}
+
+
+json_t *GetKeywordServicesRequest (const char * const username_s, const char * const password_s, const char * const keyword_s)
+{
+	json_t *res_p = NULL;
+	json_error_t error;
+	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s}", KEY_QUERY, keyword_s);
+
+	if (op_data_p)
+		{
+			res_p = GetServicesRequest (username_s, password_s, OP_RUN_KEYWORD_SERVICES, KEY_QUERY, op_data_p);
+		}
+	else
+		{
+
+		}
+
+	return res_p;
+}
+
+
+json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p)
+{
+	json_t *root_p = GetOperationAsJSON (op);
 	bool success_flag = false;
-	
+
 	if (root_p)
 		{
 			if (AddCredentialsToJson (root_p, username_s, password_s))
 				{
-					if (json_object_set (root_p, KEY_FILE_DATA, protocol_p) == 0)
+					if (json_object_set (root_p, op_key_s, op_data_p) == 0)
 						{
 							success_flag = true;
 						}
 				}
 		}
-	
+
 	if (!success_flag)
 		{
 			json_object_clear (root_p);
 			json_decref (root_p);
-			root_p = NULL;			
+			root_p = NULL;
 		}
-	
+
 	return root_p;
-	
 }
 
 

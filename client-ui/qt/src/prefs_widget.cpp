@@ -73,7 +73,7 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 
 	if (service_name_s)
 		{
-			const char *service_description_s = GetServiceNameFromJSON (service_json_p);
+			const char *service_description_s = GetServiceDescriptionFromJSON (service_json_p);
 
 			if (service_description_s)
 				{
@@ -81,7 +81,9 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 
 					if (params_p)
 						{
-							CreateAndAddServicePage (service_name_s, service_description_s, params_p);
+							const char *service_info_uri_s = GetOperationInformationURIFromJSON (service_json_p);
+
+							CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, params_p);
 						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */
@@ -90,9 +92,9 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 }
 
 
-void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p)
+void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
 {
-	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, params_p, this);
+	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, params_p, this);
 
 	pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
 	pw_service_widgets.append (service_widget_p);

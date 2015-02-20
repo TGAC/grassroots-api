@@ -3,7 +3,7 @@
 	"provider": {
 		"name": "f1000 research",
 		"description": "A service to search for academic articles.",
-		"url": "http://f1000research.com/"
+		"uri": "http://f1000research.com/"
 	},
 	"services": {
     "path": "f1000 Search service",
@@ -15,6 +15,7 @@
 				"operationId": "f1000 Web Search service",
 				"summary": "An operation to obtain matching research",
 				"description": "An operation to obtain matching resarch from f1000",
+				"about_uri": "http://f1000research.com/",
 				"uri": "http://f1000research.com/search",
 				"method": "GET",
 				"selector": "div.six div.article-title-and-info > a",

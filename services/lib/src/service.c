@@ -28,6 +28,8 @@ static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root
 
 static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p);
 
+static bool AddOperationInformationURIToJSON (Service * const service_p, json_t *root_p);
+
 static void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
 
 static const char *GetPluginNameFromJSON (const json_t * const root_p);
@@ -38,6 +40,7 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
+	const char *(*get_service_info_uri_fn) (struct Service *service_p),
 	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
@@ -48,6 +51,7 @@ void InitialiseService (Service * const service_p,
 {
 	service_p -> se_get_service_name_fn = get_service_name_fn;
 	service_p -> se_get_service_description_fn = get_service_description_fn;
+	service_p -> se_get_service_info_uri_fn = get_service_info_uri_fn;
 	service_p -> se_run_fn = run_fn;
 	service_p -> se_match_fn = match_fn;
 	service_p -> se_get_params_fn = get_parameters_fn;
@@ -473,6 +477,22 @@ const char *GetServiceDescription (Service *service_p)
 }
 
 
+
+/** Get the user-friendly description of the service. */
+const char *GetServiceInformationUri (Service *service_p)
+{
+	const char *uri_s = NULL;
+
+	if (service_p -> se_get_service_info_uri_fn)
+		{
+			uri_s = service_p -> se_get_service_info_uri_fn (service_p);
+		}
+
+	return uri_s;
+}
+
+
+
 ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
 {
 	return service_p -> se_get_params_fn (service_p, resource_p, json_p);
@@ -588,6 +608,8 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 												{
 													if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, json_p))
 														{
+															AddOperationInformationURIToJSON (service_p, operation_p);
+
 															success_flag = true;
 														}
 												}		/* if (AddServiceDescriptionToJSON (service_p, operation_p)) */	
@@ -641,6 +663,13 @@ const char *GetOperationNameFromJSON (const json_t * const root_p)
 }
 
 
+
+const char *GetOperationInformationURIFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_INFORMATION_URI_S);
+}
+
+
 static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p)
 {
 	bool success_flag = false;
@@ -671,6 +700,24 @@ static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root
 
 	#ifdef _DEBUG
 	PrintJSON (stderr, root_p, "AddServiceDescriptionToJSON :: description -> ");
+	#endif
+
+	return success_flag;
+}
+
+
+static bool AddOperationInformationURIToJSON (Service * const service_p, json_t *root_p)
+{
+	bool success_flag = false;
+	const char *uri_s = GetServiceInformationUri (service_p);
+
+	if (uri_s)
+		{
+			success_flag = (json_object_set_new (root_p, OPERATION_INFORMATION_URI_S, json_string (uri_s)) == 0);
+		}
+
+	#ifdef _DEBUG
+	PrintJSON (stderr, root_p, "AddOperationInformationURIToJSON :: uri_s -> ");
 	#endif
 
 	return success_flag;
@@ -837,10 +884,23 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
       }
     }, 
 */
-json_t *CreateServiceResponseAsJSON (const char * const service_name_s, OperationStatus status, json_t *result_json_p)
+json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p)
 {
 	json_error_t error;
-	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICE_STATUS_S, status);
+	const char *service_name_s = GetServiceName (service_p);
+	const char *service_description_s = GetServiceDescription (service_p);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_S, status);
+	const char *info_uri_s = GetServiceInformationUri (service_p);
+
+
+	if (info_uri_s)
+		{
+			if (json_object_set_new (json_p, OPERATION_INFORMATION_URI_S, json_string (info_uri_s)) != 0)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
+				}
+		}
+
 
 	#if SERVICE_DEBUG >= DL_FINE
 	char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));

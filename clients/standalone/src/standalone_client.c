@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	const char *password_s = NULL;
 	const char *from_s = NULL;
 	const char *to_s = NULL;
-	const char *filename_s = NULL;
+	const char *query_s = NULL;
 	const char *client_s = "wheatis-qt-client";
 	const char *protocol_s = NULL;
 	int api_id = -1;
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 									case 'q':
 										if (++ i < argc)
 											{
-												filename_s = argv [i];
+												query_s = argv [i];
 											}
 										else
 											{
@@ -233,15 +233,9 @@ int main(int argc, char *argv[])
 
 										case OP_LIST_INTERESTED_SERVICES:
 											{
-												if (protocol_s && filename_s)
+												if (protocol_s && query_s)
 													{
-														json_error_t error;
-														json_t *irods_file_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
-														
-														if (irods_file_p)
-															{
-																req_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);
-															}
+														req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
 
 														if (req_p)
 															{
@@ -253,7 +247,29 @@ int main(int argc, char *argv[])
 																	}		/* if (response_p) */
 
 															}		/* if (req_p) */
+
 													}
+											}
+											break;
+
+										case OP_RUN_KEYWORD_SERVICES:
+											{
+												if (query_s)
+													{
+														req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
+
+														if (req_p)
+															{
+																response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+
+																if (response_p)
+																	{
+																		ShowResults (response_p, client_p);
+																	}		/* if (response_p) */
+
+															}		/* if (req_p) */
+
+													}		/* if (query_s) */
 											}
 											break;
 
@@ -382,7 +398,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 											
 											if (params_p)
 												{
-													int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
+													const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
+
+													int res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
 												}		/* if (params_p) */
 										}
 								}		/* if (service_description_s)	*/

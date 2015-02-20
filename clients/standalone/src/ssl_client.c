@@ -257,7 +257,9 @@ int main(int argc, char *argv[])
 																												
 																												if (params_p)
 																													{
-																														int res = AddServiceToClient (client_p, service_name_s, service_description_s, params_p);
+																														const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
+
+																														int res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
 																													}		/* if (params_p) */
 																											}
 																									}		/* if (service_description_s)	*/												

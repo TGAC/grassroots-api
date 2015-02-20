@@ -34,10 +34,17 @@
 #endif
 
 
+PREFIX const char *SERVER_PROVIDER_S VAL("provider");
+PREFIX const char *PROVIDER_NAME_S VAL("name");
+PREFIX const char *PROVIDER_DESCRIPTION_S VAL("description");
+PREFIX const char *PROVIDER_URI_S VAL("uri");
+
 
 PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
 PREFIX const char *OPERATION_ID_S VAL("operationId");
 PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
+PREFIX const char *OPERATION_INFORMATION_URI_S VAL("about_uri");
+
 
 PREFIX const char *SERVICES_NAME_S VAL("services");
 PREFIX const char *SERVICES_ID_S VAL("path");

@@ -82,6 +82,9 @@ WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (PluginNameServiceMatcher 
 WHEATIS_SERVICE_API void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *matcher_p, const char *plugin_name_s, const char *operation_name_s);
 
 
+WHEATIS_SERVICE_API void InitKeywordServiceMatcher (KeywordServiceMatcher *matcher_p);
+
+
 WHEATIS_SERVICE_API void SetPluginNameForServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
 
 

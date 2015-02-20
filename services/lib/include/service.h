@@ -95,6 +95,12 @@ typedef struct Service
 	const char *(*se_get_service_description_fn) (struct Service *service_p);
 
 	/**
+	 * Function to get a web address for more information about the service
+	 */
+	const char *(*se_get_service_info_uri_fn) (struct Service *service_p);
+
+
+	/**
 	 * Function to get the ParameterSet for this Service.
 	 */
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
@@ -152,6 +158,7 @@ WHEATIS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
+	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
 	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
@@ -182,6 +189,15 @@ WHEATIS_SERVICE_API const char *GetServiceName (Service *service_p);
  */
 WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
 
+
+
+/**
+ * Get the address of a web page about the service.
+ *
+ * @param service_p The Service to get the description for.
+ * @return The address of the page or NULL if there isn't one.
+ */
+WHEATIS_SERVICE_API const char *GetServiceInformationURI (Service *service_p);
 
 /**
  * Get a newly-created ParameterSet describing the parameters for a given Service.
@@ -247,6 +263,10 @@ WHEATIS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * 
 WHEATIS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
 
 
+WHEATIS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
+
+
+
 WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 
@@ -290,7 +310,7 @@ WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_servi
 WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
 
-WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (const char * const service_name_s, OperationStatus status, json_t *result_json_p);
+WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p);
 
 
 WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));

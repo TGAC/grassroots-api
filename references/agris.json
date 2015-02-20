@@ -3,7 +3,7 @@
 	"provider": {
 		"name": "Agris",
 		"description": "A service to search for academic articles.",
-		"url": "http://agris.fao.org/agris-search/index.do"
+		"uri": "http://agris.fao.org/agris-search/index.do"
 	},
 	"services": {
     "path": "Agris Search service",
@@ -12,9 +12,10 @@
     "plugin": "web_search_service",
     "operations": [
 			{
-				"operationId": "Web Search service",
+				"operationId": "Agris Web Search service",
 				"summary": "An operation to obtain matching articles",
 				"description": "An operation to obtain matching articles from AGRIS",
+				"about_uri": "http://agris.fao.org/agris-search/index.do",
 				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
 				"method": "GET",
 				"selector": "li.result-item h3 a",

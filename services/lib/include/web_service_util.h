@@ -33,6 +33,7 @@ typedef struct WebServiceData
 	json_t *wsd_config_p;
 	const char *wsd_name_s;
 	const char *wsd_description_s;
+	const char *wsd_info_uri_s;
 	ParameterSet *wsd_params_p;
 	ByteBuffer *wsd_buffer_p;
 	const char *wsd_base_uri_s;

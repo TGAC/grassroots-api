@@ -1,3 +1,5 @@
+#include <QVBoxLayout>
+#include <QLabel>
 
 #include "results_widget.h"
 
@@ -53,26 +55,61 @@ bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p)
 
 	if (results_json_p)
 		{
-			json_t *service_json_p = json_object_get (json_p, SERVICE_NAME_S);
+			const char *service_name_s =  GetJSONString (json_p, SERVICE_NAME_S);
 
-			if (service_json_p)
+			if (service_name_s)
 				{
-					if (json_is_string (service_json_p))
-						{
-							ResultsList *list_p = new ResultsList (this);
+					const char *service_desc_s = GetJSONString (json_p, OPERATION_DESCRIPTION_S);
+					const char *service_uri_s = GetJSONString (json_p, OPERATION_INFORMATION_URI_S);
+					QWidget *page_p = CreatePageFromJSON (results_json_p, service_desc_s, service_uri_s);
 
-							if (list_p -> SetListFromJSON (results_json_p))
-								{
-									addTab (list_p, json_string_value (service_json_p));
-									success_flag = true;
-								}
-							else
-								{
-									delete list_p;
-								}
+					if (page_p)
+						{
+							addTab (page_p, service_name_s);
+							success_flag = true;
 						}
 				}
 		}
 
 	return success_flag;
+}
+
+
+
+QWidget *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const description_s, const char * const uri_s)
+{
+	QWidget *page_p = new QWidget;
+	ResultsList *list_p = new ResultsList (page_p);
+
+	if (list_p -> SetListFromJSON (results_json_p))
+		{
+			QVBoxLayout *layout_p = new QVBoxLayout;
+			page_p -> setLayout (layout_p);
+
+			QLabel *label_p = new QLabel (QString (description_s), page_p);
+			layout_p -> addWidget (label_p);
+
+			if (uri_s)
+				{
+					QString s ("For more information, go to <a href=\"");
+					s.append (uri_s);
+					s.append ("\">");
+					s.append (uri_s);
+					s.append ("</a>");
+
+					label_p = new QLabel (s, page_p);
+					label_p -> setOpenExternalLinks (true);
+					layout_p -> addWidget (label_p);
+				}
+
+			layout_p -> addWidget (list_p);
+		}
+	else
+		{
+			delete page_p;
+			page_p = 0;
+		}
+
+
+	return page_p;
 }

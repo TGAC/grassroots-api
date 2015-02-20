@@ -80,8 +80,7 @@ ServiceMatcher *AllocateKeywordServiceMatcher (void)
 
 	if (matcher_p)
 		{
-			InitServiceMatcher (& (matcher_p -> ksm_base_matcher), MatchServiceByKeyword);
-			matcher_p -> ksm_base_matcher.sm_destroy_fn = FreeKeywordServiceMatcher;
+			InitKeywordServiceMatcher (matcher_p);
 		}
 
 	return (ServiceMatcher *) matcher_p;
@@ -133,6 +132,13 @@ void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *m
 
 	matcher_p -> ponsm_operation_name_s = operation_name_s;
 
+}
+
+
+void InitKeywordServiceMatcher (KeywordServiceMatcher *matcher_p)
+{
+	InitServiceMatcher (& (matcher_p -> ksm_base_matcher), MatchServiceByKeyword);
+	matcher_p -> ksm_base_matcher.sm_destroy_fn = FreeKeywordServiceMatcher;
 }
 
 

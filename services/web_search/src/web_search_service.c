@@ -36,6 +36,10 @@ static const char *GetWebSearchServiceName (Service *service_p);
 
 static const char *GetWebSearchServiceDesciption (Service *service_p);
 
+
+static const char *GetWebSearchServiceInformationUri (Service *service_p);
+
+
 static ParameterSet *GetWebSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 static void ReleaseWebSearchServiceParameters (Service *service_p, ParameterSet *params_p);
@@ -91,6 +95,7 @@ static Service *GetWebSearchService (json_t *operation_json_p, size_t i)
 					InitialiseService (web_service_p,
 						GetWebSearchServiceName,
 						GetWebSearchServiceDesciption,
+						GetWebSearchServiceInformationUri,
 						RunWebSearchService,
 						IsResourceForWebSearchService,
 						GetWebSearchServiceParameters,
@@ -157,6 +162,14 @@ static const char *GetWebSearchServiceDesciption (Service *service_p)
 	WebSearchServiceData *data_p = (WebSearchServiceData *) (service_p -> se_data_p);
 
 	return (data_p -> wssd_base_data.wsd_description_s);
+}
+
+
+static const char *GetWebSearchServiceInformationUri (Service *service_p)
+{
+	WebSearchServiceData *data_p = (WebSearchServiceData *) (service_p -> se_data_p);
+
+	return (data_p -> wssd_base_data.wsd_info_uri_s);
 }
 
 
@@ -232,7 +245,7 @@ static json_t *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\ndata:\n%s\n", service_name_s, error.text, data_s);
 								}
 
-							res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, web_service_response_json_p);
+							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p);
 
 						}		/* if (CallCurlWebservice (data_p)) */
 

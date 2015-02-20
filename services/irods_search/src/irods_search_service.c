@@ -141,6 +141,7 @@ ServicesArray *GetServices (const json_t *config_p)
 							InitialiseService (irods_service_p,
 								GetIrodsSearchServiceName,
 								GetIrodsSearchServiceDesciption,
+								NULL,
 								RunIrodsSearchService,
 								IsFileForIrodsSearchService,
 								GetIrodsSearchServiceParameters,
@@ -502,7 +503,7 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 
 			FreeIrodsSearch (search_p);
 
-			res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, query_results_json_p);
+			res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p);
 		}		/* if (search_p) */
 
 	return res_json_p;

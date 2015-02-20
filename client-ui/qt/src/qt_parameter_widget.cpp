@@ -19,7 +19,7 @@
 #include "string_utils.h"
 
 
-QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
+QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
 :	qpw_params_p (parameters_p),
 	qpw_prefs_widget_p (prefs_widget_p),
 	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
@@ -33,6 +33,20 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 
 	QLabel *label_p = new QLabel (QString (description_s), this);
 	qpw_form_layout_p -> addRow (QString (name_s), label_p);
+
+			if (uri_s)
+				{
+					QString s ("For more information, go to <a href=\"");
+					s.append (uri_s);
+					s.append ("\">");
+					s.append (uri_s);
+					s.append ("</a>");
+
+					label_p = new QLabel (s, this);
+					label_p -> setOpenExternalLinks (true);
+					qpw_form_layout_p -> addRow (label_p);
+				}
+
 
 	if (qpw_params_p)
 		{

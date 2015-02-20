@@ -22,7 +22,7 @@ class  QTParameterWidget : public QWidget
 
 
 public:
-	QTParameterWidget (const char *name_s, const char * const description_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level);
+	QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level);
 
 	~QTParameterWidget ();
 

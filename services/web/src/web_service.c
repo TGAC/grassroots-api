@@ -28,6 +28,8 @@ static const char *GetWebServiceName (Service *service_p);
 
 static const char *GetWebServiceDesciption (Service *service_p);
 
+static const char *GetWebServiceInformationUri (Service *service_p);
+
 static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *params_p);
@@ -84,6 +86,7 @@ static Service *GetWebService (json_t *operation_json_p, size_t i)
 					InitialiseService (web_service_p,
 						GetWebServiceName,
 						GetWebServiceDesciption,
+						GetWebServiceInformationUri,
 						RunWebService,
 						IsResourceForWebService,
 						GetWebServiceParameters,
@@ -141,6 +144,15 @@ static const char *GetWebServiceDesciption (Service *service_p)
 
 	return (data_p -> wsd_description_s);
 }
+
+
+static const char *GetWebServiceInformationUri (Service *service_p)
+{
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
+
+	return (data_p -> wsd_info_uri_s);
+}
+
 
 
 static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
@@ -218,7 +230,7 @@ static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, jso
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\n%s\n", service_name_s, error.text, buffer_data_p);
 								}
 
-							res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, web_service_response_json_p);
+							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p);
 
 						}		/* if (res == OS_SUCCEEDED) */
 

@@ -52,6 +52,7 @@ ServicesArray *GetServices (const json_t *config_p)
 					InitialiseService (blast_service_p, 
 						GetBlastServiceName, 
 						GetBlastServiceDesciption, 
+						NULL,
 						RunBlastService,
 						IsFileForBlastService,
 						GetBlastServiceParameters,
@@ -148,7 +149,7 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 			FreeBlastTool (tool_p); 
 		}
 		
-	res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, NULL);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL);
 		
 	return res_json_p;
 }

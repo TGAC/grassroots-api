@@ -91,6 +91,9 @@ bool InitWebServiceData (WebServiceData * const data_p, json_t *op_json_p)
 
 															if (data_p -> wsd_base_uri_s)
 																{
+																	data_p -> wsd_info_uri_s = GetOperationInformationURIFromJSON (op_json_p);
+
+
 																	return true;
 																}
 														}

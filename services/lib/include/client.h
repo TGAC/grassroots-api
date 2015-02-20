@@ -40,7 +40,7 @@ typedef struct Client
 	 */
 	struct Plugin *cl_plugin_p;
 
-	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
+	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p);
 
 	json_t *(*cl_run_fn) (ClientData *client_data_p);
 
@@ -87,7 +87,7 @@ WHEATIS_SERVICE_API void InitialiseClient (Client * const client_p,
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, const json_t *response_p),
-	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p),	
+	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s,ParameterSet *params_p),
 	ClientData *data_p);
 
 WHEATIS_SERVICE_API json_t *RunClient (Client *client_p);
@@ -96,7 +96,7 @@ WHEATIS_SERVICE_API json_t *RunClient (Client *client_p);
 WHEATIS_SERVICE_API json_t *DisplayResultsInClient (Client *client_p, const json_t *response_p);
 
 
-WHEATIS_SERVICE_API	int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p);
+WHEATIS_SERVICE_API	int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s,ParameterSet *params_p);
 
 
 /**

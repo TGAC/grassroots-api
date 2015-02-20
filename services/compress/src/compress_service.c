@@ -98,6 +98,7 @@ ServicesArray *GetServices (const json_t *config_p)
 					InitialiseService (compress_service_p,
 						GetCompressServiceName,
 						GetCompressServiceDesciption,
+						NULL,
 						RunCompressService,
 						IsFileForCompressService,
 						GetCompressServiceParameters,
@@ -361,7 +362,7 @@ static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p
 								
 		}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */
 	
-	res_json_p = CreateServiceResponseAsJSON (GetServiceName (service_p), res, NULL);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL);
 
 	return res_json_p;
 }

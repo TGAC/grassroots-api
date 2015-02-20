@@ -45,7 +45,7 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
 
-static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p);
+static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p, const char *keyword_s);
 
 static Operation GetOperation (json_t *ops_p);
 
@@ -118,7 +118,25 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						break;
 						
 					case OP_RUN_KEYWORD_SERVICES:
-						res_p = RunKeywordServices (req_p, credentials_p);
+						{
+							json_t *keyword_json_group_p = json_object_get (req_p, KEY_QUERY);
+
+							if (keyword_json_group_p)
+								{
+									json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEY_QUERY);
+
+									if (keyword_json_value_p)
+										{
+											if (json_is_string (keyword_json_value_p))
+												{
+													const char *keyword_s = json_string_value (keyword_json_value_p);
+
+													res_p = RunKeywordServices (req_p, credentials_p, keyword_s);
+												}
+										}
+								}
+
+						}
 						break;
 
 					default:
@@ -492,9 +510,9 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 }
 
 
-static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p)
+static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p, const char *keyword_s)
 {
-	json_t *json_p = NULL;
+	json_t *res_p = NULL;
 
 	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
 
@@ -504,21 +522,82 @@ static json_t *RunKeywordServices (const json_t * const req_p, const json_t *con
 
 			if (services_p -> ll_size > 0)
 				{
-					/* For each service, set its keyword parameter */
-					ServiceNode *service_node_p = (ServiceNode *) (services_p -> ll_head_p);
+					res_p = json_array ();
 
-					while (service_node_p)
+					if (res_p)
 						{
-							/* set the keyowrd parameter */
-							service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
-						}		/* while (service_node_p) */
+							/* For each service, set its keyword parameter */
+							ServiceNode *service_node_p = (ServiceNode *) (services_p -> ll_head_p);
 
-					/* Now run the services */
-				}
+							while (service_node_p)
+								{
+									ParameterSet *params_p = NULL;
+									Service *service_p = service_node_p -> sn_service_p;
+									json_t *service_res_p = NULL;
+									bool param_flag = true;
+
+									params_p = GetServiceParameters (service_p, NULL, config_p);
+
+									if (params_p)
+										{
+											ParameterNode *param_node_p = (ParameterNode *) params_p -> ps_params_p -> ll_head_p;
+
+											param_flag = false;
+
+											while (param_node_p)
+												{
+													Parameter *param_p = param_node_p -> pn_parameter_p;
+
+													/* set the keyword parameter */
+													if (param_p -> pa_type == PT_KEYWORD)
+														{
+															if (SetParameterValue (param_p, keyword_s))
+																{
+																	param_flag = true;
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to set service param \"%s\" - \"%s\" to \"%s\"", GetServiceName (service_p), param_p -> pa_name_s, keyword_s);
+																	param_flag = false;
+																}
+														}
+
+													param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
+												}		/* while (param_node_p) */
+
+											/* Now run the service */
+											if (param_flag)
+												{
+													service_res_p = RunService (service_p, params_p, config_p);
+												}
+
+											ReleaseServiceParameters (service_p, params_p);
+
+										}		/* if (params_p) */
+
+									if (service_res_p)
+										{
+											if (json_array_append_new (res_p, service_res_p) != 0)
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to add results from service \"%s\" to results list", GetServiceName (service_p));
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
+										}
+
+									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
+
+								}		/* while (service_node_p) */
+
+						}		/* if (res_p) */
+
+				}		/* if (services_p -> ll_size > 0) */
 
 			FreeLinkedList (services_p);
 		}		/* if (services_p) */
 
-	return json_p;
+	return res_p;
 }
 

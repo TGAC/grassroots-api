@@ -14,7 +14,7 @@
 	#define SERVICE_PREFS_WIDGET_DEBUG (DEBUG_NONE)
 #endif
 
-ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const char * const service_description_s, ParameterSet *params_p, QWidget *parent_p)
+ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p, QWidget *parent_p)
 : QWidget (parent_p),
 	spw_service_name_s (service_name_s)
 {
@@ -22,7 +22,7 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 
 	spw_run_flag = false;
 
-	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, params_p, NULL, PL_BASIC);
+	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, service_info_uri_s, params_p, NULL, PL_BASIC);
 	layout_p -> addWidget (spw_params_widget_p);
 
 	QString s ("Run ");
