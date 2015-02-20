@@ -14,6 +14,8 @@ WHEATIS_CLIENT_API Client *GetClient (void);
 
 WHEATIS_CLIENT_API void ReleaseClient (Client *client_p);
 
+WHEATIS_CLIENT_LOCAL void OpenLinkInBrowser (QTClientData *data_p, const char * const link_s);
+
 //json_t *GetUserParameters (json_t *service_p, const char * const filename_s);
 
 #ifdef __cplusplus

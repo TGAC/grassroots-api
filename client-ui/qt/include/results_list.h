@@ -38,8 +38,6 @@ private:
 	/*********************/
 	QListWidget *rl_list_p;
 
-	QList <QWebView* > rl_browsers;
-
 	bool AddItemFromJSON (const json_t *json_p);
 
 };

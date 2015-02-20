@@ -366,6 +366,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 
 	#ifdef _DEBUG
 	char *response_s = json_dumps (response_p, JSON_INDENT (2));
+	printf ("res:\n%s\n", response_s);
 	#endif
 	
 	if (json_is_array (response_p))
@@ -398,7 +399,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 											
 											if (params_p)
 												{
-													const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
+													const char *service_info_uri_s = GetJSONString (ops_p, OPERATION_INFORMATION_URI_S);
 
 													int res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
 												}		/* if (params_p) */

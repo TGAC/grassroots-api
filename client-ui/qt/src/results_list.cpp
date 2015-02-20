@@ -25,12 +25,6 @@ ResultsList :: ResultsList (QWidget *parent_p)
 
 ResultsList :: ~ResultsList ()
 {
-	for (int i = rl_browsers.size(); i > 0;-- i)
-		{
-			QWebView *browser_p = rl_browsers.back ();
-			rl_browsers.pop_back ();
-			delete browser_p;
-		}
 }
 
 

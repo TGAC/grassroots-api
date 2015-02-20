@@ -43,7 +43,7 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 					s.append ("</a>");
 
 					label_p = new QLabel (s, this);
-					label_p -> setOpenExternalLinks (true);
+					connect (label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
 					qpw_form_layout_p -> addRow (label_p);
 				}
 
@@ -52,6 +52,12 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 		{
 			AddParameters (qpw_params_p);
 		}		/* if (parameters_p) */
+}
+
+
+void QTParameterWidget :: OpenLink (const QString &link_r)
+{
+
 }
 
 
