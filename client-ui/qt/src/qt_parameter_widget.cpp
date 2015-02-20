@@ -1,5 +1,5 @@
 #include <QLabel>
-
+#include <QDesktopServices>
 
 #include "qt_parameter_widget.h"
 #include "file_chooser_widget.h"
@@ -54,10 +54,16 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 		}		/* if (parameters_p) */
 }
 
-
 void QTParameterWidget :: OpenLink (const QString &link_r)
 {
+	if (!QDesktopServices :: openUrl (QUrl (link_r)))
+		{
+			QWebView *browser_p = new QWebView;
 
+			qpw_browsers.append (browser_p);
+			browser_p -> load (QUrl (link_r));
+			browser_p -> show ();
+		}
 }
 
 
@@ -102,13 +108,14 @@ QTParameterWidget :: ~QTParameterWidget ()
 			BaseParamWidget *widget_p = qpw_widgets_map.take (param_p);
 
 			widget_p -> RemoveConnection ();
-		}
-/*
-	if (qpw_params_p)
+	}
+
+	for (int i = qpw_browsers.size(); i > 0;-- i)
 		{
-			FreeLinkedList (qpw_params_p);
+			QWebView *browser_p = qpw_browsers.back ();
+			qpw_browsers.pop_back ();
+			delete browser_p;
 		}
-*/
 }
 
 

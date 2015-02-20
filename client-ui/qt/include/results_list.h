@@ -40,6 +40,8 @@ private:
 
 	bool AddItemFromJSON (const json_t *json_p);
 
+	QList <QWebView *> rl_browsers;
+
 };
 
 #endif		/* #ifndef RESULTS_LIST_HPP */

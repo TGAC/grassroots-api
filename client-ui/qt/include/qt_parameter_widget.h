@@ -5,7 +5,8 @@
 #include <QHash>
 #include <QWidget>
 #include <QCheckBox>
-
+#include <QWebView>
+#include <QList>
 
 #include "parameter.h"
 #include "parameter_set.h"
@@ -36,7 +37,8 @@ public:
 public slots:
 	void ResetToDefaults ();
 
-
+private slots:
+	void OpenLink (const QString &link_r);
 
 private:
 	ParameterSet *qpw_params_p;
@@ -49,6 +51,9 @@ private:
 
 	ParameterLevel qpw_level;
 
+	QList <QWebView *> qpw_browsers;
+
+
 	/**
 	 * Create widget for parameter.
 	 */
@@ -59,6 +64,7 @@ private:
 	 * Get pre-existing widget for parameter.
 	 */
 	BaseParamWidget *GetWidgetForParameter (Parameter * const param_p);
+
 };
 
 

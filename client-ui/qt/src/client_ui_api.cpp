@@ -3,11 +3,9 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QDialog>
-#include <QList>
 #include <QStyleFactory>
 #include <QDialogButtonBox>
 #include <QPushButton>
-#include <QWebView>
 
 #include "client_ui_api.h"
 
@@ -33,9 +31,7 @@ typedef struct QTClientData
 	PrefsWidget *qcd_prefs_widget_p;
 	ResultsWidget *qcd_results_p;
 	char *qcd_dummy_arg_s;
-	QList <QWebView *> qcd_browsers;
-
-}QTClientData;
+} QTClientData;
 
 static int s_dummy_argc = 1;
 
@@ -143,15 +139,6 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 	delete (qt_data_p -> qcd_app_p);
 	FreeCopiedString (qt_data_p -> qcd_dummy_arg_s);
 
-
-	for (int i = qt_data_p -> qcd_browsers.size(); i > 0;-- i)
-		{
-			QWebView *browser_p = qt_data_p -> qcd_browsers.back ();
-			qt_data_p -> qcd_browsers.pop_back ();
-			delete browser_p;
-		}
-
-
 	FreeMemory (qt_data_p);
 }
 
@@ -239,14 +226,4 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t
 
 
 
-void OpenLinkInBrowser (QTClientData *data_p, const char * const link_s)
-{
-	if (!QDesktopServices :: openUrl (QUrl (link_s)))
-		{
-			QWebView *browser_p = new QWebView;
 
-			data_p -> qcd_browsers.append (browser_p);
-			browser_p -> load (QUrl (s));
-			browser_p -> show ();
-		}
-}
