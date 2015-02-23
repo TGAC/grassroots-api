@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QVBoxLayout>
 
 #include "param_combo_box.h"
 #include "prefs_widget.h"
@@ -45,13 +46,25 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 				}
 		}
 
+	const char *title_s = param_p -> pa_display_name_s ;
+
+	if (!title_s)
+		{
+			title_s = param_p -> pa_name_s;
+		}
+
+	pcb_group_p = new QGroupBox (title_s);
+	QVBoxLayout *layout_p = new QVBoxLayout;
+
+	layout_p -> addWidget (pcb_combo_box_p);
+	pcb_group_p -> setLayout (layout_p);
 
 }
 
 
 ParamComboBox ::	~ParamComboBox ()
 {
-	delete pcb_combo_box_p;
+	delete pcb_group_p;
 }
 
 
@@ -199,5 +212,5 @@ void ParamComboBox :: SetDefaultValue ()
 
 QWidget *ParamComboBox :: GetQWidget ()
 {
-	return pcb_combo_box_p;
+	return pcb_group_p;
 }

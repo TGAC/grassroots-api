@@ -7,6 +7,28 @@
 #include "parameter.h"
 #include "json_util.h"
 
+
+/**
+ * A datatype to tell the system that certain
+ * parameters should be grouped together in the
+ * client's user interface if possible.
+ */
+typedef struct ParameterGroup
+{
+	char *pg_name_s;
+	uint32 pg_num_params;
+	Parameter **pg_params_pp;
+} ParameterGroup;
+
+
+typedef struct ParameterGroupNode
+{
+	ListItem pgn_node;
+	ParameterGroup *pgn_param_group_p;
+} ParameterGroupNode;
+
+
+
 /**
  * A set of Parameters along with an optional name
  * and description.
@@ -30,6 +52,12 @@ typedef struct ParameterSet
 	 * Parameters.
 	 */
 	LinkedList *ps_params_p;
+
+	/**
+	 * A LinkedList of ParamneterGroupNode for this
+	 * ParameterSet.
+	 */
+	LinkedList *ps_grouped_params_p;
 } ParameterSet;
 
 
@@ -38,6 +66,7 @@ typedef struct ParameterSetNode
 	ListItem psn_node;
 	ParameterSet *psn_param_set_p;
 } ParameterSetNode;
+
 
 
 #ifdef __cplusplus
@@ -120,6 +149,9 @@ WHEATIS_SERVICE_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *pa
 
 
 WHEATIS_SERVICE_API void FreeParameterSetNode (ListItem *node_p);
+
+
+WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
 
 
 

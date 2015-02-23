@@ -4,6 +4,7 @@
 
 #include <QWidget>
 #include <QComboBox>
+#include <QGroupBox>
 
 #include "parameter.h"
 #include "base_param_widget.h"
@@ -29,6 +30,7 @@ public:
 
 private:
 	QComboBox *pcb_combo_box_p;
+	QGroupBox *pcb_group_p;
 };
 
 

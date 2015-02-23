@@ -218,7 +218,8 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
-							if (AddParam (connection_p, key_col_id, value_col_id, param_set_p, *value_ss, display_name_s, NULL))
+
+							if (AddParam (connection_p, key_col_id, value_col_id, param_set_p, *value_ss, name_s, display_name_s))
 								{
 									++ res;
 								}

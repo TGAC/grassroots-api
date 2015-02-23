@@ -1,13 +1,24 @@
 #include "memory_allocations.h"
 #include "parameter_set.h"
 #include "parameter.h"
+#include "string_utils.h"
 
 #include "streams.h"
 #include "json_util.h"
 #include "tag_item.h"
 
+
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListItem *node_p);
+
+static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const Parameter **params_pp, const uint32 num_params);
+
+static void FreeParameterGroupNode (ListItem *node_p);
+
+static ParameterGroup *AllocateParameterGroup (const char *name_s, const Parameter **params_pp, const uint32 num_params);
+
+static void FreeParameterGroup (ParameterGroup *param_group_p);
+
 
 
 ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s)
@@ -220,6 +231,28 @@ bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, con
 }
 
 
+bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char * const param_names_p, const uint32 num_params)
+{
+	bool success_flag = false;
+	Parameter **params_pp = AllocMemoryArray (num_params, sizeof (Parameter *));
+
+	/* Get the parameters for the given names */
+	if (params_pp)
+		{
+
+
+			if (!success_flag)
+				{
+					FreeMemoryArray (params_pp);
+				}
+		}		/* if (params_pp) */
+
+
+
+	return success_flag;
+}
+
+
 
 ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 {
@@ -342,5 +375,70 @@ void FreeParameterSetNode (ListItem *node_p)
 		}
 	
 	FreeMemory (param_set_node_p);
+}
+
+
+static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const Parameter **params_pp, const uint32 num_params)
+{
+	ParameterGroup *group_p = AllocateParameterGroup (name_s, params_pp, num_params);
+
+	if (group_p)
+		{
+			ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
+
+			if (param_group_node_p)
+				{
+					param_group_node_p -> pgn_param_group_p = group_p;
+					param_group_node_p -> pgn_node.ln_prev_p = NULL;
+					param_group_node_p -> pgn_node.ln_next_p = NULL;
+
+					return param_group_node_p;
+				}		/* if (param_group_node_p) */
+
+			FreeParameterGroup (group_p);
+		}		/* if (group_p) */
+
+	return NULL;
+}
+
+
+static void FreeParameterGroupNode (ListItem *node_p)
+{
+	ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) node_p;
+
+	FreeParameterGroup (param_group_node_p -> pgn_param_group_p);
+	FreeMemory (param_group_node_p);
+}
+
+
+static ParameterGroup *AllocateParameterGroup (const char *name_s, const Parameter **params_pp, const uint32 num_params)
+{
+	char *copied_name_s = CopyToNewString (name_s, 0, false);
+
+	if (copied_name_s)
+		{
+			ParameterGroup *param_group_p = (ParameterGroup *) AllocMemory (sizeof (ParameterGroup));
+
+			if (param_group_p)
+				{
+					param_group_p -> pg_name_s = copied_name_s;
+					param_group_p -> pg_params_pp = params_pp;
+					param_group_p -> pg_num_params = num_params;
+
+					return param_group_p;
+				}
+
+			FreeCopiedString (copied_name_s);
+		}		/* if (copied_name_s) */
+
+	return NULL;
+}
+
+
+static void FreeParameterGroup (ParameterGroup *param_group_p)
+{
+	FreeCopiedString (param_group_p -> pg_name_s);
+	FreeMemory (param_group_p -> pg_params_p);
+	FreeMemory (param_group_p);
 }
 
