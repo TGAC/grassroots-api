@@ -86,10 +86,13 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 						{
 							if (AddParams (connection_p, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
 								{
-									data_p -> issd_connection_p = connection_p;
-									data_p -> issd_params_p = params_p;
+									if (AddParams (connection_p, COL_META_COLL_ATTR_NAME, COL_META_COLL_ATTR_VALUE, params_p, "Collections metadata", NULL, "The metadata tags available for iRODS collections") >= 0)
+										{
+											data_p -> issd_connection_p = connection_p;
+											data_p -> issd_params_p = params_p;
 
-									return data_p;
+											return data_p;
+										}
 								}
 
 							FreeParameterSet (params_p);
