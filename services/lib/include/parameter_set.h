@@ -145,6 +145,12 @@ WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_se
 WHEATIS_SERVICE_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
 
 
+WHEATIS_SERVICE_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, const json_t * const json_p);
+
+
+WHEATIS_SERVICE_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
+
+
 #ifdef __cplusplus
 }
 #endif

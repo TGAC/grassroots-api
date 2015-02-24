@@ -435,6 +435,10 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 							if (success_flag)
 								{
 									/* Get the groupings if any */
+									if (!CreateParameterGroupsFromJSON (params_p, root_p))
+										{
+											success_flag = false;
+										}
 								}
 
 							if (!success_flag)
@@ -487,6 +491,19 @@ void FreeParameterSetNode (ListItem *node_p)
 	
 	FreeMemory (param_set_node_p);
 }
+
+
+bool CreateParameterGroupsFromJSON (ParameterSet *params_p, const json_t * const json_p)
+{
+
+}
+
+
+json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p)
+{
+
+}
+
 
 
 static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const Parameter **params_pp, const uint32 num_params)
