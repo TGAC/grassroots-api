@@ -25,14 +25,19 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
 	qpw_level (initial_level)
 {
-	qpw_form_layout_p = new QFormLayout;
-	qpw_form_layout_p -> setFormAlignment (Qt :: AlignVCenter);
-	qpw_form_layout_p -> setLabelAlignment (Qt :: AlignVCenter);
+/*
+	qpw_layout_p = new QFormLayout;
+	qpw_layout_p -> setFormAlignment (Qt :: AlignVCenter);
+	qpw_layout_p -> setLabelAlignment (Qt :: AlignVCenter);
+*/
 
-	setLayout (qpw_form_layout_p);
+	qpw_layout_p = new QGridLayout;
 
-	QLabel *label_p = new QLabel (QString (description_s), this);
-	qpw_form_layout_p -> addRow (QString (name_s), label_p);
+	setLayout (qpw_layout_p);
+
+	QLabel *name_label_p = new QLabel (QString (name_s), this);
+	QLabel *desc_label_p = new QLabel (QString (description_s), this);
+	AddRow (name_label_p ,desc_label_p, 1);
 
 			if (uri_s)
 				{
@@ -42,9 +47,9 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 					s.append (uri_s);
 					s.append ("</a>");
 
-					label_p = new QLabel (s, this);
-					connect (label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
-					qpw_form_layout_p -> addRow (label_p);
+					name_label_p = new QLabel (s, this);
+					connect (name_label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
+					qpw_layout_p -> addWidget (name_label_p, qpw_layout_p -> rowCount (), qpw_layout_p -> columnCount (), 1, 2, Qt :: AlignVCenter);
 				}
 
 
@@ -67,35 +72,93 @@ void QTParameterWidget :: OpenLink (const QString &link_r)
 }
 
 
+
+void QTParameterWidget :: AddRow (QWidget *first_p, QWidget *second_p, const int row_span)
+{
+	int row = qpw_layout_p -> rowCount ();
+
+	qpw_layout_p -> addWidget (first_p, row, 0);
+	qpw_layout_p -> addWidget (second_p, row, 1, row_span, 1, 0);
+}
+
+
 void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 {
 	ParameterNode *node_p = reinterpret_cast <ParameterNode *> (params_p -> ps_params_p -> ll_head_p);
+	ParameterGroupNode *param_group_node_p = reinterpret_cast <ParameterGroupNode *> (params_p -> ps_grouped_params_p -> ll_head_p);
+	QHash <Parameter *, Parameter *> params_map;
+
+	while (param_group_node_p)
+		{
+			ParameterGroup *group_p = param_group_node_p -> pgn_param_group_p;
+			QGroupBox *box_p = new QGroupBox (group_p -> pg_name_s);
+			QFormLayout *layout_p = new QFormLayout;
+
+			box_p -> setLayout (layout_p);
+
+			const Parameter **param_pp = group_p -> pg_params_pp;
+
+			for (uint32 i = group_p -> pg_num_params; i > 0; -- i, ++ param_pp)
+				{
+					Parameter *param_p = const_cast <Parameter *> (*param_pp);
+
+					AddParameterWidget (param_p, layout_p);
+
+					params_map.insert (param_p, param_p);
+				}
+
+			int row = qpw_layout_p -> rowCount ();
+			int col = qpw_layout_p -> columnCount ();
+			qpw_layout_p -> addWidget (box_p, row, col, group_p -> pg_num_params, 2, Qt :: AlignVCenter);
+
+			param_group_node_p = reinterpret_cast <ParameterGroupNode *> (param_group_node_p -> pgn_node.ln_next_p);
+		}
 
 	while (node_p)
 		{
 			Parameter * const param_p = node_p -> pn_parameter_p;
-			BaseParamWidget *child_p = CreateWidgetForParameter (param_p);
 
-			if (child_p)
+			if (!params_map.contains (param_p))
 				{
-					QWidget *widget_p = child_p -> GetQWidget ();
-
-					qpw_form_layout_p -> addRow (GetUIName (param_p), widget_p);
-					qpw_widgets_map.insert (param_p, child_p);
-
-					if (CompareParameterLevels (param_p -> pa_level, qpw_level) > 0)
-						{
-							QWidget *label_p = qpw_form_layout_p -> labelForField (widget_p);
-
-							widget_p -> hide ();
-							label_p -> hide ();
-						}
+					AddParameterWidget (param_p);
 				}
 
 			node_p = reinterpret_cast <ParameterNode *> (node_p -> pn_node.ln_next_p);
 		}		/* while (node_p) */
 
 }
+
+
+void QTParameterWidget :: AddParameterWidget (Parameter *param_p, QFormLayout *layout_p)
+{
+	BaseParamWidget *child_p = CreateWidgetForParameter (param_p);
+
+	if (child_p)
+		{
+			QWidget *widget_p = child_p -> GetQWidget ();
+			QLabel *label_p = new QLabel (GetUIName (param_p));
+
+			if (layout_p)
+				{
+					layout_p -> addRow (label_p, widget_p);
+				}
+			else
+				{
+					AddRow (label_p, widget_p, 1);
+				}
+
+			qpw_widgets_map.insert (param_p, child_p);
+
+			if (CompareParameterLevels (param_p -> pa_level, qpw_level) > 0)
+				{
+					widget_p -> hide ();
+					label_p -> hide ();
+				}
+		}
+
+
+}
+
 
 QTParameterWidget :: ~QTParameterWidget ()
 {
@@ -143,7 +206,7 @@ void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, cons
 		{
 			BaseParamWidget *widget_p = reinterpret_cast <BaseParamWidget *> (i.value ());
 
-			widget_p -> CheckLevelDisplay (level, qpw_form_layout_p -> labelForField (widget_p -> GetQWidget ()), parent_widget_p);
+			//widget_p -> CheckLevelDisplay (level, qpw_form_layout_p -> labelForField (widget_p -> GetQWidget ()), parent_widget_p);
 		}
 
 	qpw_level = level;

@@ -8,18 +8,6 @@
 #include "json_util.h"
 
 
-/**
- * A datatype to tell the system that certain
- * parameters should be grouped together in the
- * client's user interface if possible.
- */
-typedef struct ParameterGroup
-{
-	char *pg_name_s;
-	uint32 pg_num_params;
-	Parameter **pg_params_pp;
-} ParameterGroup;
-
 
 typedef struct ParameterGroupNode
 {
@@ -151,8 +139,10 @@ WHEATIS_SERVICE_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *pa
 WHEATIS_SERVICE_API void FreeParameterSetNode (ListItem *node_p);
 
 
-WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
+WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const Parameter **params_pp, const uint32 num_params);
 
+
+WHEATIS_SERVICE_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
 
 
 #ifdef __cplusplus

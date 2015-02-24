@@ -96,6 +96,7 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 											param_p -> pa_level = level;
 											param_p -> pa_tag = tag;
 											param_p -> pa_store_p = store_p;
+											param_p -> pa_group_p = NULL;
 
 											memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
 

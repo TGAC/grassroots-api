@@ -53,7 +53,7 @@ static bool CloseIrodsSearchService (Service *service_p);
 
 static rcComm_t *GetIRODSConnection (const json_t *config_p);
 
-static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
@@ -68,6 +68,7 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServiceData *data_p);
 
 static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val);
+
 
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p)
@@ -215,17 +216,41 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 					QueryResult *result_p = results_p -> qr_values_p;
 					int i = result_p -> qr_num_values;
 					char **value_ss = result_p -> qr_values_pp;
+					const Parameter **params_pp = (const Parameter **) AllocMemoryArray (i, sizeof (const Parameter *));
+					const Parameter **param_pp = params_pp;
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
+							Parameter *param_p = AddParam (connection_p, key_col_id, value_col_id, param_set_p, *value_ss, NULL, display_name_s);
 
-							if (AddParam (connection_p, key_col_id, value_col_id, param_set_p, *value_ss, name_s, display_name_s))
+							if (param_p)
 								{
+									if (param_pp)
+										{
+											*param_pp = param_p;
+											++ param_pp;
+										}
+
 									++ res;
 								}
 							else
 								{
 									PrintErrors (STM_LEVEL_WARNING, "Failed to get metadata values for \"%s\"\n", *value_ss);
+								}
+						}
+
+					if (params_pp)
+						{
+							const char *heading_s = display_name_s;
+
+							if (!heading_s)
+								{
+									heading_s = name_s;
+								}
+
+							if (!AddParameterGroupToParameterSet (param_set_p, heading_s, params_pp, result_p -> qr_num_values))
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to add parameter group for \"%s\"\n", name_s);
 								}
 						}
 
@@ -257,9 +282,10 @@ static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s,
 }
 
 
-static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	bool success_flag = false;
+	Parameter *param_p = NULL;
 
 	/*
 	 * Get the attibute values
@@ -315,7 +341,6 @@ static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, 
 
 									if (options_array_p)
 										{
-											Parameter *param_p = NULL;
 											SharedType def;
 
 											def.st_string_value_s = param_options_p -> st_string_value_s;
@@ -338,6 +363,7 @@ static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, 
 													if (!success_flag)
 														{
 															FreeParameter (param_p);
+															param_p = NULL;
 														}
 												}		/* if (param_p) */
 											else
@@ -367,7 +393,7 @@ static bool AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, 
 			 FreeQueryResults (results_p);
 		}		/* if (results_p) */
 
-	return success_flag;
+	return param_p;
 }
 
 

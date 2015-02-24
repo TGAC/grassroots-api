@@ -2,6 +2,7 @@
 #define QT_PARAMETER_WIDGET_H
 
 #include <QFormLayout>
+#include <QGridLayout>
 #include <QHash>
 #include <QWidget>
 #include <QCheckBox>
@@ -47,7 +48,7 @@ private:
 
 	QHash <Parameter *, BaseParamWidget *> qpw_widgets_map;
 
-	QFormLayout *qpw_form_layout_p;
+	QGridLayout *qpw_layout_p;
 
 	ParameterLevel qpw_level;
 
@@ -63,8 +64,10 @@ private:
 	/**
 	 * Get pre-existing widget for parameter.
 	 */
-	BaseParamWidget *GetWidgetForParameter (Parameter * const param_p);
+	BaseParamWidget *GetWidgetForParameter (const Parameter * const param_p);
 
+	void AddRow (QWidget *first_p, QWidget *second_p, const int row_span);
+	void AddParameterWidget (Parameter *param_p, QFormLayout *layout_p = 0);
 };
 
 

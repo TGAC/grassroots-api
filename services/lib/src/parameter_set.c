@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "memory_allocations.h"
 #include "parameter_set.h"
 #include "parameter.h"
@@ -31,11 +33,19 @@ ParameterSet *AllocateParameterSet (const char *name_s, const char *description_
 			
 			if (params_list_p)
 				{
-					set_p -> ps_params_p = params_list_p;
-					set_p -> ps_name_s = name_s;
-					set_p -> ps_description_s = description_s;
+					LinkedList *groups_list_p = AllocateLinkedList (FreeParameterGroupNode);
+
+					if (groups_list_p)
+						{
+							set_p -> ps_params_p = params_list_p;
+							set_p -> ps_name_s = name_s;
+							set_p -> ps_description_s = description_s;
+							set_p -> ps_grouped_params_p = groups_list_p;
+
+							return set_p;
+						}
 					
-					return set_p;
+					FreeLinkedList (params_list_p);
 				}		/* if (params_list_p) */
 
 			FreeMemory (set_p);
@@ -52,7 +62,13 @@ void FreeParameterSet (ParameterSet *params_p)
 		{
 			FreeLinkedList (params_p -> ps_params_p);
 		}
-		
+
+	if (params_p -> ps_grouped_params_p)
+		{
+			FreeLinkedList (params_p -> ps_grouped_params_p);
+		}
+
+
 	FreeMemory (params_p);
 }
 
@@ -131,6 +147,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 	if (root_p)
 		{
 			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+			ParameterGroupNode *group_node_p = (ParameterGroupNode *) (param_set_p -> ps_grouped_params_p -> ll_head_p);
 			bool success_flag = true;			
 			
 			while (success_flag && node_p)
@@ -154,6 +171,28 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 				}
 				
 			
+			while (success_flag && group_node_p)
+				{
+					json_t *group_json_p = GetParameterGroupAsJSON (group_node_p -> pgn_param_group_p);
+
+					if (group_json_p)
+						{
+							#ifdef _DEBUG
+							PrintJSON (stderr, root_p, "GetParameterSetAsJSON - group_json_p :: ");
+							#endif
+
+							success_flag = (json_array_append_new (root_p, group_json_p) == 0);
+
+							group_node_p = (ParameterGroupNode *) (group_node_p -> pgn_node.ln_next_p);
+						}
+					else
+						{
+							success_flag = false;
+						}
+				}
+
+
+
 			if (!success_flag)
 				{
 					json_object_clear (root_p);
@@ -231,7 +270,33 @@ bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, con
 }
 
 
-bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char * const param_names_p, const uint32 num_params)
+bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const Parameter **params_pp, const uint32 num_params)
+{
+	bool success_flag = false;
+	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, params_pp, num_params);
+
+	if (param_group_node_p)
+		{
+			ParameterGroup *group_p = param_group_node_p -> pgn_param_group_p;
+			Parameter **param_pp = params_pp;
+			uint32 i;
+
+			LinkedListAddTail (param_set_p -> ps_grouped_params_p, (ListItem *) param_group_node_p);
+
+			for (i = num_params; i > 0; -- i, ++ param_pp)
+				{
+					(*param_pp) -> pa_group_p = group_p;
+				}
+		}
+	else
+		{
+			success_flag = false;
+		}
+
+}
+
+
+bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params)
 {
 	bool success_flag = false;
 	Parameter **params_pp = AllocMemoryArray (num_params, sizeof (Parameter *));
@@ -239,14 +304,55 @@ bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *gro
 	/* Get the parameters for the given names */
 	if (params_pp)
 		{
+			const char **param_name_ss = param_names_ss;
+			Parameter ** param_pp = params_pp;
+			uint32 i = num_params;
 
+			success_flag = true;
+
+			while (success_flag && (i > 0))
+				{
+					ParameterNode *param_node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+					const char * const param_name_s = *param_name_ss;
+
+					success_flag = false;
+
+					while (param_node_p)
+						{
+							Parameter *param_p = param_node_p -> pn_parameter_p;
+
+							if (strcmp (param_name_s, param_p -> pa_name_s) == 0)
+								{
+									*param_pp = param_p;
+									success_flag = true;
+									param_node_p = NULL;
+								}
+							else
+								{
+									param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
+								}
+
+						}		/* while (param_node_p) */
+
+					if (success_flag)
+						{
+							-- i;
+							++ param_name_ss;
+							++ param_pp;
+						}		/* if (success_flag) */
+				}
+
+			if (success_flag)
+				{
+					success_flag = AddParameterGroupToParameterSet (param_set_p, group_name_s, params_pp, num_params);
+				}
 
 			if (!success_flag)
 				{
-					FreeMemoryArray (params_pp);
+					FreeMemory (params_pp);
 				}
-		}		/* if (params_pp) */
 
+		}		/* if (params_pp) */
 
 
 	return success_flag;
@@ -326,6 +432,11 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 								}		/* while ((i < num_params) && success_flag) */
 							
 							
+							if (success_flag)
+								{
+									/* Get the groupings if any */
+								}
+
 							if (!success_flag)
 								{
 									FreeParameterSet (params_p);
@@ -438,7 +549,7 @@ static ParameterGroup *AllocateParameterGroup (const char *name_s, const Paramet
 static void FreeParameterGroup (ParameterGroup *param_group_p)
 {
 	FreeCopiedString (param_group_p -> pg_name_s);
-	FreeMemory (param_group_p -> pg_params_p);
+	FreeMemory (param_group_p -> pg_params_pp);
 	FreeMemory (param_group_p);
 }
 

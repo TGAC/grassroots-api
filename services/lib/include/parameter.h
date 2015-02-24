@@ -11,9 +11,10 @@
 #include "resource.h"
 #include "hash_table.h"
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
+
+/******* FORWARD DECLARATION *******/
+struct Parameter;
+
 
 /**
  * The different types that a Parameter can take.
@@ -103,8 +104,20 @@ typedef struct TagItem
 } TagItem;
 
 
-/******* FORWARD DECLARATION *******/
-struct Parameter;
+/**
+ * A datatype to tell the system that certain
+ * parameters should be grouped together in the
+ * client's user interface if possible.
+ */
+typedef struct ParameterGroup
+{
+	char *pg_name_s;
+	uint32 pg_num_params;
+	const struct Parameter **pg_params_pp;
+} ParameterGroup;
+
+
+
 
 /**
  * The datatype that stores all of the information about a
@@ -171,6 +184,9 @@ typedef struct Parameter
 	uint32 pa_tag;
 
 	HashTable *pa_store_p;
+
+
+	ParameterGroup *pa_group_p;
 } Parameter;
 
 
@@ -183,6 +199,10 @@ typedef struct ParameterNode
 } ParameterNode;
 
 
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
 
 
 WHEATIS_SERVICE_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
