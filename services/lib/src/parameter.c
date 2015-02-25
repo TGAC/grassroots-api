@@ -7,6 +7,7 @@
 #include "math_utils.h"
 #include "string_utils.h"
 #include "string_hash_table.h"
+#include "parameter_set.h"
 
 #include "json_util.h"
 
@@ -1498,6 +1499,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 											if (param_p)
 												{
+
 													if (!InitParameterStoreFromJSON (root_p, param_p -> pa_store_p))
 														{
 															FreeParameter (param_p);
@@ -1612,6 +1614,25 @@ static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *js
 
 		}		/* if (param_p -> pa_group_p) */
 
-	return success_flag
+	return success_flag;
+}
+
+
+static char *GetParameterGroupFromSON (const Parameter * const param_p, json_t *json_p)
+{
+	bool success_flag = true;
+
+	if (param_p -> pa_group_p)
+		{
+			const char *group_name_s = param_p -> pa_group_p -> pg_name_s;
+
+			if (group_name_s)
+				{
+					success_flag = (json_object_set_new (json_p, PARAM_GROUP_S, json_string (group_name_s)) == 0);
+				}
+
+		}		/* if (param_p -> pa_group_p) */
+
+	return success_flag;
 }
 
