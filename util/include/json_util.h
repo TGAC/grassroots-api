@@ -75,6 +75,7 @@ PREFIX const char *PARAM_WHEATIS_TYPE_INFO_S VAL("wheatis_type");
 PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default");
 PREFIX const char *PARAM_CURRENT_VALUE_S  VAL("current_value");
 PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
+PREFIX const char *PARAM_GROUP_S VAL("group");
 PREFIX const char *PARAM_MIN_S  VAL("min");
 PREFIX const char *PARAM_MAX_S  VAL("max");
 

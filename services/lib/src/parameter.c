@@ -37,6 +37,8 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p);
 
+static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p);
+
 static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p);
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
@@ -584,7 +586,10 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 																						{
 																							if (AddParameterBoundsToJSON (parameter_p, root_p))
 																								{
-																									success_flag = true;
+																									if (AddParameterGroupToJSON (parameter_p, root_p))
+																										{
+																											success_flag = true;
+																										}
 																								}
 																						}
 																				}
@@ -1591,4 +1596,22 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 	return value_s;
 }
 
+
+static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p)
+{
+	bool success_flag = true;
+
+	if (param_p -> pa_group_p)
+		{
+			const char *group_name_s = param_p -> pa_group_p -> pg_name_s;
+
+			if (group_name_s)
+				{
+					success_flag = (json_object_set_new (json_p, PARAM_GROUP_S, json_string (group_name_s)) == 0);
+				}
+
+		}		/* if (param_p -> pa_group_p) */
+
+	return success_flag
+}
 

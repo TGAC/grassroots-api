@@ -391,17 +391,17 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 			if (params_p)
 				{
 					/* Get the parameters array */
-					json_p = json_object_get (root_p, PARAM_SET_PARAMS_S);
-					if (json_p && json_is_array (json_p))
+					json_t *params_json_p = json_object_get (root_p, PARAM_SET_PARAMS_S);
+					if (params_json_p && json_is_array (params_json_p))
 						{
-							size_t num_params = json_array_size (json_p);
+							size_t num_params = json_array_size (params_json_p);
 							size_t i = 0;
 							bool success_flag = true;
 							
 							/* Loop through the params */
 							while ((i < num_params) && success_flag)
 								{
-									json_t *param_json_p = json_array_get (json_p, i);
+									json_t *param_json_p = json_array_get (params_json_p, i);
 									Parameter *param_p = CreateParameterFromJSON (param_json_p);
 									
 									if (param_p)
@@ -434,7 +434,23 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 							
 							if (success_flag)
 								{
-									/* Get the groupings if any */
+									/* Get the groups */
+									json_t *groups_json_p = json_object_get (root_p, PARAM_SET_GROUPS_S);
+									if (groups_json_p && json_is_array (groups_json_p))
+										{
+											/* assign the params to their groups and vice versa */
+											ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+											size_t num_groups = json_array_size (groups_json_p);
+											size_t i;
+
+											for (i = 0; i < num_groups; ++ i)
+												{
+
+												}
+										}
+
+
+
 									if (!CreateParameterGroupsFromJSON (params_p, root_p))
 										{
 											success_flag = false;
