@@ -71,45 +71,53 @@ bool InitWebServiceData (WebServiceData * const data_p, json_t *op_json_p)
 
 					if (data_p -> wsd_buffer_p)
 						{
-							json_t *params_p = json_object_get (op_json_p, PARAM_SET_PARAMS_S);
+							json_t *param_set_p = json_object_get (op_json_p, PARAM_SET_KEY_S);
 
-							if (params_p)
+							if (param_set_p)
 								{
-									data_p -> wsd_params_p = CreateParameterSetFromJSON (op_json_p);
+									json_t *params_p = json_object_get (param_set_p, PARAM_SET_PARAMS_S);
 
-									if (data_p -> wsd_params_p)
+									if (params_p)
 										{
-											data_p -> wsd_curl_data_p = AllocateCurlTool ();
+											data_p -> wsd_params_p = CreateParameterSetFromJSON (op_json_p);
 
-											if (data_p -> wsd_curl_data_p)
+											if (data_p -> wsd_params_p)
 												{
-													data_p -> wsd_method = GetSubmissionMethod (op_json_p);
+													data_p -> wsd_curl_data_p = AllocateCurlTool ();
 
-													if (data_p -> wsd_method != SM_UNKNOWN)
+													if (data_p -> wsd_curl_data_p)
 														{
-															data_p -> wsd_base_uri_s = GetJSONString (op_json_p, S_URI_S);
+															data_p -> wsd_method = GetSubmissionMethod (op_json_p);
 
-															if (data_p -> wsd_base_uri_s)
+															if (data_p -> wsd_method != SM_UNKNOWN)
 																{
-																	data_p -> wsd_info_uri_s = GetOperationInformationURIFromJSON (op_json_p);
+																	data_p -> wsd_base_uri_s = GetJSONString (op_json_p, S_URI_S);
+
+																	if (data_p -> wsd_base_uri_s)
+																		{
+																			data_p -> wsd_info_uri_s = GetOperationInformationURIFromJSON (op_json_p);
 
 
-																	return true;
+																			return true;
+																		}
 																}
+
+															FreeCurlTool (data_p -> wsd_curl_data_p);
 														}
 
-													FreeCurlTool (data_p -> wsd_curl_data_p);
+													FreeParameterSet (data_p -> wsd_params_p);
 												}
 
-											FreeParameterSet (data_p -> wsd_params_p);
-										}
+										}		/* if (params_p) */
 
-								}		/* if (params_p) */
+								}		/* if (param_set_p) */
 
 							FreeByteBuffer (data_p -> wsd_buffer_p);
-						}
-				}
-		}
+						}		/* if (data_p -> wsd_buffer_p) */
+
+				}		/* if (data_p -> wsd_description_s) */
+
+		}		/* if (data_p -> wsd_name_s) */
 
 	return false;
 }

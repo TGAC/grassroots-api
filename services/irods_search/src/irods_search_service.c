@@ -405,13 +405,13 @@ static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_co
 
 static const char *GetIrodsSearchServiceName (Service *service_p)
 {
-	return "Irods search service";
+	return "iRods search service";
 }
 
 
 static const char *GetIrodsSearchServiceDesciption (Service *service_p)
 {
-	return "A service to search the metadata within Irods";
+	return "A service to search the metadata within iRods";
 }
 
 

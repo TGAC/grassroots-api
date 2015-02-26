@@ -64,7 +64,17 @@ void FileChooserWidget :: SetDefaultValue ()
 	if (resource_p)
 		{
 			fcw_chooser_p -> setCurrentText (resource_p -> re_value_s);
-			fcw_protocol_label_p -> setText (resource_p -> re_protocol_s);
+
+			if (resource_p -> re_protocol_s)
+				{
+					fcw_protocol_label_p -> setText (resource_p -> re_protocol_s);
+					fcw_protocol_label_p -> show ();
+				}
+			else
+				{
+					fcw_protocol_label_p -> setText ("");
+					fcw_protocol_label_p -> hide ();
+				}
 		}
 }
 
@@ -90,18 +100,19 @@ FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWi
 	fcw_protocol_label_p -> setBuddy (fcw_chooser_p);
 	fcw_protocol_label_p -> setToolTip ("The protocol for the given file");
 
-	layout_p -> addWidget (fcw_protocol_label_p);
+//	layout_p -> addWidget (fcw_protocol_label_p);
 	layout_p -> addWidget (fcw_chooser_p);
 	layout_p -> addWidget (browse_button_p);
 
-	// Remove any borders top and bottom
-	int left;
-	int top;
-	int right;
-	int bottom;
+	/* don't show the protocol label when it's empty */
+	fcw_protocol_label_p -> hide ();
 
-	layout_p -> getContentsMargins (&left, &top, &right, &bottom);
-	layout_p -> setContentsMargins (left, 0, right, 0);
+
+	// Remove any borders top and bottom
+	QMargins m = layout_p -> contentsMargins ();
+	m.setLeft (0);
+	m.setRight (0);
+	layout_p -> setContentsMargins (m);
 
 	fcw_widget_p -> setLayout (layout_p);
 }

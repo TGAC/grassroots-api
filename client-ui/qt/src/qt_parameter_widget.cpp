@@ -1,5 +1,7 @@
 #include <QLabel>
 #include <QDesktopServices>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 
 #include "qt_parameter_widget.h"
 #include "file_chooser_widget.h"
@@ -19,39 +21,65 @@
 #include "string_utils.h"
 
 
+const int QTParameterWidget :: QPW_NUM_COLUMNS = 2;
+
+
 QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
 :	qpw_params_p (parameters_p),
 	qpw_prefs_widget_p (prefs_widget_p),
 	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
 	qpw_level (initial_level)
 {
-/*
-	qpw_layout_p = new QFormLayout;
-	qpw_layout_p -> setFormAlignment (Qt :: AlignVCenter);
-	qpw_layout_p -> setLabelAlignment (Qt :: AlignVCenter);
-*/
+	QVBoxLayout *layout_p = new QVBoxLayout;
+	QVBoxLayout *info_layout_p = new QVBoxLayout;
 
 	qpw_layout_p = new QGridLayout;
 	qpw_layout_p -> setAlignment (Qt :: AlignVCenter);
 
-	setLayout (qpw_layout_p);
+	layout_p -> addLayout (info_layout_p);
 
-	QLabel *name_label_p = new QLabel (QString (name_s), this);
-	QLabel *desc_label_p = new QLabel (QString (description_s), this);
-	AddRow (name_label_p ,desc_label_p, 1);
+	setLayout (layout_p);
 
-			if (uri_s)
-				{
-					QString s ("For more information, go to <a href=\"");
-					s.append (uri_s);
-					s.append ("\">");
-					s.append (uri_s);
-					s.append ("</a>");
+	QString str;
 
-					name_label_p = new QLabel (s, this);
-					connect (name_label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
-					qpw_layout_p -> addWidget (name_label_p, qpw_layout_p -> rowCount (), qpw_layout_p -> columnCount (), 1, 2, Qt :: AlignVCenter);
-				}
+	str.append ("<b>");
+	str.append (name_s);
+	str.append ("</b>");
+
+	QLabel *label_p = 0;
+
+
+	str.clear ();
+	str.append (description_s);
+
+	label_p = new QLabel (str, this);
+	label_p -> setSizePolicy (QSizePolicy :: Fixed, QSizePolicy :: Fixed);
+	info_layout_p -> addWidget (label_p);
+
+	if (uri_s)
+		{
+			str.clear ();
+			str.append ("For more information, go to <a href=\"");
+			str.append (uri_s);
+			str.append ("\">");
+			str.append (uri_s);
+			str.append ("</a>");
+
+			label_p = new QLabel (str, this);
+			connect (label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
+
+			label_p -> setSizePolicy (QSizePolicy :: Fixed, QSizePolicy :: Fixed);
+			label_p -> setAlignment (Qt :: AlignCenter);
+			info_layout_p -> addWidget (label_p);
+		}
+
+
+	QFrame *line_p = new QFrame;
+	line_p -> setFrameShape (QFrame :: HLine);
+	layout_p -> addWidget (line_p);
+
+	layout_p -> insertSpacing (layout_p -> count (), 10);
+	layout_p -> addLayout (qpw_layout_p);
 
 
 	if (qpw_params_p)
@@ -88,6 +116,7 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 	ParameterNode *node_p = reinterpret_cast <ParameterNode *> (params_p -> ps_params_p -> ll_head_p);
 	ParameterGroupNode *param_group_node_p = reinterpret_cast <ParameterGroupNode *> (params_p -> ps_grouped_params_p -> ll_head_p);
 	QHash <Parameter *, Parameter *> params_map;
+	bool spacer_flag = true;
 
 	while (param_group_node_p)
 		{
@@ -96,7 +125,7 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 			QFormLayout *layout_p = new QFormLayout;
 
 			box_p -> setLayout (layout_p);
-			box_p -> setAlignment (Qt:: AlignHCenter);
+			box_p -> setAlignment (Qt:: AlignRight);
 
 			const Parameter **param_pp = group_p -> pg_params_pp;
 

@@ -68,6 +68,8 @@ private:
 
 	void AddRow (QWidget *first_p, QWidget *second_p, const int row_span);
 	void AddParameterWidget (Parameter *param_p, QFormLayout *layout_p = 0);
+
+	static const int QPW_NUM_COLUMNS;
 };
 
 
