@@ -382,6 +382,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 
 					#ifdef _DEBUG
 					char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
+					printf ("client received service %ld:\n%s\n\n", i, service_s);
 					#endif
 
 

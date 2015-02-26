@@ -12,9 +12,9 @@
 #include "json_util.h"
 
 #ifdef _DEBUG
-	#define PARAMETER_DEBUG	(DL_FINE)
+	#define PARAMETER_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define PARAMETER_DEBUG	(DL_NONE)
+	#define PARAMETER_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -629,7 +629,7 @@ static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *roo
 {
 	bool success_flag = (json_object_set_new (root_p, PARAM_NAME_S, json_string (param_p -> pa_name_s)) == 0);
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddParameterNameToJSON - root_p :: ");
 	#endif
 
@@ -646,7 +646,7 @@ static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json
 			success_flag = (json_object_set_new (root_p, PARAM_DISPLAY_NAME_S, json_string (param_p -> pa_display_name_s)) == 0);
 		}
 		
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddParameterDisplayNameToJSON - root_p :: ");
 	#endif
 
@@ -663,7 +663,7 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 			success_flag = (json_object_set_new (root_p, PARAM_DESCRIPTION_S, json_string (param_p -> pa_description_s)) == 0);
 		}
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddParameterDescriptionToJSON - root_p :: ");
 	#endif
 
@@ -675,7 +675,7 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 {
 	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_tag)) == 0);
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddParameterTagToJSON - root_p :: ");
 	#endif
 
@@ -782,7 +782,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 			success_flag = (json_object_set_new (root_p, PARAM_WHEATIS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0);
 		}
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddParameterTypeToJSON - root_p :: ");
 	#endif
 
@@ -892,7 +892,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 			success_flag = false;
 		}
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddValueToJSON - root_p :: ");
 	#endif
 
@@ -910,7 +910,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 	if (json_value_p)
 		{			
-			#if SERVER_DEBUG >= DL_FINER
+			#if SERVER_DEBUG >= STM_LEVEL_FINER
 			PrintJSON (stderr, json_value_p, key_s);
 			#endif
 
@@ -1111,7 +1111,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 			success_flag = true;
 		}
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, json_p, "AddParameterOptionsToJSON - json_p :: ");
 	#endif
 
@@ -1216,7 +1216,7 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 			success_flag = true;
 		}
 
-	#if SERVER_DEBUG >= DL_FINER
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, json_p, "AddParameterBoundsToJSON - json_p :: ");
 	#endif
 
@@ -1437,7 +1437,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 	Parameter *param_p = NULL;
 	const char *name_s = GetStringValue (root_p, PARAM_NAME_S);
 
-	#if SERVER_DEBUG >= DL_FINE
+	#if SERVER_DEBUG >= STM_LEVEL_FINE
 	char *root_s = json_dumps (root_p, JSON_INDENT (2));
 	#endif
 
@@ -1517,7 +1517,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 		}		/* if (name_s) */
 
 
-	#if SERVER_DEBUG >= DL_FINE
+	#if SERVER_DEBUG >= STM_LEVEL_FINE
 	if (root_s)
 		{
 			free (root_s);

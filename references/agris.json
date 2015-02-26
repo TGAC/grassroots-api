@@ -19,18 +19,20 @@
 				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
 				"method": "GET",
 				"selector": "li.result-item h3 a",
-				"parameters": [
-					{
-						"param": "query",
-						"name": "query",
-						"default": "",
-						"current_value": "",
-						"type": "string",
-						"tag": 1,
-						"wheatis_type": 11,
-						"description": "The search term"
-					}
-				]
+				"parameter_set": {
+					"parameters": [
+						{
+							"param": "query",
+							"name": "query",
+							"default": "",
+							"current_value": "",
+							"type": "string",
+							"tag": 1,
+							"wheatis_type": 11,
+							"description": "The search term"
+						}
+					]
+				}
 			}
 		]
   }

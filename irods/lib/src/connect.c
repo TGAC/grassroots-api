@@ -2,9 +2,9 @@
 #include "json_util.h"
 
 #ifdef _DEBUG
-	#define CONNECT_DEBUG	(DL_FINE)
+	#define CONNECT_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define CONNECT_DEBUG	(DL_NONE)
+	#define CONNECT_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -23,7 +23,7 @@ rcComm_t *CreateConnectionFromJSON (const json_t *config_p)
 			credentials_p = config_p;
 		}
 
-	#if JSON_TOOLS_DEBUG >= DL_FINE
+	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 		{
 			char *value_s = json_dumps (credentials_p, JSON_INDENT (2));
 			printf ("connection credentials:\n%s\n", value_s);

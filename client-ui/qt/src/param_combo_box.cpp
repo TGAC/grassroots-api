@@ -46,6 +46,7 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 				}
 		}
 
+/*
 	const char *title_s = param_p -> pa_display_name_s ;
 
 	if (!title_s)
@@ -58,13 +59,13 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 
 	layout_p -> addWidget (pcb_combo_box_p);
 	pcb_group_p -> setLayout (layout_p);
-
+*/
 }
 
 
 ParamComboBox ::	~ParamComboBox ()
 {
-	delete pcb_group_p;
+	delete pcb_combo_box_p;
 }
 
 
@@ -212,5 +213,5 @@ void ParamComboBox :: SetDefaultValue ()
 
 QWidget *ParamComboBox :: GetQWidget ()
 {
-	return pcb_group_p;
+	return pcb_combo_box_p;
 }

@@ -10,10 +10,11 @@
 #include "tag_item.h"
 
 
-static struct GroupNameNode
-{
-	ListItem
-};
+#ifdef _DEBUG
+	#define PARAMETER_SET_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define PARAMETER_SET_DEBUG	(STM_LEVEL_NONE)
+#endif
 
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListItem *node_p);
@@ -147,84 +148,103 @@ void FreeParameterNode (ListItem *node_p)
 
 json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag)
 {
-	json_t *root_p = json_array ();
+	json_t *root_p = json_object ();
 
 	if (root_p)
 		{
-			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
-			ParameterGroupNode *group_node_p = (ParameterGroupNode *) (param_set_p -> ps_grouped_params_p -> ll_head_p);
-			bool success_flag = true;			
-			
-			while (success_flag && node_p)
+			json_t *params_p = json_array ();
+
+			if (params_p)
 				{
-					json_t *param_json_p = GetParameterAsJSON (node_p -> pn_parameter_p, full_definition_flag);
-				
-					if (param_json_p)
-						{
-							#ifdef _DEBUG
-							PrintJSON (stderr, root_p, "GetParameterSetAsJSON - param_json_p :: ");
-							#endif
+					ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+					bool success_flag = true;
 
-							success_flag = (json_array_append_new (root_p, param_json_p) == 0);
-							
-							node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-						}
-					else
+					while (success_flag && node_p)
 						{
-							success_flag = false;
-						}
-				}
+							json_t *param_json_p = GetParameterAsJSON (node_p -> pn_parameter_p, full_definition_flag);
 
-			if (success_flag)
-				{
-					if (group_node_p)
-						{
-							json_t *group_names_p = json_array ();
-
-							if (group_names_p)
+							if (param_json_p)
 								{
-									while (success_flag && group_node_p)
+									#ifdef _DEBUG
+									PrintJSON (stderr, root_p, "GetParameterSetAsJSON - param_json_p :: ");
+									#endif
+
+									success_flag = (json_array_append_new (params_p, param_json_p) == 0);
+
+									node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+
+					if (success_flag)
+						{
+							if (json_object_set (root_p, PARAM_SET_PARAMS_S, params_p) == 0)
+								{
+									ParameterGroupNode *group_node_p = (ParameterGroupNode *) (param_set_p -> ps_grouped_params_p -> ll_head_p);
+
+									if (group_node_p)
 										{
-											if (json_array_append_new (group_names_p, json_string (group_node_p -> pgn_param_group_p -> pg_name_s)) == 0)
+											json_t *group_names_p = json_array ();
+
+											if (group_names_p)
 												{
-													group_node_p = (ParameterGroupNode *) (group_node_p -> pgn_node.ln_next_p);
-												}
-											else
-												{
-													success_flag = false;
-												}
+													while (success_flag && group_node_p)
+														{
+															if (json_array_append_new (group_names_p, json_string (group_node_p -> pgn_param_group_p -> pg_name_s)) == 0)
+																{
+																	group_node_p = (ParameterGroupNode *) (group_node_p -> pgn_node.ln_next_p);
+																}
+															else
+																{
+																	success_flag = false;
+																}
 
-										}		/* while (success_flag && group_node_p) */
+														}		/* while (success_flag && group_node_p) */
 
-									if (success_flag)
-										{
-											if (json_object_set_new (root_p, PARAM_SET_GROUPS_S, group_names_p) != 0)
-												{
-													success_flag = false;
-												}
-										}
+													if (success_flag)
+														{
+															int res = json_object_set_new (root_p, PARAM_SET_GROUPS_S, group_names_p);
 
-									if (!success_flag)
-										{
-											json_object_clear (group_names_p);
-											json_decref (group_names_p);
-										}
+															if (res != 0)
+																{
+																	success_flag = false;
+																}
+														}
 
-								}		/* if (group_names_p) */
+													if (!success_flag)
+														{
+															json_object_clear (group_names_p);
+															json_decref (group_names_p);
+														}
 
-						}		/* if (group_node_p) */
+												}		/* if (group_names_p) */
 
-				}		/* while (success_flag) */
-			
+										}		/* if (group_node_p) */
 
-			if (!success_flag)
-				{
-					json_object_clear (root_p);
-					json_decref (root_p);
-					root_p = NULL;
-				}
+								}		/* if (json_object_set (root_p, PARAM_SET_PARAMS_S, params_p) == 0) */
+							else
+								{
+
+									success_flag = false;
+								}
+
+						}		/* if (success_flag) */
+
+
+					if (!success_flag)
+						{
+							json_object_clear (root_p);
+							json_decref (root_p);
+							root_p = NULL;
+						}
+
+				}		/* if (root_p) */
 			
 		}		/* if (root_p) */
+
 
 
 	return root_p;
@@ -414,126 +434,142 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 			
 			if (params_p)
 				{
-					/* Get the parameters array */
-					json_t *params_json_p = json_object_get (root_p, PARAM_SET_PARAMS_S);
-					if (params_json_p && json_is_array (params_json_p))
-						{
-							size_t num_params = json_array_size (params_json_p);
-							size_t i = 0;
-							bool success_flag = true;
-							
-							/* Loop through the params */
-							while ((i < num_params) && success_flag)
-								{
-									json_t *param_json_p = json_array_get (params_json_p, i);
-									Parameter *param_p = CreateParameterFromJSON (param_json_p);
-									
+					bool success_flag = true;
 
-									if (param_p)
+					/* Get the parameters array */
+					json_t *param_set_json_p = json_object_get (root_p, PARAM_SET_KEY_S);
+
+					if (param_set_json_p)
+						{
+							json_t *params_json_p = json_object_get (param_set_json_p, PARAM_SET_PARAMS_S);
+
+							if (params_json_p && json_is_array (params_json_p))
+								{
+									size_t num_params = json_array_size (params_json_p);
+									size_t i = 0;
+									
+									/* Loop through the params */
+									while ((i < num_params) && success_flag)
 										{
-											success_flag = AddParameterToParameterSet (params_p, param_p);
-										}
-									else
-										{
-											char *dump_s = json_dumps (param_json_p, JSON_INDENT (2));
+											json_t *param_json_p = json_array_get (params_json_p, i);
+											Parameter *param_p = CreateParameterFromJSON (param_json_p);
 											
-											if (dump_s)
+
+											if (param_p)
 												{
-													PrintErrors (STM_LEVEL_WARNING, "failed to create param from:\n%s\n", dump_s);
-													free (dump_s);
+													success_flag = AddParameterToParameterSet (params_p, param_p);
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_WARNING, "failed to create param\n");
+													char *dump_s = json_dumps (param_json_p, JSON_INDENT (2));
+
+													if (dump_s)
+														{
+															PrintErrors (STM_LEVEL_WARNING, "failed to create param from:\n%s\n", dump_s);
+															free (dump_s);
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, "failed to create param\n");
+														}
+
+													success_flag = false;
 												}
 												
-											success_flag = false;
-										}
-										
+											if (success_flag)
+												{
+													++ i;
+												}
+										}		/* while ((i < num_params) && success_flag) */
+
+
 									if (success_flag)
 										{
-											++ i;
-										}									
-								}		/* while ((i < num_params) && success_flag) */
-							
-							
-							if (success_flag)
-								{
-									/* Get the groups */
-									json_t *groups_json_p = json_object_get (root_p, PARAM_SET_GROUPS_S);
-									if (groups_json_p && json_is_array (groups_json_p))
-										{
-											/* assign the params to their groups and vice versa */
-											size_t num_groups = json_array_size (groups_json_p);
-											size_t i;
-
-											for (i = 0; i < num_groups; ++ i)
+											/* Get the groups */
+											json_t *groups_json_p = json_object_get (param_set_json_p, PARAM_SET_GROUPS_S);
+											if (groups_json_p && json_is_array (groups_json_p))
 												{
-													size_t num_group_params = 0;
-													size_t j = 0;
-													const char *group_name_s = GetJSONString (groups_json_p, i);
+													/* assign the params to their groups and vice versa */
+													size_t num_groups = json_array_size (groups_json_p);
+													size_t i;
 
-													/* Get the number of Parameters needed */
-													for (j = 0; j < num_params; ++ j)
+													for (i = 0; i < num_groups; ++ i)
 														{
-															json_t *param_json_p = json_array_get (params_json_p, j);
-															const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
+															size_t num_group_params = 0;
+															size_t j = 0;
+															json_t *group_name_json_p = json_array_get (groups_json_p, i);
 
-															if (param_group_name_s && (strcmp (param_group_name_s, group_name_s) == 0))
+															if (json_is_string (group_name_json_p))
 																{
-																	++ num_group_params;
-																}
-														}		/* for (j = 0; j < num_params; ++ j) */
-
-													if (num_group_params > 0)
-														{
-															const Parameter **params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-
-															if (params_pp)
-																{
-																	const Parameter **param_pp = params_pp;
-																	ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+																	const char *group_name_s = json_string_value (group_name_json_p);
 
 																	/* Get the number of Parameters needed */
 																	for (j = 0; j < num_params; ++ j)
 																		{
 																			json_t *param_json_p = json_array_get (params_json_p, j);
 																			const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
-																			Parameter *param_p = param_node_p -> pn_parameter_p;
 
-																			if ((param_group_name_s) && (strcmp (param_group_name_s, group_name_s) == 0))
+																			if (param_group_name_s && (strcmp (param_group_name_s, group_name_s) == 0))
 																				{
-																					*param_pp = param_node_p -> pn_parameter_p;
-																					++ param_pp;
+																					++ num_group_params;
 																				}
-
-																			param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
-
 																		}		/* for (j = 0; j < num_params; ++ j) */
 
-																	if (!AddParameterGroupToParameterSet (params_p, group_name_s, params_pp, num_group_params))
+																	if (num_group_params > 0)
 																		{
-																			PrintErrors (STM_LEVEL_WARNING, "Failed to create parameter group \"%s\"", group_name_s);
-																			FreeMemory (params_pp);
-																		}
+																			const Parameter **params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 
-																}		/* if (params_pp) */
+																			if (params_pp)
+																				{
+																					const Parameter **param_pp = params_pp;
+																					ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
 
-														}		/* if (num_group_params > 0) */
+																					/* Get the number of Parameters needed */
+																					for (j = 0; j < num_params; ++ j)
+																						{
+																							json_t *param_json_p = json_array_get (params_json_p, j);
+																							const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
+																							Parameter *param_p = param_node_p -> pn_parameter_p;
 
-												}		/* for (i = 0; i < num_groups; ++ i) */
+																							if ((param_group_name_s) && (strcmp (param_group_name_s, group_name_s) == 0))
+																								{
+																									*param_pp = param_node_p -> pn_parameter_p;
+																									++ param_pp;
+																								}
 
-										}		/* if (groups_json_p && json_is_array (groups_json_p)) */
+																							param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
 
-								}
+																						}		/* for (j = 0; j < num_params; ++ j) */
+
+																					if (!AddParameterGroupToParameterSet (params_p, group_name_s, params_pp, num_group_params))
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, "Failed to create parameter group \"%s\"", group_name_s);
+																							FreeMemory (params_pp);
+																						}
+
+																				}		/* if (params_pp) */
+
+																		}		/* if (num_group_params > 0) */
+
+																}		/* if (json_is_string (group_name_json_p)) */
+
+
+														}		/* for (i = 0; i < num_groups; ++ i) */
+
+												}		/* if (groups_json_p && json_is_array (groups_json_p)) */
+
+										}
+
+								}		/* if (json_p && json_is_array (json_p)) */
 
 							if (!success_flag)
 								{
 									FreeParameterSet (params_p);
 									params_p = NULL;
 								}
-							
-						}		/* if (json_p && json_is_array (json_p)) */
+
+						}		/* if (param_set_json_p) */
+
 					
 				}		/* if (params_p) */
 			

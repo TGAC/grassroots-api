@@ -16,9 +16,9 @@
 
 
 #ifdef _DEBUG
-	#define IRODS_HANDLER_DEBUG	(DL_INFO)
+	#define IRODS_HANDLER_DEBUG	(STM_LEVEL_INFO)
 #else
-	#define IRODS_HANDLER_DEBUG	(DL_NONE)
+	#define IRODS_HANDLER_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -310,7 +310,7 @@ static size_t WriteToIRodsHandler (struct Handler *handler_p, const void *buffer
 
 	irods_handler_p -> irh_obj_p -> len = length;
 
-	#if IRODS_HANDLER_DEBUG >= DL_FINER
+	#if IRODS_HANDLER_DEBUG >= STM_LEVEL_FINER
 		{
 			size_t j = 0;
 			const char *ptr = (const char *) buffer_p;

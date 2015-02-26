@@ -16,9 +16,9 @@
 
 
 #ifdef _DEBUG
-	#define SERVICE_DEBUG	(DL_FINE)
+	#define SERVICE_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define SERVICE_DEBUG	(DL_NONE)
+	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -578,7 +578,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 
 			if (success_flag)
 				{
-					#ifdef _DEBUG
+					#if SERVICE_DEBUG >= STM_LEVEL_FINER
 					PrintJSON (stderr, root_p, "GetServiceAsJSON - path :: ");
 					#endif
 					
@@ -594,7 +594,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 							/* Add the operations for this service */
 							json_t *operation_p = json_object ();
 
-							#ifdef _DEBUG
+							#if SERVICE_DEBUG >= STM_LEVEL_FINER
 							PrintJSON (stderr, root_p, "GetServiceAsJSON - description :: ");
 							#endif
 
@@ -632,6 +632,11 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 						
 						}
 				}
+
+			#if SERVICE_DEBUG >= STM_LEVEL_FINE
+			PrintJSON (stderr, root_p, "GetServiceAsJSON - service :: ");
+			#endif
+
 		}		/* if (root_p) */
 		
 		
@@ -680,7 +685,7 @@ static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p)
 			success_flag = (json_object_set_new (root_p, "nickname", json_string (name_s)) == 0);
 		}
 
-	#ifdef _DEBUG
+	#if SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddServiceNameToJSON :: nickname -> ");
 	#endif
 
@@ -698,7 +703,7 @@ static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root
 			success_flag = (json_object_set_new (root_p, "summary", json_string (description_s)) == 0);
 		}
 
-	#ifdef _DEBUG
+	#if SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddServiceDescriptionToJSON :: description -> ");
 	#endif
 
@@ -716,7 +721,7 @@ static bool AddOperationInformationURIToJSON (Service * const service_p, json_t 
 			success_flag = (json_object_set_new (root_p, OPERATION_INFORMATION_URI_S, json_string (uri_s)) == 0);
 		}
 
-	#ifdef _DEBUG
+	#if SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddOperationInformationURIToJSON :: uri_s -> ");
 	#endif
 
@@ -735,7 +740,7 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 			
 			if (param_set_json_p)
 				{
-					success_flag = (json_object_set (root_p, PARAM_SET_PARAMS_S, param_set_json_p) == 0);
+					success_flag = (json_object_set (root_p, PARAM_SET_KEY_S, param_set_json_p) == 0);
 					json_decref (param_set_json_p);
 				}
 				
@@ -743,7 +748,7 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 			ReleaseServiceParameters (service_p, param_set_p);
 		}
 
-	#ifdef _DEBUG
+	#if SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddServiceParameterSetToJSON :: parameters -> ");
 	#endif
 	
@@ -768,6 +773,14 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 							while (success_flag && service_node_p)
 								{
 									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p);
+
+									#if SERVICE_DEBUG >= STM_LEVEL_FINE
+										{
+											char *response_s = json_dumps (service_json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+											printf ("service:\n%s\n\n", response_s);
+											free (response_s);
+										}
+									#endif
 									
 									if (service_json_p)
 										{
@@ -791,7 +804,15 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 						}
 															
 				}		/* if (operations_p) */
-				
+
+		#if SERVICE_DEBUG >= STM_LEVEL_FINE
+			{
+				char *response_s = json_dumps (services_list_json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+				printf ("services list:\n%s\n\n", response_s);
+				free (response_s);
+			}
+		#endif
+
 		}		/* if (services_list_json_p) */
 
 	return services_list_json_p;
@@ -902,7 +923,7 @@ json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status,
 		}
 
 
-	#if SERVICE_DEBUG >= DL_FINE
+	#if SERVICE_DEBUG >= STM_LEVEL_FINE
 	char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));
 	PrintLog (STM_LEVEL_FINE, "result json:\n%s", dump_s);
 	free (dump_s);
@@ -933,7 +954,7 @@ json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status,
 			PrintErrors (STM_LEVEL_WARNING, "Failed to create json service response for %s\n", service_name_s);			
 		}
 	
-	#if SERVICE_DEBUG >= DL_FINE
+	#if SERVICE_DEBUG >= STM_LEVEL_FINE
 	dump_s = json_dumps (json_p, JSON_INDENT (2));
 	PrintLog (STM_LEVEL_FINE, "final resp json:\n%s", dump_s);
 	free (dump_s);

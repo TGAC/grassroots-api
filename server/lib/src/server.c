@@ -22,9 +22,9 @@
 
 
 #ifdef _DEBUG
-	#define SERVER_DEBUG	(DL_FINE)
+	#define SERVER_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define SERVER_DEBUG	(DL_NONE)
+	#define SERVER_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -83,7 +83,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	json_t *op_p = NULL;
 	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
 		
-	#if SERVER_DEBUG >= DL_FINE
+	#if SERVER_DEBUG >= STM_LEVEL_FINE
 		{
 			if (req_p)
 				{
@@ -222,7 +222,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 		}
 
 		
-	#if SERVER_DEBUG >= DL_FINE
+	#if SERVER_DEBUG >= STM_LEVEL_FINE
 		{
 			if (res_p)
 				{
@@ -253,7 +253,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);
 	json_t *service_res_p = NULL;
 	
-	#if SERVER_DEBUG >= DL_INFO
+	#if SERVER_DEBUG >= STM_LEVEL_INFO
 	char *req_s = json_dumps (req_p, JSON_PRESERVE_ORDER | JSON_INDENT (2));
 	printf ("RunServiceFromJSON:\n%s\n", req_s);
 	#endif
@@ -272,7 +272,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, credentials_p);
 
-							#if SERVER_DEBUG >= DL_FINE
+							#if SERVER_DEBUG >= STM_LEVEL_FINE
 								{
 									ServiceNode * node_p = (ServiceNode *) (services_p -> ll_head_p);
 
@@ -318,7 +318,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 		
 		}		/* if (op_p && json_is_true (op_p)) */
 
-	#if SERVER_DEBUG >= DL_INFO
+	#if SERVER_DEBUG >= STM_LEVEL_INFO
 	if (req_s)
 		{
 			free (req_s);

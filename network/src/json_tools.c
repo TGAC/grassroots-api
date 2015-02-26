@@ -7,9 +7,9 @@
 
 
 #ifdef _DEBUG
-	#define JSON_TOOLS_DEBUG	(DL_FINE)
+	#define JSON_TOOLS_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define JSON_TOOLS_DEBUG	(DL_NONE)
+	#define JSON_TOOLS_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -88,7 +88,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 		}
 
 
-	#if JSON_TOOLS_DEBUG >= DL_FINE
+	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 		{
 			char *value_s = json_dumps (root_p, JSON_INDENT (2));
 			free (value_s);
@@ -105,7 +105,7 @@ json_t *LoadConfig (const char *path_s)
 	json_error_t error;
 	json_t *config_json_p = json_load_file (path_s, 0, &error);	
 
-	#if JSON_TOOLS_DEBUG >= DL_FINE
+	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 	char *value_s = json_dumps (config_json_p, JSON_INDENT (2));
 	#endif
 
@@ -115,7 +115,7 @@ json_t *LoadConfig (const char *path_s)
 			success_flag = false;
 		}		/* if (config_json_p) */
 
-	#if JSON_TOOLS_DEBUG >= DL_FINE
+	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 	free (value_s);
 	#endif
 

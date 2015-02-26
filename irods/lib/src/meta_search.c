@@ -10,9 +10,9 @@
 
 
 #ifdef _DEBUG
-	#define META_SEARCH_DEBUG	(DL_FINE)
+	#define META_SEARCH_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define META_SEARCH_DEBUG	(DL_NONE)
+	#define META_SEARCH_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 /**
@@ -492,7 +492,7 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 											input_query.continueInx = 0;
 											input_query.condInput.len = 0;
 
-											#if META_SEARCH_DEBUG >= DL_FINE
+											#if META_SEARCH_DEBUG >= STM_LEVEL_FINE
 											printf ("BEGIN input_query\n");
 											printGenQI (&input_query);
 											printf ("END input_query\n");

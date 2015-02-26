@@ -32,6 +32,7 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 */
 
 	qpw_layout_p = new QGridLayout;
+	qpw_layout_p -> setAlignment (Qt :: AlignVCenter);
 
 	setLayout (qpw_layout_p);
 
@@ -95,6 +96,7 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 			QFormLayout *layout_p = new QFormLayout;
 
 			box_p -> setLayout (layout_p);
+			box_p -> setAlignment (Qt:: AlignHCenter);
 
 			const Parameter **param_pp = group_p -> pg_params_pp;
 
@@ -108,8 +110,7 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 				}
 
 			int row = qpw_layout_p -> rowCount ();
-			int col = qpw_layout_p -> columnCount ();
-			qpw_layout_p -> addWidget (box_p, row, col, group_p -> pg_num_params, 2, Qt :: AlignVCenter);
+			qpw_layout_p -> addWidget (box_p, row, 0, group_p -> pg_num_params, 2, Qt :: AlignVCenter);
 
 			param_group_node_p = reinterpret_cast <ParameterGroupNode *> (param_group_node_p -> pgn_node.ln_next_p);
 		}

@@ -19,18 +19,20 @@
 				"uri": "http://f1000research.com/search",
 				"method": "GET",
 				"selector": "div.six div.article-title-and-info > a",
-				"parameters": [
-					{
-						"param": "q",
-						"name": "query",
-						"default": "",
-						"current_value": "",
-						"type": "string",
-						"tag": 1,
-						"wheatis_type": 11,
-						"description": "The search term"
-					}
-				]
+				"parameter_set": {
+					"parameters": [
+						{
+							"param": "q",
+							"name": "query",
+							"default": "",
+							"current_value": "",
+							"type": "string",
+							"tag": 1,
+							"wheatis_type": 11,
+							"description": "The search term"
+						}
+					]
+				}
 			}
 		]
   }

@@ -6,9 +6,9 @@
 #include "service_config.h"
 
 #ifdef _DEBUG
-	#define HANDLER_UTILS_DEBUG	(DL_FINE)
+	#define HANDLER_UTILS_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define HANDLER_UTILS_DEBUG	(DL_NONE)
+	#define HANDLER_UTILS_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -125,7 +125,7 @@ bool DestroyHandlerUtil (void)
 				}
 		}
 
-	#if HANDLER_UTILS_DEBUG >= DL_FINE
+	#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
 	printf ("exit DestroyHandlerUtil %d\n", success_flag);
 	#endif
 
@@ -214,7 +214,7 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 	const char *root_path_s = GetServerRootDirectory ();
 	char *handlers_path_s = MakeFilename (root_path_s, "handlers");
 
-	#if HANDLER_UTILS_DEBUG >= DL_FINE
+	#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
 		{
 			char *dump_s = json_dumps (tags_p, 0);
 
@@ -351,7 +351,7 @@ static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, c
 
 	if (s_mapped_filenames_p)
 		{
-			#if HANDLER_UTILS_DEBUG >= DL_FINE
+			#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
 			char *mappings_s = json_dumps (s_mapped_filenames_p, JSON_INDENT (2));
 			#endif
 			
@@ -416,7 +416,7 @@ static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, c
 						
 				}		/* if (protocol_obj_p) */
 
-			#if HANDLER_UTILS_DEBUG >= DL_FINE
+			#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
 			if (mappings_s)
 				{
 					free (mappings_s);
