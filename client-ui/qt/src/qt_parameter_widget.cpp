@@ -76,7 +76,13 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 
 	QFrame *line_p = new QFrame;
 	line_p -> setFrameShape (QFrame :: HLine);
+	QPalette palette = line_p -> palette ();
+	palette.setColor (QPalette :: WindowText, Qt :: gray);
+	line_p -> setPalette (palette);
+
 	layout_p -> addWidget (line_p);
+
+
 
 	layout_p -> insertSpacing (layout_p -> count (), 10);
 	layout_p -> addLayout (qpw_layout_p);
