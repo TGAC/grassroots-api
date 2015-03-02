@@ -89,50 +89,26 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON () const
 
 					if (success_flag)
 						{
-							json_t *params_json_p = spw_params_widget_p -> GetParameterValuesAsJSON ();
+							json_t *param_set_json_p = spw_params_widget_p -> GetParameterValuesAsJSON ();
 
 							#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
-							PrintJSON (stdout, params_json_p, "3 >>\n");
+							PrintJSON (stdout, param_set_json_p, "3 >>\n");
 							#endif
 
 							success_flag = false;
 
-							if (params_json_p)
+							if (param_set_json_p)
 								{
-									json_t *param_set_json_p = json_object ();
-
-									if (param_set_json_p)
+									if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) == 0)
 										{
-											if (json_object_set_new (param_set_json_p, PARAM_SET_PARAMS_S, params_json_p) == 0)
-												{
-													if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) == 0)
-														{
-															success_flag = true;
-														}
-													else
-														{
-															json_object_clear (param_set_json_p);
-															json_decref (param_set_json_p);
-															param_set_json_p = NULL;
-														}
-												}
-											else
-												{
-													json_object_clear (params_json_p);
-													json_decref (params_json_p);
-													params_json_p = NULL;
-
-													json_decref (param_set_json_p);
-													param_set_json_p = NULL;
-												}
+											success_flag = true;
 										}
 									else
 										{
-											json_object_clear (params_json_p);
-											json_decref (params_json_p);
-											params_json_p = NULL;
+											json_object_clear (param_set_json_p);
+											json_decref (param_set_json_p);
+											param_set_json_p = NULL;
 										}
-
 								}
 
 							#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE

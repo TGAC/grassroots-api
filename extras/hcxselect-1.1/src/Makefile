@@ -3,7 +3,7 @@
 #
 
 LEX = flex
-CXXFLAGS += -Wall -Wno-unused-function -g -fPIC  -DSHARED_LIBRARY -DHCXSELECT_LIBRARY_EXPORTS -I../../../util/include
+CXXFLAGS += -Wall -Wno-unused-function -g -fPIC  -DSHARED_LIBRARY -DHCXSELECT_LIBRARY_EXPORTS -I../../../util/include -I../../htmlcxx/include
 CXXFLAGS += $(shell pkg-config --cflags htmlcxx)
 LFLAGS += --reentrant 
 

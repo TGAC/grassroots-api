@@ -18,6 +18,10 @@ DIR_ROOT = ..
 DIR_INSTALL_ROOT = ../../wheatis_demo
 DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
 
+DIR_HTMLCXX = ../extras/htmlcxx
+DIR_HTMLCXX_INC = $(DIR_HTMLCXX)/include
+DIR_HTMLCXX_LIB = $(DIR_HTMLCXX)/lib
+
 TEST_EXE_NAME = network_test
 
 BUILD		= debug
@@ -31,9 +35,9 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_SERVER_INC)
+	-I$(DIR_WHEATIS_SERVER_INC) \
+	-I$(DIR_HTMLCXX_INC)
 
-	
 	
 	
 SRCS 	= \
@@ -51,7 +55,9 @@ BASE_LDFLAGS = -ldl -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L/usr/local/lib/ -lpolarssl \
 	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
-	-L../extras/hcxselect-1.1/src -lhcxselect \
+	-L../extras/hcxselect-1.1/src \
+	-L $(DIR_HTMLCXX_LIB) \
+	-lhcxselect \
 	-lhtmlcxx \
 	-Wl,-Bsymbolic-functions -Wl,-z,relro \
 	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp

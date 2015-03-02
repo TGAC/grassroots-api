@@ -148,9 +148,9 @@ void FreeParameterNode (ListItem *node_p)
 
 json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag)
 {
-	json_t *root_p = json_object ();
+	json_t *param_set_json_p = json_object ();
 
-	if (root_p)
+	if (param_set_json_p)
 		{
 			json_t *params_p = json_array ();
 
@@ -166,7 +166,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 							if (param_json_p)
 								{
 									#ifdef _DEBUG
-									PrintJSON (stderr, root_p, "GetParameterSetAsJSON - param_json_p :: ");
+									PrintJSON (stderr, param_json_p, "GetParameterSetAsJSON - param_json_p :: ");
 									#endif
 
 									success_flag = (json_array_append_new (params_p, param_json_p) == 0);
@@ -181,7 +181,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 					if (success_flag)
 						{
-							if (json_object_set (root_p, PARAM_SET_PARAMS_S, params_p) == 0)
+							if (json_object_set (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0)
 								{
 									ParameterGroupNode *group_node_p = (ParameterGroupNode *) (param_set_p -> ps_grouped_params_p -> ll_head_p);
 
@@ -206,7 +206,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 													if (success_flag)
 														{
-															int res = json_object_set_new (root_p, PARAM_SET_GROUPS_S, group_names_p);
+															int res = json_object_set_new (param_set_json_p, PARAM_SET_GROUPS_S, group_names_p);
 
 															if (res != 0)
 																{
@@ -224,7 +224,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 										}		/* if (group_node_p) */
 
-								}		/* if (json_object_set (root_p, PARAM_SET_PARAMS_S, params_p) == 0) */
+								}		/* if (json_object_set (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0) */
 							else
 								{
 
@@ -236,18 +236,18 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 					if (!success_flag)
 						{
-							json_object_clear (root_p);
-							json_decref (root_p);
-							root_p = NULL;
+							json_object_clear (param_set_json_p);
+							json_decref (param_set_json_p);
+							param_set_json_p = NULL;
 						}
 
-				}		/* if (root_p) */
+				}		/* if (param_set_json_p) */
 			
-		}		/* if (root_p) */
+		}		/* if (param_set_json_p) */
 
 
 
-	return root_p;
+	return param_set_json_p;
 }
 
 

@@ -82,8 +82,9 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljans
 	-L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS) -lirods \
-	-L$(DIR_EXTERNAL_LIBS) -l hcxselect
-
+	-L$(DIR_EXTERNAL_LIBS) \
+	-lhcxselect \
+	-lhtmlcxx
 
 .PHONY:	all 
 
