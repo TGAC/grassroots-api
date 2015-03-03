@@ -90,6 +90,13 @@ void ReleaseServices (ServicesArray *services_p)
 }
 
 
+
+const char * const GetRootRestURI (void)
+{
+	return "http://rest.ensemblgenomes.org/sequence/";
+}
+
+
 static bool CloseEnsemblRestService (Service *service_p)
 {
 	bool success_flag = true;

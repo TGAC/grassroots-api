@@ -10,6 +10,9 @@
 
 #include "ensembl_rest_service_library.h"
 #include "parameter_set.h"
+#include "curl_tools.h"
+
+
 
 
 typedef enum
@@ -39,7 +42,7 @@ extern "C"
 #endif
 
 
-ENSEMBL_REST_SERVICE_LOCAL json_t *GetSequencesById (const char * const id_s, const SequenceOutput output_format, const SequenceType seq_type);
+ENSEMBL_REST_SERVICE_LOCAL bool RunSequenceSearch (ParameterSet *params_p, json_t *res_p, CurlTool *curl_tool_p);
 
 
 ENSEMBL_REST_SERVICE_LOCAL bool AddSequenceParameters (ParameterSet *param_set_p);

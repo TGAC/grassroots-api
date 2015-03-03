@@ -90,7 +90,7 @@ WHEATIS_SERVICE_API void FreeParameterSet (ParameterSet *params_p);
 WHEATIS_SERVICE_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
 
 
-WHEATIS_SERVICE_API bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
+WHEATIS_SERVICE_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag, 
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, 
 	ParameterBounds *bounds_p, ParameterLevel level, 
@@ -129,6 +129,7 @@ WHEATIS_SERVICE_API uint32 GetCurrentParameterValues (const ParameterSet * const
 
 WHEATIS_SERVICE_API Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
 
+WHEATIS_SERVICE_API Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s);
 
 WHEATIS_SERVICE_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
 
@@ -149,6 +150,8 @@ WHEATIS_SERVICE_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, 
 
 
 WHEATIS_SERVICE_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
+
+
 
 
 #ifdef __cplusplus

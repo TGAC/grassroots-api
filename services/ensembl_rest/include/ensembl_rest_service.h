@@ -17,7 +17,7 @@ ENSEMBL_REST_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 ENSEMBL_REST_SERVICE_API void ReleaseServices (ServicesArray *service_p);
 
 
-ENSEMBL_REST_SERVICE_LOCAL const char * const ENSEMBL_REST_URI_S = "http://rest.ensemblgenomes.org/sequence/";
+ENSEMBL_REST_SERVICE_LOCAL const char * const GetRootRestURI (void);
 
 
 #ifdef __cplusplus

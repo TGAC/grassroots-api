@@ -131,16 +131,6 @@ WHEATIS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_repla
 WHEATIS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char comment_identifier);
 
 
-
-/**
- * Is the line empty or a comment?
- *
- * @param buffer_p The line to check.
- * @return TRUE if the line is valid, FALSE if it is empty or a comment.
- */
-WHEATIS_UTIL_API bool IsLineValid (const char * const buffer_p);
-
-
 /**
  * Get a copy of the next word from a buffer.
  *

@@ -494,23 +494,6 @@ bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char c
 
 
 
-/** Is the line empty or a comment? */
-bool IsLineValid (const char * const buffer_p)
-{
-	char c = '\0';
-
-	if (sscanf (buffer_p, "%c", &c) == 1)
-		{
-			if (c != '#')
-				{
-					return true;
-				}
-		}
-
-	return false;
-}
-
-
 /**
  * Get a copy of the next word from a buffer.
  *

@@ -80,7 +80,7 @@ void FreeParameterSet (ParameterSet *params_p)
 
 
 
-bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, 
+Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, 
 	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, 
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
@@ -97,11 +97,12 @@ bool CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType 
 			else
 				{
 					FreeParameter (param_p);
+					param_p = NULL;
 				}
 				
 		}		/* if (param_p) */
 
-	return success_flag;
+	return param_p;
 }
 
 
@@ -296,6 +297,27 @@ Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_
 	return NULL;	
 }
 
+
+Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s)
+{
+	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+
+	while (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+
+			if (strcmp (param_p -> pa_name_s, name_s) == 0)
+				{
+					return param_p;
+				}
+			else
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+				}
+		}		/* while (node_p) */
+
+	return NULL;
+}
 
 
 bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag)
@@ -692,4 +714,6 @@ static void FreeParameterGroup (ParameterGroup *param_group_p)
 	FreeMemory (param_group_p -> pg_params_pp);
 	FreeMemory (param_group_p);
 }
+
+
 
