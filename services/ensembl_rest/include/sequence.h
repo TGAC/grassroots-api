@@ -8,7 +8,9 @@
 #ifndef SEQUENCE_H_
 #define SEQUENCE_H_
 
-#include "wensembl_rest_service_library.h"
+#include "ensembl_rest_service_library.h"
+#include "parameter_set.h"
+
 
 typedef enum
 {
@@ -19,20 +21,15 @@ typedef enum
 } SequenceOutput;
 
 
-const char *SEQ_FORMAT_NAMES_PP [SO_NUM_FORMATS] =
+typedef enum
 {
-	".json",
-	".fasta",
-	".seqxml",
-};
+	ST_GENOMIC,
+	ST_CDS,
+	ST_CDNA,
+	ST_PROTEIN,
+	ST_NUM_TYPES
+} SequenceType;
 
-
-const char *SEQ_FORMAT_CONTENT_TYPES_PP [SO_NUM_FORMATS] =
-{
-	"application/json",
-	"text/x-fasta",
-	"text/x-seqxml+xml"
-};
 
 
 
@@ -42,7 +39,19 @@ extern "C"
 #endif
 
 
-ENSEMBL_REST_SERVICE_LOCAL json_t *GetSequencesById (const char * const id_s);
+ENSEMBL_REST_SERVICE_LOCAL json_t *GetSequencesById (const char * const id_s, const SequenceOutput output_format, const SequenceType seq_type);
+
+
+ENSEMBL_REST_SERVICE_LOCAL bool AddSequenceParameters (ParameterSet *param_set_p);
+
+
+ENSEMBL_REST_SERVICE_LOCAL const char **GetSequenceFormatNames (void);
+
+
+ENSEMBL_REST_SERVICE_LOCAL const char **GetSequenceContentTypes (void);
+
+
+ENSEMBL_REST_SERVICE_LOCAL const char **GetSequenceSequenceTypes (void);
 
 
 
