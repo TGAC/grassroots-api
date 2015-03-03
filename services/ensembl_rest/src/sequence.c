@@ -58,6 +58,8 @@ bool RunSequenceSearch (ParameterSet *params_p, json_t *res_p, CurlTool *curl_to
 
 			if (!IsStringEmpty (id_s))
 				{
+					success_flag = false;
+
 					if (GetParameterValueFromParameterSet (params_p, TAG_OUTPUT_FORMAT, &value, true))
 						{
 							const char *output_format_s = value.st_string_value_s;
@@ -69,7 +71,7 @@ bool RunSequenceSearch (ParameterSet *params_p, json_t *res_p, CurlTool *curl_to
 
 									if (seq_res_json_p)
 										{
-
+											success_flag = (json_object_set_new (res_p, S_SEQUENCE_URI_S, seq_res_json_p) == 0);
 										}
 
 								}		/* if (GetParameterValueFromParameterSet (params_p, TAG_CONTENT_TYPE, &value, true)) */
