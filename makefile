@@ -21,6 +21,7 @@ all:
 	$(MAKE) -C services/web
 	$(MAKE) -C services/web_search
 	$(MAKE) -C services/irods_search
+	$(MAKE) -C services/ensembl_rest
 					
 install: install_init install_references install_images
 	$(MAKE) -C util install
@@ -41,7 +42,8 @@ install: install_init install_references install_images
 	$(MAKE) -C services/web install
 	$(MAKE) -C services/web_search install
 	$(MAKE) -C services/irods_search install
-
+	$(MAKE) -C services/ensembl_rest install
+	
 clean: 
 	$(MAKE) -C util clean
 	$(MAKE) -C network clean
@@ -61,6 +63,7 @@ clean:
 	$(MAKE) -C services/web clean
 	$(MAKE) -C services/web_search clean	
 	$(MAKE) -C services/irods_search clean
+	$(MAKE) -C services/ensembl_rest clean
 	
 install_init:
 	@mkdir -p $(WHEATIS_INSTALL)
