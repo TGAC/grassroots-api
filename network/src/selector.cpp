@@ -81,7 +81,7 @@ static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p)
 
 	if (GetResourceProtocolAndPath (link_p -> hl_uri_s, &protocol_s, &path_s))
 		{
-			json_p = GetResourceAsJSON (protocol_s, path_s, link_p -> hl_data_s);
+			json_p = GetResourceAsJSONByParts (protocol_s, path_s, link_p -> hl_data_s, NULL);
 		}
 
 	return json_p;

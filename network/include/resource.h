@@ -13,6 +13,10 @@ typedef struct Resource
 	char *re_value_s;
 
 	char *re_title_s;
+
+	json_t *re_data_p;
+
+	bool re_owns_data_flag;
 } Resource;
 
 /*
@@ -45,6 +49,7 @@ RESOURCE_PREFIX const char *PROTOCOL_IRODS_S RESOURCE_VAL("irods");
 RESOURCE_PREFIX const char *PROTOCOL_FILE_S RESOURCE_VAL("file");
 RESOURCE_PREFIX const char *PROTOCOL_HTTP_S RESOURCE_VAL("http");
 RESOURCE_PREFIX const char *PROTOCOL_HTTPS_S RESOURCE_VAL("https");
+RESOURCE_PREFIX const char *PROTOCOL_INLINE_S RESOURCE_VAL("inline");
 
 
 #ifdef __cplusplus
@@ -61,13 +66,15 @@ WHEATIS_NETWORK_API void ClearResource (Resource *resource_p);
 
 WHEATIS_NETWORK_API bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char *value_s, const char *title_s);
 
+WHEATIS_NETWORK_API bool SetResourceData (Resource *resource_p, json_t *data_p, const bool owns_data_flag);
+
 WHEATIS_NETWORK_API bool CopyResource (const Resource * const src_p, Resource * const dest_p);
 
 WHEATIS_NETWORK_API Resource *ParseStringToResource (const char * const resource_s);
 
 WHEATIS_NETWORK_API bool GetResourceProtocolAndPath (const char * const resource_s, char ** const path_ss, char ** const protocol_ss);
 
-WHEATIS_NETWORK_API json_t *GetResourceAsJSON (const char * const protocol_s, const char * const path_s, const char * const title_s);
+WHEATIS_NETWORK_API json_t *GetResourceAsJSONByParts (const char * const protocol_s, const char * const path_s, const char * const title_s, json_t *data_p);
 
 #ifdef __cplusplus
 }

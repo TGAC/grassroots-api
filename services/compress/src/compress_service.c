@@ -13,6 +13,11 @@
 #include "zip.h"
 #include "gzip.h"
 
+
+#define TAG_COMPRESS_INPUT_FILE MAKE_TAG ('C', 'O', 'I', 'N')
+#define TAG_COMPRESS_ALGORITHM MAKE_TAG ('C', 'O', 'A', 'L')
+
+
 /*
  * STATIC DATATYPES
  */
@@ -50,7 +55,7 @@ static CompressFunction s_compress_fns [CA_NUM_ALGORITHMS] =
 
 
 
-#define TAG_COMPRESS_ALGORITHM 	(TAG_USER |	0x00000001)
+
 
 static const char *S_INPUT_PARAM_NAME_S = "Input";
 
@@ -299,7 +304,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 				
 			def.st_resource_value_p = resource_p;		
 
-			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, NULL, "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
+			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, NULL, "The input file to read", TAG_COMPRESS_INPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
 				{
 					ParameterMultiOptionArray *options_p = NULL;
 					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Raw", "Use Zip", "Use GZip" };
@@ -343,7 +348,7 @@ static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p
 	json_t *res_json_p = NULL;
 	SharedType input_resource;
 	
-	if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &input_resource, true))
+	if (GetParameterValueFromParameterSet (param_set_p, TAG_COMPRESS_INPUT_FILE, &input_resource, true))
 		{
 			Resource *input_resource_p = input_resource.st_resource_value_p;
 			SharedType value;

@@ -6,6 +6,10 @@
 #include "blast_tool.hpp"
 
 
+
+#define TAG_BLAST_INPUT_FILE MAKE_TAG ('B', 'L', 'I', 'N')
+#define TAG_BLAST_OUTPUT_FILE MAKE_TAG ('B', 'L', 'O', 'U')
+
 /*
  * STATIC DATATYPES
  */
@@ -112,11 +116,11 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 							
 			def.st_resource_value_p = resource_p;
 
-			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", NULL, "The input file to read", TAG_INPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
+			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", NULL, "The input file to read", TAG_BLAST_INPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
 				{
 					def.st_string_value_s = NULL;
 
-					if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, "Output", NULL, "The output file to write", TAG_OUTPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
+					if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, "Output", NULL, "The output file to write", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_BASIC, NULL))
 						{
 							return param_set_p;
 						}

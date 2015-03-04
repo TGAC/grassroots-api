@@ -87,6 +87,7 @@ PREFIX const char *RESOURCE_PROTOCOL_S  VAL("protocol");
 PREFIX const char *RESOURCE_VALUE_S  VAL("value");
 PREFIX const char *RESOURCE_DESCRIPTION_S  VAL("description");
 PREFIX const char *RESOURCE_TITLE_S  VAL("title");
+PREFIX const char *RESOURCE_DATA_S  VAL("data");
 
 PREFIX const char *TAG_INPUT_NAME_S VAL("input");
 PREFIX const char *TAG_OUTPUT_NAME_S VAL("output");

@@ -38,7 +38,6 @@ static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_se
 static bool IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
-static int EnsemblRest (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
 
 static bool CloseEnsemblRestService (Service *service_p);
 
@@ -93,7 +92,7 @@ void ReleaseServices (ServicesArray *services_p)
 
 const char * const GetRootRestURI (void)
 {
-	return "http://rest.ensemblgenomes.org/sequence/";
+	return "http://rest.ensemblgenomes.org/";
 }
 
 
@@ -155,16 +154,16 @@ static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_se
 {
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *res_json_p = NULL;
-	json_t *op_json_p = NULL;
+	json_t *results_json_p = NULL;
 	CurlTool *curl_tool_p = AllocateCurlTool ();
 
 	if (curl_tool_p)
 		{
-			op_json_p = json_object ();
+			results_json_p = json_array ();
 
-			if (op_json_p)
+			if (results_json_p)
 				{
-					if (RunSequenceSearch (param_set_p, op_json_p, curl_tool_p))
+					if (RunSequenceSearch (param_set_p, results_json_p, curl_tool_p))
 						{
 							res = OS_SUCCEEDED;
 						}
@@ -174,7 +173,7 @@ static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_se
 		}
 	
 
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, op_json_p);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p);
 
 	return res_json_p;
 }

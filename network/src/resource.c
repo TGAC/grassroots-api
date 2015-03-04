@@ -99,6 +99,7 @@ void InitResource (Resource *resource_p)
 {
 	resource_p -> re_protocol_s = NULL;
 	resource_p -> re_value_s = NULL;
+	resource_p -> re_data_p = NULL;
 }
 
 
@@ -129,6 +130,11 @@ void ClearResource (Resource *resource_p)
 			resource_p -> re_title_s = NULL;
 		}
 
+	if ((resource_p -> re_data_p) && (resource_p -> re_owns_data_flag))
+		{
+			json_object_clear (resource_p -> re_data_p);
+			json_decref (resource_p -> re_data_p);
+		}
 }
 
 
@@ -160,6 +166,27 @@ bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char 
 }
 
 
+bool SetResourceData (Resource *resource_p, json_t *data_p, const bool owns_data_flag)
+{
+	bool success_flag = false;
+
+	if (resource_p -> re_data_p)
+		{
+			if (resource_p -> re_owns_data_flag)
+				{
+					success_flag = (json_object_clear (resource_p -> re_data_p) == 0);
+					json_decref (resource_p -> re_data_p);
+				}
+		}
+
+	resource_p -> re_data_p = data_p;
+	resource_p -> re_owns_data_flag = owns_data_flag;
+
+	return success_flag;
+}
+
+
+
 bool CopyResource (const Resource * const src_p, Resource * const dest_p)
 {
 	bool success_flag = SetResourceValue (dest_p, src_p -> re_protocol_s, src_p -> re_value_s, src_p -> re_title_s);
@@ -168,7 +195,7 @@ bool CopyResource (const Resource * const src_p, Resource * const dest_p)
 }
 
 
-json_t *GetResourceAsJSON (const char * const protocol_s, const char * const path_s, const char *title_s)
+json_t *GetResourceAsJSONByParts (const char * const protocol_s, const char * const path_s, const char *title_s, json_t *data_p)
 {
 	json_t *json_p = json_object ();
 
@@ -176,11 +203,14 @@ json_t *GetResourceAsJSON (const char * const protocol_s, const char * const pat
 		{
 			if (json_object_set_new (json_p, RESOURCE_PROTOCOL_S, json_string (protocol_s)) == 0)
 				{
-					if (json_object_set_new (json_p, RESOURCE_VALUE_S, json_string (path_s)) == 0)
+					if ((path_s == NULL) || (json_object_set_new (json_p, RESOURCE_VALUE_S, json_string (path_s)) == 0))
 						{
 							if (json_object_set_new (json_p, RESOURCE_TITLE_S, json_string (title_s)) == 0)
 								{
-									return json_p;
+									if ((data_p == NULL) || (json_object_set (json_p, RESOURCE_DATA_S, data_p) == 0))
+										{
+											return json_p;
+										}
 								}
 						}
 				}

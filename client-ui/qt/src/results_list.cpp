@@ -5,8 +5,12 @@
 #include <QErrorMessage>
 
 #include "results_list.h"
+#include "json_list_widget_item.h"
+
 #include "json_util.h"
 #include "resource.h"
+
+
 
 ResultsList :: ResultsList (QWidget *parent_p)
 	:	QWidget (parent_p)
@@ -96,44 +100,75 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 	if (protocol_s)
 		{
 			const char *title_s = GetJSONString (resource_json_p, RESOURCE_TITLE_S);
-			const char *value_s = GetJSONString (resource_json_p, RESOURCE_VALUE_S);
-			const char *description_s = GetJSONString (resource_json_p, RESOURCE_DESCRIPTION_S);
+			const char *description_s = GetJSONString (resource_json_p, RESOURCE_DESCRIPTION_S);			
+			const char *icon_path_s = NULL;
 
-			if (value_s)
+			if (strcmp (protocol_s, PROTOCOL_INLINE_S) == 0)
 				{
-					const char *icon_path_s = NULL;
+					json_t *data_p = json_object_get (resource_json_p, RESOURCE_DATA_S);
 
-					if (strcmp (protocol_s, PROTOCOL_FILE_S) == 0)
+					if (data_p)
 						{
-							icon_path_s = "images/list_file";
+							JSONListWidgetItem *item_p = new JSONListWidgetItem (title_s, rl_list_p);
+
+							icon_path_s = "images/list_objects";
+
+							item_p -> SetJSONData (data_p);
+
+							if (!description_s)
+								{
+									description_s = "Click to view data";
+								}
+
+							item_p -> setToolTip (description_s);
+
+							if (icon_path_s)
+								{
+									item_p -> setIcon (QIcon (icon_path_s));
+								}
+
+							success_flag = true;
 						}
-					else	if ((strcmp (protocol_s, PROTOCOL_HTTP_S) == 0) || (strcmp (protocol_s, PROTOCOL_HTTPS_S) == 0))
+				}
+			else
+				{
+					const char *value_s = GetJSONString (resource_json_p, RESOURCE_VALUE_S);
+
+					if (value_s)
 						{
-							icon_path_s = "images/list_internet";
+							QListWidgetItem *item_p = 0;
+
+							if (strcmp (protocol_s, PROTOCOL_FILE_S) == 0)
+								{
+									icon_path_s = "images/list_file";
+								}
+							else	if ((strcmp (protocol_s, PROTOCOL_HTTP_S) == 0) || (strcmp (protocol_s, PROTOCOL_HTTPS_S) == 0))
+								{
+									icon_path_s = "images/list_internet";
+								}
+							else if (strcmp (protocol_s, PROTOCOL_IRODS_S) == 0)
+								{
+									icon_path_s = "images/list_filelink";
+								}
+
+							item_p = new QListWidgetItem (title_s ? title_s : value_s, rl_list_p);
+
+							QString s (protocol_s);
+							s.append ("://");
+							s.append (value_s);
+							QVariant v (s);
+
+							item_p -> setToolTip (description_s ? description_s : value_s);
+							item_p -> setData (Qt :: UserRole, v);
+
+							if (icon_path_s)
+								{
+									item_p -> setIcon (QIcon (icon_path_s));
+								}
+
+							success_flag = true;
 						}
-					else if (strcmp (protocol_s, PROTOCOL_IRODS_S) == 0)
-						{
-
-						}
-
-					QListWidgetItem *item_p = new QListWidgetItem (title_s ? title_s : value_s, rl_list_p);
-
-					QString s (protocol_s);
-					s.append ("://");
-					s.append (value_s);
-					QVariant v (s);
-
-					item_p -> setData (Qt :: UserRole, v);
-
-					if (icon_path_s)
-						{
-							item_p -> setIcon (QIcon (icon_path_s));
-						}
-
-					item_p -> setToolTip (description_s ? description_s : value_s);
-
-					success_flag = true;
-				}		/* if (value_s) */
+				}
 
 		}		/* if (protocol_s) */
 
