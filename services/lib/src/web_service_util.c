@@ -14,7 +14,6 @@
 static const char *S_METHOD_S = "method";
 static const char *S_URI_S = "uri";
 
-static bool SetURI (const json_t *op_json_p, CURL *curl_p);
 
 static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_data_p);
 

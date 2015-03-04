@@ -5,6 +5,8 @@
  *      Author: tyrrells
  */
 
+#include <string.h>
+
 #include "sequence.h"
 #include "ensembl_rest_service.h"
 #include "byte_buffer.h"

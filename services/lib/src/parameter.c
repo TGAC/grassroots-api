@@ -1617,22 +1617,3 @@ static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *js
 	return success_flag;
 }
 
-
-static char *GetParameterGroupFromSON (const Parameter * const param_p, json_t *json_p)
-{
-	bool success_flag = true;
-
-	if (param_p -> pa_group_p)
-		{
-			const char *group_name_s = param_p -> pa_group_p -> pg_name_s;
-
-			if (group_name_s)
-				{
-					success_flag = (json_object_set_new (json_p, PARAM_GROUP_S, json_string (group_name_s)) == 0);
-				}
-
-		}		/* if (param_p -> pa_group_p) */
-
-	return success_flag;
-}
-

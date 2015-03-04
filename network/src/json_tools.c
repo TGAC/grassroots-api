@@ -211,7 +211,7 @@ json_t *GetAvailableServicesRequest (const char * const username_s, const char *
 }
 
 
-json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const char * const protocol_s, const char * const *filename_s)
+json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const char * const protocol_s, const char * const filename_s)
 {
 
 	json_t *res_p = NULL;
