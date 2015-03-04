@@ -1,7 +1,7 @@
 #include "json_list_widget_item.h"
 
 
-JSONListWidgetItem :: JSONListWidgetItem (const QString & text_r, QListWidget *parent_p, int type)
+JSONListWidgetItem :: JSONListWidgetItem (const QString &text_r, QListWidget *parent_p, int type)
 : QListWidgetItem (text_r, parent_p, type),
 	jlwi_json_data_p (0)
 {

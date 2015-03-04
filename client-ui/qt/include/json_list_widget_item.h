@@ -8,7 +8,7 @@
 class JSONListWidgetItem : public QListWidgetItem
 {
 public:
-	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = Type);
+	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = UserType);
 
 	void SetJSONData (const json_t *data_p);
 	const json_t *GetJSONData () const;

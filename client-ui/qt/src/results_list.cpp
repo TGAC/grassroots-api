@@ -34,32 +34,49 @@ ResultsList :: ~ResultsList ()
 
 void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 {
-	QVariant v = item_p -> data (Qt :: UserRole);
-	QString s = v.toString ();
-	QByteArray ba = s.toLocal8Bit ();
-	const char *value_s = ba.constData ();
+	JSONListWidgetItem *json_item_p = dynamic_cast <JSONListWidgetItem *> (item_p);
 
-	if ((s.startsWith (PROTOCOL_IRODS_S))  || (s.startsWith (PROTOCOL_FILE_S)))
-			{
+	if (json_item_p)
+		{
+			/* Open the json object */
+			json_error_t error;
+			char *dump_s = json_dumps (json_item_p -> GetJSONData (), JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
-			}
-		else if ((s.startsWith (PROTOCOL_HTTP_S))  || (s.startsWith (PROTOCOL_HTTPS_S)))
-			{
-/*
-				QWebView *browser_p = new QWebView;
+			if (dump_s)
+				{
+					qDebug () << dump_s;
+					free (dump_s);
+				}
+		}
+	else
+		{
+			QVariant v = item_p -> data (Qt :: UserRole);
+			QString s = v.toString ();
+			QByteArray ba = s.toLocal8Bit ();
+			const char *value_s = ba.constData ();
 
-				browser_p -> load (QUrl (s));
-				browser_p -> show ();
-*/
-				if (!QDesktopServices :: openUrl (QUrl (s)))
-					{
-						QWebView *browser_p = new QWebView;
+			if ((s.startsWith (PROTOCOL_IRODS_S))  || (s.startsWith (PROTOCOL_FILE_S)))
+				{
 
-						rl_browsers.append (browser_p);
-						browser_p -> load (QUrl (s));
-						browser_p -> show ();
-					}
-			}
+				}
+			else if ((s.startsWith (PROTOCOL_HTTP_S))  || (s.startsWith (PROTOCOL_HTTPS_S)))
+				{
+	/*
+					QWebView *browser_p = new QWebView;
+
+					browser_p -> load (QUrl (s));
+					browser_p -> show ();
+	*/
+					if (!QDesktopServices :: openUrl (QUrl (s)))
+						{
+							QWebView *browser_p = new QWebView;
+
+							rl_browsers.append (browser_p);
+							browser_p -> load (QUrl (s));
+							browser_p -> show ();
+						}
+				}
+		}
 }
 
 
