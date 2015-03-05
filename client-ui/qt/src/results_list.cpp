@@ -3,6 +3,7 @@
 #include <QVBoxLayout>
 #include <QWebView>
 #include <QErrorMessage>
+#include <QApplication>
 
 #include "results_list.h"
 #include "json_list_widget_item.h"
@@ -57,6 +58,11 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 					ViewerWidget *viewer_widget_p = new ViewerWidget (text_viewer_p, this);
 
 					text_viewer_p -> setText (data_s);
+
+/*
+					viewer_widget_p -> adjustSize ();
+					viewer_widget_p -> move (QApplication :: desktop () -> screen () -> rect ().center () - viewer_widget_p -> rect ().center ());
+*/
 					viewer_widget_p -> show ();
 				}
 			else

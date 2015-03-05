@@ -15,6 +15,15 @@ static const char *S_METHOD_S = "method";
 static const char *S_URI_S = "uri";
 
 
+static const char *S_MATCH_TYPE_VALUES_SS [MT_NUM_MATCH_TYPES] =
+{
+	"exact", "all", "any"
+};
+
+
+#define TAG_WEB_SERVICE_UTIL_MATCH_TYPE MAKE_TAG ('W', 'S', 'M', 'T')
+
+
 static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_data_p);
 
 static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p);
@@ -220,6 +229,67 @@ bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_s
 
 	return success_flag;
 }
+
+
+bool AddMatchTypeParameter (ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	ParameterMultiOptionArray *match_type_options_p = NULL;
+	SharedType match_types_p [MT_NUM_MATCH_TYPES];
+	uint32 i;
+
+	for (i = 0; i < MT_NUM_MATCH_TYPES; ++ i)
+		{
+			(* (match_types_p + i)).st_string_value_s = (char *) (* (S_MATCH_TYPE_VALUES_SS + i));
+		}
+
+	match_type_options_p = AllocateParameterMultiOptionArray (MT_NUM_MATCH_TYPES, NULL, match_types_p, PT_STRING);
+
+	if (match_type_options_p)
+		{
+			SharedType def;
+			Parameter *param_p = NULL;
+
+			def.st_string_value_s = match_types_p [0].st_string_value_s;
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Query matching", NULL,
+			  "How the query will be interpreted by the service.",
+			  TAG_WEB_SERVICE_UTIL_MATCH_TYPE, match_type_options_p, def, NULL, NULL, PL_BASIC, NULL)) != NULL)
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+MatchType GetMatchTypeParameterValue (ParameterSet * const param_set_p)
+{
+	MatchType mt = MT_ALL;
+	Parameter *param_p = DetachParameterByTag (param_set_p, TAG_WEB_SERVICE_UTIL_MATCH_TYPE);
+
+	if (param_p)
+		{
+			uint32 i;
+			const char * const value_s = param_p -> pa_current_value.st_string_value_s;
+
+			for (i = 0; i < MT_NUM_MATCH_TYPES; ++ i)
+				{
+					if (strcmp (value_s, * (S_MATCH_TYPE_VALUES_SS + i)) == 0)
+						{
+							mt = (MatchType) i;
+							i = MT_NUM_MATCH_TYPES; 	/* force exit from loop */
+						}
+
+				}		/* for (i = 0; i < MT_NUM_MATCH_TYPES; ++ i) */
+
+			FreeParameter (param_p);
+		}		/* if (param_p) */
+
+	return mt;
+}
+
 
 
 

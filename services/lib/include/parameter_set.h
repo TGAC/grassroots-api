@@ -152,6 +152,8 @@ WHEATIS_SERVICE_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, 
 WHEATIS_SERVICE_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
 
 
+WHEATIS_SERVICE_API Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag);
+
 
 
 #ifdef __cplusplus

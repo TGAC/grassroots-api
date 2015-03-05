@@ -190,9 +190,9 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 	bool success_flag = false;
 	SharedType def;
 
-	def.st_string_value_s = "";
+	def.st_string_value_s = NULL;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_KEYWORD, "Sequence ID", NULL, "An Ensembl stable ID", TAG_SEQUENCE_ID, NULL, def, NULL, NULL, PL_BASIC, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Sequence ID", NULL, "An Ensembl stable ID", TAG_SEQUENCE_ID, NULL, def, NULL, NULL, PL_BASIC, NULL)) != NULL)
 		{
 			ParameterMultiOptionArray *output_type_options_p = NULL;
 			SharedType output_types_p [ST_NUM_TYPES];

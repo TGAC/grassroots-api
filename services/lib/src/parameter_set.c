@@ -27,6 +27,7 @@ static ParameterGroup *AllocateParameterGroup (const char *name_s, const Paramet
 
 static void FreeParameterGroup (ParameterGroup *param_group_p);
 
+static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
 
 
 ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s)
@@ -142,7 +143,11 @@ void FreeParameterNode (ListItem *node_p)
 {
 	ParameterNode *param_node_p = (ParameterNode *) node_p;
 	
-	FreeMemory (param_node_p -> pn_parameter_p);
+	if (param_node_p -> pn_parameter_p)
+		{
+			FreeParameter (param_node_p -> pn_parameter_p);
+		}
+
 	FreeMemory (param_node_p);
 }
 
@@ -278,23 +283,9 @@ uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *
 
 Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag)
 {
-	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
-	
-	while (node_p)
-		{
-			Parameter *param_p = node_p -> pn_parameter_p;
-						
-			if (param_p -> pa_tag == tag)
-				{
-					return param_p;
-				}
-			else
-				{
-					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-				}
-		}		/* while (node_p) */
-		
-	return NULL;	
+	ParameterNode *node_p = GetParameterNodeFromParameterSetByTag (params_p, tag);
+
+	return (node_p ? node_p -> pn_parameter_p : NULL);
 }
 
 
@@ -649,6 +640,46 @@ json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p)
 	return json_p;
 }
 
+
+Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag)
+{
+	Parameter *param_p = NULL;
+	ParameterNode *node_p = GetParameterNodeFromParameterSetByTag (params_p, tag);
+
+	if (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+
+			LinkedListRemove (params_p -> ps_params_p, (ListItem * const) node_p);
+
+			node_p -> pn_parameter_p = NULL;
+			FreeParameterNode ((ListItem * const) node_p);
+		}
+
+	return param_p;
+}
+
+
+static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag)
+{
+	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+
+	while (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+
+			if (param_p -> pa_tag == tag)
+				{
+					return node_p;
+				}
+			else
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+				}
+		}		/* while (node_p) */
+
+	return NULL;
+}
 
 
 static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const Parameter **params_pp, const uint32 num_params)
