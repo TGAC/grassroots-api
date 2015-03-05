@@ -6,7 +6,7 @@
 
 #include "jansson.h"
 
-class JSONViewer
+class JSONViewer : public QWidget
 {
 Q_OBJECT
 

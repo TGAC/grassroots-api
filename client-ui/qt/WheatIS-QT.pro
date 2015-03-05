@@ -84,7 +84,10 @@ SOURCES += \
     src/results_list.cpp \
     src/results_widget.cpp \
     src/json_list_widget_item.cpp \
-    src/json_viewer.cpp
+    src/json_viewer.cpp \
+    src/text_viewer.cpp \
+    src/viewer_widget.cpp \
+    src/viewable_widget.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -102,7 +105,10 @@ HEADERS  += \
     include/results_list.h \
     include/results_widget.h \
     include/json_list_widget_item.h \
-    include/json_viewer.h
+    include/json_viewer.h \
+    include/text_viewer.h \
+    include/viewer_widget.h \
+    include/viewable_widget.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \

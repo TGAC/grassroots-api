@@ -6,7 +6,7 @@
 
 
 JSONViewer ::	JSONViewer (QWidget *parent_p)
-: QTreeWidget (parent_p)
+: QWidget (parent_p)
 {
 	QHBoxLayout *layout_p = new QHBoxLayout;
 
