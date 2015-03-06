@@ -254,7 +254,7 @@ bool AddMatchTypeParameter (ParameterSet *param_set_p)
 
 			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Query matching", NULL,
 			  "How the query will be interpreted by the service.",
-			  TAG_WEB_SERVICE_UTIL_MATCH_TYPE, match_type_options_p, def, NULL, NULL, PL_BASIC, NULL)) != NULL)
+			  TAG_WEB_SERVICE_UTIL_MATCH_TYPE, match_type_options_p, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 				{
 					success_flag = true;
 				}

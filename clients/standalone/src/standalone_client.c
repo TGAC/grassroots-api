@@ -373,7 +373,6 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 		{
 			const size_t num_services = json_array_size (response_p);
 			size_t i = 0;
-			json_t *client_results_p = NULL;
 			
 			for (i = 0; i < num_services; ++ i)
 				{
@@ -416,73 +415,79 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 				}		/* for (i = 0; i < num_services; ++ i) */
 
 			/* Get the results of the user's configuration */
-			client_results_p = RunClient (client_p);
-			if (client_results_p)
-				{
-					char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
-					json_t *new_req_p = json_object ();
-					
-					if (new_req_p)
-						{
-							if (!AddCredentialsToJson (new_req_p, username_s, password_s))
-								{
-									printf ("failed to add credentials to request\n");
-								}
+			RunClient (client_p, GetUserParameters);
 
-							if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
-								{
-									char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
-
-									printf ("client sending:\n%s\n", new_req_s);
-
-									services_json_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
-
-									if (services_json_p)
-										{
-											char *response_s = json_dumps (services_json_p, JSON_INDENT (2));
-											
-											if (response_s)
-												{
-													printf ("%s\n", response_s);
-													free (response_s);
-												}
-										}
-									else
-										{
-											printf ("no response\n");
-										}
-
-									if (new_req_s)
-										{
-											free (new_req_s);
-										}
-									
-								}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
-
-							json_decref (new_req_p);
-							
-						}		/* if (new_req_p) */
-
-					if (client_results_s)
-						{
-							printf ("%s\n", client_results_s);
-							free (client_results_s);
-						}
-
-				}
-			else
-				{
-					printf ("no results from client\n");
-				}
-					
 		}		/* if (json_is_array (response_p)) */
-	
-																						
+
+
 	#ifdef _DEBUG
 	free (response_s);
 	#endif
-	
+
 	return services_json_p;
+}
+
+
+static json_t *GetUserParameters (json_t *client_results_p)
+{
+	if (client_results_p)
+		{
+			char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
+			json_t *new_req_p = json_object ();
+
+			if (new_req_p)
+				{
+					if (!AddCredentialsToJson (new_req_p, username_s, password_s))
+						{
+							printf ("failed to add credentials to request\n");
+						}
+
+					if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
+						{
+							char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
+
+							printf ("client sending:\n%s\n", new_req_s);
+
+							services_json_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
+
+							if (services_json_p)
+								{
+									char *response_s = json_dumps (services_json_p, JSON_INDENT (2));
+
+									if (response_s)
+										{
+											printf ("%s\n", response_s);
+											free (response_s);
+										}
+								}
+							else
+								{
+									printf ("no response\n");
+								}
+
+							if (new_req_s)
+								{
+									free (new_req_s);
+								}
+							
+						}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
+
+					json_decref (new_req_p);
+
+				}		/* if (new_req_p) */
+
+			if (client_results_s)
+				{
+					printf ("%s\n", client_results_s);
+					free (client_results_s);
+				}
+
+		}
+	else
+		{
+			printf ("no results from client\n");
+		}
+	
 }
 
 

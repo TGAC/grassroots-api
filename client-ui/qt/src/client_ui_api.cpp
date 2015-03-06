@@ -27,7 +27,7 @@ typedef struct QTClientData
 {
 	ClientData qcd_base_data;
 	QApplication *qcd_app_p;
-	QDialog *qcd_window_p;
+	QMainWindow *qcd_window_p;
 	PrefsWidget *qcd_prefs_widget_p;
 	ResultsWidget *qcd_results_p;
 	char *qcd_dummy_arg_s;
@@ -111,7 +111,7 @@ static QTClientData *AllocateQTClientData (void)
 
 					QHBoxLayout *layout_p = new QHBoxLayout;
 
-					data_p -> qcd_window_p = new QDialog;
+					data_p -> qcd_window_p = new QMainWindow;
 					data_p -> qcd_window_p -> setLayout (layout_p);
 
 					data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
@@ -119,7 +119,8 @@ static QTClientData *AllocateQTClientData (void)
 
 					data_p -> qcd_results_p = new ResultsWidget;
 
-					QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QDialog :: done);
+					//QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QDialog :: done);
+					QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QMainWindow :: close);
 
 				}
 			else
@@ -155,11 +156,11 @@ static const char *GetQTClientDescription (ClientData *client_data_p)
 }
 
 
-static json_t *RunQTClient (ClientData *client_data_p)
+static json_t *RunQTClient (ClientData *client_data_p, void (*callback_fn) (json_t *user_params_p))
 {
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 	json_t *res_p = NULL;
-	int res = qt_data_p -> qcd_window_p -> exec ();
+	int res = qt_data_p -> qcd_window_p -> show ();
 
 	printf ("res %d\n", res);
 

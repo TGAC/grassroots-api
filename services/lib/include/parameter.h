@@ -43,12 +43,13 @@ typedef enum ParameterType
  * Parameters that a user wishes to work with can
  * be adjusted within the user interface.
  */
-typedef enum ParameterLevel
-{
-	PL_BASIC,
-	PL_INTERMEDIATE,
-	PL_ADVANCED
-} ParameterLevel;
+
+typedef uint8 ParameterLevel;
+
+#define PL_BASIC (1)
+#define PL_INTERMEDIATE (1 << 1)
+#define PL_ADVANCED (1 << 2)
+#define PL_ALL (PL_BASIC | PL_INTERMEDIATE | PL_ADVANCED)
 
 
 /**

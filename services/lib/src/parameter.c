@@ -1465,7 +1465,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									SharedType def;
 									ParameterMultiOptionArray *options_p = NULL;
 									ParameterBounds *bounds_p = NULL;
-									ParameterLevel level = PL_BASIC;
+									ParameterLevel level = PL_ALL;
 									bool success_flag = false;
 
 									memset (&def, 0, sizeof (SharedType));
