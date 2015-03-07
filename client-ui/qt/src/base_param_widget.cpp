@@ -33,7 +33,7 @@ void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, QWidge
 
 	if (this_widget_p)
 		{
-			if (CompareParameterLevels (bpw_param_p -> pa_level, ui_level) > 0)
+			if (!CompareParameterLevels (bpw_param_p -> pa_level, ui_level))
 				{
 					if (this_widget_p -> isVisibleTo (parent_widget_p))
 						{

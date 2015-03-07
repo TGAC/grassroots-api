@@ -24,7 +24,8 @@ unix {
 }
 
 
-DIR_WHEATIS = ../../..
+DIR_WHEATIS = ../..
+
 
 DIR_WHEATIS_UTIL = $$DIR_WHEATIS/util
 DIR_WHEATIS_UTIL_INC = $$DIR_WHEATIS_UTIL/include
@@ -87,7 +88,8 @@ SOURCES += \
     src/json_viewer.cpp \
     src/text_viewer.cpp \
     src/viewer_widget.cpp \
-    src/viewable_widget.cpp
+    src/viewable_widget.cpp \
+    src/main_window.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -108,7 +110,8 @@ HEADERS  += \
     include/json_viewer.h \
     include/text_viewer.h \
     include/viewer_widget.h \
-    include/viewable_widget.h
+    include/viewable_widget.h \
+    include/main_window.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \

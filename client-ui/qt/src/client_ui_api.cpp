@@ -11,6 +11,7 @@
 
 #include "prefs_widget.h"
 #include "results_widget.h"
+#include "main_window.h"
 
 #include "memory_allocations.h"
 #include "string_utils.h"
@@ -27,8 +28,7 @@ typedef struct QTClientData
 {
 	ClientData qcd_base_data;
 	QApplication *qcd_app_p;
-	QMainWindow *qcd_window_p;
-	PrefsWidget *qcd_prefs_widget_p;
+	MainWindow *qcd_window_p;
 	ResultsWidget *qcd_results_p;
 	char *qcd_dummy_arg_s;
 } QTClientData;
@@ -91,7 +91,7 @@ static QTClientData *AllocateQTClientData (void)
 			 * object, In addition, argc must be greater than zero and argv must
 			 * contain at least one valid character string.
 			 */
-			data_p -> qcd_dummy_arg_s = CopyToNewString ("WheatIS", 0, false);
+			data_p -> qcd_dummy_arg_s = CopyToNewString ("WheatIS Tool", 0, false);
 
 			if (data_p -> qcd_dummy_arg_s)
 				{
@@ -106,23 +106,17 @@ static QTClientData *AllocateQTClientData (void)
 					 *
 					 * The solution is to use a theme that isn't broken on Ubuntu such as Plastique.
 					 */
+					/*
 					QStyle *style_p = QStyleFactory :: create ("fusion");
 					data_p -> qcd_app_p -> setStyle (style_p);
+					*/
 
-					QHBoxLayout *layout_p = new QHBoxLayout;
+					data_p -> qcd_window_p = new MainWindow;
+					data_p -> qcd_window_p -> setWindowIcon (QIcon ("images/cog"));
 
-					data_p -> qcd_window_p = new QMainWindow;
-					data_p -> qcd_window_p -> setLayout (layout_p);
-
-					data_p -> qcd_prefs_widget_p = new PrefsWidget (data_p -> qcd_window_p, PL_BASIC);
-					layout_p -> addWidget (data_p -> qcd_prefs_widget_p);
 
 					data_p -> qcd_results_p = new ResultsWidget;
-
-					//QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QDialog :: done);
-					QObject :: connect (data_p -> qcd_prefs_widget_p, &PrefsWidget :: Finished, data_p -> qcd_window_p, &QMainWindow :: close);
-
-				}
+				 }
 			else
 				{
 					FreeMemory (data_p);
@@ -156,19 +150,15 @@ static const char *GetQTClientDescription (ClientData *client_data_p)
 }
 
 
-static json_t *RunQTClient (ClientData *client_data_p, void (*callback_fn) (json_t *user_params_p))
+static json_t *RunQTClient (ClientData *client_data_p)
 {
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 	json_t *res_p = NULL;
-	int res = qt_data_p -> qcd_window_p -> show ();
 
-	printf ("res %d\n", res);
+	qt_data_p -> qcd_window_p -> show ();
+	int res = qt_data_p -> qcd_app_p -> exec ();
 
-	/* Did the user choose to run anything? */
-	if (res == QDialog :: Accepted)
-		{
-			res_p = qt_data_p -> qcd_prefs_widget_p -> GetUserValuesAsJSON ();
-		}
+	res_p = qt_data_p -> qcd_window_p -> GetUserValuesAsJSON (false);
 
 
 	return res_p;
@@ -180,7 +170,7 @@ static int AddServiceToQTClient (ClientData *client_data_p, const char * const s
 	int res = 0;
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 
-	qt_data_p -> qcd_prefs_widget_p -> CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, params_p);
+	qt_data_p -> qcd_window_p -> CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, params_p);
 
 	return res;
 }

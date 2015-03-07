@@ -62,33 +62,23 @@ bool ServicePrefsWidget :: GetRunFlag () const
 	return spw_run_flag;
 }
 
-json_t *ServicePrefsWidget :: GetServiceParamsAsJSON () const
+json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 {
 	bool success_flag = true;
 	json_t *service_json_p = json_object ();
 
 	if (service_json_p)
 		{
-			if (spw_run_flag)
+			success_flag = (json_object_set_new (service_json_p, SERVICES_NAME_S, json_string (spw_service_name_s)) == 0) && (json_object_set_new (service_json_p, SERVICE_RUN_S, spw_run_flag ? json_true () : json_false ()) == 0);
+
+			if (success_flag)
 				{
-					success_flag = (json_object_set_new (service_json_p, SERVICE_RUN_S, json_true ()) == 0);
-
-					#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
-					PrintJSON (stdout, service_json_p, "1 >>\n");
-					#endif
-
-					if (success_flag)
+					if (spw_run_flag || full_flag)
 						{
-							success_flag = (json_object_set_new (service_json_p, SERVICES_NAME_S, json_string (spw_service_name_s)) == 0);
-						}
+							#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
+							PrintJSON (stdout, service_json_p, "1 >>\n");
+							#endif
 
-					#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
-					PrintJSON (stdout, service_json_p, "2 >>\n");
-					#endif
-
-
-					if (success_flag)
-						{
 							json_t *param_set_json_p = spw_params_widget_p -> GetParameterValuesAsJSON ();
 
 							#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
@@ -114,14 +104,12 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON () const
 							#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
 							PrintJSON (stdout, service_json_p, "4 >>\n");
 							#endif
-						}
 
-				}		/* if (spw_run_flag) */
-			else
-				{
-					success_flag = (json_object_set_new (service_json_p, SERVICE_RUN_S, json_false ()) == 0);
-				}
-		}		/* if (service_name_p) */
+						}		/* if (spw_run_flag) */
+
+				}		/* if (service_name_p) */
+
+		}
 
 
 	#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE

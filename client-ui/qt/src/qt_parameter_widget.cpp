@@ -185,7 +185,7 @@ void QTParameterWidget :: AddParameterWidget (Parameter *param_p, QFormLayout *l
 
 			qpw_widgets_map.insert (param_p, child_p);
 
-			if (CompareParameterLevels (param_p -> pa_level, qpw_level) > 0)
+			if (!CompareParameterLevels (param_p -> pa_level, qpw_level))
 				{
 					widget_p -> hide ();
 					label_p -> hide ();

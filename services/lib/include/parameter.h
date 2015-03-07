@@ -224,7 +224,7 @@ WHEATIS_SERVICE_API void FreeParameter (Parameter *param_p);
 WHEATIS_SERVICE_API ParameterBounds *AllocateParameterBounds (void);
 
 
-WHEATIS_SERVICE_API int CompareParameterLevels (const ParameterLevel pl0, const ParameterLevel pl1);
+WHEATIS_SERVICE_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
 
 
 WHEATIS_SERVICE_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);

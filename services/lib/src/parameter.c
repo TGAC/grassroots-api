@@ -406,9 +406,9 @@ const char *CheckForNotNull (const Parameter * const parameter_p, const void *va
 
 
 
-int CompareParameterLevels (const ParameterLevel pl0, const ParameterLevel pl1)
+bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold)
 {
-	return pl0 - pl1;
+	return ((param_level & threshold) == threshold);
 }
 
 

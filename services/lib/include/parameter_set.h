@@ -93,7 +93,7 @@ WHEATIS_SERVICE_API bool AddParameterToParameterSet (ParameterSet *params_p, Par
 WHEATIS_SERVICE_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag, 
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, 
-	ParameterBounds *bounds_p, ParameterLevel level, 
+	ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 

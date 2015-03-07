@@ -18,7 +18,7 @@ public:
 
 	bool GetRunFlag () const;
 
-	json_t *GetServiceParamsAsJSON () const;
+	json_t *GetServiceParamsAsJSON (bool full_flag) const;
 
 signals:
 

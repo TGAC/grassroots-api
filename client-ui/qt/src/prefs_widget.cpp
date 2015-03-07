@@ -101,6 +101,15 @@ void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, 
 }
 
 
+void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
+{
+	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, params_p, this);
+
+	pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
+	pw_service_widgets.append (service_widget_p);
+}
+
+
 
 ParameterLevel PrefsWidget :: GetCurrentParameterLevel () const
 {
@@ -118,7 +127,7 @@ void PrefsWidget :: SetInterfaceLevel (ParameterLevel level)
 }
 
 
-json_t *PrefsWidget :: GetUserValuesAsJSON () const
+json_t *PrefsWidget :: GetUserValuesAsJSON (bool full_flag) const
 {
 	json_t *root_p = json_array ();
 
@@ -138,7 +147,7 @@ json_t *PrefsWidget :: GetUserValuesAsJSON () const
 			while (success_flag && (i < num_services))
 				{
 					ServicePrefsWidget *spw_p = pw_service_widgets.at (i);
-					json_t *service_json_p = spw_p -> GetServiceParamsAsJSON ();
+					json_t *service_json_p = spw_p -> GetServiceParamsAsJSON (full_flag);
 
 					if (service_json_p)
 						{

@@ -37,6 +37,9 @@ static bool ShowResults (json_t *response_p, Client *client_p);
 static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
 
 
+static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
+
+
 /*************************************/
 /******* FUNCTION DEFINITIONS  *******/
 /*************************************/
@@ -371,6 +374,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 	
 	if (json_is_array (response_p))
 		{
+			json_t *client_results_p = NULL;
 			const size_t num_services = json_array_size (response_p);
 			size_t i = 0;
 			
@@ -415,7 +419,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 				}		/* for (i = 0; i < num_services; ++ i) */
 
 			/* Get the results of the user's configuration */
-			RunClient (client_p, GetUserParameters);
+			client_results_p = RunClient (client_p);
+
+			services_json_p = GetUserParameters (client_results_p, username_s, password_s, sock_fd, id, buffer_p);
 
 		}		/* if (json_is_array (response_p)) */
 
@@ -428,8 +434,10 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 }
 
 
-static json_t *GetUserParameters (json_t *client_results_p)
+static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
 {
+	json_t *services_json_p = NULL;
+
 	if (client_results_p)
 		{
 			char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
@@ -488,6 +496,7 @@ static json_t *GetUserParameters (json_t *client_results_p)
 			printf ("no results from client\n");
 		}
 	
+	return services_json_p;
 }
 
 
