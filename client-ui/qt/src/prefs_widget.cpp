@@ -19,7 +19,7 @@
 
 
 #include "service.h"
-
+#include "string_utils.h"
 
 using namespace std;
 
@@ -95,20 +95,30 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
 {
 	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, params_p, this);
+	char * const icon_path_s = MakeFilename ("images", service_name_s);
 
-	pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
+	if (icon_path_s)
+		{
+			pw_tabs_p -> addTab (service_widget_p, QIcon (icon_path_s), QString (service_name_s));
+			FreeCopiedString (icon_path_s);
+		}
+	else
+		{
+			pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
+		}
+
 	pw_service_widgets.append (service_widget_p);
 }
 
-
-void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
+/*
+void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const icon_path_s, ParameterSet *params_p)
 {
-	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, params_p, this);
+	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, icon_path_s, params_p, this);
 
 	pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
 	pw_service_widgets.append (service_widget_p);
 }
-
+*/
 
 
 ParameterLevel PrefsWidget :: GetCurrentParameterLevel () const

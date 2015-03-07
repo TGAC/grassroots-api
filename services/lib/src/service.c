@@ -478,7 +478,6 @@ const char *GetServiceDescription (Service *service_p)
 
 
 
-/** Get the user-friendly description of the service. */
 const char *GetServiceInformationUri (Service *service_p)
 {
 	const char *uri_s = NULL;
@@ -672,6 +671,12 @@ const char *GetOperationNameFromJSON (const json_t * const root_p)
 const char *GetOperationInformationURIFromJSON (const json_t * const root_p)
 {
 	return GetJSONString (root_p, OPERATION_INFORMATION_URI_S);
+}
+
+
+const char *GetIconPathFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_ICON_PATH_S);
 }
 
 

@@ -266,6 +266,8 @@ WHEATIS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const r
 WHEATIS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
 
 
+WHEATIS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
+
 
 WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 

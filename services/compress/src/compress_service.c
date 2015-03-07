@@ -69,6 +69,7 @@ static const char *GetCompressServiceName (Service *service_p);
 
 static const char *GetCompressServiceDesciption (Service *service_p);
 
+
 static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p);

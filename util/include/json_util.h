@@ -44,6 +44,7 @@ PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
 PREFIX const char *OPERATION_ID_S VAL("operationId");
 PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
 PREFIX const char *OPERATION_INFORMATION_URI_S VAL("about_uri");
+PREFIX const char *OPERATION_ICON_PATH_S VAL("icon");
 
 
 PREFIX const char *SERVICES_NAME_S VAL("services");
