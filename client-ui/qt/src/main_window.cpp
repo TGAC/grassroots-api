@@ -130,6 +130,13 @@ void MainWindow :: dragEnterEvent (QDragEnterEvent *event_p)
 }
 
 
+void MainWindow :: closeEvent (QCloseEvent *event_p)
+{
+	event_p -> accept ();
+	emit Closed ();
+}
+
+
 
 void MainWindow :: GenerateMenu ()
 {

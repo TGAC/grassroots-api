@@ -108,13 +108,13 @@ static QTClientData *AllocateQTClientData (void)
 					 */
 					/*
 					QStyle *style_p = QStyleFactory :: create ("fusion");
-					data_p -> qcd_app_p -> setStyle (style_p);
+					datMainWindowa_p -> qcd_app_p -> setStyle (style_p);
 					*/
 
 					data_p -> qcd_window_p = new MainWindow;
 					data_p -> qcd_window_p -> setWindowIcon (QIcon ("images/cog"));
 
-
+					QObject :: connect (data_p -> qcd_window_p, &MainWindow :: Closed, data_p -> qcd_app_p, &QApplication :: quit);
 					data_p -> qcd_results_p = new ResultsWidget;
 				 }
 			else

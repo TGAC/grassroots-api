@@ -14,6 +14,8 @@ class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 
+signals:
+	void Closed ();
 
 public slots:
 	void SetBasicInterfaceLevel ();
@@ -35,6 +37,7 @@ public:
 protected:
 	virtual void dropEvent (QDropEvent *event_p);
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);
+	virtual void closeEvent (QCloseEvent *event_p);
 
 	void LoadConfigurationFile (QString &filename_r);
 
