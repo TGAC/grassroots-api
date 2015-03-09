@@ -89,7 +89,9 @@ SOURCES += \
     src/text_viewer.cpp \
     src/viewer_widget.cpp \
     src/viewable_widget.cpp \
-    src/main_window.cpp
+    src/main_window.cpp \
+    src/services_list.cpp \
+    src/services_tabs.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -111,7 +113,10 @@ HEADERS  += \
     include/text_viewer.h \
     include/viewer_widget.h \
     include/viewable_widget.h \
-    include/main_window.h
+    include/main_window.h \
+    include/services_list.h \
+    include/services_tabs.h \
+    include/service_ui.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \

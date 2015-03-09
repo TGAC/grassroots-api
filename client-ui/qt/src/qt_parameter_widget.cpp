@@ -122,7 +122,6 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 	ParameterNode *node_p = reinterpret_cast <ParameterNode *> (params_p -> ps_params_p -> ll_head_p);
 	ParameterGroupNode *param_group_node_p = reinterpret_cast <ParameterGroupNode *> (params_p -> ps_grouped_params_p -> ll_head_p);
 	QHash <Parameter *, Parameter *> params_map;
-	bool spacer_flag = true;
 
 	while (param_group_node_p)
 		{

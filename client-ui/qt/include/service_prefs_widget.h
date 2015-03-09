@@ -2,6 +2,7 @@
 #define SERVICE_PREFS_WIDGET_H
 
 #include <QWidget>
+#include <QCheckBox>
 
 #include "parameter_set.h"
 #include "qt_parameter_widget.h"
@@ -23,12 +24,13 @@ public:
 signals:
 
 public slots:
-	void SetRunFlag (int state);
+	void SetRunFlag (bool state);
+	void ToggleRunFlag ();
 
 private:
-	bool spw_run_flag;
 	QTParameterWidget *spw_params_widget_p;
 	const char *spw_service_name_s;
+	QCheckBox *spw_run_service_button_p;
 };
 
 #endif // SERVICE_PREFS_WIDGET_H

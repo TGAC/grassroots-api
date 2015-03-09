@@ -1,4 +1,3 @@
-#include <QCheckBox>
 #include <QHBoxLayout>
 #include <QLayout>
 #include <QPushButton>
@@ -20,23 +19,21 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 {
 	QLayout *layout_p = new QVBoxLayout;
 
-	spw_run_flag = false;
-
 	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, service_info_uri_s, params_p, NULL, PL_BASIC);
 	layout_p -> addWidget (spw_params_widget_p);
 
 	QString s ("Run ");
 	s.append (service_name_s);
 
-	QCheckBox *run_service_button_p = new QCheckBox (s, this);
-	run_service_button_p -> setChecked (spw_run_flag);
-	connect (run_service_button_p, &QCheckBox :: stateChanged, this, &ServicePrefsWidget :: SetRunFlag);
+	spw_run_service_button_p = new QCheckBox (s, this);
+	spw_run_service_button_p -> setChecked (Qt :: Unchecked);
+	connect (spw_run_service_button_p, &QCheckBox :: stateChanged, this, &ServicePrefsWidget :: SetRunFlag);
 
 	QPushButton *reset_button_p = new QPushButton (QIcon ("images/reload"), "Restore Defaults", this);
 	connect (reset_button_p, &QAbstractButton :: clicked, spw_params_widget_p, &QTParameterWidget :: ResetToDefaults);
 
 	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
-	buttons_layout_p -> addWidget (run_service_button_p);
+	buttons_layout_p -> addWidget (spw_run_service_button_p);
 	buttons_layout_p -> addWidget (reset_button_p);
 
 	layout_p -> addItem (buttons_layout_p);
@@ -51,16 +48,30 @@ ServicePrefsWidget :: ~ServicePrefsWidget ()
 }
 
 
-void ServicePrefsWidget :: SetRunFlag (int state)
+void ServicePrefsWidget :: ToggleRunFlag ()
 {
-	spw_run_flag = (state == Qt :: Checked);
+	if (GetRunFlag ())
+		{
+			spw_run_service_button_p -> setCheckState (Qt :: Unchecked);
+		}
+	else
+		{
+			spw_run_service_button_p -> setCheckState (Qt :: Checked);
+		}
+}
+
+
+void ServicePrefsWidget :: SetRunFlag (bool state)
+{
+	spw_run_service_button_p -> setCheckState (state ? Qt :: Checked : Qt :: Unchecked);
 }
 
 
 bool ServicePrefsWidget :: GetRunFlag () const
 {
-	return spw_run_flag;
+	return (spw_run_service_button_p -> checkState() == Qt :: Checked);
 }
+
 
 json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 {
@@ -69,11 +80,13 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 
 	if (service_json_p)
 		{
-			success_flag = (json_object_set_new (service_json_p, SERVICES_NAME_S, json_string (spw_service_name_s)) == 0) && (json_object_set_new (service_json_p, SERVICE_RUN_S, spw_run_flag ? json_true () : json_false ()) == 0);
+			const bool run_flag = GetRunFlag ();
+
+			success_flag = (json_object_set_new (service_json_p, SERVICES_NAME_S, json_string (spw_service_name_s)) == 0) && (json_object_set_new (service_json_p, SERVICE_RUN_S, run_flag ? json_true () : json_false ()) == 0);
 
 			if (success_flag)
 				{
-					if (spw_run_flag || full_flag)
+					if (run_flag || full_flag)
 						{
 							#if SERVICE_PREFS_WIDGET_DEBUG >= DEBUG_FINE
 							PrintJSON (stdout, service_json_p, "1 >>\n");

@@ -16,7 +16,8 @@
 
 #include "file_chooser_widget.h"
 #include "qt_parameter_widget.h"
-
+#include "services_list.h"
+#include "services_tabs.h"
 
 #include "service.h"
 #include "string_utils.h"
@@ -25,14 +26,23 @@ using namespace std;
 
 
 
-PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level)
-    :	QWidget (parent_p),
-		pw_level (initial_level)
+PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, const bool tabbed_display_flag)
+:	QWidget (parent_p),
+	pw_level (initial_level)
 {
-	pw_tabs_p = new QTabWidget;
-
 	QVBoxLayout *layout_p = new QVBoxLayout;
-	layout_p -> addWidget (pw_tabs_p);
+
+	if (tabbed_display_flag)
+		{
+			pw_services_ui_p = new ServicesTabs (this);
+		}
+	else
+		{
+			pw_services_ui_p = new ServicesList (this);
+		}
+
+	layout_p -> addWidget (pw_services_ui_p -> GetWidget ());
+
 
 	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
 	QPushButton *ok_button_p = new QPushButton (QIcon ("images/ok"), tr ("Ok"), this);
@@ -95,30 +105,10 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
 {
 	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, params_p, this);
-	char * const icon_path_s = MakeFilename ("images", service_name_s);
 
-	if (icon_path_s)
-		{
-			pw_tabs_p -> addTab (service_widget_p, QIcon (icon_path_s), QString (service_name_s));
-			FreeCopiedString (icon_path_s);
-		}
-	else
-		{
-			pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
-		}
-
+	pw_services_ui_p -> AddService (service_name_s, service_widget_p);
 	pw_service_widgets.append (service_widget_p);
 }
-
-/*
-void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const icon_path_s, ParameterSet *params_p)
-{
-	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, icon_path_s, params_p, this);
-
-	pw_tabs_p -> addTab (service_widget_p, QString (service_name_s));
-	pw_service_widgets.append (service_widget_p);
-}
-*/
 
 
 ParameterLevel PrefsWidget :: GetCurrentParameterLevel () const

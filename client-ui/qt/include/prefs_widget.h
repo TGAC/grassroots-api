@@ -3,6 +3,7 @@
 
 #include <QList>
 #include <QMainWindow>
+#include <QStackedWidget>
 #include <QTabWidget>
 #include <QWidget>
 
@@ -11,6 +12,7 @@
 #include "jansson.h"
 
 #include "service_prefs_widget.h"
+#include "services_list.h"
 
 
 /**
@@ -35,7 +37,7 @@ public:
 	/***** FUNCTIONS *****/
 	/*********************/
 
-	explicit PrefsWidget (QWidget *parent_p, ParameterLevel initial_level);
+	explicit PrefsWidget (QWidget *parent_p, ParameterLevel initial_level, bool tabbed_display_flag);
 
 	~PrefsWidget ();
 
@@ -55,9 +57,8 @@ private:
 	/*********************/
 
 	ParameterLevel pw_level;
-	QTabWidget *pw_tabs_p;
+	ServiceUI *pw_services_ui_p;
 	QList <ServicePrefsWidget *> pw_service_widgets;
-
 };
 
 

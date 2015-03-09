@@ -1,4 +1,5 @@
 #include <QAction>
+#include <QDesktopWidget>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QKeySequence>
@@ -20,7 +21,7 @@ MainWindow :: MainWindow ()
 
 	GenerateMenu ();
 
-	pw_prefs_widget_p = new PrefsWidget (this, PL_BASIC);
+	pw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
 
 	setCentralWidget (pw_prefs_widget_p);
 	connect (pw_prefs_widget_p, &PrefsWidget :: Finished, this, &QMainWindow :: close);
@@ -28,6 +29,9 @@ MainWindow :: MainWindow ()
 	setWindowTitle ("WheatIS Tool");
 	setWindowIcon (QIcon ("images/cog"));
 
+	QSize screen_size = QDesktopWidget ().availableGeometry(this).size ();
+	resize (screen_size * 0.5);
+	move (screen_size.width () * 0.25, screen_size.height () * 0.25);
 }
 
 
