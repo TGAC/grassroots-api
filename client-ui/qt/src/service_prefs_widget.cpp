@@ -64,6 +64,7 @@ void ServicePrefsWidget :: ToggleRunFlag ()
 void ServicePrefsWidget :: SetRunFlag (bool state)
 {
 	spw_run_service_button_p -> setCheckState (state ? Qt :: Checked : Qt :: Unchecked);
+	emit RunStatusChanged (spw_service_name_s ,state);
 }
 
 

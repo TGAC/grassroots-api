@@ -104,10 +104,8 @@ static QTClientData *AllocateQTClientData (void)
 					 *
 					 * The solution is to use a theme that isn't broken on Ubuntu such as Plastique.
 					 */
-					/*
 					QStyle *style_p = QStyleFactory :: create ("fusion");
-					datMainWindowa_p -> qcd_app_p -> setStyle (style_p);
-					*/
+					data_p -> qcd_app_p -> setStyle (style_p);
 
 					data_p -> qcd_window_p = new MainWindow;
 					data_p -> qcd_window_p -> setWindowIcon (QIcon ("images/cog"));
@@ -157,7 +155,8 @@ static json_t *RunQTClient (ClientData *client_data_p)
 	int res = qt_data_p -> qcd_app_p -> exec ();
 
 	res_p = qt_data_p -> qcd_window_p -> GetUserValuesAsJSON (false);
-
+	delete qt_data_p -> qcd_app_p;
+	qt_data_p -> qcd_app_p = 0;
 
 	return res_p;
 }
@@ -185,6 +184,11 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t
 	#endif
 
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
+
+	if (! (qt_data_p -> qcd_app_p))
+		{
+			qt_data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (qt_data_p -> qcd_dummy_arg_s));
+		}
 
 	uint32 res = qt_data_p -> qcd_results_p -> AddAllResultsPagesFromJSON (response_p);
 	//qt_data_p -> qcd_results_p -> show ();
