@@ -11,10 +11,12 @@ ServicesList :: ServicesList (QWidget *parent_p)
 
   sl_stacked_widgets_p = new QStackedWidget (this);
   sl_services_p = new QListWidget (this);
-  sl_services_p -> setSelectionMode (QAbstractItemView :: SingleSelection);
+ // sl_services_p -> setSelectionMode (QAbstractItemView :: SingleSelection);
+ // sl_services_p -> setSelectionRectVisible (true);
 
-  connect (sl_services_p, &QListWidget :: currentRowChanged, this, &ServicesList :: SetCurrent);
+  connect (sl_services_p, &QAbstractItemView :: clicked, this, &ServicesList :: SetCurrentService);
   connect (sl_services_p, &QAbstractItemView :: doubleClicked, this, &ServicesList :: ToggleServiceRunStatus);
+  connect (sl_services_p, &QListWidget :: itemChanged, this, &ServicesList :: CheckServiceRunStatus);
 
   layout_p -> addWidget (sl_services_p);
   layout_p -> addWidget (sl_stacked_widgets_p);
@@ -23,13 +25,10 @@ ServicesList :: ServicesList (QWidget *parent_p)
 }
 
 
-void ServicesList :: SetCurrent (int row)
+void ServicesList :: SetCurrentService (const QModelIndex &index_r)
 {
+  const int row = index_r.row ();
   sl_stacked_widgets_p -> setCurrentIndex (row);
-  QListWidgetItem *list_item_p = sl_services_p -> item (row);
-
-  list_item_p -> setSelected (true);
-  list_item_p -> setBackground (Qt :: lightGray);
 }
 
 
@@ -52,6 +51,16 @@ void ServicesList :: ToggleServiceRunStatus (const QModelIndex &index_r)
 }
 
 
+void ServicesList :: CheckServiceRunStatus (const QListWidgetItem *item_p)
+{
+  int row = sl_services_p -> row (item_p);
+  bool state = item_p -> checkState () == Qt :: Checked;
+
+  ServicePrefsWidget *widget_p = static_cast <ServicePrefsWidget *> (sl_stacked_widgets_p -> widget (row));
+  widget_p -> SetRunFlag (state);
+
+}
+
 
 void ServicesList :: AddService (const char * const service_name_s, ServicePrefsWidget *services_widget_p)
 {
@@ -70,11 +79,11 @@ void ServicesList :: AddService (const char * const service_name_s, ServicePrefs
 			item_p = new QListWidgetItem (service_name, sl_services_p);
 		}
 
-	item_p -> setCheckState (Qt :: Unchecked);
-	item_p -> setFlags (Qt :: ItemIsEnabled | Qt :: ItemIsUserCheckable);
-
 	sl_services_p -> addItem (item_p);
 	sl_stacked_widgets_p -> addWidget (services_widget_p);
+
+	item_p -> setCheckState (Qt :: Unchecked);
+	item_p -> setFlags (Qt :: ItemIsEnabled | Qt :: ItemIsUserCheckable | Qt :: ItemIsSelectable);
 }
 
 

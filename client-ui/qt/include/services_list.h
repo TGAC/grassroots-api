@@ -3,6 +3,7 @@
 
 #include <QListWidget>
 #include <QStackedWidget>
+#include <QStyledItemDelegate>
 
 #include "service_ui.h"
 
@@ -17,13 +18,15 @@ public:
   virtual QWidget *GetWidget ();
 
 private slots:
-  void SetCurrent (int row);
   void ToggleServiceRunStatus (const QModelIndex &index_r);
+  void CheckServiceRunStatus (const QListWidgetItem *item_p);
+  void SetCurrentService (const QModelIndex &index_r);
 
 private:
   QStackedWidget *sl_stacked_widgets_p;
   QListWidget *sl_services_p;
 };
+
 
 #endif // SERVICES_LIST_H
 

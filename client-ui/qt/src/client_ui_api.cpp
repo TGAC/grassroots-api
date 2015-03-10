@@ -96,8 +96,6 @@ static QTClientData *AllocateQTClientData (void)
 			if (data_p -> qcd_dummy_arg_s)
 				{
 					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
-
-
 					/*
 					 * Ubuntu 12.04 has some theme bugs with various styles giving messages such as
 					 *
