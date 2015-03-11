@@ -24,12 +24,12 @@ MainWindow :: MainWindow ()
 	pw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
 
 	setCentralWidget (pw_prefs_widget_p);
-	connect (pw_prefs_widget_p, &PrefsWidget :: Finished, this, &QMainWindow :: close);
+//	connect (pw_prefs_widget_p, &PrefsWidget :: Finished, this, &QMainWindow :: close);
 
 	setWindowTitle ("WheatIS Tool");
 	setWindowIcon (QIcon ("images/cog"));
 
-	QSize screen_size = QDesktopWidget ().availableGeometry(this).size ();
+	QSize screen_size = QDesktopWidget ().availableGeometry (this).size ();
 	resize (screen_size * 0.5);
 	move (screen_size.width () * 0.25, screen_size.height () * 0.25);
 }

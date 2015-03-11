@@ -8,13 +8,33 @@
 
 #include "byte_buffer.h"
 
+
+typedef struct Connection
+{
+	int co_sock_fd;
+	uint32 co_id;
+	ByteBuffer *co_data_buffer_p;
+	struct addrinfo *co_server_p;
+} Connection;
+
+
+
+
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
 
 
-WHEATIS_NETWORK_API int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
+
+
+WHEATIS_NETWORK_API Connection *AllocateConnection (const char * const hostname_s, const char * const port_s);
+
+
+WHEATIS_NETWORK_API const char *GetConnectionData (Connection *connection_p);
+
+
+WHEATIS_NETWORK_API void FreeConnection (Connection *connection_p);
 
 
 //WHEATIS_NETWORK_API int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p);
@@ -31,10 +51,10 @@ WHEATIS_NETWORK_API int ConnectToServer (const char *hostname_s, const char *por
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-WHEATIS_NETWORK_API int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p);
+WHEATIS_NETWORK_API int AtomicReceive (Connection *connection_p);
 
 
-WHEATIS_NETWORK_API int AtomicSendString (int socket_fd, uint32 id, const char *buffer_p);
+WHEATIS_NETWORK_API int AtomicSendString (const char *data_s, Connection *connection_p);
 
 
 /**
@@ -49,8 +69,7 @@ WHEATIS_NETWORK_API int AtomicSendString (int socket_fd, uint32 id, const char *
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-WHEATIS_NETWORK_API int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, uint32 num_to_send);
-
+WHEATIS_NETWORK_API int AtomicSend (const char *buffer_p, uint32 num_to_send, Connection *connection_p);
 
 
 #ifdef __cplusplus

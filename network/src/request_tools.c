@@ -13,7 +13,7 @@
 #include "request_tools.h"
 #include "string_utils.h"
 #include "math_utils.h"
-
+#include "memory_allocations.h"
 
 /*****************************/
 /***** STATIC PROTOTYPES *****/
@@ -25,12 +25,15 @@ static int ReceiveData (int socket_fd, void *buffer_p, const uint32 num_to_recei
 
 static int ReceiveDataIntoByteBuffer (int socket_fd, ByteBuffer *buffer_p, const uint32 num_to_receive, bool append_flag);
 
+static int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
+
+
 /******************************/
 /***** METHOD DEFINITIONS *****/
 /******************************/
 
 
-int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp)
+static int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp)
 {
 	struct addrinfo hints;
 	int i;
@@ -81,9 +84,60 @@ int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo
 }
 
 
-int AtomicSendString (int socket_fd, uint32 id, const char *buffer_p)
+Connection *AllocateConnection (const char * const hostname_s, const char * const port_s)
 {
-	return AtomicSend (socket_fd, id, buffer_p, strlen (buffer_p));
+	Connection *connection_p = (Connection *) AllocMemory (sizeof (Connection));
+
+	if (connection_p)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					struct addrinfo *server_p = NULL;
+					int fd = ConnectToServer (hostname_s, port_s, &server_p);
+
+					if (fd >= 0)
+						{
+							connection_p -> co_data_buffer_p = buffer_p;
+							connection_p -> co_sock_fd = fd;
+							connection_p -> co_server_p = server_p;
+							connection_p -> co_id = 0;
+
+							return connection_p;
+						}		/* if (fd >= 0) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+
+			FreeMemory (connection_p);
+		}		/* if (connection_p) */
+
+
+	return NULL;
+}
+
+
+
+void FreeConnection (Connection *connection_p)
+{
+	FreeByteBuffer (connection_p -> co_data_buffer_p);
+	freeaddrinfo (connection_p -> co_server_p);
+	close (connection_p -> co_sock_fd);
+
+	FreeMemory (connection_p);
+}
+
+
+const char *GetConnectionData (Connection *connection_p)
+{
+	return GetByteBufferData (connection_p -> co_data_buffer_p);
+}
+
+
+int AtomicSendString (const char *data_s, Connection *connection_p)
+{
+	return AtomicSend (data_s, strlen (data_s), connection_p);
 }
 
 
@@ -99,7 +153,7 @@ int AtomicSendString (int socket_fd, uint32 id, const char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, const uint32 num_to_send)
+int AtomicSend (const char *buffer_p, const uint32 num_to_send, Connection *connection_p)
 {
 	int num_sent = 0;
 	const size_t header_size = sizeof (uint32);
@@ -114,7 +168,7 @@ int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, const uint32 num
 	 * terminated.
 	 */
 	memcpy (header_s, &i, header_size);	
-	num_sent = SendData (socket_fd, (const void *) header_s, header_size);
+	num_sent = SendData (connection_p -> co_sock_fd, (const void *) header_s, header_size);
 
 	if (num_sent == header_size)
 		{
@@ -124,14 +178,14 @@ int AtomicSend (int socket_fd, uint32 id, const char *buffer_p, const uint32 num
 			 * isn't a valid c string as it is not null-
 			 * terminated.
 			 */
-			i = htonl (id);
+			i = htonl (connection_p -> co_id);
 			memcpy (header_s, &i, header_size);	
-			num_sent = SendData (socket_fd, header_s, header_size);
-			
+			num_sent = SendData (connection_p -> co_sock_fd, (const void *) header_s, header_size);
+
 			if (num_sent == header_size)
 				{
 					/* Send the message */
-					num_sent = SendData (socket_fd, buffer_p, num_to_send);
+					num_sent = SendData (connection_p -> co_sock_fd, buffer_p, num_to_send);
 				}
 		}
 
@@ -201,14 +255,14 @@ int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p)
+int AtomicReceive (Connection *connection_p)
 {
 	int num_received = 0;
 	const int header_size = sizeof (uint32);	
 	char header_s [header_size];	
 	
 	/* Get the length of the message */
-	num_received = ReceiveData (socket_fd, header_s, header_size);
+	num_received = ReceiveData (connection_p -> co_sock_fd, header_s, header_size);
 
 	if (num_received == header_size)
 		{
@@ -216,14 +270,14 @@ int AtomicReceive (int socket_fd, uint32 id, ByteBuffer *buffer_p)
 			uint32 message_size = ntohl (*val_p);
 
 			/* Get the id of the message */
-			num_received = ReceiveData (socket_fd, header_s, header_size);
+			num_received = ReceiveData (connection_p -> co_sock_fd, header_s, header_size);
 
 			if (num_received == header_size)
 				{
 					val_p = (uint32 *) header_s;
 					uint32 id_val = ntohl (*val_p);
 										
-					num_received = ReceiveDataIntoByteBuffer (socket_fd, buffer_p, message_size, false);
+					num_received = ReceiveDataIntoByteBuffer (connection_p -> co_sock_fd, connection_p -> co_data_buffer_p, message_size, false);
 				}
 		}
 

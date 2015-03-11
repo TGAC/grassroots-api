@@ -96,16 +96,18 @@ FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWi
 	fcw_widget_p = new QWidget;
 	QHBoxLayout *layout_p = new QHBoxLayout;
 
+
 	fcw_protocol_label_p = new QLabel;
 	fcw_protocol_label_p -> setBuddy (fcw_chooser_p);
 	fcw_protocol_label_p -> setToolTip ("The protocol for the given file");
 
-//	layout_p -> addWidget (fcw_protocol_label_p);
+	/* don't show the protocol label when it's empty */
+	fcw_protocol_label_p -> hide ();
+
+	layout_p -> addWidget (fcw_protocol_label_p);
 	layout_p -> addWidget (fcw_chooser_p);
 	layout_p -> addWidget (browse_button_p);
 
-	/* don't show the protocol label when it's empty */
-	fcw_protocol_label_p -> hide ();
 
 
 	// Remove any borders top and bottom

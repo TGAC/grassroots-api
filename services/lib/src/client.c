@@ -69,6 +69,21 @@ void FreeClient (Client *client_p)
 }
 
 
+
+/*
+
+typedef struct ClientConnection
+{
+	int cc_sock_fd;
+	uint32 cc_id;
+	ByteBuffer *cc_data_buffer_p;
+	struct addrinfo *cc_server_p;
+} ClientConnection;
+
+
+ */
+
+
 ClientNode *AllocateClientNode (Client *client_p)
 {
 	ClientNode *node_p = (ClientNode *) sizeof (ClientNode);

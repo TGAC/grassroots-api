@@ -5,7 +5,7 @@
 #include "jansson.h"
 #include "typedefs.h"
 #include "operation.h"
-
+#include "request_tools.h"
 
 #define JSON_KEY_USERNAME ("username")
 #define JSON_KEY_PASSWORD ("password")
@@ -16,7 +16,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_NETWORK_API int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p);
+WHEATIS_NETWORK_API int SendJsonRequest (const json_t *json_p, Connection *connection_p);
 
 WHEATIS_NETWORK_API json_t *GetLoginJsonRequest (const char * const username_s, const char *password_s);
 
@@ -36,7 +36,7 @@ WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
 
 WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p);
 
-
+WHEATIS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p);
 
 #ifdef __cplusplus
 }

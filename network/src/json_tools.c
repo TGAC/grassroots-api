@@ -18,14 +18,50 @@ json_t *LoadConfig (const char *path_s);
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
 
-int SendJsonRequest (int socket_fd, uint32 id, const json_t *json_p)
+json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
+{
+	char *req_s = json_dumps (req_p, 0);
+	json_t *response_p = NULL;
+
+	if (SendJsonRequest (req_p, connection_p) > 0)
+		{
+			if (AtomicReceive (connection_p) > 0)
+				{
+					json_error_t err;
+					const char *data_s = GetConnectionData (connection_p);
+
+					printf ("%s\n", data_s);
+
+					response_p = json_loads (data_s, 0, &err);
+
+					if (!response_p)
+						{
+							printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
+						}
+
+				}
+			else
+				{
+					printf ("no buffer\n");
+				}
+
+		}
+
+	free (req_s);
+
+	return response_p;
+}
+
+
+
+int SendJsonRequest (const json_t *json_p, Connection *connection_p)
 {
 	int res = -1;
 	char *req_s = json_dumps (json_p, 0);
 	
 	if (req_s)
 		{
-			res = AtomicSendString (socket_fd, id, req_s);
+			res = AtomicSendString (req_s, connection_p);
 			free (req_s);
 		}
 		

@@ -28,16 +28,14 @@
 /******* STATIC PROTOTYPES *******/
 /*********************************/
 
-static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p);
-
 
 static bool ShowResults (json_t *response_p, Client *client_p);
 
 
-static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
+static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, Connection *connection_p);
 
 
-static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p);
+static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
 
 
 /*************************************/
@@ -46,8 +44,6 @@ static json_t *GetUserParameters (json_t *client_results_p, const char * const u
 
 int main(int argc, char *argv[])
 {
-	int sock_fd;  
-	struct addrinfo *server_p = NULL;
 	const char *hostname_s = "localhost";
 	const char *port_s = DEFAULT_SERVER_PORT;
 	const char *username_s = NULL;
@@ -59,6 +55,7 @@ int main(int argc, char *argv[])
 	const char *protocol_s = NULL;
 	int api_id = -1;
 	int i;
+	Connection *connection_p = NULL;
 	
 	if (argc < 3)
 		{
@@ -184,9 +181,8 @@ int main(int argc, char *argv[])
 					++ i;
 				}		/* while (i < argc) */
 				
-
-		sock_fd = ConnectToServer (hostname_s, port_s, &server_p);
-		if (sock_fd >= 0)
+		connection_p = AllocateConnection (hostname_s, port_s);
+		if (connection_p)
 			{
 				json_t *req_p = NULL;
 				json_t *response_p = NULL;
@@ -212,11 +208,11 @@ int main(int argc, char *argv[])
 															printf ("Failed to add credentials\n");
 														}
 
-													response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+													response_p = MakeRemoteJsonCall (req_p, connection_p);
 
 													if (response_p)
 														{
-															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, sock_fd, id, buffer_p);
+															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
 
 															if (run_services_response_p)
 																{
@@ -231,7 +227,7 @@ int main(int argc, char *argv[])
 
 										case OP_IRODS_MODIFIED_DATA:
 											req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
-											response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+											response_p = MakeRemoteJsonCall (req_p, connection_p);
 											break;
 
 										case OP_LIST_INTERESTED_SERVICES:
@@ -242,11 +238,11 @@ int main(int argc, char *argv[])
 
 														if (req_p)
 															{
-																response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+																response_p = MakeRemoteJsonCall (req_p, connection_p);
 
 																if (response_p)
 																	{
-																		ShowServices (response_p, client_p, username_s, password_s, sock_fd, id, buffer_p);
+																		ShowServices (response_p, client_p, username_s, password_s, connection_p);
 																	}		/* if (response_p) */
 
 															}		/* if (req_p) */
@@ -263,7 +259,7 @@ int main(int argc, char *argv[])
 
 														if (req_p)
 															{
-																response_p = SendRequest (sock_fd, req_p, id, buffer_p);
+																response_p = MakeRemoteJsonCall (req_p, connection_p);
 
 																if (response_p)
 																	{
@@ -284,13 +280,11 @@ int main(int argc, char *argv[])
 						FreeByteBuffer (buffer_p);
 					}		/* if (buffer_p) */				
 
-				freeaddrinfo (server_p);
-				close (sock_fd);
-
+				FreeConnection (connection_p);
 			}
 		else
 			{
-				printf ("failed to connect to server with code %d\n", sock_fd);
+				printf ("failed to connect to server %s:%s\n", hostname_s, port_s);
 			}
 			
 		}
@@ -328,42 +322,10 @@ static void RunServicesOnFile ()
 }
 */
 
-static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, ByteBuffer *buffer_p)
-{
-	char *req_s = json_dumps (req_p, 0);
-	json_t *response_p = NULL;
-
-	if (SendJsonRequest (sock_fd, id, req_p) > 0)
-		{
-			if (AtomicReceive (sock_fd, id, buffer_p) > 0)
-				{						
-					json_error_t err;
-														
-					printf ("%s\n", buffer_p -> bb_data_p);
-
-					response_p = json_loads (buffer_p -> bb_data_p, 0, &err);
-
-					if (!response_p)
-						{
-							printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
-						}										
-								
-				}
-			else
-				{
-					printf ("no buffer\n");
-				}
-								
-		}
-	
-	free (req_s);
-
-	return response_p;
-}
 	
 
 
-static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
+static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, Connection *connection_p)
 {
 	json_t *services_json_p = NULL;
 
@@ -421,7 +383,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 			/* Get the results of the user's configuration */
 			client_results_p = RunClient (client_p);
 
-			services_json_p = GetUserParameters (client_results_p, username_s, password_s, sock_fd, id, buffer_p);
+			services_json_p = GetUserParameters (client_results_p, username_s, password_s, connection_p);
 
 		}		/* if (json_is_array (response_p)) */
 
@@ -434,7 +396,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 }
 
 
-static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, const int sock_fd, uint32 id, ByteBuffer *buffer_p)
+
+
+static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p)
 {
 	json_t *services_json_p = NULL;
 
@@ -456,7 +420,7 @@ static json_t *GetUserParameters (json_t *client_results_p, const char * const u
 
 							printf ("client sending:\n%s\n", new_req_s);
 
-							services_json_p = SendRequest (sock_fd, new_req_p, id, buffer_p);
+							services_json_p = MakeRemoteJsonCall (new_req_p, connection_p);
 
 							if (services_json_p)
 								{

@@ -13,17 +13,18 @@ ServicesList :: ServicesList (QWidget *parent_p)
   sl_services_p = new QListWidget (this);
  // sl_services_p -> setSelectionMode (QAbstractItemView :: SingleSelection);
  // sl_services_p -> setSelectionRectVisible (true);
+  sl_services_p -> setSizeAdjustPolicy (AdjustToContents);
 
   connect (sl_services_p, &QAbstractItemView :: clicked, this, &ServicesList :: SetCurrentService);
   connect (sl_services_p, &QAbstractItemView :: doubleClicked, this, &ServicesList :: ToggleServiceRunStatus);
   connect (sl_services_p, &QListWidget :: itemChanged, this, &ServicesList :: CheckServiceRunStatus);
 
-  QGroupBox *box_p = new QGroupBox (tr ("Services1"));
-  QVBoxLayout *services_layout_p = new QVBoxLayout;
+  QGroupBox *box_p = new QGroupBox (tr ("Services"));
+  box_p -> setAlignment (Qt :: AlignRight);
+  QHBoxLayout *services_layout_p = new QHBoxLayout;
 
   services_layout_p -> addWidget (sl_services_p);
   box_p -> setLayout (services_layout_p);
-  box_p -> setAlignment (Qt :: AlignRight);
 
   layout_p -> addWidget (box_p);
   layout_p -> addWidget (sl_stacked_widgets_p);
@@ -115,6 +116,14 @@ ServicesListItem :: ServicesListItem (const QString &service_name_r, QListWidget
 : QListWidgetItem (service_name_r, list_p)
 {}
 
+
+QSize ServicesListItem :: sizeHint () const
+{
+	QSize original_size = QListWidgetItem :: sizeHint ();
+
+	original_size.setHeight (50);
+	return original_size;
+}
 
 /*
 void ServicesListItem :: SetRunStatus (bool state)

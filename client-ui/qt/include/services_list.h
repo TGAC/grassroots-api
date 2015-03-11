@@ -38,6 +38,8 @@ public:
   ServicesListItem (const QIcon &icon_r, const QString &service_name_r, QListWidget *list_p);
   ServicesListItem (const QString &service_name_r, QListWidget *list_p);
 
+  virtual QSize sizeHint () const;
+
   /*
 public slots:
   void SetRunStatus (bool state);

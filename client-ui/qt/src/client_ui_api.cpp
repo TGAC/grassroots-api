@@ -155,8 +155,9 @@ static json_t *RunQTClient (ClientData *client_data_p)
 	int res = qt_data_p -> qcd_app_p -> exec ();
 
 	res_p = qt_data_p -> qcd_window_p -> GetUserValuesAsJSON (false);
-	delete qt_data_p -> qcd_app_p;
-	qt_data_p -> qcd_app_p = 0;
+
+	//delete qt_data_p -> qcd_app_p;
+	//qt_data_p -> qcd_app_p = 0;
 
 	return res_p;
 }

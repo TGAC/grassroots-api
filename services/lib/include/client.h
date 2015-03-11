@@ -21,10 +21,13 @@
 struct Plugin;
 struct Client;
 
+
 typedef struct ClientData
 {
 	/** The Client that owns this data. */
 	struct Client *cd_client_p;
+
+	struct Connection *cc_connection_p;
 } ClientData;
 
 
