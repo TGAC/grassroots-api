@@ -12,7 +12,7 @@
     "plugin": "web_service",
     "operations": [
 			{
-				"operationId": "Contig service",
+				"operationId": "CerealsDB Contig service",
 				"summary": "An operation to obtain contig information using SNP or Contig names",
 				"description": "An operation to obtain contig information using SNP or Contig names",
 				"uri": "http://www.cerealsdb.uk.net/cerealgenomics/CerealsDB/contig.php",
@@ -42,7 +42,7 @@
 					]
 				}
 			}, {
-				"operationId": "Search service",
+				"operationId": "CerealsDB Search service",
 				"summary": "An operation to obtain contig information using generic search terms",
 				"description": "An operation to obtain contig information generic search terms",
 				"uri": "http://www.cerealsdb.uk.net/cerealgenomics/CerealsDB/contig.php",

@@ -45,8 +45,8 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, co
 
 
 	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
-	QPushButton *ok_button_p = new QPushButton (QIcon ("images/ok"), tr ("Ok"), this);
-	QPushButton *cancel_button_p = new QPushButton (QIcon ("images/cancel"), tr ("Cancel"), this);
+	QPushButton *ok_button_p = new QPushButton (QIcon ("images/run"), tr ("Run"), this);
+	QPushButton *cancel_button_p = new QPushButton (QIcon ("images/cancel"), tr ("Quit"), this);
 
 	buttons_layout_p -> addWidget (ok_button_p);
 	buttons_layout_p -> addWidget (cancel_button_p);

@@ -2,11 +2,13 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QFileDialog>
 
 #include "results_window.h"
 
 
 ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
+	: rw_data_p (0)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 
@@ -30,17 +32,55 @@ ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 
 	layout_p -> addWidget (buttons_p);
 
+	setWindowTitle (tr ("Results"));
+	setWindowIcon (QIcon ("images/viewas_list"));
 	setLayout (layout_p);
 }
 
 
-uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p)
+void ResultsWindow :: ClearData ()
 {
+/*
+  if (rw_data_p)
+    {
+      json_array_clear (rw_data_p);
+      json_decref (rw_data_p);
+    }
+*/
+}
+
+
+ResultsWindow :: ~ResultsWindow ()
+{
+  ClearData ();
+}
+
+
+uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p)
+{  
+  ClearData ();
+  rw_data_p = json_p;
+
   return rw_results_p -> AddAllResultsPagesFromJSON (json_p);
 }
 
 
 void ResultsWindow :: SaveResults (bool clicked_flag)
 {
+	QString filename = QFileDialog :: getSaveFileName (this, tr ("Save Results"), "wheatis_results.json", tr ("JSON (*.json)"));
+
+	if (! (filename.isNull () || filename.isEmpty ()))
+		{
+			QByteArray ba = filename.toLocal8Bit ();
+			const char * const filename_s = ba.constData ();
+
+			int res = json_dump_file (rw_data_p, filename_s, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+			if (res != 0)
+				{
+
+				}
+
+		}		/* if (! (filename.isNull () || filename.isEmpty ())) */
 
 }

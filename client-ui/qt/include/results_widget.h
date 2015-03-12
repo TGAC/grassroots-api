@@ -16,7 +16,7 @@ public:
   bool AddResultsPageFromJSON (const json_t *json_p);
 
 private:
-	QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
+  QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
 
 };
 

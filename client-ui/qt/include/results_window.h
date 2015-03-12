@@ -13,7 +13,11 @@ class ResultsWindow : public QWidget
 {
 public:
   ResultsWindow (QMainWindow *parent_p);
+  ~ResultsWindow ();
   uint32 AddAllResultsPagesFromJSON (const json_t *json_p);
+
+private:
+  void ClearData ();
 
 
 private slots:
@@ -22,6 +26,7 @@ private slots:
 
 private:
   ResultsWidget *rw_results_p;
+  const json_t *rw_data_p;
 };
 
 
