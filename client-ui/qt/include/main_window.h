@@ -10,6 +10,8 @@
 #include "hash_table.h"
 
 
+struct QTClientData;
+
 class MainWindow : public QMainWindow
 {
 	Q_OBJECT
@@ -23,9 +25,10 @@ public slots:
 	void SetAdvancedInterfaceLevel ();
 	void LoadConfiguration ();
 	void SaveConfiguration ();
+	void RunServices (bool run_flag);
 
 public:
-	MainWindow ();
+	MainWindow (struct QTClientData *data_p);
 	~MainWindow ();
 
 	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p);
@@ -43,7 +46,8 @@ protected:
 
 
 private:
-	PrefsWidget *pw_prefs_widget_p;
+	PrefsWidget *mw_prefs_widget_p;
+	struct QTClientData *mw_client_data_p;
 
 	void GenerateMenu ();
 };

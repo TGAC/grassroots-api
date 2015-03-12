@@ -16,22 +16,13 @@
 #include "memory_allocations.h"
 #include "string_utils.h"
 
+#include "qt_client_data.h"
 
 #ifdef _DEBUG
 	#define CLIENT_UI_API_DEBUG (DEBUG_FINE)
 #else
 	#define CLIENT_UI_API_DEBUG (DEBUG_NONE)
 #endif
-
-
-typedef struct QTClientData
-{
-	ClientData qcd_base_data;
-	QApplication *qcd_app_p;
-	MainWindow *qcd_window_p;
-	ResultsWidget *qcd_results_p;
-	char *qcd_dummy_arg_s;
-} QTClientData;
 
 static int s_dummy_argc = 1;
 
@@ -45,7 +36,7 @@ static int AddServiceToQTClient (ClientData *client_p, const char * const servic
 static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t *response_p);
 
 
-Client *GetClient (void)
+Client *GetClient (Connection *connection_p)
 {
 	Client *client_p = NULL;
 	QTClientData *data_p = AllocateQTClientData ();
@@ -56,7 +47,7 @@ Client *GetClient (void)
 
 			if (client_p)
 				{
-					InitialiseClient (client_p, GetQTClientName, GetQTClientDescription, RunQTClient, DisplayResultsInQTClient, AddServiceToQTClient, reinterpret_cast <ClientData *> (data_p));
+					InitialiseClient (client_p, GetQTClientName, GetQTClientDescription, RunQTClient, DisplayResultsInQTClient, AddServiceToQTClient, reinterpret_cast <ClientData *> (data_p), connection_p);
 				}
 			else
 				{
@@ -107,12 +98,14 @@ static QTClientData *AllocateQTClientData (void)
 					QStyle *style_p = QStyleFactory :: create ("fusion");
 					data_p -> qcd_app_p -> setStyle (style_p);
 
-					data_p -> qcd_window_p = new MainWindow;
+					data_p -> qcd_window_p = new MainWindow (data_p);
 					data_p -> qcd_window_p -> setWindowIcon (QIcon ("images/cog"));
 
 					QObject :: connect (data_p -> qcd_window_p, &MainWindow :: Closed, data_p -> qcd_app_p, &QApplication :: quit);
-					data_p -> qcd_results_p = new ResultsWidget;
-				 }
+					data_p -> qcd_results_p = new ResultsWindow (data_p -> qcd_window_p);
+
+					data_p -> qcd_init_flag = false;
+				}
 			else
 				{
 					FreeMemory (data_p);
@@ -152,12 +145,12 @@ static json_t *RunQTClient (ClientData *client_data_p)
 	json_t *res_p = NULL;
 
 	qt_data_p -> qcd_window_p -> show ();
-	int res = qt_data_p -> qcd_app_p -> exec ();
 
-	res_p = qt_data_p -> qcd_window_p -> GetUserValuesAsJSON (false);
-
-	//delete qt_data_p -> qcd_app_p;
-	//qt_data_p -> qcd_app_p = 0;
+	if (! (qt_data_p -> qcd_init_flag))
+		{
+			qt_data_p -> qcd_init_flag = true;
+			int res = qt_data_p -> qcd_app_p -> exec ();
+		}
 
 	return res_p;
 }
@@ -185,39 +178,19 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t
 	#endif
 
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
-
-	if (! (qt_data_p -> qcd_app_p))
-		{
-			qt_data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (qt_data_p -> qcd_dummy_arg_s));
-		}
-
 	uint32 res = qt_data_p -> qcd_results_p -> AddAllResultsPagesFromJSON (response_p);
-	//qt_data_p -> qcd_results_p -> show ();
 
+	qt_data_p -> qcd_results_p -> show ();
 
-	QDialog dialog;
-	QVBoxLayout *layout_p = new QVBoxLayout;
-
-	layout_p -> addWidget (qt_data_p -> qcd_results_p);
-
-	QDialogButtonBox *buttons_p = new QDialogButtonBox (QDialogButtonBox :: Ok);
-	QObject :: connect (buttons_p, &QDialogButtonBox :: accepted, &dialog, &QDialog :: accept);
-
-	QPushButton *btn_p = buttons_p -> button (QDialogButtonBox::Ok);
-	if (btn_p)
+	if (! (qt_data_p -> qcd_init_flag))
 		{
-			btn_p -> setIcon (QIcon ("images/ok"));
+			qt_data_p -> qcd_init_flag = true;
+			qt_data_p -> qcd_app_p -> exec ();
 		}
 
-	layout_p -> addWidget (buttons_p);
-
-	dialog.setLayout (layout_p);
-
-	dialog.exec ();
 
 	return res_p;
 }
-
 
 
 

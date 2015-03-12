@@ -11,20 +11,26 @@
 #include <QWidget>
 
 #include "string_utils.h"
+#include "request_tools.h"
+
+#include "json_tools.h"
 
 #include "main_window.h"
 #include "filesystem_utils.h"
 
-MainWindow :: MainWindow ()
+#include "qt_client_data.h"
+
+
+MainWindow :: MainWindow (QTClientData *data_p)
 {
 	setAcceptDrops (true);
 
 	GenerateMenu ();
 
-	pw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
+	mw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
 
-	setCentralWidget (pw_prefs_widget_p);
-//	connect (pw_prefs_widget_p, &PrefsWidget :: Finished, this, &QMainWindow :: close);
+	setCentralWidget (mw_prefs_widget_p);
+	connect (mw_prefs_widget_p, &PrefsWidget :: RunServices, this, &MainWindow :: RunServices);
 
 	setWindowTitle ("WheatIS Tool");
 	setWindowIcon (QIcon ("images/cog"));
@@ -40,15 +46,35 @@ MainWindow :: ~MainWindow ()
 }
 
 
+void MainWindow :: RunServices (bool run_flag)
+{
+	if (run_flag)
+		{
+			json_t *client_params_p = GetUserValuesAsJSON (false);
+			const char *username_s = NULL;
+			const char *password_s = NULL;
+
+			json_t *services_json_p = CallServices (client_params_p, username_s, password_s, mw_client_data_p -> qcd_base_data.cd_connection_p);
+
+			if (services_json_p)
+				{
+				}
+		}
+	else
+		{
+			close ();
+		}
+}
+
 void MainWindow :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
 {
-	pw_prefs_widget_p -> CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, params_p);
+	mw_prefs_widget_p -> CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, params_p);
 }
 
 
 json_t *MainWindow :: GetUserValuesAsJSON (bool all_flag) const
 {
-	return pw_prefs_widget_p -> GetUserValuesAsJSON (all_flag);
+	return mw_prefs_widget_p -> GetUserValuesAsJSON (all_flag);
 }
 
 
@@ -202,19 +228,19 @@ void MainWindow :: GenerateMenu ()
 
 void MainWindow :: SetBasicInterfaceLevel ()
 {
-	pw_prefs_widget_p -> SetInterfaceLevel (PL_BASIC);
+	mw_prefs_widget_p -> SetInterfaceLevel (PL_BASIC);
 }
 
 
 void MainWindow :: SetIntermediateInterfaceLevel ()
 {
-	pw_prefs_widget_p -> SetInterfaceLevel (PL_INTERMEDIATE);
+	mw_prefs_widget_p -> SetInterfaceLevel (PL_INTERMEDIATE);
 }
 
 
 void MainWindow :: SetAdvancedInterfaceLevel ()
 {
-	pw_prefs_widget_p -> SetInterfaceLevel (PL_ADVANCED);
+	mw_prefs_widget_p -> SetInterfaceLevel (PL_ADVANCED);
 }
 
 

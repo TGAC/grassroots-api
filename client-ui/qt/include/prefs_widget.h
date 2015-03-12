@@ -24,7 +24,7 @@ class PrefsWidget : public QWidget
 
 signals:
 	void InterfaceLevelChanged (ParameterLevel level);
-	void Finished (int result);
+	void RunServices (bool run_flag);
 
 public slots:
 	void SetInterfaceLevel (ParameterLevel level);

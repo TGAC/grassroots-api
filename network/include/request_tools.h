@@ -3,11 +3,12 @@
 
 #include <netdb.h>
 
+#include "jansson.h"
+
 #include "network_library.h"
 #include "typedefs.h"
 
 #include "byte_buffer.h"
-
 
 typedef struct Connection
 {
@@ -26,6 +27,9 @@ extern "C"
 #endif
 
 
+
+
+WHEATIS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
 
 
 WHEATIS_NETWORK_API Connection *AllocateConnection (const char * const hostname_s, const char * const port_s);

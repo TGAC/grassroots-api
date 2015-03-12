@@ -10,7 +10,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_CLIENT_API Client *GetClient (void);
+WHEATIS_CLIENT_API Client *GetClient (Connection *connection_p);
 
 WHEATIS_CLIENT_API void ReleaseClient (Client *client_p);
 

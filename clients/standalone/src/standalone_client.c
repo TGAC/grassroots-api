@@ -35,9 +35,6 @@ static bool ShowResults (json_t *response_p, Client *client_p);
 static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, Connection *connection_p);
 
 
-static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
-
-
 /*************************************/
 /******* FUNCTION DEFINITIONS  *******/
 /*************************************/
@@ -192,7 +189,7 @@ int main(int argc, char *argv[])
 				
 				if (buffer_p)
 					{				
-						Client *client_p = LoadClient ("clients", client_s);
+						Client *client_p = LoadClient ("clients", client_s, connection_p);
 
 						if (client_p)
 							{
@@ -213,12 +210,6 @@ int main(int argc, char *argv[])
 													if (response_p)
 														{
 															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
-
-															if (run_services_response_p)
-																{
-																	ShowResults (run_services_response_p, client_p);
-																}		/* if (run_services_response_p) */
-
 														}		/* if (response_p) */
 
 												}		/* if (req_p) */
@@ -382,9 +373,6 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 
 			/* Get the results of the user's configuration */
 			client_results_p = RunClient (client_p);
-
-			services_json_p = GetUserParameters (client_results_p, username_s, password_s, connection_p);
-
 		}		/* if (json_is_array (response_p)) */
 
 
@@ -392,74 +380,6 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 	free (response_s);
 	#endif
 
-	return services_json_p;
-}
-
-
-
-
-static json_t *GetUserParameters (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p)
-{
-	json_t *services_json_p = NULL;
-
-	if (client_results_p)
-		{
-			char *client_results_s = json_dumps (client_results_p, JSON_INDENT (2));
-			json_t *new_req_p = json_object ();
-
-			if (new_req_p)
-				{
-					if (!AddCredentialsToJson (new_req_p, username_s, password_s))
-						{
-							printf ("failed to add credentials to request\n");
-						}
-
-					if (json_object_set_new (new_req_p, SERVICES_NAME_S, client_results_p) == 0)
-						{
-							char *new_req_s  = json_dumps (new_req_p, JSON_INDENT (2));
-
-							printf ("client sending:\n%s\n", new_req_s);
-
-							services_json_p = MakeRemoteJsonCall (new_req_p, connection_p);
-
-							if (services_json_p)
-								{
-									char *response_s = json_dumps (services_json_p, JSON_INDENT (2));
-
-									if (response_s)
-										{
-											printf ("%s\n", response_s);
-											free (response_s);
-										}
-								}
-							else
-								{
-									printf ("no response\n");
-								}
-
-							if (new_req_s)
-								{
-									free (new_req_s);
-								}
-							
-						}		/* if (json_object_set_new (new_req_p, SERVICES_S, client_results_p) */
-
-					json_decref (new_req_p);
-
-				}		/* if (new_req_p) */
-
-			if (client_results_s)
-				{
-					printf ("%s\n", client_results_s);
-					free (client_results_s);
-				}
-
-		}
-	else
-		{
-			printf ("no results from client\n");
-		}
-	
 	return services_json_p;
 }
 

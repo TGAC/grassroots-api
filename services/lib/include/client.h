@@ -7,6 +7,7 @@
 #include "parameter_set.h"
 #include "typedefs.h"
 #include "user_details.h"
+#include "request_tools.h"
 
 #include "jansson.h"
 
@@ -27,7 +28,7 @@ typedef struct ClientData
 	/** The Client that owns this data. */
 	struct Client *cd_client_p;
 
-	struct Connection *cc_connection_p;
+	struct Connection *cd_connection_p;
 } ClientData;
 
 
@@ -91,7 +92,8 @@ WHEATIS_SERVICE_API void InitialiseClient (Client * const client_p,
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, const json_t *response_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s,ParameterSet *params_p),
-	ClientData *data_p);
+	ClientData *data_p,
+	Connection *connection_p);
 
 WHEATIS_SERVICE_API json_t *RunClient (Client *client_p);
 
@@ -120,10 +122,10 @@ WHEATIS_SERVICE_API void FreeClientNode (ListItem *node_p);
 WHEATIS_SERVICE_API LinkedList *LoadClients (const char * const clients_path_s, const char * const pattern_s);
 
 
-WHEATIS_SERVICE_API Client *LoadClient (const char * const clients_path_s, const char * const client_s);
+WHEATIS_SERVICE_API Client *LoadClient (const char * const clients_path_s, const char * const client_s, Connection *connection_p);
 
 
-WHEATIS_SERVICE_API Client *GetClientFromPlugin (struct Plugin * const plugin_p);
+WHEATIS_SERVICE_API Client *GetClientFromPlugin (struct Plugin * const plugin_p, Connection *connection_p);
 
 
 WHEATIS_SERVICE_API bool DeallocatePluginClient (struct Plugin * const plugin_p);

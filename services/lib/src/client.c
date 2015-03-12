@@ -20,7 +20,8 @@ void InitialiseClient (Client * const client_p,
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, const json_t *response_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p),
-	ClientData *data_p)
+	ClientData *data_p,
+	Connection *connection_p)
 {
 	client_p -> cl_get_client_name_fn = get_client_name_fn;
 	client_p -> cl_get_client_description_fn = get_client_description_fn;
@@ -32,6 +33,7 @@ void InitialiseClient (Client * const client_p,
 	if (client_p -> cl_data_p)
 		{
 			client_p -> cl_data_p -> cd_client_p = client_p;
+			client_p -> cl_data_p -> cd_connection_p = connection_p;
 		}
 }
 
@@ -115,7 +117,7 @@ LinkedList *LoadClients (const char * const clients_path_s, const char * const p
 }
 
 
-Client *LoadClient (const char * const clients_path_s, const char * const client_s)
+Client *LoadClient (const char * const clients_path_s, const char * const client_s, Connection *connection_p)
 {
 	Client *client_p = NULL;
 	const char *plugin_s = MakePluginName (client_s);
@@ -130,7 +132,7 @@ Client *LoadClient (const char * const clients_path_s, const char * const client
 
 					if (OpenPlugin (plugin_p))
 						{																							
-							client_p = GetClientFromPlugin (plugin_p);
+							client_p = GetClientFromPlugin (plugin_p, connection_p);
 
 							if (!client_p)
 								{
@@ -150,7 +152,7 @@ Client *LoadClient (const char * const clients_path_s, const char * const client
 //
 //	Get Symbol
 //
-Client *GetClientFromPlugin (Plugin * const plugin_p)
+Client *GetClientFromPlugin (Plugin * const plugin_p, Connection *connection_p)
 {
 	if (!plugin_p -> pl_client_p)
 		{
@@ -158,9 +160,9 @@ Client *GetClientFromPlugin (Plugin * const plugin_p)
 
 			if (symbol_p)
 				{
-					Client *(*fn_p) (void) = (Client *(*) (void)) symbol_p;
+					Client *(*fn_p) (Connection *connection_p) = (Client *(*) (Connection *connection_p)) symbol_p;
 
-					plugin_p -> pl_client_p = fn_p ();
+					plugin_p -> pl_client_p = fn_p (connection_p);
 
 					if (plugin_p -> pl_client_p)
 						{

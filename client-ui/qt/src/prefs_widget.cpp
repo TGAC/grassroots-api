@@ -67,13 +67,13 @@ PrefsWidget :: ~PrefsWidget ()
 
 void PrefsWidget :: Accept ()
 {
-	emit Finished (QDialog :: Accepted);
+	emit RunServices (true);
 }
 
 
 void PrefsWidget :: Reject ()
 {
-	emit Finished (QDialog :: Rejected);
+	emit RunServices (false);
 }
 
 
