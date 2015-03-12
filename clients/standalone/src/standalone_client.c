@@ -178,98 +178,89 @@ int main(int argc, char *argv[])
 					++ i;
 				}		/* while (i < argc) */
 				
-		connection_p = AllocateConnection (hostname_s, port_s);
+		connection_p = AllocateServerConnection (hostname_s, port_s);
 		if (connection_p)
 			{
 				json_t *req_p = NULL;
 				json_t *response_p = NULL;
-				uint32 id = 1;
+				Client *client_p = LoadClient ("clients", client_s, connection_p);
 
-				ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-				
-				if (buffer_p)
-					{				
-						Client *client_p = LoadClient ("clients", client_s, connection_p);
-
-						if (client_p)
+				if (client_p)
+					{
+						switch (api_id)
 							{
-								switch (api_id)
-									{
-										case OP_LIST_ALL_SERVICES:
-											req_p = GetAvailableServicesRequest (username_s, password_s);
+								case OP_LIST_ALL_SERVICES:
+									req_p = GetAvailableServicesRequest (username_s, password_s);
 
-											if (req_p)
+									if (req_p)
+										{
+											if (!AddCredentialsToJson (req_p, username_s, password_s))
 												{
-													if (!AddCredentialsToJson (req_p, username_s, password_s))
-														{
-															printf ("Failed to add credentials\n");
-														}
+													printf ("Failed to add credentials\n");
+												}
 
-													response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-													if (response_p)
-														{
-															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
-														}		/* if (response_p) */
-
-												}		/* if (req_p) */
-											break;
-
-
-										case OP_IRODS_MODIFIED_DATA:
-											req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
 											response_p = MakeRemoteJsonCall (req_p, connection_p);
-											break;
 
-										case OP_LIST_INTERESTED_SERVICES:
+											if (response_p)
+												{
+													json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
+												}		/* if (response_p) */
+
+										}		/* if (req_p) */
+									break;
+
+
+								case OP_IRODS_MODIFIED_DATA:
+									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+									response_p = MakeRemoteJsonCall (req_p, connection_p);
+									break;
+
+								case OP_LIST_INTERESTED_SERVICES:
+									{
+										if (protocol_s && query_s)
 											{
-												if (protocol_s && query_s)
+												req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
+
+												if (req_p)
 													{
-														req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
+														response_p = MakeRemoteJsonCall (req_p, connection_p);
 
-														if (req_p)
+														if (response_p)
 															{
-																response_p = MakeRemoteJsonCall (req_p, connection_p);
+																ShowServices (response_p, client_p, username_s, password_s, connection_p);
+															}		/* if (response_p) */
 
-																if (response_p)
-																	{
-																		ShowServices (response_p, client_p, username_s, password_s, connection_p);
-																	}		/* if (response_p) */
+													}		/* if (req_p) */
 
-															}		/* if (req_p) */
-
-													}
 											}
-											break;
-
-										case OP_RUN_KEYWORD_SERVICES:
-											{
-												if (query_s)
-													{
-														req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
-
-														if (req_p)
-															{
-																response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-																if (response_p)
-																	{
-																		ShowResults (response_p, client_p);
-																	}		/* if (response_p) */
-
-															}		/* if (req_p) */
-
-													}		/* if (query_s) */
-											}
-											break;
-
-										default:
-											break;
 									}
-							}
+									break;
 
-						FreeByteBuffer (buffer_p);
-					}		/* if (buffer_p) */				
+								case OP_RUN_KEYWORD_SERVICES:
+									{
+										if (query_s)
+											{
+												req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
+
+												if (req_p)
+													{
+														response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+														if (response_p)
+															{
+																ShowResults (response_p, client_p);
+															}		/* if (response_p) */
+
+													}		/* if (req_p) */
+
+											}		/* if (query_s) */
+									}
+									break;
+
+								default:
+									break;
+							}
+					}
 
 				FreeConnection (connection_p);
 			}

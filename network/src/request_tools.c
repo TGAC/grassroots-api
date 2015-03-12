@@ -84,7 +84,49 @@ static int ConnectToServer (const char *hostname_s, const char *port_s, struct a
 }
 
 
-Connection *AllocateConnection (const char * const hostname_s, const char * const port_s)
+Connection *AllocateClientConnection (int server_socket_fd)
+{
+	Connection *connection_p = (Connection *) AllocMemory (sizeof (Connection));
+
+	if (connection_p)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					struct sockaddr *remote_p = (struct sockaddr *) AllocMemory (sizeof (struct sockaddr *));
+
+					if (remote_p)
+						{
+							socklen_t t = sizeof (*remote_p);
+							int client_socket_fd = accept (server_socket_fd, remote_p, &t);
+
+							if (client_socket_fd != -1)
+								{
+									connection_p -> co_data_buffer_p = buffer_p;
+									connection_p -> co_sock_fd = client_socket_fd;
+									connection_p -> co_data.co_client_p = remote_p;
+									connection_p -> co_server_connection_flag = false;
+									connection_p -> co_id = 0;
+
+									return connection_p;
+								}
+
+							FreeMemory (remote_p);
+						}		/* if (remote_p) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+
+			FreeMemory (connection_p);
+		}		/* if (connection_p) */
+
+	return NULL;
+}
+
+
+
+Connection *AllocateServerConnection (const char * const hostname_s, const char * const port_s)
 {
 	Connection *connection_p = (Connection *) AllocMemory (sizeof (Connection));
 
@@ -101,7 +143,8 @@ Connection *AllocateConnection (const char * const hostname_s, const char * cons
 						{
 							connection_p -> co_data_buffer_p = buffer_p;
 							connection_p -> co_sock_fd = fd;
-							connection_p -> co_server_p = server_p;
+							connection_p -> co_data.co_server_p = server_p;
+							connection_p -> co_server_connection_flag = true;
 							connection_p -> co_id = 0;
 
 							return connection_p;
@@ -122,7 +165,22 @@ Connection *AllocateConnection (const char * const hostname_s, const char * cons
 void FreeConnection (Connection *connection_p)
 {
 	FreeByteBuffer (connection_p -> co_data_buffer_p);
-	freeaddrinfo (connection_p -> co_server_p);
+
+	if (connection_p -> co_server_connection_flag)
+		{
+			if (connection_p -> co_data.co_server_p)
+				{
+					freeaddrinfo (connection_p -> co_data.co_server_p);
+				}
+		}
+	else
+		{
+			if (connection_p -> co_data.co_client_p)
+				{
+					FreeMemory (connection_p -> co_data.co_server_p);
+				}
+		}
+
 	close (connection_p -> co_sock_fd);
 
 	FreeMemory (connection_p);

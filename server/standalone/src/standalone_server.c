@@ -126,19 +126,19 @@ static void RunServer (int server_socket_fd)
 {
 	while (g_running_flag)
 		{
-			struct sockaddr remote;
-			socklen_t t = sizeof (remote);
-			int client_socket_fd;
+			Connection *connection_p = NULL;
 			
-			if (g_running_flag && (client_socket_fd = accept (server_socket_fd, (struct sockaddr *) &remote, &t)) != -1) 
+			if (g_running_flag && (connection_p = AllocateClientConnection (server_socket_fd)))
 				{
 					pthread_t worker_thread;
-					
-					if (pthread_create (&worker_thread, NULL, HandleConnection, (void *) &client_socket_fd) != 0)
+
+					if (pthread_create (&worker_thread, NULL, HandleConnection, (void *) connection_p) != 0)
 						{
 							perror ("Could not create thread");
 							return;
 						}
+
+					FreeConnection (connection_p);
 				}
 		}
 }
@@ -217,67 +217,58 @@ static int BindToPort (const char *port_s, struct addrinfo **loaded_address_pp)
 /*
  * This will handle connection for each client
  * */
-static void *HandleConnection (void *socket_desc_p)
+static void *HandleConnection (void *conn_p)
 {
 	//Get the socket descriptor
-	int socket_fd = * (int *) socket_desc_p;
+	Connection *connection_p = (Connection *) conn_p;
 	ssize_t read_size;
-
-	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+	bool success_flag = true;
+	bool connected_flag = true;
 	
-	if (buffer_p)
+	/* Get the message from the client */
+	while (connected_flag && g_running_flag)
 		{
-			bool success_flag = true;
-			int id = 1;
-			bool connected_flag = true;
-			
-			/* Get the message from the client */
-			while (connected_flag && g_running_flag)
-				{
-					read_size = AtomicReceive (socket_fd, id, buffer_p);
-				
-					if (read_size > 0)
-						{
-							char *request_s = buffer_p -> bb_data_p;
+			read_size = AtomicReceive (connection_p);
 
-							if (strcmp (request_s, "QUIT") == 0)
-								{
-									connected_flag = false;
-								}
-							else
-								{
-									json_t *response_p = ProcessServerRawMessage (request_s, socket_fd);
-									char *response_s = NULL;									
-									
-									if (response_p)
-										{
-											response_s = json_dumps (response_p, 0);
-										}
-									else
-										{
-											json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", buffer_p -> bb_data_p);
-											
-											response_s = json_dumps (error_p, 0);
-							
-											json_decref (error_p);							
-										}
-									
-									if (response_s)
-										{
-											int result = AtomicSendString (socket_fd, id, response_s);
-											
-											free (response_s);
-										}
-								}
-						}
-					else
+			if (read_size > 0)
+				{
+					const char *request_s = GetConnectionData (connection_p);
+
+					if (strcmp (request_s, "QUIT") == 0)
 						{
 							connected_flag = false;
 						}
+					else
+						{
+							json_t *response_p = ProcessServerRawMessage (request_s, connection_p -> co_sock_fd);
+							char *response_s = NULL;
+
+							if (response_p)
+								{
+									response_s = json_dumps (response_p, 0);
+								}
+							else
+								{
+									json_t *error_p = json_pack ("{s:s, s:s}", "error", "unable to process", "client_request", request_s);
+									
+									response_s = json_dumps (error_p, 0);
+
+									json_decref (error_p);
+								}
+							
+							if (response_s)
+								{
+									int result = AtomicSendString (response_s, connection_p);
+									
+									free (response_s);
+								}
+						}
 				}
-				
-			FreeByteBuffer (buffer_p);
-		}		/* if (buffer_p) */
+			else
+				{
+					connected_flag = false;
+				}
+		}
 
 	return NULL;
 } 
