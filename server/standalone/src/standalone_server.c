@@ -138,7 +138,7 @@ static void RunServer (int server_socket_fd)
 							return;
 						}
 
-					FreeConnection (connection_p);
+					//FreeConnection (connection_p);
 				}
 		}
 }

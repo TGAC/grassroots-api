@@ -94,11 +94,11 @@ Connection *AllocateClientConnection (int server_socket_fd)
 
 			if (buffer_p)
 				{
-					struct sockaddr *remote_p = (struct sockaddr *) AllocMemory (sizeof (struct sockaddr *));
+					struct sockaddr *remote_p = (struct sockaddr *) AllocMemory (sizeof (struct sockaddr));
 
 					if (remote_p)
 						{
-							socklen_t t = sizeof (*remote_p);
+							socklen_t t = sizeof (struct sockaddr);
 							int client_socket_fd = accept (server_socket_fd, remote_p, &t);
 
 							if (client_socket_fd != -1)
@@ -107,7 +107,7 @@ Connection *AllocateClientConnection (int server_socket_fd)
 									connection_p -> co_sock_fd = client_socket_fd;
 									connection_p -> co_data.co_client_p = remote_p;
 									connection_p -> co_server_connection_flag = false;
-									connection_p -> co_id = 0;
+									connection_p -> co_id = 2;
 
 									return connection_p;
 								}
@@ -145,7 +145,7 @@ Connection *AllocateServerConnection (const char * const hostname_s, const char 
 							connection_p -> co_sock_fd = fd;
 							connection_p -> co_data.co_server_p = server_p;
 							connection_p -> co_server_connection_flag = true;
-							connection_p -> co_id = 0;
+							connection_p -> co_id = 1;
 
 							return connection_p;
 						}		/* if (fd >= 0) */
@@ -177,7 +177,7 @@ void FreeConnection (Connection *connection_p)
 		{
 			if (connection_p -> co_data.co_client_p)
 				{
-					FreeMemory (connection_p -> co_data.co_server_p);
+					FreeMemory (connection_p -> co_data.co_client_p);
 				}
 		}
 
