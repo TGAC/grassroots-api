@@ -106,6 +106,7 @@ void MainWindow :: LoadConfigurationFile (QString &filename_r)
 	QByteArray ba = filename_r.toLocal8Bit ();
 	const char * const filename_s = ba.constData ();
 
+	qDebug () << filename_r;
 }
 
 

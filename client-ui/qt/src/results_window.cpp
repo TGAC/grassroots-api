@@ -3,6 +3,9 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QFileDialog>
+#include <QMimeData>
+#include <QDebug>
+
 
 #include "results_window.h"
 
@@ -29,12 +32,13 @@ ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 
 	buttons_p -> setLayout (buttons_layout_p);
 
-
 	layout_p -> addWidget (buttons_p);
 
 	setWindowTitle (tr ("Results"));
 	setWindowIcon (QIcon ("images/viewas_list"));
 	setLayout (layout_p);
+
+	setAcceptDrops (true);
 }
 
 
@@ -84,3 +88,61 @@ void ResultsWindow :: SaveResults (bool clicked_flag)
 		}		/* if (! (filename.isNull () || filename.isEmpty ())) */
 
 }
+
+
+void ResultsWindow :: LoadResults (const char * const filename_s)
+{
+	json_error_t error;
+
+	json_t *results_p =	json_load_file (filename_s, 0, &error);
+
+	if (results_p)
+		{
+			rw_results_p -> AddAllResultsPagesFromJSON (results_p);
+		}
+}
+
+
+void ResultsWindow :: LoadResults ()
+{
+	QString filename = QFileDialog :: getSaveFileName (this, tr ("Load Results"), "wheatis_results.json", tr ("JSON (*.json)"));
+
+	if (! (filename.isNull () || filename.isEmpty ()))
+		{
+			QByteArray ba = filename.toLocal8Bit ();
+			const char * const filename_s = ba.constData ();
+
+			LoadResults (filename_s);
+		}		/* if (! (filename.isNull () || filename.isEmpty ())) */
+
+}
+
+
+void ResultsWindow :: dropEvent (QDropEvent *event_p)
+{
+	QList <QUrl> urls = event_p -> mimeData () -> urls ();
+
+	if (! (urls.isEmpty ()))
+		{
+			QString filename = urls.first ().toLocalFile ();
+
+			if (! ((filename.isEmpty ()) || (filename.isNull ())))
+				{
+					QByteArray ba = filename.toLocal8Bit ();
+					const char * const filename_s = ba.constData ();
+
+					qDebug () << "dropped " << filename;
+
+					LoadResults (filename_s);
+				}		/* if (! (filename.isEmpty ())) */
+
+		}		/* if (! (urls.isEmpty ())) */
+
+}
+
+
+void ResultsWindow :: dragEnterEvent (QDragEnterEvent *event_p)
+{
+	event_p -> acceptProposedAction ();
+}
+

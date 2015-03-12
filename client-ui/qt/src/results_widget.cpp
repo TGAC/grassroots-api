@@ -27,6 +27,13 @@ uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p)
    */
   setUpdatesEnabled (false);
 
+  for (int i = count (); i > 0; -- i)
+    {
+      QWidget *widget_p = widget (0);
+      removeTab (0);
+      delete widget_p;
+    }
+
   if (json_is_array (json_p))
     {
       const size_t size = json_array_size (json_p);

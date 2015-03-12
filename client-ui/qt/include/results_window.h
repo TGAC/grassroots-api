@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QWindow>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 #include "results_widget.h"
 
@@ -16,8 +18,16 @@ public:
   ~ResultsWindow ();
   uint32 AddAllResultsPagesFromJSON (const json_t *json_p);
 
+protected:
+	virtual void dropEvent (QDropEvent *event_p);
+	virtual void dragEnterEvent (QDragEnterEvent *event_p);
+
 private:
-  void ClearData ();
+	void ClearData ();
+
+	void LoadResults (const char * const filename_s);
+	void LoadResults ();
+
 
 
 private slots:
