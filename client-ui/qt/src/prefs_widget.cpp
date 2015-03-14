@@ -119,6 +119,7 @@ bool PrefsWidget :: SetServiceParams (json_t *service_config_p)
 		{
 			ServicePrefsWidget *service_widget_p = 0;
 
+			/* find the service widget */
 			for (int i = pw_service_widgets.size (); i >= 0; -- i)
 				{
 					ServicePrefsWidget *widget_p = pw_service_widgets.at (i);
@@ -136,15 +137,20 @@ bool PrefsWidget :: SetServiceParams (json_t *service_config_p)
 
 					if (ops_p)
 						{
-							ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
+							json_t *json_p = json_object_get (ops_p, SERVICE_RUN_S);
 
-							if (params_p)
+							if (json_p && (json_is_true (json_p))
 								{
-									const char *service_info_uri_s = GetJSONString (ops_p, OPERATION_INFORMATION_URI_S);
+									SetRunFlag (true);
+								}
+							else
+								{
+									SetRunFlag (false);
+								}
 
-									int res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
 
-								}		/* if (params_p) */
+							/* Set the params */
+
 
 						}		/* if (ops_p) */
 
