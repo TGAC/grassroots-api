@@ -93,27 +93,6 @@ QWidget *ServicesList :: GetWidget ()
 }
 
 
-QWidget *ServicesList :: GetServiceWidget (const char * const service_name_s)
-{
-	QWidget *widget_p = 0;
-	QString name (service_name_s);
-
-	for (int i = sl_services_p -> count (); i >= 0; -- i)
-		{
-			const QListWidgetItem *item_p = sl_services_p -> item (i);
-			const QString s = item_p -> text ();
-
-			if (s.compare (name) == 0)
-				{
-					widget_p = sl_stacked_widgets_p -> widget (i);
-					i = -1;		/* force exit from loop */
-				}
-		}
-
-	return widget_p;
-}
-
-
 void ServicesList :: SetServiceRunStatus (const char * const service_name_s, bool state)
 {
 	QString service_name (service_name_s);
@@ -124,7 +103,7 @@ void ServicesList :: SetServiceRunStatus (const char * const service_name_s, boo
 			QListWidgetItem *item_p = widgets.at (0);
 
 			item_p -> setCheckState (state ? Qt :: Checked : Qt :: Unchecked);
-
+		}
 }
 
 

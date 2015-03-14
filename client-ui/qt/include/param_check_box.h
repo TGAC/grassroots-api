@@ -24,6 +24,9 @@ public:
 
 	virtual void SetDefaultValue ();
 
+	virtual bool SetValueFromText (const char *value_s);
+
+
 private:
 	QCheckBox *pcb_check_box_p;
 

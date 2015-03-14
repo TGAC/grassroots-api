@@ -27,6 +27,10 @@ public:
 
 	virtual void SetDefaultValue () = 0;
 
+	virtual bool SetValueFromText (const char *value_s) = 0;
+
+	const char *GetParameterName () const;
+
 protected:
 	Parameter * const bpw_param_p;
 	const PrefsWidget * const bpw_prefs_widget_p;

@@ -2,6 +2,7 @@
 
 #include "param_spin_box.h"
 #include "prefs_widget.h"
+#include "math_utils.h"
 
 
 ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, bool signed_flag, QWidget *parent_p)
@@ -57,5 +58,20 @@ bool ParamSpinBox :: UpdateConfig (int value)
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
 
 	return b;
+}
+
+
+bool ParamSpinBox :: SetValueFromText (const char *value_s)
+{
+	bool success_flag  = true;
+	int value;
+
+	if (GetValidInteger (&value_s, &value))
+		{
+			psb_spin_box_p -> setValue (value);
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 

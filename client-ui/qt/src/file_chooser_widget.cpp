@@ -49,11 +49,15 @@ bool FileChooserWidget :: UpdateConfig (const QString &value_r)
 	QByteArray ba = value_r.toLocal8Bit ();
 	const char * value_s = ba.constData ();
 
-	bool b = SetParameterValue (bpw_param_p, value_s);
+	return SetValueFromText (value_s);
+}
 
-	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
 
-	return b;
+bool FileChooserWidget :: SetValueFromText (const char *value_s)
+{
+	fcw_chooser_p -> setCurrentText (value_s);
+
+	return true;
 }
 
 

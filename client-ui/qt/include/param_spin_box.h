@@ -23,6 +23,7 @@ public:
 
 	virtual QWidget *GetQWidget ();
 
+	virtual bool SetValueFromText (const char *value_s);
 
 	virtual void SetDefaultValue ();
 

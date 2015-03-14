@@ -28,6 +28,8 @@ public:
 
 	virtual void SetDefaultValue ();
 
+	virtual bool SetValueFromText (const char *value_s);
+
 private:
 	QWidget *fcw_widget_p;
 	QComboBox *fcw_chooser_p;

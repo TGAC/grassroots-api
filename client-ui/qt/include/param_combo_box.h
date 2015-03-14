@@ -27,6 +27,7 @@ public:
 
 	virtual void SetDefaultValue ();
 
+	virtual bool SetValueFromText (const char *value_s);
 
 private:
 	QComboBox *pcb_combo_box_p;

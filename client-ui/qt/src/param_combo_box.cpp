@@ -5,6 +5,7 @@
 #include "prefs_widget.h"
 
 #include "string_utils.h"
+#include "math_utils.h"
 
 
 ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
@@ -144,6 +145,82 @@ bool ParamComboBox :: UpdateConfig (int index)
 				break;
 		}
 
+
+	return success_flag;
+}
+
+
+
+bool ParamComboBox :: SetValueFromText (const char *value_s)
+{
+	bool success_flag  = false;
+
+	switch (bpw_param_p -> pa_type)
+		{
+			case PT_STRING:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+			case PT_DIRECTORY:
+				{
+					pcb_combo_box_p -> setCurrentText (bpw_param_p -> pa_default.st_string_value_s);
+					success_flag  = true;
+				}
+				break;
+
+			case PT_CHAR:
+				{
+					pcb_combo_box_p -> setCurrentText (& (bpw_param_p -> pa_default.st_char_value));
+					success_flag  = true;
+				}
+				break;
+
+			case PT_BOOLEAN:
+				{
+					if ((strcmp (value_s, "true") == 0) || ((strcmp (value_s, "true") == 0)))
+						{
+							pcb_combo_box_p -> setCurrentText (value_s);
+							success_flag  = true;
+						}
+				}
+				break;
+
+			case PT_SIGNED_INT:
+			case PT_UNSIGNED_INT:
+				{
+					int32 value;
+
+					if (GetValidInteger (&value_s, &value))
+						{
+							QString s;
+
+							s.setNum (value);
+							pcb_combo_box_p -> setCurrentText (s);
+
+							success_flag = true;
+						}
+				}
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				{
+					double value;
+
+					if (GetValidRealNumber (&value_s, &value))
+						{
+							QString s;
+
+							s.setNum (value);
+							pcb_combo_box_p -> setCurrentText (s);
+
+							success_flag = true;
+						}
+				}
+				break;
+
+			default:
+				break;
+		}
 
 	return success_flag;
 }

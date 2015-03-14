@@ -17,8 +17,6 @@ public:
   virtual void AddService (const char * const service_name_s, ServicePrefsWidget *services_widget_p);
   virtual QWidget *GetWidget ();
 
-  virtual QWidget *GetServiceWidget (const char * const service_name_s);
-
 private slots:
   void ToggleServiceRunStatus (const QModelIndex &index_r);
   void CheckServiceRunStatus (const QListWidgetItem *item_p);

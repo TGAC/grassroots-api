@@ -134,7 +134,7 @@ void MainWindow :: LoadConfigurationFile (QString &filename_r)
 
 	if (config_p)
 		{
-
+			mw_prefs_widget_p -> SetServiceParams (config_p);
 		}		/* if (config_p) */
 
 

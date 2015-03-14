@@ -195,6 +195,29 @@ void QTParameterWidget :: AddParameterWidget (Parameter *param_p, QFormLayout *l
 }
 
 
+
+
+BaseParamWidget *QTParameterWidget :: GetWidgetForParameter (const char * const param_name_s) const
+{
+	BaseParamWidget *widget_p = 0;
+
+	const QList <Parameter *> keys = qpw_widgets_map.keys ();
+
+	for (int i = keys.size () - 1; i >= 0; -- i)
+		{
+			Parameter *param_p = keys.at (i);
+
+			if (strcmp (param_p -> pa_name_s, param_name_s) == 0)
+				{
+					widget_p = qpw_widgets_map.value (param_p);
+					i = -1;		/* force exit from loop */
+				}
+		}
+
+	return widget_p;
+}
+
+
 QTParameterWidget :: ~QTParameterWidget ()
 {
 	QList <Parameter *> keys = qpw_widgets_map.keys ();

@@ -23,8 +23,9 @@ public:
 	ParamDoubleSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
 	virtual ~ParamDoubleSpinBox ();
 
-
 	virtual void SetDefaultValue ();
+
+	virtual bool SetValueFromText (const char *value_s);
 
 	virtual QWidget *GetQWidget ();
 

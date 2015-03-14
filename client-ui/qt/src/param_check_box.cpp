@@ -40,6 +40,28 @@ void ParamCheckBox :: SetDefaultValue ()
 }
 
 
+bool ParamCheckBox :: SetValueFromText (const char *value_s)
+{
+	bool success_flag = false;
+
+	if (value_s)
+		{
+			if (strcmp (value_s, "false") == 0)
+				{
+					pcb_check_box_p -> setChecked (false);
+					success_flag = true;
+				}
+			else if (strcmp (value_s, "true") == 0)
+				{
+					pcb_check_box_p -> setChecked (true);
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
 
 QWidget *ParamCheckBox :: GetQWidget ()
 {

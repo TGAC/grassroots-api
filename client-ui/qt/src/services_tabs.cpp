@@ -36,23 +36,3 @@ QWidget *ServicesTabs :: GetWidget ()
 	return this;
 }
 
-
-QWidget *ServicesTabs :: GetServiceWidget (const char * const service_name_s)
-{
-	QWidget *widget_p = 0;
-	QString name (service_name_s);
-
-	for (int i = sl_services_p -> count (); i >= 0; -- i)
-		{
-			const QListWidgetItem *item_p = sl_services_p -> item (i);
-			const QString s = item_p -> text ();
-
-			if (s.compare (name) == 0)
-				{
-					widget_p = sl_stacked_widgets_p -> widget (i);
-					i = -1;		/* force exit from loop */
-				}
-		}
-
-	return widget_p;
-}

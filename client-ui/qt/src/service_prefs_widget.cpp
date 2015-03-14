@@ -48,7 +48,7 @@ ServicePrefsWidget :: ~ServicePrefsWidget ()
 }
 
 
-const char * const ServicePrefsWidget ::GetServiceName () const
+const char *ServicePrefsWidget ::GetServiceName () const
 {
 	return spw_service_name_s;
 }
@@ -150,5 +150,73 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 
 	return service_json_p;
 }
+
+
+
+bool ServicePrefsWidget :: SetServiceParams (json_t *service_config_p)
+{
+	bool success_flag = true;
+	json_t *json_p = json_object_get (service_config_p, SERVICE_RUN_S);
+
+	if (json_p && (json_is_true (json_p)))
+		{
+			SetRunFlag (true);
+		}
+	else
+		{
+			SetRunFlag (false);
+		}
+
+
+	/* Set the params */
+	json_p = json_object_get (service_config_p, PARAM_SET_KEY_S);
+
+	if (json_p)
+		{
+			json_p = json_object_get (json_p, PARAM_SET_PARAMS_S);
+
+			if (json_p)
+				{
+					if (json_is_array (json_p))
+						{
+							json_t *param_p;
+							size_t i;
+
+							json_array_foreach (json_p, i, param_p)
+								{
+									const char *param_name_s = GetJSONString (param_p, PARAM_NAME_S);
+									const char *param_value_s = GetJSONString (param_p, PARAM_CURRENT_VALUE_S);
+
+									if (param_name_s)
+										{
+											BaseParamWidget *widget_p = spw_params_widget_p -> GetWidgetForParameter (param_name_s);
+
+											if (widget_p)
+												{
+													if (param_value_s)
+														{
+															if (! (widget_p -> SetValueFromText (param_value_s)))
+																{
+
+																}
+														}
+
+												}
+										}		/* if (param_name_s) */
+
+
+								}		/* json_array_foreach (json_p, i, param_p) */
+
+
+						}		/* if (json_is_array (json_p)) */
+
+				}
+
+		}
+
+
+	return success_flag;
+}
+
 
 

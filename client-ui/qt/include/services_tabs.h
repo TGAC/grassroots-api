@@ -13,7 +13,6 @@ public:
 
   virtual void AddService (const char * const service_name_s, ServicePrefsWidget *service_widget_p);
   virtual QWidget *GetWidget ();
-  virtual QWidget *GetServiceWidget (const char * const service_name_s);
 
 };
 

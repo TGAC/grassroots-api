@@ -21,6 +21,12 @@ BaseParamWidget :: ~BaseParamWidget ()
 
 
 
+const char *BaseParamWidget :: GetParameterName () const
+{
+	return bpw_param_name_s;
+}
+
+
 void BaseParamWidget :: RemoveConnection ()
 {
 

@@ -111,53 +111,42 @@ void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, 
 }
 
 
-bool PrefsWidget :: SetServiceParams (json_t *service_config_p)
+bool PrefsWidget :: SetServiceParams (json_t *services_config_p)
 {
-	const char *service_name_s = GetJSONString (service_config_p, SERVICES_NAME_S);
-
-	if (service_name_s)
+	if (json_is_array (services_config_p))
 		{
-			ServicePrefsWidget *service_widget_p = 0;
+			json_t *service_config_p;
+			size_t i;
 
-			/* find the service widget */
-			for (int i = pw_service_widgets.size (); i >= 0; -- i)
+			json_array_foreach (services_config_p, i, service_config_p)
 				{
-					ServicePrefsWidget *widget_p = pw_service_widgets.at (i);
+					const char *service_name_s = GetJSONString (service_config_p, SERVICES_NAME_S);
 
-					if (strcmp (widget_p -> GetServiceName (), service_name_s) == 0)
+					if (service_name_s)
 						{
-							service_widget_p = widget_p;
-							i = -1;		// force exit from loop
-						}
+							ServicePrefsWidget *service_widget_p = 0;
+
+							/* find the service widget */
+							for (int i = pw_service_widgets.size () - 1; i >= 0; -- i)
+								{
+									ServicePrefsWidget *widget_p = pw_service_widgets.at (i);
+
+									if (strcmp (widget_p -> GetServiceName (), service_name_s) == 0)
+										{
+											service_widget_p = widget_p;
+											i = -1;		// force exit from loop
+										}
+								}
+
+							if (service_widget_p)
+								{
+									service_widget_p -> SetServiceParams (service_config_p);
+								}		/* if (service_widget_p) */
+
+						}		/* if (service_name_s) */
 				}
+		}
 
-			if (service_widget_p)
-				{
-					json_t *ops_p = json_object_get (service_config_p, SERVER_OPERATIONS_S);
-
-					if (ops_p)
-						{
-							json_t *json_p = json_object_get (ops_p, SERVICE_RUN_S);
-
-							if (json_p && (json_is_true (json_p))
-								{
-									SetRunFlag (true);
-								}
-							else
-								{
-									SetRunFlag (false);
-								}
-
-
-							/* Set the params */
-
-
-						}		/* if (ops_p) */
-
-				}		/* if (service_widget_p) */
-
-
-		}		/* if (service_name_s) */
 
 }
 

@@ -35,6 +35,9 @@ public:
 
 	json_t *GetParameterValuesAsJSON () const;
 
+
+	BaseParamWidget *GetWidgetForParameter (const char * const param_name_s) const;
+
 public slots:
 	void ResetToDefaults ();
 

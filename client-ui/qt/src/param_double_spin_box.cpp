@@ -2,7 +2,7 @@
 
 #include "param_double_spin_box.h"
 #include "prefs_widget.h"
-
+#include "math_utils.h"
 
 
 ParamDoubleSpinBox :: ParamDoubleSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
@@ -44,6 +44,21 @@ bool ParamDoubleSpinBox :: UpdateConfig (double value)
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
 
 	return b;
+}
+
+
+bool ParamDoubleSpinBox :: SetValueFromText (const char *value_s)
+{
+	bool success_flag  = false;
+	double value;
+
+	if (GetValidRealNumber (&value_s, &value))
+		{
+			psb_spin_box_p -> setValue (value);
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 
 

@@ -47,6 +47,13 @@ bool ParamTextBox :: UpdateConfig (const QString &value_r)
 {
 	QByteArray ba = value_r.toLocal8Bit ();
 	const char *value_s = ba.constData ();
+
+	return UpdateConfigValue (value_s);
+}
+
+
+bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
+{
 	bool success_flag = SetParameterValue (bpw_param_p, value_s);
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
@@ -54,3 +61,10 @@ bool ParamTextBox :: UpdateConfig (const QString &value_r)
 	return success_flag;
 }
 
+
+
+bool ParamTextBox :: SetValueFromText (const char *value_s)
+{
+	ptb_text_box_p -> setText (value_s);
+	return true;
+}
