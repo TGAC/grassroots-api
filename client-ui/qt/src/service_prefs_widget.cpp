@@ -48,6 +48,12 @@ ServicePrefsWidget :: ~ServicePrefsWidget ()
 }
 
 
+const char * const ServicePrefsWidget ::GetServiceName () const
+{
+	return spw_service_name_s;
+}
+
+
 void ServicePrefsWidget :: ToggleRunFlag ()
 {
 	if (GetRunFlag ())

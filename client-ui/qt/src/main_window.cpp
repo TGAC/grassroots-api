@@ -95,6 +95,28 @@ void MainWindow :: LoadConfiguration ()
 }
 
 
+void MainWindow :: SetParams (json_t *config_p)
+{
+
+	if (json_is_array (config_p))
+		{
+			const size_t num_services = json_array_size (config_p);
+			size_t i = 0;
+
+			for (i = 0; i < num_services; ++ i)
+				{
+					json_t *service_json_p = json_array_get (config_p, i);
+
+				}		/* for (i = 0; i < num_services; ++ i) */
+
+		}		/* if (json_is_array (config_p) */
+	else
+		{
+
+		}
+}
+
+
 void MainWindow :: LoadConfigurationFile (QString &filename_r)
 {
 	char c = GetFileSeparatorChar ();
@@ -106,7 +128,16 @@ void MainWindow :: LoadConfigurationFile (QString &filename_r)
 	QByteArray ba = filename_r.toLocal8Bit ();
 	const char * const filename_s = ba.constData ();
 
-	qDebug () << filename_r;
+	json_error_t error;
+	json_t *config_p = json_load_file (filename_s, 0, &error);
+
+
+	if (config_p)
+		{
+
+		}		/* if (config_p) */
+
+
 }
 
 

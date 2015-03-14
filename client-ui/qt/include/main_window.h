@@ -50,6 +50,7 @@ private:
 	struct QTClientData *mw_client_data_p;
 
 	void GenerateMenu ();
+	void SetParams (json_t *config_p);
 };
 
 

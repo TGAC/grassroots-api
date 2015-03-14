@@ -21,6 +21,8 @@ public:
 
 	json_t *GetServiceParamsAsJSON (bool full_flag) const;
 
+	const char * const GetServiceName () const;
+
 signals:
 	void RunStatusChanged (const char * const service_name_s, bool status);
 

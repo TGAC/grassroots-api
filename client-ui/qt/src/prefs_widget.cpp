@@ -111,6 +111,52 @@ void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, 
 }
 
 
+bool PrefsWidget :: SetServiceParams (json_t *service_config_p)
+{
+	const char *service_name_s = GetJSONString (service_config_p, SERVICES_NAME_S);
+
+	if (service_name_s)
+		{
+			ServicePrefsWidget *service_widget_p = 0;
+
+			for (int i = pw_service_widgets.size (); i >= 0; -- i)
+				{
+					ServicePrefsWidget *widget_p = pw_service_widgets.at (i);
+
+					if (strcmp (widget_p -> GetServiceName (), service_name_s) == 0)
+						{
+							service_widget_p = widget_p;
+							i = -1;		// force exit from loop
+						}
+				}
+
+			if (service_widget_p)
+				{
+					json_t *ops_p = json_object_get (service_config_p, SERVER_OPERATIONS_S);
+
+					if (ops_p)
+						{
+							ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
+
+							if (params_p)
+								{
+									const char *service_info_uri_s = GetJSONString (ops_p, OPERATION_INFORMATION_URI_S);
+
+									int res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
+
+								}		/* if (params_p) */
+
+						}		/* if (ops_p) */
+
+				}		/* if (service_widget_p) */
+
+
+		}		/* if (service_name_s) */
+
+}
+
+
+
 ParameterLevel PrefsWidget :: GetCurrentParameterLevel () const
 {
 	return pw_level;
