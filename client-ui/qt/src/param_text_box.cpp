@@ -65,6 +65,13 @@ bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
 
 bool ParamTextBox :: SetValueFromText (const char *value_s)
 {
+	QString s = ptb_text_box_p -> text ();
+	qDebug () << "old " << s;
+
 	ptb_text_box_p -> setText (value_s);
+
+	s = ptb_text_box_p -> text ();
+	qDebug () << "new " << s;
+
 	return true;
 }

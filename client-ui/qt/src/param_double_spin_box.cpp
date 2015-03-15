@@ -54,7 +54,7 @@ bool ParamDoubleSpinBox :: SetValueFromText (const char *value_s)
 
 	if (GetValidRealNumber (&value_s, &value))
 		{
-			psb_spin_box_p -> setValue (value);
+			pdsb_spinner_p -> setValue (value);
 			success_flag = true;
 		}
 
