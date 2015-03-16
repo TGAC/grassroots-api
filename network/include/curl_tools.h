@@ -71,6 +71,9 @@ WHEATIS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * const
 WHEATIS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
 
 
+WHEATIS_NETWORK_API bool SetCurlToolForJSONPost (CurlTool *tool_p);
+
+
 WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
 
 

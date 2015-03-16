@@ -25,172 +25,11 @@ static int ReceiveData (int socket_fd, void *buffer_p, const uint32 num_to_recei
 
 static int ReceiveDataIntoByteBuffer (int socket_fd, ByteBuffer *buffer_p, const uint32 num_to_receive, bool append_flag);
 
-static int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
-
 
 /******************************/
 /***** METHOD DEFINITIONS *****/
 /******************************/
 
-
-static int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp)
-{
-	struct addrinfo hints;
-	int i;
-	int sock_fd = -1;
-	
-	memset (&hints, 0, sizeof (hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-
-	i = getaddrinfo (hostname_s, port_s, &hints, server_pp);
-	
-	if (i == 0)
-		{
-			struct addrinfo *addr_p = *server_pp;
-			int loop_flag = 1;
-			
-			/* loop through all the results and connect to the first we can */
-			while (loop_flag)
-				{
-					sock_fd = socket (addr_p -> ai_family, addr_p -> ai_socktype, addr_p -> ai_protocol);
-
-					if (sock_fd != -1)
-						{
-							i = connect (sock_fd, addr_p -> ai_addr, addr_p -> ai_addrlen);
-					
-							if (i != -1)
-								{
-									
-									loop_flag = 0;
-								}
-							else
-								{
-									close (sock_fd);
-									sock_fd = -1;
-								}							
-						}
-						
-					if (loop_flag)	
-						{
-							addr_p = addr_p -> ai_next;
-							loop_flag = (addr_p != NULL);
-						}
-				}		/* while (addr_p) */
-				
-		}		/* if (i == 0) */
-	
-	return sock_fd;
-}
-
-
-Connection *AllocateClientConnection (int server_socket_fd)
-{
-	Connection *connection_p = (Connection *) AllocMemory (sizeof (Connection));
-
-	if (connection_p)
-		{
-			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-			if (buffer_p)
-				{
-					struct sockaddr *remote_p = (struct sockaddr *) AllocMemory (sizeof (struct sockaddr));
-
-					if (remote_p)
-						{
-							socklen_t t = sizeof (struct sockaddr);
-							int client_socket_fd = accept (server_socket_fd, remote_p, &t);
-
-							if (client_socket_fd != -1)
-								{
-									connection_p -> co_data_buffer_p = buffer_p;
-									connection_p -> co_sock_fd = client_socket_fd;
-									connection_p -> co_data.co_client_p = remote_p;
-									connection_p -> co_server_connection_flag = false;
-									connection_p -> co_id = 2;
-
-									return connection_p;
-								}
-
-							FreeMemory (remote_p);
-						}		/* if (remote_p) */
-
-					FreeByteBuffer (buffer_p);
-				}		/* if (buffer_p) */
-
-			FreeMemory (connection_p);
-		}		/* if (connection_p) */
-
-	return NULL;
-}
-
-
-
-Connection *AllocateServerConnection (const char * const hostname_s, const char * const port_s)
-{
-	Connection *connection_p = (Connection *) AllocMemory (sizeof (Connection));
-
-	if (connection_p)
-		{
-			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-			if (buffer_p)
-				{
-					struct addrinfo *server_p = NULL;
-					int fd = ConnectToServer (hostname_s, port_s, &server_p);
-
-					if (fd >= 0)
-						{
-							connection_p -> co_data_buffer_p = buffer_p;
-							connection_p -> co_sock_fd = fd;
-							connection_p -> co_data.co_server_p = server_p;
-							connection_p -> co_server_connection_flag = true;
-							connection_p -> co_id = 1;
-
-							return connection_p;
-						}		/* if (fd >= 0) */
-
-					FreeByteBuffer (buffer_p);
-				}		/* if (buffer_p) */
-
-			FreeMemory (connection_p);
-		}		/* if (connection_p) */
-
-
-	return NULL;
-}
-
-
-
-void FreeConnection (Connection *connection_p)
-{
-	FreeByteBuffer (connection_p -> co_data_buffer_p);
-
-	if (connection_p -> co_server_connection_flag)
-		{
-			if (connection_p -> co_data.co_server_p)
-				{
-					freeaddrinfo (connection_p -> co_data.co_server_p);
-				}
-		}
-	else
-		{
-			if (connection_p -> co_data.co_client_p)
-				{
-					FreeMemory (connection_p -> co_data.co_client_p);
-				}
-		}
-
-	close (connection_p -> co_sock_fd);
-
-	FreeMemory (connection_p);
-}
-
-
-const char *GetConnectionData (Connection *connection_p)
-{
-	return GetByteBufferData (connection_p -> co_data_buffer_p);
-}
 
 
 int AtomicSendString (const char *data_s, Connection *connection_p)
@@ -313,14 +152,14 @@ int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicReceive (Connection *connection_p)
+int AtomicReceiveRawConnection (RawConnection *connection_p)
 {
 	int num_received = 0;
 	const int header_size = sizeof (uint32);	
 	char header_s [header_size];	
 	
 	/* Get the length of the message */
-	num_received = ReceiveData (connection_p -> co_sock_fd, header_s, header_size);
+	num_received = ReceiveData (connection_p -> rc_sock_fd, header_s, header_size);
 
 	if (num_received == header_size)
 		{
@@ -328,14 +167,14 @@ int AtomicReceive (Connection *connection_p)
 			uint32 message_size = ntohl (*val_p);
 
 			/* Get the id of the message */
-			num_received = ReceiveData (connection_p -> co_sock_fd, header_s, header_size);
+			num_received = ReceiveData (connection_p -> rc_sock_fd, header_s, header_size);
 
 			if (num_received == header_size)
 				{
 					val_p = (uint32 *) header_s;
 					uint32 id_val = ntohl (*val_p);
 										
-					num_received = ReceiveDataIntoByteBuffer (connection_p -> co_sock_fd, connection_p -> co_data_buffer_p, message_size, false);
+					num_received = ReceiveDataIntoByteBuffer (connection_p -> rc_sock_fd, connection_p -> rc_base.co_data_buffer_p, message_size, false);
 				}
 		}
 

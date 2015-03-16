@@ -18,33 +18,44 @@ json_t *LoadConfig (const char *path_s);
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
 
+
+
+
+
 json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 {
 	char *req_s = json_dumps (req_p, 0);
 	json_t *response_p = NULL;
+	const char *data_s = NULL;
 
-	if (SendJsonRequest (req_p, connection_p) > 0)
+	if (connection_p -> co_type == CT_RAW)
 		{
-			if (AtomicReceive (connection_p) > 0)
+			RawConnection *raw_connection_p = (RawConnection *) connection_p;
+
+			if (SendJsonRequest (req_p, raw_connection_p) > 0)
 				{
-					json_error_t err;
-					const char *data_s = GetConnectionData (connection_p);
-
-					printf ("%s\n", data_s);
-
-					response_p = json_loads (data_s, 0, &err);
-
-					if (!response_p)
+					if (AtomicReceive (raw_connection_p) > 0)
 						{
-							printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
+							data_s = GetConnectionData (connection_p);
 						}
-
 				}
-			else
+		}
+	else if (connection_p -> co_type == CT_WEB)
+		{
+			WebConnection *web_connection_p = (WebConnection *) connection_p;
+
+		}
+
+	if (data_s)
+		{
+			json_error_t err;
+
+			response_p = json_loads (data_s, 0, &err);
+
+			if (!response_p)
 				{
-					printf ("no buffer\n");
+					printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
 				}
-
 		}
 
 	free (req_s);

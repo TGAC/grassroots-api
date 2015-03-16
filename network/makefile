@@ -42,6 +42,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	byte_buffer.c \
+	connection.c \
 	curl_tools.c \
 	json_tools.c \
 	key_value_pair.c \

@@ -98,6 +98,8 @@ CurlTool *AllocateCurlTool (void)
 void FreeCurlTool (CurlTool *curl_tool_p)
 {
 	FreeCurl (curl_tool_p -> ct_curl_p);
+	curl_slist_free_all (curl_tool_p -> ct_headers_list_p);
+
 	FreeByteBuffer (curl_tool_p -> ct_buffer_p);
 	FreeMemory (curl_tool_p);
 }
@@ -297,14 +299,84 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 		{
 			{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },
 			{ CURLOPT_WRITEDATA, (const char *) buffer_p },
+
+			/* set default user agent */
+	    { CURLOPT_USERAGENT,  "libcurl-agent/1.0" },
+
+	    /* set timeout */
+	    { CURLOPT_TIMEOUT, (const char *) 5 },
+
+	    /* enable location redirects */
+	    { CURLOPT_FOLLOWLOCATION, (const char *) 1},
+
+	    /* set maximum allowed redirects */
+	    { CURLOPT_MAXREDIRS, (const char *) 1 },
+
 			{ CURLOPT_LASTENTRY, (const char *) NULL }
 		};
+
 	const CURLParam *param_p = params;
-					
-					
+
+
 	while (success_flag && (param_p -> cp_value_s))
 		{
 			CURLcode ret = curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s);
+
+			if (ret == CURLE_OK)
+				{
+					++ param_p;
+				}
+			else
+				{
+					success_flag = false;
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+				}
+
+		}		/* while (continue_flag && param_p) */
+
+
+	return success_flag;
+}
+
+
+bool SetCurlToolJSONData (CurlTool *tool_p, json_t *json_p)
+{
+	bool success_flag = false;
+	char *dump_s = json_dumps (json_p, 0);
+
+	if (dump_s)
+		{
+			if (curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_POSTFIELDS, dump_s) == CURLE_OK)
+				{
+					success_flag = true;
+				}
+
+			free (dump_s);
+		}		/* if (dump_s) */
+
+	return success_flag;
+}
+
+
+bool SetCurlToolForJSONPost (CurlTool *tool_p)
+{
+	bool success_flag = true;
+
+	tool_p -> ct_headers_list_p = curl_slist_append (tool_p -> ct_headers_list_p, "Accept: application/json");
+	tool_p -> ct_headers_list_p = curl_slist_append (tool_p -> ct_headers_list_p, "Content-Type: application/json");
+
+	const CURLParam params [] =
+		{
+			{ CURLOPT_CUSTOMREQUEST, "POST" },
+			{ CURLOPT_HTTPHEADER, (const char *) (tool_p -> ct_headers_list_p)  },
+			{ CURLOPT_LASTENTRY, (const char *) NULL }
+		};
+
+	const CURLParam *param_p = params;
+
+	while (success_flag && (param_p -> cp_value_s))
+		{
+			CURLcode ret = curl_easy_setopt (tool_p, param_p -> cp_opt, param_p -> cp_value_s);
 			
 			if (ret == CURLE_OK)
 				{
@@ -320,6 +392,7 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 				
 	
 	return success_flag;
+
 }
 
 

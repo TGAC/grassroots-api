@@ -9,22 +9,7 @@
 #include "typedefs.h"
 
 #include "byte_buffer.h"
-
-typedef struct Connection
-{
-	int co_sock_fd;
-	uint32 co_id;
-	ByteBuffer *co_data_buffer_p;
-	bool co_server_connection_flag;
-
-	union
-		{
-			struct addrinfo *co_server_p;
-			struct sockaddr *co_client_p;
-		}
-	co_data;
-
-} Connection;
+#include "connection.h"
 
 
 
@@ -38,21 +23,6 @@ extern "C"
 
 
 WHEATIS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
-
-
-WHEATIS_NETWORK_API Connection *AllocateServerConnection (const char * const hostname_s, const char * const port_s);
-
-
-WHEATIS_NETWORK_API Connection *AllocateClientConnection (int server_socket_fd);
-
-
-WHEATIS_NETWORK_API const char *GetConnectionData (Connection *connection_p);
-
-
-WHEATIS_NETWORK_API void FreeConnection (Connection *connection_p);
-
-
-//WHEATIS_NETWORK_API int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p);
 
 
 /**
