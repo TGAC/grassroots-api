@@ -32,9 +32,9 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 		{
 			RawConnection *raw_connection_p = (RawConnection *) connection_p;
 
-			if (SendJsonRequest (req_p, raw_connection_p) > 0)
+			if (SendJsonRawRequest (req_p, raw_connection_p) > 0)
 				{
-					if (AtomicReceive (raw_connection_p) > 0)
+					if (AtomicReceiveViaRawConnection(raw_connection_p) > 0)
 						{
 							data_s = GetConnectionData (connection_p);
 						}
@@ -65,14 +65,14 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 
 
 
-int SendJsonRequest (const json_t *json_p, Connection *connection_p)
+int SendJsonRawRequest (const json_t *json_p, RawConnection *connection_p)
 {
 	int res = -1;
 	char *req_s = json_dumps (json_p, 0);
 	
 	if (req_s)
 		{
-			res = AtomicSendString (req_s, connection_p);
+			res = AtomicSendStringViaRawConnection (req_s, connection_p);
 			free (req_s);
 		}
 		

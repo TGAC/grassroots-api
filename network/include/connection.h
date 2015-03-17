@@ -51,7 +51,7 @@ typedef struct WebConnection
 {
 	Connection wc_base;
 	CurlTool *wc_curl_p;
-	const char * const wc_uri_s;
+	char *wc_uri_s;
 } WebConnection;
 
 

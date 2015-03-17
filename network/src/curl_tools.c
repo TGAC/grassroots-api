@@ -339,7 +339,7 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 }
 
 
-bool SetCurlToolJSONData (CurlTool *tool_p, json_t *json_p)
+bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p)
 {
 	bool success_flag = false;
 	char *dump_s = json_dumps (json_p, 0);

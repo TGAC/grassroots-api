@@ -198,7 +198,6 @@ static json_t *ConvertPostParametersToJSON (request_rec *req_p)
   json_t *root_p = NULL;
 	apr_array_header_t *pairs_p = NULL;
   int res;
-	int socket_fd = -1;
 	
  	/* get the form parameters */
   res = ap_parse_form_data (req_p, NULL, &pairs_p, -1, HUGE_STRING_LEN);

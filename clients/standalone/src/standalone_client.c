@@ -22,6 +22,7 @@
 #include "client.h"
 #include "server.h"
 #include "byte_buffer.h"
+#include "connection.h"
 
 
 /*********************************/
@@ -39,7 +40,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 /******* FUNCTION DEFINITIONS  *******/
 /*************************************/
 
-int main(int argc, char *argv[])
+int main (int argc, char *argv [])
 {
 	const char *hostname_s = "localhost";
 	const char *port_s = DEFAULT_SERVER_PORT;
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
 	const char *query_s = NULL;
 	const char *client_s = "wheatis-qt-client";
 	const char *protocol_s = NULL;
+	bool web_server_flag = false;
 	int api_id = -1;
 	int i;
 	Connection *connection_p = NULL;
@@ -170,6 +172,11 @@ int main(int argc, char *argv[])
 											}
 										break;			
 									
+									case 'W':
+										web_server_flag = true;
+										++ i;
+										break;
+
 									default:
 										break;									
 								}
@@ -177,8 +184,17 @@ int main(int argc, char *argv[])
 						
 					++ i;
 				}		/* while (i < argc) */
-				
-		connection_p = AllocateServerConnection (hostname_s, port_s);
+
+
+		if (web_server_flag)
+			{
+
+			}
+		else
+			{
+				connection_p = AllocateRawServerConnection (hostname_s, port_s);
+			}
+
 		if (connection_p)
 			{
 				json_t *req_p = NULL;

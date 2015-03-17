@@ -80,6 +80,8 @@ WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
 WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s);
 
 
+WHEATIS_NETWORK_API bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p);
+
 
 #ifdef __cplusplus
 }

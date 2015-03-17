@@ -32,9 +32,9 @@ static int ReceiveDataIntoByteBuffer (int socket_fd, ByteBuffer *buffer_p, const
 
 
 
-int AtomicSendString (const char *data_s, Connection *connection_p)
+int AtomicSendStringViaRawConnection (const char *data_s, RawConnection *connection_p)
 {
-	return AtomicSend (data_s, strlen (data_s), connection_p);
+	return AtomicSendViaRawConnection (data_s, strlen (data_s), connection_p);
 }
 
 
@@ -50,7 +50,7 @@ int AtomicSendString (const char *data_s, Connection *connection_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicSend (const char *buffer_p, const uint32 num_to_send, Connection *connection_p)
+int AtomicSendViaRawConnection (const char *buffer_p, const uint32 num_to_send, RawConnection *connection_p)
 {
 	int num_sent = 0;
 	const size_t header_size = sizeof (uint32);
@@ -65,7 +65,7 @@ int AtomicSend (const char *buffer_p, const uint32 num_to_send, Connection *conn
 	 * terminated.
 	 */
 	memcpy (header_s, &i, header_size);	
-	num_sent = SendData (connection_p -> co_sock_fd, (const void *) header_s, header_size);
+	num_sent = SendData (connection_p -> rc_sock_fd, (const void *) header_s, header_size);
 
 	if (num_sent == header_size)
 		{
@@ -75,14 +75,14 @@ int AtomicSend (const char *buffer_p, const uint32 num_to_send, Connection *conn
 			 * isn't a valid c string as it is not null-
 			 * terminated.
 			 */
-			i = htonl (connection_p -> co_id);
+			i = htonl (connection_p -> rc_base.co_id);
 			memcpy (header_s, &i, header_size);	
-			num_sent = SendData (connection_p -> co_sock_fd, (const void *) header_s, header_size);
+			num_sent = SendData (connection_p -> rc_sock_fd, (const void *) header_s, header_size);
 
 			if (num_sent == header_size)
 				{
 					/* Send the message */
-					num_sent = SendData (connection_p -> co_sock_fd, buffer_p, num_to_send);
+					num_sent = SendData (connection_p -> rc_sock_fd, buffer_p, num_to_send);
 				}
 		}
 
@@ -152,7 +152,7 @@ int AtomicReceiveString (int socket_fd, uint32 id, char *buffer_p)
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-int AtomicReceiveRawConnection (RawConnection *connection_p)
+int AtomicReceiveViaRawConnection (RawConnection *connection_p)
 {
 	int num_received = 0;
 	const int header_size = sizeof (uint32);	

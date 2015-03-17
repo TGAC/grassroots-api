@@ -36,10 +36,10 @@ WHEATIS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char *
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-WHEATIS_NETWORK_API int AtomicReceive (Connection *connection_p);
+WHEATIS_NETWORK_API int AtomicReceiveViaRawConnection (RawConnection *connection_p);
 
 
-WHEATIS_NETWORK_API int AtomicSendString (const char *data_s, Connection *connection_p);
+WHEATIS_NETWORK_API int AtomicSendStringViaRawConnection (const char *data_s, RawConnection *connection_p);
 
 
 /**
@@ -54,7 +54,7 @@ WHEATIS_NETWORK_API int AtomicSendString (const char *data_s, Connection *connec
  * sent successfully before the error occurred. If this is zero, it means that there was 
  * an error sending the initial message containing the length header.
  */
-WHEATIS_NETWORK_API int AtomicSend (const char *buffer_p, uint32 num_to_send, Connection *connection_p);
+WHEATIS_NETWORK_API int AtomicSendViaRawConnection (const char *buffer_p, uint32 num_to_send, RawConnection *connection_p);
 
 
 #ifdef __cplusplus

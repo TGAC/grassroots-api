@@ -3,11 +3,14 @@
 
 #include "connection.h"
 #include "memory_allocations.h"
+#include "string_utils.h"
 
 
 static int ConnectToServer (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
 
+
 static bool InitConnection (Connection *connection_p);
+
 
 static void ReleaseConnection (Connection *connection_p);
 
@@ -84,7 +87,7 @@ static void ReleaseConnection (Connection *connection_p)
 }
 
 
-Connection *AllocateServerRawConnection (const char * const hostname_s, const char * const port_s)
+Connection *AllocateRawServerConnection (const char * const hostname_s, const char * const port_s)
 {
 	RawConnection *connection_p = (RawConnection *) AllocMemory (sizeof (RawConnection));
 
@@ -125,11 +128,50 @@ Connection *AllocateWebServerConnection (const char * const hostname_s, const ch
 
 			if (curl_p)
 				{
-					if (InitConnection (& (connection_p -> wc_base)))
-						{
+					bool success_flag = false;
+					ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
-							ReleaseConnection (& (connection_p -> wc_base));
-						}		/* if (InitConnection (& (connection_p -> wc_base))) */
+					if (buffer_p)
+						{
+							if (AppendStringsToByteBuffer (buffer_p, hostname_s, ":", port_s, NULL))
+								{
+									const char *uri_s = GetByteBufferData (buffer_p);
+
+									if (uri_s)
+										{
+											char *copy_s = CopyToNewString (uri_s, 0, false);
+
+											if (copy_s)
+												{
+													connection_p -> wc_uri_s = copy_s;
+
+													if (SetUriForCurlTool (curl_p, uri_s))
+														{
+															if (SetCurlToolForJSONPost (curl_p))
+																{
+																	success_flag = true;
+																}
+														}
+
+													if (!success_flag)
+														{
+															FreeCopiedString (connection_p -> wc_uri_s);
+														}
+												}		/* if (copy_s) */
+										}
+								}
+
+							FreeByteBuffer (buffer_p);
+						}		/* if (buffer_p) */
+
+					if (success_flag)
+						{
+							if (InitConnection (& (connection_p -> wc_base)))
+								{
+									return (& (connection_p -> wc_base));
+								}		/* if (InitConnection (& (connection_p -> wc_base))) */
+
+						}		/* if (success_flag) */
 
 					FreeCurlTool (curl_p);
 				}		/* if (curl_p) */
@@ -167,6 +209,8 @@ void FreeConnection (Connection *connection_p)
 
 static void FreeWebConnection (WebConnection *connection_p)
 {
+	FreeCurlTool (connection_p -> wc_curl_p);
+	FreeCopiedString (connection_p -> wc_uri_s);
 }
 
 

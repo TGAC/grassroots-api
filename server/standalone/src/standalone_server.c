@@ -26,6 +26,7 @@
 #include "request_tools.h"
 #include "service_config.h"
 #include "system_util.h"
+#include "connection.h"
 
 
 /**********************/
@@ -128,7 +129,7 @@ static void RunServer (int server_socket_fd)
 		{
 			Connection *connection_p = NULL;
 			
-			if (g_running_flag && (connection_p = AllocateClientConnection (server_socket_fd)))
+			if (g_running_flag && (connection_p = AllocaterRawClientConnection (server_socket_fd)))
 				{
 					pthread_t worker_thread;
 
@@ -220,7 +221,7 @@ static int BindToPort (const char *port_s, struct addrinfo **loaded_address_pp)
 static void *HandleConnection (void *conn_p)
 {
 	//Get the socket descriptor
-	Connection *connection_p = (Connection *) conn_p;
+	RawConnection *connection_p = (RawConnection *) conn_p;
 	ssize_t read_size;
 	bool success_flag = true;
 	bool connected_flag = true;
@@ -228,11 +229,11 @@ static void *HandleConnection (void *conn_p)
 	/* Get the message from the client */
 	while (connected_flag && g_running_flag)
 		{
-			read_size = AtomicReceive (connection_p);
+			read_size = AtomicReceiveViaRawConnection (connection_p);
 
 			if (read_size > 0)
 				{
-					const char *request_s = GetConnectionData (connection_p);
+					const char *request_s = GetConnectionData (& (connection_p -> rc_base));
 
 					if (strcmp (request_s, "QUIT") == 0)
 						{
@@ -240,7 +241,7 @@ static void *HandleConnection (void *conn_p)
 						}
 					else
 						{
-							json_t *response_p = ProcessServerRawMessage (request_s, connection_p -> co_sock_fd);
+							json_t *response_p = ProcessServerRawMessage (request_s, connection_p -> rc_sock_fd);
 							char *response_s = NULL;
 
 							if (response_p)
@@ -258,7 +259,7 @@ static void *HandleConnection (void *conn_p)
 							
 							if (response_s)
 								{
-									int result = AtomicSendString (response_s, connection_p);
+									int result = AtomicSendStringViaRawConnection (response_s, connection_p);
 									
 									free (response_s);
 								}

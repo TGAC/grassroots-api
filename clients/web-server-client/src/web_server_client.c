@@ -390,7 +390,7 @@ static json_t *SendRequest (const int sock_fd, json_t *req_p, const uint32 id, B
 	char *req_s = json_dumps (req_p, 0);
 	json_t *response_p = NULL;
 
-	if (SendJsonRequest (sock_fd, id, req_p) > 0)
+	if (SendJsonRawRequest (sock_fd, id, req_p) > 0)
 		{
 			if (AtomicReceive (sock_fd, id, buffer_p) > 0)
 				{						
