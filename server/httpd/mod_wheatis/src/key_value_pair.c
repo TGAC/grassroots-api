@@ -12,6 +12,7 @@
 
 #include "key_value_pair.h"
 #include "typedefs.h"
+#include "byte_buffer.h"
 
 typedef struct JsonRequest
 {
@@ -36,7 +37,7 @@ static int AddParameter (void *rec_p, const char *key_s, const char *value_s);
 static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value_s, request_rec *req_p);
 
 
-static int ReadRequestBody (request_rec *req_p, const char **buffer_pp, apr_off_t *size_p);
+static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p);
 
 
 /**********************************/
@@ -101,23 +102,27 @@ json_t *GetRequestParameters (request_rec *req_p)
 json_t *GetRequestBodyAsJSON (request_rec *req_p)
 {
 	json_t *params_p = NULL;
-	const char *buffer_p = NULL;
-	apr_off_t buffer_size = 0;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 	
-	int res = ReadRequestBody (req_p, &buffer_p, &buffer_size);
-	
-	if (res == 0)
+	if (buffer_p)
 		{
-			json_error_t error;
+			int res = ReadRequestBody (req_p, buffer_p);
 			
-			params_p = json_loads (buffer_p, 0, &error);
-			
-			if (!params_p)
+			if (res == 0)
 				{
+					json_error_t error;
+					const char *data_s = GetByteBufferData (buffer_p);
+					params_p = json_loads (data_s, 0, &error);
 					
+					if (!params_p)
+						{
+
+						}
 				}
+
+			FreeByteBuffer (buffer_p);
 		}
-		
+
 	return params_p;
 }
 
@@ -401,40 +406,30 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 
 
 
-static int ReadRequestBody (request_rec *req_p, const char **buffer_pp, apr_off_t *size_p)
+static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p)
 {
 	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
 	
-	if (ret) 
+	if (ret != OK)
 		{
 			return ret;
 		}
 
-	if (ap_should_client_block (req_p)) 
+	ret = ap_should_client_block (req_p);
+	if (ret != 0)
 		{
-			char argsbuffer [HUGE_STRING_LEN];
-			apr_off_t rsize;
+			char buffer_s [1024];
 			apr_off_t len_read;
-			apr_off_t rpos = 0;
-			apr_off_t length = req_p -> remaining;
+			bool loop_flag = true;
 			
-
-			*buffer_pp = (const char *) apr_pcalloc (req_p -> pool, (apr_size_t) (length + 1));
-			*size_p = length;
-			
-			while ((len_read = ap_get_client_block (req_p, argsbuffer, sizeof (argsbuffer))) > 0) 
+			while (((len_read = ap_get_client_block (req_p, buffer_s, 1024)) > 0) && loop_flag)
 				{
-					if ((rpos + len_read) > length) 
-						{
-							rsize = length - rpos;
-						}
-					else 
-						{
-							rsize = len_read;
-						}
+					loop_flag = AppendToByteBuffer (buffer_p, buffer_s, len_read);
+				}
 
-					memcpy ((char *) ((*buffer_pp) + rpos), argsbuffer, (size_t) rsize);
-					rpos += rsize;
+			if (!loop_flag)
+				{
+					ret = -ret;
 				}
 		}
 	

@@ -14,7 +14,7 @@
 #include "byte_buffer.h"
 #include "curl_tools.h"
 #include "network_library.h"
-
+#include "jansson.h"
 
 typedef enum
 {
@@ -64,7 +64,7 @@ extern "C"
 WHEATIS_NETWORK_API Connection *AllocateRawServerConnection (const char * const hostname_s, const char * const port_s);
 
 
-WHEATIS_NETWORK_API Connection *AllocateWebServerConnection (const char * const hostname_s, const char * const port_s);
+WHEATIS_NETWORK_API Connection *AllocateWebServerConnection (const char * const full_uri_s);
 
 
 WHEATIS_NETWORK_API Connection *AllocaterRawClientConnection (int server_socket_fd);
@@ -74,6 +74,9 @@ WHEATIS_NETWORK_API const char *GetConnectionData (Connection *connection_p);
 
 
 WHEATIS_NETWORK_API void FreeConnection (Connection *connection_p);
+
+
+WHEATIS_NETWORK_API const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *req_p);
 
 
 #ifdef __cplusplus

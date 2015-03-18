@@ -23,6 +23,7 @@
 #include "server.h"
 #include "byte_buffer.h"
 #include "connection.h"
+#include "string_utils.h"
 
 
 /*********************************/
@@ -34,6 +35,9 @@ static bool ShowResults (json_t *response_p, Client *client_p);
 
 
 static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, Connection *connection_p);
+
+
+static char *GetFullServerURI (const char *hostname_s, const char *port_s, const char *uri_s);
 
 
 /*************************************/
@@ -49,6 +53,7 @@ int main (int argc, char *argv [])
 	const char *from_s = NULL;
 	const char *to_s = NULL;
 	const char *query_s = NULL;
+	const char *uri_s = NULL;
 	const char *client_s = "wheatis-qt-client";
 	const char *protocol_s = NULL;
 	bool web_server_flag = false;
@@ -172,9 +177,19 @@ int main (int argc, char *argv [])
 											}
 										break;			
 									
+									case 'U':
+										if (++ i < argc)
+											{
+												uri_s = argv [i];
+											}
+										else
+											{
+												error_arg = * (argv [i] - 1);
+											}
+										break;
+
 									case 'W':
 										web_server_flag = true;
-										++ i;
 										break;
 
 									default:
@@ -185,106 +200,112 @@ int main (int argc, char *argv [])
 					++ i;
 				}		/* while (i < argc) */
 
-
-		if (web_server_flag)
-			{
-
-			}
-		else
-			{
-				connection_p = AllocateRawServerConnection (hostname_s, port_s);
-			}
-
-		if (connection_p)
-			{
-				json_t *req_p = NULL;
-				json_t *response_p = NULL;
-				Client *client_p = LoadClient ("clients", client_s, connection_p);
-
-				if (client_p)
+				if (web_server_flag)
 					{
-						switch (api_id)
+						char *full_uri_s = GetFullServerURI (hostname_s, port_s, uri_s);
+
+						if (full_uri_s)
 							{
-								case OP_LIST_ALL_SERVICES:
-									req_p = GetAvailableServicesRequest (username_s, password_s);
-
-									if (req_p)
-										{
-											if (!AddCredentialsToJson (req_p, username_s, password_s))
-												{
-													printf ("Failed to add credentials\n");
-												}
-
-											response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-											if (response_p)
-												{
-													json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
-												}		/* if (response_p) */
-
-										}		/* if (req_p) */
-									break;
-
-
-								case OP_IRODS_MODIFIED_DATA:
-									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
-									response_p = MakeRemoteJsonCall (req_p, connection_p);
-									break;
-
-								case OP_LIST_INTERESTED_SERVICES:
-									{
-										if (protocol_s && query_s)
-											{
-												req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
-
-												if (req_p)
-													{
-														response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-														if (response_p)
-															{
-																ShowServices (response_p, client_p, username_s, password_s, connection_p);
-															}		/* if (response_p) */
-
-													}		/* if (req_p) */
-
-											}
-									}
-									break;
-
-								case OP_RUN_KEYWORD_SERVICES:
-									{
-										if (query_s)
-											{
-												req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
-
-												if (req_p)
-													{
-														response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-														if (response_p)
-															{
-																ShowResults (response_p, client_p);
-															}		/* if (response_p) */
-
-													}		/* if (req_p) */
-
-											}		/* if (query_s) */
-									}
-									break;
-
-								default:
-									break;
+								connection_p = AllocateWebServerConnection (full_uri_s);
+								FreeCopiedString (full_uri_s);
 							}
 					}
+				else
+					{
+						connection_p = AllocateRawServerConnection (hostname_s, port_s);
+					}
 
-				FreeConnection (connection_p);
-			}
-		else
-			{
-				printf ("failed to connect to server %s:%s\n", hostname_s, port_s);
-			}
-			
+				if (connection_p)
+					{
+						json_t *req_p = NULL;
+						json_t *response_p = NULL;
+						Client *client_p = LoadClient ("clients", client_s, connection_p);
+
+						if (client_p)
+							{
+								switch (api_id)
+									{
+										case OP_LIST_ALL_SERVICES:
+											req_p = GetAvailableServicesRequest (username_s, password_s);
+
+											if (req_p)
+												{
+													if (!AddCredentialsToJson (req_p, username_s, password_s))
+														{
+															printf ("Failed to add credentials\n");
+														}
+
+													response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+													if (response_p)
+														{
+															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
+														}		/* if (response_p) */
+
+												}		/* if (req_p) */
+											break;
+
+
+										case OP_IRODS_MODIFIED_DATA:
+											req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+											response_p = MakeRemoteJsonCall (req_p, connection_p);
+											break;
+
+										case OP_LIST_INTERESTED_SERVICES:
+											{
+												if (protocol_s && query_s)
+													{
+														req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
+
+														if (req_p)
+															{
+																response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+																if (response_p)
+																	{
+																		ShowServices (response_p, client_p, username_s, password_s, connection_p);
+																	}		/* if (response_p) */
+
+															}		/* if (req_p) */
+
+													}
+											}
+											break;
+
+										case OP_RUN_KEYWORD_SERVICES:
+											{
+												if (query_s)
+													{
+														req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
+
+														if (req_p)
+															{
+																response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+																if (response_p)
+																	{
+																		ShowResults (response_p, client_p);
+																	}		/* if (response_p) */
+
+															}		/* if (req_p) */
+
+													}		/* if (query_s) */
+											}
+											break;
+
+										default:
+											break;
+									}
+							}
+
+						FreeConnection (connection_p);
+					}
+				else
+					{
+						printf ("failed to connect to server %s:%s\n", hostname_s, port_s);
+					}
+
+
 		}
 	
 
@@ -320,6 +341,53 @@ static void RunServicesOnFile ()
 }
 */
 
+
+static char *GetFullServerURI (const char *hostname_s, const char *port_s, const char *uri_s)
+{
+	char *full_uri_s = NULL;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+	if (buffer_p)
+		{
+			if (!hostname_s)
+				{
+					hostname_s = "localhost";
+				}
+
+			if (AppendToByteBuffer (buffer_p, hostname_s, strlen (hostname_s)))
+				{
+					bool success_flag = true;
+
+					if (port_s)
+						{
+							success_flag = AppendStringsToByteBuffer (buffer_p, ":", port_s, NULL);
+						}
+
+					if (success_flag)
+						{
+							if (uri_s)
+								{
+									success_flag = AppendStringsToByteBuffer (buffer_p, "/", uri_s, NULL);
+								}
+
+							if (success_flag)
+								{
+									const char *data_s = GetByteBufferData (buffer_p);
+
+									if (data_s)
+										{
+											full_uri_s = CopyToNewString (data_s, 0, false);
+										}
+								}
+						}
+
+				}		/* if (AppendToByteBuffer (buffer_p, hostname_s, strlen (hostname_s))) */
+
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
+
+	return full_uri_s;
+}
 	
 
 

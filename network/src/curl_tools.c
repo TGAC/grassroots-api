@@ -61,6 +61,7 @@ typedef struct CURLParam
 
 static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
 
+static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p);
 
 
 CurlTool *AllocateCurlTool (void)
@@ -145,6 +146,25 @@ bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s)
 		{
 			success_flag = true;
 		}
+
+	return success_flag;
+}
+
+
+bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p)
+{
+	bool success_flag = false;
+
+	if (SetCurlToolJSONRequestData (tool_p, req_p))
+		{
+			CURLcode res = RunCurlTool (tool_p);
+
+			if (res == CURLE_OK)
+				{
+					success_flag = true;
+				}
+
+		}		/* if (SetCurlToolJSONRequestData (web_connection_p -> wc_curl_p, req_p)) */
 
 	return success_flag;
 }
@@ -339,7 +359,7 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 }
 
 
-bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p)
+static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p)
 {
 	bool success_flag = false;
 	char *dump_s = json_dumps (json_p, 0);

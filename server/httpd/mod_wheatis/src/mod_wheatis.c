@@ -29,6 +29,13 @@ static int WheatISHandler (request_rec *req_p);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
 
+
+#ifdef _DEBUG
+	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 static const command_rec s_wheatis_directives [] =
 {
     AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),

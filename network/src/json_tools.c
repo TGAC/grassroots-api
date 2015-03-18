@@ -24,27 +24,8 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 
 json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 {
-	char *req_s = json_dumps (req_p, 0);
 	json_t *response_p = NULL;
-	const char *data_s = NULL;
-
-	if (connection_p -> co_type == CT_RAW)
-		{
-			RawConnection *raw_connection_p = (RawConnection *) connection_p;
-
-			if (SendJsonRawRequest (req_p, raw_connection_p) > 0)
-				{
-					if (AtomicReceiveViaRawConnection(raw_connection_p) > 0)
-						{
-							data_s = GetConnectionData (connection_p);
-						}
-				}
-		}
-	else if (connection_p -> co_type == CT_WEB)
-		{
-			WebConnection *web_connection_p = (WebConnection *) connection_p;
-
-		}
+	const char *data_s = MakeRemoteJsonCallViaConnection (connection_p, req_p);
 
 	if (data_s)
 		{
@@ -54,11 +35,9 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 
 			if (!response_p)
 				{
-					printf ("error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
+					PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
 				}
 		}
-
-	free (req_s);
 
 	return response_p;
 }
