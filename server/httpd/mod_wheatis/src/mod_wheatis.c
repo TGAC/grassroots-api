@@ -29,12 +29,16 @@ static int WheatISHandler (request_rec *req_p);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
 
+static int printitem (void* rec, const char* key, const char* value);
+static void printtable (request_rec* r, apr_table_t* t, const char* caption, const char* keyhead, const char* valhead);
+
 
 #ifdef _DEBUG
 	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_FINE)
 #else
 	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_NONE)
 #endif
+
 
 static const command_rec s_wheatis_directives [] =
 {
@@ -99,31 +103,45 @@ static int WheatISHandler (request_rec *req_p)
    */
   if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) 
   	{
- 			/* Get the posted json data */
-			json_t *json_req_p = GetAllRequestDataAsJSON (req_p);
-			
-			if (json_req_p)
-				{
-					int socket_fd = -1;
-					
-					res = OK;
+  		if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST))
+  			{
+  				/* Get the posted json data */
+						json_t *json_req_p = GetAllRequestDataAsJSON (req_p);
 
-					json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
-					
-					if (res_p)
-						{
-							char *res_s = json_dumps (res_p, JSON_INDENT (2));
-							
-							if (res_s)
-								{
-									ap_rputs (res_s, req_p);
-								}		/* if (res_s) */
-							
-							json_decref (res_p);
-						}		/* if (res_p) */
-				
-					json_decref (json_req_p);
-				}		/* if (json_req_p) */
+						if (json_req_p)
+							{
+								int socket_fd = -1;
+
+								res = OK;
+
+								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
+
+								if (res_p)
+									{
+										char *res_s = json_dumps (res_p, JSON_INDENT (2));
+
+										if (res_s)
+											{
+												ap_rputs (res_s, req_p);
+											}		/* if (res_s) */
+
+										json_decref (res_p);
+									}		/* if (res_p) */
+
+								json_decref (json_req_p);
+							}		/* if (json_req_p) */
+
+
+					  printtable (req_p, req_p -> headers_in, "Request Headers", "Header", "Value") ;
+					  printtable (req_p, req_p -> headers_out, "Response Headers", "Header", "Value") ;
+					  printtable (req_p, req_p -> subprocess_env, "Environment", "Variable", "Value") ;
+
+  			}		/* if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST)) */
+  		else
+  			{
+  				res = HTTP_METHOD_NOT_ALLOWED;
+  			}
+
 
   	}		/* if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) */
 	 
@@ -131,3 +149,30 @@ static int WheatISHandler (request_rec *req_p)
 }
 
 
+
+
+
+static int printitem (void* rec, const char* key, const char* value)
+{
+  /* rec is a userdata pointer.  We'll pass the request_rec in it */
+  request_rec* r = rec ;
+  ap_rprintf(r, "<tr><th scope=\"row\">%s</th><td>%s</td></tr>\n",
+	ap_escape_html(r->pool, key), ap_escape_html(r->pool, value)) ;
+  /* Zero would stop iterating; any other return value continues */
+  return 1 ;
+}
+
+static void printtable(request_rec* r, apr_table_t* t,
+	const char* caption, const char* keyhead, const char* valhead) {
+
+  /* print a table header */
+  ap_rprintf(r, "<table><caption>%s</caption><thead>"
+	"<tr><th scope=\"col\">%s</th><th scope=\"col\">%s"
+	"</th></tr></thead><tbody>", caption, keyhead, valhead) ;
+
+  /* Print the data: apr_table_do iterates over entries with our callback */
+  apr_table_do(printitem, r, t, NULL) ;
+
+  /* and finish the table */
+  ap_rputs("</tbody></table>\n", r) ;
+}
