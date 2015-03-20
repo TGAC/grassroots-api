@@ -28,10 +28,7 @@ static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
-
-static int printitem (void* rec, const char* key, const char* value);
-static void printtable (request_rec* r, apr_table_t* t, const char* caption, const char* keyhead, const char* valhead);
-
+static int ExampleHandler (request_rec *r);
 
 #ifdef _DEBUG
 	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_FINE)
@@ -42,8 +39,8 @@ static void printtable (request_rec* r, apr_table_t* t, const char* caption, con
 
 static const command_rec s_wheatis_directives [] =
 {
-    AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),
-    { NULL }
+	AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),
+	{ NULL }
 };
 
 
@@ -74,11 +71,12 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 /* register_hooks: Adds a hook to the httpd process */
 static void RegisterHooks (apr_pool_t *pool_p) 
 {
-  /* Hook the request handler */
-  ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_LAST);
+	ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_FIRST);
+	//ap_hook_handler (ExampleHandler, NULL, NULL, APR_HOOK_FIRST);
   
   InitInformationSystem ();
 }
+
 
 
 /* Handler for the "WheatISRoot" directive */
@@ -131,11 +129,6 @@ static int WheatISHandler (request_rec *req_p)
 								json_decref (json_req_p);
 							}		/* if (json_req_p) */
 
-
-					  printtable (req_p, req_p -> headers_in, "Request Headers", "Header", "Value") ;
-					  printtable (req_p, req_p -> headers_out, "Response Headers", "Header", "Value") ;
-					  printtable (req_p, req_p -> subprocess_env, "Environment", "Variable", "Value") ;
-
   			}		/* if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST)) */
   		else
   			{
@@ -149,30 +142,26 @@ static int WheatISHandler (request_rec *req_p)
 }
 
 
-
-
-
-static int printitem (void* rec, const char* key, const char* value)
+static int ExampleHandler (request_rec *req_p)
 {
-  /* rec is a userdata pointer.  We'll pass the request_rec in it */
-  request_rec* r = rec ;
-  ap_rprintf(r, "<tr><th scope=\"row\">%s</th><td>%s</td></tr>\n",
-	ap_escape_html(r->pool, key), ap_escape_html(r->pool, value)) ;
-  /* Zero would stop iterating; any other return value continues */
-  return 1 ;
+	int res = DECLINED;
+
+  if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0))
+  	{
+  		if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST))
+  			{
+					apr_off_t size = 0;
+					const char *buffer_s = NULL;
+
+					if (ReadBody (req_p, &buffer_s, &size) == OK)
+						{
+							ap_rprintf (req_p, "We read a request body that was %" APR_OFF_T_FMT " bytes long: %s", size, buffer_s);
+							res = OK;
+						}
+  			}
+  	}
+
+  return res;
 }
 
-static void printtable(request_rec* r, apr_table_t* t,
-	const char* caption, const char* keyhead, const char* valhead) {
 
-  /* print a table header */
-  ap_rprintf(r, "<table><caption>%s</caption><thead>"
-	"<tr><th scope=\"col\">%s</th><th scope=\"col\">%s"
-	"</th></tr></thead><tbody>", caption, keyhead, valhead) ;
-
-  /* Print the data: apr_table_do iterates over entries with our callback */
-  apr_table_do(printitem, r, t, NULL) ;
-
-  /* and finish the table */
-  ap_rputs("</tbody></table>\n", r) ;
-}

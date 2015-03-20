@@ -46,7 +46,7 @@ static int ReadRequestBody (request_rec *req_p, const char **buffer_pp, apr_off_
 
 json_t *GetAllRequestDataAsJSON (request_rec *req_p)
 {
-	json_t *params_p = GetRequestParameters (req_p);
+	json_t *params_p = GetGetRequestParameters (req_p);
 	json_t *body_p = GetRequestBodyAsJSON (req_p);
 	json_t *res_p = NULL;
 
@@ -76,22 +76,13 @@ json_t *GetAllRequestDataAsJSON (request_rec *req_p)
 }
 
 
-json_t *GetRequestParameters (request_rec *req_p)
+json_t *GetGetRequestParameters (request_rec *req_p)
 {
 	json_t *params_p = NULL;
 	
-	switch (req_p -> method_number)
+	if (req_p -> method_number == M_GET)
 		{
-			case M_GET:
-				params_p = ConvertGetParametersToJSON (req_p);			
-				break;
-				
-			case M_POST:
-				params_p = ConvertPostParametersToJSON (req_p);
-				break;
-				
-			default:
-				break;
+			params_p = ConvertGetParametersToJSON (req_p);
 		}
 		
 	return params_p;

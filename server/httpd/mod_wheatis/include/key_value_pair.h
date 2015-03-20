@@ -12,9 +12,12 @@ typedef struct KeyValuePair
 
 json_t *GetAllRequestDataAsJSON (request_rec *req_p);
 
-json_t *GetRequestParameters (request_rec *req_p);
+json_t *GetGetRequestParameters (request_rec *req_p);
 
 json_t *GetRequestBodyAsJSON (request_rec *req_p);
+
+
+int ReadBody (request_rec *r, const char **rbuf, apr_off_t *size);
 
 #endif		/* #ifndef KEY_VALUE_PAIR_H */
 

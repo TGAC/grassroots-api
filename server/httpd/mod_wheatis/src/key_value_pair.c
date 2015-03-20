@@ -48,56 +48,36 @@ static int ReadRequestBody2 (request_rec *req_p, ByteBuffer *buffer_p);
 
 json_t *GetAllRequestDataAsJSON (request_rec *req_p)
 {
-	json_t *params_p = GetRequestParameters (req_p);
-	json_t *body_p = GetRequestBodyAsJSON (req_p);
+	json_t *get_params_p = ConvertGetParametersToJSON (req_p);
+	json_t *body_params_p = GetRequestBodyAsJSON (req_p);
 	json_t *res_p = NULL;
 
-	if (params_p)
+	if (get_params_p)
 		{
-			if (body_p)
-				{					
-					int i = json_object_update (params_p, body_p);
+			if (body_params_p)
+				{
+					int i = json_object_update (get_params_p, body_params_p);
 
 					if (i != 0)
 						{
 							// error
-						}						
+						}
 
-					json_object_clear (body_p);
-					json_decref (body_p);
+					json_object_clear (body_params_p);
+					json_decref (body_params_p);
 				}
 
-			res_p = params_p;
+			res_p = get_params_p;
 		}
 	else
 		{
-			res_p = body_p;
+			res_p = body_params_p;
 		}
-		
+
 	return res_p;
 }
 
 
-json_t *GetRequestParameters (request_rec *req_p)
-{
-	json_t *params_p = NULL;
-	
-	switch (req_p -> method_number)
-		{
-			case M_GET:
-				params_p = ConvertGetParametersToJSON (req_p);			
-				break;
-				
-			case M_POST:
-				params_p = ConvertPostParametersToJSON (req_p);
-				break;
-				
-			default:
-				break;
-		}
-		
-	return params_p;
-}
 
 
 json_t *GetRequestBodyAsJSON (request_rec *req_p)
@@ -107,7 +87,7 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 	
 	if (buffer_p)
 		{
-			int res = ReadRequestBody2 (req_p, buffer_p);
+			int res = ReadRequestBody (req_p, buffer_p);
 			
 			if (res == 0)
 				{
@@ -505,31 +485,55 @@ static int ReadRequestBody2 (request_rec *req_p, ByteBuffer *buffer_p)
 
 static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p)
 {
-	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
-	
-	if (ret != OK)
+	apr_off_t size = 0;
+	const char *buffer_s = NULL;
+	int res = ReadBody (req_p,  &buffer_s, &size);
+
+	if (res == OK)
 		{
-			return ret;
+			AppendToByteBuffer (buffer_p, buffer_s, size);
 		}
 
-	ret = ap_should_client_block (req_p);
-	if (ret != 0)
-		{
-			char buffer_s [1024];
-			apr_off_t len_read;
-			bool loop_flag = true;
-			
-			while (((len_read = ap_get_client_block (req_p, buffer_s, 1024)) > 0) && loop_flag)
-				{
-					loop_flag = AppendToByteBuffer (buffer_p, buffer_s, len_read);
-				}
-
-			if (!loop_flag)
-				{
-					ret = -ret;
-				}
-		}
-	
-	return ret;
+	return res;
 }
+
+
+
+int ReadBody (request_rec *req_p, const char **buffer_ss, apr_off_t *size_p)
+{
+	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
+
+	if (ret == OK)
+		{
+	    if (ap_should_client_block (req_p))
+	    	{
+	        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	        char         temp_s [HUGE_STRING_LEN];
+	        apr_off_t    rsize, len_read, rpos = 0;
+	        apr_off_t length = req_p->remaining;
+	        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+	        *buffer_ss = (const char *) apr_pcalloc (req_p -> pool, (apr_size_t) (length + 1));
+	        *size_p = length;
+
+	        while((len_read = ap_get_client_block (req_p, temp_s, sizeof(temp_s))) > 0)
+	        	{
+	            if((rpos + len_read) > length)
+	            	{
+	                rsize = length - rpos;
+	            	}
+	            else
+	            	{
+	                rsize = len_read;
+	            	}
+
+	            memcpy ((char *) *buffer_ss + rpos, temp_s, (size_t) rsize);
+	            rpos += rsize;
+	        }
+	    }
+		}
+
+    return (ret);
+}
+
 
