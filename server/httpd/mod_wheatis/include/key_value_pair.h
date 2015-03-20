@@ -3,6 +3,8 @@
 
 #include "httpd.h"
 #include "jansson.h"
+#include "byte_buffer.h"
+
 
 typedef struct KeyValuePair
 {
@@ -16,8 +18,7 @@ json_t *GetGetRequestParameters (request_rec *req_p);
 
 json_t *GetRequestBodyAsJSON (request_rec *req_p);
 
-
-int ReadBody (request_rec *r, const char **rbuf, apr_off_t *size);
+int ReadBody (request_rec *req_p, ByteBuffer *buffer_p);
 
 #endif		/* #ifndef KEY_VALUE_PAIR_H */
 

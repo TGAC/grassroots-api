@@ -87,7 +87,7 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 	
 	if (buffer_p)
 		{
-			int res = ReadRequestBody (req_p, buffer_p);
+			int res = ReadBody (req_p, buffer_p);
 			
 			if (res == 0)
 				{
@@ -483,23 +483,8 @@ static int ReadRequestBody2 (request_rec *req_p, ByteBuffer *buffer_p)
 }
 
 
-static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p)
-{
-	apr_off_t size = 0;
-	const char *buffer_s = NULL;
-	int res = ReadBody (req_p,  &buffer_s, &size);
 
-	if (res == OK)
-		{
-			AppendToByteBuffer (buffer_p, buffer_s, size);
-		}
-
-	return res;
-}
-
-
-
-int ReadBody (request_rec *req_p, const char **buffer_ss, apr_off_t *size_p)
+int ReadBody (request_rec *req_p, ByteBuffer *buffer_p)
 {
 	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
 
@@ -513,10 +498,7 @@ int ReadBody (request_rec *req_p, const char **buffer_ss, apr_off_t *size_p)
 	        apr_off_t length = req_p->remaining;
 	        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-	        *buffer_ss = (const char *) apr_pcalloc (req_p -> pool, (apr_size_t) (length + 1));
-	        *size_p = length;
-
-	        while((len_read = ap_get_client_block (req_p, temp_s, sizeof(temp_s))) > 0)
+	        while (((len_read = ap_get_client_block (req_p, temp_s, sizeof(temp_s))) > 0) && (ret == OK))
 	        	{
 	            if((rpos + len_read) > length)
 	            	{
@@ -527,13 +509,15 @@ int ReadBody (request_rec *req_p, const char **buffer_ss, apr_off_t *size_p)
 	                rsize = len_read;
 	            	}
 
-	            memcpy ((char *) *buffer_ss + rpos, temp_s, (size_t) rsize);
-	            rpos += rsize;
-	        }
-	    }
+	            if (!AppendToByteBuffer (buffer_p, temp_s, rsize))
+	            	{
+	            		ret = HTTP_INTERNAL_SERVER_ERROR;
+	            	}
+	        	}
+	    	}
 		}
 
-    return (ret);
+    return ret;
 }
 
 

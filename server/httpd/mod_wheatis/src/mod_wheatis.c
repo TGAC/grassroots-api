@@ -141,7 +141,7 @@ static int WheatISHandler (request_rec *req_p)
   return res;
 }
 
-
+/*
 static int ExampleHandler (request_rec *req_p)
 {
 	int res = DECLINED;
@@ -163,5 +163,6 @@ static int ExampleHandler (request_rec *req_p)
 
   return res;
 }
+*/
 
 
