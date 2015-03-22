@@ -44,24 +44,31 @@ Connection *AllocaterRawClientConnection (int server_socket_fd)
 		{
 			if (InitConnection (& (connection_p -> rc_base), CT_RAW))
 				{
-					struct sockaddr *remote_p = (struct sockaddr *) AllocMemory (sizeof (struct sockaddr));
+					connection_p -> rc_data_buffer_p = AllocateByteBuffer (1024);
 
-					if (remote_p)
+					if (connection_p -> rc_data_buffer_p)
 						{
-							socklen_t t = sizeof (struct sockaddr);
-							int client_socket_fd = accept (server_socket_fd, remote_p, &t);
+							struct sockaddr *remote_p = (struct sockaddr *) AllocMemory (sizeof (struct sockaddr));
 
-							if (client_socket_fd != -1)
+							if (remote_p)
 								{
-									connection_p -> rc_sock_fd = client_socket_fd;
-									connection_p -> rc_data.rc_client_p = remote_p;
-									connection_p -> rc_server_connection_flag = false;
+									socklen_t t = sizeof (struct sockaddr);
+									int client_socket_fd = accept (server_socket_fd, remote_p, &t);
 
-									return (& (connection_p -> rc_base));
-								}
+									if (client_socket_fd != -1)
+										{
+											connection_p -> rc_sock_fd = client_socket_fd;
+											connection_p -> rc_data.rc_client_p = remote_p;
+											connection_p -> rc_server_connection_flag = false;
 
-							FreeMemory (remote_p);
-						}		/* if (remote_p) */
+											return (& (connection_p -> rc_base));
+										}
+
+									FreeMemory (remote_p);
+								}		/* if (remote_p) */
+
+							FreeByteBuffer (connection_p -> rc_data_buffer_p);
+						}		/* if (connection_p -> rc_data_buffer_p) */
 
 					ReleaseConnection (& (connection_p -> rc_base));
 				}		/* if (InitConnection (& (connection_p -> rc_base))) */
@@ -75,18 +82,10 @@ Connection *AllocaterRawClientConnection (int server_socket_fd)
 
 static bool InitConnection (Connection *connection_p, ConnectionType type)
 {
-	bool success_flag = false;
+	bool success_flag = true;
 
-	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-	if (buffer_p)
-		{
-			connection_p -> co_data_buffer_p = buffer_p;
-			connection_p -> co_id = 1;
-			connection_p -> co_type = type;
-
-			success_flag = true;
-		}		/* if (buffer_p) */
+	connection_p -> co_id = 1;
+	connection_p -> co_type = type;
 
 	return success_flag;
 }
@@ -94,7 +93,6 @@ static bool InitConnection (Connection *connection_p, ConnectionType type)
 
 static void ReleaseConnection (Connection *connection_p)
 {
-	FreeByteBuffer (connection_p -> co_data_buffer_p);
 }
 
 
@@ -106,17 +104,24 @@ Connection *AllocateRawServerConnection (const char * const hostname_s, const ch
 		{
 			if (InitConnection (& (connection_p -> rc_base), CT_RAW))
 				{
-					struct addrinfo *server_p = NULL;
-					int fd = ConnectToServer (hostname_s, port_s, &server_p);
+					connection_p -> rc_data_buffer_p = AllocateByteBuffer (1024);
 
-					if (fd >= 0)
+					if (connection_p -> rc_data_buffer_p)
 						{
-							connection_p -> rc_sock_fd = fd;
-							connection_p -> rc_data.rc_server_p = server_p;
-							connection_p -> rc_server_connection_flag = true;
+							struct addrinfo *server_p = NULL;
+							int fd = ConnectToServer (hostname_s, port_s, &server_p);
 
-							return (& (connection_p -> rc_base));
-						}		/* if (fd >= 0) */
+							if (fd >= 0)
+								{
+									connection_p -> rc_sock_fd = fd;
+									connection_p -> rc_data.rc_server_p = server_p;
+									connection_p -> rc_server_connection_flag = true;
+
+									return (& (connection_p -> rc_base));
+								}		/* if (fd >= 0) */
+
+							FreeByteBuffer (connection_p -> rc_data_buffer_p);
+						}
 
 					ReleaseConnection (& (connection_p -> rc_base));
 				}		/* if (InitConnection (& (connection_p -> rc_base))) */
@@ -202,9 +207,9 @@ void FreeConnection (Connection *connection_p)
 const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *req_p)
 {
 	bool success_flag = false;
-	char *req_s = json_dumps (req_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
 	#if CONNECTION_DEBUG >= STM_LEVEL_FINE
+	char *req_s = json_dumps (req_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 	PrintLog (STM_LEVEL_FINE, "MakeRemoteJsonCallViaConnection req:\n%s\n", req_s);
 	#endif
 
@@ -230,7 +235,9 @@ const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *r
 				}		/* if (MakeRemoteJSONCallFromCurlTool (web_connection_p -> wc_curl_p, req_p)) */
 		}
 
+	#if CONNECTION_DEBUG >= STM_LEVEL_FINE
 	free (req_s);
+	#endif
 
 	return (success_flag ? GetConnectionData (connection_p) : NULL);
 }
@@ -260,13 +267,31 @@ static void FreeRawConnection (RawConnection *connection_p)
 				}
 		}
 
+	FreeByteBuffer (connection_p -> rc_data_buffer_p);
+
+
 	close (connection_p -> rc_sock_fd);
 }
 
 
 const char *GetConnectionData (Connection *connection_p)
 {
-	return GetByteBufferData (connection_p -> co_data_buffer_p);
+	const char *data_s = NULL;
+
+	if (connection_p -> co_type == CT_RAW)
+		{
+			RawConnection *raw_connection_p = (RawConnection *) connection_p;
+
+			data_s = GetByteBufferData (raw_connection_p -> rc_data_buffer_p);
+		}
+	else if (connection_p -> co_type == CT_WEB)
+		{
+			WebConnection *web_connection_p = (WebConnection *) connection_p;
+
+			data_s = GetCurlToolData (web_connection_p -> wc_curl_p);
+		}
+
+	return data_s;
 }
 
 

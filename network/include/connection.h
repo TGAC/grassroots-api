@@ -26,7 +26,6 @@ typedef enum
 typedef struct Connection
 {
 	uint32 co_id;
-	ByteBuffer *co_data_buffer_p;
 	ConnectionType co_type;
 } Connection;
 
@@ -34,6 +33,7 @@ typedef struct Connection
 typedef struct RawConnection
 {
 	Connection rc_base;
+	ByteBuffer *rc_data_buffer_p;
 	int rc_sock_fd;
 	bool rc_server_connection_flag;
 

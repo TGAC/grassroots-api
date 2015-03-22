@@ -174,7 +174,7 @@ int AtomicReceiveViaRawConnection (RawConnection *connection_p)
 					val_p = (uint32 *) header_s;
 					uint32 id_val = ntohl (*val_p);
 										
-					num_received = ReceiveDataIntoByteBuffer (connection_p -> rc_sock_fd, connection_p -> rc_base.co_data_buffer_p, message_size, false);
+					num_received = ReceiveDataIntoByteBuffer (connection_p -> rc_sock_fd, connection_p -> rc_data_buffer_p, message_size, false);
 				}
 		}
 

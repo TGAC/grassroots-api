@@ -13,6 +13,8 @@
 #include "key_value_pair.h"
 #include "typedefs.h"
 #include "byte_buffer.h"
+#include "streams.h"
+
 
 typedef struct JsonRequest
 {
@@ -39,7 +41,8 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 
 static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p);
 
-static int ReadRequestBody2 (request_rec *req_p, ByteBuffer *buffer_p);
+static int ReadBody2 (request_rec *req_p, ByteBuffer *buffer_p);
+
 
 /**********************************/
 /********** API METHODS ***********/
@@ -48,7 +51,7 @@ static int ReadRequestBody2 (request_rec *req_p, ByteBuffer *buffer_p);
 
 json_t *GetAllRequestDataAsJSON (request_rec *req_p)
 {
-	json_t *get_params_p = ConvertGetParametersToJSON (req_p);
+	json_t *get_params_p = NULL; // ConvertGetParametersToJSON (req_p);
 	json_t *body_params_p = GetRequestBodyAsJSON (req_p);
 	json_t *res_p = NULL;
 
@@ -87,17 +90,17 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 	
 	if (buffer_p)
 		{
-			int res = ReadBody (req_p, buffer_p);
+			int res = ReadBody2 (req_p, buffer_p);
 			
 			if (res == 0)
 				{
-					json_error_t error;
+					json_error_t err;
 					const char *data_s = GetByteBufferData (buffer_p);
-					params_p = json_loads (data_s, 0, &error);
+					params_p = json_loads (data_s, 0, &err);
 					
 					if (!params_p)
 						{
-
+							PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
 						}
 				}
 
@@ -386,100 +389,45 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 }
 
 
-static int ReadRequestBody2 (request_rec *req_p, ByteBuffer *buffer_p)
+static int ReadBody2 (request_rec *req_p, ByteBuffer *buffer_p)
 {
-	apr_status_t status;
-	bool has_input_flag = false;
-	const char *value_s = NULL;
-	int ret = OK;
-
-	/* Is there any input? */
-	if (apr_table_get (req_p -> headers_in, "Content-Length"))
-		{
-			has_input_flag = true;
-		}
-	else if ((value_s = apr_table_get (req_p -> headers_in, "Transfer-Encoding")) != NULL)
-		{
-			if (strcasecmp (value_s, "chunked") == 0)
-				{
-					has_input_flag = true;
-				}
-			else
-				{
-					ap_rprintf (req_p, "<p>Unknown transfer encoding: %s</p>", ap_escape_html (req_p -> pool, value_s));
-
-				}
-		}
-
-	if (has_input_flag)
-		{
-			#define BUFFER_SIZE (256)
-
-			/* Create a brigade where we will store the data */
-			apr_bucket_brigade *brigade_p = apr_brigade_create (req_p -> pool, req_p -> connection -> bucket_alloc);
-			bool continue_flag = true;
-
-			/* Loop until we get an EOS */
-			do
-				{
-					/* Read a chunk */
-					status = ap_get_brigade (req_p -> input_filters, brigade_p, AP_MODE_READBYTES, APR_BLOCK_READ, BUFFER_SIZE);
-
-					if (status == APR_SUCCESS)
-						{
-							apr_bucket *bucket_p = APR_BRIGADE_FIRST (brigade_p);
-
-							/* loop through all of the buckets */
-							while (continue_flag && (bucket_p != APR_BRIGADE_SENTINEL (brigade_p)))
-								{
-									if (APR_BUCKET_IS_EOS (bucket_p))
-										{
-											continue_flag = false;
-										}
-									else if (!APR_BUCKET_IS_METADATA (bucket_p))
-										{
-											const char buffer_s [BUFFER_SIZE];
-											apr_size_t bytes_read = BUFFER_SIZE;
-											const char *buf_p = buffer_s;
-
-											/* read the data */
-											status = apr_bucket_read (bucket_p, &buf_p, &bytes_read, APR_BLOCK_READ);
-
-											if (bytes_read)
-												{
-													continue_flag = AppendToByteBuffer (buffer_p, buffer_s, bytes_read);
-												}
-										}
-
-									if (continue_flag)
-										{
-											bucket_p = APR_BUCKET_NEXT (bucket_p);
-										}
-								}
-
-						}		/* if (status == APR_SUCCESS) */
-
-					/* We've finished with the brigade so clean it up */
-					apr_brigade_cleanup (brigade_p);
-				}
-			while (continue_flag && (status == APR_SUCCESS));
-
-		}
-	else
-		{
-			ap_rputs ("<p>Empty request body</p>\n", req_p);
-		}
-
+	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
 
 	if (ret == OK)
 		{
-			if (status != APR_SUCCESS)
-				{
-					ret = HTTP_INTERNAL_SERVER_ERROR;
-				}
+	    if (ap_should_client_block (req_p))
+	    	{
+	        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	        char         temp_s [HUGE_STRING_LEN];
+	        apr_off_t    rsize, len_read, rpos = 0;
+	        apr_off_t length = req_p->remaining;
+	        /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+	        const char *buffer_s = (const char *) apr_pcalloc (req_p -> pool, (apr_size_t) (length + 1));
+
+	        while (((len_read = ap_get_client_block (req_p, temp_s, sizeof(temp_s))) > 0) && (ret == OK))
+	        	{
+	            if((rpos + len_read) > length)
+	            	{
+	                rsize = length - rpos;
+	            	}
+	            else
+	            	{
+	                rsize = len_read;
+	            	}
+
+							memcpy ((char *) buffer_s + rpos, temp_s, (size_t) rsize);
+							rpos += rsize;
+	        	}
+
+          if (!AppendToByteBuffer (buffer_p, buffer_s, length))
+          	{
+          		ret = HTTP_INTERNAL_SERVER_ERROR;
+          	}
+
+	    	}
 		}
 
-	return ret;
+    return ret;
 }
 
 

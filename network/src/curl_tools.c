@@ -52,6 +52,16 @@
 #include "streams.h"
 #include "memory_allocations.h"
 
+#include "streams.h"
+
+
+#ifdef _DEBUG
+	#define CURL_TOOLS_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define CURL_TOOLS_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
 typedef struct CURLParam
 {
 	CURLoption cp_opt;
@@ -114,7 +124,13 @@ CURL *GetCurl (ByteBuffer *buffer_p)
 		{
 			if (buffer_p)
 				{
-					if (!AddCurlCallback (curl_p, buffer_p))
+					if (AddCurlCallback (curl_p, buffer_p))
+						{
+							#if CURL_TOOLS_DEBUG >= STM_LEVEL_FINE
+							curl_easy_setopt (curl_p, CURLOPT_VERBOSE, 1L);
+							#endif
+						}
+					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, "Failed to add buffer callback for curl object\n");
 							FreeCurl (curl_p);
@@ -154,17 +170,22 @@ bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s)
 bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p)
 {
 	bool success_flag = false;
+	char *dump_s = json_dumps (req_p, 0);
 
-	if (SetCurlToolJSONRequestData (tool_p, req_p))
+	if (dump_s)
 		{
-			CURLcode res = RunCurlTool (tool_p);
-
-			if (res == CURLE_OK)
+			if (curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_POSTFIELDS, dump_s) == CURLE_OK)
 				{
-					success_flag = true;
+					CURLcode res = RunCurlTool (tool_p);
+
+					if (res == CURLE_OK)
+						{
+							success_flag = true;
+						}
 				}
 
-		}		/* if (SetCurlToolJSONRequestData (web_connection_p -> wc_curl_p, req_p)) */
+			free (dump_s);
+		}		/* if (dump_s) */
 
 	return success_flag;
 }
@@ -324,7 +345,7 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 	    { CURLOPT_USERAGENT,  "libcurl-agent/1.0" },
 
 	    /* set timeout */
-	    { CURLOPT_TIMEOUT, (const char *) 5 },
+	   // { CURLOPT_TIMEOUT, (const char *) 5 },
 
 	    /* enable location redirects */
 	    { CURLOPT_FOLLOWLOCATION, (const char *) 1},
@@ -366,7 +387,7 @@ static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p)
 
 	if (dump_s)
 		{
-			if (curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_POSTFIELDS, dump_s) == CURLE_OK)
+			if (curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_COPYPOSTFIELDS, dump_s) == CURLE_OK)
 				{
 					success_flag = true;
 				}
