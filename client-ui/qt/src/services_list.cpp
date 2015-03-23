@@ -1,4 +1,5 @@
 #include <QGroupBox>
+#include <QSplitter>
 
 #include "services_list.h"
 
@@ -7,13 +8,8 @@
 ServicesList :: ServicesList (QWidget *parent_p)
 : QListWidget (parent_p)
 {
-  QHBoxLayout *layout_p = new QHBoxLayout;
-
   sl_stacked_widgets_p = new QStackedWidget (this);
   sl_services_p = new QListWidget (this);
- // sl_services_p -> setSelectionMode (QAbstractItemView :: SingleSelection);
- // sl_services_p -> setSelectionRectVisible (true);
-  sl_services_p -> setSizeAdjustPolicy (AdjustToContents);
 
   connect (sl_services_p, &QAbstractItemView :: clicked, this, &ServicesList :: SetCurrentService);
   connect (sl_services_p, &QAbstractItemView :: doubleClicked, this, &ServicesList :: ToggleServiceRunStatus);
@@ -26,11 +22,28 @@ ServicesList :: ServicesList (QWidget *parent_p)
   services_layout_p -> addWidget (sl_services_p);
   box_p -> setLayout (services_layout_p);
 
-  layout_p -> addWidget (box_p);
-  layout_p -> addWidget (sl_stacked_widgets_p);
+
+	QHBoxLayout *layout_p = new QHBoxLayout;
+
+	/*
+	layout_p -> addWidget (box_p);
+	layout_p -> addWidget (sl_stacked_widgets_p);
+	*/
+
+	QSplitter *splitter_p = new QSplitter (this);
+	splitter_p -> setHandleWidth (2);
+	splitter_p -> addWidget (box_p);
+	splitter_p -> addWidget (sl_stacked_widgets_p);
+	layout_p -> addWidget (splitter_p);
 
   setLayout (layout_p);
+
+	QSizePolicy p;
+	p.setHorizontalPolicy (QSizePolicy :: MinimumExpanding);
+	sl_services_p -> setSizePolicy (p);
 }
+
+
 
 
 void ServicesList :: SetCurrentService (const QModelIndex &index_r)
@@ -107,6 +120,17 @@ void ServicesList :: SetServiceRunStatus (const char * const service_name_s, boo
 }
 
 
+QSize ServicesList :: sizeHint () const
+{
+	QSize s = QListWidget :: sizeHint ();
+
+//	int w = s.width ();
+//	s.setWidth (w + 32);
+
+	return s;
+}
+
+
 ServicesListItem :: ServicesListItem (const QIcon &icon_r, const QString &service_name_r, QListWidget *list_p)
 : QListWidgetItem (icon_r, service_name_r, list_p)
 {}
@@ -120,8 +144,11 @@ ServicesListItem :: ServicesListItem (const QString &service_name_r, QListWidget
 QSize ServicesListItem :: sizeHint () const
 {
 	QSize original_size = QListWidgetItem :: sizeHint ();
+/*
+	int width = original_size.width ();
 
-	original_size.setHeight (50);
+	original_size.setHeight (width + 32);
+*/
 	return original_size;
 }
 

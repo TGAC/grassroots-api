@@ -176,7 +176,15 @@ bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p)
 		{
 			if (curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_POSTFIELDS, dump_s) == CURLE_OK)
 				{
-					CURLcode res = RunCurlTool (tool_p);
+					CURLcode res;
+
+					/* if the buffer isn't empty, clear it */
+					if (GetByteBufferSize (tool_p -> ct_buffer_p) > 0)
+						{
+							ResetByteBuffer (tool_p -> ct_buffer_p);
+						}
+
+					res = RunCurlTool (tool_p);
 
 					if (res == CURLE_OK)
 						{

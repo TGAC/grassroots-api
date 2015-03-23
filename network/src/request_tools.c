@@ -158,6 +158,13 @@ int AtomicReceiveViaRawConnection (RawConnection *connection_p)
 	const int header_size = sizeof (uint32);	
 	char header_s [header_size];	
 	
+	/* if the buffer isn't empty, clear it */
+	if (GetByteBufferSize (connection_p -> rc_data_buffer_p) > 0)
+		{
+			ResetByteBuffer (connection_p -> rc_data_buffer_p);
+		}
+
+
 	/* Get the length of the message */
 	num_received = ReceiveData (connection_p -> rc_sock_fd, header_s, header_size);
 

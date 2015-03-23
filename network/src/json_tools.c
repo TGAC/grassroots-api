@@ -35,7 +35,7 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 
 			if (!response_p)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
+					PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n%s\n", err.text, err.source, err.line, err.column, err.position, data_s);
 				}
 		}
 

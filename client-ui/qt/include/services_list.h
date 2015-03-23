@@ -17,6 +17,9 @@ public:
   virtual void AddService (const char * const service_name_s, ServicePrefsWidget *services_widget_p);
   virtual QWidget *GetWidget ();
 
+	virtual QSize sizeHint () const;
+
+
 private slots:
   void ToggleServiceRunStatus (const QModelIndex &index_r);
   void CheckServiceRunStatus (const QListWidgetItem *item_p);
