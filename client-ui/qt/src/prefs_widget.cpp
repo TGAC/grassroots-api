@@ -113,6 +113,8 @@ void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, 
 
 bool PrefsWidget :: SetServiceParams (json_t *services_config_p)
 {
+	bool success_flag = false;
+
 	if (json_is_array (services_config_p))
 		{
 			json_t *service_config_p;
@@ -145,8 +147,11 @@ bool PrefsWidget :: SetServiceParams (json_t *services_config_p)
 
 						}		/* if (service_name_s) */
 				}
+
+			success_flag = true;
 		}
 
+	return success_flag;
 
 }
 

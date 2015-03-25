@@ -1,0 +1,8 @@
+Name:		python
+Brief:		Microservices for interacting with python
+Description:	Microservices for interacting with python modules and functions.
+Dependencies: 
+Enabled:	yes
+Creator:	Simon Tyrrell, The Genmoe Analysis Centre, Norwich
+Created:	March 2015
+License:	BSD
