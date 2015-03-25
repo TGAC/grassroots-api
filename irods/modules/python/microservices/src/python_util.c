@@ -91,11 +91,43 @@ int AddParamToDictionary (PyObject *dict_p, const char * const key_s, msParam_t 
 					else
 						{
 							Py_DECREF (python_value_p);
+
+							if (rei_p -> rsComm)
+								{
+									rodsLogAndErrorMsg (LOG_ERROR, & (rei_p -> rsComm -> rError), rei_p -> status, "AddParamToDictionary: Could not set python value for %s=%s\n", key_s, value_s);
+								}
+							else
+								{
+									rodsLog (LOG_ERROR, "AddParamToDictionary: Could not set python value for %s=%s\n", key_s, value_s);
+								}
+
 						}
 
 				}		/* if (python_value_p) */
+			else
+				{
+					if (rei_p -> rsComm)
+						{
+							rodsLogAndErrorMsg (LOG_ERROR, & (rei_p -> rsComm -> rError), rei_p -> status, "AddParamToDictionary: Could not create python value from %s\n", value_s);
+						}
+					else
+						{
+							rodsLog (LOG_ERROR, "AddParamToDictionary: Could not create python value from %s\n", value_s);
+						}
+				}
 
 		}		/* if (value_s) */
+	else
+		{
+			if (rei_p -> rsComm)
+				{
+					rodsLogAndErrorMsg (LOG_ERROR, & (rei_p -> rsComm -> rError), rei_p -> status, "AddParamToDictionary: Could not get irods param value for key %s\n", key_s);
+				}
+			else
+				{
+					rodsLog (LOG_ERROR, "AddParamToDictionary: Could not get irods param value for key %s\n", key_s);
+				}
+		}
 
 	return result;
 }
