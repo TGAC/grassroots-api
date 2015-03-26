@@ -18,7 +18,6 @@ extern "C"
 {
 #endif
 
-
 int InitPython (const char * const module_name_s, const char * const function_name_s, PyObject **module_pp, PyObject **function_pp, ruleExecInfo_t *rei_p);
 
 void ExitPython (PyObject *module_p, PyObject *function_p);

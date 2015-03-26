@@ -13,7 +13,7 @@ extern "C" {
 /*************************************/
 /******** FUNCTION PROTOTYPES ********/
 /*************************************/
-int ObjectRegistered (msParam_t *user_p, msParam_t *resource_p, msParam_t *collection_p, msParam_t *data_object_p, ruleExecInfo_t *rei);
+int ObjectRegisteredPythonCallback (msParam_t *user_p, msParam_t *resource_p, msParam_t *collection_p, msParam_t *data_object_p, ruleExecInfo_t *rei);
 
 #ifdef __cplusplus
 }

@@ -8,6 +8,7 @@
 
 #include <Python.h>
 
+#include "python_util.h"
 #include "reDataObjOpr.h"
 
 
@@ -31,10 +32,10 @@ int InitPython (const char * const module_name_s, const char * const function_na
 
 	Py_Initialize ();
 
-	module_p = GetModule (module_name_s);
+	module_p = GetModule (module_name_s, rei_p);
 	if (module_p)
 		{
-			PyObject *function_p = GetFunction (function_name_s, module_p, rs_comm_p);
+			PyObject *function_p = GetFunction (function_name_s, module_p, rei_p);
 
 			if (function_p)
 				{
@@ -84,7 +85,7 @@ int AddParamToDictionary (PyObject *dict_p, const char * const key_s, msParam_t 
 
 			if (python_value_p)
 				{
-					if (PyDict_SetItemString (python_args_p, key_s, python_value_p) == 0)
+					if (PyDict_SetItemString (dict_p, key_s, python_value_p) == 0)
 						{
 							result = 0;
 						}
@@ -139,11 +140,11 @@ int AddParamToDictionary (PyObject *dict_p, const char * const key_s, msParam_t 
 
 static PyObject *GetModule (const char *module_name_s, ruleExecInfo_t *rei_p)
 {
-	PyObect *python_module_p = NULL;
+	PyObject *python_module_p = NULL;
 
 	/* Convert the module name from C to Python */
 	/* Error checking of python_name_p left out */
-  PyObect *python_name_p = PyString_FromString (module_name_s);
+  PyObject *python_name_p = PyString_FromString (module_name_s);
 
 	if (python_name_p)
 		{
@@ -170,7 +171,7 @@ static PyObject *GetModule (const char *module_name_s, ruleExecInfo_t *rei_p)
 static PyObject *GetFunction (const char *function_name_s, PyObject *module_p, ruleExecInfo_t *rei_p)
 {
 	/* Get the Python function that we are going to call */
-	PyObject *python_function_p = PyObject_GetAttrString (python_module_p, function_name_s);
+	PyObject *python_function_p = PyObject_GetAttrString (module_p, function_name_s);
 
 	if (python_function_p)
 		{

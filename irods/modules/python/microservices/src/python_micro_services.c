@@ -12,14 +12,14 @@
 /*
 micro service calls
 */
-int ObjectRegistered (msParam_t *user_p, msParam_t *resource_p, msParam_t *collection_p, msParam_t *data_object_p, ruleExecInfo_t *rei)
+int ObjectRegisteredPythonCallback (msParam_t *user_p, msParam_t *resource_p, msParam_t *collection_p, msParam_t *data_object_p, ruleExecInfo_t *rei)
 {
 	int result = -1;
 	PyObject *module_p = NULL;
 	PyObject *function_p = NULL;
 
 	/* The	next line is needed	for	loop back	testing	using	the irule	-i option */
-	RE_TEST_MACRO	("				Calling	ObjectRegistered");
+	RE_TEST_MACRO	("				Calling	ObjectRegisteredPythonCallback");
 
 	if (InitPython ("irods_python", "ObjectRegistered", &module_p, &function_p, rei) == 0)
 		{

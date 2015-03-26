@@ -1,1 +1,1 @@
-{ "PythonObjectRegistered", 4, (funcPtr) ObjectRegistered },   
+{ "PythonObjectRegistered", 4, (funcPtr) ObjectRegisteredPythonCallback },   
