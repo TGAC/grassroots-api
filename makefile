@@ -22,6 +22,7 @@ all:
 	$(MAKE) -C services/web_search
 	$(MAKE) -C services/irods_search
 	$(MAKE) -C services/ensembl_rest
+	$(MAKE) -C services/tgac_elastic_search
 					
 install: install_init install_references install_images
 	$(MAKE) -C util install
@@ -43,6 +44,7 @@ install: install_init install_references install_images
 	$(MAKE) -C services/web_search install
 	$(MAKE) -C services/irods_search install
 	$(MAKE) -C services/ensembl_rest install
+	$(MAKE) -C services/tgac_elastic_search install
 	
 clean: 
 	$(MAKE) -C util clean
@@ -64,6 +66,7 @@ clean:
 	$(MAKE) -C services/web_search clean	
 	$(MAKE) -C services/irods_search clean
 	$(MAKE) -C services/ensembl_rest clean
+	$(MAKE) -C services/tgac_elastic_search clean
 	
 install_init:
 	@mkdir -p $(WHEATIS_INSTALL)

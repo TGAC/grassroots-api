@@ -28,8 +28,6 @@ static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
-static int ExampleHandler (request_rec *r);
-
 #ifdef _DEBUG
 	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_FINE)
 #else
@@ -72,7 +70,6 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 static void RegisterHooks (apr_pool_t *pool_p) 
 {
 	ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_FIRST);
-	//ap_hook_handler (ExampleHandler, NULL, NULL, APR_HOOK_FIRST);
   
   InitInformationSystem ();
 }
@@ -141,28 +138,5 @@ static int WheatISHandler (request_rec *req_p)
   return res;
 }
 
-/*
-static int ExampleHandler (request_rec *req_p)
-{
-	int res = DECLINED;
-
-  if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0))
-  	{
-  		if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST))
-  			{
-					apr_off_t size = 0;
-					const char *buffer_s = NULL;
-
-					if (ReadBody (req_p, &buffer_s, &size) == OK)
-						{
-							ap_rprintf (req_p, "We read a request body that was %" APR_OFF_T_FMT " bytes long: %s", size, buffer_s);
-							res = OK;
-						}
-  			}
-  	}
-
-  return res;
-}
-*/
 
 

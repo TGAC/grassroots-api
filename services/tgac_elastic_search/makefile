@@ -47,8 +47,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_HANDLER_INC) 
 	
 SRCS 	= \
-	ensembl_rest_service.c \
-	sequence.c 	
+	tgac_elastic_search_service.c 
 	 
 CPPFLAGS += -DTGAC_ELASTIC_SEARCH_LIBRARY_EXPORTS 
 

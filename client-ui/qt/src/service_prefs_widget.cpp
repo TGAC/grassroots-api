@@ -32,9 +32,11 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 	QPushButton *reset_button_p = new QPushButton (QIcon ("images/reload"), "Restore Defaults", this);
 	connect (reset_button_p, &QAbstractButton :: clicked, spw_params_widget_p, &QTParameterWidget :: ResetToDefaults);
 
-	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
+	QVBoxLayout *buttons_layout_p = new QVBoxLayout;
 	buttons_layout_p -> addWidget (spw_run_service_button_p);
 	buttons_layout_p -> addWidget (reset_button_p);
+	buttons_layout_p -> setAlignment (reset_button_p, Qt::AlignRight);
+
 
 	layout_p -> addItem (buttons_layout_p);
 

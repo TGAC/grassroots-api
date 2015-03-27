@@ -7,6 +7,7 @@
 #include "handler_utils.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
+#include "curl_tools.h"
 
 
 #define TAG_SEARCH_FIELD MAKE_TAG ('E', 'S', 'F', 'D')
@@ -24,6 +25,8 @@ typedef struct
 
 typedef enum
 {
+	SF_STUDY_ACCESSION,
+	SF_SCIENTIFIC_NAME,
 	SF_CENTRE_NAME,
 	SF_EXPERIMENT_TITLE,
 	SF_STUDY_TITLE,
@@ -33,9 +36,11 @@ typedef enum
 
 static const char *s_field_names_pp [SF_NUM_FIELDS] =
 {
-	"Centre Name",
-	"Experiment Title",
-	"Study Title"
+	"study_accession",
+	"scientific_name",
+	"center_name",
+	"experiment_title",
+	"study_title"
 };
 
 /*
@@ -56,10 +61,9 @@ static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *pa
 
 static bool IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
-
-
 static bool CloseElasticSearchRestService (Service *service_p);
 
+static const char * const GetRootRestURI (void);
 
 
 /*
@@ -109,7 +113,7 @@ void ReleaseServices (ServicesArray *services_p)
 
 
 
-const char * const GetRootRestURI (void)
+static const char * const GetRootRestURI (void)
 {
 	return "http://v0214.nbi.ac.uk:8080/wis-web/wis-web/rest/searchelasticsearch/";
 }
@@ -155,7 +159,14 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 			ParameterMultiOptionArray *options_p = NULL;
 			SharedType values [SF_NUM_FIELDS];
 			uint32 i;
-			const char **descriptions_pp = NULL;
+			const char *descriptions_pp [SF_NUM_FIELDS] =
+				{
+					"Study Accession",
+					"Scientific Name",
+					"Centre Name",
+					"Experiment Title",
+					"Study Title"
+				};
 
 			for (i = 0; i < SF_NUM_FIELDS; ++ i)
 				{
@@ -170,6 +181,8 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 
 					if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Search field", NULL, "The field to search", TAG_SEARCH_FIELD, options_p, def, NULL, NULL, PL_ALL, NULL))
 						{
+							def.st_string_value_s = "";
+
 							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Search term", NULL, "The term to search for in the given field", TAG_SEARCH_KEYWORD, NULL, def, NULL, NULL, PL_ALL, NULL))
 								{
 									return param_set_p;
@@ -209,15 +222,58 @@ static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *pa
 
 					if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true))
 						{
-							results_json_p = json_array ();
-
-							if (results_json_p)
+							/* Is keyword valid? */
+							if (!IsStringEmpty (keyword.st_string_value_s))
 								{
-									if (RunSearch (param_set_p, results_json_p, curl_tool_p))
+									results_json_p = json_array ();
+
+									if (results_json_p)
 										{
-											res = OS_SUCCEEDED;
+											ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+											if (buffer_p)
+												{
+													/* build the uri to call */
+													if (AppendStringsToByteBuffer (buffer_p, GetRootRestURI (), field.st_string_value_s, "/", keyword.st_string_value_s, NULL))
+														{
+															const char * const uri_s = GetByteBufferData (buffer_p);
+
+															if (SetUriForCurlTool (curl_tool_p, uri_s))
+																{
+																	CURLcode curl_res = RunCurlTool (curl_tool_p);
+
+																	if (curl_res == CURLE_OK)
+																		{
+																			const char * const data_s = GetCurlToolData (curl_tool_p);
+
+																			if (data_s)
+																				{
+																					json_error_t error;
+
+																					results_json_p = json_loads (data_s, 0, &error);
+
+																					if (results_json_p)
+																						{
+																							res = OS_SUCCEEDED;
+																						}
+																					else
+																						{
+
+																						}		/* if (!results_json_p) */
+
+																				}		/* if (data_s) */
+
+																		}		/* if (res == CURLE_OK) */
+
+																}		/* if (SetUriForCurlTool (curl_tool_p, uri_s)) */
+
+														}		/* if (AppendStringsToByteBuffer (buffer_p, field.st_string_value_s, "/", keyword.st_string_value_s, NULL)) */
+
+													FreeByteBuffer (buffer_p);
+												}		/* if (buffer_p) */
 										}
-								}
+
+								}		/* if (!IsStringEmpty (keyword.st_string_value_s)) */
 
 						}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true)) */
 
@@ -226,7 +282,6 @@ static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *pa
 			FreeCurlTool (curl_tool_p);
 		}
 	
-
 	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p);
 
 	return res_json_p;

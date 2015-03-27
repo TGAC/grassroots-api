@@ -17,9 +17,6 @@ TGAC_ELASTIC_SEARCH_SERVICE_API ServicesArray *GetServices (const json_t *config
 TGAC_ELASTIC_SEARCH_SERVICE_API void ReleaseServices (ServicesArray *service_p);
 
 
-TGAC_ELASTIC_SEARCH_SERVICE_API const char * const GetRootRestURI (void);
-
-
 #ifdef __cplusplus
 }
 #endif
