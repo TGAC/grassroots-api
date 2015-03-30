@@ -7,7 +7,10 @@
 #include <QMenuBar>
 #include <QMimeData>
 #include <QPluginLoader>
+#include <QPushButton>
 #include <QUrl>
+#include <QTabWidget>
+#include <QToolBar>
 #include <QWidget>
 
 #include "string_utils.h"
@@ -28,13 +31,22 @@ MainWindow :: MainWindow (QTClientData *data_p)
 
 	GenerateMenu ();
 
-	mw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
+	QTabWidget *tabs_p = new QTabWidget;
+	setCentralWidget (tabs_p);
 
-	setCentralWidget (mw_prefs_widget_p);
+
+	mw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
 	connect (mw_prefs_widget_p, &PrefsWidget :: RunServices, this, &MainWindow :: RunServices);
+	tabs_p -> addTab (mw_prefs_widget_p, QIcon ("images/list_wand"), "All Services");
+
+	mw_keyword_widget_p = new KeywordWidget (this, PL_BASIC);
+	//connect (mw_keyword_widget_p, &KeywordWidget :: RunKeywordSearch, this, &MainWindow :: RunKeywordSearch);
+	tabs_p -> addTab (mw_keyword_widget_p, QIcon ("images/list_search"), "Run by search");
 
 	setWindowTitle ("WheatIS Tool");
 	setWindowIcon (QIcon ("images/cog"));
+
+	AddControlButtons ();
 
 	QSize screen_size = QDesktopWidget ().availableGeometry (this).size ();
 	resize (screen_size * 0.5);
@@ -44,6 +56,31 @@ MainWindow :: MainWindow (QTClientData *data_p)
 
 MainWindow :: ~MainWindow ()
 {
+}
+
+void MainWindow :: AddControlButtons ()
+{
+	QToolBar *toolbar_p = addToolBar (tr ("Run"));
+
+	QAction *action_p = new QAction (QIcon ("images/run"), tr ("Run"), this);
+	connect (action_p, &QAction :: triggered, this, &MainWindow :: Accept);
+	toolbar_p -> addAction (action_p);
+
+	action_p = new QAction (QIcon ("images/cancel"), tr ("Quit"), this);
+	connect (action_p, &QAction :: triggered, this, &MainWindow :: Reject);
+	toolbar_p -> addAction (action_p);
+}
+
+
+void MainWindow :: Accept ()
+{
+	RunServices (true);
+}
+
+
+void MainWindow :: Reject ()
+{
+	RunServices (false);
 }
 
 
@@ -68,6 +105,13 @@ void MainWindow :: RunServices (bool run_flag)
 			close ();
 		}
 }
+
+
+void MainWindow :: RunKeywordSearch (QString keywords)
+{
+
+}
+
 
 void MainWindow :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
 {

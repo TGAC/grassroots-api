@@ -11,6 +11,7 @@
 
 #include "jansson.h"
 
+#include "runnable_widget.h"
 #include "service_prefs_widget.h"
 #include "services_list.h"
 
@@ -18,7 +19,7 @@
 /**
  * @brief The PrefsWidget class
  */
-class PrefsWidget : public QWidget
+class PrefsWidget : public QWidget, public RunnableWidget
 {
 	Q_OBJECT
 
@@ -28,8 +29,6 @@ signals:
 
 public slots:
 	void SetInterfaceLevel (ParameterLevel level);
-	void Accept ();
-	void Reject ();
 
 public:
 
@@ -50,7 +49,7 @@ public:
 	bool SetServiceParams (json_t *service_config_p);
 
 
-	json_t *GetUserValuesAsJSON (bool full_flag) const;
+	virtual json_t *GetUserValuesAsJSON (bool full_flag);
 
 
 private:

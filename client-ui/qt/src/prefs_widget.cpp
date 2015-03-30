@@ -43,20 +43,7 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, co
 
 	layout_p -> addWidget (pw_services_ui_p -> GetWidget ());
 
-
-	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
-	QPushButton *ok_button_p = new QPushButton (QIcon ("images/run"), tr ("Run"), this);
-	QPushButton *cancel_button_p = new QPushButton (QIcon ("images/cancel"), tr ("Quit"), this);
-
-	buttons_layout_p -> addWidget (ok_button_p);
-	buttons_layout_p -> addWidget (cancel_button_p);
-
-	layout_p -> addItem (buttons_layout_p);
-
 	setLayout (layout_p);
-
-	connect (ok_button_p, &QAbstractButton :: clicked, 	this, &PrefsWidget :: Accept);
-	connect (cancel_button_p, &QAbstractButton :: clicked, 	this, &PrefsWidget :: Reject);
 }
 
 
@@ -64,17 +51,6 @@ PrefsWidget :: ~PrefsWidget ()
 {
 }
 
-
-void PrefsWidget :: Accept ()
-{
-	emit RunServices (true);
-}
-
-
-void PrefsWidget :: Reject ()
-{
-	emit RunServices (false);
-}
 
 
 void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p)
@@ -173,7 +149,7 @@ void PrefsWidget :: SetInterfaceLevel (ParameterLevel level)
 }
 
 
-json_t *PrefsWidget :: GetUserValuesAsJSON (bool full_flag) const
+json_t *PrefsWidget :: GetUserValuesAsJSON (bool full_flag)
 {
 	json_t *root_p = json_array ();
 

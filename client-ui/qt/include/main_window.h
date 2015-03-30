@@ -6,9 +6,8 @@
 #include <QDropEvent>
 #include <QMainWindow>
 
+#include "keyword_widget.h"
 #include "prefs_widget.h"
-#include "hash_table.h"
-
 
 struct QTClientData;
 
@@ -26,6 +25,8 @@ public slots:
 	void LoadConfiguration ();
 	void SaveConfiguration ();
 	void RunServices (bool run_flag);
+	void RunKeywordSearch (QString keywords);
+
 
 public:
 	MainWindow (struct QTClientData *data_p);
@@ -47,10 +48,17 @@ protected:
 
 private:
 	PrefsWidget *mw_prefs_widget_p;
+	KeywordWidget *mw_keyword_widget_p;
 	struct QTClientData *mw_client_data_p;
 
 	void GenerateMenu ();
 	void SetParams (json_t *config_p);
+	void AddControlButtons ();
+
+private slots:
+	void Accept ();
+	void Reject ();
+
 };
 
 
