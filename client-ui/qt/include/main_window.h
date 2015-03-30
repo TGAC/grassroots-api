@@ -51,9 +51,8 @@ private:
 	KeywordWidget *mw_keyword_widget_p;
 	struct QTClientData *mw_client_data_p;
 
-	void GenerateMenu ();
+	void AddActions ();
 	void SetParams (json_t *config_p);
-	void AddControlButtons ();
 
 private slots:
 	void Accept ();

@@ -1,3 +1,4 @@
+#include <QLabel>
 #include <QVBoxLayout>
 
 #include "keyword_widget.h"
@@ -8,6 +9,9 @@ KeywordWidget :: KeywordWidget (QWidget *parent_p, ParameterLevel initial_level)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	setLayout (layout_p);
+
+	QLabel *label_p = new QLabel ("Choose your search terms");
+	layout_p -> addWidget (label_p);
 
 	kw_text_box_p = new QLineEdit;
 	connect (kw_text_box_p, &QLineEdit :: returnPressed, this, &KeywordWidget :: TextEntered);

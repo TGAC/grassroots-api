@@ -24,7 +24,7 @@ unix {
 }
 
 
-DIR_WHEATIS = ../../..
+DIR_WHEATIS = ../..
 
 
 DIR_WHEATIS_UTIL = $$DIR_WHEATIS/util

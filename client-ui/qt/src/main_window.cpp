@@ -12,6 +12,7 @@
 
 #include <QUrl>
 #include <QTabWidget>
+#include <QToolBar>
 #include <QWidget>
 
 #include "string_utils.h"
@@ -30,7 +31,6 @@ MainWindow :: MainWindow (QTClientData *data_p)
 {
 	setAcceptDrops (true);
 
-	GenerateMenu ();
 
 	QTabWidget *tabs_p = new QTabWidget;
 	setCentralWidget (tabs_p);
@@ -41,13 +41,13 @@ MainWindow :: MainWindow (QTClientData *data_p)
 	tabs_p -> addTab (mw_prefs_widget_p, QIcon ("images/list_wand"), "All Services");
 
 	mw_keyword_widget_p = new KeywordWidget (this, PL_BASIC);
-	//connect (mw_keyword_widget_p, &KeywordWidget :: RunKeywordSearch, this, &MainWindow :: RunKeywordSearch);
+	connect (mw_keyword_widget_p, &KeywordWidget :: RunKeywordSearch, this, &MainWindow :: RunKeywordSearch);
 	tabs_p -> addTab (mw_keyword_widget_p, QIcon ("images/list_search"), "Run by search");
 
 	setWindowTitle ("WheatIS Tool");
 	setWindowIcon (QIcon ("images/cog"));
 
-	AddControlButtons ();
+	AddActions ();
 
 	QSize screen_size = QDesktopWidget ().availableGeometry (this).size ();
 	resize (screen_size * 0.5);
@@ -59,24 +59,6 @@ MainWindow :: ~MainWindow ()
 {
 }
 
-void MainWindow :: AddControlButtons ()
-{
-	QDockWidget *dock_widget_p = new QDockWidget (this);
-	QWidget *widget_p = new QWidget (dock_widget_p);
-
-	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
-	QPushButton *ok_button_p = new QPushButton (QIcon ("images/run"), tr ("Run"), this);
-	QPushButton *cancel_button_p = new QPushButton (QIcon ("images/cancel"), tr ("Quit"), this);
-
-	buttons_layout_p -> addWidget (ok_button_p);
-	buttons_layout_p -> addWidget (cancel_button_p);
-
-	widget_p -> setLayout (buttons_layout_p);
-	dock_widget_p -> setWidget (widget_p);
-
-	connect (ok_button_p, &QAbstractButton :: clicked, 	this, &MainWindow :: Accept);
-	connect (cancel_button_p, &QAbstractButton :: clicked, 	this, &MainWindow :: Reject);
-}
 
 
 void MainWindow :: Accept ()
@@ -254,9 +236,11 @@ void MainWindow :: closeEvent (QCloseEvent *event_p)
 
 
 
-void MainWindow :: GenerateMenu ()
+void MainWindow :: AddActions ()
 {
 	QMenuBar *menu_bar_p = menuBar ();
+	QToolBar *toolbar_p = new QToolBar (tr ("Main"));
+	toolbar_p -> setToolButtonStyle (Qt :: ToolButtonFollowStyle);
 
 	// File Menu
 	QMenu *menu_p = menu_bar_p -> addMenu (tr ("&File"));
@@ -267,6 +251,7 @@ void MainWindow :: GenerateMenu ()
 	action_p -> setStatusTip (tr ("Load a configuration file."));
 	connect (action_p, &QAction :: triggered, this, &MainWindow :: LoadConfiguration);
 	menu_p -> addAction (action_p);
+	toolbar_p -> addAction (action_p);
 
 	// Save configuration
 	action_p = new QAction (QIcon ("images/save"), tr ("&Save Configuration..."), this);
@@ -274,6 +259,21 @@ void MainWindow :: GenerateMenu ()
 	action_p -> setStatusTip (tr ("Save configuration file."));
 	connect (action_p, &QAction :: triggered, this, &MainWindow :: SaveConfiguration);
 	menu_p -> addAction (action_p);
+	toolbar_p -> addAction (action_p);
+
+	toolbar_p -> addSeparator ();
+
+	// Run
+	action_p = new QAction (QIcon ("images/run"), tr ("Run"), this);
+	toolbar_p -> addAction (action_p);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: Accept);
+
+	// Cancel
+	action_p = new QAction (QIcon ("images/cancel"), tr ("Quit"), this);
+	toolbar_p -> addAction (action_p);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: Accept);
+
+
 
 	// Tools Menu
 	menu_p = menu_bar_p -> addMenu (tr ("&Tools"));
@@ -309,6 +309,7 @@ void MainWindow :: GenerateMenu ()
 
 	menu_p -> addMenu (sub_menu_p);
 
+	addToolBar (toolbar_p);
 }
 
 
