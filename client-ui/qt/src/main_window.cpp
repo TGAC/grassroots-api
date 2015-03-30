@@ -1,4 +1,5 @@
 #include <QAction>
+#include <QDockWidget>
 #include <QDesktopWidget>
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -6,11 +7,11 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMimeData>
-#include <QPluginLoader>
 #include <QPushButton>
+#include <QPluginLoader>
+
 #include <QUrl>
 #include <QTabWidget>
-#include <QToolBar>
 #include <QWidget>
 
 #include "string_utils.h"
@@ -60,15 +61,21 @@ MainWindow :: ~MainWindow ()
 
 void MainWindow :: AddControlButtons ()
 {
-	QToolBar *toolbar_p = addToolBar (tr ("Run"));
+	QDockWidget *dock_widget_p = new QDockWidget (this);
+	QWidget *widget_p = new QWidget (dock_widget_p);
 
-	QAction *action_p = new QAction (QIcon ("images/run"), tr ("Run"), this);
-	connect (action_p, &QAction :: triggered, this, &MainWindow :: Accept);
-	toolbar_p -> addAction (action_p);
+	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
+	QPushButton *ok_button_p = new QPushButton (QIcon ("images/run"), tr ("Run"), this);
+	QPushButton *cancel_button_p = new QPushButton (QIcon ("images/cancel"), tr ("Quit"), this);
 
-	action_p = new QAction (QIcon ("images/cancel"), tr ("Quit"), this);
-	connect (action_p, &QAction :: triggered, this, &MainWindow :: Reject);
-	toolbar_p -> addAction (action_p);
+	buttons_layout_p -> addWidget (ok_button_p);
+	buttons_layout_p -> addWidget (cancel_button_p);
+
+	widget_p -> setLayout (buttons_layout_p);
+	dock_widget_p -> setWidget (widget_p);
+
+	connect (ok_button_p, &QAbstractButton :: clicked, 	this, &MainWindow :: Accept);
+	connect (cancel_button_p, &QAbstractButton :: clicked, 	this, &MainWindow :: Reject);
 }
 
 
