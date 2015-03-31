@@ -32,7 +32,7 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/drivers/include \
 	-I$(DIR_IRODS)/server/icat/include \
 	-I$(DIR_IRODS)/server/re/include \
-	
+	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \
 	file_output_stream.c \
@@ -66,7 +66,7 @@ endif
 
 CPPFLAGS += -DWHEATIS_UTIL_LIBRARY_EXPORTS -DUNIX 
 
-LDFLAGS += -ldl -ljansson
+LDFLAGS += -ldl -L$(DIR_JANSSON_LIB) -ljansson
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
