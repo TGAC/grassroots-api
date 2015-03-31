@@ -1,6 +1,17 @@
 COPY	= cp
 WHEATIS_INSTALL = ../wheatis_demo
 
+# BEGIN JANSSON CONFIG
+ifdef $(JANSSON_HOME)
+DIR_JANSSON=$(JANSSON_HOME)
+else
+DIR_JANSSON=/usr/local
+endif
+export DIR_JANSSON_INC=$(DIR_JANSSON)/include
+export DIR_JANSSON_LIB=$(DIR_JANSSON)/lib
+# END JANSSON CONFIGURATION
+
+
 all: 	
 	@echo "BUILD = " $(BUILD)
 	$(MAKE) -C util 
