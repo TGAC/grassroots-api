@@ -33,7 +33,6 @@ private:
 private slots:
   void SaveResults (bool clicked_flag);
 
-
 private:
   ResultsWidget *rw_results_p;
   const json_t *rw_data_p;

@@ -24,6 +24,7 @@
 #include "filesystem_utils.h"
 
 #include "qt_client_data.h"
+#include "ui_utils.h"
 
 
 MainWindow :: MainWindow (QTClientData *data_p)
@@ -86,6 +87,9 @@ void MainWindow :: RunServices (bool run_flag)
 			if (services_json_p)
 				{
 					uint32 i = mw_client_data_p -> qcd_results_p ->  AddAllResultsPagesFromJSON (services_json_p);
+
+					UIUtils :: CentreWidget (this, mw_client_data_p -> qcd_results_p);
+
 					mw_client_data_p -> qcd_results_p -> show ();
 				}
 		}

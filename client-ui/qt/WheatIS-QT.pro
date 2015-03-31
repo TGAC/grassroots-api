@@ -24,7 +24,7 @@ unix {
 }
 
 
-DIR_WHEATIS = ../..
+DIR_WHEATIS = ../../..
 
 
 DIR_WHEATIS_UTIL = $$DIR_WHEATIS/util
@@ -93,7 +93,8 @@ SOURCES += \
     src/services_list.cpp \
     src/services_tabs.cpp \
     src/results_window.cpp \
-    src/keyword_widget.cpp
+    src/keyword_widget.cpp \
+    src/ui_utils.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -122,7 +123,8 @@ HEADERS  += \
     include/results_window.h \
     include/qt_client_data.h \
     include/keyword_widget.h \
-    include/runnable_widget.h
+    include/runnable_widget.h \
+    include/ui_utils.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \

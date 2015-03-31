@@ -23,7 +23,7 @@
 					"parameters": [
 						{
 							"param": "query",
-							"name": "query",
+							"name": "Query",
 							"default": "",
 							"current_value": "",
 							"type": "string",
