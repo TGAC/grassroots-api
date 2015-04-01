@@ -59,7 +59,8 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/core/include \
 	-I$(DIR_IRODS)/server/drivers/include \
 	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include 	
+	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_JANSSON_INC)	
 	
 SRCS 	= \
 	server.c \
@@ -67,7 +68,8 @@ SRCS 	= \
 
 CPPFLAGS += -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS 
 
-LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) -ljansson -lcurl \
+LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L$(DIR_JANSSON_LIB) -ljansson -lcurl \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \

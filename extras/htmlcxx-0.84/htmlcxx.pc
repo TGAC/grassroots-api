@@ -1,0 +1,12 @@
+url=http://htmlcxx.sourceforge.net/
+prefix=/opt/wheatis/extras/htmlcxx
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: htmlcxx
+Description: html and css apis for c++
+Version: 0.84
+Libs: -L${libdir} -lhtmlcxx
+Cflags: -I${includedir} 
+URL: ${url}

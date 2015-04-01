@@ -2,6 +2,8 @@ CC=gcc -fPIC
 AR=ar
 LD_LIBRARY_PATH=/usr/local/include
 
+JANSSON_PATH=/usr/local
+LIBOAUTH_PATH=/usr/local
 
 OBJ_PATH=obj
 SRC_PATH=src
@@ -12,7 +14,7 @@ EXAMPLE_PATH=example
 LIBRARY_INSTALL_PATH=/usr/local/lib
 INCLUDE_INSTALL_PATH=/usr/local/include
 
-FLAGS=-g -Wall -std=gnu99 -I $(LD_LIBRARY_PATH)
+FLAGS=-g -Wall -std=gnu99 -I $(LD_LIBRARY_PATH) -I ../memStream/include
 
 OBJ=$(addprefix $(OBJ_PATH)/,dropbox.o dropboxJson.o dropboxOAuth.o dropboxUtils.o dropboxUtils.o)
 OUT=$(OUT_PATH)/libdropbox.so
@@ -28,7 +30,7 @@ all: EXPORT_VAR $(OBJ_PATH) $(OUT_PATH) $(LIBRARY_INSTALL_PATH) $(INCLUDE_INSTAL
 example: $(EXAMPLE_PATH)/example
 
 EXPORT_VAR: 
-	-ldconfig $(LIBRARY_INSTALL_PATH)
+#	-ldconfig $(LIBRARY_INSTALL_PATH)
 
 strip: $(OUT)
 	-strip $^
@@ -37,26 +39,26 @@ $(EXAMPLE): $(EXAMPLE_PATH)/example.c
 	$(CC) $(FLAGS) $< -o $@ -Bstatic -lmemstream -Bdynamic -ldropbox -L$(LIBRARY_INSTALL_PATH)
 
 $(OUT): $(OBJ)
-	$(CC) $(FLAGS) -shared $^ -o $@ -I $(INCLUDE_PATH) -Bstatic -lmemstream -Bdynamic -lcurl -loauth -ljansson -L$(LIBRARY_INSTALL_PATH)
+	$(CC) $(FLAGS) -shared $^ -o $@ -I $(INCLUDE_PATH) -Bstatic -lmemstream -Bdynamic -lcurl -L$(LIBOAUTH_PATH)/lib -loauth -L$(JANSSON_PATH)/lib -ljansson -L$(LIBRARY_INSTALL_PATH)
 
 $(OBJ_PATH)/dropbox.o : $(SRC_PATH)/dropbox.c $(DROPBOX_H)
 	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH)
 
 $(OBJ_PATH)/dropboxJson.o : $(SRC_PATH)/dropboxJson.c $(DROPBOX_JSON_H)
-	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH)
+	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH) -I$(JANSSON_PATH)/include
 
 $(OBJ_PATH)/dropboxOAuth.o : $(SRC_PATH)/dropboxOAuth.c $(DROPBOX_OAUTH_H)
-	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH)
+	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH) -I$(LIBOAUTH_PATH)/include
 
 $(OBJ_PATH)/dropboxUtils.o : $(SRC_PATH)/dropboxUtils.c $(DROPBOX_UTILS_H)
-	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH)
+	$(CC) $(FLAGS) -o $@ -c $< -I $(INCLUDE_PATH)  -I$(LIBOAUTH_PATH)/include
 
 $(OBJ_PATH) $(OUT_PATH) $(LIBRARY_INSTALL_PATH) $(INCLUDE_INSTALL_PATH):
 	-mkdir -p $@
 
 .PHONY install: all
 	install -m 0755 $(OUT) $(LIBRARY_INSTALL_PATH)
-	install -m 0644 $(INCLUDE_PATH)/dropbox.h $(INCLUDE_INSTALL_PATH)
+	install -m 0644 $(INCLUDE_PATH)/*.h $(INCLUDE_INSTALL_PATH)
 
 uninstall: 
 	rm -rf $(LIBRARY_INSTALL_PATH)/libdropbox.so $(INCLUDE_INSTALL_PATH)/dropbox.h

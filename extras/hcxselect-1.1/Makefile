@@ -5,10 +5,17 @@
 SUBDIRS = src examples test
 .PHONY: all $(SUBDIRS)
 
-all: examples test
+all: examples test install
+
+install:
+	mkdir $(PREFIX)
+	mkdir $(PREFIX)/include
+	mkdir $(PREFIX)/lib
+	cp src/libhcxselect.so $(PREFIX)/lib
+	cp src/*.h $(PREFIX)/include 
 
 src:
-	@$(MAKE) -wC src $(MFAGS)
+	@$(MAKE) -wC src $(MFLAGS)
 
 examples: src
 	@$(MAKE) -wC examples $(MFLAGS)

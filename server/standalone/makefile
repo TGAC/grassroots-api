@@ -67,15 +67,16 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/core/include \
 	-I$(DIR_IRODS)/server/drivers/include \
 	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include 	
-	
+	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_JANSSON_INC)
 SRCS = \
 	standalone_server.c
 
 
 CPPFLAGS += -DUNIX
 
-LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljansson \
+LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
@@ -83,8 +84,9 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  -ljans
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS) -lirods \
 	-L$(DIR_EXTERNAL_LIBS) \
-	-lhcxselect \
-	-lhtmlcxx
+	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
+	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
+	-L$(DIR_IRODS_INSTALL)
 
 .PHONY:	all 
 

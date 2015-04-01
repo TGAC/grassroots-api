@@ -48,7 +48,6 @@ SRCS 	= \
 	key_value_pair.c \
 	request_tools.c \
 	resource.c \
-#	polar_ssl_connection.c \
 	selector.cpp
 	
 
