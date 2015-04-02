@@ -1,7 +1,11 @@
 COPY	= cp
-WHEATIS_INSTALL = /opt/wheatis
+DIR_WHEATIS_INSTALL = /opt/wheatis
 
-# BEGIN JANSSON CONFIG
+
+include generic_makefiles/properties.makefile
+
+
+# BEGIN JANSSON CONFIGURATION
 ifdef $(JANSSON_HOME)
 DIR_JANSSON=$(JANSSON_HOME)
 else
@@ -11,7 +15,7 @@ export DIR_JANSSON_INC=$(DIR_JANSSON)/include
 export DIR_JANSSON_LIB=$(DIR_JANSSON)/lib
 # END JANSSON CONFIGURATION
 
-# BEGIN DROPBOX CONFIG
+# BEGIN DROPBOX CONFIGURATION
 ifdef $(DROPBOX_HOME)
 DIR_DROPBOX=$(DROPBOX_HOME)
 else
@@ -21,7 +25,7 @@ export DIR_DROPBOX_INC=$(DIR_DROPBOX)/include
 export DIR_DROPBOX_LIB=$(DIR_DROPBOX)/lib
 # END DROPBOX CONFIGURATION
 
-# BEGIN HCXSELECT CONFIG
+# BEGIN HCXSELECT CONFIGURATION
 ifdef $(HCXSELECT_HOME)
 DIR_HCXSELECT=$(HCXSELECT_HOME)
 else
@@ -31,7 +35,7 @@ export DIR_HCXSELECT_INC=$(DIR_HCXSELECT)/include
 export DIR_HCXSELECT_LIB=$(DIR_HCXSELECT)/lib
 # END HCXSELECT CONFIGURATION
 
-# BEGIN HTMLCXX CONFIG
+# BEGIN HTMLCXX CONFIGURATION
 ifdef $(HTMLCXX_HOME)
 DIR_HTMLCXX=$(HTMLCXX_HOME)
 else
@@ -41,7 +45,7 @@ export DIR_HTMLCXX_INC=$(DIR_HTMLCXX)/include
 export DIR_HTMLCXX_LIB=$(DIR_HTMLCXX)/lib
 # END HTMLCXX CONFIGURATION
 
-DIR_IRODS_INSTALL=$(WHEATIS_INSTALL)/extras/irods
+SHARED_IRODS_HOME=$(WHEATIS_INSTALL)/extras/irods
 
 all: 	
 	@echo "BUILD = " $(BUILD)
@@ -111,17 +115,27 @@ clean:
 	$(MAKE) -C services/tgac_elastic_search clean
 	
 install_init:
-	@mkdir -p $(WHEATIS_INSTALL)
-	@mkdir -p $(WHEATIS_INSTALL)/lib
-	@mkdir -p $(WHEATIS_INSTALL)/services
-	@mkdir -p $(WHEATIS_INSTALL)/references
-	@mkdir -p $(WHEATIS_INSTALL)/images
-	@mkdir -p $(WHEATIS_INSTALL)/clients
-	@mkdir -p $(WHEATIS_INSTALL)/handlers
+	@mkdir -p $(DIR_WHEATIS_INSTALL)
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/extras
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/lib
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/services
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/references
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/images
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/clients
+	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
 
 
+install_deps:
+	
 install_references:
 	$(COPY) references/* $(WHEATIS_INSTALL)/references/
 
 install_images:
 	$(COPY) images/* $(WHEATIS_INSTALL)/images
+
+install_jansson:
+	cd $(DIR_ROOT)/extras/jansson
+	./configure --prefix=$(DIR_JANSSON)
+	make
+	make install	
+	
