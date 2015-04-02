@@ -1,5 +1,5 @@
 COPY	= cp
-WHEATIS_INSTALL = ../wheatis_demo
+WHEATIS_INSTALL = /opt/wheatis
 
 # BEGIN JANSSON CONFIG
 ifdef $(JANSSON_HOME)
@@ -41,7 +41,7 @@ export DIR_HTMLCXX_INC=$(DIR_HTMLCXX)/include
 export DIR_HTMLCXX_LIB=$(DIR_HTMLCXX)/lib
 # END HTMLCXX CONFIGURATION
 
-DIR_IRODS_INSTALL=/opt/wheatis/extras/irods
+DIR_IRODS_INSTALL=$(WHEATIS_INSTALL)/extras/irods
 
 all: 	
 	@echo "BUILD = " $(BUILD)
