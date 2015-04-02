@@ -18,9 +18,6 @@ DIR_ROOT = ..
 DIR_INSTALL_ROOT = ../../wheatis_demo
 DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
 
-DIR_HTMLCXX = ../extras/htmlcxx
-DIR_HTMLCXX_INC = $(DIR_HTMLCXX)/include
-DIR_HTMLCXX_LIB = $(DIR_HTMLCXX)/lib
 
 TEST_EXE_NAME = network_test
 

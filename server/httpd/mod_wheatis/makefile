@@ -86,7 +86,8 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/core/include \
 	-I$(DIR_IRODS)/server/drivers/include \
 	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include 	
+	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_JANSSON_INC)	
 		
 SRCS 	= \
 	src/mod_wheatis.c \

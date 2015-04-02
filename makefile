@@ -2,11 +2,11 @@ COPY	= cp
 DIR_WHEATIS_INSTALL = /opt/wheatis
 
 
-include generic_makefiles/properties.makefile
+include dependencies.properties
 
 
 # BEGIN JANSSON CONFIGURATION
-ifdef $(JANSSON_HOME)
+ifneq ($(JANSSON_HOME),)
 DIR_JANSSON=$(JANSSON_HOME)
 else
 DIR_JANSSON=/usr/local
@@ -16,7 +16,7 @@ export DIR_JANSSON_LIB=$(DIR_JANSSON)/lib
 # END JANSSON CONFIGURATION
 
 # BEGIN DROPBOX CONFIGURATION
-ifdef $(DROPBOX_HOME)
+ifneq ($(DROPBOX_HOME),)
 DIR_DROPBOX=$(DROPBOX_HOME)
 else
 DIR_DROPBOX=/usr/local
@@ -26,7 +26,7 @@ export DIR_DROPBOX_LIB=$(DIR_DROPBOX)/lib
 # END DROPBOX CONFIGURATION
 
 # BEGIN HCXSELECT CONFIGURATION
-ifdef $(HCXSELECT_HOME)
+ifneq ($(HCXSELECT_HOME),)
 DIR_HCXSELECT=$(HCXSELECT_HOME)
 else
 DIR_HCXSELECT=/usr/local
@@ -36,7 +36,7 @@ export DIR_HCXSELECT_LIB=$(DIR_HCXSELECT)/lib
 # END HCXSELECT CONFIGURATION
 
 # BEGIN HTMLCXX CONFIGURATION
-ifdef $(HTMLCXX_HOME)
+ifneq ($(HTMLCXX_HOME),)
 DIR_HTMLCXX=$(HTMLCXX_HOME)
 else
 DIR_HTMLCXX=/usr/local
@@ -49,6 +49,8 @@ SHARED_IRODS_HOME=$(WHEATIS_INSTALL)/extras/irods
 
 all: 	
 	@echo "BUILD = " $(BUILD)
+	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
+	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C util 
 	$(MAKE) -C network
 	$(MAKE) -C irods/lib
