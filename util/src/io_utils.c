@@ -11,7 +11,7 @@
  */
 #include <math.h>
 #include <stdarg.h>
-
+#include <string.h>
 /*
  * os includes
  */
