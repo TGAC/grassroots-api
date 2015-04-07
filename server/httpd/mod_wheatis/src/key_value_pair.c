@@ -5,6 +5,8 @@
 #include "http_request.h"
 #include "http_log.h"
 
+#include "ap_release.h"
+
 #include "apr_strings.h"
 #include "apr_tables.h"
 #include "util_script.h"
@@ -28,11 +30,22 @@ typedef struct JsonRequest
 /**********************************/
 
 
-static bool ConvertFormPairToKeyValuePair (request_rec *req_p, ap_form_pair_t *pair_p, KeyValuePair *key_value_pair_p);
+#if AP_SERVER_MAJORVERSION_NUMBER >= 2
 
-static json_t *ConvertGetParametersToJSON (request_rec *req_p);
+	#if AP_SERVER_MINORVERSION_NUMBER == 4
+		static bool ConvertFormPairToKeyValuePair (request_rec *req_p, ap_form_pair_t *pair_p, KeyValuePair *key_value_pair_p);
 
-static json_t *ConvertPostParametersToJSON (request_rec *req_p);
+		static json_t *ConvertGetParametersToJSON (request_rec *req_p);
+
+		static json_t *ConvertPostParametersToJSON (request_rec *req_p);
+
+		#else #if AP_SERVER_MINORVERSION_NUMBER == 2		/* #if AP_SERVER_MINORVERSION_NUMBER == 4 */
+
+	#endif		/* #else #if AP_SERVER_MINORVERSION_NUMBER == 2 */
+
+#endif		/* #if AP_SERVER_MAJORVERSION_NUMBER >= 2 */
+
+
 
 static int AddParameter (void *rec_p, const char *key_s, const char *value_s);
 
@@ -115,6 +128,10 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 /********* STATIC METHODS *********/
 /**********************************/
 
+
+#if AP_SERVER_MAJORVERSION_NUMBER >= 2
+
+#if AP_SERVER_MINORVERSION_NUMBER == 4
 
 static bool ConvertFormPairToKeyValuePair (request_rec *req_p, ap_form_pair_t *pair_p, KeyValuePair *key_value_pair_p)
 {
@@ -278,6 +295,11 @@ static json_t *ConvertPostParametersToJSON (request_rec *req_p)
 		 
 	return root_p;
 }
+
+#endif		/* #if AP_SERVER_MINORVERSION_NUMBER == 4 */
+
+#endif		/* #if AP_SERVER_MAJORVERSION_NUMBER >= 2 */
+
 
 
 static int AddParameter (void *rec_p, const char *key_s, const char *value_s)
