@@ -59,14 +59,15 @@ INCLUDES = \
 	-I$(DIR_IRODS)/server/core/include \
 	-I$(DIR_IRODS)/server/drivers/include \
 	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include 
+	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \
 	irods_search_service.c 	
 	 
 CPPFLAGS += -DIRODS_SEARCH_LIBRARY_EXPORTS 
 
-LDFLAGS += -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICE_LIB) -l$(WHEATIS_SERVICE_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLE_LIB) -l$(WHEATIS_HANDLE_LIB_NAME) \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \

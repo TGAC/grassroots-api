@@ -8,5 +8,5 @@ buildDir = $(IRODS)
 include lib/Makefile
 
 shared: lib
-	gcc --shared  -o libirods.so $(LIB_CORE_OBJS) 
+	gcc --shared  -o libirods.so $(OBJS) 
 	

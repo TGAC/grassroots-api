@@ -39,7 +39,7 @@ typedef struct JsonRequest
 
 		static json_t *ConvertPostParametersToJSON (request_rec *req_p);
 
-		#else #if AP_SERVER_MINORVERSION_NUMBER == 2		/* #if AP_SERVER_MINORVERSION_NUMBER == 4 */
+	#elif AP_SERVER_MINORVERSION_NUMBER == 2		/* #if AP_SERVER_MINORVERSION_NUMBER == 4 */
 
 	#endif		/* #else #if AP_SERVER_MINORVERSION_NUMBER == 2 */
 

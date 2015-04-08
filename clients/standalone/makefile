@@ -45,20 +45,21 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
-	-I$(DIR_IRODS)/lib/core/include 
+	-I$(DIR_IRODS)/lib/core/include \
+	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \
 	standalone_client.c 
 
-LDFLAGS += -ljansson \
+LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME)  \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
-	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
+	-L/usr/lib/x86_64-linux-gnu/ \
+	-lcurl \
 	-ldl \
-	-L$(DIR_EXTERNAL_LIBS) \
-	-lhcxselect \
-	-lhtmlcxx
+	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
+	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx
 
 .PHONY:	all 
 
