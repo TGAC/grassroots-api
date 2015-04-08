@@ -5,36 +5,14 @@ CC		= g++
 CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
-DIR_INSTALL = ../../../wheatis_demo/handlers
 
-BUILD		= debug
+ifeq ($(DIR_ROOT),)
+export DIR_ROOT = $(realpath $(../..))
+endif
 
-DIR_ROOT = ../..
-
-DIR_IRODS	= $$IRODS_HOME
-
-
-DIR_WHEATIS_UTIL = ../../util
-DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
-DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
-WHEATIS_UTIL_LIB_NAME = wheatis_util
-
-DIR_WHEATIS_NETWORK = ../../network
-DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
-DIR_WHEATIS_NETWORK_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
-WHEATIS_NETWORK_LIB_NAME = wheatis_network
-
-
-DIR_WHEATIS_HANDLE = ../lib
-DIR_WHEATIS_HANDLE_INC = $(DIR_WHEATIS_HANDLE)/include
-DIR_WHEATIS_HANDLE_LIB = $(DIR_WHEATIS_HANDLE)/$(BUILD)
-WHEATIS_HANDLE_LIB_NAME = wheatis_handler
-
-DIR_WHEATIS_SERVICE = ../../services/lib
-DIR_WHEATIS_SERVICE_INC = $(DIR_WHEATIS_SERVICE)/include
-DIR_WHEATIS_SERVICE_LIB = $(DIR_WHEATIS_SERVICE)/$(BUILD)
-WHEATIS_SERVICE_LIB_NAME = wheatis_services
-
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
 
 
 

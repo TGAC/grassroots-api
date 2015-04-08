@@ -9,30 +9,14 @@ MAKEDEPEND 	= gcc -MM -MF
 
 BUILD		= debug
 
-DIR_ROOT = ../..
 
+ifeq ($(DIR_ROOT),)
+export DIR_ROOT = $(realpath $(../..))
+endif
 
-DIR_IRODS = $$IRODS_HOME
-#DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
-
-
-DIR_WHEATIS_SERVICES = ../../services/lib
-DIR_WHEATIS_SERVICES_INC = $(DIR_WHEATIS_SERVICES)/include
-DIR_WHEATIS_SERVICES_LIB = $(DIR_WHEATIS_SERVICES)/$(BUILD)
-WHEATIS_SERVICES_LIB_NAME = wheatis_services
-
-DIR_WHEATIS_UTIL = ../../util
-DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
-DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
-WHEATIS_UTIL_LIB_NAME = wheatis_util
-
-DIR_WHEATIS_NETWORK = ../../network
-DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
-DIR_WHEATIS_NETWORK_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
-WHEATIS_NETWORK_LIB_NAME = wheatis_network
-
-
-DIR_INSTALL = ../../../wheatis_demo/lib
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
 
 
 CFLAGS += -ansi
@@ -49,14 +33,14 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
-	-I$(DIR_IRODS)/lib/api/include \
-	-I$(DIR_IRODS)/lib/core/include \
-	-I$(DIR_IRODS)/lib/md5/include \
-	-I$(DIR_IRODS)/lib/sha1/include \
-	-I$(DIR_IRODS)/server/core/include \
-	-I$(DIR_IRODS)/server/drivers/include \
-	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \

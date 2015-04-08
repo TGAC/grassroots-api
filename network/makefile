@@ -5,19 +5,14 @@ COMP		= gcc
 MAKEDEPEND 	= gcc -MM -MF
 
 
-DIR_WHEATIS_UTIL = ../util
-DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
-DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
-WHEATIS_UTIL_LIB_NAME = wheatis_util
 
-DIR_WHEATIS_SERVER = ../server/lib
-DIR_WHEATIS_SERVER_INC = $(DIR_WHEATIS_SERVER)/include
+ifeq ($(DIR_ROOT),)
+export DIR_ROOT = $(realpath $(..))
+endif
 
-DIR_ROOT = ..
-
-DIR_INSTALL_ROOT = ../../wheatis_demo
-DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
-
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
 
 TEST_EXE_NAME = network_test
 

@@ -1,5 +1,8 @@
 COPY	= cp
-DIR_WHEATIS_INSTALL = /opt/wheatis
+
+
+export DIR_WHEATIS_INSTALL = /opt/wheatis
+export DIR_ROOT = $(realpath .)
 
 
 include dependencies.properties
@@ -51,10 +54,11 @@ DIR_SHARED_IRODS=$(SHARED_IRODS_HOME)
 else
 DIR_SHARED_IRODS=/usr/local
 endif
-export DIR_SHARED_IRODS_INC=$(DIR_SHARED_IRODS)/include
+export DIR_SHARED_IRODS_INC=$(DIR_SHARED_IRODS)
 export DIR_SHARED_IRODS_LIB=$(DIR_SHARED_IRODS)/lib
-# # END HTMLCXX CONFIGURATION
-#
+# END HTMLCXX CONFIGURATION
+
+include project.properties
 
 
 all: 	

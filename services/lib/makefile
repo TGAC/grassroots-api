@@ -5,27 +5,15 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
-DIR_ROOT = ../..
 
-DIR_IRODS	= $$IRODS_HOME
+ifeq ($(DIR_ROOT),)
+export DIR_ROOT = $(realpath $(../..))
+endif
 
-DIR_INSTALL_ROOT = ../../../wheatis_demo
-DIR_INSTALL = $(DIR_INSTALL_ROOT)/lib
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
 
-DIR_WHEATIS_UTIL = ../../util
-DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
-DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
-WHEATIS_UTIL_LIB_NAME = wheatis_util
-
-DIR_WHEATIS_NETWORK = ../../network
-DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
-DIR_WHEATIS_NETWORKL_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
-WHEATIS_NETWORK_LIB_NAME = wheatis_network
-
-DIR_WHEATIS_HANDLER = ../../handlers/lib
-DIR_WHEATIS_HANDLER_INC = $(DIR_WHEATIS_HANDLER)/include
-DIR_WHEATIS_HANDLER_LIB = $(DIR_WHEATIS_HANDLER)/$(BUILD)
-WHEATIS_HANDLER_LIB_NAME = wheatis_handler
 
 
 BUILD		= debug
@@ -40,7 +28,14 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
-	-I$(DIR_JANSSON_INC)
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
 	
 SRCS 	= \
 	client.c \
