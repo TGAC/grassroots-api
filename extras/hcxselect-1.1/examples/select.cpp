@@ -70,7 +70,7 @@ int main(int argc, char **argv)
 	}
 
 	for (hcxselect::Selector::const_iterator it = s.begin(); it != s.end(); ++it) {
-		cout << source.substr((*it)->data.offset(), (*it)->data.length()) << endl << endl;
+		cout << source.substr((*it)->data.offset(), (*it)->data.length());
 	}
 	return 0;
 }

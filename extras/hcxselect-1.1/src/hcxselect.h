@@ -38,8 +38,6 @@
 #include <htmlcxx/html/Node.h>
 #include <htmlcxx/html/tree.h>
 
-#include "hcxselect_library.h"
-
 #define HCXSELECT_VERSION_STR "1.1"
 #define HCXSELECT_VERSION_MAJOR 1
 #define HCXSELECT_VERSION_MINOR 1
@@ -49,7 +47,7 @@
 /*!
  * Library namespace
  */
-namespace  hcxselect
+namespace hcxselect
 {
 
 /*!
@@ -82,7 +80,7 @@ typedef std::set<Node *, NodeComp> NodeSet;
  * \param expr The CSS selector expression
  * \returns A set of nodes that matches the given selector
  */
-HCXSELECT_API NodeSet select(const tree<htmlcxx::HTML::Node> &tree, const std::string &expr);
+NodeSet select(const tree<htmlcxx::HTML::Node> &tree, const std::string &expr);
 
 /*!
  * Applies a CSS selector expression to a set of nodes.
@@ -92,7 +90,7 @@ HCXSELECT_API NodeSet select(const tree<htmlcxx::HTML::Node> &tree, const std::s
  * \param expr The CSS selector expression
  * \returns A set of nodes that matches the given selector
  */
-HCXSELECT_API NodeSet select(const NodeSet &nodes, const std::string &expr);
+NodeSet select(const NodeSet &nodes, const std::string &expr);
 
 
 /*!
@@ -101,7 +99,7 @@ HCXSELECT_API NodeSet select(const NodeSet &nodes, const std::string &expr);
  * and a select() member function. This allows for chaining of different
  * selectors.
  */
-class HCXSELECT_API Selection : public NodeSet
+class Selection : public NodeSet
 {
 public:
 	Selection();

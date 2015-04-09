@@ -161,9 +161,9 @@ install_htmlcxx:
 	make install		
 	
 install_hcxselect:
-	cd $(DIR_ROOT)/extras/hcxselect-1.1
-	./configure --prefix=$(DIR_HCXSELECT)
-	make
+	cd $(DIR_ROOT)/extras/hcxselect-1.1; \
+	./configure --prefix=$(DIR_HCXSELECT); \
+	make; \
 	make install		
 	
 	

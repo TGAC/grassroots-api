@@ -8,11 +8,8 @@ SUBDIRS = src examples test
 all: examples test install
 
 install:
-	mkdir $(PREFIX)
-	mkdir $(PREFIX)/include
-	mkdir $(PREFIX)/lib
-	cp src/libhcxselect.so $(PREFIX)/lib
-	cp src/*.h $(PREFIX)/include 
+	cp src/libhcxselect.so $(DIR_HTMLCXX_LIB)
+	cp src/*.h $(DIR_HTMLCXX_INC) 
 
 src:
 	@$(MAKE) -wC src $(MFLAGS)
