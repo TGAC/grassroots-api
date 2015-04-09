@@ -149,7 +149,7 @@ install_images:
 	$(COPY) images/* $(WHEATIS_INSTALL)/images
 
 install_jansson:
-	cd $(DIR_ROOT)/extras/jansson; \
+	cd $(DIR_ROOT)/extras/jansson-2.6; \
 	./configure --prefix=$(DIR_JANSSON); \
 	make; \
 	make install	
