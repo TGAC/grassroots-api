@@ -155,9 +155,9 @@ install_jansson:
 	make install	
 	
 install_htmlcxx:
-	cd $(DIR_ROOT)/extras/htmlcxx-0.84
-	./configure --prefix=$(DIR_HTMLCXX)
-	make
+	cd $(DIR_ROOT)/extras/htmlcxx-0.84; \
+	./configure --prefix=$(DIR_HTMLCXX); \
+	make; \
 	make install		
 	
 install_hcxselect:
