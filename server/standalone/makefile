@@ -28,14 +28,14 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_IRODS_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_WHEATIS_HANDLER_INC) \
-	-I$(DIR_IRODS)/lib/api/include \
-	-I$(DIR_IRODS)/lib/core/include \
-	-I$(DIR_IRODS)/lib/md5/include \
-	-I$(DIR_IRODS)/lib/sha1/include \
-	-I$(DIR_IRODS)/server/core/include \
-	-I$(DIR_IRODS)/server/drivers/include \
-	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC)
 SRCS = \
 	standalone_server.c
@@ -51,7 +51,6 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 	-L$(DIR_SHARED_IRODS_LIB) -lirods \
-	-L$(DIR_EXTERNAL_LIBS) \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
 	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 

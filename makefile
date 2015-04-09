@@ -1,5 +1,4 @@
-COPY	= cp
-
+COPY	= cp 
 
 export DIR_WHEATIS_INSTALL = /opt/wheatis
 export DIR_ROOT = $(realpath .)
@@ -48,15 +47,15 @@ export DIR_HTMLCXX_INC=$(DIR_HTMLCXX)/include
 export DIR_HTMLCXX_LIB=$(DIR_HTMLCXX)/lib
 # END HTMLCXX CONFIGURATION
 
-# BEGIN HTMLCXX CONFIGURATION
+# BEGIN IRODS CONFIGURATION
 ifneq ($(SHARED_IRODS_HOME),)
 DIR_SHARED_IRODS=$(SHARED_IRODS_HOME)
 else
 DIR_SHARED_IRODS=/usr/local
 endif
-export DIR_SHARED_IRODS_INC=$(DIR_SHARED_IRODS)
+export DIR_SHARED_IRODS_INC=$(DIR_SHARED_IRODS)/include
 export DIR_SHARED_IRODS_LIB=$(DIR_SHARED_IRODS)/lib
-# END HTMLCXX CONFIGURATION
+# END IRODS CONFIGURATION
 
 include project.properties
 
@@ -141,7 +140,7 @@ install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
 
 
-install_deps:
+install_deps: install_jansson install_htmlcxx install_hcxselect
 	
 install_references:
 	$(COPY) references/* $(WHEATIS_INSTALL)/references/
@@ -150,8 +149,41 @@ install_images:
 	$(COPY) images/* $(WHEATIS_INSTALL)/images
 
 install_jansson:
-	cd $(DIR_ROOT)/extras/jansson
-	./configure --prefix=$(DIR_JANSSON)
-	make
+	cd $(DIR_ROOT)/extras/jansson; \
+	./configure --prefix=$(DIR_JANSSON); \
+	make; \
 	make install	
 	
+install_htmlcxx:
+	cd $(DIR_ROOT)/extras/htmlcxx-0.84
+	./configure --prefix=$(DIR_HTMLCXX)
+	make
+	make install		
+	
+install_hcxselect:
+	cd $(DIR_ROOT)/extras/hcxselect-1.1
+	./configure --prefix=$(DIR_HCXSELECT)
+	make
+	make install		
+	
+	
+	
+install_irods_dev:
+	@mkdir -p $(DIR_SHARED_IRODS_INC)
+	@mkdir -p $(DIR_SHARED_IRODS_LIB)
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/lib/api/include
+	$(COPY) $$IRODS_HOME/lib/api/include/* $(DIR_SHARED_IRODS_INC)/lib/api/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/lib/core/include
+	$(COPY) $$IRODS_HOME/lib/core/include/* $(DIR_SHARED_IRODS_INC)/lib/core/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/lib/md5/include
+	$(COPY) $$IRODS_HOME/lib/md5/include/* $(DIR_SHARED_IRODS_INC)/lib/md5/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/lib/sha1/include
+	$(COPY) $$IRODS_HOME/lib/sha1/include/* $(DIR_SHARED_IRODS_INC)/lib/sha1/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/server/core/include
+	$(COPY) $$IRODS_HOME/server/core/include/* $(DIR_SHARED_IRODS_INC)/server/core/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/server/drivers/include
+	$(COPY) $$IRODS_HOME/server/drivers/include/* $(DIR_SHARED_IRODS_INC)/server/drivers/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/server/icat/include
+	$(COPY) $$IRODS_HOME/server/icat/include/* $(DIR_SHARED_IRODS_INC)/server/icat/include
+	@mkdir -p $(DIR_SHARED_IRODS_INC)/server/re/include
+	$(COPY) $$IRODS_HOME/server/re/include/* $(DIR_SHARED_IRODS_INC)/server/re/include
