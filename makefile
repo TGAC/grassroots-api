@@ -57,6 +57,17 @@ export DIR_SHARED_IRODS_INC=$(DIR_SHARED_IRODS)/include
 export DIR_SHARED_IRODS_LIB=$(DIR_SHARED_IRODS)/lib
 # END IRODS CONFIGURATION
 
+# BEGIN OAUTH CONFIGURATION
+ifneq ($(OAUTH_HOME),)
+DIR_OAUTH=$(OAUTH_HOME)
+else
+DIR_OAUTH=/usr/local
+endif
+export DIR_OAUTH_INC=$(DIR_OAUTH)/include
+export DIR_OAUTH_LIB=$(DIR_OAUTH)/lib
+# END OAUTH CONFIGURATION
+
+
 include project.properties
 
 
@@ -140,7 +151,7 @@ install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
 
 
-install_deps: install_jansson install_htmlcxx install_hcxselect
+install_deps: install_jansson install_htmlcxx install_hcxselect install_dropbox_c install_oauth install_irods_dev
 	
 install_references:
 	$(COPY) references/* $(WHEATIS_INSTALL)/references/
@@ -161,14 +172,22 @@ install_htmlcxx:
 	make install		
 	
 install_hcxselect:
+	@mkdir -p $(DIR_HCXSELECT)
+	@mkdir -p $(DIR_HCXSELECT_INC)
+	@mkdir -p $(DIR_HCXSELECT_LIB)
 	cd $(DIR_ROOT)/extras/hcxselect-1.1; \
 	make; \
 	make install		
-	
+
 install_dropbox_c:
+	cd $(DIR_ROOT)/extras/Dropbox-C; \
+	make all LIBRARY_INSTALL_PATH=$(DIR_DROPBOX_LIB) INCLUDE_INSTALL_PATH=$(DIR_DROPBOX_INC)
 
 install_oauth:
-
+	cd $(DIR_ROOT)/extras/liboauth-1.0.3; \
+	./configure --prefix=$(DIR_OAUTH); \
+	make; \
+	make install			
 	
 	
 install_irods_dev:
