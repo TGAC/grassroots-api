@@ -151,7 +151,7 @@ install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
 
 
-install_deps: install_jansson install_htmlcxx install_hcxselect install_dropbox_c install_oauth install_irods_dev
+install_deps: install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_irods_dev
 	
 install_references:
 	$(COPY) references/* $(WHEATIS_INSTALL)/references/
@@ -181,7 +181,7 @@ install_hcxselect:
 
 install_dropbox_c:
 	cd $(DIR_ROOT)/extras/Dropbox-C; \
-	make all LIBRARY_INSTALL_PATH=$(DIR_DROPBOX_LIB) INCLUDE_INSTALL_PATH=$(DIR_DROPBOX_INC)
+	make all LIBRARY_INSTALL_PATH=$(DIR_DROPBOX_LIB) INCLUDE_INSTALL_PATH=$(DIR_DROPBOX_INC) JANSSON_PATH=$(DIR_JANSSON) LIBOAUTH_PATH=$(DIR_OAUTH)
 
 install_oauth:
 	cd $(DIR_ROOT)/extras/liboauth-1.0.3; \

@@ -5,7 +5,7 @@
 CXXFLAGS += -Wall -g -I$(DIR_HTMLCXX_INC)
 CXXFLAGS += $(shell pkg-config --cflags htmlcxx)
 INCLUDES += -I../src
-LIBS += -L../src -lhcxselect -lstdc++
+LIBS += -L../src -lhcxselect -lstdc++ -L$(DIR_HTMLCXX_LIB) -lhtmlcxx
 LIBS += $(shell pkg-config --libs htmlcxx)
 
 all: select
