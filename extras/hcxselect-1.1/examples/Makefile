@@ -2,7 +2,7 @@
 # hcxselect - A CSS selector engine for htmlcxx
 #
 
-CXXFLAGS += -Wall -g
+CXXFLAGS += -Wall -g -I$(DIR_HTMLCXX_INC)
 CXXFLAGS += $(shell pkg-config --cflags htmlcxx)
 INCLUDES += -I../src
 LIBS += -L../src -lhcxselect -lstdc++
