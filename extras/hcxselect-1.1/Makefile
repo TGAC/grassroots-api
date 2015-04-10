@@ -7,9 +7,9 @@ SUBDIRS = src examples test
 
 all: examples test install
 
-install:
-	cp src/libhcxselect.so $(DIR_HTMLCXX_LIB)
-	cp src/*.h $(DIR_HTMLCXX_INC) 
+install: src
+	cp src/libhcxselect.so $(DIR_HCXSELECT_LIB)
+	cp src/*.h $(DIR_HCXSELECT_INC) 
 
 src:
 	@$(MAKE) -wC src $(MFLAGS)

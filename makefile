@@ -162,10 +162,13 @@ install_htmlcxx:
 	
 install_hcxselect:
 	cd $(DIR_ROOT)/extras/hcxselect-1.1; \
-	./configure --prefix=$(DIR_HCXSELECT); \
 	make; \
 	make install		
 	
+install_dropbox_c:
+
+install_oauth:
+
 	
 	
 install_irods_dev:
