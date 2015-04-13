@@ -9,9 +9,16 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
-DIR_IRODS	= $$IRODS_HOME
+ifneq ($$APACHE_HOME,)
+SUDO = 
 DIR_APACHE_MODULES = $$APACHE_HOME/modules
 DIR_APACHE_INC = $$APACHE_HOME/include
+else
+SUDO = sudo
+DIR_APACHE_MODULES = /etc/httpd/modules
+DIR_APACHE_INC = /usr/include/httpd
+endif
+
 
 
 ifeq ($(DIR_ROOT),)
@@ -42,6 +49,7 @@ VPATH	= \
 
 INCLUDES = \
 	-I ../include \
+	-I$(DIR_APACHE_INC) \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
@@ -51,14 +59,14 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_IRODS_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_WHEATIS_HANDLER_INC) \
-	-I$(DIR_IRODS)/lib/api/include \
-	-I$(DIR_IRODS)/lib/core/include \
-	-I$(DIR_IRODS)/lib/md5/include \
-	-I$(DIR_IRODS)/lib/sha1/include \
-	-I$(DIR_IRODS)/server/core/include \
-	-I$(DIR_IRODS)/server/drivers/include \
-	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC)	
 		
 SRCS 	= \
@@ -90,7 +98,7 @@ $(DIR_OBJS)/%.o : %.c
 .PHONY:	all
 
 all: 
-		apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
+		$(SUDO) apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
