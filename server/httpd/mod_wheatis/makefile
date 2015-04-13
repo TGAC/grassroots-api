@@ -9,16 +9,18 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
-DIR_APACHE=$(trim $$APACHE_HOME)
+DIR_APACHE=$$APACHE_HOME
 
 ifneq ($(DIR_APACHE),)
 SUDO = 
 DIR_APACHE_MODULES = $(DIR_APACHE)/modules
 DIR_APACHE_INC = $(DIR_APACHE)/include
+DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
 else
 SUDO = sudo
 DIR_APACHE_MODULES = /etc/httpd/modules
 DIR_APACHE_INC = /usr/include/httpd
+DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/include
 endif
 
 
@@ -100,15 +102,17 @@ $(DIR_OBJS)/%.o : %.c
 .PHONY:	all
 
 all: 
-		$(SUDO) apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
+	@echo "APACHE_HOME $$APACHE_HOME"
+	@echo "IRODS_HOME $$IRODS_HOME -"
+	@echo "DIR_APACHE _ $(DIR_APACHE) _"
+	@echo "APACHE INC $(DIR_APACHE_INC)"
+	$(SUDO) apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
 		
 install: all
-	@echo "DIR_APACHE _$(DIR_APACHE)_"
-	@echo "APACHE INC $(DIR_APACHE_INC)"
 	@echo "Installing mod_$(NAME).so to $(DIR_APACHE_MODULES)"
 	cp src/.libs/mod_$(NAME).so $(DIR_APACHE_MODULES)
-		
-		
+	cp conf/extra/httpd-wheatis.conf $(DIR_APACHE_CONF_EXTRA)
+	sed -i 's/DIR_WHEATIS_INSTALL/$(subst /,\/,$(DIR_WHEATIS_INSTALL))/g' $(DIR_APACHE_CONF_EXTRA)/httpd-wheatis.conf		
