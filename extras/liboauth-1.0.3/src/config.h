@@ -69,7 +69,7 @@
 /* Define to 1 if you have the <string.h> header file. */
 #define HAVE_STRING_H 1
 
-/* Define to 1 if `st_blocks' is a member of `struct stat'. */
+/* Define to 1 if `st_blocks' is member of `struct stat'. */
 #define HAVE_STRUCT_STAT_ST_BLOCKS 1
 
 /* Define to 1 if your `struct stat' has `st_blocks'. Deprecated, use
@@ -130,9 +130,6 @@
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "liboauth"
 
-/* Define to the home page for this package. */
-#define PACKAGE_URL "http://liboauth.sourceforge.net/"
-
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "-"
 
@@ -158,6 +155,3 @@
 
 /* Version number of package */
 #define VERSION "1.0.3"
-
-/* Define to `unsigned int' if <sys/types.h> does not define. */
-/* #undef size_t */
