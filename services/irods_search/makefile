@@ -26,18 +26,18 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_SERVICE_INC) \
+	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_WHEATIS_HANDLER_INC) \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_IRODS_INC) \
-	-I$(DIR_IRODS)/lib/api/include \
-	-I$(DIR_IRODS)/lib/core/include \
-	-I$(DIR_IRODS)/lib/md5/include \
-	-I$(DIR_IRODS)/lib/sha1/include \
-	-I$(DIR_IRODS)/server/core/include \
-	-I$(DIR_IRODS)/server/drivers/include \
-	-I$(DIR_IRODS)/server/icat/include \
-	-I$(DIR_IRODS)/server/re/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
+	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \
