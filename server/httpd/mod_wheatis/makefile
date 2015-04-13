@@ -9,7 +9,7 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
-DIR_APACHE=$$APACHE_HOME
+DIR_APACHE=$(trim $$APACHE_HOME)
 
 ifneq ($(DIR_APACHE),)
 SUDO = 
@@ -106,6 +106,8 @@ clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
 		
 install: all
+	@echo "DIR_APACHE _$(DIR_APACHE)_"
+	@echo "APACHE INC $(DIR_APACHE_INC)"
 	@echo "Installing mod_$(NAME).so to $(DIR_APACHE_MODULES)"
 	cp src/.libs/mod_$(NAME).so $(DIR_APACHE_MODULES)
 		
