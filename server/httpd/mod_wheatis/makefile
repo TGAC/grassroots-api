@@ -9,10 +9,12 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
-ifneq ($$APACHE_HOME,)
+DIR_APACHE=$$APACHE_HOME
+
+ifneq ($(DIR_APACHE),)
 SUDO = 
-DIR_APACHE_MODULES = $$APACHE_HOME/modules
-DIR_APACHE_INC = $$APACHE_HOME/include
+DIR_APACHE_MODULES = $(DIR_APACHE)/modules
+DIR_APACHE_INC = $(DIR_APACHE)/include
 else
 SUDO = sudo
 DIR_APACHE_MODULES = /etc/httpd/modules
