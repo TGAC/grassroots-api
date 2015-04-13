@@ -13,6 +13,11 @@ ifneq ($(PROPERTIES_SET),1)
 include $(DIR_ROOT)/project.properties
 endif
 
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
+
+export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/handlers
 
 VPATH	= \
 	$(DIR_SRC) 

@@ -6,6 +6,7 @@ CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
 
+
 ifeq ($(DIR_ROOT),)
 export DIR_ROOT = $(realpath $(../..))
 endif
@@ -14,6 +15,7 @@ ifneq ($(PROPERTIES_SET),1)
 include $(DIR_ROOT)/project.properties
 endif
 
+export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/services
 
 BUILD		= debug
 

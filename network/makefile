@@ -14,6 +14,8 @@ ifneq ($(PROPERTIES_SET),1)
 include $(DIR_ROOT)/project.properties
 endif
 
+export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
+
 TEST_EXE_NAME = network_test
 
 BUILD		= debug

@@ -4,14 +4,16 @@ DIR_INCLUDE = include
 COMP		= gcc
 MAKEDEPEND 	= gcc -MM -MF
 
-
 ifeq ($(DIR_ROOT),)
-export DIR_ROOT = $(realpath $(../..))
+export DIR_ROOT = $(realpath $(..))
 endif
 
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
 
-#DIR_IRODS	= /usr/users/ga002/tyrrells/Projects/iRODS-3.3.1
-DIR_IRODS	= $$IRODS_HOME
+export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
+
 
 BUILD		= debug
 

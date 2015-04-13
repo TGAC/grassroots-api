@@ -19,6 +19,8 @@ include $(DIR_ROOT)/project.properties
 endif
 
 
+export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
+
 CFLAGS += -ansi
 
 VPATH	= \
