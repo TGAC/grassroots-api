@@ -9,18 +9,16 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
-DIR_APACHE=$$APACHE_HOME
+HTTPD := $(shell httpd -V) 
+DIR_APACHE := $(filter HTTPD_ROOT=%, $(HTTPD))
 
 ifneq ($(DIR_APACHE),)
-SUDO = 
-DIR_APACHE_MODULES = $(DIR_APACHE)/modules
-DIR_APACHE_INC = $(DIR_APACHE)/include
+DIR_APACHE:=$(subst HTTPD_ROOT=,,$(DIR_APACHE))
+DIR_APACHE_MODULES := $(DIR_APACHE)/modules
+DIR_APACHE_INC := $(DIR_APACHE)/include
 DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
-else
+APACHE_SET = true
 SUDO = sudo
-DIR_APACHE_MODULES = /etc/httpd/modules
-DIR_APACHE_INC = /usr/include/httpd
-DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/include
 endif
 
 
@@ -101,18 +99,21 @@ $(DIR_OBJS)/%.o : %.c
 
 .PHONY:	all
 
-all: 
-	@echo "APACHE_HOME $$APACHE_HOME"
+all:
+	@echo "HTTPD $(HTTPD)" 
+	@echo "APACHE SET $(APACHE_SET)"
+	@echo "APACHE_HOME  - $$APACHE_HOME -"
 	@echo "IRODS_HOME $$IRODS_HOME -"
 	@echo "DIR_APACHE _ $(DIR_APACHE) _"
 	@echo "APACHE INC $(DIR_APACHE_INC)"
-	$(SUDO) apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
+	apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
 		
 install: all
 	@echo "Installing mod_$(NAME).so to $(DIR_APACHE_MODULES)"
-	cp src/.libs/mod_$(NAME).so $(DIR_APACHE_MODULES)
-	cp conf/extra/httpd-wheatis.conf $(DIR_APACHE_CONF_EXTRA)
-	sed -i 's/DIR_WHEATIS_INSTALL/$(subst /,\/,$(DIR_WHEATIS_INSTALL))/g' $(DIR_APACHE_CONF_EXTRA)/httpd-wheatis.conf		
+	$(SUDO) cp src/.libs/mod_$(NAME).so $(DIR_APACHE_MODULES)
+	#if [ -d $(DIR_APACHE)/conf/conf.d ]; then $(DIR_APACHE_CONF)=$(DIR_APACHE)/conf/conf.d; fi
+	#$(SUDO) cp conf/extra/httpd-wheatis.conf $(DIR_APACHE_CONF)
+	#$(SUDO) sed -i 's/DIR_WHEATIS_INSTALL/$(subst /,\/,$(DIR_WHEATIS_INSTALL))/g' $(DIR_APACHE_CONF)/httpd-wheatis.conf		
