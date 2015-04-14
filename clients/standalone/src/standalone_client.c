@@ -293,6 +293,23 @@ int main (int argc, char *argv [])
 											}
 											break;
 
+										case OP_GET_NAMED_SERVICES:
+											{
+												req_p = GetNamedServicesRequest (username_s, password_s, query_s);
+
+												if (req_p)
+													{
+														response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+														if (response_p)
+															{
+																ShowServices (response_p, client_p, username_s, password_s, connection_p);
+															}		/* if (response_p) */
+
+													}		/* if (req_p) */
+											}
+											break;
+
 										default:
 											break;
 									}

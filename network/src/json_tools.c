@@ -276,6 +276,26 @@ json_t *GetKeywordServicesRequest (const char * const username_s, const char * c
 }
 
 
+
+json_t *GetNamedServicesRequest (const char * const username_s, const char * const password_s, const char * const service_name_s)
+{
+	json_t *res_p = NULL;
+	json_error_t error;
+	json_t *op_data_p = json_pack_ex (&error, 0, "[s]", service_name_s);
+
+	if (op_data_p)
+		{
+			res_p = GetServicesRequest (username_s, password_s, OP_GET_NAMED_SERVICES, SERVICES_NAME_S, op_data_p);
+		}
+	else
+		{
+
+		}
+
+	return res_p;
+}
+
+
 json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p)
 {
 	json_t *root_p = GetOperationAsJSON (op);

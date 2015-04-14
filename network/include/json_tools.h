@@ -30,6 +30,8 @@ WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const use
 
 WHEATIS_NETWORK_API json_t *GetKeywordServicesRequest (const char * const username_s, const char * const password_s, const char * const keyword_s);
 
+WHEATIS_NETWORK_API json_t *GetNamedServicesRequest (const char * const username_s, const char * const password_s, const char * const service_name_s);
+
 WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s);
 
 WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
