@@ -37,8 +37,7 @@ CFLAGS 	+=  -Wc,-Wall  -Wc,-fpic
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -Wc,-O3 -Wc,-s
  	LDFLAGS += Wl,-s
-else
-#	CFLAGS 	+= -g
+gti pull#	CFLAGS 	+= -g
 	CFLAGS 	+= -Wc,-g -Wc,-pg -Wc,-Wall -Wc,-O0
 	LDFLAGS += -Wl,pg
 	CPPFLAGS += -Wc,-D_DEBUG
@@ -106,6 +105,7 @@ clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
 		
 install: all
+
 	@echo "Installing mod_$(NAME).so to $(DIR_APACHE_MODULES)"
 	cp src/.libs/mod_$(NAME).so $(DIR_APACHE_MODULES)
 		

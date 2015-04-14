@@ -33,6 +33,7 @@ typedef enum ParameterType
 	PT_CHAR,
 	PT_PASSWORD,
 	PT_KEYWORD,
+	PT_LARGE_STRING,
 	PT_NUM_TYPES
 } ParameterType;
 
