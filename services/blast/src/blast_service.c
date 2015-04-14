@@ -130,7 +130,7 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 						{
 							def.st_string_value_s = NULL;
 
-							if (CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, "Query Sequence(s)", NULL, "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
+							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Query Sequence(s)", NULL, "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
 							  "It accepts a number of different types of input and automatically determines the format or the input."
 							  " To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))
 								{
@@ -138,7 +138,7 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 
 									if (CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "Max target sequences", NULL, "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this)." , TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL))
 										{
-											def.st_boolean_value = TRUE;
+											def.st_boolean_value = true;
 
 											if (CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, "Short queries", NULL, "Automatically adjust parameters for short input sequences", TAG_BLAST_SHORT_QUERIES, NULL, def, NULL, NULL, PL_ALL, NULL))
 												{

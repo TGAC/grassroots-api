@@ -47,6 +47,8 @@ SRCS 	= \
 
 BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
+	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 #	-L/usr/local/lib/ -lpolarssl \
 	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
 	-L../extras/hcxselect-1.1/src \

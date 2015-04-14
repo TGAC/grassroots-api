@@ -18,7 +18,7 @@ DIR_APACHE_MODULES := $(DIR_APACHE)/modules
 DIR_APACHE_INC := $(DIR_APACHE)/include
 DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
 APACHE_SET = true
-SUDO = sudo
+SUDO =
 endif
 
 
