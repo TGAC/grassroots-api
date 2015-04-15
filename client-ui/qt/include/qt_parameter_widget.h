@@ -7,6 +7,7 @@
 #include <QWidget>
 #include <QCheckBox>
 #include <QWebView>
+#include <QGroupBox>
 #include <QList>
 
 #include "parameter.h"
@@ -57,6 +58,8 @@ private:
 
 	QList <QWebView *> qpw_browsers;
 
+
+	QList <QGroupBox *> qpw_groupings;
 
 	/**
 	 * Create widget for parameter.

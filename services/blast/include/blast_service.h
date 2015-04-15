@@ -27,7 +27,6 @@
 #endif /* #ifdef SHARED_LIBRARY */
 
 
-
 #ifdef __cplusplus
 extern "C"
 {

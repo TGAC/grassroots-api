@@ -17,7 +17,8 @@
 #define TAG_BLAST_MAX_RANGE_MATCHES MAKE_TAG ('B', 'M', 'R', 'G')
 #define TAG_BLAST_SUBRANGE_FROM MAKE_TAG ('B', 'Q', 'F', 'R')
 #define TAG_BLAST_SUBRANGE_TO MAKE_TAG ('B', 'Q', 'T', 'O')
-
+#define TAG_BLAST_MATCH_SCORE MAKE_TAG ('B', 'M', 'T', 'C')
+#define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
 /*
  * STATIC DATATYPES
  */
@@ -26,6 +27,7 @@ typedef struct
 	ServiceData bsd_base_data;
 	BlastTool *blast_tool_p;
 } BlastServiceData;
+
 
 
 /*
@@ -49,6 +51,8 @@ static bool CloseBlastService (Service *service_p);
 static bool AddQuerySequenceParams (ParameterSet *param_set_p);
 
 static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p);
+
+static bool AddScoringParams (ParameterSet *param_set_p);
 
 /*
  * API FUNCTIONS
@@ -175,7 +179,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 
 									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "To", NULL, subrange_s, TAG_BLAST_SUBRANGE_TO, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
-											def.st_string_value_s = NULL;
+											const char * const group_name_s = "Query Sequence Parameters";
 
 											if (grouped_param_pp)
 												{
@@ -183,9 +187,9 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 													++ grouped_param_pp;
 												}
 
-											if (!AddParameterGroupToParameterSet (param_set_p, "Query Sequence Parameters", grouped_params_pp, num_group_params))
+											if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to add sequence grouping");
+													PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
 													FreeMemory (grouped_params_pp);
 												}
 
@@ -256,15 +260,17 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "Max matches in a query range", NULL, "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", TAG_BLAST_WORD_SIZE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 										{
+											const char * const group_name_s = "General Algorithm Parameters";
+
 											if (grouped_param_pp)
 												{
 													*grouped_param_pp = param_p;
 													++ grouped_param_pp;
 												}
 
-											if (!AddParameterGroupToParameterSet (param_set_p, "General Algorithm Parameters", grouped_params_pp, num_group_params))
+											if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to add sequemakence grouping");
+													PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
 													FreeMemory (grouped_params_pp);
 												}
 
@@ -274,6 +280,53 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 						}
 				}
 		}
+
+	return success_flag;
+}
+
+
+static bool AddScoringParams (ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	Parameter *param_p = NULL;
+	SharedType def;
+	size_t num_group_params = 2;
+	const Parameter **grouped_params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	const Parameter **grouped_param_pp = grouped_params_pp;
+	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
+
+	def.st_long_value = 2;
+
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, "Match", NULL, "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+		{
+			if (grouped_param_pp)
+				{
+					*grouped_param_pp = param_p;
+					++ grouped_param_pp;
+				}
+
+			def.st_long_value = -3;
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, "Mismatch", NULL, "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+				{
+					const char * const group_name_s = "Scoring Parameters";
+
+					if (grouped_param_pp)
+						{
+							*grouped_param_pp = param_p;
+							++ grouped_param_pp;
+						}
+
+					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							FreeMemory (grouped_params_pp);
+						}
+
+					success_flag = true;
+				}
+		}
+
 
 	return success_flag;
 }
@@ -289,7 +342,10 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 				{
 					if (AddGeneralAlgorithmParams (param_set_p))
 						{
-							return param_set_p;
+							if (AddScoringParams (param_set_p))
+								{
+									return param_set_p;
+								}
 						}
 				}
 

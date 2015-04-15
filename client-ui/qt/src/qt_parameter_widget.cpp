@@ -146,6 +146,8 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 			int row = qpw_layout_p -> rowCount ();
 			qpw_layout_p -> addWidget (box_p, row, 0, group_p -> pg_num_params, 2, Qt :: AlignVCenter);
 
+			qpw_groupings.append (box_p);
+
 			param_group_node_p = reinterpret_cast <ParameterGroupNode *> (param_group_node_p -> pgn_node.ln_next_p);
 		}
 
@@ -267,7 +269,51 @@ void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, cons
 			widget_p -> CheckLevelDisplay (level, parent_widget_p);
 		}
 
-	qpw_level = level;
+	for (int i = qpw_groupings.count () - 1; i >= 0; -- i)
+		{
+			QGroupBox *box_p = qpw_groupings.at (i);
+			QLayout *layout_p = box_p -> layout ();
+
+			if (box_p -> isHidden ())
+				{
+					bool any_visible_children_flag = false;
+
+					for (int j = layout_p -> count () - 1; j >= 0; -- j)
+						{
+							if (layout_p -> itemAt (j) -> widget () -> isVisible ())
+								{
+									any_visible_children_flag = true;
+									j = 0;
+								}
+						}
+
+					if (any_visible_children_flag)
+						{
+							box_p -> show ();
+						}
+				}
+			else
+				{
+					bool any_hidden_children_flag = false;
+
+					for (int j = layout_p -> count () - 1; j >= 0; -- j)
+						{
+							if (layout_p -> itemAt (j) -> widget () -> isHidden ())
+								{
+									any_hidden_children_flag = true;
+									j = 0;
+								}
+						}
+
+					if (!any_hidden_children_flag)
+						{
+							box_p -> show ();
+						}
+				}
+
+		}
+
+	qpw_level = level;	
 }
 
 
