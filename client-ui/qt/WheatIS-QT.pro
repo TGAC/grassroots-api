@@ -130,5 +130,5 @@ LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \
    -lpthread -ljansson
 
-target.path = ../../../wheatis_demo/clients/
+target.path = /opt/wheatis/clients/
 INSTALLS += target

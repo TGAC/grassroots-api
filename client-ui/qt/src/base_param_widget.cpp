@@ -8,6 +8,7 @@ BaseParamWidget	:: BaseParamWidget (Parameter * const param_p, const PrefsWidget
 		bpw_prefs_widget_p (prefs_widget_p)
 {
 	bpw_param_name_s = CopyToNewString (param_p -> pa_name_s, 0, false);	
+	bpw_label_p = new QLabel (GetUIName (param_p));
 }
 
 
@@ -18,7 +19,6 @@ BaseParamWidget :: ~BaseParamWidget ()
 			FreeCopiedString (bpw_param_name_s);
 		}
 }
-
 
 
 const char *BaseParamWidget :: GetParameterName () const
@@ -33,7 +33,13 @@ void BaseParamWidget :: RemoveConnection ()
 }
 
 
-void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, QWidget *sync_widget_p, const QWidget * const parent_widget_p)
+QLabel *BaseParamWidget :: GetLabel () const
+{
+	return bpw_label_p;
+}
+
+
+void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, const QWidget * const parent_widget_p)
 {
 	QWidget *this_widget_p = GetQWidget ();
 
@@ -45,9 +51,9 @@ void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, QWidge
 						{
 							this_widget_p -> hide ();
 
-							if (sync_widget_p)
+							if (bpw_label_p)
 								{
-									sync_widget_p -> hide ();
+									bpw_label_p -> hide ();
 								}
 						}
 				}
@@ -57,9 +63,9 @@ void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, QWidge
 						{
 							this_widget_p -> show ();
 
-							if (sync_widget_p)
+							if (bpw_label_p)
 								{
-									sync_widget_p -> show ();
+									bpw_label_p -> show ();
 								}
 						}
 				}

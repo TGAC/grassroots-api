@@ -25,6 +25,8 @@ public:
 
 	bool SetServiceParams (json_t *service_config_p);
 
+	void CheckInterfaceLevel (ParameterLevel level);
+
 signals:
 	void RunStatusChanged (const char * const service_name_s, bool status);
 

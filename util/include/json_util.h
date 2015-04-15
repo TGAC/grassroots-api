@@ -80,6 +80,7 @@ PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
 PREFIX const char *PARAM_GROUP_S VAL("group");
 PREFIX const char *PARAM_MIN_S  VAL("min");
 PREFIX const char *PARAM_MAX_S  VAL("max");
+PREFIX const char *PARAM_LEVEL_S  VAL("level");
 
 PREFIX const char *SHARED_TYPE_DESCRIPTION_S  VAL("description");
 PREFIX const char *SHARED_TYPE_VALUE_S  VAL("value");

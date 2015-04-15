@@ -221,4 +221,9 @@ bool ServicePrefsWidget :: SetServiceParams (json_t *service_config_p)
 }
 
 
+void ServicePrefsWidget :: CheckInterfaceLevel (ParameterLevel level)
+{
+	spw_params_widget_p -> UpdateParameterLevel (level, this);
+}
+
 

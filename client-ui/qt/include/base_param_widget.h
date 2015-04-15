@@ -2,6 +2,7 @@
 #define BASE_PARAM_WIDGET_H
 
 #include <QWidget>
+#include <QLabel>
 
 #include "parameter.h"
 
@@ -20,7 +21,9 @@ public:
 
 	virtual QWidget *GetQWidget () = 0;
 
-	void CheckLevelDisplay (const ParameterLevel ui_level, QWidget *sync_widget_p, const QWidget * const parent_widget_p);
+	QLabel *GetLabel () const;
+
+	void CheckLevelDisplay (const ParameterLevel ui_level, const QWidget * const parent_widget_p);
 
 	virtual void RemoveConnection ();
 
@@ -34,6 +37,7 @@ public:
 protected:
 	Parameter * const bpw_param_p;
 	const PrefsWidget * const bpw_prefs_widget_p;
+	QLabel *bpw_label_p;
 	char *bpw_param_name_s;
 };
 

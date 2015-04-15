@@ -5,32 +5,16 @@ COMP		= g++
 LINK		= ld
 MAKEDEPEND 	= g++ -MM -MF
 
-DIR_ROOT = ../..
-DIR_IRODS	= $$IRODS_HOME
-DIR_EXTERNAL_LIBS = ../../external_libs
 
-DIR_WHEATIS_UTIL = ../../util
-DIR_WHEATIS_UTIL_INC = $(DIR_WHEATIS_UTIL)/include
-DIR_WHEATIS_UTIL_LIB = $(DIR_WHEATIS_UTIL)/$(BUILD)
-WHEATIS_UTIL_LIB_NAME = wheatis_util
+ifeq ($(DIR_ROOT),)
+export DIR_ROOT = $(realpath $(../..))
+endif
 
+ifneq ($(PROPERTIES_SET),1)
+include $(DIR_ROOT)/project.properties
+endif
 
-DIR_WHEATIS_NETWORK = ../../network
-DIR_WHEATIS_NETWORK_INC = $(DIR_WHEATIS_NETWORK)/include
-DIR_WHEATIS_NETWORK_LIB = $(DIR_WHEATIS_NETWORK)/$(BUILD)
-WHEATIS_NETWORK_LIB_NAME = wheatis_network
-
-
-DIR_WHEATIS_SERVICES = ../../services/lib
-DIR_WHEATIS_SERVICES_INC = $(DIR_WHEATIS_SERVICES)/include
-DIR_WHEATIS_SERVICES_LIB = $(DIR_WHEATIS_SERVICES)/$(BUILD)
-WHEATIS_SERVICES_LIB_NAME = wheatis_service
-
-
-DIR_WHEATIS_SERVER_INC = ../../server/lib/include
-
-
-DIR_INSTALL = ../../../wheatis_demo
+export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/
 
 BUILD		= debug
 

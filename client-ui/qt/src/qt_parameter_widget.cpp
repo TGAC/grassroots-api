@@ -171,7 +171,7 @@ void QTParameterWidget :: AddParameterWidget (Parameter *param_p, QFormLayout *l
 	if (child_p)
 		{
 			QWidget *widget_p = child_p -> GetQWidget ();
-			QLabel *label_p = new QLabel (GetUIName (param_p));
+			QLabel *label_p = child_p ->  GetLabel ();
 
 			if (layout_p)
 				{
@@ -264,7 +264,7 @@ void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, cons
 		{
 			BaseParamWidget *widget_p = reinterpret_cast <BaseParamWidget *> (i.value ());
 
-			//widget_p -> CheckLevelDisplay (level, qpw_form_layout_p -> labelForField (widget_p -> GetQWidget ()), parent_widget_p);
+			widget_p -> CheckLevelDisplay (level, parent_widget_p);
 		}
 
 	qpw_level = level;

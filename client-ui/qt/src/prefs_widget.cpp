@@ -84,6 +84,8 @@ void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, 
 
 	pw_services_ui_p -> AddService (service_name_s, service_widget_p);
 	pw_service_widgets.append (service_widget_p);
+
+	connect (this, &PrefsWidget :: InterfaceLevelChanged, service_widget_p, &ServicePrefsWidget :: CheckInterfaceLevel);
 }
 
 

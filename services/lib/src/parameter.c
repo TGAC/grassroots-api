@@ -42,6 +42,8 @@ static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *js
 
 static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p);
 
+static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p);
+
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
 static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s);
@@ -49,6 +51,8 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp);
 
 static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
+
+static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLevel *level_p);
 
 static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p);
 
@@ -575,21 +579,24 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 										{
 											if (AddParameterStoreToJSON (parameter_p, root_p))
 												{
-													if (full_definition_flag)
+													if (AddParameterLevelToJSON (parameter_p, root_p))
 														{
-															if (AddParameterDescriptionToJSON (parameter_p, root_p))
+															if (full_definition_flag)
 																{
-																	if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+																	if (AddParameterDescriptionToJSON (parameter_p, root_p))
 																		{
-																			if (AddDefaultValueToJSON (parameter_p, root_p))
+																			if (AddParameterDisplayNameToJSON (parameter_p, root_p))
 																				{
-																					if (AddParameterOptionsToJSON (parameter_p, root_p))
+																					if (AddDefaultValueToJSON (parameter_p, root_p))
 																						{
-																							if (AddParameterBoundsToJSON (parameter_p, root_p))
+																							if (AddParameterOptionsToJSON (parameter_p, root_p))
 																								{
-																									if (AddParameterGroupToJSON (parameter_p, root_p))
+																									if (AddParameterBoundsToJSON (parameter_p, root_p))
 																										{
-																											success_flag = true;
+																											if (AddParameterGroupToJSON (parameter_p, root_p))
+																												{
+																													success_flag = true;
+																												}
 																										}
 																								}
 																						}
@@ -680,6 +687,18 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 	#endif
 
 	return success_flag;	
+}
+
+
+static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = (json_object_set_new (root_p, PARAM_LEVEL_S, json_integer (param_p -> pa_level)) == 0);
+
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
+	PrintJSON (stderr, root_p, "AddParameterTagToJSON - root_p :: ");
+	#endif
+
+	return success_flag;
 }
 
 
@@ -1276,6 +1295,24 @@ static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p
 }
 
 
+static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLevel *level_p)
+{
+	bool success_flag = false;
+	json_t *value_p = json_object_get (json_p, PARAM_LEVEL_S);
+
+	if (value_p && json_is_integer (value_p))
+		{
+			json_int_t subtype = json_integer_value (value_p);
+
+			*level_p = (ParameterLevel) (subtype);
+			success_flag = true;
+		}
+
+
+	return success_flag;
+}
+
+
 static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType *param_type_p)
 {
 	bool success_flag = false;
@@ -1469,6 +1506,11 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									bool success_flag = false;
 
 									memset (&def, 0, sizeof (SharedType));
+
+									if (GetParameterLevelFromJSON (root_p, &level))
+										{
+
+										}
 
 									if (!IsJSONParameterConcise (root_p))
 										{
