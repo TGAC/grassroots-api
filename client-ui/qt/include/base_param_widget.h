@@ -25,8 +25,11 @@ public:
 
 	void CheckLevelDisplay (const ParameterLevel ui_level, const QWidget * const parent_widget_p);
 
+	bool MeetsLevel (const ParameterLevel ui_level) const;
+
 	virtual void RemoveConnection ();
 
+	void SetVisible (const bool visible_flag);
 
 	virtual void SetDefaultValue () = 0;
 

@@ -13,6 +13,7 @@
 #include "parameter.h"
 #include "parameter_set.h"
 #include "base_param_widget.h"
+#include "param_group_box.h"
 
 // forward class declaration
 class PrefsWidget;
@@ -58,8 +59,7 @@ private:
 
 	QList <QWebView *> qpw_browsers;
 
-
-	QList <QGroupBox *> qpw_groupings;
+	QList <ParamGroupBox *> qpw_groupings;
 
 	/**
 	 * Create widget for parameter.
@@ -73,7 +73,7 @@ private:
 	BaseParamWidget *GetWidgetForParameter (const Parameter * const param_p);
 
 	void AddRow (QWidget *first_p, QWidget *second_p, const int row_span);
-	void AddParameterWidget (Parameter *param_p, QFormLayout *layout_p = 0);
+	void AddParameterWidget (Parameter *param_p, ParamGroupBox *group_p = 0);
 
 	static const int QPW_NUM_COLUMNS;
 };

@@ -39,6 +39,25 @@ QLabel *BaseParamWidget :: GetLabel () const
 }
 
 
+bool BaseParamWidget :: MeetsLevel (const ParameterLevel ui_level) const
+{
+	return CompareParameterLevels (bpw_param_p -> pa_level, ui_level);
+}
+
+
+void BaseParamWidget :: SetVisible (const bool visible_flag)
+{
+	QWidget *widget_p = GetQWidget ();
+
+	if (widget_p)
+		{
+			widget_p -> setVisible (visible_flag);
+		}
+
+	bpw_label_p -> setVisible (visible_flag);
+}
+
+
 void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, const QWidget * const parent_widget_p)
 {
 	QWidget *this_widget_p = GetQWidget ();

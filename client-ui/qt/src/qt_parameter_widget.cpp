@@ -126,19 +126,14 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 	while (param_group_node_p)
 		{
 			ParameterGroup *group_p = param_group_node_p -> pgn_param_group_p;
-			QGroupBox *box_p = new QGroupBox (group_p -> pg_name_s);
-			QFormLayout *layout_p = new QFormLayout;
-
-			box_p -> setLayout (layout_p);
-			box_p -> setAlignment (Qt:: AlignRight);
-
+			ParamGroupBox *box_p = new ParamGroupBox (group_p -> pg_name_s);
 			const Parameter **param_pp = group_p -> pg_params_pp;
 
 			for (uint32 i = group_p -> pg_num_params; i > 0; -- i, ++ param_pp)
 				{
 					Parameter *param_p = const_cast <Parameter *> (*param_pp);
 
-					AddParameterWidget (param_p, layout_p);
+					AddParameterWidget (param_p, box_p);
 
 					params_map.insert (param_p, param_p);
 				}
@@ -166,21 +161,21 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 }
 
 
-void QTParameterWidget :: AddParameterWidget (Parameter *param_p, QFormLayout *layout_p)
+void QTParameterWidget :: AddParameterWidget (Parameter *param_p, ParamGroupBox *group_p)
 {
 	BaseParamWidget *child_p = CreateWidgetForParameter (param_p);
 
 	if (child_p)
 		{
-			QWidget *widget_p = child_p -> GetQWidget ();
-			QLabel *label_p = child_p ->  GetLabel ();
-
-			if (layout_p)
+			if (group_p)
 				{
-					layout_p -> addRow (label_p, widget_p);
+					group_p -> AddParameterWidget (child_p);
 				}
 			else
 				{
+					QWidget *widget_p = child_p -> GetQWidget ();
+					QLabel *label_p = child_p ->  GetLabel ();
+
 					AddRow (label_p, widget_p, 1);
 				}
 
@@ -188,8 +183,7 @@ void QTParameterWidget :: AddParameterWidget (Parameter *param_p, QFormLayout *l
 
 			if (!CompareParameterLevels (param_p -> pa_level, qpw_level))
 				{
-					widget_p -> hide ();
-					label_p -> hide ();
+					child_p -> SetVisible (false);
 				}
 		}
 
@@ -242,7 +236,6 @@ QTParameterWidget :: ~QTParameterWidget ()
 }
 
 
-
 void QTParameterWidget :: ResetToDefaults ()
 {
 	QList <Parameter *> keys = qpw_widgets_map.keys ();
@@ -255,7 +248,6 @@ void QTParameterWidget :: ResetToDefaults ()
 		}
 
 }
-
 
 
 void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, const QWidget * const parent_widget_p)
@@ -271,52 +263,12 @@ void QTParameterWidget :: UpdateParameterLevel (const ParameterLevel level, cons
 
 	for (int i = qpw_groupings.count () - 1; i >= 0; -- i)
 		{
-			QGroupBox *box_p = qpw_groupings.at (i);
-			QLayout *layout_p = box_p -> layout ();
-
-			if (box_p -> isHidden ())
-				{
-					bool any_visible_children_flag = false;
-
-					for (int j = layout_p -> count () - 1; j >= 0; -- j)
-						{
-							if (layout_p -> itemAt (j) -> widget () -> isVisible ())
-								{
-									any_visible_children_flag = true;
-									j = 0;
-								}
-						}
-
-					if (any_visible_children_flag)
-						{
-							box_p -> show ();
-						}
-				}
-			else
-				{
-					bool any_hidden_children_flag = false;
-
-					for (int j = layout_p -> count () - 1; j >= 0; -- j)
-						{
-							if (layout_p -> itemAt (j) -> widget () -> isHidden ())
-								{
-									any_hidden_children_flag = true;
-									j = 0;
-								}
-						}
-
-					if (!any_hidden_children_flag)
-						{
-							box_p -> show ();
-						}
-				}
-
+			ParamGroupBox *box_p = qpw_groupings.at (i);
+			box_p -> CheckVisibility (level);
 		}
 
 	qpw_level = level;	
 }
-
-
 
 
 BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * const param_p)

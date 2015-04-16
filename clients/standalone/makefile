@@ -29,7 +29,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
-	-I$(DIR_IRODS)/lib/core/include \
+	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
 	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \
