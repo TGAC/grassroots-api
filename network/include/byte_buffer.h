@@ -34,6 +34,9 @@ WHEATIS_NETWORK_API bool ExtendByteBuffer (ByteBuffer *buffer_p, size_t incremen
 WHEATIS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t data_length);
 
 
+WHEATIS_NETWORK_API bool AppendStringToByteBuffer (ByteBuffer *buffer_p, const char * const value_s);
+
+
 WHEATIS_NETWORK_API bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...);
 
 

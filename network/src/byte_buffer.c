@@ -67,6 +67,12 @@ bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size)
 }
 
 
+bool AppendStringToByteBuffer (ByteBuffer *buffer_p, const char * const value_s)
+{
+	return AppendToByteBuffer (buffer_p, value_s, strlen (value_s));
+}
+
+
 bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t data_length)
 {
 	const size_t space_remaining = GetRemainingSpaceInByteBuffer (buffer_p);

@@ -19,6 +19,8 @@ public:
 
 	virtual bool Run () = 0;
 
+	virtual bool ParseParameters (ParameterSet *params_p) = 0;
+
 	/**
 	 * Add an argument to Blast prior to its run.
 	 * 
@@ -29,13 +31,11 @@ public:
 	void AddArgument (char *arg_s, bool newly_allocated_flag);
 
 	void PringArgsToLog ();
-
 	
+
 	void PreRun ();
 	
 	void PostRun ();
-
-	
 
 protected:
 	bool bt_running_flag;
@@ -50,6 +50,8 @@ protected:
 	 * leaks.
 	 */
 	std :: vector <char *> bt_allocated_args;
+
+	char *bt_temp_input_filename_s;
 };
 
 
@@ -109,7 +111,9 @@ public:
 class BLAST_SERVICE_LOCAL QueuedBlastTool : public BlastTool 
 {
 public:
-	
+
+	virtual bool ParseParameters (ParameterSet *params_p);
+
 	virtual bool Run ();	
 };
 

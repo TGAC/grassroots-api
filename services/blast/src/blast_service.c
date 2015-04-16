@@ -5,20 +5,6 @@
 
 #include "blast_tool.hpp"
 
-
-
-#define TAG_BLAST_INPUT_QUERY MAKE_TAG ('B', 'Q', 'U', 'Y')
-#define TAG_BLAST_INPUT_FILE MAKE_TAG ('B', 'I', 'N', 'F')
-#define TAG_BLAST_OUTPUT_FILE MAKE_TAG ('B', 'O', 'U', 'F')
-#define TAG_BLAST_MAX_SEQUENCES MAKE_TAG ('B', 'M', 'S', 'Q')
-#define TAG_BLAST_SHORT_QUERIES MAKE_TAG ('B', 'S', 'H', 'Q')
-#define TAG_BLAST_EXPECT_THRESHOLD MAKE_TAG ('B', 'E', 'X', 'T')
-#define TAG_BLAST_WORD_SIZE MAKE_TAG ('B', 'W', 'D', 'S')
-#define TAG_BLAST_MAX_RANGE_MATCHES MAKE_TAG ('B', 'M', 'R', 'G')
-#define TAG_BLAST_SUBRANGE_FROM MAKE_TAG ('B', 'Q', 'F', 'R')
-#define TAG_BLAST_SUBRANGE_TO MAKE_TAG ('B', 'Q', 'T', 'O')
-#define TAG_BLAST_MATCH_SCORE MAKE_TAG ('B', 'M', 'T', 'C')
-#define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
 /*
  * STATIC DATATYPES
  */
@@ -229,7 +215,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, "Short queries", NULL, "Automatically adjust parameters for short input sequences", TAG_BLAST_SHORT_QUERIES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 				{
-					def.st_ulong_value = 10;
+					def.st_data_value = 10.0;
 
 					if (grouped_param_pp)
 						{
@@ -237,8 +223,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 							++ grouped_param_pp;
 						}
 
-
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "Expect threshold", NULL, "Expected number of chance matches in a random model" , TAG_BLAST_EXPECT_THRESHOLD, NULL, def, NULL, NULL, level, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_REAL, "Expect threshold", NULL, "Expected number of chance matches in a random model" , TAG_BLAST_EXPECT_THRESHOLD, NULL, def, NULL, NULL, level, NULL)) != NULL)
 						{
 							def.st_ulong_value = 28;
 
@@ -357,6 +342,9 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 
 
 
+
+
+
 static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p)
 {
 	FreeParameterSet (params_p);
@@ -371,9 +359,12 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 	
 	if (tool_p)
 		{
-			res = (RunBlast (tool_p)) ? OS_SUCCEEDED : OS_FAILED;
+			if (tool_p -> ParseParameters (param_set_p))
+				{
+					res = (RunBlast (tool_p)) ? OS_SUCCEEDED : OS_FAILED;
 
-			FreeBlastTool (tool_p); 
+					FreeBlastTool (tool_p);
+				}
 		}
 		
 	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL);
