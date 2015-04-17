@@ -7,6 +7,8 @@
 #include "io_utils.h"
 
 #include "byte_buffer.h"
+#include "string_utils.h"
+
 
 BlastTool *CreateBlastTool ()
 {
@@ -238,7 +240,12 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (!IsStringEmpty (sequence_s))
 						{
-							bt_temp_input_filename_s = tmpnam ()
+							char name_s [L_tmpnam];
+
+							if ((bt_temp_input_filename_s = tmpnam (name_s)) != NULL)
+								{
+
+								}
 						}
 					else
 						{
@@ -259,7 +266,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 					memset (&to, 0, sizeof (SharedType));
 					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &value, true))
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL)
+							success_flag = AppendStringsToByteBuffer (args_buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL);
 						}
 				}
 

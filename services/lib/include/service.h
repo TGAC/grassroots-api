@@ -54,13 +54,25 @@ PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
 struct Plugin;
 struct Service;
 
+typedef enum OperationStatus
+{
+	OS_IDLE,
+	OS_FAILED_TO_START,
+	OS_STARTED,
+	OS_FINISHED,
+	OS_FAILED,
+	OS_SUCCEEDED
+} OperationStatus;
+
+
+
 typedef struct ServiceData
 {
 	/** The service that owns this data. */
 	struct Service *sd_service_p;
 
 	/** Is the service currently in an open state? */
-	bool sd_open_flag;
+	OperationStatus sd_status;
 } ServiceData;
 
 
@@ -136,15 +148,7 @@ typedef struct ServicesArray
 } ServicesArray;
 
 
-typedef enum OperationStatus
-{
-	OS_IDLE,
-	OS_FAILED_TO_START,
-	OS_STARTED,
-	OS_FINISHED,
-	OS_FAILED,
-	OS_SUCCEEDED
-} OperationStatus;
+
 
 
 #ifdef __cplusplus
