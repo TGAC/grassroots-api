@@ -68,6 +68,17 @@ export DIR_OAUTH_LIB=$(DIR_OAUTH)/lib
 # END OAUTH CONFIGURATION
 
 
+# BEGIN UUID CONFIGURATION
+ifneq ($(UUID_HOME),)
+DIR_UUID=$(UUID_HOME)
+else
+DIR_UUID=/usr/local
+endif
+export DIR_UUID_INC=$(DIR_UUID)/include
+export DIR_UUID_LIB=$(DIR_UUID)/lib
+# END UUID CONFIGURATION
+
+
 include project.properties
 
 
@@ -151,7 +162,7 @@ install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
 
 
-install_deps: install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_irods_dev
+install_deps: install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_irods_dev install_uuid
 	
 install_references: 
 	$(COPY) references/* $(DIR_WHEATIS_INSTALL)/references/
@@ -189,6 +200,13 @@ install_oauth:
 	make; \
 	make install			
 	
+install_uuid:
+	cd $(DIR_ROOT)/extras/libuuid-1.0.3; \
+	./configure --prefix=$(DIR_UUID); \
+	make; \
+	make install			
+
+
 	
 install_irods_dev:
 	@mkdir -p $(DIR_SHARED_IRODS_INC)

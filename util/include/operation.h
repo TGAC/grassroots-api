@@ -19,6 +19,9 @@ typedef enum Operation {
 	/** Get list of services matching the given names */
 	OP_GET_NAMED_SERVICES,
 
+	/** Get status of running services */
+	OP_CHECK_SERVICE_STATUS,
+
 	OP_NUM_OPERATIONS
 } Operation;
 

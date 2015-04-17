@@ -33,6 +33,13 @@ WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const 
 WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd);
 
 
+WHEATIS_SERVICE_MANAGER_API char *GetUUIDString (json_t *user_p);
+
+
+WHEATIS_SERVICE_MANAGER_API void FreeUUIDString (char *uuid_s);
+
+
+
 
 #ifdef __cplusplus
 }

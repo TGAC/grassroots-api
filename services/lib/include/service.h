@@ -321,6 +321,7 @@ WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, Ope
 
 WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
+
 #ifdef __cplusplus
 }
 #endif

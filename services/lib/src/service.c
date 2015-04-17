@@ -667,7 +667,6 @@ const char *GetOperationNameFromJSON (const json_t * const root_p)
 }
 
 
-
 const char *GetOperationInformationURIFromJSON (const json_t * const root_p)
 {
 	return GetJSONString (root_p, OPERATION_INFORMATION_URI_S);

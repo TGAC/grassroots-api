@@ -84,7 +84,51 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	json_t *res_p = NULL;
 	json_t *op_p = NULL;
 	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
-		
+	json_t *uuid_p = NULL;
+
+	if (!credentials_p)
+		{
+			credentials_p = json_object ();
+
+			if (credentials_p)
+				{
+					if (json_object_set_new (req_p, CREDENTIALS_S, credentials_p) != 0)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to add credentials json");
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to create credentials json");
+				}
+		}
+
+
+	/* add a unique id if not already there */
+	if (credentials_p)
+		{
+			json_t *uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
+
+			if (!uuid_p)
+				{
+					char *uuid_s = GetUUIDString ();
+
+					if (uuid_s)
+						{
+							if (json_object_set_new (credentials_p, CREDENTIALS_UUID_S, json_string ()) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add uuid string to credentials");
+								}
+
+							FreeUUIDString (uuid_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to get uuid string");
+						}
+				}
+		}
+
 	#if SERVER_DEBUG >= STM_LEVEL_FINE
 		{
 			if (req_p)
@@ -99,7 +143,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 				}
 		}
 	#endif
-
 
 	if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
 		{
@@ -142,7 +185,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						break;
 
 					case OP_GET_NAMED_SERVICES:
-						res_p = GetNamedServices(req_p, credentials_p);
+						res_p = GetNamedServices (req_p, credentials_p);
+						break;
+
+
+					case OP_CHECK_SERVICE_STATUS:
+						res_p = GetServiceStatus (req_p, credentials_p);
 						break;
 
 					default:
@@ -223,7 +271,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						{
 							// error
 						}
-			
 				}					
 		}
 
@@ -246,6 +293,29 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	return res_p;
 }
 
+
+
+char *GetUUIDString (json_t *user_p)
+{
+	const int UUID_BYTE_SIZE = 36;
+	char *uuid_s = (char *) AllocMemory ((UUID_BYTE_SIZE + 1) * sizeof (char));
+
+	if (uuid_s)
+		{
+			uuid_t uuid;
+
+			uuid_generate (uuid);
+			uuid_unparse_lower (uuid, uuid_s);
+		}
+
+	return uuid_s;
+}
+
+
+void FreeUUIDString (char *uuid_s)
+{
+	FreeMemory (uuid_s);
+}
 
 
 /******************************/
@@ -293,8 +363,6 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 										}
 								}
 							#endif
-
-
 
 							if (services_p -> ll_size == 1)
 								{	
@@ -436,6 +504,14 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 												
 
 	res_p = GetServices (SERVICES_PATH_S, username_s, password_s, NULL, NULL, credentials_p);
+
+	return res_p;
+}
+
+
+static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p)
+{
+	json_t *res_p = NULL;
 
 	return res_p;
 }
