@@ -30,7 +30,6 @@ void FreeBlastTool (BlastTool *tool_p)
 BlastTool :: BlastTool ()
 {
 	bt_running_flag = false;
-	bt_temp_input_filename_s = 0;
 }
 
 BlastTool :: ~BlastTool ()
@@ -46,6 +45,19 @@ BlastTool :: ~BlastTool ()
 			free (data_s);
 		}
 }
+
+
+QueuedBlastTool :: QueuedBlastTool ()
+{
+	qbt_buffer_p = AllocateByteBuffer (1024);
+}
+
+
+QueuedBlastTool :: ~QueuedBlastTool ()
+{
+	FreeByteBuffer (qbt_buffer_p);
+}
+
 
 
 
@@ -225,40 +237,66 @@ bool QueuedBlastTool :: Run ()
 bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 {
 	bool success_flag = false;
-	ByteBuffer *args_buffer_p = AllocateByteBuffer (1024);
+	SharedType value;
+	char temp_s [L_tmpnam] = { 0 };
+	char *filename_s = NULL;
+	const char *args_s = NULL;
 
-	if (args_buffer_p)
+	memset (&value, 0, sizeof (SharedType));
+
+	/* Input query */
+	if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_INPUT_QUERY, &value, true))
 		{
-			SharedType value;
+			char *sequence_s = value.st_string_value_s;
 
-			memset (&value, 0, sizeof (SharedType));
-
-			/* Input query */
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_INPUT_QUERY, &value, true))
+			if (!IsStringEmpty (sequence_s))
 				{
-					char *sequence_s = value.st_string_value_s;
-
-					if (!IsStringEmpty (sequence_s))
+					if ((tmpnam (temp_s)) != NULL)
 						{
-							char name_s [L_tmpnam];
+							FILE *temp_f = fopen (temp_s, "w");
 
-							if ((bt_temp_input_filename_s = tmpnam (name_s)) != NULL)
+							if (temp_f)
 								{
+									if (fprintf (temp_f, "%s\n") > 0)
+										{
+											filename_s = temp_s;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"");
+										}
 
+									if (fclose (temp_f) != 0)
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to close temp file \"%s\" for query \"%s\"");
+										}
 								}
-						}
-					else
-						{
-							/* try to get the input file */
-							if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_INPUT_FILE, &value, true))
+							else
 								{
-
+									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file \"%s\" for query \"%s\"");
 								}
+
 						}
 				}
+			else
+				{
+					/* try to get the input file */
+					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_INPUT_FILE, &value, true))
+						{
+							filename_s = value.st_string_value_s;
+						}
+				}
+		}
+
+	if (filename_s)
+		{
+			success_flag = AppendStringsToByteBuffer (args_buffer_p, "-query ", filename_s, NULL);
+		}
 
 
-			/* Query Location */
+	/* Query Location */
+	if (success_flag)
+		{
 			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true))
 				{
 					SharedType to;
@@ -269,102 +307,101 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 							success_flag = AppendStringsToByteBuffer (args_buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL);
 						}
 				}
+		}
 
 
+	/* Reward */
+	if (success_flag)
+		{
+			success_flag = false;
 
-			/* Reward */
-			if (success_flag)
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MATCH_SCORE, &value, true))
 				{
-					success_flag = false;
+					char *value_s = ConvertIntegerToString (value.st_long_value);
 
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MATCH_SCORE, &value, true))
+					if (value_s)
 						{
-							char *value_s = ConvertIntegerToString (value.st_long_value);
+							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -reward ", value_s, NULL);
 
-							if (value_s)
-								{
-									success_flag = AppendStringsToByteBuffer (args_buffer_p, " -reward ", value_s, NULL);
-
-									FreeCopiedString (value_s);
-								}		/* if (value_s) */
-						}
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
 				}
+		}
 
 
-			/* Penalty */
-			if (success_flag)
+	/* Penalty */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MISMATCH_SCORE, &value, true))
 				{
-					success_flag = false;
+					char *value_s = ConvertIntegerToString (value.st_long_value);
 
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MISMATCH_SCORE, &value, true))
+					if (value_s)
 						{
-							char *value_s = ConvertIntegerToString (value.st_long_value);
+							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -penalty ", value_s, NULL);
 
-							if (value_s)
-								{
-									success_flag = AppendStringsToByteBuffer (args_buffer_p, " -penalty ", value_s, NULL);
-
-									FreeCopiedString (value_s);
-								}		/* if (value_s) */
-						}
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
 				}
+		}
 
-			/* Max target sequences */
-			if (success_flag)
+	/* Max target sequences */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MAX_SEQUENCES, &value, true))
 				{
-					success_flag = false;
+					char *value_s = ConvertIntegerToString (value.st_ulong_value);
 
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MAX_SEQUENCES, &value, true))
+					if (value_s)
 						{
-							char *value_s = ConvertIntegerToString (value.st_ulong_value);
+							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -max_target_seqs ", value_s, NULL);
 
-							if (value_s)
-								{
-									success_flag = AppendStringsToByteBuffer (args_buffer_p, " -max_target_seqs ", value_s, NULL);
-
-									FreeCopiedString (value_s);
-								}		/* if (value_s) */
-						}
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
 				}
+		}
 
-			/* Expect threshold */
-			if (success_flag)
+	/* Expect threshold */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_EXPECT_THRESHOLD, &value, true))
 				{
-					success_flag = false;
+					char *value_s = ConvertDoubleToString (value.st_data_value);
 
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_EXPECT_THRESHOLD, &value, true))
+					if (value_s)
 						{
-							char *value_s = ConvertDoubleToString (value.st_data_value);
+							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -evalue ", value_s, NULL);
 
-							if (value_s)
-								{
-									success_flag = AppendStringsToByteBuffer (args_buffer_p, " -evalue ", value_s, NULL);
-
-									FreeCopiedString (value_s);
-								}		/* if (value_s) */
-						}
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
 				}
+		}
 
 
-			/* Word Size */
-			if (success_flag)
+	/* Word Size */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_WORD_SIZE, &value, true))
 				{
-					success_flag = false;
+					char *value_s = ConvertIntegerToString (value.st_ulong_value);
 
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_WORD_SIZE, &value, true))
+					if (value_s)
 						{
-							char *value_s = ConvertIntegerToString (value.st_ulong_value);
+							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -word_size ", value_s, NULL);
 
-							if (value_s)
-								{
-									success_flag = AppendStringsToByteBuffer (args_buffer_p, " -word_size ", value_s, NULL);
-
-									FreeCopiedString (value_s);
-								}		/* if (value_s) */
-						}
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
 				}
+		}
 
-		}		/* if (args_buffer_p) */
 
 	return success_flag;
 }

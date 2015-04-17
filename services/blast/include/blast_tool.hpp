@@ -50,8 +50,6 @@ protected:
 	 * leaks.
 	 */
 	std :: vector <char *> bt_allocated_args;
-
-	char *bt_temp_input_filename_s;
 };
 
 
@@ -111,10 +109,15 @@ public:
 class BLAST_SERVICE_LOCAL QueuedBlastTool : public BlastTool 
 {
 public:
+	QueuedBlastTool ();
+	~QueuedBlastTool ();
 
 	virtual bool ParseParameters (ParameterSet *params_p);
 
 	virtual bool Run ();	
+
+private:
+	ByteBuffer *qbt_buffer_p;
 };
 
 
