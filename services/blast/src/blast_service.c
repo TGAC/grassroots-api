@@ -361,7 +361,6 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 		{
 			if (tool_p -> ParseParameters (param_set_p))
 				{
-					res
 					res = (RunBlast (tool_p)) ? OS_SUCCEEDED : OS_FAILED;
 
 					FreeBlastTool (tool_p);

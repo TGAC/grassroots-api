@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "blast_service.h"
-
+#include "byte_buffer.h"
 
 /**
  * The base class for running Blast.
@@ -17,7 +17,7 @@ public:
 
 	virtual ~BlastTool ();
 
-	virtual bool Run () = 0;
+	virtual OperationStatus Run () = 0;
 
 	virtual bool ParseParameters (ParameterSet *params_p) = 0;
 
@@ -74,7 +74,7 @@ class BLAST_SERVICE_LOCAL ForkedBlastTool : public BlastTool
 {
 public:
 	
-	virtual bool Run ();	
+	virtual OperationStatus Run ();
 };
 
 
@@ -86,7 +86,7 @@ class BLAST_SERVICE_LOCAL InlineBlastTool : public BlastTool
 {
 public:
 	
-	virtual bool Run ();	
+	virtual OperationStatus Run ();
 };
 
 
@@ -98,7 +98,7 @@ class BLAST_SERVICE_LOCAL ThreadedBlastTool : public BlastTool
 {
 public:
 	
-	virtual bool Run ();	
+	virtual OperationStatus Run ();
 };
 
 
@@ -114,7 +114,7 @@ public:
 
 	virtual bool ParseParameters (ParameterSet *params_p);
 
-	virtual bool Run ();	
+	virtual OperationStatus Run ();
 
 private:
 	ByteBuffer *qbt_buffer_p;
@@ -152,10 +152,10 @@ BLAST_SERVICE_API void FreeBlastTool (BlastTool *tool_p);
  * @return <code>true</code> if the tool completed successfully, <code>false</code>
  * otherwise.
  */
-BLAST_SERVICE_API bool RunBlast (BlastTool *tool_p);
+BLAST_SERVICE_API OperationStatus RunBlast (BlastTool *tool_p);
 
 
-BLAST_SERVICE_API bool IsBlastRunning (BlastTool *tool_p);
+BLAST_SERVICE_API OperationStatus GetBlastStatus (BlastTool *tool_p);
 
 
 #ifdef __cplusplus

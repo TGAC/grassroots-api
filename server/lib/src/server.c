@@ -18,6 +18,8 @@
 #include "string_utils.h"
 #include "parameter_set.h"
 
+#include "uuid/uuid.h"
+
 //#include "irods_handle.h"
 
 
@@ -51,6 +53,7 @@ static Operation GetOperation (json_t *ops_p);
 
 static json_t *GetNamedServices (const json_t * const req_p, const json_t *credentials_p);
 
+static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p);
 
 /***************************/
 /***** API DEFINITIONS *****/
@@ -107,15 +110,15 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	/* add a unique id if not already there */
 	if (credentials_p)
 		{
-			json_t *uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
+			uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
 
 			if (!uuid_p)
 				{
-					char *uuid_s = GetUUIDString ();
+					char *uuid_s = GetUUIDString (credentials_p);
 
 					if (uuid_s)
 						{
-							if (json_object_set_new (credentials_p, CREDENTIALS_UUID_S, json_string ()) != 0)
+							if (json_object_set_new (credentials_p, CREDENTIALS_UUID_S, json_string (uuid_s)) != 0)
 								{
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to add uuid string to credentials");
 								}

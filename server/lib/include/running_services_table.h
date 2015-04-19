@@ -27,9 +27,10 @@
 WHEATIS_SERVICE_MANAGER_API HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const uint8 load_percentage);
 
 
-
-WHEATIS_SERVICE_MANAGER_API bool CompareStringHashBuckets (const void * const bucket_key_p, const void * const key_p);
-
+/**
+ *
+ */
+WHEATIS_SERVICE_MANAGER_LOCAL void ServiceFinished (uuid key, Service *service_p, const OperationStatus status);
 
 
 #ifdef __cplusplus

@@ -151,11 +151,11 @@ OPTIONAL ARGUMENTS
 
 
 
-bool RunBlast (BlastTool *tool_p)
+OperationStatus RunBlast (BlastTool *tool_p)
 {
-	bool success_flag = tool_p -> Run ();
+	OperationStatus status = tool_p -> Run ();
 		
-	return success_flag;	
+	return status;
 }
 
 
@@ -171,51 +171,51 @@ void BlastTool :: AddArgument (char *arg_s, bool newly_allocated_flag)
 
 
 
-bool ForkedBlastTool :: Run ()
+OperationStatus ForkedBlastTool :: Run ()
 {
-	bool success_flag = true;
+	OperationStatus status = OS_SUCCEEDED;
 	
 	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "%s %d: ForkedBlastTool :: Run", __FILE__, __LINE__);		
 	PostRun ();
 	
-	return success_flag;
+	return status;
 }
 
 
-bool InlineBlastTool :: Run ()
+OperationStatus InlineBlastTool :: Run ()
 {
-	bool success_flag = true;
+	OperationStatus status = OS_SUCCEEDED;
 
 	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "%s %d: InlineBlastTool :: Run", __FILE__, __LINE__);		
 	PostRun ();
 
-	return success_flag;
+	return status;
 }
 
 
-bool ThreadedBlastTool :: Run ()
+OperationStatus ThreadedBlastTool :: Run ()
 {
-	bool success_flag = true;
+	OperationStatus status = OS_SUCCEEDED;
 	
 	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "%s %d: ThreadedBlastTool :: Run", __FILE__, __LINE__);	
 	PostRun ();
 
-	return success_flag;
+	return status;
 }
 
 
-bool QueuedBlastTool :: Run ()
+OperationStatus QueuedBlastTool :: Run ()
 {
-	bool success_flag = true;
+	OperationStatus status = OS_SUCCEEDED;
 	
 	PreRun ();
 	WriteToLog (NULL, LOG_INFO, "%s %d: QueuedBlastTool :: Run", __FILE__, __LINE__);	
 	PostRun ();
 
-	return success_flag;
+	return status;
 }
 
 
@@ -290,7 +290,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 	if (filename_s)
 		{
-			success_flag = AppendStringsToByteBuffer (args_buffer_p, "-query ", filename_s, NULL);
+			success_flag = AppendStringsToByteBuffer (qbt_buffer_p, "-query ", filename_s, NULL);
 		}
 
 
@@ -304,7 +304,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 					memset (&to, 0, sizeof (SharedType));
 					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &value, true))
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL);
+							success_flag = AppendStringsToByteBuffer (qbt_buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL);
 						}
 				}
 		}
@@ -321,7 +321,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -reward ", value_s, NULL);
+							success_flag = AppendStringsToByteBuffer (qbt_buffer_p, " -reward ", value_s, NULL);
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -340,7 +340,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -penalty ", value_s, NULL);
+							success_flag = AppendStringsToByteBuffer (qbt_buffer_p, " -penalty ", value_s, NULL);
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -358,7 +358,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -max_target_seqs ", value_s, NULL);
+							success_flag = AppendStringsToByteBuffer (qbt_buffer_p, " -max_target_seqs ", value_s, NULL);
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -376,7 +376,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -evalue ", value_s, NULL);
+							success_flag = AppendStringsToByteBuffer (qbt_buffer_p, " -evalue ", value_s, NULL);
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -395,7 +395,7 @@ bool QueuedBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (args_buffer_p, " -word_size ", value_s, NULL);
+							success_flag = AppendStringsToByteBuffer (qbt_buffer_p, " -word_size ", value_s, NULL);
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -430,8 +430,4 @@ void BlastTool :: PringArgsToLog ()
 			WriteToLog (NULL, LOG_INFO, "%s %d: arg [%d]=\"%s\"\n", __FILE__, __LINE__, (int) i, bt_command_line_args [i]);	
 		}
 }
-
-
-
-
 

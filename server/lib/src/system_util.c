@@ -37,3 +37,8 @@ bool DestroyInformationSystem ()
 
 	return res_flag;
 }
+
+
+
+
+
