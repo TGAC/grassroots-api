@@ -54,6 +54,7 @@ PREFIX const char *SERVICE_RUN_S VAL("run");
 
 
 PREFIX const char *SERVICE_NAME_S VAL("service");
+PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_S VAL("status");
 PREFIX const char *SERVICE_RESULTS_S VAL("results");
 
@@ -98,7 +99,7 @@ PREFIX const char *CREDENTIALS_S VAL("credentials");
 PREFIX const char *CREDENTIALS_NAME_S VAL("name");
 PREFIX const char *CREDENTIALS_USERNAME_S VAL("user");
 PREFIX const char *CREDENTIALS_PASSWORD_S VAL("pass");
-PREFIX const char *CREDENTIALS_UUID_S VAL("uuid");
+PREFIX const char *CREDENTIALS_UUID_S VAL("user_uuid");
 PREFIX const char *CREDENTIALS_TOKEN_KEY_S VAL("token_key");
 PREFIX const char *CREDENTIALS_TOKEN_SECRET_S VAL("token_secret");
 PREFIX const char *CREDENTIALS_APP_KEY_S VAL("app_key");

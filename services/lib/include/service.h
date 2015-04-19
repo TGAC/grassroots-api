@@ -9,6 +9,8 @@
 #include "handler.h"
 #include "user_details.h"
 
+#include "uuid/uuid.h"
+
 #include "jansson.h"
 #include "tag_item.h"
 
@@ -73,6 +75,9 @@ typedef struct ServiceData
 
 	/** Is the service currently in an open state? */
 	OperationStatus sd_status;
+
+	/** Unique Id for this service */
+	uuid_t sd_id;
 } ServiceData;
 
 
