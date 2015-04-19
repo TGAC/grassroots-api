@@ -30,6 +30,8 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 
 static bool AddOperationInformationURIToJSON (Service * const service_p, json_t *root_p);
 
+static bool AddServiceUUIDToJSON (Service * const service_p, json_t *root_p);
+
 static void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
 
 static const char *GetPluginNameFromJSON (const json_t * const root_p);
@@ -478,7 +480,7 @@ const char *GetServiceDescription (Service *service_p)
 
 
 
-const char *GetServiceInformationUri (Service *service_p)
+const char *GetServiceInformationURI (Service *service_p)
 {
 	const char *uri_s = NULL;
 
@@ -488,6 +490,31 @@ const char *GetServiceInformationUri (Service *service_p)
 		}
 
 	return uri_s;
+}
+
+
+const uuid_t *GetServiceUUID (const Service *service_p)
+{
+	if (service_p -> se_data_p)
+		{
+			return & (service_p -> se_data_p -> sd_id);
+		}
+
+	return NULL;
+}
+
+
+char *GetServiceUUIDAsString (Service *service_p)
+{
+	char *uuid_s = NULL;
+	uuid_t *id_p = GetServiceUUID (service_p);
+
+	if (uuid_is_null (*id_p) == 0)
+		{
+			uuid_unparse (*id_p, uuid_s);
+		}
+
+	return uuid_s;
 }
 
 
@@ -607,10 +634,15 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 												{
 													if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, json_p))
 														{
-															AddOperationInformationURIToJSON (service_p, operation_p);
+															if (AddServiceUUIDToJSON (service_p, operation_p))
+																{
+																	AddOperationInformationURIToJSON (service_p, operation_p);
 
-															success_flag = true;
-														}
+																	success_flag = true;
+																}		/* if (AddServiceUUIDToJSON (service_p, operation_p)) */
+
+														}		/* if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, json_p)) */
+
 												}		/* if (AddServiceDescriptionToJSON (service_p, operation_p)) */	
 																						
 										}		/* if (AddServiceNameToJSON (service_p, operation_p)) */
@@ -715,15 +747,36 @@ static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root
 }
 
 
+static bool AddServiceUUIDToJSON (Service * const service_p, json_t *root_p)
+{
+	bool success_flag = false;
+	char *uuid_s = GetServiceUUIDAsString (service_p);
+
+	if (uuid_s)
+		{
+			success_flag = (json_object_set_new (root_p, SERVICE_UUID_S, json_string (uuid_s)) == 0);
+			FreeUUIDString (uuid_s);
+		}
+
+	#if SERVICE_DEBUG >= STM_LEVEL_FINER
+	PrintJSON (stderr, root_p, "AddServiceUUIDToJSON :: uuid -> ");
+	#endif
+
+	return success_flag;
+}
+
+
+
 static bool AddOperationInformationURIToJSON (Service * const service_p, json_t *root_p)
 {
 	bool success_flag = false;
-	const char *uri_s = GetServiceInformationUri (service_p);
+	const char *uri_s = GetServiceInformationURI (service_p);
 
 	if (uri_s)
 		{
 			success_flag = (json_object_set_new (root_p, OPERATION_INFORMATION_URI_S, json_string (uri_s)) == 0);
 		}
+
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintJSON (stderr, root_p, "AddOperationInformationURIToJSON :: uri_s -> ");
@@ -909,7 +962,7 @@ json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status,
 	const char *service_name_s = GetServiceName (service_p);
 	const char *service_description_s = GetServiceDescription (service_p);
 	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_S, status);
-	const char *info_uri_s = GetServiceInformationUri (service_p);
+	const char *info_uri_s = GetServiceInformationURI (service_p);
 
 
 	if (info_uri_s)

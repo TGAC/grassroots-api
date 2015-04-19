@@ -15,6 +15,8 @@
 #include "wheatis_util_library.h"
 #include "linked_list.h"
 
+#include "uuid/uuid.h"
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
@@ -179,6 +181,12 @@ WHEATIS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 WHEATIS_UTIL_API char *ConvertIntegerToString (const int value);
 
 WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
+
+
+WHEATIS_UTIL_API char *GetUUIDAsString (const uuid_t id);
+
+
+WHEATIS_UTIL_API void FreeUUIDString (char *uuid_s);
 
 #ifdef __cplusplus
 }

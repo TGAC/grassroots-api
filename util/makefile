@@ -36,7 +36,8 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
-	-I$(DIR_JANSSON_INC)
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
 	file_output_stream.c \
@@ -70,7 +71,9 @@ endif
 
 CPPFLAGS += -DWHEATIS_UTIL_LIBRARY_EXPORTS -DUNIX 
 
-LDFLAGS += -ldl -L$(DIR_JANSSON_LIB) -ljansson
+LDFLAGS += -ldl \
+	-L$(DIR_JANSSON_LIB) -ljansson \
+	-L$(DIR_UUID_LIB) -luuid
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 

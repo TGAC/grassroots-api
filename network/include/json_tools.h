@@ -6,6 +6,7 @@
 #include "typedefs.h"
 #include "operation.h"
 #include "request_tools.h"
+#include "uuid/uuid.h"
 
 #define JSON_KEY_USERNAME ("username")
 #define JSON_KEY_PASSWORD ("password")
@@ -39,6 +40,8 @@ WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
 WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p);
 
 WHEATIS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p);
+
+WHEATIS_NETWORK_API uuid_t *GetUserUUIDFromJSON (const json_t *credentials_p);
 
 #ifdef __cplusplus
 }

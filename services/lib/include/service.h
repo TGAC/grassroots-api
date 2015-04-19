@@ -220,6 +220,15 @@ WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Reso
 
 
 /**
+ * Get the address of a web page about the service.
+ *
+ * @param service_p The Service to get the description for.
+ * @return The address of the page or NULL if there isn't one.
+ */
+WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
+
+
+/**
  * Free a Service and its associated Parameters and ServiceData.
  *
  * @param service_p The Service to free.

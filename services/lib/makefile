@@ -38,6 +38,7 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
+	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
 	client.c \
@@ -56,8 +57,8 @@ BASE_LDFLAGS = -lpthread \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
-	-L$(DIR_JANSSON_LIB) -ljansson 
-
+	-L$(DIR_JANSSON_LIB) -ljansson \
+	-L$(DIR_UUID_LIB) -luuid
 
 LDFLAGS += $(BASE_LDFLAGS) 
 

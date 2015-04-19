@@ -734,3 +734,25 @@ int Stricmp (const char *c0_p, const char *c1_p)
 
 	return res;
 }
+
+
+
+
+char *GetUUIDAsString (const uuid_t id)
+{
+	const int UUID_BYTE_SIZE = 36;
+	char *uuid_s = (char *) AllocMemory ((UUID_BYTE_SIZE + 1) * sizeof (char));
+
+	if (uuid_s)
+		{
+			uuid_unparse_lower (id, uuid_s);
+		}
+
+	return uuid_s;
+}
+
+
+void FreeUUIDString (char *uuid_s)
+{
+	FreeMemory (uuid_s);
+}

@@ -114,7 +114,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 			if (!uuid_p)
 				{
-					char *uuid_s = GetUUIDString (credentials_p);
+					char *uuid_s = GetUserUUIDFromJSON (credentials_p);
 
 					if (uuid_s)
 						{
@@ -298,27 +298,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 
 
-char *GetUUIDString (json_t *user_p)
-{
-	const int UUID_BYTE_SIZE = 36;
-	char *uuid_s = (char *) AllocMemory ((UUID_BYTE_SIZE + 1) * sizeof (char));
-
-	if (uuid_s)
-		{
-			uuid_t uuid;
-
-			uuid_generate (uuid);
-			uuid_unparse_lower (uuid, uuid_s);
-		}
-
-	return uuid_s;
-}
-
-
-void FreeUUIDString (char *uuid_s)
-{
-	FreeMemory (uuid_s);
-}
 
 
 /******************************/
