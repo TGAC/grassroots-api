@@ -114,7 +114,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 			if (!uuid_p)
 				{
-					char *uuid_s = GetUserUUIDFromJSON (credentials_p);
+					char *uuid_s = GetUserUUIDStringFromJSON (credentials_p);
 
 					if (uuid_s)
 						{

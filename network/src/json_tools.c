@@ -433,3 +433,9 @@ json_t *CallServices (json_t *client_params_json_p, const char * const username_
 }
 
 
+const char *GetUserUUIDStringFromJSON (const json_t *credentials_p)
+{
+	return GetJSONString (credentials_p, CREDENTIALS_UUID_S);
+}
+
+

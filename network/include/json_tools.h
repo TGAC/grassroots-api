@@ -41,7 +41,8 @@ WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, c
 
 WHEATIS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p);
 
-WHEATIS_NETWORK_API uuid_t *GetUserUUIDFromJSON (const json_t *credentials_p);
+WHEATIS_NETWORK_API const char *GetUserUUIDStringFromJSON (const json_t *credentials_p);
+
 
 #ifdef __cplusplus
 }

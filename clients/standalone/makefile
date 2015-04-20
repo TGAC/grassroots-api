@@ -30,7 +30,8 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
-	-I$(DIR_JANSSON_INC)
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
 	standalone_client.c 

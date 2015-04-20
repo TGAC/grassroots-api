@@ -30,7 +30,9 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_WHEATIS_HANDLER_INC) \
-	-I$(DIR_JANSSON_INC)
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_UUID_INC)
+	
 	
 SRCS 	= \
 	ensembl_rest_service.c \

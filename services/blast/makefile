@@ -40,7 +40,8 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
-	-I$(DIR_JANSSON_INC)
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
 	blast_service.c \
