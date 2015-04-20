@@ -526,7 +526,74 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 
 static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p)
 {
-	json_t *res_p = NULL;
+	json_error_t error;
+	json_t *res_p = json_object ();
+
+	if (res_p)
+		{
+			bool success_flag = false;
+			OperationStatus status = OS_ERROR;
+			const char *service_name_s = NULL;
+			const char *uuid_s = GetJSONString (req_p, SERVICE_UUID_S);
+
+			if (uuid_s)
+				{
+					if (json_object_set_new (res_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
+						{
+							uuid_t service_id;
+
+							if (ConvertStringToUUID (uuid_s, service_id))
+								{
+									Service *service_p = GetServiceFromStatusTable (service_id);
+
+									if (service_p)
+										{
+											status = GetRunningServiceStatus (service_p);
+
+											if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
+												{
+													success_flag = true;
+
+													if (json_object_set_new (res_p, SERVICE_NAME_S, GetServiceName (service_p)) != 0)
+														{
+															PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for %s - %s to status json", GetServiceName (service_p), uuid_s);
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to get service for %s from status table", uuid_s);
+										}
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to get convert string to uuid");
+								}
+
+						}		/* if (json_object_set_new (res_p, SERVICE_UUID_S, json_string (uuid_s)) == 0) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to get set status uuid %s for status json", uuid_s);
+						}
+
+				}		/* if (uuid_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to get uuid for status json");
+				}
+
+			if (!success_flag)
+				{
+					json_object_clear (res_p);
+					json_decref (res_p);
+					res_p = NULL;
+				}
+
+		}		/* if (res_p) */
 
 	return res_p;
 }

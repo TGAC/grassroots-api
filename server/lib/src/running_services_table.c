@@ -52,6 +52,8 @@ static void FreeUUIDServiceNode (ListItem * const node_p)
 }
 
 
+
+
 HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const uint8 load_percentage)
 {
 	HashTable *services_p = NULL;
@@ -121,18 +123,18 @@ void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus
 
 	if (services_p)
 		{
-			ServiceNode *node_p = (ServiceNode *) (services_p -> ll_head_p);
+			UUIDServiceNode *node_p = (UUIDServiceNode *) (services_p -> ll_head_p);
 			bool searching_flag = (node_p != NULL);
 
 			while (searching_flag)
 				{
-					if (service_p == node_p -> sn_service_p)
+					if (service_p == node_p -> usn_node.sn_service_p)
 						{
 							searching_flag = false;
 						}
 					else
 						{
-							node_p = (ServiceNode *) (node_p -> sn_node.ln_next_p);
+							node_p = (UUIDServiceNode *) (node_p -> usn_node.sn_node.ln_next_p);
 							searching_flag = (node_p != NULL);
 						}
 
@@ -143,8 +145,8 @@ void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus
 					LinkedListRemove (services_p, (ListItem * const) node_p);
 
 					SetCurrentServiceStatus (service_p, status);
-					node_p -> sn_service_p = NULL;
-					FreeServiceNode (node_p);
+					node_p -> usn_node.sn_service_p = NULL;
+					FreeUUIDServiceNode (node_p);
 				}
 
 		}		/* if (services_p) */
@@ -161,7 +163,7 @@ Service *GetServiceFromStatusTable (const uuid_t user_key, const uuid_t service_
 	/* Lock access to avoid race conditions */
 	pthread_mutex_lock (&s_services_mutex);
 
-	services_p = GetFromHashTable (s_running_services_p, user_key);
+	services_p = (LinkedList *) GetFromHashTable (s_running_services_p, user_key);
 
 	if (services_p)
 		{

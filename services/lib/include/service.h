@@ -58,6 +58,7 @@ struct Service;
 
 typedef enum OperationStatus
 {
+	OS_ERROR = -1,
 	OS_IDLE,
 	OS_FAILED_TO_START,
 	OS_STARTED,

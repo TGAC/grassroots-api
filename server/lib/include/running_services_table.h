@@ -20,7 +20,7 @@
 
 
 /**
- * Create a HashTable where both the keys are strings and the values are service lists
+ * Create a HashTable where both the keys are strings and the values are services
  *
  * @param initital_capacity The initial number of HashBuckets for the HashTable.
  * @param load_percentage The percentage value for how full the HashTable should
@@ -30,13 +30,17 @@
 WHEATIS_SERVICE_MANAGER_API HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const uint8 load_percentage);
 
 
-WHEATIS_SERVICE_MANAGER_API bool AddServiceToStatusTable (uuid_t user_key, Service *service_p);
+WHEATIS_SERVICE_MANAGER_API bool AddServiceToStatusTable (uuid_t service_key, Service *service_p);
+
+
+WHEATIS_SERVICE_MANAGER_API Service *GetServiceFromStatusTable (const uuid_t service_key);
 
 
 /**
  *
  */
-WHEATIS_SERVICE_MANAGER_LOCAL void ServiceFinished (uuid_t key, Service *service_p, const OperationStatus status);
+WHEATIS_SERVICE_MANAGER_LOCAL void ServiceFinished (uuid_t service_key, const OperationStatus status);
+
 
 
 

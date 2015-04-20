@@ -742,14 +742,26 @@ void GenerateUUID (uuid_t *id_p)
 }
 
 
+void ConvertUUIDToString (const uuid_t id, char *uuid_s)
+{
+	uuid_unparse_lower (id, uuid_s);
+}
+
+
+bool ConvertStringToUUID (const char *id_s, uuid_t id)
+{
+	return (uuid_parse (id_s, id) == 0);
+}
+
+
+
 char *GetUUIDAsString (const uuid_t id)
 {
-	const int UUID_BYTE_SIZE = 36;
-	char *uuid_s = (char *) AllocMemory ((UUID_BYTE_SIZE + 1) * sizeof (char));
+	char *uuid_s = (char *) AllocMemory (UUID_BUFFER_SIZE * sizeof (char));
 
 	if (uuid_s)
 		{
-			uuid_unparse_lower (id, uuid_s);
+			ConvertUUIDToString (id, uuid_s);
 		}
 
 	return uuid_s;
