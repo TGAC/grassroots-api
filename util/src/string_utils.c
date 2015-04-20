@@ -736,6 +736,10 @@ int Stricmp (const char *c0_p, const char *c1_p)
 }
 
 
+void GenerateUUID (uuid_t *id_p)
+{
+	uuid_generate (*id_p);
+}
 
 
 char *GetUUIDAsString (const uuid_t id)

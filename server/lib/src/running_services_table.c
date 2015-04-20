@@ -1,5 +1,5 @@
 #include "running_services_table.h"
-
+#include "pthread.h"
 
 typedef struct UUIDServiceNode
 {
@@ -68,7 +68,7 @@ bool AddServiceToStatusTable (uuid_t user_key, Service *service_p)
 	/* Lock access to avoid race conditions */
 	pthread_mutex_lock (&s_services_mutex);
 
-	services_p = GetFromHashTable (s_running_services_p, user_key);
+	services_p = (LinkedList *) GetFromHashTable (s_running_services_p, user_key);
 
 	if (!services_p)
 		{
@@ -90,7 +90,7 @@ bool AddServiceToStatusTable (uuid_t user_key, Service *service_p)
 
 			if (node_p)
 				{
-					LinkedListAddTail (services_p, node_p);
+					LinkedListAddTail (services_p, (ListItem * const) node_p);
 					success_flag = true;
 				}
 			else
@@ -101,11 +101,12 @@ bool AddServiceToStatusTable (uuid_t user_key, Service *service_p)
 		}		/* if (services_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to allocate services list for status %s", key);
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to allocate services list for status %s", user_key);
 
 		}
 
 	pthread_mutex_unlock (&s_services_mutex);
+	return success_flag;
 }
 
 
@@ -116,7 +117,7 @@ void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus
 	/* Lock access to avoid race conditions */
 	pthread_mutex_lock (&s_services_mutex);
 
-	services_p = GetFromHashTable (s_running_services_p, user_key);
+	services_p = (LinkedList *) GetFromHashTable (s_running_services_p, user_key);
 
 	if (services_p)
 		{
@@ -125,8 +126,6 @@ void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus
 
 			while (searching_flag)
 				{
-					Service *stored_service_p = node_p -> sn_service_p;
-
 					if (service_p == node_p -> sn_service_p)
 						{
 							searching_flag = false;
@@ -141,9 +140,9 @@ void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus
 
 			if (node_p)
 				{
-					LinkedListRemove (services_p, node_p);
+					LinkedListRemove (services_p, (ListItem * const) node_p);
 
-					service_p -> se_data_p -> sd_status = status;
+					SetCurrentServiceStatus (service_p, status);
 					node_p -> sn_service_p = NULL;
 					FreeServiceNode (node_p);
 				}

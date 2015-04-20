@@ -10,6 +10,9 @@
 
 #include "hash_table.h"
 #include "wheatis_service_manager_library.h"
+#include "service.h"
+
+#include "uuid/uuid.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -27,10 +30,16 @@
 WHEATIS_SERVICE_MANAGER_API HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const uint8 load_percentage);
 
 
+WHEATIS_SERVICE_MANAGER_API bool AddServiceToStatusTable (uuid_t user_key, Service *service_p);
+
+
 /**
  *
  */
-WHEATIS_SERVICE_MANAGER_LOCAL void ServiceFinished (uuid key, Service *service_p, const OperationStatus status);
+WHEATIS_SERVICE_MANAGER_LOCAL void ServiceFinished (uuid_t key, Service *service_p, const OperationStatus status);
+
+
+
 
 
 #ifdef __cplusplus

@@ -72,12 +72,6 @@ typedef struct ServiceData
 {
 	/** The service that owns this data. */
 	struct Service *sd_service_p;
-
-	/** Is the service currently in an open state? */
-	OperationStatus sd_status;
-
-	/** Unique Id for this service */
-	uuid_t sd_id;
 } ServiceData;
 
 
@@ -128,10 +122,17 @@ typedef struct Service
 	 */
 	void (*se_release_params_fn) (struct Service *service_p, ParameterSet *params_p);
 
+	bool (*se_close_fn) (struct Service *service_p);
 
-	bool (*se_close_fn) (struct Service *service_p); 
 
-	/**
+	/** Is the service currently in an open state? */
+	OperationStatus se_status;
+
+	/** Unique Id for this service */
+	uuid_t se_id;
+
+
+	/**w
 	 * Any custom data that the service needs to store.
 	 */
 	ServiceData *se_data_p;
@@ -220,10 +221,10 @@ WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Reso
 
 
 /**
- * Get the address of a web page about the service.
+ * Get the unique id of a service object.
  *
- * @param service_p The Service to get the description for.
- * @return The address of the page or NULL if there isn't one.
+ * @param service_p The Service to get the id for.
+ * @return The string of the id.
  */
 WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
 
@@ -334,6 +335,12 @@ WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, Ope
 
 
 WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
+
+
+WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (const Service *service_p);
+
+
+WHEATIS_SERVICE_API void SetCurrentServiceStatus (Service *service_p, const OperationStatus status);
 
 
 #ifdef __cplusplus

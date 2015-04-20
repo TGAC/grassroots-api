@@ -495,23 +495,18 @@ const char *GetServiceInformationURI (Service *service_p)
 
 const uuid_t *GetServiceUUID (const Service *service_p)
 {
-	if (service_p -> se_data_p)
-		{
-			return & (service_p -> se_data_p -> sd_id);
-		}
-
-	return NULL;
+	return & (service_p -> se_id);
 }
 
 
 char *GetServiceUUIDAsString (Service *service_p)
 {
 	char *uuid_s = NULL;
-	uuid_t *id_p = GetServiceUUID (service_p);
+	const uuid_t *id_p = GetServiceUUID (service_p);
 
 	if (uuid_is_null (*id_p) == 0)
 		{
-			uuid_unparse (*id_p, uuid_s);
+			uuid_s = GetUUIDAsString (*id_p);
 		}
 
 	return uuid_s;
@@ -528,6 +523,18 @@ ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, co
 void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p)
 {
 	return service_p -> se_release_params_fn (service_p, params_p);
+}
+
+
+OperationStatus GetCurrentServiceStatus (const Service *service_p)
+{
+	return service_p -> se_status;
+}
+
+
+void SetCurrentServiceStatus (Service *service_p, const OperationStatus status)
+{
+	service_p -> se_status = status;
 }
 
 

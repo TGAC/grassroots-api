@@ -16,6 +16,7 @@
 
 #include "math_utils.h"
 #include "string_utils.h"
+#include "running_services_table.h"
 #include "parameter_set.h"
 
 #include "uuid/uuid.h"
@@ -45,9 +46,9 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
-static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p);
+static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid);
 
-static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p, const char *keyword_s);
+static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p, const char *keyword_s);
 
 static Operation GetOperation (json_t *ops_p);
 
@@ -88,6 +89,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	json_t *op_p = NULL;
 	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
 	json_t *uuid_p = NULL;
+	uuid_t uuid;
 
 	if (!credentials_p)
 		{
@@ -114,7 +116,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 			if (!uuid_p)
 				{
-					char *uuid_s = GetUserUUIDStringFromJSON (credentials_p);
+					char *uuid_s = NULL;
+					uuid_t user_id;
+
+					uuid_generate (user_id);
+
+					uuid_s = GetUUIDAsString (user_id);
 
 					if (uuid_s)
 						{
@@ -204,6 +211,19 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
 		{
 			bool success_flag = false;
+			uuid_t user_uuid;
+			char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
+
+			if (user_uuid_s)
+				{
+					uuid_parse (user_uuid_s, user_uuid);
+					FreeUUIDString (user_uuid_s);
+				}
+			else
+				{
+					uuid_clear (user_uuid);
+				}
+
 			
 			if (json_is_array (op_p))
 				{
@@ -213,10 +233,10 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						{
 							size_t i;
 							json_t *value_p;
-														
+
 							json_array_foreach (op_p, i, value_p) 
 								{
-									json_t *service_res_p = RunServiceFromJSON (value_p, credentials_p, res_p);
+									json_t *service_res_p = RunServiceFromJSON (value_p, credentials_p, res_p, user_uuid);
 									
 									if (service_res_p)
 										{
@@ -250,7 +270,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 					
 					if (res_p)
 						{
-							json_t *service_res_p = RunServiceFromJSON (op_p, credentials_p, res_p);
+							json_t *service_res_p = RunServiceFromJSON (op_p, credentials_p, res_p, user_uuid);
 							
 							if (service_res_p)
 								{
@@ -305,7 +325,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 /******************************/
 
 
-static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p)
+static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid)
 {
 	/* Get the requested operation */
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);
@@ -360,7 +380,20 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 											if (params_p)
 												{
+													OperationStatus status;
+
 													service_res_p = RunService (service_p, params_p, credentials_p);
+
+													status = GetCurrentServiceStatus (service_p);
+
+													if (status == OS_STARTED)
+														{
+															if (!AddServiceToStatusTable (user_uuid, service_p))
+																{
+
+																}
+														}
+
 												}		/* if (params_p) */
 
 										}		/* if (service_p) */
@@ -627,7 +660,7 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 }
 
 
-static json_t *RunKeywordServices (const json_t * const req_p, const json_t *config_p, const char *keyword_s)
+static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p, const char *keyword_s)
 {
 	json_t *res_p = NULL;
 

@@ -43,6 +43,7 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)	
 	
 SRCS 	= \
+	running_services_table.c \
 	server.c \
 	system_util.c
 
