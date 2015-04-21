@@ -119,7 +119,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 
 	def.st_string_value_s = NULL;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "Input", NULL, "The input file to read", TAG_BLAST_INPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, "input", "Input", "The input file to read", TAG_BLAST_INPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 		{
 			def.st_string_value_s = NULL;
 
@@ -129,7 +129,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 					++ grouped_param_pp;
 				}
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, "Output", NULL, "The output file to write", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, "output", "Output", "The output file to write", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					def.st_string_value_s = NULL;
 
@@ -139,7 +139,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 							++ grouped_param_pp;
 						}
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Query Sequence(s)", NULL, "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "query_sequence", "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
 					  "It accepts a number of different types of input and automatically determines the format or the input."
 					  " To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
 						{
@@ -153,7 +153,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 
 							def.st_ulong_value = 0;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "From", NULL, subrange_s, TAG_BLAST_SUBRANGE_FROM, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "from", "From", subrange_s, TAG_BLAST_SUBRANGE_FROM, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 								{
 									def.st_ulong_value = 0;
 
@@ -163,7 +163,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 											++ grouped_param_pp;
 										}
 
-									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "To", NULL, subrange_s, TAG_BLAST_SUBRANGE_TO, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "to", "To", subrange_s, TAG_BLAST_SUBRANGE_TO, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
 											const char * const group_name_s = "Query Sequence Parameters";
 
@@ -202,7 +202,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 	def.st_ulong_value = 100;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "Max target sequences", NULL, "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this)." , TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "max_target_sequences", "Max target sequences", "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this)." , TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 		{
 			def.st_boolean_value = true;
 
@@ -213,7 +213,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 				}
 
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, "Short queries", NULL, "Automatically adjust parameters for short input sequences", TAG_BLAST_SHORT_QUERIES, NULL, def, NULL, NULL, level, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, "short_queries", "Short queries", "Automatically adjust parameters for short input sequences", TAG_BLAST_SHORT_QUERIES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 				{
 					def.st_data_value = 10.0;
 
@@ -223,7 +223,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 							++ grouped_param_pp;
 						}
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_REAL, "Expect threshold", NULL, "Expected number of chance matches in a random model" , TAG_BLAST_EXPECT_THRESHOLD, NULL, def, NULL, NULL, level, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_REAL, "expect_threshold", "Expect threshold", "Expected number of chance matches in a random model" , TAG_BLAST_EXPECT_THRESHOLD, NULL, def, NULL, NULL, level, NULL)) != NULL)
 						{
 							def.st_ulong_value = 28;
 
@@ -233,7 +233,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 									++ grouped_param_pp;
 								}
 
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "Word size", NULL, "Expected number of chance matches in a random model", TAG_BLAST_WORD_SIZE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "word_size", "Word size", "Expected number of chance matches in a random model", TAG_BLAST_WORD_SIZE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 								{
 									def.st_ulong_value = 0;
 
@@ -243,7 +243,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 											++ grouped_param_pp;
 										}
 
-									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "Max matches in a query range", NULL, "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", TAG_BLAST_WORD_SIZE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", TAG_BLAST_WORD_SIZE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 										{
 											const char * const group_name_s = "General Algorithm Parameters";
 
@@ -282,7 +282,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 
 	def.st_long_value = 2;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, "Match", NULL, "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, "match", "Match", "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 		{
 			if (grouped_param_pp)
 				{
@@ -292,7 +292,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 
 			def.st_long_value = -3;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, "Mismatch", NULL, "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 				{
 					const char * const group_name_s = "Scoring Parameters";
 

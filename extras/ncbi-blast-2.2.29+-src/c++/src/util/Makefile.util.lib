@@ -1,0 +1,18 @@
+# $Id: Makefile.util.lib 407893 2013-07-24 18:10:08Z kornbluh $
+
+SRC = random_gen utf8 checksum bytesrc strbuffer itree smalldns \
+      thread_pool_old ddump_viewer strsearch logrotate \
+      format_guess ascii85 md5 file_obsolete unicode dictionary \
+      dictionary_util thread_nonstop sgml_entity static_set \
+      transmissionrw miscmath mutex_pool ncbi_cache line_reader \
+      util_exception uttp multi_writer itransaction thread_pool \
+      thread_pool_ctrl scheduler distribution util_misc ncbi_url \
+      histogram_binning table_printer
+
+LIB = xutil
+PROJ_TAG = core
+
+LIBS = $(ORIG_LIBS)
+
+WATCHERS = vakatov kornbluh
+

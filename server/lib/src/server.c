@@ -548,7 +548,7 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 
 									if (service_p)
 										{
-											status = GetRunningServiceStatus (service_p);
+											status = GetCurrentServiceStatus (service_p);
 
 											if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
 												{

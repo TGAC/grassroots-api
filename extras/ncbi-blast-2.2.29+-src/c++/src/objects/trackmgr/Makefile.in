@@ -1,0 +1,10 @@
+# $Id: Makefile.in 410502 2013-08-19 18:48:38Z rafanovi $
+# Author:  Peter Meric
+# Meta-makefile for trackmgr ASN.1 libraries
+#################################
+
+ASN_PROJ = trackmgr
+LIB_PROJ = trackmgrcli trackmgrgridcli
+
+srcdir = @srcdir@
+include @builddir@/Makefile.meta

@@ -1,0 +1,6 @@
+# $Id: Makefile.blastdb.lib 395653 2013-04-12 14:33:22Z vakatov $
+
+LIB = blastdb
+SRC = blastdb__ blastdb___
+
+WATCHERS = camacho

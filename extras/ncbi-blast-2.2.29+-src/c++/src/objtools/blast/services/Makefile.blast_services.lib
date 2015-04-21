@@ -1,0 +1,15 @@
+# $Id: Makefile.blast_services.lib 386917 2013-01-24 15:07:04Z ucko $
+
+WATCHERS = madden camacho maning
+
+ASN_DEP = xnetblast
+
+SRC = blast_services
+
+LIB = blast_services
+
+CFLAGS   = $(FAST_CFLAGS)
+CPPFLAGS = -DNCBI_MODULE=NETBLAST $(ORIG_CPPFLAGS)
+CXXFLAGS = $(FAST_CXXFLAGS)
+LDFLAGS  = $(FAST_LDFLAGS)
+
