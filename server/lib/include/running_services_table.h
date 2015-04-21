@@ -36,6 +36,10 @@ WHEATIS_SERVICE_MANAGER_API bool AddServiceToStatusTable (uuid_t service_key, Se
 WHEATIS_SERVICE_MANAGER_API Service *GetServiceFromStatusTable (const uuid_t service_key);
 
 
+WHEATIS_SERVICE_MANAGER_API Service *RemoveServiceFromStatusTable (const uuid_t service_key);
+
+
+
 /**
  *
  */

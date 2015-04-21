@@ -176,11 +176,11 @@ WHEATIS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
 WHEATIS_UTIL_API bool IsStringEmpty (const char *value_s);
 
 
-
 WHEATIS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 
 
 WHEATIS_UTIL_API char *ConvertIntegerToString (const int value);
+
 
 WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
@@ -195,6 +195,16 @@ WHEATIS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
 
 
 WHEATIS_UTIL_API void FreeUUIDString (char *uuid_s);
+
+
+WHEATIS_UTIL_API void ClearUUID (uuid_t *id_p);
+
+
+WHEATIS_UTIL_API bool IsUUIDSet (uuid_t id);
+
+
+WHEATIS_UTIL_API void GenerateUUID (uuid_t *id_p);
+
 
 #ifdef __cplusplus
 }

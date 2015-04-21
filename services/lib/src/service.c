@@ -38,6 +38,8 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p);
 
 static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag);
 
+static GenerateServiceUUID (Service *service_p);
+
 
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
@@ -67,7 +69,11 @@ void InitialiseService (Service * const service_p,
 		{
 			service_p -> se_data_p -> sd_service_p = service_p;
 		}
-		
+
+	service_p -> se_status = OS_IDLE;
+
+	ClearUUID (service_p -> se_id);
+
 	service_p -> se_plugin_p = NULL;
 	service_p -> se_has_permissions_fn = NULL;
 }
@@ -455,6 +461,8 @@ void LoadKeywordServices (LinkedList *services_p, const char * const services_pa
 
 json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
+	GenerateServiceUUID (service_p);
+
 	return service_p -> se_run_fn (service_p, param_set_p, credentials_p);
 }
 
@@ -544,6 +552,12 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p)
 }
 
 
+static GenerateServiceUUID (Service *service_p)
+{
+	GenerateUUID (& (service_p -> se_id));
+}
+
+
 //
 //	Get Symbol
 //
@@ -594,7 +608,7 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
-json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p)
+json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag)
 {
 	json_t *root_p = json_object ();
 	
@@ -641,7 +655,19 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 												{
 													if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, json_p))
 														{
-															if (AddServiceUUIDToJSON (service_p, operation_p))
+															bool b = true;
+
+															if (add_id_flag)
+																{
+																	if (!IsUUIDSet (service_p -> se_id))
+																		{
+																			GenerateServiceUUID (service_p);
+																		}
+
+																	b = AddServiceUUIDToJSON (service_p, operation_p);
+																}
+
+															if (b)
 																{
 																	AddOperationInformationURIToJSON (service_p, operation_p);
 
@@ -820,7 +846,7 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 }
 
 
-json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p)
+json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag)
 {
 	json_t *services_list_json_p = json_array ();
 			
@@ -834,7 +860,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 
 							while (service_node_p)
 								{
-									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p);
+									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
 
 									#if SERVICE_DEBUG >= STM_LEVEL_FINE
 										{

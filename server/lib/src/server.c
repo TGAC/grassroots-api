@@ -190,7 +190,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 												}
 										}
 								}
-
 						}
 						break;
 
@@ -368,7 +367,8 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 							if (services_p -> ll_size == 1)
 								{	
-									Service *service_p = ((ServiceNode *) (services_p -> ll_head_p)) -> sn_service_p;
+									ServiceNode *node_p = (ServiceNode *) (services_p -> ll_head_p);
+									Service *service_p =  node_p -> sn_service_p;
 							
 									if (service_p)
 										{
@@ -388,9 +388,19 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 													if (status == OS_STARTED)
 														{
-															if (!AddServiceToStatusTable (user_uuid, service_p))
-																{
+															uuid_t service_key;
+															GenerateUUID (&service_key);
 
+															if (AddServiceToStatusTable (service_key, service_p))
+																{
+																	/* since we've checked for a single node */
+																	LinkedListRemHead (services_p);
+																	node_p -> sn_service_p = NULL;
+																	FreeServiceNode (node_p);
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to save service %s %s", GetServiceName (service_p), service_key);
 																}
 														}
 
@@ -548,7 +558,7 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 
 									if (service_p)
 										{
-											status = GetRunningServiceStatus (service_p);
+											status = GetCurrentServiceStatus (service_p);
 
 											if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
 												{
@@ -642,7 +652,7 @@ static json_t *GetNamedServices (const json_t * const req_p, const json_t *crede
 
 			if (services_p -> ll_size > 0)
 				{
-					res_p = GetServicesListAsJSON (services_p, NULL, credentials_p);
+					res_p = GetServicesListAsJSON (services_p, NULL, credentials_p, false);
 				}
 
 			FreeLinkedList (services_p);
@@ -717,7 +727,7 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 			if (services_p -> ll_size > 0)
 				{
-					json_p = GetServicesListAsJSON (services_p, resource_p, config_p);
+					json_p = GetServicesListAsJSON (services_p, resource_p, config_p, false);
 				}
 				
 			FreeLinkedList (services_p);
