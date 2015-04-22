@@ -46,6 +46,9 @@ static bool AddScoringParams (ParameterSet *param_set_p);
 
 static bool AddDatabaseParams (ParameterSet *param_set_p);
 
+static json_t *GetBlastResultAsJSON (const char *blast_result_s, const char *title_s);
+
+
 /*
  * API FUNCTIONS
  */
@@ -400,11 +403,48 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 }
 
 
+static json_t *GetBlastResultsAsJSON (const char *blast_result_s, const char *title_s)
+{
+	json_t *results_json_p = json_array ();
+
+	if (results_json_p)
+		{
+			bool success_flag = false;
+			json_t *result_json_p = json_string (blast_result_s);
+
+			if (result_json_p)
+				{
+					json_t *resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, result_json_p);
+
+					if (resource_json_p)
+						{
+							success_flag = (json_array_append_new (results_json_p, resource_json_p) == 0);
+						}
+					else
+						{
+							json_object_clear (result_json_p);
+							json_decref (result_json_p);
+						}
+				}
+
+			if (!success_flag)
+				{
+					json_object_clear (results_json_p);
+					json_decref (results_json_p);
+					results_json_p = NULL;
+				}
+		}
+
+	return results_json_p;
+}
+
+
 static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	OperationStatus res = OS_FAILED_TO_START;
-	json_t *res_json_p = NULL;
+	json_t *result_json_p = NULL;
+	json_t *final_json_p = NULL;
 	BlastTool *tool_p = blast_data_p -> bsd_blast_tool_p;
 	
 	if (tool_p -> ParseParameters (param_set_p))
@@ -415,11 +455,11 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 
 					if (result_s)
 						{
-							json_error_t error;
+							const char *title_s = "blast result";
 
-							res_json_p = json_pack_ex (&error, 0, "{s:s}", "results", result_s);
+							result_json_p = GetBlastResultsAsJSON (result_s, title_s);
 
-							if (res_json_p)
+							if (result_json_p)
 								{
 									res = OS_SUCCEEDED;
 								}
@@ -431,9 +471,9 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 				}
 		}
 		
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, res_json_p);
+	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p);
 		
-	return res_json_p;
+	return final_json_p;
 }
 
 

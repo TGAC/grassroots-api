@@ -28,7 +28,7 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 	if (AppendStringToByteBuffer (ebt_buffer_p, "blastn "))
 		{
 			/* TESTING REMOVE THIS WHEN DATABASE SELECTOR IS ACTIVE */
-			if (AppendStringToByteBuffer (ebt_buffer_p, "-db test "))
+			if (AppendStringToByteBuffer (ebt_buffer_p, "-db testdb "))
 				{
 					success_flag = ExternalBlastTool :: ParseParameters (params_p);
 				}
@@ -54,7 +54,7 @@ OperationStatus SystemBlastTool :: Run ()
 
 	if (res == 0)
 		{
-
+			status = OS_SUCCEEDED;
 		}
 
 	return status;

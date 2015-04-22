@@ -17,14 +17,14 @@ ViewerWidget :: ViewerWidget (ViewableWidget *child_p, QWidget *parent_p)
 	QGroupBox *buttons_box_p = new QGroupBox;
 	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
 
-	QPushButton *button_p = new QPushButton (QIcon ("images/save"), tr ("Save"), this);
+	QPushButton *button_p = new QPushButton (QIcon ("images/ok"), tr ("Ok"), this);
+	connect (button_p, &QPushButton :: clicked, this, &ViewerWidget :: close);
+	buttons_layout_p -> addWidget (button_p);
+
+	button_p = new QPushButton (QIcon ("images/save"), tr ("Save"), this);
 	connect (button_p, &QPushButton :: clicked, this, &ViewerWidget :: Save);
 	buttons_layout_p -> addWidget (button_p);
 
-	button_p = new QPushButton (QIcon ("images/ok"), tr ("Ok"), this);
-
-	connect (button_p, &QPushButton :: clicked, this, &ViewerWidget :: close);
-	buttons_layout_p -> addWidget (button_p);
 
 	buttons_box_p -> setLayout (buttons_layout_p);
 

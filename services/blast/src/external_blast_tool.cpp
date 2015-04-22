@@ -243,6 +243,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 		}
 
 	/* Db */
+/*
 	if (success_flag)
 		{
 			success_flag = false;
@@ -252,7 +253,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 					success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -db ", value.st_string_value_s, NULL);
 				}
 		}
-
+*/
 
 	return success_flag;
 }

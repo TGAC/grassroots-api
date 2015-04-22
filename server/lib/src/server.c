@@ -211,12 +211,11 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 		{
 			bool success_flag = false;
 			uuid_t user_uuid;
-			char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
+			const char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
 
 			if (user_uuid_s)
 				{
 					uuid_parse (user_uuid_s, user_uuid);
-					FreeUUIDString (user_uuid_s);
 				}
 			else
 				{

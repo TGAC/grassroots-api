@@ -1013,6 +1013,10 @@ json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status,
 	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_S, status);
 	const char *info_uri_s = GetServiceInformationURI (service_p);
 
+	#if SERVICE_DEBUG >= STM_LEVEL_FINE
+	char *dump_s = NULL;
+	#endif
+
 
 	if (info_uri_s)
 		{
@@ -1024,7 +1028,7 @@ json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status,
 
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));
+	dump_s = json_dumps (result_json_p, JSON_INDENT (2));
 	PrintLog (STM_LEVEL_FINE, "result json:\n%s", dump_s);
 	free (dump_s);
 
