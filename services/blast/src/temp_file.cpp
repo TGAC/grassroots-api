@@ -18,7 +18,7 @@ TempFile *TempFile :: GetTempFile (const char *mode_s)
 
 	if ((tmpnam (tf_p -> tf_name_s)) != NULL)
 		{
-			if (tf_p -> Open (mode_s))
+			if ((strcmp (mode_s, "r") == 0) || (tf_p -> Open (mode_s)))
 				{
 					return tf_p;
 				}
@@ -93,8 +93,13 @@ char *TempFile :: GetData ()
 
 int TempFile :: Close ()
 {
-	int res = fclose (tf_handle_f);
-	tf_handle_f = 0;
+	int res = 0;
+
+	if (tf_handle_f)
+		{
+			res = fclose (tf_handle_f);
+			tf_handle_f = 0;
+		}
 
 	return res;
 }
@@ -102,7 +107,7 @@ int TempFile :: Close ()
 
 TempFile :: TempFile ()
 {
-	Close ();
+	tf_handle_f = 0;
 	memset (tf_name_s, 0, sizeof (char) * L_tmpnam);
 }
 

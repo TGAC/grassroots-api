@@ -603,10 +603,10 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 																				}
 																		}
 																}
-														}
-													else
-														{
-															success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
+															else
+																{
+																	success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
+																}
 														}
 												}		/* if (full_definition_flag) */
 										}

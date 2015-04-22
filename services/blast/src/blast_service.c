@@ -11,7 +11,7 @@
 typedef struct 
 {
 	ServiceData bsd_base_data;
-	BlastTool *blast_tool_p;
+	BlastTool *bsd_blast_tool_p;
 } BlastServiceData;
 
 
@@ -19,7 +19,11 @@ typedef struct
 /*
  * STATIC PROTOTYPES
  */
- 
+
+static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p);
+
+static void FreeBlastServiceData (BlastServiceData *data_p);
+
 static const char *GetBlastServiceName (Service *service_p);
 
 static const char *GetBlastServiceDesciption (Service *service_p);
@@ -53,26 +57,31 @@ ServicesArray *GetServices (const json_t *config_p)
 			
 			if (services_p)
 				{		
-					ServiceData *data_p = NULL;
+					ServiceData *data_p = (ServiceData *) AllocateBlastServiceData (blast_service_p);
 					
-					InitialiseService (blast_service_p, 
-						GetBlastServiceName, 
-						GetBlastServiceDesciption, 
-						NULL,
-						RunBlastService,
-						IsFileForBlastService,
-						GetBlastServiceParameters,
-						ReleaseBlastServiceParameters,
-						CloseBlastService,
-						NULL,
-						true,
-						data_p);
-					
-					* (services_p -> sa_services_pp) = blast_service_p;
+					if (data_p)
+						{
+							InitialiseService (blast_service_p,
+								GetBlastServiceName,
+								GetBlastServiceDesciption,
+								NULL,
+								RunBlastService,
+								IsFileForBlastService,
+								GetBlastServiceParameters,
+								ReleaseBlastServiceParameters,
+								CloseBlastService,
+								NULL,
+								true,
+								data_p);
 							
-					return services_p;
+							* (services_p -> sa_services_pp) = blast_service_p;
+
+							return services_p;
+						}
+
+					FreeServicesArray (services_p);
 				}
-				
+
 			FreeService (blast_service_p);
 		}
 
@@ -90,9 +99,40 @@ void ReleaseServices (ServicesArray *services_p)
  * STATIC FUNCTIONS 
  */
  
+
+static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
+{
+	BlastServiceData *data_p = (BlastServiceData *) AllocMemory (sizeof (BlastServiceData));
+
+	if (data_p)
+		{
+			data_p -> bsd_blast_tool_p = CreateBlastTool (blast_service_p);
+
+			if (data_p -> bsd_blast_tool_p)
+				{
+					return data_p;
+				}
+
+			FreeMemory (data_p);
+		}
+
+	return NULL;
+}
+
+
+static void FreeBlastServiceData (BlastServiceData *data_p)
+{
+	FreeBlastTool (data_p -> bsd_blast_tool_p);
+	FreeMemory (data_p);
+}
+
  
 static bool CloseBlastService (Service *service_p)
 {
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+
+	FreeBlastServiceData (blast_data_p);
+
 	return true;
 }
  
@@ -203,7 +243,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 	def.st_ulong_value = 100;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "max_target_sequences", "Max target sequences", "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this)." , TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "max_target_sequences", "Max target sequences", "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this)." , TAG_BLAST_MAX_SEQUENCES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 		{
 			def.st_boolean_value = true;
 
