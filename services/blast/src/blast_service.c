@@ -354,7 +354,7 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	OperationStatus res = OS_FAILED_TO_START;
-	BlastTool *tool_p = CreateBlastTool ();
+	BlastTool *tool_p = CreateBlastTool (service_p);
 	json_t *res_json_p = NULL;
 	
 	if (tool_p)
