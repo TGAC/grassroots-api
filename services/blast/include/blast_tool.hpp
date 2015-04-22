@@ -6,6 +6,9 @@
 #include "blast_service.h"
 #include "byte_buffer.h"
 
+
+
+
 /**
  * The base class for running Blast.
  */
@@ -13,7 +16,7 @@ class BLAST_SERVICE_LOCAL BlastTool
 {
 public:
 
-	BlastTool ();
+	BlastTool (Service *service_p);
 
 	virtual ~BlastTool ();
 
@@ -37,9 +40,12 @@ public:
 	
 	void PostRun ();
 
-protected:
-	bool bt_running_flag;
+	OperationStatus GetStatus () const;
 
+
+protected:
+	OperationStatus bt_status;
+	Service *bt_service_p;
 
 	/** All of the command line arguments */
 	std :: vector <char *> bt_command_line_args;
@@ -68,58 +74,30 @@ protected:
 
 
 /**
- * A class that will run Blast as a forked process.
- */
-class BLAST_SERVICE_LOCAL ForkedBlastTool : public BlastTool 
-{
-public:
-	
-	virtual OperationStatus Run ();
-};
-
-
-/**
  * A class that will run Blast within the main process
  * of the iRods server.
  */
+/*
 class BLAST_SERVICE_LOCAL InlineBlastTool : public BlastTool 
 {
 public:
 	
 	virtual OperationStatus Run ();
 };
-
+*/
 
 /**
  * A class that will run Blast in a separate thread on
  * the iRods server.
  */
+/*
 class BLAST_SERVICE_LOCAL ThreadedBlastTool : public BlastTool 
 {
 public:
 	
 	virtual OperationStatus Run ();
 };
-
-
-/**
- * A class that will run Blast as a job sumbmission 
- * script for the HPC or similar.
- */
-class BLAST_SERVICE_LOCAL QueuedBlastTool : public BlastTool 
-{
-public:
-	QueuedBlastTool ();
-	~QueuedBlastTool ();
-
-	virtual bool ParseParameters (ParameterSet *params_p);
-
-	virtual OperationStatus Run ();
-
-private:
-	ByteBuffer *qbt_buffer_p;
-};
-
+*/
 
 
 #ifdef __cplusplus
@@ -133,7 +111,7 @@ extern "C"
  * 
  * @return The BlastTool or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_API BlastTool *CreateBlastTool ();
+BLAST_SERVICE_API BlastTool *CreateBlastTool (Service *service_p);
 
 
 /**

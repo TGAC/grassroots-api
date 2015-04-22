@@ -218,8 +218,8 @@ install_uuid:
 	make install			
 
 install_blast:
-	cd $(DIR_ROOT)/extras/ncbi-blast-2.2.29+-src/c++; \
-	./configure --prefix=$(DIR_BLAST) --with-dll; \
+	cd $(DIR_ROOT)/extras/ncbi-blast-2.2.30+-src/c++; \
+	./configure --without-gui --without-internal --with-dll --prefix=$(DIR_BLAST) --with-flat-makefile; \
 	make -j 4; \
 	make install	
 	
