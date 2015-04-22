@@ -3,6 +3,7 @@
 
 #include "wheatis_service_library.h"
 
+#include "byte_buffer.h"
 #include "linked_list.h"
 #include "parameter_set.h"
 #include "typedefs.h"
@@ -118,6 +119,8 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
+	char *(*se_get_results_fn) (struct Service *service_p);
+
 	/**
 	 * Function to release the ParameterSet for this Service.
 	 */
@@ -175,6 +178,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
+	char *(*get_results_fn) (struct Service *service_p),
 	bool specific_flag,
 	ServiceData *data_p);
 
@@ -258,6 +262,13 @@ WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const cha
 WHEATIS_SERVICE_API bool CloseService (Service *service_p);
 
 
+/**
+ * Get the results from a long running service
+ *
+ * @param service_p The Service to get the results for
+ * @return The results or NULL if they are not any.
+ */
+WHEATIS_SERVICE_API char *GetServiceResults (Service *service_p);
 
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions

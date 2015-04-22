@@ -153,6 +153,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								GetIrodsSearchServiceParameters,
 								ReleaseIrodsSearchServiceParameters,
 								CloseIrodsSearchService,
+								NULL,
 								true,
 								data_p);
 							

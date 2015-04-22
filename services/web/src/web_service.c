@@ -92,6 +92,7 @@ static Service *GetWebService (json_t *operation_json_p, size_t i)
 						GetWebServiceParameters,
 						ReleaseWebServiceParameters,
 						CloseWebService,
+						NULL,
 						false,
 						data_p);
 

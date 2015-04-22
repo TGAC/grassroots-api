@@ -37,6 +37,17 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 }
 
 
+char *ExternalBlastTool :: GetOutputData ()
+{
+	char *results_s = NULL;
+
+	if (ebt_output_p -> Open ("r"))
+		{
+			results_s = ebt_output_p -> GetData ();
+		}
+
+	return results_s;
+}
 
 
 /*
@@ -73,7 +84,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (ebt_input_p)
 						{
-							if (fprintf (ebt_input_p -> tf_handle_f, "%s\n", sequence_s) > 0)
+							if (ebt_input_p -> Print (sequence_s))
 								{
 									filename_s = ebt_input_p -> GetFilename ();
 								}

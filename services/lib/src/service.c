@@ -50,6 +50,7 @@ void InitialiseService (Service * const service_p,
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
+	char *(*get_results_fn) (struct Service *service_p),
 	bool specific_flag,
 	ServiceData *data_p)
 {
@@ -61,6 +62,7 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_get_params_fn = get_parameters_fn;
 	service_p -> se_release_params_fn = release_parameters_fn;
 	service_p -> se_close_fn = close_fn;
+	service_p -> se_get_results_fn = get_results_fn;
 	service_p -> se_data_p = data_p;
 	
 	service_p -> se_is_specific_service_flag = specific_flag;
@@ -84,9 +86,23 @@ void FreeService (Service *service_p)
 	FreeMemory (service_p);
 }
 
+
 bool CloseService (Service *service_p)
 {
 	return service_p -> se_close_fn (service_p);
+}
+
+
+char *GetServiceResults (Service *service_p)
+{
+	char *results_s = NULL;
+
+	if (service_p -> se_get_results_fn)
+		{
+			results_s = service_p -> se_get_results_fn (service_p);
+		}
+
+	return results_s;
 }
 
 

@@ -110,6 +110,7 @@ ServicesArray *GetServices (const json_t *config_p)
 						GetCompressServiceParameters,
 						ReleaseCompressServiceParameters,
 						CloseCompressService,
+						NULL,
 						true,
 						data_p);
 					

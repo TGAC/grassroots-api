@@ -24,7 +24,9 @@ public:
 
 	virtual bool ParseParameters (ParameterSet *params_p);
 
-private:
+	char *GetOutputData ();
+
+protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_input_p;
 	TempFile *ebt_output_p;

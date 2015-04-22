@@ -59,8 +59,12 @@ BlastTool :: ~BlastTool ()
 
 OperationStatus RunBlast (BlastTool *tool_p)
 {
-	OperationStatus status = tool_p -> Run ();
-		
+	OperationStatus status = OS_IDLE;
+
+	tool_p -> PreRun  ();
+	status = tool_p -> Run ();
+	tool_p -> PostRun  ();
+
 	return status;
 }
 

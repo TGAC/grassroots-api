@@ -64,6 +64,7 @@ ServicesArray *GetServices (const json_t *config_p)
 						GetBlastServiceParameters,
 						ReleaseBlastServiceParameters,
 						CloseBlastService,
+						NULL,
 						true,
 						data_p);
 					

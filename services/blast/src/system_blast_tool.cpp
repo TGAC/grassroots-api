@@ -22,11 +22,19 @@ SystemBlastTool :: ~SystemBlastTool ()
 
 OperationStatus SystemBlastTool :: Run ()
 {
-	OperationStatus status = OS_SUCCEEDED;
+	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
+	SetCurrentServiceStatus (bt_service_p, OS_STARTED);
+	int res = system (command_line_s);
 
-	PreRun ();
-	PrintLog (STM_LEVEL_INFO, "%s %d: SystemBlastTool :: Run", __FILE__, __LINE__);
-	PostRun ();
+	OperationStatus status = OS_FAILED;
+
+	if (res == 0)
+		{
+
+		}
 
 	return status;
 }
+
+
+
