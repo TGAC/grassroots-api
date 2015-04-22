@@ -267,8 +267,7 @@ WHEATIS_SERVICE_API bool CloseService (Service *service_p);
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
  */
-WHEATIS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p);
-
+WHEATIS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag);
 
 
 WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
@@ -292,7 +291,7 @@ WHEATIS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p
 WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 
-WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p);
+WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag);
 
 
 WHEATIS_SERVICE_API void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p);

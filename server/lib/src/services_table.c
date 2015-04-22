@@ -57,9 +57,23 @@ void ServiceFinished (uuid_t service_key, const OperationStatus status)
 }
 
 
+
+Service *RemoveServiceFromStatusTable (const uuid_t service_key)
+{
+	Service *service_p = GetServiceFromStatusTable (service_key);
+
+	if (service_p)
+		{
+			RemoveFromHashTable (s_running_services_p, &service_key);
+		}
+
+	return service_p;
+}
+
+
 Service *GetServiceFromStatusTable (const uuid_t service_key)
 {
-	Service *service_p = (Service *) GetFromHashTable (s_running_services_p, service_key);
+	Service *service_p = (Service *) GetFromHashTable (s_running_services_p, &service_key);
 
 	if (!service_p)
 		{
