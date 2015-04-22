@@ -1,0 +1,8 @@
+ASN_DEP = xnetblast
+
+LIB = xnetblastcli
+SRC = blastclient blastclient_
+
+
+USES_LIBRARIES =  \
+    xconnect xnetblast

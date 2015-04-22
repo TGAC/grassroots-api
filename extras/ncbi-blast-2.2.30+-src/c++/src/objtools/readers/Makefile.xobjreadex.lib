@@ -1,0 +1,16 @@
+# $Id: Makefile.xobjreadex.lib 432036 2014-04-09 17:27:03Z grichenk $
+
+WATCHERS = dicuccio ludwigf kornbluh gotvyans
+
+ASN_DEP = seq seqset
+
+LIB = xobjreadex
+SRC = glimmer_reader idmapper idmapper_builtin idmapper_config \
+	  idmapper_database idmapper_gcassembly idmapper_scope \
+	  source_mod_parser_wrapper
+
+DLL_LIB = xobjread
+
+
+USES_LIBRARIES =  \
+    $(OBJREAD_LIBS) xobjutil

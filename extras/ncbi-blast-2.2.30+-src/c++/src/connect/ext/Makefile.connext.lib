@@ -1,0 +1,15 @@
+# $Id: Makefile.connext.lib 420420 2013-12-03 17:43:23Z gouriano $
+
+SRC_C    = $(NCBI_CRYPT) ncbi_dblb ncbi_iprange ncbi_localnet
+
+SRC      = $(SRC_C)
+UNIX_SRC = ncbi_ifconf
+
+LIB      = connext
+PROJ_TAG = mod_loadinfo
+
+WATCHERS = lavr
+
+
+USES_LIBRARIES =  \
+    connect

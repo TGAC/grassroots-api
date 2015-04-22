@@ -1,0 +1,13 @@
+# $Id: Makefile.xconnext.lib 427428 2014-02-20 13:41:02Z gouriano $
+
+include $(srcdir)/Makefile.connext.lib
+
+SRC      = $(SRC_C) ncbi_dblb_svcmapper
+
+LIB      = xconnext
+
+WATCHERS = lavr
+
+
+USES_LIBRARIES =  \
+    xconnect

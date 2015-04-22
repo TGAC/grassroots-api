@@ -1,0 +1,10 @@
+# $Id: Makefile.genome_collection.lib 427424 2014-02-20 13:38:50Z gouriano $
+
+LIB = genome_collection
+SRC = genome_collection__ genome_collection___
+
+WATCHERS = dicuccio
+
+
+USES_LIBRARIES =  \
+    $(SEQ_LIBS) pub

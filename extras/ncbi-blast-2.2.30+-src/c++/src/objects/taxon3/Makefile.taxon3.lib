@@ -1,0 +1,10 @@
+# $Id: Makefile.taxon3.lib 427424 2014-02-20 13:38:50Z gouriano $
+
+LIB = taxon3
+SRC = taxon3__ taxon3___ taxon3
+
+WATCHERS = bollin
+
+
+USES_LIBRARIES =  \
+    $(SEQ_LIBS) pub xconnect

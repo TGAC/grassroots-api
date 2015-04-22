@@ -1,0 +1,19 @@
+# $Id: Makefile.blast_services.lib 427429 2014-02-20 13:41:40Z gouriano $
+
+WATCHERS = madden camacho
+
+ASN_DEP = xnetblast
+
+SRC = blast_services
+
+LIB = blast_services
+
+CFLAGS   = $(FAST_CFLAGS)
+CPPFLAGS = -DNCBI_MODULE=NETBLAST $(ORIG_CPPFLAGS)
+CXXFLAGS = $(FAST_CXXFLAGS)
+LDFLAGS  = $(FAST_LDFLAGS)
+
+
+
+USES_LIBRARIES =  \
+    xnetblastcli

@@ -79,6 +79,17 @@ export DIR_UUID_LIB=$(DIR_UUID)/lib
 # END UUID CONFIGURATION
 
 
+# BEGIN BLAST CONFIGURATION
+ifneq ($(BLAST_HOME),)
+DIR_BLAST=$(BLAST_HOME)
+else
+DIR_BLAST=/usr/local
+endif
+export DIR_BLAST_INC=$(DIR_BLAST)/include/ncbi-tools++
+export DIR_BLAST_LIB=$(DIR_BLAST)/lib
+# END BLAST CONFIGURATION
+
+
 include project.properties
 
 
@@ -162,7 +173,7 @@ install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
 
 
-install_deps: install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_irods_dev install_uuid
+install_deps: install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_irods_dev install_uuid install_blast
 	
 install_references: 
 	$(COPY) references/* $(DIR_WHEATIS_INSTALL)/references/
@@ -206,7 +217,11 @@ install_uuid:
 	make; \
 	make install			
 
-
+install_blast:
+	cd $(DIR_ROOT)/extras/ncbi-blast-2.2.29+-src/c++; \
+	./configure --prefix=$(DIR_BLAST) --with-dll; \
+	make -j 4; \
+	make install	
 	
 install_irods_dev:
 	@mkdir -p $(DIR_SHARED_IRODS_INC)

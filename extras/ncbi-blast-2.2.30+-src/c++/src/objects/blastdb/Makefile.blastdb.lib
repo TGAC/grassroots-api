@@ -1,0 +1,10 @@
+# $Id: Makefile.blastdb.lib 427424 2014-02-20 13:38:50Z gouriano $
+
+LIB = blastdb
+SRC = blastdb__ blastdb___
+
+WATCHERS = camacho
+
+
+USES_LIBRARIES =  \
+    $(SEQ_LIBS) pub

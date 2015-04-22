@@ -1,0 +1,14 @@
+# $Id: Makefile.connssl.lib 440221 2014-07-10 15:16:25Z gouriano $
+
+SRC      = ncbi_gnutls
+
+LIB      = connssl
+
+CPPFLAGS = $(GNUTLS_INCLUDE) $(ORIG_CPPFLAGS)
+LIBS     = $(GNUTLS_LIBS) $(ORIG_LIBS)
+
+WATCHERS = lavr
+
+
+USES_LIBRARIES =  \
+    $(GCRYPT_LIBS) $(GNUTLS_LIBS) connect

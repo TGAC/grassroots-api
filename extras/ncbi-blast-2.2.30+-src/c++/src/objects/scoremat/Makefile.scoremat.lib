@@ -1,0 +1,6 @@
+LIB = scoremat
+SRC = scoremat__ scoremat___
+
+
+USES_LIBRARIES =  \
+    seqset
