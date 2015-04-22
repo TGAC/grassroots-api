@@ -20,6 +20,10 @@ public:
 	virtual ~SystemBlastTool ();
 
 	virtual OperationStatus Run ();
+
+	virtual bool ParseParameters (ParameterSet *params_p);
+
+	virtual const char *GetResults ();
 };
 
 

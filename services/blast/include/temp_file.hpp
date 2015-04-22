@@ -29,11 +29,14 @@ public:
 
 	bool Print (const char *arg_s);
 
-	char *GetData ();
+	const char *GetData ();
+
+	bool IsOpen () const;
 
 private:
 	char tf_name_s [L_tmpnam];
 	FILE *tf_handle_f;
+	char *tf_data_s;
 
 	TempFile ();
 

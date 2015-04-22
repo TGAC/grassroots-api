@@ -37,9 +37,9 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 }
 
 
-char *ExternalBlastTool :: GetOutputData ()
+const char *ExternalBlastTool :: GetOutputData ()
 {
-	char *results_s = NULL;
+	const char *results_s = NULL;
 
 	if (ebt_output_p -> Open ("r"))
 		{
@@ -232,7 +232,24 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (ebt_output_p)
 				{
+					success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -out ", ebt_output_p -> GetFilename (), NULL);
+
 					ebt_output_p -> Close ();
+				}
+			else
+				{
+					success_flag = false;
+				}
+		}
+
+	/* Db */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_DATABASE_NAME, &value, true))
+				{
+					success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -db ", value.st_string_value_s, NULL);
 				}
 		}
 

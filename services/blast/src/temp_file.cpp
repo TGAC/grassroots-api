@@ -32,9 +32,14 @@ TempFile *TempFile :: GetTempFile (const char *mode_s)
 
 const char *TempFile :: GetFilename () const
 {
-	return (tf_handle_f ? tf_name_s : 0);
+	return tf_name_s;
 }
 
+
+bool TempFile :: IsOpen () const
+{
+	return (tf_handle_f != 0);
+}
 
 
 bool TempFile :: Open (const char *mode_s)
@@ -63,9 +68,13 @@ bool TempFile :: Print (const char *arg_s)
 }
 
 
-char *TempFile :: GetData ()
+const char *TempFile :: GetData ()
 {
-	char *data_s = NULL;
+	if (tf_data_s)
+		{
+			FreeMemory (tf_data_s);
+			tf_data_s = 0;
+		}
 
 	if (tf_handle_f)
 		{
@@ -75,19 +84,18 @@ char *TempFile :: GetData ()
 			fseek (tf_handle_f, 0, SEEK_END);
 			size_t size = ftell (tf_handle_f);
 
-			data_s = (char *) AllocMemory ((size + 1) * sizeof (char));
-			if (data_s)
+			tf_data_s = (char *) AllocMemory ((size + 1) * sizeof (char));
+			if (tf_data_s)
 				{
 					rewind (tf_handle_f);
 
-					fread (data_s, sizeof (char), size, tf_handle_f);
-					* (data_s + size) = '\0';
+					fread (tf_data_s, sizeof (char), size, tf_handle_f);
+					* (tf_data_s + size) = '\0';
 					fseek (tf_handle_f, current_pos, SEEK_SET);
 				}
 		}
 
-
-	return data_s;
+	return tf_data_s;
 }
 
 
@@ -108,6 +116,7 @@ int TempFile :: Close ()
 TempFile :: TempFile ()
 {
 	tf_handle_f = 0;
+	tf_data_s = 0;
 	memset (tf_name_s, 0, sizeof (char) * L_tmpnam);
 }
 
@@ -115,6 +124,11 @@ TempFile :: TempFile ()
 TempFile :: ~TempFile ()
 {
 	Close ();
+
+	if (tf_data_s)
+		{
+			FreeMemory (tf_data_s);
+		}
 }
 
 

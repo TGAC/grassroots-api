@@ -42,6 +42,7 @@ public:
 
 	OperationStatus GetStatus () const;
 
+	virtual const char *GetResults () = 0;
 
 protected:
 	OperationStatus bt_status;

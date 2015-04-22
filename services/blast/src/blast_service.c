@@ -44,6 +44,8 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p);
 
 static bool AddScoringParams (ParameterSet *param_set_p);
 
+static bool AddDatabaseParams (ParameterSet *param_set_p);
+
 /*
  * API FUNCTIONS
  */
@@ -148,6 +150,16 @@ static const char *GetBlastServiceDesciption (Service *service_p)
 	return "A service to run the Blast program";
 }
 
+
+/*
+ * The list of databases that can be searched
+ */
+static bool AddDatabaseParams (ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+
+	return success_flag;
+}
 
 static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 {
@@ -382,10 +394,6 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 }
 
 
-
-
-
-
 static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p)
 {
 	FreeParameterSet (params_p);
@@ -394,21 +402,36 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 
 static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	OperationStatus res = OS_FAILED_TO_START;
-	BlastTool *tool_p = CreateBlastTool (service_p);
 	json_t *res_json_p = NULL;
+	BlastTool *tool_p = blast_data_p -> bsd_blast_tool_p;
 	
-	if (tool_p)
+	if (tool_p -> ParseParameters (param_set_p))
 		{
-			if (tool_p -> ParseParameters (param_set_p))
+			if (RunBlast (tool_p))
 				{
-					res = (RunBlast (tool_p)) ? OS_SUCCEEDED : OS_FAILED;
+					const char *result_s = tool_p -> GetResults ();
 
-					FreeBlastTool (tool_p);
+					if (result_s)
+						{
+							json_error_t error;
+
+							res_json_p = json_pack_ex (&error, 0, "{s:s}", "results", result_s);
+
+							if (res_json_p)
+								{
+									res = OS_SUCCEEDED;
+								}
+						}
+				}
+			else
+				{
+					res = OS_FAILED;
 				}
 		}
 		
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, res_json_p);
 		
 	return res_json_p;
 }
