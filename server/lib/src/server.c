@@ -541,57 +541,58 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 			bool success_flag = false;
 			OperationStatus status = OS_ERROR;
 			const char *service_name_s = NULL;
-			const char *uuid_s = GetJSONString (req_p, SERVICE_UUID_S);
+			const char *service_uuids_json_p = GetJSONString (req_p, SERVICES_NAME_S);
 
-			if (uuid_s)
+			if (service_uuids_json_p)
 				{
-					if (json_object_set_new (res_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
+					if (is_json_array (service_uuids_json_p))
 						{
-							uuid_t service_id;
+							size_t i;
+							json_t *service_uuid_json_p;
 
-							if (ConvertStringToUUID (uuid_s, service_id))
+							json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
 								{
-									Service *service_p = GetServiceFromStatusTable (service_id);
-
-									if (service_p)
+									if (json_is_string (service_uuid_json_p))
 										{
-											status = GetCurrentServiceStatus (service_p, service_id);
+											const char *uuid_s = json_string_value (service_uuid_json_p);
+											uuid_t service_id;
 
-											if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
+											if (ConvertStringToUUID (uuid_s, service_id))
 												{
-													success_flag = true;
+													Service *service_p = GetServiceFromStatusTable (service_id);
 
-													if (json_object_set_new (res_p, SERVICE_NAME_S, json_string (GetServiceName (service_p))) != 0)
+													if (service_p)
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
-														}
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for %s - %s to status json", GetServiceName (service_p), uuid_s);
-												}
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to get service for %s from status table", uuid_s);
-										}
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to get convert string to uuid");
-								}
+															status = GetCurrentServiceStatus (service_p, service_id);
 
-						}		/* if (json_object_set_new (res_p, SERVICE_UUID_S, json_string (uuid_s)) == 0) */
+															if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
+																{
+																	success_flag = true;
+
+																	if (json_object_set_new (res_p, SERVICE_NAME_S, json_string (GetServiceName (service_p))) != 0)
+																		{
+																			PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
+																		}
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for %s - %s to status json", GetServiceName (service_p), uuid_s);
+																}
+
+														}		/* if (service_p) */
+
+												}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
+
+										}		/* if (json_is_string (service_uuid_json_p)) */
+
+								}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to get set status uuid %s for status json", uuid_s);
+
 						}
 
-				}		/* if (uuid_s) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to get uuid for status json");
-				}
+				}		/* if (service_uuids_json_p) */
 
 			if (!success_flag)
 				{
