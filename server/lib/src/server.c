@@ -531,6 +531,44 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 }
 
 
+static bool AddServiceStatusToJSON (const json_t *services_p, uuid_t service_id)
+{
+	bool success_flag = false;
+	json_object *status_p = json_object ();
+
+	if (status_p)
+		{
+			Service *service_p = GetServiceFromStatusTable (service_id);
+
+			if (service_p)
+				{
+
+				}		/* if (service_p) */
+
+			status = GetCurrentServiceStatus (service_p, service_id);
+
+
+
+			if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
+				{
+					success_flag = true;
+
+					if (json_object_set_new (res_p, SERVICE_NAME_S, json_string (GetServiceName (service_p))) != 0)
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
+						}
+				}
+
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for %s - %s to status json", GetServiceName (service_p), uuid_s);
+		}
+
+	return success_flag;
+}
+
+
 static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p)
 {
 	json_error_t error;
@@ -559,27 +597,6 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 
 											if (ConvertStringToUUID (uuid_s, service_id))
 												{
-													Service *service_p = GetServiceFromStatusTable (service_id);
-
-													if (service_p)
-														{
-															status = GetCurrentServiceStatus (service_p, service_id);
-
-															if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
-																{
-																	success_flag = true;
-
-																	if (json_object_set_new (res_p, SERVICE_NAME_S, json_string (GetServiceName (service_p))) != 0)
-																		{
-																			PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
-																		}
-																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for %s - %s to status json", GetServiceName (service_p), uuid_s);
-																}
-
-														}		/* if (service_p) */
 
 												}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
 
