@@ -119,10 +119,10 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-	char *(*se_get_results_fn) (struct Service *service_p);
+	json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t service_id);
 
 
-	OperationStatus (*se_get_status_fn) (const struct Service *service_p, const uuid_t service_id);
+	OperationStatus (*se_get_status_fn) (struct Service *service_p, const uuid_t service_id);
 
 
 	/**
@@ -182,8 +182,8 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
-	char *(*get_results_fn) (struct Service *service_p),
-	OperationStatus (*get_status_fn) (const Service *service_p, const uuid_t service_id),
+	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
+	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
 	bool specific_flag,
 	ServiceData *data_p);
 
@@ -273,7 +273,7 @@ WHEATIS_SERVICE_API bool CloseService (Service *service_p);
  * @param service_p The Service to get the results for
  * @return The results or NULL if they are not any.
  */
-WHEATIS_SERVICE_API char *GetServiceResults (Service *service_p);
+WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, uuid_t service_id);
 
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions

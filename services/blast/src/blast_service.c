@@ -46,9 +46,9 @@ static bool AddScoringParams (ParameterSet *param_set_p);
 
 static bool AddDatabaseParams (ParameterSet *param_set_p);
 
-static json_t *GetBlastResultAsJSON (const char *blast_result_s, const char *title_s);
+static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id);
 
-static OperationStatus GetBlastServiceStatus (const Service *service_p, const uuid_t service_id);
+static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
 
 
 /*
@@ -406,10 +406,10 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 }
 
 
-static json_t *GetBlastResultsAsJSON (const char *blast_result_s, const char *title_s)
+static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id)
 {
 	json_t *results_json_p = json_array ();
-
+/*
 	if (results_json_p)
 		{
 			bool success_flag = false;
@@ -437,7 +437,7 @@ static json_t *GetBlastResultsAsJSON (const char *blast_result_s, const char *ti
 					results_json_p = NULL;
 				}
 		}
-
+*/
 	return results_json_p;
 }
 
@@ -461,7 +461,7 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 						{
 							const char *title_s = "blast result";
 
-							result_json_p = GetBlastResultsAsJSON (result_s, title_s);
+							result_json_p = GetBlastResultAsJSON (service_p, tool_p -> GetUUID ());
 
 							if (result_json_p)
 								{
@@ -525,7 +525,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 }
 
 
-static OperationStatus GetBlastServiceStatus (const Service *service_p, const uuid_t service_id)
+static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id)
 {
 	OperationStatus status = OS_ERROR;
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);

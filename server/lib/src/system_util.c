@@ -12,12 +12,15 @@ bool InitInformationSystem ()
 	if (InitHandlerUtil ())
 		{
 			if (InitDefaultOutputStream ())
-				{					
-					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
-					
-					if (c == 0)
+				{
+					if (InitServicesStatusTable ())
 						{
-							return true;
+							CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
+
+							if (c == 0)
+								{
+									return true;
+								}
 						}
 				}
 		}
@@ -32,7 +35,7 @@ bool DestroyInformationSystem ()
 	
 	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
-
+	DestroyServicesStatusTable ();
 	curl_global_cleanup ();
 
 	return res_flag;

@@ -50,8 +50,8 @@ void InitialiseService (Service * const service_p,
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
-	char *(*get_results_fn) (struct Service *service_p),
-	OperationStatus (*get_status_fn) (const Service *service_p, const uuid_t service_id),
+	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
+	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
 	bool specific_flag,
 	ServiceData *data_p)
 {
@@ -101,16 +101,16 @@ bool CloseService (Service *service_p)
 }
 
 
-char *GetServiceResults (Service *service_p)
+json_t *GetServiceResults (Service *service_p, uuid_t service_id)
 {
-	char *results_s = NULL;
+	json_t *results_p = NULL;
 
 	if (service_p -> se_get_results_fn)
 		{
-			results_s = service_p -> se_get_results_fn (service_p);
+			results_p = service_p -> se_get_results_fn (service_p, service_id);
 		}
 
-	return results_s;
+	return results_p;
 }
 
 

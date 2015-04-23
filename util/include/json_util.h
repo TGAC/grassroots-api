@@ -33,6 +33,7 @@
 	#define VAL(x)	
 #endif
 
+PREFIX const char *ERROR_S VAL("error");
 
 PREFIX const char *SERVER_PROVIDER_S VAL("provider");
 PREFIX const char *PROVIDER_NAME_S VAL("name");

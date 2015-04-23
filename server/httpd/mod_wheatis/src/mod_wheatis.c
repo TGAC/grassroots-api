@@ -107,10 +107,11 @@ static int WheatISHandler (request_rec *req_p)
 						if (json_req_p)
 							{
 								int socket_fd = -1;
+								json_t *res_p = NULL;
 
 								res = OK;
 
-								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
+								res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
 
 								if (res_p)
 									{
@@ -119,6 +120,8 @@ static int WheatISHandler (request_rec *req_p)
 										if (res_s)
 											{
 												ap_rputs (res_s, req_p);
+
+												free (res_s);
 											}		/* if (res_s) */
 
 										json_decref (res_p);

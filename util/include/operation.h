@@ -22,6 +22,9 @@ typedef enum Operation {
 	/** Get status of running services */
 	OP_CHECK_SERVICE_STATUS,
 
+	/** Get results from completed job */
+	OP_GET_SERVICE_RESULTS,
+
 	OP_NUM_OPERATIONS
 } Operation;
 

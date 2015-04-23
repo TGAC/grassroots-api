@@ -56,6 +56,15 @@ static json_t *GetNamedServices (const json_t * const req_p, const json_t *crede
 
 static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p);
 
+static json_t *GetServiceResultsAsJSON (const json_t * const req_p, const json_t *credentials_p);
+
+static json_t *GetServiceData (const json_t * const req_p, const json_t *credentials_p, bool (*callback_fn) (json_t *services_p, uuid_t service_id, const char *uuid_s));
+
+static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
+
+static bool AddServiceResultsToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
+
+
 /***************************/
 /***** API DEFINITIONS *****/
 /***************************/
@@ -197,9 +206,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						res_p = GetNamedServices (req_p, credentials_p);
 						break;
 
-
 					case OP_CHECK_SERVICE_STATUS:
 						res_p = GetServiceStatus (req_p, credentials_p);
+						break;
+
+					case OP_GET_SERVICE_RESULTS:
+						res_p = GetServiceResultsAsJSON (req_p, credentials_p);
 						break;
 
 					default:
@@ -385,10 +397,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 													if (status == OS_STARTED)
 														{
-															uuid_t service_key;
-															GenerateUUID (&service_key);
-
-															if (AddServiceToStatusTable (service_key, service_p))
+															if (AddServiceToStatusTable (service_p -> se_id, service_p))
 																{
 																	/* since we've checked for a single node */
 																	LinkedListRemHead (services_p);
@@ -397,7 +406,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to save service %s %s", GetServiceName (service_p), service_key);
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to save service %s %s", GetServiceName (service_p), service_p -> se_id);
 																}
 														}
 
@@ -531,96 +540,199 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 }
 
 
-static bool AddServiceStatusToJSON (const json_t *services_p, uuid_t service_id)
+static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	json_object *status_p = json_object ();
+	json_t *status_p = json_object ();
 
 	if (status_p)
 		{
-			Service *service_p = GetServiceFromStatusTable (service_id);
+			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
+				{
+					Service *service_p = GetServiceFromStatusTable (service_id);
+
+					if (service_p)
+						{
+							OperationStatus status = GetCurrentServiceStatus (service_p, service_id);
+							const char *service_name_s = GetServiceName (service_p);
+
+							success_flag = true;
+
+							if (json_object_set_new (status_p, SERVICE_NAME_S, json_string (service_name_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service name %s to status json", service_name_s);
+									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service name to status json"));
+									success_flag = false;
+								}
+
+							if (json_object_set_new (status_p, SERVICE_STATUS_S, json_integer (status)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
+									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
+									success_flag = false;
+								}
+
+						}		/* if (service_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to find %s in services table", uuid_s);
+							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to add service uuid_s %s to status json", uuid_s);
+					json_object_set_new (status_p, ERROR_S, json_string ("Failed to add uuid to status json"));
+				}
+
+			success_flag = (json_array_append_new (services_p, status_p ) == 0);
+		}		/* if (status_p) */
+
+	return success_flag;
+}
+
+
+static bool AddServiceResultsToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s)
+{
+	bool success_flag = false;
+	json_t *status_p = json_object ();
+
+	if (status_p)
+		{
+			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
+				{
+					Service *service_p = GetServiceFromStatusTable (service_id);
+
+					if (service_p)
+						{
+							OperationStatus status = GetCurrentServiceStatus (service_p, service_id);
+							const char *service_name_s = GetServiceName (service_p);
+
+							success_flag = true;
+
+							if (json_object_set_new (status_p, SERVICE_NAME_S, json_string (service_name_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service name %s to status json", service_name_s);
+									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service name to status json"));
+									success_flag = false;
+								}
+
+							if (json_object_set_new (status_p, SERVICE_STATUS_S, json_integer (status)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
+									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
+									success_flag = false;
+								}
+
+						}		/* if (service_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to find %s in services table", uuid_s);
+							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to add service uuid_s %s to status json", uuid_s);
+					json_object_set_new (status_p, ERROR_S, json_string ("Failed to add uuid to status json"));
+				}
+
+			success_flag = (json_array_append_new (services_p, status_p) == 0);
+		}		/* if (status_p) */
+
+
+	if (success_flag)
+		{
+			Service *service_p = RemoveServiceFromStatusTable (service_id);
 
 			if (service_p)
 				{
-
-				}		/* if (service_p) */
-
-			status = GetCurrentServiceStatus (service_p, service_id);
-
-
-
-			if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
-				{
-					success_flag = true;
-
-					if (json_object_set_new (res_p, SERVICE_NAME_S, json_string (GetServiceName (service_p))) != 0)
-						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
-						}
+					CloseService (service_p);
 				}
-
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for %s - %s to status json", GetServiceName (service_p), uuid_s);
 		}
 
 	return success_flag;
 }
 
 
-static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p)
+static json_t *GetServiceData (const json_t * const req_p, const json_t *credentials_p, bool (*callback_fn) (json_t *services_p, uuid_t service_id, const char *uuid_s))
 {
-	json_error_t error;
 	json_t *res_p = json_object ();
 
 	if (res_p)
 		{
-			bool success_flag = false;
-			OperationStatus status = OS_ERROR;
-			const char *service_name_s = NULL;
-			const char *service_uuids_json_p = GetJSONString (req_p, SERVICES_NAME_S);
+			json_t *res_services_p = json_array ();
 
-			if (service_uuids_json_p)
+			if (res_services_p)
 				{
-					if (is_json_array (service_uuids_json_p))
+					if (json_object_set (res_p, SERVICES_NAME_S, res_services_p) == 0)
 						{
-							size_t i;
-							json_t *service_uuid_json_p;
+							json_t *service_uuids_json_p = json_object_get (req_p, SERVICES_NAME_S);
 
-							json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
+							if (service_uuids_json_p)
 								{
-									if (json_is_string (service_uuid_json_p))
+									if (json_is_array (service_uuids_json_p))
 										{
-											const char *uuid_s = json_string_value (service_uuid_json_p);
-											uuid_t service_id;
+											size_t i;
+											json_t *service_uuid_json_p;
 
-											if (ConvertStringToUUID (uuid_s, service_id))
+											json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
 												{
+													if (json_is_string (service_uuid_json_p))
+														{
+															const char *uuid_s = json_string_value (service_uuid_json_p);
+															uuid_t service_id;
 
-												}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
+															if (ConvertStringToUUID (uuid_s, service_id))
+																{
+																	callback_fn (res_services_p, service_id, uuid_s);
+																}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
 
-										}		/* if (json_is_string (service_uuid_json_p)) */
+														}		/* if (json_is_string (service_uuid_json_p)) */
 
-								}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+												}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+										}
+									else
+										{
+
+										}
+
+								}		/* if (service_uuids_json_p) */
 						}
 					else
 						{
+							const char error_s [] = "Failed to add services array to services status json";
 
+							PrintErrors (STM_LEVEL_SEVERE, error_s);
+							json_object_set_new (res_p, ERROR_S, json_string (error_s));
 						}
 
-				}		/* if (service_uuids_json_p) */
-
-			if (!success_flag)
+				}		/* if (res_services_p) */
+			else
 				{
-					json_object_clear (res_p);
-					json_decref (res_p);
-					res_p = NULL;
+					const char error_s [] = "Failed to get services array to services status json";
+
+					PrintErrors (STM_LEVEL_SEVERE, error_s);
+					json_object_set_new (res_p, ERROR_S, json_string (error_s));
 				}
 
 		}		/* if (res_p) */
 
 	return res_p;
+
+}
+
+
+static json_t *GetServiceResultsAsJSON (const json_t * const req_p, const json_t *credentials_p)
+{
+	return GetServiceData (req_p, credentials_p, AddServiceResultsToJSON);
+}
+
+
+
+static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p)
+{
+	return GetServiceData (req_p, credentials_p, AddServiceStatusToJSON);
 }
 
 
