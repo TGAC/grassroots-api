@@ -47,6 +47,7 @@ INCLUDES = \
 SRCS 	= \
 	blast_service.c \
 	blast_tool.cpp \
+	blast_tool_set.cpp \
 	external_blast_tool.cpp \
 	system_blast_tool.cpp \
 	temp_file.cpp

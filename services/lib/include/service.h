@@ -121,6 +121,10 @@ typedef struct Service
 
 	char *(*se_get_results_fn) (struct Service *service_p);
 
+
+	OperationStatus (*se_get_status_fn) (const struct Service *service_p, const uuid_t service_id);
+
+
 	/**
 	 * Function to release the ParameterSet for this Service.
 	 */
@@ -179,6 +183,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
 	char *(*get_results_fn) (struct Service *service_p),
+	OperationStatus (*get_status_fn) (const Service *service_p, const uuid_t service_id),
 	bool specific_flag,
 	ServiceData *data_p);
 
@@ -348,11 +353,13 @@ WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, Ope
 WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 
-WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (const Service *service_p);
+WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (const Service *service_p, const uuid_t service_id);
 
 
-WHEATIS_SERVICE_API void SetCurrentServiceStatus (Service *service_p, const OperationStatus status);
+WHEATIS_SERVICE_API void SetCurrentServiceStatus (Service *service_p, const uuid_t service_id, const OperationStatus status);
 
+
+WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (const Service *service_p, const uuid_t service_id);
 
 #ifdef __cplusplus
 }

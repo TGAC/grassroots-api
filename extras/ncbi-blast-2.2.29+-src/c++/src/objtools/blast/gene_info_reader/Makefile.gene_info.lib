@@ -1,7 +1,0 @@
-# $Id: Makefile.gene_info.lib 379598 2012-11-02 13:11:58Z camacho $
-
-WATCHERS = camacho
-
-CPPFLAGS = -DNCBI_MODULE=GENEINFO $(ORIG_CPPFLAGS)
-LIB = gene_info
-SRC = gene_info gene_info_reader file_utils

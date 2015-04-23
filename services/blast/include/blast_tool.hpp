@@ -44,9 +44,13 @@ public:
 
 	virtual const char *GetResults () = 0;
 
+	const uuid_t &GetUUID () const;
+
 protected:
 	OperationStatus bt_status;
 	Service *bt_service_p;
+
+	uuid_t bt_uuid;
 
 	/** All of the command line arguments */
 	std :: vector <char *> bt_command_line_args;
@@ -58,7 +62,6 @@ protected:
 	 */
 	std :: vector <char *> bt_allocated_args;
 };
-
 
 
 /*

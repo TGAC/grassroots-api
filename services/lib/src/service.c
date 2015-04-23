@@ -38,7 +38,7 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p);
 
 static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag);
 
-static GenerateServiceUUID (Service *service_p);
+static void GenerateServiceUUID (Service *service_p);
 
 
 void InitialiseService (Service * const service_p,
@@ -51,6 +51,7 @@ void InitialiseService (Service * const service_p,
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
 	char *(*get_results_fn) (struct Service *service_p),
+	OperationStatus (*get_status_fn) (const Service *service_p, const uuid_t service_id),
 	bool specific_flag,
 	ServiceData *data_p)
 {
@@ -65,6 +66,13 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_get_results_fn = get_results_fn;
 	service_p -> se_data_p = data_p;
 	
+	if (!get_status_fn)
+		{
+			get_status_fn = DefaultGetServiceStatus;
+		}
+
+	service_p -> se_get_status_fn = get_status_fn;
+
 	service_p -> se_is_specific_service_flag = specific_flag;
 	
 	if (service_p -> se_data_p)
@@ -74,7 +82,7 @@ void InitialiseService (Service * const service_p,
 
 	service_p -> se_status = OS_IDLE;
 
-	ClearUUID (service_p -> se_id);
+	ClearUUID (& (service_p -> se_id));
 
 	service_p -> se_plugin_p = NULL;
 	service_p -> se_has_permissions_fn = NULL;
@@ -550,13 +558,13 @@ void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p)
 }
 
 
-OperationStatus GetCurrentServiceStatus (const Service *service_p)
+OperationStatus GetCurrentServiceStatus (const Service *service_p, const uuid_t service_id)
 {
-	return service_p -> se_status;
+	return service_p -> se_get_status_fn (service_p, service_id);
 }
 
 
-void SetCurrentServiceStatus (Service *service_p, const OperationStatus status)
+void SetCurrentServiceStatus (Service *service_p, const uuid_t service_id, const OperationStatus status)
 {
 	service_p -> se_status = status;
 }
@@ -568,9 +576,15 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p)
 }
 
 
-static GenerateServiceUUID (Service *service_p)
+static void GenerateServiceUUID (Service *service_p)
 {
 	GenerateUUID (& (service_p -> se_id));
+}
+
+
+OperationStatus DefaultGetServiceStatus (const Service *service_p, const uuid_t service_id)
+{
+	return service_p -> se_status;
 }
 
 

@@ -115,7 +115,7 @@ typedef struct ParameterGroup
 {
 	char *pg_name_s;
 	uint32 pg_num_params;
-	const struct Parameter **pg_params_pp;
+	struct Parameter **pg_params_pp;
 } ParameterGroup;
 
 

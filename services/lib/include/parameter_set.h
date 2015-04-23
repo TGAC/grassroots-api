@@ -140,7 +140,7 @@ WHEATIS_SERVICE_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *pa
 WHEATIS_SERVICE_API void FreeParameterSetNode (ListItem *node_p);
 
 
-WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const Parameter **params_pp, const uint32 num_params);
+WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, Parameter **params_pp, const uint32 num_params);
 
 
 WHEATIS_SERVICE_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);

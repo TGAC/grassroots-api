@@ -3,7 +3,7 @@
 #include "blast_service.h"
 #include "memory_allocations.h"
 
-#include "blast_tool.hpp"
+#include "blast_tool_set.hpp"
 
 /*
  * STATIC DATATYPES
@@ -11,7 +11,7 @@
 typedef struct 
 {
 	ServiceData bsd_base_data;
-	BlastTool *bsd_blast_tool_p;
+	BlastToolSet *bsd_blast_tools_p;
 } BlastServiceData;
 
 
@@ -48,6 +48,8 @@ static bool AddDatabaseParams (ParameterSet *param_set_p);
 
 static json_t *GetBlastResultAsJSON (const char *blast_result_s, const char *title_s);
 
+static OperationStatus GetBlastServiceStatus (const Service *service_p, const uuid_t service_id);
+
 
 /*
  * API FUNCTIONS
@@ -76,6 +78,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								ReleaseBlastServiceParameters,
 								CloseBlastService,
 								NULL,
+								GetBlastServiceStatus,
 								true,
 								data_p);
 							
@@ -111,9 +114,9 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 
 	if (data_p)
 		{
-			data_p -> bsd_blast_tool_p = CreateBlastTool (blast_service_p);
+			data_p -> bsd_blast_tools_p = CreateBlastToolSet (blast_service_p);
 
-			if (data_p -> bsd_blast_tool_p)
+			if (data_p -> bsd_blast_tools_p)
 				{
 					return data_p;
 				}
@@ -127,7 +130,7 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 
 static void FreeBlastServiceData (BlastServiceData *data_p)
 {
-	FreeBlastTool (data_p -> bsd_blast_tool_p);
+	FreeBlastToolSet (data_p -> bsd_blast_tools_p);
 	FreeMemory (data_p);
 }
 
@@ -170,8 +173,8 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 	Parameter *param_p = NULL;
 	SharedType def;
 	size_t num_group_params = 5;
-	const Parameter **grouped_params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	const Parameter **grouped_param_pp = grouped_params_pp;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
 
 	def.st_string_value_s = NULL;
 
@@ -252,8 +255,8 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 	Parameter *param_p = NULL;
 	SharedType def;
 	size_t num_group_params = 5;
-	const Parameter **grouped_params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	const Parameter **grouped_param_pp = grouped_params_pp;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
 	uint8 level = PL_INTERMEDIATE | PL_ALL;
 
 	def.st_ulong_value = 100;
@@ -332,8 +335,8 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 	Parameter *param_p = NULL;
 	SharedType def;
 	size_t num_group_params = 2;
-	const Parameter **grouped_params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	const Parameter **grouped_param_pp = grouped_params_pp;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
 	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
 
 	def.st_long_value = 2;
@@ -445,7 +448,8 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *result_json_p = NULL;
 	json_t *final_json_p = NULL;
-	BlastTool *tool_p = blast_data_p -> bsd_blast_tool_p;
+	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool ();
+
 	
 	if (tool_p -> ParseParameters (param_set_p))
 		{
@@ -518,5 +522,20 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 	
 	
 	return interested_flag;	
+}
+
+
+static OperationStatus GetBlastServiceStatus (const Service *service_p, const uuid_t service_id)
+{
+	OperationStatus status = OS_ERROR;
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (service_id);
+
+	if (tool_p)
+		{
+			status = tool_p -> GetStatus ();
+		}
+
+	return status;
 }
 

@@ -185,8 +185,8 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 {
 	const uint32 num_params = 3;
 	Parameter *param_p = NULL;
-	const Parameter **grouped_params_pp = (const Parameter **) AllocMemoryArray (num_params, sizeof (Parameter *));
-	const Parameter **grouped_param_pp = grouped_params_pp;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
 	bool success_flag = false;
 	SharedType def;
 

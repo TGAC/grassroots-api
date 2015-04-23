@@ -154,6 +154,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								ReleaseIrodsSearchServiceParameters,
 								CloseIrodsSearchService,
 								NULL,
+								NULL,
 								true,
 								data_p);
 							
@@ -211,7 +212,6 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 	 */
 	QueryResults *results_p = GetAllMetadataAttributeNames (connection_p, key_col_id);
 
-
 	if (results_p)
 		{
 			if (results_p -> qr_num_results == 1)
@@ -219,8 +219,8 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 					QueryResult *result_p = results_p -> qr_values_p;
 					int i = result_p -> qr_num_values;
 					char **value_ss = result_p -> qr_values_pp;
-					const Parameter **params_pp = (const Parameter **) AllocMemoryArray (i, sizeof (const Parameter *));
-					const Parameter **param_pp = params_pp;
+					Parameter **params_pp = (Parameter **) AllocMemoryArray (i, sizeof (Parameter *));
+					Parameter **param_pp = params_pp;
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{

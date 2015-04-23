@@ -344,8 +344,6 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 					
 					if (services_p)
 						{
-							json_t *json_config_p = NULL;
-
 							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, credentials_p);
 
 							#if SERVER_DEBUG >= STM_LEVEL_FINE
@@ -383,7 +381,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 													service_res_p = RunService (service_p, params_p, credentials_p);
 
-													status = GetCurrentServiceStatus (service_p);
+													status = GetCurrentServiceStatus (service_p, NULL);
 
 													if (status == OS_STARTED)
 														{
@@ -395,7 +393,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 																	/* since we've checked for a single node */
 																	LinkedListRemHead (services_p);
 																	node_p -> sn_service_p = NULL;
-																	FreeServiceNode (node_p);
+																	FreeServiceNode ((ListItem * const) node_p);
 																}
 															else
 																{
@@ -557,13 +555,13 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 
 									if (service_p)
 										{
-											status = GetCurrentServiceStatus (service_p);
+											status = GetCurrentServiceStatus (service_p, service_id);
 
 											if (json_object_set_new (res_p, SERVICE_STATUS_S, json_integer (status)) == 0)
 												{
 													success_flag = true;
 
-													if (json_object_set_new (res_p, SERVICE_NAME_S, GetServiceName (service_p)) != 0)
+													if (json_object_set_new (res_p, SERVICE_NAME_S, json_string (GetServiceName (service_p))) != 0)
 														{
 															PrintErrors (STM_LEVEL_WARNING, "Failed to add service name to status json");
 														}

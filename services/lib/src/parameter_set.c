@@ -19,11 +19,11 @@
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListItem *node_p);
 
-static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const Parameter **params_pp, const uint32 num_params);
+static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, Parameter **params_pp, const uint32 num_params);
 
 static void FreeParameterGroupNode (ListItem *node_p);
 
-static ParameterGroup *AllocateParameterGroup (const char *name_s, const Parameter **params_pp, const uint32 num_params);
+static ParameterGroup *AllocateParameterGroup (const char *name_s, Parameter **params_pp, const uint32 num_params);
 
 static void FreeParameterGroup (ParameterGroup *param_group_p);
 
@@ -327,7 +327,7 @@ bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, con
 }
 
 
-bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const Parameter **params_pp, const uint32 num_params)
+bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, Parameter **params_pp, const uint32 num_params)
 {
 	bool success_flag = false;
 	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, params_pp, num_params);
@@ -530,11 +530,11 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 
 																	if (num_group_params > 0)
 																		{
-																			const Parameter **params_pp = (const Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+																			Parameter **params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 
 																			if (params_pp)
 																				{
-																					const Parameter **param_pp = params_pp;
+																					Parameter **param_pp = params_pp;
 																					ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
 
 																					/* Get the number of Parameters needed */
@@ -542,7 +542,6 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 																						{
 																							json_t *param_json_p = json_array_get (params_json_p, j);
 																							const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
-																							Parameter *param_p = param_node_p -> pn_parameter_p;
 
 																							if ((param_group_name_s) && (strcmp (param_group_name_s, group_name_s) == 0))
 																								{
@@ -682,7 +681,7 @@ static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet 
 }
 
 
-static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const Parameter **params_pp, const uint32 num_params)
+static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, Parameter **params_pp, const uint32 num_params)
 {
 	ParameterGroup *group_p = AllocateParameterGroup (name_s, params_pp, num_params);
 
@@ -715,7 +714,7 @@ static void FreeParameterGroupNode (ListItem *node_p)
 }
 
 
-static ParameterGroup *AllocateParameterGroup (const char *name_s, const Parameter **params_pp, const uint32 num_params)
+static ParameterGroup *AllocateParameterGroup (const char *name_s, Parameter **params_pp, const uint32 num_params)
 {
 	char *copied_name_s = CopyToNewString (name_s, 0, false);
 

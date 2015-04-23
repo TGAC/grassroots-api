@@ -1,4 +1,0 @@
-# $Id: Makefile.biotree.lib 386911 2013-01-24 14:43:36Z ucko $
-
-LIB = biotree
-SRC = biotree__ biotree___

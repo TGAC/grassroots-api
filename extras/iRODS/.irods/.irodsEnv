@@ -1,0 +1,20 @@
+# iRODS personal configuration file.
+#
+# This file was automatically created during iRODS installation.
+#   Created Tue Aug  5 10:17:49 2014
+#
+# iRODS server host name:
+irodsHost 'n79610.nbi.ac.uk'
+# iRODS server port number:
+irodsPort 1247
+
+# Default storage resource name:
+irodsDefResource 'demoResc'
+# Home directory in iRODS:
+irodsHome '/defaultZone/home/irods'
+# Current directory in iRODS:
+irodsCwd '/defaultZone/home/irods'
+# Account name:
+irodsUserName 'irods'
+# Zone:
+irodsZone 'defaultZone'

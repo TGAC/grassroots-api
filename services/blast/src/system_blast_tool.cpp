@@ -47,7 +47,7 @@ const char *SystemBlastTool :: GetResults ()
 OperationStatus SystemBlastTool :: Run ()
 {
 	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
-	SetCurrentServiceStatus (bt_service_p, OS_STARTED);
+	SetCurrentServiceStatus (bt_service_p, bt_uuid, OS_STARTED);
 	int res = system (command_line_s);
 
 	OperationStatus status = OS_FAILED;

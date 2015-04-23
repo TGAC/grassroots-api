@@ -117,6 +117,7 @@ all:
 	$(MAKE) -C services/irods_search
 	$(MAKE) -C services/ensembl_rest
 	$(MAKE) -C services/tgac_elastic_search
+	$(MAKE) -C services/test_long_runner
 					
 install: install_init install_references install_images
 	$(MAKE) -C util install
@@ -139,6 +140,7 @@ install: install_init install_references install_images
 	$(MAKE) -C services/irods_search install
 	$(MAKE) -C services/ensembl_rest install
 	$(MAKE) -C services/tgac_elastic_search install
+	$(MAKE) -C services/test_long_runner install
 	
 clean: 
 	$(MAKE) -C util clean
@@ -161,6 +163,7 @@ clean:
 	$(MAKE) -C services/irods_search clean
 	$(MAKE) -C services/ensembl_rest clean
 	$(MAKE) -C services/tgac_elastic_search clean
+	$(MAKE) -C services/test_long_runner clean
 	
 install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)

@@ -69,6 +69,7 @@ ServicesArray *GetServices (const json_t *config_p)
 						ReleaseEnsemblRestServiceParameters,
 						CloseEnsemblRestService,
 						NULL,
+						NULL,
 						true,
 						data_p);
 					

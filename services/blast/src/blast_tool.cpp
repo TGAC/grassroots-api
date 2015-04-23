@@ -33,12 +33,20 @@ BlastTool :: BlastTool (Service *service_p)
 {
 	bt_status = OS_IDLE;
 	bt_service_p = service_p;
+
+	GenerateUUID (&bt_uuid);
 }
 
 
 OperationStatus BlastTool :: GetStatus () const
 {
 	return bt_status;
+}
+
+
+const uuid_t &BlastTool :: GetUUID () const
+{
+	return bt_uuid;
 }
 
 
@@ -110,7 +118,7 @@ void BlastTool :: PreRun ()
 {
 	bt_status = OS_STARTED;
 
-	SetCurrentServiceStatus (bt_service_p, bt_status);
+	SetCurrentServiceStatus (bt_service_p, bt_uuid, bt_status);
 }
 
 
@@ -118,7 +126,7 @@ void BlastTool :: PostRun ()
 {
 	bt_status = OS_SUCCEEDED;
 
-	SetCurrentServiceStatus (bt_service_p, bt_status);
+	SetCurrentServiceStatus (bt_service_p, bt_uuid, bt_status);
 }
 
 
