@@ -310,6 +310,31 @@ int main (int argc, char *argv [])
 											}
 											break;
 
+										case OP_CHECK_SERVICE_STATUS:
+											{
+												req_p = GetCheckServicesRequest (username_s, password_s, query_s);
+
+												if (req_p)
+													{
+														response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+														if (response_p)
+															{
+																char *dump_s = json_dumps (response_p, JSON_INDENT (2));
+
+																if (dump_s)
+																	{
+																		PrintLog (STM_LEVEL_INFO, "%s", dump_s);
+																		free (dump_s);
+																	}
+
+																//ShowServices (response_p, client_p, username_s, password_s, connection_p);
+															}		/* if (response_p) */
+
+													}		/* if (req_p) */
+											}
+											break;
+
 										default:
 											break;
 									}

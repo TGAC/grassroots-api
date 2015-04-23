@@ -14,6 +14,7 @@ typedef struct ThreadData
 {
 	uint32 td_duration;
 	OperationStatus td_status;
+	bool td_active_flag;
 } ThreadData;
 
 /*
@@ -80,6 +81,7 @@ static void CleanupHandler (void *params_p)
 
 static void CreateThread (pthread_t *thread_p, ThreadData *data_p)
 {
+	data_p -> td_active_flag = true;
 	pthread_create (thread_p, NULL, LongRunningFunction, (void *) data_p);
 }
 
@@ -178,6 +180,14 @@ static void FreeLongRunningServiceData (LongRunningServiceData *data_p)
 static bool CloseLongRunningService (Service *service_p)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
+	void *status_p;
+
+	if (data_p -> lsd_thread_data.td_active_flag)
+		{
+			data_p -> lsd_thread_data.td_active_flag = false;
+			pthread_join (data_p -> lsd_thread, &status_p);
+			//pthread_exit ();
+		}
 
 	FreeLongRunningServiceData (data_p);
 
@@ -208,7 +218,7 @@ static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resour
 
 			def.st_ulong_value = S_DEFAULT_DURATION;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "duration", "Duration in seconds", "Duration in seconds", TAG_LONG_RUNNING_DURATION, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "duration", "Duration in seconds", "Duration in seconds", TAG_LONG_RUNNING_DURATION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					return param_set_p;
 				}
@@ -270,11 +280,6 @@ static json_t *RunLongRunningService (Service *service_p, ParameterSet *param_se
 	json_t *result_json_p = NULL;
 
 	CreateThread (& (data_p -> lsd_thread), & (data_p -> lsd_thread_data));
-
-	if (uuid_is_null (service_p -> se_id))
-		{
-			GenerateUUID (& (service_p -> se_id));
-		}
 	
 	res = GetLongRunningServiceStatus (service_p, NULL);
 
