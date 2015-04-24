@@ -1,0 +1,1309 @@
+#
+#
+#*****************************************************************************
+#
+# $Id: hostsetup,v 1.1 2006/06/27 19:31:10 gwen Exp $
+#
+# This script is sourced by lsfsetup. It is not a standalone script.
+# Do the per-host setup for LSF server hosts.
+#
+#*****************************************************************************
+#
+
+
+get_servers_names()
+{
+_hosts=$1
+first_char=`expr "$_hosts" : '\(.\).*'`
+while : 
+do
+  if [ "$first_char" != "/" ]; then
+    SETUPSERVERS=$_hosts; export SETUPSERVERS; return 0
+  else
+    if [ ! -r "$_hosts" ]; then
+        echo "Sorry, the file $_hosts does not exist."
+        if yesno "Do you still want to continue?" Y "" > $LSNULFILE
+        then
+          break #continue 
+        else
+          exit
+        fi
+    else                                    
+        SETUPSERVERS=""
+        exec 3<$_hosts
+        while read LINE 0<&3
+        do
+            first_char=`expr "$LINE" : '\(.\).*'` # Support comments in host file
+
+            if [ "$first_char" = "#" ]; then
+                continue
+            else
+                :
+            fi
+            _t=`echo $LINE|sed -e "s/^[     ]*//" -e "s/[   ]*$//"`
+            if [ "$SETUPSERVERS" = "" ]; then
+                SETUPSERVERS=$_t
+            else
+                SETUPSERVERS="$SETUPSERVERS,$_t"
+            fi
+        done
+        exec 3<&-
+        export SETUPSERVERS
+	return 0
+    fi
+  fi
+done 
+}
+ 
+
+
+get_clients_names()
+{
+_hosts=$1
+first_char=`expr "$_hosts" : '\(.\).*'`
+
+while : 
+do
+    if [ "$first_char" != "/" ]; then
+
+        if [ "$_hosts" = "" ]; then
+
+            echo "Sorry, no host name is specified."
+
+            if [ "$UNATTENDED_INSTALL" = "y" ]; then
+                exit
+            else
+                if yesno "Do you still want to continue?" Y "" > $LSNULFILE
+                then
+                    return 1
+                else
+                    exit
+                fi
+            fi
+        else
+            SETUPCLIENTS=$_hosts; export SETUPCLIENTS; return 0
+        fi
+    else
+        if [ ! -r "$_hosts" ]; then
+
+            echo "Sorry, the file $_hosts does not exist."
+
+            if yesno "Do you still want to continue?" Y "" > $LSNULFILE
+            then
+                return 1
+            else
+                exit
+            fi
+        else                                    
+            SETUPCLIENTS=""
+            exec 3<$_hosts
+
+            while read LINE 0<&3
+            do
+
+                first_char=`expr "$LINE" : '\(.\).*'` # Support comments in host file
+
+                if [ "$first_char" = "#" ]; then
+                    continue
+                else
+                    :
+                fi
+
+                _t=`echo $LINE|sed -e "s/^[     ]*//" -e "s/[   ]*$//"`
+
+                if [ "$SETUPCLIENTS" = "" ]; then
+                    SETUPCLIENTS=$_t
+                else
+                    SETUPCLIENTS="$SETUPCLIENTS,$_t"
+                fi
+            done
+            exec 3<&-
+            export SETUPCLENTS
+	    return 0
+        fi
+    fi
+done 
+}
+
+
+
+
+get_clients_servers()
+{
+
+_lsfClients=`echo "$1" | sed -e "s/,/ /g"`
+_lsfClientsNO=`echo $_lsfClients | wc -w`
+TMP_SUCCEEDHOSTS=" $SUCCEEDHOSTS "
+
+for _host in $_lsfClients
+do
+    get_clients=y 
+    case $TMP_SUCCEEDHOSTS in
+        *" $_host "* )
+            if [ "$LSF_CLIENTS" = "" ]; then
+                LSF_CLIENTS="$_host"
+            else
+                LSF_CLIENTS="$LSF_CLIENTS $_host"
+            fi
+            LSF_SERVERS=`echo $LSF_SERVERS | sed -e "s/$_host//"`
+            ;;
+        * )
+            get_clients=n  
+            echo "Sorry, host $_host is not prepared for Host Setup."
+            if [ "$UNATTENDED_INSTALL" = "y" ]; then
+                exit
+            else
+                if yesno "Do you still want to continue?" Y "" > $LSNULFILE
+                then
+                    return 1
+                else
+                    exit
+                fi
+            fi
+         ;;
+     esac
+
+
+
+#The hosts that are inputed as client contact server must be in
+#two sets.
+#1. HOSTNAMES - CLIENTS
+#2. the hosts that are already defined in the lsf.cluster.XXX
+#For the case of unattended install, client contact server can
+#only in the first set. 
+
+    if [ "$UNATTENDED_INSTALL" != "y" ]; then
+
+        LSF_CLUSTER=${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+SERVER_FROM_CLUSTER=`sed -n "/^[	 ]*[Bb]egin[ 	]*[hH]ost\$/,/^[ 	]*[Ee]nd[ 	]*[hH]ost\$/p"  $LSF_CLUSTER |grep -v "^[ 	]*[Bb]egin"|grep -v "^[ 	]*[Ee]nd"|grep -v "^[ 	]*HOSTNAME"|grep -v "^[ 	]*#"|$AWK '$4==1 {print $1}'`
+
+        TMP_SERVER_FROM_CLUSTER=""
+
+        for tmpSeverFromCluster in $SERVER_FROM_CLUSTER # Put all host names in one line
+        do
+            if [ "$TMP_SERVER_FROM_CLUSTER" = "" ]; then
+                TMP_SERVER_FROM_CLUSTER="$tmpSeverFromCluster"
+            else
+                TMP_SERVER_FROM_CLUSTER="$TMP_SERVER_FROM_CLUSTER $tmpSeverFromCluster"
+            fi
+        done
+
+        SERVER_FROM_CLUSTER="$TMP_SERVER_FROM_CLUSTER"
+
+        LSF_CLIENTS_CONTACTS="$LSF_SERVERS $SERVER_FROM_CLUSTER"
+    else
+        LSF_CLIENTS_CONTACTS="$LSF_SERVERS"
+    fi
+
+    no_LSF_CLIENTS_CONTACTS=`echo $LSF_CLIENTS_CONTACTS | wc -w`
+
+    if [ "$no_LSF_CLIENTS_CONTACTS" -eq 0 ]; then 
+
+        get_clients=n
+
+        cat << ALL_HOST_AS_CLIENTS_TXT
+
+        Sorry, you cannot designate all hosts as clients.
+        At least one host in the cluster must be a server host
+        that all the clients can contact.
+
+ALL_HOST_AS_CLIENTS_TXT
+
+        if [ "$UNATTENDED_INSTALL" = "y" ]; then
+            exit
+        else
+            if yesno "Do you still want to continue?" Y "" > $LSNULFILE
+            then
+                return 1
+            else
+                exit
+            fi
+        fi
+    else
+        :
+    fi
+done
+
+return 0
+
+}
+
+
+rsh_check_hosts()
+{
+echo
+echo "LSF will take some time to ensure that $RSH works well on all "| tee -a $PREFIX_LOG/Install.log
+echo "LSF hosts. Please wait ..."| tee -a $PREFIX_LOG/Install.log
+echo
+
+SUCCEEDHOSTS=""
+FAILHOSTS=""
+_localhost=`hostname`
+
+#noDomain=`echo $_localhost | $AWK '{ FS = "." ; print $1 }'`
+noDomain=`echo $_localhost | cut -f1 -d.`
+
+if [ "$UNATTENDED_INSTALL" = "y" -o "$UNATTENDED_INSTALL" = "Y" ]; then
+    _dirs=$SelectionOSVersions
+else
+    if test "$LSF_DEFAULT_INSTALL" = "y"; then
+        _dirs=`ls -1 $LSF_INDEP`
+    else
+        exec 4<${LSF_SERVERDIR}/osversion
+        while read LINE 0<&4
+        do
+            first_char=`expr "$LINE" : '\(.\).*'`
+            if [ "$first_char" != "#" ]; then
+                _dirs="$LINE"
+            fi
+        done
+        exec 4<&-
+    fi
+fi
+
+
+for _host in $SETUPHOSTS
+do
+    if [ "$_localhost" = "$_host" ]; then
+        _hostType=`uname -a 2>$LSNULFILE`
+    elif [ "$noDomain" = "$_host" ]; then
+        _hostType=`uname -a 2>$LSNULFILE`
+    else
+        _hostType=`$RSH $_host uname -a 2>$LSNULFILE`
+    fi
+
+    if [ "$_hostType" != "" ]; then
+        echo "Succeeded on host $_host."| tee -a $PREFIX_LOG/Install.log
+        
+        if found_binary_type "$_hostType"; then
+            
+	    _found="n"
+	    for _item in $_dirs
+	    do
+		if [ "$_item" = "$BINARY_TYPE" ]; then
+	    	    _found="y"
+		    break
+		fi
+	    done
+
+	    if [ "$_found" = "y" ] ; then
+                SUCCEEDHOSTS="$SUCCEEDHOSTS $_host"
+                continue
+	    else
+                echo "LSF binaries $BINARY_TYPE for host $_host are not installed yet or are not matched with the platform on which you want to install."| tee -a $PREFIX_LOG/Install.log
+            fi
+        else
+            echo "LSF does not support host type $_hostType."| tee -a $PREFIX_LOG/Install.log
+        fi
+    else
+        echo "$RSH fails at host $_host."| tee -a $PREFIX_LOG/Install.log
+    fi
+
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+        exit
+    else
+        if yesno "Do you still want to continue?" Y "" > $LSNULFILE; then
+            :
+        else
+            exit
+        fi
+    fi
+
+    if [ "$FAILHOSTS" = "" ]; then
+        FAILHOSTS=$_host
+    else
+        FAILHOSTS="$FAILHOSTS $_host"
+    fi
+done                      
+return 0
+}
+
+get_hosts()
+{
+_hosts=$1
+first_char=`expr "$_hosts" : '\(.\).*'`
+
+if [ "$first_char" != "/" ]; then
+    if [ "$_hosts" = "" ]; then
+        echo "Sorry, no host name is specified."| tee -a $PREFIX_LOG/Install.log; return 1
+    else
+        SETUPHOSTS=$_hosts; export SETUPHOSTS; return 0
+    fi
+else
+    if [ ! -r "$_hosts" ]; then
+        echo "Sorry, the file $_hosts does not exist." | tee -a $PREFIX_LOG/Install.log; return 1
+    else                                    
+        SETUPHOSTS=""
+        exec 3<$_hosts
+        while read LINE 0<&3
+        do
+            first_char=`expr "$LINE" : '\(.\).*'` # Support comments in host file
+
+            if [ "$first_char" = "#" ]; then
+                continue
+            else
+                :
+            fi
+
+            _t=`echo $LINE|sed -e "s/^[     ]*//" -e "s/[   ]*$//"`
+            if [ "$SETUPHOSTS" = "" ]; then
+                SETUPHOSTS=$_t
+            else
+                SETUPHOSTS="$SETUPHOSTS,$_t"
+            fi
+        done
+        exec 3<&-
+        export SETUPHOSTS
+	return 0
+    fi
+fi
+}
+
+ask_symbolic_link()
+{
+cat <<HERE
+
+LSF supports  multi-platform applications and therefore includes
+some machine-dependent files e.g. binaries, daemons and libraries.
+For easier LSF administration, you should access these files
+with a uniform directory path.
+If you do not specify a uniform directory path, lsfsetup defines
+machine-dependent paths in the user environment shell files cshrc.lsf
+and profile.lsf.
+HERE
+
+while [ 1 ] 
+do
+        echo $enf "Do you want a uniform directory path? (y/n or ? for help) [y] " $enl| tee -a $PREFIX_LOG/Install.log 
+   	read reply
+        echo $reply >>$PREFIX_LOG/Install.log
+
+   	case $reply in
+     	""|y|Y) 
+		  LSF_SYMBOLIC_LINK=y
+	       	  ;;
+	n|N) 
+		  LSF_SYMBOLIC_LINK=n
+	          return        
+	         ;;
+	?)cat <<HERE
+
+Machine-dependent file:
+The same command or file name with different binaries to fit different
+platform. For example, the LSF lsid command has different binaries on
+Sun SPARC (Solaris) and DEC ALPHA (Digital UNIX).
+
+Uniform directory path:
+On different host types, you use a uniform directory path to run LSF
+commands with the same path on all hosts. For example, on Sun SPARC (Solaris)
+and DEC ALPHA (Digital UNIX) the path to the lsid command is the same:
+it is located in "/usr/local/lsf/bin" on both host types.
+
+By default, lsfsetup creates a shared directory (LSF_TOP/mnt), which
+contains machine-dependent directories for each host type you install.
+For example, the machine-dependent directory for Sun SPARC (Solaris)
+is LSF_TOP/mnt/sparc-sol2, and the machine-dependent directory for
+DEC ALPHA (Digital UNIX) is LSF_TOP/mnt/alpha.
+
+You can choose a uniform platform directory path to the machine-dependent
+directories by telling lsfsetup to create symbolic links under LSF_TOP
+on each host. If you do not specify a uniform directory path, lsfsetup defines
+machine-dependent paths in the user environment shell files cshrc.lsf
+and profile.lsf.
+
+Refer to the LSF Installation Guide for more information.
+
+Press Enter key to continue ...
+HERE
+
+        	read  anykey
+	        continue 
+	        ;; 
+	*) 
+        	continue
+       		;;
+	esac
+ 
+	while [ 1 ] 
+	do
+
+
+		_linkPath=`grep "^[ 	]*LSF_LINK_PATH=" $LSF_ENVDIR/lsf.conf |sed -e "s/.*=//"`
+		if [ "$_linkPath" = "" ]; then
+		    DEFAULTPATH="/usr/local/lsf"
+		else
+		    DEFAULTPATH=$_linkPath
+		fi
+
+                echo $enf "Enter a local (not shared) path as uniform directory: (? for help)[$DEFAULTPATH]"$enl | tee -a $PREFIX_LOG/Install.log
+		read LOCALPATH
+	        echo $LOCALPATH >>$PREFIX_LOG/Install.log
+
+
+                case $LOCALPATH in
+                "")
+                        LOCALPATH=$DEFAULTPATH
+                        break
+                        ;;
+                ?)cat <<HERE
+
+This path is taken as the root directory of uniform directory path for
+machine-dependent files. It must be local to the host type and not shared.
+HERE
+	          continue
+
+                       ;;
+                *) 
+                       ;;
+                esac
+
+
+                if is_full_path $LOCALPATH; then
+                    :
+                else
+                    echo You cannot choose $LOCALPATH.
+                    echo Uniform path must start with /. Please specify
+                    echo an absolute path.
+                    echo
+                    continue
+                fi
+
+                if [ -f $LOCALPATH ]; then
+                    echo "You cannot choose $LOCALPATH as uniform directory."
+                    echo "It is an existent file"
+                    continue
+                else
+                    break
+                fi
+
+	done
+
+# the test is moved to rsh_check function: local in current host does not
+# mean local on all hosts. If not local, just do not make link on that host.
+test  -d $LOCALPATH || make_dir $LOCALPATH
+if is_local $LOCALPATH; then
+   :
+else
+  echo " $LOCALPATH is not a local directory."
+  continue
+fi
+
+LSF_LINK_PATH=$LOCALPATH
+
+break
+
+done
+
+}
+
+
+del_variable_lsfconf()
+{
+modify_conf $LSF_ENVDIR/lsf.conf LSF_SERVERDIR  DELETE 
+modify_conf $LSF_ENVDIR/lsf.conf LSF_BINDIR     DELETE 
+modify_conf $LSF_ENVDIR/lsf.conf LSF_LIBDIR     DELETE 
+modify_conf $LSF_ENVDIR/lsf.conf XLSF_UIDDIR    DELETE 
+}
+
+multi_plat_dot()
+{
+more ./scripts/binary_type.sh >$LSF_CONFDIR/profile.lsf
+echo "LSF_SERVERDIR="$LSF_INDEP/\$BINARY_TYPE/etc"">>$LSF_CONFDIR/profile.lsf 
+echo "LSF_BINDIR="$LSF_INDEP/\$BINARY_TYPE/bin"" >>$LSF_CONFDIR/profile.lsf
+echo "LSF_LIBDIR="$LSF_INDEP/\$BINARY_TYPE/lib"" >>$LSF_CONFDIR/profile.lsf
+echo "XLSF_UIDDIR="$LSF_INDEP/\$BINARY_TYPE/lib/uid"" >>$LSF_CONFDIR/profile.lsf
+echo "LSF_ENVDIR="$LSF_INDEP/conf"" >>$LSF_CONFDIR/profile.lsf
+echo "PATH="\$LSF_BINDIR":\$PATH ">>$LSF_CONFDIR/profile.lsf
+echo "MANPATH="\$LSF_MANDIR":\$MANPATH ">>$LSF_CONFDIR/profile.lsf
+echo "export LSF_SERVERDIR LSF_BINDIR LSF_LIBDIR XLSF_UIDDIR LSF_ENVDIR PATH MANPATH" >>$LSF_CONFDIR/profile.lsf
+
+more ./scripts/binary_type.csh >$LSF_CONFDIR/cshrc.lsf   
+echo "setenv LSF_SERVERDIR "$LSF_INDEP/\$BINARY_TYPE/etc"" >>$LSF_CONFDIR/cshrc.lsf
+echo "setenv LSF_BINDIR "$LSF_INDEP/\$BINARY_TYPE/bin"" >>$LSF_CONFDIR/cshrc.lsf
+echo "setenv LSF_LIBDIR "$LSF_INDEP/\$BINARY_TYPE/lib"" >>$LSF_CONFDIR/cshrc.lsf
+echo "set ldpath=\`printenv LD_LIBRARY_PATH\`" >>$LSF_CONFDIR/cshrc.lsf
+echo "if ( \$ldpath == \"\") then" >>$LSF_CONFDIR/cshrc.lsf
+echo "    setenv LD_LIBRARY_PATH "$LSF_INDEP/\$BINARY_TYPE/lib"" >>$LSF_CONFDIR/cshrc.lsf
+echo "else">>$LSF_CONFDIR/cshrc.lsf
+echo "    setenv LD_LIBRARY_PATH "$LSF_INDEP/\$BINARY_TYPE/lib:\$ldpath"" >>$LSF_CONFDIR/cshrc.lsf
+echo "endif">>$LSF_CONFDIR/cshrc.lsf
+
+echo "if ( \$BINARY_TYPE == \"x86-64-sol10\" ) then" >>$LSF_CONFDIR/cshrc.lsf
+echo "    setenv LD_LIBRARY_PATH "/usr/dt/lib/64:\${LD_LIBRARY_PATH}"" >>$LSF_CONFDIR/cshrc.lsf                                               
+echo "endif">>$LSF_CONFDIR/cshrc.lsf
+
+echo "setenv XLSF_UIDDIR "$LSF_INDEP/\$BINARY_TYPE/lib/uid"" >>$LSF_CONFDIR/cshrc.lsf
+
+
+echo "setenv LSF_ENVDIR "$LSF_INDEP/conf"" >>$LSF_CONFDIR/cshrc.lsf
+
+echo "setenv PATH "\${LSF_BINDIR}":\${PATH}" >>$LSF_CONFDIR/cshrc.lsf
+echo "env | grep MANPATH > /dev/null">>$LSF_CONFDIR/cshrc.lsf
+echo "if ($?>0)then">>$LSF_CONFDIR/cshrc.lsf
+echo "setenv MANPATH $LSF_MANDIR">>$LSF_CONFDIR/cshrc.lsf
+echo "else">>$LSF_CONFDIR/cshrc.lsf
+echo "setenv MANPATH ${MANPATH}:$LSF_MANDIR" >>$LSF_CONFDIR/cshrc.lsf
+echo "endif">>$LSF_CONFDIR/cshrc.lsf
+
+}
+
+# do_symbolic() in funcs.sh has been modified.
+
+#----------------------------------------------------------------------
+# check_mans ---
+#
+# Making sure that man pages are installed and accessible from this host.
+#
+#----------------------------------------------------------------------
+check_mans()
+{
+    if [ -f $LSF_MANDIR/man1/lsid.1 ] 
+    then
+	return 0
+    else
+	cat <<MAN_WARNX
+
+	Man pages are not accessible on this host from directory
+	`echo $LSF_MANDIR. If you wish to access man pages`
+	from this host, you must install them and make it accessible.
+
+        To install man pages on this host, run lsfsetup
+        and choose Option 1. Install LSF Products to install the man pages.
+
+MAN_WARNX
+	return 1
+    fi
+}
+
+ask_quit()
+{
+if yesno "Continue with Host Setup?" N "" >$LSNULFILE
+then
+    return 1
+else
+    echo Host Setup exiting ...
+    return 0
+fi
+}
+
+# host setup quit handler for signals
+
+hostsetup_quit_handler()
+{
+echo "
+LSF host setup terminated."
+exit
+}
+
+
+#
+#-----------------------------------------
+#
+# hostsetup --
+#
+# ARGUMENTS:
+# 
+# PRE-CONDITION:
+#
+# DESCRIPTION:
+#
+# main routine of hostsetup
+#
+# SIDE_EFFECTS:
+#
+# RETURN:
+#
+#-----------------------------------------
+#
+hostsetup()
+{
+
+trap hostsetup_quit_handler 1 2 3 15
+
+if [ "$LSHOSTTYPE" = "NT" ] ; then
+    echo Host Setup option not currently supported on Windows NT.
+    exit 1
+fi
+
+
+if [ "$UNATTENDED_INSTALL" != "y" ]; then    
+    
+    LSF_CLUSTER=${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+    HOST_FROM_CLUSTER=`sed -n "/^[	 ]*[Bb]egin[ 	]*[hH]ost\$/,/^[ 	]*[Ee]nd[ 	]*[hH]ost\$/p"  $LSF_CLUSTER |grep -v "^[ 	]*[Bb]egin"|grep -v "^[ 	]*[Ee]nd"|grep -v "^[ 	]*HOSTNAME"|grep -v "^[ 	]*#"|$AWK '{print $1}'`
+
+
+    #Get hosts begins.
+    
+    while :    
+    do         
+        echo lsfsetup needs to know host names which you want to do Host Setup.| tee -a $PREFIX_LOG/Install.log
+        echo These host names can be specified two ways:
+        echo
+        echo "1. Host names separated by commas (e.g., hostA,hostB)"
+        echo "2. A full path name to a file containing all host names,"
+        echo  "  (e.g. /etc/hosts). This file must list one host name per line."
+        echo    For example:
+        echo    hostA 
+        echo    hostB 
+        echo    hostC 
+        echo $enf "Please enter the host names or file name with full path:" $enl | tee -a $PREFIX_LOG/Install.log
+        read NP
+	echo $NP >> $PREFIX_LOG/Install.log
+    	       
+        if get_hosts "$NP"; then
+	    :
+        else   
+            continue
+        fi     
+	
+        SETUPHOSTS=`echo $SETUPHOSTS | sed -e "s/,/ /g"`    
+        SETUPHOSTSNO=`echo $SETUPHOSTS | wc -w`
+        export SETUPHOSTSNO SETUPHOSTS
+
+	#check if the host has been setuped. A host cannot be setup twice.
+       
+        for tmpHost in $HOST_FROM_CLUSTER # Put the hosts from cluster into one line.
+        do
+            if [ "$TMP_HOST_FROM_CLUSTER" = "" ]; then
+                TMP_HOST_FROM_CLUSTER="$tmpHost"
+            else
+                TMP_HOST_FROM_CLUSTER="$TMP_HOST_FROM_CLUSTER $tmpHost"
+            fi
+        done
+
+        TMP_HOST_FROM_CLUSTER=" $TMP_HOST_FROM_CLUSTER " 
+
+        for _host in $SETUPHOSTS
+	do
+	    case $TMP_HOST_FROM_CLUSTER in
+	        *" $_host "* )
+                     cat << HOST_FROM_CLUSTER_TXT | tee -a $PREFIX_LOG/Install.log
+
+            Sorry, $_host have already been a member in this cluster.
+            The same host cannot be set up twice. You can continue this 
+            program to comment this host in your cluster config file:
+            $LSF_CLUSTER
+            and do hostsetup again on $_host.
+
+            Or, you can choose "no" (n) to answer the following question
+            to input the host names again.
+
+HOST_FROM_CLUSTER_TXT
+
+                     if yesno "Do you want to comment the host?" Y ""  > $LSNULFILE
+                     then
+
+toComment=`sed -n "/^[ 	]*[Bb]egin[ 	]*[Hh]ost\$/,/[ 	]*[Ee]nd[ 	]*[Hh]ost\$/p" $LSF_CLUSTER \
+| grep -v "^[   ]*#" | grep "^[ 	]*$_host[ 	]"` 
+
+                         if [ -f ${LSF_CLUSTER}.$$ ]
+                         then
+                             rm -f ${LSF_CLUSTER}.$$
+                         fi
+     
+                         mv $LSF_CLUSTER ${LSF_CLUSTER}.$$
+
+                         exec 3<${LSF_CLUSTER}.$$
+
+                         while read LINE 0<&3
+                         do 
+                             if [ "$LINE" != "$toComment" ]; then
+                                 echo "$LINE" >> $LSF_CLUSTER
+                             else
+                                 echo "$LINE" | sed -e "s/^/#/" >> $LSF_CLUSTER
+                             fi
+                         done
+        
+                         exec 3<&-
+
+                         rm -f ${LSF_CLUSTER}.$$
+
+                         echo "Commenting $_host"| tee -a $PREFIX_LOG/Install.log
+                     else
+                         continue 2
+                     fi
+		     ;;
+		* )
+		     :
+		     ;;
+	    esac
+        done
+
+	#Check if the host is rsh reachable and if the host has a matched 
+	# machine type.
+
+        if is_root; then     
+   	    _account=root
+        else
+            if [ `uname` = ConvexOS ] ; then
+                _account=`whoami`
+            else
+                _account=`id | sed -e 's/[^(]*(\([^)]*\)).*/\1/'`
+            fi          
+        fi
+
+        echo 
+        echo "lsfsetup uses rsh/rcp to set up and remove LSF remote hosts."
+        echo "A remote authentication database should be set up in /etc/hosts.equiv"
+        echo "and .rhosts files for '${_account}' account."
+        echo
+        echo "lsfsetup will take some time to check whether $RSH operation by '${_account}'"
+        echo 'account is effective from this host to all other host(s) in the cluster.'
+        echo "Press Enter key to continue......"
+
+        read anykey
+
+        rsh_check_hosts
+        export RSHCHECK
+        export SUCCEEDHOSTS
+	
+	if [ "$SUCCEEDHOSTS" != "" ]; then
+	     break
+	else
+	     echo
+             echo "Sorry, There are not eligible hosts for hostsetup."| tee -a $PREFIX_LOG/Install.log
+	     echo "Please, Re-enter the host list."| tee -a $PREFIX_LOG/Install.log
+	     echo
+	fi
+
+    done       
+
+
+    #Get client begins.
+
+    get_clients=n                
+    while [ $get_clients = 'n' ] 
+    do                           
+        echo
+        echo "By default, lsfsetup assumes that all hosts are server hosts. "
+        echo "If you want to assign some client-only hosts, please give "| tee -a $PREFIX_LOG/Install.log
+        echo "their hostnames here."| tee -a $PREFIX_LOG/Install.log
+        echo "If you do not want to specify any client hosts, press Enter."
+        echo
+        echo Client-only host names can be specified two ways:
+        echo
+        echo "1. Host names separated by commas (e.g., hostA,hostB)"
+        echo "2. A full path name to a file containing all host names,"
+        echo "  (e.g. /etc/hosts). This file must list one host name per line."
+        echo    For example:
+        echo    hostA 
+        echo    hostB 
+        echo    hostC
+        echo $enf "Please enter the host names or file name with full path:" $enl| tee -a $PREFIX_LOG/Install.log
+    
+        read _lsfClients
+	echo $_lsfClients >>$PREFIX_LOG/Install.log
+        LSF_CLIENTS=""
+        LSF_SERVERS=$SUCCEEDHOSTS
+          
+        if [ "$_lsfClients" != "" ]; then
+
+            if get_clients_names $_lsfClients; then
+                :
+            else
+                continue
+            fi
+
+            if get_clients_servers $SETUPCLIENTS; then
+                :
+            else
+                continue
+            fi
+        else
+            break 
+        fi
+
+        if [ "$LSF_SERVER_HOSTS" != "" ]; then
+
+            LSF_SERVER_HOSTS=" $LSF_SERVER_HOSTS "
+            shouldRemove=""
+
+            for chk_LSF_CLIENTS in $LSF_CLIENTS
+            do
+                case $LSF_SERVER_HOSTS in
+                    *" $chk_LSF_CLIENTS "* )
+                        if [ "$shouldRemove" = "" ]; then
+                            shouldRemove="$chk_LSF_CLIENTS"
+                        else
+                            shouldRemove="$shouldRemove $chk_LSF_CLIENTS"
+                        fi
+                        ;;
+                    * )
+                        ;;
+                esac
+            done
+
+            if [ "$shouldRemove" != "" ]; then
+                cat << SHOULD_REMOVE_FOR_SERVER_TXT | tee -a $PREFIX_LOG/Install.log
+
+                The following hosts are defined as LSF_SERVER_HOST in lsf.conf file.
+                But, this time they are in client list. 
+                If you continue this program, they will be removed from the 
+                LSF_SERVER_HOST definition, or you re-input client names:
+SHOULD_REMOVE_FOR_SERVER_TXT
+
+                echo "$shouldRemove"| tee -a $PREFIX_LOG/Install.log
+                
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    for removeHost in $shouldRemove
+                    do
+                        case $LSF_SERVER_HOSTS in
+                            *" $removeHost "* )
+                                LSF_SERVER_HOSTS=`echo "$LSF_SERVER_HOSTS" | sed -e "s/ $removeHost / /"`
+                                ;;
+                            * )
+                                ;;
+                        esac
+                    done
+                    break
+                else
+                    get_clients=n
+                    continue
+                fi
+            else
+                break
+            fi
+        else
+            break
+        fi
+    done 
+
+    if [ "$LSF_CLIENTS" != "" ]; then
+
+        echo "The following hosts are the candidates of server hosts:"\
+            | tee -a $PREFIX_LOG/Install.log	
+        echo $LSF_CLIENTS_CONTACTS| tee -a $PREFIX_LOG/Install.log
+
+        if [ "$LSF_SERVER_HOSTS" != "" ]; then
+            echo "The following hosts are defined is lsf.conf file as client-only hosts contact:"| tee -a $PREFIX_LOG/Install.log
+            echo "$LSF_SERVER_HOSTS"| tee -a $PREFIX_LOG/Install.log
+
+            if yesno "Do you need re-define your contact servers?" Y "" >$LSNULFILE
+            then
+                reDefine=y
+            else
+                reDefine=n
+            fi
+        else
+            reDefine=y
+        fi
+    fi 
+
+    export LSF_SERVERS
+    export LSF_CLIENTS
+ 
+    if [ "$LSF_CLIENTS" != "" ]; then
+        _lsfServerHosts=""
+        
+        while [ "$reDefine" = "y" ]
+        do
+
+            cat << ASKCONTACTSERVER | tee -a $PREFIX_LOG/Install.log
+
+    Please enter one or more server host names for client-only hosts to contact.
+
+    NOTE: If the contact server is not determined, please type <Enter> key to
+    skip this step.
+
+    Separate each host name with a comma (e.g. hostA,hostB) or 
+    enter a file name with full path:
+ASKCONTACTSERVER
+
+            read _lsfServerHosts
+
+            if [ "$_lsfServerHosts" = "" ]; then
+                break
+            fi
+
+	    echo $_lsfServerHosts >> $PREFIX_LOG/Install.log
+            
+            if [ "$_lsfServerHosts" = "" ]; then
+                echo
+                echo "Sorry, please assign at least one server host for client-only hosts to contact."
+                echo
+                continue
+            else
+                get_servers_names $_lsfServerHosts
+                _lsfSetupServers=`echo "$SETUPSERVERS" | sed -e "s/,/ /g"`
+                
+		TMP_LSF_CLIENTS_CONTACTS=" $LSF_CLIENTS_CONTACTS "
+                for _tmpServer in $_lsfSetupServers
+                do
+                    case $TMP_LSF_CLIENTS_CONTACTS in 
+                        *" $_tmpServer "* )
+                            if [ "$TMP_LSF_SERVER_HOSTS" = "" ]; then
+                                TMP_LSF_SERVER_HOSTS="$_tmpServer"
+                            else
+                                TMP_LSF_SERVER_HOSTS="$TMP_LSF_SERVER_HOSTS $_tmpServer"
+                            fi 
+                            ;;
+                        * ) 
+			    cat << CLIENT_AS_SERVER_TXT
+
+          Sorry, the specified hosts cannot be server hosts. 
+          Please choose hosts from the following list of server hosts:
+CLIENT_AS_SERVER_TXT
+
+                            echo $LSF_CLIENTS_CONTACTS
+                            continue 2
+			    
+                            ;;  
+                    esac
+                done
+
+		if [ "$LSF_SERVER_HOSTS" = "" ]; then
+                    LSF_SERVER_HOSTS="$TMP_LSF_SERVER_HOSTS"
+                    break
+		else 
+	            echo "Lsfsetup has detected the following hosts that have been "| tee -a $PREFIX_LOG/Install.log
+	            echo "defined as LSF_SERVER_HOSTS in lsf.conf."| tee -a $PREFIX_LOG/Install.log
+                    echo "$LSF_SERVER_HOSTS"| tee -a $PREFIX_LOG/Install.log
+                    echo
+    
+                    if yesno "Merge the new hosts in the hosts that have been defined?" Y  >$LSNULFILE
+                    then 
+                        LSF_SERVER_HOSTS=" $LSF_SERVER_HOSTS "
+                        for _tmpServer in $TMP_LSF_SERVER_HOSTS
+                        do
+                            case $LSF_SERVER_HOSTS in 
+                                *" $_tmpServer "* )
+                                    ;;
+                                *)
+                                    LSF_SERVER_HOSTS="$LSF_SERVER_HOSTS $_tmpServer "
+                                    ;;
+                            esac
+                        done
+                        break
+                    else
+                        echo "Replace the LSF_SERVER_HOSTS definition with new hosts defined in this step."| tee -a $PREFIX_LOG/Install.log
+                        LSF_SERVER_HOSTS="$TMP_LSF_SERVER_HOSTS"
+                        break
+                    fi
+		fi
+            fi  
+        done
+    fi
+       
+    export LSF_SERVER_HOSTS
+    if [ "$LSF_SERVER_HOSTS" != "" ]; then
+        modify_conf $LSF_ENVDIR/lsf.conf LSF_SERVER_HOSTS  "\"$LSF_SERVER_HOSTS\""
+    fi
+
+    
+    if yesno "Modify system startup scripts to start LSF daemons at boot time?" Y "" >$LSNULFILE
+    then
+        SETRC=y 
+    else
+        SETRC=n
+    fi
+ 
+    if [ "$LSF_DEFAULT_INSTALL" = "y" -o "$LSF_DEFAULT_INSTALL" = "Y" ]; then  
+        case "$LSF_LINK_PATH" in
+            "" )
+                ask_symbolic_link
+                ;;
+            n|N ) 
+                LSF_SYMBOLIC_LINK=n
+                ;;
+            * ) 
+                LSF_SYMBOLIC_LINK=y       
+                ;;
+        esac
+    else
+        LSF_SYMBOLIC_LINK=n
+    fi
+     
+fi    # End of interactive hostsetup
+
+echo  |tee -a $PREFIX_LOG/Install.log
+echo "Lsfsetup program will do hostsetup for the following hosts:" |tee -a $PREFIX_LOG/Install.log
+echo "$SUCCEEDHOSTS" |tee -a $PREFIX_LOG/Install.log
+echo  |tee -a $PREFIX_LOG/Install.log
+if [ "$LSF_CLIENTS" != "" ]; then
+   echo "In the hosts above, the following hosts will be client hosts."  |tee -a $PREFIX_LOG/Install.log
+   echo "$LSF_CLIENTS" |tee -a $PREFIX_LOG/Install.log
+
+   if [ "$LSF_SERVER_HOSTS" != "" ]; then
+       echo "$LSF_SERVER_HOSTS will be contact server for client hosts." |tee -a $PREFIX_LOG/Install.log
+   fi
+fi
+
+
+if [ "$LSF_DEFAULT_INSTALL" = "y" ]; then
+    if [ "$LSF_SYMBOLIC_LINK" = "y" -o "$LSF_SYMBOLIC_LINK" = "Y" ]; then
+        LSF_SYMBOLIC_LINK="y"
+
+        if grep LSF_LINK_PATH ${LSF_ENVDIR}/lsf.conf >$LSNULFILE; then
+            :
+        else
+            echo  >> ${LSF_ENVDIR}/lsf.conf
+            echo "# WARNING: Please do not delete/modify next line!!" >> ${LSF_ENVDIR}/lsf.conf
+        fi
+
+        modify_conf $LSF_ENVDIR/lsf.conf LSF_LINK_PATH  "$LSF_LINK_PATH"
+        modify_conf $LSF_ENVDIR/lsf.conf LSF_SERVERDIR  "${LSF_LINK_PATH}/etc"
+        modify_conf $LSF_ENVDIR/lsf.conf LSF_BINDIR     "${LSF_LINK_PATH}/bin"
+        modify_conf $LSF_ENVDIR/lsf.conf LSF_LIBDIR     "${LSF_LINK_PATH}/lib"
+        modify_conf $LSF_ENVDIR/lsf.conf XLSF_UIDDIR    "${LSF_LINK_PATH}/lib/uid"
+    else
+        if grep LSF_LINK_PATH ${LSF_ENVDIR}/lsf.conf >$LSNULFILE; then
+            :
+        else
+            echo  >> ${LSF_ENVDIR}/lsf.conf
+            echo "# WARNING: Please do not delete/modify next line!!" >> ${LSF_ENVDIR}/lsf.conf
+        fi
+        modify_conf $LSF_ENVDIR/lsf.conf LSF_LINK_PATH  "n"
+        del_variable_lsfconf 
+        multi_plat_dot
+        
+        LSF_SERVERDIR=""
+        LSF_BINDIR=""
+        LSF_LIBDIR=""
+    fi
+else
+    LSF_SYMBOLIC_LINK=n
+    echo  >> ${LSF_ENVDIR}/lsf.conf
+    echo "# WARNING: Please do not delete/modify next line!!" >> ${LSF_ENVDIR}/lsf.conf
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_LINK_PATH  "n"
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_SERVERDIR  "${LSF_MACHDEP}/etc"
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_BINDIR     "${LSF_MACHDEP}/bin"
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_LIBDIR     "${LSF_MACHDEP}/lib"
+    modify_conf $LSF_ENVDIR/lsf.conf XLSF_UIDDIR    "${LSF_MACHDEP}/lib/uid"
+fi
+
+
+if [ "$LSF_MANAGER" = "" ]; then
+    if [ "$LSF_CLUSTER_NAME" = "" ]; then
+        find_cluster
+    fi
+    LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+    get_lsf_manager
+fi
+$CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.*
+
+. $LSF_ENVDIR/lsf.conf
+
+ 
+_allHosts="$LSF_SERVERS $LSF_CLIENTS"    # do remote setup
+_lhost=`hostname`
+noDomain=`echo $_lhost | cut -f1 -d.`
+_outfile=/tmp/outfile.$$
+
+_i=1
+_isServer=y
+_serverNO=`echo $LSF_SERVERS | wc -w`
+
+for _rhost in $_allHosts
+do  
+    if [ "$_i" -gt "$_serverNO" ]; then
+        _isServer=n
+    else
+	_i=`expr $_i + 1`
+    fi
+
+    echo
+    echo "Checking on host $_rhost ..." |tee -a $PREFIX_LOG/Install.log
+
+    _continue=y
+
+    if [ "$_rhost" = "$_lhost" ]; then
+        test -r /tmp/funcs.sh && rm -r /tmp/funcs.sh
+        $sp/rsh_check $LSF_ENVDIR $_outfile $LSF_SYMBOLIC_LINK $LSF_LINK_PATH $_rhost
+    elif [ "$_rhost" = "$noDomain" ]; then
+        test -r /tmp/funcs.sh && rm -r /tmp/funcs.sh
+        $sp/rsh_check $LSF_ENVDIR $_outfile $LSF_SYMBOLIC_LINK $LSF_LINK_PATH $_rhost
+    else
+        rcp $sp/funcs.sh $_rhost:/tmp/funcs.sh
+        rcp $sp/rsh_check $_rhost:/tmp/rsh_check
+
+        if  $RSH $_rhost /tmp/rsh_check $LSF_ENVDIR $_outfile $LSF_SYMBOLIC_LINK $LSF_LINK_PATH $_rhost; then
+            rcp $_rhost:$_outfile $_outfile
+        else
+            cat << NOIDEA | tee -a $PREFIX_LOG/Install.log
+
+    Cannot run the host configuration checking scripts on this host.
+    Cannot do Host Setup on this host.
+
+NOIDEA
+            _continue=n
+        fi
+    fi
+
+    test "$_continue" = "n" && continue
+   
+    _continue=y
+    _doLink=$LSF_SYMBOLIC_LINK
+    _doSetupConf="y"
+    exec 3<$_outfile
+
+    while read LINE 0<&3
+    do
+        case $LINE in
+            FIND_CONF_FAIL)
+                echo "Cannot find file $LSF_ENVDIR/lsf.conf on host $_rhost."| tee -a $PREFIX_LOG/Install.log
+                echo "Cannot do Host Setup on this host."| tee -a $PREFIX_LOG/Install.log
+                _continue="n"
+                ;;
+            GOT_HOSTTYPE_FAIL)
+                echo "Machine-dependent files are not installed on host $_rhost."| tee -a $PREFIX_LOG/Install.log
+                echo "Cannot do Host Setup on this host."| tee -a $PREFIX_LOG/Install.log
+                _continue="n"
+                ;;
+            LINKPATH_LOCAL_FAIL)
+                echo "$LSF_LINK_PATH is not a local directory."| tee -a $PREFIX_LOG/Install.log
+                echo "Do not create symbolic link on this host."| tee -a $PREFIX_LOG/Install.log
+                _doLink="n"
+                ;;
+            LINK_PATH_EXIST)
+                echo "LSF symbolic links already exist on this host."| tee -a $PREFIX_LOG/Install.log
+                _doLink="n"
+                if test "$UNATTENDED_INSTALL" = "y"; then
+                    echo "Cannot create symbolic links on this host."| tee -a $PREFIX_LOG/Install.log
+                else
+                    if yesno "Do you still want to create symbolic link?" N "" > $LSNULFILE; then
+                        _doLink="y"
+                    fi
+                fi
+                ;;
+            SETUP_CONF_FAIL)
+                echo "Can not setup lsf.conf file."| tee -a $PREFIX_LOG/Install.log
+                _doSetupConf="n"
+                ;;
+            SETUP_CONF_EXIST)
+                echo "lsf.conf file already exists."| tee -a $PREFIX_LOG/Install.log
+                _doSetupConf="n"
+                if test "$UNATTENDED_INSTALL" = "y"; then
+                    echo "Cannot set up lsf.conf file."| tee -a $PREFIX_LOG/Install.log
+                else
+                    if yesno "Do you still want to set up lsf.conf file?" N "" > $LSNULFILE; then
+                        _doSetupConf="y"
+                    fi
+                fi
+                ;;
+        esac
+    done
+    exec 3<&-
+
+    test "$_continue" = "n" && continue
+
+    if [ "$_rhost" = "$_lhost" ]; then
+        echo
+        echo "Doing host set up on host $_rhost ..."|tee -a $PREFIX_LOG/Install.log
+        $sp/rsh_setup $LSF_ENVDIR $_isServer $SETRC $_doLink $_doSetupConf $LSF_LINK_PATH $_rhost
+    elif [ "$_rhost" = "$noDomain" ]; then
+        echo
+        echo "Doing host set up on host $_rhost ..."|tee -a $PREFIX_LOG/Install.log
+        $sp/rsh_setup $LSF_ENVDIR $_isServer $SETRC $_doLink $_doSetupConf $LSF_LINK_PATH $_rhost
+    else
+        rcp $sp/rsh_setup $_rhost:/tmp/rsh_setup
+        $RSH $_rhost /tmp/rsh_setup $LSF_ENVDIR $_isServer $SETRC $_doLink $_doSetupConf $LSF_LINK_PATH $_rhost
+    fi
+
+done
+
+echo
+echo "    Checking up your LSF installations ..."
+echo
+
+if defined "$LSF_LOGDIR"
+then
+    if [ ! -d "$LSF_LOGDIR" ] 
+    then
+        make_dir "$LSF_LOGDIR"
+    fi
+else
+    echo "    LSF_LOGDIR not defined in lsf.conf. Server messages will be"
+    echo "    logged in syslog."
+fi
+
+if test "$LSF_RES_ACCTDIR" != "" -a  "$LSF_RES_ACCTDIR" != "UNDEF" -a ! -d "$LSF_RES_ACCTDIR"
+then
+    echo "    Creating RES accounting directory $LSF_RES_ACCTDIR ... "
+    make_dir "$LSF_RES_ACCTDIR"
+fi
+
+if [ "$UNATTENDED_INSTALL" != "y" ]; then
+    if check_confdir
+    then
+        :
+    else
+        if ask_quit ; then
+           exit 1
+        fi
+    fi
+    
+    if check_sharedir
+    then
+        :
+    else
+        if ask_quit ; then
+            exit 1
+        fi
+    fi
+    
+    if check_mans
+    then
+        :
+    else
+        if ask_quit ; then
+            exit 1
+        fi
+    fi
+fi
+
+if [ ! -w $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME ]
+then
+    if is_root ; then    # Add hosts into cluster file  
+	export LSF_CONFDIR
+	export LSF_CLUSTER_NAME
+	if [ "$LSF_MANAGER" = "" ]; then
+	    if [ "$LSF_CLUSTER_NAME" = "" ]; then
+		find_cluster
+	    fi
+	    LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+	    get_lsf_manager
+	fi
+	lsfmanager=`echo $LSF_MANAGER | $AWK '{print $1}'`
+	echo "login as $lsfmanager ..."
+	su $lsfmanager -c "$sp/add_hosts"
+    else
+	add_host
+    fi
+else
+    add_host
+fi
+
+
+echo "    Checking done."
+echo
+
+. $sp/makedot; newmakedot
+
+date
+
+if defined "$LSF_AUTH" && test "$UNATTENDED_INSTALL" != "y"
+then
+    echo $enf "Press Enter to continue ..." $enl
+    echo
+fi
+
+cat <<HOSTSETUP
+    If you have done Host Setup for all the hosts, you can now start LSF
+    servers on all hosts. Follow the steps below:
+
+    o Run lsadmin ckconfig -v to verify your
+      configuration files are correct. If there are errors, correct these
+      errors first, otherwise do next step.
+
+    o Start LSF servers by running 'lsf_daemons start'
+      on every host.
+
+    o Run lsid to see if LSF daemons are up.
+
+    o Follow the steps in the LSF Installation Guide to test various
+      functions of LSF.
+HOSTSETUP
+
+exit 0
+}

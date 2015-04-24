@@ -1,0 +1,65 @@
+#!/bin/sh
+#$RCSfile: esub,v $Revision: 1.16 $Date: 2013/01/10 05:56:00 $
+#
+#If the user wants to rename the default queue in lsb.queues,
+#don't forget to change this variable's value.
+DEFAULT_HPC_QUEUE_NAME="hpc_linux"
+LSB_SUB_QUEUE=""
+
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    # if not set do nothing
+    exit 0
+fi
+
+. $LSB_SUB_PARM_FILE
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+# First check if user defined this variable
+# in envrionment, if not check lsf.conf
+if [ -z "$LSF_PJL_COMPAT" ]; then
+    . ${LSF_ENVDIR}/lsf.conf
+fi
+
+# Assume
+GM_ADDITIONAL_KEY="mpich_gm"
+PJL_WRAPPER="gmmpirun_wrapper"
+GM_ADDITIONAL_CMD="pam -g 1 $PJL_WRAPPER"
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+if [ "$LSF_PJL_COMPAT" = "y" -o "$LSF_PJL_COMPAT" = "Y" ]; then
+    #Strip comment in command line
+    LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+    BEGIN { RS=";"; command=""; counter=0}
+    $0 !~ /^[ \t]*#/ {
+        if ( counter == 0 )
+           command = $0
+        else
+           command = sprintf("%s;%s", command, $0)
+        counter = counter + 1
+
+    }
+    END { print command } '`
+    echo "LSB_SUB_COMMAND_LINE=\"$GM_ADDITIONAL_CMD $LSB_SUB_COMMAND_LINE"\" >> $LSB_SUB_MODIFY_FILE
+else
+    # set enviroment variable LSF_PJL_TYPE to mpich_gm
+    # mpirun.lsf will read this variable to decide
+    # which PJL_wrapper to insert to the command line
+    echo "LSF_PJL_TYPE=\"$GM_ADDITIONAL_KEY\"" >> $LSB_SUB_MODIFY_ENVFILE
+fi
+
+if [ -z "$LSB_SUB_QUEUE" ]; then
+   echo "LSB_SUB_QUEUE=\"$DEFAULT_HPC_QUEUE_NAME\"" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#useful for debugging purposes
+#echo "LSB_SUB_PARM_FILE contains:"
+#more $LSB_SUB_PARM_FILE
+#echo "LSB_SUB_MODIFY_FILE contains:"
+#more $LSB_SUB_MODIFY_FILE
+#exit $LSB_SUB_ABORT_VALUE
+

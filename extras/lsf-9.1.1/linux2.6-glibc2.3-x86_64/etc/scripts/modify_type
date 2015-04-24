@@ -1,0 +1,157 @@
+#
+#$Id: modify_type,v 1.2 2012/06/08 03:37:24 sbadugu Exp $
+
+# This is not a stand alone script. It is sourced by scripts/config.
+
+while : ; do
+    rm -f /tmp/.tmp.file.$$
+    rm -f ${LSF_SHARED_TMP}
+    unset NEW
+    cat << MENU
+
+Please choose one of the following options:
+
+    1. List Currently Defined Host Types
+    2. Add Host Types
+    3. Delete Host Types
+
+    ?. Help
+    q. Quit Modifying Host Types
+
+MENU
+
+    echo $enf "Please enter your choice:" $enl
+    read A
+    echo
+
+    case "$A" in
+    1) ;;
+    2) ;;
+    3) ;;
+    [Qq]*) break;;
+    *) cat <<HELP2
+
+    Host types identify classes of hosts that are compatible each other so
+    that the same executable can be run on any of them. LSF uses host
+    types for job placement decisions; e.g., jobs will be moved between
+    hosts of the same type unless the job resource requirements dictate
+    otherwise. You can define a host type as any ASCII string, although
+    usually the name describes the operating system and hardware combination.
+
+    To see what host types are currently defined in the LSF 
+    cluster, choose Option 1. List Currently Defined Host Types.
+
+    To add new host types into the LSF cluster, choose Option 2. Add Host
+    Types.
+
+    To remove host types from the current LSF configuration, 
+    choose Option 3. Delete Host Types.
+
+    To see this help information, choose Help (?).
+
+    To exit from this menu, choose Quit Modifying Host Types (q).
+
+HELP2
+    continue;;
+    esac
+
+    if [ "$A" = "1" ] ; then
+#   Listing current host types
+	egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/,/^[	 ]*[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/p" | grep -iv begin | grep -vi end | more; 
+	echo
+	echo $enf "Press Enter to continue ... " $enl
+	read N
+	continue;
+    fi
+
+    if [ "$A" = "2" ] ; then
+	TYPES=`ask "Enter the names of host types to add" ""`
+	cp $LSNULFILE /tmp/.tmp.file.$$
+	unset NEW
+	for typename in ${TYPES} ; do
+	    AWK_CMD="$AWK '{ 
+		if (\$1 == \"$typename\" && \$1 != \"Begin\" && \$1 != \"End\")
+		   print \$1
+	    }'"
+
+            MATCH=`egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/,/^[	 ]*[Ee][Nn]Dd][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/p" | eval $AWK_CMD`
+
+	    if [ "${MATCH}" != "" ] ; then
+	        echo "Host type ${typename} already defined; ignored"
+		continue
+            fi
+	    NEW=y
+            echo "${typename}" >> /tmp/.tmp.file.$$
+        done
+
+        if [ "${NEW}" != "y" ] ; then
+	    echo No host type to add.
+	    continue
+	fi
+
+	cp ${LSF_SHARED} ${LSF_SHARED_TMP}
+
+	$LSEXEDITOR ${LSF_SHARED_TMP} << EXEND2>$LSNULFILE 2>&1
+	/^[	 ]*[Ee][Nn][Dd][	  ]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]
+	-1
+	r /tmp/.tmp.file.$$
+	w
+	q
+EXEND2
+
+	if yesno "Save changes to ${LSF_SHARED}" Y "help LSF_SHARED" > $LSNULFILE
+	then
+	    cp ${LSF_SHARED} ${LSF_SHARED}.old
+	    cp ${LSF_SHARED_TMP} ${LSF_SHARED}
+	    stat=$?
+	    $CHOWN ${LSF_MANAGER} ${LSF_SHARED} ${LSF_SHARED}.old
+	    chmod 644 ${LSF_SHARED} ${LSF_SHARED}.old
+	    if [ "$?" != "0"  -o  "${stat}" != "0" ] ; then
+		echo Cannot list host types. Exiting ...
+		kill -2 $$
+		exit
+	    else
+		echo "Host types added."
+	    fi
+	fi
+	continue
+    fi
+# end of option 2
+
+    if [ "$A" = "3" ] ; then
+        echo Currently defined host types are:
+	egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/,/^[	 ]*[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/p" | grep -iv begin | grep -iv end | more; 
+        TYPES=`ask "Enter the names of host types to delete" ""`
+	for typename in ${TYPES} ; do
+	    AWK_CMD="$AWK '{ 
+		if (\$1 == \"$typename\" && \$1 != \"Begin\" && \$1 != \"End\")
+		   print \$1
+	    }'"
+
+            MATCH=`egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/,/^[	 ]*[Ee][Nn]Dd][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/p" | eval $AWK_CMD`
+
+	    if [ "$MATCH" = "" ] ; then
+		echo "${typename}: no such host type defined in ${LSF_SHARED}; ignored"
+		continue
+	    fi
+	    delete_element HostType ${typename} ${LSF_SHARED}>/tmp/.tmp.file.$$
+	    mv /tmp/.tmp.file.$$ ${LSF_SHARED}
+	    $CHOWN ${LSF_MANAGER} ${LSF_SHARED}
+	    chmod 644  ${LSF_SHARED}
+	    if [ "$?" != "0" ] ; then
+		echo Failed
+		kill -2 $$
+		exit
+	    fi
+	    echo "Host type <${typename}> deleted from ${LSF_SHARED}"
+	done
+	continue
+    fi
+# end of option 3
+
+	echo An unrecoverable error has occurred. 
+	echo Please contact product support.
+    kill -2 $$
+done
+
+continue

@@ -397,17 +397,10 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 													if (status == OS_STARTED)
 														{
-															if (AddServiceToStatusTable (service_p -> se_id, service_p))
-																{
-																	/* since we've checked for a single node */
-																	LinkedListRemHead (services_p);
-																	node_p -> sn_service_p = NULL;
-																	FreeServiceNode ((ListItem * const) node_p);
-																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to save service %s %s", GetServiceName (service_p), service_p -> se_id);
-																}
+															/* since we've checked for a single node */
+															LinkedListRemHead (services_p);
+															node_p -> sn_service_p = NULL;
+															FreeServiceNode ((ListItem * const) node_p);
 														}
 
 												}		/* if (params_p) */
@@ -653,10 +646,9 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const
 
 	if (success_flag)
 		{
-			Service *service_p = RemoveServiceFromStatusTable (service_id);
-
 			if (service_p)
 				{
+
 					CloseService (service_p);
 				}
 		}

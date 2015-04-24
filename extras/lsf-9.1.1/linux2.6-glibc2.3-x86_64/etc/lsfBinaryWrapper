@@ -1,0 +1,23 @@
+#!/bin/sh
+
+if [ "$LSF_ENVDIR" != "" -a -f "$LSF_ENVDIR/lsf.conf" ] ; then
+    . "$LSF_ENVDIR/lsf.conf"
+else
+    . "/etc/lsf.conf"
+fi	   
+
+if [ "$EGO_ENVDIR" != "" -a -f "$EGO_ENVDIR/ego.conf" ] ; then
+    . "$EGO_ENVDIR/ego.conf"
+elif [ "$EGO_CONFDIR" != "" -a -f "$EGO_CONFDIR/ego.conf" ] ; then
+    . "$EGO_CONFDIR/ego.conf"
+elif [ "$LSF_EGO_ENVDIR" != "" -a -f "$LSF_EGO_ENVDIR/ego.conf" ] ; then
+    . "$LSF_EGO_ENVDIR/ego.conf"
+elif [ -f "/etc/ego.conf" ] ; then
+    . "/etc/ego.conf"
+fi	   
+
+if [ "$LSF_CONFDIR" != "" -a -f "$LSF_CONFDIR/profile.lsf" ] ; then
+    . $LSF_CONFDIR/profile.lsf
+fi
+
+exec ${LSF_SERVERDIR}/$1 $2 $3 $4

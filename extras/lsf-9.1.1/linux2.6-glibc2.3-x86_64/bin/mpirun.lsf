@@ -1,0 +1,362 @@
+#!/bin/sh
+#$RCSfile: mpirun.lsf,v $Revision: 1.21 $Date: 2013/01/10 05:55:52 $
+#
+# ---------------------------------------------------------------
+# mpirun.lsf is used for lammpi, mpich_gm, poe, and mpichp4
+# it take following options 
+#     mpirun.lsf [-pam "pam_options"] [mpi_options] job [job_options]
+# mpirun.lsf generates pam command line like this:
+#     pam "pam_options" -g PJL_wrapper mpi_options job job_options
+# Name of PJL_wrapper is get through envarionment variable LSF_PJL_TYPE
+# set by esub. LSF_PJL_TYPE=lammpi|mpich_gm|poe|mpichp4|mvapich
+#
+# user have to define this envarionment variable if esub is not 
+# invoked during job submission.
+# ---------------------------------------------------------------
+
+#set -x
+#
+# execute the job command line
+# Params:
+#   $1: The command line to be executed
+#
+function mpirun_exec_job {
+    command_line=$1
+    command_rc=0
+    tmp_rc=0
+
+    # -------------------------------------------------------
+    # execute the MPIRUN_LSF_PRE_EXEC command
+    # You may customize the behavior to exit mpirun.lsf
+    # when MPIRUN_LSF_PRE_EXEC fails
+    # -------------------------------------------------------
+    if [ "$MPIRUN_LSF_PRE_EXEC" != "" ]; then
+        $MPIRUN_LSF_PRE_EXEC
+        tmp_rc=$?
+        if [ $tmp_rc -ne 0 ]; then
+            echo "$MPIRUN_LSF_PRE_EXEC returns $tmp_rc"
+        fi
+    fi
+
+
+    if [ "$MPIRUN_LSF_POST_EXEC" != "" ]; then
+        # -------------------------------------------------------
+        # execute the command
+        # -------------------------------------------------------
+        $command_line
+        command_rc=$?
+
+        # -------------------------------------------------------
+        # execute the mpirun.lsf post exec 
+        # -------------------------------------------------------
+        $MPIRUN_LSF_POST_EXEC
+        tmp_rc=$?
+        if [ $tmp_rc -ne 0 ]; then
+            echo "$MPIRUN_LSF_POST_EXEC returns $tmp_rc"
+        fi
+
+        # -------------------------------------------------------
+        # exit with pam exit value
+        # -------------------------------------------------------
+        exit ${command_rc}
+    else
+        exec $command_line
+    fi
+}
+
+# -------------------------------------------------------
+# If mpirun.lsf post is defined, trap signals
+# You may modify this line to trap more signals you want
+# as signal definition varies from one platform to another
+# Make sure to include SIGTERM, SIGUSR1, SIGUSR2, SIGINT, 
+# SIGHUP, and SIGQUIT
+# -------------------------------------------------------
+if [ "$MPIRUN_LSF_POST_EXEC" != "" ]; then
+    trap "" 1 2 3 15
+fi
+
+# To start TotalView to debug MPI jobs.
+# User should add correct path of totalview to $PATH 
+# at submission host.
+TV="totalview"
+Corefile=$TVCORE #TV's corefile name.
+
+# -------------------------------------------------------
+# parse command line options 
+# -------------------------------------------------------
+PAM_OPTS=""
+TV_ARGS=""
+MPI_JOB_CMDLN=""
+while [ "$#" -gt 0 ]
+do
+    case "$1" in
+	-pam)
+	    shift
+	    PAM_OPTS="$PAM_OPTS $1"
+	    shift
+	    ;;
+	-tvopt)
+	    shift
+	    TV_ARGS="$TV_ARGS $1"
+	    shift
+	    ;;
+	*)
+	    MPI_JOB_CMDLN="$MPI_JOB_CMDLN $1"
+	    shift
+	    ;;
+    esac
+done
+
+# we want to break pam options into two groups, one contains the
+# debug options that starts with "-pass" and assumes that all option after
+# are also debug options
+# everything before seeing "-pass" will considered non-debug pam options
+_PAM_OPTS="$PAM_OPTS"
+PAM_OPTS=""
+PASS_OPTS=""
+PASS=""
+for OPTION in $_PAM_OPTS; do
+    if [ "$OPTION" = "-pass" ]; then
+	PASS="$OPTION"
+    fi
+    if [ -n "$PASS" ]; then
+	PASS_OPTS="$PASS_OPTS $OPTION"
+    else
+	PAM_OPTS="$PAM_OPTS $OPTION"
+    fi
+done
+
+
+if [ "$PE_RM_BATCH" = "NOyes" -a "x$LSB_DJOB_PE_NETWORK" != "x" ] ; then
+    # this is new LSF-PE integration, invoke poe directly and PE RM API will
+    # parse the parameters and leverage blaunch framework to launch POE jobs
+
+    POE_TV_ARGS=""
+    POE_TV_ARGS_FOUND=0
+    JOB_CMD_LINE=""
+    TV_POE_CMD_LINE=""
+
+    if [ "x$LSB_PJL_TASK_GEOMETRY" != "x" -a "x$LSB_TASK_GEOMETRY" = "x" ] ; then
+        LSB_TASK_GEOMETRY=$LSB_PJL_TASK_GEOMETRY
+        export LSB_TASK_GEOMETRY
+    fi
+
+    for item in $MPI_JOB_CMDLN ; do
+        if [ $POE_TV_ARGS_FOUND -eq 1 ] ; then
+            POE_TV_ARGS="$POE_TV_ARGS $item"
+        elif [ "$item" = "-tv_args" ] ; then
+            POE_TV_ARGS_FOUND=1
+        else
+            JOB_CMD_LINE="$JOB_CMD_LINE $item"
+        fi
+    done
+
+    if [ $POE_TV_ARGS_FOUND -eq 1 -o "x$POE_TV_ARGS" != "x" ] ; then
+        TV_POE_CMD_LINE="$TV $POE_TV_ARGS poe $Corefile -a $JOB_CMD_LINE"
+    else
+        TV_POE_CMD_LINE="poe $JOB_CMD_LINE"
+    fi
+
+    echo "Execute poe command line: $TV_POE_CMD_LINE"
+
+    # don't return
+    mpirun_exec_job "$TV_POE_CMD_LINE"
+
+    exit $?
+fi
+
+# -------------------------------------------------------
+# get pam debug flags from pam options 
+# -------------------------------------------------------
+
+# -------------------------------------------------------
+# find out PJL_TYPE dynamically, if LSF_PJL_TYPE empty
+# -------------------------------------------------------
+
+if [ "$LSF_PJL_TYPE" = "" ]
+then 
+    . $LSF_ENVDIR/lsf.conf
+    [ "$LSB_DEFAULT_PJLTYPE" = "" ] && {
+	# MPI Autodetection is not set. Print an error message and exit
+        echo "mpirun.lsf: LSF_PJL_TYPE is undefined. Exit ..." 1>&2
+        exit 1
+    }
+    
+    [ "$LSB_MCPU_HOSTS" = "" ] && {
+        echo "mpirun.lsf: LSB_MCPU_HOSTS is undefined. Aborting." 1>&2
+        exit 1
+    }
+
+    case `uname` in
+        SunOS) AWK="nawk";;
+        *)     AWK="awk";;
+    esac
+
+    hosts=`echo $LSB_MCPU_HOSTS |
+           sed 's/[ ][ ]*[1-9][0-9]*[ ]/ /g;s/[ ][ ]*[1-9][0-9]*$//'`
+
+# 
+# we want both fast processing and preserved preference order
+# thus an associative array (tbl) and an auxiliary indexed array (arr)
+#
+    PJL_TYPE=`lshosts $hosts |
+    $AWK '
+    BEGIN {
+        typesz = split("'"$LSB_DEFAULT_PJLTYPE"'",typearr);
+        for (i = 1; i <= typesz; ++i) 
+            typetbl[typearr[i]] = 0
+        nhosts=0
+    }
+    !/^HOST_NAME/    {
+        ++nhosts
+        beg = index($0, "(") + 1
+        len = length($0) - beg
+        res = substr($0, beg, len)
+        ressz = split(res, resarr)
+        for (i = 1; i <= ressz; ++i)
+            if (resarr[i] in typetbl)
+                ++typetbl[resarr[i]]
+    }
+    END {
+        for (i = 1; i <= typesz; ++i) {
+            if (typetbl[typearr[i]] == nhosts) {
+                print typearr[i]
+                break
+            }
+        }
+    }
+    '`
+
+# -------------------------------------------------------
+# "ibmmpi" is the new boolean resource for POE auto-detection, 
+# as "poe" resource is alerady used for other purposes, 
+# translate it back to "poe"
+# -------------------------------------------------------
+    [ "$PJL_TYPE" = "ibmmpi" ] && PJL_TYPE="poe"
+
+    LSF_PJL_TYPE="$PJL_TYPE"
+
+# -------------------------------------------------------
+# Useful debug message
+# -------------------------------------------------------
+#  echo "mpirun.lsf: common PJL type is <$PJL_TYPE>"
+else
+    PJL_TYPE="$LSF_PJL_TYPE"
+fi
+
+# -------------------------------------------------------
+# Re-construct LSB_MCPU_HOSTS environmental variable
+# based on task geometry specification.
+# -------------------------------------------------------
+if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+    if [ -f "$LSF_BINDIR/pjllib.sh" ]; then
+        . $LSF_BINDIR/pjllib.sh
+    else
+        echo "Cannot find $LSF_BINDIR/pjllib.sh. Task Geometry cannot be supported. Exit."
+        exit 1
+    fi
+
+    syntax_check "$LSB_PJL_TASK_GEOMETRY"
+    if [ "$?" != "0" ]; then
+        echo "Exit..."
+        exit 1
+    fi
+
+    case "$PJL_TYPE" in
+        mpichp4)
+            task_geom_str=`top_first_task "$LSB_PJL_TASK_GEOMETRY"`
+            ;;
+        *)
+            task_geom_str=`construct_task_geom_str "$LSB_PJL_TASK_GEOMETRY"`
+            ;;
+    esac
+
+    construct_task_geom_file "$task_geom_str" "/dev/null"
+    if [ "$?" != "0" ]; then
+        echo "Exit..."
+        exit 1
+    fi
+    LSB_MCPU_HOSTS=$NEW_LSB_MCPU_HOSTS
+    export LSB_MCPU_HOSTS
+fi
+
+# SUP_BY_DEV#170129
+LSB_MCPU_HOSTS2=$LSB_MCPU_HOSTS
+export LSB_MCPU_HOSTS2
+
+PJL_WRAPPER=""
+case "$PJL_TYPE" in
+#
+# 1. known wrappers with special options (such as TV, for supported MPI types)
+#
+    lammpi)
+        PJL_WRAPPER="${LSF_BINDIR}/lammpirun_wrapper"
+	;;
+    tvlammpi)
+        PJL_WRAPPER="${LSF_BINDIR}/lammpirun_wrapper"
+        LSB_TOTALVIEW="y"
+	;;
+    mpich_gm)
+        PJL_WRAPPER="${LSF_BINDIR}/gmmpirun_wrapper"
+	;;
+    tvmpich_gm)
+        PJL_WRAPPER="${LSF_BINDIR}/gmmpirun_wrapper"
+        LSB_TOTALVIEW="y"
+	;;
+    poe)
+        # For HPC 5.1 run
+        # PAM_COMLN="pam $PAM_OPTS -g 1 poejob $MPI_JOB_CMDLN"
+        PJL_WRAPPER="${LSF_BINDIR}/poejob"
+        LSF_PAM_HOST_PORT_OPT="y"
+        export LSF_PAM_HOST_PORT_OPT
+	;;
+    tvpoe)
+        PJL_WRAPPER="${LSF_BINDIR}/poejob"
+        LSB_TOTALVIEW="y"
+        LSF_PAM_HOST_PORT_OPT="y"
+        export LSF_PAM_HOST_PORT_OPT
+	;;
+#
+# 2. known pass-through integrations that don't require a wrapper
+#    system administrators should add their site-specific MPI here
+#    currently HP MPI, SGI MPI, RMS, and Cray's.
+#
+    hpmpi|sgimpi|rms|crayxt3|crayx1)
+        PJL_WRAPPER="none"
+        ;;
+#
+# 3. other known or even unknown pam-based integrations 
+#    such as intelmpi, mvapich, sca_mpimon, etc.
+#    wrapper name is formed as {mpi_type}_wrapper.
+#
+    *)
+        PJL_WRAPPER="${LSF_BINDIR}/${PJL_TYPE}_wrapper"
+	;;
+esac
+
+if [ "${PJL_TYPE}" = "" ]; then
+    echo "mpirun.lsf: Unknown LSF_PJL_TYPE <$LSF_PJL_TYPE>. Exit ..."
+    exit 1
+fi
+
+if [ ! -f "${PJL_WRAPPER}" -a "$PJL_WRAPPER" != "none" ]; then
+    echo "mpirun.lsf: Cannot run ${PJL_WRAPPER} to launch <$PJL_TYPE> type parallel jobs. Exit ..."
+    exit 1
+fi
+
+if [ "$LSB_TOTALVIEW" = "Y" -o "$LSB_TOTALVIEW" = "y" ]; then
+    PAM_COMLN="$TV pam $Corefile $TV_ARGS $PAM_OPTS -a -tv -g ${PJL_WRAPPER} $MPI_JOB_CMDLN $PASS_OPTS"
+elif [ "$PJL_WRAPPER" != "none" ]; then
+    PAM_COMLN="pam $PAM_OPTS -g ${PJL_WRAPPER} $MPI_JOB_CMDLN $PASS_OPTS"
+else
+    PAM_COMLN="$MPI_JOB_CMDLN"
+fi
+
+# -------------------------------------------------------
+# Useful debug message
+# -------------------------------------------------------
+# echo "mpirun.lsf: Your command line looks like:"
+# echo "$PAM_COMLN"
+
+mpirun_exec_job "$PAM_COMLN"
+

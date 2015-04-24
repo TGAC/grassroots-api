@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Copyright International Business Machines Corp,2002, 2012.
+# All Rights Reserved.
+#
+# esub.ls_dyna called by esub to use the LS-Dyna application
+#
+# This script sets the checkpointing method "dyna"
+# to use the echkpnt.ls_dyna.
+#
+# This script is called by a general esub which is invoked by bsub.
+# invoked by bsub -a ls_dyna.
+#
+
+# esub should always redirect stdout to stderr. 
+exec 1>&2
+
+echo 'LSB_ECHKPNT_METHOD="ls_dyna"' > $LSB_SUB_MODIFY_ENVFILE

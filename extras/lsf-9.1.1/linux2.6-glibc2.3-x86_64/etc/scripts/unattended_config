@@ -1,0 +1,690 @@
+
+#
+#-----------------------------------------
+#
+# chk_dir_unatt --
+#
+# ARGUMENTS: $1 LSF parameter name
+# 
+# PRE-CONDITION:
+#
+# DESCRIPTION:
+#
+# SIDE_EFFECTS:
+#
+# RETURN:
+#
+#-----------------------------------------
+#
+chk_dir_unatt()
+{
+testVar=$1
+
+testPath=`eval echo \\$$testVar`
+
+if is_full_path $testPath; then
+    :
+else
+    echo "$testVar must be an absolute path."| tee -a $PREFIX_LOG/Install.log
+    echo "$testPath is not an absolute path."| tee -a $PREFIX_LOG/Install.log
+    echo "Installation exiting..."| tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+if [ -f $testPath ]; then
+    echo "$testVar must be a directory."| tee -a $PREFIX_LOG/Install.log
+    echo "$testPath is an existent file."| tee -a $PREFIX_LOG/Install.log
+    echo "Installation exiting..."| tee -a $PREFIX_LOG/Install.log
+    exit
+else
+    :
+fi
+
+return
+} 
+
+
+
+get_clients()
+{
+_hosts=$1
+first_char=`expr "$_hosts" : '\(.\).*'`
+
+if [ "$first_char" != "/" ]; then
+    LSF_CLIENTS=$_hosts; export LSF_CLIENTS; return 0
+else
+    if [ ! -r $_hosts ]; then
+        echo "Sorry, the file $_hosts does not exist."| tee -a $PREFIX_LOG/Install.log
+        return 1
+    else
+        LSF_CLIENTS=""
+        exec 3<$_hosts
+        while read LINE 0<&3
+        do
+            _t=`echo $LINE|sed -e "s/^[     ]*//" -e "s/[   ]*$//"`
+            if [ "$LSF_CLIENTS" = "" ]; then
+                LSF_CLIENTS=$_t
+            else
+                LSF_CLIENTS="$LSF_CLIENTS,$_t"
+            fi
+        done
+        exec 3<&-
+        export LSF_CLIENTS
+        return 0
+    fi
+fi
+}
+
+
+
+
+get_contact_server()
+{
+_hosts=$1
+first_char=`expr "$_hosts" : '\(.\).*'`
+
+if [ "$first_char" != "/" ]; then
+    LSF_SERVER_HOSTS=$_hosts
+else
+    if [ ! -r $_hosts ]; then
+        echo "Sorry, the file $_hosts does not exist."| tee -a $PREFIX_LOG/Install.log
+        return 1
+    else
+        LSF_SERVER_HOSTS=""
+        exec 3<$_hosts
+        while read LINE 0<&3
+        do
+            _t=`echo $LINE|sed -e "s/^[     ]*//" -e "s/[   ]*$//"`
+            if [ "$LSF_SERVER_HOSTS" = "" ]; then
+                LSF_SERVER_HOSTS=$_t
+            else
+                LSF_SERVER_HOSTS="$LSF_SERVER_HOSTS,$_t"
+            fi
+        done
+        exec 3<&-
+    fi
+fi
+#Each host in LSF_SERVER_HOSTS should belong LSF_SERVERS
+server_hosts=`echo "$LSF_SERVER_HOSTS" | sed -e "s/,/ /g"`
+server_hosts_no=`echo $server_hosts | wc -w`
+LSF_SERVER_HOSTS=""
+
+for _host in $server_hosts
+do
+	case $LSF_SERVERS in 
+	*"$_host"* )
+		if [ "$LSF_SERVER_HOSTS" = "" ]; then
+			LSF_SERVER_HOSTS="$_host"
+		else
+			LSF_SERVER_HOSTS="$LSF_SERVER_HOSTS $_host"
+		fi
+		;;
+	* )
+                echo "Sorry, host $_host cannot be a client contact server."| tee -a $PREFIX_LOG/Install.log
+		return 1
+		;;
+	esac
+done
+export LSF_SERVER_HOSTS
+return 0
+}			
+
+
+
+get_lsf_products()
+{
+SelectedLSFProducts=""
+
+INSTALL_LSMAKE="n"
+INSTALL_BASE="n"
+INSTALL_BATCH="n"
+INSTALL_MC="n"
+#INSTALL_JS="n"
+#INSTALL_ANALYZER="n"
+#INSTALL_PARALLEL="n"
+
+_js=n
+_license=n
+exec 3<$LSF_LICENSE_LOCATION
+while read LINE 0<&3
+do
+    if echo "$LINE" | grep "^FEATURE" > $LSNULFILE; then
+ 	_product=`echo $LINE | awk '{print $2}'`
+ 	case $_product in
+ 	    lsf_base)
+      		SelectedLSFProducts="${SelectedLSFProducts} Base"
+		INSTALL_BASE="y"
+		_license=y
+	    	;;
+ 	    lsf_batch) 
+		SelectedLSFProducts="${SelectedLSFProducts} Batch"
+		INSTALL_BATCH="y"
+		_license=y
+		;;
+# 	    lsf_jobscheduler|lsf_jobscheduler_server) 
+#		if test "$_js" = "n"; then
+#		    SelectedLSFProducts="${SelectedLSFProducts} JS"
+#		    _js=y
+#	 	fi
+#		INSTALL_JS="y"
+#		_license=y
+#		;;
+
+	    *)
+		;;
+ 	esac
+    fi
+done
+exec 3<&-
+
+if test "$_license" = "n"; then
+    echo "Cannot find valid license from license file:"| tee -a $PREFIX_LOG/Install.log
+    echo $LSF_LICENSE_LOCATION| tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+export SelectedLSFProducts               
+export INSTALL_LSMAKE
+export INSTALL_BASE
+export INSTALL_BATCH
+export INSTALL_MC
+#export INSTALL_JS
+#export INSTALL_PARALLEL 
+#export INSTALL_ANALYZER
+
+setuid_progs
+
+}
+
+
+get_unattended_params() 
+{ 
+# input: parameter_name parameter_type 
+# output: parameter_value
+tmp_param=`echo $1=` 
+param=`grep "^$tmp_param" $UNATTENDED_CONFIG_FILE | sed -e "s/$tmp_param//"` 
+if [ "$param" = "" ]; then 
+    if [ "$2" = "REQUIRED" ]; then 
+
+	echo ""| tee -a $PREFIX_LOG/Install.log
+        exit 
+    fi 
+fi 
+echo $param 
+} 
+
+
+check_unattended_params()
+{
+exec 3<$UNATTENDED_CONFIG_FILE
+while read LINE 0<&3
+do
+
+
+
+
+
+    if [ "$LINE" = "" ]; then
+        continue
+    fi
+
+    first_char=`expr "$LINE" : '\(.\).*'`
+   
+    if [ "$first_char" = "#" ]; then
+        continue
+    else
+        param_name=`echo $LINE | sed -e "s%=.*%%"`
+        param_num=`grep "^$param_name" $UNATTENDED_CONFIG_FILE | wc -l | sed -e "s/[ 	]*//"`
+        if [ "$param_num" -gt 1 ]; then
+            echo "Every parameter can only be defined once in the installation"| tee -a $PREFIX_LOG/Install.log
+            echo "configuration file. If you defined it more then once, the "| tee -a $PREFIX_LOG/Install.log
+            echo "installation program cannot work properly."| tee -a $PREFIX_LOG/Install.log
+            echo "$param_name is defined $param_num times in $UNATTENDED_CONFIG_FILE,"| tee -a $PREFIX_LOG/Install.log
+            echo "please modify this file manually."| tee -a $PREFIX_LOG/Install.log
+            exit
+        else
+            continue
+        fi
+    fi
+done
+
+exec 3<&-
+
+return 0
+}
+
+unattended_config() 
+{ 
+# input: configuration file name
+# output: the values of parameters defined in configuration files 
+
+# log installation log file 
+
+check_unattended_params
+LSF_DEFAULT_INSTALL="y"
+
+# LSF_INSTALL_TYPE: optional parameter 
+LSF_INSTALL_TYPE=`get_unattended_params LSF_INSTALL_TYPE OPTIONAL` 
+if [ "$LSF_INSTALL_TYPE" = "" ]; then 
+    LSF_INSTALL_TYPE="INITIAL_INSTALL" 
+fi 
+case "$LSF_INSTALL_TYPE" in
+    INITIAL_INSTALL|UPGRADE|ADD_HOSTTYPE|DE_INSTALL) : ;;
+    *) echo "Sorry, install type is not recognized."| tee -a $PREFIX_LOG/Install.log; exit ;;
+esac
+export LSF_INSTALL_TYPE 
+
+# LSF_ENVDIR: optional parameter 
+LSF_ENVDIR_TMP=`get_unattended_params LSF_ENVDIR OPTIONAL`
+
+if [ "$LSF_ENVDIR_TMP" = "" ]; then
+    if [ "$LSF_ENVDIR" = "" ]; then
+        LSF_ENVDIR="/etc"
+    else
+        :
+    fi
+else
+    LSF_ENVDIR=$LSF_ENVDIR_TMP
+fi
+
+chk_dir_unatt LSF_ENVDIR    
+
+if [ "$LSF_INSTALL_TYPE" != "INITIAL_INSTALL" -a ! -r "$LSF_ENVDIR/lsf.conf" ]; then 
+    echo "Sorry, cannot find $LSF_ENVDIR/lsf.conf."| tee -a $PREFIX_LOG/Install.log
+    exit 
+fi 
+export LSF_ENVDIR 
+if [ "$LSF_INSTALL_TYPE" != "INITIAL_INSTALL" ]; then
+    find_conf LOCAL
+fi
+
+# parameters for DE_INSTALL are enough now! 
+if [ "$LSF_INSTALL_TYPE" = "DE_INSTALL" ]; then 
+    return 
+fi 
+
+# LSF_DIST_DIR: optional parameter 
+LSF_DIST_DIR=`get_unattended_params LSF_DIST_DIR OPTIONAL` 
+if [ "$LSF_DIST_DIR" = "" ]; then 
+    LSF_DIST_DIR=$defLSF_DIST_DIR 
+fi 
+
+chk_dir_unatt LSF_DIST_DIR 
+
+if check_distribution_dir $LSF_DIST_DIR; then
+    :
+else
+    exit 
+fi
+numDisTarFiles=` echo $SelectionOSVersions | wc -w `       
+export LSF_DIST_DIR 
+
+if [ "$LSF_DEFAULT_INSTALL" != "Y" -a "$LSF_DEFAULT_INSTALL" != "y" ]
+then
+    if [ "$numDisTarFiles" -gt 1 ]; then
+        echo
+        echo "Your distribution directory contains more one distribution files."| tee -a $PREFIX_LOG/Install.log
+        echo "Custom installation can only install one platform in one session."| tee -a $PREFIX_LOG/Install.log
+        echo "Please check."| tee -a $PREFIX_LOG/Install.log
+        echo "Installation Exiting..."| tee -a $PREFIX_LOG/Install.log
+        exit
+    fi
+fi
+
+
+# LSF_WORKING_DIR: optional parameter 
+LSF_WORKING_DIR=`get_unattended_params LSF_WORKING_DIR OPTIONAL` 
+if [ "$LSF_WORKING_DIR" = "" ]; then 
+    LSF_WORKING_DIR=$defLSF_WORKING_DIR
+fi 
+
+chk_dir_unatt LSF_WORKING_DIR     
+
+if check_working_dir $LSF_WORKING_DIR; then
+    :
+else
+    exit
+fi
+export LSF_WORKING_DIR 
+
+case $LSF_INSTALL_TYPE in
+    INITIAL_INSTALL) get_lsf_products ;;
+    UPGRADE|ADD_HOSTTYPE) get_products ;;
+esac
+
+# parameters for UPGRADE are enough now! 
+if [ "$LSF_INSTALL_TYPE" = "UPGRADE" ]; then 
+    return 
+fi 
+  
+
+# LSF_HOST_NAMES: required parameter 
+LSF_HOST_NAMES=`get_unattended_params LSF_HOST_NAMES REQUIRED` 
+
+
+if [ "$LSF_HOST_NAMES" != "" ]; then
+    LSF_HOST_NAMES=`eval echo $LSF_HOST_NAMES`
+    if get_hosts "$LSF_HOST_NAMES"; then
+    	:
+    else
+    	exit
+    fi     
+    SETUPHOSTS=`echo $SETUPHOSTS | sed -e "s/,/ /g"`
+    SETUPHOSTSNO=`echo $SETUPHOSTS | wc -w`
+    export SETUPHOSTSNO SETUPHOSTS    
+    RSHCHECK=y
+    rsh_check_hosts
+else
+    echo "Sorry, LSF_HOST_NAMES parameter is not specified or empty"| tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+export RSHCHECK
+export SUCCEEDHOSTS
+export LSF_HOST_NAMES 
+
+# LSF_CLIENTS: optional parameter 
+LSF_CLIENTS=`get_unattended_params LSF_CLIENTS OPTIONAL` 
+
+
+LSF_CLIENTS=`eval echo $LSF_CLIENTS`
+if get_clients "$LSF_CLIENTS"; then
+    :
+else
+    exit
+fi    
+
+
+if [ "$LSF_CLIENTS" = "" ]; then 
+    LSF_CLIENTS="" 
+    LSF_SERVERS=$SUCCEEDHOSTS
+else 
+    clients=`eval echo $LSF_CLIENTS`
+    LSF_CLIENTS=""
+    LSF_SERVERS=$SUCCEEDHOSTS
+    get_clients_servers "$clients"
+fi 
+export LSF_CLIENTS 
+export LSF_SERVERS
+
+# LSF_SERVER_HOSTS: optional parameter 
+
+
+
+if [ "$LSF_CLIENTS" != "" ];then 
+	LSF_SERVER_HOSTS=`get_unattended_params LSF_SERVER_HOSTS OPTIONAL` 
+	LSF_SERVER_HOSTS=`eval echo $LSF_SERVER_HOSTS`
+	if get_contact_server "$LSF_SERVER_HOSTS"; then
+    		:
+	else
+	    exit
+	fi    
+	if [ "$LSF_SERVER_HOSTS" = "" ]; then 
+                echo Sorry, please assign at least one server host for
+                echo client-only hosts to contact.
+		exit
+	fi
+        export LSF_SERVER_HOSTS 
+fi
+
+# LSF_MACHDEP: optional parameter
+LSF_MACHDEP=`get_unattended_params LSF_MACHDEP OPTIONAL`
+if [ "$LSF_MACHDEP" = "" ]; then
+    LSF_MACHDEP=/usr/local/lsf
+else
+    # Now lsfsetup consider it is custom installation.
+    if [ "$numDisTarFiles" -gt 1 ]; then
+        echo
+        echo "Your distribution directory contains more one distribution files."
+        echo "Definition of LSF_MACHDEP in configure file means custom installation."
+        echo "Custom installation can only install one platform in one session."
+        echo "Please check."
+        echo "Installation Exiting..."
+        exit
+    fi
+
+    LSF_DEFAULT_INSTALL=n
+    first_char=`expr "$LSF_MACHDEP" : '\(.\).*'`
+    if [ "$first_char" != "/" ]; then
+        echo
+        echo "Sorry, $LSF_MACHDEP should be absolute directory path."
+               echo "Using default value /usr/local/lsf instead."
+        LSF_MACHDEP=/usr/local/lsf
+    else
+
+
+
+
+        if [ -f $LSF_MACHDEP ]; then
+            echo "LSF_MACHDEP must be a directory."| tee -a $PREFIX_LOG/Install.log
+            echo "$LSF_MACHDEP is an existent file."| tee -a $PREFIX_LOG/Install.log
+            echo "Installation exiting..."| tee -a $PREFIX_LOG/Install.log
+            exit
+        else
+            :
+        fi
+
+        if [ ! -d $LSF_MACHDEP ]; then
+            make_dir  $LSF_MACHDEP
+        fi
+    fi
+fi
+export LSF_MACHDEP
+
+
+
+# parameters for ADD_HOSTTYPE are enough now!
+if [ "$LSF_INSTALL_TYPE" = "ADD_HOSTTYPE" ]; then
+    return
+fi
+  
+
+# LSF_TOP: required parameter
+LSF_TOP=`get_unattended_params LSF_TOP REQUIRED`
+
+
+if [ "$LSF_TOP" != "" ]; then
+    first_char=`expr "$LSF_TOP" : '\(.\).*'` 
+
+    if [ "$first_char" != "/" ]; then 
+        echo "Sorry, LSF_TOP should be a full path directory name." | tee -a $PREFIX_LOG/Install.log
+        exit 
+    else 
+
+        if [ -f $testPath ]; then                    
+            echo "$testVar must be a directory."  | tee -a $PREFIX_LOG/Install.log
+            echo "$testPath is an existent file." | tee -a $PREFIX_LOG/Install.log
+            echo "Installation exiting..."       | tee -a $PREFIX_LOG/Install.log
+            exit                                   
+        else                                      
+            :                                    
+        fi                                      
+
+        if [ ! -d $LSF_TOP -a "$LSF_INSTALL_TYPE" = "INITIAL_INSTALL" ]; then 
+            make_dir $LSF_TOP 
+        fi 
+    fi
+else
+    echo "Sorry, LSF_TOP parameter is not specified or empty"| tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+
+
+export LSF_TOP 
+
+# LSF_CLUSTER_NAME: required parameter 
+tmp_name=`get_unattended_params LSF_CLUSTER_NAME REQUIRED` 
+LSF_CLUSTER_NAME=`eval echo $tmp_name` 
+
+
+if [ "$LSF_CLUSTER_NAME" != "" ]; then
+    clusNum=`echo $LSF_CLUSTER_NAME | wc -w | sed -e "s/[ 	]*//"`
+    if [ "$clusNum" != "1" ]; then
+        echo "Sorry, you can only designate one cluster name."| tee -a $PREFIX_LOG/Install.log
+        echo "There are $clusNum names in installation config file."| tee -a $PREFIX_LOG/Install.log
+        echo "Please modify this file manually."| tee -a $PREFIX_LOG/Install.log
+        echo "Installation Exiting..."| tee -a $PREFIX_LOG/Install.log
+        exit
+    fi
+else
+        echo "Sorry, LSF cluster name is empty or not specified."| tee -a $PREFIX_LOG/Install.log
+	exit
+fi
+
+
+if is_full_path $LSF_CLUSTER_NAME; then                   
+    echo "LSF_CLUSTER_NAME cannot start with \"/\"."     | tee -a $PREFIX_LOG/Install.log
+    echo "Please choose another cluster name."           | tee -a $PREFIX_LOG/Install.log
+    echo "Installation exiting..."                      | tee -a $PREFIX_LOG/Install.log
+    exit                                                  
+else                                                     
+    :                                                   
+fi 
+
+if [ -f "${LSF_TOP}/mnt/conf/lsf.cluster.${LSF_CLUSTER_NAME}" -a "$LSF_INSTALL_TYPE" != "INITIAL_INSTALL" ]; then
+    HOST_FROM_CLUSTER=`sed -n "/^[ 	]*[Bb]egin[ 	]*[hH]ost\$/,/^[ 	]*[Ee]nd[ 	]*[hH]ost\$/p"  ${LSF_TOP}/mnt/conf/lsf.cluster.${LSF_CLUSTER_NAME}\
+|grep -v "^[ 	]*[Bb]egin" \
+|grep -v "^[ 	]*[Ee]nd" \
+|grep -v "^[ 	]*HOSTNAME" \
+|grep -v "^[ 	]*#" \
+|awk '{print $1}'`
+
+    for tmpHost in $HOST_FROM_CLUSTER # Put the hosts from cluster into one line
+        do
+            if [ "$TMP_HOST_FROM_CLUSTER" = "" ]; then
+                TMP_HOST_FROM_CLUSTER="$tmpHost"
+            else
+                TMP_HOST_FROM_CLUSTER="$TMP_HOST_FROM_CLUSTER $tmpHost"
+            fi
+        done
+
+    TMP_HOST_FROM_CLUSTER=" $TMP_HOST_FROM_CLUSTER "
+
+    for _host in $SETUPHOSTS
+    do 
+        case $TMP_HOST_FROM_CLUSTER in
+            *" $_host "* )
+                cat << HOST_FROM_CLUSTER_TXT | tee -a $PREFIX_LOG/Install.log
+                
+            Sorry, $_host have already been a member in this cluster.
+            The same host cannot be set up twice.
+            Please check the file ${LSF_TOP}/mnt/conf/lsf.cluster.${LSF_CLUSTER_NAME}.
+            Exiting...
+
+HOST_FROM_CLUSTER_TXT
+                exit
+                ;;
+            * )
+                :
+                ;;
+        esac
+   done
+fi
+        
+export LSF_CLUSTER_NAME 
+
+# LSF_ADMINS: required parameter 
+LSF_ADMINS=`get_unattended_params LSF_ADMINS REQUIRED` 
+
+
+if [ "$LSF_ADMINS" != "" ]; then
+LSF_MANAGER=`eval echo $LSF_ADMINS | awk '{ print $1 }'` 
+if [ "$LSF_MANAGER" = "root" ] ; then 
+    echo "Please do not use root as the LSF primary administrator." | tee -a $PREFIX_LOG/Install.log
+    exit 
+else
+    echo "unattended_config: Possibly using ypmatch $LSF_MANAGER passwd to search for user." >> $PREFIX_LOG/Install.log
+
+    if (grep "^$LSF_MANAGER:" /etc/passwd \
+        || ypmatch "$LSF_MANAGER" passwd \
+        || nismatch name="$LSF_MANAGER" passwd.org_dir \
+        ) > $LSNULFILE 2>&1 
+    then 
+        : 
+    else 
+        echo "Sorry, cannot find that login name of LSF primary administrator." | tee -a $PREFIX_LOG/Install.log
+        echo "Please create that account or use a different login name." | tee -a $PREFIX_LOG/Install.log
+        exit 
+    fi 
+fi 
+else
+	echo "Sorry, LSF_ADMINS parameter is not specified or empty"| tee -a $PREFIX_LOG/Install.log
+	exit
+fi
+
+export LSF_ADMINS 
+export LSF_MANAGER
+
+## LSF_LINK_PATH: optional parameter 
+
+LSF_LINK_PATH=`get_unattended_params LSF_LINK_PATH OPTIONAL` 
+
+  if [ "$LSF_LINK_PATH" != "" ]; then 
+     LSF_SYMBOLIC_LINK=y
+     first_char=`expr "$LSF_LINK_PATH" : '\(.\).*'`
+     if [ "$first_char" != "/" ]; then
+         echo "Sorry, $LSF_LINK_PATH should be absolute directory path, use default value instead"| tee -a $PREFIX_LOG/Install.log
+         LSF_LINK_PATH=/usr/local/lsf
+     fi
+     if [ ! -d $LSF_LINK_PATH ]; then
+    	 make_dir  $LSF_LINK_PATH
+     fi
+
+     if is_local $LSF_LINK_PATH; then
+         :
+     else
+          echo Warning: $LSF_LINK_PATH should be local directory
+          echo Use default value /usr/local/lsf instead
+          LSF_LINK_PATH=/usr/local/lsf
+     fi
+  else
+     LSF_SYMBOLIC_LINK=N 
+  fi 
+
+  case "$LSF_SYMBOLIC_LINK" in
+    Y) LSF_SYMBOLIC_LINK=y ;;
+    y|n|N) ;;
+  esac
+
+export LSF_SYMBOLIC_LINK LSF_LINK_PATH
+
+# LSF_CONFDIR: optional parameter 
+LSF_CONFDIR=`get_unattended_params LSF_CONFDIR OPTIONAL` 
+if [ "$LSF_CONFDIR" = "" ]; then 
+    LSF_CONFDIR=$LSF_TOP/mnt/conf 
+else 
+    LSF_DEFAULT_INSTALL=n
+    first_char=`expr "$LSF_CONFDIR" : '\(.\).*'` 
+    if [ "$first_char" != "/" ]; then 
+        echo "Sorry, $LSF_CONFDIR should be absolute directory path."| tee -a $PREFIX_LOG/Install.log
+        echo "Using default value $LSF_TOP/mnt/conf instead."| tee -a $PREFIX_LOG/Install.log
+        LSF_CONFDIR=$LSF_TOP/mnt/conf 
+    fi 
+fi 
+export LSF_CONFDIR 
+
+# LSF_LOGDIR: optional parameter 
+LSF_LOGDIR=`get_unattended_params LSF_LOGDIR OPTIONAL` 
+if [ "$LSF_LOGDIR" = "" ]; then 
+    LSF_LOGDIR=/tmp 
+else 
+    echo "LSF_LOGDIR cannot be defined in unattended_installation."| tee -a $PREFIX_LOG/Install.log
+    echo "Ignor it."| tee -a $PREFIX_LOG/Install.log
+    LSF_LOGDIR=/tmp 
+fi 
+export LSF_LOGDIR 
+
+export LSF_DEFAULT_INSTALL
+}
+
+condition_check() 
+{ 
+    if is_root ; then
+	:
+    else
+	echo "Please log in as root account to install LSF software."| tee -a $PREFIX_LOG/Install.log
+	exit
+    fi
+#   check rsh for all hosts 
+} 

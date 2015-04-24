@@ -1,0 +1,117 @@
+#$Id: another,v 1.1 2006/06/27 19:31:09 gwen Exp $
+
+another()
+{
+#---------------------------------------------------------------------
+#
+#  This script is sourced by lsfsetup.
+#
+#  Install LSF for another host type.
+#--------------------------------------------------------------------
+
+echo  >> $PREFIX_LOG/Install.log
+echo `date` >>$PREFIX_LOG/Install.log
+
+echo Installation procedure for platform \"`uname -a`\" started >>$PREFIX_LOG/Install.log
+
+echo I am `who am i` >>$PREFIX_LOG/Install.log
+
+echo >> $PREFIX_LOG/Install.log
+
+EXCUSED_CONF=y
+EXCUSED_INCLUDE=y
+EXCUSED_MANS=y
+EXCUSED_XMISC=y
+EXCUSED_MISC=y
+NO_MANDATORY=y
+
+if [ "$LSF_DEFAULT_INSTALL" != 'y' ]; then
+    find_conf COPY
+fi
+
+get_products
+
+echo
+echo "    Checking for accessibility of host type independent files ..."
+
+if check_confdir
+then
+    :
+else
+    echo "    Installation cannot continue. Exiting ..."
+    exit
+fi
+
+if check_sharedir
+then
+    :
+else
+    echo "    Installation cannot continue. Exiting ..." |tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+if defined "$LSF_SERVER_HOSTS"
+then
+    :
+fi
+
+if man_ready
+then
+    EXCUSED_MANS=y
+else
+    EXCUSED_MANS=n
+fi
+
+if xmisc_ready
+then
+    EXCUSED_XMISC=y
+else
+    EXCUSED_XMISC=n
+fi
+
+if misc_ready
+then
+   EXCUSED_MISC=y
+else
+   EXCUSED_MISC=n
+fi
+
+if include_ready
+then
+    EXCUSED_INCLUDE=y
+else
+    EXCUSED_INCLUDE=n
+fi
+
+# When eauth config, only lsadmin badmin and eauth need to
+# be setuid to root since they need to access lsf.sudoers file.
+if [ "$LSF_AUTH" != "" ]; then
+    SETUIDS="lsadmin badmin"
+fi
+
+echo "    Checking done."
+
+
+echo 
+
+# for picking up the missing parameters 
+# In default install, lsf.conf is same
+if [ "$LSF_DEFAULT_INSTALL" != 'y' ]; then
+    if [ -f "$lsfconf_copy" -a -d "$LSF_SERVERDIR" ]; then
+        cp $lsfconf_copy  $LSF_SERVERDIR/lsf.conf.old
+    fi
+fi
+
+. $sp/newInstall; newInstall
+
+check_setuid
+
+unset DO_INDEP
+
+echo "    Finished installing on this host type." | tee -a $PREFIX_LOG/Install.log
+if [ "$LSF_DEFAULT_INSTALL" != 'y' ]; then
+        echo "    Installation parameters should be in $LSF_SERVERDIR/lsf.conf." | tee -a $PREFIX_LOG/Install.log
+else 
+        echo "    Installation parameters should be in $LSF_CONFDIR/lsf.conf." | tee -a $PREFIX_LOG/Install.log
+fi
+} # another

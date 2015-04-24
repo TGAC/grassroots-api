@@ -1,0 +1,119 @@
+# $Id: mandatory,v 1.1 2006/06/27 19:31:11 gwen Exp $
+
+# This routine is not standalone. It is sourced by other scripts
+#
+#*********************************************************************
+#
+# This routine asks a few questions that are mandatory for all installs
+#*********************************************************************
+
+mandatory()
+{
+
+# save this because when LSF_INDEP is changed, LSF_MACHDEP may also change.
+OLD_LSF_MACHDEP=$LSF_MACHDEP
+OLD_LSF_INDEP=$LSF_INDEP
+
+if do_machdep ; then
+
+    if [ "$LSF_DEFAULT_INSTALL" != 'y' -a "$UNATTENDED_INSTALL" != "y" ]
+    then
+
+        while : 
+        do
+            LSF_MACHDEP=`ask_dir LSF_MACHDEP` 
+            check_dir LSF_MACHDEP 
+
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                break
+            else
+                continue
+            fi
+        done
+
+        update_params $OLD_LSF_MACHDEP $LSF_MACHDEP $BINS LSF_INDEP
+
+        echo
+    fi
+fi
+
+if do_indep ; then
+
+    if [ "$LSF_DEFAULT_INSTALL" != 'y' -a "$UNATTENDED_INSTALL" != "y" ]; then
+
+        while :
+        do
+            LSF_INDEP=`ask_dir LSF_INDEP`
+            check_dir LSF_INDEP
+
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                break
+            else
+                continue
+            fi
+        done
+
+        echo
+        
+        update_params $OLD_LSF_INDEP $LSF_INDEP LSF_MACHDEP $SHARED $OPTSHARE
+
+        echo
+    fi
+fi
+
+if do_indep ; then
+    
+    while :
+    do
+        LSF_CLUSTER_NAME=`ask_param LSF_CLUSTER_NAME`
+
+        if is_full_path $LSF_CLUSTER_NAME; then
+            echo "LSF_CLUSTER_NAME cannot start with \"/\", "
+            echo "please choose another name."
+            continue
+        else
+            :
+        fi
+        break
+    done 
+        
+
+    if [ "$LSF_MANAGER" = "" ] ; then
+	LSF_MANAGER=lsfadmin
+    fi
+
+    while : ; do
+	LSF_MANAGER=`ask_param LSF_MANAGER`
+	if [ "$LSF_MANAGER" = "root" ] ; then
+ 	    echo Please do not use root as the LSF administrator.
+	else
+            echo "mandatory: Possibly using ypmatch $LSF_MANAGER passwd to search for user." >> $PREFIX_LOG/Install.log
+
+	    if (grep "^$LSF_MANAGER:" /etc/passwd \
+		|| ypmatch "$LSF_MANAGER" passwd \
+		|| nismatch name="$LSF_MANAGER" passwd.org_dir \
+		) > $LSNULFILE 2>&1
+	    then
+		echo "To run LSF, the user name $LSF_MANAGER must exist on all hosts in the LSF cluster."
+                if yesno "Have you created the user name $LSF_MANAGER on all LSF hosts" Y "" > $LSNULFILE
+                then
+		    break
+ 		else
+		    continue
+		fi
+	    else
+                if [ "$LSHOSTTYPE" = "NT" ] ; then
+                  break;
+                fi
+		echo "Cannot find that login name. Create that account or use a different login name"
+		continue
+	    fi
+	fi
+    done
+fi
+
+# get_db_host
+
+} # mandatory

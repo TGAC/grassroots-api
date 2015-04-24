@@ -1,0 +1,166 @@
+#!/bin/sh
+#
+# $Id: component,v 1.1 2006/06/27 19:31:10 gwen Exp $
+#
+#
+
+component()
+{
+
+echo >> $PREFIX_LOG/Install.log
+echo `date` >> $PREFIX_LOG/Install.log
+echo Component installation started >>$PREFIX_LOG/Install.log
+echo >> $PREFIX_LOG/Install.log
+
+# Main loop for component install
+
+while : ; do
+    cat << MENU | tee -a $PREFIX_LOG/Install.log 
+
+Please choose one of the following options:
+
+     1. Install Configuration Files
+     2. Install Binary Files
+     3. Install Manual Pages
+     4. Install X Applications Default Files
+     5. Install Misc Examples etc
+     6. Install LSF Header Files
+
+     ?. Help
+     q. Quit
+
+MENU
+    echo $enf "Please enter your choice:" $enl |tee -a $PREFIX_LOG/Install.log
+    read N
+    echo $N >> $PREFIX_LOG/Install.log
+
+    case $N in
+
+#   Config files
+    1) DO_MACHDEP=n
+	EXCUSED_MISC=y
+	EXCUSED_XMISC=y
+	EXCUSED_MANS=y
+	EXCUSED_INCLUDE=y
+	if defined "$LSF_MANAGER" ; then
+	    :
+	else
+	    LSF_MANAGER=`ask_param LSF_MANAGER`
+	fi
+	if defined "$LSF_CLUSTER_NAME" ; then
+	    :
+	else
+	    LSF_CLUSTER_NAME=`ask_param LSF_CLUSTER_NAME`
+	fi
+
+	. $sp/newInstall; newInstall
+	unset DO_MACHDEP
+	unset EXCUSED_MISC
+	unset EXCUSED_XMISC
+	unset EXCUSED_MANS
+	unset EXCUSED_INCLUDE
+	exit ;;
+
+#   Binaries
+    2) DO_INDEP=n
+	. $sp/newInstall; newInstall
+	install_sendpr
+	check_setuid
+
+	unset DO_INDEP
+	exit ;;
+
+#   Man pages
+    3) DO_MACHDEP=n
+	EXCUSED_CONF=y
+	EXCUSED_XMISC=y
+	EXCUSED_MISC=y
+	EXCUSED_INCLUDE=y
+	. $sp/newInstall; newInstall
+	unset DO_MACHDEP
+	unset EXCUSED_CONF
+	unset EXCUSED_MISC
+	unset EXCUSED_XMISC
+	unset EXCUSED_INCLUDE
+	exit;;
+
+#   Misc X default files
+    4) DO_MACHDEP=n
+	EXCUSED_CONF=y
+	EXCUSED_MANS=y
+	EXCUSED_MISC=y
+	EXCUSED_INCLUDE=y
+	. $sp/newInstall; newInstall
+	unset DO_MACHDEP
+	unset EXCUSED_CONF
+	unset EXCUSED_MISC
+	unset EXCUSED_MANS
+	unset EXCUSED_INCLUDE
+	exit;;
+
+#   Misc examples
+    5) DO_MACHDEP=n
+	EXCUSED_CONF=y
+	EXCUSED_XMISC=y
+	EXCUSED_MANS=y
+	EXCUSED_INCLUDE=y
+	. $sp/newInstall; newInstall
+	unset DO_MACHDEP
+	unset EXCUSED_CONF
+	unset EXCUSED_MANS
+	unset EXCUSED_XMISC
+	unset EXCUSED_INCLUDE
+	exit;;
+
+#   LSF header files 
+    6) DO_MACHDEP=n
+	EXCUSED_CONF=y
+	EXCUSED_XMISC=y
+	EXCUSED_MANS=y
+	EXCUSED_MISC=y
+	. $sp/newInstall; newInstall
+	unset DO_MACHDEP
+	unset EXCUSED_CONF
+	unset EXCUSED_MANS
+	unset EXCUSED_XMISC
+	unset EXCUSED_MISC
+	exit;;
+
+    [Qq]*) exit ;;
+
+    *)	cat << HELP2
+
+   All LSF files except for the binary files are machine-independent and
+   can be shared by all host types. The LSF configuration files must be
+   installed in a shared file system.
+
+   To install LSF configuration files, choose Option 1. Install Configuration
+   Files. This option installs configuration files and shared
+   working directories for lsbatch.
+
+   To install LSF daemons, commands, libraries, X applications uid files,
+   choose Option 2. Install Binary Files.
+
+   To install LSF manual pages, choose Option 3. Install Manual Pages.
+
+   To install LSF X applications default files and help files, choose 
+   Option 4. Install X Applications Default Files.
+
+   To install miscellaneous LSF example files, choose Option 5. Install
+   Misc Examples etc.
+
+   To install LSF header files, choose Option 6. Install LSF Header Files.
+
+   To see this help information, choose Help (?).
+
+   To quit the installation, choose Quit (q).
+
+HELP2
+    echo $enf "Press Enter to continue ... " $enl
+    read N
+    continue ;;
+
+    esac
+done
+
+} # component

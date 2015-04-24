@@ -1,0 +1,554 @@
+#! /bin/sh
+# $RCSfile: lsfstartup,v $Revision: 5.31 $Date: 2013/01/10 05:54:38 $
+#-----------------------------------------------------------------     
+#     
+#  Startup script for LSF.
+#     
+#  lsfstartup - start up all daemons of LSF on all hosts of the
+#  local cluster.
+#     
+#  Usage: lsfstartup [ -f | -pdsh [-num_hosts number] [-delay seconds] | -h | -V ]
+#
+#     
+#----------------------------------------------------------------     
+EXEC_FILENAME=`basename $0`
+usage="Usage: $EXEC_FILENAME [ -f | -pdsh [-num_hosts number] [-delay seconds] | -h | -V ]"
+confirm='Error(s) found in previous operation, continue ? [y/n]'
+
+error=0                        # exit code 
+enable_ego=0
+started_cand=0
+# handle difference between system V and BSD echo
+# To echo "foo" with no newline, do
+# echo $enf "foo" $enl
+if [ "`echo -n`" = "-n" ] ; then
+    enf=
+    enl="\c"
+else
+    enf=-n
+    enl=
+fi
+
+if [ "`uname -s`" = "SunOS" ];then
+     AWK=nawk
+else
+     AWK=awk
+fi
+
+#
+# Parallel startup host daemons with PDSH:
+#    lsfstartup -pdsh [-num_hosts number] [-delay seconds]
+#
+#    - All hosts are divided into chunks;
+#       - num_hosts
+#         It is the host number per chunk: the hosts in one chunk will startup in parallel:
+#            The default value is defined as $num_hosts; 
+#            The max number is 512, defined as $PDSH_CONNECT_MAX. 
+#       - delay 
+#         It is the waiting time between two consecutive chunks:
+#            The default value is defined as $delay. 
+#            The max value is 60 seconds, defined as $MAX_INTERVAL.
+#    - Master candidates are first startup.
+
+num_hosts=250
+delay=8
+PDSH_CONNECT_MAX=512
+MAX_INTERVAL=60
+lsf_hosts=""
+started_list=""
+
+pdsh_startup_in_chunks () 
+{
+    hostlist=$1
+    i=0
+    host_chunk=""
+    start_cmd="/bin/sh -c 'LSF_ENVDIR=$LSF_ENVDIR; export LSF_ENVDIR;. \$LSF_ENVDIR/lsf.conf; . \$LSF_CONFDIR/profile.lsf; \$LSF_BINDIR/lsadmin limstartup -f 2>&1; \$LSF_BINDIR/lsadmin resstartup -f 2>&1; \$LSF_BINDIR/badmin hstartup -f 2>&1 '"
+
+    first_chunk=1
+    for host in $hostlist; do 
+        #
+        # 1) Duplicated hosts defined in cluster file also be filered. Here need not check this case.  
+        # 2) Ideally, we should check host is resolvable or not by "ping -c 1 -W 1" or "gethostip". 
+        #    This is to avoid the below issue: 
+        #       Connect to an un-resolvable host, PDSH reports "gethostbyname failed" and break out, 
+        #       thus affect cmd execution on other hosts in the same chunk.
+        #    Normally lshosts already outputs the resolvable official name except one nagative case: 
+        #       configuring an un-resolvable name in column of offical name of $LSF_CONFDIR/hosts, e.g. "IP unresv_name".
+        #
+        #    List it as a dependence for multi-homed hosts configuartion since applying ping to detect every host is not reasonable. 
+
+        if [ $i -lt $num_hosts ]; then
+            if [ $i = 0 ]; then
+               if [ $first_chunk != 1 ]; then 
+                   echo "Waiting <$delay> seconds ..." 
+                   sleep $delay
+                   echo 
+               fi 
+
+               host_chunk=$host
+            else
+               host_chunk=${host_chunk},$host
+            fi
+            i=`expr $i + 1`
+            if [ $i = $num_hosts ]; then
+                # Call pdsh startup hosts in the chunk, then sleep a while. 
+                if [ x"$LSF_CMD_LOGDIR" != x ]; then
+                    echo "pdsh -S -w $host_chunk \"$start_cmd\"" 
+                fi
+                # Filter the duplicated warning messages.
+                pdsh -S -w $host_chunk "$start_cmd" | grep "Starting\ up" | sort -u -k 1 |  sed 's/[^:]*://'
+                echo 
+                i=0
+                first_chunk=0
+           fi
+        fi 
+    done
+
+    if [ $i != 0 ]; then 
+        if [ x"$LSF_CMD_LOGDIR" != x ]; then
+            echo "pdsh -S -w $host_chunk $start_cmd"
+        fi
+        pdsh -S -w $host_chunk "$start_cmd" | grep "Starting\ up" | sort -u -k 1 |  sed 's/[^:]*://'
+    fi 
+}
+
+if [ x"$1" != x ]; then 
+    if [ $1 = "-pdsh" ]; then
+    
+    # check PDSH installation
+    pdsh -V > /dev/null 2>&1
+    if [ $? -ne 0 ]; then 
+        echo  "PDSH cannot be found in this machine." 
+        exit 1
+    fi
+
+    # check option number 
+    if [ $# -gt 5 ] ; then
+        echo $usage; exit 1;
+    fi
+   
+    num_hosts_spec=0 
+    delay_spec=0 
+    if [ x$2 != x  ] ; then 
+        case $2 in
+            -num_hosts)     
+                if [ x"$3" != x ]; then
+                    if [ $3 -gt 0 -a $3 -le $PDSH_CONNECT_MAX ] 2>/dev/null ; then
+                        num_hosts=$3
+                        num_hosts_spec=1 
+                    else 
+                        echo "Error: num_hosts must be specified between 1 and $PDSH_CONNECT_MAX."
+                        exit 1
+                    fi
+                else
+                    echo "Error: num_hosts must be specified between 1 and $PDSH_CONNECT_MAX."
+                    exit 1
+                fi
+	        ;;
+            -delay) 
+                if [ x"$3" != x ]; then
+                    if [ $3 -gt 0 -a $3 -le $MAX_INTERVAL ] 2>/dev/null ; then
+                        delay=$3
+                        delay_spec=1 
+                    else 
+                        echo "Error: delay must be specified between 1 and $MAX_INTERVAL."
+                        exit 1
+                    fi
+                else
+                    echo "Error: delay must be specified between 1 and $MAX_INTERVAL."
+                    exit 1
+                fi
+	        ;;
+            *)  
+                echo "<$2> is not a valid option." 
+                echo $usage; exit 1
+            ;;
+	esac
+    fi 
+
+    if [ x$4 != x  ] ; then 
+        case $4 in
+            -num_hosts)     
+                if [ $num_hosts_spec -eq 1 ]; then
+                    echo "       Warning: you input \"-num_hosts\" twice, the second value will be omitted."
+                fi
+                if [ x"$5" != x ]; then
+                    if [ $5 -gt 0 -a $5 -le $PDSH_CONNECT_MAX ] 2>/dev/null; then
+                        if [ $num_hosts_spec -eq 0 ]; then
+                            num_hosts=$5
+                            num_hosts_spec=1 
+                        fi
+                    else 
+                        echo "Error: num_hosts must be specified between 1 and $PDSH_CONNECT_MAX."
+                        exit 1
+                    fi
+                else
+                    echo "Error: num_hosts must be specified between 1 and $PDSH_CONNECT_MAX."
+                    exit 1
+                fi
+	        ;;
+            -delay) 
+                if [ $delay_spec -eq 1 ]; then
+                    echo "       Warning: you input \"-delay\" twice; the second value will be omitted."
+                fi
+
+                if [ x"$5" != x ]; then
+                    if [ $5 -gt 0 -a $5 -le $MAX_INTERVAL ] 2>/dev/null; then
+                        if [ $delay_spec -eq 0 ]; then
+                            delay=$5
+                            delay_spec=1 
+                        fi
+                    else 
+                        echo "Error: delay must be specified between 1 and $MAX_INTERVAL."
+                        exit 1
+                    fi
+                else
+                    echo "Error: delay must be specified between 1 and $MAX_INTERVAL."
+                    exit 1
+                fi
+	        ;;
+            *)  
+                echo "<$4> is not a valid option." 
+                echo $usage; exit 1
+                ;;
+	    esac
+    fi 
+else 
+    if [ $# -gt 1 ] ; then
+        echo $usage; exit 1;
+    fi
+fi
+fi
+# check the option -f is provided ?
+if [ x$1 != x ]; then
+    case $1 in
+        -pdsh) enPDSH=y;;
+        -f)    FORCE=y;;
+        -V)    echo ""; lshosts -V; echo ""; exit;;
+         *)    echo $usage; exit 1;;
+    esac
+fi
+
+if [ "$LSF_ENVDIR" = "" ] ; then
+    if [ -f /etc/lsf.conf ] ; then
+	echo $enf "Is /etc/lsf.conf your current installation ? [y/n]" $enl
+	read N
+	case "$N" in
+	    ""| Y* | y*) CONF=/etc/lsf.conf;;
+	    *) if [ "$N" = "" ] ; then 
+		   CONF=/etc/lsf.conf 
+	       fi
+	       ;;
+	esac
+    fi
+
+    if [ "$CONF" = "" ] ; then
+	while [ 1 ] ; do
+	    echo $enf "Enter the full pathname of the lsf.conf file" $enl
+	    read N
+	    if [ ! -f $N ] ; then
+		echo $N is not a file or does not exist.
+            else
+		CONF=$N
+                break;
+            fi
+	done
+    fi
+    . $CONF
+    if [ "$LSF_ENVDIR" != "" ]; then
+        export LSF_ENVDIR
+    else
+        LSF_ENVDIR=`dirname $CONF`
+        export LSF_ENVDIR
+    fi
+else
+    . $LSF_ENVDIR/lsf.conf
+    CONF=$LSF_ENVDIR/lsf.conf
+fi
+
+if [ "$LSF_BINDIR" != "" ] ; then
+    PATH=$PATH:$LSF_BINDIR
+fi
+
+# If LSF_ENABLE_EGO is "N" or "n", skip checking $EGO_CONFDIR
+if [ "${LSF_ENABLE_EGO}" != "n" -a "${LSF_ENABLE_EGO}" != "N" ]; then    
+
+    if [ "$enPDSH" = "y" ]; then    
+        echo  "Parallel lsfstartup does not support enabling EGO." 
+        exit 1
+    fi
+
+    if [ -f "$EGO_ENVDIR/ego.conf" ] ; then
+       CONF="$EGO_ENVDIR/ego.conf" 
+    elif [ -f "$EGO_CONFDIR/ego.conf" ] ; then
+       CONF="$EGO_CONFDIR/ego.conf"
+    elif [ -f "$LSF_EGO_ENVDIR/ego.conf" ] ; then
+       CONF="$LSF_EGO_ENVDIR/ego.conf"    
+    elif [ -f /etc/ego.conf ] ; then
+       CONF=/etc/ego.conf 
+    else
+       while [ 1 ] ; do
+          echo $enf "Enter the full pathname of the ego.conf file" $enl
+           read N
+           if [ ! -f $N ] ; then
+               echo $N is not a file or does not exist.
+            else
+               CONF=$N
+                break;
+            fi
+       done
+    fi
+    
+    if [ "$EGO_CONFDIR" = "" ] ; then
+       . $CONF
+       export EGO_CONFDIR
+    else
+       . $CONF
+    fi
+    
+    if [ "$EGO_BINDIR" != "" ] ; then
+        PATH=$PATH:$EGO_BINDIR
+    fi
+    enable_ego=1
+fi
+
+if [ "$enPDSH" = "y" ]; then    
+
+    # (1) User authorization checking: root or users defined in lsf.sudoers are permitted.
+    # (2) Should not startup remote daemons from a slave or client only host.
+    #
+    invalid_hostname="@invalid_hostname@" 
+    test_res=`lsadmin limstartup -f $invalid_hostname 2>&1`
+    exit_code=$? 
+    if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+        echo
+        # internal debug message
+        echo "Testing lsfstartup permission with exit code <$exit_code>: " 
+        echo "$test_res" 
+        echo
+    fi
+
+    no_auth=`echo "$test_res" | grep "^Not\ authorized\ to\ start\ up"` 
+    if [ x"$no_auth" != x  ]; then 
+        echo "$test_res" 
+        exit 1
+    fi
+   
+    if [ $exit_code != 0 ]; then
+        disallow=`echo "$test_res" | grep "^Should\ not\ start\ remote"` 
+        if [ x"$disallow" != x ]; then
+            echo  "Error: Should not start remote daemons from a slave only or client host."  
+            exit 1
+        fi
+    fi
+
+    echo "Parallel startup with PDSH:" 
+    echo "       "num_hosts is: \<$num_hosts\> hosts per chunk.
+    echo "       "chunk delay is: \<$delay\> seconds.
+    echo
+    echo  "Reading configuration file ..." 
+
+    # Search LSF_MASTER_LIST, to the multiple lines of LSF_MASTER_LIST, get the last one.
+    master_list=`sed 's/^[ \t]*//g' $CONF | sed 's/[ \t]*$//g' |
+                 grep "^LSF_MASTER_LIST=\"" |  tail -1 | 
+                 sed 's/LSF_MASTER_LIST=\"//'|  
+                 grep "\"" | $AWK -F\" '{print $1}' |
+                 sed 's/[[:space:]][[:space:]]*/ /' |
+                 sed 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/'
+                `
+	if [ $? != 0 -o x"$master_list" = x ]; then 
+        echo  "Error: Master list cannot be found or syntax error in the file <$CONF> ." 
+        exit 1
+    else
+        if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+            echo "       Master candidate list is:" $master_list
+        fi
+    fi
+
+    echo 
+    echo Starting up daemons on master candidates in sequence ...
+    echo 
+    
+    for candidate in $master_list; do
+        cand_lim_start=`lsadmin limstartup -f $candidate 2>&1`   
+        echo "$cand_lim_start" | grep -v "Bad host name"  
+
+        cand_res_start=`lsadmin resstartup -f $candidate 2>&1` 
+        echo "$cand_res_start" | grep -v "Bad host name"  
+
+        cand_sbd_start=`badmin  hstartup   -f $candidate 2>&1` 
+        echo "$cand_sbd_start" | grep -v "Bad host name" 
+        
+        unresolve=`echo "$cand_lim_start" | grep "failed: Bad host name"`
+        if [ x"$unresolve" = x ]; then 
+            started_cand=`expr $started_cand + 1`
+            echo 
+        fi
+    done
+
+    echo
+    echo $enf "Waiting for Master LIM to start up ..." $enl
+        until lsid 1>/dev/null 2>&1
+    do
+        echo $enf "." $enl
+        sleep 4
+    done
+    echo "  Master LIM is ok" 
+
+    echo
+    echo Starting up daemons on server hosts in parallel ...
+    # Get host list from lshosts -w cluster_name.
+    CLUSTERNAME=`lsid | grep "My\ cluster\ name\ is\ " | sed 's/My\ cluster\ name\ is\ //' `
+    CLUSTERHOSTS=`lshosts -w $CLUSTERNAME`
+
+    # Master host is in the front of output of "lshosts", we should not startup these master candidates again.  
+    started_master=`echo "$CLUSTERHOSTS" | grep -v "^HOST_NAME" |  head -n $started_cand | 
+                  $AWK -F '[ :\t|]' '{print $1}' | 
+                  while read line;do
+                      echo $line 
+                  done 
+                  `  
+    if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+        echo "       Started master is: $started_master"
+        echo "       Started master number : <$started_cand>"
+    fi
+
+    # Skip dynamic hosts and client hosts with "grep "\ Yes\ ".
+    server_list=`echo "$CLUSTERHOSTS" | grep -v "^HOST_NAME" | grep "\ Yes\ "  | 
+              $AWK -F '[ :\t|]' '{print $1}' | 
+              while read line;do
+                  echo $line 
+              done 
+              ` 
+    for master_host in $started_master; do 
+	    master=`echo "$master_host" | sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g'`
+        server_list=`echo " " $server_list " "| sed 's/\ /\ \ /g' | sed "s/\ $master\ /\ /g" `
+    done
+
+    if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+        echo "       Cluster Name is: $CLUSTERNAME"
+        echo "       Slave server hosts waiting for startup are: $server_list"
+    fi
+
+    if [ x"$server_list" != x ]; then
+        # pdsh startup all slave hosts in chunks
+        pdsh_startup_in_chunks "$server_list"
+    fi
+    echo 
+    echo Done starting up LSF daemons in parallel. 
+    exit 0
+fi
+
+echo  Starting up all LIMs ...
+
+lsadmin limstartup all 
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y"  ] ; do
+        echo $enf $confirm $enl
+	read answer
+ 	case $answer in
+ 	    Y* | y*) break;;
+        N* | n*) exit 1;;
+ 	    *) continue;;
+ 	esac
+    done
+fi
+
+echo 
+echo $enf "Waiting for Master LIM to start up ..." $enl
+until lsid 1>/dev/null 2>&1
+do
+    echo $enf "." $enl
+    sleep 3
+done
+echo "  Master LIM is ok" 
+
+# If LSF_ENABLE_EGO is "N" or "n", ignore LSF_EGO_DAEMON_CONTROL
+if [ "${LSF_ENABLE_EGO}" != "n" -a "${LSF_ENABLE_EGO}" != "N" ]; then    
+	echo
+	if [ "${LSF_EGO_DAEMON_CONTROL}" = "Y" -o "${LSF_EGO_DAEMON_CONTROL}" = "y" ]; then
+	    echo $enf "LSF_EGO_DAEMON_CONTROL is enabled in lsf.conf, waiting for EGO Service Controller to start up ..." $enl
+	    error=1
+	    egosh service list 1>/tmp/test_egosc_$! 2>&1
+	    while [ $error -le 20 ]
+	    do
+	        resstatus=`grep "res" /tmp/test_egosc_$! | $AWK '{print $2}'`
+	        sbdstatus=`grep "sbatchd" /tmp/test_egosc_$! | $AWK '{print $2}'`
+	        if [ "$resstatus" = "ALLOCATI" -o "$resstatus" = "STARTED" ]; then
+	            if [ "$sbdstatus" = "ALLOCATI" -o "$sbdstatus" = "STARTED" ]; then
+	                error=0
+	                rm /tmp/test_egosc_$!
+	                break
+	            fi
+	        fi
+	        echo $enf "." $enl
+	        rm /tmp/test_egosc_$!
+	        error=`expr $error + 1`
+	        sleep 3
+	        egosh service list 1>/tmp/test_egosc_$! 2>&1
+	    done
+	    if [ $error -ne 0 ]; then
+	        echo
+	        while [ "$FORCE" != "y" ] ; do
+	            echo $enf "EGO Service Controller is not ready, continue ? [y/n]" $enl
+	            read answer
+	            case $answer in
+	                Y* | y*) break;;
+	                N* | n*) exit 1;;
+	                *) continue;;
+	            esac
+	        done
+	    else
+	        echo "  EGO Service Controller is ready"
+	        echo
+	    fi
+	fi
+fi	
+  
+echo Starting up all RESes ...
+
+lsadmin resstartup all
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y" ] ; do
+        echo $enf $confirm $enl
+	read answer
+	case $answer in
+	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+	    *) continue;;
+	esac
+    done
+else 
+    echo 
+fi
+
+echo Starting all slave daemons on LSBATCH hosts ...
+
+badmin hstartup all
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y" ] ; do
+        echo $enf $confirm $enl
+	read answer
+	case $answer in
+	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+	    *) continue;;
+	esac
+    done
+else 
+    echo ""
+fi
+
+echo Done starting up LSF daemons on the local LSF cluster ...
+
+echo ""
+exit $error
+
+
+

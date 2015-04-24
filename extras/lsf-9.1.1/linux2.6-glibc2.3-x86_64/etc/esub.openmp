@@ -1,0 +1,60 @@
+#!/bin/sh
+# 
+# Copyright International Business Machines Corp,2002, 2012.
+# All Rights Reserved.
+#
+# esub.openmp sets environment variable LSF_PAM_HOSTLIST_USE=unique
+# for OpenMP, and insert "pam" before the command.
+#
+# No path of pam is allowed on the command line.
+#
+# This script is called by a general esub which is 
+# invoked by bsub -a openmp ....
+#
+LSB_SUB_COMMAND_LINE=""
+
+# esub should always redirect stdout to stderr. 
+exec 1>&2
+
+. $LSB_SUB_PARM_FILE
+
+# First check if user defined this variable
+# in envrionment, if not check lsf.conf 
+if [ -z "$LSF_PJL_COMPAT" ]; then
+    . ${LSF_ENVDIR}/lsf.conf
+fi
+
+#set the environment
+echo "LSF_PAM_HOSTLIST_USE=unique" >> $LSB_SUB_MODIFY_ENVFILE
+
+if [ "$LSF_PJL_COMPAT" = "y" -o "$LSF_PJL_COMPAT" = "Y" ]; then
+    if [ x"$LSB_SUB_COMMAND_LINE" = "x" ]; then
+        echo "Command line can not be empty"
+        exit $LSB_SUB_ABORT_VALUE
+    fi
+
+    #Strip comment in command line
+    LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+    BEGIN { RS=";"; command=""; counter=0}
+    $0 !~ /^[ \t]*#/ {
+        if ( counter == 0 )
+            command = $0
+        else
+            command = sprintf("%s;%s", command, $0)
+        counter = counter + 1
+    }
+    END { print command } '`
+
+    if [ "$LSB_SUB_COMMANDNAME" != "pam" ]; then 
+        #put pam before the command line
+        LSB_SUB_COMMAND_LINE="\"pam $LSB_SUB_COMMAND_LINE\""
+        echo "LSB_SUB_COMMAND_LINE=$LSB_SUB_COMMAND_LINE" >> $LSB_SUB_MODIFY_FILE 
+    fi
+fi
+ 
+exit 0
+
+
+
+
+

@@ -1,0 +1,239 @@
+#!/bin/sh
+
+#$Id: config,v 1.1 2006/06/27 19:31:10 gwen Exp $
+
+#**********************************************************************
+#
+# Script for creating initial configurations
+#
+# Assumes it is sourced by lsfsetup
+#*********************************************************************
+
+# Some helper functions
+
+#--------------------------------------------------------------------
+#
+# delete_element -
+#
+#    This routine deletes an element (one line) from a section
+#
+#    Usage: delete_element section_name keyname fname
+#--------------------------------------------------------------------
+delete_element()
+{
+    section=$1
+    key=$2
+    fname=$3
+
+    AKW_LINE="$AWK 'BEGIN{ i = 0} {
+        if (NF == 2 && \$1 == \"Begin\" && \$2 == \"$section\")
+            i = 1;
+        if (NF == 2 && \$1 == \"End\" && $2 == \"$section\")
+            i = 0;
+        if ( i == 0) {
+            print
+        } else {
+            if (\$1 != \"$key\")
+                print
+        }
+    }'"
+
+    eval $AKW_LINE $fname
+}
+
+config()
+{
+
+echo
+echo "Starting LSF configuration ... "| tee -a $PREFIX_LOG/Install.log
+echo
+
+if test "$lsfconf" != "" -a ! -f "$lsfconf"
+then
+    lsfconf=
+fi
+
+if test "$lsfconf" = ""
+then
+    for CONF in $LSF_SERVERDIR/lsf.conf $LSF_ENVDIR/lsf.conf
+    do
+	if [ -f $CONF ] ; then
+            if yesno "Use $CONF for the set up?" Y "help LSFCONF" > $LSNULFILE
+	    then
+		lsfconf=$CONF
+		. $CONF
+		break
+	    fi
+	fi
+    done
+fi
+
+while [ "$lsfconf" = "" ] ; do
+    N=`ask "Enter the pathname of your installed lsf.conf file" "" "help LSFCONF"`
+    if [ -d "$N" ] ; then
+        echo "   $N is not a file."| tee -a $PREFIX_LOG/Install.log
+	help LSFCONF
+	continue
+    fi
+
+    if [ ! -f "$N" ] ; then
+	echo "   Cannot find file $N."| tee -a $PREFIX_LOG/Install.log
+	continue
+    fi
+    .  $N
+    lsfconf=$N
+    break
+done
+
+#Currently, in lsf.conf LSF_ENVDIR is always set to /etc. We cannot trust /etc,
+#since some site already has a cluster, /etc/lsf.conf is pointed to the exist
+#cluster not the new install cluster. Get the LSF_ENVDIR exactly from what the
+# user input.
+
+if [ $lsfconf != "" ]; then
+    LSF_ENVDIR=`echo $lsfconf | sed 's/\/lsf.conf//' `
+fi
+
+if [ ! -d "$LSF_CONFDIR" ] ; then
+    echo "Cannot find LSF cluster configuration directory. You must install"
+    echo "Cannot find LSF cluster configuration directory. You must install" >> $PREFIX_LOG/Install.log
+    echo "LSF first."
+    echo "LSF first." >> $PREFIX_LOG/Install.log
+    echo
+    exit
+fi
+
+# initialization
+LSF_SHARED=${LSF_CONFDIR}/lsf.shared
+LSF_SHARED_TMP=/tmp/lsf.shared.tmp
+LSF_CLUSTER=${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+LSF_CLUSTER_TMP=/tmp/lsf.cluster.tmp
+
+get_lsf_manager
+
+trap "echo cleaning up ...; rm -f ${LSF_SHARED_TMP} ${LSF_CLUSTER_TMP} /tmp/.tmp.file.$$ /tmp/.tmp.file1.$$ ; exit" 1 2 3 15
+
+rm -f ${LSF_CLUSTER_TMP}
+s1=$?
+rm -f /tmp/.tmp.file.$$
+s2=$?
+rm -f /tmp/.tmp.file1.$$
+s3=$?
+rm -f ${LSF_SHARED_TMP}
+
+if [ "$?" != "0" -o "$s1" != "0" -o "$s2" != "0" -o "$s3" != "0" ] ; then
+    echo "Please make sure that /tmp/.tmp.file.$$, /tmp/.tmp.file1.$$,"
+    echo "Please make sure that /tmp/.tmp.file.$$, /tmp/.tmp.file1.$$," >> $PREFIX_LOG/Install.log
+    echo "${LSF_CLUSTER_TMP}, ${LSF_SHARED_TMP} are removed."
+    echo "${LSF_CLUSTER_TMP}, ${LSF_SHARED_TMP} are removed." >> $PREFIX_LOG/Install.log
+    exit
+fi
+
+clear
+while : ; do
+    cat <<MENU | tee -a $PREFIX_LOG/Install.log
+
+Please choose one of the following options:
+
+    1. View/Modify Currently Configured Hosts
+    2. View/Modify Currently Defined Host Models
+    3. View/Modify Currently Defined Resource Names
+    4. View/Modify Currently Defined Host Types
+    5. Check LSF Configuration File for Errors
+    6. Reconfigure LSF servers
+
+    ?. Help
+    q. Quit
+
+MENU
+    echo $enf "Please enter your choice:" $enl| tee -a $PREFIX_LOG/Install.log
+    read A
+    echo $A >> $PREFIX_LOG/Install.log
+
+    case $A in
+    1)  . $sp/modify_host; modify_host; continue;;
+    2)  . $sp/modify_model; modify_model; continue;;
+    3)  . $sp/modify_resource; modify_resource; continue;;
+    4)  . $sp/modify_type; modify_type; continue;;
+    5)
+        if [ "$LSF_DEFAULT_INSTALL" = "y" -o "$LSF_DEFAULT_INSTALL" = "Y" ]
+        then
+            if [ "$LSF_LINK_PATH" = "n" ]; then
+                . $LSF_CONFDIR/profile.lsf
+            elif [ "$LSF_LINK_PATH" = "" ]; then
+                echo "Please do hostsetup first"| tee -a $PREFIX_LOG/Install.log
+                continue
+            else
+                :
+            fi
+        fi
+        ${LSF_SERVERDIR}/lim -C -d ${LSF_ENVDIR}; continue;;
+    6)  set LSF_ENVDIR $LSF_ENVDIR
+	echo 
+	echo "    Reconfiguring LIMs ..."| tee -a $PREFIX_LOG/Install.log
+	echo
+        if [ "$LSF_DEFAULT_INSTALL" = "y" -o "$LSF_DEFAULT_INSTALL" = "Y" ]
+        then
+            if [ "$LSF_LINK_PATH" = "n" ]; then
+                . $LSF_CONFDIR/profile.lsf
+            elif [ "$LSF_LINK_PATH" = "" ]; then
+                echo "Please do hostsetup first"| tee -a $PREFIX_LOG/Install.log
+                continue
+            else
+                :
+            fi
+        fi
+	${LSF_BINDIR}/lsadmin reconfig 
+	echo
+	echo 
+	echo "    Reconfiguring lsbatch ..."| tee -a $PREFIX_LOG/Install.log
+	echo
+	${LSF_BINDIR}/badmin reconfig
+	continue ;;
+    [Qq]*) break ;;
+    *)	more << HELP1
+    The operations defined in this menu result in changes to the
+    following files:
+    ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+    ${LSF_CONFDIR}/lsf.shared
+
+    To add, delete, or change hosts in LSF cluster configuration,
+    choose Option 1. View/Modify Currently Configured Hosts.
+
+    To add, delete, or change the host models defined,
+    choose Option 2. View/Modify Currently Defined Host Models.
+    Host models dictate the CPU speed scaling factor that LSF uses
+    for its policy.
+
+    To add, delete, or change the resource names currently
+    defined by your configuration, choose Option 3. View/Modify Currently
+    Defined Resource Names. Resource names can be associated with hosts
+    so that LSF can use them to select hosts according to user-specified
+    resource requirement expressions.
+
+    To add, delete, or change the list of available host types,
+    choose Option 4. View/Modify Currently Defined Host Types.
+    Host types are used to identify binary-compatible hosts.
+
+    When you have finished setting up the LSF configuration,
+    choose Option 5. Check LSF Configuration File for Errors to
+    make sure that there are no syntax errors in the configuration files.
+
+    If you have made any changes to the configuration files while the
+    LSF system is running, you must choose Option 6. Reconfigure LSF Servers.
+
+    To see this help information, choose Help (?)
+
+    To exit from this menu, choose Quit (q).
+
+    Press Enter to continue ...
+HELP1
+    read N;;
+    esac
+done
+
+echo
+echo "LSF configuration complete."| tee -a $PREFIX_LOG/Install.log
+echo
+
+} # config

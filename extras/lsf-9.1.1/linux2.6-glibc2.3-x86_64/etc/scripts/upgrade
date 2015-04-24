@@ -1,0 +1,704 @@
+#!/bin/sh
+#
+# $Id: upgrade,v 1.2 2012/06/08 03:37:25 sbadugu Exp $
+#
+# Must be sourced by lsfsetup
+
+#
+#-----------------------------------------
+#
+# limitation_handler --
+#
+# ARGUMENTS:
+#
+# $1: section name in lsf.shared
+# $2: limitation number of the section
+#
+# PRE-CONDITION:
+#
+# DESCRIPTION:
+#
+# This function handles the limitiation of sections in lsf.shared file.
+# When doing upgrade, we will merge the user's original lsf.shared and
+# the template in ~/base/conf of lsf.shared.
+#
+# SIDE_EFFECTS:
+#
+# If the limitation of any section is modified, although we do not need
+# modify this function, but we need modify the function which calls this 
+# function.
+#
+# RETURN:
+#
+#-----------------------------------------
+#
+limitation_handler()
+{
+secName=$1
+secLimit=$2
+
+lineCount=0
+inSec=n
+
+if [ -f ${LSF_SHARED}.$$ ]; then
+    rm -f ${LSF_SHARED}.$$ >$LSNULFILE
+fi
+
+mv -f $LSF_SHARED ${LSF_SHARED}.$$
+
+exec 4<${LSF_SHARED}.$$
+
+while read LINE 0<&4
+do
+    echo $LINE | grep "Begin[ 	]*${secName}" >$LSNULFILE && { inSec=y; echo $LINE >> $LSF_SHARED; continue; }
+    echo $LINE | grep "End[ 	]*${secName}" >$LSNULFILE && { inSec=n; echo $LINE >> $LSF_SHARED; continue; }
+
+    if [ "$inSec" = y ]; then
+        string=`echo $LINE | sed -e 's/^[ 	]*//'`
+        first_char=`expr "$string" : '\(.\).*'`
+
+        if [ "$first_char" != "#" ]; then
+            lineCount=`expr $lineCount + 1`
+            itemCount=`expr $lineCount - 1` # for the keyword line
+
+            if [ "$itemCount" -gt "$secLimit" ]; then
+                echo "#"$LINE >> $LSF_SHARED # when exceed limit, comments it
+            else
+                echo $LINE >> $LSF_SHARED
+            fi
+        else
+            echo $LINE >> $LSF_SHARED
+        fi
+    else
+        echo $LINE >> $LSF_SHARED
+    fi
+done
+
+exec 4<&-
+
+rm -f ${LSF_SHARED}.$$ >$LSNULFILE
+
+return
+
+}
+                
+        
+
+#
+#-----------------------------------------
+#
+# add_newline --
+#
+# ARGUMENTS:
+#
+# $1: section name in lsf.shared
+# 
+# PRE-CONDITION:
+#
+# correct content of lsf.shared, both new and old
+#
+# DESCRIPTION:
+#
+# This function will add the lines in new lsf.shared
+# that do not exist in the old lsf.shared.
+#
+# SIDE_EFFECTS:
+#
+# RETURN:
+#
+#-----------------------------------------
+#
+add_newline()
+{
+LSF_SHARED_SEC=$1
+
+exec 4<$_source
+
+while read LINE 0<&4
+do
+
+    echo $LINE | grep "Begin[ 	]*${LSF_SHARED_SEC}" >$LSNULFILE && { inSec=y; continue; }
+    echo $LINE | grep "End[ 	]*${LSF_SHARED_SEC}" >$LSNULFILE && { inSec=n; break; }
+
+    sharedName=`echo $LINE | $AWK '{print $1}'`
+
+    if [ "$sharedName" != "" -a "$inSec" = "y" ]; then
+        if egrep "$sharedName" $_f >$LSNULFILE 2>&1 
+        then
+            continue
+        else
+            echo $LINE >> $_f
+            continue
+        fi
+    fi
+    continue
+done
+exec 4<&-
+
+return
+}
+
+
+
+grap_types()
+{
+    file_name=$1
+
+    TYPES=`grep -v "^#" $file_name | $AWK '$1 ~ /^[Bb][Ee][Gg][Ii][Nn]$/ && $2 ~ /^[Hh][Oo][Ss][Tt]$/ { state=1;next } state == 1 { fnum = 1 ; while ($fnum !~ /[Tt][Yy][Pp][Ee]/) { fnum++ } state=2 ; next ; } $1 ~ /^[Ee][Nn][Dd]$/ && $2 ~ /^[Hh][Oo][Ss][Tt]$/ { exit ; } state == 2 { print $fnum }' | sort -u`
+
+    echo $TYPES
+}
+
+#------------------------------------------------------------------------
+# add_type
+#
+#    Add type to file
+#------------------------------------------------------------------------
+add_type() 
+{
+    file=$1
+    type=$2
+    FOUND=`sed -n -e "/^[ 	]*[Bb][Ee][Gg][Ii][Nn][	 ][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/,/^[	 ]*[Ee][Nn][Dd][ 	][	 ]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/p" $file | egrep "^[	 ]*${type}[ 	]*$`
+    if [ "$FOUND" = "" ] ; then
+	echo "        Adding host type $type to $file ..." |tee -a $PREFIX_LOG/Install.log
+	echo
+	$LSEXEDITOR $file <<EXEND_TYPE >$LSNULFILE 2>&1
+	/^[	 ]*[Ee][Nn][Dd][ 	][	 ]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]
+	i
+`echo $type`
+.
+	w
+	q
+EXEND_TYPE
+    fi
+}
+
+upgrade_config()
+{
+    echo
+    echo "Upgrading configuration files."
+    echo
+
+    LSF_SHARED=${LSF_CONFDIR}/lsf.shared
+
+    CLUSTERS=`sed -n -e "/^Begin[ 	][ 	]*Cluster/,/^End[	 ][	 ]*Cluster/p" ${LSF_SHARED} | $AWK '{print $1}' | grep -v Begin | grep -v End | grep -v ClusterName | sed -e "/^#/d"`
+
+    if [ "$CLUSTERS" = "" ] ; then
+	echo "    Cannot find out cluster name from $LSF_SHARED." |tee -a $PREFIX_LOG/Install.log
+	CLUSTERS=`ask "${LSF_CLUSTER_NAME_STR}" "" "help LSF_CLUSTER_NAME"`
+    fi
+
+    for clust in $CLUSTERS ; do
+	if readable ${LSF_CONFDIR}/lsf.cluster.$clust HOSTNAME ; then
+	    :
+	else
+	    echo "    Warning: ${LSF_CONFDIR}/lsf.cluster.$clust ignored."| tee -a $PREFIX_LOG/Install.log
+	    continue
+	fi
+
+	eval `sed -n -e "/^Begin[	 ][	 ]*ClusterManager/,/^End[	 ][	 ]*ClusterManager/p" ${LSF_CONFDIR}/lsf.cluster.$clust | egrep = | sed -e "s/[ 	]*=[ 	]*/=/"` 
+	LSF_MANAGER=$Manager
+
+	if [ "$LSF_MANAGER" = "" ] ; then
+#	    eval `sed -n -e "/^Begin[	 ][	 ]*ClusterAdmins/,/^End[	 ][	 ]*ClusterAdmins/p" ${LSF_CONFDIR}/lsf.cluster.$clust | egrep = | sed -e "s/[ 	]*=[ 	]*/=/"` 
+ 	    Manager=`sed -n -e "/^Begin[	 ][	 ]*ClusterAdmins/,/^End[	 ][	 ]*ClusterAdmins/p" ${LSF_CONFDIR}/lsf.cluster.$clust | grep -i "^[ 	]*Administrators" | $AWK '{print $3}'`
+	    LSF_MANAGER=$Manager
+	fi
+	
+	while [ "$LSF_MANAGER" = "" ] ; do
+	    echo "    Cannot find out cluster manager name from ${LSF_CONFDIR}/lsf.cluster.$clust" |tee -a $PREFIX_LOG/Install.log
+	    LSF_MANAGER=`ask "${LSF_MANAGER_STR}" "" "help LSF_MANAGER"`
+        done
+
+# upgrade_lsf() is used for upgrade lsf.shared file into new format.
+# It adds new host models and types into lsf.shared file and adds ARCHITECTURE column
+# to host model section. This is for AUTO_DETECT_HOST_MODEL_TYPE, but we do not do it
+# when upgrade LSF from 3.2 to 4.0. 
+#
+# 	if upgrade_lsf $clust $LSF_MANAGER; then
+#	    :
+# 	fi
+    done
+
+    if defined "$SUCCESS" ; then
+	return 0
+    else
+	return 1
+    fi
+}
+
+
+#
+#-----------------------------------------
+#
+# upgrade_lsf --
+#
+# ARGUMENTS:
+#
+# $LSF_CLUSTER_NAME
+# $LSF_MANAGER
+#
+# PRE-CONDITION:
+#
+# correct mode and content of lsf.cluster.<cluster-name> and lsf.shared
+#
+# DESCRIPTION:
+#
+# upgrade lsf.cluster.<cluster-name> and lsf.shared
+#
+# SIDE_EFFECTS:
+#
+# RETURN:
+#
+# success -- 0
+# fail -- 1
+#
+#-----------------------------------------
+#
+
+upgrade_lsf() 
+{
+LSF_CLUSTER_NAME=$1
+LSF_MANAGER=$2
+
+MaxTypeNum=128 # In 4.0, we support no more than 128 HostTypes in lsf.shared
+MaxModelNum=128 # In 4.0, we support no more than 128 HostModels in lsf.shared
+
+if is_root ; then
+    CHOWN=chown
+else
+    CHOWN=true
+fi
+
+$CHOWN $LSF_MANAGER ${LSF_CONFDIR}
+
+echo
+echo "    Upgrading Base config files for cluster $LSF_CLUSTER_NAME ..."
+echo
+LSF_SHARED=${LSF_CONFDIR}/lsf.shared
+LSF_CLUSTER=${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+
+$CHOWN $LSF_MANAGER $LSF_CLUSTER
+$CHOWN $LSF_MANAGER $LSF_SHARED
+chmod 644 $LSF_CLUSTER $LSF_SHARED
+
+if test ! -w $LSF_SHARED ; then
+    echo "${LSF_SHARED}: Does not exist or not writable."| tee -a $PREFIX_LOG/Install.log
+    echo "Cannot upgrade configuration files." | tee -a $PREFIX_LOG/Install.log
+    return 1
+fi
+
+if test ! -w $LSF_CLUSTER ; then
+    echo "${LSF_CLUSTER}: Does not exist or not writable."| tee -a $PREFIX_LOG/Install.log
+    echo "Cannot upgrade configuration files."| tee -a $PREFIX_LOG/Install.log
+    return 1
+fi
+
+cp $LSF_CLUSTER ${LSF_CLUSTER}.old
+chmod 644 ${LSF_CLUSTER}.old
+$CHOWN $LSF_MANAGER ${LSF_CLUSTER}.old 2>&1
+
+if egrep "^[ 	]*MODELNAME[ 	][	 ]*CPUFACTOR[    ][       ]*ARCHITECTURE" ${LSF_SHARED} >$LSNULFILE 2>&1
+then
+    echo "    ${LSF_SHARED} is already in new format."
+    upgradeShared=n
+else
+    if [ "$UNATTENDED_INSTALL" != "y" ]; then
+        if yesno "Do you want to upgrade lsf.shared file to new format?" Y "" > $LSNULFILE
+        then
+            upgradeShared=y
+        else
+            upgradeShared=n
+        fi
+    else
+        upgradeShared=y
+    fi
+fi
+
+if [ "$upgradeShared" = "y" ]; then
+    echo 
+    echo "Saving ${LSF_SHARED} to ${LSF_SHARED}.old"
+    echo "Upgrading ${LSF_SHARED}"
+    echo
+    mv ${LSF_SHARED} ${LSF_SHARED}.old 2>&1
+    chmod 644 ${LSF_SHARED}.old
+    $CHOWN ${LSF_MANAGER} ${LSF_SHARED}.old
+
+    _edit=n
+    _f=${LSF_SHARED}
+    _source=base/conf/lsf.shared
+    exec 3<${LSF_SHARED}.old
+    while read LINE 0<&3
+    do
+        echo $LINE | grep "End[ 	]*HostType" >$LSNULFILE && { _edit=n; add_newline HostType; echo $LINE >> $_f; continue; }
+        echo $LINE | grep "End[ 	]*HostModel" >$LSNULFILE && { _edit=n; add_newline HostModel; echo $LINE >> $_f; continue; }
+        echo $LINE | grep "End[ 	]*Resource" >$LSNULFILE && { _edit=n; add_newline Resource; echo $LINE >> $_f; continue; }
+        echo $LINE | grep "Begin[ 	]*HostModel" >$LSNULFILE && { _edit=y; echo $LINE >> $_f; continue; }
+        test "$_edit" = "n" && { echo $LINE >> $_f; continue; }
+            
+        echo $LINE | grep "MODELNAME[ 	]*CPUFACTOR" >$LSNULFILE && { echo "MODELNAME	CPUFACTOR	ARCHITECTURE" >> $_f; continue; }
+        echo $LINE | grep "DEFAULT" >$LSNULFILE && { echo "DEFAULT	 	1.0		()" >> $_f; continue; }
+        	
+        _model=`echo $LINE | $AWK '{print $1}'`
+        _newline=`echo $LINE | $AWK '{print $1 " 	 "  $2}'`
+        if grep "$_model" $_source >$LSNULFILE; then
+            _tmp=`grep "$_model" $_source | cat`
+            _arch=`echo $_tmp | sed -e 's/[^(]*(\([^)]*\)).*/\1/'`
+            _newline="$_newline  	($_arch)"
+        else
+            _newline="$_newline  	()"
+        fi
+        echo "$_newline" >> $_f
+    done
+fi
+
+if [ "$upgradeShared" = "y" ]; then
+    limitation_handler HostType $MaxTypeNum
+    limitation_handler HostModel $MaxModelNum
+fi
+
+chmod 644 $LSF_SHARED
+$CHOWN $LSF_MANAGER $LSF_SHARED
+return 0
+
+} #upgrade_lsf
+
+
+
+upgrade_lsb()
+{
+    LSF_CLUSTER_NAME=$1
+    LSF_MANAGER=$2
+
+    LSB_PARAMS=$LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir/lsb.params
+    LSB_QUEUES=$LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir/lsb.queues
+    LSB_HOSTS=$LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir/lsb.hosts
+
+    if is_root ; then
+	CHOWN=chown
+    else
+	CHOWN=true
+    fi
+
+    if grep '^# Upgrade: 2.0' $LSB_PARAMS >$LSNULFILE 2>&1
+    then
+	# already upgraded; just return silently
+	return 0
+    fi
+
+    if test ! -w $LSB_PARAMS ; then
+	echo "$LSB_PARAMS : Does not exist or not writable."| tee -a $PREFIX_LOG/Install.log
+	echo "Cannot upgrade lsbatch configuration files."| tee -a $PREFIX_LOG/Install.log
+	return 1
+    fi
+
+    if test ! -w $LSB_QUEUES ; then
+	echo "$LSB_QUEUES : Does not exist or not writable."| tee -a $PREFIX_LOG/Install.log
+	echo "Cannot upgrade lsbatch configuration files."| tee -a $PREFIX_LOG/Install.log
+	return 1
+    fi
+
+    if test ! -w $LSB_HOSTS ; then
+	echo "$LSB_HOSTS : Does not exist or not writable."| tee -a $PREFIX_LOG/Install.log
+	echo "Cannot upgrade lsbatch configuration files."| tee -a $PREFIX_LOG/Install.log
+	return 1
+    fi
+
+#        upgrade lsb.params 
+#   delete LSB_MANAGER, RETRY_INTERVAL. The JOB_ACCEPT_INTERVAL is either 1
+#   or 0.
+    echo "Saving ${LSB_PARAMS} to ${LSB_PARAMS}.old"| tee -a $PREFIX_LOG/Install.log
+    echo "Upgrading ${LSB_PARAMS}" | tee -a $PREFIX_LOG/Install.log
+    echo
+    cp ${LSB_PARAMS} ${LSB_PARAMS}.old 2>&1
+    rm ${LSB_PARAMS}
+    sed -e "s/[	 ]*=[	 ]*/=/" ${LSB_PARAMS}.old | $AWK 'BEGIN {FS = "="} {
+	if ($1 == "JOB_ACCEPT_INTERVAL") {
+	    if ($2 <= 1) {
+		print "JOB_ACCEPT_INTERVAL = 0"
+	    } else {
+		print "JOB_ACCEPT_INTERVAL = 1"
+	    }
+	} else {
+	    print
+	}
+    }' | $AWK 'BEGIN {FS = "="} {
+	if ($1 != "LSB_MANAGER" && $1 != "RETRY_INTERVAL" && $1 != "MAX_RETRY" && $1 != "MAX_SBD_FAIL") {
+	    print
+	}
+    }' > ${LSB_PARAMS}
+        
+#   Put Upgrade tag in ${LSB_PARAMS}
+    echo "# Upgrade: 2.0" >> ${LSB_PARAMS}
+
+    chmod 644 ${LSB_PARAMS} ${LSB_PARAMS}.old
+    $CHOWN $LSF_MANAGER ${LSB_PARAMS} ${LSB_PARAMS}.old
+    
+#    Upgrade lsb.queues
+#    Make sure all NICE values are no more than 20.
+
+    echo "Saving ${LSB_QUEUES} to ${LSB_QUEUES}.old"| tee -a $PREFIX_LOG/Install.log
+    echo "Upgrading ${LSB_QUEUES}"| tee -a $PREFIX_LOG/Install.log
+    cp ${LSB_QUEUES} ${LSB_QUEUES}.old
+    rm ${LSB_QUEUES}
+    sed -e "s/[	 ]*=[	 ]*/=/" ${LSB_QUEUES}.old | $AWK 'BEGIN {FS = "="} {
+	if ($1 == "NICE" && $2 > 20) {
+	    print "NICE = 20"
+	} else {
+	    print
+	}
+    }' > ${LSB_QUEUES}
+
+    chmod 644 ${LSB_QUEUES} ${LSB_QUEUES}.old
+    $CHOWN $LSF_MANAGER ${LSB_QUEUES} ${LSB_QUEUES}.old
+
+#   Upgrade lsb.hosts
+#   Host partition must have a name. The name is the line number
+    echo
+    echo "Saving ${LSB_HOSTS} to ${LSB_HOSTS}.old"| tee -a $PREFIX_LOG/Install.log
+    echo "Upgrading ${LSB_HOSTS}"| tee -a $PREFIX_LOG/Install.log
+    cp ${LSB_HOSTS} ${LSB_HOSTS}.old
+    rm ${LSB_HOSTS}
+    $AWK '{
+	if ($1 == "Begin" && $2 == "HostPartition") {
+	    print 
+	    print "HPART_NAME = ", NR
+	} else {
+	    print
+	}
+    }' ${LSB_HOSTS}.old > ${LSB_HOSTS}
+
+    chmod 644 ${LSB_HOSTS} ${LSB_HOSTS}.old
+    $CHOWN $LSF_MANAGER ${LSB_HOSTS} ${LSB_HOSTS}.old
+    $CHOWN $LSF_MANAGER ${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir
+
+    return 0
+}
+
+upgrade_lsf_conf()
+{
+if grep LSF_LINK_PATH ${LSF_ENVDIR}/lsf.conf >$LSNULFILE; then
+    :
+else
+    if [ "$LSF_DEFAULT_INSTALL" = "Y" -o "$LSF_DEFAULT_INSTALL" = "y" ]
+    then
+        . $LSF_ENVDIR/lsf.conf
+
+        ls -ld $LSF_SERVERDIR >/dev/null 2>&1
+
+        if [ $? = 0 ]; then
+            isSymLink=`ls -ld $LSF_SERVERDIR | $AWK '{print $1}'`
+
+            case "$isSymLink" in
+                l*)
+                    LSF_LINK_PATH=`dirname $LSF_SERVERDIR` ;;
+                *)
+                    LSF_LINK_PATH="n" ;;
+            esac
+        else
+            cat << WARNWORDS | tee -a $PREFIX_LOG/Install.log
+
+    In $LSF_ENVDIR/lsf.conf 
+    LSF_SERVERDIR defined as $LSF_SERVERDIR.
+    But lsfsetup cannot find $LSF_SERVERDIR.
+
+    Please check it manually.
+
+WARNWORDS
+        fi 
+    else
+        LSF_LINK_PATH="n"
+    fi 
+   
+    echo >> ${LSF_ENVDIR}/lsf.conf
+
+    echo "# WARNING: Please do not delete/modify next line!!" >> ${LSF_ENVDIR}/lsf.conf
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_LINK_PATH  "$LSF_LINK_PATH"
+fi
+
+if grep LSF_DB_CONFDIR ${LSF_ENVDIR}/lsf.conf >$LSNULFILE; then
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_DB_CONFDIR DELETE
+fi
+
+if grep LSF_DB_HOST ${LSF_ENVDIR}/lsf.conf >$LSNULFILE; then
+    modify_conf $LSF_ENVDIR/lsf.conf LSF_DB_HOST DELETE
+fi
+
+return 0
+}
+
+# Check if the files defined already exist. If not, remind user about this
+
+validate()
+{
+    if test -f ${LSF_BINDIR}/lsid ; then
+	:
+    else
+	echo 
+	echo Directory ${LSF_BINDIR} does not seem 
+	echo to contain binaries of the previous LSF version. 
+	echo
+	ERR=y
+    fi
+
+    if test -f ${LSF_MANDIR}/man1/lsid.1 ; then
+	:
+    else
+	echo
+	echo Directory ${LSF_MANDIR} does not seem 
+	echo to contain man pages for the previous LSF version.
+	echo 
+	ERR=y
+    fi
+
+    if test -f ${LSF_INCLUDEDIR}/lsf/lsf.h ; then
+	:
+    else
+	echo
+	echo Directory ${LSF_INCLUDEDIR}/lsf does not seem
+	echo to contain lsf.h from the previous LSF version.
+	echo
+	ERR=y
+    fi
+
+    if [ "$ERR" = "y" ] ; then
+	echo 
+	echo If the above settings are not what you want. You can change them
+	echo by choosing Change Current Settings in the next session. 
+	echo
+    fi
+}
+
+upgrade_all()
+{
+    GOT_CONFIG=y
+    echo `date` >>$PREFIX_LOG/Install.log
+    echo Upgrading procedures >>$PREFIX_LOG/Install.log
+    post_install=upgrade_lsf_conf
+
+
+
+
+    if [ "$LSF_AUTH" != "" ] ; then
+# Using eauth, reset SETUIDS
+# Only lsadmin, badmin and eauth need to be setuid to root
+# since they need to access lsf.sudoers file 
+        SETUIDS="lsadmin badmin"
+    fi
+
+    NO_MANDATORY=y
+
+    . $sp/newInstall; newInstall
+
+    check_setuid
+
+    unset EXCUSED_CONF
+    unset post_install
+}
+
+
+# Main program
+upgrade()
+{
+
+EXCUSED_CONF=y
+
+if is_AFS ; then
+    LSF_BINDIR="$LSF_MACHDEP/bin"
+    LSF_SERVERDIR="$LSF_MACHDEP/etc"
+    LSF_LIBDIR="$LSF_MACHDEP/lib"
+fi
+
+UNIFORM_DIR=$LSF_MACHDEP
+
+# We only handle upgrade from 2.0 later 
+echo "    Upgrading LSF from 2.0 or later " |tee -a $PREFIX_LOG/Install.log
+
+find_conf LOCAL
+
+confOwner=`ls -l ${LSF_ENVDIR}/lsf.conf | $AWK '{print $3}'`
+
+#if [ "$UNATTENDED_INSTALL" != "y" ]; then
+#    if [ "$INSTALL_ANALYZER" = "y" ]; then
+#        dbConf=`grep "^[   ]*LSF_DB_CONFDIR=" ${LSF_ENVDIR}/lsf.conf`
+#        dbHost=`grep "^[   ]*LSF_DB_HOST=" ${LSF_ENVDIR}/lsf.conf`
+#    
+#        if [ "$dbConf" != "" -o "$dbHost" != "" ]; then 
+#            echo "Please check and uninstall Analyzer of old version by hand." | tee -a $PREFIX_LOG/Install.log
+#            echo "Press Enter key to continue ..."
+#            read anykey
+#        fi
+#    fi
+#fi
+
+UPGRADE="y"; export UPGRADE
+
+useOriginalFile=""
+
+if [ -f ${LSF_SERVERDIR}/eauth ]; then
+    useOriginalFile="eauth"
+else
+    :
+fi
+
+#if [ "$INSTALL_JS" = "y" -a -f ${LSF_SERVERDIR}/eeventd ]; then
+#    useOriginalFile="$useOriginalFile eeventd"
+#else
+#    :
+#fi
+
+if [ "$useOriginalFile" != "" ]; then
+    cat << USEORIGINALFILE
+
+    lsfsetup will replace all binaries in $LSF_SERVERDIR, include ${useOriginalFile} .
+
+USEORIGINALFILE
+
+    if yesno "Do you want to use original $useOriginalFile after upgrade?" N "" > $LSNULFILE
+    then
+        replaceOriginalFile=n
+    else
+        replaceOriginalFile=y
+    fi
+else
+    replaceOriginalFile=y
+fi
+
+upgrade_all
+
+chown $confOwner ${LSF_ENVDIR}/lsf.conf 
+
+if [ "$replaceOriginalFile" = "n" ]; then
+
+    for fileName in ${useOriginalFile}; do
+
+        if [ -f "${LSF_SERVERDIR}/${fileName}.new" ]; then
+            mv ${LSF_SERVERDIR}/${fileName}.new ${LSF_SERVERDIR}/${fileName}.$$
+        else
+            :
+        fi
+
+        mv ${LSF_SERVERDIR}/${fileName} ${LSF_SERVERDIR}/${fileName}.new
+        mv ${LSF_SERVERDIR}/${fileName}.old ${LSF_SERVERDIR}/${fileName}
+    done
+else
+    :
+fi
+
+if [ "$LSF_DEFAULT_INSTALL" != "y" -a "$LSF_DEFAULT_INSTALL" != "Y" ]; then
+    if [ -f ${LSF_SERVERDIR}/osversion ]; then 
+        :
+    else
+        make_os_flag
+    fi
+fi
+
+
+
+echo "    Finished upgrading LSF on this host type." |tee -a $PREFIX_LOG/Install.log
+
+echo "    Installation parameters should be in $LSF_ENVDIR/lsf.conf." |tee -a $PREFIX_LOG/Install.log
+
+exit 0 
+
+} # upgrade

@@ -1,0 +1,83 @@
+#!/bin/sh
+
+resname=ostype
+
+if [ -f /etc/redhat-release ]
+then
+	# Get the release string
+	rel=`head -1 /etc/redhat-release`
+	# If release string is well formed, get the distribution name and
+	# version.
+	if echo "$rel" | grep ' release ' > /dev/null 2>&1
+	then
+		dist=`echo "$rel" | sed -e "s/\(.*\) release.*/\1/"`
+		ver=`echo "$rel" | sed -e "s/.* release \([^ ]*\) .*/\1/"`
+		# Special case for some RHEL dists, strip the AS.
+		ver=`echo "$ver" | sed "s/AS$//"`
+	else
+		# release string is not well formed.
+		# Just pass the user something.
+		dist="$rel"
+		ver=""
+	fi
+	# Check for an update number.
+	if echo "$rel" | grep '(.* Update .*)' > /dev/null 2>&1
+	then
+		upd=`echo "$rel" | sed -e "s/.* Update \(.*\))/\1/"`
+		ver="$ver.$upd"
+	fi
+	if echo "$dist" | grep "CentOS" > /dev/null 2>&1
+	then
+		dist="CENT"
+	elif echo "$dist" | grep "^Red Hat Enterprise Linux" > /dev/null 2>&1
+	then
+		dist="RHEL"
+	elif echo "$dist" | grep "^Red Hat Linux" > /dev/null 2>&1
+	then
+		dist="RHAT"
+	elif echo "$dist" | grep "^Fedora" > /dev/null 2>&1
+	then
+		dist="FEDC"
+	else
+		dist="RHunknown"
+	fi
+elif [ -f /etc/SuSE-release ]
+then
+	#Get the release string
+	line1=`cat /etc/SuSE-release | head -1`
+	line2=`cat /etc/SuSE-release | head -2 | tail -1`
+	line3=`cat /etc/SuSE-release | head -3 | tail -1`
+	
+	dist="SLES"
+
+	if echo "$line2" | grep "^VERSION = " > /dev/null 2>&1
+	then
+		ver=`echo "$line2" | sed -e 's/VERSION = \(.*\)/\1/'`
+	else
+		ver=""
+	fi
+
+	if echo "$line3" | grep "^PATCHLEVEL = " > /dev/null 2>&1
+	then
+		patchlev=`echo $line3 | sed -e 's/PATCHLEVEL = \(.*\)/\1/'`
+		ver="$ver.$patchlev"
+	fi
+	
+elif [ "`uname -s`" = "AIX" ]
+then
+        dist="AIX"
+        ver=`uname -v`.`uname -r`
+else
+	dist=`uname -s`
+	ver=`uname -r`
+fi
+
+# Compose the ostype
+type="$dist$ver"
+
+# strip illegal characters
+type=`echo $type | tr -cd '[:alnum:]._-'`
+
+# report the result.
+echo "1 $resname $type"
+

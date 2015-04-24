@@ -1,0 +1,354 @@
+#!/bin/sh
+#
+# $Id: addProduct,v 1.2 2012/06/08 03:37:23 sbadugu Exp $
+#
+# Must be sourced by lsfsetup
+
+
+# Check if the some directories are writable. 
+# If not, remind user must first fix  this.
+
+validate()
+{
+    if test -w ${LSF_BINDIR} ; then
+	:
+    else
+	echo 
+        echo Directory ${LSF_BINDIR} does not exist or has no write permission.
+	echo
+	ERR=y
+    fi
+
+    if test -w ${LSF_SERVERDIR} ; then
+        :
+    else
+	echo
+        echo Directory ${LSF_SERVERDIR} does not exist or has no write permission.
+	echo
+	ERR=y
+    fi
+
+    if test -w ${LSF_LIBDIR} ; then
+        :
+    else
+	echo
+        echo Directory ${LSF_LIBDIR} does not exist or has no write permission.
+	echo
+	ERR=y
+    fi
+
+
+    if test -w ${LSF_MANDIR} ; then
+	:
+    else
+	echo
+        echo Directory ${LSF_MANDIR} does not exist or has no write permission.
+	echo 
+	ERR=y
+    fi
+
+    if test -w ${LSF_INCLUDEDIR} ; then
+	:
+    else
+	echo
+        echo Directory ${LSF_INCLUDEDIR} does not exist or has no write permission.
+	echo
+	ERR=y
+    fi
+
+    if [ "$ERR" = "y" ] ; then
+	echo 
+        echo You must first fix above errors, then do I
+        echo Install Additional Products again.
+	echo
+	exit 1 
+    fi
+}
+
+exist_feature()
+{
+    if [ "$2" = "BATCH" ]; then
+	feature=`echo $1 |sed -n /lsf_batch/p`
+	if [ "$feature" = "" ] ; then 
+	    feature=`echo $1 |sed -n /LSF_Batch/p`
+        fi
+	if [ "x$feature" = "x" ]; then 
+            return 1
+        else
+	    return 0
+        fi
+    fi 
+    if [ "$2" = "LSF_Manager" ]; then
+	feature=`echo $1 |sed -n /lsf_manager/p`
+	if [ "$feature" = "" ] ; then 
+	    feature=`echo $1 |sed -n /LSF_Manager/p`
+        fi
+	if [ "x$feature" = "x" ]; then 
+            return 1
+        else
+	    return 0
+        fi
+    fi 
+    if [ "$2" = "ANALYZER" ]; then
+        feature=`echo $1 |sed -n /lsf_analyzer_server/p`
+        if [ "$feature" = "" ] ; then 
+   	    feature=`echo $1 |sed -n /LSF_Analyzer/p`
+	fi
+        if [ "x$feature" = "x" ]; then 
+            return 1
+        else
+            return 0
+        fi
+    fi
+    if [ "$2" = "JS" ]; then 
+        feature=`echo $1 |sed -n /lsf_js/p`
+        if [ "$feature" = "" ] ; then
+             feature=`echo $1 |sed -n /LSF_JobScheduler/p`
+        fi
+        if [ "x$feature" = "x" ]; then 
+            return 1
+        else 
+            return 0
+        fi
+    fi  
+    if [ "$2" = "MC" ]; then
+        feature=`echo $1 |sed -n /lsf_mc/p`
+        if [ "$feature" = "" ] ; then
+             feature=`echo $1 |sed -n /LSF_MultiCluster/p`
+        fi
+        if [ "x$feature" = "x" ]; then
+            return 1
+        else 
+            return 0
+        fi
+    fi 
+    if [ "$2" = "PARALLEL" ]; then
+        feature=`echo $1 |sed -n /lsf_parallel/p`
+        if [ "$feature" = "" ] ; then
+             feature=`echo $1 |sed -n /LSF_Parallel/p`
+        fi
+        if [ "x$feature" = "x" ]; then
+            return 1
+        else 
+            return 0
+        fi
+    fi
+    if [ "$2" = "LSMAKE" ]; then
+        feature=`echo $1 |sed -n /lsf_make/p`
+        if [ "$feature" = "" ] ; then
+             feature=`echo $1 |sed -n /LSF_Make/p`
+        fi
+        if [ "x$feature" = "x" ]; then
+            return 1
+        else 
+            return 0
+        fi
+    fi
+}
+
+upgrade_Productline()
+{
+    if [ "$LSF_CLUSTER_NAME" = "" ]; then
+	find_cluster
+    fi
+    EXIST_FEATURES=`grep "^FEATURES" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME | $AWK  '{ FS="="; print $2}'`
+    if [ "$EXIST_FEATURES" = "" ] ; then
+        EXIST_FEATURES=`grep "^PRODUCTS" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME | $AWK  '{ FS="="; print $2}'`
+    fi
+   
+    INSTALL_BASE="n"
+    INSTALL_ADVANCED_MANAGER="n"
+    INSTALL_MC="n"
+    INSTALL_LSMAKE="n"
+#    INSTALL_JS="n"
+#    INSTALL_ANALYZER="n"
+#    INSTALL_PARALLEL="n"
+    for _Product in $SelectedLSFProducts; do
+	case "$_Product" in
+            Base)       INSTALL_BASE=y ;;
+            Manager)      INSTALL_ADVANCED_MANAGER=y ;;
+            MC)         INSTALL_MC=y ;;
+            Make)       INSTALL_LSMAKE=y ;;
+#            JS)         INSTALL_JS=y ;;
+#            ANA)        INSTALL_ANALYZER=y ;;
+#            PAR)        INSTALL_PARALLEL=y ;;
+        esac
+    done                                                   
+
+    LSF_UPGRADE="LSF_Manager LSF_Sched_Fairshare LSF_Sched_Preemption LSF_Sched_Parallel LSF_Sched_Resource_Reservation LSF_Sched_Advance_Reservation"
+    LSF_REMOVE="lsf_batch lsf_sched_fcfs lsf_sched_default lsf_sched_limit lsf_sched_reserve lsf_sched_advrsv lsf_sched_mc lsf_api_scheduler lsf_resource_preempt lsf_sched_topology"
+    LSF_REMOV1="LSF_Batch LSF_Sched_Fcfs LSF_Sched_Default LSF_Sched_Limit LSF_Sched_Reserve LSF_Sched_Advrsv LSF_Sched_Mc LSF_Api_Scheduler LSF_Resource_Preempt LSF_Sched_Topology"
+    LSF_REMOVE="$LSF_REMOVE $LSF_REMOV1"
+    if [ "$INSTALL_ADVANCED_MANAGER" = "y" ]; then 
+        if  exist_feature "$EXIST_FEATURES" "BATCH" ; then 
+            for rmv in $LSF_REMOVE
+            do
+                EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$rmv//g"`
+            done
+	    for upgrd in $LSF_UPGRADE
+	    do 
+	        EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$upgrd//g"`
+	        EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$/$upgrd/"`
+            done
+        elif  exist_feature "$EXIST_FEATURES" "LSF_Manager" ; then 
+            :
+	else 
+	    if test "$UNATTENDED_INSTALL" = "y"; then
+                for rmv in $LSF_REMOVE
+                do
+                    EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$rmv//g"`
+                done
+	        for upgrd in $LSF_UPGRADE
+	        do 
+	            EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$upgrd//g"`
+                    EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$/$upgrd/"`
+                done
+		echo "LSF product Manager is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+            else
+                if yesno "Are all the hosts in the cluster going to be Manager servers" Y > $LSNULFILE ; then
+                    for rmv in $LSF_REMOVE
+                    do
+                        EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$rmv//g"`
+                    done
+	            for upgrd in $LSF_UPGRADE
+	            do 
+	                EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$upgrd//g"`
+                        EXIST_FEATURES=`echo $EXIST_FEATURES|sed "s/$/$upgrd/"`
+                    done
+	  	    echo "LSF product Manager is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+                else 
+                    echo 
+                    echo "Your $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME file"| tee -a $PREFIX_LOG/Install.log
+                    echo "needs to be further modified manually to include LSF_Manager"| tee -a $PREFIX_LOG/Install.log
+                    echo "in the resource part of the Hosts section for all your LSF_Manager servers." | tee -a $PREFIX_LOG/Install.log
+                    echo 
+                fi
+	    fi
+        fi
+    fi
+
+#
+# JS installation/upgrade has been removed from LSF4.2
+#
+#    if [ "$INSTALL_JS" = "y" ]; then
+#        if  exist_feature "$EXIST_FEATURES" "JS" ; then 
+#            :
+#        else  
+#	    if test "$UNATTENDED_INSTALL" = "y"; then
+#                EXIST_FEATURES="$EXIST_FEATURES LSF_JobScheduler"
+#	  	echo "LSF product JobScheduler is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+#            else
+#
+#            if yesno "Are all the hosts in the cluster going to be JobScheduler servers" Y > $LSNULFILE ; then
+#                EXIST_FEATURES="$EXIST_FEATURES LSF_JobScheduler"
+#	  	echo "LSF product JobScheduler is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+#            else
+#                echo 
+#                echo "  Your $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME file"| tee -a $PREFIX_LOG/Install.log
+#                echo "  needs to be further modified manually to include LSF_JobScheduler"| tee -a $PREFIX_LOG/Install.log
+#                echo "  in the resource part of the Hosts section for all your JobScheduler servers."| tee -a $PREFIX_LOG/Install.log
+#                echo 
+#            fi
+#
+#	    fi
+#         fi 
+#    fi  
+
+#
+# Analyzer installation/upgrade has been removed from LSF4.2
+#
+#    if [ "$INSTALL_ANALYZER" = "y" ]; then 
+#	if  exist_feature "$EXIST_FEATURES" "ANALYZER" ; then  
+#	    :
+#        else 
+#	    EXIST_FEATURES="$EXIST_FEATURES LSF_Analyzer"
+#	    echo "LSF product Analyzer is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+#        fi
+#    fi 
+  
+    if [ "$INSTALL_MC" = "y" ]; then
+        if  exist_feature "$EXIST_FEATURES" "MC" ; then 
+            :
+        else  
+            EXIST_FEATURES="$EXIST_FEATURES LSF_MultiCluster"
+	    echo "LSF product MultiCluster is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+        fi
+    fi
+
+#
+# Parallel installation/upgrade has been removed from LSF4.2
+#
+#    if [ "$INSTALL_PARALLEL" = "y" ]; then
+#        if  exist_feature "$EXIST_FEATURES" "PARALLEL" ; then 
+#            :
+#        else  
+#            EXIST_FEATURES="$EXIST_FEATURES LSF_Parallel"
+#	    echo "LSF product Parallel is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+#        fi
+#    fi
+
+    if [ "$INSTALL_LSMAKE" = "y" ]; then
+        if  exist_feature "$EXIST_FEATURES" "LSMAKE" ; then 
+            :
+        else  
+            EXIST_FEATURES="$EXIST_FEATURES LSF_Make"
+	    echo "LSF product LsMake is added to existing cluster." |tee -a $PREFIX_LOG/Install.log
+        fi
+    fi
+
+    # update the PRODUCT line of cluster file 
+
+    sed "s/^PRODUCTS.*/PRODUCTS=$EXIST_FEATURES/" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME > /tmp/lsf.cluster1.tmp 
+    sed "s/^FEATURES.*/PRODUCTS=$EXIST_FEATURES/" < /tmp/lsf.cluster1.tmp > /tmp/lsf.cluster.tmp
+    rm -f /tmp/lsf.cluster1.tmp
+    mv /tmp/lsf.cluster.tmp $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME 
+    chmod 644 $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+    if [ "$LSF_MANAGER" = "" ]; then
+	LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+        get_lsf_manager
+    fi
+    lsfmanager=`echo $LSF_MANAGER | $AWK '{print $1}'`
+    chown $lsfmanager $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+}
+
+addProduct()
+{
+
+if [ "$LSF_DEFAULT_INSTALL" != "Y" -a "$LSF_DEFAULT_INSTALL" != "y" ]
+then
+    if [ -f ${LSF_SERVERDIR}/osversion ]; then
+        :
+    else
+        echo "You are adding product to old version of LSF "| tee -a $PREFIX_LOG/Install.log
+        echo "This is dangerous."| tee -a $PREFIX_LOG/Install.log
+
+        if yesno "Are you sure you want to continue?" Y ""  >$LSNULFILE
+        then
+            make_os_flag
+        else
+            echo "Installation exiting..."
+            echo "Installation exiting..." >> $PREFIX_LOG/Install.log
+            exit
+        fi
+    fi
+fi
+
+ADD_PRODUCT=y
+EXCUSED_CONF=y
+EXCUSED_MISC=n
+EXCUSED_XMISC=n
+EXCUSED_MANS=n
+export EXCUSED_MISC 
+export EXCUSED_XMISC 
+export EXCUSED_MANS
+
+UNIFORM_DIR=$LSF_MACHDEP
+
+find_cluster
+LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+get_lsf_manager
+
+. $sp/newInstall; newInstall 
+upgrade_Productline
+
+} # addProduct 

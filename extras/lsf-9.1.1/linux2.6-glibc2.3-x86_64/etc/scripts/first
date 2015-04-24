@@ -1,0 +1,137 @@
+#$Id: first,v 1.2 2012/06/08 03:37:23 sbadugu Exp $
+
+
+#---------------------------------------------------------------------
+#
+#  This script is sourced by lsfsetup.
+#
+#  Install LSF for the first time, first host type.
+#--------------------------------------------------------------------
+first()
+{
+
+showCopyright
+
+cat << LICENSE_NEEDED
+
+    This software is furnished under a license and may be used and
+    copied only in accordance with the terms of such license and with
+    the inclusion of the above copyright notice. This software or any
+    other copies thereof may not be provided or otherwise made available
+    to any other person. No title to and ownership of the software is
+    hereby transferred.
+
+    You must have a software license key to run LSF.  If you do not have
+    a license key, contact your LSF vendor and obtain one before
+    attempting to run LSF.
+
+LICENSE_NEEDED
+
+if yesno "Have you purchased LSF?" N "" >$LSNULFILE
+then
+    clear
+else
+    cat<< LEGAL
+
+    To conduct a trial of LSF, you must accept the following terms and 
+    conditions by answering YES. Under shrink wrap legislation, this notice 
+    becomes a legal document. If you do not respond YES, the installation 
+    will exit.
+
+    Your LSF vendor (VENDOR) grants you a limited-term, non-exclusive, 
+    non-transferable, and personal free trial of LSF at this site. 
+
+    Upon expiration of this trial license, you must stop the trial and delete 
+    all LSF software and documentation unless you get prior written approval 
+    from VENDOR for a trial extension.
+
+    IBM Corporation retains all intellectual property rights in LSF software 
+    and related documentation, names and logos, and in no way warrants, express
+    or implied, the merchantability of LSF. In no event shall IBM PLATFORM or 
+    VENDOR be liable to you or any third party for special, consequential, 
+    incidental or indirect damages of any kind, including those damages arising 
+    from lost profits in the use or misuse of LSF.
+
+LEGAL
+
+    if yesno "Do you accept the above terms and conditions" Y "" >$LSNULFILE 
+    then
+	clear
+	cat <<LEGAL1
+
+    You have accepted the terms and conditions in the above legal notice. 
+    Thank you for trying LSF at your site.  
+
+LEGAL1
+    else
+        echo "   Installation exiting ..."
+	exit
+    fi
+fi
+
+cat<<TIME
+
+    This installation should take between 5 and 15 minutes to complete,
+    depending on the system configuration.
+
+    Warning: if you are installing LSF for AFS or DCE environments, refer
+    to the README file before continuing with the installation.
+
+TIME
+
+echo `date` >>$PREFIX_LOG/Install.log
+echo Installation for the first platform >> $PREFIX_LOG/Install.log
+echo >>$PREFIX_LOG/Install.log
+
+set_defaults
+if is_root ; then
+    if yesno  "Do you wish to use external user authentication?" Y "help LSF_EAUTH" >$LSNULFILE
+    then   
+#Using eauth, only lsadmin badmin and eauth need to be setuid
+# to root since they need to access lsf.sudoers file
+
+        LSF_AUTH=eauth
+        SETUIDS="lsadmin badmin" 
+    fi
+fi
+
+. $sp/mandatory; mandatory
+. $sp/nonroot; nonroot
+. $sp/newInstall; newInstall
+. $sp/makedot; makedot
+
+check_setuid
+
+. $sp/license; license
+lsfconf=$LSF_SERVERDIR/lsf.conf
+. $sp/config; config
+
+echo "    Finished installing LSF on this host type." |tee -a $PREFIX_LOG/Install.log
+echo "    Installation parameters should be in $LSF_ENVDIR/lsf.conf."
+cat << ADVICE
+
+    To install LSF on another host type, do the following:
+    1.  Extract the LSF distribution tar file for that host type.
+    2.  Log in to host of that type and change directory to the distribution
+        directory.
+    3.  Run lsfsetup and choose Option 1. Install LSF Products,
+               then choose Option 3. Install Other Host Types.
+
+    If you have installed LSF on all host types you want, run
+    lsfsetup on every host and choose Option 2. Setup LSF Hosts.
+    Host Setup configures the host environment for every host.
+    Refer to the Help option in lsfsetup for more details of Host Setup.
+
+ADVICE
+
+} # first
+
+
+
+
+
+
+
+
+
+

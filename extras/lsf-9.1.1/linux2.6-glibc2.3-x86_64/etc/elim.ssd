@@ -1,0 +1,22 @@
+#!/bin/sh
+#**********************************************************
+# This ELIM script is used to collect free disk space on mount point.
+# Change the mount point according to your real case.
+# This ELIM script return the free disk space for the mount point.
+#**********************************************************
+
+NAME=$(basename $0|awk -F . '{print $NF}')
+DIR_LOC=/ssd/512GB
+
+while true
+do
+    df -m $DIR_LOC &> /dev/null
+    if [ $? -eq 0 ]; then
+        RES=$(df -P -BG $DIR_LOC | tail -n1|awk '{print $4}')
+        echo 1 $NAME $RES
+    else
+        echo 1 $NAME 0
+    fi
+    sleep 2
+done
+

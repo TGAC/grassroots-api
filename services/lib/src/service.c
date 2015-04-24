@@ -271,7 +271,6 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 					
 					if (services_p)
 						{
-							Service *service_p = NULL;
 							uint32 i = services_p -> sa_num_services;
 							Service **s_pp = services_p -> sa_services_pp;
 							
@@ -558,7 +557,7 @@ void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p)
 }
 
 
-OperationStatus GetCurrentServiceStatus (const Service *service_p, const uuid_t service_id)
+OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id)
 {
 	return service_p -> se_get_status_fn (service_p, service_id);
 }
@@ -1019,17 +1018,38 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
       }
     }, 
 */
-json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p)
+json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p, const uuid_t service_id)
 {
 	json_error_t error;
 	const char *service_name_s = GetServiceName (service_p);
 	const char *service_description_s = GetServiceDescription (service_p);
-	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i,s:s}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_S, status, SERVICE_UUID_S, GetServiceUUIDAsString (service_p));
 	const char *info_uri_s = GetServiceInformationURI (service_p);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_S, status);
+	char *uuid_s = NULL;
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
 	char *dump_s = NULL;
 	#endif
+
+	if (service_id)
+		{
+			uuid_s = GetUUIDAsString (service_id);
+		}
+	else
+		{
+			const uuid_t *id_p = GetServiceUUID (service_p);
+			uuid_s = GetUUIDAsString (*id_p);
+		}
+
+	if (uuid_s)
+		{
+			if (json_object_set_new (json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to add uuid  \"%s\" to service response for \"%s\"", uuid_s, service_name_s);
+				}
+
+			FreeUUIDString (uuid_s);
+		}
 
 
 	if (info_uri_s)

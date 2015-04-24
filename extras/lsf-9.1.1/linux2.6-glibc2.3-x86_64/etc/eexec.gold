@@ -1,0 +1,425 @@
+#!/usr/bin/perl 
+# Copyright International Business Machines Corp, 2011, 2012.
+# US Government Users Restricted Rights - Use, duplication or disclosure
+# restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+# GOLD2.2.0 integration details:
+# - "greserve" is run just before the job begins to run.
+#  If greserve fails:
+#     - "bpost" returns the failure reason;
+#       and then "bkill" kills the job.
+#     - A message is logged in the log file: eexec.log.<user_name>.
+#
+# - "gcharge" is run right after the job complets or exits.
+#  If gcharge fails or an over-charge occurs:
+#     (over-charge means the charge exceeds the reserved amount.)
+#     - "bpost" returns the failure reason.
+#     - A message is logged in the log file: eexec.log.<user_name>. 
+#
+# - If debug mode is enabled ($LSF_CMD_LOGDIR defined in job's ENV, inherited from bsub):
+#     - Results of gcharge and greserve are also logged. 
+#  
+# - The eexec excution user can be different from the job's eexecution user by defining LSF_EEXEC_USER,
+#   Note the specific user should have priviledge to kill(by bkill) jobs or post(by bpost) messages to jobs submitted by other users.  
+#   
+#  
+
+use strict;
+
+# The magic key is set at esub.gold. 
+# It is used to avoid extra gcharge for a re-runnable job after the first exectuion host daemons recovered.
+if ($ENV{GOLD_MAGIC} ne "9999") {
+    exit(0);
+}
+
+if ($ENV{LS_EXEC_T} ne "START" &&  $ENV{LS_EXEC_T} ne "END") {
+    exit(0);
+}
+
+# the execution user of this eexec script
+my $exe_user=(getpwuid($<))[0];
+chomp($exe_user);
+
+my $debug = 0;
+if(defined $ENV{LSF_CMD_LOGDIR}){
+    $debug = 1;
+}
+
+my $eexec_log;
+my $lsf_logdir; 
+$lsf_logdir = $ENV{LSF_LOGDIR};
+chomp($lsf_logdir);
+$eexec_log  = $lsf_logdir."/eexec.log".".$exe_user" ;
+
+unless (open(STDERR,">>$eexec_log")){  
+    # if only root has permisssion to access $LSF_LOGDIR. 
+    $eexec_log  = "/tmp/eexec.log".".$exe_user" ;
+    open(STDERR,">>$eexec_log");
+}
+
+print STDERR scalar localtime(time()) if $debug;
+print STDERR "***Running in DEBUG mode for GOLD***\n" if ($debug);
+
+my $lsf_bindir="";
+if (defined ($ENV{LSF_BINDIR})) {
+    $lsf_bindir=$ENV{LSF_BINDIR};
+    chomp($lsf_bindir);
+    if ($lsf_bindir !~ /\/$/){
+        $lsf_bindir = $lsf_bindir."\/";
+    }
+}
+
+# may be an element of a job array
+my $jobid = $ENV{LSB_BATCH_JID};
+chomp($jobid);
+$jobid=~s/^\ +//;
+$jobid=~s/\ +$//;
+$jobid = "\"".$jobid."\"";
+
+my $bpost_msg;
+my $bpost_cmd;
+my $bpost_res;
+
+my $bkill_cmd;
+my $bkill_res;
+$bkill_cmd = $lsf_bindir."bkill $jobid"; 
+
+# current eexec execution host
+open(LOCAL_HOST, "hostname|");
+my @local_machine = <LOCAL_HOST>;
+close(LOCAL_HOST);
+my $cur_machine = $local_machine[0]; 
+chomp($cur_machine);
+$cur_machine=~s/^\ +//;
+$cur_machine=~s/\ +$//;
+
+# GOLD2.2 installation DIR
+my $GOLD_PATH;
+if(defined $ENV{GOLD_PATH}){
+    $GOLD_PATH = $ENV{GOLD_PATH};
+} else {
+    $GOLD_PATH = "/opt/gold";
+}
+
+if (-e $GOLD_PATH && -e "$GOLD_PATH/bin/greserve" && -e "$GOLD_PATH/bin/gcharge") {
+} else {
+    print STDERR "\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n";
+    print STDERR "Error: GOLD command <greserve> or <gcharge> cannot be found.\n" ;
+
+    # bpost the failure reason to the job 
+    $bpost_msg = "Error: GOLD command <greserve> or <gcharge> cannot be found.\n" ;
+    $bpost_cmd = $lsf_bindir."bpost -d \"$bpost_msg\" $jobid";
+    $bpost_res = `$bpost_cmd`;
+    chomp($bpost_res);
+    print STDERR "    Result of bpost $jobid: $bpost_res.\n";
+          
+    # bkill the job by default 
+    $bkill_res = `$bkill_cmd`;
+    chomp($bkill_res);
+    print STDERR "    Result of bkill job $jobid: $bkill_res.\n";
+    print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n";
+     
+    close STDERR;
+    exit(0);
+}
+
+# key value pair: {execution_machine, cpu number}
+my $lsb_mcpu_hosts = $ENV{LSB_MCPU_HOSTS};
+my @tmp_machine;
+   @tmp_machine = split(/\s+/, $lsb_mcpu_hosts);
+my %cpu_per_machine;
+   %cpu_per_machine = @tmp_machine;
+my $key_machine;
+my $value_cpu;
+my $proc_num=0;
+
+# total processor number usage
+while (($key_machine, $value_cpu) = each(%cpu_per_machine)){
+   $proc_num += $value_cpu; 
+}
+
+my $project_name=""; 
+my $run_limit = -1; 
+my $run_time  = -1; 
+
+# GOLD commands
+my $reserve_cmd;
+my $charge_cmd;
+my $glsjob_cmd;
+my @glsjob_res;
+
+# get job's basic specification (project_name and run_limit) from "bjobs -l"
+&GetJobSpec;
+
+if ($debug) {
+    print STDERR "    Run limit of job $jobid is: $run_limit seconds.\n";
+    print STDERR "    Project name of job $jobid is: $project_name.\n";
+}
+
+if ( $ENV{LS_EXEC_T} eq "START" ) {
+    $reserve_cmd = "$GOLD_PATH/bin/greserve -J $jobid -p $project_name -u \"$ENV{LSB_JOB_EXECUSER}\" -m \"$cur_machine\" -P $proc_num -t $run_limit 2>&1";
+    print STDERR "Reserve action in GOLD: $reserve_cmd.\n" if ($debug);
+    my @reserve_res = `$reserve_cmd`;
+    chomp $reserve_res[0];
+    $reserve_res[0]=~s/^\ +//;
+    $reserve_res[0]=~s/\ +$//;
+    $reserve_res[0]=~s/\"/\'/; 
+
+    if ($?) {
+        if ($debug == 0){ 
+            print STDERR "Reserve action in GOLD: $reserve_cmd.\n" ;
+        }
+        print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n";
+        print STDERR "    Reserve result in GOLD: $reserve_res[0].\n";
+
+        # bpost the message to the job 
+        $bpost_msg = "Job was terminated due to reservation failure in GOLD: $reserve_res[0].";
+        $bpost_cmd = $lsf_bindir."bpost -d \"$bpost_msg\" $jobid";
+        $bpost_res = `$bpost_cmd`;
+        if ($bpost_res eq "") {
+            print STDERR "    Successful bpost on job $jobid with message: $bpost_msg\n";
+        } else {
+            print STDERR "    Failed bpost on job $jobid: $bpost_res.\n";
+        }
+
+        # then bkill the job 
+        $bkill_res = `$bkill_cmd`;
+        chomp $bkill_res;
+        $bkill_res=~s/^\ +//;
+        $bkill_res=~s/\ +$//;
+        print STDERR "    Result of bkill job $jobid: $bkill_res.\n";
+        print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n\n";
+        close STDERR;
+        exit(0);
+    } else {
+        print STDERR "    Reserve result in GOLD : $reserve_res[0]\n\n" if $debug;
+    }
+
+} elsif ( $ENV{LS_EXEC_T} eq "END") {
+
+    # call "bhist -l" to get the run time and the original run limit set by bsub. 
+    &GetJobRTime;
+    print STDERR "    Run time of job $jobid is: $run_time seconds.\n" if ($debug);
+
+    # Avoid to charge accumulated run time value from output of "bhist -l" for brequeue or preeexec fail and retry.
+    # Solution: 
+    #     1) get all the charged credits in history for the same job, then sum them up;
+    #     2) substract above runtime from current runtime getting from "bhist -l" .
+    # Result: we can get the seperated run time after job re-dispatching.   
+    #  
+    $glsjob_cmd = "$GOLD_PATH/bin/glsjob -J $jobid -p $project_name -u \"$ENV{LSB_JOB_EXECUSER}\" --stage \"Charge\" --show Charge --quiet 2>&1";
+    @glsjob_res = `$glsjob_cmd`;
+    print STDERR "Glsjob action in GOLD: $glsjob_cmd.\n" if $debug;
+    #print STDERR "Glsjob result in GOLD: @glsjob_res.\n" if $debug;
+    my $charged_value=0;
+    my $charged_runtime=0;
+    if ($?) {
+        print STDERR "Glsjob result in GOLD: @glsjob_res.\n" if $debug;
+        # Need not post a message.
+        # Failure already be logged.
+    } else {
+        foreach(@glsjob_res){
+            chomp;
+            split(/\s+/, $_);
+            # print STDERR "$_\n" if ($debug);
+            $charged_value=( $charged_value + $_);
+        }
+    } 
+    if ($charged_value != 0 && $proc_num != 0){
+        # substraction of the already charged partition from total runtime.
+        $charged_runtime = ($charged_value / $proc_num); 
+        my $sub_val = ($run_time - $charged_runtime);
+        if ($sub_val > 0) {
+            $run_time = $sub_val;
+        }
+        print STDERR "    Charged runtime is: $charged_runtime.\n" if ($debug);
+        print STDERR "    Run time of job $jobid after substraction is: $run_time seconds.\n" if ($debug);
+    }
+
+    # get the reserved credits from "glsres" in GOLD. This is used to determine when over-charging occurs.
+    # If glsres fails or the reservation is not found, $reserv_credits remains at zero, and eexec sends a bpost over-charge message.
+    my $job_name;
+    my $job_reserv;
+    my $reserv_credits = 0;
+    my $glsres_cmd= "$GOLD_PATH/bin/glsres -n $jobid -p $project_name -u \"$ENV{LSB_JOB_EXECUSER}\" -m \"$cur_machine\" --show Name,Amount --quiet 2>&1";
+    print STDERR "Glsres action in GOLD: $glsres_cmd.\n" if $debug;
+    my @glsres_res = `$glsres_cmd`;
+    foreach(@glsres_res){
+        chomp;
+        print STDERR "$_\n" if ($debug);
+        split(/\s+/, $_);
+        $job_name=$_[0];
+        $job_reserv=$_[1];
+        if ( $job_name eq $ENV{LSB_BATCH_JID}){
+            $reserv_credits =  $job_reserv;
+            last;
+        }
+    }
+    print STDERR "    Reservation of job $jobid in GOLD is: $reserv_credits.\n" if ($debug);
+    
+    # charge action
+    $charge_cmd= "$GOLD_PATH/bin/gcharge -J $jobid -p $project_name -u \"$ENV{LSB_JOB_EXECUSER}\" -m \"$cur_machine\" -P $proc_num -t $run_time 2>&1";
+    print STDERR "Charge action in GOLD: $charge_cmd.\n" if $debug;
+    my @charge_res = `$charge_cmd`;
+    chomp $charge_res[0];
+    $charge_res[0] =~s/^\ +//;
+    $charge_res[0] =~s/\ +$//;
+    $charge_res[0] =~s/\"/\'/; 
+
+
+    if ($?) {
+        # charge action failed
+        if ($debug == 0){ 
+            print STDERR "Charge action in GOLD: $charge_cmd.\n";
+        }
+        print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n";
+        print STDERR "    Charge result in GOLD: $charge_res[0].\n";
+
+        # bpost message to the job 
+        $bpost_msg = "Charge failed in GOLD: $charge_res[0].";
+        $bpost_cmd = $lsf_bindir."bpost -d \"$bpost_msg\" $jobid";
+        $bpost_res = `$bpost_cmd`;
+        if ($bpost_res eq "") {
+            print STDERR "    Successful bpost on job $jobid for charge failure in GOLD.\n";
+        } else {
+            print STDERR "    Failed bpost on job $jobid for charge failure in GOLD: $bpost_res.\n";
+        }
+        print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n\n";
+        close STDERR;
+        exit(0);
+    } else {
+        print STDERR "    Charge result in GOLD: $charge_res[0].\n" if $debug;
+    }
+
+    # Over-charge if charged credit > reserved credit.
+    # Here charged credits = (run time * cpu num); reserved credits = (old run limit * cpu num).
+    my $over_charge = 0;
+    my $charge_credits = ($run_time * $proc_num);
+    if (($reserv_credits + 20) < $charge_credits) {
+        # 20 second margin: if run limit is reached, the job is terminated, but run time may be counted for a few more seconds.
+        $over_charge = 1; 
+    } else {
+        $over_charge = 0; 
+    }
+    if ($over_charge == 1){
+        if ($debug == 0){
+            print STDERR "Charge action in GOLD: $charge_cmd.\n";
+        }
+        # bpost over-charge message to the job 
+        $bpost_msg = "Over charge in GOLD happened. Reserved credit is: $reserv_credits; Charged credit is: $charge_credits.";
+        print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n";
+        print STDERR "    ".$bpost_msg;
+        print STDERR "\n";
+        $bpost_cmd = $lsf_bindir."bpost -d \"$bpost_msg\" $jobid";
+        print STDERR "    bpost action is: $bpost_cmd.\n";
+        $bpost_res = `$bpost_cmd`;
+        if ($bpost_res eq "") {
+            print STDERR "    Successful bpost on job $jobid for over-charge in GOLD.\n";
+        } else {
+            print STDERR "    Failed bpost on job $jobid for over-charge in GOLD: $bpost_res.\n";
+        }
+        print STDERR "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n\n";
+    } else {
+        print STDERR "\n";
+    }
+}
+
+close STDERR;
+exit(0);
+
+
+##################################################################
+# get job's basic specifications (project_name and run_limit) from "bjobs -l"
+##################################################################
+sub GetJobSpec
+{
+    print STDERR "Getting job information from bjobs -l $jobid...\n" if ($debug);
+
+    open(JOBSPE,$lsf_bindir."bjobs -l $jobid|");
+    my @jobRes= <JOBSPE>;
+    close JOBSPE;
+
+    my $hit_spec   = 0;
+    my $hit_limit = 0;
+    my $jobSpec = "";
+    foreach (@jobRes){
+        chomp;
+        # the project name may accross mulitiple lines, concat these lines first:
+        if ($_ =~ /^Job\ </  && $hit_spec == 0) {
+            $hit_spec ++;
+            $jobSpec = $_;   # the first line beginning with "Job <"
+        } elsif ($hit_spec == 1 && $_ =~ /^\s+/ ) { 
+            #concat next lines: beginning with mutiple spaces
+            $_=~s/^\s+//;
+            $_=~s/\s+$//;
+            $jobSpec = $jobSpec.$_ ;
+        } elsif ($hit_spec == 1 && $_ !~ /^\s+/) {
+            $hit_spec ++;  
+        }
+
+        # try to get RUNlIMIT        
+        if ($_ =~ /^\s+RUNLIMIT/) {
+            # begin with " RUNLIMIT"
+            # nexeline is the value of run limit 
+            $hit_limit ++;
+        } elsif ($hit_limit == 1) {
+            if ($_ =~ /\s+(\d+)\.(\d)\d*\s+min/){  # case: 11.0 min 
+	        $run_limit = ($1 * 60) + $2 * 6;   # run limit in seconds
+            } else {
+                print STDERR "    Error: Run limit is not found in the output of bjobs -l $jobid.\n";
+                return; 
+            }
+            $hit_limit ++ ;
+        }
+    }
+
+    # get project_name from job's basic specification.
+    print STDERR "    Job specification from bsub: $jobSpec.\n" if ($debug);
+    my $begin=index($jobSpec, "\>,\ Project\ \<");
+    my $end  =index($jobSpec, "\>,", $begin + 2 );
+    if ($begin == -1 || $end == -1 || $begin > $end ){
+        print STDERR "    Error: Project name is not found in the output of bjobs -l $jobid.\n";
+        return ;
+    }
+    $project_name  = substr($jobSpec, $begin+12, $end - $begin - 12 );
+    $project_name = "\"".$project_name."\"";
+}
+    
+
+##################################################################
+# get job run time from "bhist -l"
+##################################################################
+sub GetJobRTime
+{
+    print STDERR "Getting run time from bhist -l $jobid...\n" if ($debug);
+    open(JOBINFO,$lsf_bindir."bhist -l $jobid|");
+    my @jobHist = <JOBINFO>;
+    close JOBINFO;
+    my $hit_rlimit = 0;
+
+    my $hit_rtime  = 0;
+    foreach (@jobHist){
+        chomp;
+        if ($_ =~ /^Summary\ of\ time/) {
+            $hit_rtime ++; 
+        } elsif ($hit_rtime == 1) {
+            if ($_ =~ /^\s+PEND/ ) {
+                # Sanity checking, next line should be 
+                # PEND     PSUSP    RUN      USUSP    SSUSP    UNKWN    TOTAL
+                $hit_rtime ++;
+            } else {
+                print STDERR "    Error: Run time is not found in the output of bhist -l $jobid.\n" ;
+                return; 
+            } 
+        } elsif ($hit_rtime == 2) {
+            if ($_ =~ /\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/) {
+                $run_time = $3;
+            } else {
+                print STDERR "    Error: Run time is not found in the output of bhist -l $jobid.\n" ;
+                return; 
+            }
+            $hit_rtime ++;    #next line 
+        }
+
+    }
+}

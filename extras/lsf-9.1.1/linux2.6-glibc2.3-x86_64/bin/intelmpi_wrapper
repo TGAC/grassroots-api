@@ -1,0 +1,829 @@
+#!/bin/sh
+#$RCSfile: intelmpi_wrapper,v $Revision: 1.13 $Date: 2013/01/10 05:52:04 $
+#
+# intelmpi_wrapper script does the following:
+# - starts MPD daemons on hosts allocated by the LSF,
+# - parses supplied arguments according to the syntax of teh `mpiexec`
+#   command, 
+# - generates new configuration file based either on the command line
+#   options or user supplied configuration file,
+# - launches `mpiexec` comamnd with the new configuration file.
+# 
+# The exit code for abnormal cases:
+#   66:     error found while handling mpi options 
+#   67:     exit bacause of signal 1, 2, 3, 15 received
+#   68:     error found while handling task geometry
+#   69:     cannot create required files
+#   others: exit code of Intel mpiexec
+#
+# Special Note:
+# If multiple MPI applications are included in one job script, you might 
+# encounter the connection problem reported by mpiexec. In such cases,
+# you can put a short sleep in between of the MPI applications.
+# (The above-mentioned problem is caused by LSF)
+#
+
+# ---------------------------------------------------------------------
+# Remove temporary files. 
+# ---------------------------------------------------------------------
+rm_tmpfiles() {
+
+   rm -rf $MPI_OLDCONF   2>/dev/null 
+   rm -rf $MPI_NEWCONF   2>/dev/null
+   rm -rf $MPD_HOST_FILE 2>/dev/null
+
+} # rm_tmpfiles()
+
+# ---------------------------------------------------------------------
+# Create MPD host file, get number of hosts and total number of tasks
+# ---------------------------------------------------------------------
+setMPDRing()
+{
+   # Create an mpd.conf file. 
+    if [ ! -a $MPD_CONF_FILE ]; then
+	touch $MPD_CONF_FILE
+	if [ ! -f "$MPD_CONF_FILE" ]; then
+	    echo "Cannot create MPD configuration file. Exiting ..."
+	    echo "Cannot create MPD configuration file. Exiting ..." >> $LOGFILE
+	    exit 69
+	fi
+	echo password="$DISPLAY_JOBID" > $MPD_CONF_FILE
+    fi
+    chmod 600 $MPD_CONF_FILE
+    
+	
+    if [ -f $MPD_HOST_FILE ]; then
+	rm -f $MPD_HOST_FILE
+    fi
+
+    touch $MPD_HOST_FILE
+    if [ ! -f "$MPD_HOST_FILE" ]; then
+	echo "Cannot create MPD host file. Exiting ..."
+	echo "Cannot create MPD host file. Exiting ..." >> $LOGFILE
+	exit 69
+    fi
+
+    output=`echo $LSB_MCPU_HOSTS | /bin/awk '
+    BEGIN {counter1=0;counter2=0}
+    {
+      size = split($0, a, " ");
+      for (i = 1; i <= size; i += 2) {
+        counter1 = counter1 + 1;
+        counter2 = counter2 + a[i + 1];
+        for (j = 0; j < a[i + 1]; ++j) {
+            print a[i] > hfile;
+        }
+      }
+    }
+    END { print counter1 " " counter2}' hfile=$MPD_HOST_FILE`
+    TOTAL_NUM_HOSTS=`echo $output | cut -f1 -d' '`
+    TOTAL_NUM_TASKS=`echo $output | cut -f2 -d' '`
+
+    if [ $TOTAL_NUM_TASKS -lt $TOTAL_NUM_APPS ]; then
+	echo "Number of applications to launch <$TOTAL_NUM_APPS> exceeds number of job slots <$TOTAL_NUM_TASKS> allocated. Exiting."
+	echo "Number of applications to launch <$TOTAL_NUM_APPS> exceeds number of job slots <$TOTAL_NUM_TASKS> allocated. Exiting." >> $LOGFILE
+	exit 66
+    fi
+
+} # setMPDRing()
+
+# ---------------------------------------------------------------------
+# Start MPD ring
+# ---------------------------------------------------------------------
+startMPDRing()
+{
+
+    # Start an exclusive MPD ring by setting an unique MPD_CON_EXT variable
+    export MPD_CON_EXT=$DISPLAY_JOBID
+    $MPDBOOT_CMD -n $TOTAL_NUM_HOSTS -f $MPD_HOST_FILE
+    rc=$?
+    if [ $rc -ne 0 ]
+	then
+	echo "Failed to start MPD daemons"
+	echo "Failed to start MPD daemons" >> $LOGFILE
+	rm_tmpfiles
+    fi	
+    return $rc
+
+} # startMPDRing()
+
+# ---------------------------------------------------------------------
+# Shut down MPD ring
+# ---------------------------------------------------------------------
+cleanMPDRing()
+{
+    $MPDEXIT_CMD
+    rc=$?
+    if [ $rc -ne 0 ]
+	then
+	echo "Failed to shut down MPD daemons"
+	echo "Failed to shut down MPD daemons" >> $LOGFILE
+        rm_tmpfiles
+    fi
+    return $rc
+
+} # cleanMPDRing()
+
+# ---------------------------------------------------------------------
+# Define the function to handle external signals: 
+# - display the signal received and the shutdown action to the user 
+# - log the signal received and the daemon shutdown action 
+# - exit gracefully by shutting down the daemon 
+# - set the exit code to 67
+# ----------------------------------------------------------------------  
+intelMPI_exit()
+{
+   trap '' 1 2 3 15
+   echo "Signal Received, exiting ..."
+   echo "Signal Received, exiting ..." >>$LOGFILE
+   # clean MPD ring
+   cleanMPDRing
+   # clean up configfiles
+   rm_tmpfiles 
+
+   exit 67
+} # intelMPI_exit()
+
+# ----------------------------------------------------------------------
+# who_am_i()
+# Environment Variables:
+# Description:
+#       It returns the name of the current user.
+# Return Value:
+#       User name.
+# ----------------------------------------------------------------------
+who_am_i()
+{
+    _my_name=`id | sed -e 's/[^(]*(\([^)]*\)).*/\1/' | sed -e "s/[      ]//g"`  
+    echo $_my_name
+} # who_am_i()
+
+# ----------------------------------------------------------------------
+# get_globalOpts()
+#   (1) parse <globa_options> from $*
+#
+# Store global options into MPI_GLOBAL_OPTS variable.
+#
+# NOTE: get_globalOpts() ignores "-gn|-gnp" and "-ghost" options. 
+# ----------------------------------------------------------------------
+get_globalOpts()
+{
+
+    while [ $# -gt 0 ]
+    do
+        case "$1" in
+            -genv)
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get option name
+		shift 
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get <var>
+		shift
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get <val>
+		shift
+		;;
+	    -genvlist)
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get option name
+		shift 
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS \"$1\"" #get list "var1,var2,.."
+		shift
+		;;
+            -gpath|-gwdir|-gsoft|-garch|-s)
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get option name
+		shift 
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get option val
+		shift
+		;;
+            -genvnone|-genvall)
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get option name
+		shift 
+		;;
+	    -l|-bnr|-fi|-kx)
+		MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1" #get option name
+		shift 
+		;;
+            -ghost) # Ignore hostname if is not from the user 
+		    #  supplied configuration file.
+		if [ -n "$MPI_CONFIGFILE_USER" ]; then
+		    MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1"
+		    shift
+		    MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1"
+		    shift
+		else    
+		    shift
+		    shift
+		fi
+		;;
+            -machinefile) # Ignore -machinefile if is not from the user 
+		          #  supplied configuration file.
+		if [ -n "$MPI_CONFIGFILE_USER" ]; then
+		    MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1"
+		    shift
+		    MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1"
+		    shift
+		else    
+		    shift
+		    shift
+		fi
+		;;
+            -tv)                                      # Ignore tv option
+		shift
+		;;
+            -gn|-gnp) # Ignore -gn|-gnp if is not from the user 
+		      #  supplied configuration file.
+		if [ -n "$MPI_CONFIGFILE_USER" ]; then
+		    MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1"
+		    shift
+		    MPI_GLOBAL_OPTS="$MPI_GLOBAL_OPTS $1"
+		    shift
+		else    
+		    shift
+		    shift
+		fi
+		;;
+	    *)   
+		break
+		;;
+        esac
+    done
+
+    if [ -n "$MPI_GLOBAL_OPTS_DONE" ]; then
+	MPI_GLOBAL_OPTS=""	
+    fi
+
+    # Parse the remaining line 
+    get_argSet "$@"
+
+} # get_globalOpts()
+
+# ----------------------------------------------------------------------
+# get_argSet() - get local options and arguments from $*
+# ----------------------------------------------------------------------
+get_argSet()
+{
+
+    MPI_ARGSET=""
+
+    while [ $# -gt 0 ]
+    do
+        case "$1" in
+	    -n|-np) # Ignore -n|-np if it is not from the user 
+		    #  supplied configuration file.
+		if [ -n "$MPI_CONFIGFILE_USER" ]; then
+		    MPI_ARGSET="$MPI_ARGSET $1"
+		    shift
+		    MPI_ARGSET="$MPI_ARGSET $1"
+		    shift
+		else    
+		    shift
+		    shift
+		fi  
+            	;;
+	    -wdir|-path|-soft|-arch)
+            	MPI_ARGSET="$MPI_ARGSET $1" #get option name
+            	shift 
+            	MPI_ARGSET="$MPI_ARGSET $1" #get option val
+            	shift
+            	;;
+	    -host) # Ignore hostname if is not from the user 
+		   #  supplied configuration file.
+		if [ -n "$MPI_CONFIGFILE_USER" ]; then
+		    MPI_ARGSET="$MPI_ARGSET $1"
+		    shift
+		    MPI_ARGSET="$MPI_ARGSET $1"
+		    shift
+		else    
+		    shift
+		    shift
+		fi
+		;;
+	    -envall|-envnone|-V|-version)
+            	MPI_ARGSET="$MPI_ARGSET $1" #get option name
+            	shift
+		;;          
+            -env)
+            	MPI_ARGSET="$MPI_ARGSET $1" #get option name
+            	shift 
+            	MPI_ARGSET="$MPI_ARGSET $1" #get <var>
+            	shift
+            	MPI_ARGSET="$MPI_ARGSET $1" #get <val>
+            	shift
+            	;;
+	    -envlist)
+		MPI_ARGSET="$MPI_ARGSET $1" #get option name
+		shift 
+		MPI_ARGSET="$MPI_ARGSET \"$1\"" #get list "var1,var2,.."
+		shift
+		;;            
+	    *)
+            	break
+            	;;
+        esac
+    done
+
+    # Get the appllication and it's arguments
+    MPI_ARGCMD="$@"
+
+} #get_argSet()
+
+# ----------------------------------------------------------------------
+# countNumApps() - count total number of applications to launch
+# ----------------------------------------------------------------------
+countNumApps() {
+
+    exec 3<&0 <$MPI_OLDCONF
+    while read LINE
+      do
+      _is_comment=`echo $LINE | grep "^[  ]*#" 2>/dev/null`
+      if [ "$_is_comment" != "" ]; then
+        #ignore the comment line
+	  continue                    
+      fi
+
+      TOTAL_NUM_APPS=`expr $TOTAL_NUM_APPS + 1`
+
+    done # while
+    exec 0<&3 3<&-
+
+} # countNumApps()
+
+# ----------------------------------------------------------------------
+# Process a single line assuming the following syntax: 
+#  arg1 : arg2 : arg3 : ...
+# ----------------------------------------------------------------------
+parseSingleLine() {    
+
+    # Make sure that -n coming as a first argument is not treated as 
+    # the -n option by the `echo` command.
+    echo "\\""$@" |sed 's/\\//'|sed 's/ :/ !/g' |awk -F! '{for(i=1; i<=NF; i++){print $i}}' >> $MPI_OLDCONF
+
+} #parseSingleLine()
+
+# ----------------------------------------------------------------------
+# Process the mpiexec options: 
+# (1) -configfile <configfile>, where <configfile> has the syntax
+#      <global_options> <local_options> arg : <local_options> arg 
+#      <local_options> arg : <local_options> arg
+# (2) form MPI_OLDCONF from command line options.
+# mpiexec <global_options> <local_options> arg : <local_options> arg
+# ----------------------------------------------------------------------
+parseCommandLine() {
+if [ -f $MPI_OLDCONF ]; then
+    rm -rf $MPI_OLDCONF
+fi
+
+if [ -f $MPI_NEWCONF ]; then
+    rm -rf $MPI_NEWCONF
+fi
+
+touch $MPI_OLDCONF
+touch $MPI_NEWCONF
+if [ ! -f "$MPI_OLDCONF" -o ! -f "$MPI_NEWCONF" ]; then
+    echo "Cannot create temporary configuration files. Exiting ..."
+    echo "Cannot create temporary configuration files. Exiting ..." >> $LOGFILE
+    exit 69
+fi
+
+if [ "$1" = "-file" ]; then
+    echo "-file is not supported, use -configfile."
+    echo "-file is not supported, use -configfile." >> $LOGFILE
+    exit $EXIT_VALUE
+fi
+
+echo "# This file is constructed by LSF " >> $MPI_OLDCONF
+
+if [ "$1" = "-configfile" ]; then
+    shift
+    MPI_USERCONF="$1"
+    if [ -f "$MPI_USERCONF" ]; then
+	MPI_CONFIGFILE_USER="$MPI_USERCONF"
+	echo "User provided -configfile $MPI_USERCONF option." >>$LOGFILE
+	exec 3<&0 <$MPI_USERCONF
+	while read LINE
+	  do
+          # Ignore the comment line.
+	  _is_comment=`echo $LINE | grep "^[  ]*#" 2>/dev/null`
+	  if [ "$_is_comment" != "" ]; then  	 
+	      continue                    
+	  fi
+	  parseSingleLine $LINE
+	done # while reading lines
+	exec 0<&3 3<&-
+    else
+        echo "Error: $MPI_USERCONF not found." >>$LOGFILE    
+        exit $EXIT_VALUE
+    fi      
+else
+    parseSingleLine "$@"
+fi
+
+echo "$MPI_OLDCONF file contents:" >> $LOGFILE
+echo "#--------------------------" >> $LOGFILE
+cat $MPI_OLDCONF >> $LOGFILE
+echo "#--------------------------" >> $LOGFILE
+    
+# Count total number of applications to launch.
+countNumApps
+
+} #parseCommandLine()
+
+# ----------------------------------------------------------------------
+# Generate a new set of mpiexec argSet based on
+#   (1) $LSB_PJL_TASK_GEOMETRY
+# and/or
+#   (2) $LSB_MCPU_HOSTS (LSF job allocation)
+# ----------------------------------------------------------------------
+applyTaskGeometry() {
+
+    if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+        # -------------------------------------------------
+        # Handle LSB_PJL_TASK_GEOMETRY
+        # If task geometry is used, the INTEL_TASK_GEOMETRY
+        # will contain the sorted (HOST 1) pair, according 
+        # to LSF_MPCU_HOSTS and LSB_PJL_TASK_GEOMETRY
+        # -------------------------------------------------
+        #
+	if [ -f "$LSF_BINDIR/pjllib.sh" ]; then
+	    . $LSF_BINDIR/pjllib.sh
+	    result_file="/tmp/task_geometry_allocation.$$"
+	    geom_str=`construct_task_geom_str "$LSB_PJL_TASK_GEOMETRY"`
+	    construct_task_geom_file "$geom_str" "$result_file"
+	    if [ "$?" != "0" ]; then
+		EXIT_VALUE="68"
+	    else
+		node_index=`sort -n $result_file | awk '{ print $2 }'`
+		rm -rf $result_file
+		INTEL_TASK_GEOMETRY=`echo $node_index | sed -e "s/ / 1 /g"`
+		INTEL_TASK_GEOMETRY="$INTEL_TASK_GEOMETRY 1"
+	    fi
+	else
+	    echo "Cannot find pjllib.sh in $LSF_BINDIR, Task Geometry is disabled" >> $LOGFILE 
+	fi
+    else
+	if [ -z $INTEL_TASK_GEOMETRY ]; then 
+	    INTEL_TASK_GEOMETRY="$LSB_MCPU_HOSTS"
+	fi    
+
+    fi
+    
+} #applyTaskGeometry()
+
+# --------------------------------------------------------------------
+# Convert each line from the user supplied MPI_OLDCONF file to a line 
+# in the MPI_NEWCONF file.
+# --------------------------------------------------------------------
+convertUserLines()
+{   
+    exec 3<&0 <$MPI_OLDCONF
+    while read LINE
+      do
+
+      # Ignore the comment line.
+      _is_comment=`echo $LINE | grep "^[  ]*#" 2>/dev/null`
+      if [ "$_is_comment" != "" ]; then  	 
+	  continue                    
+      fi
+
+      # Global options are considered for the first line only.
+      if [ -z "$MPI_GLOBAL_OPTS_DONE" ]; then
+	  get_globalOpts $LINE
+	  MPI_OPTIONS="$MPI_GLOBAL_OPTS $MPI_ARGSET"
+	  MPI_GLOBAL_OPTS_DONE="YES"
+      else
+	  get_globalOpts $LINE
+	  MPI_OPTIONS="$MPI_ARGSET"
+      fi
+      
+      echo "$MPI_OPTIONS $LSF_TS $LSF_TS_OPTIONS $MPI_ARGCMD" >> $MPI_NEWCONF
+      
+    done # while
+    exec 0<&3 3<&-
+    
+} # convertUserLines()
+
+# --------------------------------------------------------------------
+# Convert each line from the LSF supplied MPI_OLDCONF file to a line 
+# in the MPI_NEWCONF file.
+# --------------------------------------------------------------------
+convertLSFLines()
+{
+
+    while [ -n "$INTEL_TASK_GEOMETRY" ]
+      do
+
+      exec 3<&0 <$MPI_OLDCONF
+      while read LINE
+	do
+          # Ignore the comment line.
+	_is_comment=`echo $LINE | grep "^[  ]*#" 2>/dev/null`
+	if [ "$_is_comment" != "" ]; then    
+	    continue                    
+	fi
+
+          # Global options are considered for the first line only.
+	if [ -z "$MPI_GLOBAL_OPTS_DONE" ]; then
+	    get_globalOpts $LINE
+	    MPI_OPTIONS="$MPI_GLOBAL_OPTS $MPI_ARGSET"
+	    MPI_GLOBAL_OPTS_DONE="YES"
+	else
+	    get_globalOpts $LINE
+	    MPI_OPTIONS="$MPI_ARGSET"
+	fi
+
+	HOST=""
+	FLAG="FALSE"
+	CURR_TASK_GEOMETR=""
+	NEW_PROC="0"
+	COUNT="FALSE"
+	
+	for TOKEN in $INTEL_TASK_GEOMETRY
+	  do
+	  if [ "$FLAG" = "FALSE" ]; then
+	      HOST="$TOKEN"
+	      FLAG="TRUE"
+	  else
+	      NEW_PROC="$TOKEN"
+	      FLAG="FALSE"
+	      if [ "$COUNT" = "FALSE" ]; then
+		  NEW_PROC=`expr $TOKEN - 1`	  
+		  HOST_AND_SLOT="-n 1 -host $HOST"  
+		  echo "$MPI_OPTIONS $HOST_AND_SLOT $LSF_TS $LSF_TS_OPTIONS $MPI_ARGCMD" >> $MPI_NEWCONF
+		  COUNT="TRUE"
+	      fi
+	      if [ "$NEW_PROC" -gt "0" ]; then
+		  CURR_TASK_GEOMETR="$CURR_TASK_GEOMETR $HOST $NEW_PROC"
+	      fi
+	  fi 
+	done
+
+	INTEL_TASK_GEOMETRY="$CURR_TASK_GEOMETR"
+
+      done # while reading lines
+      exec 0<&3 3<&-
+
+    done # while there are slots available
+  
+} # convertLSFLines()
+
+# --------------------------------------------------------------------
+# Convert a line from the user supplied MPI_OLDCONF file to a line 
+# in the MPI_NEWCONF file. 
+# NOTE: It is assumed that MPI_OLDCONF has one application line.
+# --------------------------------------------------------------------
+convertLSFOneLine()
+{   
+
+      exec 3<&0 <$MPI_OLDCONF
+      while read LINE
+	do
+        # Ignore the comment line.
+	_is_comment=`echo $LINE | grep "^[  ]*#" 2>/dev/null`
+	if [ "$_is_comment" != "" ]; then    
+	    continue                    
+	fi
+
+	get_globalOpts $LINE
+	MPI_OPTIONS="$MPI_GLOBAL_OPTS $MPI_ARGSET"
+	    
+	HOST=""
+	FLAG="FALSE"
+	for TOKEN in $INTEL_TASK_GEOMETRY
+	  do
+	  if [ "$FLAG" = "FALSE" ]; then
+	      HOST="$TOKEN"
+	      FLAG="TRUE"
+	  else
+	      FLAG="FALSE"
+	      HOST_AND_SLOT="-n $TOKEN -host $HOST"  
+	      echo "$MPI_OPTIONS $HOST_AND_SLOT $LSF_TS $LSF_TS_OPTIONS $MPI_ARGCMD" >> $MPI_NEWCONF
+	      # Ensure that global options appear only once
+  	      MPI_OPTIONS="$MPI_ARGSET"
+	  fi 
+	done
+
+      done # while reading lines
+      exec 0<&3 3<&-
+
+} # convertLSFOneLine()
+
+# --------------------------------------------------------------------
+# Convert the MPI_OLDCONF file to the MPI_NEWCONF file.
+# Distinguishes three cases:
+#  1. User created MPI_OLDCONF file, calls convertUserLines()
+#  2. LSF created MPI_OLDCONF file, calls convertLSFLines()
+#  3. LSF created MPI_OLDCONF file, which conatins only one application line
+#     calls convertLSFOneLine()
+# --------------------------------------------------------------------
+createNewConfFile() {
+   
+    echo "#This file is generated by LSF" >> $MPI_NEWCONF
+
+    if [ -n "$MPI_CONFIGFILE_USER" ]; then 
+        # Special case: user supplied MPI_OLDCONF file.
+	convertUserLines
+    elif [ "$TOTAL_NUM_APPS" -eq "1" ]; then
+        # Special case: MPI_OLDCONF has a single line.
+	convertLSFOneLine
+    else
+        # General case. 
+	convertLSFLines	
+    fi
+
+    # complete the generation of the new options for mpiexec 
+    echo "The configuration file generated for execution:" >> $LOGFILE
+    cat $MPI_NEWCONF >> $LOGFILE
+
+} #createNewConfFile()
+
+# --------------------------------------------------------------------
+# Set up the log file: 
+# - create and set the variable LOGDIR to represent the log file directory 
+# - fill in your own choice of directory LOGDIR 
+# - the log directory you choose must be accessible by the user from all hosts 
+# - create a log file with a unique name, based on the job ID 
+# - if the log directory is not specified, the log file is /dev/null 
+# - the first entry logs the file creation date and file name 
+# - we create and set a second variable DISPLAY_JOBID to format the job 
+#   ID properly for writing to the log file  
+# --------------------------------------------------------------------
+setLogFile() {
+    
+    if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+	JOB_ALIAS="$LSB_JOBID"
+	DISPLAY_JOBID="$LSB_JOBID"
+    else
+	JOB_ALIAS="$LSB_JOBID"_"$LSB_JOBINDEX"
+	DISPLAY_JOBID="$LSB_JOBID[$LSB_JOBINDEX]"
+    fi
+
+    if [ -d "$LOGDIR" ]; then
+	LOGFILE="${LOGDIR}/intelMPI_wrapper.job${JOB_ALIAS}.log"
+	touch $LOGFILE
+        if [ ! -f "${LOGFILE}" ]; then
+	    echo "Cannot create a log file. Using /dev/null."
+	    LOGFILE="/dev/null"
+	fi
+    else
+	LOGFILE="/dev/null"	
+    fi
+
+    # --------------------------------------------------------------------
+    # Write the first entry to the script's log file 
+    # - date of creationg 
+    # - name of log file 
+    # --------------------------------------------------------------------
+    my_name=`who_am_i`
+    echo "`date` $my_name" >>$LOGFILE
+
+} # setLogFile()
+
+# ------------------------------------------------------------------------
+# Sanity check fior TaskStarter binary and options
+# ------------------------------------------------------------------------
+checkTSOptions() {
+ 
+    if [ -z "$LSF_TS_OPTIONS" -o -z "$LSF_TS" ]; then
+	echo "Cannot add TaskStarter to the command line. Exiting..."
+	echo "Cannot add TaskStarter to the command line. Exiting..." >> $LOGFILE
+	exit 67
+    fi
+} # checkTSOptions()
+
+# ------------------------------------------------------------------------
+# checkMPIversion() - Checks Intel MPI version using Release_Notes file.
+# 
+# Only version 2.0 or higher is supported.
+# ------------------------------------------------------------------------
+checkMPIversion() {
+
+    version=`$MPI_TOPDIR/bin/mpirun -V |grep "Version 1.0.2"` > /dev/null 2>&1
+    if [ -z "$version" ]; then
+	version=`$MPI_TOPDIR/bin/mpirun -V |grep "Version [2-9]"` > /dev/null 2>&1
+    fi
+    if [ -z "$version" ]; then
+	echo "Only versions 1.0.2 or higher of the Intel MPI are supported. Exiting..."
+	echo "Only versions 1.0.2 or higher of the Intel MPI are supported. Exiting..." >> $LOGFILE
+	      exit 67
+    fi
+    
+} # checkMPIversion()
+
+# ------------------------------------------------------------------------
+#
+# Main script starts here
+#
+# ------------------------------------------------------------------------
+
+# Define signal handler.
+trap intelMPI_exit 1 2 3 15
+
+# Source the LSF environment.
+. ${LSF_ENVDIR}/lsf.conf
+
+# Optional: specify the LOGDIR. 
+LOGDIR="/dev/null"
+
+# Set log file
+setLogFile
+
+# Define top directory for Intel MPI
+MPI_TOPDIR="/opt/intel/mpi/2.0"
+
+# Define MPI commands used in the script
+MPIEXEC_CMD="$MPI_TOPDIR/bin/mpiexec"
+MPDEXIT_CMD="$MPI_TOPDIR/bin/mpdallexit"
+MPDBOOT_CMD="$MPI_TOPDIR/bin/mpdboot"
+
+# Check Intel MPI version. Must be 1.0.2 or higher.
+checkMPIversion
+
+# Set up the variable LSF_TS representing the TaskStarter.
+LSF_TS="$LSF_BINDIR/TaskStarter"
+
+# Do a sanity check
+checkTSOptions
+
+# Define total number of tasks
+TOTAL_NUM_TASKS="0"
+
+# Define total number of hosts 
+TOTAL_NUM_HOSTS="0"
+
+# Files used to launch MPD daemons.
+MPD_CONF_FILE="$HOME/.mpd.conf" 
+MPD_HOST_FILE="$HOME/.mpd.host.$DISPLAY_JOBID"
+
+# Task Geometry Information
+INTEL_TASK_GEOMETRY=""
+
+# Define temporary configuration files for mpiexec/mpirun. 
+MPI_OLDCONF="$PWD/.intelmpi_wrapper.$DISPLAY_JOBID.oldconf"
+MPI_NEWCONF="$PWD/.intelmpi_wrapper.$DISPLAY_JOBID.newconf"
+
+# Define non-zero exit value for handlinng of the mpiexec options
+EXIT_VALUE="66"
+
+# Unique batch job ID.
+JOB_ALIAS=""
+
+# Global mpiexec options
+MPI_GLOBAL_OPTS=""
+
+# Local mpiexec otpions
+MPI_ARGSET=""
+
+# Total number of applications to be launched
+TOTAL_NUM_APPS="0"
+
+# User supplied configuration file
+MPI_CONFIGFILE_USER=""
+
+# Parse command line and store global options into MPI_GLOBAL_OPTS
+parseCommandLine "$@"
+
+# Create MPD host file and configuration files
+setMPDRing
+
+# Start an MPD ring
+startMPDRing
+MPD_EXIT_VALUE=$?
+if [ $MPD_EXIT_VALUE -ne 0 ]; then
+    echo "startMPDRing exit value is $MPD_EXIT_VALUE." >> $LOGFILE
+    cleanMPDRing
+    rm_tmpfiles
+    exit $MPD_EXIT_VALUE
+fi
+
+# Sort out topology.
+applyTaskGeometry
+
+#Create new configuration file MPI_NEWCONF
+createNewConfFile
+
+# Run the parallel job launcher: 
+echo "Execute $MPIEXEC_CMD -configfile $MPI_NEWCONF" >> $LOGFILE
+$MPIEXEC_CMD -configfile $MPI_NEWCONF 
+EXIT_VALUE=$?
+
+# Shut down an MPD ring
+cleanMPDRing
+MPD_EXIT_VALUE=$?
+if [ $MPD_EXIT_VALUE -ne 0 ]; then
+    echo "cleanMPDRing exit value is $MPD_EXIT_VALUE." >> $LOGFILE
+    rm_tmpfiles
+    exit $MPD_EXIT_VALUE
+fi
+
+# --------------------------------------------------------------------
+# Finalize after running this script:
+# - log the exit value for MPD related commands
+# - log the exit value of the job
+# - clean up old and new configfiles
+# - exit with exit value of the PJL command
+# --------------------------------------------------------------------
+echo "Job<${DISPLAY_JOBID}> exiting with exit value $EXIT_VALUE." >> $LOGFILE
+rm_tmpfiles
+exit $EXIT_VALUE
+
+#
+# --------------------------------------------------------------------
+# The End.
+# --------------------------------------------------------------------

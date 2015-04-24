@@ -1,0 +1,311 @@
+# $Id: customize,v 1.2 2012/06/08 03:37:23 sbadugu Exp $
+
+#******************************************************************
+#This is not a standalone script. It is sourced by other scripts.
+#*****************************************************************
+
+
+
+while :
+do
+    LSF_ENVDIR=`ask_dir LSF_ENVDIR`
+    check_dir LSF_ENVDIR
+
+    if [ "$realChk" = "y" ]; then
+        if yesno "Do you want to continue?" Y "" >$LSNULFILE
+        then
+            break
+        else
+            continue
+        fi
+    fi
+    break 
+done
+
+
+if do_machdep
+then
+    echo
+    echo "Path settings for machine dependent files"
+    echo
+    if defined "$NO_MANDATORY" ; then
+	echo
+	OLD_LSF_MACHDEP=$LSF_MACHDEP
+
+
+ 
+        while :
+        do
+            LSF_MACHDEP=`ask_dir LSF_MACHDEP`
+            check_dir LSF_MACHDEP           
+
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+        
+	update_params $OLD_LSF_MACHDEP $LSF_MACHDEP $BINS 
+	echo
+    fi
+
+
+
+
+
+
+
+
+
+
+    while :
+    do    
+        LSF_BINDIR=`ask_dir LSF_BINDIR`
+        check_dir LSF_BINDIR          
+
+        if [ "$realChk" = "y" ]; then
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                break
+            else
+                continue
+            fi
+        fi
+        break
+    done
+
+    while :
+    do
+        LSF_SERVERDIR=`ask_dir LSF_SERVERDIR` 
+        check_dir LSF_SERVERDIR              
+        
+        if [ "$realChk" = "y" ]; then
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                break
+            else
+                continue
+            fi
+        fi
+        break
+    done
+
+    while :
+    do
+        LSF_LIBDIR=`ask_dir LSF_LIBDIR`   
+        check_dir LSF_LIBDIR             
+
+        if [ "$realChk" = "y" ]; then
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                break
+            else
+                continue
+            fi
+        fi
+        break
+    done
+
+    while :
+    do
+        XLSF_UIDDIR=`ask_dir XLSF_UIDDIR` 
+        check_dir XLSF_UIDDIR            
+
+        if [ "$realChk" = "y" ]; then
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                break
+            else
+                continue
+            fi
+        fi
+        break
+    done
+
+
+
+
+        
+fi
+
+if do_indep
+then
+    echo
+    echo "Path settings for shared files"
+    echo
+    if [ "$EXCUSED_CONF" != "y" ] ; then
+
+
+
+
+
+
+
+        while :
+        do
+            LSF_CONFDIR=`ask_dir LSF_CONFDIR`
+            check_dir LSF_CONFDIR
+
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+
+        while :
+        do
+            LSB_CONFDIR=`ask_dir LSB_CONFDIR`
+            check_dir LSB_CONFDIR
+
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+
+        while :
+        do
+            LSB_SHAREDIR=`ask_dir LSB_SHAREDIR`
+            check_dir LSB_SHAREDIR
+
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+
+
+
+
+    fi
+
+    if [ "$EXCUSED_MANS" != "y" ] ; then
+
+
+        while :
+        do
+            LSF_MANDIR=`ask_dir LSF_MANDIR` 
+            check_dir LSF_MANDIR           
+           
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+    fi
+
+    if [ "$EXCUSED_INCLUDE" != "y" ] ; then
+
+
+        while :
+        do
+            LSF_INCLUDEDIR=`ask_dir LSF_INCLUDEDIR` 
+            check_dir LSF_INCLUDEDIR               
+
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done    
+    fi
+
+    if [ "$EXCUSED_MISC" != "y" ] ; then
+
+
+        while :
+        do
+            LSF_MISC=`ask_dir LSF_MISC`
+            check_dir LSF_MISC        
+
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+    fi
+
+    if [ "$EXCUSED_XMISC" != "y" ] ; then
+
+
+        while :
+        do
+            XLSF_APPDIR=`ask_dir XLSF_APPDIR` 
+            check_dir XLSF_APPDIR            
+ 
+            if [ "$realChk" = "y" ]; then
+                if yesno "Do you want to continue?" Y "" >$LSNULFILE
+                then
+                    break
+                else
+                    continue
+                fi
+            fi
+            break
+        done
+    fi
+
+    echo
+    echo "LSF daemon message logs"
+    echo
+
+
+    LSF_LOGDIR=`ask_dir LSF_LOGDIR` 
+
+    LSF_LOG_MASK=`ask_param LSF_LOG_MASK`
+
+    echo
+    echo "Miscellaneous"
+    echo
+    LSF_AUTH=`ask_param LSF_AUTH`
+    LSB_MAILTO=`ask_param LSB_MAILTO`
+    LSF_STRIP_DOMAIN=`ask_param LSF_STRIP_DOMAIN`
+    LSF_ROOT_REX=`yesno "$LSF_ROOT_REX_STR" $LSF_ROOT_REX "help LSF_ROOT_REX"`
+    if defined LSF_LIM_PORT; then
+	if [ "$LSF_LIM_PORT" = "" ]; then
+	    LSF_LIM_PORT='UNDEF'
+	    LSF_RES_PORT='UNDEF'
+	    LSB_MBD_PORT='UNDEF'
+	    LSB_SBD_PORT='UNDEF'
+        fi
+        LSF_LIM_PORT=`ask_param LSF_LIM_PORT`
+        LSF_RES_PORT=`ask_param LSF_RES_PORT`
+        LSB_MBD_PORT=`ask_param LSB_MBD_PORT`
+        LSB_SBD_PORT=`ask_param LSB_SBD_PORT`
+    fi
+fi
+

@@ -1,0 +1,41 @@
+#!/bin/bash
+
+###
+# Ensure that gpu resource is specfied if gpu_model or gpu is selected
+#
+# Written by M.Burrell November 2013
+#   As part of Job 234425
+#   
+#   DESCRIPTION
+#   if gpu_model or gpu is specified make sure that rusage is specified too, default to rusage [gpu=1]
+#
+###
+
+if [ -e "$LSB_SUB_PARM_FILE" ]; then
+  . $LSB_SUB_PARM_FILE
+else
+  exit
+fi
+
+
+REQUEST_HAS_GPU=$(echo $LSB_SUB_RES_REQ | sed 's/ //g' | egrep "gpu_model|gpu$|gpu\s|gpu\]|gpu\&")
+
+if [ "$REQUEST_HAS_GPU" != "" ]; then
+
+        GPU_RESOURCE_SPECIFIED=$(echo $LSB_SUB_RES_REQ | sed 's/ //g' | egrep -o "gpu=[0-9]")
+
+        if [ "${GPU_RESOURCE_SPECIFIED}" == "" ]; then
+
+                RES_REQ=$(echo $LSB_SUB_RES_REQ | sed 's/\"//g')
+
+                UPDATED_RES_REQ="${RES_REQ} rusage [ gpu=1 ]"
+
+                echo "LSB_SUB_RES_REQ=\"${UPDATED_RES_REQ}\"" >> $LSB_SUB_MODIFY_FILE
+
+                exit
+
+        fi
+fi
+
+exit
+

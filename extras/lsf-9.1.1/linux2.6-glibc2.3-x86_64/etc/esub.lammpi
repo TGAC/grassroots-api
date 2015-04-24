@@ -1,0 +1,375 @@
+#!/bin/sh
+#$RCSfile: esub,v $Revision: 1.16 $Date: 2013/01/10 05:55:56 $
+#
+#If the user wants to rename the default queue in lsb.queues,
+#don't forget to change this variable's value.
+DEFAULT_HPC_QUEUE_NAME="hpc_linux"
+LSB_SUB_QUEUE=""
+
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    # if not set do nothing
+    exit 0
+fi
+
+. $LSB_SUB_PARM_FILE
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+# First check if user defined this variable
+# in envrionment, if not check lsf.conf 
+if [ -z "$LSF_PJL_COMPAT" ]; then
+    . ${LSF_ENVDIR}/lsf.conf
+fi
+
+# Assume
+LAMMPI_ADDITIONAL_KEY="lammpi"
+PJL_WRAPPER="lammpirun_wrapper"
+LAMMPI_ADDITIONAL_CMD="pam -g 1 $PJL_WRAPPER"
+LAMMPI_RESOURCE_KEY="lammpi"
+LAMMPI_SEL_KEY=" ($LAMMPI_RESOURCE_KEY) "
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+if [ -z "$LSB_SUB_RES_REQ" ]; then
+	# if -a lammpi and no -R "job specific resource requirement string"
+	# use the default and write to $LSB_SUB_MODIFY_FILE
+
+	LSB_SUB_RES_REQ="select[$LAMMPI_SEL_KEY]"
+	echo "LSB_SUB_RES_REQ=\"$LSB_SUB_RES_REQ"\" > "$LSB_SUB_MODIFY_FILE"
+else
+	# if -R "$LSB_SUB_RES_REQ" is specified, we need to get the select[]  
+	# section if there are any, and append/create lammpi specific
+	# requirement $LAMMPI_SEL_KEY
+	# select[] section doesn't have to be delimited by the select[] keyword
+	# as specified on pp469 "Specifying Resource Requirements" in 
+	# "LSF Administrator's Guide 4.1
+
+	# Need to get the right gawk command to do the string parsing 
+	# On Solars, there is no gawk command, we can use /usr/xpg4/bin/awk
+        # Figure out the platform from uname
+	GAWKCMD=""
+        platform=`uname -a | cut -f1 -d' '` 
+        case "$platform" in
+            SunOS)
+	        GAWKCMD=/usr/xpg4/bin/awk
+                ;;
+            Linux)
+	        GAWKCMD=gawk
+                ;;
+            *)
+                # For the reset of it just use awk 
+	        GAWKCMD=awk
+                ;;
+        esac
+
+	echo $LSB_SUB_RES_REQ | $GAWKCMD ' 
+        {
+            setting = "";
+
+            if (is_compound_resreq(str_orig)) {
+                if (is_alternative_resreq(str_orig)) {
+                    setting = transform_alternative_resreq(str_orig);
+                } else {
+                    setting = transform_compound_resreq(str_orig);
+                }
+            } else {
+                setting = transform_simple_resreq(str_orig);
+            }
+
+            print "LSB_SUB_RES_REQ=" "\"" setting "\"" > MOD_FILE
+        }
+
+        function is_alternative_resreq(instr)
+        {
+	    x = index(instr, "||");
+
+            if (x <= 0) {
+                return 0;
+            }
+
+            pre = substr(instr, 1, x-1);
+            post = substr(instr, x+1, length(instr));
+
+            a = index(pre, "}");
+            b = index(post, "{");
+
+	    if ( a > 0 && b > 0 ) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        function is_compound_resreq(instr)
+        {
+            a = index(instr, "{");
+            b = index(instr, "}");
+
+            if (a > 0 && b > 0 && a < b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        function transform_alternative_resreq(alternative)
+        {
+            transformed = "";
+
+            split(alternative, altterms, "|");
+
+            k = 1;
+            nalts = sizeof(altterms);
+
+            while (k <= nalts) {
+          
+		if ( length(altterms[k]) > 0 ) {
+		    rsrcreq = altterms[k];
+		    delay = "";
+		    delayIndex = index(rsrcreq, "@");
+		    if (delayIndex > 0) {
+		        delay = substr(rsrcreq, delayIndex+1, length(rsrcreq));
+		        rsrcreq = substr(rsrcreq, 0, delayIndex-1);
+		    }
+		    rsrcreq = strip_curly_brackets(rsrcreq);
+
+		    if (is_compound_resreq(rsrcreq)) {
+		        rsrcreq = transform_compound_resreq(rsrcreq);
+                    } else {
+                        rsrcreq = transform_simple_resreq(rsrcreq);
+                    }
+
+                    if ( transformed != "" ) {
+                        transformed = transformed " || "
+                    }
+                    transformed = transformed "{" rsrcreq "}"
+                    if (delay != "") {
+                        transformed = transformed "@" delay;
+                    }
+                }
+                k++;
+            }
+
+            return transformed;
+        }
+
+        function transform_compound_resreq(compound)
+        {
+            transform = "";
+
+            split(compound, terms, "+");
+
+            j = 1;
+            size = sizeof(terms);
+
+            while (j <= size) {
+
+                if (j > 1) {
+                    transform = transform "+";
+                }
+
+                s = index(terms[j], "*");
+                if (s > 0) {
+                    # Term looks like N1*{R1}
+                    slots = substr(terms[j], 1, s);
+                    resreq = substr(terms[j], s + 1, length(terms[j]));
+                } else {
+                    # Term looks like {R1}
+                    slots = "";
+                    resreq = terms[j];
+                }
+
+                resreq = strip_curly_brackets(resreq);
+                resreq = transform_simple_resreq(resreq);
+
+                transform = transform slots "{" resreq "}";
+
+                j++;
+            }
+
+            return transform;
+        }
+
+        function sizeof(ar)
+        {
+            e = 0;
+            for (elem in ar) {
+                e++;
+            }
+
+            return e;
+        }
+
+        function strip_curly_brackets(strip)
+        {
+            len = length(strip);
+
+            stripped = strip;
+            x = 0;
+            for( i = 1; i <= len; i++ ) {
+                if ( substr(stripped, i, 1) == "{" ) {
+                    x = i;
+                    break;
+                }
+            }
+
+            if (x > 0) {
+                 stripped = substr(stripped, 1, x - 1) " " substr(stripped, x + 1, length(strip));
+            }
+
+            x = 0;
+            len = length(stripped);
+            for( i = len; i >= 1; i-- ) {
+                if ( substr(stripped, i, 1) == "}" ) {
+                    x = i;
+                    break;
+                }
+            }
+
+            if (x > 0) {
+                 stripped = substr(stripped, 1, x - 1) " " substr(stripped, x + 1, length(strip));
+            }
+
+            return stripped;
+        }
+
+        function transform_simple_resreq(str_orig)
+        {
+		result="";
+
+		# split the string by ]
+		split(str_orig, arr, "]");
+
+		str_sel="";
+		str_spa="";
+		str_ord="";
+		str_same="";
+		str_cu="";
+		str_left="";
+		str_rus="";
+
+		for ( i in arr )
+		{
+			if (match(arr[i], "select") >0)
+			{
+				# get the select string
+				split(arr[i], tmp, "[");
+				str_sel=tmp[2];
+				# remove the select[] section from the item
+				sub(/select\ *\[.*$/, "", arr[i]);
+			}
+			if (match(arr[i], "rusage") >0)
+			{
+				# get the rusage string
+				split(arr[i], tmp, "[");
+				str_rus="rusage[" tmp[2] "]";
+				# remove the rusage[] section from the item
+				sub(/rusage *\[.*$/, "", arr[i]);
+			}
+			if (match(arr[i], "span") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_spa="span[" tmp[2] "]";
+				sub(/span *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "order") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_ord="order[" tmp[2] "]";
+				sub(/order *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "same") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_same="same[" tmp[2] "]";
+				sub(/same *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "cu") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_spa="cu[" tmp[2] "]";
+				sub(/cu *\[.*$/, "", arr[i]);
+			}
+
+			# if arr[i] has anything left after the substraction
+			# it indicates that apart from the section, there is
+			# a select[] section specified
+			# this is to deal with the case where a select[] string
+			# is specified in the beginning of the LSB_SUB_RES_REQ
+			# without the select[] delimitor
+			str_left=str_left arr[i];
+		}
+
+		if (match(str_left, /^ *$/) == 0)
+			str_sel=str_left;
+
+                if (match(str_sel, /^ *$/) == 0)
+		{
+		    # to deal with the XOR case
+		    # -R "select[ op1,op2]
+		    # ==> -R "select[ (op1) && lammpi_token >0,(op2) && lammpi_token>0]"
+                        i = 1;
+			str_tmp="";
+			split(str_sel, arr, ",");
+			
+                        for (seg in arr)
+                        {
+                            tmp1 = "(" arr[seg] ") &&" LAMMPI_SEL_KEY
+                            str_tmp = str_tmp tmp1
+                            i = i+1;
+                            if (i in arr)
+			    # to make sure no , after the last segment
+                                str_tmp = str_tmp","
+                        }
+                        str_sel = "select[" str_tmp "]"
+      		}
+		else
+			str_sel="select[" LAMMPI_SEL_KEY "]";
+
+	  result= str_sel " " str_rus " " str_ord " " str_spa " " str_same " " str_cu
+
+          return result;
+
+	}' str_orig="$LSB_SUB_RES_REQ" LAMMPI_SEL_KEY="$LAMMPI_SEL_KEY" MOD_FILE="$LSB_SUB_MODIFY_FILE"
+
+fi
+
+if [ "$LSF_PJL_COMPAT" = "y" -o "$LSF_PJL_COMPAT" = "Y" ]; then
+    #Strip comment in command line
+    LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+    BEGIN { RS=";"; command=""; counter=0}
+    $0 !~ /^[ \t]*#/ {
+        if ( counter == 0 )
+           command = $0
+        else
+           command = sprintf("%s;%s", command, $0)
+        counter = counter + 1
+
+    }
+    END { print command } '`
+
+    echo "LSB_SUB_COMMAND_LINE=\"$LAMMPI_ADDITIONAL_CMD $LSB_SUB_COMMAND_LINE"\" >> $LSB_SUB_MODIFY_FILE
+else 
+    # set enviroment variable LSF_PJL_TYPE to lammpi 
+    # mpirun.lsf will read this variable to decide
+    # which PJL_wrapper to insert to the command line
+    echo "LSF_PJL_TYPE=\"$LAMMPI_ADDITIONAL_KEY\"" >> $LSB_SUB_MODIFY_ENVFILE
+fi
+
+if [ -z "$LSB_SUB_QUEUE" ]; then
+   echo "LSB_SUB_QUEUE=\"$DEFAULT_HPC_QUEUE_NAME\"" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#useful for debugging purposes
+#echo "LSB_SUB_PARM_FILE contains:"
+#more $LSB_SUB_PARM_FILE
+#echo "LSB_SUB_MODIFY_FILE contains:"
+#more $LSB_SUB_MODIFY_FILE
+#exit $LSB_SUB_ABORT_VALUE
+

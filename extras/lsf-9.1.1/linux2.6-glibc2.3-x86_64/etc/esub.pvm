@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Copyright International Business Machines Corp,2002, 2012.
+# All Rights Reserved.
+#
+# esub.pvm called by esub to process PVM-specific job submission.
+#
+# NOTE: You must set LSB_SUB_COMMANDNAME=y in lsf.conf to get command line
+# from bsub.
+#
+# This script is called by a general esub which is invoked by bsub.
+# invoked by bsub -a pvm.
+
+#esub always redirects stdout to stderr.
+exec 1>&2
+
+. $LSB_SUB_PARM_FILE
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+#Strip comment in command line
+LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+BEGIN { RS=";"; command=""; counter=0}
+$0 !~ /^[ \t]*#/ {
+    if ( counter == 0 )
+       command = $0
+    else
+       command = sprintf("%s;%s", command, $0)
+    counter = counter + 1
+
+}
+END { print command } '`
+
+echo "LSB_SUB_COMMAND_LINE=\"pvmjob $LSB_SUB_COMMAND_LINE\"" > $LSB_SUB_MODIFY_FILE
+
+exit 0

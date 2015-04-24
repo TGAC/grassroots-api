@@ -1,0 +1,191 @@
+#
+#$Id: modify_model,v 1.2 2012/06/08 03:37:24 sbadugu Exp $
+
+# This is not a stand alone script. It is sourced by scripts/config.
+
+modify_model()
+{
+edit=`echo $EDITOR | $AWK -F/ '{print $NF}'`
+while : ; do
+    rm -f /tmp/.tmp.file.$$
+    rm -f /tmp/.tmp.file1.$$
+    rm -f ${LSF_SHARED_TMP}
+    unset NEW
+    cat << MENU
+
+Please choose one of the following options:
+
+    1. List Currently Defined Host Models
+    2. Add Host Models
+    3. Delete Host Models
+    4. Modify Host Models
+
+    ?. Help
+    q. Quit Modifying Host Models
+
+MENU
+
+    echo $enf "Please enter your choice:" $enl
+    read A
+    echo
+
+    case "$A" in
+    1)	#   Listing current host models
+	sed -e '1,/^[	 ]*Begin[ 	]*HostModel/d;/^[	 ]*End[ 	]*HostModel/,$d;/^#/d' ${LSF_SHARED} | more;
+	echo
+	echo $enf "Press Enter to continue ... " $enl
+	read N
+	continue ;;
+    2) ;;
+    3) ;;
+    4) ;;
+    [Qq]*) break;;
+    *) cat <<HELP2
+
+    Host models dictate the CPU speed scaling factor used by LSF. The values
+    of the CPU scaling factors are relative. The higher the value, the faster
+    the host. All host models used by lsf.cluster.${clustername} must be
+    defined in lsf.shared file.
+
+    To see what host models are currently defined in the LSF
+    cluster, choose Option 1. List Currently Defined Host Models. 
+
+    To add new host models into the LSF cluster, choose Option 2. Add Host
+    Models.
+
+    To remove some host models from the current LSF configuration,
+    choose Option 3. Delete Host Models.
+
+    To change the CPU factors of some host models, choose Option 4. Modify 
+    Host Models.
+
+    To see this help information, choose Help (?).
+
+    To exit from this menu, choose Quit Modifying Host Models (q).
+
+HELP2
+    continue;;
+    esac
+
+    if [ "$A" = "2" ] ; then
+	MODELS=`ask "Enter the names of host models to add" ""`
+	cp $LSNULFILE /tmp/.tmp.file.$$
+	for modelname in ${MODELS} ; do
+	    AWK_CMD="$AWK '{
+		if (\$1 == \"$modelname\" && \$1 != \"Begin\" && \$1 != \"End\")
+		    print \$1
+	    }'"
+
+	    MATCH=`egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/,/^[ 	]*[Ee][Nn][Dd][	 ]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/p" | eval $AWK_CMD`
+
+	    if [ "${MATCH}" != "" ] ; then
+	        echo "Host model ${modelname} already defined; ignored"
+		continue
+            fi
+	    NEW=y
+#           echo "${modelname}   (DEFINE VALUE HERE)" >> /tmp/.tmp.file.$$
+            echo "${modelname}   (DEFINE VALUE HERE)   (DEFINE VALUE HERE)" >> /tmp/.tmp.file.$$
+        done
+
+        if [ "${NEW}" != "y" ] ; then
+	    echo No host model to add.
+	    continue
+	fi
+
+	cp ${LSF_SHARED} ${LSF_SHARED_TMP}
+
+	$LSEXEDITOR ${LSF_SHARED_TMP} << EXEND2>$LSNULFILE 2>&1
+	/^[	 ]*[Ee][Nn][Dd][	  ]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]
+	-1
+	r /tmp/.tmp.file.$$
+	w
+	q
+EXEND2
+	if [ "$edit" != "vi" ]
+	then
+	    $EDITOR  ${LSF_SHARED_TMP}
+	else
+	    $EDITOR +/"DEFINE VALUE HERE"  ${LSF_SHARED_TMP}
+        fi
+	if yesno "Save changes to ${LSF_SHARED}" Y "help LSF_SHARED" > $LSNULFILE
+	then
+	    cp ${LSF_SHARED} ${LSF_SHARED}.old
+	    cp ${LSF_SHARED_TMP} ${LSF_SHARED}
+	    stat=$?
+	    $CHOWN ${LSF_MANAGER} ${LSF_SHARED}.old ${LSF_SHARED}
+	    chmod 644 ${LSF_SHARED}.old ${LSF_SHARED}
+	    if [ "$?" != "0"  -o  "${stat}" != "0" ] ; then
+		echo Failed.
+		kill -2 $$
+		exit
+	    else
+		echo "Host models added."
+	    fi
+	fi
+	continue
+    fi
+# end of option 2
+
+    if [ "$A" = "3" ] ; then
+        echo Currently defined host models are:
+	egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	 ]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/,/^[ 	]*[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/p" | egrep -v [Bb][Ee][Gg][Ii][Nn] | egrep -v [Ee][Nn][Dd] | more
+        MODELS=`ask "Enter the names of host models to delete" ""`
+	for modelname in ${MODELS} ; do
+	    AWK_CMD="$AWK '{
+		if (\$1 == \"$modelname\" && \$1 != \"Begin\" && \$1 != \"End\")
+		    print \$1
+	    }'"
+
+            VALID=`egrep -v "^#.*" ${LSF_SHARED} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][	 ]*[Hh][Oo][Ss][Tt][Mm][oO][Dd][Ee][Ll]/,/^[ 	]*[Ee][Nn][Dd][	 ]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/p" | eval $AWK_CMD`
+
+	    if [ "${VALID}" = "" ] ; then
+		echo "${modelname}: no such a host model defined in ${LSF_SHARED}; ignored"
+		continue
+	    fi
+
+	    delete_element HostModel ${modelname} ${LSF_SHARED} >/tmp/.tmp.file.$$
+	    mv /tmp/.tmp.file.$$ ${LSF_SHARED}
+	    $CHOWN ${LSF_MANAGER} ${LSF_SHARED}
+	    chmod 644 ${LSF_SHARED}
+	    if [ "$?" != "0" ] ; then
+		echo Failed
+		kill -2 $$
+		exit
+	    fi
+	    echo "Host model <${modelname}> deleted from ${LSF_SHARED}"
+	done
+	continue
+    fi
+# end of option 3
+
+    if [ "$A" = "4" ] ; then
+	cp ${LSF_SHARED} ${LSF_SHARED_TMP}
+	if [ "$edit" != "vi" ]; then
+            $EDITOR ${LSF_SHARED_TMP}
+        else
+	    $EDITOR  +/"^[	 ]*[Bb][Ee][Gg][Ii][Nn][	 ]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]" ${LSF_SHARED_TMP}
+        fi
+
+	DIFF=`diff ${LSF_SHARED_TMP} ${LSF_SHARED}`
+	if [ "${DIFF}" != "" ] ; then
+	    if yesno "Save changes to ${LSF_SHARED}" Y "help LSF_SHARED" > $LSNULFILE
+	    then
+		cp ${LSF_SHARED_TMP} ${LSF_SHARED}
+		$CHOWN ${LSF_MANAGER} ${LSF_SHARED}
+		chmod 644 ${LSF_SHARED}
+		rm ${LSF_SHARED_TMP}
+	    fi
+	else
+	    echo Nothing changed.
+	fi
+	continue
+    fi
+#end of option 4
+
+    echo An unrecoverable error has occurred. 
+	echo Please contact product support.
+	kill -2 $$
+done
+
+continue
+} # modify_model

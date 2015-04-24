@@ -1,0 +1,175 @@
+#$Id: otherInstall,v 1.1 2006/06/27 19:31:11 gwen Exp $
+
+otherInstall()
+{
+#---------------------------------------------------------------------
+#
+#  This script is sourced by lsfsetup.
+#
+#  Install LSF for other host type(s).
+#--------------------------------------------------------------------
+
+echo  >> $PREFIX_LOG/Install.log
+echo `date` >>$PREFIX_LOG/Install.log
+
+echo Installation procedure for other OS Versions started >>$PREFIX_LOG/Install.log
+
+echo I am `who am i` >>$PREFIX_LOG/Install.log
+
+echo >> $PREFIX_LOG/Install.log
+
+addHostType=y
+lsfconf_copy=$lsfconf
+
+if [ "$LSF_DEFAULT_INSTALL" != "y" -a "$LSF_DEFAULT_INSTALL" != "Y" ]
+then
+    while [ "$UNATTENDED_INSTALL" != "Y" -a "$UNATTENDED_INSTALL" != "y" ] 
+    do
+        new_LSF_MACHDEP=`ask_param LSF_MACHDEP`
+
+        if [ "$new_LSF_MACHDEP" = "$LSF_MACHDEP" ]; then
+
+            cat << SAMEMACHDEP | tee -a $PREFIX_LOG/Install.log
+
+     You have installed LSF in $new_LSF_MACHDEP.
+     If you choose continue, the previous installation may be destroied. 
+     Or, you can select another directory.
+
+SAMEMACHDEP
+        
+            if yesno "Do you want to continue?" N "" > $LSNULFILE
+            then
+                :
+            else
+                continue
+            fi
+        else
+             LSF_MACHDEP=$new_LSF_MACHDEP
+        fi
+
+        if [ ! -d $LSF_MACHDEP ]; then
+            make_dir $LSF_MACHDEP
+            testBuild="y"
+        fi
+
+        _MachdepBytes=`SpaceAvail $LSF_MACHDEP`
+        _MachdepSpace=`expr $_MachdepBytes / 1024`
+
+        cat << AVASPA | tee -a $PREFIX_LOG/Install.log
+
+     $LSF_MACHDEP has ${_MachdepSpace}M free space.
+     Please make sure that the available space for directory
+     $LSF_MACHDEP is enough for all the files.
+
+     For referrence, the average size of each host type is 100 MB.
+
+AVASPA
+
+        if [ "$testBuild" = "y" ]; then
+            rmdir $LSF_MACHDEP
+        fi
+        break
+    done
+
+    UNIFORM_DIR=$LSF_MACHDEP
+    LSF_BINDIR=$LSF_MACHDEP/bin
+    LSF_SERVERDIR=$LSF_MACHDEP/etc
+    LSF_LIBDIR=$LSF_MACHDEP/lib
+    LSF_ENVDIR=$LSF_SERVERDIR
+    XLSF_UIDDIR=$LSF_LIBDIR/uid
+fi
+
+if [ "$LSF_DEFAULT_INSTALL" != "y" -a "$LSF_DEFAULT_INSTALL" != "Y" ]
+then
+    EXCUSED_CONF=n
+else
+    EXCUSED_CONF=y
+fi
+
+EXCUSED_INCLUDE=y
+
+
+if ( echo "$SelectedOSVersions" | grep "sgi" > $LSNULFILE ); then
+    EXCUSED_MANS=n 
+else
+    EXCUSED_MANS=y 
+fi
+
+EXCUSED_XMISC=y
+EXCUSED_MISC=y
+NO_MANDATORY=y
+
+echo
+echo "    Checking for accessibility of host type independent files ..."| tee -a $PREFIX_LOG/Install.log
+
+if check_confdir
+then
+    :
+else
+    echo "    Installation cannot continue. Exiting ..."| tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+if check_sharedir
+then
+    :
+else
+    echo "    Installation cannot continue. Exiting ..." | tee -a $PREFIX_LOG/Install.log
+    exit
+fi
+
+if defined "$LSF_SERVER_HOSTS"
+then
+    :
+fi
+
+# When eauth config, only lsadmin badmin and eauth need to
+# be setuid to root since they need to access lsf.sudoers file.
+if [ "$LSF_AUTH" != "" ]; then
+    SETUIDS="lsadmin badmin"
+fi
+
+echo "    Checking done."| tee -a $PREFIX_LOG/Install.log
+
+echo 
+
+. $sp/newInstall; newInstall
+
+
+# for picking up the missing parameters
+# In default install, lsf.conf is same
+if [ "$LSF_DEFAULT_INSTALL" != "y" ]; then
+    if [ -f "$lsfconf_copy" -a -d "$LSF_ENVDIR" ]; then
+        cp $lsfconf_copy  $LSF_ENVDIR/lsf.conf.old
+    fi
+fi
+
+if [ "$LSF_DEFAULT_INSTALL" != "y" ]; then
+    (set $LSF_ENVDIR/lsf.conf $LSF_ENVDIR/lsf.conf.old; . $sp/pickup)
+fi
+
+if [ "$LSF_DEFAULT_INSTALL" = "y" -o "$LSF_DEFAULT_INSTALL" = "Y" ]; then
+    :
+else
+    make_os_flag
+fi
+
+if [ "$LSF_LINK_PATH" != "" -a "$LSF_LINK_PATH" != "n" ]; then
+    LSF_SYMBOLIC_LINK=y
+fi
+
+if [ "$UNATTENDED_INSTALL" = "y" ]; then
+    . $sp/hostsetup; hostsetup
+fi
+
+check_setuid
+
+if yesno "Do you want to set up LSF hosts now?" Y "" > $LSNULFILE
+then
+    . $sp/hostsetup; hostsetup
+fi
+
+echo "    Finished installation." | tee -a $PREFIX_LOG/Install.log
+echo "    Installation parameters should be in $LSF_ENVDIR/lsf.conf." | tee -a $PREFIX_LOG/Install.log
+
+} # another

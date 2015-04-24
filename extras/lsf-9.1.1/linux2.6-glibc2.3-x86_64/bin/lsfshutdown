@@ -1,0 +1,384 @@
+#! /bin/sh 
+#$RCSfile: lsfshutdown,v $Revision: 5.36 $Date: 2013/01/10 05:54:36 $ 
+#-----------------------------------------------------------------     
+#     
+#  Shutdown script for LSF.  
+#     
+#  lsfshutdown - shutdown all daemons of LSF.
+#     
+#  Usage: lsfshutdown [-f | -pdsh | -h | -V]
+#     
+#  The order of the operation is important :
+#      sbatchd, res, lim, mbatchd.     
+#     
+#     
+#----------------------------------------------------------------     
+
+#
+# Parallel Shutdown Hosts in Current Cluster with PDSH:
+#    lsfshutdown -pdsh 
+#       - All hosts will be divided into chunks, 400 hosts per chunk;
+#       - Parallel shutdown daemons with pdsh inside one chunk; 
+#       - The master is the last one to be shutdown.
+#
+# chunk interval should be larger than default time-out 10 seconds of PDSH.
+chunk_size=400
+enable_ego=0
+
+#poring AWK
+if [ "`uname -s`" = "SunOS" ];then
+     AWK=nawk
+else
+     AWK=awk
+fi
+
+
+pdsh_shutdown_in_chunks () 
+{
+    hostlist=$1
+    i=0
+    host_chunk=""
+    shutdown_cmd="/bin/sh -c 'LSF_ENVDIR=$LSF_ENVDIR; export LSF_ENVDIR;. \$LSF_ENVDIR/lsf.conf; . \$LSF_CONFDIR/profile.lsf; \$LSF_BINDIR/badmin hshutdown -f 2>&1 ; \$LSF_BINDIR/lsadmin resshutdown -f 2>&1 ; sleep 1; \$LSF_BINDIR/lsadmin limshutdown -f 2>&1'"
+
+    for host in $hostlist; do 
+        if [ $i -lt $chunk_size ]; then
+            if [ $i = 0 ]; then
+               host_chunk=$host
+            else
+               host_chunk=${host_chunk},$host
+            fi
+            i=`expr $i + 1`
+            if [ $i = $chunk_size ]; then
+                if [ x"$LSF_CMD_LOGDIR" != x ]; then
+                    echo pdsh -S -w $host_chunk "$shutdown_cmd"
+                fi
+                pdsh -S -w $host_chunk "$shutdown_cmd"  | sort -r -u -k 1  | sed 's/[^:]*://'
+                i=0
+                host_chunk=""
+            fi
+        fi 
+    done
+
+    if [ $i != 0 ]; then 
+        if [ x"$LSF_CMD_LOGDIR" != x ]; then
+            echo pdsh -S -w $host_chunk "$shutdown_cmd"
+        fi
+        pdsh -S -w $host_chunk "$shutdown_cmd" | sort -r -u -k 1 | sed 's/[^:]*://'
+    fi 
+}
+
+EXEC_FILENAME=`basename $0`
+usage="Usage: $EXEC_FILENAME [ -f | -pdsh | -h | -V ]"
+confirm="Error(s) found in previous operation, continue ? [y/n] "
+
+error=0                        # exit code 
+
+# handle difference between system V and BSD echo
+# To echo "foo" with no newline, do
+# echo $enf "foo" $enl
+
+if [ "`echo -n`" = "-n" ] ; then
+    enf=
+    enl="\c"
+else
+    enf=-n
+    enl=
+fi
+
+if [ $# -gt 1 ] ; then
+    echo $usage; exit 1;
+fi
+
+# check the option is provided ?
+if [ x$1 != x ]; then
+    case $1 in
+        -pdsh) enPDSH=y;;
+        -f) FORCE=y;;
+        -V) echo ""; lsadmin -V; echo ""; exit;;
+        *)  echo $usage; exit 1;;
+    esac
+fi
+
+if [ "$LSF_ENVDIR" = "" ] ; then
+    if [ -f /etc/lsf.conf ] ; then
+        echo $enf "Is /etc/lsf.conf your current installation ? [y/n] y" $enl
+        read N
+        case "$N" in
+            ""| Y* | y*) CONF=/etc/lsf.conf;;
+            *) if [ "$N" = "" ] ; then
+		   CONF=/etc/lsf.conf
+               fi
+	       ;;
+        esac
+    fi
+
+    if [ "$CONF" = "" ] ; then
+        while [ 1 ] ; do
+            echo $enf "Enter the full pathname of the lsf.conf file" $enl
+            read N
+            if [ ! -f $N ] ; then
+                echo $N is not a file or does not exist.
+            else
+                CONF=$N
+                break;
+            fi
+        done
+    fi
+    . $CONF
+else
+    . $LSF_ENVDIR/lsf.conf
+    CONF=$LSF_ENVDIR/lsf.conf
+fi
+
+if [ "$LSF_BINDIR" != "" ] ; then
+    PATH=$PATH:$LSF_BINDIR
+fi
+
+# If LSF_ENABLE_EGO is "N" or "n", skip checking $EGO_CONFDIR
+if [ "${LSF_ENABLE_EGO}" != "n" -a "${LSF_ENABLE_EGO}" != "N" ]; then    
+    if [ "$enPDSH" = "y" ]; then    
+        echo  "Parallel lsfshutdown does not support enabling EGO." 
+        exit 1
+    fi
+
+    if [ -f "$EGO_ENVDIR/ego.conf" ] ; then
+        CONF="$EGO_ENVDIR/ego.conf"
+    elif [ -f "$EGO_CONFDIR/ego.conf" ] ; then
+        CONF="$EGO_CONFDIR/ego.conf"
+    elif [ -f "$LSF_EGO_ENVDIR/ego.conf" ] ; then
+        CONF="$LSF_EGO_ENVDIR/ego.conf"
+    elif [ -f /etc/ego.conf ] ; then
+        CONF=/etc/ego.conf
+    else
+        while [ 1 ] ; do
+           echo $enf "Enter the full pathname of the ego.conf file" $enl
+           read N
+           if [ ! -f $N ] ; then
+               echo $N is not a file or does not exist.
+           else
+               CONF=$N
+               break;
+           fi
+        done
+    fi
+    
+    
+    if [ "$EGO_CONFDIR" = "" ] ; then
+       . $CONF
+       export EGO_CONFDIR
+    else
+       . $CONF
+    fi
+    
+    
+    if [ "$EGO_BINDIR" != "" ] ; then
+        PATH=$PATH:$EGO_BINDIR
+    fi
+    enable_ego=1
+fi
+
+if [ "$enPDSH" = "y" ]; then    
+
+    # check PDSH installation
+    pdsh -V > /dev/null 2>&1
+    if [ $? -ne 0 ]; then 
+        echo  "PDSH cannot be found in this machine." 
+        exit 1
+    fi
+
+    # Should not shutdown remote daemons from slave only/client 
+    #
+    invalid_hostname="@invalid_hostname@" 
+    test_res=`lsadmin limshutdown -f $invalid_hostname 2>&1`
+    exit_code=$? 
+    if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+        echo
+        echo "Testing lsfshutdown permission with exit code <$exit_code>: " 
+        echo "$test_res" 
+        echo
+    fi
+   
+    if [ $exit_code != 0 ]; then
+        disallow=`echo "$test_res" | grep "^Should\ not\ operate\ remote"` 
+        if [ x"$disallow" != x ]; then
+            echo "Error: Should not shutdown remote daemons from a slave only or client host." 
+            exit 1
+        fi
+    fi
+
+    echo Parallel shutdown with PDSH: 
+    echo 
+    echo Getting cluster information ...
+
+    # Get host list from lshosts -w cluster_name.
+    CLUSTERNAME=`lsid | grep "My\ cluster\ name\ is\ " | sed 's/My\ cluster\ name\ is\ //' `
+    CLUSTERHOSTS=`lshosts -w $CLUSTERNAME`
+
+    # Distinguish them as server hosts or dynamic hosts
+    # Note the master hosts are in the front part of the command's output.
+
+    server_list=`echo "$CLUSTERHOSTS" | grep -v "^HOST_NAME" | grep "\ Yes\ " |  
+                  $AWK -F '[ :\t|]' '{print $1}' |
+                      while read line; do 
+                          echo $line 
+                      done
+                 ` 
+
+    if [ x"$server_list" = x ]; then
+        echo Error: Cannot get the host list of your cluster from command \"lshosts -w\".
+        exit 1
+    else
+        if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+            echo "       "Server host list is: $server_list
+        fi
+    fi
+
+    # dynamic host list, including non-shared installed packege
+    dyn_list=`echo "$CLUSTERHOSTS" | grep -v "^HOST_NAME" | grep "\ Dyn\ " |  
+                  $AWK -F '[ :\t|]' '{print $1}' |
+                   while read dyn; do 
+                       echo $dyn
+                   done
+              ` 
+     
+    # get current master host from "lsid" 
+    #
+    master=`lsid | grep "^My master name is" |
+             sed 's/My master name is//'|
+             sed 's/^[ \t]*//g' | sed 's/[ \t]*$//g'  
+           ` 
+    if [ $? != 0 -o x"$master" = x ]; then 
+        echo Error: Cannot get current master of your cluster from command \"lsid\".
+        exit 1
+    fi
+
+    # get the identical master name from lshosts -w to disambiguation 
+    master_name=`lshosts -w $master | grep -v "^HOST_NAME" | $AWK -F '[ :\t|]' '{print $1}'`
+    if [ x"$master_name" = x ]; then 
+        echo Error: Cannot get current master of your cluster from command \"lshosts -w\".
+        exit 1
+    else 
+        echo "       "Current master is: $master_name
+    fi
+
+    echo
+    echo Shutting down daemons on non-master servers in parallel ...
+    pdsh_shutdown_list=`echo " " $server_list " " | sed "s/\ $master_name\ /\ /"`
+    if [ x"$LSF_CMD_LOGDIR" != x ]; then
+        echo "       "Shutdown server host list: $pdsh_shutdown_list
+    fi
+    pdsh_shutdown_in_chunks "$pdsh_shutdown_list" 
+    
+    if [ x"$dyn_list" != x ]; then 
+        echo 
+        echo Shutting down dynamic host daemons in sequence ... 
+        for dyn_host in $dyn_list; do
+            badmin hshutdown -f $dyn_host 
+            lsadmin resshutdown -f  $dyn_host 
+            lsadmin limshutdown -f $dyn_host 
+        done
+    fi
+    echo
+    echo Shutting down daemons on master \<$master\> ...
+    pdsh_shutdown_in_chunks "$master" 
+
+    echo
+    echo Done shutting down LSF daemons in parallel. 
+    exit 0
+fi
+
+echo Shutting down all slave batch daemons ...
+
+badmin hshutdown all
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y" ] ; do
+        echo $enf $confirm $enl
+	read answer
+	case $answer in
+	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+	    *) continue;;
+	esac
+    done
+fi
+
+echo Shutting down all RESes ...
+
+lsadmin resshutdown all 
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y" ] ; do
+        echo $enf $confirm $enl
+	read answer
+	case $answer in
+	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+	    *) continue;;
+	esac
+    done
+fi
+
+# If LSF_ENABLE_EGO is "N" or "n", ignore LSF_EGO_DAEMON_CONTROL
+if [ "${LSF_ENABLE_EGO}" != "n" -a "${LSF_ENABLE_EGO}" != "N" ]; then    
+	echo
+	if [ "${LSF_EGO_DAEMON_CONTROL}" = "Y" ]; then
+	    echo $enf "LSF_EGO_DAEMON_CONTROL is enabled in lsf.conf, waiting for all RESes and slave daemons shut down ..." $enl
+	    error=1
+	    egosh service list 1>/tmp/test_egosh_$! 2>&1
+	    while [ $? -eq 0 ]
+	    do
+	        resstatus=`grep "res" /tmp/test_egosh_$! | $AWK '{print $2}'`
+	        sbdstatus=`grep "sbatchd" /tmp/test_egosh_$! | $AWK '{print $2}'`
+	        if [ "$resstatus" = "ALLOCATI" -o "$resstatus" = "DEFINED" ]; then
+	            if [ "$sbdstatus" = "ALLOCATI"  -o "$sbdstatus" = "DEFINED" ]; then
+	                error=0 
+	                rm /tmp/test_egosh_$!
+	                break
+	            fi    
+	        fi
+	        echo $enf "." $enl
+	        rm /tmp/test_egosh_$!
+	        error=`expr $error + 1`
+	        if [ $error -gt 20 ]; then
+		          break
+	        fi
+	        sleep 3
+	        egosh service list 1>/tmp/test_egosh_$! 2>&1
+	    done
+	    if [ $error -gt 20 ]; then
+	        echo
+	        while [ "$FORCE" != "y" ] ; do
+	            echo $enf "RESes or slave daemons not shutdown normally, continue ? [y/n]" $enl
+	            read answer
+	            case $answer in
+	                Y* | y*) break;;
+	                N* | n*) exit 1;;
+	                *) continue;;
+	            esac
+	        done
+	    elif [ $error -ne 0 ]; then
+	        echo
+	        while [ "$FORCE" != "y" ] ; do
+	            echo $enf "EGO Service Controller no response, continue ? [y/n]" $enl
+	            read answer
+	            case $answer in
+	                Y* | y*) break;;
+	                N* | n*) exit 1;;
+	                *) continue;;
+	            esac
+	        done
+	    else
+	        echo "  All daemons shut down"
+	        echo
+	    fi
+	fi
+fi	
+
+echo Shutting down all LIMs ...
+
+lsadmin limshutdown all
+
+exit $error

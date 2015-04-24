@@ -1,0 +1,91 @@
+#!/bin/sh
+#
+# $RCSfile: esub.bproc,v $Revision: 1.3 $Date: 2013/01/10 05:49:33 $
+#
+# For BPROC integration
+#
+# To provide node-level allocation, no matter how many processors
+# the job requests, during job submission, esub.bproc will round it up 
+# to a number which is multiple of NODESIZE(max number of cpus per node). 
+#
+
+# round up function
+round_up_proc()
+{
+    _orig_proc_ct=$1
+    _tmp=`expr $_orig_proc_ct % $NODESIZE`
+
+    if [ "$_tmp" -eq "0" ]; then
+        # the processor count is divided evenly, no need to round up  
+        round_proc_ct=$LSB_SUB_NUM_PROCESSORS
+    else
+        # Round up the processors count
+        #
+        _num_of_node=`expr $_orig_proc_ct / $NODESIZE`
+        _num_of_node=`expr $_num_of_node + 1 `
+        round_proc_ct=`expr $_num_of_node '*' $NODESIZE` 
+    fi
+}
+
+# read max number of cpus per node from lsf.conf
+. $LSF_ENVDIR/lsf.conf
+
+# NODESIZE is the max number of cpus on each node 
+#
+if [ -z "$LSF_BPROC_NODESIZE" ]; then
+   exit 0
+fi
+
+if [ "$LSF_BPROC_NODESIZE" -ge "1" ]; then
+   NODESIZE="$LSF_BPROC_NODESIZE"
+else
+   # no need to go ahead
+   exit 0
+fi
+
+# Read bsub parameters from the file
+if [ x"$LSB_SUB_PARM_FILE" != "x" ]; then
+    .  $LSB_SUB_PARM_FILE
+else
+    exit 0
+fi
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+proc_ct_change=0
+if [ -n "$LSB_SUB_NUM_PROCESSORS" ]; then
+    round_up_proc $LSB_SUB_NUM_PROCESSORS
+    proc_ct=$round_proc_ct
+    if [ "$LSB_SUB_NUM_PROCESSORS" -ne "$proc_ct" ]; then
+        proc_ct_change=1
+    fi
+else
+    # User didn't specify 'bsub -n<num>' option, by default 
+    # job requres 1 processor.  # need to be round up to $NODESIZE
+    #
+    proc_ct=$NODESIZE
+    proc_ct_change=1
+fi
+
+if [ "$proc_ct_change" -eq "1" ]; then
+    # modify the -n <num> and output some message to notify the user
+    echo "LSB_SUB_NUM_PROCESSORS=$proc_ct" > $LSB_SUB_MODIFY_FILE
+    echo " The processor count has been rounded up to $proc_ct."
+fi
+
+if [ -n "$LSB_SUB_MAX_NUM_PROCESSORS" ]; then
+    if [ "$LSB_SUB_MAX_NUM_PROCESSORS" -le "$proc_ct" ]; then
+         max_proc_ct=$proc_ct
+    else
+         round_up_proc $LSB_SUB_MAX_NUM_PROCESSORS
+         max_proc_ct=$round_proc_ct
+    fi
+    if [ "$LSB_SUB_MAX_NUM_PROCESSORS" -ne "$max_proc_ct" ]; then
+         # modify maximum processor and output message to end user
+         echo "LSB_SUB_MAX_NUM_PROCESSORS=$max_proc_ct" >> $LSB_SUB_MODIFY_FILE
+         echo " The maximum processor count has been rounded up to $max_proc_ct."
+    fi
+fi
+
+exit 0

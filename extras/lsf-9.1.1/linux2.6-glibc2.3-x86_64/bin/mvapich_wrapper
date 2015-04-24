@@ -1,0 +1,422 @@
+#!/bin/sh
+# $RCSfile: mvapich_wrapper,v $Revision: 1.4 $Date: 2013/01/10 05:52:09 $
+
+#-----------------------------------------------------------------------------
+# This wrapper script creates a host file based on LSB_MCPU_HOSTS
+# and then run various mpirun command based on 
+# MVAPICH_START_CMD (rsh/ssh/mpd default ssh) to execute a parallel job. 
+# 
+# It is also responsible for inserting TaskStarter and TaskStarter options
+# before each task. This solution makes sure that each application 
+# process is started by TaskStarter.
+#-----------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+# Name:mvapich_exit 
+# Synopsis: mvapich_exit 
+# Environment Variables: NONE
+# Description:
+#     Signal handling function: clean up and exit.
+#-------------------------------------------------------------------------
+mvapich_exit()
+{
+    trap '' 1 2 3 15
+    echo "Signal Received, Terminating the job<${UNIQUE_ID}>  ..." 1>&2
+    rm -f $HOST_FILE
+    if [ "$MVAPICH_START_CMD" = "mpd" -o "$MVAPICH_START_CMD" = "MPD" ]; then
+        $MPDALLEXIT_CMD >/dev/null 2>&1
+        $MPDCLEANUP_CMD >/dev/null 2>&1
+    fi
+    exit 1
+} #mvapich_exit
+
+#-----------------------------------
+# Name: get_renv_and_job 
+# Synopsis: get_renv_and_job 
+# Environment Variables: REMOTE_ENV_VAR JOB_CMD
+# Description:
+#       It sets the remote env var section to REMOTE_ENV_VAR 
+#       and job cmd to JOB_CMD
+#-----------------------------------
+get_renv_and_job ()
+{
+while [ "$#" -gt 0 ] 
+do
+    case "$1" in
+        *=*)
+            REMOTE_ENV_VAR="${REMOTE_ENV_VAR} $1"
+            shift
+            ;;
+        *)
+            JOB_CMD="$*"
+            break
+            ;;
+     esac
+done
+} # get_renv_and_job
+
+#-----------------------------------
+# Name: get_mpirun_mpd_options
+# Synopsis: get_mpirun_mpd_options
+# Environment Variables: PJL_OPTS 
+# Description:
+#       It sets the mpirun options to PJL_OPTS 
+#-----------------------------------
+
+get_mpirun_mpd_options ()
+{
+# Start mpd then mpirun_mpd will display the usage information.
+# mpirun_mpd -help
+# Usage: mpirun <args> executable <args_to_executable>
+# Arguments are:
+#   [-np num_processes_to_run] (required) 
+#   [-s]  (close stdin; can run in bkgd w/o tty input problems)
+#   [-h]  print this message
+#   [-g group_size]  (start group_size procs per mpd)
+#   [-m machine_file]  (filename for allowed machines)
+#   [-l]  (line labels; unique id for each process's output
+#   [-1]  (do NOT start first process locally)
+#   [-y]  (run as Myrinet job)
+#   [-whole]  (stdout is guaranteed to stay in whole lines)
+#   [-wdir dirname] (set working directory for application)
+#   [-jidfile file] (place job id in file file)
+
+while [ "$#" -gt 0 ] 
+do
+    case "$1" in
+        -np | -g | -m)
+            shift
+            shift
+            ;; 
+         -1)
+            if [ "$LSB_PJL_TASK_GEOMETRY" != "" ]; then
+                echo "Task Geometry is specified, -1 option will be ignored." 1>&2
+                shift
+            else
+                PJL_OPTS="${PJL_OPTS} $1"
+                shift
+            fi
+            ;; 
+         -s | -h | -l | -whole | -y)
+            PJL_OPTS="${PJL_OPTS} $1"
+            shift
+            ;;
+         -wdir | -jidfile)
+            PJL_OPTS="${PJL_OPTS} $1"
+            shift
+            PJL_OPTS="${PJL_OPTS} $1"
+            shift
+            ;;
+         *) # mpirun_mpd use this to handle env var:
+            # mpirun_mpd -np $np $prog <args> -MPDENV- ENV1=value1 ENV2=value2 
+           # we can just leave them all on the JOB_CMD
+            JOB_CMD="$*"
+            REMOTE_ENV_VAR=" "
+            break
+           ;;
+    esac
+done
+} # get_mpirun_mpd_options
+
+#-----------------------------------
+# Name: get_mpirun_rsh_options
+# Synopsis: et_mpirun_rsh_options
+# Environment Variables: PJL_OPTS 
+# Description:
+#       It sets the mpirun options to PJL_OPTS 
+#-----------------------------------
+get_mpirun_rsh_options ()
+{
+# ./mpirun_rsh 
+#Without hostfile option, hostnames must be specified on command line.
+#usage: mpirun_rsh [-v] [-rsh|-ssh] [-paramfile=pfile] [-debug] -[tv] [-xterm] [-show] -np N (-hostfile hfile | h1 h2 ... hN) a.out args
+#Where:
+#        v          => Show version and exit
+#        rsh        => to use rsh for connecting
+#        ssh        => to use ssh for connecting
+#        paramfile  => file containing run-time MVICH parameters
+#        debug      => run each process under the control of gdb
+#        tv         => run each process under the control of totalview
+#        xterm      => run remote processes under xterm
+#        show       => show command for remote execution but dont run it
+#        np         => specify the number of processes
+#        h1 h2...   => names of hosts where processes should run
+#or      hostfile   => name of file contining hosts, one per line
+#        a.out      => name of MPI binary
+#        args       => arguments for MPI binary
+while [ "$#" -gt 0 ] 
+do
+    case "$1" in
+        -np | -hostfile )
+            shift
+            shift
+            ;; 
+        -local )
+            #local only exists for topspin mpi
+            if [ "$MPIRUN_SSH_AVAIL" = "y" ]; then
+                if [ "$LSB_PJL_TASK_GEOMETRY" != "" ]; then
+                    echo "Task Geometry is specified, -local option will be ignored." 1>&2 
+                else
+                    PJL_OPTS="${PJL_OPTS} $1"
+                fi
+            fi
+            shift
+            ;; 
+        -debug | -rsh | -ssh | -tv )
+            # -debug: and -tv: it will invoke gdb and TotalView to debug TaskStarter.
+            #                   you can use bsub -a "mvapich tv" to debug the program
+            #                   in totalview.
+            # -rsh/ssh: administrator should set it in esub.mvapich and this script
+            #           to enforce the command usage.
+            shift
+            ;; 
+        -xterm | -show | -v)
+            PJL_OPTS="${PJL_OPTS} $1"
+            shift
+            ;;
+        -paramfile )
+            PJL_OPTS="${PJL_OPTS} $1"
+            shift
+            PJL_OPTS="${PJL_OPTS} $1"
+            shift
+            ;;
+        *) # now process env=var a.out <options>
+            get_renv_and_job $*
+            break
+            ;;
+     esac
+done
+} # get_mpirun_rsh_options
+
+#
+# main 
+#
+
+#----------------------------------------------------------------
+# Set up the variables representing the parallel job launcher:
+# - MVAPICH_HOME, fill in the path to the MPICH directory in your system 
+# - DEF_MVAPICH_START_CMD, use rsh/ssh/mpd to start parallel tasks 
+#----------------------------------------------------------------
+
+MVAPICH_HOME="/usr/local/topspin/mpi/mpich"
+MPDALLEXIT_CMD="mpdallexit"
+MPDCLEANUP_CMD="mpdcleanup"
+
+DEF_MVAPICH_START_CMD="ssh" # You can change it to rsh/ssh/mpd
+# Only set MPD_RING_STARTUP_GROUP_SIZE to 100 (recommended) if you are going to run large scale jobs
+MPD_RING_STARTUP_GROUP_SIZE=""
+
+PATH=${MVAPICH_HOME}/bin:${MVAPICH_HOME}:$PATH
+export MVAPICH_HOME 
+export PATH
+
+#-------------------------------------------------------------------------
+# EXIT_VALUE should not be set to 0
+# This exit value is for any error that might occur before the real job
+# starts to run
+#-------------------------------------------------------------------------
+EXIT_VALUE="66"
+
+LSF_TASKSTARTER="${LSF_BINDIR}/TaskStarter"
+
+trap "mvapich_exit" 1 2 3 15
+
+PJL=""
+PJL_OPTS=" "
+REMOTE_ENV_VAR=" "
+JOB_CMD=""
+MPIRUN_SSH_AVAIL=""
+
+all_options="$*"
+
+#----------------------------------------------------------------
+# Find the correct MPIRUN command based on MVAPICH_START_CMD
+#----------------------------------------------------------------
+
+if [ -f "${MVAPICH_HOME}/bin/mpirun_ssh" ]; then
+    MPIRUN_SSH_AVAIL="y" #Rocks topspin roll
+fi
+
+export MPIRUN_SSH_AVAIL
+
+if [ "$MVAPICH_START_CMD" = "" ]; then
+    MVAPICH_START_CMD="$DEF_MVAPICH_START_CMD"
+fi
+
+case  "$MVAPICH_START_CMD" in
+    "rsh" | "RSH" )
+        if [ "$MPIRUN_SSH_AVAIL" = "y" ]; then
+            PJL="$MVAPICH_HOME/bin/mpirun_rsh"
+        else
+            PJL="$MVAPICH_HOME/bin/mpirun_rsh"
+            PJL_OPTS="$PJL_OPTS -rsh"
+        fi
+        ;;
+    "mpd" | "MPD" )
+        #
+        # In MPD mode, mpirun_mpd will do round-robin of the machine file
+        # and ignore repeated host names, therefore, Task Geometry 
+        # is not supported.
+        #
+        PJL="$MVAPICH_HOME/bin/mpirun_mpd"
+        if [ "${LSB_PJL_TASK_GEOMETRY}" != "" ]; then
+            echo "Task Geometry is not supported in MPD Ring mode." 1>&2
+            echo "LSB_PJL_TASK_GEOMETRY=$LSB_PJL_TASK_GEOMETRY is ignored." 1>&2
+            LSB_PJL_TASK_GEOMETRY=""
+            export LSB_PJL_TASK_GEOMETRY
+        fi
+        $LSF_BINDIR/mpdstartup $MPD_RING_STARTUP_GROUP_SIZE
+        ;;
+    *)
+        if [ "$MPIRUN_SSH_AVAIL" = "y" ]; then
+            PJL="$MVAPICH_HOME/bin/mpirun_ssh"
+        else
+            PJL="$MVAPICH_HOME/bin/mpirun_rsh"
+        fi
+        ;;
+esac
+
+export PJL
+
+#----------------------------------------------------------------
+# Process options
+#----------------------------------------------------------------
+
+case  "$MVAPICH_START_CMD" in
+    "mpd" | "MPD" )
+        get_mpirun_mpd_options $all_options
+        ;;
+    *)
+        get_mpirun_rsh_options $all_options
+        ;;
+esac
+
+export PJL_OPTS 
+export REMOTE_ENV_VAR 
+export JOB_CMD
+
+
+
+#-------------------------------------------------------------------------
+# Create a log file with a unique name based on the LSF job ID 
+#-------------------------------------------------------------------------
+if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+   UNIQUE_ID="${LSB_JOBID}"
+else
+   UNIQUE_ID="${LSB_JOBID}_${LSB_JOBINDEX}"
+fi
+
+ 
+#-----------------------------------------------------------------------------
+# Test the mpich command mpirun; exit if the command is not found.
+#-----------------------------------------------------------------------------
+if [ ! -x "$PJL" ]; then
+    echo "${PJL} cannot be found." 1>&2
+    exit ${EXIT_VALUE}
+fi
+
+#-------------------------------------------------------------------------
+# Set up some variables representing temporary files:
+# - the file names are based on the LSF job ID
+#-------------------------------------------------------------------------
+HOST_FILE=".mvapich.hosts._${UNIQUE_ID}"
+if [ -d "$HOME" ]; then
+    HOST_FILE="$HOME/${HOST_FILE}"
+fi
+
+
+#-------------------------------------------------------------------------
+# Create the host file.
+#-------------------------------------------------------------------------
+if [ -f "${HOST_FILE}" ]; then
+    rm -f ${HOST_FILE}
+fi
+touch ${HOST_FILE}
+
+# check if we were able to start writing the host file
+if [ ! -f "${HOST_FILE}" ]; then
+    echo "$0: can't create ${HOST_FILE}" 1>&2
+    exit ${EXIT_VALUE}
+fi
+
+TOTAL_CPUS=`echo $LSB_MCPU_HOSTS | /bin/awk '
+BEGIN {counter=0}
+{
+    size = split($0, a, " ");
+    for (i = 1; i <= size; i += 2) {
+        counter = counter + a[i + 1];
+        for (j = 0; j < a[i + 1]; ++j) {
+            print a[i] > hfile;
+        }
+    }
+}
+END { print counter}' hfile=$HOST_FILE` 
+
+if [ -n "${LSB_PJL_TASK_GEOMETRY}" ]; then 
+    if [ -f "${LSF_BINDIR}/pjllib.sh" ]; then
+        . ${LSF_BINDIR}/pjllib.sh
+        reorder_file_based_on_task_geom "$HOST_FILE" "sort"
+        EXIT_VALUE=$?
+        if [ "$EXIT_VALUE" != "0" ]; then
+            echo "Error in reorder_file_based_on_task_geom \"$HOST_FILE\" \"sort\", Exit ..." 1>&2
+            rm -f ${HOST_FILE}
+            exit ${EXIT_VALUE}
+
+        fi
+    else
+        echo "Cannot find pjllib.sh in $LSF_BINDIR, Task Geometry is disabled" 1>&2
+    fi
+fi
+
+PJL_OPTS=" -np $TOTAL_CPUS $PJL_OPTS "
+
+if [ "$MVAPICH_START_CMD" != "mpd" -a "$MVAPICH_START_CMD" != "MPD" ]; then
+    PJL_OPTS=" -hostfile $HOST_FILE ${PJL_OPTS} " 
+else
+    PJL_OPTS=" -m $HOST_FILE ${PJL_OPTS} " 
+fi 
+
+
+# ------------------------------------------------------------------------------
+#  Set up the CMD_LINE variable representing the integrated section of 
+#  the command line:
+# - LSF_TS, script variable representing the TaskStarter binary. 
+#   TaskStarter must start each and every job task process.
+# - LSF_TS_OPTIONS, LSF environment variable containing all necessary information 
+#   for TaskStarter to callback to LSF's Parallel Application Manager.
+# - JOB_CMDLN, script variable containing the job and job options
+#--------------------------------------------------------------------------------
+if [ -n "$LSF_TS_OPTIONS" ]
+then
+    JOB_CMD="$LSF_TASKSTARTER $LSF_TS_OPTIONS $JOB_CMD "
+fi
+
+
+#-------------------------------------------------------------------------
+# Run the job by calling the mpirun command with the files created by this 
+# script.
+#-------------------------------------------------------------------------
+
+
+$PJL $PJL_OPTS $REMOTE_ENV_VAR $JOB_CMD 
+EXIT_VALUE=$?
+
+if [ "$MVAPICH_START_CMD" = "mpd" -o "$MVAPICH_START_CMD" = "MPD" ]; then
+    $MPDALLEXIT_CMD >/dev/null 2>&1
+    $MPDCLEANUP_CMD >/dev/null 2>&1
+fi
+
+
+#-------------------------------------------------------------------------
+# Clean up: exit with the exit value of the mpirun command
+#-------------------------------------------------------------------------
+rm -f $HOST_FILE
+
+#-------------------------------------------------------------------------
+# Return Exit value
+#-------------------------------------------------------------------------
+exit $EXIT_VALUE
+
+#-------------------------------------------------------------------------
+# End the script.
+#-------------------------------------------------------------------------

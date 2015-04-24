@@ -1,0 +1,119 @@
+#!/bin/csh -f
+#  Copyright International Business Machines Corp,1998-2011, 2012
+
+# external check pointing routine for FLUENT
+# echkpnt  [-c] [-f] [-k|-s] -d chkpnt_dir process-group-id"
+# tasks:
+# 1) check those parameters
+# 2) generate the checkpoint trigger file name from the "chkpnt_dir"
+# 3) create the checkpoint trigger file
+# 4) loop to check if the checkpoint trigger file is removed or not,
+#    if it is removed, exit with 0
+#    if timeout, exit with 1
+
+setenv PATH /usr/bin:/bin:/usr/etc:$PATH
+set usage="Usage: $0 [-k] -d chkpnt_dir process-group-id"
+
+# checkpoint trigger file mode.
+set mode=0664
+# checkpoint trigger file name for not exit after checkpoint finish.
+set chkpntonly=check
+# checkpoint trigger file name for exit after checkpoint finish.
+set chkpntexit=exit
+# time interval of checking if the trigger file is removed.
+set chkinterval=10
+# waiting time (10 hours).
+set chkwaiting=36000
+
+# 1) check those parameters
+while (x$1 != x)
+	switch ($1)
+	case -k: 
+	    set killflag=TRUE
+	    shift
+	    breaksw
+	case -d: 
+	    set chkpntdir=$2
+	    shift
+	    shift
+	    breaksw
+	case -c: 
+	    shift
+	    breaksw
+	case -s: 
+	    set killflag=TRUE
+	    shift
+	    breaksw
+	case -f: 
+	    shift
+	    breaksw
+	case -*: 
+	    echo "Illegal argument $1"
+	    echo "$usage"
+	    exit 1
+	    breaksw
+	default: 
+	    break
+	endsw
+end
+
+if ($#argv != 1) then
+	echo "$usage"
+	exit 1
+endif
+set progrpid=$1
+
+if ($?chkpntdir != 1) then
+	echo "$usage"
+	exit 1
+endif
+
+if (! -e $chkpntdir) then
+	echo "The check point directory is not existing"
+	exit 1
+endif
+
+if (! -d $chkpntdir) then
+	echo "The check point directory is not a directory"
+	exit 1
+endif
+
+# 2) generate the checkpoint trigger file name from the "chkpnt_dir"
+# make the real check point directory
+set chkpnt=`echo $chkpntdir|awk '{split($1,dir,".");print dir[1]}'`
+# make the check point file name
+if ($?killflag == 1) then
+    set trigfile=$chkpnt/$chkpntexit
+else
+    set trigfile=$chkpnt/$chkpntonly
+endif
+
+# 3) create the checkpoint trigger file
+if {(touch $trigfile)} then
+    :
+else
+    echo "Failed to create the check point trigger file ($trigfile)."
+    exit 1
+endif
+
+if {(chmod $mode $trigfile)} then
+    :
+else
+    echo "Failed to change mode of the check point trigger file ($trigfile)."
+    exit 1
+endif
+
+# 4) loop to check if the checkpoint trigger file is removed or not,
+#    if it is removed, exit with 0
+#    if timeout, exit with 1
+set waittimer=0
+while (-e $trigfile)
+    sleep $chkinterval
+    @ waittimer += $chkinterval
+    if ($waittimer >= $chkwaiting) then
+	echo "check point waiting time out $chkwaiting."
+	exit 1
+    endif
+end
+
+exit 0

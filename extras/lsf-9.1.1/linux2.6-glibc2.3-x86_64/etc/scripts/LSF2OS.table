@@ -1,0 +1,79 @@
+lsf9.1_hppa9:1:HPUX9:HP-UX 9.0:Base Batch MC Make:hppa9:300:200
+lsf9.1_hppa10:1:HPUX10:HP-UX 10.10:Base Batch MC Make:hppa10:300:200
+lsf9.1_hppa10.20:1:HPUX10:HP-UX 10.20:Base Batch MC Make:hppa10.20:300:200
+lsf9.1_hppa11-32:1:HPUX11:HP-UX 11-32:Base Batch MC Make:hppa11-32:300:200
+lsf9.1_hppa11-64:1:HPUX11:HP-UX 11-64:Base Batch MC Make:hppa11-64:300:200
+lsf9.1_aix4:1:AIX4:AIX 4.1:Base Batch MC Make:aix4:300:200
+lsf9.1_aix4.2:1:AIX4.2:AIX 4.2/4.3:Base Batch MC Make:aix4.2:300:200
+lsf9.1_aix:1:AIX5:AIX 5L:Base Batch MC Make:aix:300:200
+lsf9.1_aix-32:1:AIX5:AIX 5L-32:Base Batch MC Make:aix-32:300:200
+lsf9.1_aix-64:1:AIX5:AIX 5L-64:Base Batch MC Make:aix-64:200:80
+lsf9.1_aix-64-catiav5:1:AIX5:AIX 5L-64 CATIA V5:Base Batch:aix-64-catiav5:300:200
+lsf9.1_sgi5:1:IRIX5:IRIX 5.3/6.1/6.3:Base Batch MC Make:sgi5:300:200
+lsf9.1_sgi6:1:IRIX6:IRIX 6.2/6.4:Base Batch MC Make:sgi6:300:200
+lsf9.1_sgi6.5:1:IRIX6:IRIX 6.5:Base Batch MC Make:sgi6.5:300:200
+lsf9.1_sgi6.5.8:1:IRIX6:IRIX 6.5.8+:Base Batch MC Make:sgi6.5.8:300:200
+lsf9.1_irix6.5.24:1:IRIX6:IRIX 6.5.24:Base Batch MC Make:irix6.5.24:200:100
+lsf9.1_trix6.5.24:1:IRIX6:TRIX 6.5.24:Base Batch MC Make:trix6.5.24:300:200
+lsf9.1_trix6:1:IRIX6:TRIX 6.5:Base Batch MC Make:trix6:300:200
+lsf9.1_trix6.5.8:1:IRIX6:TRIX 6.5.8:Base Batch MC Make:trix6.5.8:300:200
+lsf9.1_sparc-sol2:1:Sol2:Solaris 2.5.1/2.6:Base Batch MC Make:sparc-sol2:300:200
+lsf9.1_sparc-sol7-32:1:Sol7:Solaris 7/8/9 32-bit:Base Batch MC Make:sparc-sol7-32:410:160
+lsf9.1_sparc-sol7-64:1:Sol7:Solaris 7/8/9 64-bit:Base Batch MC Make:sparc-sol7-64:350:140
+lsf9.1_sparc-sol10-64:1:Sol10:Solaris 10 64-bit:Base Batch MC Make:sparc-sol10-64:270:150
+lsf9.1_x86-sol2:1:Sol2-X86:Solaris x86 2.5.1/2.6:Base Batch MC Make:x86-sol2:300:200
+lsf9.1_x86-sol7:1:Sol7-X86:Solaris x86 2.7:Base Batch Make:x86-sol7:300:200
+lsf9.1_x86-sol10:1:Sol10-X86:Solaris x86 2.10:Base Batch Make:x86-sol10:300:200
+lsf9.1_x86-64-sol10:1:Sol10-X86:Solaris x86 2.10 64-bit:Base Batch Make:x86-64-sol10:250:110
+lsf9.1_sunos4:1:SunOS4:SunOS 4.1.x:Base Batch MC Make:sunos4:300:200
+lsf9.1_linux2.2-glibc2.1-alpha:1:Linux2-Alpha:Linux 2.2-glibc2.1-Alpha:Base Batch Make:linux2.2-glibc2.1-alpha:300:200
+lsf9.1_linux2.2-glibc2.1-x86:1:Linux2.2-x86:Linux 2.2-glibc2.1-x86:Base Batch Make MC:linux2.2-glibc2.1-x86:300:200
+lsf9.1_linux2.4-glibc2.1-x86:1:Linux2.4-X86:Linux 2.4-glibc2.1-x86:Base Batch Make MC:linux2.4-glibc2.1-x86:300:200
+lsf9.1_linux2.4-glibc2.2-x86:1:Linux2.4-X86:Linux 2.4-glibc2.2-x86:Base Batch Make MC:linux2.4-glibc2.2-x86:150:110
+lsf9.1_linux2.4-glibc2.2-x86-dist:1:Linux2.4-X86-DIST:Linux 2.4-glibc2.2-x86-dist:Base Batch Make MC:linux2.4-glibc2.2-x86-dist:300:200
+lsf9.1_linux2.4-glibc2.3-x86:1:Linux2.4-X86:Linux 2.4-glibc2.3-x86:Base Batch Make MC:linux2.4-glibc2.3-x86:150:110
+lsf9.1_linux2.4-glibc2.2-armv5l:1:Linux2.4-armv5l:Linux 2.4-glibc2.2-armv5l:Base Batch :linux2.4-glibc2.2-armv5l:300:200
+lsf9.1_linux2.4-glibc2.2-ia64:1:Linux-IA64:Linux 2.4-glibc2.2-ia64:Base Batch:linux2.4-glibc2.2-ia64:300:200
+lsf9.1_linux2.4-glibc2.2-ia64-dist:1:Linux-IA64-DIST:Linux 2.4-glibc2.2-ia64-dist:Base Batch:linux2.4-glibc2.2-ia64-dist:300:200
+lsf9.1_linux2.4-glibc2.3-ia64:1:Linux-IA64:Linux 2.4-glibc2.3-ia64:Base Batch:linux2.4-glibc2.3-ia64:300:200
+lsf9.1_linux2.4-glibc2.2-x86-esx2.5:1:Linux2.4-X86:Linux 2.4-glibc2.2-x86-esx2.5:Base Batch:linux2.4-glibc2.2-x86-esx2.5:300:200
+lsf9.1_linux2.6-glibc2.3-ia64:1:Linux-IA64:Linux 2.6-glibc2.3-ia64:Base Batch:linux2.6-glibc2.3-ia64:320:130
+lsf9.1_linux2.4-glibc2.2-amd64:1:Linux-2.4-X86-64:Linux 2.4-glibc2.2-amd64:Base Batch:linux2.4-glibc2.2-amd64:300:200
+lsf9.1_linux2.4-glibc2.2-x86_64:1:Linux-2.4-X86-64:Linux 2.4-glibc2.2-x86_64:Base Batch:linux2.4-glibc2.2-x86_64:170:100
+lsf9.1_linux2.4-glibc2.2-ppc64:1:Linux-ppc64:Linux 2.4-glibc2.2-ppc64:Base Batch:linux2.4-glibc2.2-ppc64:300:200
+lsf9.1_linux2.4-glibc2.2-s390-32:1:Linux-s390-32:Linux 2.4-glibc2.2-s390-32:Base Batch:linux2.4-glibc2.2-s390-32:300:200
+lsf9.1_linux2.4-glibc2.2-s390x-64:1:Linux-s390x-64:Linux 2.4-glibc2.2-s390x-64:Base Batch:linux2.4-glibc2.2-s390x-64:300:200
+lsf9.1_linux2.4-glibc2.2-alpha:1:Linux2-alpha:Linux 2.4-glibc2.2-Alpha:Base Batch JS MC Make PAR:linux2.4-glibc2.2-alpha:300:200
+lsf9.1_linux2.4-glibc2.2-x86-scyld:1:Linux2.4-X86-SCYLD:Linux 2.4-glibc2.2-x86-scyld:Base Batch Make MC:linux2.4-glibc2.2-x86-scyld:300:200
+lsf9.1_linux2.4-glibc2.3-ia32e:1:Linux-2.4-X86-64:Linux 2.4-glibc2.3-ia32e:Base Batch:linux2.4-glibc2.3-ia32e:300:200
+lsf9.1_linux2.4-glibc2.3-x86_64-cray:1:Linux-2.4-X86-64:Linux 2.4-glibc2.3-x86_64-cray:Base Batch:linux2.4-glibc2.3-x86_64-cray:300:200
+lsf9.1_linux2.6-glibc2.3-ia32e:1:Linux-2.6-X86-64:Linux 2.6-glibc2.3-ia32e:Base Batch:linux2.6-glibc2.3-ia32e:300:200
+lsf9.1_linux2.6-glibc2.3-x86:1:Linux2.6-X86:Linux 2.6-glibc2.3-x86:Base Batch Make MC:linux2.6-glibc2.3-x86:130:90
+lsf9.1_linux2.6-glibc2.3-amd64:1:Linux-2.6-X86-64:Linux 2.6-glibc2.3-amd64:Base Batch:linux2.6-glibc2.3-amd64:300:200
+lsf9.1_linux2.6-glibc2.3-x86_64-bproc4:1:Linux-2.6-X86-64:Linux 2.6-glibc2.3-x86_64-bproc4:Base Batch:linux2.6-glibc2.3-x86_64-bproc4:300:200
+lsf9.1_lnx26-lib23-x64-cray:1:Linux-2.6-X86-64:Linux 2.6-glibc2.3-x86_64-cray:Base Batch:linux2.6-glibc2.3-x86_64-cray:300:200
+lsf9.1_linux2.6-glibc2.3-x86_64:1:Linux-2.6-X86-64:Linux 2.6-glibc2.3-x86_64:Base Batch:linux2.6-glibc2.3-x86_64:300:200
+lsf9.1_linux2.6-glibc2.3-ppc64:1:Linux-ppc64:Linux 2.6-glibc2.3-ppc64:Base Batch:linux2.6-glibc2.3-ppc64:180:100
+lsf9.1_linux2.6-glibc2.3-ppc64-bluegene:1:Linux-ppc64:Linux 2.6-glibc2.3-ppc64-bluegene:Base Batch:linux2.6-glibc2.3-ppc64-bluegene:300:200
+lsf9.1_crayj90:1:CrayJ90:Cray J90 UNICOS 10.0:Base Batch MC Make:crayj90:300:200
+lsf9.1_crayt90:1:CrayT90:Cray T90 UNICOS 10.0:Base Batch MC Make:crayt90:300:200
+lsf9.1_crayt3e:1:CrayT3E:Cray T3E UNICOS MK 2Update6:Base Batch MC Make:crayt3e:300:200
+lsf9.1_crayt90-ieee:1:CrayT90:Cray T90 IEEE UNICOS 10.0:Base Batch MC Make:crayt90-ieee:300:200
+lsf9.1_crayc90:1:CrayC90:Cray C90 UNICOS 10.0:Base Batch MC Make:crayc90:300:200
+lsf9.1_craysv1:1:CraySV1:Cray SV1 UNICOS 10.0:Base Batch MC Make:craysv1:300:200
+lsf9.1_crayx1:1:CrayX1:Cray X1 UNICOS 10.0:Base Batch MC Make:crayx1:300:200
+lsf9.1_uxp:1:VPP:VPP 300:200:Base Batch:uxp:300
+lsf9.1_macosx:1:macosx:Mac OS X 10.x:Base Batch:macosx:240:120
+lsf9.1_linux2.4-glibc2.3-sn-ipf:1:Linux-IA64:Linux 2.4-glibc2.3-sn-ipf:Base Batch MC Make:linux2.4-glibc2.3-sn-ipf:300:200
+lsf9.1_linux2.6-glibc2.3-sn-ipf:1:Linux-IA64:Linux 2.6-glibc2.3-sn-ipf:Base Batch MC Make:linux2.6-glibc2.3-sn-ipf:310:130
+lsf9.1_linux2.6-glibc2.4-sn-ipf:1:Linux-IA64:Linux 2.6-glibc2.4-sn-ipf:Base Batch MC Make:linux2.6-glibc2.4-sn-ipf:330:120
+lsf9.1_hpuxia64:1:HPUX11:HP-UX 11-IA64:Base Batch MC Make:hpuxia64:350:120
+lsf9.1_hppa11i-32:1:HPUX11:HP-UX 11i-32:Base Batch MC Make:hppa11i-32:300:200
+lsf9.1_hppa11i-64:1:HPUX11:HP-UX 11i-64:Base Batch MC Make:hppa11i-64:250:120
+lsf9.1_linux2.4-glibc2.3-x86-bproc:1:Linux2.4-X86-BPROC:Linux 2.4-glibc2.3-x86-bproc:Base Batch Make MC:linux2.4-glibc2.3-x86-bproc:300:200
+lsf9.1_linux2.4-glibc2.3-x86-slurm:1:Linux2.4-X86-SLURM:SLURM Linux 2.4-glibc2.3-x86:Base Batch Make MC:linux2.4-glibc2.3-x86-slurm:300:200
+lsf9.1_linux2.4-glibc2.3-x86_64-slurm:1:Linux-AMD64-SLURM:SLURM Linux 2.4-glibc2.3-x86_64:Base Batch:linux2.4-glibc2.3-x86_64-slurm:300:200
+lsf9.1_linux2.4-glibc2.3-ia64-slurm:1:Linux-IA64-SLURM:SLURM Linux 2.4-glibc2.3-ia64:Base Batch:linux2.4-glibc2.3-ia64-slurm:300:200
+lsf9.1_linux2.6-glibc2.3-ia64-slurm:1:Linux-IA64-SLURM:SLURM Linux 2.6-glibc2.3-ia64:Base Batch Make MC:linux2.6-glibc2.3-ia64-slurm:300:200
+lsf9.1_linux2.6-glibc2.3-x86_64-slurm:1:Linux-X86_64-SLURM:SLURM Linux 2.6-glibc2.3-x86_64:Base Batch Make MC:linux2.6-glibc2.3-x86_64-slurm:130:80
+lsf9.1_linux2.6-glibc2.3-x86-xen:1:Linux2.6-X86:Linux 2.6-glibc2.3-x86-xen:Base Batch:linux2.6-glibc2.3-x86-xen:300:200

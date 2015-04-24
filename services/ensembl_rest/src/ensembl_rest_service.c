@@ -175,7 +175,7 @@ static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_se
 		}
 	
 
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p, NULL);
 
 	return res_json_p;
 }

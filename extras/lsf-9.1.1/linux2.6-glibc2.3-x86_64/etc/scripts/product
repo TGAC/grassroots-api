@@ -1,0 +1,418 @@
+#! /bin/sh
+#$Id: product,v 1.2 2012/06/08 03:37:25 sbadugu Exp $
+#---------------------------------------------------------------------
+#
+#  This script is sourced by lsfsetup.
+#
+#  Choose a LSF product to install.
+#--------------------------------------------------------------------
+    
+install_base_batch_only()
+{     
+
+INSTALL_LSMAKE=""; export INSTALL_LSMAKE
+INSTALL_ANALYZER=""; export INSTALL_ANALYZER
+INSTALL_BASE=""; export INSTALL_BASE
+INSTALL_MANAGER=""; export INSTALL_MANAGER
+INSTALL_JS=""; export INSTALL_JS
+INSTALL_MC=""; export INSTALL_MC
+INSTALL_PARALLEL=""; export INSTALL_PARALLEL
+
+
+#again=1
+#while [ "$again" = "1" ] ;
+#do
+#    again=0
+#
+#    cat << MENU | tee -a $PREFIX_LOG/Install.log 
+#
+#Please specify one or more of the following products to install:
+#
+#    1.  LSF Manager (default)
+#    2.  LSF Make 
+#    3.  LSF Base-only
+#
+#    ?.  Help
+#    q.  Quit
+#
+#MENU
+#
+#    echo $enf "Please enter your choice(s) separated by comma (e.g., 1,2)? [1] " $enl | tee -a $PREFIX_LOG/Install.log 
+#    read NP
+#    echo $NP >>$PREFIX_LOG/Install.log
+#
+# Temporary, the only possible upgrade is to Manager
+#    NP=1
+#    if [ "$NP" = "" ] ; then
+#	NP=1
+#    fi
+#
+#    IFSSAVE=$IFS
+#    IFS=,
+#    set $NP
+#    IFS=$IFSSAVE
+#
+#    for i
+#    do
+#        case "$i" in
+#        1) INSTALL_BASE=y
+#           INSTALL_MANAGER=y ;;
+#        2) INSTALL_LSMAKE=y ;;
+#        3) INSTALL_BASE=y ;;
+#        [Qq]*) exit ;;
+#        *) more << HELP
+#
+#    Specify the option number(s) for the product(s) you want to install.
+#    The default is to only install the Manager product.  Multiple products
+#    can be specified by giving the option numbers separated by a comma.
+#    E.g., "1,2" will install the Manager products.
+#    
+#HELP
+#           again=1;;
+#        esac
+#    done
+#done
+
+setuid_progs
+
+
+#SelectedLSFProducts=""
+#if [ "$INSTALL_BASE" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} Base"
+#fi
+#if [ "$INSTALL_MANAGER" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} Manager"
+#fi
+#if [ "$INSTALL_LSMAKE" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} Make"
+#fi
+
+SelectedLSFProducts="Base Manager Make"
+export SelectedLSFProducts
+
+
+
+
+} # install_base_batch_only
+
+product()
+{
+INSTALL_LSMAKE=""; export INSTALL_LSMAKE
+INSTALL_ANALYZER=""; export INSTALL_ANALYZER
+INSTALL_BASE=""; export INSTALL_BASE
+INSTALL_MANAGER=""; export INSTALL_MANAGER
+INSTALL_JS=""; export INSTALL_JS
+INSTALL_MC=""; export INSTALL_MC
+INSTALL_PARALLEL=""; export INSTALL_PARALLEL
+
+
+again=1
+while [ "$again" = "1" ] ;
+do
+    again=0
+#   Since we currently have only IBM Platform LSF ,
+#   we'll desable the dialog with choises
+
+#
+#    cat << MENU |tee -a $PREFIX_LOG/Install.log
+#
+#Please specify one or more of the following products to install:
+#
+#    1.  LSF Manager (default)
+#    2.  LSF MultiCluster
+#    3.  LSF Make 
+#    4.  LSF Base-only
+#
+#    ?.  Help
+#    q.  Quit
+#
+#MENU
+#
+#    echo $enf "Please enter your choice(s) separated by comma (e.g., 1,2)? [1] " $enl |tee -a $PREFIX_LOG/Install.log
+#    read NP
+#    echo $NP >>$PREFIX_LOG/Install.log
+    NP=1
+    if [ "$NP" = "" ] ; then
+	NP=1
+    fi
+
+    IFSSAVE=$IFS
+    IFS=,
+    set $NP
+    IFS=$IFSSAVE
+
+    for i
+    do
+        case "$i" in
+
+        1) INSTALL_BASE=y
+           INSTALL_MANAGER=y 
+           INSTALL_LSMAKE=y ;;
+#        1) INSTALL_BASE=y
+#           INSTALL_MANAGER=y ;;
+        2) INSTALL_BASE=y
+           INSTALL_MC=y ;;
+        3) INSTALL_BASE=y
+           INSTALL_LSMAKE=y ;;
+        4) INSTALL_BASE=y ;;
+        [Qq]*) exit ;;
+        *) more << HELP
+
+    Specify the option number(s) for the product(s) you want to install.
+    The default is to only install the Manager product.  Multiple products
+    can be specified by giving the option numbers separated by a comma.
+    E.g., "1,3" will install the Manager and LSF make products.
+    
+HELP
+           again=1;;
+        esac
+    done
+done
+
+setuid_progs
+
+#SelectedLSFProducts=""
+#if [ "$INSTALL_BASE" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} Base"
+#fi
+#if [ "$INSTALL_MANAGER" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} Manager"
+#fi
+#if [ "$INSTALL_MC" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} MC"
+#fi
+#if [ "$INSTALL_LSMAKE" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} Make"
+#fi
+#if [ "$INSTALL_PARALLEL" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} PAR"
+#fi
+#if [ "$INSTALL_JS" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} JS"
+#fi
+SelectedLSFProducts="Base Manager Make"
+export SelectedLSFProductsNO SelectedLSFProducts
+} # product   
+    
+#-------------------------------------------------------------------------
+# 
+# setuid_progs() 
+# 
+#     Define setuid progs.
+#-------------------------------------------------------------------------
+setuid_progs()
+{
+
+# Programs that needs to be setuid to root
+NQSCOMMANDS=""
+BCOMMANDS=""
+# LSCOMMANDS="lstcsh lsrun ch lsgrun lsadmin lsmakerm lsrcp"
+_ht=`uname`
+if [ "$_ht" = "Darwin" ] ; then
+    LSCOMMANDS="lsrun ch lsgrun lsadmin lsrcp"
+else
+    LSCOMMANDS="lstcsh lsrun ch lsgrun lsadmin lsrcp"
+fi
+
+if [ "$INSTALL_LSMAKE" = "y" ] ; then
+    LSCOMMANDS="$LSCOMMANDS lsmakerm" 
+fi
+
+#if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#    LSCOMMANDS="$LSCOMMANDS pam"
+#fi
+
+if [ "$INSTALL_JS" = "y" -o "$INSTALL_MANAGER" = "y" ] ; then
+    BCOMMANDS="bkill bpeek badmin brun bsub bmod brequeue bpost bread bstatus"
+
+    if [ "$INSTALL_MANAGER" = "y" ] ; then
+	BCOMMANDS="$BCOMMANDS brestart bmig btop bbot bswitch"
+        NQSCOMMANDS="qsub qdel"
+    fi
+#    if [ "$INSTALL_JS" = "y" ] ; then
+#	BCOMMANDS="$BCOMMANDS bcadd bgadd bgmod bghold bgrel bgdel "
+#    fi
+fi
+
+SETUIDS="$LSCOMMANDS $BCOMMANDS $NQSCOMMANDS"
+} # setuid_progs()
+
+#-------------------------------------------------------------------------
+# 
+# get_products() 
+# 
+#     Get products from cluster file. 
+#-------------------------------------------------------------------------
+get_products()
+{
+
+
+GOT_CONFIG=y
+if [ "$LSF_CLUSTER_NAME" = "" -o "$UNATTENDED_INSTALL" = "y" ]; then
+    find_cluster
+fi
+
+if [ -f $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME ] ; then 
+    :
+else
+    echo "    Something is wrong.  The cluster file"
+    echo "    $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME"
+    echo "    is missing.  A cluster file should "
+    echo "    have been installed in the directory "
+    echo "    $LSF_CONFDIR"
+    echo "    from your first installation."
+    exit 1
+fi 
+ 
+PRODUCTS=`grep "^FEATURES" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME | $AWK 'BEGIN{FS = "="} {print $2}'`
+
+if [ "$PRODUCTS" = "" ] ; then
+    PRODUCTS=`grep "^PRODUCTS" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME | $AWK 'BEGIN{FS = "="} {print $2}'`
+fi
+
+# No products defined in cluster file, we think it is batch only
+if [ "$PRODUCTS" = "" ] ; then
+    PRODUCTS="LSF_Base LSF_Manager LSF_Make LSF_Sched_Fairshare LSF_Sched_Parallel LSF_Sched_Preemption LSF_Sched_Resource_Reservation LSF_Sched_Advance_Reservation"
+fi 
+
+INSTALL_BASE=y; export INSTALL_BASE
+INSTALL_MANAGER=""; export INSTALL_MANAGER
+INSTALL_MC=""; export INSTALL_MC
+INSTALL_JS=""; export INSTALL_JS
+INSTALL_ANALYZER=""; export INSTALL_ANALYZER
+INSTALL_LSMAKE=""; export INSTALL_LSMAKE
+
+
+for product in $PRODUCTS 
+do 
+    if [ "$product" = "lsf_batch" -o "$product" = "LSF_Batch" -o "$product" = "LSF_Manager" ] ; then 
+	INSTALL_MANAGER=y
+    fi
+
+#    if [ "$product" = "lsf_js" -o "$product" = "LSF_JobScheduler" ] ; then 
+# 	echo " To install/upgrade LSF JS product, refer to README." | tee -a $PREFIX_LOG/Install.log
+#	#INSTALL_JS=y
+#    fi
+
+    if [ "$product" = "lsf_mc" -o "$product" = "lsf_multicluster" -o "$product" = "LSF_MultiCluster" ] ; then
+
+        if [ "$UNATTENDED_INSTALL" = "y" ]; then
+            echo "Unattended installation does not support MultiCluster." | tee -a $PREFIX_LOG/Install.log
+        else
+            INSTALL_MC=y
+        fi
+    fi
+
+#    if [ "$product" = "LSF_Analyzer" ] ; then
+# 	echo " To install/upgrade LSF Analyzer product, refer to README." | tee -a $PREFIX_LOG/Install.log
+
+#        if [ "$UNATTENDED_INSTALL" = "y" ]; then
+#            echo "Unattended installation does not support Analyzer." | tee -a $PREFIX_LOG/Install.log
+#        else
+#            INSTALL_ANALYZER=y
+#
+#        fi
+#    fi
+
+#    if [ "$product" = "lsf_parallel" -o "$product" = "LSF_Parallel" ] ; then
+# 	echo " To install/upgrade LSF Parallel product, refer to README." | tee -a $PREFIX_LOG/Install.log
+       
+#        if [ "$UNATTENDED_INSTALL" = "y" ]; then
+#            echo "Unattended installation does not support Parallel." | tee -a $PREFIX_LOG/Install.log
+#        else
+#            INSTALL_PARALLEL=y
+#        fi
+#    fi
+
+    if [ "$product" = "lsf_make" -o "$product" = "LSF_Make" ] ; then
+
+        if [ "$UNATTENDED_INSTALL" = "y" ]; then
+            echo "Unattended installation does not support Make." | tee -a $PREFIX_LOG/Install.log
+        else
+            INSTALL_LSMAKE=y
+        fi
+    fi
+
+done
+
+if [ "$LSB_MODE" = "batch" -o "$LSB_MODE" = "batch_js" ] ; then
+    INSTALL_MANAGER=y
+fi
+
+#if [ "$LSB_MODE" = "js" -o "$LSB_MODE" = "batch_js" ] ; then
+#    INSTALL_JS=y
+#fi
+
+# The product may not defined in the product line, but in the resource field 
+# of a host, we must handle this situation.
+
+# find out defined hosts in lsf.cluster.<cluster_name>
+
+lsfHostNames=`sed -n "/^[ 	]*[Bb]egin[ 	]*[Hh]ost/,/^[ 	]*[Ee]nd[ 	]*[Hh]ost/p" ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} | grep -v "^[ 	]*#" | $AWK 'BEGIN{FS = " "} {print $1}'`
+
+lsfHostNames=`echo $lsfHostNames | sed -e "s/[Bb]egin//g" | sed -e "s/[Hh][Oo][Ss][Tt][Nn][Aa][Mm][Ee]//g" | sed -e "s/[Ee]nd//g"`
+
+# find out which field is "RESOURCES"
+
+fieldNo=`grep "^[ 	]*[Hh][Oo][Ss][Tt][Nn][Aa][Mm][Ee]" ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} | wc -w`
+
+fieldNo=`echo $fieldNo | sed -e "s/^[ 	]*//"`
+
+resFieldNo=1
+
+while :
+do
+    findRes="no"
+    fieldName=`grep "^[ 	]*[Hh][Oo][Ss][Tt][Nn][Aa][Mm][Ee]" ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} | awk '{printf $'"$resFieldNo"'}'`
+
+    if [ "$fieldName" = "RESOURCES" -o "$fieldName" = "resources" ]; then
+        findRes="yes"
+        break
+    fi
+
+    resFieldNo=`expr $resFieldNo + 1`
+
+    if [ "$resFieldNo" -gt "$fieldNo" ]; then
+        break
+    fi
+done
+
+
+# JS and Parallel and Make may defined in the RESOURCES field must be checked
+
+if [ "$LS_BASE_BATCH_ONLY" = "y" ] ; then
+    INSTALL_ANALYZER=n
+    INSTALL_JS=n
+    INSTALL_MC=n
+    INSTALL_PARALLEL=n
+fi
+
+SelectedLSFProducts=""
+#if [ "$INSTALL_BASE" = "y" ]; then
+    SelectedLSFProducts="${SelectedLSFProducts} Base"
+#fi
+#if [ "$INSTALL_MANAGER" = "y" ]; then
+    SelectedLSFProducts="${SelectedLSFProducts} Manager"
+#fi
+#if [ "$INSTALL_MC" = "y" ]; then
+    SelectedLSFProducts="${SelectedLSFProducts} MC"
+#fi
+#if [ "$INSTALL_LSMAKE" = "y" ]; then
+    SelectedLSFProducts="${SelectedLSFProducts} Make"
+#fi
+#if [ "$INSTALL_JS" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} JS"
+#fi
+#if [ "$INSTALL_ANALYZER" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} ANA"
+#fi
+#if [ "$INSTALL_PARALLEL" = "y" ]; then
+#    SelectedLSFProducts="${SelectedLSFProducts} PAR"
+#fi
+
+export SelectedLSFProducts
+
+# Programs that needs to be setuid to root
+setuid_progs
+
+} # get_products 

@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Copyright International Business Machines Corp,2002, 2012.
+# All Rights Reserved.
+#
+# esub.fluent called by esub to use the FLUENT application
+#
+# This script sets the checkpointing method "fluent"
+# to use the echkpnt.fluent.
+#
+# This script is called by a general esub which is invoked by bsub.
+# invoked by bsub -a fluent.
+
+
+# esub should always redirect stdout to stderr. 
+exec 1>&2
+
+echo 'LSB_ECHKPNT_METHOD="fluent"' > $LSB_SUB_MODIFY_ENVFILE

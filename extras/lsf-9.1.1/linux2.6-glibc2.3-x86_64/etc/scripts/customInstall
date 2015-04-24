@@ -1,0 +1,158 @@
+#$Id: customInstall,v 1.2 2012/06/08 03:37:23 sbadugu Exp $
+
+#---------------------------------------------------------------------
+#
+#  This script is sourced by lsfsetup.
+#
+#  Custom Install LSF 
+#--------------------------------------------------------------------
+custom_exit()
+{
+    trap '' 1 2 3 15
+    echo
+    echo " LSF Custom Installation preparing to exit ..."| tee -a $PREFIX_LOG/Install.log
+    echo
+    if [ -d "$LSF_INDEP" -a  -n "$LSF_INDEP" ]; then
+        echo
+        echo "The following components have been installed in machine independent directory"| tee -a $PREFIX_LOG/Install.log
+        echo "($LSF_INDEP):" | tee -a $PREFIX_LOG/Install.log
+        ls $LSF_INDEP | tee -a $PREFIX_LOG/Install.log
+        DIR_TO_RM=$LSF_INDEP
+        if yesno "Delete all files in $DIR_TO_RM" N "" >$LSNULFILE
+        then
+                echo "Deleting files in $DIR_TO_RM ..."| tee -a $PREFIX_LOG/Install.log
+                echo
+                /bin/rm -fr $DIR_TO_RM/*
+        fi
+    fi
+
+    if [ -d "$LSF_MACHDEP" ]; then
+        echo
+        echo "The following components have been installed in machine dependent directory"| tee -a $PREFIX_LOG/Install.log
+        echo "($LSF_MACHDEP):"| tee -a $PREFIX_LOG/Install.log
+        ls $LSF_MACHDEP | tee -a $PREFIX_LOG/Install.log
+        DIR_TO_RM=$LSF_MACHDEP
+        if yesno "Delete all files in $DIR_TO_RM" N "" >$LSNULFILE
+        then
+                echo "Deleting files in $DIR_TO_RM ..."| tee -a $PREFIX_LOG/Install.log
+                echo
+                /bin/rm -fr $DIR_TO_RM/*
+        fi
+    fi
+
+    if [ -d "$LSF_WORKING_DIR" ]; then
+        echo "Deleting files in $LSF_WORKING_DIR ..."| tee -a $PREFIX_LOG/Install.log
+        echo
+
+        for _Platform in $SelectedOSVersions
+        do
+               if [ "$_Platform" != "" ] ; then
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.tar
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.tar.Z
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part1.tar.Z
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part2.tar.Z
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part1.tar
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part2.tar
+               fi
+        done
+   
+        if [ "$removeWorkingDir" = "y" ]; then
+            if [ "$LSF_WORKING_DIR" != "/tmp" ]; then
+                /bin/rm -fr $LSF_WORKING_DIR
+            fi
+        fi
+    fi
+    echo " LSF Custom Installation exiting ..." | tee -a $PREFIX_LOG/Install.log
+    echo `date` >>$PREFIX_LOG/Install.log
+    echo Receive signal and exit...  >> $PREFIX_LOG/Install.log
+    echo >>$PREFIX_LOG/Install.log
+    exit 1
+}
+
+
+customInstall()
+{
+LSF_DEFAULT_INSTALL=n
+trap custom_exit 1 2 3 15
+
+echo `date` >>$PREFIX_LOG/Install.log
+echo Initial Custom Installation >> $PREFIX_LOG/Install.log
+echo >>$PREFIX_LOG/Install.log
+
+if [ "$UNATTENDED_INSTALL" != "y" ]; then
+    set_defaults
+
+    if is_root ; then
+        if yesno  "Do you wish to use external user authentication?" Y "help LSF_EAUTH" >$LSNULFILE
+        then   
+            #Using eauth, only lsadmin badmin and eauth need to be setuid
+	    # to root since they need to access lsf.sudoers file
+
+            LSF_AUTH=eauth
+            SETUIDS="lsadmin badmin" 
+        fi
+    fi
+    . $sp/mandatory; mandatory
+    . $sp/nonroot; nonroot
+else
+    LSF_AUTH=eauth
+    UNIFORM_DIR=$LSF_MACHDEP
+    DEFAULT_INSTALLDIR=$LSF_INDEP
+    LSF_BINDIR=$LSF_MACHDEP/bin
+    LSF_SERVERDIR=$LSF_MACHDEP/etc
+    LSF_MANDIR=$LSF_INDEP/man
+    LSF_LIBDIR=$LSF_MACHDEP/lib
+    LSF_INCLUDEDIR=$LSF_INDEP/include
+    LSF_CONFDIR=$LSF_INDEP/conf
+    LSF_ENVDIR=$LSF_MACHDEP/etc
+    LSB_CONFDIR=$LSF_CONFDIR/lsbatch
+    LSB_SHAREDIR=$LSF_INDEP/work
+    LSF_MISC=$LSF_INDEP/misc
+    XLSF_APPDIR=$LSF_INDEP/misc
+    XLSF_UIDDIR=$LSF_LIBDIR/uid
+    LSF_LOGDIR=/tmp
+    LSF_LIM_PORT=6879
+    LSF_RES_PORT=6878
+    LSB_SBD_PORT=6882
+    LSB_MBD_PORT=6881
+    OPTSHARE="$OPTSHARE LSF_LIM_PORT LSF_RES_PORT LSB_MBD_PORT LSB_SBD_PORT"         
+fi
+
+#LSF_ENVDIR=$LSF_INDEP/conf
+LSF_LOGDIR=/tmp
+UNIFORM_DIR=$LSF_MACHDEP
+DEFAULT_INSTALLDIR=$LSF_INDEP
+
+export UNIFORM_DIR
+export DEFAULT_INSTALLDIR
+
+ . $sp/newInstall; newInstall
+ . $sp/makedot; makedot
+
+check_setuid
+
+
+lsfconf=$LSF_ENVDIR/lsf.conf
+
+make_os_flag
+
+
+if [ "$UNATTENDED_INSTALL" = "y" ]; then
+    . $sp/hostsetup; hostsetup
+else
+
+    if yesno "Do you want to set up LSF hosts now?" Y "" > $LSNULFILE
+    then
+        . $sp/hostsetup; hostsetup
+    fi
+
+    if yesno "Do you want to config LSF cluster now" Y "" > $LSNULFILE
+    then
+        . $sp/config; config
+    fi
+fi                                            
+
+echo "    Finished installing LSF." |tee -a $PREFIX_LOG/Install.log
+echo "    Installation parameters should be in $LSF_ENVDIR/lsf.conf." |tee -a $PREFIX_LOG/Install.log
+}

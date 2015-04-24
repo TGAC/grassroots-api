@@ -1,0 +1,63 @@
+#
+#$Id: cluster,v 1.1 2006/06/27 19:31:10 gwen Exp $
+
+# This is not a stand alone script. It is sourced by scripts/modify_host.
+
+tfile=/tmp/.tmp.lsf$$
+
+# Producing a template file for lsf.cluster
+cat << END > $tfile
+		       INSTRUCTIONS
+    (Please do not edit instructions; they will be removed automatically)
+
+    1.  MODEL - This parameter determines the CPU speed scaling factor of
+	a host. Choose one of the following for each host:
+
+`sed -e 's/#.*//' -e '1,/[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/d' -e '/[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt][Mm][Oo][Dd][Ee][Ll]/,$d' -e '/^[ 	]*$/d' ${LSF_SHARED}`
+
+    If none of the above models is what you want, quit the session. Choose 
+    View/Modify Currently Defined Host Models option to add your new model.
+
+    2.  TYPE - This parameter determines a compatible class of hosts. Hosts
+	with the same type will run the same binaries. Choose one of the
+	following or name your own:
+
+`sed -e 's/#.*//;1,/[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/d;/[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt][Tt][Yy][Pp][Ee]/,$d;/^[ 	]*$/d' ${LSF_SHARED} |grep -vi TYPENAME`
+
+    3.  SERVER - Set this field to 1 if the host is an LSF server host,
+	0 if the host is a client which will not accept LSF jobs from
+	other hosts.
+
+    4.  R1M - 1 minute average CPU run queue threhold beyond which LIM
+	will consider this host as busy. Fill in nothing if you do not
+	want your host to be considered as busy because of this load
+	index. Any non-negative value is valid for this parameter.
+
+    5.  MEM - Available memory threshold below which LIM will consider
+	the host as busy. Fill in nothing if you do not want your host to
+	be considered as busy because of this load index. Any non-negative
+	value is valid for this parameter.
+
+    6.  SWP - Available swap space threshold below which LIM will consider
+	the host as busy. Fill in nothing if you do not want your host to
+	be considered as busy because of this load index. Any non-negative
+	value is valid for this parameter.
+
+    7.  RESOURCES - Special resources associated with this host. The
+	resource names currently defined in lsf.shared file are:
+
+`sed -e 's/#.*//;1,/[Bb][Ee][Gg][Ii][Nn][ 	]*[Rr][Ee][Ss][Oo][Uu][Rr][Cc][Ee]/d;/[Ee][Nn][Dd][ 	]*[Rr][Ee][Ss][Oo][Uu][Rr][Cc][Ee]/,$d;/^[ 	]*$/d' ${LSF_SHARED}`
+
+        You can choose one or more of the above resources for each host.
+	Multiple resource names should be put inside "()". If you want to
+	define new resources, quit this session and choose View/Modify 
+	Currently Defined Resource Names option to add your resource names.
+
+    7.  Advanced parameters - If you want to define more sophisticated
+	controls, please follow LSF Administrator's Guide and lsf.cluster(5)
+	to define the additional parameters, with one parameter per column.
+	All parameters must be filled with either a value or a empty value
+	"()". The additional parameters are:
+
+	      END_OF_INSTRUCTIONS
+END

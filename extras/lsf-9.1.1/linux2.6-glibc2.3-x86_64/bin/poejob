@@ -1,0 +1,2314 @@
+#!/bin/sh
+# $RCSfile: poejob,v $Revision: 1.30 $Date: 2013/01/10 05:52:24 $
+#
+#  bsub -a poe [bsub options] mpirun.lsf job [job options] [poe options]
+#
+#  The variable LSB_MCPU_HOSTS is assigned by IBM Platform LSF.
+#
+
+# Add the default path for SDRGetObjects command to the environment.
+# Please change it if the SDR commands are installed in
+# a different path.
+
+#----------------------------script debug begins---------------------------------------------------
+# This is the overall debug level control for scripts and binaries
+#LSF_PBSUB_DEBUG=4
+#export LSF_PBSUB_DEBUG
+#
+# This is the overall debug level control for binaries only
+#NRT_DEBUG=Y
+#export NRT_DEBUG
+#
+# This is to enable debug for poe_nrt binary. poe_nrt is for selecting windows for jobs
+#POE_NRT_DEBUG=Y
+#export POE_NRT_DEBUG
+#
+# This is to enable debug for nrt_api binary. nrt_api is for loading/unloading windows
+#NRT_API_DEBUG=Y
+#export NRT_API_DEBUG
+#
+# This is to enable debug for this script.
+#set -x
+#-----------------------------script debug ends--------------------------------------------------
+
+PATH=/usr/lpp/ssp/bin/:/usr/sbin/:$PATH
+export PATH
+
+POEJOB_REXEC="poe" # POEJOB_REXEC can be either "blaunch" or "poe"
+
+export POEJOB_REXEC
+
+# create unique id based on current pid, LSF job id and job index
+if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+   UNIQUE_ID="$LSB_JOBID"; export UNIQUE_ID
+else
+   UNIQUE_ID="${LSB_JOBID}_${LSB_JOBINDEX}"; export UNIQUE_ID
+fi
+
+POE_DATAFILE_DIR="${HOME}/.${UNIQUE_ID}" # must be on shared file system accessible from all nodes by job owners
+if [ ! -d "$POE_DATAFILE_DIR" ]; then
+    mkdir -p "$POE_DATAFILE_DIR"
+    if [ ! -d "$POE_DATAFILE_DIR" ]; then
+        echo "POE_DATAFILE_DIR \"$POE_DATAFILE_DIR\" does not exist. Exiting..."
+        exit 1
+    fi
+fi
+export POE_DATAFILE_DIR
+
+#
+# unset_all_mp_env ()
+# This function will unset all MP_ environmental variables
+#
+unset_all_mp_env()
+{
+
+rm -f $SAVE_MP_ENV_FILE >/dev/null 2>&1
+_all_mp_env=`env | grep "^MP_"`
+
+if [ "$_all_mp_env" != "" ]; then
+    for mp_env in $_all_mp_env
+    do
+        echo $mp_env >> $SAVE_MP_ENV_FILE
+        _name=`echo "$mp_env" | sed -e "s/=.*$//g"`
+        unset $_name
+        export $_name
+    done
+fi
+}
+
+#
+# restore_all_mp_env ()
+# This function will restore all MP_ environmental variables
+#
+restore_all_mp_env()
+{
+if [ -f "$SAVE_MP_ENV_FILE" ]; then
+    . "$SAVE_MP_ENV_FILE"
+    rm -f "$SAVE_MP_ENV_FILE"
+fi
+}
+
+#
+# my_which ()
+# This function will tell if a command is in
+# $PATH or not
+#
+my_which()
+{
+(
+_command="$1"
+
+case $_command in
+    */* )
+        if [ -x "$_command" -a ! -d "$_command" ]; then
+            return 0
+        fi
+        ;;
+
+    * )
+        IFS=:
+        for dir in `echo "$PATH" | sed -e 's/^:/.:/' -e 's/::/:.:/g' -e 's/:$/:./'`
+        do
+           if [ -x "$dir/$_command" -a ! -d "$dir/$_command" ] ; then
+               return 0
+           fi
+        done
+        ;;
+esac
+
+return 1
+)
+
+if [ "$?" = "0" ] ; then
+    return 0
+else
+    return 1
+fi
+
+} # my_which
+
+#
+# runit_poe()
+#
+# This function takes the global variable $COMMANDLINE
+# and then sets the $exstat to
+#    (1) first value of $REQUEUE_EXIT_VALUES if poe could not allocate nodes,
+#    (2) or exit status of the command otherwise
+#
+
+runit_poe() {
+
+        eval $LSF_POE_WRAPPER poe $COMMANDLINE 2>>$POE_JOB_ERRFILE
+        exstat=$?
+
+        # Print out the captured error messages in prevoius line to stderr
+        # Which will be shown up in error file of bsub -e option
+        # Also append the error messages to POE_ERRFILE to keep
+        # backword compatibility
+        if [ -f "$POE_JOB_ERRFILE" ]; then
+            cat $POE_JOB_ERRFILE 1>&2
+            cat $POE_JOB_ERRFILE >> $POE_ERRFILE
+            rm -rf $POE_JOB_ERRFILE
+        fi
+
+        if [ -n "`grep 't allocate nodes for parallel' $POE_ERRFILE`" ] ; then
+                if [ x"$LSB_EXIT_REQUEUE" = "x" ] ; then
+                        true
+                else
+                        lsf_requeue=1
+                        # take the first value of the REQUEUE_EXIT_VALUES
+                        if [ x"$REQUEUE_EXIT_VALUES" = x ] ; then
+                            echo "`date` [poejob]: You must define REQUEUE_EXIT_VALUES in poejob. Exiting ... " >>$POE_ERRFILE
+                        else
+                                exstat=`echo $REQUEUE_EXIT_VALUES | awk '{print $1}'`
+                        fi
+                fi
+        fi
+        my_exit
+}
+
+#
+#swtbl_unload()
+#
+swtbl_unload ()
+{
+    unload_flag="$1"
+    unload_file="$2"
+    unload_hf="$3"
+    err_unload="1"
+
+    LSF_POE_UNLOAD=Y
+    export LSF_POE_UNLOAD
+
+    if [ "$POEJOB_REXEC" = "blaunch" ]; then
+        $LSF_BINDIR/blaunch -u $unload_hf swtbl_api $unload_flag "$unload_file" >>$POE_ERRFILE 2>&1 < /dev/null
+        if [ "$?" = "0" ]; then
+            err_unload="0"
+        fi
+    fi
+
+    if [ "$err_unload" = "1" ]; then
+        unset_all_mp_env
+        $LSF_POE_WRAPPER poe swtbl_api $unload_flag "$unload_file" -euilib ip -hfile $unload_hf -procs $nnodes -stdoutmode ordered >>$POE_ERRFILE 2>&1 < /dev/null
+        err_unload="$?"
+        restore_all_mp_env
+    fi
+
+    LSF_POE_UNLOAD=N
+    export LSF_POE_UNLOAD
+
+    rm -f $unload_hf
+    return $err_unload
+}
+
+#
+#lsntbl_unload()
+#
+lsntbl_unload ()
+{
+    trap " " 1 2 3 15 24 31
+    unload_flag="-c"
+    unload_file="$2"
+    err_unload="1"
+    retry=0
+
+    LSF_POE_UNLOAD=Y
+    export LSF_POE_UNLOAD
+
+    while [ $retry -le 5 -a $err_unload -ne 0 ]
+    do
+        if [ "$POEJOB_REXEC" = "blaunch" ]; then
+            $LSF_BINDIR/blaunch -u "$unload_file" $LSNTBL_PATH/lsntbl_api "$unload_flag" < /dev/null
+            if [ "$?" = "0" ]; then
+                err_unload="0"
+            fi
+        fi
+
+        if [ "$err_unload" = "1" ]; then
+            unset_all_mp_env
+
+            $LSF_POE_WRAPPER poe $LSNTBL_PATH/lsntbl_api "$unload_flag" -resd no -euilib ip -hfile "$unload_file" -procs $nnodes -stdoutmode ordered < /dev/null
+            err_unload="$?"
+
+            restore_all_mp_env
+        fi
+        if [ "$err_unload" != "0" ]; then
+            let retry=retry+1
+            sleep 1
+        fi
+    done
+
+    LSF_POE_UNLOAD="N"
+    export LSF_POE_UNLOAD
+
+    return $err_unload
+}
+
+#
+#lsnrt_unload()
+#
+lsnrt_unload ()
+{
+    trap " " 1 2 3 15 24 31
+    unload_flag="-c"
+    unload_file="$2"
+    err_unload="1"
+    retry=0
+
+    LSF_POE_UNLOAD=Y
+    export LSF_POE_UNLOAD
+
+    while [ $retry -le 5 -a $err_unload -ne 0 ]
+    do
+        if [ "$POEJOB_REXEC" = "blaunch" ]; then
+            $LSF_BINDIR/blaunch -u "$unload_file" $LSNRT_PATH/lsnrt_api "$unload_flag" < /dev/null
+            if [ "$?" = "0" ]; then
+                err_unload="0"
+            fi
+        fi
+
+        if [ "$err_unload" = "1" ]; then
+            unset_all_mp_env
+
+            $LSF_POE_WRAPPER poe $LSNRT_PATH/lsnrt_api "$unload_flag" -resd no -euilib ip -hfile "$unload_file" -procs $nnodes -stdoutmode ordered -instances 1 < /dev/null
+            err_unload="$?"
+
+            restore_all_mp_env
+        fi
+        if [ $err_unload != "0" ]; then
+            let retry=retry+1
+            sleep 1
+        fi
+    done
+
+    LSF_POE_UNLOAD="N"
+    export LSF_POE_UNLOAD
+
+    return $err_unload
+}
+#
+# poe_kill()
+#
+poe_kill() {
+trap "echo poe_kill: Signal received ... Cleaning up " 1 2 3 15 24 31
+
+        if [ "$MP_RESD" = "poe" ]; then
+            my_exit
+        fi
+
+        if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+            echo "`date` [poejob]: Entering poe_kill ..." >> $POE_ERRFILE
+        fi
+        #
+        #Solution 63992: rename datatable files which needed by lsntbl_api -c/u,
+        #in case they are removed by my_exit before lsntbl_api unloads/cleans them.
+        #
+
+        if [ ! -z "$NTBLHOSTFILE" ]; then
+            mv -f "${SNI0DATAFILE}.1"  "${SNI0DATAFILE}.tmp.1" > /dev/null 2>&1
+            mv -f "${SNI0DATAFILE}.2"  "${SNI0DATAFILE}.tmp.2" > /dev/null 2>&1
+            mv -f "${SNI1DATAFILE}.1"  "${SNI1DATAFILE}.tmp.1" > /dev/null 2>&1
+            mv -f "${SNI1DATAFILE}.2"  "${SNI1DATAFILE}.tmp.2" > /dev/null 2>&1
+            cp -f ${NTBLHOSTFILE} ${NTBLHOSTFILE}.tmp > /dev/null 2>&1
+            if [ -f "${SNI0DATAFILE}.tmp.2" ]; then
+                SNI0_NTBL_DATA_FILE="${SNI0DATAFILE}.tmp.1,${SNI0DATAFILE}.tmp.2"
+            else
+                SNI0_NTBL_DATA_FILE="${SNI0DATAFILE}.tmp.1"
+            fi
+            export SNI0_NTBL_DATA_FILE
+            if [ -f "${SNI1DATAFILE}.tmp.2" ]; then
+                SNI1_NTBL_DATA_FILE="${SNI1DATAFILE}.tmp.1,${SNI1DATAFILE}.tmp.2"
+            else
+                SNI1_NTBL_DATA_FILE="${SNI1DATAFILE}.tmp.1"
+            fi
+            export SNI1_NTBL_DATA_FILE
+        elif [ ! -z "$NRTHOSTFILE" ]; then
+            mv -f ${NRTHOSTFILE} ${NRTHOSTFILE}.tmp > /dev/null 2>&1
+            mv -f "${POE_DATAFILE_DIR}" "${POE_DATAFILE_DIR}.tmp" > /dev/null 2>&1 #POE_DATAFILE_DIR will be reset in background process
+                                                                                    #otherwise it will be deleted by my_exit
+        else
+            mv -f "$SWTBLDATAFILE.2" "$SWTBLDATAFILE.tmp.2" > /dev/null 2>&1
+            mv -f "$SWTBLDATAFILE.1" "$SWTBLDATAFILE.tmp.1" > /dev/null 2>&1
+            cp -f ${ALLHOSTS} ${ALLHOSTS}.tmp > /dev/null 2>&1
+        fi
+
+(
+        # call swtbl_api -c to unload the switch table
+        if [ -f "$SWTBLDATAFILE.tmp.2" ]; then
+            swtbl_unload "-c" "$SWTBLDATAFILE.tmp.1,$SWTBLDATAFILE.tmp.2" "${ALLHOSTS}.tmp"
+            rm -rf $SWTBLDATAFILE.tmp.1 > /dev/null 2>&1
+            rm -rf $SWTBLDATAFILE.tmp.2 > /dev/null 2>&1
+        elif [ -f "$SWTBLDATAFILE.tmp.1" ]; then
+            cp -f ${ALLHOSTS} ${ALLHOSTS}.tmp > /dev/null 2>&1
+            swtbl_unload "-c" "$SWTBLDATAFILE.tmp.1" "${ALLHOSTS}.tmp"
+            rm -rf $SWTBLDATAFILE.tmp.1 > /dev/null 2>&1
+        elif [ -f "${NTBLHOSTFILE}.tmp" ]; then
+            if [ "$LOAD_OK" = "y" ]; then
+                lsntbl_unload "-u" "${NTBLHOSTFILE}.tmp"
+            else
+                lsntbl_unload "-c" "${NTBLHOSTFILE}.tmp"
+            fi
+            ret="$?"
+            if [ $ret -ne 0 ] ; then
+                echo "`date` [poejob]: Cannot unload ntbl_windows on all selected nodes." >> $POE_ERRFILE
+            fi
+            # Solution 63992: remove datatable files after unload/clean finished here.
+            rm -rf "${SNI0DATAFILE}.tmp.1" > /dev/null 2>&1
+            rm -rf "${SNI0DATAFILE}.tmp.2" > /dev/null 2>&1
+            rm -rf "${SNI1DATAFILE}.tmp.1" > /dev/null 2>&1
+            rm -rf "${SNI1DATAFILE}.tmp.2" > /dev/null 2>&1
+            rm -rf "${NTBLHOSTFILE}.tmp" > /dev/null 2>&1
+        elif [ -f "${NRTHOSTFILE}.tmp" ]; then
+            POE_DATAFILE_DIR="${POE_DATAFILE_DIR}.tmp"
+            export POE_DATAFILE_DIR
+            lsnrt_unload "-c" "${NRTHOSTFILE}.tmp"
+            ret="$?"
+            if [ $ret -ne 0 ] ; then
+                echo "`date` [poejob]: Cannot unload nrt_windows on all selected nodes." >> $POE_ERRFILE
+            fi
+            # remove datatable files after unload/clean is done .
+            rm -rf ${POE_DATAFILE_DIR} /dev/null 2>&1
+            rm -rf "${NRTHOSTFILE}.tmp" /dev/null 2>&1
+        fi
+
+        if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+            echo "`date` [poejob]: Exit poe_kill ..." >> $POE_ERRFILE
+        fi
+)&
+        my_exit
+}
+
+#
+# my_exit()
+#
+my_exit() {
+
+    trap "" 1 2 3 15 24 31
+    # This is the command file created by this script.
+    # Clean-up is done here.
+    if [ -f "$_newcmdfile" ]; then
+        rm -rf $_newcmdfile
+    fi
+
+    # This is the real application's error message file
+    # created by this script.  Clean-up here
+    if [ -f "$POE_JOB_ERRFILE" ]; then
+        rm -rf $POE_JOB_ERRFILE
+    fi
+
+    if [ -f "$SWTBLDATAFILE.tmp" ]; then
+        rm -rf "$SWTBLDATAFILE.tmp"
+    fi
+    # Solution 63992: for lapi,mpi type we created two set of files, need to remove them here.
+    for index in 1 2
+    do
+        if [ -f "$SWTBLDATAFILE.${index}" ]; then
+            rm -rf "$SWTBLDATAFILE.${index}" > /dev/null 2>&1
+        fi
+
+        if [ -f "$SNI0DATAFILE.${index}" ]; then
+            rm -rf "$SNI0DATAFILE.${index}" > /dev/null 2>&1
+        fi
+
+        if [ -f "$SNI1DATAFILE.${index}" ]; then
+            rm -rf "$SNI1DATAFILE.${index}" > /dev/null 2>&1
+        fi
+
+        if [ -f "$WINFILE.${index}" ]; then
+            rm -rf "$WINFILE.${index}" > /dev/null 2>&1
+        fi
+    done
+    # clean up tmp data files
+    # keep them only if LSF_PBSUB_DEBUG level is set above 3
+    if [ -n "$LSF_PBSUB_DEBUG" -a  "$LSF_PBSUB_DEBUG" -gt 3 ]; then
+        :
+    else
+
+        rm -f ./.*.${UNIQUE_ID} > /dev/null 2>&1
+        rm -f ./.*.${UNIQUE_ID}.[12] > /dev/null 2>&1
+        rm -f /tmp/.*.${UNIQUE_ID} > /dev/null 2>&1
+        rm -f ${HOME}/.*.${UNIQUE_ID} > /dev/null 2>&1
+        rm -f ${HOME}/.*.${UNIQUE_ID}.[12] > /dev/null 2>&1
+        rm -rf ${POE_DATAFILE_DIR} > /dev/null 2>&1
+    fi
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a  "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: You can find the poejob script log in $POE_ERRFILE"
+    fi
+
+    if [ "$exstat" = "" ]; then
+        exit 1
+    else
+        exit $exstat
+    fi
+
+}
+
+#
+# requeue_exit()
+#
+requeue_exit() {
+
+        if [ x"$LSB_EXIT_REQUEUE" = "x" ] ; then
+                true
+        else
+                lsf_requeue=1
+                # take the first value of the REQUEUE_EXIT_VALUES
+                if [ x"$REQUEUE_EXIT_VALUES" = x ] ; then
+                        echo "`date` [poejob]: You must define REQUEUE_EXIT_VALUES in poejob. Exiting ... " >>$POE_ERRFILE
+                else
+                        exstat=`echo $REQUEUE_EXIT_VALUES|awk '{ print $1 }'`
+                fi
+        fi
+
+        my_exit
+
+}
+
+#
+# Automatically determine device type.
+#
+find_device_type()
+{
+
+PdDvLn0=`/bin/odmget -q"name=css0" CuDv | grep PdDvLn |awk '{ print $3 }' 2>/dev/null`
+PdDvLn1=`/bin/odmget -q"name=css1" CuDv | grep PdDvLn |awk '{ print $3 }' 2>/dev/null`
+
+if [ ! -z "$PdDvLn0" ] ; then
+    PdDvLn="$PdDvLn0"
+elif [ ! -z "$PdDvLn1" ] ; then
+    PdDvLn="$PdDvLn1"
+else
+    PdDvLn="<none>"
+fi
+
+#
+# Find TB3_TYPE from /usr/spp/ssp/css/rc.switch
+#
+
+rc_switch="/usr/lpp/ssp/css/rc.switch"
+tmp_rc_switch=/tmp/rc_switch.${UNIQUE_ID}
+
+# clean previous tmp files
+rm -f ${tmp_rc_switch}
+
+if [ ! -f $rc_switch ]; then
+    echo "`date` [poejob]: Warning: Cannot find/open $rc_switch. No user space job is allowed." >&2
+    export dtype="unknown"
+    return
+fi
+
+touch ${tmp_rc_switch}
+
+if [ ! -f ${tmp_rc_switch} ]; then
+    echo "`date` [poejob]: Warning: Cannot create $tmp_rc_switch. No user space job is allowed." >&2
+    export dtype="unknown"
+    return
+fi
+
+echo "#!/bin/sh" >> ${tmp_rc_switch}
+
+sed -n "/^[     ]*# Getting adapter type out of ODM/,/^[        ]*esac/p" ${rc_switch} >> ${tmp_rc_switch}
+
+echo 'echo $TB3_TYPE' >> ${tmp_rc_switch}
+
+chmod 755 ${tmp_rc_switch}
+
+TB3_TYPE=` ( ${tmp_rc_switch} ) | tail -1`
+
+# clean tmp files
+rm -f ${tmp_rc_switch}
+
+#
+# Find device_type based on TB3_TYPE
+#
+case "$TB3_TYPE" in
+    "")
+        if [ "$PdDvLn0" = "adapter/mca/tb3" ]; then
+            dtype=2
+        else
+            echo "`date` [poejob]: Warning: Unknown device type - $PdDvLn. No user space job is allowed." >&2
+            dtype="unknown"
+        fi
+        ;;
+    "MX")
+        dtype=3
+        ;;
+    "PCI")
+        dtype=4
+        ;;
+    "COL")
+        if [ ! -z "$PdDvLn0" -a ! -z "$PdDvLn1" ] ; then
+            dtype=7
+        elif [ ! -z "$PdDvLn0" ] ; then
+            dtype=5
+        else
+            dtype=6
+        fi
+        ;;
+    "COR")
+        if [ ! -z "$PdDvLn0" -a ! -z "$PdDvLn1" ] ; then
+            dtype=12
+        elif [ ! -z "$PdDvLn0" ] ; then
+            dtype=10
+        else
+            dtype=11
+        fi
+        ;;
+    *)
+        echo "`date` [poejob]: Warning: Unknown device type - $PdDvLn. No user space job is allowed." >&2
+        dtype="unknown"
+        ;;
+esac
+
+export dtype
+
+}
+#
+# split_data_file ()
+# split_data_file will split ntbl_datafile into two data files .
+#
+# odd records in one, even records in another
+#
+split_data_file()
+{
+from_file=$1
+rm -f $from_file.1 $from_file.2
+
+line=`cat $from_file | awk  '
+BEGIN { }
+{
+    if ( numline%2 == 0 ) {
+        print $0 >> new_file1 ;
+    } else {
+         print $0 >> new_file2 ;
+    }
+    numline+=1;
+}
+END { print matched_ln }' new_file1=${from_file}.1 new_file2=${from_file}.2 `
+
+echo "$line"
+}
+#
+# poejob_swtbl ()
+# poejob_swtbl will launch a poe parallel job in user space mode
+# using swtbl_ API families. The communication will be through
+# PSSP switches.
+#
+poejob_swtbl()
+{
+SWTBLDATAFILE="./.swtbl_data.${UNIQUE_ID}"
+SWTBLHOSTFILE="./.swtbl_host.${UNIQUE_ID}"
+COMMANDLINE=
+LOAD_OK="n"; export LOAD_OK
+
+#
+# If the user submits with '-L', LSB_LOAD_ADAPTER_WINDOW might
+# have been removed from the environment. We'll need to check
+# first for the MP_EUILIB environment variable, and then
+# for the -euilib command-line argument and reset the
+# variable.
+#
+if [ "$MP_EUILIB" = "us" ]; then
+        LSB_LOAD_ADAPTER_WINDOW=yes
+fi
+
+check_cmdfile=0
+for arg in $*; do
+        if [ "$arg" = "-cmdfile" ]; then
+                check_cmdfile=1
+        fi
+done
+
+
+check_lib=0
+for arg in $*; do
+        if [ $check_lib -eq 1 ]; then
+                if [ "$arg" = "us" ]; then
+                        LSB_LOAD_ADAPTER_WINDOW=yes
+                fi
+                break
+        fi
+        if [ "$arg" = "-euilib" ]; then
+                check_lib=1
+        fi
+done
+
+#
+# parse the command line to find out poe options, program, program options
+#
+#   poejob program [program_options] [poe_options]
+#
+# and set,
+# SWTBL_POE_FLAGS=poe_options
+# APP_NAME=application
+# SWTBL_APP_ARGS=app_options
+#
+
+SWTBL_POE_FLAGS=
+SWTBL_APP_ARGS=
+APP_NAME=
+
+#
+# extract [program_options] from the command-line;
+# the end of the [program_options] section is assumed to be when one of the
+# POE options ([poe_options]) are encountered.
+#
+while [ $# -gt 0 ]
+do
+    case $1 in
+    -adapter_use |\
+    -cpu_use |\
+    -euidevice |\
+    -euilib|\
+    -euilibpath|\
+    -pulse|\
+    -retry|\
+    -retrycount|\
+    -msg_api|\
+    -rmpool|\
+    -savehostfile|\
+    -spname|\
+    -cmdfile|\
+    -llfile|\
+    -newjob|\
+    -pgmmodel|\
+    -save_llfile|\
+    -labelio|\
+    -stdinmode|\
+    -stdoutmode|\
+    -samplefreq|\
+    -infolevel|\
+    -ilevel|\
+    -pmdlog|\
+    -buffer_mem|\
+    -clock_source|\
+    -css_interrupt|\
+    -eager_limit|\
+    -hints_filtered|\
+    -ionodefile|\
+    -shared_memory|\
+    -shm_cc|\
+    -use_flow_control|\
+    -udp_packet_size|\
+    -copy_send_buf_size|\
+    -thread_stacksize|\
+    -single_thread|\
+    -wait_mode|\
+    -polling_interval|\
+    -retransmit_interval|\
+    -io_buffer_size|\
+    -io_errlog|\
+    -coredir|\
+    -sfreq|\
+    -corefile_format|\
+    -corefile_sigterm|\
+    -euidevelop|\
+    -printenv|\
+    -statistics|\
+    -tbuffsize|\
+    -tbsize|\
+    -tbuffwrap|\
+    -tbwrap|\
+    -tmpdir|\
+    -tracedir|\
+    -tdir|\
+    -tracefile|\
+    -tfile|\
+    -tracelevel|\
+    -tlevel|\
+    -ttempsize|\
+    -ttsize|\
+    -infolevel|\
+    -ilevel|\
+    -pmdlog|\
+    -buffer_mem|\
+    -css_interrupt|\
+    -eager_limit|\
+    -intrdelay|\
+    -max_typedepth|\
+    -use_flow_control|\
+    -euidevelop|\
+    -pmlights|\
+    -usrport|\
+    -coredir|\
+    -resd|\
+    -hostfile|\
+    -hfile|\
+    -procs|\
+    -cmdfile|\
+    -pgmmodel|\
+    -thread_stacksize|\
+    -single_thread|\
+    -wait_mode|\
+    -polling_interval|\
+    -spname|\
+    -samplefreq|\
+    -procs)
+        break
+        ;;
+
+    # anything else is assumed to be 'command [command_options]'
+    *)
+        if [ x"$APP_NAME" = "x" ] ; then
+            APP_NAME=$1
+            shift
+        else
+            echo $APP_NAME|grep TaskStarter > /dev/null
+            if [ $? -eq 0 -a $check_cmdfile -eq 1 ]
+            then
+               if [ x"$SWTBL_APP_ARGS" = "x" ]
+               then
+                      SWTBL_APP_ARGS="$SWTBL_APP_ARGS $1"
+               fi
+            else
+               SWTBL_APP_ARGS="$SWTBL_APP_ARGS $1"
+            fi
+            shift
+        fi
+        ;;
+    esac
+done
+if [ -n "$LSF_TS_OPTIONS" ]; then
+    #
+    # APP_NAME and SWTBL_APP_ARGS must be modified if TS will
+    # be inserted manually. swtbl_poe binary takes env var instead
+    # of command line arguments to start the real application
+    #
+    SWTBL_APP_ARGS=" $LSF_TS_OPTIONS $APP_NAME $SWTBL_APP_ARGS"
+    APP_NAME="$LSF_TASKSTARTER"
+fi
+#
+# The rest of the arguments on the command-line
+# are assumed to be POE options.
+#
+# Now remove any arguments that would affect LSF batch
+# i.e., -hostfile, -hfile, -procs, -resd, and
+# if LSB_LOAD_ADAPTER_WINDOW=yes, -cmdfile, -pgmmodel
+#
+while [ $# -gt 0 ]
+do
+        case $1 in
+
+        -hostfile | -hfile | -procs | -resd)
+                # do not include it and its value in the list of flags for swtbl_poe
+                shift 2
+                ;;
+
+        -pgmmodel)
+                # swtbl_poe sets this if LSB_LOAD_ADAPTER_WINDOW=yes
+                if [ "$LSB_LOAD_ADAPTER_WINDOW" != "yes" ]; then
+                        SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS $1 $2"
+                fi
+                shift 2
+                ;;
+         -msg_api)
+             MP_MSG_API=$2
+             export MP_MSG_API
+             shift 2
+             ;;
+        -cmdfile)
+                MP_CMDFILE=$2
+                export MP_CMDFILE
+                shift 2
+                ;;
+        -euidevice)
+                if [ "$LSB_LOAD_ADAPTER_WINDOW" != "yes" ]; then
+                        SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS $1 $2"
+                fi
+                MP_EUIDEVICE=$2
+                export MP_EUIDEVICE
+                shift 2
+                ;;
+        *)
+                SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS $1"
+                shift
+                ;;
+        esac
+done
+
+export SWTBL_POE_FLAGS
+export SWTBL_APP_ARGS
+
+#
+# check if it will use switch
+#
+if [ "$LSB_LOAD_ADAPTER_WINDOW" != "yes" ] ; then
+# Run poe job and save exit status
+    if [ -n "$MP_CMDFILE" ]; then
+        _cmdfile=$MP_CMDFILE
+        if [ ! -f "${_cmdfile}" ]; then
+            echo "`date` [poejob]: Cannot find MP_CMDFILE <${_cmdfile}>. Exiting ..."
+            export exstat=1
+            my_exit
+        fi
+        _newcmdfile=$MP_CMDFILE.$UNIQUE_ID; export _newcmdfile
+        touch $_newcmdfile
+        if [ ! -f "${_newcmdfile}" ]; then
+            echo "`date` [poejob]: Cannot create temporary command file ${_newcmdfile}. Exiting ..."
+            export exstat=1
+            my_exit
+        fi
+        exec 3<&0 <$_cmdfile
+        while read LINE
+        do
+            echo "$APP_NAME $SWTBL_APP_ARGS $LINE" >> $_newcmdfile
+        done
+        exec 0<&3 3<&-
+        COMMANDLINE=" $SWTBL_POE_FLAGS"; export COMMANDLINE
+        MP_CMDFILE="$_newcmdfile"; export MP_CMDFILE
+        echo "Your command file $MP_CMDFILE looks like " >> $POE_ERRFILE
+        cat $MP_CMDFILE >> $POE_ERRFILE
+    else
+        COMMANDLINE="$APP_NAME $SWTBL_APP_ARGS $SWTBL_POE_FLAGS"
+    fi
+    runit_poe
+    my_exit
+fi
+
+#
+# Do not use MP_EUIDEVICE here.
+# Use SWTBL_EUIDEVICE because
+# MP_EUIDEVICE does not offically
+# support css1 value
+#
+find_device_type
+device_type="$dtype"
+if [ "$device_type" = "unknown" ]; then
+    echo "`date` [poejob]: Unknown device_type. Exiting ... " >>$POE_ERRFILE
+    exit 1
+fi
+
+if [  -n "$MP_EUIDEVICE" ]; then
+    # Honor user specifications
+    SWTBL_EUIDEVICE="$MP_EUIDEVICE";export SWTBL_EUIDEVICE
+else
+    # Set default values
+    case $device_type in
+    "6"  | "11" )
+        # css1 is not a supported value for poe
+        # option euidevice, that's why we use
+        # SWTBL_EUIDEVICE to pass the value to
+        # swtbl_api
+        SWTBL_EUIDEVICE="css1"; export SWTBL_EUIDEVICE
+        ;;
+    "7" | "12" )
+        SWTBL_EUIDEVICE="csss";export SWTBL_EUIDEVICE
+        MP_EUIDEVICE="csss";export MP_EUIDEVICE
+        ;;
+    *)
+        SWTBL_EUIDEVICE="css0";export SWTBL_EUIDEVICE
+        MP_EUIDEVICE="css0";export MP_EUIDEVICE
+        ;;
+    esac
+fi
+
+if [ "$MP_MSG_API" = "MPI,LAPI" -o "$MP_MSG_API" = "mpi,lapi" -o "$MP_MSG_API" = "LAPI,MPI" -o "$MP_MSG_API" = "lapi,mpi" ]
+then
+                SWTBL_WINDOW_COUNT=2
+                SWTBL_DATA_FILE="$SWTBLDATAFILE.1,$SWTBLDATAFILE.2"
+else
+                SWTBL_WINDOW_COUNT=1
+                SWTBL_DATA_FILE="$SWTBLDATAFILE.1"
+fi
+
+# Try loading the windows 5 times
+retry=0
+while [ $retry -lt 5 ]
+do
+
+#
+# We are going to load the switch table before call poe
+# Generate swtbl data file
+#
+
+rm -f $SWTBLDATAFILE.*
+
+#
+# Get switch node number from the System Data Repository (SDR)
+#
+SDRGetObjects -G Node reliable_hostname switch_node_number > $SWTBLHOSTFILE
+
+node=
+for item in $LSB_MCPU_HOSTS
+do
+    if [ x"$node" = "x" ] ; then
+        node=$item
+        nodeid=`grep "$node[. ]" $SWTBLHOSTFILE | awk '{print $2}'`
+    else
+        number=$item
+
+        if [ "$SWTBL_EUIDEVICE" = "csss" ]
+        then
+            st_status $node | grep ST_SWITCH_NOT_LOADED | grep css0 | awk 'match($3,"Window") {print $4}; match($5,"window") {print $6}' | sort -b > ./.css0.${UNIQUE_ID}
+            st_status $node | grep ST_SWITCH_NOT_LOADED | grep css1 | awk 'match($3,"Window") {print $4}; match($5,"window") {print $6}' | sort -b > ./.css1.${UNIQUE_ID}
+           windows=`join ./.css0.${UNIQUE_ID} ./.css1.${UNIQUE_ID} | sort -n`
+           rm -rf ./.css0.${UNIQUE_ID} ./.css1.${UNIQUE_ID}
+        elif [ "$SWTBL_EUIDEVICE" = "css1" ]
+        then
+            windows=`st_status $node | grep ST_SWITCH_NOT_LOADED | grep css1 | awk 'match($3,"Window") {print $4}; match($5,"window") {print $6}'`
+        else
+           # for css0
+            windows=`st_status $node | grep ST_SWITCH_NOT_LOADED | grep css0 | awk 'match($3,"Window") {print $4}; match($5,"window") {print $6}'`
+        fi
+
+        freewindows=`echo $windows | wc -w`
+        let number*=$SWTBL_WINDOW_COUNT
+        if [ $number -gt $freewindows ] ; then
+            echo "`date` [poejob]: Cannot find enough available adapter windows to run the job. Job will be requeued ... " 1>&2
+            requeue_exit
+        fi
+
+        for window in $windows
+        do
+            if [ $number -eq 0 ] ; then
+                break
+            fi
+            if [ $SWTBL_WINDOW_COUNT -eq 2 ]; then
+                # Build two data files from the free windows list $windows.
+                # put number 1,3,5,... from $windows to file1
+                # put number 2,4,6,... from $windows to file2
+                let numfile=2-number%2
+            else
+               numfile=1
+            fi
+            echo $node $nodeid $window >> $SWTBLDATAFILE.${numfile}
+            let number=number-1
+        done
+        node=
+    fi
+done
+
+numFile=1
+while [ $numFile -le $SWTBL_WINDOW_COUNT ]
+do
+    if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+            reorder_file_based_on_task_geom $SWTBLDATAFILE.${numFile} "sort"
+                if [ "$?" != "0" ]; then
+                    echo "Error in reorder_file_based_on_task_geom \"$SWTBLDATAFILE.${numFile}\" \"sort\", Exiting ..."
+                        export exststat=1
+                        my_exit
+            fi
+        fi
+        echo $ncpus $$ $device_type > $SWTBLDATAFILE.tmp
+        cat $SWTBLDATAFILE.${numFile} >>$SWTBLDATAFILE.tmp
+        mv -f $SWTBLDATAFILE.tmp $SWTBLDATAFILE.${numFile}
+
+        let numFile=numFile+1
+done
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: Before swtbl_api -L to load the switch table ..." >> $POE_ERRFILE
+fi
+# call swtbl_api -L to load the switch table
+if [ "$POEJOB_REXEC" = "poe" ]; then
+    unset_all_mp_env
+    $LSF_POE_WRAPPER poe $LSF_BINDIR/swtbl_api -L $SWTBL_DATA_FILE -euilib ip -hfile $ALLHOSTS -procs $nnodes -stdoutmode ordered >>$POE_ERRFILE 2>&1 < /dev/null
+    ret=$?
+    restore_all_mp_env
+else
+    $LSF_BINDIR/blaunch -u $ALLHOSTS $LSF_BINDIR/swtbl_api -L $SWTBL_DATA_FILE >>$POE_ERRFILE 2>&1 < /dev/null
+    ret=$?
+fi
+
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: After swtbl_api -L to load the switch table ..." >> $POE_ERRFILE
+fi
+
+if [ $ret -ne 0 ] ; then
+    echo "`date` [poejob]: swtbl_api -L failed. Unloading the loaded adapter windows ... " >>$POE_ERRFILE
+    swtbl_unload "-c" "$SWTBL_DATA_FILE" "$ALLHOSTS"
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: After unloading the adapter windows due to errors in swtbl_api -L ..." >>$POE_ERRFILE
+    fi
+    let retry=retry+1
+    sleep 5
+else
+    #
+    # load successful, set this flag, signal handler will use
+    # swbl_clean_table
+    #
+    LOAD_OK="y"; export LOAD_OK
+    break
+fi
+done # end of retry
+
+
+if [ "$LOAD_OK" != "y" ]; then
+        echo "`date` [poejob]: swtbl_api -L failed after $retry attempts. Requeue the job ... " >>$POE_ERRFILE
+        requeue_exit
+fi
+
+# swtbl_poe requires "." to be in the PATH
+PATH=$PATH:.; export PATH
+
+# swtbl_poe will read SWTBL_DATA_FILE and use the
+# switch table file constructed by this script
+export SWTBL_DATA_FILE
+
+echo "`date` [poejob]: calling swtbl_poe $APP_NAME $SWTBL_APP_ARGS $SWTBL_POE_ARGS" >> $POE_ERRFILE
+
+# call swtbl_poe APP_NAME to run the poe job
+swtbl_poe $APP_NAME 2>>$POE_JOB_ERRFILE
+exstat=$?
+
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo " `date` [poejob]: After calling swtbl_poe $APP_NAME $SWTBL_APP_ARGS $SWTBL_POE_ARGS" >> $POE_ERRFILE
+fi
+
+# Print out the captured error messages in prevoius line to stderr
+# Which will be shown up in error file of bsub -e option
+# Also append the error messages to POE_ERRFILE to keep backword compatibility
+if [ -f "$POE_JOB_ERRFILE" ]; then
+    cat $POE_JOB_ERRFILE 1>&2
+    cat $POE_JOB_ERRFILE >> $POE_ERRFILE
+    rm -rf $POE_JOB_ERRFILE
+fi
+
+# call swtbl_api -c to unload the switch table
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: Before call swtbl_api -c to unload the switch table ..." >> $POE_ERRFILE
+fi
+
+swtbl_unload "-c" "$SWTBL_DATA_FILE" "$ALLHOSTS"
+
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: After call swtbl_api -c to unload the switch table ..." >> $POE_ERRFILE
+fi
+
+if [ $exstat -ne 0 ] ; then
+    echo "`date` [poejob]: swtbl_poe $APP_NAME exited with $exstat ... " >>$POE_ERRFILE
+fi
+
+my_exit
+}
+
+#
+# poejob_ntbl ()
+# poejob_ntbl will launch a poe parallel job in user space mode
+# using ntbl_ API families. The communication will be through
+# Federation switches.
+#
+
+poejob_ntbl ()
+{
+LSNTBL_PATH="$LSF_BINDIR"; export LSNTBL_PATH
+LOAD_OK="n"; export LOAD_OK
+
+#
+# Now remove any arguments that would affect LSF batch
+# i.e., -hostfile, -hfile, -procs, -resd
+#
+# Also set env vars based on command line options.
+#
+
+while [ $# -gt 0 ]
+do
+        case $1 in
+
+        -hostfile | -hfile | -procs | -resd)
+            # User's settings are ignored.
+            # poejob will set the above options.
+            shift 2
+            ;;
+        -euilib)
+            MP_EUILIB=$2; export MP_EUILIB
+            JOBCMD="$JOBCMD $1 $2"
+            shift 2
+            ;;
+        -msg_api)
+            MP_MSG_API=$2; export MP_MSG_API
+            JOBCMD="$JOBCMD $1 $MP_MSG_API"
+            shift 2
+            ;;
+        -cmdfile)
+            MP_CMDFILE=$2
+            export MP_CMDFILE
+            shift 2
+            ;;
+        -use_bulk_xfer)
+            MP_USE_BULK_XFER=$2
+            export MP_USE_BULK_XFER
+            shift 2
+            ;;
+        -rcxt_blks)
+            MP_RCXT_BLKS=$2
+            export MP_RCXT_BLKS
+            shift 2
+            ;;
+        *)
+            JOBCMD="$JOBCMD $1"
+            shift
+            ;;
+        esac
+done
+
+if [ "$MP_USE_BULK_XFER" = "yes" -o "$MP_USE_BULK_XFER" = "YES" ]; then
+    if [ "$MP_RCXT_BLKS" = "" ]; then
+        MP_RCXT_BLKS=1
+        export MP_RCXT_BLKS
+    fi
+fi
+
+_jobCmd2=""
+if [ -n "$MP_CMDFILE" ]; then
+    _cmdfile=$MP_CMDFILE
+    if [ ! -f "${_cmdfile}" ]; then
+        echo "`date` [poejob]: Cannot find MP_CMDFILE <${_cmdfile}>. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+    _newcmdfile=$MP_CMDFILE.$UNIQUE_ID; export _newcmdfile
+    touch $_newcmdfile
+    if [ ! -f "${_newcmdfile}" ]; then
+        echo "`date` [poejob]: Cannot create temporary command file ${_newcmdfile}. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+    exec 3<&0 <$_cmdfile
+    while read LINE
+    do
+        #
+        # Insert TS
+        #
+        insert_lsntbl_run=""
+        if [ "$MP_EUILIB" = "us" ]; then
+            insert_lsntbl_run="$LSNTBL_PATH/lsntbl_run"
+        fi
+        if [ -n "$LSF_TS_OPTIONS" ]; then
+            echo "$insert_lsntbl_run $LSF_TASKSTARTER $LSF_TS_OPTIONS $LINE" >> $_newcmdfile
+        else
+            echo "$insert_lsntbl_run $LINE" >> $_newcmdfile
+        fi
+    done
+    exec 0<&3 3<&-
+    MP_CMDFILE="$_newcmdfile"; export MP_CMDFILE
+    _jobCmd2="$JOBCMD -cmdfile $_newcmdfile"
+    echo "Your command file $MP_CMDFILE looks like " >> $POE_ERRFILE
+    cat $MP_CMDFILE >> $POE_ERRFILE
+fi
+
+if [ "$MP_EUILIB" = "ip" ] ; then
+    # if -cmdfile/MP_CMDFILE is set
+    # TS has been inserted to the cmd file. Therefore,
+    # only run JOBCMD which is supposed to be
+    # poe options
+    #
+    if [ -n "$LSF_TS_OPTIONS" -a x"$MP_CMDFILE" = "x" ]; then
+        COMMANDLINE="$LSF_TASKSTARTER $LSF_TS_OPTIONS $JOBCMD"
+    else
+        COMMANDLINE="$_jobCmd2"
+    fi
+    # Run poe job and save exit status
+    runit_poe
+    my_exit
+fi
+#
+#set NTBL specific env vars
+#  NTBL_WINDOW_COUNT will be hard-coded to 2
+#      (sni0 and sni1 pair for each task)
+#
+# MP_CHILD will be set by PMD
+
+#job_key must be greater than 0 and less than 0xFFF0
+if [ -n "$LSB_JOBINDEX" ]; then
+    let NTBL_JOB_KEY=LSB_JOBID+LSB_JOBINDEX+$$
+    let NTBL_JOB_KEY=NTBL_JOB_KEY%65519+1
+    export NTBL_JOB_KEY
+else
+    let NTBL_JOB_KEY=LSB_JOBID+$$
+    let NTBL_JOB_KEY=NTBL_JOB_KEY%65519+1
+    export NTBL_JOB_KEY
+fi
+# Solution 63992: support mpi,lapi mixed type.
+# we need pair of free windows for mpi and another for lapi.
+
+RESULT="${HOME}/.result.${UNIQUE_ID}"
+SNI0DATAFILE=${HOME}/.sni0.${UNIQUE_ID}
+SNI1DATAFILE=${HOME}/.sni1.${UNIQUE_ID}
+TMP_SN0=${HOME}/.tmp_sni0.${UNIQUE_ID}; export TMP_SN0
+TMP_SN1=${HOME}/.tmp_sni1.${UNIQUE_ID}; export TMP_SN1
+
+# Solution 63992: support mpi,lapi mixed type.
+# we need pair of free windows for mpi and another for lapi.
+if [ "$MP_MSG_API" = "MPI,LAPI" -o "$MP_MSG_API" = "mpi,lapi" -o "$MP_MSG_API" = "LAPI,MPI"  -o "$MP_MSG_API" = "lapi,mpi" ]
+then
+    NTBL_WINDOW_PAIR=2; export NTBL_WINDOW_PAIR
+    SNI0_NTBL_DATA_FILE="${SNI0DATAFILE}.1,${SNI0DATAFILE}.2"
+    export SNI0_NTBL_DATA_FILE  # used by ntbl_api -luc
+    SNI1_NTBL_DATA_FILE="${SNI1DATAFILE}.1,${SNI1DATAFILE}.2"
+    export SNI1_NTBL_DATA_FILE  # used by ntbl_api -luc
+else
+    NTBL_WINDOW_PAIR=1; export NTBL_WINDOW_PAIR
+    SNI0_NTBL_DATA_FILE="${SNI0DATAFILE}.1"
+    export SNI0_NTBL_DATA_FILE  # used by ntbl_api -luc
+    SNI1_NTBL_DATA_FILE="${SNI1DATAFILE}.1"
+    export SNI1_NTBL_DATA_FILE  # used by ntbl_api -luc
+fi
+NTBL_WINDOW_COUNT=2; export NTBL_WINDOW_COUNT
+retry=5
+while [ $retry -gt 0 ]
+do
+    #
+    # Prepare the NTBL_WINDOW_DATA env var
+    # for each task, we need a pair (sni0-sni1) on the node where this task
+    # runs. This file must be sorted based on MP_CHILD
+    #
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: Before calling lsntbl_windows ..." >> $POE_ERRFILE
+    fi
+    if [ "$POEJOB_REXEC" = "poe" ]; then
+        unset_all_mp_env
+
+        $LSF_POE_WRAPPER poe $LSNTBL_PATH/lsntbl_windows -resd no -labelio no -euilib ip -hfile $ALLHOSTS -procs $nnodes -stdoutmode ordered > ${RESULT} < /dev/null
+        ret="$?"
+
+        restore_all_mp_env
+    else
+        $LSF_BINDIR/blaunch -u $ALLHOSTS $LSNTBL_PATH/lsntbl_windows > ${RESULT} < /dev/null
+        ret="$?"
+    fi
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: After calling lsntbl_windows ..." >> $POE_ERRFILE
+    fi
+
+
+    if [ "$ret" != "0" ]; then
+        echo "`date` [poejob]: Cannot determine free ntbl_windows on all selected nodes. Exiting ..." | tee -a $POE_ERRFILE
+        export exstat=1
+        my_exit
+    fi
+
+    #
+    # construct the
+    # sni0.jobkey file and sni1.jobkey file
+    # each includes sni free windows on all nodes
+    #
+    rm -f ${SNI0DATAFILE} ${SNI1DATAFILE}
+    if [ "$POEJOB_REXEC" = "poe" ]; then
+        grep sni0 ${RESULT} | cut -f4- -d' ' > ${SNI0DATAFILE}
+        grep sni1 ${RESULT} | cut -f4- -d' ' > ${SNI1DATAFILE}
+    else
+        grep sni0 ${RESULT} | sort -n | cut -f4- -d' ' > ${SNI0DATAFILE}
+        grep sni1 ${RESULT} | sort -n | cut -f4- -d' ' > ${SNI1DATAFILE}
+    fi
+
+    if [ $NTBL_WINDOW_PAIR -eq 2 ]; then
+       split_data_file ${SNI0DATAFILE}
+       split_data_file ${SNI1DATAFILE}
+    else
+        cat ${SNI0DATAFILE} > ${SNI0DATAFILE}.1
+        cat ${SNI1DATAFILE} > ${SNI1DATAFILE}.1
+   fi
+
+numFile=1
+while [ $numFile -le $NTBL_WINDOW_PAIR ]
+do
+    #
+    # Construct NTBL_WINDOW_DATA HOST_FILE based on LSB_PJL_TASK_GEOMETRY
+    #
+    if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+        reorder_file_based_on_task_geom "${SNI0DATAFILE}.${numFile}" "sort"
+        if [ "$?" != "0" ]; then
+            echo "`date` [poejob]: Error in reorder_file_based_on_task_geom \"${SNI0_NTBL_DATA_FILE}\" \"sort\", Exit ..."
+            export exstat=1
+            my_exit
+        fi
+        reorder_file_based_on_task_geom "${SNI1DATAFILE}.${numFile}" "sort"
+        if [ "$?" != "0" ]; then
+            echo "`date` [poejob]: Error in reorder_file_based_on_task_geom \"${SNI1_NTBL_DATA_FILE}\" \"sort\", Exit ..."
+            export exstat=1
+            my_exit
+        fi
+    fi
+
+    num_sni0=`cat ${SNI0DATAFILE}.${numFile} | wc -l`
+    num_sni0=`echo $num_sni0`
+    if [ "$num_sni0" -ne "$MP_PROCS" ]; then
+        echo "`date` [poejob]: Cannot find enough ntbl windows on sni0. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+
+    num_sni1=`cat ${SNI1DATAFILE}.${numFile} | wc -l`
+    num_sni1=`echo $num_sni1`
+    if [ "$num_sni1" -ne "$MP_PROCS" ]; then
+        echo "`date` [poejob]: Cannot find enough ntbl windows on sni1. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+
+    NTBL_WINDOW_DATA=""
+    cat ${SNI0DATAFILE}.${numFile} | awk '{printf $2",sn0 "}' > $TMP_SN0
+    cat ${SNI1DATAFILE}.${numFile} | awk '{printf $2",sn1 "}' > $TMP_SN1
+
+    NTBL_WINDOW_DATA=`$LSF_BINDIR/lsntbl_genNtblWinData $TMP_SN0 $TMP_SN1`
+
+    rm -f $TMP_SN0 $TMP_SN1
+    rm -f $WINFILE.{numFile}
+    echo $NTBL_WINDOW_DATA > $WINFILE.${numFile}
+    let numFile=numFile+1
+done
+    rm -f ${RESULT}
+
+    NTBLHOSTFILE=$ALLHOSTS
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: Before calling lsntbl_api ..." >> $POE_ERRFILE
+    fi
+    if [ "$POEJOB_REXEC" = "poe" ]; then
+        # unset all MP_ environmental variables
+
+        unset_all_mp_env
+
+        #
+        # load the table through lsntbl_api, and then use lsntbl_run to launch the job
+        #
+        $LSF_POE_WRAPPER poe $LSNTBL_PATH/lsntbl_api -l -resd no -euilib ip -hfile $NTBLHOSTFILE -procs $nnodes -stdoutmode ordered < /dev/null
+        ret="$?"
+
+        restore_all_mp_env
+    else
+        $LSF_BINDIR/blaunch -u $NTBLHOSTFILE $LSNTBL_PATH/lsntbl_api -l < /dev/null
+        ret="$?"
+    fi
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: After calling lsntbl_api ..." >>$POE_ERRFILE
+    fi
+
+    if [ "$ret" != "0" ]; then
+        echo "`date` [poejob]: Cannot load ntbl_windows on all selected nodes ..." | tee -a $POE_ERRFILE
+
+        lsntbl_unload "-u" "$NTBLHOSTFILE"
+        export exstat=1
+        if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+            echo "`date` [poejob]: after lsntbl_api -u due to errors in lsntbl_api -l ..." >> $POE_ERRFILE
+        fi
+    else
+        LOAD_OK="y"; export LOAD_OK
+        export exstat=0
+        break
+    fi
+    let retry=retry-1
+    sleep 5
+done
+
+if [ "$exstat" != "0" ]; then
+    echo "`date` [poejob]: Cannot load ntbl_windows on all selected nodes. Job will be requeued ..." | tee -a $POE_ERRFILE
+    requeue_exit
+fi
+
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: Before starting real job ..." >> $POE_ERRFILE
+fi
+if [ -n "$MP_CMDFILE" ]; then
+    #
+    # if -cmdfile/MP_CMDFILE is set
+    # TS has been inserted to the cmd file. Therefore,
+    # only run JOBCMD which is supposed to be
+    # poe options
+    #
+    $LSF_POE_WRAPPER poe $JOBCMD
+else
+    if [ -n "$LSF_TS_OPTIONS" ]; then
+        $LSF_POE_WRAPPER poe $LSNTBL_PATH/lsntbl_run $LSF_TASKSTARTER $LSF_TS_OPTIONS $JOBCMD
+    else
+        $LSF_POE_WRAPPER poe $LSNTBL_PATH/lsntbl_run $JOBCMD
+    fi
+fi
+exstat=$?
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: job is finished ..." >>$POE_ERRFILE
+    echo "`date` [poejob]: Before unloading ..." >>$POE_ERRFILE
+fi
+
+#
+# unload the table through lsntbl_api
+#
+lsntbl_unload "-u" "$NTBLHOSTFILE"
+ret=$?
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: After unloading ..." >>$POE_ERRFILE
+fi
+
+if [ "$ret" != "0" ]; then
+    echo "`date` [poejob]: Cannot unload ntbl_windows on all selected nodes. Exiting ..." | tee -a $POE_ERRFILE
+    export exstat=1
+    my_exit
+fi
+
+#
+# clean up and exit.
+#
+if [ $exstat -ne 0 ] ; then
+    echo "`date` [poejob]: poejob: poe lsntbl_run $APP_NAME exited with $exstat ... " >>$POE_ERRFILE
+fi
+
+my_exit
+} # poejob_ntbl
+
+#
+# poejob_nrt ()
+# poejob_nrt will launch a poe parallel job in user space mode
+# using nrt_ API families.
+# The communication will be through Infiniband.
+#
+
+poejob_nrt ()
+{
+
+#------------------------nrt script debug begins------------------------------------
+#set -x
+#------------------------nrt script debug ends---------------------------------------
+MP_DEVTYPE=ib # required for selecting the Infiniband interconnect
+export MP_DEVTYPE
+
+_adapterArray=` lsdev -Cc adapter | /bin/grep -i available | grep iba | awk '{print $1}'`
+_adapter_array=""
+for iba in ${_adapterArray}
+do
+    _adapter_array=" ${_adapter_array} ${iba} "
+done
+export _adapter_array
+
+LSNRT_PATH="${LSF_BINDIR}"; export LSNRT_PATH
+LOAD_OK="n"; export LOAD_OK
+
+# Initialize MP_EUIDEVICE MP_INSTANCES MP_MSG_API
+if [ "$MP_EUIDEVICE" = "" ]; then
+    MP_EUIDEVICE="sn_all" # for user space job, sn_all is default, for ip job, it does not matter
+    export MP_EUIDEVICE
+fi
+
+if [ "$MP_INSTANCES" = "" ]; then
+    MP_INSTANCES=1
+    export MP_INSTANCES
+fi
+
+if [ "$MP_MSG_API" = "" ]; then
+    MP_MSG_API="mpi"
+    export MP_MSG_API
+fi
+
+#if [ "$MP_RC_USE_LMC" = "" ]; then
+#    MP_RC_USE_LMC="no"
+#    export MP_RC_USE_LMC
+#fi
+
+#
+# Now remove any arguments that would affect LSF batch
+# i.e., -hostfile, -hfile, -procs, -resd
+#
+# Also set env vars based on command line options.
+#
+
+while [ $# -gt 0 ]
+do
+        case $1 in
+
+        -hostfile | -hfile | -procs | -resd)
+            # User's settings are ignored.
+            # poejob will set the above options.
+            shift 2
+            ;;
+        -euilib)
+            MP_EUILIB=$2; export MP_EUILIB
+            JOBCMD="$JOBCMD $1 $2"
+            shift 2
+            ;;
+        -msg_api)
+            MP_MSG_API=$2; export MP_MSG_API
+            JOBCMD="$JOBCMD $1 $MP_MSG_API"
+            shift 2
+            ;;
+        -cmdfile)
+            MP_CMDFILE=$2
+            export MP_CMDFILE
+            shift 2
+            ;;
+        -use_bulk_xfer)
+            MP_USE_BULK_XFER=$2
+            export MP_USE_BULK_XFER
+            shift 2
+            ;;
+        -rcxt_blks)
+            MP_RCXT_BLKS=$2
+            export MP_RCXT_BLKS
+            shift 2
+            ;;
+        -instances)
+            MP_INSTANCES=$2
+            export MP_INSTANCES
+            shift 2
+            ;;
+        -euidevice)
+            MP_EUIDEVICE=$2
+            export MP_EUIDEVICE
+            shift 2
+            ;;
+        -rc_use_lmc)
+            MP_RC_USE_LMC=$2
+            export MP_RC_USE_LMC
+            shift 2
+            ;;
+        *)
+            JOBCMD="$JOBCMD $1"
+            shift
+            ;;
+        esac
+done
+
+LSF_MP_INSTANCES=$MP_INSTANCES # we might use poe to query/load/unload, remember the job setting.
+export LSF_MP_INSTANCES
+
+LSF_MP_RC_USE_LMC=$MP_RC_USE_LMC  # we might use poe to query/load/unload, remember the job setting.
+export LSF_MP_RC_USE_LMC
+
+if [ "$MP_USE_BULK_XFER" = "yes" -o "$MP_USE_BULK_XFER" = "YES" ]; then
+    if [ "$MP_RCXT_BLKS" = "" ]; then
+        MP_RCXT_BLKS=1
+        export MP_RCXT_BLKS
+    fi
+fi
+
+_jobCmd2=""
+if [ -n "$MP_CMDFILE" ]; then
+    _cmdfile=$MP_CMDFILE
+    if [ ! -f "${_cmdfile}" ]; then
+        echo "`date` [poejob]: Cannot find MP_CMDFILE <${_cmdfile}>. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+    _newcmdfile=${MP_CMDFILE}.${UNIQUE_ID}; export _newcmdfile
+    touch $_newcmdfile
+    if [ ! -f "${_newcmdfile}" ]; then
+        echo "`date` [poejob]: Cannot create temporary command file ${_newcmdfile}. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+    exec 3<&0 <$_cmdfile
+    while read LINE
+    do
+        #
+        # Insert TS
+        #
+        insert_lsnrt_run=""
+        if [ "$MP_EUILIB" = "us" ]; then
+            insert_lsnrt_run="$LSNRT_PATH/lsnrt_run"
+        fi
+        if [ -n "$LSF_TS_OPTIONS" ]; then
+            echo "$insert_lsnrt_run $LSF_TASKSTARTER $LSF_TS_OPTIONS $LINE" >> $_newcmdfile
+        else
+            echo "$insert_lsnrt_run $LINE" >> $_newcmdfile
+        fi
+    done
+    exec 0<&3 3<&-
+    MP_CMDFILE="$_newcmdfile"; export MP_CMDFILE
+    _jobCmd2="$JOBCMD -cmdfile $_newcmdfile"
+    echo "Your command file $MP_CMDFILE looks like " >> $POE_ERRFILE
+    cat $MP_CMDFILE >> $POE_ERRFILE
+fi
+
+if [ "$MP_EUILIB" = "ip" ] ; then
+    # if -cmdfile/MP_CMDFILE is set
+    # TS has been inserted to the cmd file. Therefore,
+    # only run JOBCMD which is supposed to be
+    # poe options
+    #
+    if [ -n "$LSF_TS_OPTIONS" -a x"$MP_CMDFILE" = "x" ]; then
+        COMMANDLINE="$LSF_TASKSTARTER $LSF_TS_OPTIONS $JOBCMD"
+    else
+        COMMANDLINE="$_jobCmd2"
+    fi
+    # Run poe job and save exit status
+    runit_poe
+    my_exit
+fi
+
+# find the number of ports on each adapter
+# assume it's the same across all adapters on all nodes
+_number_of_ports_on_each_adapter=`NRT_DEVICE="iba0"; export NRT_DEVICE; nrt_api -s | grep "number of ports:" | awk '{print $4}'`
+export _number_of_ports_on_each_adapter
+
+_number_of_networks=0
+for adapter in ${_adapter_array}
+do
+    NRT_DEVICE="$adapter"
+    export NRT_DEVICE
+    network_id=`nrt_api -s "$adapter" | grep "network id:" | awk 'BEGIN{FS = "network id:"} {print $2}'`
+    for nid in $network_id
+    do
+        tmp=`echo " ${_network_id_array} " |grep " ${nid} "`
+        if [ "$tmp" = "" ]; then
+            _network_id_array=" ${_network_id_array} ${nid} "
+            let _number_of_networks=${_number_of_networks}+1
+        fi
+    done
+done
+export _number_of_networks
+export _network_id_array
+
+if [ "$MP_EUIDEVICE" = "sn_single" ]; then
+    let NRT_WINDOW_COUNT=${MP_INSTANCES} # the number of instances used by each task
+else
+    let NRT_WINDOW_COUNT=${MP_INSTANCES}*${_number_of_networks}
+fi
+export NRT_WINDOW_COUNT
+
+if [ -z "${_number_of_ports_on_each_adapter}" ]; then
+    echo "Cannot find available ports on nrt adapters. Exiting ..."
+    exit 1    
+fi
+
+if [ ${_number_of_ports_on_each_adapter} -lt 1 ]; then
+    echo "Cannot find available ports on nrt adapters. Exiting ..."
+    exit 1    
+fi
+
+# MP_CHILD will be set by PMD
+#job key must be greater than 0 and less than 0xFFF0
+if [ -n "$LSB_JOBINDEX" ]; then
+    let NRT_JOB_KEY=LSB_JOBID+LSB_JOBINDEX+$$
+    let NRT_JOB_KEY=NRT_JOB_KEY%65519+1
+    export NRT_JOB_KEY
+else
+    let NRT_JOB_KEY=LSB_JOBID+$$
+    let NRT_JOB_KEY=NRT_JOB_KEY%65519+1
+    export NRT_JOB_KEY
+fi
+
+# files needed by poe_nrt binary
+NRT_WINDOW_DATA_FILE_MPI="${POE_DATAFILE_DIR}/nrt_window_data_mpi" # for env var NRT_WINDOW_DATA
+export NRT_WINDOW_DATA_FILE_MPI
+NRT_WINDOW_DATA_FILE_LAPI="${POE_DATAFILE_DIR}/nrt_window_data_lapi"
+export NRT_WINDOW_DATA_FILE_LAPI
+NRT_DATA_FILE_MPI="datafile_mpi.${UNIQUE_ID}" # for loading table by nrt_api
+export NRT_DATA_FILE_MPI
+NRT_DATA_FILE_LAPI="datafile_lapi.${UNIQUE_ID}"
+export NRT_DATA_FILE_LAPI
+
+# Solution 63992: support mpi,lapi mixed type.
+# we need pair of free windows for mpi and another for lapi.
+if [ "$MP_MSG_API" = "MPI,LAPI" -o "$MP_MSG_API" = "mpi,lapi" -o "$MP_MSG_API" = "LAPI,MPI"  -o "$MP_MSG_API" = "lapi,mpi" ]
+then
+    NRT_WINDOW_PAIR=2
+    export NRT_WINDOW_PAIR
+else
+    NRT_WINDOW_PAIR=1
+    export NRT_WINDOW_PAIR
+fi
+
+retry=5
+while [ $retry -gt 0 ]
+do
+    #
+    # Prepare the NRT_WINDOW_DATA env var
+    #
+    rm -f ${NRT_WINDOW_DATA_FILE_MPI} ${NRT_WINDOW_DATA_FILE_LAPI} 
+    rm -f ${POE_DATAFILE_DIR}/${NRT_DATA_FILE_MPI} ${POE_DATAFILE_DIR}/${NRT_DATA_FILE_LAPI}
+    rm -f ${POE_DATAFILE_DIR}/*.free_map.${UNIQUE_ID}
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: Before calling lsnrt_windows $_adapter_array ..." >> $POE_ERRFILE
+    fi
+    if [ "$POEJOB_REXEC" = "poe" ]; then
+        unset_all_mp_env
+
+        $LSF_POE_WRAPPER poe $LSNRT_PATH/lsnrt_windows $_adapter_array -resd no -labelio no -euilib ip -hfile $ALLHOSTS -procs $nnodes -stdoutmode ordered -instances 1 < /dev/null
+        ret="$?"
+
+        restore_all_mp_env
+    else
+        $LSF_BINDIR/blaunch -u $ALLHOSTS $LSNRT_PATH/lsnrt_windows $_adapter_array > ${RESULT} < /dev/null
+        ret="$?"
+    fi
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: After calling lsnrt_windows ..." >> $POE_ERRFILE
+    fi
+    # prepare the data file by calling poe_nrt binary
+
+    if [ "${POE_NRT_DEBUG}" != "Y" -a "${POE_NRT_DEBUG}" != "y" ]; then
+        # reset debug level
+        OLD_LSF_PBSUB_DEBUG="${LSF_PBSUB_DEBUG}"
+        export OLD_LSF_PBSUB_DEBUG
+        OLD_NRT_DEBUG="${NRT_DEBUG}"
+        export OLD_NRT_DEBUG
+        LSF_PBSUB_DEBUG=""
+        export LSF_PBSUB_DEBUG
+        NRT_DEBUG="N"
+        export NRT_DEBUG
+    fi
+     
+    if [ "${MP_MSG_API}" = "MPI" -o "${MP_MSG_API}" = "mpi" -o "${MP_MSG_API}" = "LAPI" -o "${MP_MSG_API}" = "lapi" ]; then
+        $LSF_BINDIR/poe_nrt "${POE_DATAFILE_DIR}/${NRT_DATA_FILE_MPI}"
+    elif [ "$MP_MSG_API" = "MPI,LAPI" -o "$MP_MSG_API" = "mpi,lapi" -o "$MP_MSG_API" = "LAPI,MPI"  -o "$MP_MSG_API" = "lapi,mpi" ]; then
+        $LSF_BINDIR/poe_nrt "${POE_DATAFILE_DIR}/${NRT_DATA_FILE_MPI}" "${POE_DATAFILE_DIR}/${NRT_DATA_FILE_LAPI}"
+    fi
+    ret="$?"
+ 
+    if [ "${POE_NRT_DEBUG}" != "Y" -a "${POE_NRT_DEBUG}" != "y" ]; then
+        # reset debug level
+        LSF_PBSUB_DEBUG="${OLD_LSF_PBSUB_DEBUG}"
+        export LSF_PBSUB_DEBUG
+        NRT_DEBUG="${OLD_NRT_DEBUG}"
+        export NRT_DEBUG
+    fi
+
+    if [ "$ret" != 0 ]; then
+        let retry=retry-1
+        sleep 2
+    else
+        break
+    fi
+done
+
+if [ "$ret" != "0" ]; then
+    echo "`date` [poejob]: Cannot determine free nrt_windows on all selected nodes. Exiting ..." | tee -a $POE_ERRFILE
+    export exstat=1
+    my_exit
+fi
+
+# if sn_all, split the raw free window file to nid.datafile_[mpi|lapi].${UNIQUE_ID}
+# for nrt_api to load/unload/clean
+table_size=`cat ${POE_DATAFILE_DIR}/${NRT_DATA_FILE_MPI} | wc -l`
+export table_size
+
+if [ "$MP_EUIDEVICE" = "sn_single" ]; then
+    NRT_API_FILE_LIST="${NRT_DATA_FILE_MPI}"
+else
+    NRT_API_FILE_LIST=`cat ${POE_DATAFILE_DIR}/${NRT_DATA_FILE_MPI} | awk '
+BEGIN {nrt_api_file_list="" }
+{
+    line=$0
+    size = split($0, a, " ");
+    print line >> poe_datafile_dir"/"a[2]".datafile_mpi."unique_id 
+    if (match(nrt_api_file_list, a[2]".datafile_mpi."unique_id) == 0) { 
+        if (length(nrt_api_file_list) == 0) {
+            nrt_api_file_list=a[2]".datafile_mpi."unique_id
+        } else {
+            nrt_api_file_list=nrt_api_file_list " " a[2]".datafile_mpi."unique_id
+        }
+    } 
+}
+END {print nrt_api_file_list }' poe_datafile_dir=${POE_DATAFILE_DIR} unique_id=${UNIQUE_ID}`
+fi
+
+if [ "$MP_MSG_API" = "MPI,LAPI" -o "$MP_MSG_API" = "mpi,lapi" -o "$MP_MSG_API" = "LAPI,MPI"  -o "$MP_MSG_API" = "lapi,mpi" ]
+then
+    if [ "$MP_EUIDEVICE" = "sn_single" ]; then
+        NRT_API_FILE_LIST="${NRT_DATA_FILE_LAPI}"
+         # table size is same
+    else 
+        NRT_LAPI_FILE_LIST=`cat ${POE_DATAFILE_DIR}/${NRT_DATA_FILE_LAPI} | awk '
+BEGIN {nrt_api_file_list="" }
+{
+    line=$0
+    size = split($0, a, " ");
+    print line >> poe_datafile_dir"/"a[2]".datafile_lapi."unique_id 
+    if (match(nrt_api_file_list, a[2]".datafile_lapi."unique_id) == 0) { 
+        if (length(nrt_api_file_list) == 0) {
+            nrt_api_file_list=a[2]".datafile_lapi."unique_id
+        } else {
+            nrt_api_file_list=nrt_api_file_list " " a[2]".datafile_lapi."unique_id
+        }
+    } 
+}
+END {print nrt_api_file_list }' poe_datafile_dir=${POE_DATAFILE_DIR} unique_id=${UNIQUE_ID}`
+    fi
+    NRT_API_FILE_LIST="${NRT_API_FILE_LIST} ${NRT_LAPI_FILE_LIST}"
+fi
+export NRT_API_FILE_LIST
+
+retry=5
+while [ $retry -gt 0 ]
+do
+    rm -f ${RESULT}
+
+    NRTHOSTFILE=$ALLHOSTS
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: Before calling lsnrt_api ..." >> $POE_ERRFILE
+    fi
+    if [ "$POEJOB_REXEC" = "poe" ]; then
+        # unset all MP_ environmental variables
+
+        unset_all_mp_env
+
+        #
+        # load the table through lsnrt_api, and then use lsnrt_run to launch the job
+        #
+        $LSF_POE_WRAPPER poe $LSNRT_PATH/lsnrt_api -l -resd no -euilib ip -hfile $NRTHOSTFILE -procs $nnodes -stdoutmode ordered -instances 1 < /dev/null
+        ret="$?"
+
+        restore_all_mp_env
+    else
+        $LSF_BINDIR/blaunch -u $NRTHOSTFILE $LSNRT_PATH/lsnrt_api -l < /dev/null
+        ret="$?"
+    fi
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+        echo "`date` [poejob]: After calling lsnrt_api ..." >>$POE_ERRFILE
+    fi
+
+    if [ "$ret" != "0" ]; then
+        echo "`date` [poejob]: Cannot load nrt_windows on all selected nodes ..." | tee -a $POE_ERRFILE
+        lsnrt_unload "-u" "$NRTHOSTFILE"
+        export exstat=1
+        if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+            echo "`date` [poejob]: after lsnrt_api -u due to errors in lsnrt_api -l ..." >> $POE_ERRFILE
+        fi
+    else
+        LOAD_OK="y"; export LOAD_OK
+        export exstat=0
+        break
+    fi
+    let retry=retry-1
+    sleep 5
+done
+
+if [ "$exstat" != "0" ]; then
+    echo "`date` [poejob]: Cannot load nrt_windows on all selected nodes. Job will be requeued ..." | tee -a $POE_ERRFILE
+    requeue_exit
+fi
+
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: Before starting real job ..." >> $POE_ERRFILE
+fi
+
+if [ -n "$MP_CMDFILE" ]; then
+    #
+    # if -cmdfile/MP_CMDFILE is set
+    # TS has been inserted to the cmd file. Therefore,
+    # only run JOBCMD which is supposed to be
+    # poe options
+    #
+    $LSF_POE_WRAPPER poe $JOBCMD
+else
+    if [ -n "$LSF_TS_OPTIONS" ]; then
+        $LSF_POE_WRAPPER poe $LSNRT_PATH/lsnrt_run $LSF_TASKSTARTER $LSF_TS_OPTIONS $JOBCMD
+    else
+        $LSF_POE_WRAPPER poe $LSNRT_PATH/lsnrt_run $JOBCMD
+    fi
+fi
+exstat=$?
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: job is finished ..." >>$POE_ERRFILE
+    echo "`date` [poejob]: Before unloading ..." >>$POE_ERRFILE
+fi
+
+#
+# unload the table through lsnrt_api
+#
+lsnrt_unload "-u" "$NRTHOSTFILE"
+ret=$?
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: After unloading ..." >>$POE_ERRFILE
+fi
+
+if [ "$ret" != "0" ]; then
+    echo "`date` [poejob]: Cannot unload nrt_windows on all selected nodes. Exiting ..." | tee -a $POE_ERRFILE
+    export exstat=1
+    my_exit
+fi
+
+#
+# clean up and exit.
+#
+if [ $exstat -ne 0 ] ; then
+    echo "`date` [poejob]: poejob: poe lsnrt_run $APP_NAME exited with $exstat ... " >>$POE_ERRFILE
+fi
+
+my_exit
+} # poejob_nrt
+
+
+#
+# poejob_poe ()
+# poejob_poe will launch a poe parallel job in PE5.2 or above. 
+# Communications are through infiniband.
+# MP_RESD is set to poe so that poe itself will be responsible for
+# allocating/releasing adapter windows.
+# Set the MP_PROCS environment variable: set in main script
+# Create a host list file: created in main script
+# Set the MP_HOSTFILE environment variable: created in main script
+# Set the MP_RESD environment variable: set to "poe" in poejob_poe
+# Set the MP_EUILIB environment variable: default is "us" unless explicitely set to "ip"
+# Set the MP_EUIDEVICE environment variable: default is "sn_all" unless explicitely set otherwise 
+# Set the MP_DEVTYPE environment variable: set to ib in poejob_poe
+# Set the MP_MSG_API environment variable: default to "mpi" unless explicitely set otherwise
+# Unset the MP_RMPOOL environment variable because no Resource Manager is used
+#
+poejob_poe ()
+{
+
+#------------------------nrt script debug begins------------------------------------
+#set -x
+#------------------------nrt script debug ends---------------------------------------
+
+#
+# Now remove any arguments that would affect LSF batch
+# i.e., -hostfile, -hfile, -procs, -resd
+#
+# Also set env vars based on command line options.
+#
+ 
+while [ $# -gt 0 ]
+do
+        case $1 in
+
+        -hostfile | -hfile | -procs | -resd)
+            # User's settings are ignored.
+            # poejob will set the above options.
+            shift 2
+            ;;
+        -euilib)
+            MP_EUILIB=$2; export MP_EUILIB
+            JOBCMD="$JOBCMD $1 $2"
+            shift 2
+            ;;
+        -msg_api)
+            MP_MSG_API=$2; export MP_MSG_API
+            JOBCMD="$JOBCMD $1 $MP_MSG_API"
+            shift 2
+            ;;
+        -cmdfile)
+            MP_CMDFILE=$2
+            export MP_CMDFILE
+            shift 2
+            ;;
+        -use_bulk_xfer)
+            MP_USE_BULK_XFER=$2
+            export MP_USE_BULK_XFER
+            shift 2
+            ;;
+        -rcxt_blks)
+            MP_RCXT_BLKS=$2
+            export MP_RCXT_BLKS
+            shift 2
+            ;;
+        -instances)
+            MP_INSTANCES=$2
+            export MP_INSTANCES
+            shift 2
+            ;;
+        -euidevice)
+            MP_EUIDEVICE=$2
+            export MP_EUIDEVICE
+            shift 2
+            ;;
+        -rc_use_lmc)
+            MP_RC_USE_LMC=$2
+            export MP_RC_USE_LMC
+            shift 2
+            ;;
+        *)
+            JOBCMD="$JOBCMD $1"
+            shift
+            ;;
+        esac
+done
+
+MP_RESD="poe"
+export MP_RESD
+
+
+unset MP_RMPOOL
+export MP_RMPOOL
+
+if [ "$MP_USE_BULK_XFER" = "yes" -o "$MP_USE_BULK_XFER" = "YES" ]; then
+    if [ "$MP_RCXT_BLKS" = "" ]; then
+        MP_RCXT_BLKS=1
+        export MP_RCXT_BLKS
+    fi
+fi
+
+_jobCmd2=""
+if [ -n "$MP_CMDFILE" ]; then
+    _cmdfile=$MP_CMDFILE
+    if [ ! -f "${_cmdfile}" ]; then
+        echo "`date` [poejob]: Cannot find MP_CMDFILE <${_cmdfile}>. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+    _newcmdfile=${MP_CMDFILE}.${UNIQUE_ID}; export _newcmdfile
+    touch $_newcmdfile
+    if [ ! -f "${_newcmdfile}" ]; then
+        echo "`date` [poejob]: Cannot create temporary command file ${_newcmdfile}. Exiting ..."
+        export exstat=1
+        my_exit
+    fi
+    exec 3<&0 <$_cmdfile
+    while read LINE
+    do
+        if [ -n "$LSF_TS_OPTIONS" ]; then
+            echo "$LSF_TASKSTARTER $LSF_TS_OPTIONS $LINE" >> $_newcmdfile
+        else
+            echo "$LINE" >> $_newcmdfile
+        fi
+    done
+    exec 0<&3 3<&-
+    MP_CMDFILE="$_newcmdfile"; export MP_CMDFILE
+    _jobCmd2="$JOBCMD -cmdfile $_newcmdfile"
+    echo "Your command file $MP_CMDFILE looks like " >> $POE_ERRFILE
+    cat $MP_CMDFILE >> $POE_ERRFILE
+fi
+
+if [ "$MP_EUILIB" = "ip" ] ; then
+    # if -cmdfile/MP_CMDFILE is set
+    # TS has been inserted to the cmd file. Therefore,
+    # only run JOBCMD which is supposed to be
+    # poe options
+    #
+    if [ -n "$LSF_TS_OPTIONS" -a x"$MP_CMDFILE" = "x" ]; then
+        COMMANDLINE="$LSF_TASKSTARTER $LSF_TS_OPTIONS $JOBCMD"
+    else
+        COMMANDLINE="$_jobCmd2"
+    fi
+    unset MP_EUIDEVICE
+    export MP_EUIDEVICE
+    # Run poe job and save exit status
+    runit_poe
+    my_exit
+fi
+
+# user space jobs
+
+# MP_DEVTYPE is default to ib
+
+# Initialize MP_EUIDEVICE MP_INSTANCES MP_MSG_API
+if [ "$MP_EUIDEVICE" = "" ]; then
+    MP_EUIDEVICE="sn_all" # for user space job, sn_all is default, for ip job, it does not matter
+    export MP_EUIDEVICE
+fi
+
+if [ "$MP_INSTANCES" = "" ]; then
+    MP_INSTANCES=1
+    export MP_INSTANCES
+fi
+
+if [ "$MP_MSG_API" = ""  ]; then
+    MP_MSG_API="mpi"
+    export MP_MSG_API
+fi
+if [ -n "$MP_CMDFILE" ]; then
+    #
+    # if -cmdfile/MP_CMDFILE is set
+    # TS has been inserted to the cmd file. Therefore,
+    # only run JOBCMD which is supposed to be
+    # poe options
+    #
+    $LSF_POE_WRAPPER poe $JOBCMD
+else
+    if [ -n "$LSF_TS_OPTIONS" ]; then
+        $LSF_POE_WRAPPER poe $LSF_TASKSTARTER $LSF_TS_OPTIONS $JOBCMD
+    else
+        $LSF_POE_WRAPPER poe $JOBCMD
+    fi
+fi
+exstat=$?
+
+if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    echo "`date` [poejob]: job is finished ..." >>$POE_ERRFILE
+fi
+
+my_exit
+} # poejob_poe
+
+#
+# The shell script start from here
+# main()
+#
+
+$LSB_TRAPSIGS
+trap 'poe_kill' 1 2 3 15 24 31
+
+_os_type=`uname`
+
+#Set the host.list.$$ in the current directory
+REQUEUE_EXIT_VALUES=133
+WINFILE="${HOME}/.windows.${UNIQUE_ID}"
+HOSTFILE="${HOME}/.host.list.${UNIQUE_ID}"
+ALLHOSTS="${HOME}/.all.hosts.${UNIQUE_ID}"
+SAVE_MP_ENV_FILE="./.mp_env_save.${UNIQUE_ID}"
+
+if [  -z "$LSF_PBSUB_DEBUG" ]; then
+    LSF_PBSUB_DEBUG=0
+    export LSF_PBSUB_DEBUG
+fi
+
+if [ "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+    POE_ERRFILE="./.poejob.${UNIQUE_ID}.log"; export POE_ERRFILE
+else
+    POE_ERRFILE="/dev/null"; export POE_ERRFILE
+fi
+POE_JOB_ERRFILE="./.poejob.err.${UNIQUE_ID}"
+LSF_TASKSTARTER="${LSF_BINDIR}/TaskStarter"; export LSF_TASKSTARTER
+
+if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+    if [ -f "${LSF_BINDIR}/pjllib.sh" ]; then
+        . ${LSF_BINDIR}/pjllib.sh
+    else
+        echo "Cannot find ${LSF_BINDIR}/pjllib.sh. Exit..."
+        exit 1
+    fi
+fi
+#
+# Generate ALLHOSTS file and HOSTFILE file
+#
+# ALLHOSTS file contains all host entries in
+# $LSB_MCPU_HOSTS.
+#
+# HOSTFILE file will expand the $LSB_MCPU_HOSTS
+# host entries will be repeated n times depending on
+# the value of tasks on this node specified
+# in $LSB_MCPU_HOSTS
+#
+
+#
+# Temporary files to be removed before exit
+#
+if [ -f $HOSTFILE ] ; then
+    rm $HOSTFILE
+fi
+
+if [ -f $ALLHOSTS ] ; then
+    rm $ALLHOSTS
+fi
+
+touch $HOSTFILE
+touch $ALLHOSTS
+
+if [ ! -f "$HOSTFILE" -o ! -f "$ALLHOSTS" ]; then
+    echo " Cannot create host files. Exiting ..." >> $POE_ERRFILE
+    exit 1
+fi
+
+output=`echo $LSB_MCPU_HOSTS | /bin/awk '
+BEGIN {counter1=0;counter2=0}
+{
+    size = split($0, a, " ");
+    for (i = 1; i <= size; i += 2) {
+        counter1 = counter1 + 1;
+        counter2 = counter2 + a[i + 1];
+        print a[i] > allhfile;
+        for (j = 0; j < a[i + 1]; ++j) {
+            print a[i] > hfile;
+        }
+    }
+}
+END { print counter1 " " counter2}' hfile=$HOSTFILE allhfile=$ALLHOSTS`
+nnodes=`echo $output | cut -f1 -d' '`
+ncpus=`echo $output | cut -f2 -d' '`
+
+if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+    reorder_file_based_on_task_geom "$HOSTFILE" "sort"
+    if [ "$?" != "0" ]; then
+        echo "Error in reorder_file_based_on_task_geom \"$HOSTFILE\" \"sort\", Exit ..."
+        my_exit
+    fi
+    # based on new re-ordered $HOSTFILE to re-construct NEW_LSB_MCPU_HOSTS
+    # which will be in the following format:
+    # host1 1 host2 1 ...expanded host list each with 1 task to reflect task geometry
+
+    NEW_LSB_MCPU_HOSTS=`cat $HOSTFILE | /bin/awk '
+BEGIN {b="" }
+{
+    size = split($0, host_list ," ");
+    for (i = 1; i <= size; i++) {
+        b=b" "host_list[i]" "1" "
+    }
+}
+END {print b}'`
+
+    if [ -z "${NEW_LSB_MCPU_HOSTS}" ]; then
+        echo "Failed to convert LSB_MCPU_HOSTS based on LSB_PJL_TASK_GEOMETRY, Exit ..."
+        my_exit
+    fi
+
+    if [ -n "$LSF_PBSUB_DEBUG" -a "$LSF_PBSUB_DEBUG" -gt 0 ]; then
+            echo "`date` [poejob]: LSB_PJL_TASK_GEOMETRY is ${LSB_PJL_TASK_GEOMETRY}..." >> $POE_ERRFILE
+            echo "`date` [poejob]: NEW_LSB_MCPU_HOSTS is ${NEW_LSB_MCPU_HOSTS} ..." >> $POE_ERRFILE
+    fi
+    export NEW_LSB_MCPU_HOSTS
+    LSB_MCPU_HOSTS="${NEW_LSB_MCPU_HOSTS}"
+    export LSB_MCPU_HOSTS
+fi
+
+#
+# Set poe specific environment variables
+# common to all
+#
+MP_PROCS=$ncpus; export MP_PROCS
+MP_HOSTFILE=$HOSTFILE; export MP_HOSTFILE
+MP_RESD="no"; export MP_RESD
+if [ "$MP_MSG_API" = "" ]; then
+   MP_MSG_API=mpi
+   export MP_MSG_API
+fi
+
+# determine the integration type
+# swtbl. ntbl, or nrt
+if [ "$_os_type" = "AIX" ]; then
+    _available_adapters=`lsdev -Cc adapter | /bin/grep -i available`
+    NRT_LIB_FILE="/usr/lib/libnrt.a"
+    NRT_NUM_IBA=`echo "${_available_adapters}" | /bin/grep iba |wc -l`
+else
+    NRT_NUM_IBA=1 #on linux, we assume POE over Infiniband
+    NRT_LIB_FILE="/usr/lib/libnrt.so"
+    NRT_LIB64_FILE="/usr/lib64/libnrt.so"
+fi
+
+NRT_NUM_IBA=`expr ${NRT_NUM_IBA}`
+LSF_MP_PROCS=$ncpus; export LSF_MP_PROCS
+
+if [ -f "${NRT_LIB_FILE}"  -o -f "${NRT_LIB64_FILE}" -a "${NRT_NUM_IBA}" -gt 0 ]; then
+    # call different poejob_nrt routines based on PE version
+    # For AIX: lslpp -ha ppe.poe
+    # Sample output
+    # Fileset         Level     Action       Status       Date         Time
+    # ----------------------------------------------------------------------------
+    # Path: /usr/lib/objrepos
+    #  ppe.poe
+    #                  3.2.0.0   COMMIT       COMPLETE     04/04/02     20:16:29
+    #                  3.2.0.0   APPLY        COMPLETE     04/04/02     20:16:29
+    #
+    #Path: /etc/objrepos
+    #  ppe.poe
+    #                  3.2.0.0   COMMIT       COMPLETE     04/04/02     20:16:48
+    #                  3.2.0.0   APPLY        COMPLETE     04/04/02     20:16:48
+    # For Linux: assume 5.2 or above 
+    #
+    if [ "$_os_type" = "AIX" ]; then
+        _poe_version_str=`lslpp -ha ppe.poe | grep COMMIT | awk '{print $1}' | sort -ru | head -n 1`
+        _poe_version=`echo ${_poe_version_str} | awk -F. '{print $1}'`
+        _poe_sub_version=`echo ${_poe_version_str} | awk -F. '{print $2}'`
+        if [ "${_poe_version}" = "" ]; then
+            _poe_version=5
+        fi
+
+        if [ "${_poe_sub_version}" = "" ]; then
+            _poe_sub_version=0
+        fi
+
+        if [ ${_poe_version} -gt 5 ]; then
+            poejob_poe $*
+        elif [ ${_poe_version} -eq 5 -a ${_poe_sub_version} -ge 2 ]; then
+            poejob_poe $*
+        else
+            poejob_nrt $*
+        fi
+    elif [ "$_os_type" = "Linux" ]; then
+        poejob_poe $*
+    fi
+
+else
+    NTBL_NUM_ADAPTERS=`echo "${_available_adapters}" | /bin/grep sni | wc -l`
+    NTBL_NUM_ADAPTERS=`expr ${NTBL_NUM_ADAPTERS}`
+    if [ "${NTBL_NUM_ADAPTERS}" != "0" ]; then
+        poejob_ntbl $*
+    else
+        poejob_swtbl $*
+    fi
+fi

@@ -1,0 +1,93 @@
+#! /bin/sh
+#this scripts convert static library into dynamic library
+
+if [ $# -eq 0 ] ; then
+    echo "$0 <arch type>  <lib name>  <version number> "
+    exit 1
+fi
+ 
+ARCH=$1
+
+case $ARCH in
+    sparc-sol2 | sparc-64)
+	if [ "$ARCH" = "sparc-64" ]; then
+	    LIB="-L/usr/lib/sparcv9 -L/usr/ucblib/sparcv9"
+	fi
+        if [ -s $2.a ] ; then
+            if [ -d tmp_shlib ] ; then
+                rm -rf tmp_shlib/
+            fi
+            mkdir tmp_shlib
+            cp $2.a tmp_shlib/
+            cd tmp_shlib/
+            ar xv $2.a
+            ld -G *.o -o $2.so.$3 -h $2.so.$3 $LIB -lnsl -lelf -lsocket -lrpcsvc -lgen -ldl
+            mv $2.so.$3 ..
+            cd ..
+            chmod a+x $2.so.$3
+            rm -rf tmp_shlib/
+        fi
+        ;;
+    hppa)
+        if [ -s $2.a ] ; then
+            if [ -d tmp_shlib ] ; then
+                rm -rf tmp_shlib/
+            fi
+            mkdir tmp_shlib
+            cp $2.a tmp_shlib/
+            cd tmp_shlib/
+            ar xv $2.a
+            ld -b *.o -o $2.sl
+            mv $2.sl ..
+            cd ..
+            chmod a+x $2.sl
+            rm -rf tmp_shlib/
+        fi
+        ;;
+    alpha)
+        if [ -s $2.a ] ; then
+            ld -shared -all $2.a -o $2.so
+            chmod a+x $2.so
+        fi
+        ;;
+    sgi6 | trix6 )
+        if [ -s $2.a ] ; then
+            cwd=`pwd` 
+            cp $2.a /tmp
+            cd /tmp
+            cc -32 -mips2 -shared -all $2.a -o $2.so
+            chmod a+x $2.so
+            mv $2.so $cwd
+            rm -f $2.a
+            cd $cwd
+        fi
+        ;;
+    sgi62 )
+        if [ -s $2.a ] ; then
+            cwd=`pwd`
+            cp $2.a /tmp
+            cd /tmp
+            cc -n32 -mips3 -shared -all $2.a -o $2.so
+            chmod a+x $2.so
+            mv $2.so $cwd
+            rm -f $2.a
+            cd $cwd
+        fi
+        ;;
+
+    sgi5)
+        if [ -s $2.a ] ; then
+            cwd=`pwd`
+            cp $2.a /tmp
+            cd /tmp
+            #cc -mips2 -32 -shared -all $2.a -o $2.so
+            cc -shared -all $2.a -o $2.so
+            chmod a+x $2.so
+            mv $2.so $cwd
+            rm -f $2.a
+            cd $cwd
+        fi
+        ;;
+esac
+
+

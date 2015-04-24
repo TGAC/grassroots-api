@@ -1,0 +1,47 @@
+#! /bin/sh
+#
+# $Id: uninstall,v 1.2 2008/12/29 07:07:51 yhzhan Exp $
+#
+# Remove LSF from a host
+# Usage: uninstall [lsf_conf_file]
+
+if [ "$LSF_ENVDIR" = "" ] ; then
+    if [ -f "$1" ] ; then
+	LSF_CONF=$1
+    else
+	if [ "$1" != "" ] ; then
+	    echo $1: no such a file
+	fi
+	echo "usage: $0 [lsf_conf_file]"
+	exit 1
+    fi
+else
+    LSF_CONF=$LSF_ENVDIR/lsf.conf
+fi
+
+. $LSF_CONF
+
+# Shut down LSF daemons
+$LSF_SERVERDIR/lsf_daemons stop
+
+# Remove /etc/services entries (OK if they are not there)
+ed /etc/services << RMS_ED >$LSNULFILE 2>&1
+/%LSF_START%/,/%LSF_END%/d
+w!
+q
+RMS_ED
+
+if [ -f /etc/rc.local ] ; then
+    ed /etc/rc.local << RCL_ED >$LSNULFILE 2>&1
+    /%LSF_START%/,/%LSF_END%/d
+    w!
+    q
+RCL_ED
+fi
+
+if [ -d /sbin/init.d ] ; then
+    rm -f /sbin/init.d/lsf /sbin/rc[0-9].d/[SK][0-9][0-9]lsf
+fi
+if [ -d /etc/init.d ] ; then
+    rm -f /etc/init.d/lsf /etc/rc[0-9].d/[SK][0-9][0-9]lsf
+fi

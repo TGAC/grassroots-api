@@ -1,0 +1,78 @@
+# $Id: makedot,v 1.1 2006/06/27 19:31:11 gwen Exp $
+
+# This routine is not standalone. It is sourced by other scripts
+#
+#*********************************************************************
+#
+# This file is used to produce the dot file to be included into users
+# shell start up file (.cshrc, .profile) in order to run LSF.
+# This file is produced only if LSF_ENVDIR is not /etc.
+#*********************************************************************
+
+makedot()
+{
+
+if [ "$LSF_ENVDIR" != "/etc" ] ; then
+    cp $LSNULFILE $LSF_CONFDIR/cshrc.lsf
+    echo "#" >> $LSF_CONFDIR/cshrc.lsf
+    echo "# Environment setup for LSF users. Attach this file to the end" >> $LSF_CONFDIR/cshrc.lsf
+    echo "# of your shell start up dot file." >> $LSF_CONFDIR/cshrc.lsf
+    echo >> $LSF_CONFDIR/cshrc.lsf
+    cp $LSF_CONFDIR/cshrc.lsf $LSF_CONFDIR/profile.lsf
+
+    echo "setenv LSF_ENVDIR $LSF_ENVDIR" >> $LSF_CONFDIR/cshrc.lsf
+    echo "set path=($LSF_BINDIR \$path)" >> $LSF_CONFDIR/cshrc.lsf
+    echo "setenv MANPATH \${MANPATH}:$LSF_MANDIR" >> $LSF_CONFDIR/cshrc.lsf
+
+    echo "LSF_ENVDIR=$LSF_ENVDIR" >> $LSF_CONFDIR/profile.lsf
+    echo "export LSF_ENVDIR" >> $LSF_CONFDIR/profile.lsf
+    echo "PATH=$LSF_BINDIR:\$PATH" >> $LSF_CONFDIR/profile.lsf
+    echo "export PATH" >> $LSF_CONFDIR/profile.lsf
+    echo "MANPATH=$LSF_MANDIR:\$MANPATH" >> $LSF_CONFDIR/profile.lsf
+    echo "export MANPATH" >> $LSF_CONFDIR/profile.lsf
+
+    chown $LSF_MANAGER $LSF_CONFDIR/cshrc.lsf $LSF_CONFDIR/profile.lsf
+
+    cat << DOT
+
+    In order to run LSF, all the LSF users need to include $LSF_CONFDIR/cshrc.lsf 
+    (for csh, tcsh) or $LSF_CONFDIR/profile.lsf (for sh, ksh) at the end of their 
+    cshrc or profile file.
+
+    Please remember to do so and let all LSF users do this.
+
+DOT
+    if [ "$UNATTENDED_INSTALL" != "y" ]; then
+        echo $enf "Press Enter to continue ..." $enl
+        read V
+    fi
+fi
+
+} # makedot
+
+
+newmakedot()
+{
+if [ "$LSF_SYMBOLIC_LINK" = "y" -o "$LSF_SYMBOLIC_LINK" = "Y" -o \( "$LSF_DEFAULT_INSTALL" != "y" -a "$LSF_DEFAULT_INSTALL" != "Y" \) ];
+then
+    makedot
+else
+    cat << DOT
+
+    In order to run LSF, all the LSF users need to
+     source $LSF_CONFDIR/cshrc.lsf (for csh, tcsh) or 
+     . $LSF_CONFDIR/profile.lsf (for sh, ksh) 
+    to set LSF user environment.
+
+    Please remember to do so and let all LSF users do this.
+
+DOT
+    chown $LSF_MANAGER $LSF_CONFDIR/cshrc.lsf $LSF_CONFDIR/profile.lsf
+
+ if [ "$UNATTENDED_INSTALL" != "y" ]; then
+    echo $enf "Press Enter to continue ..." $enl
+    read V
+ fi
+
+fi
+}

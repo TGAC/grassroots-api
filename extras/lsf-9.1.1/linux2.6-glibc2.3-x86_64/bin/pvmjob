@@ -1,0 +1,114 @@
+#! /bin/sh 
+#$RCSfile: pvmjob,v $Revision: 5.5 $Date: 2013/01/10 05:54:56 $
+#  This sample script is a wrapper for running pvm jobs under lsbatch.
+#  Submit job by saying "bsub [otheroptions] -n k pvmjob command line",
+#  where k is the number of hosts to use; pvmjob is the name of this script.
+#
+#  Note the variable LSB_HOSTS is assigned by lsbatch system when this script
+#  is started by lsbatch.
+
+# LSB_TRAPSIGS is the platform specific trap for signals. This script does not
+# want to die unless its members all die.
+$LSB_TRAPSIGS 
+
+BEOMAP=/usr/bin/beomap
+Scyld_System=0
+
+# run "uname -a" to see whether this is a Linux Scyld Beowulf system.
+#
+uname_val=`uname -a`
+sys_type=`echo $uname_val | awk '{print $1}'`
+if [ "$sys_type" = "Linux" ]; then
+    echo $uname_val | awk '{print $3}' | grep "_Scyld" > /dev/null 2>&1
+    # If output of uname includes _Scyld, this is a Scyld system
+    if [ "$?" -eq "0" ]; then
+        Scyld_System=1
+    fi
+fi
+
+HOSTFILE=$HOME/.lsbatch/host$$.`hostname`
+
+CMD=$1
+
+COMMANDLINE="$@"
+
+rm -f $HOSTFILE
+touch $HOSTFILE
+
+# If This is a Scyld System, we should generate the pvm
+# operation file, instead of hostfile. The algorithm is:
+# 1) run beomap to get the node mapping
+# 2) generate operation file, including
+#    add .#
+#    add .#
+#    quit 
+# 
+nhosts=0
+if [ "$Scyld_System" = "1" ]; then
+    for node in `$BEOMAP | sed 's/:/ /g'`
+    do
+        echo "add .$node" >> $HOSTFILE
+        nhosts=`expr $nhosts + 1`
+    done
+    echo "quit" >> $HOSTFILE 
+else
+    #Generate hostfile
+    for word in $LSB_HOSTS 
+    do
+    echo $word >> $HOSTFILE
+    nhosts=`expr $nhosts + 1`
+    done
+fi
+
+#unset PVM_ARCH environment variable
+PVM_ARCH=""; export PVM_ARCH
+
+# start pvm daemons.
+# If this is a Scyld Beowulf system, we cannot start the  
+# pvm daemon in background, because bpsh cannot run the 
+# program in background. Instead of this, we can use 
+# pvm < operation file. redirect the output to /dev/null
+#
+if [ "$Scyld_System" = "1" ]; then
+    pvm < $HOSTFILE > /dev/null 2>&1 
+else
+    pvmd $HOSTFILE &
+fi
+
+# wait until daemons started.
+sleep `expr $nhosts "*" 6`
+
+# run pvm job and save exit status.
+eval $COMMANDLINE
+exstat=$?
+
+# Kill remote tasks that do not die.
+pvm << RESET
+reset
+RESET
+
+#Kill pvm daemons and clean up hostfile
+pvm <<HALT
+halt
+HALT
+
+# Allow pvmd to cleanup
+sleep 5
+
+# Kill runaway processes
+# If this is a Scyld Beowulf system, we shouldn't kill the
+# process through lsgrun. We can use use zapit on the master
+# node, because master knows all processes. 
+#
+if [ "$Scyld_System" = "1" ]; then
+    zapit -9 pvm pvmjob > /dev/null 2>&1
+    zapit -9 $CMD pvmjob > /dev/null 2>&1 
+else
+    lsgrun -p -f $HOSTFILE zapit -9 pvm pvmjob >/dev/null 2>&1
+    lsgrun -p -f $HOSTFILE zapit -9 $CMD pvmjob >/dev/null 2>&1
+fi
+
+rm -f $HOSTFILE
+
+exit $exstat
+

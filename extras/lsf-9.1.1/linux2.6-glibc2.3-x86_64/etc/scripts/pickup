@@ -1,0 +1,54 @@
+#!/bin/sh 
+
+# $Id: pickup,v 1.1 2006/06/27 19:31:11 gwen Exp $
+
+#**********************************************************************
+#  This scripts picks up the missing parameters defined in old lsf.conf
+#  but are missing in the newly produced lsf.conf
+#
+#  Usage: pickup newfile oldfile
+#  Assumes it is being sourced by an lsfsetup script, so all functions
+#  are already defined
+#***********************************************************************
+
+
+obsolete="LSF_AUTHD LSB_LOCALDIR LSF_NQS LSF_TOP LSF_MANAGER LSF_CLUSTER_NAME"
+varlist=/tmp/lsfsetup.$$
+
+sed -e 's/#.*//;s/=.*//;s/[ 	]*//;/^$/d' $1 > $varlist
+
+if test ! -s $varlist
+then
+    echo "Installation error: cannot find any parameters in the new"
+    echo "lsf.conf file. Exiting ... "
+    rm $varlist
+    exit 1
+fi
+
+# Make sure we toss out obsolete variables
+for obs in $obsolete
+do
+    echo $obs >> $varlist
+done
+
+MISSING=`sed -e 's/#.*//;s/=.*//;s/[ 	]*//;/^$/d' $2 | fgrep -v -f $varlist`
+rm $varlist
+
+if [ "$MISSING" != "" ] ; then
+#            Note: do not change $1 to $2!
+    echo The following parameters were defined in your old $1 file,
+    echo but are not defined in the new $1 file
+    echo $MISSING
+    for var in ${MISSING} ; do
+       if [ "$UNATTENDED_INSTALL" != "y" -a "$UNATTENDED_INSTALL" != "Y" ]; then
+               if (yesno "Put $var into new config file $1" Y) >$LSNULFILE
+               then
+                   egrep "^[  ]*$var" $2 >> $1
+               fi
+       else
+               egrep "^[  ]*$var" $2 >> $1
+
+	fi
+    done
+fi
+

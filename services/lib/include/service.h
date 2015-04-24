@@ -347,13 +347,13 @@ WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_servi
 WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
 
-WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p);
+WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p, const uuid_t service_id);
 
 
 WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 
-WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (const Service *service_p, const uuid_t service_id);
+WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id);
 
 
 WHEATIS_SERVICE_API void SetCurrentServiceStatus (Service *service_p, const uuid_t service_id, const OperationStatus status);

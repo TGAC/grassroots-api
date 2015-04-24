@@ -1,0 +1,519 @@
+#!/bin/sh 
+# $RCSfile: mpichp4_wrapper,v $Revision: 1.14 $Date: 2013/01/10 05:55:44 $
+
+#-----------------------------------------------------------------------------
+# This wrapper script creates a process information file, a host file, 
+# and a command file, and inserts TaskStarter and TaskStarter options
+# into these files. This solution makes sure that each application 
+# process is started by TaskStarter.
+#-----------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------
+# Clean up temporary files
+# Remove the command_file from $HOME/.sever_apps and $HOME/.p4apps
+#-------------------------------------------------------------------------
+
+cleanup_temp_file()
+{
+    rm -f $GENHOST_FILE >>$LOGFILE 2>&1
+    rm -f $COMMAND_FILE >>$LOGFILE 2>&1
+    rm -f $PIFILE >>$LOGFILE 2>&1
+
+    if [ $start_by_secserver = "y" ]; then
+        # Old server
+        if [ -r $HOME/.p4apps ] ; then
+           if grep $COMMAND_FILE $HOME/.p4apps > /dev/null 2>&1 ; then 
+              grep -v $COMMAND_FILE $HOME/.p4apps > $HOME/.p4apps.new
+              rm -r $HOME/.p4apps >>$LOGFILE 2>&1
+              mv $HOME/.p4apps.new $HOME/.p4apps >>$LOGFILE 2>&1
+              chmod 600 $HOME/.p4apps >>$LOGFILE 2>&1
+           fi
+        fi
+
+        # New server
+        if [ -r $HOME/.server_apps ] ; then
+           if grep $COMMAND_FILE $HOME/.server_apps > /dev/null 2>&1 ; then
+              grep -v $COMMAND_FILE $HOME/.server_apps > $HOME/.server_apps.new
+              rm -r $HOME/.server_apps >>$LOGFILE 2>&1
+              mv $HOME/.server_apps.new $HOME/.server_apps >>$LOGFILE 2>&1
+              chmod 600 $HOME/.server_apps >>$LOGFILE 2>&1
+           fi
+        fi
+     fi
+}
+
+#-------------------------------------------------------------------------
+# Signal handling function: clean up and exit.
+#-------------------------------------------------------------------------
+mpichp4_exit()
+{
+    trap '' 1 2 3 15
+    echo "Signal Received, Terminating the job<${UNIQUE_ID}>  ..."
+    echo "Signal Received, Terminating the job<${UNIQUE_ID}>  ..." >> $LOGFILE
+    cleanup_temp_file
+    exit 1
+} #mpichp4_exit
+
+#-----------------------------------
+# Name: who_am_i
+# Synopsis: who_am_i 
+# Environment Variables:
+# Description:
+#       It returns the name of the current user.
+# Return Value:
+#       User name.
+#-----------------------------------
+who_am_i()
+{
+if  [ `uname` = ConvexOS ] ; then
+    _my_name=`whoami | sed -e "s/[      ]//g"`  
+else
+    _my_name=`id | sed -e 's/[^(]*(\([^)]*\)).*/\1/' | sed -e "s/[      ]//g"`  
+fi
+
+echo $_my_name
+} # who_am_i
+#----------------------------------------------------------------
+# Set up the variables representing the parallel job launcher:
+# - MPICH_HOME, fill in the path to the MPICH directory in your system 
+# - MPIRUN_CMD, fill in the path to the mpirun command 
+#----------------------------------------------------------------
+MPICH_HOME="/opt/mpich-1.2.5.2-ch_p4/"
+MPIRUN_CMD="${MPICH_HOME}/bin/mpirun"
+LSF_TASKSTARTER="${LSF_BINDIR}/TaskStarter"
+start_by_secserver="n"
+
+#
+# Process mpich and mpich_p4
+# options
+#
+
+MPIRUN_OPTIONS=" "
+while [ "$#" -gt 0 ] 
+do
+    case "$1" in
+        -arch |\
+        -machinedir |\
+        -machine |\
+	-p4wd |\
+        -rsh |\
+	-stdin |\
+	-stdout |\
+	-stderr |\
+	-map |\
+        -p4ssport)
+            # The above are options with a value
+            # -arch <architecture>           
+            # -machinedir <directory>
+            # -machine <machine name>            
+            # -p4wd pathname
+            # -rsh cmd
+            # -stdin filename
+            # -stdout filename         
+            # -stderr filename
+            # -map <list>
+            # -p4ssport portnum
+            if [ "$1" = "-p4ssport" ]; then
+                start_by_secserver="y" 
+            fi
+            MPIRUN_OPTIONS="$MPIRUN_OPTIONS $1"
+            shift
+            MPIRUN_OPTIONS="$MPIRUN_OPTIONS $1"
+            shift
+            ;;
+        -h |\
+	-t |\
+	-v |\
+	-leave_pg)   
+           # The above are options without a value
+           # -h help
+           # -t      
+           # -v      
+           # -leave_pg
+           MPIRUN_OPTIONS="$MPIRUN_OPTIONS $1"
+           shift
+           ;;
+        -machinefile |\
+	-np |\
+	-nodes |\
+	-excluse |\
+	-mvback |\
+	-maxtime |\
+        -cpu |\
+        -cal |\
+        -p4pg)
+            # The above options and their values are ignored by this
+            # integration. Users should use LSF bsub options
+            # -machinefile <machine-file name> 
+            # -np <np>
+            # -nodes <nodes>
+            # -exclude <list>
+            # -mvback files
+            # -maxtime min
+            # -mem value           
+            # -cpu time
+            # -cac name
+            # -p4pg filename
+            shift
+            shift
+            ;;
+        -nolocal |\
+	-all-cpus |\
+	-allcpus |\
+	-all-local |\
+        -dbg |\
+	-ksq |\
+	-batch |\
+	-jid |\
+	-mvhost |\
+	-nopoll |\
+        -e)
+            # The above no-value options are ignored by this
+            # integration. Users should use LSF bsub options
+            # -nolocal
+            # -all-cpus, -allcpus
+            # -all-local
+	    # -dbg    
+ 	    # -ksq    
+ 	    # -batch  
+ 	    # -jid    
+ 	    # -mvhome 
+            # -nopoll 
+            # -e     
+            # -pg     
+            shift
+            ;;
+        *)
+            JOB_CMDLN="$*"
+            break
+            ;;
+   esac 
+done
+
+#Check for MPI_P4SSPORT environment variable
+if [ -n "$MPI_P4SSPORT" ] ; then
+    if [ "$MPI_USEP4SSPORT" = "yes" -o "$MPI_USEP4SSPORT" = "YES" ] ; then
+         start_by_secserver="y"
+    fi
+fi
+
+
+#-------------------------------------------------------------------------
+# Set up the variable LOGDIR representing the log file directory 
+# - fill in your own choice of directory LOGDIR 
+# - the log directory you choose must be accessible by the user from all hosts 
+# - if the log directory is not specified, the log directory is /tmp 
+#-------------------------------------------------------------------------
+LOGDIR=""
+if [ "$LOGDIR" = "" ]; then
+    LOGDIR="/tmp"
+fi
+
+#-------------------------------------------------------------------------
+# WE REMOVED THIS LINE FROM LAMMPI IS IT REALL Y  USED HERE
+#-------------------------------------------------------------------------
+NULLFILE="/dev/null"
+
+#-------------------------------------------------------------------------
+# EXIT_VALUE should not be set to 0
+#-------------------------------------------------------------------------
+EXIT_VALUE="66"
+
+#-----------------------------------------------------------------------------
+#  Source the LSF environment. Optional.
+#-----------------------------------------------------------------------------
+. $LSF_ENVDIR/lsf.conf
+
+#-------------------------------------------------------------------------
+# Create a log file with a unique name based on the LSF job ID 
+#-------------------------------------------------------------------------
+if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+   UNIQUE_ID="$LSB_JOBID"
+else
+   UNIQUE_ID="$LSB_JOBID_$LSB_JOBINDEX"
+fi
+LOGFILE="${LOGDIR}/mpichp4_wrapper.job${UNIQUE_ID}.log"
+
+my_name=`who_am_i`
+echo "`date` $my_name" >> $LOGFILE
+
+echo MPIRUN_OPTIONS=$MPIRUN_OPTIONS >>  $LOGFILE
+echo JOB_CMDLN=$JOB_CMDLN >>  $LOGFILE
+#-----------------------------------------------------------------------------
+# Test the mpich command mpirun; exit if the command is not found.
+#-----------------------------------------------------------------------------
+for command in $MPIRUN_CMD 
+do
+    if [ -x "$command" ]; then
+        : 
+    else
+        echo "command ${command} not found."
+        echo "command ${command} not found." >> $LOGFILE
+        exit $EXIT_VALUE
+    fi
+done
+
+#-------------------------------------------------------------------------
+# Set up some variables representing temporary files:
+# - the file names are based on the LSF job ID
+#-------------------------------------------------------------------------
+GENHOST_FILE=".lsf_${UNIQUE_ID}_genmpi.hosts"
+if [ -d "$HOME" ]; then
+    GENHOST_FILE="$HOME/$GENHOST_FILE"
+fi
+
+COMMAND_FILE=".lsf_gen_mpi_${UNIQUE_ID}" 
+if [ -d "$HOME" ]; then
+   COMMAND_FILE="$HOME/$COMMAND_FILE"
+fi
+
+PIFILE=".lsf_${UNIQUE_ID}_genmpi_pifile" 
+if [ -d "$HOME" ]; then
+   PIFILE="$HOME/$PIFILE"
+fi
+
+#-------------------------------------------------------------------------
+# register the command_file to $HOME/.sever_apps and $HOME/.p4apps
+# This is the same code as mpirun.ch_p4
+#------------------------------------------------------------------------
+if [ $start_by_secserver = "y" ]; then
+   if [ -z "$HOME" ] ; then
+       echo "Cannot determine location of home directory (in HOME)"
+       exit 1
+   fi
+
+   # Old server
+   if [ -r $HOME/.p4apps ] ; then
+       if grep $COMMAND_FILE $HOME/.p4apps > /dev/null 2>&1 ; then 
+          :
+       else 
+          echo "$COMMAND_FILE" >> $HOME/.p4apps
+          chmod 600 $HOME/.p4apps
+       fi
+    else
+       echo "$COMMAND_FILE" >> $HOME/.p4apps
+       chmod 600 $HOME/.p4apps
+    fi
+
+    # New server
+    if [ -r $HOME/.server_apps ] ; then
+       if grep $COMMAND_FILE $HOME/.server_apps > /dev/null 2>&1 ; then
+          :
+       else
+          echo "$COMMAND_FILE" >> $HOME/.server_apps
+          chmod 600 $HOME/.server_apps
+       fi
+    else
+       echo "$COMMAND_FILE" >> $HOME/.server_apps
+       chmod 600 $HOME/.server_apps
+    fi
+fi
+
+#-------------------------------------------------------------------------
+# We need the lsrun command to copy the host file,  command file, and PI 
+# file if the $HOME is not shared.
+#-------------------------------------------------------------------------
+#RSH_CMD="lsrun -m"
+
+#-------------------------------------------------------------------------
+# Use the signal handling function to handle specific external signals. 
+#-------------------------------------------------------------------------
+trap mpichp4_exit 1 2 3 15
+
+#-------------------------------------------------------------------------
+# Create the host file.
+#-------------------------------------------------------------------------
+rm -f $GENHOST_FILE
+#echo "# GENMPI host file created by LSF on `date`" >> $GENHOST_FILE
+touch $GENHOST_FILE
+
+# check if we were able to start writing the host file
+if [ -f $GENHOST_FILE ]; then
+    :
+else
+    echo "$0: can't create $GENHOST_FILE"
+    exit 1
+fi
+
+HOST=""
+FLAG=""
+for TOKEN in $LSB_MCPU_HOSTS
+do
+    if [ -z "$FLAG" ]; then
+	HOST="$TOKEN"
+	FLAG="1"
+    else
+        FLAG=""
+    fi
+
+    if [ "$FLAG" = "1" ]; then
+        echo $HOST >>$GENHOST_FILE
+    fi
+    # get ready for the next host
+    HOST=""
+done
+
+echo "Your host file looks like:" >> $LOGFILE
+cat $GENHOST_FILE >> $LOGFILE
+
+
+#-------------------------------------------------------------------------
+# Create the command file.
+#-------------------------------------------------------------------------
+rm -f $COMMAND_FILE
+touch $COMMAND_FILE
+
+# check if we were able to start writing the command file
+if [ -f $COMMAND_FILE ]; then
+    :
+else
+    echo "$0: can't create $COMMAND_FILE"
+    exit 1
+fi
+
+#
+# mpichp4 mpi master task will append its options
+# to slave tasks. Therefore the format of the command
+# file should be
+# TaskStarter <TaskStarter options> jobname $*
+#
+# $* will include job options and mpi task options.
+# Therefore, when creating the command file, all job options
+# should be removed. Job options are still on the command line
+# so when at the time of job execution, job options and
+# mpi task options will be passed in to the command file
+# by $*
+#
+echo "#!/bin/sh" >> $COMMAND_FILE
+if [ -z "$LSF_TS_OPTIONS" ]; then
+    if [ -z "$LSF_TSOPT_NUM" ]
+    then
+        echo "$0: can not find environment variable LSF_TSOPT_NUM"
+        exit 1
+    fi
+    JOB_NAME_POS=`expr $LSF_TSOPT_NUM + 1` # TS and its options
+    i=0
+    for token in $JOB_CMDLN
+    do
+        JOB_CMD_NAME="$JOB_CMD_NAME $token"
+        i=`expr $i + 1`
+        if [ $i -eq $JOB_NAME_POS ]; then
+            break
+        fi
+    done
+else
+    JOB_NAME=`echo $JOB_CMDLN | awk '{ print $1 }'`
+    JOB_CMD_NAME="$LSF_TASKSTARTER $LSF_TS_OPTIONS $JOB_NAME"
+    JOB_CMDLN="$LSF_TASKSTARTER $LSF_TS_OPTIONS $JOB_CMDLN"
+fi
+echo $JOB_CMD_NAME' "$@"' >> $COMMAND_FILE
+chmod 755  $COMMAND_FILE
+
+echo "Your command file looks like:" >> $LOGFILE
+cat $COMMAND_FILE >> $LOGFILE
+
+#-------------------------------------------------------------------------
+# Create the PI file.
+#-------------------------------------------------------------------------
+rm -f $PIFILE
+touch $PIFILE
+
+# check if we were able to start writing the PI file
+if [ -f $PIFILE ]; then
+    :
+else
+    echo "$0: can't create $PIFILE"
+    exit 1
+fi
+
+CCount=0
+
+#------------------------------------------------------------------
+# Process $LSB_PJL_TASK_GEOMETRY
+# It will shuffle the order the PI file
+# based on the order of task geometry
+#------------------------------------------------------------------
+if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+    . $LSF_BINDIR/pjllib.sh
+    task_geom_str=`top_first_task "$LSB_PJL_TASK_GEOMETRY"`
+    construct_task_geom_file "$task_geom_str" "/tmp/task_geom_list.$$"
+    if [ "$?" != "0" ]; then
+        rm -f /tmp/task_geom_list.$$
+        exit 1
+    fi
+    sort -n -o "/tmp/task_geom_list.$$" "/tmp/task_geom_list.$$"
+    EXPANDED_HOST_LIST=`awk '{ print $2 }' /tmp/task_geom_list.$$`
+    rm -f /tmp/task_geom_list.$$
+
+    for TOKEN in $EXPANDED_HOST_LIST
+    do
+        if [ $CCount -eq 0 ] 
+        then 
+            echo $TOKEN" "$CCount" "$COMMAND_FILE   >> $PIFILE
+        else 
+            echo $TOKEN" 1 "$COMMAND_FILE   >> $PIFILE
+        fi
+        CCount=`expr $CCount + 1`
+    done
+else 
+    HOST=""
+    NCPU=""
+    for TOKEN in $LSB_MCPU_HOSTS
+    do
+        if [ -z "$HOST" ]; then
+            HOST="$TOKEN"
+        else
+            NCPU="$TOKEN"
+        fi
+
+        if [ -n "$HOST" -a -n "$NCPU" ]; then
+            while [ "$NCPU" != "0" ]
+            do
+                if [ "$CCount" = "0" ]
+                then
+                    echo "$HOST 0 $COMMAND_FILE"   >> $PIFILE
+                    CCount=1
+                else
+                    echo "$HOST 1 $COMMAND_FILE"   >> $PIFILE
+                fi
+
+                NCPU=`expr $NCPU - 1`
+            done
+            # get ready for the next host
+            HOST=""
+            NCPU=""
+        fi
+    done
+fi
+
+echo "Your PI file looks like:" >> $LOGFILE
+cat $PIFILE >> $LOGFILE
+
+#-------------------------------------------------------------------------
+# Run the job by calling the mpirun command with the files created by this 
+# script.
+#-------------------------------------------------------------------------
+echo "Your command line looks like:" >> $LOGFILE
+if [ -n "$LSF_TS_OPTIONS" ]; then
+    echo $MPIRUN_CMD $MPIRUN_OPTIONS -machinefile $GENHOST_FILE -p4pg $PIFILE $LSF_TASKSTARTER $LSF_TS_OPTIONS $@ >> $LOGFILE
+    $MPIRUN_CMD $MPIRUN_OPTIONS -machinefile $GENHOST_FILE -p4pg $PIFILE $LSF_TASKSTARTER $LSF_TS_OPTIONS "$@" 
+else
+    echo $MPIRUN_CMD $MPIRUN_OPTIONS -machinefile $GENHOST_FILE -p4pg $PIFILE $@ >> $LOGFILE
+    $MPIRUN_CMD $MPIRUN_OPTIONS -machinefile $GENHOST_FILE -p4pg $PIFILE "$@" 
+fi
+EXIT_VALUE=$?
+
+#-------------------------------------------------------------------------
+# Clean up: exit with the exit value of the mpirun command
+#-------------------------------------------------------------------------
+cleanup_temp_file
+
+#-------------------------------------------------------------------------
+# Return Exit value
+#-------------------------------------------------------------------------
+echo "Job<${UNIQUE_ID}> exits with exit value $EXIT_VALUE." >>$LOGFILE 2>&1
+exit $EXIT_VALUE
+
+#-------------------------------------------------------------------------
+# End the script.
+#-------------------------------------------------------------------------

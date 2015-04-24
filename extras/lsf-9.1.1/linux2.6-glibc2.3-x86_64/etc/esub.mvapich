@@ -1,0 +1,31 @@
+#!/bin/sh
+#$RCSfile: esub.mvapich,v $Revision: 1.2 $Date: 2013/01/10 05:51:05 $
+
+MVAPICH_START_CMD=ssh # can be changed to ssh/rsh/mpd 
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    exit 0
+fi
+
+. $LSB_SUB_PARM_FILE
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+case $MVAPICH_START_CMD in
+    ssh | SSH | rsh | RSH | mpd | MPD)
+        :
+        ;;
+    *)
+        echo "MVAPICH_START_CMD must be specified as ssh/rsh/mpd"
+        exit $LSB_SUB_ABORT_VALUE
+esac
+
+echo "LSF_PJL_TYPE=\"mvapich\"" >> $LSB_SUB_MODIFY_ENVFILE
+echo "MVAPICH_START_CMD=\"$MVAPICH_START_CMD\"" >> $LSB_SUB_MODIFY_ENVFILE
+
+exit 0

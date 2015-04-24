@@ -232,7 +232,7 @@ static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, jso
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\n%s\n", service_name_s, error.text, buffer_data_p);
 								}
 
-							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p);
+							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p, NULL);
 
 						}		/* if (res == OS_SUCCEEDED) */
 

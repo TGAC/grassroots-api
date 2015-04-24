@@ -1,0 +1,71 @@
+#!/bin/sh
+
+_lsfconf=$1
+
+. $_lsfconf
+LSNULFILE=/dev/null
+
+# Shut down LSF daemons
+if [ "$LSF_DEFAULT_INSTALL" = "y" -o "$LSF_DEFAULT_INSTALL" = "Y" ]; then
+    if [ "$LSF_LINK_PATH" = "n" ]; then
+        . $LSF_CONFDIR/profile.lsf
+        $LSF_SERVERDIR/lsf_daemons stop
+    elif [ "$LSF_LINK_PATH" = "" ]; then
+        :
+    else
+        $LSF_SERVERDIR/lsf_daemons stop
+    fi
+else
+    $LSF_SERVERDIR/lsf_daemons stop
+fi
+
+# Remove /etc/services entries (OK if they are not there)
+ed /etc/services << RMS_ED >$LSNULFILE 2>&1
+/%LSF_START%/,/%LSF_END%/d
+w!
+q
+RMS_ED
+
+if [ -f /etc/rc.local ] ; then
+    ed /etc/rc.local << RCL_ED >$LSNULFILE 2>&1
+    /%LSF_START%/,/%LSF_END%/d
+    w!
+    q
+RCL_ED
+fi
+
+if [ -d /sbin/init.d ] ; then
+    rm -f /sbin/init.d/lsf /sbin/rc[0-9].d/[SK][0-9][0-9]lsf
+
+# Added for dlogd (Analyzer)
+    rm -f /sbin/init.d/lsf /sbin/rc[0-9].d/[SK][0-9][0-9]dlogd
+#
+fi
+
+if [ -d /etc/init.d ] ; then
+    rm -f /etc/init.d/lsf /etc/rc[0-9].d/[SK][0-9][0-9]lsf
+
+# Added for dlogd (Analyzer)
+#    rm -f /etc/init.d/lsf /etc/rc[0-9].d/[SK][0-9][0-9]dlogd
+#
+fi
+
+
+
+#added for Linux
+
+if [ -d /etc/rc.d ] ; then
+    rm -f /etc/rc.d/init.d/lsf /etc/rc.d/rc[0-9].d/[SK][0-9][0-9]lsf
+
+# Added for dlogd (Analyzer)
+#    rm -f /etc/rc.d/init.d/lsf /etc/rc.d/rc[0-9].d/[SK][0-9][0-9]dlogd
+#
+fi
+
+
+
+
+if [ -f /etc/lsf.conf ]; then
+    mv -f /etc/lsf.conf /etc/lsf.conf.old
+fi
+

@@ -1,0 +1,537 @@
+#!/bin/sh
+# eadmin - example program to perform LSF Self-Management task.
+#          This example is put under LSF_SERVERDIR directory.
+# $RCSfile: eadmin,v $Revision: 1.11 $Date: 2013/01/10 05:49:47 $ 
+# 
+# Command line:
+#    /LSF_SERVERDIR/eadmin  lsfAdmin  
+#    lsfAdmin - the user name of LSF administrator
+#               (required)
+#
+# The following environment variables will be set when eadmin invoked
+# LSB_HOST_EXITRATE_EXCEPTION
+# LSB_EXITRATE_HOSTS
+# LSB_JOB_OVERRUN_EXCEPTION
+# LSB_OVERRUN_JOBS
+# LSB_JOB_UNDERRUN_EXCEPTION
+# LSB_UNDERRUN_JOBS
+# LSB_JOB_IDLE_EXCEPTION
+# LSB_IDLE_JOBS
+# LSB_STREAM_EVENT_EXCEPTION
+# LSB_STREAM_EVENTS
+
+# White space padding for truncating purposes
+PAD="                              "
+
+# turn on debug mode
+#set -x
+
+# tmp file directory, change to your owns
+TMP_DIR="/tmp"
+
+# Enhancement for exception mail
+#JOB_EXCEPTION_EMAIL_FORMAT="full"
+
+#######################################################################
+#  function - envDebug
+#    To write the eadmin's arguments and environments into DEBUG_FILE
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+envDebug()
+{
+    DEBUG_FILE="$TMP_DIR/eadmin.debug"
+ 
+    if [ -f $DEBUG_FILE ]; then
+        rm $DEBUG_FILE
+    fi
+    echo "LSF admin is : "$1 > $DEBUG_FILE
+    echo "-----------------------------------" >> $DEBUG_FILE
+
+    echo "LSB_HOST_EXITRATE_EXCEPTION = "$LSB_HOST_EXITRATE_EXCEPTION >> $DEBUG_FILE
+    echo "LSB_EXITRATE_HOSTS = "$LSB_EXITRATE_HOSTS  >> $DEBUG_FILE
+    echo "-----------------------------------" >> $DEBUG_FILE
+
+    echo "LSB_JOB_OVERRUN_EXCEPTION = "$LSB_JOB_OVERRUN_EXCEPTION >> $DEBUG_FILE    
+    echo "LSB_OVERRUN_JOBS = "$LSB_OVERRUN_JOBS >> $DEBUG_FILE
+    echo "----------------------------------"   >> $DEBUG_FILE
+
+    echo "LSB_JOB_UNDERRUN_EXCEPTION = "$LSB_JOB_UNDERRUN_EXCEPTION >> $DEBUG_FILE
+    echo "LSB_UNDERRUN_JOBS = "$LSB_UNDERRUN_JOBS >> $DEBUG_FILE
+    echo "----------------------------------"     >> $DEBUG_FILE
+
+    echo "LSB_JOB_IDLE_FACTOR = "$LSB_JOB_IDLE_FACTOR >> $DEBUG_FILE
+    echo "LSB_IDLE_JOBS = "$LSB_IDLE_JOBS     >> $DEBUG_FILE
+    echo "----------------------------------" >> $DEBUG_FILE
+    echo "LSB_STREAM_EVENT_EXCEPTION = "$LSB_STREAM_EVENT_EXCEPTION >> $DEBUG_FILE
+    echo "LSB_STREAM_EVENT_EXCEPTION = "$LSB_STREAM_EVENTS >> $DEBUG_FILE
+    echo "----------------------------------" >> $DEBUG_FILE
+}
+
+#################################################################
+#  function - hostClose
+#    To close the hosts and attach an action message to them
+#  Parameters:
+#    arg1 : the tmp email file
+#    arg2...argn : the name list the hosts
+
+hostClose()
+{
+    CMD_LOG="$TMP_DIR/eadmin.cmd"
+    CMD="$LSF_SERVERDIR/../bin/badmin"
+    MSG="eadmin: JOB EXIT RATE THRESHOLD EXCEEDED"
+    
+    Email=$1
+    echo "" >> $Email
+    echo "Host Name List: " >> $Email
+    if [ -f $CMD_LOG ]; then
+        rm $CMD_LOG
+    fi
+    echo "host close actions: " > $CMD_LOG
+    
+    shift
+    hNum=0
+    report="N"
+    for hName 
+    do
+        # close 10 hosts in a badmin command
+        # Two purpose:
+        #   (1) to reduce the time to bother MBD
+        #   (2) to prevent the command line exceeding the sh limit
+        if [ `expr $hNum % 10` -eq 0 ]; then 
+            if [ $hNum -ne 0 ] ; then
+                echo "$CMD hclose $hList " >> $CMD_LOG
+                $CMD hclose -C "$MSG" $hList 
+                echo $hList >> $Email
+                report="Y"
+            fi
+            hList=$hName
+        else
+            hList=$hList" "$hName
+            report="N"
+        fi
+        hNum=`expr $hNum + 1`
+    done
+    
+    if [ $report = "N" ] ; then 
+        echo "$CMD hclose $hList " >> $CMD_LOG
+        $CMD hclose -C "$MSG" $hList 
+        echo $hList >> $Email
+    fi
+}
+
+###################################################
+#  function - sendEmail
+#    To send a notification email to lsf admin
+#  Parameters:
+#      arg1 : the user name of sender
+#      arg2 : the user name of receiver
+#      arg3 : the tmp mail file
+
+sendEmail()
+{
+    SENDMAIL="/usr/lib/sendmail"
+    SENDER="LSF"
+    
+    `cat $3 | $SENDMAIL -oi -f$1 -F$SENDER $2 `
+}
+
+#####################################################
+#  function - chkJobEatingHosts
+#    The exception handler for job eating machines
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+chkJobEatingHosts()
+{
+    HOSTS_NAME=" "
+    INDEX=0
+
+    if [ $LSB_HOST_EXITRATE_EXCEPTION -a $LSB_HOST_EXITRATE_EXCEPTION = "Y" ] ;  then
+
+        # prepare the notification email
+        MAIL_FILE="$TMP_DIR/eadmin.hmail.$$"
+        FROM=$1
+        TO=$1   
+        SUBJECT="Job Eating Hosts"
+        SUMMERY="The following hosts exceed the job exit rate threshold and will be closed:"
+        SPACEBAR="---------------------------------------------------------------------------"
+    
+        if [ -f $MAIL_FILE ]; then
+            rm $MAIL_FILE
+            if [ $? -ne 0 ] ; then
+                exit 1
+            fi
+        fi
+        echo "Subject: $SUBJECT" > $MAIL_FILE        
+        echo "To: $TO"          >> $MAIL_FILE
+        echo ""                 >> $MAIL_FILE
+	echo ""			>> $MAIL_FILE
+        echo $SPACEBAR          >> $MAIL_FILE
+        echo $SUMMERY           >> $MAIL_FILE
+        echo $SPACEBAR          >> $MAIL_FILE
+	echo ""			>> $MAIL_FILE
+        echo "Host Job Exit Rates:"       >> $MAIL_FILE
+        echo "  HOSTS               EXIT_RATE"       >> $MAIL_FILE
+        echo "  -----------------------------------" >> $MAIL_FILE
+       
+        #close the hosts
+        for HOST in $LSB_EXITRATE_HOSTS 
+        do
+            LEFT=`expr $INDEX % 2`
+            if [ $LEFT -eq 0 ] ; then
+	        HOSTS_NAME=$HOSTS_NAME" "$HOST
+		NOTIFY_STR="`echo "$HOST$PAD" | cut -c 1-17`"
+	    else
+	        NOTIFY_STR="$NOTIFY_STR   $HOST"
+	        echo "  $NOTIFY_STR" >> $MAIL_FILE
+	    fi
+	    INDEX=`expr $INDEX + 1`
+        done
+        
+        # close the hosts
+        hostClose $MAIL_FILE $HOSTS_NAME
+        
+        
+        # send the notification mail if $1 is not ""        
+        if [ $1"X" != "X" ]; then
+            sendEmail $FROM $TO $MAIL_FILE
+        fi
+
+        rm $MAIL_FILE
+        
+    fi
+}
+
+###############################################
+#  function - chkOverunJobs
+#    The exception handler for over run jobs
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+chkOverunJobs()
+{    
+    INDEX=0
+    JOB_STR=" "
+    MAIL=$1
+    SPACETITLE="        "
+    
+    NUM=`echo $LSB_OVERRUN_JOBS | wc -w`
+    NUM=`expr $NUM / 2 `
+    
+    #over run jobs
+    echo " " >> $MAIL
+    echo "--------------------------------" >> $MAIL
+    echo " Over run jobs: ($NUM) " >> $MAIL
+    echo "--------------------------------" >> $MAIL
+    echo "" >> $MAIL
+    echo "  JOB_ID $SPACETITLE RUN_TIME " >> $MAIL
+    
+    for JOB in $LSB_OVERRUN_JOBS 
+    do
+        LEFT=`expr $INDEX % 2`
+        if [ $LEFT -eq 0 ] ; then    
+	    JOB_STR="`echo "$JOB$PAD" | cut -c 1-13`"
+        else
+	    JOB_STR="$JOB_STR   $JOB"
+	    echo "  $JOB_STR" >> $MAIL
+	fi
+	INDEX=`expr $INDEX + 1`
+    done
+    return;
+}
+
+
+################################################
+#  function - chkUnderrunJobs
+#    The exception handler for under run jobs
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+chkUnderrunJobs()
+{
+    INDEX=0
+    JOB_STR=" "
+    MAIL=$1
+    SPACETITLE="        "
+    
+    NUM=`echo $LSB_UNDERRUN_JOBS | wc -w`
+    NUM=`expr $NUM / 2 `
+    
+    #Under run jobs
+    echo " " >> $MAIL
+    echo "--------------------------------" >> $MAIL
+    echo " Under run jobs: ($NUM) " >> $MAIL
+    echo "--------------------------------" >> $MAIL
+    echo "" >> $MAIL
+    echo "  JOB_ID $SPACETITLE RUN_TIME " >> $MAIL
+    
+    for JOB in $LSB_UNDERRUN_JOBS 
+    do
+        LEFT=`expr $INDEX % 2`
+        if [ $LEFT -eq 0 ] ; then    
+	    JOB_STR="`echo "$JOB$PAD" | cut -c 1-13`"
+        else
+	    JOB_STR="$JOB_STR   $JOB"
+	    echo "  $JOB_STR" >> $MAIL
+	fi
+	INDEX=`expr $INDEX + 1`
+    done
+
+    return;
+}
+
+#################################################
+#  function - chkIdleJobs
+#    The exception handler for idle jobs
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+chkIdleJobs()
+{
+    INDEX=0
+    JOB_STR=" "
+    MAIL=$1
+    SPACETITLE="        "
+    
+    NUM=`echo $LSB_IDLE_JOBS | wc -w`
+    NUM=`expr $NUM / 2 `
+    
+    #Under run jobs
+    echo " " >> $MAIL
+    echo "--------------------------------" >> $MAIL
+    echo " Idle jobs: ($NUM) " >> $MAIL
+    echo "--------------------------------" >> $MAIL
+    echo "" >> $MAIL
+    echo "  JOB_ID $SPACETITLE IDLE_FACTOR " >> $MAIL
+    
+    for JOB in $LSB_IDLE_JOBS 
+    do
+        LEFT=`expr $INDEX % 2`
+        if [ $LEFT -eq 0 ] ; then    
+	    JOB_STR="`echo "$JOB$PAD" | cut -c 1-13`"
+        else
+	    JOB_STR="$JOB_STR   $JOB"
+	    echo "  $JOB_STR" >> $MAIL
+	fi
+	INDEX=`expr $INDEX + 1`
+    done
+    
+    return;
+}
+
+#################################################
+#  function - chkStreamExceptions
+#    The exception handler for stream events
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+chkStreamExceptions()
+{
+    INDEX=0
+    JOB_STR=" "
+    MAIL=$1
+    SPACETITLE="        "
+    
+    NUM=`echo $LSB_STREAM_EVENTS | wc -w`
+    NUM=`expr $NUM / 2 `
+    
+    #Under run jobs
+    echo " " >> $MAIL
+    echo "------------------------------------" >> $MAIL
+    echo " Stream logging exceptions : ($NUM) " >> $MAIL
+    echo "------------------------------------" >> $MAIL
+    echo "" >> $MAIL
+    echo "  JOB_ID $SPACETITLE EVENT_TYPE " >> $MAIL
+    
+    for JOB in $LSB_STREAM_EVENTS 
+    do
+        LEFT=`expr $INDEX % 2`
+        if [ $LEFT -eq 0 ] ; then    
+	    JOB_STR="`echo "$JOB$PAD" | cut -c 1-13`"
+        else
+	    JOB_STR="$JOB_STR   $JOB"
+	    echo "  $JOB_STR" >> $MAIL
+	fi
+	INDEX=`expr $INDEX + 1`
+    done
+    
+    return;
+}
+
+#################################################
+#  function - chkExceptJobs
+#    The exception handler for all job exceptions
+#  Parameters:
+#    arg1 : the user name of lsf admin
+
+chkExceptJobs()
+{
+    overRJ="N"
+    underRJ="N"
+    idleJ="N"
+    streamE="N"
+
+    if [ $ENHANCE = "y" -a -f $2 ] ; then
+        chkExceptJobs_enh $1 $2
+        return;
+    fi
+    
+    if [ $LSB_JOB_OVERRUN_EXCEPTION -a $LSB_JOB_OVERRUN_EXCEPTION = "Y" ] ;  then
+        overRJ="Y"
+    fi
+    
+    if [ $LSB_JOB_UNDERRUN_EXCEPTION -a $LSB_JOB_UNDERRUN_EXCEPTION = "Y" ] ;  then
+        underRJ="Y"
+    fi
+
+    if [ $LSB_JOB_IDLE_EXCEPTION -a $LSB_JOB_IDLE_EXCEPTION = "Y" ] ;  then
+        idleJ="Y"
+    fi
+    
+    if [ $LSB_STREAM_EVENT_EXCEPTION -a $LSB_STREAM_EVENT_EXCEPTION = "Y" ] ;  then
+        streamE="Y"
+    fi
+    
+    #prepare the mail 
+    if [ $overRJ = "Y" -o $underRJ = "Y" -o $idleJ = "Y" -o $streamE = "Y" ] ;  then
+
+        # prepare the notification email
+        MAIL_FILE="$TMP_DIR/eadmin.jmail.$$"
+        FROM=$1
+        TO=$1   
+        SUBJECT="Job Exceptions"        
+            
+        if [ -f $MAIL_FILE ]; then
+            rm $MAIL_FILE
+            if [ $? -ne 0 ] ; then
+                exit 1
+            fi
+        fi
+        echo "Subject: $SUBJECT" > $MAIL_FILE
+        echo "To: $TO"          >> $MAIL_FILE
+        
+        #check over run jobs
+        if [ $overRJ = "Y" ]; then
+            chkOverunJobs $MAIL_FILE
+        fi
+        
+        #check under run jobs
+        if [ $underRJ = "Y" ]; then 
+            chkUnderrunJobs $MAIL_FILE
+        fi
+        
+        #check idle jobs 
+        if [ $idleJ = "Y" ]; then
+            chkIdleJobs $MAIL_FILE
+        fi
+        
+        #check strema exceptions  
+        if [ $streamE = "Y" ]; then
+            chkStreamExceptions $MAIL_FILE
+        fi
+        
+        
+        #send the mail
+        sendEmail $FROM $TO $MAIL_FILE
+        rm $MAIL_FILE
+    fi
+    
+    return;
+}
+
+#################################################
+#  function - chkExceptJobs_enh
+#    The exception handler for all job exceptions
+#    with enhanced output
+#  Parameters:
+#    arg1 : the user name of lsf admin
+#    arg2 : tmp mail path
+chkExceptJobs_enh()
+{
+    MAIL_FILE=$2
+    FROM=$1
+    TO=$1
+
+    #send the mail
+    sendEmail $FROM $TO $MAIL_FILE
+    rm $MAIL_FILE
+}
+
+fixedMail()
+{
+    MAIL_FILE=$1
+    FIXED_MAIL=$1".tmp"
+
+    touch $FIXED_MAIL
+    inContent=0
+    cat $MAIL_FILE | while read line
+    do
+        first=`echo $line | awk '{print $1}'`
+        a=`echo $line | grep "RUN_TIME"`
+        b=`echo $line | grep "IDLE_FACTOR"`
+
+        if [ `echo $first | sed "s/\(.\).*/\1/g" | grep "^[0-9]*$"` ] ; then
+            s1=`echo $line | awk '{print $1}' | cut -c 1-10`
+            s2=`echo $line | awk '{print $2}' | cut -c 1-11`
+            s3=`echo $line | awk '{print $3}' | cut -c 1-10`
+            s4=`echo $line | awk '{print $4}' | cut -c 1-10`
+            s5=`echo $line | awk '{print $5}' | cut -c 1-15`
+            s6=`echo $line | awk '{for (i=6;i<=NF;i++) print $i}'`
+            s6=`echo $s6 | cut -c 1-19`
+            printf "  %-10s %-12s %-10s %-10s %-15s " $s1 $s2 $s3 $s4 $s5 >> $FIXED_MAIL
+            echo $s6 >> $FIXED_MAIL
+            inContent=1
+        elif [ -n "$a" ] ; then
+            printf "  %-10s %-12s %-10s %-10s %-15s %s\n" "JOB_ID" "RUN_TIME" "USER" "QUEUE" "EXEC_HOST" "JOB_NAME" >> $FIXED_MAIL
+        elif [ -n "$b" ] ; then
+            printf "  %-10s %-12s %-10s %-10s %-15s %s\n" "JOB_ID" "IDLE_FACTOR" "USER" "QUEUE" "EXEC_HOST" "JOB_NAME" >> $FIXED_MAIL
+        elif [ `echo $line | grep "^-------"` ] ; then
+            inContent=0
+            echo $line >> $FIXED_MAIL
+        elif [ "$inContent" -eq "1" ] ; then
+            s5=`echo $line | cut -c 1-15`
+            printf "  %-10s %-12s %-10s %-10s %-15s %s\n" "" "" "" "" $s5 "" >> $FIXED_MAIL 
+        else
+            echo $line >> $FIXED_MAIL
+        fi
+    done
+
+    mv $FIXED_MAIL $MAIL_FILE
+}
+    
+
+#####################################
+#         main entry                #
+#####################################
+
+#  debug purpose only
+envDebug $1
+
+#  check job eating hosts
+chkJobEatingHosts $1
+
+text1="full"
+text2="fixed"
+
+x_tmp=`echo $JOB_EXCEPTION_EMAIL_FORMAT | tr [a-z] [A-Z]`
+y_tmp=`echo $text1 | tr [a-z] [A-Z]`
+z_tmp=`echo $text2 | tr [a-z] [A-Z]`
+
+if [ "$x_tmp" = "$y_tmp" ] ; then
+    ENHANCE="y"
+fi
+
+if [ "$x_tmp" = "$z_tmp" ] ; then
+    ENHANCE="y"
+    fixedMail $2
+fi
+
+
+#  check exception jobs
+chkExceptJobs $1 $2
+
+# cleanup the tmp file if still there
+if [ -f $2 ] ; then
+    rm $2
+fi

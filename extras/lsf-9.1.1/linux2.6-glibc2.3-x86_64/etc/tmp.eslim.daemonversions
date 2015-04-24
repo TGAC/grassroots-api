@@ -1,0 +1,35 @@
+#!/bin/sh
+
+BINARIES="lim"
+NUM=0
+string=""
+
+for bin in $BINARIES
+do
+
+RESNAME="$bin""version"
+
+if [ -x "$LSF_SERVERDIR/$bin" ]
+then
+	BIN="$LSF_SERVERDIR/$bin"
+elif [ -x "$EGO_SERVERDIR/$bin" ]
+then
+	BIN="$EGO_SERVERDIR/$bin"
+fi
+
+ver=`$BIN -V 2>&1 | head -1 |awk '{print $3}' | tr -d ","`
+
+if [ ! -z "$ver" ]
+then
+	# do some sanity checking.
+	if echo "$ver" | grep '^[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*$' > /dev/null 2>&1
+	then
+	    string="$string""$RESNAME $ver "
+	    NUM=`expr $NUM + 1`
+	fi
+fi
+
+done
+
+echo "$NUM $string"
+

@@ -1,0 +1,672 @@
+#!/bin/sh
+#
+#-----------------------------------------------------------------------------
+# $Id: rsh_setup,v 1.1 2006/06/27 19:31:12 gwen Exp $
+#
+# This script is sourced by lsfsetup. It is not a standalone script.
+# Do the per-host setup for LSF server hosts.
+#-----------------------------------------------------------------------------
+
+#------------------------------------------------------------------
+#
+# check_bins
+#
+#    Make sure binaries are accessible and are installed properly
+#-------------------------------------------------------------------
+check_bins()
+{
+
+# Check if files are there
+if [ ! -f "$LSF_BINDIR/lsload" ] ; then
+    cat <<BINARY_WARN
+
+    LSF binaries for this host type are not accessbile on this host from
+    `echo $LSF_BINDIR. Make sure they are installed and accessible`
+    from this host.
+
+    To install binaries on this host locally rather than sharing with
+    other hosts with the same architecture, run lsfsetup and choose 
+    Option 1. Install LSF Products to install binaires on this host. 
+    After you have installed the LSF binaries, run lsfsetup again and 
+    choose Option 2. Set Up Hosts.
+BINARY_WARN
+
+    return 1
+fi
+
+# ignore set_uid test, it should be done during installation.
+# modify it for multi platform installation
+return 0
+}                         
+
+user_ports()
+{
+if yesno "Define LSF server port numbers in lsf.conf?" Y "help LSF_PORTS" >$LSNULFILE
+then
+    LSF_LIM_PORT=`ask_param LSF_LIM_PORT`
+    LSF_RES_PORT=`ask_param LSF_RES_PORT`
+    LSB_MBD_PORT=`ask_param LSB_MBD_PORT`
+    LSB_SBD_PORT=`ask_param LSB_SBD_PORT`
+    echo "# LSF server port numbers" >> $LSF_ENVDIR/lsf.conf
+    echo LSF_LIM_PORT=$LSF_LIM_PORT >> $LSF_ENVDIR/lsf.conf
+    echo LSF_RES_PORT=$LSF_RES_PORT >> $LSF_ENVDIR/lsf.conf
+    echo LSB_MBD_PORT=$LSB_MBD_PORT >> $LSF_ENVDIR/lsf.conf
+    echo LSB_SBD_PORT=$LSB_SBD_PORT >> $LSF_ENVDIR/lsf.conf
+fi
+}
+
+setup_services() 
+{
+
+echo
+
+# check if services are already there
+LIM=`grep "^[ 	]*LSF_LIM_PORT=" $LSF_ENVDIR/lsf.conf`
+RES=`grep "^[   ]*LSF_RES_PORT=" $LSF_ENVDIR/lsf.conf`
+SBD=`grep "^[ 	]*LSB_SBD_PORT=" $LSF_ENVDIR/lsf.conf`
+MBD=`grep "^[ 	]*LSB_MBD_PORT=" $LSF_ENVDIR/lsf.conf`
+
+if [ "$LIM" != ""  -a  "$RES" != ""  -a  "$SBD" != ""  -a  "$MBD" != "" ]
+then
+    echo Services seem to be already defined in $LSF_ENVDIR/lsf.conf.
+    return 0
+fi
+
+echo "setup_services: Using ypmatch lim services.byname_proto to check for services." >> $PREFIX_LOG/Install.log
+
+# not in lsf.conf, now check YP
+if (ypmatch lim services.byname_proto \
+    || ypmatch lim servi.bynp \
+    || ypmatch lim services.byname \
+    || ypmatch lim services.byservicename \
+    || ypcat services 2>$LSNULFILE | egrep "lim[/ 	]" | egrep udp \
+    || nismatch name=lim services.org_dir \
+   )  >$LSNULFILE 2>&1
+then
+    echo "LSF services seem to be already defined in NIS (YP)."
+    return 0
+fi
+
+# not in YP, let's see if YP is supposed to be used.
+if YSRV=`ypwhich -m services.byname_proto 2> $LSNULFILE` \
+    || YSRV=`ypwhich -m servi.bynp 2> $LSNULFILE` \
+    || YSRV=`ypwhich -m services.byname 2> $LSNULFILE` \
+    || YSRV=`ypwhich -m services.byservicename 2> $LSNULFILE` \
+    || (nismatch name=echo services.org_dir) >$LSNULFILE 2>&1
+then
+# YP is supposed to be used for services. No op unless user is not root
+    if [ "$YSRV" != "" ] ; then
+	YMSG="log in to host $YSRV and"
+    else
+	YMSG="use the NIS+ commands to"
+    fi
+    cat << SERVS
+
+Your system uses NIS (Yellow Pages) or NIS+ for services, but the LSF services 
+are not defined in the NIS database. If you want to use NIS or NIS+ for
+LSF services, you must $YMSG add the contents of the
+./example.services file into the services database.  See the "Adding LSF
+services to NIS" section in the LSF Administrator's Guide for details.
+
+To use /etc/services for LSF services instead, you must add them by hand.
+Add the contents of the ./example.services file to /etc/services.
+
+SERVS
+
+    if is_root ; then
+
+	return 1
+    else
+	echo 
+	echo If you do not want to use NIS or /etc/services for LSF services, 
+	echo you can define LSF server port numbers in lsf.conf. If you do
+	echo want to use NIS or /etc/services for LSF services, you must add
+	echo LSF services by hand as root. Add the contents of the
+	echo ./example.services file into the NIS database or /etc/services.
+
+#	user_ports
+	return 0 
+    fi
+fi
+
+# YP is not used, see if it is in /etc/services already 
+if  grep '^[ 	]*lim[ 	]' /etc/services > $LSNULFILE 2>&1
+then
+    echo "    The LSF services are already defined in /etc/services."
+    return 0
+fi 
+
+# not registered in /etc/services. Add only if we are root and confirmed by
+# user
+
+if is_root ; then
+
+
+     echo "Add LSF service entries in /etc/services" 
+	echo Installing LSF service entries in /etc/services ... 
+	cp /etc/services /etc/services.nolsf
+	cat >> /etc/services << IN_SERVICES
+
+# %LSF_START% LSF services
+res     3878/tcp                        # remote execution server
+lim     3879/udp                        # load information manager
+mbatchd 3881/tcp                        # master lsbatch daemon
+sbatchd 3882/tcp                        # slave lsbatch daemon
+ident   113/tcp         auth tap        # RFC 1413 identification daemon
+# %LSF_END%
+IN_SERVICES
+	if [ "$?" != "0" ] ; then
+	    echo "Setup failed: cannot update /etc/services. You must do it"
+	    echo "by hand. Add contents of ./example.services to /etc/services."
+	    return 1
+	fi
+	return 0
+fi
+
+# not root
+cat << NON_ROOT
+
+    You are not root and cannot change /etc/services. You must add LSF 
+    services to /etc/services by hand as root. Add contents of 
+    ./example.services to /etc/services.
+
+    If you do not want to register LSF services in /etc/services, you can also
+    define these in your lsf.conf file.
+
+NON_ROOT
+#user_ports
+return 0  
+}
+
+setup_rc()
+{
+# install startup code for daemons
+DONE=no
+ if [ "$SETRC" = "y" ]; then
+#   if yesno "Modify system startup scripts to start LSF daemons at boot time?" >$LSNULFILE
+    if : ; then
+############### Installing startup code on Mac OS X   #############################
+        # System startup item on MAC OS X is totally different with other system
+        # We handle it separately.
+        _ht=`uname`
+        if [ "$_ht" = "Darwin" ] ; then
+          
+    _sys_item_path="/System/Library/StartupItems/LSFDaemons"
+    _local_item_path="/Library/StartupItems/LSFDaemons"
+    _item_path=""
+    _daemon_script=""
+    _daemon_plist=""
+    _daemon_resource=""
+
+    if [ -d "$_sys_item_path" ] ; then
+       _item_path=$_sys_item_path
+
+    elif [ -d "$_local_item_path" ] ; then
+       _item_path=$_local_item_path
+
+    else
+       # Create new items as System Startup Items.
+       _item_path=$_sys_item_path
+       mkdir -p ${_item_path}/Resources/English.lproj
+       chmod 0755 $_item_path
+    fi
+
+    # Backup Daemon script file and startup parameter file
+    (cd $_item_path
+     if [ -f LSFDaemons ] ; then
+         echo "Saving ${_item_path}/LSFDaemons to ${_item_path}/LSFDaemons.old"
+         mv LSFDaemons LSFDaemons.old
+     fi
+     if [ -f StartupParameters.plist ] ; then
+         echo "Saving ${_item_path}/StartupParameters.plist to ${_item_path}/StartupParameters.plist.old"
+         mv StartupParameters.plist StartupParameters.plist.old 
+     fi
+
+     if [ -f Resources/English.lproj/Localizable.strings ] ; then
+          echo "Saving ${_item_path}/Resources/English.lproj/Localizable.strings to ${_item_path}/Resources/English.lproj/Localizable.strings.old"
+          mv Resources/English.lproj/Localizable.strings Resources/English.lproj/Localizable.strings.old
+     fi
+
+    )
+
+    _daemon_script=${_item_path}/LSFDaemons
+    _daemon_plist=${_item_path}/StartupParameters.plist
+    _daemon_resource=${_item_path}/Resources/English.lproj/Localizable.strings
+
+    # Create Daemon script
+############################################################
+    cat << ENDOFSCRIPT > $_daemon_script
+#!/bin/sh
+
+##
+# Start LSF Daemons
+##
+
+. /etc/rc.common
+
+#If automount used, we need to mount it first.
+ls ${LSF_SERVERDIR}/lsf_daemons >/dev/null 2>&1
+
+if [ -f ${LSF_SERVERDIR}/lsf_daemons ] ; then
+    ConsoleMessage "Starting LSF Daemons"
+    ${LSF_SERVERDIR}/lsf_daemons start
+fi
+ENDOFSCRIPT
+############################################################
+
+    # Create Daemon start up parameter list file
+############################################################
+    cat << ENDOFPLIST > $_daemon_plist
+{     
+  Description     = "LSF Daemons";
+  Provides        = ("LSF Daemons");
+  Requires        = ("Network");
+  Uses            = ("NFS", "Resolver", "NIS");
+  OrderPreference = "Late";
+  Messages =
+  {   
+    start = "Starting LSF Daemons";
+    stop  = "Stopping LSF Daemons";
+  }; 
+}    
+ENDOFPLIST
+############################################################
+
+    # Create Resource file
+############################################################
+    cat << ENDOFRESOURCE > $_daemon_resource
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+        <key>Starting LSF Daemons</key>
+        <string>Starting LSF Daemons</string>
+</dict>
+</plist>
+ENDOFRESOURCE
+############################################################
+
+    # Change access permision
+    chmod 0555 $_daemon_script
+    chmod 0444 $_daemon_plist
+    chmod 0444 $_daemon_resource
+
+    if [ -f $_daemon_script -a -f $_daemon_plist -a -f $_daemon_resource ] ; then
+        DONE=yes
+        return 0
+    else
+        echo "setup_rc failed, can't create $_daemon_script $_daemon_plist" 
+        DONE=no
+        return 1
+    fi
+ 
+        fi 
+################# End of Installing startup code on Mac OS X  ###################
+        # SUP_BY_DEV20533
+        # on aix , assumption that /etc/rc.d implys /etc/rc.d/init.d does not hold.
+        # just add startup code into rc.local
+        hosttype=`uname`
+        if ( test "$hosttype" != "AIX" ) && ( test -d /sbin/init.d || test -d /etc/init.d|| test -d /etc/rc.d ); then
+    	    # get the name of the init directory
+	    if [ -d  /etc/rc.d ] ; then
+	        sdir=/etc/rc.d
+            elif [ -d /sbin/init.d ] ; then
+		sdir=/sbin
+	    else
+	        sdir=/etc
+	    fi
+
+
+	    # Get the run level from /etc/inittab
+	    runlev=`$AWK -F: '$3 == "initdefault" && $1 !~ "#" { print $2 }' /etc/inittab`
+	    stoplev=`expr ${runlev:=3} - 1`
+	    while [ $stoplev -gt 0 -a ! -d $sdir/rc${stoplev}.d ]
+	    do
+	        stoplev=`expr $stoplev - 1`
+	    done
+	    LSFlsf="lsf"
+	    if [ -f $sdir/rc${runlev}.d/S95lsf -o -f $sdir/rc${stoplev}.d/K05lsf ]; then
+	        echo "S95lsf or K05lsf already exists."
+	        echo "Will save the startup script in S95LSF and K05LSF."
+	        LSFlsf="LSF"
+	    fi
+
+	    echo "    Adding startup code to $sdir/init.d ... "
+	
+	    #if ln -f -s $LSF_SERVERDIR/lsf_daemons $sdir/init.d/lsf \
+	    if /bin/cp -f $LSF_SERVERDIR/lsf_daemons $sdir/init.d/lsf \
+	        && ln -f -s $sdir/init.d/lsf $sdir/rc${runlev}.d/S95${LSFlsf} \
+	        && ln -f -s $sdir/init.d/lsf $sdir/rc${stoplev}.d/K05${LSFlsf}
+	    then
+	        #echo "    ln -f -s $LSF_SERVERDIR/lsf_daemons $sdir/init.d/lsf"
+	        echo "    /bin/cp -f $LSF_SERVERDIR/lsf_daemons $sdir/init.d/lsf"
+	        echo "    ln -f -s $sdir/init.d/lsf $sdir/rc${runlev}.d/S95${LSFlsf}"
+	        echo "    ln -f -s $sdir/init.d/lsf $sdir/rc${stoplev}.d/K05${LSFlsf}"
+	        DONE=yes
+	    else
+	        echo "    Setup failed: cannot install $sdir/init.d/lsf."
+	    fi
+
+	    if [ "$DONE" = "yes" -a -d /etc/rc.config.d ] ; then
+	        # needed on hp10
+	        echo "    Adding LSF configuration to /etc/rc.config.d/lsf ... "
+	        echo "LSF=1" > /etc/rc.config.d/lsf
+	        if [ "$?" != "0" ] ; then
+	            echo "    Setup failed: cannot add /etc/rc.config.d/lsf."
+	   	    DONE=no
+	        else
+	  	    DONE=yes
+	        fi
+	    fi
+        elif [ -d /etc/rc.d/rc.misc ] ; then
+	    # this is linux
+ 	    LSFlsf="lsf"
+	    if [ -f /etc/rc.d/rc.misc/rc.lsf ]; then
+	        echo "rc.lsf  already exists."
+	        echo "Will save the startup script in rc.LSF."
+	        LSFlsf="LSF"
+	    fi
+	    RCMISC="/etc/rc.d/rc.misc/rc.${LSFlsf}"
+	    echo "    Adding startup code to $RCMISC ... "
+            if ln -f -s $LSF_SERVERDIR/lsf_daemons $RCMISC
+            then
+	        echo "    ln -f -s $LSF_SERVERDIR/lsf_daemons $RCMISC"
+	        DONE=yes
+	    else
+	        echo "    Setup failed: cannot install $RCMISC."
+            fi		
+        elif test -f /etc/rc.local -a -r /etc/rc.local ;
+        then
+	    RCLOCAL=/etc/rc.local
+	    doit=yes
+	    if grep '%LSF_START%' $RCLOCAL >$LSNULFILE
+	    then
+	        if yesno "LSF daemons are already started in $RCLOCAL.  Add again?" >$LSNULFILE
+	        then
+		doit=yes
+	        else
+	    	    doit=no
+	        fi
+	    fi
+
+            if test "$doit" = no
+            then
+	        DONE=yes
+	    else
+                rm -f $RCLOCAL.old
+                echo "    Saving $RCLOCAL to $RCLOCAL.old ..."
+                cp $RCLOCAL $RCLOCAL.old
+
+                ed $RCLOCAL << RCL_ED > $LSNULFILE 2>&1
+/%LSF_START%/,/%LSF_END%/d
+w
+q
+RCL_ED
+	        echo "    Adding startup code to $RCLOCAL ... "
+	        echo "# %LSF_START% Start LSF daemons" >> $RCLOCAL
+	        echo "$LSF_SERVERDIR/lsf_daemons start" >> $RCLOCAL
+	        echo "# %LSF_END%" >> $RCLOCAL
+	        if [ "$?" != "0" ] ; then
+	            echo "    Setup failed: cannot update $RCLOCAL."
+	        else
+	            DONE=yes
+	        fi
+   	    fi
+        else
+            hosttype=`uname`
+            if [ "$hosttype" = "AIX" ]
+            then
+                RCLOCAL=/etc/rc.local
+
+                mkitab -i rcnfs "rclocal:2:wait:/etc/rc.local >/dev/console 2>&1"
+                touch $RCLOCAL
+                chmod 700 $RCLOCAL
+
+                ed $RCLOCAL << RCL_ED > $LSNULFILE 2>&1
+/%LSF_START%/,/%LSF_END%/d
+w
+q
+RCL_ED
+                echo "    Adding startup code to $RCLOCAL ... "
+                echo "# %LSF_START% Start LSF daemons" >> $RCLOCAL
+                echo "$LSF_SERVERDIR/lsf_daemons start" >> $RCLOCAL
+                echo "# %LSF_END%" >> $RCLOCAL
+                if [ "$?" != "0" ] ; then
+                    echo "    Setup failed: cannot update $RCLOCAL."
+                else
+                    DONE=yes
+                fi
+            else
+                 cat << RC_FAIL
+    Cannot figure out where to put startup scripts in your system.
+RC_FAIL
+            fi
+        fi
+    else
+        SETRC=n
+    fi
+ fi
+if [ "$DONE" != "yes" -a "$SETRC" = "y" ] 
+then
+    echo
+    echo "Boot daemon code not installed - you MUST install it by hand."
+    echo Try adding \"$LSF_SERVERDIR/lsf_daemons start\" to /etc/rc or
+    echo creating /etc/rc.local.
+#   echo $enf "Press Enter to continue ..." $enl
+#   read N
+fi
+
+}
+
+#-----------------------------------------------------------------------
+#
+#   setup_lsfconf
+#
+#   Setup the link to the appropriate lsf.conf/lsf.conf.client
+#
+#----------------------------------------------------------------------
+setup_lsfconf()
+{
+
+
+if [ "$LSF_DEFAULT_INSTALL" = 'y' ]; then
+    lsf_conf=$LSF_CONFDIR/lsf.conf
+    if [ "$LSF_CONFDIR" = "$LSF_ENVDIR" ] ; then
+        return
+    fi
+else
+    lsf_conf=$LSF_SERVERDIR/lsf.conf
+    if [ "$LSF_SERVERDIR" = "$LSF_ENVDIR" ] ; then
+        return
+    fi
+fi
+
+if test -f $LSF_ENVDIR/lsf.conf
+then
+    if diff $LSF_ENVDIR/lsf.conf $lsf_conf >$LSNULFILE 2>&1
+    then
+	return 0
+    else
+	echo Saving old $LSF_ENVDIR/lsf.conf file as $LSF_ENVDIR/lsf.conf.old
+	rm -f $LSF_ENVDIR/lsf.conf.old
+	cp $LSF_ENVDIR/lsf.conf $LSF_ENVDIR/lsf.conf.old
+	rm -f $LSF_ENVDIR/lsf.conf
+	echo ln -s $lsf_conf $LSF_ENVDIR/lsf.conf
+	ln -s $lsf_conf $LSF_ENVDIR/lsf.conf
+	if [ ! -r $LSF_ENVDIR/lsf.conf ]; then 
+	    echo cp $lsf_conf $LSF_ENVDIR/lsf.conf  
+	    cp  $lsf_conf $LSF_ENVDIR/lsf.conf
+        fi
+
+ 	(set $LSF_ENVDIR/lsf.conf $LSF_ENVDIR/lsf.conf.old)
+	if [ $? != 0 ] ; then
+	    return 1
+	fi
+    fi
+else
+    make_dir "$LSF_ENVDIR"
+    rm -f $LSF_ENVDIR/lsf.conf
+    echo Installing lsf.conf file for this host ... 
+    echo ln -s $lsf_conf $LSF_ENVDIR/lsf.conf
+    ln -s $lsf_conf $LSF_ENVDIR/lsf.conf
+    if [ ! -r $LSF_ENVDIR/lsf.conf ]; then
+        echo cp $lsf_conf $LSF_ENVDIR/lsf.conf
+        cp $lsf_conf $LSF_ENVDIR/lsf.conf
+    fi 
+    if [ $? != 0 ] ; then
+	return 1
+    fi
+fi
+
+return 0
+}
+
+#----------------------------------------------------------------
+#   main routine
+#----------------------------------------------------------------
+
+
+#Original parameter include: LSF_ENVDIR, $_isServer, $SETRC, $_doLink, $_doSetupConf
+#insert a new parameter: LSF_LINK_PATH
+LSF_LINK_PATH=$6
+
+if [ "$_host" = "" ]; then
+    _host=$7
+else
+    :
+fi
+
+LSNULFILE=/dev/null
+export LSNULFILE
+
+LSF_ENVDIR=$1
+_isServer=$2
+SETRC=$3
+_doLink=$4
+_doSetupConf=$5
+ 
+. $LSF_ENVDIR/lsf.conf
+
+test "$LSF_INDEP" = "" && { echo An unrecoverable error has occurred in the lsf.conf file. Exiting ... ; exit ; }
+
+REMOTE_SH="y"
+if test -r /tmp/funcs.sh; then
+    . /tmp/funcs.sh
+else
+    . $sp/funcs.sh
+fi
+               
+_hostType=`uname -a`
+found_binary_type "$_hostType"
+
+# The next 8 line will set LSF_BINDIR etc., they will be use in check_bin.
+# Bin can be checked in rsh_setup.
+if test "$LSF_DEFAULT_INSTALL" = "y"; then
+    _bins="$LSF_INDEP/$BINARY_TYPE"
+else
+#    _bins="$LSF_MACHDEP/$BINARY_TYPE"
+    _bins="$LSF_MACHDEP"
+fi      
+test "$LSF_SERVERDIR" = "" && LSF_SERVERDIR=$_bins/etc
+test "$LSF_BINDIR" = "" && LSF_BINDIR=$_bins/bin
+test "$LSF_LIBDIR" = "" && LSF_LIBDIR=$_bins/lib
+
+if [ -d /etc/rc.config.d ] ; then
+
+# For install HP10 HP11 from other platform
+    if grep "#!/sbin/sh" ${_bins}/etc/lsf_daemons >$LSNULFILE 2>&1; then
+        :
+    else
+        mv ${_bins}/etc/lsf_daemons ${_bins}/etc/lsf_daemons.old
+        echo "#!/sbin/sh" > ${_bins}/etc/lsf_daemons
+        echo "# hp10 need follow two lines" >> ${_bins}/etc/lsf_daemons
+        echo "PATH=$PATH:/usr/sbin:/usr/bin:/sbin" >>${_bins}/etc/lsf_daemons
+        echo "export PATH" >> ${_bins}/etc/lsf_daemons
+        sed -e "s|#!/bin/sh||" < ${_bins}/etc/lsf_daemons.old >> ${_bins}/etc/lsf_daemons
+    fi
+
+    chmod 755 ${_bins}/etc/lsf_daemons
+
+else
+
+# For install other platform from HP10 HP11
+    if grep "#!/sbin/sh" ${_bins}/etc/lsf_daemons  >$LSNULFILE 2>&1; then
+        mv ${_bins}/etc/lsf_daemons ${_bins}/etc/lsf_daemons.old
+        sed -e "s|#!/sbin/sh|#!/bin/sh|" < ${_bins}/etc/lsf_daemons.old > ${_bins}/etc/lsf_daemons
+    else
+        :
+    fi
+
+    chmod 755 ${_bins}/etc/lsf_daemons
+fi
+
+if [ "$_doLink" = "y" -a "$LSF_LINK_PATH" != "" ]; then
+    echo "Creating symbolic links ..."
+    for _dir in bin etc lib; do
+        _linkDir="$LSF_LINK_PATH/$_dir"
+
+        echo ln -s $_bins/$_dir $_linkDir
+
+	_tmp=`echo $_linkDir | sed -e "s/^[ 	]*//"`
+   	if test "$_tmp" = "$_dir"; then
+            echo LSF_LINK_PATH is empty. 
+			echo Cannot create symbolic links for this host.
+            continue
+        fi
+
+        if [ -f $_linkDir -o -d $_linkDir -o -h $_linkDir ]; then
+	    _old=${_linkDir}.old
+	    if [ -f $_old -o -d $_old -o -h $_old ]; then
+		rm -rf $_old
+	    fi
+            mv $_linkDir  $_old
+	fi
+        ln -s $_bins/$_dir $_linkDir
+    done
+fi
+
+if test "$_doSetupConf" = "y"; then
+    echo Doing lsf.conf file setup ...
+
+    if is_root ; then
+        LSF_ENVDIR=/etc
+    else
+        LSF_ENVDIR=$LSF_CONFDIR
+    fi
+
+    if setup_lsfconf
+    then
+        echo "lsf.conf file setup is done."
+    else
+        echo "Cannot set up /etc/lsf.conf file."
+    fi                 
+fi
+
+
+echo Doing services setup ...
+if setup_services
+then 
+    echo "Services registered."
+else
+    echo Cannot register LSF services.
+fi
+
+
+if [ "$SETRC" = "y" ] ; then
+    echo Doing rc files setup ...
+    if is_root ; then
+        test "$_isServer" = "y"  && setup_rc
+    else
+        cat <<BOOT_RC
+
+    You are not root and cannot change the rc file to start LSF servers 
+    on machine reboot. If you want LSF daemons to automatically start when 
+    your machine reboots, you must install the start code. Try adding 
+    `echo \"$LSF_SERVERDIR/lsf_daemons start\" to /etc/rc or creating` 
+    /etc/rc.local.
+
+BOOT_RC
+    fi 
+fi
+
+check_bins

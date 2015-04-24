@@ -1,0 +1,65 @@
+#!/bin/sh 
+
+# This program kills processes that belong to the user and contain the
+# specified string but do not contain the excepted string in the command line.
+
+if [ $# = 0 -o $#  -gt 3 ] ; then
+    echo Usage: $0  [-sig] process_string [except_string]
+    exit 1
+fi
+
+arg0=$0
+
+while test x$1 != x
+do
+    case $1 in
+	-*) if [ "$SIG" != "" ] ; then 
+		echo Usage: $arg0  [-sig] process_string [except_string]
+		exit 1
+	    else 
+		SIG=$1; 
+	    fi;;
+	 *) if [ "$string" = "" ] ; then 
+		string=$1;
+	    else
+		if [ "$except" = "" ] ; then
+		    except=$1;
+		else
+		    echo Usage: $arg0  [-sig] process_string [except_string]; 
+		    exit 1
+		fi
+	    fi;;
+    esac
+    shift
+done
+
+if [ "$string" = "" ] ; then
+    echo Usage: $arg0  [-sig] process_string [except_string];
+    exit 1
+fi
+
+if [ "$except" = "" ] ; then
+    except=$arg0
+fi
+
+user=`whoami`
+mypid=$$
+
+if [ `uname` = "HP-UX" ] ; then
+   psx="/bin/ps -x"
+else
+   psx="/bin/ps x"
+fi
+$psx >/dev/null 2>&1
+if [ $? = 0 ] ; then
+   pids=`/bin/ps x | grep -v PID |grep $string | grep -v $except | grep -v lsgrun| grep -v $mypid | grep -v grep | awk '{print $1}'` 
+else
+   pids=`/bin/ps -u $user | grep -v PID |grep $string | grep -v $except | grep -v lsgrun| grep -v $mypid | grep -v grep | awk '{  print $1}'`
+fi
+
+if [ "$pids" = "" ] ; then
+    exit 0
+fi
+
+kill $SIG $pids >/dev/null 2>&1
+

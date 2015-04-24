@@ -1,0 +1,47 @@
+#!/bin/sh
+#$RCSfile: esub.mpich_mx,v $Revision: 1.5 $Date: 2013/01/10 05:51:04 $
+#
+#If the user wants to rename the default queue in lsb.queues,
+#don't forget to change this variable's value.
+DEFAULT_HPC_QUEUE_NAME="hpc_linux"
+LSB_SUB_QUEUE=""
+
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    # if not set do nothing
+    exit 0
+fi
+
+. $LSB_SUB_PARM_FILE
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+# First check if user defined this variable
+# in envrionment, if not check lsf.conf
+if [ -z "$LSF_PJL_COMPAT" ]; then
+    . ${LSF_ENVDIR}/lsf.conf
+fi
+
+# Assume
+MX_ADDITIONAL_KEY="mpich_mx"
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+# set enviroment variable LSF_PJL_TYPE to mpich_mx
+# mpirun.lsf will read this variable to decide
+# which PJL_wrapper to insert to the command line
+echo "LSF_PJL_TYPE=\"$MX_ADDITIONAL_KEY\"" >> $LSB_SUB_MODIFY_ENVFILE
+
+if [ -z "$LSB_SUB_QUEUE" ]; then
+   echo "LSB_SUB_QUEUE=\"$DEFAULT_HPC_QUEUE_NAME\"" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#useful for debugging purposes
+#echo "LSB_SUB_PARM_FILE contains:"
+#more $LSB_SUB_PARM_FILE
+#echo "LSB_SUB_MODIFY_FILE contains:"
+#more $LSB_SUB_MODIFY_FILE
+#exit $LSB_SUB_ABORT_VALUE
+

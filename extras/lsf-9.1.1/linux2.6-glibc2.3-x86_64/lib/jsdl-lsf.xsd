@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema 
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:jsdl-lsf="http://www.platform.com/lsf/2006/01/jsdl-lsf"
+    targetNamespace="http://www.platform.com/lsf/2006/01/jsdl-lsf" 
+    elementFormDefault="qualified">
+    
+    <xs:element name="Queue" type="xs:string"/>
+    <xs:element name="ResourceRequirements" type="xs:string"/>
+    <xs:element name="Start" type="xs:string"/>
+    <xs:element name="Deadline" type="xs:string"/>
+    <xs:element name="ReservationID" type="xs:string"/>
+    <xs:element name="Dependencies" type="xs:string"/>
+    <xs:element name="Rerunnable" type="xs:boolean"/>
+    <xs:element name="UserPriority" type="xs:integer"/>
+    <xs:element name="ServiceClass" type="xs:string"/>
+    <xs:element name="Group" type="xs:string"/>
+    <xs:element name="ExternalScheduler" type="xs:string"/>
+    <xs:element name="Hold" type="xs:boolean"/>
+    <xs:element name="JobGroup" type="xs:string"/>
+    
+    <xs:element name="SchedulerParams">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="jsdl-lsf:Queue" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:ResourceRequirements" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Start" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Deadline" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:ReservationID" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Dependencies" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Rerunnable" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:UserPriority" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:ServiceClass" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Group" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:ExternalScheduler" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Hold" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:JobGroup" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="NotifyAtStart" type="xs:boolean"/>
+    <xs:element name="NotifyAtFinish" type="xs:boolean"/>
+    <xs:element name="NotificationEmail" type="xs:string"/>
+    
+    <xs:element name="NotificationParams">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="jsdl-lsf:NotifyAtStart" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:NotifyAtFinish" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:NotificationEmail" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="Interactive">
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+                <xs:enumeration value="pipe"/>
+                <xs:enumeration value="p"/>
+                <xs:enumeration value="s"/>
+            </xs:restriction>
+        </xs:simpleType>
+    </xs:element>
+    <xs:element name="Block" type="xs:boolean"/>
+    <xs:element name="PreExec" type="xs:string"/>
+    <xs:element name="Checkpoint" type="xs:string"/>
+    <xs:element name="LoginShell" type="xs:string"/>
+    <xs:element name="SignalJob" type="xs:string"/>
+    <xs:element name="WarningAction" type="xs:string"/>
+    <xs:element name="WarningTime" type="xs:int"/>
+    <xs:element name="SpoolCommand" type="xs:boolean"/>
+    
+    <xs:element name="RuntimeParams">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="jsdl-lsf:Interactive" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Block" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:PreExec" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:Checkpoint" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:LoginShell" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:SignalJob" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:WarningAction" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:WarningTime" minOccurs="0"/>
+                <xs:element ref="jsdl-lsf:SpoolCommand" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+</xs:schema>

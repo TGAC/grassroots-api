@@ -1,0 +1,247 @@
+#$Id: defInstall,v 1.2 2012/06/08 03:37:23 sbadugu Exp $
+
+#---------------------------------------------------------------------------
+#
+# Set up interrupt handlers:
+#
+#----------------------------------------------------------------------
+
+default_exit()
+{
+
+
+    trap '' 1 2 3 15
+    echo 
+    echo " LSF Default Installation preparing to exit ..."| tee -a $PREFIX_LOG/Install.log
+    echo
+
+    if [ -d "$LSF_INDEP" -a -n "$LSF_INDEP" ]; then
+	echo
+	echo "The following components have been installed in machine independent directory"| tee -a $PREFIX_LOG/Install.log
+	echo "($LSF_INDEP):"| tee -a $PREFIX_LOG/Install.log
+	ls $LSF_INDEP | tee -a $PREFIX_LOG/Install.log
+	DIR_TO_RM=$LSF_INDEP
+ 	if yesno "Delete all files in $DIR_TO_RM" N "" >$LSNULFILE
+	then
+	        echo "Deleting files in $DIR_TO_RM ..."| tee -a $PREFIX_LOG/Install.log
+                echo
+	        /bin/rm -fr $DIR_TO_RM/*
+        fi
+    fi
+    if [ -d "$LSF_WORKING_DIR" ]; then
+	echo "Deleting files in $LSF_WORKING_DIR ..."| tee -a $PREFIX_LOG/Install.log
+        echo
+
+	for _Platform in $SelectedOSVersions
+        do
+		if [ "$_Platform" != "" ] ; then
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform.tar
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform.tar.Z
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform.part1.tar.Z
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform.part2.tar.Z
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform.part1.tar
+			/bin/rm -fr $LSF_WORKING_DIR/$_Platform.part2.tar
+		fi
+        done
+
+        if [ "$removeWorkingDir" = "y" ]; then
+            if [ "$LSF_WORKING_DIR" != "/tmp" ]; then
+                /bin/rm -fr $LSF_WORKING_DIR
+            fi
+        fi
+    fi
+
+    echo " LSF Default Installation exiting ..."| tee -a $PREFIX_LOG/Install.log
+    echo `date` >>$PREFIX_LOG/Install.log
+    echo Receive signal and exit... >> $PREFIX_LOG/Install.log
+    echo >>$PREFIX_LOG/Install.log
+    exit 1
+}
+
+#---------------------------------------------------------------------
+#
+#  This script is sourced by lsfsetup.
+#
+#  Install LSF for the default.
+#--------------------------------------------------------------------
+defInstall()
+{
+    LSF_DEFAULT_INSTALL=y
+
+    trap default_exit 1 2 3 15
+
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+        DEFAULT_INSTALLDIR=$LSF_TOP
+    else
+        while [ 1 ]
+        do
+            echo  $enf "Where do you want to install LSF? [/usr/local/lsf]"  $enl  | tee -a $PREFIX_LOG/Install.log 
+            read DEFAULT_INSTALLDIR
+	    echo $DEFAULT_INSTALLDIR >> $PREFIX_LOG/Install.log
+
+            if [ "$DEFAULT_INSTALLDIR" = "$LSF_DIST_DIR" ]; then
+                echo "We recommend using different directories for" | tee -a $PREFIX_LOG/Install.log
+                echo "distribution directory and installation target." | tee -a $PREFIX_LOG/Install.log
+
+                if yesno "Do you want to continue? "  N "" >$LSNULFILE
+                then
+                    :
+                else
+                    continue
+                fi
+            fi
+     
+            if [ "$DEFAULT_INSTALLDIR" = "" ]; then
+     	        DEFAULT_INSTALLDIR=/usr/local/lsf
+            else
+         	# DEFAULT_INSTALLDIR must start with /  
+
+                if is_full_path $DEFAULT_INSTALLDIR; then
+                    :
+                else
+                    echo "You cannot install in $DEFAULT_INSTALLDIR."| tee -a $PREFIX_LOG/Install.log
+                    echo "Install path must start with /. Please specify"| tee -a $PREFIX_LOG/Install.log
+                    echo "an absolute path."| tee -a $PREFIX_LOG/Install.log
+                    echo
+                    continue
+                fi
+
+
+                if [ -f "$DEFAULT_INSTALLDIR" ]; then
+                    echo "You cannot install in $DEFAULT_INSTALLDIR."| tee -a $PREFIX_LOG/Install.log
+                    echo "$DEFAULT_INSTALLDIR is an existent file."| tee -a $PREFIX_LOG/Install.log
+                    echo "Please specify an absolute path of a directory."| tee -a $PREFIX_LOG/Install.log
+                    continue
+                fi
+            fi
+
+            check_dir_empty $DEFAULT_INSTALLDIR
+            check_dir_space $DEFAULT_INSTALLDIR
+
+	    if [ "$?" -gt 100 ]; then
+		continue
+	    fi
+
+            if yesno "Do you want to continue?" Y "" >$LSNULFILE
+            then
+                :
+            else
+                continue
+            fi
+
+	    cat << DEF_INSTALL | tee -a $PREFIX_LOG/Install.log
+
+    Default installation assumes that all files are installed on a single
+    file server and that the installation directory is accessible with the
+    same path name from all machines that will run LSF.
+
+DEF_INSTALL
+   
+
+            if yesno "Install LSF in $DEFAULT_INSTALLDIR" Y "" >$LSNULFILE
+	    
+            then
+	        if [ ! -d $DEFAULT_INSTALLDIR ]; then 
+	            make_dir  $DEFAULT_INSTALLDIR
+	            create_it=y
+                fi
+
+		if is_root; then
+		    :
+		else
+		    if writable $DEFAULT_INSTALLDIR; then
+			:
+		    else 
+                        echo "The directory $DEFAULT_INSTALLDIR"| tee -a $PREFIX_LOG/Install.log
+                        echo "is not writable for non-root installation."| tee -a $PREFIX_LOG/Install.log
+			continue
+		    fi
+		fi
+	        break 
+            fi 
+        done
+
+        # In here we change /usr/local/lsf/ to /usr/local/lsf
+        lastfield=`echo $DEFAULT_INSTALLDIR | $AWK -F/ '{print $NF}'`
+        if [ "$lastfield" = "" ]; then
+            DEFAULT_INSTALLDIR=`echo $DEFAULT_INSTALLDIR | $AWK -F/ '{for(i=1;i<NF; i++){if(i==NF-1){printf "%s", $i}else{printf "%s/", $i}}}'`
+        fi
+    fi
+
+    # UNIFORM_DIR will be /usr/local/lsf
+    UNIFORM_DIR=$DEFAULT_INSTALLDIR
+
+    # append mnt to DEFAULT_INSTALLDIR 
+    DEFAULT_INSTALLDIR=$DEFAULT_INSTALLDIR/mnt
+
+    export DEFAULT_INSTALLDIR
+    export UNIFORM_DIR
+
+    echo `date` >>$PREFIX_LOG/Install.log
+    echo Initial Default Installation >> $PREFIX_LOG/Install.log
+    echo >>$PREFIX_LOG/Install.log
+
+    if [ "$UNATTENDED_INSTALL" != "y" ]; then
+        set_defaults
+    fi
+
+    # reset default values defined in default.config
+
+    LSF_INDEP=$DEFAULT_INSTALLDIR
+    LSF_MACHDEP=$LSF_INDEP
+    LSF_BINDIR=$UNIFORM_DIR/bin
+    LSF_SERVERDIR=$UNIFORM_DIR/etc
+    LSF_MANDIR=$LSF_INDEP/man
+    LSF_LIBDIR=$UNIFORM_DIR/lib
+    LSF_INCLUDEDIR=$LSF_INDEP/include
+    LSF_CONFDIR=$LSF_INDEP/conf
+    LSF_ENVDIR=$LSF_INDEP/conf
+    LSB_CONFDIR=$LSF_CONFDIR/lsbatch
+    LSB_SHAREDIR=$LSF_INDEP/work
+    LSF_MISC=$LSF_INDEP/misc
+    XLSF_APPDIR=$LSF_INDEP/misc
+    XLSF_UIDDIR=$LSF_LIBDIR/uid
+    LSF_LOGDIR=/tmp
+    LSF_LIM_PORT=6879
+    LSF_RES_PORT=6878
+    LSB_SBD_PORT=6882
+    LSB_MBD_PORT=6881
+    OPTSHARE="$OPTSHARE LSF_LIM_PORT LSF_RES_PORT LSB_MBD_PORT LSB_SBD_PORT"
+
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+        LSF_AUTH=eauth
+    else
+        if is_root ; then
+            # if yesno  "Do you wish to use external user authentication?" Y "help LSF_EAUTH"  > $LSNULFILE
+            # then
+
+            #Using eauth, only lsadmin badmin and eauth need to be setuid to root
+            LSF_AUTH=eauth
+            SETUIDS="lsadmin badmin" 
+
+            #fi
+        fi
+
+        . $sp/mandatory; mandatory
+        . $sp/nonroot; nonroot
+    fi
+
+    . $sp/newInstall; newInstall
+
+    check_setuid
+
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+	. $sp/hostsetup; hostsetup
+    else
+
+        if yesno "Do you want to set up LSF hosts now?" Y "" > $LSNULFILE
+        then
+            . $sp/hostsetup; hostsetup
+        fi
+    fi
+
+    echo "    Finished installing LSF." | tee -a $PREFIX_LOG/Install.log
+    echo "    Installation parameters should be in $LSF_CONFDIR/lsf.conf." | tee -a $PREFIX_LOG/Install.log
+
+} # Default Install 

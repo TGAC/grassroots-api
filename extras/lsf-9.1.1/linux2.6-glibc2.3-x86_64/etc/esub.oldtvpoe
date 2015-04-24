@@ -1,0 +1,649 @@
+#!/bin/sh
+# 
+# $RCSfile: esub.oldtvpoe,v $Revision: 1.2 $Date: 2013/01/10 05:51:07 $
+# 
+# (1)user interface is in the form of:
+#    bsub [-a tvpoe][bsub options]program[program options][poe options][-tvopt [TV options]]
+#
+# (2)This script performs similar functions as esub.poe, and finally
+# converts the above submission into the form of
+#    bsub [bsub options] totalview pam [TV options] -a -g 1 -tv poejob program[program options][poe options]
+#
+# (3)User should add totalview's path to $PATH at submission host.
+TV="totalview"
+TV_ARGS=
+Corefile=$TVCORE #TV's corefile name.
+
+HPC_PJL="poejob"
+TVPOE_ADDITIONAL_KEY="tvpoe"
+
+# If the user wants to rename the default queue,
+# rename the queue in lsb.queues and then modify this variable's value.
+HPC_SUB_QUEUE="hpc_ibm_tv"
+
+LSB_SUB_EXCLUSIVE=""
+LSB_SUB_ADDITIONAL="1" #any value different from poe
+LSB_SUB_QUEUE=""
+LSB_SUB_RES_REQ=""
+
+APP_NAME=""
+SWTBL_APP_ARGS=""
+
+#default value of resource "adapter_windows"
+#for any specific switch type, user should verify the correct value,
+#e.g., for Colony switch this should be 16.
+# 
+POE_ADAPTER_US_WINDOWS_DEFAULT=4
+
+#extend the duration value to a larger value for debugging. 
+RUS_DURATION="duration=10"
+
+exec 1>& 2
+
+#read bsub parameters from the file:
+if [ x"$LSB_SUB_PARM_FILE" != "x" ]; then
+   .  $LSB_SUB_PARM_FILE
+else
+   exit 0
+fi
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+#
+# if LSF_PJL_COMPAT=Y is not set in either the environment
+# or the lsf.conf, esub will only
+# set enviroment variable LSF_PJL_TYPE to poe and then exit.
+# mpirun.lsf will read this variable to decide
+# which PJL_wrapper to insert to the command line
+#
+if [ "$LSF_PJL_COMPAT" != "y" -a "$LSF_PJL_COMPAT" != "Y" ]; then
+    tmp=`grep "LSF_PJL_COMPAT=" $LSF_ENVDIR/lsf.conf | sed -e "s/LSF_PJL_COMPAT=//g"`
+    if [ "$tmp" != "y" -a "$tmp" != "Y" ]; then
+        echo "LSF_PJL_TYPE=\"$TVPOE_ADDITIONAL_KEY\"" >> $LSB_SUB_MODIFY_ENVFILE
+        exit 0
+    fi
+fi
+#Strip comment in command line
+LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+BEGIN { RS=";"; command=""; counter=0}
+$0 !~ /^[ \t]*#/ {
+    if ( counter == 0 )
+       command = $0
+    else
+       command = sprintf("%s;%s", command, $0)
+    counter = counter + 1
+
+}
+END { print command } '`
+
+#At first extract TV-specific options and remove them from $LSB_SUB_COMMAND_LINE
+_COMMAND_LINE_=
+TVargs_found=0
+for item in $LSB_SUB_COMMAND_LINE 
+do
+case $item in
+     -tvopt)
+     TVargs_found=1
+     ;;
+ 
+     *)
+     if [ $TVargs_found = 1 ]; then
+        TV_ARGS="$TV_ARGS $item"
+     else
+        _COMMAND_LINE_="$_COMMAND_LINE_ $item"
+     fi         
+     ;;
+esac
+done
+
+LSB_SUB_COMMAND_LINE=$_COMMAND_LINE_
+#
+#From now on do the same as what the esub.poe does, except the difference in the final 
+#$LSB_SUB_COMMAND_LINE:
+#
+#extract program[program options] from $LSB_SUB_COMMAND_LINE line
+#the end of the [program options] section is assumed to be when any one of poe-options is encountered.
+#
+if [ x"$LSB_SUB_COMMAND_LINE" = "x" ]; then 
+   echo "error: command  line is empty"
+   exit $LSB_SUB_ABORT_VALUE
+fi
+
+for item in $LSB_SUB_COMMAND_LINE
+do
+case $item in
+     -adapter_use | -cpu_use | -euidevice | -euilib | -euilibpath | -pulse | -retry |\
+     -retrycount | -rmpool | -savehostfile | -spname | -newjob | -lablelio |\
+     -stdinmodel | -stdoutmodel | -samplefreq | -sfreq | -tbuffsize | -tbsize |\
+     -tbuffwrap | -tbwrap | -tmpdir | -tracedir | -tdir | -tracefile | -tfile | -tracelevel |\
+     -tlevel | -ttempsize | -ttsize | -infolevel | -ilevel | -pmdlog | -buffer_mem |\
+     -css_interrupt| -eager_limit| -intrdelay| -max_typedepth| -use_flow_control|\
+     -euidevelop| -pmlights| -usrport| -coredir| -resd| -hostfile| -hfile|\
+     -procs| -cmdfile| -pgmmodel| -thread_stacksize| -single_thread| -wait_mode|\
+     -polling_interval)
+     break  #stop at the beginning of [poe options] section.
+     ;;
+      #anything else is assumed to be program[program options]
+     *)
+     if [ x"$APP_NAME" = "x" ]; then
+        APP_NAME=$item
+     else
+        SWTBL_APP_ARGS="$SWTBL_APP_ARGS $item"
+     fi
+     ;;
+  esac
+done
+#
+#extract poe options from $LSB_SUB_COMMAND_LINE and do consistency check. 
+#
+optValueCmdfile=0
+optValueProcs=0
+optValueCpuUse=0
+optValueAdapterUse=0
+optValueEuiDevice=0
+optValueEuiLib=0
+optValueRmPool=0
+optValueSpName=0
+optValuePoeOther=0
+optNamePoeOther=
+
+for item in $LSB_SUB_COMMAND_LINE
+do
+case $item in
+  -procs)
+     optValueProcs=1 #indicate that next item should be a value of -procs
+     ;;
+  -cpu_use)
+     optValueCpuUse=1
+     ;;
+  -cmdfile)
+     optValueCmdfile=1
+     ;;  
+  -adapter_use)
+     optValueAdapterUse=1
+     ;;
+  -euidevice)
+     optValueEuiDevice=1
+     ;;
+  -euilib)
+     optValueEuiLib=1
+     ;;
+  -rmpool)
+     optValueRmPool=1
+     ;;
+  -spname)
+     optValueSpName=1
+     ;;
+  
+  -euilibpath | -pulse | -retry |\
+  -retrycount | -savehostfile | -newjob | -lablelio |\
+  -stdinmodel | -stdoutmodel | -samplefreq | -sfreq | -tbuffsize | -tbsize |\
+  -tbuffwrap | -tbwrap | -tmpdir | -tracedir | -tdir | -tracefile | -tfile | -tracelevel |\
+  -tlevel | -ttempsize | -ttsize | -infolevel | -ilevel | -pmdlog | -buffer_mem |\
+  -css_interrupt| -eager_limit| -intrdelay| -max_typedepth| -use_flow_control|\
+  -euidevelop| -pmlights| -usrport| -coredir| -resd| -hostfile| -hfile|\
+  -pgmmodel| -thread_stacksize| -single_thread| -wait_mode|\
+  -polling_interval)
+     optValuePoeOther=1
+     optNamePoeOther=$item
+     ;;
+      
+  *)
+   if [ $optValueProcs = 1 ] ; then 
+      optValueProcs=0
+      # -procs's value is always ignored unless -n is not specified in the command line.
+      # At startup, poejob always uses the lsf-scheduling result specified by LSB_MCPU_HOSTS
+      # to calculate number of processors POE should allocate for the job and set MP_PROCS
+      # to be that value.
+      # Note that even -n is not specified in bsub's command line, LSB_SUB_MAX_NUM_PROCESSORS
+      # and LSB_SUB_NUM_PROCESSORS lines are still in the file $LSB_SUB_MODIFY_FILE with the
+      # default value 1.
+      # 
+      continue
+   fi
+   if [ optValueCmdfile = 1 ]; then
+      optValueCmdfile=0 #ignore -cmdfile, avoid conflict with SUP_BY_DEV28715
+      continue
+   fi
+   if [ $optValueCpuUse = 1 ]; then
+      optValueCpuUse=0
+      #set the most restrictive value.
+      if [ $item = "unique" -o $LSB_SUB_EXCLUSIVE = "Y" ]; then
+           item="unique"
+           LSB_SUB_EXCLUSIVE="Y"
+      fi
+      SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS -cpu_use $item"
+      continue
+    fi
+    if [ $optValueAdapterUse = 1 ]; then
+         optValueAdapterUse=0
+         #keep this value for resource requirement string construction.
+         POE_ADAPTER_USE=$item
+         SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS -adapter_use $item"
+         continue
+    fi
+    if [ $optValueEuiDevice = 1 ]; then
+         optValueEuiDevice=0
+         #keep this value for later consistency check against -euilib's value
+         POE_EUIDEVICE=$item
+         continue
+    fi
+    if [ $optValueEuiLib = 1 ]; then
+         optValueEuiLib=0
+         #keep this value for later consistency check against -euidevice's value.
+         POE_EUILIB=$item
+         continue
+    fi
+    if [ $optValueRmPool = 1 ]; then
+         optValueRmPool=0
+         #keep this value for resource requirement string construction.
+         POE_RMPOOL=$item
+         continue
+    fi
+    if [ $optValueSpName = 1 ]; then
+         optValueSpName=0
+         #keep this value for resource requirement string construction.
+         POE_SPNAME=$item
+         continue
+    fi
+    #keep any other options value
+    if [ $optValuePoeOther = 1 ]; then
+       optValuePoeOther=0
+       SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS $optNamePoeOther $item"
+       optNamePoeOther=
+       continue
+    fi  
+    ;;
+  esac
+done
+
+if [ x"$POE_EUILIB" = "x" ]; then
+   POE_EUILIB=$MP_EUILIB
+   #no default value
+fi
+if [ x"$POE_EUIDEVICE" = "x" ]; then
+   POE_EUIDEVICE=$MP_EUIDEVICE
+   #no default value
+fi
+
+#US-protocol must use SP-switch
+if [ "$POE_EUILIB" = "us" ]; then
+   POE_EUIDEVICE="css0"
+   #LSB_LOAD_ADAPTER_WINDOW="yes"
+   #export $LSB_LOAD_ADAPTER_WINDOW
+   echo "LSB_LOAD_ADAPTER_WINDOWS=yes" >> $LSB_SUB_MODIFY_ENVFILE
+fi
+if [ x"$POE_ADAPTER_USE" = "x" ]; then
+   #get it from environment.
+   POE_ADAPTER_USE=$MP_ADAPTER_USE
+   if [ x"$POE_ADAPTER_USE" = "x" ]; then
+      #set default value
+      if [ "$POE_EUILIB" = "us" ]; then
+         POE_ADAPTER_USE="dedicated"
+      fi
+      if [ "$POE_EUILIB" = "ip" ]; then
+         POE_ADAPTER_USE="shared"
+      fi  
+   fi
+fi
+if [ x"$POE_EUILIB" != "x" ]; then
+   SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS -euilib $POE_EUILIB"
+fi
+if [ x"$POE_EUIDEVICE" != x ]; then
+   SWTBL_POE_FLAGS="$SWTBL_POE_FLAGS -euidevice $POE_EUIDEVICE"
+fi
+
+#Re-assemble the command line.
+LSB_SUB_COMMAND_LINE="$TV pam $Corefile $TV_ARGS -a -g 1 -tv $HPC_PJL $APP_NAME $SWTBL_APP_ARGS $SWTBL_POE_FLAGS"
+echo "LSB_SUB_COMMAND_LINE=\"$LSB_SUB_COMMAND_LINE"\" >> $LSB_SUB_MODIFY_FILE 
+
+#Output parameter lines for bsub:
+#Only valued parameters are output.
+#
+if [ x"$LSB_SUB_EXCLUSIVE" = "x" ]; then
+    LSB_SUB_EXCLUSIVE=$MP_CPU_USE
+fi
+if [ "$LSB_SUB_EXCLUSIVE" = "Y" ]; then
+   echo "LSB_SUB_EXCLUSIVE=Y" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#If the user doesn't specify any queue, submit the job
+#to the default HPC-queue.
+if [ x"$LSB_SUB_QUEUE" = "x" ]; then
+   echo "LSB_SUB_QUEUE=\"$HPC_SUB_QUEUE"\" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#Construct or merge resource requirement string based-upon some poe options -rmpool, -spname, -euilib, 
+#-euidevice, -adapter_use write to $LSB_SUB_MODIFY_FILE
+#Temp variables:
+#tmp_select will be in the form of (XXX)&&(XXX)..&&(XXX)
+#tmp_rusage XXX:XXX...:XXX
+tmp_select=
+tmp_rusage=
+
+if [ x"$POE_ADAPTER_US_WINDOWS" = "x" ]; then
+     POE_ADAPTER_US_WINDOWS=$POE_ADAPTER_US_WINDOWS_DEFAULT
+fi
+
+if [ "$POE_EUIDEVICE" = "css0" ]; then
+     if [ "$POE_ADAPTER_USE" = "shared" ]; then 
+           case $POE_EUILIB in
+              us)
+                tmp_select="(dedicated_tasks==0)&&(adapter_windows>0)"
+                tmp_rusage="adapter_windows=1"
+                ;;
+              ip)
+                tmp_select="(dedicated_tasks==0)&&(adapter_windows>=0)"
+                tmp_rusage="ip_tasks=1"
+                ;;
+              *)
+                ;; 
+           esac
+     fi
+     if [ "$POE_ADAPTER_USE" = "dedicated" ]; then
+           case $POE_EUILIB in
+              us)
+                tmp_select="(dedicated_tasks==0)&&(adapter_windows==$POE_ADAPTER_US_WINDOWS)&&(ip_tasks==0)"
+                tmp_rusage="dedicated_tasks=1:adapter_windows=1"
+                ;;
+              ip)
+                tmp_select="(dedicated_tasks==0)&&(adapter_windows==$POE_ADAPTER_US_WINDOWS)&&(ip_tasks==0)"
+                tmp_rusage="dedicated_tasks=1:ip_tasks=1"
+                ;;
+              *)
+                ;; 
+           esac     
+     fi
+fi
+
+#Get values from environment if not specified in the command line.
+if [ x"$POE_RMPOOL" = "x" ]; then
+     POE_RMPOOL=$MP_RMPOOL
+fi
+if [ x"$POE_SPNAME" = "x" ]; then
+     POE_SPNAME=$SP_NAME
+fi
+if [ x"$POE_RMPOOL" != "x" ]; then
+   if [ x"$tmp_select" = "x" ]; then
+        tmp_select="(pool==$POE_RMPOOL)"
+   else
+        tmp_select="$tmp_select&&(pool==$POE_RMPOOL)"     
+   fi
+fi
+if [ x"$POE_SPNAME" != "x" ]; then
+   if [ x"$tmp_select" = "x" ]; then
+        tmp_select="(spname==\"$POE_SPNAME\")"
+   else
+        tmp_select="$tmp_select&&(spname==\"$POE_SPNAME\")"     
+   fi
+
+fi
+
+if [ x"$tmp_select" = "x" -a x"$tmp_rusage" = "x" ]; then
+     exit 0
+fi
+
+if [ x"$LSB_SUB_RES_REQ" = "x" ]; then
+	# No -R "job specific resource requirement string
+        if [ x"$tmp_select" != "x" ]; then
+           LSB_SUB_RES_REQ="select[$tmp_select]"
+        fi
+        if [ x"$tmp_rusage" != "x" ]; then
+           LSB_SUB_RES_REQ="$LSB_SUB_RES_REQ rusage[$tmp_rusage:duration=1]"
+        fi
+        
+	echo "LSB_SUB_RES_REQ=\"$LSB_SUB_RES_REQ"\" >> "$LSB_SUB_MODIFY_FILE"
+	
+else
+	# if -R "$LSB_SUB_RES_REQ" is specified, we need to get the select[] and 
+	# rusage[] sections if there are any, and append/create poe specific
+	# requirement $GM_SEL_KEY and $GM_RUS_KEY
+	# select[] section doesn't have to be delimited by the select[] keyword
+	# as specified on pp469 "Specifying Resource Requirements" in 
+	# "LSF Administrator's Guide 4.1
+	echo $LSB_SUB_RES_REQ | awk ' 
+        {
+            setting = "";
+
+            if (is_compound_resreq(str_orig)) {
+                setting = transform_compound_resreq(str_orig);
+            } else {
+                setting = transform_simple_resreq(str_orig);
+            }
+
+            print "LSB_SUB_RES_REQ=" "\"" setting "\"" >> MOD_FILE
+        }
+
+        function is_compound_resreq(instr)
+        {
+            a = index(instr, "{");
+            b = index(instr, "}");
+
+            if (a > 0 && b > 0 && a < b) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        function transform_compound_resreq(compound)
+        {
+            transform = "";
+
+            split(compound, terms, "+");
+
+            j = 1;
+            size = sizeof(terms);
+
+            while (j <= size) {
+
+                if (j > 1) {
+                    transform = transform "+";
+                }
+
+                s = index(terms[j], "*");
+                if (s > 0) {
+                    # Term looks like N1*{R1}
+                    slots = substr(terms[j], 1, s);
+                    resreq = substr(terms[j], s + 1, length(terms[j]));
+                } else {
+                    # Term looks like {R1}
+                    slots = "";
+                    resreq = terms[j];
+                }
+
+                resreq = strip_curly_brackets(resreq);
+                resreq = transform_simple_resreq(resreq);
+
+                transform = transform slots "{" resreq "}";
+
+                j++;
+            }
+
+            return transform;
+        }
+
+        function sizeof(ar)
+        {
+            e = 0;
+            for (elem in ar) {
+                e++;
+            }
+
+            return e;
+        }
+
+        function strip_curly_brackets(strip)
+        {
+            x = index(strip, "{");
+            if (x > 0) {
+                strip = substr(strip, 1, x - 1) " " substr(strip, x + 1, length(strip));
+            }
+
+            x = index(strip, "}");
+            if (x > 0) {
+                strip = substr(strip, 1, x - 1) " " substr(strip, x + 1, length(strip));
+            }
+
+            return strip;
+        }
+
+        function transform_simple_resreq(str_orig)
+	{
+		result="";
+
+		# split the string by ]
+		split(str_orig, arr, "]");
+
+		str_sel="";
+		str_rus="";
+		str_spa="";
+		str_ord="";
+		str_cu="";
+		str_left="";
+		
+		for ( i in arr )
+		{
+			if (match(arr[i], "select") >0)
+			{
+				# get the select string
+				split(arr[i], tmp, "[");
+				str_sel=tmp[2];
+				# remove the select[] section from the item
+				sub(/select\ *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "rusage") >0)
+			{
+				# get the rusage string
+				split(arr[i], tmp, "[");
+				str_rus="rusage[" tmp[2] "]";
+				# remove the rusage[] section from the item
+				sub(/rusage *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "span") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_spa="span[" tmp[2] "]";
+				sub(/span *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "order") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_ord="order[" tmp[2] "]";
+				sub(/order *\[.*$/, "", arr[i]);
+			}
+
+			if (match(arr[i], "cu") >0)
+			{
+				split(arr[i], tmp, "[");
+				str_cu="cu[" tmp[2] "]";
+				sub(/cu *\[.*$/, "", arr[i]);
+			}
+
+			# if arr[i] has anything left after the substraction
+			# it indicates that apart from the section, there is
+			# a select[] section specified
+			# this is to deal with the case where a select[] string
+			# is specified in the beginning of the LSB_SUB_RES_REQ
+			# without the select[] delimitor
+			str_left=str_left arr[i];
+		}
+
+		if (match(str_left, /^ *$/) == 0)
+			str_sel=str_left;
+
+                if (match(str_sel, /^ *$/) == 0)
+		{
+		    # to deal with the XOR case
+		    # -R "select[ op1,op2]
+		    # ==> -R "select[ (op1) && $tmp_select,(op2) && $tmp_select]"
+                        i = 1;
+			str_tmp="";
+			split(str_sel, arr, ",");
+			
+                        for (seg in arr)
+                        {
+                            if ( tmp_select != "" )
+                            {
+                               tmp1 = "(" arr[seg] ") &&" tmp_select  
+                            }   
+                            str_tmp = str_tmp tmp1
+                            i = i+1;
+                            if (i in arr)
+			    # to make sure no , after the last segment
+                                str_tmp = str_tmp","
+                        }
+                        str_sel = "select[" str_tmp "]"
+      		}
+		else
+		        if ( tmp_select != "" )
+		        { 
+		           str_sel="select[" tmp_select "]";
+		        }   
+
+		if (match(str_rus, /^ *$/) == 0) 
+                {
+                        final_rus=""
+                        # get rid of [ ]
+                        split(str_rus,tmp,"[")
+                        split(tmp[2],tmp2,"]")
+                        # parse rusage fields by :
+		        split(tmp2[1],str_rus_item,":")	 
+                        str_rus=""
+                        i=0
+			this_rus=1
+                        # construct new rusage
+                        while ( this_rus in str_rus_item )
+                        {
+                            if(match(str_rus_item[this_rus],"duration=") > 0 )
+                            {
+                                RUS_DURATION=str_rus_item[this_rus]
+                                this_rus=this_rus+1 
+                                continue
+                            }
+                            if ( i == 0 )
+                            {
+                                final_rus=str_rus_item[this_rus]
+                                i=1 
+                            }
+                            else
+                                final_rus = final_rus ":" str_rus_item[this_rus]
+                            this_rus=this_rus+1 
+                        }
+
+                        if ( final_rus == "" )
+                        {
+                            if ( tmp_rusage != "" )
+                            {
+                                str_rus=" rusage[" tmp_rusage ":duration=1]"
+                            }
+                            
+                        } else {
+                            if ( tmp_rusage != "" )
+                            {
+                               str_rus=" rusage[" final_rus ":" tmp_rusage ":" RUS_DURATION "]" 
+                            }   
+                        }
+                }
+		else
+		{
+                   if ( tmp_rusage != "" )
+                   {   
+                      str_rus=" rusage[" tmp_rusage ":duration=1]"
+                   }
+                }
+	  result= str_sel " "  str_rus " " str_ord " " str_spa " " str_cu
+
+          return result;
+	}' str_orig="$LSB_SUB_RES_REQ" tmp_select="$tmp_select" tmp_rusage="$tmp_rusage" MOD_FILE="$LSB_SUB_MODIFY_FILE" RUS_DURATION="$RUS_DURATION"
+fi
+
+exit 0
+
+#Done
+

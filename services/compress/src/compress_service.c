@@ -370,7 +370,7 @@ static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p
 								
 		}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */
 	
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL, NULL);
 
 	return res_json_p;
 }

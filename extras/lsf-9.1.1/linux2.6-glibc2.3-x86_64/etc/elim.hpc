@@ -1,0 +1,219 @@
+#!/bin/sh
+#
+#$RCSfile: elim,v $Revision: 1.13 $Date: 2013/01/10 05:51:03 $
+#
+# ---------------------------------------------------------------------------
+#        elim for IBM Platform LSF
+#
+# Copyright International Business Machines Corp,2002-2004, 2012
+# US Government Users Restricted Rights - Use, duplication or disclosure 
+# restricted by GSA ADP Schedule Contract with IBM Corp.
+#
+# This elim script will be running on HPC hosts.
+# It will report three external resources:
+#       adapter_windows: free SP switch comminucation window. AIX only
+#       poe: poe available host. AIX/Linux2.6-glibc2.3-x86_64 only
+#
+# They are all numeric external resources and elim will report
+#      *  nothing if resource does not exist on this host type
+#          or error reading this resource.
+#      *  0 if resource exists but is not available.
+#      *  n if resource exists and the number of available resource is n.
+# -----------------------------------------------------------------------------
+#
+
+#-----------------------------------
+# Name: my_which
+#
+# Synopsis:  my_which "$command"
+#
+# Description
+#    Search for a command in PATH or the directory if the command
+#    with a path.
+#
+# Retrun Values
+#    0:   command was found; otherwise return 1
+#-----------------------------------
+my_which()
+{
+
+(
+_command="$1"
+
+case $_command in
+    */* )
+        if [ -x "$_command" -a ! -d "$_command" ]; then
+            return 0
+        fi
+        ;;
+
+    * )
+        IFS=:
+        for dir in `echo "$PATH" | sed -e 's/^:/.:/' -e 's/::/:.:/g' -e 's/:$/:./'`
+        do
+           if [ -x "$dir/$_command" -a ! -d "$dir/$_command" ] ; then
+               return 0
+           fi
+        done
+        ;;
+esac
+
+return 1
+)
+
+if [ "$?" = "0" ] ; then
+    return 0
+else
+    return 1
+fi
+
+} # my_which
+
+#
+# Global Variables
+#
+_sleep_time_interval=8          # by default it will be 8 seconds, it could be another value for poe
+                                # sleep time is based on lim configuration. It's better to be
+                                # 1.5*ELIM_POLL_INTERVAL (default ELIM_POLL_INTERVAL is 5 seconds)
+                                # If user configured ELIM_POLL_INTERVAL in cluster file, the sleep time
+                                # here should be changed accordingly
+_hostname=`hostname`
+_num_hpc_res=6 # css0, csss, ntbl_windows, adapter_windows, nrt_windows, and poe
+_num_usr_res=0
+_hpc_res_report=""
+_usr_res_report=""
+_res_not_exist="-1"
+_res_not_avail="0"
+_last_output=""
+_consumed_interval=0
+
+# variables for poe
+_poe_="poe" # st_stus hostname will output the status of poe switch adapter windows on the host
+_poe_nrt_res="nrt_windows"
+_poe_cmd_ofile="/tmp/.poe_cmd_ofile.$$.LSFTMP"
+_poe_nrt_status_cmd="nrt_status" # On linux, nrt_status cmd is available to check available windows
+
+#
+# Initialization
+#
+if [ -f "$LSF_ENVDIR/lsf.conf" ]
+then
+    . "$LSF_ENVDIR/lsf.conf"
+    . "$LSF_CONFDIR/profile.lsf"
+fi
+
+if [ "$LSF_SERVERDIR" = "" ]; then
+    echo "Cannot find LSF_SERVERDIR. Exiting..."
+    exit 1
+fi
+
+if [ -z "$LSF_LOGDIR" ]
+then
+    LSF_LOGDIR=/tmp
+fi
+
+LOGFILE=$LSF_LOGDIR/elim.log.${_hostname}
+
+#
+# Please modify the PATH when poe
+# are installed in a directory other than
+#/usr/bin:/bin:/usr/local/bin:/local/bin:/sbin:/usr/sbin:
+#/usr/ucb:/usr/sbin:/usr/bsd:
+#
+PATH="/usr/bin:/bin:/usr/local/bin:/local/bin:/sbin:/usr/sbin:/usr/ucb:/usr/sbin:/usr/bsd:${PATH}"
+PATH=$LSF_SERVERDIR:$LSF_BINDIR:$PATH
+export PATH
+
+echo "elim (PID=$$) started  `date`" >> $LOGFILE
+
+#
+# main loop to report external resources
+#
+while :
+do
+    #
+    # initilize for each loop
+    # clear the output string before each main loop
+    #
+    _hpc_res_report=""
+    _num_hpc_res=0
+
+    #Test to see if the file can be reached
+    CMD=`my_which $_poe_ >/dev/null 2>&1`
+    if [ "$?" = "0" ]; then
+        _hpc_res_report="$_hpc_res_report $_poe_ 1"
+        let _num_hpc_res=_num_hpc_res+1
+    else
+        :
+    fi
+    #Check nrt_status command
+    CMD=`my_which $_poe_nrt_status_cmd >/dev/null 2>&1`
+    if [ "$?" = "0" ]; then
+        _num_free_windows_iba=`${_poe_nrt_status_cmd} -m us | /bin/grep "AVAILABLE" | wc -l` 
+	_hpc_res_report="$_hpc_res_report $_poe_nrt_res $_num_free_windows_iba"
+        let _num_hpc_res=_num_hpc_res+1
+    else
+       :
+    fi
+
+    #
+    # Now combine _hpc_res_report with _usr_res_report
+    #
+
+    if [ "$_elim_usr_yn" = "n" ]; then
+        _usr_res_report=""
+        _num_usr_res=0
+    fi
+
+    #
+    # prepare to echo out the final string:
+    # total_number_of_res adapter_windows n2 usr_res1 n3 ...
+    #
+    _num_total_res=`expr $_num_usr_res + $_num_hpc_res`
+    if [ "$_num_total_res" -gt "0" ]; then
+       _output="$_num_total_res $_hpc_res_report $_usr_res_report"
+       _output=`echo ${_output}` # get rid of spaces
+    else
+       _output=""
+    fi
+
+    if [ "$_output" != "$_last_output" ]; then
+        echo ${_output}
+    fi
+
+    _last_output="$_output"
+
+    # prepare for the next loop
+    # sleep time is based on lim configuration. It's better to be
+    # 1.5*ELIM_POLL_INTERVAL (default ELIM_POLL_INTERVAL is 5 seconds)
+    # If user configured ELIM_POLL_INTERVAL in cluster file, the sleep time
+    # here should be changed accordingly
+
+    sleep $_sleep_time_interval
+
+    # periodically check lim. If lim is down, exit the elim
+
+    kill -CONT $PPID >>$LOGFILE 2>&1
+    if [ "$?" != "0" ] ;
+    then
+         echo "Parent lim is down, elim exit" >> $LOGFILE
+         exit 1
+    fi
+
+    # check if user elim's sleep interval time up
+    if [ "$_elim_usr_yn" = "y" ]; then
+         _consumed_interval=`expr $_consumed_interval + 8`
+         if [ $_consumed_interval -ge $_elim_user_interval ];
+         then
+             _elim_user_output=`elim.user 2>>$LOGFILE`
+             _elim_user_interval=`echo $_elim_user_output | awk '{print $1}' 2>>$LOGFILE`
+             _num_usr_res=`echo $_elim_user_output | awk '{print $2}' 2>>$LOGFILE`
+             _usr_res_report=`echo $_elim_user_output  | cut -d' ' -f3- 2>>$LOGFILE`
+             _consumed_interval=0
+        fi
+    fi
+done
+
+if [ -f "$_poe_cmd_ofile" ]; then
+    rm -rf "$_poe_cmd_ofile"
+fi

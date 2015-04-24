@@ -284,7 +284,7 @@ static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *pa
 			FreeCurlTool (curl_tool_p);
 		}
 	
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p);
+	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p, NULL);
 
 	return res_json_p;
 }

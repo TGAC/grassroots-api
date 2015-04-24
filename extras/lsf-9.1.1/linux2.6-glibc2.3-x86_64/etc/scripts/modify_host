@@ -1,0 +1,249 @@
+#
+#$Id: modify_host,v 1.2 2012/06/08 03:37:24 sbadugu Exp $
+
+# This is not a stand alone script. It is sourced by scripts/config.
+
+modify_host()
+{
+
+while : ; do
+    rm -f /tmp/.tmp.file1.$$ /tmp/.tmp.file.$$ $tfile
+    rm -f ${LSF_CLUSTER_TMP}
+    unset NEW
+    cat << MENU
+
+Please choose one of the following options:
+
+    1. List Currently Configured Hosts
+    2. Add Hosts To LSF Configuration
+    3. Delete Hosts From LSF Configuration
+    4. Modify Hosts In LSF Configuration
+
+    ?. Help
+    q. Quit Host Configuration
+
+MENU
+
+    echo $enf "Please enter your choice:" $enl
+    read A
+    echo
+
+    case "$A" in
+    1) ;;
+    2) ;;
+    3) ;;
+    4) ;;
+    [Qq]*) break;;
+    *)	cat <<HELP2
+
+    To see what hosts are currently configured into the LSF
+    cluster, choose Option 1. List Currently Configured Hosts.
+
+    To add more hosts into the LSF cluster, choose Option 2. Add Hosts.
+
+    To remove some hosts from the current LSF configuration,
+    choose Option 3. Delete Hosts. 
+
+    To change the configuration parameters for some hosts,
+    choose Option 4. Modify Hosts. 
+
+    To see this help information, choose Help (?).
+
+    To exit from this menu, choose Quit Host Configuration (q).
+
+    Press Enter to continue ...
+HELP2
+	read N
+	continue ;;
+    esac
+
+    if [ "$A" = "1" ] ; then
+#   Listing current hosts
+	sed -e '1,/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	]*[Hh][Oo][Ss][Tt][ 	]*$/d;/^[	 ]*[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt][ 	]*$/,$d;/^#/d' ${LSF_CLUSTER} | more;
+	echo
+	echo $enf "Press Enter to continue ..." $enl
+	read N
+	continue;
+    fi
+
+    if [ "$A" = "2" ] ; then
+	HOSTS=`ask "Enter the names of hosts to add" ""`
+	goodHosts=""
+	newHosts=""
+	for hostname in ${HOSTS} ; do
+            echo "modify_host: Possibly using ypmatch $hostname hosts.byname to search for host." >> $PREFIX_LOG/Install.log
+
+	    if (grep "[ 	]$hostname[ 	]" /etc/hosts \
+		|| ypmatch $hostname hosts.byname \
+		|| nismatch name=$hostname hosts.org_dir ) >$LSNULFILE 2>&1
+	    then
+		:
+	    elif test "" != "`(nslookup $hostname 2>&1) | grep '\*\*\*' 2>&1`"
+	    then
+		echo "Cannot find \"${hostname}\" in /etc/hosts, NIS(YP), or DNS."
+                if yesno "Are you sure \"${hostname}\" is a valid host name?" Y "" >$LSNULFILE
+		then
+		    :
+		else
+		    echo "Host name $hostname ignored."
+		    continue
+		fi
+            fi
+	    goodHosts="$goodHosts $hostname"
+        done
+
+	cp ${LSF_CLUSTER} ${LSF_CLUSTER_TMP}
+	# get the keywords for the Host section
+	skeys=`sect_keys $LSF_CLUSTER_TMP host`
+        . $sp/cluster
+
+	cp $LSNULFILE  /tmp/.tmp.file1.$$
+	NEW=n
+	AHOST="	# Added hosts"
+	for hostname in ${goodHosts} ; do
+	    if egrep "^[	 ]*${hostname}[ .	]" ${LSF_CLUSTER_TMP} >$LSNULFILE 2>&1
+	    then
+		echo "Host \"${hostname}\" is already defined in ${LSF_CLUSTER}; ignored."
+	    else
+	    	LINE=""
+		for field in $skeys
+		do
+		    case $field in
+		    hostname)	LINE="${LINE}$hostname	" ;;
+#		    model|type)	LINE="${LINE}DEFAULT	" ;;
+ 		    model|type)	LINE="${LINE}!	" ;;
+		    r|server)	LINE="${LINE}1  " ;;
+		    r1m)	LINE="${LINE}3.5 " ;;
+		    *) LINE="${LINE}()  " ;;
+		    esac
+		done
+		echo "$LINE$AHOST" >> /tmp/.tmp.file1.$$
+		AHOST=
+		NEW=y
+	    fi
+        done
+	if [ "$NEW" != "y" ] ; then
+	    echo No host to add.
+	    continue
+	fi
+	$LSEXEDITOR ${LSF_CLUSTER_TMP} << EXEND2 >$LSNULFILE 2>&1
+	/^[	 ]*Begin[	 ]*Host
+	-1
+	r $tfile
+	/^[	 ]*End[	  ]*Host
+	-1
+	r /tmp/.tmp.file1.$$
+	wq
+EXEND2
+        edit=`echo $EDITOR | $AWK -F/ '{print $NF}'`
+	if [ "$edit" != "vi" ]
+	then
+	     $EDITOR  ${LSF_CLUSTER_TMP}
+        else
+	     $EDITOR +/'# Added hosts$' ${LSF_CLUSTER_TMP}
+        fi
+
+#   Get rid of the instructions
+	$LSEXEDITOR ${LSF_CLUSTER_TMP} << EXEND3 >$LSNULFILE 2>&1
+	/INSTRUCTIONS/,/END_OF_INSTRUCTIONS/d
+	wq
+EXEND3
+
+# Get rid of the "Added hosts" comments, if any
+
+	$LSEXEDITOR ${LSF_CLUSTER_TMP} << EXEND31 >$LSNULFILE 2>&1
+	/# Added hosts$/s/[ 	]*# Added hosts$//
+	wq
+EXEND31
+
+	DIFF=`diff ${LSF_CLUSTER_TMP} ${LSF_CLUSTER}`
+	if [ "${DIFF}" != "" ] ; then
+	    if yesno "Save changes to ${LSF_CLUSTER}" Y "help LSF_CLUSTER" > $LSNULFILE
+	    then
+		cp ${LSF_CLUSTER} ${LSF_CLUSTER}.old
+		cp ${LSF_CLUSTER_TMP} ${LSF_CLUSTER}
+		stat=$?
+		$CHOWN ${LSF_MANAGER} ${LSF_CLUSTER} ${LSF_CLUSTER}.old
+		chmod 644 ${LSF_CLUSTER}.old ${LSF_CLUSTER}
+		if [ "$?" != "0"  -o  "${stat}" != "0" ] ; then
+		    echo Failed.
+		    kill -2 $$
+		    exit
+		fi
+		echo "Hosts added."
+	    else
+		echo No host added.
+	    fi
+	fi
+	rm ${LSF_CLUSTER_TMP}
+	continue
+    fi
+# end of option 2
+
+    if [ "$A" = "3" ] ; then
+        echo Currently configured hosts are:
+	egrep -v "^#.*" ${LSF_CLUSTER} | sed -n "/^[	 ]*[Bb][Ee][Gg][Ii][Nn][ 	 ]*[Hh][Oo][Ss][Tt]/,/^[Ee][Nn][Dd][ 	]*[Hh][Oo][Ss][Tt]/p" | egrep -v [Bb][Ee][Gg][Ii][Nn] | egrep -v [Ee][Nn][Dd] | more
+        HOSTS=`ask "Enter the names of hosts to delete:" ""`
+	for host in ${HOSTS} ; do
+	    VALID=`egrep "^[	 ]*${host}[.	 ]" ${LSF_CLUSTER}`
+	    if [ "${VALID}" = "" ] ; then
+		echo "${host}: no such a host defined in ${LSF_CLUSTER}, ignored."
+		continue
+	    fi
+	    sed -e "/^[	 ]*${host}[	 .]/d" ${LSF_CLUSTER} > /tmp/.tmp.file.$$
+	    mv /tmp/.tmp.file.$$ ${LSF_CLUSTER}
+	    $CHOWN ${LSF_MANAGER} ${LSF_CLUSTER}
+	    chmod 644 ${LSF_CLUSTER}
+	    if [ "$?" != "0" ] ; then
+		echo Failed.
+		kill -2 $$
+		exit
+	    else
+		echo Host ${host} deleted.
+	    fi
+	done
+	continue
+    fi
+# end of option 3
+
+    if [ "$A" = "4" ] ; then
+	cp ${LSF_CLUSTER} ${LSF_CLUSTER_TMP}
+	. $sp/cluster
+	$LSEXEDITOR ${LSF_CLUSTER_TMP} << EXEND4 >$LSNULFILE 2>&1
+	/^[ 	]*Begin[	 ]*Host
+	-1
+	r $tfile
+        wq
+EXEND4
+
+	$EDITOR ${LSF_CLUSTER_TMP}
+#get rid of the instructions
+	$LSEXEDITOR ${LSF_CLUSTER_TMP} << EXEND5
+	/INSTRUCTIONS/,/END_OF_INSTRUCTIONS/d
+	wq
+EXEND5
+
+	DIFF=`diff ${LSF_CLUSTER_TMP} ${LSF_CLUSTER}`
+	if [ "${DIFF}" != "" ] ; then
+	    if yesno "Save changes to ${LSF_CLUSTER}" Y "help LSF_CLUSTER" > $LSNULFILE
+	    then
+		cp ${LSF_CLUSTER_TMP} ${LSF_CLUSTER}
+		$CHOWN ${LSF_MANAGER} ${LSF_CLUSTER}
+		chmod 644  ${LSF_CLUSTER}
+		rm ${LSF_CLUSTER_TMP}
+	    else
+		echo Exiting ...
+	    fi
+	else
+	    echo Nothing has been changed.
+	fi
+	continue
+    fi
+#end of option 4
+
+    echo An unrecoverable error has occurred. 
+	echo Please contact product support.
+    kill -2 $$
+done
+continue
+} # modify_host

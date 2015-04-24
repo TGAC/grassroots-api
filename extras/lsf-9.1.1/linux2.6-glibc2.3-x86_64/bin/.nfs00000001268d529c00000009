@@ -1,0 +1,44 @@
+#!/bin/bash
+
+INTERACTIVE_HOSTS="cn-128-00"
+QIIME_HOST="v0346"
+
+# Define COLOURS
+unset COLOUR
+green='\e[0;32m'
+amber='\e[0;33m'
+red='\e[0;31m'
+endColor='\e[0m'
+
+echo -e "Please note: Graphical applications are better run on your ${green}desktop machine.${endColor}"
+echo -e "             ${amber}If your connection is lost it cannot be resumed.${endColor}"
+echo -e "             Interactive sessions are limited to ${red}3GB of memory${endColor}"
+echo -e "             If you require more memory consider using the batch system."
+
+if [ "$1" != "" ]; then
+    if [ "$1" == "nano" ]; then 
+        source nano-2.2.6
+        lsrun -SP -R"order[cpu:mem:login]" -m $INTERACTIVE_HOSTS "$@"
+    
+    elif [ "$1" == 'qiime' ]; then
+        # added for computing job 229263 (Mark Alston)
+        echo -e "${green}$1 requested ${endColor}"
+        echo -e ""
+        echo -e "${amber}Please note: If your connection is lost programs cannot be resumed.${endColor}"
+        echo -e "${green}qimme is installed into /opt/qiime_software/${endColor}"
+        echo -e ""
+        echo -e "${green}Please run sh /opt/qiime_software/activate.sh to setup your env${endColor}"
+        echo -e ""
+        echo -e "${green}Documentation available from http://qiime.org/${endColor}"
+        echo -e ""
+        echo -e "${green}When complete type${endColor} ${red}exit${endColor} ${green}to leave the qiime node${endColor}"
+        echo -e ""
+        
+        lsrun -SP -m $QIIME_HOST bash -login -i
+ 
+    else 
+        lsrun -SP -R"order[cpu:mem:login]" -m $INTERACTIVE_HOSTS "$@"
+    fi
+else
+    lsrun -SP -R"order[cpu:mem:login]" -m $INTERACTIVE_HOSTS bash -i -l
+fi

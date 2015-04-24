@@ -1,0 +1,219 @@
+#!/bin/bash
+
+###
+# This script is the magical esub which will traverse job the submission CMD and associated files.
+###
+
+if [ -e "$LSB_SUB_PARM_FILE" ]; then
+  . $LSB_SUB_PARM_FILE
+fi
+
+IFS=$'\n'
+USER=$USER
+#DEBUG="1"
+
+# Define COLOURS
+unset COLOUR
+GRE='\e[0;32m'
+AMB='\e[0;33m'
+RED='\e[0;31m'
+BLU='\e[1;34m'
+GREY='\e[0;37m'
+EC='\e[0m'
+
+
+function STDERR () {
+  cat - 1>&2
+}
+
+#echo $LSB_SUB_COMMANDNAME | STDERR
+#echo $LSB_SUB_COMMAND_LINE | STDERR
+
+START_CHECK=0
+
+if [ ! $LSB_SUB_QUEUE ]; then
+     # Using a the default "normal" queue
+     #    echo "Please submit a queue name, i.e."|STDERR
+     #    echo -e "    bsub ${RED}-q testing${EC} $LSB_SUB_COMMAND_LINE"|STDERR
+     #    exit $LSB_SUB_ABORT_VALUE
+     if [ $DEBUG ]; then echo "Default Queue used - Skipping $*"|STDERR; fi
+     START_CHECK=0
+elif [[ $LSB_SUB_QUEUE == Test* ]]; then
+    if [ $DEBUG ]; then echo "Test Queue used - Skipping $*"|STDERR; fi
+    START_CHECK=1
+elif [[ $LSB_SUB_QUEUE == Prod* ]]; then
+    if [ $DEBUG ]; then echo "Prod Queue used - Skipping $*"|STDERR; fi
+    START_CHECK=1
+fi
+
+
+# Following are used as Delims, as we need to test each one being executed.
+TEST_SEQUENTIAL=";"
+TEST_OR="||"
+TEST_AND="&&"
+
+
+function process_bsub {
+    if [ $DEBUG ]; then echo -e "Starting: process_bsub - $*"|STDERR; fi
+    DELIM=$1
+    IFS=$DELIM read -a BSUB_CMD <<< "$LSB_SUB_COMMAND_LINE"
+    if [ ${#BSUB_CMD[@]} -gt 0 ]; then
+        local i
+        for i in "${BSUB_CMD[@]}"; do
+            process_line $i
+        done
+    fi
+    if [ $DEBUG ]; then echo -e "Finish: process_bsub - $*"|STDERR; fi
+}
+
+function process_line {
+    # Function Parses each line
+    #  Checks the following:
+    #   - Splits based on above Tests (why? since this function can be also called by the parse file).
+    #   - Checks to see whether the "execution binary/script exists, and checks it location.
+
+    if [ $DEBUG ]; then echo -e "${GRE}Starting: process_line on - '$*'${EC}"|STDERR; fi
+    # Tidy up the line and do:
+    # " abc zyz " becomes "abc xyz"
+    # 
+    if [ "$1" != "" ]; then
+    RUN_CMD=$1
+    RUN_CMD=$(echo $RUN_CMD | tr "\n" " ")
+    RUN_CMD=${RUN_CMD#"$RUN_CMD1"}
+    RUN_CMD1=${RUN_CMD##*[!${2:- }]}
+    RUN_CMD=${RUN_CMD%"$RUN_CMD1"}
+    RUN_CMD1=${RUN_CMD%% *}
+
+    # Now check to see whether the CMD runs a "source" or a "."
+    # If it does we'll need to open that file and look for a PATH export.
+    # We need this as it may be used to run something from the PATH.
+
+    if [ "$RUN_CMD1" == "source" -o "$RUN_CMD1" == "." ]; then
+        if [ $DEBUG ]; then echo -e "    ${GRE}process_line - 'source' or '.' found${EC}"|STDERR; fi
+        # If someone is being sneaky check the following:
+        # ~      - Change to ~$USER
+        # $HOME  - Change to ~$USER
+        
+        if [[ $RUN_CMD == *"\$HOME"* ]]; then
+            if [ $DEBUG ]; then echo -e "        ${GRE}process_line - found HOME${EC}"|STDERR; fi
+            RUN_CMD=$(echo $RUN_CMD| sed -e "s/\$HOME/~$USER/g"|awk '{print $2}')
+        elif [[ $RUN_CMD == *"~"* ]]; then
+            if [ $DEBUG ]; then echo -e "        ${GRE}process_line - found ~${EC}"|STDERR; fi
+            RUN_CMD=$(echo $RUN_CMD| sed -e "s/\~/~$USER/g"|awk '{print $2}')
+        else
+            if [ $DEBUG ]; then echo -e "        ${GRE}process_line - found normal${EC}"|STDERR; fi
+            RUN_CMD=$PWD/$(echo $RUN_CMD|awk '{print $2}')
+        fi
+        parse_file $RUN_CMD
+    elif [[ $RUN_CMD1 == "export PATH"* ]]; then
+        if [ $DEBUG ]; then echo -e "${GRE}    process_line - PATH found${EC}"|STDERR; fi
+        eval $RUN_CMD1
+        RUN_CMD=$RUN_CMD1
+    else
+        if [ $DEBUG ]; then echo -ne "${GRE}    process_line - Processing Line - "|STDERR; fi
+        # Substitute Update so as "abc 123" becomes "abc"
+        RUN_CMD=$(echo $RUN_CMD1|awk '{print $1}')
+        if [ $DEBUG ]; then echo -e "'$RUN_CMD'${EC}"|STDERR; fi
+        # Check to see whether this is a 'file'
+        check_exists $RUN_CMD
+    fi
+    
+    else
+        if [ $DEBUG ]; then echo -e "${GREY}BLANK LINE DETECTED. SKIPPED${EC}"|STDERR; fi
+    fi
+    if [ $DEBUG ]; then echo -e "${GRE}Finish: process_line on - $1 ${EC}"|STDERR; fi
+}
+
+function parse_file {
+    # This function parses each line of a file and sends it back to process_line
+    if [ $DEBUG ]; then echo -e "Starting: parse_file on - $*"|STDERR; fi
+    IFS=$'\n'
+    local i
+    # Ensure this is a file
+    which $1 > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        SCRIPT=$(echo $(which $1 2>/dev/null))
+        for i in $(cat $SCRIPT| egrep -v "^#|^$"); do
+            if [ $DEBUG ]; then echo -e "    checking line - '$i'"|STDERR; fi
+            process_line $i
+        done
+    fi
+    if [ $DEBUG ]; then echo -e "Finish: parse_file on - $*"|STDERR; fi
+}
+
+function check_exists {
+    # Function checks to see whether the first argument is a valid file or not.
+    # If the file is a 'script' we'll try to open it and parse each line.
+    if [ $DEBUG ]; then echo -e "${AMB}Starting: check_exists on - '$*'${EC}"|STDERR; fi
+    
+    local RUN_CMD=$(echo $(which $1 2>/dev/null))
+    which $RUN_CMD > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        if [ $DEBUG ]; then echo -e "    ${AMB}valid file file detected - '$RUN_CMD'${EC}"|STDERR; fi
+        # Lets check the file to see whether its a script or not.
+        local TYPE=$(file -bL $RUN_CMD 2>/dev/null)
+        if [ "$(echo $TYPE| grep shell)" != "" ]; then
+            #Looks like a shell file
+            if [ $DEBUG ]; then echo -e "        ${AMB}Looks like a SHELL file${EC}"|STDERR; fi
+            parse_file $RUN_CMD
+        else
+            #Treat it as a binary
+            if [ $DEBUG ]; then echo -e "        ${AMB}Looks like a BINARY file${EC}"|STDERR; fi
+            IS_IT_OKAY_TO_RUN=$(is_valid_location $RUN_CMD)
+            if [ $IS_IT_OKAY_TO_RUN -ne 0 ]; then
+                echo -e "Job Submission Failure on - ${RED}$RUN_CMD${EC}"|STDERR
+                echo -e "    This location is invalid for the ${BLU}$LSB_SUB_QUEUE${EC} queue"|STDERR
+                echo "Exiting."|STDERR
+                #exit 1
+                exit $LSB_SUB_ABORT_VALUE
+            fi
+        fi
+    else
+        if [ $DEBUG ]; then echo -e "    ${AMB}no file detected - '$RUN_CMD'${EC}"|STDERR; fi
+    fi
+    if [ $DEBUG ]; then echo -e "${AMB}Finish: check_exists - $*${EC}"|STDERR; fi
+}
+
+function is_valid_location {
+    # This function checks to see if a valid 'file' falls into a VALID_LOCATION
+    if [ $DEBUG ]; then echo -e "Starting: is_valid_location on - $*"|STDERR; fi
+    
+    # Treat everything as PRODUCTION unless otherwise
+    PROD_LOCATIONS="/tgac/software/production /tsl/software/production"
+    TEST_LOCATIONS="/tgac/software/testing /tsl/software/testing"
+
+    if [[ $LSB_SUB_QUEUE == Test* ]]; then
+        local VALID_LOCATIONS="/bin /usr/bin /usr/sbin /usr/users $PROD_LOCATIONS $TEST_LOCATIONS"
+    else
+        local VALID_LOCATIONS="/bin /usr/bin /usr/sbin $PROD_LOCATIONS"
+    fi
+    
+    # START with BAD=1 only change if we get a valid hit
+    local BAD=1
+    IFS=" " read -a ALLOWED_PATHS <<< "$VALID_LOCATIONS"
+    local i
+    for i in "${ALLOWED_PATHS[@]}"; do
+        if [ $DEBUG ]; then echo -ne "    looking for  - $i in $1 -"|STDERR; fi
+        if [[ $1 == $i* ]]; then
+            if [ $DEBUG ]; then echo -e " FOUND"|STDERR; fi
+            BAD=0
+        else
+            if [ $DEBUG ]; then echo -e " NOT_FOUND"|STDERR; fi
+        fi
+    done
+    if [ $BAD -eq 0 ]; then
+        if [ $DEBUG ]; then echo -e "Finishing is_valid_location - ${BLU}VALID COMMAND${EC}"|STDERR; fi
+        echo 0
+    else
+        if [ $DEBUG ]; then echo -e "Finishing is_valid_location - ${RED}INVALID COMMAND - ABORT JOB${EC}"|STDERR; fi
+        echo 1
+    fi
+    if [ $DEBUG ]; then echo -e "Finish: is_valid_location on - $*"|STDERR; fi
+}
+
+
+if [ $START_CHECK -eq 1 ]; then
+    process_bsub $TEST_SEQUENTIAL
+    process_bsub $TEST_OR
+    process_bsub $TEST_AND
+fi

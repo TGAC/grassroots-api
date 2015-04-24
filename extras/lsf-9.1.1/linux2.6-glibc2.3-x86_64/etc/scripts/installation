@@ -1,0 +1,989 @@
+#$Id: installation,v 1.2 2012/06/08 03:37:24 sbadugu Exp $
+
+#!/bin/sh
+
+
+
+# This is the default signal handler for default, custom, upgrade, addhosttype, 
+# addproduct. It only clean temporary directory. 
+# In custom and default installation, each has their own handler to overwrite
+# this one.
+
+install_exit()
+{
+   trap '' 1 2 3 15
+    echo
+    echo " LSF Installation prepare exiting ..."
+    echo
+    if [ -d "$LSF_WORKING_DIR" ]; then
+        echo "Deleting files in $LSF_WORKING_DIR ..."
+        echo
+        for _Platform in $SelectedOSVersions
+        do
+                if [ "$_Platform" != "" ] ; then
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.tar
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.tar.Z
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part1.tar.Z
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part2.tar.Z
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part1.tar
+                        /bin/rm -fr $LSF_WORKING_DIR/$_Platform.part2.tar
+               fi
+        done
+
+        if [ "$removeWorkingDir" = "y" ]; then
+            if [ "$LSF_WORKING_DIR" != "/tmp" ]; then
+                /bin/rm -fr $LSF_WORKING_DIR
+            fi
+        fi
+    fi
+    echo " LSF  Installation exiting ..."
+    echo `date` >>$PREFIX_LOG/Install.log
+    echo Receive signal and exit... >> $PREFIX_LOG/Install.log
+    echo >>$PREFIX_LOG/Install.log
+    exit 1
+}
+
+
+# get LSF_DIST_DIR
+check_distribution_dir()
+{
+# return 1-error  0-okey
+if [ ! -d $1 ]; then
+    echo "The directory $1 does not exists."| tee -a $PREFIX_LOG/Install.log
+    return 1
+fi
+
+echo
+echo "Searching LSF distribution files. Please wait ..."| tee -a $PREFIX_LOG/Install.log
+
+SelectionOSVersions=""
+
+NEED_WORK_DIR=n
+
+_last=""
+
+_tmp=`ls -1 -d  $1/lsf"$LSF_VER"_* | wc -l`
+
+if [ $_tmp -gt 0 ]
+then
+    _files=`ls -1 -d $1/lsf"$LSF_VER"_*`
+
+
+    for _tf in $_files
+    do
+        _tarfile=`basename $_tf |sed -e "s/.Z\$//"| sed -e "s/.tar\$//"| sed -e "s/.part[12]*\$//"`
+	test "$_tarfile" = "lsf${LSF_VER}_lsfsetup" && continue 
+        _platform=`grep "$_tarfile:" $TABLE`
+
+
+	if [ "$_platform" != "" ]; then
+
+	case "$SelectionOSVersions" in
+	
+		*" $_tarfile "*)
+			;;
+		*)
+
+            		SelectionOSVersions="$SelectionOSVersions $_tarfile "
+
+		        NEED_WORK_DIR=y
+			;;
+	esac
+
+	fi
+
+    done
+fi                 
+
+export NEED_WORK_DIR
+
+
+if test "$SelectionOSVersions" = ""; then
+    echo "The directory $1 does not contain LSF distribution files."| tee -a $PREFIX_LOG/Install.log
+    return 1
+else
+    export SelectionOSVersions
+    return 0
+fi
+}
+
+get_distribution_dir()
+{
+while [ 1 ]; 
+do
+    echo
+    echo $enf "Enter the full path of where multi_platform distribution files are put:" $enl | tee -a $PREFIX_LOG/Install.log
+    read LSF_DIST_DIR
+    echo $LSF_DIST_DIR  >>$PREFIX_LOG/Install.log
+
+    if [ "$LSF_DIST_DIR" = "" ]; then
+        LSF_DIST_DIR=$defLSF_DIST_DIR
+    fi
+
+    if is_full_path $LSF_DIST_DIR; then
+        :
+    else
+        echo "LSF distribution directory requires a full path name."| tee -a $PREFIX_LOG/Install.log
+        echo "$LSF_DIST_DIR is not a full path name. Please input"| tee -a $PREFIX_LOG/Install.log
+        echo "an absolute path name."| tee -a $PREFIX_LOG/Install.log
+        continue
+    fi
+
+    if check_distribution_dir $LSF_DIST_DIR; then
+        export LSF_DIST_DIR
+        break
+    fi
+done
+}
+
+# get LSF_WORKING_DIR
+check_working_dir()
+{
+# return 0-okey  1-error   2-unnormal
+
+LSF_WORKING_SPACE=230
+
+OLD_PAR=$1
+#check if the directory writable for non-root installation
+is_root || writable $OLD_PAR || { echo "The directory is not writable"; return 1; }
+if is_full_path "$OLD_PAR"; then
+    :
+else
+    echo "Parameter LSF_WORKING_DIR requires a full path name."| tee -a $PREFIX_LOG/Install.log
+    return 1
+fi
+
+if [ -f "$OLD_PAR" ]; then
+    echo "$OLD_PAR is an existent file."| tee -a $PREFIX_LOG/Install.log
+    return 1
+fi
+
+if [ ! -d "$OLD_PAR" ]; then
+    if [ "$UNATTENDED_INSTALL" != "y" -a "$UNATTENDED_INSTALL" != "Y" ]
+    then
+        if yesno "Directory $OLD_PAR does not exist, do you want to create it?" N "" > $LSNULFILE
+        then
+    	    make_dir $OLD_PAR
+        else
+	    return 1
+        fi
+    else
+        if [ -d `dirname $OLD_PAR` ]; then
+            make_dir $OLD_PAR
+        else
+            echo "$OLD_PAR and its parent dir do not exist."| tee -a $PREFIX_LOG/Install.log
+            echo "Please check."| tee -a $PREFIX_LOG/Install.log
+            echo "Installation exiting..."| tee -a $PREFIX_LOG/Install.log
+            exit
+        fi
+    fi
+fi
+
+_bytes=`SpaceAvail $OLD_PAR`
+if [ "$_bytes" = "" ]; then
+    cat << NOT_FOUND_DISK_SPACE | tee -a $PREFIX_LOG/Install.log
+
+        lsfsetup cannot determine the available space on this host type.
+        Please make sure that the available space of $OLD_PAR
+        is greater than ${LSF_WORKING_SPACE} MB.
+
+NOT_FOUND_DISK_SPACE
+
+    echo
+    return 2
+fi
+
+_space=`expr $_bytes / 1024`
+if [ "$_space" -lt "$LSF_WORKING_SPACE" ]; then
+    echo "The directory $OLD_PAR does not have enough free space(${LSF_WORKING_SPACE}M bytes)."| tee -a $PREFIX_LOG/Install.log
+    return 1
+fi                             
+
+return 0
+}
+
+get_working_dir()
+{
+test "$NEED_WORK_DIR" = "n" && { LSF_WORKING_DIR=$defLSF_WORKING_DIR; export LSF_WORKING_DIR; return; }
+
+echo
+echo "Searching an appropriate LSF temporary directory, please wait ..."
+
+check_working_dir "/tmp"
+
+if [ "$?" -eq 0 ]; then
+	tmpLSF_WORKING_DIR="/tmp"
+else
+	check_working_dir "/usr/tmp"
+	if [ "$?" -eq 0 ]; then
+		tmpLSF_WORKING_DIR="/usr/tmp"
+	else
+		check_working_dir "/var/tmp"
+		if [ "$?" -eq 0 ]; then
+			tmp_LSF_WORKING_DIR="/var/tmp"
+		else
+			tmp_LSF_WORKING_DIR=""
+		fi
+	fi	
+fi
+
+while [ 1 ];
+do
+    if [ "$tmpLSF_WORKING_DIR" = "" ]; then
+    	tmpLSF_WORKING_DIR=`ask_param LSF_WORKING_DIR`
+    	echo $tmpLSF_WORKING_DIR >> $PREFIX_LOG/Install.log
+    fi
+
+    if is_full_path $tmpLSF_WORKING_DIR; then
+        :
+    else
+        echo "You cannot install in $tmpLSF_WORKING_DIR."| tee -a $PREFIX_LOG/Install.log
+        echo "Install path must start with /. Please specify"| tee -a $PREFIX_LOG/Install.log
+        echo "an absolute path."| tee -a $PREFIX_LOG/Install.log
+        echo
+	tmpLSF_WORKING_DIR=""
+        continue
+    fi
+
+    check_working_dir $tmpLSF_WORKING_DIR
+    if [ "$?" = "1" ]
+    then
+	tmpLSF_WORKING_DIR=""
+    	continue
+    fi
+    if [ "$?" = "2" ]
+    then
+        echo $enf "Press Enter to continue ..." $enl; read _tmp 
+    fi
+
+    LSF_WORKING_DIR=$tmpLSF_WORKING_DIR
+    export LSF_WORKING_DIR
+    echo "LSF setup temporary directory is $LSF_WORKING_DIR."
+
+    break
+done
+}
+
+#
+#-----------------------------------------
+#
+# get_os_versions --
+#
+# ARGUMENTS:
+# 
+# PRE-CONDITION:
+#
+# DESCRIPTION:
+#
+# SIDE_EFFECTS:
+#
+# RETURN:
+#
+#-----------------------------------------
+#
+
+get_os_versions()
+{
+_installType="$1"
+SelectedOSVersions=""
+
+ 
+if [ "$UNATTENDED_INSTALL" = "y" ]; then
+    SelectedOSVersions=$SelectionOSVersions
+    export SelectedOSVersions
+    return
+fi
+
+if [ "_installType" != "" -a "$GOT_CONFIG" = "y" ]; then
+    _installedOSVersions=""
+
+    if [ "$LSF_DEFAULT_INSTALL" = "y" ] ; then
+        _dirs=`ls -1 $LSF_INDEP`
+    else
+        if [ -f ${LSF_SERVERDIR}/osversion ]; then
+            exec 4<${LSF_SERVERDIR}/osversion
+            while read LINE 0<&4 
+            do
+                first_char=`expr "$LINE" : '\(.\).*'`
+                if [ "$first_char" != "#" ]; then
+                    _dirs="$LINE"
+                fi
+            done
+            exec 4<&-
+        fi 
+    fi
+
+    for _dirname in $_dirs
+    do
+        if [ "$LSF_DEFAULT_INSTALL" = "y" ] ; then
+	    if [ ! -d "$LSF_INDEP/$_dirname" ] ; then
+	        continue
+	    fi
+	fi
+
+        if grep "${_dirname}:" $TABLE > $LSNULFILE; then
+            _installedOSVersions="$_installedOSVersions $_dirname "
+	else
+	    #
+	    # The following OS names have been changed after 4.2 release
+	    #
+	    _new_os_version=""
+
+	    case $_dirname in
+
+	    linux2.2-glibc2.1-intel)
+	    _new_os_version="linux2.2-glibc2.1-x86"
+	    ;;
+
+	    linux2.4-glibc2.1-intel)
+	    _new_os_version="linux2.4-glibc2.1-x86"
+	    ;;
+
+	    redhat6.2-intel)
+	    _new_os_version="linux2.2-glibc2.1-x86"
+	    ;;
+
+	    redhat6.2-alpha)
+	    _new_os_version="linux2.2-glibc2.1-alpha"
+	    ;;
+
+	    esac
+
+ 	    if [ "$_new_os_version" != "" ] ; then
+	        _installedOSVersions="$_installedOSVersions $_new_os_version"
+	        echo "$_installedOSVersions"
+
+    		if [ "$LSF_DEFAULT_INSTALL" = "y" ] ; then
+
+		    if [ -h "$LSF_INDEP/$_new_os_version" ] ; then
+		        rm -f $LSF_INDEP/$_new_os_version
+		    fi
+		    if [ -d "$LSF_INDEP/$_new_os_version" ] ; then
+			:
+		    else
+		        ln -s $LSF_INDEP/$_dirname $LSF_INDEP/$_new_os_version
+			cat << RENAME_NOTES |  tee -a $PREFIX_LOG/Install.log
+
+The name of LSF binary type $_dirname is changed 
+to $_new_os_version after LSF4.2. lsfsetup builds 
+a symbolic link to maintain naming compatibility.
+
+RENAME_NOTES
+		    fi
+		    if [ ! -d  "$LSF_INDEP/$_new_os_version" -a ! -h  "$LSF_INDEP/$_new_os_version" ] ; then
+		        echo "Cannot upgrade $_new_os_version, exiting ..." | tee -a $PREFIX/Install.log
+		        exit 1
+		    fi	
+		else
+		     sed -e s/$_dirname/$_new_os_version/g < $LSF_SERVERDIR/osversion > /tmp/osversion.$$.LSFTMP
+		     mv -f /tmp/osversion.$$.LSFTMP $LSF_SERVERDIR/osversion
+	        fi
+	    fi
+	fi
+    done
+
+fi
+
+_installedOSVersions=`echo $_installedOSVersions` 
+echo "You have LSF distribution files for the following operating systems:"|tee -a $PREFIX_LOG/Install.log
+
+localHostType=`uname -a 2>$LSNULFILE`
+
+_host=`hostname`
+if found_binary_type "$localHostType"; then
+    localBinaryType=$BINARY_TYPE
+else
+    :
+fi
+
+_i=1
+_installed=n
+
+for _tf in $SelectionOSVersions
+do  
+
+    _machType=`echo $_tf | sed -e "s/lsf${LSF_VER}_//"`
+
+    _tf="$_tf:"
+    _platform=`grep $_tf $TABLE | cut -d ':' -f4`
+    case " $_installedOSVersions " in
+        *" $_machType "*) 
+            echo "  *  $_i) $_platform"|tee -a $PREFIX_LOG/Install.log; _installed=y; installedPlatform="$_platform" ;;
+        *)  
+            echo "     $_i) $_platform" |tee -a $PREFIX_LOG/Install.log;;
+    esac
+
+    if [ "$_machType" = "$localBinaryType" ]; then
+        defPlatform=$_i
+    fi
+
+    _i=`expr $_i + 1`
+done
+
+if test "$_installed" = "y"; then
+    case "$_installType" in
+        ADD_HOSTTYPE|UPGRADE|ADD_PRODUCTS)
+            echo "NOTE: The operating systems marked by \"*\" are already installed."
+            ;;
+    esac
+fi
+
+echo
+
+if [ "$LSF_DEFAULT_INSTALL" = "y" -o "$LSF_DEFAULT_INSTALL" = "Y" ]
+then   
+
+    if yesno "Install all" Y  >$LSNULFILE
+
+    then
+        SelectedOSVersions=$SelectionOSVersions
+    else
+        while :
+        do
+            echo "Please specify one or more of the above operating systems to be installed."
+            echo $enf "Enter your choices separated by commas (e.g., 1,2)? [1] " $enl|tee -a $PREFIX_LOG/Install.log
+            read NP
+	    echo $NP >>$PREFIX_LOG/Install.log
+         
+            if [ "$NP" = "" ] ; then
+                NP=1
+            fi
+         
+            IFSSAVE=$IFS
+            IFS=,
+            set $NP
+            IFS=$IFSSAVE                                                  
+         
+            for i
+            do    
+                expr "$i" + 1 >/dev/null 2>&1 #test if i is a number
+                 
+                if [ $? -lt 2 ]; then
+
+		    
+		    if [ \( "$i" -lt 1 \) -o \( "$i" -ge "$_i" \) ]; then
+			echo
+			echo "$i is not a proper choice."|tee -a $PREFIX_LOG/Install.log
+			echo "Choice $i is ignored."|tee -a $PREFIX_LOG/Install.log
+			continue
+		    fi
+		    
+
+                    _cmd=`echo "awk '{print \\\$$i}'"`
+                    _tf=`echo $SelectionOSVersions | eval $_cmd`
+                
+                    if [ "$SelectedOSVersions" = "" ]; then
+                        SelectedOSVersions=$_tf
+                    else
+                        SelectedOSVersions="$SelectedOSVersions $_tf"
+                    fi
+		else
+		    echo 
+		    echo "$i is not a proper choice."|tee -a $PREFIX_LOG/Install.log
+		    echo "Choice $i is ignored."|tee -a $PREFIX_LOG/Install.log
+		    continue
+                fi  
+            done
+            
+            if [ "$SelectedOSVersions" = "" ]; then
+		echo
+                echo "Please enter a number that is larger than 0 and less than $_i."|tee -a $PREFIX_LOG/Install.log
+                echo
+            else
+                break
+            fi
+        done
+    
+    fi
+ 
+    export SelectedOSVersions
+    return
+
+else
+    askPlatform="y"
+    if [ "$_installType" = "UPGRADE" -o "$_installType" = "ADD_PRODUCTS" ];
+    then
+        if [ -f "${LSF_SERVERDIR}/osversion" ]; then
+            if [ "$installedPlatform" = "" ]; then
+                cat << WARNWORD | tee -a $PREFIX_LOG/Install.log
+
+    For $_installType, LSF installation program cannot find the distribution
+    file for the previous installation.
+    You can choose going on this installation, but it may destroy the previous 
+    installation.
+    Otherwise, you can choose not to continue this installation and check the
+    distribution files, this is recommended.
+
+WARNWORD
+
+                if yesno "Do you want to continue?" N "" >$LSNULFILE
+                then
+                    :
+                else
+                    echo "lsfsetup exiting..." |tee -a $PREFIX_LOG/Install.log
+                    exit
+                fi
+            fi
+        fi
+           
+        if [ "$installedPlatform" != "" ]; then
+            echo "You have installed LSF for following platform:" |tee -a $PREFIX_LOG/Install.log
+            echo "$installedPlatform" |tee -a $PREFIX_LOG/Install.log
+            
+            if [ "$_installType" = "UPGRADE" ]; then
+                echo "The installation program will only upgrade this platform." |tee -a $PREFIX_LOG/Install.log
+            else
+                echo "The installation program will only add product(s)" |tee -a $PREFIX_LOG/Install.log
+                echo "for this platform."|tee -a $PREFIX_LOG/Install.log
+            fi
+        
+            if yesno "Do you want to only handle this platform?" Y "" > $LSNULFILE
+            then
+                SelectedOSVersions=` echo "$_installedOSVersions"|sed -e "s/^[ ]*//"|sed -e "s/^/lsf${LSF_VER}_/" `
+                askPlatform="n"
+            else
+                cat << PLATFORM |tee -a $PREFIX_LOG/Install.log
+
+    If you want to upgrade or add product(s) for other platform, 
+    it may distroy the current installation.
+
+PLATFORM
+                if yesno "Are you sure you want to continue?" N "" > $LSNULFILE
+                then 
+                    askPlatform="y"
+                    rm -f ${LSF_SERVERDIR}/osversion
+                else
+                    echo "lsfsetup exiting..."
+                    exit
+                fi
+            fi
+        fi
+    fi
+
+    while [ "$askPlatform" = "y" ]
+    do 
+        echo "Please specify one of the above operating systems to be installed."|tee -a $PREFIX_LOG/Install.log
+
+        if [ $LSF_DEFAULT_INSTALL = y ]; then
+            defPlatform=1
+        else
+            if defined "$defPlatform" ; then
+                :
+            else
+                defPlatform=1
+            fi
+        fi
+                
+            
+        echo $enf "Enter your choices (e.g., 1)? [${defPlatform}] " $enl|tee -a $PREFIX_LOG/Install.log
+
+        read NP
+	echo $NP  >> $PREFIX_LOG/Install.log
+     
+        if [ "$NP" = "" ] ; then
+            NP=$defPlatform
+        fi
+
+
+        IFSSAVE=$IFS
+        IFS=,
+        set $NP
+        IFS=$IFSSAVE
+
+    
+        for i
+        do    
+            expr "$i" + 1 >/dev/null 2>&1 #test if i is a number
+                 
+            if [ $? -lt 2 ]; then
+
+                
+                if [ \( "$i" -lt 1 \) -o \( "$i" -ge "$_i" \) ]; then
+                    echo
+                    echo "$i is not a proper choice."|tee -a $PREFIX_LOG/Install.log
+                    echo "Choice $i is ignored." |tee -a $PREFIX_LOG/Install.log
+                    continue
+                fi
+                
+
+                _cmd=`echo "awk '{print \\\$$i}'"`
+                _tf=`echo $SelectionOSVersions | eval $_cmd`
+            
+                if [ "$SelectedOSVersions" = "" ]; then
+                    SelectedOSVersions=$_tf
+                else
+                    echo "You can only choose one operating system to be" |tee -a $PREFIX_LOG/Install.log
+                    echo "installed in one session of lsfsetup if you choose" |tee -a $PREFIX_LOG/Install.log
+                    echo "\"Initial Custom Install\" from the previous menu." |tee -a $PREFIX_LOG/Install.log
+                    
+                    if yesno "Do you want to continue?" Y "" >$LSNULFILE 
+                    then
+                        SelectedOSVersions=""
+                        continue 2
+                    else
+                        exit
+                    fi
+                fi
+	    else
+                echo
+                echo "$i is not a proper choice." |tee -a $PREFIX_LOG/Install.log
+                echo "Choice $i is ignored." |tee -a $PREFIX_LOG/Install.log
+                continue
+            fi  
+        done
+    
+        if [ "$SelectedOSVersions" = "" ]; then
+            echo "Please enter a number that is larger than 0 and less than $_i.." |tee -a $PREFIX_LOG/Install.log
+            echo
+        else
+            break
+        fi
+    done
+    
+    export SelectedOSVersions
+    return
+fi
+}
+
+installation()
+{
+trap install_exit 1 2 3 15
+while [ 1 ] ;
+do
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+        case $LSF_INSTALL_TYPE in
+        INITIAL_INSTALL) 
+	    FIRST_TIME="y"
+            DO_INDEP="y"
+	    case "$LSF_DEFAULT_INSTALL" in
+	  	y) N=1 ;;
+	 	n) N=2 ;;
+		*) N=1 ;;
+	    esac
+	;;
+        ADD_HOSTTYPE) 
+            FIRST_TIME="n"
+            DO_INDEP="y"
+	    N=3 
+	;;
+        UPGRADE)
+            FIRST_TIME="n"
+            DO_INDEP="y"
+	    N=4 
+	;;
+        *) N=1 ;;
+        esac
+
+	export FIRST_TIME DO_INDEP
+    else
+
+        echo
+        cat << INSTALLMENU  | tee -a $PREFIX_LOG/Install.log
+Please choose one of the following options:
+
+    1.  Initial Custom Install
+    2.  Install Additional Host Types
+    3.  Upgrade From a Previous Version
+    4.  Install Additional Products
+
+    ?.  Help
+    q.  Quit
+
+INSTALLMENU
+
+        echo $enf "Please enter your choice: [1] " $enl | tee -a $PREFIX_LOG/Install.log
+   
+        read N
+	echo $N  >>$PREFIX_LOG/Install.log
+        if [ "$N" = "" ]; then
+            N=1
+        fi
+  
+        case "$N" in
+	1)
+#                if [ "$N" = "1" ]; then
+#                    LSF_DEFAULT_INSTALL="y"
+#                fi
+
+ 		FIRST_TIME="y"
+
+        	showCopyright
+
+		cat << LICENSE_NEEDED
+
+    This software is furnished under a license and may  be  used  and
+    copied only in accordance with the terms of such license and with
+    the inclusion of the above copyright notice. This software or any
+    other copies thereof may not be provided or otherwise made avail-
+    able to any other person. No title to and ownership of the software 
+    is hereby transferred.
+
+    You must have a software license key to run LSF.  If you  do  not 
+    have a license key, contact your LSF vendor and obtain one before
+    attempting to run LSF.
+
+LICENSE_NEEDED
+
+    		if yesno "Have you purchased LSF?" N "" >$LSNULFILE
+    		then
+        	    clear
+    		else
+        	    cat<< LEGAL        
+
+   To conduct a trial of LSF, you must accept the following terms and
+   conditions by answering YES. Under shrink wrap  legislation,  this
+   notice becomes a legal document. If you do not  respond  YES,  the
+   installation will exit.
+
+   Your LSF vendor (VENDOR) grants you a limited-term, non-exclusive,
+   non-transferable, and personal free trial of LSF at this site.
+
+   Upon expiration of this trial license, you must stop the trial and 
+   delete all LSF  software  and  documentation  unless you get prior 
+   written approval from VENDOR for a trial extension.
+
+   IBM Corporation retains all intellectual property rights in LSF 
+   software and related documentation, names and logos, and in no way 
+   warrants, express or implied, the merchant-ability of LSF. In no 
+   event shall IBM PLATFORM or VENDOR be liable to you or any third 
+   party for special, consequential, incidental or indirect damages of
+   any kind, including those damages arising from lost profits in the
+   use or misuse of LSF.
+
+LEGAL
+    		fi
+
+    		if yesno "Do you accept the above terms and conditions?" Y "" >$LSNULFILE
+    		then
+        	    clear
+        	    cat <<LEGAL1
+
+   You have accepted the terms and conditions in the above legal notice.
+   Thank you for trying LSF at your site.
+
+LEGAL1
+    		else
+        	    echo "   Installation exiting ..."
+        	    exit
+    		fi
+
+    		cat<<TIME
+
+   This installation should take between 5 and 15 minutes to complete,
+   depending on the system configuration.
+
+   Warning: if you are installing LSF for AFS or DCE environments, refer 
+   to the README file before continuing with the installation.
+
+TIME
+	;;
+        2)
+ 		find_conf LOCAL
+ 		FIRST_TIME="n"
+	        DO_INDEP="y"; export DO_INDEP
+        ;;
+        3|4)
+ 		find_conf LOCAL
+ 		FIRST_TIME="n"
+	        DO_INDEP="y"; export DO_INDEP
+        ;;
+        [Qq]*)
+                exit
+        ;;
+        *)
+                more << HELP
+
+    If you prefer not to use lsfinstall, or are an experienced LSF 
+    administrator, choose Option 1. Initial Custom Install. This 
+    option gives you full control over all installation parameters.
+
+    If you have already installed LSF on one or more host types, and 
+    want to install another host type, choose Option 2. Install Other 
+    Host Types.
+
+    To upgrade from an earlier version of LSF, choose Option 3. Upgrade 
+    From a Previous Version. You can use this option on the any host
+    in the cluster to upgrade the configuration files and the
+    machine-dependent files.
+
+    To install additional products into your cluster, choose Option 4. 
+    Install Additional Products. If the version of your new products 
+    is different from your currently installed version of LSF, you must 
+    choose Option 3. Upgrade From a Previous Version to install the new 
+    version of the products you want.
+
+    To see this help information, choose Help (?).
+
+    To return to shell prompt, choose Quit (q).
+
+HELP
+                echo $enf "Press Enter to continue ..." $enl
+                read N
+
+                continue
+        ;;
+        esac
+	export FIRST_TIME
+
+	. $sp/product;
+        . $sp/funcs.sh 
+        thisPlatform=`SystemType`
+        case "$N" in
+        1|3|4) 
+		if [ $thisPlatform = "CRAY" ] ; then 
+		   LSBASEBATCHONLY_NOGUI=y; export LSBASEBATCHONLY_NOGUI;
+		   install_base_batch_only;
+		else 
+		   product;
+                fi
+		;;
+	2)   get_products ;;
+        esac
+
+        if [ -d ./base ]; then 
+            multiPlatform=n
+        else
+            multiPlatform=y
+        fi
+
+        case "$N" in
+            2) _installType="ADD_HOSTTYPE" ;;
+            3) _installType="UPGRADE" ;;
+            4) _installType="ADD_PRODUCTS" ;;
+            *) _installType="" ;;
+        esac
+  
+        if [ "$multiPlatform" = "y" ]; then
+            get_distribution_dir 
+            get_os_versions "$_installType"
+            OSVersionSelected=$SelectedOSVersions	 
+	    export OSVersionSelected
+            needWorkingSpace=n
+            for plat in $SelectedOSVersions
+            do
+                if [ -d ${LSF_DIST_DIR}/${plat} ]; then
+                    :
+                else
+                    needWorkingSpace=y
+                fi
+            done
+
+            if [ "$needWorkingSpace" = "y" ]; then
+                get_working_dir    #require 400M
+            else
+                LSF_WORKING_DIR="/tmp"
+            fi
+        else
+            LSF_DIST_DIR=`dirname $LSFSETUP_CWD`
+            SelectedOSVersions=`basename $LSFSETUP_CWD` 
+            OSVersionSelected=$SelectedOSVersions	 
+	    export OSVersionSelected
+            LSF_WORKING_DIR="/tmp"
+
+            if `grep ${SelectedOSVersions}: $TABLE >$LSNULFILE 2>&1`; 
+            then
+                :
+            else
+                cat << CANNOTFINDPLATFORM | tee -a $PREFIX_LOG/Install.log
+
+    lsfsetup cannot determine the platform of current distribution, please check the directory name.
+CANNOTFINDPLATFORM
+                echo "lsfsetup exiting ..."
+                exit 1 
+            fi
+        fi
+    fi
+
+    if [ "$LSF_DIST_DIR" = "$LSF_WORKING_DIR" ]; then
+        sameDir=y
+    elif [ "$LSF_DIST_DIR" = "${LSF_WORKING_DIR}/" ]; then
+        sameDir=y
+    elif [ "$LSF_WORKING_DIR" = "${LSF_DIST_DIR}/" ]; then
+        sameDir=y
+    else
+        :
+    fi
+
+    if [ "$sameDir" = "y" ]; then
+        LSF_WORKING_DIR=`(cd $LSF_WORKING_DIR; mkdir lsf_inst_tmp.$$; cd lsf_inst_tmp.$$; pwd)`
+        removeWorkingDir=y
+    fi
+
+    case "$N" in
+#    1) 
+#       EXCUSED_CONF="n"; export EXCUSED_CONF
+#       LSF_DEFAULT_INSTALL="y"; export LSF_DEFAULT_INSTALL
+#       . $sp/defInstall; defInstall
+#       ;;
+    1) 
+       EXCUSED_CONF="n"; export EXCUSED_CONF
+       LSF_DEFAULT_INSTALL="n"; export LSF_DEFAULT_INSTALL
+       . $sp/customInstall; customInstall
+       ;;
+    2)
+       EXCUSED_CONF="y"; export EXCUSED_CONF
+       . $sp/otherInstall; otherInstall
+       ;;
+    3)  
+       EXCUSED_CONF="y"; export EXCUSED_CONF
+       ADD_LSB_CONF_FILES="y"; export ADD_LSB_CONF_FILES
+       . $sp/upgrade; upgrade
+       ;;
+    4)
+       EXCUSED_CONF="y"; export EXCUSED_CONF
+       . $sp/addProduct; addProduct
+       ;;
+    [Qq]*) 
+       exit
+       ;;
+
+    *)  more << HELP
+
+    If you prefer not to use lsfinstall, or are an experienced LSF 
+    administrator, choose Option 1. Initial Custom Install. This 
+    option gives you full control over all installation parameters.
+
+    If you have already installed LSF on one or more host types, and 
+    want to install another host type, choose Option 2. Install Other 
+    Host Types.
+
+    To upgrade from an earlier version of LSF, choose Option 3. Upgrade 
+    From a Previous Version. You can use this option on the any host
+    in the cluster to upgrade the configuration files and the
+    machine-dependent files.
+
+    To install additional products into your cluster, choose Option 4. 
+    Install Additional Products. If the version of your new products 
+    is different from your currently installed version of LSF, you must 
+    choose Option 3. Upgrade From a Previous Version to install the new 
+    version of the products you want.
+
+    To see this help information, choose Help (?).
+
+    To return to shell prompt, choose Quit (q).
+
+HELP
+    echo $enf "Press Enter to continue ..." $enl
+    read N
+
+    continue
+        ;;
+    esac
+
+    exit
+done
+
+#   To install LSF for the first time, we recommend you choose 
+#   Option 1. Initial Default Install.  This option assigns default
+#   values for a number of installation parameters.  Initial Default Install  
+#   requires  that  all  LSF machine-dependent and machine-independent files 
+#   are installed on a single file server. The top-level installation directory 
+#   must be accessible with the same path name from all hosts that will run LSF.
+
+#   If you prefer not to use the default installation values, or are
+#   an experienced LSF administrator, choose Option 2. Initial Custom
+#   Install. This option gives you full control over all installation
+#   parameters.
+
+}

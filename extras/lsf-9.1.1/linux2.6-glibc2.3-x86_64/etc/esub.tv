@@ -1,0 +1,16 @@
+#!/bin/sh
+#$RCSfile: esub.tv,v $Revision: 1.3 $Date: 2013/01/10 05:51:09 $
+#
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    # if not set do nothing
+    exit 0
+fi
+
+. $LSB_SUB_PARM_FILE
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+#Just set $LSB_TOTALVIEW
+#
+echo "LSB_TOTALVIEW=\"Y\"" >> $LSB_SUB_MODIFY_ENVFILE

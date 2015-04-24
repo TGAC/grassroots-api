@@ -1,0 +1,342 @@
+#!/bin/sh
+#$RCSfile: mpich_mx_wrapper,v $Revision: 1.3 $Date: 2013/01/10 05:52:08 $
+mpich_mx_wrapper_exit ()
+{
+    trap " " 1 2 3 15
+    echo "Signal received, cleaning up temporary files and exiting ..."
+    echo "Signal received, cleaning up temporary files and exitiing ..." >> $LOGFILE
+   
+    for afile in "$MXPI_CONF"
+    do
+        if [ -f "$afile" ]; then
+            rm -f "$afile"
+        fi
+    done
+
+    exit 1
+}
+
+    
+#------------------------------------------------------------------
+# Initialization:
+# - specify the absolute paths of mpirun.ch_mx if they are not in $PATH 
+# - EXIT_VALUE should not be set to 0
+#------------------------------------------------------------------
+
+# -----------------------------------------------------
+# Source the LSF environment. Optional.
+# -----------------------------------------------------
+
+. ${LSF_ENVDIR}/lsf.conf
+which_cmd=""
+if [ -f $LSF_TOP/$LSF_VERSION/install/instlib/lsflib.sh ]; then
+    . $LSF_TOP/$LSF_VERSION/install/instlib/lsflib.sh
+    which_cmd="my_which"
+fi 
+
+# -----------------------------------------------------
+# Set up the variable LSF_TS representing the TaskStarter.
+# -----------------------------------------------------
+LSF_TS="$LSF_BINDIR/TaskStarter"
+
+MPIRUN_CMD="mpirun.ch_mx"
+
+LOGFILE="/dev/null"
+EXIT_VALUE="66"
+TASK_GEOM_OK="0"
+
+#
+# If task geometry is not used 
+# Reverse order of the host list to gain better performance
+#
+if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+    REVERSE_ORDER="n"
+else
+    REVERSE_ORDER="y"
+fi
+
+#------------------------------------------------------------------
+# Create files with a unique name based on the LSF job ID:
+# - log file 
+# - machine file 
+# - temp file 
+#------------------------------------------------------------------
+TMP_TMPID=""
+if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+    TMP_JOBID="$LSB_JOBID"
+else
+    TMP_JOBID="$LSB_JOBID"_"$LSB_JOBINDEX"
+fi
+
+MXPI_CONF=".lsf_${TMP_JOBID}_mxpi.conf"
+
+if [ -d "$HOME" ]; then
+    MXPI_CONF="$HOME/$MXPI_CONF"
+fi
+
+
+#------------------------------------------------------------------
+# Enable signal handler
+#------------------------------------------------------------------
+trap "mpich_mx_wrapper_exit" 1 2 3 15
+
+#------------------------------------------------------------------
+# Check mpirun.ch_mx command
+#------------------------------------------------------------------
+if [ "$which_cmd" = "my_which" ]; then
+  my_which "$MPIRUN_CMD"
+  if [ "$?" != "0" ]; then
+      echo "Cannot find $MPIRUN_CMD in PATH<$PATH>. Exiting ..."
+      echo "Cannot find $MPIRUN_CMD in PATH<$PATH>. Exiting ..." >> $LOGFILE
+      exit 1
+  fi
+fi
+
+#------------------------------------------------------------------
+# Create the machine file: 
+# - based on the LSF environment variable LSB_MCPU_HOSTS 
+# - the format of the machine file depends on the mpich version 
+# - the file is used by the mpirun.ch_mx command 
+# - the file is used to run the jobs on the hosts selected by LSF
+#------------------------------------------------------------------
+rm -f $MXPI_CONF
+echo "# MPICH-MX machine file created by LSF on `date`" >> $MXPI_CONF
+
+# check if we were able to start writing the conf file
+if [ -f $MXPI_CONF ]; then
+    :
+else
+    echo "$0: cannot create $MXPI_CONF"
+    exit 1
+fi
+
+# determine the number of processes and print it to the machine file
+TOTAL_NUM_PROC="0"
+FLAG=""
+for TOKEN in $LSB_MCPU_HOSTS
+do
+    if [ -z "$FLAG" ]; then
+	FLAG="1"
+    else
+        let TOTAL_NUM_PROC=TOTAL_NUM_PROC+TOKEN
+        FLAG=""
+    fi
+done
+
+echo "# host" >> $MXPI_CONF
+
+#
+# Reverse LSB_MCPU_HOSTS
+#
+if [ "$REVERSE_ORDER" = "y" ]; then
+    HOST=""
+    NEW_LSB_MCPU_HOSTS=""
+    for i in $LSB_MCPU_HOSTS
+    do
+        if [ -z "$HOST" ]
+        then
+            HOST="$i"
+        else
+            NEW_LSB_MCPU_HOSTS="$HOST $i $NEW_LSB_MCPU_HOSTS"
+            HOST=""
+        fi
+    done
+    LSB_MCPU_HOSTS=$NEW_LSB_MCPU_HOSTS
+fi
+
+HOST=""
+NUM_PROC=""
+FLAG=""
+for TOKEN in $LSB_MCPU_HOSTS
+do
+    if [ -z "$FLAG" ]; then
+	HOST="$TOKEN"
+	FLAG="1"
+    else
+        NUM_PROC="$TOKEN"
+        FLAG=""
+    fi
+
+    if [ -n "$HOST" -a -n "$NUM_PROC" ]; then
+	echo "$HOST:$NUM_PROC" >> $MXPI_CONF
+
+        # get ready for the next host
+	HOST=""
+	NUM_PROC=""
+    fi
+done
+
+# last thing added to MXPI_CONF
+echo "# end of file" >> $MXPI_CONF
+
+#  -----------------------------------------------------
+#  Process the command line: 
+# - extract [mpiopts] from the command line
+# - extract jobname [jobopts] from the command line
+#  -----------------------------------------------------
+ARG00=`$MPIRUN_CMD 2>&1 | \
+      egrep '^[[:space:]]+-[[:alpha:]_-]+[[:space:]][[:space:]]' | \
+      awk '{printf "%s ", $1}'`
+ARG01=`$MPIRUN_CMD 2>&1 | \
+      egrep '^[[:space:]]+-[[:alpha:]_-]+[[:space:]][[:alpha:]]' | \
+      awk '{printf "%s ", $1}' |sed 's/--mx-shmem-prefix//'`
+ARG0="$ARG00$ARG01"
+ARG1="`$MPIRUN_CMD 2>&1 | \
+      egrep '^[[:space:]]+-[[:alpha:]_-]+[[:space:]]+<[[:alpha:]_[:space:]]+>[[:space:]][[:space:]]'  | \
+      awk '{printf "%s ", $1}'`--mx-shmem-prefix"
+
+while [ $# -gt 0 ]
+do
+     MPIRunOpt="0"
+
+     #single-valued options
+     for option in $ARG1
+     do
+         if [ "$option" = "$1" ]; then  
+            MPIRunOpt="1"
+	    case "$1" in
+	        -machinefile|-np)
+		    shift 
+		    shift
+		    ;;
+		-pg)
+		    shift
+		    MXPI_PROCFILE="$1"
+		    shift
+		    ;;
+	        *)
+		    MPICH_MX_OPTS="$MPICH_MX_OPTS $1" #get option name
+		    shift 
+		    MPICH_MX_OPTS="$MPICH_MX_OPTS $1" #get option value
+		    shift
+		    ;;
+	    esac
+            break
+        else
+            TMPARG=`echo $1 | awk /=/`
+            if [ -n "$TMPARG" ]; then
+		MPICH_MX_OPTS="$MPICH_MX_OPTS $1" #append to options
+		shift
+		MPIRunOpt="1"
+		break
+            fi
+
+         fi
+     done
+
+     if [ $MPIRunOpt = "1" ]; then
+        : 
+     else
+        #Non-valued options
+        for option in $ARG0
+        do
+            if [ $option = "$1" ]; then
+               MPIRunOpt="1"
+               MPICH_MX_OPTS="$MPICH_MX_OPTS $1"
+               shift
+               break     
+            fi
+        done
+     fi
+
+     if [ $MPIRunOpt = "1" ]; then
+        : 
+     else 
+        JOB_CMDLN="$*"
+        break 
+     fi
+
+done
+
+# -----------------------------------------------------
+#  Set up the CMD_LINE variable representing the integrated section of the command line:
+# - LSF_TS, script variable representing the TaskStarter binary. 
+#   TaskStarter must start each and every job task process.
+# - LSF_TS_OPTIONS, LSF environment variable containing all necessary information 
+#   for TaskStarter to callback to LSF's Parallel Application Manager.
+# - JOB_CMDLN, script variable containing the job and job options
+#--------------------------------------------------------------------------------
+if [ -z "$LSF_TS_OPTIONS" ]
+then
+    echo CMD_LINE="$JOB_CMDLN" >> $LOGFILE
+    CMD_LINE="$JOB_CMDLN "
+else
+    echo CMD_LINE="$LSF_TS $LSF_TS_OPTIONS $JOB_CMDLN" >> $LOGFILE
+    CMD_LINE="$LSF_TS $LSF_TS_OPTIONS $JOB_CMDLN "
+fi
+
+
+#------------------------------------------------------------------
+# Process $LSB_PJL_TASK_GEOMETRY
+# It will shuffle the order the machine_file
+# based on the order of task geometry
+#------------------------------------------------------------------
+TASK_GEOMETRY_ERR=0
+if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+    . $LSF_BINDIR/pjllib.sh
+    rm -f $MXPI_CONF
+    touch $MXPI_CONF
+    for token in $LSB_HOSTS
+    do
+        echo $token >> $MXPI_CONF
+    done
+
+    reorder_file_based_on_task_geom "$MXPI_CONF" "sort"
+    TASK_GEOMETRY_ERR="$?"
+fi
+
+#------------------------------------------------------------------
+# Run the job 
+# - use the mpirun.ch_mx command to launch your job
+# - you may add other standard mpirun.ch_mx options to the command line
+# - for example, to turn on the verbose mode, modify the command line to:
+#   $MPIRUN_CMD --mx-f --mx-v $MXPI_CONF $* 
+#------------------------------------------------------------------
+if [ "$TASK_GEOMETRY_ERR" = "0" ]; then
+#----------------------------------------------------------------------------
+# If the procgroup file is present ("-pg procfile" option for mpirun.ch_mx),
+# create a new procgroup file containing "$LSF_TS $USER $LSF_TS_OPTIONS" at
+# starting from the third field of each line. Ignore empty lines and lines 
+# starting with '#'. 
+# In other words, user supplied procgroup file of the format:
+#   # Comments
+#   <empty line>           
+#   hostname ntasks a.out [username] [options]
+# will be converted into the following procgroup file:
+#   hostname ntasks TaskStarter username TaskStarter_options a.out [options]
+#-----------------------------------------------------------------------------
+    if [ -n "$MXPI_PROCFILE" ]; then
+	TMP_MXPI_PROCFILE="$MXPI_PROCFILE"_${TMP_JOBID}
+	awk -v tsopt="$LSF_TS $USER $LSF_TS_OPTIONS" -v user="$USER" \
+	'{if(NF!= 0&&$1!~/#/){split($0,tmp); \
+        printf("%s %s %s ",tmp[1],tmp[2],tsopt); ff=3; \
+        if(tmp[ff+1]~user) {printf("%s",tmp[ff]);ff=5} \
+        for(i=ff; i<=NF; i++) printf(" %s",tmp[i]);printf("\n")}}' \
+	$MXPI_PROCFILE > $TMP_MXPI_PROCFILE 2>> $LOGFILE
+	echo "   $MPIRUN_CMD -pg $TMP_MXPI_PROCFILE $MPICH_MX_OPTS $CMD_LINE" >> $LOGFILE
+	echo "" >> $LOGFILE
+	echo "Contents of the $TMP_MXPI_PROCFILE procgroup file:" >> $LOGFILE
+	cat $TMP_MXPI_PROCFILE >> $LOGFILE
+	echo "" >> $LOGFILE
+	$MPIRUN_CMD -pg $TMP_MXPI_PROCFILE $MPICH_MX_OPTS $CMD_LINE
+    else
+	echo "   $MPIRUN_CMD -np $TOTAL_NUM_PROC -machinefile $MXPI_CONF $MPICH_MX_OPTS $CMD_LINE " >> $LOGFILE
+	$MPIRUN_CMD -np $TOTAL_NUM_PROC -machinefile $MXPI_CONF $MPICH_MX_OPTS $CMD_LINE
+    fi
+    EXIT_VALUE=$?
+fi
+
+#------------------------------------------------------------------
+# Clean up:
+# - remove temporary files 
+# - exit with the exit value of the mpirun.ch_mx command 
+#------------------------------------------------------------------
+rm -f $MXPI_CONF
+if [ -n $TMP_MXPI_PROCFILE ]; then
+    rm -f $TMP_MXPI_PROCFILE
+fi
+exit $EXIT_VALUE
+
+#-------------------------------------------------------------------------
+# End the script.
+#-------------------------------------------------------------------------

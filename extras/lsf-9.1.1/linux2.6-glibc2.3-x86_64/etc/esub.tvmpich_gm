@@ -1,0 +1,126 @@
+#!/bin/sh
+#$RCSfile: esub.tvmpich_gm,v $Revision: 1.11 $Date: 2013/01/10 05:51:11 $
+#
+# (1)user interface is in the form of:
+#    bsub [-a tvmpich_gm][bsub options] mpirun.lsf [-pam "pam_options"] [mpi_options] program[options][-tvopt[TV options]]
+#    bsub [-a tvmpich_gm][bsub options]program[options][-tvopt[TV options]]
+#
+# (2)This script performs similar functions to esub.mpich-gm,
+#    It will set type of PJL to envarionment variable.
+#    Or if $LSF_PJL_COMPAT=Y|y, convert the job's submission into the form of
+#
+#    bsub [bsub opts] $TV pam [TV-options] -a -g 1 -tv $PJL_WRAPPER program [options]
+#
+# to start TotalView to debug MPICH-GM jobs.
+#########################################################################################
+
+# If LSF_PJL_COMPAT=Y|y is used, User should add correct path
+# to totalview to $PATH at submission host.
+TV="totalview"
+TV_ARGS=
+Corefile=$TVCORE #TV's corefile name.
+
+#If the user wants to rename the default queue in lsb.queues,
+#don't forget to change this variable's value.
+DEFAULT_HPC_QUEUE_NAME="hpc_linux_tv"
+LSB_SUB_QUEUE=""
+
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    # if not set do nothing
+    exit 0
+fi
+
+. $LSB_SUB_PARM_FILE
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+# Get value of $LSF_PJL_COMPAT
+# First check if user defined this variable
+# in envrionment, if not check lsf.conf
+if [ -z "$LSF_PJL_COMPAT" ]; then
+    . ${LSF_ENVDIR}/lsf.conf
+fi
+
+if [ "$LSF_PJL_COMPAT" = "y" -o "$LSF_PJL_COMPAT" = "Y" ]; then
+    #Strip comment in command line
+    LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+    BEGIN { RS=";"; command=""; counter=0}
+    $0 !~ /^[ \t]*#/ {
+	if ( counter == 0 )
+	command = $0
+    else
+	command = sprintf("%s;%s", command, $0)
+	counter = counter + 1
+	
+    }
+    END { print command } '`
+    
+    #At first extract TV-specific options and remove them from $LSB_SUB_COMMAND_LINE
+    _COMMAND_LINE_=
+    TVargs_found=0
+    for item in $LSB_SUB_COMMAND_LINE 
+    do
+	case $item in
+	-tvopt)
+	    TVargs_found=1
+	    ;;
+ 	
+	*)
+	    if [ $TVargs_found = 1 ]; then
+		TV_ARGS="$TV_ARGS $item"
+	    else
+		_COMMAND_LINE_="$_COMMAND_LINE_ $item"
+	    fi         
+	    ;;
+	esac
+    done
+fi # endof if $LSF_PJL_COMPAT=Y|y
+
+LSB_SUB_COMMAND_LINE=$_COMMAND_LINE_
+#
+#From now on do the same as what the esub.mpich_gm does, except diffrence
+#in GM_ADDITIONAL_CMD:
+#
+# Assume
+GM_ADDITIONAL_KEY="mpich_gm"
+PJL_WRAPPER="gmmpirun_wrapper"
+GM_ADDITIONAL_CMD="$TV pam $Corefile $TV_ARGS -a -g 1 -tv $PJL_WRAPPER"
+
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+if [ "$LSF_PJL_COMPAT" = "y" -o "$LSF_PJL_COMPAT" = "Y" ]; then
+	echo "LSB_SUB_COMMAND_LINE=\"$GM_ADDITIONAL_CMD $LSB_SUB_COMMAND_LINE"\" >> $LSB_SUB_MODIFY_FILE
+else
+    # set enviroment variable LSF_PJL_TYPE to mpich_gm
+    # mpirun.lsf will read this variable to decide
+    # which PJL_wrapper to insert to the command line
+    echo "LSF_PJL_TYPE=\"tv$GM_ADDITIONAL_KEY\"" >> $LSB_SUB_MODIFY_ENVFILE
+fi
+
+if [ -z "$LSB_SUB_QUEUE" ]; then
+   echo "LSB_SUB_QUEUE=\"$DEFAULT_HPC_QUEUE_NAME"\" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#useful for debugging purposes
+#echo "LSB_SUB_PARM_FILE contains:"
+#more $LSB_SUB_PARM_FILE
+#echo "LSB_SUB_MODIFY_FILE contains:"
+#more $LSB_SUB_MODIFY_FILE
+#exit $LSB_SUB_ABORT_VALUE
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+#-----------------------------------------------------------------------------
+# This script is sourced by lsfsetup. It is not a standalone script.
+# Do the per-host setup for LSF server hosts.
+#-----------------------------------------------------------------------------
+#
+
+#Original parameter include: LSF_ENVDIR, _outfile, $LSF_SYMBOLIC_LINK
+#insert a new parameter: LSF_LINK_PATH
+LSF_LINK_PATH=$4
+
+if [ "$_host" = "" ]; then
+    _host=$5
+else
+    :
+fi
+
+LSNULFILE=/dev/null
+export LSNULFILE
+
+LSF_ENVDIR=$1
+_result=$2; echo `date` > $_result
+_doLink=$3
+
+if test -r $LSF_ENVDIR/lsf.conf; then
+    . $LSF_ENVDIR/lsf.conf
+    test "$LSF_INDEP" = "" && { echo fatal error happen in lsf.conf file! ; exit ; }
+else
+    echo "Cannot find file $LSF_ENVDIR/lsf.conf."
+    echo FIND_CONF_FAIL >> $_result
+    exit
+fi
+
+REMOTE_SH="y"
+if test -r /tmp/funcs.sh; then
+    . /tmp/funcs.sh
+else
+    . $sp/funcs.sh
+fi
+
+if [ "$_doLink" = "y" ]; then
+    test  -d $LSF_LINK_PATH || make_dir $LSF_LINK_PATH
+    is_local $LSF_LINK_PATH || echo LINKPATH_LOCAL_FAIL >> $_result
+
+    _hostType=`uname -a`
+    if found_binary_type "$_hostType"; then
+        GOT_HOSTTYPE=y
+    else
+        echo GOT_HOSTTYPE_FAIL >> $_result
+        exit
+    fi
+
+#In fact, there is no chance to consider custom case here. do_link=n
+
+    if [ "$GOT_HOSTTYPE" = "y" ]; then
+	_exist=n
+	if test "$LSF_DEFAULT_INSTALL" = "y"; then
+	    _bins="$LSF_INDEP/$BINARY_TYPE"
+	else
+	    _bins="$LSF_MACHDEP"
+	fi
+	for _dir in lib etc bin; do
+	    _linkDir="${LSF_LINK_PATH}/${_dir}"
+            if [ -f $_linkDir -o -d $_linkDir -o -h $_linkDir ]; then
+		echo ln -s $_bins/$_dir $_linkDir
+		_exist=y
+	    fi
+  	done
+
+       	if test "$_exist" = "y"; then
+	    echo LINK_PATH_EXIST >> $_result
+	fi
+    fi
+fi
+
+# check lsf.conf file
+if is_root ; then
+    LSF_ENVDIR=/etc
+else
+    LSF_ENVDIR=$LSF_CONFDIR
+fi
+if writable $LSF_ENVDIR lsf.conf
+then
+    if test -r $LSF_ENVDIR/lsf.conf; then
+        echo SETUP_CONF_EXIST >> $_result
+    fi
+else
+    echo SETUP_CONF_FAIL >> $_result
+fi

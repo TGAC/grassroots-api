@@ -1,0 +1,355 @@
+#! /bin/sh
+$RCSfile: lsfrestart,v $Revision: 5.29 $Date: 2013/01/10 05:54:34 $
+#-----------------------------------------------------------------     
+#     
+#  Restart script for LSF.
+#     
+#  lsfrestart - restart all daemons of LSF.
+#     
+#  Usage: lsfrestart [-f | -pdsh | -h | -V]
+#
+#  The order of the operation is important :
+#      lim, res, sbatchd,  mbatchd.
+#   
+#----------------------------------------------------------------     
+EXEC_FILENAME=`basename $0`
+usage="Usage: $EXEC_FILENAME [  -f | -pdsh | -h | -V ]"
+confirm='Error(s) found in previous operation, continue ? [y/n]'
+
+error=0                        # exit code 
+enable_ego=0
+
+# handle difference between system V and BSD echo
+# To echo "foo" with no newline, do
+# echo $enf "foo" $enl
+
+if [ "`echo -n`" = "-n" ] ; then
+    enf=
+    enl="\c"
+else
+    enf=-n
+    enl=
+fi
+
+#poring AWK
+if [ "`uname -s`" = "SunOS" ];then
+     AWK=nawk
+else
+     AWK=awk
+fi
+
+
+# Parallel restart host daemons with PDSH:
+#    lsfrestart -pdsh 
+#       - All hosts will be divided into chunks, 400 hosts per chunk;
+#       - No interval between chunks;
+
+chunk_size=400
+
+pdsh_restart_in_chunks () 
+{
+    # Input parameters
+    #    - 1st parameter: hostlist   
+    #    - 2nd parameter: remote execution command
+
+    hostlist=$1
+    restart_cmd="$2"
+    i=0
+    host_chunk=""
+
+    for host in $hostlist; do 
+        if [ $i -lt $chunk_size ]; then
+            if [ $i = 0 ]; then
+               host_chunk=$host
+            else
+               host_chunk=${host_chunk},$host
+            fi
+            i=`expr $i + 1`
+            if [ $i = $chunk_size ]; then
+                if [ x"$LSF_CMD_LOGDIR" != x ]; then
+                    echo pdsh -S -w $host_chunk "$restart_cmd"
+                fi
+               pdsh -S -w $host_chunk "$restart_cmd"  | grep "\ Restart\ " | sort -u -k 1 | sed 's/[^:]*://'
+               i=0
+               host_chunk=""
+            fi
+        fi 
+    done
+
+    if [ $i != 0 ]; then 
+        if [ x"$LSF_CMD_LOGDIR" != x ]; then
+            echo pdsh -S -w $host_chunk "$restart_cmd"
+        fi
+        pdsh -S -w $host_chunk "$restart_cmd" | grep "\ Restart\ " | sort -u -k 1 | sed 's/[^:]*://'
+    fi 
+}
+
+if [ $# -gt 1 ] ; then
+    echo $usage; exit 1;
+fi
+
+# check the option -f is provided ?
+if [ x$1 != x ]; then
+    case $1 in
+        -pdsh) enPDSH=y;;
+        -f) FORCE=y; OPTION="-f";;
+        -V) echo ""; lshosts -V; echo ""; exit;;
+        *)  echo $usage; exit 1;;
+    esac
+fi
+
+if [ "$LSF_ENVDIR" = "" ] ; then
+    if [ -f /etc/lsf.conf ] ; then
+	echo $enf "Is /etc/lsf.conf your current installation ? [y/n] y" $enl
+	read N
+	case "$N" in
+	    ""| Y* | y*) CONF=/etc/lsf.conf;;
+	    *) if [ "$N" = "" ] ; then 
+		   CONF=/etc/lsf.conf 
+	       fi
+	       ;;
+	esac
+    fi
+
+    if [ "$CONF" = "" ] ; then
+	while [ 1 ] ; do
+	    echo $enf "Enter the full pathname of the lsf.conf file" $enl
+	    read N
+	    if [ ! -f $N ] ; then
+		echo $N is not a file or does not exist.
+            else
+		CONF=$N
+                break;
+            fi
+	done
+    fi
+    . $CONF
+else
+    . $LSF_ENVDIR/lsf.conf
+    CONF=$LSF_ENVDIR/lsf.conf
+fi
+
+if [ "$LSF_BINDIR" != "" ] ; then
+    PATH=$PATH:$LSF_BINDIR
+fi
+
+if [ "${LSF_ENABLE_EGO}" != "n" -a "${LSF_ENABLE_EGO}" != "N" ]; then    
+    enable_ego=1
+fi
+if [ "$enPDSH" = "y" ]; then    
+
+    # check PDSH installation
+    pdsh -V > /dev/null 2>&1
+    if [ $? -ne 0 ]; then 
+        echo  "PDSH cannot be found in this machine." 
+        exit 1
+    fi
+
+    if [ $enable_ego = 1 ]; then 
+        echo  "Parallel lsfrestart does not support enabling EGO." 
+        exit 1
+    fi
+
+    # Should not restart remote daemons from slave only/client 
+    #
+    invalid_hostname="@invalid_hostname@" 
+    test_res=`lsadmin limrestart -f $invalid_hostname 2>&1`
+    exit_code=$? 
+    if [ x"$LSF_CMD_LOGDIR" != x  ]; then 
+        echo
+        # Internal debug messages
+        echo "Testing lsfrestart permission with exit code <$exit_code>: " 
+        echo "$test_res" 
+        echo
+    fi
+   
+    if [ $exit_code != 0 ]; then
+        disallow=`echo "$test_res" | grep "^Should\ not\ operate\ remote"` 
+        if [ x"$disallow" != x ]; then
+            echo "Error: Should not restart remote daemons from a slave only or client host." 
+            exit 1
+        fi
+    fi
+
+    echo Parallel restart with PDSH: 
+    echo 
+
+
+    # Checking configuration file
+    echo "$test_res" | grep -v "$invalid_hostname" | grep -v "\ Bad\ host\ name"  
+
+    echo Getting cluster information ...
+    echo 
+
+    CLUSTERNAME=`lsid | grep "My\ cluster\ name\ is\ " | sed 's/My\ cluster\ name\ is\ //' `
+    CLUSTERHOSTS=`lshosts -w $CLUSTERNAME`
+
+    # Get host list from lshosts -w cluster_name.
+    # Distinguish them as server hosts or dynamic hosts
+    # The master hosts are in the front part of the command's output.
+
+
+    server_list=`echo "$CLUSTERHOSTS" | grep -v "^HOST_NAME" | grep "\ Yes\ " |  
+                  $AWK -F '[ :\t|]' '{print $1}' |
+                      while read line; do 
+                          echo $line 
+                      done
+                 ` 
+     
+    if [ x"$server_list" = x ]; then
+        echo Error: Cannot get the host list of your cluster from command \"lshosts -w\".
+        exit 1
+    else
+        if [ x"$LSF_CMD_LOGDIR" != x ]; then
+            echo "       "Server host list is: $server_list
+        fi
+    fi
+
+    # dynamic host list, including non-shared installed packege
+    # Filtering host which is unavailable. 
+    dyn_list=`echo "$CLUSTERHOSTS" | grep -v "^HOST_NAME" | grep "\ Dyn\ " |  
+                  $AWK -F '[ :\t|]' '{print $1}' |
+                   while read dyn; do 
+                       echo $dyn
+                   done
+              ` 
+
+    pdsh_restart_list=`echo " " $server_list " " | sed "s/\ $master\ /\ /"`
+   
+    # Step 1: restart LIMs in parallel on non-dyn hosts. 
+    # Step 2: restart LIMs sequentially on dynamic hosts & slave installed hosts.
+    # Step 3: restart RESes and SBD in parallel on non-dyn hosts. 
+    # Step 4: restart RESes and SBD sequentially on dyn hosts.
+    # Step 5: Finally restart MBD.
+    # Above setting is to avoid RES restart too fast than local LIM and report permission deny.
+
+    echo  Restarting LIMs in parallel ...
+    echo
+
+    restart_lim="/bin/sh -c 'LSF_ENVDIR=$LSF_ENVDIR; export LSF_ENVDIR;. \$LSF_ENVDIR/lsf.conf; . \$LSF_CONFDIR/profile.lsf; \$LSF_BINDIR/lsadmin limrestart -f 2>&1 '"
+    pdsh_restart_in_chunks "$server_list" "$restart_lim"
+
+
+    if [ x"$dyn_list" != x ]; then 
+        echo
+        echo Restarting LIMs on dynamic hosts in sequence ... 
+          
+        for dyn_host in $dyn_list; do
+            lsadmin limrestart -f $dyn_host 
+        done
+    fi
+    
+    echo 
+    echo $enf "Waiting for Master LIMs to start up ..." $enl
+    until lsid 1>/dev/null 2>&1
+    do
+        echo $enf "." $enl
+        sleep 3
+    done
+    echo "  Master LIM is ok" 
+
+    # Avoid RESes restart too fast than local LIM and report permission deny.
+    sleep 8 
+
+    echo
+    echo Restarting RESes and slave daemons in parallel ...
+    echo
+    restart_res_sbd="/bin/sh -c 'LSF_ENVDIR=$LSF_ENVDIR; export LSF_ENVDIR;. \$LSF_ENVDIR/lsf.conf; . \$LSF_CONFDIR/profile.lsf; \$LSF_BINDIR/lsadmin resrestart -f 2>&1;  \$LSF_BINDIR/badmin hrestart -f 2>&1 '"
+    pdsh_restart_in_chunks "$server_list" "$restart_res_sbd"
+
+    if [ x"$dyn_list" != x ]; then 
+        echo
+        echo Restarting RESes and slave daemons on dynamic hosts in sequence ... 
+        for dyn_host in $dyn_list; do
+            lsadmin resrestart -f $dyn_host 
+            badmin  hrestart   -f $dyn_host 
+        done
+    fi
+    echo
+
+    echo Restarting master daemon of LSBATCH ...
+    badmin mbdrestart -f
+    if [ $? -ne 0 ]; then
+        error=1
+    fi
+    
+    echo 
+    echo Done restarting LSF daemons in parallel. 
+    exit $error
+fi
+
+
+
+echo  Restarting all LIMs ...
+
+lsadmin reconfig $OPTION
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y"  ] ; do
+        echo $enf $confirm $enl
+	read answer
+ 	case $answer in
+ 	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+ 	    *) continue;;
+ 	esac
+    done
+fi
+
+echo 
+echo $enf "Waiting for Master LIM to start up ..." $enl
+until lsid 1>/dev/null 2>&1
+do
+    echo $enf "." $enl
+    sleep 3
+done
+echo "  Master LIM is ok" 
+    
+echo Restarting all RESes ...
+
+lsadmin resrestart -f all
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y" ] ; do
+        echo $enf $confirm $enl
+	read answer
+	case $answer in
+	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+	    *) continue;;
+	esac
+    done
+else 
+    echo 
+fi
+
+echo Restarting all slave daemons on LSBATCH hosts ...
+
+badmin hrestart -f all
+if [ $? -ne 0 ]; then
+    error=1
+    echo 
+    while [ "$FORCE" != "y" ] ; do
+        echo $enf $confirm $enl
+	read answer
+	case $answer in
+	    Y* | y*) break;;
+	    N* | n*) exit 1;;
+	    *) continue;;
+	esac
+    done
+else 
+    echo ""
+fi
+
+echo Restarting master daemon of LSBATCH ...
+
+badmin mbdrestart
+if [ $? -ne 0 ]; then
+    error=1
+fi
+
+echo ""
+exit $error

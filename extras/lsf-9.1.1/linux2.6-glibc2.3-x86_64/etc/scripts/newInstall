@@ -1,0 +1,2543 @@
+#-----------------------------------------------------------------
+# $Id: newInstall,v 1.2 2012/06/08 03:37:25 sbadugu Exp $
+#
+#  Main installation engine. This is not a standalone scripts, it is sourced 
+#  by other modules.
+#-------------------------------------------------------------------------
+
+# Make sure the invoking user is root, print a warning if not
+check_root()
+{
+    if is_root ; then
+	:
+    else
+        cat << WARN
+
+    You are not root. You may not be able to install LSF successfully unless
+    you have the appropriate permissions. You may not be able to start LIM
+    if you do not have read permission on /dev/kmem.
+
+WARN
+	if yesno Continue? Y >$LSNULFILE
+	then
+	    :
+	else
+	    echo "Installation exiting ..." |tee -a $PREFIX_LOG/Install.log
+	    exit
+	fi
+    fi
+}
+
+# Install a group of files in the specified location
+# Usage: install_files dest mode file ...
+install_files()
+{
+    dd=$1
+    mode=$2
+    shift 2
+    dofiles="$@"
+
+    make_dir $dd
+    cp $dofiles $dd
+    echo ; echo "In directory " $dd
+    (cd $dd ; chmod $mode $dofiles ; ls -l $dofiles)
+}
+
+#-----------------------------------------------------------------------
+# Translate the mpicc, mpiCC, mpif77 and mpif90 files 
+# to include lsf specific paths
+#-----------------------------------------------------------------------
+translate_mpi_files()
+{
+    if [ -n "$1" ] ; then
+        if [ ! -d $1 ] ; then
+            echo "Fatal Error: $1 is not a directory; cannot install mpi to $1"
+            exit 1
+        else
+            LSF_PREFIX=$1
+        fi
+    else
+        LSF_PREFIX=""
+    fi
+
+#
+# mpicc
+#
+    echo "Translating mpicc file.  Please wait ..."
+
+    if grep "@lsf_prefix@" $LSF_BINDIR/mpicc >$LSNULFILE 2>&1
+    then 
+        sed -e "s%@lsf_prefix@%$LSF_PREFIX%g" \
+            -e "s%@LSF_INCLUDEDIR@%$LSF_INCLUDEDIR%g" \
+            -e "s%@LSF_LIBDIR@%$LSF_LIBDIR%g" \
+            $LSF_BINDIR/mpicc > /tmp/tmp_mpicc.$$
+        mv /tmp/tmp_mpicc.$$ $LSF_BINDIR/mpicc
+    fi
+    
+    echo  $enf "Which C compiler should mpicc use? [cc]"  $enl
+    read CLINKER
+ 
+    if [ "$CLINKER" = "" ]; then
+        CLINKER=cc
+    fi
+
+    if grep "@LSF_CLINKER@" $LSF_BINDIR/mpicc >$LSNULFILE 2>&1 
+    then 
+        sed -e "s%@LSF_CLINKER@%$CLINKER%g" \
+            $LSF_BINDIR/mpicc > /tmp/tmp_mpicc.$$
+        mv /tmp/tmp_mpicc.$$ $LSF_BINDIR/mpicc
+    fi
+
+    chmod 755 $LSF_BINDIR/mpicc
+
+#
+# mpiCC
+#
+    echo "Translating mpiCC file.  Please wait ..."
+
+    if grep "@lsf_prefix@" $LSF_BINDIR/mpiCC >$LSNULFILE 2>&1
+    then 
+        sed -e "s%@lsf_prefix@%$LSF_PREFIX%g" \
+            -e "s%@LSF_INCLUDEDIR@%$LSF_INCLUDEDIR%g" \
+            -e "s%@LSF_LIBDIR@%$LSF_LIBDIR%g" \
+            $LSF_BINDIR/mpiCC > /tmp/tmp_mpiCC.$$
+        mv /tmp/tmp_mpiCC.$$ $LSF_BINDIR/mpiCC
+    fi
+
+    echo  $enf "Which C++ compiler should mpicc use? [CC]"  $enl
+    read CCLINKER
+ 
+    if [ "$CCLINKER" = "" ]; then
+        CCLINKER=CC
+    fi
+
+    if grep "@LSF_CCLINKER@" $LSF_BINDIR/mpiCC >$LSNULFILE 2>&1 
+    then 
+        sed -e "s%@LSF_CCLINKER@%$CCLINKER%g" \
+            $LSF_BINDIR/mpiCC > /tmp/tmp_mpiCC.$$
+        mv /tmp/tmp_mpiCC.$$ $LSF_BINDIR/mpiCC
+    fi
+
+    chmod 755 $LSF_BINDIR/mpiCC
+
+#
+# mpif77
+#
+    echo "Translating mpif77 file.  Please wait ..."
+
+    if grep "@lsf_prefix@" $LSF_BINDIR/mpif77 >$LSNULFILE 2>&1
+    then 
+        sed -e "s%@lsf_prefix@%$LSF_PREFIX%g" \
+            -e "s%@LSF_INCLUDEDIR@%$LSF_INCLUDEDIR%g" \
+            -e "s%@LSF_LIBDIR@%$LSF_LIBDIR%g" \
+            $LSF_BINDIR/mpif77 > /tmp/tmp_mpif77.$$
+        mv /tmp/tmp_mpif77.$$ $LSF_BINDIR/mpif77
+    fi
+
+    echo  $enf "Which F77 compiler should mpif77 use? [f77]"  $enl
+    read F77LINKER
+ 
+    if [ "$F77LINKER" = "" ]; then
+        F77LINKER=f77
+    fi
+
+    if grep "@LSF_F77LINKER@" $LSF_BINDIR/mpif77 >$LSNULFILE 2>&1
+    then 
+        sed -e "s%@LSF_F77LINKER@%$F77LINKER%g" \
+            $LSF_BINDIR/mpif77 > /tmp/tmp_mpif77.$$
+        mv /tmp/tmp_mpif77.$$ $LSF_BINDIR/mpif77
+    fi
+    chmod 755 $LSF_BINDIR/mpif77
+
+#
+# mpif90
+#
+
+    echo "Translating mpif90 file.  Please wait ..."
+
+    if grep "@lsf_prefix@" $LSF_BINDIR/mpif90 >$LSNULFILE 2>&1
+    then 
+        sed -e "s%@lsf_prefix@%$LSF_PREFIX%g" \
+            -e "s%@LSF_INCLUDEDIR@%$LSF_INCLUDEDIR%g" \
+            -e "s%@LSF_LIBDIR@%$LSF_LIBDIR%g" \
+            $LSF_BINDIR/mpif90 > /tmp/tmp_mpif90.$$
+        mv /tmp/tmp_mpif90.$$ $LSF_BINDIR/mpif90
+    fi
+
+    echo  $enf "Which F90 compiler should mpif90 use? [f90]"  $enl
+    read F90LINKER
+ 
+    if [ "$F90LINKER" = "" ]; then
+        F90LINKER=f90
+    fi
+
+    if grep "@LSF_F90LINKER@" $LSF_BINDIR/mpif90 >$LSNULFILE 2>&1
+    then 
+        sed -e "s%@LSF_F90LINKER@%$F90LINKER%g" \
+        $LSF_BINDIR/mpif90 > /tmp/tmp_mpif90.$$
+        mv /tmp/tmp_mpif90.$$ $LSF_BINDIR/mpif90
+    fi
+
+    chmod 755 $LSF_BINDIR/mpif90
+}
+
+# UN*X which swaps directly from filesystem will not allow to overwrite
+# an image of a running executable. The following function will.
+# Usage: safe_cp file file ... dir
+safe_cp()
+{
+    files=
+    while [ $# -gt 1 ]
+    do
+        files="$files $1"
+        shift
+    done
+    dest=$1
+
+    for i in $files
+    do
+        curr=$dest/`basename $i`
+        if [ -f $curr ] 
+        then
+            if [ -f $curr.old ]
+            then
+                mv -f $curr.old $curr.$$
+                rm -f $curr.$$
+            fi
+            mv -f $curr $curr.old
+            rm -f $curr.old
+        fi
+        cp $i $dest
+    done
+}
+
+# This function is similiar to safe_cp () function above
+# It just does not rm the backup file. 
+cp_backup()
+{
+    files=
+    while [ $# -gt 1 ]
+    do
+        files="$files $1"
+        shift
+    done
+    dest=$1
+
+    for i in $files
+    do
+        curr=$dest/`basename $i`
+        if [ -f $curr ] 
+        then
+            if [ -f $curr.old ]
+            then
+                echo "The original $curr.old is copied to $curr.$$"
+                mv -f $curr.old $curr.$$
+            fi
+            echo "The original $curr is copied to $curr.old"
+            mv -f $curr $curr.old
+        fi
+        cp $i $dest
+    done
+}
+
+# When install daemons, *.old file cannot be removed before restart daemon,
+# otherwise the cluster cannot work well.
+# Usage: safe_cp_daemons file file ... dir
+safe_cp_daemons()
+{
+    files=
+    while [ $# -gt 1 ]
+    do
+        files="$files $1"
+        shift
+    done
+    dest=$1
+
+    for i in $files
+    do
+        curr=$dest/`basename $i`
+        if [ -f $curr ]
+        then
+            if [ -f $curr.old ]
+            then
+                mv -f $curr.old $curr.$$
+            fi
+            mv -f $curr $curr.old
+        fi
+        cp $i $dest
+    done
+}
+ 
+# Install all the commands into the appropriate place
+install_bins()
+{
+    if [ "$LSF_CLUSTER_NAME" = "" ]; then
+         find_cluster
+    fi
+    if [ "$LSF_MANAGER" = "" ]; then 
+        if [ "$LSF_CLUSTER_NAME" = "" ]; then
+            find_cluster
+        fi
+        LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+        get_lsf_manager
+    fi
+    export LSF_MANAGER
+
+ 
+    make_dir $LSF_BINDIR
+
+    echo ; echo "In directory " $LSF_BINDIR
+    # special case for dependent variable
+    if defined "$LSF_AUTH" 
+    then
+	LSF_INSMODE=0755
+    else
+	LSF_INSMODE=04755
+    fi
+    
+
+    if is_root ; then
+	ADMIN_MODE=04755
+        CHOWN=chown
+    else
+	LSF_INSMODE=0755
+	ADMIN_MODE=0755
+	CHOWN=true
+    fi
+    
+
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        safe_cp base/bin/* $LSF_BINDIR/
+    fi
+
+#    if [ "$INSTALL_ANALYZER" = "y" ] ; then
+#        if [ ! -d "$LSF_SERVERDIR" ] ; then
+#            make_dir $LSF_SERVERDIR
+#        fi
+#        safe_cp analyzer/etc/* $LSF_SERVERDIR/
+#        safe_cp analyzer/bin/* $LSF_BINDIR/
+#    fi
+
+#    if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#      
+#	if [ -f parallel/bin/pam ] ; then
+#	    safe_cp parallel/bin/pam $LSF_BINDIR/
+#        fi
+#	if [ -f parallel/bin/mpicc.in ] ; then
+#            
+#            safe_cp parallel/bin/mpicc.in $LSF_BINDIR/mpicc
+#            safe_cp parallel/bin/mpiCC.in $LSF_BINDIR/mpiCC
+#            safe_cp parallel/bin/mpif77.in $LSF_BINDIR/mpif77
+#            safe_cp parallel/bin/mpif90.in $LSF_BINDIR/mpif90
+#            translate_mpi_files
+#        fi
+#    fi
+
+    if [ "$INSTALL_LSMAKE" = "y" ] ; then
+        safe_cp lsmake/bin/* $LSF_BINDIR/
+    fi
+
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+	safe_cp batch_js/bin/* $LSF_BINDIR/
+        if [ "$INSTALL_BATCH" = "y" ] ; then
+	    safe_cp batch/bin/* $LSF_BINDIR/
+	fi
+#        if [ "$INSTALL_JS" = "y" ] ; then
+#	    safe_cp js/bin/* $LSF_BINDIR/
+#	fi
+    fi
+
+	
+    (
+
+        IFILES=""
+        ANAIFILES=""
+
+        if [ "$INSTALL_BASE" = "y" ] ; then 
+	    IFILES=`cd base/bin; echo $enf * $enl`
+        fi
+
+#        if [ "$INSTALL_ANALYZER" = "y" ] ; then
+#            tmpF=`cd analyzer/bin; echo $enf * $enl`
+#            IFILES="$IFILES $tmpF"
+#            ANAIFILES=`cd analyzer/etc; echo $enf * $enl`
+#        fi
+
+#	if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#	    IFILES="$IFILES pam"
+#        fi 
+
+	if [ "$INSTALL_LSMAKE" = "y" ] ; then
+	    tmpF=`cd lsmake/bin; echo $enf * $enl`
+	    IFILES="$IFILES $tmpF"
+        fi
+
+	if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+	    tmpF=`cd batch_js/bin; echo $enf * $enl`
+	    IFILES="$IFILES $tmpF"
+
+	    if [ "$INSTALL_BATCH" = "y" ] ; then
+		tmpF=`cd batch/bin; echo $enf * $enl`
+		IFILES="$IFILES $tmpF"
+	    fi
+#	    if [ "$INSTALL_JS" = "y" ] ; then
+#		tmpF=`cd js/bin; echo $enf * $enl`
+#		IFILES="$IFILES $tmpF"
+#	    fi
+	fi
+
+        if [ "$LSF_MANAGER" = "" -a "$INSTALL_JS" = "y" ]; then
+	    if [ "$LSF_CLUSTER_NAME" = "" ]; then
+		find_cluster
+            fi
+	    LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+	    get_lsf_manager
+        fi
+
+        
+#        if [ "$INSTALL_ANALYZER" = "y" ]; then
+#            cd $LSF_SERVERDIR
+#            if [ "$ANAIFILES" = "" ]; then
+#                :
+#            else
+#                chmod 755 $ANAIFILES
+#                chmod 777 jsScript
+#            fi
+#        fi
+
+	cd $LSF_BINDIR
+        if [ "$IFILES" = "" ] ; then 
+            :
+        else
+	    chmod 755 $IFILES
+        fi 
+	chmod $LSF_INSMODE $LSCOMMANDS $BCOMMANDS 
+#	if [ "$INSTALL_JS" = "y" ]; then 
+#	        chmod $LSF_INSMODE balarms xbalarms
+#                lsfmanager=`echo $LSF_MANAGER | $AWK '{print $1}'`
+#                $CHOWN $lsfmanager  balarms xbalarms
+#        fi
+	chmod $ADMIN_MODE lsadmin
+
+        if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+    	    chmod $ADMIN_MODE badmin
+	fi
+
+        if [ "$INSTALL_BASE" = "y" ] ; then 
+	    rm -f lsltasks lsreconfig lslockhost lsunlockhost lsfsetup bmodify
+	    ln lsrtasks lsltasks
+	    ln lsadmin lsreconfig
+	    ln lsadmin lslockhost
+	    ln lsadmin lsunlockhost
+	    ln -s $LSF_SERVERDIR/lsfsetup lsfsetup
+	    ln -s bmod bmodify
+        fi
+
+	if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+	    rm -f bstop bresume xbmod
+
+	    ln bkill bstop
+	    ln bkill bresume
+            if [ "$LSBASEBATCHONLY_NOGUI" = "n" ] ; then 
+	       ln xbsub xbmod
+            fi
+
+	    if [ "$INSTALL_BATCH" = "y" ] ; then
+		rm -f bchkpnt xbmodify bugroup breconfig bqc breboot
+	        ln badmin breconfig
+    	        ln badmin bqc
+	        ln badmin breboot
+		ln bkill bchkpnt
+                if [ "$LSBASEBATCHONLY_NOGUI" = "n" ] ; then 
+		   ln xbmod xbmodify
+                fi
+	        ln bmgroup bugroup
+	    fi
+
+#	    if [ "$INSTALL_JS" = "y" ] ; then
+#		rm -f bdel bcmod bcdel bchist bcundel
+#		ln bkill bdel 
+#	        ln bcadd bcmod
+#	        ln bcadd bcdel
+#	        ln bcadd bcundel
+#	        ln bcadd bchist
+#	    fi
+	fi
+
+        if [ "$IFILES" = "" ] ; then 
+            :
+        else
+	    ls -l $IFILES lsfsetup
+
+#            if [ "$INSTALL_ANALYZER" = "y" ]; then
+#                if [ "$ANAIFILES" = "" ]; then
+#                    :
+#                else
+#                    orgDir=`pwd`
+#                    cd $LSF_SERVERDIR
+#                    echo "in $LSF_SERVERDIR" 
+#                    ls -l $ANAIFILES 
+#                    cd $orgDir
+#                fi
+#            fi
+        fi
+    )
+}
+
+# Put the daemons in their place, back up the old ones
+install_daemons()
+{
+    make_dir $LSF_SERVERDIR
+
+    IFILES=""
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        IFILES=`cd base/etc; echo $enf * $enl`
+    fi
+
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+	tmpF=`cd batch_js/etc; echo $enf * $enl`
+	IFILES="$IFILES $tmpF"
+
+	if [ "$INSTALL_BATCH" = "y" ] ; then
+       _ht=`uname`
+       if [ "$_ht" != "Darwin" ];  then
+	    tmpF=`cd batch/etc; echo $enf * $enl`
+	    IFILES="$IFILES $tmpF"
+       fi
+	fi
+#	if [ "$INSTALL_JS" = "y" ] ; then
+#	    tmpF=`cd js/etc; echo $enf * $enl`
+#	    IFILES="$IFILES $tmpF"
+#	fi
+    fi
+
+    if [ "$INSTALL_BASE" = "y" ] ; then
+        if test -h $LSF_SERVERDIR/lmgrd -o -h $LSF_SERVERDIR/lmhostid ; then
+            CUSTOMER_FLXLM="y"
+            mv -f $LSF_SERVERDIR/lmgrd $LSF_SERVERDIR/lmgrd_tmp
+            mv -f $LSF_SERVERDIR/lmhostid $LSF_SERVERDIR/lmhostid_tmp
+        fi   
+        safe_cp_daemons base/etc/*  $LSF_SERVERDIR/
+        if [ "$CUSTOMER_FLXLM" = "y" ]; then
+            rm -f $LSF_SERVERDIR/lmgrd $LSF_SERVERDIR/lmhostid
+            mv -f $LSF_SERVERDIR/lmgrd_tmp $LSF_SERVERDIR/lmgrd
+            mv -f $LSF_SERVERDIR/lmhostid_tmp $LSF_SERVERDIR/lmhostid
+        fi 
+    fi
+
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+        safe_cp_daemons batch_js/etc/*  $LSF_SERVERDIR/
+	if [ "$INSTALL_BATCH" = "y" ] ; then
+        _ht=`uname`
+        if [ "$_ht" != "Darwin" ] ; then
+            safe_cp_daemons batch/etc/*  $LSF_SERVERDIR/
+        fi
+	fi
+#	if [ "$INSTALL_JS" = "y" ] ; then
+#            safe_cp_daemons js/etc/*  $LSF_SERVERDIR/
+#	fi
+    fi
+
+    if [ "$IFILES" = "" ] ; then 
+        :
+    else
+        (cd $LSF_SERVERDIR ; chmod 755 $IFILES ;  if is_root ; then   chmod 04755 eauth ; fi )
+        (cd $LSF_SERVERDIR ; if is_root ; then if [ -f utmpreg ] ; then chmod 04755 utmpreg ; fi; fi )
+    fi
+
+#
+# Porting 15632: Should not try to link to or list a non-existent file
+#
+
+    LINKS=""
+    if [ "$INSTALL_BASE" = "y" -a "$CUSTOMER_FLXLM" != "y" ] ; then 
+        LINKS="lmcksum lmreread lmdown lmstat lmswitchr lmremove lmver"
+        (cd $LSF_SERVERDIR ; rm -f $LINKS )
+        (cd $LSF_SERVERDIR ; 
+	if [ -f lmhostid ] ; then 
+		for file in $LINKS ; do ln lmhostid $file ; done
+	fi
+	)
+    fi
+
+    if [ "$IFILES" = "" -a "$LINKS" = "" ] ; then 
+        :
+    else 
+        echo ; echo "In directory " $LSF_SERVERDIR
+        (cd $LSF_SERVERDIR ; 
+	if [ -f "$LINKS" ] ; then 
+		ls -l $IFILES $LINKS
+	else 
+		ls -l $IFILES
+	fi
+	)
+    fi
+}
+
+
+# Put all the scripts in place
+install_scripts()
+{
+
+    if [ "$LSF_ENVDIR" = "" ]; then
+        LSF_ENVDIR=/etc
+
+        cat << CANNOTFINDENV | tee -a $PREFIX_LOG/Install.log
+
+    lsfsetup cannot find the definition of LSF_ENVDIR. In the startup script, 
+    lsf_daemons, lsfsetup will use /etc as LSF_ENVDIR.
+
+    Please check the whether /etc can be used as LSF_ENVDIR by hand.
+
+CANNOTFINDENV
+
+        sleep 10 
+    fi
+
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        make_dir $LSF_SERVERDIR
+
+	cp $LSFSETUP_CWD/lsfsetup $LSF_SERVERDIR
+
+        #
+	# Install LSF installation scripts
+	#
+	
+        make_dir $LSF_SERVERDIR/scripts
+        cp $sp/* ${LSF_SERVERDIR}/scripts
+        chmod 755 $LSF_SERVERDIR/scripts/*
+        (cd $LSF_SERVERDIR ; ls -lR lsfsetup scripts)
+
+        if [ -d /etc/rc.config.d ] ; then 
+            # hp10 should use !/sbin/sh, export path. 
+            echo "#!/sbin/sh" > $LSF_SERVERDIR/lsf_daemons
+            echo "# hp10 need follow two lines" >> $LSF_SERVERDIR/lsf_daemons
+            echo "PATH=$PATH:/usr/sbin:/usr/bin:/sbin" >>$LSF_SERVERDIR/lsf_daemons
+            echo "export PATH" >> $LSF_SERVERDIR/lsf_daemons
+            sed -e "1,2d" -e "s|@LSF_CONF@|$LSF_ENVDIR/lsf.conf|" < startup.svr4 >> $LSF_SERVERDIR/lsf_daemons
+        else
+            sed -e "s|@LSF_CONF@|$LSF_ENVDIR/lsf.conf|" < startup.svr4 > $LSF_SERVERDIR/lsf_daemons
+        fi
+   
+        chmod 755 $LSF_SERVERDIR/lsf_daemons 
+    fi
+}
+
+# Install Make.def and Make.misc
+install_makes()
+{
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        (install_files $LSF_MISC 644 Make.misc
+         install_files $LSF_MISC/config 644 Make.def
+         mv -f $LSF_MISC/config/Make.def $LSF_MISC/config/Make.def.$MACHTYPE)
+    fi
+}
+
+# Install the libraries and ranlib if necessary, install the Motif .uid files
+install_libs()
+{
+    IFILES=""
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        (cd base/lib ; install_files $LSF_LIBDIR 644 *.a)
+        (cd base/lib ; install_files $LSF_LIBDIR 755 *.so)
+        IFILES=`cd base/lib; echo $enf *.a $enl`
+	# install shared object for lim or res if it is there
+        (cd base/lib ; if [ -f libresvcl.so ] ; then install_files $LSF_LIBDIR 755 libresvcl.so; fi)
+	(  # install locale file 
+	     if [ -d base/lib/locale ] ; then 
+	         cd base/lib/locale
+	         LOCALES=" C en_US.utf iso8859-1 iso8859-2 iso8859-3 iso8859-4 iso8859-5 iso8859-6 iso8859-7 iso8859-8 iso8859-9 ja ja.JIS ja.SJIS ko tbl_data th_TH.TACTIS zh zh_TW" 
+	         if [ -f compose.dir ] ; then  
+	 	     install_files $LSF_LIBDIR/locale 644  compose.dir
+                 fi 
+                 if [ -f locale.alias ] ; then
+		     install_files $LSF_LIBDIR/locale 644 locale.alias
+                 fi
+	         if [ -f locale.dir ] ; then
+		     install_files $LSF_LIBDIR/locale 644 locale.dir 
+ 	         fi
+	         for locdir in $LOCALES ; do 
+		     if [ -d $locdir ] ; then 
+                         (cd $locdir ; install_files $LSF_LIBDIR/locale/$locdir/ 644 *)
+                     fi
+ 	         done
+             fi
+	 )
+        
+    fi
+
+#    if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#        (cd parallel/lib ; if [ -f libmpich.a ] ; then install_files $LSF_LIBDIR 644 *.a ; fi)
+#        (cd parallel/lib ; if [ -f mpe_prof.o ] ; then install_files $LSF_LIBDIR 644 *.o ; fi)
+#        tmpF=`cd parallel/lib; echo $enf *.a $enl`
+#	IFILES="$IFILES $tmpF"
+#        (cd parallel/lib ; if [ -f libpamvcl.so ] ; then install_files $LSF_LIBDIR 755 *.so ; fi)
+#        (cd parallel/lib ; if [ -f libmpich.sl ] ; then install_files $LSF_LIBDIR 755 *.sl ; fi)
+#    fi 
+
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+        (cd batch_js/lib ; install_files $LSF_LIBDIR 644 *.a)
+        (cd batch_js/lib ; install_files $LSF_LIBDIR 755 *.so)
+        tmpF=`cd batch_js/lib; echo $enf *.a $enl`
+	IFILES="$IFILES $tmpF"
+	if [ "$INSTALL_BATCH" = "y" -a -d batch/lib ] ; then
+            (cd batch/lib ; install_files $LSF_LIBDIR 644 *.a)
+	    tmpF=`cd batch/lib; echo $enf *.a $enl`
+	    IFILES="$IFILES $tmpF"
+	fi
+
+        if [ "$INSTALL_BATCH" = "y" -a -d batch/lib ] ; then
+            (cd batch/lib ; if [ -f ckpt_crt0.o -o -f ckpt_crt0.mips2-32.o ] ; then install_files $LSF_LIBDIR 644 *.o ;fi)
+            (cd batch/lib ; if [ -f syscall.exp ] ; then install_files $LSF_LIBDIR 644 syscall.exp ; fi)
+ 	fi
+    fi
+
+
+    if [ "$IFILES" = "" ] ; then 
+        :
+    else 
+        case `uname` in
+            ULTRIX | ConvexOS | OSF1) 
+		(
+		cd ${LSF_LIBDIR} 
+		if [ `ranlib ${IFILES} | grep "Execution of ar failed" | wc -l` -gt 0 ]
+		then
+			echo "`uname` version of ranlib fails on ${CurrentBinVersion} version of  ${IFILES}."
+			echo "Please ignore the ranlib error messages." 
+		fi
+		)
+		;;
+
+	    AIX) 
+		(
+		cd ${LSF_LIBDIR} 
+		if [ `ranlib -t ${IFILES} | grep "Execution of ar failed" | wc -l` -gt 0 ]
+		then
+			echo "`uname` version of ranlib fails on ${CurrentBinVersion} version of  ${IFILES}."
+			echo "Please ignore the ranlib error messages."
+		fi
+		)
+		;;
+	    SunOS)  
+	    (
+	    if [ `uname -r | sed 's/\(.\).*/\1/'` -lt 5 ] 
+		    then
+			cd ${LSF_LIBDIR} 
+			if [ `ranlib -t ${IFILES} | grep "Execution of ar failed" | wc -l` -gt 0 ]
+			then
+				echo "`uname` version of ranlib fails on ${CurrentBinVersion} version of  ${IFILES}."
+				echo "Please ignore the ranlib error messages."
+			fi
+		    fi 
+	    )
+	    ;;
+	    *) ;;
+        esac
+        if [ "$LSBASEBATCHONLY_NOGUI" = "n" ] ; then 
+           (cd base/lib/uid ; install_files $XLSF_UIDDIR 644 *.uid)
+        fi
+    fi
+}
+
+# Install the binary parts of lsNQS
+install_nqs_bin()
+{
+    if [ "$INSTALL_BATCH" != "y" ] ; then
+	return 0
+    fi
+
+    if test "$LSF_NQS" = "N"
+    then
+    	return 0
+    fi
+
+    # special case for dependent variable
+    if defined "$LSF_AUTH" 
+    then
+	LSF_INSMODE=0755
+    else
+	LSF_INSMODE=04755
+    fi
+
+    if is_root ; then
+	:
+    else
+	LSF_INSMODE=0755
+    fi
+
+    make_dir $LSF_BINDIR
+    (
+    	cd batch/nqs
+	IFILES=`ls | egrep -v '\.1$|qothers'`
+	OTHERS="qrestart qjlist qlimit qmapmgr qmgr qps qrun qsa qsnapshot qwatch batch-acct clnqs pipeclient"
+	cp $IFILES qothers ${LSF_BINDIR}/
+	cd ${LSF_BINDIR}
+	chmod $LSF_INSMODE $NQSCOMMANDS
+	chmod 755 qothers qstat
+	for exe in $OTHERS
+	do
+	    rm -f $exe
+	    ln qothers $exe
+	done
+	rm -f qothers
+	echo ; echo "lsNQS commands in " $LSF_BINDIR
+	ls -l $IFILES $OTHERS
+    )
+}
+
+# Install all the binary parts
+install_all_bin()
+{
+    if [ "$EXCUSED_BIN" != "y" ] ; then
+	install_bins
+	install_daemons
+	install_scripts
+	install_libs
+	install_makes
+	# This does nothing if NQS is not selected
+	install_nqs_bin
+    fi
+}
+
+
+# Install shared parts - conf, examples, man
+install_shared()
+{
+    if [ "$EXCUSED_MISC" != "y" ] ; then
+	install_misc
+    fi
+
+    if [ "$LSBASEBATCHONLY_NOGUI" = "n" ] ; then 
+       if [ "$EXCUSED_XMISC" != "y" ] ; then
+	   install_xmisc
+       fi
+    fi
+
+    if [ "$EXCUSED_MANS" != "y" ] ; then
+        if [ "$addHostType" = "y" ]; then
+            if ( echo "$SelectedOSVersions" | grep "sgi" > $LSNULFILE ); then
+                install_cat_man
+            fi
+        else
+            install_mans
+        fi
+    fi
+
+    if [ "$EXCUSED_INCLUDE" != "y" ] ; then 
+	install_include
+    fi
+}
+
+# Install the misc examples, etc
+install_misc()
+{
+    make_dir $LSF_MISC
+    make_dir $LSF_MISC/examples
+
+    if [ "$INSTALL_LSMAKE" = "y" ]; then 
+        make_dir $LSF_MISC/lsmake
+        $CP lsmake/misc/* $LSF_MISC/lsmake
+        chmod a+x $LSF_MISC/lsmake
+    fi
+    
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+
+        _ht=`uname`
+        if [ "$_ht" != "Darwin" ] ; then
+        $CP base/misc/flexuser.htm ${LSF_MISC}
+        fi
+
+        cp -r examples/* ${LSF_MISC}/examples
+        (
+    	    cd $LSF_MISC/examples
+	    chmod 644 simsh.c Makefile README elim.c
+	    chmod 755 ssh 
+        )
+   
+        _ht=`uname`
+        if [ "$_ht" != "Darwin" ] ; then
+        make_dir $LSF_MISC/lstcsh
+        $CP base/misc/lstcsh/* $LSF_MISC/lstcsh
+        fi
+
+        find $LSF_MISC/. -exec chmod a+r {} \;
+      
+        _ht=`uname`
+        if [ "$_ht" != "Darwin" ] ; then
+        if [ "$LSBASEBATCHONLY_NOGUI" = "n" ] ; then 
+	  if [ -d $LSF_MISC/examples/krb ]; then 
+            chmod a+x $LSF_MISC $LSF_MISC/lstcsh $LSF_MISC/examples/krb $LSF_MISC/examples/xelim $LSF_MISC/examples $LSF_MISC/examples/reselim $LSF_MISC/examples/web-lsf $LSF_MISC/examples/blogin $LSF_MISC/examples/clearcase $LSF_MISC/examples/eevent
+	  else
+	    chmod a+x $LSF_MISC $LSF_MISC/lstcsh $LSF_MISC/examples/xelim $LSF_MISC/examples $LSF_MISC/examples/reselim $LSF_MISC/examples/web-lsf $LSF_MISC/examples/blogin $LSF_MISC/examples/clearcase $LSF_MISC/examples/eevent
+	  fi
+	else
+	  if [ -d $LSF_MISC/examples/krb ]; then 
+            chmod a+x $LSF_MISC $LSF_MISC/lstcsh $LSF_MISC/examples/krb $LSF_MISC/examples $LSF_MISC/examples/reselim $LSF_MISC/examples/web-lsf $LSF_MISC/examples/blogin $LSF_MISC/examples/clearcase $LSF_MISC/examples/eevent
+	  else
+	    chmod a+x $LSF_MISC $LSF_MISC/lstcsh $LSF_MISC/examples $LSF_MISC/examples/reselim $LSF_MISC/examples/web-lsf $LSF_MISC/examples/blogin $LSF_MISC/examples/clearcase $LSF_MISC/examples/eevent
+	  fi
+        fi
+      fi
+
+        echo ; echo "In directory " $LSF_MISC
+        (cd $LSF_MISC ; ls -lR *)
+    fi
+
+}
+
+install_xmisc()
+{
+    IFILES=""
+
+
+
+
+
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        cp base/misc/X* base/misc/x* $XLSF_APPDIR/
+
+        IFILES="$IFILES XLsmon XLsmon.ja xlsmon.hlp xlsmon.hlp.ja XKeysymDB xsupport"
+    fi
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+        cp batch_js/misc/X* $XLSF_APPDIR/
+	IFILES="$IFILES XBsub XBmod XLsf "
+#        if [ "$INSTALL_JS" = "y" ] ; then
+#            cp js/misc/x* $XLSF_APPDIR/
+#            cp js/misc/X* $XLSF_APPDIR/
+#	    IFILES="$IFILES XBcal XLsjs XBalarms xbalarms.hlp  xbcal.hlp xbsubjs.hlp xbmodjs.hlp xlsjs.hlp "
+#        fi
+        if [ "$INSTALL_BATCH" = "y" ] ; then
+            cp batch/misc/x* $XLSF_APPDIR/
+            cp batch/misc/X* $XLSF_APPDIR/
+	    IFILES="$IFILES XLsadmin XLsadmin.ja xlsadmin.hlp xlsadmin.hlp.ja XLsbatch XLsbatch.ja xbsub.hlp xbmod.hlp xlsbatch.hlp xlsbatch.hlp.ja "
+        fi
+    fi
+
+    if [ "$IFILES" = "" ] ; then 
+        :
+    else
+        (
+	cd $XLSF_APPDIR
+	chmod 644 $IFILES
+	echo ; echo "In directory " $XLSF_APPDIR
+
+
+	ls -l $XLSF_APPDIR
+
+
+        )
+    fi
+}
+
+# Install header files
+install_include()
+{
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        (cd base/include/lsf ; install_files $LSF_INCLUDEDIR/lsf 644 lsf.h)
+    fi 
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+        (cd batch_js/include/lsf ; install_files $LSF_INCLUDEDIR/lsf 644 lsbatch.h)
+        (cd batch_js/include/lsf ; install_files $LSF_INCLUDEDIR/lsf 644 lssched.h)
+    fi
+
+#    if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#        (if [ -d parallel/include/lsf ] ; then 
+#	     cd parallel/include/lsf  
+#	     install_files $LSF_INCLUDEDIR/lsf 644 *.h 
+#	 fi)
+#        (if [ -d parallel/include/lsf/mpi ] ; then 
+#	     cd parallel/include/lsf/mpi 
+#	     install_files $LSF_INCLUDEDIR/lsf/mpi 644 *.h  
+#	 fi)
+#        (if [ -d parallel/include/lsf/mpi/mpi2c++ ] ; then 
+#	     cd parallel/include/lsf/mpi/mpi2c++
+#	     install_files $LSF_INCLUDEDIR/lsf/mpi/mpi2c++ 644 *.h  
+#	 fi)
+#    fi
+}
+    
+# Install man pages 
+install_mans()
+{
+
+#    if [ "$INSTALL_ANALYZER" = "y" ]; then
+#        for sect in 1 5 8
+#        do
+#            if [ -d analyzer/man/cat$sect ]; then
+#                (cd analyzer/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+#            fi
+#
+#            if [ -d analyzer/man/man$sect ]; then
+#                (cd analyzer/man/man$sect ; install_files $LSF_MANDIR/man$sect 644 *)
+#            fi
+#        done
+#    fi
+
+    if [ "$INSTALL_BASE" = "y" ] ; then 
+        for sect in 1 3 5 8
+        do
+	    if [ -d base/man/cat$sect ]; then
+	        (cd base/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+	    fi
+	    if [ -d "base/man/man$sect" ]; then
+    	        (cd base/man/man$sect ; install_files $LSF_MANDIR/man$sect 644 *)
+	    fi
+        done
+    fi
+    
+    if [ "$INSTALL_LSMAKE" = "y" ] ; then
+	if [ -d lsmake/cat1 ] ; then
+	    (cd lsmake/cat1 ; install_files $LSF_MANDIR/cat1 644 *)
+	fi    
+        if [ -d lsmake/man1 ] ; then 
+            (cd lsmake/man1 ; install_files $LSF_MANDIR/man1 644 *) 
+        fi 
+    fi 
+
+#    if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#	if [ -d parallel/man/cat1 ] ; then
+#	    (cd parallel/man/cat1 ; install_files $LSF_MANDIR/cat1 644 *)
+#        fi
+#        if [ -d parallel/man/cat3 ] ; then
+#	    (cd parallel/man/cat3 ; install_files $LSF_MANDIR/cat3 644 *)
+#        fi
+#
+#        if [ -d parallel/man/man1 ] ; then 
+#            (cd parallel/man/man1 ; install_files $LSF_MANDIR/man1 644 *.1) 
+#        fi 
+#        if [ -d parallel/man/man3 ] ; then
+#            (cd parallel/man/man3 ; install_files $LSF_MANDIR/man3 644 *.3)
+#        fi
+#    fi 
+
+    if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+        for sect in 1 3 5 8
+        do
+	    if [ -d batch_js/man/cat$sect ]; then
+	        (cd batch_js/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+	    fi
+	   
+	    if [ -d batch_js/man/man$sect ]; then 
+      	        (cd batch_js/man/man$sect ; install_files $LSF_MANDIR/man$sect 644 *)
+            fi
+
+    	    if [ "$INSTALL_BATCH" = "y" ] ; then
+                if [ "$sect" = "3" ] ; then 
+                    :
+                else
+	            if [ -d "batch/man/man$sect" ]; then 
+   	                (cd batch/man/man$sect ; install_files $LSF_MANDIR/man$sect 644 *)
+	            fi
+
+	    	    if [ -d batch/man/cat$sect ]; then 
+		        (cd batch/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+                    fi
+                fi
+            fi
+        done
+
+#	if [ "$INSTALL_JS" = "y" ] ; then
+#	    for sect in 1 3 5 8
+#	    do 
+#	        if [ -d js/man/cat$sect ]; then
+#	            (cd js/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+#	        fi
+#	        if [ -d js/man/man$sect ]; then
+#            	    (cd js/man/man$sect ; install_files $LSF_MANDIR/man$sect 644 *)
+#		fi
+#	    done
+#	fi
+
+#	if [ "$INSTALL_BATCH" = "y" -a "$INSTALL_JS" = "y" ] ; then
+#	    for sect in 1 3 5 8
+#	    do 
+#	        if [ -d mix_batch_js/man/cat$sect ]; then
+#	            (cd mix_batch_js/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+#	        fi
+#	        if [ -d mix_batch_js/man/man$sect ]; then
+#            	    (cd mix_batch_js/man/man$sect ; install_files $LSF_MANDIR/man$sect 644 *)
+#		fi
+#	    done
+#	fi
+    fi
+
+#    if [ "$INSTALL_BASE" = "y" ] ; then 
+#	if [ -d "$LSF_MANDIR/man3" ]; then 
+#            (cd $LSF_MANDIR/man3 ; rm -f ls_nio*  ls_rstty.3 *oftype.3 lsf.3 ls_init.3)
+# 	fi
+#	if [ -d "$LSF_MANDIR/man1" ] ; then
+#            (cd $LSF_MANDIR/man1 ; 
+#             rm -f *lockhost.1 lsfshutdown.1 lsreconfig.1 lsadmin.1 ;
+#	     rm -f lsfrestart.1 badmin.1 bhc.1 bqc.1 breboot.1 breconfig.1 ;
+#            )
+#	fi
+#	if [ -d "$LSF_MANDIR/man5" ] ; then
+#            (cd $LSF_MANDIR/man5 ; rm -f lsb.jlog.5)
+#	fi
+#    fi 
+}
+
+
+# Install the cat man for sgi
+install_cat_man()
+{
+#if [ "$INSTALL_ANALYZER" = "y" ]; then
+#    for sect in 1 5 8
+#    do 
+#        if [ -d analyzer/man/cat$sect ]; then
+#            (cd analyzer/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+#        fi
+#    done
+#fi
+
+if [ "$INSTALL_BASE" = "y" ] ; then
+    for sect in 1 3 5 8
+    do
+        if [ -d base/man/cat$sect ]; then
+            (cd base/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+        fi
+    done
+fi
+
+if [ "$INSTALL_LSMAKE" = "y" ] ; then
+    if [ -d lsmake/cat1 ] ; then
+        (cd lsmake/cat1 ; install_files $LSF_MANDIR/cat1 644 *)
+    fi
+fi
+
+#if [ "$INSTALL_PARALLEL" = "y" ] ; then
+#    if [ -d parallel/man/cat1 ] ; then
+#        (cd parallel/man/cat1 ; install_files $LSF_MANDIR/cat1 644 *)
+#    fi
+#    if [ -d parallel/man/cat3 ] ; then
+#        (cd parallel/man/cat3 ; install_files $LSF_MANDIR/cat3 644 *)
+#    fi
+#fi
+
+if [ "$INSTALL_BATCH" = "y" -o "$INSTALL_JS" = "y" ] ; then
+    for sect in 1 3 5 8
+    do
+        if [ -d batch_js/man/cat$sect ]; then
+            (cd batch_js/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+        fi
+
+        if [ "$INSTALL_BATCH" = "y" ] ; then
+            if [ "$sect" = "3" ] ; then
+                :
+            else
+                if [ -d batch/man/cat$sect ]; then
+                    (cd batch/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+                fi
+            fi
+        fi
+    done
+
+#    if [ "$INSTALL_JS" = "y" ] ; then
+#        for sect in 1 3 5 8
+#        do 
+#            if [ -d js/man/cat$sect ]; then
+#                (cd js/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+#            fi
+#        done
+#    fi
+
+    if [ "$INSTALL_BATCH" = "y" -a "$INSTALL_JS" = "y" ] ; then
+        for sect in 1 3 5 8
+        do
+            if [ -d mix_batch_js/man/cat$sect ]; then
+                (cd mix_batch_js/man/cat$sect ; install_files $LSF_MANDIR/cat$sect 644 *)
+            fi
+        done
+    fi
+fi
+}
+
+
+# Install the lsNQS man pages
+install_nqs_man()
+{
+    if [ "$INSTALL_BATCH" != "y" ] ; then
+	return 0
+    fi
+
+    if test "$LSF_NQS" = "N"
+    then
+    	return 0
+    fi
+    (cd batch/nqs ; install_files $LSF_MANDIR/man1 644 *.1)
+}
+
+# Do all the shared parts
+install_all_shared()
+{
+    install_shared
+    if [ "$EXCUSED_MANS" != "y" ] ; then
+	install_nqs_man
+    fi
+}
+
+
+perform_inst()
+{
+    echo
+    echo $instAct started `date`
+    echo
+
+
+    _uncom_untar=n
+
+     if [ "$EXCUSED_CONF" != "y" -o "$UPGRADE" = "y" ]; then
+        _MaxValue=0; 
+	for _Platform in $SelectedOSVersions
+    	do
+	    _Products=`grep ${_Platform}: $TABLE | cut -d ':' -f5`
+            _tmp=`echo $_Products | wc -w`
+            if [ "$_tmp" -gt "$_MaxValue" ]; then
+                _MaxPlatform="$_Platform" ; _MaxValue=$_tmp
+            fi
+        done
+
+	#move _MaxPlatform to top of SelectedOSVersions
+ 		
+        SelectedOSVersions=`echo $SelectedOSVersions | sed -e "s/$_MaxPlatform//"`
+        SelectedOSVersions="$_MaxPlatform $SelectedOSVersions"
+
+        prepare_source "$_MaxPlatform" ; _uncom_untar=y
+
+
+# if there are some errors happened in the process of perform_inst(),
+# and lsfsetup should exit, the following steps will be executed.
+# 1) kill his parent.
+# 2) exit
+# Other ways of exiting is not better then this one.
+# Because perform_inst run as the child of "tee", "exit" can only return to 
+# the parent. 
+# $? is the return value form "tee", and different process cannot share
+# varables, so parent(lsfsetup) do not know whether to exit or continue 
+# to do lincense setup after exit form perform_inst(). 
+# If we want kill the child process, we have to get the current pid. It is not
+# easy because $$ do not change in subshell when it is forked from parent, 
+# and because ps always incur platform problem.  
+#
+# In this way, parent do not handle the signal until the subshell finished,
+# so child exit after kill his parent.
+#
+
+	if [ -d "$LSF_WORKING_DIR/$_MaxPlatform" ]; then
+             cd $LSF_WORKING_DIR/$_MaxPlatform
+	else
+	     echo
+	     echo "Can not install LSF product for $_MaxPlatform!"
+	     kill $$
+	     exit
+	fi
+
+    fi
+
+    if test "$UPGRADE" = "y"; then
+       # add this for detect type and model
+       echo
+       echo Upgrading LSF configuration files ...
+       upgrade_config
+       if test "$ADD_LSB_CONF_FILES" = "y"; then
+           ADD_LSB_CONF_FILES=n; export ADD_LSB_CONF_FILES
+           if [ "$LSF_CLUSTER_NAME" = "" ]; then
+               find_cluster
+           fi
+           echo ; echo "In directory " ${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir
+           cp_backup batch/conf/configdir/lsb.modules ${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir 
+           cp_backup batch/conf/configdir/lsb.resources ${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir 
+           chmod 644 ${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir/*
+           chown ${LSF_MANAGER} ${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir/*
+          
+           #
+           # Update the PRODUCT line in lsf.cluster.<clustername>
+           # 
+           echo ; echo "In directory " ${LSB_CONFDIR}
+           _existing_products=`grep "^[ 	]*PRODUCTS=" ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} | sed -e "s/PRODUCTS=//g;s/lsf_/LSF_/g; s/_b/_B/g; s/_s/_S/g; s/_p/_P/g; s/_f/_F/g; s/_r/_R/g; s/_d/_D/g; s/_l/_L/g; s/_a/_A/g; s/_t/_T/g; s/_multicluster/_MultiCluster/g; s/_m/_M/g"`
+           if [ -f "${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}" ]; then
+               cp  -f ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}.old
+                _new_products="LSF_Base LSF_Make LSF_Manager LSF_Sched_Fairshare LSF_Sched_Preemption LSF_Sched_Parallel LSF_Sched_Resource_Reservation LSF_Sched_Advance_Reservation"
+                _exclude_products="LSF_Batch LSF_Fcfs LSF_Sched_Default LSF_Sched_Limit LSF_Sched_Reserve LSF_Sched_Advrsv LSF_Sched_Topology LSF_Api_Scheduler"
+		for wrong_prod in $_exclude_products
+		do
+		    _existing_products=`echo $_existing_products|sed -e "s/$wrong_prod//g"`
+                done
+                _NEW_PRODUCTLINE="$_existing_products"
+                for new_product in $_new_products
+                do
+                    echo "$_existing_products" | grep "$new_product"
+                    if [ "$?" != "0" ]; then
+                        _NEW_PRODUCTLINE="$_NEW_PRODUCTLINE $new_product"
+                    fi
+                done
+		echo "$_existing_products" | grep "LSF_MultiCluster"
+                if [ "$?" != "0" ]; then
+		    _NEW_PRODUCTLINE=`echo $_NEW_PRODUCTLINE|sed "s/LSF_Sched_Mc/LSF_MultiCluster/g;s/LSF_Resource_Preempt/LSF_License_Maximizer/g"`
+                else
+                    _NEW_PRODUCTLINE=`echo $_NEW_PRODUCTLINE|sed "s/LSF_Sched_Mc//g;s/LSF_Resource_Preempt/LSF_License_Maximizer/g"`
+                fi
+
+                ed ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} <<ED_PRODUCT_LINE_IN_CLUSTER_FILE >$LSNULFILE 2>&1
+/PRODUCTS=/d
+/End Parameters/i
+PRODUCTS=$_NEW_PRODUCTLINE
+.
+w
+q
+ED_PRODUCT_LINE_IN_CLUSTER_FILE
+               chmod 644 ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+               chown ${LSF_MANAGER} ${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME} 
+          fi
+       fi
+    fi
+   
+    if [ "$EXCUSED_CONF" != "y" ] ; then
+	echo
+        echo Installing LSF configuration files ...
+
+	make_lsf_conf
+        
+        if [ "$addHostType" != "y" ]; then
+            make_cluster
+        fi
+
+        if [ "$LSF_LOGDIR" != "" ]; then
+            test -d "$LSF_LOGDIR" || { make_dir "$LSF_LOGDIR"; chmod 755 "$LSF_LOGDIR" ; }
+        fi
+    fi
+
+
+        if is_root ; then
+            CHOWN=chown
+        else
+            CHOWN=true
+        fi
+        if [ "$LSF_MANAGER" = "" ]; then 
+            if [ "$LSF_CLUSTER_NAME" = "" ]; then
+                find_cluster
+            fi
+            LSF_CLUSTER=$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+            get_lsf_manager
+        fi
+        $CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.*
+
+    export LSF_MANAGER
+
+    $CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.*
+
+    first_platform="y"
+
+
+    for _Platform in $SelectedOSVersions
+    do
+	test "$_uncom_untar" = "n" && prepare_source $_Platform
+
+	if [ -d "$LSF_WORKING_DIR/$_Platform" ]; then
+             cd $LSF_WORKING_DIR/$_Platform
+	else
+	     echo
+	     echo "Cannot install LSF product for $_Platform!"
+	     echo
+	     kill $$
+	     exit
+	fi
+
+      	_uncom_untar=n
+        if [ "$ADD_PRODUCT" = "y" ]; then
+            PRODUCTS=`grep "^[ 	]*FEATURES" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME | $AWK 'BEGIN{FS = "="} {print $2}'`
+            if [ "$PRODUCTS" = "" ] ; then
+                PRODUCTS=`grep "^[ 	]*PRODUCTS" < $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME | $AWK 'BEGIN{FS = "="} {print $2}'`
+            fi
+
+            if [ "$PRODUCTS" = "LSF_Base" ]; then
+                if [ -d "$LSB_CONFDIR" ]; then
+                    :
+                else
+                    make_dir "$LSB_CONFDIR"
+                    $CHOWN $LSF_MANAGER $LSB_CONFDIR
+
+                    make_dir "${LSB_CONFDIR}/${LSF_CLUSTER_NAME}"
+                    $CHOWN $LSF_MANAGER $LSB_CONFDIR/$LSF_CLUSTER_NAME
+
+                    make_dir "${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir"
+                    $CHOWN $LSF_MANAGER $LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir
+
+                    cp $LSF_WORKING_DIR/$_Platform/batch/conf/configdir/* "${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir"
+                    $CHOWN $LSF_MANAGER $LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir/*
+                fi
+            fi
+        fi            
+
+        # if choose JS, lsb.alarms ... should be copied to conf directory.
+
+        if ( echo "$SelectedLSFProducts" | grep "JS" > $LSNULFILE ); then
+
+	if [ -d "$LSF_WORKING_DIR/$_Platform" ]; then
+             cd $LSF_WORKING_DIR/$_Platform
+	else
+	     echo
+	     echo "Can not install LSF product for $_Platform!"
+	     echo
+	     kill $$
+	     exit
+	fi
+
+
+            jsConfs=`ls js/conf/configdir/*`
+
+            if [ "$LSF_CLUSTER_NAME" = "" ]; then
+                find_cluster
+            fi
+
+            for confFile in $jsConfs; do
+
+                fileName=`basename $confFile`
+
+                if [ -f ${LSF_CONFDIR}/lsbatch/${LSF_CLUSTER_NAME}/configdir/${fileName} ]
+                then
+                    :
+                else
+                    cp js/conf/configdir/$fileName $LSF_CONFDIR/lsbatch/$LSF_CLUSTER_NAME/configdir
+                    chown $LSF_MANAGER $LSF_CONFDIR/lsbatch/$LSF_CLUSTER_NAME/configdir/$fileName
+                fi
+            done
+
+            $CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.*
+        fi
+
+
+
+
+        MACHTYPE=`echo $_Platform | sed -e "s/^lsf"$LSF_VER"_//"`
+
+
+	if test "$LSF_DEFAULT_INSTALL" = "y"; then
+            _uniform=$LSF_INDEP/$MACHTYPE
+	else
+            _uniform=$LSF_MACHDEP
+	fi
+
+	if [ "$UPGRADE" = "y" ]; then 
+	    if is_AFS; then
+	        if [ "$multiPlatform" = "n" ]; then
+	            _uniform=$LSF_MACHDEP
+	        fi
+	    else
+	        :
+            fi
+	fi
+
+        LSF_BINDIR=$_uniform/bin
+        LSF_SERVERDIR=$_uniform/etc
+        LSF_LIBDIR=$_uniform/lib
+        XLSF_UIDDIR=$LSF_LIBDIR/uid             
+        export MACHTYPE LSF_BINDIR LSF_SERVERDIR LSF_LIBDIR XLSF_UIDDIR
+
+  	INSTALL_BASE="n"
+	INSTALL_BATCH="n"
+	INSTALL_JS="n"
+	INSTALL_MC="n"
+	INSTALL_LSMAKE="n"
+	INSTALL_ANALYZER="n"
+	INSTALL_PARALLEL="n"
+
+	for _Product in $SelectedLSFProducts
+	do
+	    case "$_Product" in
+	        Base)	_pn=Base ;;
+		Manager) _pn=Batch ;;
+		Batch) _pn=Batch ;;
+		MC)	_pn=MultiCluster ;;
+		Make)	_pn=LsMake ;;
+#		JS) 	_pn=JobScheduler ;;
+#		ANA)	_pn=Analyzer ;;
+#		PAR)	_pn=Parallel ;;
+	    esac
+
+            if [ "$_Product" = "Manager" ]; then
+	        _Selected=`grep "$MACHTYPE" $TABLE | grep -c "Batch"` 
+            else
+	        _Selected=`grep "$MACHTYPE" $TABLE | grep -c "$_Product"` 
+            fi
+	    if [ "$_Selected" -eq "0" ]; then
+	        echo 
+		echo "WARNING:"
+		echo "LSF product $_pn is not supported on the operaing system version "
+		echo "$MACHTYPE."
+		echo
+
+
+               if [ "$UNATTENDED_INSTALL" != "y" ]; then
+ 		echo "Press Enter to continue ..."
+		read NP
+               fi
+
+
+		continue
+	    fi
+
+	    case "$_Product" in
+                Base)       INSTALL_BASE=y ;;
+                Batch)      INSTALL_BATCH=y ;;
+                Manager)      INSTALL_BATCH=y ;;
+                MC)         INSTALL_MC=y ;;
+                Make)       INSTALL_LSMAKE=y ;;
+#                JS)         INSTALL_JS=y ;;
+#                ANA)        INSTALL_ANALYZER=y ;;
+#                PAR)        INSTALL_PARALLEL=y ;;
+            esac                       
+	done
+
+	export INSTALL_BASE INSTALL_BATCH INSTALL_JS INSTALL_MC INSTALL_LSMAKE INSTALL_ANALYZER INSTALL_PARALLEL
+
+        if do_indep ; then
+            if ( echo "$_Platform" | grep "sgi" > $LSNULFILE ); then
+		if [ "$first_platform" != "y" ] ; then
+
+                        install_cat_man
+	        fi
+	    fi
+	fi
+        if [ "$first_platform" = "y" ] ; then
+            if do_indep ; then
+   	         echo; echo "Installing machine-independent components ..."
+                 echo
+                 install_all_shared
+	         first_platform="n"
+            fi
+	fi
+
+        if do_machdep ; then
+            echo; echo "Installing machine-dependent components ..."; echo
+            install_all_bin
+        fi
+
+
+#Reason: Detect lacking disk space.
+
+        if [ "$FAILED_CP" = "" ] ; then
+            echo "All files copied properly."
+        else
+            echo "The following files have not been copied properly:"
+            echo "$FAILED_CP"
+            FAILED_CP=""
+	    _bytes_mach=`SpaceAvail $LSF_MACHDEP`
+	    _bytes_indep=`SpaceAvail $LSF_INDEP`
+	    echo
+	    if [ "$_bytes_mach" = "" -o "$_bytes_indep" = "" ]; then
+		echo "Lsfsetup program cannot determine the available space on disk,"
+		echo "so lsfsetup program cannot detect the reason for failing to"
+                echo "copy above files."
+                if [ "$UNATTENDED_INSTALL" != "y" ]; then
+			if yesno "Would you like to continue install LSF products for other platforms?" N ""  > $LSNULFILE
+			then 
+				:
+			else
+				kill $$
+				exit
+			fi
+		else 
+			echo "Unattended installation cannot continue!"
+			kill $$
+			exit
+		fi
+	    else
+		if [ "$_bytes_mach" -lt "200" -o "$_bytes_indep" -lt "200" ]; then
+			echo "There is not enough disk space to install LSF products."			
+ 		        echo "Lacking disk space is the possible reason for failing to"
+			echo "copy above files."
+                	if [ "$UNATTENDED_INSTALL" != "y" ]; then
+				if yesno "Would you like to continue install LSF products for other platforms?" N ""  > $LSNULFILE
+				then 
+					:
+				else
+					kill $$
+					exit
+				fi
+			else
+				echo "Unattended installation cannot continue!"
+				kill $$
+				exit
+			fi
+
+		fi 
+			
+	    fi	
+	    
+        fi
+
+        echo
+
+        cd $LSFSETUP_CWD; rm -rf ${LSF_WORKING_DIR}/$_Platform
+
+    done
+
+    if [ $? != 0 ] ; then
+        echo 
+	echo Installation failed. Installation log is in $PREFIX_LOG/Install.log 
+	echo Send $PREFIX_LOG/Install.log to your LSF vendor for help.
+	echo 
+	exit
+    else
+	echo Installation completed. Install log in $PREFIX_LOG/Install.log. 
+    fi
+
+    echo
+
+    if [ "$removeWorkingDir" = "y" ]; then
+        if [ "$LSF_WORKING_DIR" != "/tmp" ]; then
+            /bin/rm -fr $LSF_WORKING_DIR
+        fi
+    fi
+
+    # run post-installation command if the caller wants one
+    if test "$post_install" != ""
+    then
+	$post_install
+    fi
+
+    echo Installation done `date`. 
+    echo 
+
+}
+
+#-------------------------------------------------------------------------
+#  should_fix -
+#  routine shared by all permission checking routines.
+#
+#  Return 0 if user chooses to fix the permission before continuing, 
+#  otherwise return 1.
+#-------------------------------------------------------------------------
+should_fix()
+{
+
+    should_fix_1=$1
+    should_fix_2=$2
+    should_fix_3=$3
+    should_fix_4=$4
+    while :
+    do
+	echo |tee -a $PREFIX_LOG/Install.log
+        echo Please choose one of the following options: |tee -a $PREFIX_LOG/Install.log
+
+	echo "    1. Fix the Permissions or Modify the Pathnames" |tee -a $PREFIX_LOG/Install.log
+	echo "    2. Continue without Installing $should_fix_1 $should_fix_2 $should_fix_3 $should_fix_4" |tee -a $PREFIX_LOG/Install.log
+	echo "    ?. Help"  |tee -a $PREFIX_LOG/Install.log
+
+	echo "    q. Exit Installation" |tee -a $PREFIX_LOG/Install.log
+
+	echo $enf "Please enter your choice:" $enl |tee -a $PREFIX_LOG/Install.log
+	read X
+	echo X >>$PREFIX_LOG/Install.log
+
+        case $X in
+	1) return 0;;
+        2) echo
+	    echo Please remember to use the lsfsetup Install Additional Products 
+	    echo option to install $should_fix_1 $should_fix_2 $should_fix_3 $should_fix_4 later.
+	    echo 
+	    echo $enf "Press Enter to continue ..." $enl
+	    read G
+	    return 1;;
+
+        q) if yesno "Are you sure you want to exit the installation? " Y "" >$LSNULFILE
+	   then 
+	       echo "Installation exiting ..." |tee -a $PREFIX_LOG/Install.log
+	       kill -2 $$
+           fi
+	   continue ;;
+     
+	*) echo
+	   echo To fix the file system permissions or change the pathnames 
+	   echo of directories, choose Option 1. Fix the Permissions 
+	   echo or Modify Pathnames. 
+           echo
+	   echo If you must install $should_fix_1 $should_fix_2 $should_fix_3 $should_fix_4 in this directory and
+	   echo you cannot fix the permissions because the file system
+	   echo is NFS mounted, choose Option q. Exit Installation, 
+	   echo and try the installation on the file server. 
+	   echo 
+	   echo If you must install other LSF components from this host, 
+	   echo choose Option 2: Continue without Installing $1 $2 $3 $4.
+	   echo You can install $should_fix_1 $should_fix_2 $should_fix_3 $should_fix_4 later by running lsfsetup.
+	   echo Choose Option 1. Install LSF Products, then choose
+	   echo Option 5. Install Additional Products.
+           echo
+	   continue;; 
+	esac
+    done
+}
+
+conf_permission_ok()
+{
+    if [ "$EXCUSED_CONF" = "y" ] ; then
+	return 0
+    fi
+
+    if writable $LSF_CONFDIR lsf.shared ; then
+	if writable $LSB_SHAREDIR ; then
+	    if writable $LSB_CONFDIR ; then
+		return 0
+	    fi
+	fi
+    fi
+    echo Cannot install LSF configuration files.
+
+    COMPONENT="Configuration Files"
+    if should_fix $COMPONENT ; then
+        return 1;
+    else
+	MEMO1=$COMPONENT
+        EXCUSED_CONF=y
+	return 0
+    fi
+}
+
+man_permission_ok()
+{
+    if [ "$EXCUSED_MANS" = "y" ] ; then
+	return 0
+    fi
+
+    if writable $LSF_MANDIR man1/lsid.1 ; then
+	return 0
+    else
+	echo Cannot install LSF man pages because of the above errors.
+	echo
+	COMPONENT="Manual Pages"
+	if should_fix $COMPONENT ; then
+	    return 1
+	else
+	    EXCUSED_MANS=y
+	    MEMO2=$COMPONENT
+	    return 0
+	fi
+    fi
+}
+
+xmisc_permission_ok()
+{
+
+    if [ "$EXCUSED_XMISC" = "y" ] ; then
+	return 0
+    fi
+
+    if writable $XLSF_APPDIR ; then
+	return 0
+    else
+	echo Cannot install LSF X applications default files because of the|tee -a $PREFIX_LOG/Install.log
+	echo above errors. |tee -a $PREFIX_LOG/Install.log
+	echo
+	COMPONENT="X Applications Default Files"
+	if should_fix $COMPONENT ; then
+	    return 1
+	else
+	    EXCUSED_XMISC=y
+	    MEMO3=$COMPONENT
+	    return 0
+	fi
+    fi
+}
+
+include_permission_ok() 
+{
+    if [ "$EXCUSED_INCLUDE" = "y" ] ; then
+	return 0
+    fi
+
+    if writable $LSF_INCLUDEDIR ; then
+	return 0
+    else
+	echo Cannot install the LSF header files because of the above errors.
+	echo
+	COMPONENT="LSF Header Files"
+	if should_fix $COMPONENT ; then
+	    return 1
+	else
+	    EXCUSED_INCLUDE=y
+	    MEMO4=$COMPONENT
+	    return 0
+	fi
+    fi
+}
+
+# Permisssion for examples, etc
+misc_permission_ok()
+{
+
+    if [ "$EXCUSED_MISC" = "y" ] ; then
+	return 0
+    fi
+
+    if writable $LSF_MISC elim.c; then
+	return 0
+    fi
+
+    echo Cannot install the LSF examples and miscellaneous files because of  
+    echo the above errors.
+    COMPONENT="Misc Examples etc"
+
+    if should_fix $COMPONENT ; then
+	return 1
+    else
+        EXCUSED_MISC=y
+	MEMO5=$COMPONENT
+	return 0
+    fi
+}
+      
+# Check for binary dirs' permissions 
+
+bin_permission_ok()
+{
+    unset FAIL
+    if writable $LSF_SERVERDIR nios; then
+	:
+    else
+	FAIL=y
+    fi
+
+    if writable $LSF_BINDIR bsub ; then
+	:
+    else
+	FAIL=y
+    fi
+
+    if writable $LSF_LIBDIR liblsf.a; then
+	:
+    else
+	FAIL=y
+    fi
+
+    if writable "$XLSF_UIDDIR" ; then
+	:
+    else
+	FAIL=y
+    fi
+
+    if [ "$FAIL" != "y" ] ; then
+	return 0
+    fi
+
+    echo 
+    echo Cannot install binaries for this host type.
+    echo
+
+    COMPONENT="Binary Files"
+    if should_fix $COMPONENT ; then
+	return 1
+    else
+	MEMO6=$COMPONENT
+	EXCUSED_BIN=y
+	return 0
+    fi
+}
+
+#check path for all the configuration and data file locations
+#to make sure none points to the distribution file itself.
+check_install_paths()
+{
+
+    # I-nodes not available on NT
+    if [ "$LSHOSTTYPE" = "NT" ] ; then
+        return 0
+    fi
+
+    case `uname` in
+        HP-UX) DF=bdf ;;
+            *) DF=df ;;
+    esac
+
+    conf_paths="$LSF_MACHDEP $LSF_BINDIR $LSF_SERVERDIR $LSF_LIBDIR $XLSF_UIDDIR $LSF_INDEP $LSF_CONFDIR $LSB_CONFDIR $LSB_SHAREDIR $LSF_MANDIR $LSF_INCLUDEDIR $LSF_MISC $XLSF_APPDIR $LSF_LOGDIR $LSF_ENVDIR"
+
+    LSF_DISTRIB=`pwd`
+    # also check inode-numbers to catch soft links if possible
+    INODE_LSF_DISTRIB=`ls -di $LSF_DISTRIB | $AWK '{print $1}'`
+    FS_LSF_DISTRIB=`$DF $LSF_DISTRIB | $AWK '{fs=$1}END{print fs}'`
+
+    unset FAIL
+    for i in $conf_paths; do
+        if echo $i | grep $LSF_DISTRIB > $LSNULFILE 2>&1 ; then
+	    FAIL=y
+	    break
+        elif [ -r $i ] ; then		# make sure it exists, cmp inodes
+            INODE_CONF_PATH=`ls -di $i | $AWK '{print $1}'`
+    	    if [ $INODE_LSF_DISTRIB -eq $INODE_CONF_PATH ]; then
+                # check if they are on the same file system
+                FS_CONF_PATH=`$DF $i | $AWK '{fs=$1}END{print fs}'`
+                if [ $FS_LSF_DISTRIB = $FS_CONF_PATH ]; then
+		    FAIL=y
+		    break
+		fi
+	    fi
+	fi
+    done
+
+    if [ "$FAIL" != "y" ] ; then
+	return 0
+    fi
+
+    echo
+    echo Unrecoverable error.
+    echo Cannot install files in $i: path refers
+    echo to the LSF distribution in $LSF_DISTRIB.
+    echo Review the install settings and change them.
+    echo Installation exiting ...
+    echo
+    return 1
+}
+
+sizeof()
+{
+    ls -l $1 | $AWK '{
+	if (NF == 8) {
+	    print $4
+	} else {
+	    if (NF == 9) {
+		print $5
+	    } else {
+		print NR
+	    }
+	}
+    }'
+}
+
+# check if we should install lsNQS
+#
+nqs_ok()
+{
+    if [ "$LSHOSTTYPE" = "NT" ]; then
+#   No NQS installed
+        return 0
+    fi
+
+#Don't install NQS on MAC OS X -- 2001-12-07
+    _ht=`uname`
+    if [ "$_ht" = "Darwin" ] ; then
+        LSF_NQS=N
+        return 0
+    fi
+
+    if [ ! -f ${LSF_BINDIR}/qsub -a  ! -f ${LSF_BINDIR}/qdel ] ; then
+#   No NQS installed
+	return 0
+    fi
+
+# NQS commands exist. Check if it is lsNQS
+
+    if [ -f ${LSF_BINDIR}/qjlist  -a -f ${LSF_BINDIR}/qlimit  \
+	 -a -f ${LSF_BINDIR}/qmapmgr -a -f ${LSF_BINDIR}/qps \
+	 -a -f ${LSF_BINDIR}/qrun -a -f ${LSF_BINDIR}/qsa     \
+	 -a -f ${LSF_BINDIR}/qsnapshot -a -f ${LSF_BINDIR}/qwatch ] ; then
+	LEN1=`sizeof ${LSF_BINDIR}/qjlist`
+	LEN2=`sizeof ${LSF_BINDIR}/qlimit`
+	LEN3=`sizeof ${LSF_BINDIR}/qmapmgr`
+	LEN4=`sizeof ${LSF_BINDIR}/qps`
+	LEN5=`sizeof ${LSF_BINDIR}/qrun`
+
+	if [ $LEN1 -eq $LEN2  -a $LEN2 -eq $LEN3  -a $LEN3 -eq $LEN4 \
+	     -a $LEN4 -eq $LEN5 ] ; then
+	    return 0
+	fi
+    fi
+
+# Not lsNQS 
+    echo
+    echo "   The directory ${LSF_BINDIR} contains binaries for another batch"
+    echo "   queueing system. Some of the command names conflict with the"
+    echo "   NQS compatible commands provided by LSF. These LSF commands are:"
+    echo "   qsub, qdel, qjlist, qlimit, qmapmgr, qmgr, qps, qrestart, qrun,"
+    echo "   qsa, qsnapshot, qstat, qwatch."
+    echo 
+    echo Please choose one of the following options:
+    echo
+
+    cat <<NQS |tee -a $PREFIX_LOG/Install.log
+    1. Overwrite Existing Binaries for the Above Commands
+    2. Continue without Installing the NQS Compatible Commands
+    3. Go Back to the Previous Menu and Change the Pathnames
+    4. Help
+
+NQS
+
+    echo $enf "Please enter your choice:" $enl |tee -a $PREFIX_LOG/Install.log
+    read V
+    echo $V >>$PREFIX_LOG/Install.log
+
+    case $V in
+    1) return 0;;
+    2) LSF_NQS=N; return 0;;
+    3) return 1;;
+    4|*) echo
+    cat <<NQS_HELP
+
+    The NQS Compatible Commands of LSF provide a NQS like command interface for
+    lsbatch. Users can submit jobs to lsbatch system as if they were using NQS.
+
+    If you no longer need the binaries for the other batch queueing system, 
+    choose Overwrite Existing Binaries for the Above Commands (option 1).
+
+    If you still need those binaries for the other batch queueing system, and
+    do not want to use the NQS compatible commands from LSF, choose
+    Continue without Installing the NQS Compatible Commands (option 2). You
+    will still be able to manipulate jobs in LSF by using LSF commands. 
+	 
+    To install LSF binaries into a different directory, choose
+    Go Back to the Previous Menu and Change the Pathnames (option 3) and
+    modify the settings.
+
+    To exit the installation, type Crtl-C.
+
+NQS_HELP
+    ;;
+    esac
+}
+
+#--------------------------------------------------------------------
+# check permissions before install
+#
+# Return 0 if we can continue with real install, otherwise return 1.
+#---------------------------------------------------------------------
+pre_inst()
+{
+
+    echo
+    echo Checking for file system permissions ...
+    echo
+
+    if do_indep ; then
+	if conf_permission_ok ; then
+	    :
+	else
+	    return 1
+	fi
+
+	if misc_permission_ok ; then
+	    :
+	else
+	    return 1
+	fi
+
+	if man_permission_ok ; then
+	    :
+	else
+	    return 1
+	fi
+
+	if xmisc_permission_ok ; then
+	    :
+	else
+	    return 1
+	fi
+
+	if include_permission_ok ; then
+	    :
+	else
+	    return 1
+	fi
+    fi
+
+
+    if do_machdep ; then
+        if [  "$LSF_DEFAULT_INSTALL" = "y" ] ; then
+	    _old_bindir=$LSF_BINDIR
+	    _old_serverdir=$LSF_SERVERDIR
+	    _old_libdir=$LSF_LIBDIR
+	    _old_uiddir=$XLSF_UIDDIR
+  	    for _osVersion in $SelectedOSVersions
+            do
+
+
+
+                MACHTYPE=`echo $_osVersion | sed -e "s/^lsf"$LSF_VER"_//"`
+
+                LSF_BINDIR=$LSF_MACHDEP/$MACHTYPE/bin
+	        LSF_SERVERDIR=$LSF_MACHDEP/$MACHTYPE/etc
+	        LSF_LIBDIR=$LSF_MACHDEP/$MACHTYPE/lib
+	        XLSF_UIDDIR=$LSF_LIBDIR/uid
+                export LSF_BINDIR LSF_SERVERDIR LSF_LIBDIR XLSF_UIDDIR
+
+    	        if bin_permission_ok ; then
+    	             :
+    	        else
+    	             return 1
+    	        fi
+    	        if nqs_ok ; then
+    	             :
+    	        else
+    	              return 1
+    	        fi
+             done
+             LSF_BINDIR=$_old_bindir
+             LSF_SERVERDIR=$_old_serverdir
+             LSF_LIBDIR=$_old_libdir
+             XLSF_UIDDIR=$_old_uiddir
+             export LSF_BINDIR LSF_SERVERDIR LSF_LIBDIR XLSF_UIDDIR
+        else
+	     if bin_permission_ok ; then
+                 :
+             else
+                 return 1
+             fi
+             if nqs_ok ; then
+                 :
+             else
+                 return 1
+             fi
+        fi
+
+    fi
+
+    echo Checking done.
+    echo
+    return 0;
+}
+
+# Main loop for install
+
+newInstall()
+{
+
+check_root
+if [ "$LSF_DEFAULT_INSTALL" != 'y' ]; then
+    echo
+    echo
+    echo "    PLEASE MAKE SURE ALL PARAMETERS ARE SET CORRECTLY BEFORE STARTING"
+    echo "    INSTALLING FILES."
+    echo
+fi
+
+if [ "$UPGRADE" = "y" ]; then
+    instAct="Upgrade"
+elif [ "$addHostType" = "y" ]; then
+    instAct="Add another host type"
+elif [ "$ADD_PRODUCT" = "y" ]; then
+    instAct="Add product"
+else 
+    instAct="Install the Software"
+fi
+
+while : ; do
+    if [ "$LSF_DEFAULT_INSTALL" != 'y' -a "$UNATTENDED_INSTALL" != "y" ]; then
+        cat << MENU| tee -a $PREFIX_LOG/Install.log 
+
+Please choose one of the following options:
+
+     1. List Current Settings
+     2. Change Current Settings
+     3. $instAct Now
+     4. Use Default Settings
+
+     ?. Help
+     q. Quit
+
+MENU
+        echo $enf "Please enter your choice:" $enl |tee -a  $PREFIX_LOG/Install.log
+        read N
+    else
+	echo "Default install" >>$PREFIX_LOG/Install.log 
+        N=3
+    fi
+
+    echo $N >>$PREFIX_LOG/Install.log
+
+    case $N in
+    1)	list_params | more
+	list_params >> $PREFIX_LOG/Install.log
+	echo $enf "Press Enter to continue ... " $enl
+	read N
+	continue ;;
+
+    2)  if [ "$NO_MANDATORY" != "y" ] ; then
+	    . $sp/mandatory; mandatory
+	fi
+	. $sp/customize
+	continue ;;
+
+    3)
+        if [ "$UNATTENDED_INSTALL" != "y" ]; then
+            if pre_inst ; then
+	        :
+            else
+	        continue;
+	    fi
+   	fi
+    
+	echo
+	echo Installing LSF software. This may take a few minutes. |tee -a $PREFIX_LOG/Install.log
+	echo >> $PREFIX_LOG/Install.log
+	(echo; list_params ; echo) >> $PREFIX_LOG/Install.log
+	perform_inst 2>&1 | tee -a $PREFIX_LOG/Install.log
+	if [ "$MEMO1" != "" -o "$MEMO2" != "" -o "$MEMO3" != "" \
+	     -o "$MEMO4" != ""  -o "$MEMO5" != ""  -a "$MEMO6" != "" ] ; then
+	     cat << MEMO_LIST | tee -a $PREFIX_LOG/Install.log
+
+    The following components are not installed or updated. You must install 
+    them to run LSF. Run lsfsetup and choose Option 1. Install LSF Products
+    to install the following components:
+
+MEMO_LIST
+	    if [ "$MEMO1" != "" ] ; then
+		echo "    o  $MEMO1"| tee -a $PREFIX_LOG/Install.log
+	    fi
+	    if [ "$MEMO2" != "" ] ; then
+		echo "    o  $MEMO2"| tee -a $PREFIX_LOG/Install.log
+	    fi
+	    if [ "$MEMO3" != "" ] ; then
+		echo "    o  $MEMO3"| tee -a $PREFIX_LOG/Install.log
+            fi
+	    if [ "$MEMO4" != "" ] ; then
+		echo "    o  $MEMO4"| tee -a $PREFIX_LOG/Install.log
+            fi
+	    if [ "$MEMO5" != "" ] ; then
+		echo "    o  $MEMO5"| tee -a $PREFIX_LOG/Install.log
+            fi
+	    if [ "$MEMO6" != "" ] ; then
+		echo "    o  $MEMO6"| tee -a $PREFIX_LOG/Install.log
+            fi
+	    echo
+        fi 
+	break ;;
+
+    4)	if yesno "Do you really want to replace your current configuration
+choices with the default values?" n >$LSNULFILE
+	then
+	    set_defaults
+	    . $sp/mandatory; mandatory
+	fi
+	continue ;;
+
+    [Qq]*) echo "    Installation exiting ..." |tee -a $PREFIX_LOG/Install.log;  exit ;;
+
+    *)	cat << HELP1
+
+   To examine your current installation settings, choose Option 1. List Current
+   Settings.
+
+   to change your current installation settings, choose Option 2. Change 
+   Current Settings.
+
+   To use the current settings and start installing the LSF software 
+   according to those settings, choose Option 3. Install the Software Now.
+
+   To change back to the default installation settings, choose Option 4.
+   Use Default Settings.
+
+   For help understanding any installation parameters, choose Change
+   Current Settings (option 2) and enter "?" for a description of the
+   parameters.
+
+   To see this help information, choose Help (?).
+
+   To quit the installation, choose Quit (q).
+
+HELP1
+        echo $enf "Press Enter to continue ... " $enl
+	read N
+	continue ;;
+    esac
+done
+} # newInstall
+
+
+convert_directory_tree()
+{
+
+_binary_type="$1"
+   
+_PWD=`pwd`
+
+if [ "$_binary_type" = "" -o ! -d "$_binary_type" ] ; then
+    return 1
+fi
+
+make_dir $_PWD/base
+make_dir $_PWD/batch
+make_dir $_PWD/batch_js
+make_dir $_PWD/lsmake
+make_dir $_PWD/misc
+make_dir $_PWD/scripts
+
+#
+# Convert Binaries to new directory structure
+#
+( cd $_PWD/$_binary_type/bin
+
+  LSMAKE_BINS="lsmake lsmakerm"
+  make_dir "$_PWD/lsmake/bin"
+  mv $LSMAKE_BINS $_PWD/lsmake/bin 2>$LSNULFILE
+
+  BATCH_BINS="baddrsv brmrsv brsvs bbot bclusters bhpart bmig brequeue brestart bswitch btop ckpt_ld ckpt_ld_f mpijob p4job pvmjob xlsadmin xlsbatch zapit"
+  make_dir "$_PWD/batch/bin"
+  mv $BATCH_BINS $_PWD/batch/bin 2>$LSNULFILE
+
+  BATCH_JS_BINS="bacct badmin bhist bhosts bjobs bkill bmgroup bmod bparams bpeek bpost bqueues bread brun bstatus bsub busers libsub.a xbsub xlsf"
+  make_dir "$_PWD/batch_js/bin"
+  mv $BATCH_JS_BINS $_PWD/batch_js/bin 2>$LSNULFILE
+
+  NQS_BINS="qdel qothers qstat qsub"
+  make_dir "$_PWD/batch/nqs"
+  mv $NQS_BINS $_PWD/batch/nqs 2>$LSNULFILE
+
+  cd $_PWD
+  mv $_PWD/$_binary_type/bin $_PWD/base 2>$LSNULFILE
+) 
+
+( cd $_PWD/$_binary_type/lib
+  BATCH_LIBS="ckpt_crt0*.o libckpt*.a"
+  make_dir "$_PWD/batch/lib"
+  mv $BATCH_LIBS $_PWD/batch/lib 2>$LSNULFILE
+
+  BATCH_JS_LIBS="libbat.a"
+  make_dir "$_PWD/batch_js/lib"
+  mv $BATCH_JS_LIBS $_PWD/batch_js/lib 2>$LSNULFILE
+
+  cd $_PWD
+  mv $_PWD/$_binary_type/lib $_PWD/base 2>$LSNULFILE
+)
+
+( cd $_PWD/$_binary_type/etc
+  BATCH_ETC="echkpnt echkpnt.default erestart erestart.default nqsi"
+  make_dir "$_PWD/batch/etc"
+  mv $BATCH_ETC $_PWD/batch/etc 2>$LSNULFILE
+
+  BATCH_JS_ETC="libschd.a mbatchd sbatchd mbschd"
+  make_dir "$_PWD/batch_js/etc"
+  mv $BATCH_JS_ETC $_PWD/batch_js/etc 2>$LSNULFILE
+
+  cd $_PWD
+  mv $_PWD/$_binary_type/etc $_PWD/base 2>$LSNULFILE
+)
+
+#
+# Convert shared files to new directory structure
+#
+( cd $_PWD/include/lsf
+  BATCH_JS_INCLUDE="lsbatch.h lssched.h"
+  make_dir "$_PWD/batch_js/include"
+  make_dir "$_PWD/batch_js/include/lsf"
+  mv $BATCH_JS_INCLUDE $_PWD/batch_js/include/lsf 2>$LSNULFILE
+
+  cd $_PWD
+  mv $_PWD/include $_PWD/base 2>$LSNULFILE
+)
+
+( cd $_PWD/misc
+  BATCH_MISC="XLsadmin XLsadmin.ja XLsbatch XLsbatch.ja xbmod.hlp xbsub.hlp  xlsadmin.hlp xlsadmin.hlp.ja xlsbatch.hlp  xlsbatch.hlp.ja"
+  make_dir "$_PWD/batch/misc"
+  mv $BATCH_MISC $_PWD/batch/misc 2>$LSNULFILE
+
+  BATCH_JS_MISC="XBmod XBsub XLsf"
+  make_dir "$_PWD/batch_js/misc"
+  mv $BATCH_JS_MISC $_PWD/batch_js/misc 2>$LSNULFILE
+
+  if [ -d "$_PWD/misc/lsmake" ]; then 
+      #LSMAKE_MISC="COPYING README README.lsmake"
+      cd $_PWD/misc/lsmake
+      make_dir "$_PWD/lsmake/misc"
+      mv * $_PWD/lsmake/misc  2>$LSNULFILE
+  fi
+
+  if [ -d "$_PWD/misc/conf_tmpl" ] ; then
+      cd $_PWD/misc/conf_tmpl
+      BATCH_CONF="lsb.hosts lsb.nqsmaps lsb.queues lsb.users lsb.modules lsb.resources lsb.serviceclasses"
+      make_dir "$_PWD/batch/conf"
+      make_dir "$_PWD/batch/conf/configdir"
+      mv $BATCH_CONF $_PWD/batch/conf/configdir 2>$LSNULFILE
+
+      BATCH_JS_CONF="lsb.params"
+      make_dir "$_PWD/batch_js/conf"
+      make_dir "$_PWD/batch_js/conf/configdir"
+      mv $BATCH_JS_CONF $_PWD/batch_js/conf/configdir 2>$LSNULFILE
+
+      BASE_CONF="TMPL.lsf.cluster TMPL.lsf.shared lsf.shared lsf.task"
+      make_dir "$_PWD/base/conf"
+      mv $BASE_CONF $_PWD/base/conf 2>$LSNULFILE
+  fi
+    
+  cd $_PWD
+  mv $_PWD/misc/Make.misc $_PWD/Make.misc 2>$LSNULFILE
+  mv $_PWD/misc/config/Make.def.* $_PWD/Make.def 2>$LSNULFILE
+  rm -rf $_PWD/misc/config
+  rm -rf $_PWD/misc/conf_tmpl
+  rm -rf $_PWD/misc/lsmake
+
+  mv -f  $_PWD/misc/examples $_PWD/examples 2>$LSNULFILE
+
+  mv $_PWD/misc $_PWD/base 2>$LSNULFILE
+)
+
+( # Convert man1
+  if [ -d "$_PWD/man/man1" ]; then
+      cd $_PWD/man/man1 
+
+      #BATCH_JS_MAN="bacct.1"
+      make_dir "$_PWD/batch_js/man"
+      make_dir "$_PWD/batch_js/man/man1"
+      #mv $BATCH_JS_MAN $_PWD/batch_js/man/man1
+
+      BATCH_MAN="ckpt_ld.1 ckpt_ld_f.1 lsfbatch.1 mpijob.1 p4job.1 parScripts.1 poejob.1 pvmjob.1 xbmod.1 xbsub.1 xlsadmin.1 xlsbatch.1"
+      make_dir "$_PWD/batch/man"
+      make_dir "$_PWD/batch/man/man1"
+      mv b*.1 $_PWD/batch/man/man1
+      mv $BATCH_MAN $_PWD/batch/man/man1 2>$LSNULFILE
+ 
+      LSMAKE_MAN="gmake.1 lsmake.1"
+      make_dir "$_PWD/lsmake/man1"
+      mv $LSMAKE_MAN $_PWD/lsmake/man1 2>$LSNULFILE
+
+      NQS_MAN="lsnqs.1 qdel.1 qstat.1 qsub.1"
+      make_dir "$_PWD/batch/nqs"
+      mv $NQS_MAN "$_PWD/batch/nqs" 2>$LSNULFILE
+
+      make_dir "$_PWD/base/man"
+      cd $_PWD
+      mv $_PWD/man/man1 $_PWD/base/man 2>$LSNULFILE
+  fi
+
+  # Convert cat1
+  if [ -d "$_PWD/man/cat1" ]; then
+      cd $_PWD/man/cat1 
+
+      #BATCH_JS_CAT="bacct.z"
+      make_dir "$_PWD/batch_js/man"
+      make_dir "$_PWD/batch_js/man/cat1"
+      #mv $BATCH_JS_CAT $_PWD/batch_js/man/cat1
+
+      BATCH_CAT="ckpt_ld.z ckpt_ld_f.z lsfbatch.z mpijob.z p4job.z parScripts.z poejob.z pvmjob.z xbmod.z xbsub.z xlsadmin.z xlsbatch.z"
+      make_dir "$_PWD/batch/man"
+      make_dir "$_PWD/batch/man/cat1"
+      mv b*.z $_PWD/batch/man/cat1 2>$LSNULFILE
+      mv $BATCH_CAT $_PWD/batch/man/cat1 2>$LSNULFILE
+ 
+      LSMAKE_CAT="gmake.z lsmake.z"
+      make_dir "$_PWD/lsmake/cat1"
+      mv $LSMAKE_CAT $_PWD/lsmake/cat1 2>$LSNULFILE
+
+      make_dir "$_PWD/base/man"
+      cd $_PWD
+      mv $_PWD/man/cat1 $_PWD/base/man 2>$LSNULFILE
+  fi
+
+  # Convert man3
+  if [ -d "$_PWD/man/man3" ]; then
+      cd $_PWD/man/man3
+
+#  BATCH_MAN="ckpt_crt0.o.3 libckpt.a.3"
+#  make_dir "$_PWD/batch/man/man3"
+#  mv $BATCH_MAN "$_PWD/batch/man/man3"
+
+      make_dir "$_PWD/batch_js/man/man3"
+      mv lsb*  "$_PWD/batch_js/man/man3" 2>$LSNULFILE
+	
+      make_dir "$_PWD/base/man"
+      cd $_PWD
+      mv $_PWD/man/man3 $_PWD/base/man 2>$LSNULFILE
+  fi
+
+  # Convert cat3
+  if [ -d "$_PWD/man/cat3" ]; then
+      cd $_PWD/man/cat3
+
+      make_dir "$_PWD/batch_js/man/cat3"
+      mv lsb*  "$_PWD/batch_js/man/cat3" 2>$LSNULFILE
+	
+      make_dir "$_PWD/base/man"
+      cd $_PWD
+      mv $_PWD/man/cat3 $_PWD/base/man 2>$LSNULFILE
+  fi
+
+  # Convert man5
+  if [ -d "$_PWD/man/man5" ] ; then
+      cd $_PWD/man/man5
+      make_dir "$_PWD/batch/man/man5"
+      mv lsb.* "$_PWD/batch/man/man5" 2>$LSNULFILE
+ 
+      cd $_PWD
+      mv $_PWD/man/man5 $_PWD/base/man 2>$LSNULFILE
+  fi
+
+  # Convert cat5
+  if [ -d "$_PWD/man/cat5" ] ; then
+      cd $_PWD/man/cat5
+      make_dir "$_PWD/batch/man/cat5"
+      mv lsb.* "$_PWD/batch/man/cat5" 2>$LSNULFILE
+ 
+      cd $_PWD
+      mv $_PWD/man/cat5 $_PWD/base/man 2>$LSNULFILE
+  fi
+
+  # Convert man8
+  if [ -d "$_PWD/man/man8" ] ; then
+      cd $_PWD/man/man8
+      BATCH_MAN="badmin.8 bqc.8 breboot.8 breconfig.8 brun.8 echkpnt.8 erestart.8 mbatchd.8 sbatchd.8"
+      make_dir  $_PWD/batch/man/man8
+      mv $BATCH_MAN $_PWD/batch/man/man8 2>$LSNULFILE
+
+      cd $_PWD
+      mv $_PWD/man/man8 $_PWD/base/man 2>$LSNULFILE
+
+      rm -rf $_PWD/man
+  fi
+
+  # Convert cat8
+  if [ -d "$_PWD/man/cat8" ] ; then
+      cd $_PWD/man/cat8
+      BATCH_CAT="badmin.z bqc.z breboot.z breconfig.z brun.z echkpnt.z erestart.z mbatchd.z sbatchd.z"
+      make_dir  $_PWD/batch/man/cat8
+      mv $BATCH_CAT $_PWD/batch/man/cat8 2>$LSNULFILE
+
+      cd $_PWD
+      mv $_PWD/man/cat8 $_PWD/base/man 2>$LSNULFILE
+
+      rm -rf $_PWD/man
+  fi
+) 
+
+cp $LSFSETUP_CWD/example.services $_PWD
+cp $LSFSETUP_CWD/startup.svr4 $_PWD
+cp -f $LSFSETUP_CWD/scripts/* $_PWD/scripts
+
+return 0
+} # convert_directory_tree
+
+prepare_source()
+{
+
+_platform="$1"
+
+_binary_type=""
+_binary_type=`grep ${_platform}: $TABLE | cut -d ':' -f6`
+
+if [ "$_binary_type" = "" ] ; then
+    _binary_type=`echo "$_platform" |  sed -e "s/lsf${LSF_VER}_//g"`
+fi
+
+uncompress_untar "$_platform"
+
+if [ -d "$LSF_WORKING_DIR/$_platform" ]; then
+    cd $LSF_WORKING_DIR/$_platform
+else
+    echo
+    echo "Cannot install LSF product for $_Platform!" | tee -a $PREFIX_LOG/Install.log
+    echo
+    kill $$
+    exit
+fi
+
+echo 
+echo Convert LSF product packages ...
+convert_directory_tree "$_binary_type"
+
+if [ "$?" != "0" ] ; then
+    echo
+    echo "Can not install LSF product for $_platform!"| tee -a $PREFIX_LOG/Install.log
+    echo
+    kill $$
+    exit
+fi
+
+return 0
+
+} # prepare_source

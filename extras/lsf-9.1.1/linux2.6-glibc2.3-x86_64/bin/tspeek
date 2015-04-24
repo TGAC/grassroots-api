@@ -1,0 +1,165 @@
+#! /bin/sh
+# $RCSfile: tspeek.sh,v $Revision: 1.7 $Date: 2013/01/10 05:52:52 $
+#--------------------------------------------------------------
+# tspeek [-h] [-V] jobId
+#
+#  displays the stdout and stderr output of an unfinished 
+#  Terminal Services job 
+#
+#--------------------------------------------------------------
+
+# Script name
+EXEC_FILENAME=`basename $0`
+
+# Usage
+usage="Usage: $EXEC_FILENAME [-h] [-V] jobId"
+
+# Error Num
+SUCCESS=0
+ERROR_BAD_ARGS=1
+ERROR_BJOBS=2
+ERROR_TSJOB=3
+ERROR_RUNNING_JOB=4
+ERROR_RDESK=5
+ERROR_BAD_ENV=6
+
+# Find a version of awk we can trust, copy from LSF profile.lsf
+AWK=""
+for tmp in nawk  /usr/toolbox/nawk gawk awk
+do
+#   This is the real test, for functions & tolower
+#    if foo=`(echo FOO | $tmp 'function tl(str) { return tolower(str) } { print tl($1) }') 2>$LSNULFILE` \
+#       && test "$foo" = "foo"
+#   A simpler test, just for executability
+    if ($tmp 'BEGIN{ } { }') < /dev/null > /dev/null 2>&1
+    then
+        AWK=$tmp
+	break
+    fi
+done
+
+if test "$AWK" = ""
+then
+    echo "Cannot find a correct version of awk."
+    echo "Exiting ... "
+    exit $ERROR_BAD_ENV
+fi
+export AWK
+
+# check args
+if [ -n "$1" ]; then
+    if [ $1 = "-h" ]; then
+        echo $usage
+	exit 0
+    elif [ $1 = "-V" ]; then
+        bjobs -V
+	exit 0
+    elif echo "$1" | grep '^[0-9]*$' > /dev/null; then
+        jobId="$1"
+    else
+        echo $usage
+	exit $ERROR_BAD_ARGS
+    fi
+
+else
+    echo $usage
+    exit $ERROR_BAD_ARGS
+fi
+
+# check whether rdesktop has been installed
+which rdesktop > /dev/null; 
+if [ $? -ne 0 ]; then
+    echo "Please ensure you have installed rdesktop."
+    exit $ERROR_RDESK
+fi
+
+# check whether bjobs -l command can run successfully
+bjobs -u all > /dev/null;
+if [ $? -ne 0 ]; then
+    echo "Please check LSF bjobs command can works well."
+    exit $ERROR_BJOBS
+else
+    output=`bjobs -l $jobId 2>/dev/null`
+    if [ -z "$output" ]; then
+	bjobs -l $jobId
+	exit $ERROR_BJOBS
+    elif echo "$output" | $AWK '{ printf("%s", $0) } END { print }' | sed 's/ //g' | grep 'Status<RUN>' >/dev/null 2>&1; then
+        externalmsg=`bread -i 3 $jobId 2>/dev/null`
+	if [ $? -ne 0 ]; then
+	    echo "Job <$jobId> is not a TS job"
+	    exit $ERROR_TSJOB
+	fi
+	SessionId=`echo "$externalmsg" | $AWK 'NR==2{ print $7 }'`
+	if [ -z "$SessionId" ]; then
+	    echo "Job <$jobId> is not a TS job"
+	    exit $ERROR_TSJOB
+	fi
+	if [ $SessionId -lt 0 ]; then
+	    echo "Job <$jobId> is not a TS job"
+	    exit $ERROR_TSJOB
+	fi
+	
+    else
+        echo "Job <$jobId> is not running."
+	exit $ERROR_RUNNING_JOB
+    fi
+fi
+
+# The job is a TS job and we have get the TS session
+# Get user, domain, passwd, exechost and connect the session
+
+userName=`echo "$output" | grep 'User <' | $AWK -F'User <' '{print $2}' | $AWK -F'>' '{print $1}'`
+
+if echo "$userName" | grep '\\' >/dev/null 2>&1; then
+domain=`echo "$userName" | $AWK -F'\\' '{print $1}'`
+fi
+
+if [ -n "$domain" ]; then
+    userName=`echo "$userName" | $AWK -F'\\' '{print $2}'`
+else
+    while : ; do
+        printf "Please input Job <$jobId>'s user domain: "
+	read domain
+	if [ -z "$domain" ]; then
+            :
+	else
+	    echo
+	    break
+	fi
+    done
+fi
+
+# Try to get exechost
+execHost=`echo "$output" | $AWK '{ printf("%s", $0) } END { print }' | sed 's/ //g' | $AWK -F'Startedon<' '{print $2}' | $AWK -F'>' '{print $1}'`
+
+# Try to get user's passwd.
+passwd=$LSB_TSJOB_PASSWD
+if [ -z "$passwd" ]; then
+    while : ; do
+        printf "Please input your passwd: "
+	stty icanon -echo
+	read passwd
+	stty -icanon echo
+        if [ -z "$passwd" ]; then
+	    :
+	else
+	    echo
+	    break
+	fi
+    done
+fi
+
+# exec rdesktop
+rdesktop -u $userName -p $passwd -d $domain -s "tscon $SessionId" $execHost
+ret=$?
+
+# Success and exit
+if [ $ret -eq 0 -o $ret -eq 2 ]; then
+    exit $SUCCESS
+else
+    exit $ERROR_RDESK
+fi
+
+
+
+

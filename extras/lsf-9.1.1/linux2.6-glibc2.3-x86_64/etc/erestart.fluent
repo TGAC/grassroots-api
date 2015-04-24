@@ -1,0 +1,128 @@
+#!/bin/sh 
+# $RCSfile: erestart.fluent,v $Revision: 1.3 $Date: 2013/01/10 05:52:02 $
+
+# external check pointing restart routine for FLUENT
+# erestart  [-c] [-f] chkpnt_dir 
+# tasks:
+# 1) check those parameters
+# 2) check those env variables
+# 3) update the original command with addition option "-restart lsf"
+# 4) put the new job file in .restart_cmd.
+# 5) exit with 0
+PATH=/usr/bin:/bin:/usr/etc:$PATH
+export PATH
+usage="Usage: $0 [-c] [-f] chkpnt_dir"
+
+# 1) check those parameters
+# "chkpnt_dir" is the new job_id
+# We don't care about those option for FLUENT.
+while [ "$1" != "" ]
+do
+        case $1 in
+        -c)
+            shift
+	    ;;
+        -f)
+            shift
+	    ;;
+        *)
+            break
+	    ;;
+        esac
+done
+
+#save the chkpnt_dir for future
+new_jobid="$1"
+
+# 2) check those env variables
+if [ -f $LSB_CHKFILENAME ]
+then
+    :
+else
+    echo "Can not find $LSB_CHKFILENAME" 1>&2
+    exec 2<&-
+    exit 1
+fi
+
+# if LSB_CHKPNT_DIR is not defined, set it up (for LSF 3.1)
+if [ _$LSB_CHKPNT_DIR = '_' ]; then
+    LSB_CHKPNT_DIR=`dirname $LSB_CHKFILENAME`
+fi
+
+if [ -d $LSB_CHKPNT_DIR ]
+then
+    :
+else
+    echo "Can not find $LSB_CHKPNT_DIR" 1>&2
+    exec 2<&-
+    exit 1
+fi
+
+# 3) update the original command with addition option "-restart"
+
+new_jobfile=$LSB_CHKFILENAME.fluent.restart
+if [ -f "$new_jobfile" ]; then
+    rm -rf $new_jobfile
+fi
+
+#
+# New version of fluent will be able to
+# tell us its version and we expect
+# new version of fluent to read LSF_FLUENT_RESTART_JOB
+# environment variable and then set -restart flag
+# automatically so that we do not need to
+# modify LSF job file.
+#
+# At this moment, we assume all are old versions
+# 
+FLUENT_VERSION=""
+if [ -n "$FLUENT_VERSION" ]; then
+    cat $LSB_CHKFILENAME | awk ' {
+    print $0 >> new_file;
+    if (found_lsbatch_user_input == 0) {
+        if ($1 == "#" && $2 == "LSBATCH:" && \
+            $3 == "User" && $4 == "input") {
+            found_lsbatch_user_input = 1;
+            print "export LSF_FLUENT_RESTART_JOB=Y" >> new_file;
+        }
+    }
+    }' new_file=$new_jobfile;
+else
+    cat $LSB_CHKFILENAME | awk ' {
+    found_lsf = 0;
+    found_restart = 0;
+    if (found_lsbatch_user_input == 0) {
+        print $0 >> new_file;
+        if ($1 == "#" && $2 == "LSBATCH:" && \
+            $3 == "User" && $4 == "input") {
+            found_lsbatch_user_input = 1;
+            print "export LSF_FLUENT_RESTART_JOB=Y" >> new_file
+        }
+    } else {
+        split($0, arr, " ");
+        for ( i in arr ) {
+            if (match(arr[i], "-lsf") >0) {
+                found_lsf =1;
+            }
+            if (match(arr[i], "-restart") >0) {
+                found_restart =1;
+            }
+        }
+        if(found_lsbatch_user_input == 1 && \
+           found_lsf == 1 && found_restart == 0) {
+            print $0, " -restart" >> new_file;
+        } else {
+            print $0 >> new_file;
+        }
+    }
+    }' new_file=$new_jobfile;
+fi
+
+chmod 700 $new_jobfile
+
+# 4) put the new job file in .restart_cmd.
+echo LSB_RESTART_CMD=$new_jobfile > $LSB_CHKPNT_DIR/.restart_cmd
+echo LSB_USE_MY_JOBFILE=Y >> $LSB_CHKPNT_DIR/.restart_cmd
+
+# 5) exit 0 to tell erestart that erestart.fluent succeeded.
+exit 0

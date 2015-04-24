@@ -1,0 +1,641 @@
+#! /bin/sh
+# $Id: help,v 1.3 2012/06/08 03:37:24 sbadugu Exp $
+
+#***********************************************************************
+#
+#   This script prints out help information about a particular setup
+#   parameter.
+#
+#   Usage: help keyword
+#************************************************************************
+
+help()
+{
+
+case $1
+in
+LSF_CLUSTER_NAME)
+    cat << HCLUSTE_NAMER
+
+    This parameter names your LSF cluster. Enter a string containing no more
+    than 39 characters. The cluster name does not need to be the same as the 
+    DNS or NIS domain name of the hosts. You should not use a valid host name 
+    as the cluster name.
+
+HCLUSTE_NAMER
+;;
+
+LSF_MANAGER)
+    cat << HMANAGER
+
+    This defines the administration login name for LSF. It must be a valid 
+    login name and must not be root. The LSF administrator manages the LSF 
+    cluster and has the privilege to configure/reconfigure the LSF system,
+    modifying the configurations files, restarting LSF servers, etc. The 
+    administration login name for LSF should usually be a dedicated account, 
+    rather than a personal account. This is necessary because sometimes you 
+    need to transfer the administration responsibility among different people.
+
+HMANAGER
+;;
+
+LSF_INDEP)
+    cat << HLSF_INDEP
+
+    This parameter specifies the top level directory under which you
+    want to install the shared (machine-independent) portions of LSF
+    (man pages, configuration files, examples, and so on). This
+    parameter is used for the installation procedure to figure out a
+    reasonable default for various directories. If you don't want to
+    install everything under one top level directory, simply enter a
+    directory where most of the contents will be installed. For example,
+    if you want to install commands in /local/bin, man pages in
+    /local/man, then you can give /local as the answer. If you are not
+    sure what to answer, just use the default.
+
+    The machine-independent portions of LSF require about 2 megabytes of
+    disk space.
+
+HLSF_INDEP
+;;
+
+DEFAULT_INSTALLDIR)
+    cat << HDEFAULT_INSTALLDIR
+
+    This parameter specifies the top level directory under which you
+    want to install the LSF product.  This directory should be accessible 
+    from all machines that will run LSF.  All shared (machine-independent) 
+    portions of LSF (man pages, configuration files, examples, and so on)
+    will be installed in this directory. This parameter is used for the 
+    installation procedure to figure out a reasonable default for various 
+    directories.
+
+    The Host dependent directory will be created in this directory 
+    automatically by default install. If you are not sure what to 
+    answer, just use the default.
+
+HDEFAULT_INSTALLDIR
+;;
+
+LSF_MACHDEP)
+    cat << HLSF_MACHDEP
+
+    This parameter specifies the top level directory for the machine-
+    dependent portions of LSF (user commands, daemons, and libraries).  
+    This parameter is used to set the default values for the installation 
+    locations.  If you don't want to install all machine-dependent 
+    components under the same directory, simply enter a directory where
+    one or more of the machine-dependent directories will be installed.
+
+    The default value is the same directory as the machine-independent
+    portions.  You only need to change this if you are installing LSF on
+    more than one host architecture.
+
+    The machine-dependent portions of LSF require approximately 25
+    megabytes of disk space per machine type.
+
+HLSF_MACHDEP
+;;
+
+LSF_BINDIR)
+    cat << HLSF_BIN
+
+    This is the directory where all LSF commands will be installed. This
+    directory does not have to exist. It will be created if it is not 
+    already there. 
+
+HLSF_BIN
+;;
+
+LSF_SERVERDIR)
+    cat << HLSF_SERVERDIR
+
+    This is the directory where all LSF servers (daemons) will be installed.
+    This directory does not have to exist. It will be created if it is not 
+    already there. 
+
+HLSF_SERVERDIR
+;;
+
+LSF_MANDIR)
+    cat << HMANDIR
+
+    This is the directory where all LSF online man pages will be installed.
+    This directory does not have to exist. It will be created if it is not
+    already there.
+
+HMANDIR
+;;
+
+LSF_LIBDIR)
+    cat << HLIBDIR
+
+    This is the directory where LSF library will be installed. This directory
+    does not have to exist. It will be created if it is not already there.
+
+HLIBDIR
+;;
+
+LSF_INCLUDEDIR)
+    cat << HINCLUDEDIR
+
+    This is the directory where LSF header file lsf/lsf.h will be installed.
+    This directory does not have to exist. It will be created if it is not
+    already there.
+
+HINCLUDEDIR
+;;
+
+XLSF_APPDIR)
+    cat << HXLSF_APPDIR
+
+    This is the directory where the application resource files for windows 
+    applications are installed. It will be convenient for users to use
+    LSF GUI tools if this directory is the same as that for other windows
+    applications already installed. If you choose a different directory,
+    then users environment variable XAPPLRESDIR has to be changed to
+    include this directory.
+
+HXLSF_APPDIR
+;;
+
+XLSF_UIDDIR)
+    cat << HXLSF_UID
+
+    This is the directory where the User Interface Database (UID) files
+    for GUI tools of LSF will be installed. See uil(1) and MrmOpenHierarchy(3X)
+    for more details.
+
+HXLSF_UID
+;;
+
+LSF_LOGDIR)
+    cat << HLSF_LOGDIR
+
+    This will be the directory that LSF servers log error messages. This
+    directory must already exist and be writable by root. If you want the 
+    messages to go to syslog(3) rather than log files, enter UNDEF.
+    In the case of using syslog(3), the directory of the syslog(8) messages 
+    are determined by /etc/syslog.conf. 
+
+HLSF_LOGDIR
+;;
+
+LSF_CONFDIR)
+    cat << HLSF_CONFDIR
+
+    This is the directory where LSF cluster configuration files will be 
+    installed. This directory must be accessible from any host in the 
+    cluster that runs LSF servers. 
+
+HLSF_CONFDIR
+;;
+
+LSB_CONFDIR)
+    cat << HLSB_CONFDIR
+
+    This is the directory where LSF batch system (lsbatch) configuration files
+    will be installed. This directory must be accessible from any host in the
+    cluster that runs the lsbatch server. If possible, you can define this
+    directory to be a "lsbatch" subdirectory within the LSF cluster 
+    configuration file directory. 
+
+HLSB_CONFDIR
+;;
+
+LSB_SHAREDIR)
+    cat << HLSB_SHAREDIR
+
+    This directory is used by the lsbatch system to store job data and
+    accounting logging files. It must be a directory that is accessible 
+    from any hosts in the LSF cluster that runs a lsbatch server. It must
+    not be a read only file system.
+
+HLSB_SHAREDIR
+;;
+
+LSB_MAILTO)
+    cat << HLSB_MAILTO
+
+    This defines the mail address format that the lsbatch system uses to
+    send mails. The possible formats are:
+
+    !U                  -- Mail is sent to user's account name (the default)
+    !U@!H               -- Mail is sent to user@job_submission_hostname
+    !U@company_name.com -- Mail is sent to user@company_name.com
+
+    To use the default, enter "!U" or UNDEF.
+
+HLSB_MAILTO
+;;
+
+LSF_STRIP_DOMAIN)
+    cat << HLSF_STRIP_DOMAIN
+
+    This is an optional parameter. If all your hosts can be accessed by short
+    names rather than the fully-qualified domain name, you can define
+    LSF_STRIP_DOMAIN to remove the domain name. Note that the leading '.' is
+    required. More than one domain name can be specified, separated by ":".
+    For example, 
+	.ibm.com:.ibm.ca
+
+    To undefine it, enter "UNDEF".
+
+HLSF_STRIP_DOMAIN
+;;
+
+LSF_ROOT_REX)
+    cat <<HLSF_ROOT_REX
+
+    Enter y if you want root to run jobs through LSF. Note that allowing root
+    to run jobs through LSF effectively makes root on all hosts identical. If
+    you don't want this feature, enter n.
+
+HLSF_ROOT_REX
+;;
+
+SAVED_CONFIG)
+    cat << HSAVED_CONFIG
+
+    This should only apply to the case when you upgrade LSF from 1.2a or
+    earlier to LSF 2.0. The upgrading procedure needs to know how your
+    current LSF version was installed. The local.config file contains all
+    such information. The local.config should be in the distribution directory
+    where you installed the last LSF version. If you have this file ready,
+    then the upgrading process will be easier for you. However, if you
+    cannot find this file, enter "n" and the installation procedure will
+    guide you to create a new one.
+
+HSAVED_CONFIG
+;;
+
+RESTART)
+    cat << HRESTART
+
+    If you are ready to restart all LSF servers, enter y. Otherwise enter n
+
+HRESTART
+;;
+
+LSF_EAUTH)
+  
+    cat <<HLSF_EAUTH
+
+    LSF allows you to use different ways for user authentication across the
+    network. 
+
+    Answer 'y', you will use:
+
+    o -  External authentication (eauth)
+    
+    LSF bundles an eauth and it will be installed in LSF_SERVERDIR. 
+    The users also can write and configure their site-specific eauth 
+    if they like.  A example of supporting Kerberos authentication's eauth 
+    can be found in the examples/krb in the standard LSF distribution.
+
+    In Unix and NT mixed cluster, you should choose eauth. 
+
+    Answer 'n', you will use:
+      
+    o -  Setuid approach. This is the mechanism most UNIX remote utilities
+         use. The commands must be installed as setuid programs and owned
+	 by root.
+
+
+HLSF_EAUTH
+    ;;
+    
+LSF_SETUID)
+    cat <<HLSF_SETUID
+
+    LSF allows you to use different ways for user authentication across the
+    network. There are currently 3 choices for you:
+
+    o -  Setuid approach. This is the mechanism most UNIX remote utilities
+	 use. The commands must be installed as setuid programs and owned 
+	 by root. This is the default mechanism.
+
+    o -  RFC 931/RFC 1413 protocol: user commands do not need to be installed
+	 as setuid programs and owned by root. 
+ 
+    o -  External authentication: eauth
+    
+    If you want to use RFC 931/RFC 1413 protocol, you must install the identd
+    daemon (available from public domain).
+	    
+    A security risk exists in that a user can discover the format of LSF protocol
+    messages and write a program that tries to communicate with LSF server. It is
+    recommended that external authentication (via eauth) be  used  where this 
+    security risk is a concern (detail see man page eauth(8)).
+
+    In Unix and NT mixed cluster, you should choose eauth. 
+
+HLSF_SETUID
+    ;;
+
+LSF_AUTH)
+    cat << HLSF_AUTH
+
+    LSF allows you to use different ways for user authentication across the
+    network. There are currently 3 choices for you:
+
+    o -  Setuid approach. This is the mechanism most UNIX remote utilities
+	 use. The commands must be installed as setuid programs and owned 
+	 by root. This is the default mechanism.
+
+    o -  RFC 931/RFC 1413 protocol: user commands do not need to be installed
+	 as setuid programs and owned by root. 
+ 
+    o -  external authentication: eauth  
+
+    If you want to use RFC 931/RFC 1413 protocol, you must install the identd 
+    daemon (available from public domain). 
+
+    A security risk exists in that a user can discover the format of LSF protocol
+    messages and write a program that tries to communicate with LSF server. It is
+    recommended that external authentication (via eauth) be  used  where this 
+    security risk is a concern (detail see man page eauth(8)). 
+
+    In Unix and NT mixed cluster, you should choose eauth. 
+
+    Enter "UNDEF" to use Setuid approach. 
+
+    Enter "ident" to use RFC 931/RFC 1413 protocol.
+
+    Enter "eauth" to use external authentication.
+
+HLSF_AUTH
+;;
+
+LSFCONF)
+    cat << HLSFCONF
+
+    The lsf.conf file is a global environment configuration file for all
+    LSF services and applications. If you install LSF using default install,
+    This file should be in LSF_CONFDIR (e.g. if you install LSF in 
+    /usr/local/lsf, it should be in /usr/local/lsf/mnt/conf). Otherwise, 
+    this file should be accessible from LSF_SERVERDIR/lsf.conf (e.g. if your
+    LSF machine dependent directory is /usr/local/lsf/HPUX, it should be in 
+    /usr/local/lsf/HPUX/etc). The common way to do it is to put lsf.conf in 
+    some architecture-wide shared file system (usually the directory where 
+    the LSF servers are stored) and make a symbolic link from /etc/lsf.conf 
+    to point to that file. 
+
+HLSFCONF
+;;
+
+LSFCONF_LOCAL)
+    cat << HLSFCONF_LOCAL
+
+    This file contains definitions about the installations on this host type. 
+    If you enter y, the installation parameters in this file will be picked
+    up. Note that it will not pick up parameters that must be shared by
+    all hosts.
+
+    Enter y if you want to install all host type dependent files binaries,
+    LSF daemons, libraries, and X application uid files) into the same 
+    directories as were installed before. You should enter 'n' only if you do 
+    not want to install host type dependent files into the same directories.
+
+HLSFCONF_LOCAL
+;;
+
+UPGRADE_CONF)
+    cat << HUPGRADE_CONF
+
+    This file should normally be the lsf.conf file currently in use. It 
+    stores the the existing installation settings. This file is used as a 
+    base for the new installation. However, if you would like to use a 
+    different lsf.conf file, you can provide that file name. You will be
+    given a chance to examine the settings and make modifications later.
+
+HUPGRADE_CONF
+;;
+
+LSF_ENVDIR)
+    cat << HLSF_ENVDIR
+
+    The directory where the global environment configuration file lsf.conf
+    will be installed. This parameter is architecture specific and is not
+    shared between different architectures. 
+    
+    This should always be /etc, unless you have a special reason for not 
+    doing it (such as you do not have permission to install it into /etc).
+    The lsf.conf in this directory is usually a symbolic link to the lsf.conf 
+    (or lsf.conf.client for client-only hosts) in the LSF_SERVERDIR.
+
+HLSF_ENVDIR
+;;
+
+LSF_LOG_MASK)
+    cat << HLSF_LOG_MASK
+
+    If defined, the log mask will be set so that messages of lower priority
+    than this will not be logged by LSF servers. You can define it to be
+    any log priority symbols defined in <syslog.h> (see syslog(8)). If not
+    defined, a default mask LOG_WARNING will be used.
+
+HLSF_LOG_MASK
+;;
+
+LSF_MISC)
+    cat << HLSF_MISC
+
+    The LSF_MISC directory contains miscellaneous host type independent
+    files such as X application defaults files, LSF programming
+    examples, and additional copyright notices for some portions of LSF.
+    This directory will be created if needed.
+
+HLSF_MISC
+;;
+
+UPGRADED)
+     cat << HUPGRADED
+
+     If you already upgraded LSF on another host type (or architecture), then 
+     we only need to upgrade those host type specific files 
+     for this host type. Enter n if you already upgraded LSF on another 
+     host type, enter y if this is the first host type to upgrade.
+
+HUPGRADED
+;;
+
+NONROOT)
+    cat << HNONROOT
+
+    For production use, you should always install LSF as root. However, you
+    may want to install LSF for demonstration or testing purposes. In this 
+    case, you can run LSF daemons as a normal user.
+
+    To run LSF daemons as an ordinary user, you must have access to kernel
+    information, such as /dev/kmem. You either have to be in some privileged
+    group, such as kmem (ultrix, Sun4.x, OSF1), or sys (Solaris, HPUX, IRIX
+    etc), or you must ask your system manager to make LSF_SERVERDIR/lim
+    setuid to root or setgid to appropriate group id.
+
+    If you run LSF daemons as an normal user, then you will be the only user
+    to use LSF, nobody else can run any jobs under LSF. You must also define
+    LSF administrator login name to be your login name.
+
+HNONROOT
+;;
+
+LSF_PORTS)
+    cat << HLSF_PORTS
+
+    LSF daemons serve applications through dedicated port numbers. These 
+    port numbers should normally be registered in your service database
+    (/etc/services or NIS). However, you can also define these port numbers
+    in your lsf.conf file. If port numbers are defined in lsf.conf, then
+    port numbers defined in /etc/services are ignored.
+
+    There are 4 servers in LSF that must use a port number: RES, LIM, 
+    mbatchd and sbatchd. To define these port numbers in your service 
+    database, look at the file ./example.services.
+
+    To define these port numbers in lsf.conf, supply a port number for each
+    service prompted. These port numbers can be any numbers ranging from
+    1024 to 65535 that are not already used by other services. You should 
+    make sure that the port numbers you supply are not already used by your 
+    service database (check /etc/services or run ypcat services).
+
+HLSF_PORTS
+;;
+
+LSF_LIM_PORT)
+
+    cat << HLSF_LIM_PORT
+
+    TCP service port number to use for communication with the lim daemons. The
+    port number is normally obtained by looking up the LSF service names
+    in the /etc/services file or the NIS.  If it is not possible to modify
+    the service database, this variable can be defined to set the port number.
+
+HLSF_LIM_PORT
+;;
+
+LSF_RES_PORT)
+
+    cat << HLSF_RES_PORT
+
+    TCP service port number to use for communication with the res daemons. The
+    port number is normally obtained by looking up the LSF service names
+    in the /etc/services file or the NIS.  If it is not possible to modify
+    the service database, this variable can be defined to set the port number.
+
+HLSF_RES_PORT
+;;
+
+LSB_MBD_PORT)
+
+    cat << HLSB_MBD_PORT
+
+    TCP service port number to use for communication with the mbatchd daemons. 
+    The port number is normally obtained by looking up the LSF service names
+    in the /etc/services file or the NIS.  If it is not possible to modify
+    the service database, this variable can be defined to set the port number.
+
+HLSB_MBD_PORT
+;;
+
+LSB_SBD_PORT)
+
+    cat << HLSB_SBD_PORT
+
+    TCP service port number to use for communication with the sbatchd daemons. 
+    The port number is normally obtained by looking up the LSF service names
+    in the /etc/services file or the NIS.  If it is not possible to modify
+    the service database, this variable can be defined to set the port number.
+
+HLSB_SBD_PORT
+;;
+
+
+LSF_SERVICES)
+    cat << HLSF_SERVICES
+
+    LSF services can be defined in different ways:
+
+    You can define them in system's service database, such as /etc/services
+    or NIS (YP).
+    You can also define LSF service port numbers in lsf.conf. Check LSF
+    Administrator's Guide for more information.
+
+HLSF_SERVICES
+    ;;
+
+LSF_SERVER_HOSTS)
+    cat << HLSF_SERVER_HOSTS
+
+    This defines a list of hosts that run LIM so that client-only hosts 
+    which do not run LIM can contact LIMs on one of these hosts to get
+    LSF services. It is recommended that you define the first a few hosts
+    in lsf.cluster.<clustername> here. Multiple host names should be 
+    separated by spaces.
+
+HLSF_SERVER_HOSTS
+    ;;
+
+LSF_CLIENTS)
+    cat <<HLSF_CLIENTS
+
+    Client-only hosts are hosts that do not run LSF servers while still 
+    being able to access LSF services. To make a host client-only, the 
+    SERVER column of the lsf.cluster.<clustername> file for this host 
+    must be set to 0. Note that even if a host is client-only, it must 
+    be in lsf.cluster.<clustername> file.
+
+HLSF_CLIENTS
+    ;;
+
+LSF_CLUSTER)
+    cat << HLSF_CLUSTER
+
+    This file is the cluster configuration file that defines host parameters
+    for this cluster. This file should be owned by LSF administrator and must
+    be in $LSF_CONFDIR.
+
+HLSF_CLUSTER
+;;
+
+LSF_DATABASE)
+    cat << HLSF_DATABASE
+    
+    LSF 3.2 xanalyzer needs a database to collect cluster data. If this is 
+    your first time to upgrade to 3.2 or you want to upgrade database,
+    you should answer 'y'.  Otherwise, answer 'n'.
+    
+HLSF_DATABASE
+;;
+
+LSF_SHARED)
+
+    cat << HLSF_SHARED
+
+    This file is the global definition file that defines host types, host
+    models, resource names, cluster names, external load indices, etc. The
+    definitions defined in this file are referenced by individual clusters.
+    All resource names, host types, host models, and external index names
+    used by lsf.cluster.<clustername> file must be defined in this file.
+
+HLSF_SHARED
+;;
+
+LSF_WORKING_DIR)
+
+    cat << HLSF_WORKING_DIR
+
+    This directory is used by lsfsetup to temporarily uncompress and 
+    extract the installation files.  After installation, lsfsetup cleans up 
+    the temporary directory by removing the extracted files.  
+    
+    Ensure that the directory has enough space to hold the files for the 
+    largest distribution file you plan to install (approximately 400 MB). 
+    
+
+HLSF_WORKING_DIR
+;;
+
+*)   echo No help for $1 ;;
+esac
+}

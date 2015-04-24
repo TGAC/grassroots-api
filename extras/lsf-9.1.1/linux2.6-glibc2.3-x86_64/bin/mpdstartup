@@ -1,0 +1,142 @@
+#!/bin/bash
+#$RCSfile: mpdstartup,v $Revision: 1.4 $Date: 2013/01/10 05:51:12 $
+# version for mvapich 0.9.5
+#USAGE:
+# mpdstartup switchsize
+# where
+#     switchsize is a tunable parameter indicating how many simutaneous mpd
+#                will be started by lsgrun in one shot
+#
+#     this program will start mpd on first exec host to get port #
+#     then it will lauch mpd on the rest of host in a batch mode.
+#     MPD_CON_EXT will be set to a unique value and by lsgrun
+#     this env var will be passed to remote host
+
+##########################################
+# Please modify the following lines to suit 
+# the need in your cluster
+###########################################
+
+mpdstartup_cleanup()
+{
+trap "" 1 2 3 15
+$MPDALLEXIT_CMD >/dev/null 2>&1
+$MPDCLEANUP_CMD >/dev/null 2>&1
+if [ -f "$HOSTNAMEFILE" ]; then
+    FILES=`cat $HOSTNAMEFILE`
+    for LINE in $FILES; do
+        rm -f $LINE >/dev/null 2>&1
+    done
+    rm -f $HOSTNAMEFILE
+fi
+}
+
+start_mpd_on_first_host()
+{
+case "$LSF_PJL_TYPE" in
+    "mpich2")
+        # start the mpd on the first host
+        port_number=`$MPDCMD --echo --daemon`
+        ;;
+    "mvapich")
+        # start the mpd on the first host
+        port_number=`$MPDCMD -b -t`
+        ;;
+    default) 
+        ;;
+esac
+export port_number
+}
+
+start_job_mpd_ring()
+{
+hostfile="$1"
+case "$LSF_PJL_TYPE" in
+    "mpich2")
+        lsgrun -p -f $hostfile $MPDCMD --host $first_host --port $port_number --daemon
+        ;;
+    "mvapich")
+        lsgrun -p -f $LINE $MPDCMD -h $first_host -p $port_number -b
+        ;;
+    default) 
+        ;;
+esac
+    sleep 1
+}
+
+case "$LSF_PJL_TYPE" in
+    "mpich2")
+        MPDCMD="mpd.py" #assume mpd is in the path
+        MPDALLEXIT_CMD="mpdallexit"
+        MPDCLEANUP_CMD="mpdcleanup"
+        ;;
+    "mvapich")
+        MPDCMD="mpd" #assume mpd is in the path
+        MPDALLEXIT_CMD="mpdallexit"
+        MPDCLEANUP_CMD="mpdcleanup"
+        ;;
+    default) 
+        ;;
+esac
+export MPDCMD
+export MPDALLEXIT_CMD
+export MPDCLEANUP_CMD
+
+#####################################################################################
+SWITCHSIZE=$1
+if [ "$SWITCHSIZE" = "" ]; then
+    SWITCHSIZE=9999999 #please specify the default SWITCHSIZE here
+fi
+
+MPD_CON_EXT="$LSB_BATCH_JID"
+export MPD_CON_EXT
+
+HOSTNAMEFILE=toc.$LSB_BATCH_JID
+ALLHOSTS=hosts.$LSB_BATCH_JID
+first_host=`echo $LSB_MCPU_HOSTS | /bin/awk '{print $1}'`
+
+trap "mpdstartup_cleanup" 1 2 3 15
+output=`echo $LSB_MCPU_HOSTS | /bin/awk '
+BEGIN {counter=0}
+{
+    fname = "";
+    size = split($0, a, " ");
+    numlines = 0;
+
+    for (i = 3; i <= size; i += 2) {
+        fname = sprintf("%d.%s", counter, hostfile);
+        print a[i] > fname
+        numlines ++;
+        # start 5 hosts all together 
+        if (numlines == switchsize) { 
+            counter++;
+            if (i+2 < size) {
+                print fname > tocfile
+            }
+            numlines = 0;
+        }
+    }
+
+    if (size >= 3) {
+        print fname > tocfile
+    }
+
+}
+END {}' tocfile=$HOSTNAMEFILE hostfile=$ALLHOSTS switchsize=$SWITCHSIZE`
+
+# start the mpd on the first host
+start_mpd_on_first_host
+
+if [ ! -f $HOSTNAMEFILE ]; then
+# just one execution host
+    exit 0
+fi
+
+FILES=`cat $HOSTNAMEFILE`
+for LINE in $FILES; do
+    start_job_mpd_ring "$LINE"
+    rm -f $LINE
+done
+
+rm -f $HOSTNAMEFILE 
+exit 0

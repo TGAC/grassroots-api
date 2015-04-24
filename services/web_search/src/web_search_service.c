@@ -246,7 +246,7 @@ json_t *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\ndata:\n%s\n", service_name_s, error.text, data_s);
 								}
 
-							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p);
+							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p, NULL);
 
 						}		/* if (CallCurlWebservice (data_p)) */
 

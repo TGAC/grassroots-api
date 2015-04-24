@@ -1,0 +1,19 @@
+#!/bin/sh
+# Copyright International Business Machines Corp,2002, 2012.
+# All Rights Reserved.
+#
+# esub.mpichp4 will notify mpirun.lsf that the job submitted
+# will use mpichp4 integration.
+# 
+# This esub is invoked by bsub -a mpichp4
+#
+
+# esub should always redirect stdout to stderr. 
+exec 1>&2
+
+. $LSB_SUB_PARM_FILE
+
+#set the environment
+echo "LSF_PJL_TYPE=mpichp4" >> $LSB_SUB_MODIFY_ENVFILE
+
+exit 0

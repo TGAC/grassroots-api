@@ -1,0 +1,243 @@
+#!/bin/sh
+# 
+# user interface is in the form of:
+#    bsub [-a poe][bsub options] program [program options][poe options]
+#
+# This script will read the bsub command line, strip intrested poe options, 
+# and transform those options to -network requirement string of bsub.
+# 
+# If [-a poe] and [-network ] are both present in bsub command line, this script will
+# silently strip the intrested poe options from command line, without generating new
+# -network string.
+# 
+LSB_SUB_ADDITIONAL="1" #any value different from poe
+
+APP_NAME=""
+APP_ARGS=""
+POE_ARGS=""
+
+exec 1>& 2
+
+#read bsub parameters from the file:
+if [ x"$LSB_SUB_PARM_FILE" != "x" ]; then
+   .  $LSB_SUB_PARM_FILE
+else
+   exit 0
+fi
+
+if [ "$LSB_SUB_ADDITIONAL" = "" ]; then
+    exit 0
+fi
+
+#
+#extract program[program options] from $LSB_SUB_COMMAND_LINE line
+#the end of the [program options] section is assumed to be when any one of poe-options is encountered.
+#
+if [ x"$LSB_SUB_COMMAND_LINE" = "x" ]; then 
+   echo "error: command  line is empty"
+   exit $LSB_SUB_ABORT_VALUE
+fi
+
+#Strip comment in command line
+LSB_SUB_COMMAND_LINE=`echo $LSB_SUB_COMMAND_LINE | awk '
+BEGIN { RS=";"; command=""; counter=0}
+$0 !~ /^[ \t]*#/ {
+    if ( counter == 0 )
+       command = $0
+    else
+       command = sprintf("%s;%s", command, $0)
+    counter = counter + 1
+
+}
+END { print command } '`
+
+#
+# extract user application and its arguments from command line
+#
+for item in $LSB_SUB_COMMAND_LINE
+do
+case $item in
+ -adapter_use | -bindproc | -bsr_barrier | -buffer_mem | -bulk_min_msg_size | \
+ -cc_buf_mem | -cc_scratch_buf | -clock_source | -cmdfile | -collective_groups | \
+ -config | -config | -coredir | -corefile_format | -corefile_sigterm | \
+ -coscheduler_version | -cpu_use | -css_interrupt | -debug_attach | -debug_attach_dir | \
+ -debug_notimeout | -devtype | -eager_limit | -endpoints | -euidevelop | \
+ -euidevice | -euilib | -euilibpath | -fifo_route_mode | -forced_interrupts_enabled | \
+ -hints_filtered | -hostfile | -hfile | -imm_send_buffers | -infolevel | \
+ -ilevel | -ioagent_cnt | -io_buffer_size | -io_errlog | -ionodefile | \
+ -iotasklist | -instances | -labelio | -lockless | -msg_api | \
+ -msg_envelope_buf | -newjob | -nodes | -pe_affinity | -pgmmodel | \
+ -pmdlog | -pmdlog_dir | -poe_continue | -polling_interval | -printenv | \
+ -procs | -profdir | -priority_log | -priority_log_dir | -priority_log_name | \
+ -priority_ntp | -pulse | -rc_max_qp | -rc_use_lmc | -rdma_route_mode | \
+ -resd | -retransmit_interval | -retry | -rexmit_buf_cnt | -rexmit_buf_size | \
+ -rmfile | -rmpool | -rm_timeout | -savehostfile | -save_rmfile | \
+ -shared_memory | -single_thread | -statistics | -stdinmode | -stdoutmode | \
+ -task_affinity | -tasks_per_node | -thread_stacksize | -tlp_required | -udp_packet_size)
+     break  #stop at the beginning of [poe options] section.
+     ;;
+ #anything else is assumed to be program[program options]
+ *)
+      if [ x"$APP_NAME" = "x" ]; then
+          APP_NAME=$item
+      else
+          APP_ARGS="$APP_ARGS $item"
+      fi
+      ;;
+  esac
+done
+
+#
+#extract poe options from $LSB_SUB_COMMAND_LINE 
+#
+optValueProcs=0
+optValueAdapterUse=0
+optValueEuiDevice=0
+optValueEuiLib=0
+optValuePoeOther=0
+optValueMsgApi=0
+optValueInstances=0
+optNamePoeOther=""
+
+for item in $LSB_SUB_COMMAND_LINE
+do
+case $item in
+  -procs)
+     optValueProcs=1 #indicate that next item should be a value of -procs
+     ;;
+  -adapter_use)
+     optValueAdapterUse=1
+     ;;
+  -euidevice)
+     optValueEuiDevice=1
+     ;;
+  -euilib)
+     optValueEuiLib=1
+     ;;
+ -msg_api)
+     optValueMsgApi=1
+     ;;
+ -instances)
+     optValueInstances=1
+     ;;
+  
+ -bindproc | -bsr_barrier | -buffer_mem | -bulk_min_msg_size | \
+ -cc_buf_mem | -cc_scratch_buf | -clock_source | -cmdfile | -collective_groups | \
+ -config | -config | -coredir | -corefile_format | -corefile_sigterm | \
+ -coscheduler_version | -cpu_use | -css_interrupt | -debug_attach | -debug_attach_dir | \
+ -debug_notimeout | -devtype | -eager_limit | -endpoints | -euidevelop | \
+ -euilibpath | -fifo_route_mode | -forced_interrupts_enabled | \
+ -hints_filtered | -hostfile | -hfile | -imm_send_buffers | -infolevel | \
+ -ilevel | -ioagent_cnt | -io_buffer_size | -io_errlog | -ionodefile | \
+ -iotasklist | -labelio | -lockless | \
+ -msg_envelope_buf | -newjob | -nodes | -pe_affinity | -pgmmodel | \
+ -pmdlog | -pmdlog_dir | -poe_continue | -polling_interval | -printenv | \
+ -profdir | -priority_log | -priority_log_dir | -priority_log_name | \
+ -priority_ntp | -pulse | -rc_max_qp | -rc_use_lmc | -rdma_route_mode | \
+ -resd | -retransmit_interval | -retry | -rexmit_buf_cnt | -rexmit_buf_size | \
+ -rmfile | -rmpool | -rm_timeout | -savehostfile | -save_rmfile | \
+ -shared_memory | -single_thread | -statistics | -stdinmode | -stdoutmode | \
+ -task_affinity | -tasks_per_node | -thread_stacksize | -tlp_required | -udp_packet_size)
+     optValuePoeOther=1
+     optNamePoeOther=$item
+     ;;
+      
+  *)
+   if [ $optValueProcs = 1 ] ; then 
+      optValueProcs=0
+      # -procs's value is always ignored unless -n is not specified in the command line.
+      # At startup, poejob always uses the lsf-scheduling result specified by LSB_MCPU_HOSTS
+      # to calculate number of processors POE should allocate for the job and set MP_PROCS
+      # to be that value.
+      # Note that even -n is not specified in bsub's command line, LSB_SUB_MAX_NUM_PROCESSORS
+      # and LSB_SUB_NUM_PROCESSORS lines are still in the file $LSB_SUB_MODIFY_FILE with the
+      # default value 1.
+      # 
+      continue
+   fi
+    if [ $optValueAdapterUse = 1 ]; then
+         optValueAdapterUse=0
+         poeAdapterUse="$item"
+         continue
+    fi
+    if [ $optValueEuiDevice = 1 ]; then
+         optValueEuiDevice=0
+         if [ "$item" = "css0" ] ; then
+             poeEuidevice="sn_single"
+         elif [ "$item" = "csss" ] ; then
+             poeEuidevice="sn_all"
+         else
+             poeEuidevice="$item"
+         fi
+         continue
+    fi
+    if [ $optValueEuiLib = 1 ]; then
+         optValueEuiLib=0
+         poeEuiLib="$item"
+         continue
+    fi
+    if [ $optValueMsgApi = 1 ] ; then
+        optValueMsgApi=0
+        # "(" and ")" will be backslashed in addBackSlashs() by bsub, remove the backslash
+        poeMsgApi=$(echo $item | sed "s/\\\\\(.\)/\1/g")
+        continue
+    fi
+    if [ $optValueInstances = 1 ] ; then
+        optValueInstances=0
+        poeInstances="$item"
+        continue
+    fi
+    #keep any other options value
+    if [ $optValuePoeOther = 1 ]; then
+       optValuePoeOther=0
+       POE_ARGS="$POE_ARGS $optNamePoeOther $item"
+       optNamePoeOther=""
+       continue
+    fi  
+    ;;
+  esac
+done
+
+#
+# generate -network string from POE options iff there is no -network string present in bsub
+#
+if [ -z "${LSB_SUB4_NETWORK+unset}" ] ; then
+    # LSB_SUB4_NETWORK is undefined, there is no -network in bsub command line
+
+    # generate -network string from POE options
+    poeAdapterUse=${poeAdapterUse:-$MP_ADAPTER_USE}
+    poeEuidevice=${poeEuidevice:-$MP_EUIDEVICE}
+    poeEuiLib=${poeEuiLib:-$MP_EUILIB}
+    poeMsgApi=${poeMsgApi:-$MP_MSG_API}
+    poeInstances=${poeInstances:-$MP_INSTANCES}
+
+    networkReqString=""
+
+    if [ -n "$poeAdapterUse" ] ; then
+        networkReqString="$networkReqString:usage=$poeAdapterUse"
+    fi
+    if [ -n "$poeEuidevice" ] ; then
+        networkReqString="$networkReqString:type=$poeEuidevice"
+    fi
+    if [ -n "$poeEuiLib" ] ; then
+        networkReqString="$networkReqString:mode=$poeEuiLib"
+    fi
+    if [ -n "$poeMsgApi" ] ; then
+        networkReqString="$networkReqString:protocol=$poeMsgApi"
+    fi
+    if [ -n "$poeInstances" ] ; then
+        networkReqString="$networkReqString:instance=$poeInstances"
+    fi
+
+    if [ "x$networkReqString" = "x" ] ; then
+        echo "LSB_SUB4_NETWORK=\"\"" >> $LSB_SUB_MODIFY_FILE
+    else
+        echo "LSB_SUB4_NETWORK=\"${networkReqString:1}\"" >> $LSB_SUB_MODIFY_FILE
+    fi
+fi
+
+LSB_SUB_COMMAND_LINE="$APP_NAME $APP_ARGS $POE_ARGS"
+echo "LSB_SUB_COMMAND_LINE=\"$LSB_SUB_COMMAND_LINE\"" >> $LSB_SUB_MODIFY_FILE
+
+exit 0
+

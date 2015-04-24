@@ -1,0 +1,4 @@
+
+. $sp/funcs.sh
+. $sp/help
+add_host

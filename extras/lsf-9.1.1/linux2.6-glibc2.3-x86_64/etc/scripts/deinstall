@@ -1,0 +1,369 @@
+#! /bin/sh
+#
+# $Id: deinstall,v 1.2 2008/12/29 07:07:51 yhzhan Exp $
+#
+# Remove LSF from a host/hosts
+# Usage: deinstall [lsf_conf_file]
+
+_removedHostList=" "
+
+getUninstallHosts()
+{
+_hosts=$1
+first_char=`expr "$_hosts" : '\(.\).*'`
+
+if [ "$first_char" != "/" ]; then
+    if [ "$_hosts" = "" ]; then
+        echo "Sorry, no host name is specified."| tee -a $PREFIX_LOG/Install.log; return 1
+    else
+        uninstallHosts=$_hosts; export uninstallHosts; return 0
+    fi
+else
+    if [ ! -r $_hosts ]; then
+        echo "Sorry, the file $_hosts does not exist." | tee -a $PREFIX_LOG/Install.log; return 1
+    else
+        uninstallHosts=""
+        exec 3<$_hosts
+        while read LINE 0<&3
+        do
+            first_char=`expr "$LINE" : '\(.\).*'` # Support comments in host file
+
+            if [ "$first_char" = "#" ]; then
+                continue
+            else
+                :
+            fi
+
+            _t=`echo $LINE|sed -e "s/^[     ]*//" -e "s/[   ]*$//"`
+            if [ "$uninstallHosts" = "" ]; then
+                uninstallHosts=$_t
+            else
+                uninstallHosts="$uninstallHosts,$_t"
+            fi
+        done
+        exec 3<&-
+        export uninstallHosts
+        return 0
+    fi
+fi
+}
+
+unInstallGroup()
+{
+
+while :
+do
+    cat << ASKUNLIST
+
+lsfsetup needs to know host names which you want to do uninstall.
+These host names can be specified two ways:
+
+1. Host names separated by commas (e.g., hostA,hostB).
+
+2. A full path name to a file containing all host names,
+   (e.g. /etc/hosts). This file must list one host name per line.
+   For example:
+   hostA
+   hostB
+   hostC
+ASKUNLIST
+
+echo $enf "Please enter the host names or file name with full path:" $enl | tee -a $PREFIX_LOG/Install.log
+
+    read NP
+    echo $NP >> $PREFIX_LOG/Install.log
+
+    if getUninstallHosts "$NP"; then
+        break 
+    else
+        continue
+    fi
+
+done
+
+uninstallHosts=`echo $uninstallHosts | sed -e "s/,/ /g"`
+    
+#check if the host has been setuped. 
+
+for tmpHost in $HOST_FROM_CLUSTER # Put the hosts from cluster into one line.
+do
+    if [ "$TMP_HOST_FROM_CLUSTER" = "" ]; then
+        TMP_HOST_FROM_CLUSTER="$tmpHost"
+    else
+        TMP_HOST_FROM_CLUSTER="$TMP_HOST_FROM_CLUSTER $tmpHost"
+    fi
+done
+
+TMP_HOST_FROM_CLUSTER=" $TMP_HOST_FROM_CLUSTER "
+    
+for curHost in $uninstallHosts
+do
+    case $TMP_HOST_FROM_CLUSTER in
+        *" $curHost "* )
+          localHost=`hostname`
+          noDomain=`echo $localHost | cut -f1 -d.`
+
+          if [ "$curHost" = "$localHost" ]; then
+              $sp/rsh_deinstall $LSF_CONF; 
+              _removedHostList="$_removedHostList""$curHost  ";
+          elif [ "$curHost" = "$noDomain" ]; then
+              $sp/rsh_deinstall $LSF_CONF;
+              _removedHostList="$_removedHostList""$curHost  ";
+          else
+              hostType=`$RSH $curHost uname -a 2>$LSNULFILE` 
+
+              if [ "$hostType" != "" ]; then
+                  rcp $sp/rsh_deinstall ${curHost}:/tmp/rsh_deinstall
+                  $RSH $curHost /tmp/rsh_deinstall $LSF_CONF
+                  _removedHostList="$_removedHostList""$curHost  "
+              else
+                  echo "lsfsetup cannot execute $RSH to $curHost, cannot uninstall $curHost" | tee -a $PREFIX_LOG/Install.log
+              fi
+          fi
+          ;;
+        *)
+          echo "$curHost is not in this cluster."
+          ;;
+    esac
+done
+
+}
+
+deinstall()
+{
+
+deinstall_0=$0
+deinstall_1=$1
+
+if [ "$LSF_ENVDIR" = "" ] ; then
+    if [ -f "$deinstall_1" ] ; then
+	LSF_CONF=$deinstall_1
+    else
+	if [ "$deinstall_1" != "" ] ; then
+            echo $deinstall_1: File does not exist.
+	fi
+	echo "usage: $deinstall_0 [lsf_conf_file]"
+	exit 1
+    fi
+else
+    LSF_CONF=$LSF_ENVDIR/lsf.conf
+fi
+
+. $LSF_CONF
+
+find_cluster
+
+LSF_CLUSTER=${LSF_CONFDIR}/lsf.cluster.${LSF_CLUSTER_NAME}
+
+HOST_FROM_CLUSTER=`sed -n "/^[ 	]*[Bb]egin[ 	]*[hH]ost\$/,/^[ 	]*[Ee]nd[ 	]*[hH]ost\$/p" $LSF_CLUSTER | \
+grep -v "^[ 	]*[Bb]egin"|grep -v "^[ 	]*[Ee]nd"|grep -v "^[ 	]*HOSTNAME"| \
+grep -v "^[ 	]*#"|$AWK '{print $1}'`
+
+while :
+do
+
+    cat << UNINSTALLMENU  | tee -a $PREFIX_LOG/Install.log
+
+Please choose one of the following options:
+
+    1.  Uninstall Local Host
+    2.  Uninstall All Hosts in This Cluster
+    3.  Uninstall Some Hosts in This Cluster
+
+    ?.  Help
+    q.  Quit
+
+UNINSTALLMENU
+
+    echo $enf "Please enter your choice: [1] " $enl | tee -a $PREFIX_LOG/Install.log
+
+    read N
+    echo $N  >>$PREFIX_LOG/Install.log
+    if [ "$N" = "" ]; then
+        N=1
+    fi
+
+    case "$N" in
+        1)
+          $sp/rsh_deinstall $LSF_CONF; 
+          localHost=`hostname`
+          noDomain=`echo $localHost | cut -f1 -d.`
+          for curHost in $HOST_FROM_CLUSTER
+          do
+              if [ "$curHost" = "$localHost" -o "$curHost" = "$noDomain" ]; then
+                  _removedHostList="$_removedHostList""$curHost  "
+	      fi
+	  done
+	  removehostfromfile
+	  exit
+          ;;
+        2)
+          localHost=`hostname`
+          noDomain=`echo $localHost | cut -f1 -d.`
+
+          for curHost in $HOST_FROM_CLUSTER
+          do
+              if [ "$curHost" = "$localHost" ]; then
+                  $sp/rsh_deinstall $LSF_CONF; 
+                  _removedHostList="$_removedHostList""$curHost  ";
+              elif [ "$curHost" = "$noDomain" ]; then
+                  $sp/rsh_deinstall $LSF_CONF; 
+                  _removedHostList="$_removedHostList""$curHost  ";
+              else
+                  hostType=`$RSH $curHost uname -a 2>$LSNULFILE`
+
+                  if [ "$hostType" != "" ]; then
+                      rcp $sp/rsh_deinstall $curHost:/tmp/rsh_deinstall
+                      $RSH $curHost /tmp/rsh_deinstall $LSF_CONF
+                      _removedHostList="$_removedHostList""$curHost  ";
+                  else
+                      echo "lsfsetup cannot execute $RSH to $curHost, cannot uninstall $curHost" | tee -a $PREFIX_LOG/Install.log
+                  fi
+              fi
+          done
+          removehostfromfile
+          exit
+          ;;
+        3)
+          unInstallGroup; 
+          removehostfromfile
+          exit
+          ;;    
+        q|Q)
+          exit 
+          ;;
+        ?|H|h)
+          cat << UNINSTALLHELP 
+
+    *) To uninstall LSF only on local host, choose option 1.
+
+    *) To uninstall LSF on all the hosts in this cluster, choose option 2. 
+
+       NOTE: This function requires $RSH operation can be used from this 
+             host to all the hosts in this cluster.
+
+    *) To uninstall LSF on a group of hosts, choose option 3.
+
+       NOTE: This function requires $RSH operation can be used from this
+             host to all the hosts in this group.
+
+    *) To read this help message, choose option ?.
+
+    *) To exit lsfsetup, choose option q.
+
+UNINSTALLHELP
+          ;;
+        *)
+          continue
+          ;;
+    esac
+done
+}
+
+
+# Remove host entry from LSF cluster file and batch host file
+
+removehostfromfile()
+{
+    if [ "$_removedHostList" != "" ]; then
+        if [ -f ${LSF_CLUSTER}.$$ ]
+        then
+            rm -f ${LSF_CLUSTER}.$$
+        fi
+        oldOwner=`ls -l ${LSF_CLUSTER} | awk '{ print $3 }'`
+        oldGrp=`ls -l ${LSF_CLUSTER} | awk '{ print $4 }'`
+        mv $LSF_CLUSTER ${LSF_CLUSTER}.$$
+        exec 3<${LSF_CLUSTER}.$$
+
+        while read LINE 0<&3
+        do
+	    hostSectionBegin=`echo $LINE | sed -n "/^[ 	]*[Bb]egin[ 	]*[hH]ost/,//p"`
+            if [ "$hostSectionBegin" != "" ]; then
+                echo "$LINE" >> $LSF_CLUSTER
+                while read LINE 0<&3
+                do
+ 	            hostSectionEnd=`echo $LINE | sed -n "/^[ 	]*[Ee]nd[ 	]*[hH]ost/,//p"`
+ 	            if [ "$hostSectionEnd" = "" ]; then
+ 	                _host=`echo $LINE| awk '{print $1}'`
+		        case $_removedHostList in
+		            *" $_host "* )
+                                echo "$LINE" | sed -e "s/^/#/" >> $LSF_CLUSTER
+                                echo "Removing the host entry of $_host from the host section of $LSF_CLUSTER"| tee -a $PREFIX_LOG/Install.log
+			        ;;
+                            *)
+                                echo "$LINE" >> $LSF_CLUSTER
+			        ;;
+                        esac
+	            else
+                        echo "$LINE" >> $LSF_CLUSTER
+       	                break
+	            fi
+	        done
+	    else
+                echo "$LINE" >> $LSF_CLUSTER
+	    fi    
+        done
+
+        exec 3<&-
+
+        rm -f ${LSF_CLUSTER}.$$
+
+        chown $oldOwner ${LSF_CLUSTER}
+        chgrp $oldGrp ${LSF_CLUSTER}
+        chmod 644 ${LSF_CLUSTER}
+
+
+        # Remove host from LSF Batch host file
+        LSB_HOST=${LSB_CONFDIR}/${LSF_CLUSTER_NAME}/configdir/lsb.hosts
+        if [ -f ${LSB_HOST}.$$ ]
+        then
+            rm -f ${LSB_HOST}.$$
+        fi
+        oldOwner=`ls -l ${LSB_HOST} | awk '{ print $3 }'`
+        oldGrp=`ls -l ${LSB_HOST} | awk '{ print $4 }'`
+        mv $LSB_HOST ${LSB_HOST}.$$
+
+        exec 3<${LSB_HOST}.$$
+
+        while read LINE 0<&3
+        do
+	    hostSectionBegin=`echo $LINE | sed -n "/^[ 	]*[Bb]egin[ 	]*[hH]ost/,//p"`
+            if [ "$hostSectionBegin" != "" ]; then
+                echo "$LINE" >> $LSB_HOST
+                while read LINE 0<&3
+                do
+ 	            hostSectionEnd=`echo $LINE | sed -n "/^[ 	]*[Ee]nd[ 	]*[hH]ost/,//p"`
+ 	            if [ "$hostSectionEnd" = "" ]; then
+ 	                _host=`echo $LINE| awk '{print $1}'`
+		        case $_removedHostList in
+		            *" $_host "* )
+                                echo "$LINE" | sed -e "s/^/#/" >> $LSB_HOST
+                                echo "Removing the host entry of $_host from the host section of $LSB_HOST"| tee -a $PREFIX_LOG/Install.log
+			        ;;
+                            *)
+                                echo "$LINE" >> $LSB_HOST
+			        ;;
+                        esac
+	            else
+                        echo "$LINE" >> $LSB_HOST
+       	                break
+	            fi
+	        done
+	    else
+                echo "$LINE" >> $LSB_HOST
+	    fi    
+        done
+
+        exec 3<&-
+
+        rm -f ${LSB_HOST}.$$
+
+        chown $oldOwner ${LSB_HOST}
+        chgrp $oldGrp ${LSB_HOST}
+        chmod 644 ${LSB_HOST}
+
+        echo "Please note: remember to check the following hosts is not used in other configuration files of LSF"
+        echo "$_removedHostList"
+        _removedHostList=" "
+    fi
+}

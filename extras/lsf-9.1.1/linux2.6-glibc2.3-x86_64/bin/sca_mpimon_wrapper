@@ -1,0 +1,154 @@
+#!/bin/sh
+# $RCSfile: sca_mpimon_wrapper,v $Revision: 1.5 $Date: 2013/01/10 05:55:46 $
+#-----------------------------------------------------
+#  This script is called sca_mpimon_wrapper. It is meant to be used 
+#  with the following products: 
+# - IBM Platform LSF
+# - IBM Platform Parallel
+# - Generic MPI Integration package
+#   
+#  The purpose of the script is to integrate LSF with ScaMPI, allowing 
+#  LSF to monitor job resource usage and provide job control over parallel tasks. 
+#  Submit a ScaMPI job to LSF as shown:
+#  bsub [bsub options] pam -g sca_mpimon_wrapper [mpiopts] jobname [jobopts]
+# 
+# - mpimon usage is:
+#  mpimon [mpiopts] job [jobopts] -- <hostname>[<count>] <hostname> [<count>]...
+# - for example:
+#  mpimon -verbose -environment export ./hello.ScaMPI  -- HostA 1 HostB 1
+#-----------------------------------------------------
+
+#-----------------------------------------------------
+# Begin the script with identification. 
+# ----------------------------------------------------
+
+#  -----------------------------------------------------
+# Set up the variable SCALI_MPIMON representing the parallel job launcher:
+# - fill in the path to the mpimon command in your system
+#  -----------------------------------------------------
+SCALI_MPIMON="/opt/scali/bin/mpimon"
+
+#  -----------------------------------------------------
+# Set up the script's log file directory: 
+# - set up the variable LOGDIR representing the log file directory 
+# - fill in your own choice of directory LOGDIR 
+# - the log directory you choose must be accessible by the user from all hosts 
+#  ----------------------------------------------------
+LOGDIR="/tmp"
+
+#  -----------------------------------------------------
+#  Initialize some variables used later in the script.
+#  -----------------------------------------------------
+SCALI_MPI_OPTS=""
+JOB_CMDLN=""
+ScaMPIopt="0"
+optionValue=""
+
+#  -----------------------------------------------------
+#  Source the LSF environment. Optional.
+#  -----------------------------------------------------
+. ${LSF_ENVDIR}/lsf.conf
+
+#  -----------------------------------------------------
+#  Set up the variable LSF_TS representing the TaskStarter.
+#  -----------------------------------------------------
+LSF_TS="$LSF_BINDIR/TaskStarter"
+
+#  -----------------------------------------------------
+#  Set up the script's log file: 
+# - create a log file with a unique name, based on the job ID 
+#  -----------------------------------------------------
+if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+   UNIQUE_ID="$LSB_JOBID"
+else
+   UNIQUE_ID="$LSB_JOBID_$LSB_JOBINDEX"
+fi
+
+LOGFILE="${LOGDIR}/mpimon_wrapper.job${UNIQUE_ID}.log"
+
+#  -----------------------------------------------------
+#  Process the command line: 
+# - extract [mpiopts] from the command line
+# - extract jobname [jobopts] from the command line
+#  -----------------------------------------------------
+ARG0=`$SCALI_MPIMON -help | \
+      egrep '^[[:space:]]+-[[:alpha:]_-]+[[:space:]]+:' | \
+      awk '{printf "%s ", $1}'`
+ARG1=`$SCALI_MPIMON -help | \
+      egrep '^[[:space:]]+-[[:alpha:]_]+[[:space:]]+<[[:alpha:]_[:space:]]+>[[:space:]]+:' | \
+      awk '{printf "%s ", $1}'`
+
+
+while [ $# -gt 0 ]
+do
+     ScaMPIopt="0"
+
+     #single-valued options
+     for option in $ARG1
+     do
+         if [ $option = "$1" ]; then  
+            ScaMPIopt="1"
+            SCALI_MPI_OPTS="$SCALI_MPI_OPTS $1" #get option name
+            shift 
+            SCALI_MPI_OPTS="$SCALI_MPI_OPTS $1" #get option value
+            shift
+            break
+         fi
+     done
+
+     if [ $ScaMPIopt = "1" ]; then
+        : 
+     else
+        #Non-valued options
+        for option in $ARG0
+        do
+            if [ $option = "$1" ]; then
+               ScaMPIopt="1"
+               SCALI_MPI_OPTS="$SCALI_MPI_OPTS $1"
+               shift
+               break     
+            fi
+        done
+     fi
+
+     if [ $ScaMPIopt = "1" ]; then
+        : 
+     else 
+        JOB_CMDLN="$*"
+        break 
+     fi
+
+done
+
+# -----------------------------------------------------
+#  Set up the CMD_LINE variable representing the integrated section of the command line:
+# - LSF_TS, script variable representing the TaskStarter binary. 
+#   TaskStarter must start each and every job task process.
+# - LSF_TS_OPTIONS, LSF environment variable containing all necessary information 
+#   for TaskStarter to callback to LSF's Parallel Application Manager.
+# - JOB_CMDLN, script variable containing the job and job options
+# - LSB_MCPU_HOSTS, LSF environment variable containing the LSF scheduling results, 
+#   in the same format as the ScaMPI's host specification option.
+#--------------------------------------------------------------------------------
+echo CMD_LINE="$LSF_TS $LSF_TS_OPTIONS $JOB_CMDLN -- $LSB_MCPU_HOSTS" >> $LOGFILE
+CMD_LINE="$LSF_TS $LSF_TS_OPTIONS $JOB_CMDLN -- $LSB_MCPU_HOSTS"
+
+# -----------------------------------------------------
+#  Run the parallel job launcher:
+# - SCALI_MPIMON, script variable representing the parallel job launcher, mpimon
+# - SCALI_MPI_OPTS, script variable representing regular options to the mpimon command
+# - CMD_LINE, script variable representing the integrated section of the command line
+# -----------------------------------------------------
+echo "   $SCALI_MPIMON $SCALI_MPI_OPTS $CMD_LINE " >> $LOGFILE
+$SCALI_MPIMON $SCALI_MPI_OPTS $CMD_LINE
+
+# -----------------------------------------------------
+#  Trap the exit value.
+# -----------------------------------------------------
+EXIT_VALUE=$?
+echo "Job $UNIQUE_ID exits with exit value $EXIT_VALUE." >>$LOGFILE 2>&1
+exit $EXIT_VALUE
+
+# -----------------------------------------------------
+#  End the script.
+# ----------------------------------------------------

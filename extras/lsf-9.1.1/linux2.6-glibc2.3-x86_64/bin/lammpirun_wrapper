@@ -1,0 +1,471 @@
+#!/bin/sh
+#$RCSfile: lammpirun_wrapper,v $Revision: 1.11 $Date: 2013/01/10 05:55:58 $
+# 
+# -----------------------------------------------------
+# Source the LSF environment. Optional.
+# -----------------------------------------------------
+. ${LSF_ENVDIR}/lsf.conf
+
+# -----------------------------------------------------
+# Set up the variable LSF_TS representing the TaskStarter.
+# -----------------------------------------------------
+LSF_TS="$LSF_BINDIR/TaskStarter"
+
+# -----------------------------------------------------
+# clean up temporary files
+# -----------------------------------------------------
+cleanup_temp_file()
+{
+   for tmpFile in $LAMHOST_FILE $result_file
+   do
+       if [ -f "$tmpFile" ]; then
+           rm -f $tmpFile >>$LOGFILE 2>&1
+       fi
+   done
+}
+
+# ---------------------------------------------------------------------
+# Define the function to handle external signals: 
+# - display the signal received and the shutdown action to the user 
+# - log the signal received and the daemon shutdown action 
+# - exit gracefully by shutting down the daemon 
+# - set the exit code to 1 
+# ---------------------------------------------------------------------- 
+# 
+lammpirun_exit()
+{
+   trap '' 1 2 3 15
+   echo "Signal Received, Terminating the job<${TMP_JOBID}> and run lamhalt ..."
+   echo "Signal Received, Terminating the job<${TMP_JOBID}> and run lamhalt ..." >>$LOGFILE
+   $LAMHALT_CMD >>$LOGFILE 2>&1
+   cleanup_temp_file
+   exit 1
+} #lammpirun_exit
+
+#-----------------------------------
+# Name: who_am_i
+# Synopsis: who_am_i 
+# Environment Variables:
+# Description:
+#       It returns the name of the current user.
+# Return Value:
+#       User name.
+#-----------------------------------
+who_am_i()
+{
+if  [ `uname` = ConvexOS ] ; then
+    _my_name=`whoami | sed -e "s/[      ]//g"`  
+else
+    _my_name=`id | sed -e 's/[^(]*(\([^)]*\)).*/\1/' | sed -e "s/[      ]//g"`  
+fi
+
+echo $_my_name
+} # who_am_i
+
+#-----------------------------------
+# Name: my_which
+#
+# Synopsis:  my_which "$command"
+# Description
+#    Search for a command in PATH or the directory if the command
+#    with a path.
+# Retrun Values
+#    0:   command was found; otherwise return 1
+#-----------------------------------
+my_which()
+{
+(
+_command="$1"
+case $_command in
+    */* )
+        if [ -x "$_command" -a ! -d "$_command" ]; then
+            return 0
+        fi
+        ;;
+    * )
+        IFS=:
+        for dir in `echo "$PATH" | sed -e 's/^:/.:/' -e 's/::/:.:/g' -e 's/:$/:./'`
+        do
+           if [ -x "$dir/$_command" -a ! -d "$dir/$_command" ] ; then
+               return 0
+           fi
+        done
+        ;;
+esac
+return 1
+)
+if [ "$?" = "0" ] ; then
+    return 0
+else
+    return 1
+fi
+} # my_which
+
+#
+#  -----------------------------------------------------
+# Set up the script's log file: 
+# - create and set the variable LOGDIR to represent the log file directory 
+# - fill in your own choice of directory LOGDIR 
+# - the log directory you choose must be accessible by the user from all hosts 
+# - create a log file with a unique name, based on the job ID 
+# - if the log directory is not specified, the log file is /dev/null 
+# - the first entry logs the file creation date and file name 
+# - we create and set a second variable DISPLAY_JOBID to format the job 
+#   ID properly for writing to the log file  
+#  ----------------------------------------------------
+#
+#
+# Please specify your own LOGDIR,
+# Your LOGDIR must be accessible by the user from all hosts.
+#
+LOGDIR=""
+
+TMP_JOBID=""
+if [ -z "$LSB_JOBINDEX" -o "$LSB_JOBINDEX" = "0" ]; then
+    TMP_JOBID="$LSB_JOBID"
+    DISPLAY_JOBID="$LSB_JOBID"
+else
+    TMP_JOBID="$LSB_JOBID"_"$LSB_JOBINDEX"
+    DISPLAY_JOBID="$LSB_JOBID[$LSB_JOBINDEX]"
+fi
+
+if [ -z "$LOGDIR" ]; then
+    LOGFILE="/dev/null"
+else
+    LOGFILE="${LOGDIR}/lammpirun_wrapper.job${TMP_JOBID}.log"
+fi
+
+
+#
+# -----------------------------------------------------
+# Create and set variables to represent the commands used in the script:
+#  - to modify this script to use different commands, edit this section 
+# ----------------------------------------------------
+#
+TPING_CMD="tping"
+LAMMPIRUN_CMD="mpirun"
+LAMBOOT_CMD="lamboot"
+LAMHALT_CMD="lamhalt"
+
+#
+# -----------------------------------------------------
+# Define an exit value to rerun the script if it fails 
+# - create and set the variable EXIT_VALUE to represent the requeue exit value
+# - we assume you have enabled job requeue in LSF
+# - we assume 66 is one of the job requeue values you specified in LSF 
+# ----------------------------------------------------
+#
+# EXIT_VALUE should not be set to 0
+EXIT_VALUE="66"
+
+#
+# -----------------------------------------------------
+# Write the first entry to the script's log file 
+# - date of creationg 
+# - name of log file 
+# ----------------------------------------------------
+#
+my_name=`who_am_i`
+echo "`date` $my_name" >>$LOGFILE
+
+# -----------------------------------------------------
+# Use the signal handling function to handle specific external signals. 
+# ----------------------------------------------------
+#
+LAMHOST_FILE=".lsf_${TMP_JOBID}_lammpi.hosts"
+if [ -d "$HOME" ]; then
+    LAMHOST_FILE="$HOME/$LAMHOST_FILE"
+fi
+
+trap lammpirun_exit 1 2 3 15
+
+#
+# -----------------------------------------------------
+# Check if the lammpi commands exist in system PATH
+# -----------------------------------------------------
+#
+
+for cmd in $TPING_CMD $LAMMPIRUN_CMD $LAMBOOT_CMD $LAMHALT_CMD
+do
+    my_which "$cmd"
+    if [ "$?" != "0" ]; then
+        echo "Cannot find $cmd in PATH <$PATH> environment variable. Exiting ..."
+        echo "Cannot find $cmd in PATH <$PATH> environment variable. Exiting ..." >>$LOGFILE
+        exit 1
+    fi
+    if [ "$cmd" = "mpirun" ]; then
+        MPIRUN_HELP_MSG=`mpirun -h 2>&1`
+        if [ "$?" != "0" ]; then
+            echo "$cmd -h returned error. Exiting ..."
+            echo "$cmd -h returned error. Exiting ..." >>$LOGFILE
+            exit 1
+        else
+            tmp=`echo $MPIRUN_HELP_MSG | grep "LAM\/MPI"`
+            if [ -z "$tmp" ]; then
+                echo "$cmd may not be a lammpi mpirun command. Exiting ..."
+                echo "$cmd may not be a lammpi mpirun command. Exiting ..." >>$LOGFILE
+            fi
+        fi
+    fi
+done
+
+#
+# -----------------------------------------------------
+# Set up a hosts file in the specific format required by LAM MPI: 
+# - remove any old hosts file
+# - create a new hosts file with a unique name using the LSF job ID 
+# - write a comment at the start of the hosts file 
+# - if the hosts file was not created properly, display an error to 
+#   the user and exit  
+# - define the variables HOST, NUM_PROC, FLAG, and TOTAL_CPUS to 
+#   help with parsing the host information 
+# - LSF's selected hosts are described in LSB_MCPU_HOSTS environment variable  
+# - parse LSB_MCPU_HOSTS into the components  
+# - write the new hosts file using this information 
+# - write a comment at the end of the hosts file 
+# - log the contents of the new hosts file to the script log file 
+# ----------------------------------------------------
+#
+
+#
+# ----------------------------------------------------
+# start a new host file from scratch
+# ----------------------------------------------------
+#
+rm -f $LAMHOST_FILE
+echo "# LAMMPI host file created by LSF on `date`" >> $LAMHOST_FILE
+
+# check if we were able to start writing the conf file
+if [ -f $LAMHOST_FILE ]; then
+    :
+else
+    echo "$0: can't create $LAMHOST_FILE"
+    exit 1
+fi
+
+HOST=""
+NUM_PROC=""
+FLAG=""
+TOTAL_CPUS=0
+for TOKEN in $LSB_MCPU_HOSTS
+do
+    if [ -z "$FLAG" ]; then
+        HOST="$TOKEN"
+        FLAG="0"
+    else
+        NUM_PROC="$TOKEN"
+        TOTAL_CPUS=`expr $TOTAL_CPUS + $NUM_PROC`
+        FLAG="1"
+    fi
+
+    if [ "$FLAG" = "1" ]; then
+        _x=0
+        while [ $_x -lt $NUM_PROC ]
+        do
+            echo "$HOST" >>$LAMHOST_FILE
+            _x=`expr $_x + 1`
+        done
+
+        # get ready for the next host
+        FLAG=""
+        HOST=""
+        NUM_PROC=""
+    fi
+done
+
+# last thing added to LAMHOST_FILE
+echo "# end of LAMHOST file" >> $LAMHOST_FILE
+
+echo "Your lamboot hostfile looks like:" >> $LOGFILE
+cat $LAMHOST_FILE >> $LOGFILE
+
+#  -----------------------------------------------------
+#  Process the command line: 
+# - extract [mpiopts] from the command line
+# - extract jobname [jobopts] from the command line
+#  -----------------------------------------------------
+ARG0=`$LAMMPIRUN_CMD -h 2>&1 | \
+      egrep '^[[:space:]]+-[[:alpha:][:digit:]-]+[[:space:]][[:space:]]' | \
+      awk '{printf "%s ", $1}'`
+# get -ton,t and -w / nw options
+TMPARG=`$LAMMPIRUN_CMD -h 2>&1 | \
+      egrep '^[[:space:]]+-[[:alpha:]_-]+[[:space:]]*(,|/)[[:space:]]-[[:alpha:]]*' | 
+      sed 's/,/ /'| sed 's/\// /' | \
+      awk '{printf "%s %s ", $1, $2}'`
+ARG0="$ARG0 $TMPARG"
+
+ARG1=`$LAMMPIRUN_CMD -h 2>&1 | \
+      egrep '^[[:space:]]+-[[:alpha:]_-]+[[:space:]]+<[[:alpha:][:space:]_]+>[[:space:]]' | \
+      awk '{printf "%s ", $1}'`
+
+while [ $# -gt 0 ]
+do
+     MPIRunOpt="0"
+
+     #single-valued options
+     for option in $ARG1
+     do
+         if [ "$option" = "$1" ]; then  
+            MPIRunOpt="1"
+	    case "$1" in
+	        -np|-c)
+		    shift 
+		    shift
+		    ;;
+	        *)
+		    LAMMPI_OPTS="$LAMMPI_OPTS $1" #get option name
+		    shift 
+		    LAMMPI_OPTS="$LAMMPI_OPTS $1" #get option value
+		    shift
+		    ;;
+	    esac
+            break
+         fi
+     done
+
+     if [ $MPIRunOpt = "1" ]; then
+        : 
+     else
+        #Non-valued options
+        for option in $ARG0
+        do
+            if [ $option = "$1" ]; then
+               MPIRunOpt="1"
+	       case "$1" in
+	       -v)
+	           shift
+		   ;;
+	       *)
+		   LAMMPI_OPTS="$LAMMPI_OPTS $1"
+		   shift 
+		   ;;
+	       esac
+	       break
+            fi
+        done
+     fi
+
+     if [ $MPIRunOpt = "1" ]; then
+        : 
+     else 
+        JOB_CMDLN="$*"
+        break 
+     fi
+
+done
+
+# ------------------------------------------------------------------------------
+#  Set up the CMD_LINE variable representing the integrated section of the command line:
+# - LSF_TS, script variable representing the TaskStarter binary. 
+#   TaskStarter must start each and every job task process.
+# - LSF_TS_OPTIONS, LSF environment variable containing all necessary information 
+#   for TaskStarter to callback to LSF's Parallel Application Manager.
+# - JOB_CMDLN, script variable containing the job and job options
+#--------------------------------------------------------------------------------
+if [ -z "$LSF_TS_OPTIONS" ]
+then
+    echo CMD_LINE="$JOB_CMDLN" >> $LOGFILE
+    CMD_LINE="$JOB_CMDLN "
+else
+    echo CMD_LINE="$LSF_TS $LSF_TS_OPTIONS $JOB_CMDLN" >> $LOGFILE
+    CMD_LINE="$LSF_TS $LSF_TS_OPTIONS $JOB_CMDLN "
+fi
+
+#
+# -----------------------------------------------------
+# Pre-execution steps required by LAMMPI:
+# - define the variable LAM_MPI_SOCKET_SUFFIX using the LSF 
+#   job ID and export it
+# - run lamboot command and log the action 
+# - append the hosts file to the script log file 
+# - run tping command and log the action and output 
+# - capture the result of tping and test for success before proceeding 
+# - exits with the "requeue" exit value if pre-execution setup failed
+# ----------------------------------------------------
+#
+
+LAM_MPI_SOCKET_SUFFIX="${LSB_JOBID}_${LSB_JOBINDEX}"
+export LAM_MPI_SOCKET_SUFFIX
+
+echo $LAMBOOT_CMD $LAMHOST_FILE >>$LOGFILE
+$LAMBOOT_CMD $LAMHOST_FILE >>$LOGFILE 2>&1
+echo $TPING_CMD h -c 1 >>$LOGFILE
+$TPING_CMD N -c 1 >>$LOGFILE 2>&1
+EXIT_VALUE="$?"
+
+if [ "$EXIT_VALUE" = "0" ]; then
+#
+# -----------------------------------------------------
+# Handle LSB_PJL_TASK_GEOMETRY
+# -----------------------------------------------------
+#
+    if [ -n "$LSB_PJL_TASK_GEOMETRY" ]; then
+        if [ -f "$LSF_BINDIR/pjllib.sh" ]; then
+            . $LSF_BINDIR/pjllib.sh
+            LAM_WHERE=""
+            result_file="/tmp/task_geometry_allocation.$$"
+            geom_str=`construct_task_geom_str "$LSB_PJL_TASK_GEOMETRY"`
+            construct_task_geom_file "$geom_str" "$result_file"
+            if [ "$?" != "0" ]; then
+                EXIT_VALUE="1"
+            else
+                node_index=`sort -n $result_file | awk '{ print $3 }'`
+                rm -rf $result_file
+                LAM_WHERE=`echo n$node_index | sed -e "s/ /,/g"`
+                #
+                # in lammpi, mpirun allows two nid1,id2...(lamwhere) 
+                # options and mpirun will take the first one and ignore
+                # the rest.
+                #
+                LAMMPI_OPTS="$LAM_WHERE $LAMMPI_OPTS"
+           fi
+        else
+            echo "Cannot find pjllib.sh in $LSF_BINDIR, Task Geometry is disabled" >> $LOGFILE 
+        fi 
+    fi
+
+#
+# -----------------------------------------------------
+# Run the parallel job launcher: 
+# - log  the action 
+# - trap the exit value 
+# ----------------------------------------------------
+#
+    if [ "$EXIT_VALUE" = "0" ]; then
+        #call mpirun -np # a.out
+        echo "Your command line looks like:" >> $LOGFILE
+        echo $LAMMPIRUN_CMD $LAMMPI_OPTS -v -np $TOTAL_CPUS $CMD_LINE >> $LOGFILE
+        $LAMMPIRUN_CMD $LAMMPI_OPTS -v -np $TOTAL_CPUS $CMD_LINE 
+        EXIT_VALUE=$?
+#
+# -----------------------------------------------------
+#  Post-execution steps required by LAMMPI:
+# - run lamhalt   
+# - log the action 
+# ----------------------------------------------------
+#
+        echo $LAMHALT_CMD >>$LOGFILE
+        $LAMHALT_CMD >>$LOGFILE 2>&1
+    fi
+fi
+
+#
+# -----------------------------------------------------
+# Clean up after running this script:
+# - delete the hosts file we created 
+# - log the end of the job 
+# - log the exit value of the job
+# ----------------------------------------------------
+#
+# cleanup temp and conf file then exit
+cleanup_temp_file
+echo "Job<${DISPLAY_JOBID}> exits with exit value $EXIT_VALUE." >>$LOGFILE 2>&1
+# To support multiple jobs inside one job script
+# Sleep one sec to allow next lamd start up, otherwise tping will return error
+sleep 1
+exit $EXIT_VALUE
+#
+# -----------------------------------------------------
+# End the script.
+# ----------------------------------------------------
+#

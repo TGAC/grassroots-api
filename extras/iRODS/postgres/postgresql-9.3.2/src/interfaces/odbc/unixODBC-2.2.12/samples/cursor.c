@@ -7,7 +7,7 @@
 #define OPENDATE_LEN 11
 #define DONE -1
 
-int res[][ 3 ] = 
+int res_1[][ 3 ] =
 {
     { SQL_FETCH_NEXT, 0, 0 },
     { SQL_FETCH_NEXT, 0, 0 },

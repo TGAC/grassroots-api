@@ -475,7 +475,7 @@ static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, j
 				}
 		}
 		
-	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p);
+	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p, tool_p -> GetUUID ());
 		
 	return final_json_p;
 }

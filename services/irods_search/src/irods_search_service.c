@@ -536,7 +536,7 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 
 			FreeIrodsSearch (search_p);
 
-			res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p);
+			res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p, NULL);
 		}		/* if (search_p) */
 
 	return res_json_p;

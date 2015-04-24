@@ -1,0 +1,42 @@
+# $Id: nonroot,v 1.1 2006/06/27 19:31:11 gwen Exp $
+
+# This routine is not standalone. It is sourced by other scripts
+#
+#*********************************************************************
+#
+# This file is used only if the installer is not root.
+# Some parameters useful in non-root operation will be asked.
+#*********************************************************************
+
+nonroot()
+{
+
+if is_root ; then
+    :
+else
+
+    if yesno "Do you want to run LSF daemons as non-root?" N "help NONROOT" > $LSNULFILE
+    then
+	cat <<WARN_NONROOT
+
+    To run LSF daemons as an ordinary user, you must have access to kernel
+    information, such as /dev/kmem. You either have to be in some priviliged
+    group, such as kmem (ultrix, Sun4.x, OSF1), or sys (Solaris, HPUX, IRIX 
+    etc), or you must ask your system manager to make LSF_SERVERDIR/lim
+    setuid to root or setgid to appropriate group id.
+
+    If you run LSF daemons as a normal user, then you will be the only user
+    to use LSF, nobody else can run any jobs under LSF. You must also define
+    LSF administrator login name to be your login name.
+
+WARN_NONROOT
+	if yesno "Are you sure you want to install LSF for non-root operation?" Y "help NONROOT" >$LSNULFILE
+	then
+	    LSF_LIM_DEBUG=1
+	    LSF_RES_DEBUG=1
+	    LSB_DEBUG=1
+        fi
+    fi
+fi
+
+} # nonroot

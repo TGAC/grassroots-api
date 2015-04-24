@@ -1,0 +1,260 @@
+#!/bin/sh
+#$RCSfile: esub.intelmpi,v $Revision: 1.8 $Date: 2013/01/10 05:52:03 $
+#
+#If the user wants to rename the default queue in lsb.queues,
+#don't forget to change this variable's value.
+#
+DEFAULT_INTELMPI_QUEUE="hpc_linux"
+#
+LSB_SUB_QUEUE=""
+
+if [ -z "$LSB_SUB_PARM_FILE" ]; then
+    # if not set do nothing
+    exit $LSB_SUB_ABORT_VALUE
+fi
+
+. $LSB_SUB_PARM_FILE
+
+# Redirect stderr to stdout so echo can be used for error
+exec 1>&2
+
+# Assume
+PJL_WRAPPER="intelmpi_wrapper"
+INTELMPI_ADDITIONAL_KEY="intelmpi"
+INTELMPI_ADDITIONAL_CMD="pam -g $PJL_WRAPPER"
+INTELMPI_RESOURCE_KEY="intelmpi"
+INTELMPI_SEL_KEY=" ($INTELMPI_RESOURCE_KEY) "
+
+if [ -z "$LSB_SUB_RES_REQ" ]; then
+    # if -a intelmpi and no -R "job specific resource requirement string"
+    # use the default and write to $LSB_SUB_MODIFY_FILE
+
+    LSB_SUB_RES_REQ="select[$INTELMPI_SEL_KEY]"
+    echo "LSB_SUB_RES_REQ=\"$LSB_SUB_RES_REQ"\" > "$LSB_SUB_MODIFY_FILE"
+else
+    # if -R "$LSB_SUB_RES_REQ" is specified, we need to get the select[]  
+    # section if there are any, and append/create intelmpi specific
+    # requirement $INTELMPI_SEL_KEY
+    # select[] section doesn't have to be delimited by the select[] keyword
+    # as specified on pp469 "Specifying Resource Requirements" in 
+    # "LSF Administrator's Guide 4.1
+    echo $LSB_SUB_RES_REQ | gawk ' 
+    {
+        setting = "";
+
+        if (is_compound_resreq(str_orig)) {
+            setting = transform_compound_resreq(str_orig);
+        } else {
+            setting = transform_simple_resreq(str_orig);
+        }
+
+        print "LSB_SUB_RES_REQ=" "\"" setting "\"" > MOD_FILE
+    }
+
+    function is_compound_resreq(instr)
+    {
+        a = index(instr, "{");
+        b = index(instr, "}");
+
+        if (a > 0 && b > 0 && a < b) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
+    function transform_compound_resreq(compound)
+    {
+        transform = "";
+
+        split(compound, terms, "+");
+
+        j = 1;
+        size = sizeof(terms);
+
+        while (j <= size) {
+
+            if (j > 1) {
+                transform = transform "+";
+            }
+
+            s = index(terms[j], "*");
+            if (s > 0) {
+                # Term looks like N1*{R1}
+                slots = substr(terms[j], 1, s);
+                resreq = substr(terms[j], s + 1, length(terms[j]));
+            } else {
+                # Term looks like {R1}
+                slots = "";
+                resreq = terms[j];
+            }
+
+            resreq = strip_curly_brackets(resreq);
+            resreq = transform_simple_resreq(resreq);
+
+            transform = transform slots "{" resreq "}";
+
+            j++;
+        }
+
+        return transform;
+    }
+
+    function sizeof(ar)
+    {
+        e = 0;
+        for (elem in ar) {
+            e++;
+        }
+
+        return e;
+    }
+
+    function strip_curly_brackets(strip)
+    {
+        x = index(strip, "{");
+        if (x > 0) {
+            strip = substr(strip, 1, x - 1) " " substr(strip, x + 1, length(strip));
+        }
+
+        x = index(strip, "}");
+        if (x > 0) {
+            strip = substr(strip, 1, x - 1) " " substr(strip, x + 1, length(strip));
+        }
+
+        return strip;
+    }
+
+    function transform_simple_resreq(str_orig)
+    {
+        result="";
+
+        # split the string by ]
+        split(str_orig, arr, "]");
+
+        str_sel="";
+        str_spa="";
+        str_ord="";
+	str_same="";
+        str_cu="";
+        str_left="";
+        
+        for ( i in arr )
+        {
+            if (match(arr[i], "select") >0)
+            {
+                # get the select string
+                split(arr[i], tmp, "[");
+                str_sel=tmp[2];
+                # remove the select[] section from the item
+                sub(/select\ *\[.*$/, "", arr[i]);
+            }
+            if (match(arr[i], "rusage") >0)
+            {
+                # get the rusage string
+                split(arr[i], tmp, "[");
+                str_rus="rusage[" tmp[2] "]";
+                # remove the rusage[] section from the item
+                sub(/rusage *\[.*$/, "", arr[i]);
+            }
+            if (match(arr[i], "span") >0)
+            {
+                split(arr[i], tmp, "[");
+                str_spa="span[" tmp[2] "]";
+                sub(/span *\[.*$/, "", arr[i]);
+            }
+
+            if (match(arr[i], "order") >0)
+            {
+                split(arr[i], tmp, "[");
+                str_ord="order[" tmp[2] "]";
+                sub(/order *\[.*$/, "", arr[i]);
+            }
+
+	    if (match(arr[i], "same") >0)
+	    {
+		split(arr[i], tmp, "[");
+		str_same="same[" tmp[2] "]";
+		sub(/same *\[.*$/, "", arr[i]);
+	    }
+
+            if (match(arr[i], "cu") >0)
+            {
+                split(arr[i], tmp, "[");
+                str_cu="cu[" tmp[2] "]";
+                sub(/cu *\[.*$/, "", arr[i]);
+            }
+
+            # if arr[i] has anything left after the substraction
+            # it indicates that apart from the section, there is
+            # a select[] section specified
+            # this is to deal with the case where a select[] string
+            # is specified in the beginning of the LSB_SUB_RES_REQ
+            # without the select[] delimitor
+            str_left=str_left arr[i];
+        }
+
+        if (match(str_left, /^ *$/) == 0)
+            str_sel=str_left;
+            if (match(str_sel, /^ *$/) == 0)
+            {
+                # to deal with the XOR case
+                # -R "select[ op1,op2]
+                # ==> -R "select[ (op1) && intelmpi_token >0,(op2) && intelmpi_token>0]"
+                i = 1;
+                str_tmp="";
+                split(str_sel, arr, ",");
+            
+                for (seg in arr)
+                {
+                    tmp1 = "(" arr[seg] ") &&" INTELMPI_SEL_KEY
+                    str_tmp = str_tmp tmp1
+                    i = i+1;
+                    if (i in arr)
+                        # to make sure no , after the last segment
+                        str_tmp = str_tmp","
+                }
+                str_sel = "select[" str_tmp "]"
+            }
+        else
+            str_sel="select[" INTELMPI_SEL_KEY "]";
+
+      result= str_sel;
+      if (length(str_rus) > 0){
+	  result = result " " str_rus;
+      }
+      if (length(str_ord) > 0){
+	  result = result " " str_ord;
+      }
+      if (length(str_spa) > 0){
+          result = result " " str_spa;
+      }      
+      if (length(str_same) > 0){
+	  result = result " " str_same;
+      }
+      if (length(str_cu) > 0){
+	  result = result " " str_cu;
+      }
+      
+      return result;
+
+    }' str_orig="$LSB_SUB_RES_REQ" INTELMPI_SEL_KEY="$INTELMPI_SEL_KEY" MOD_FILE="$LSB_SUB_MODIFY_FILE"
+
+fi
+
+# set enviroment variable LSF_PJL_TYPE to intelmpi 
+# mpirun.lsf will read this variable to decide
+# which PJL_wrapper to insert to the command line
+echo "LSF_PJL_TYPE=\"$INTELMPI_ADDITIONAL_KEY\"" >> $LSB_SUB_MODIFY_ENVFILE
+
+if [ -z "$LSB_SUB_QUEUE" ]; then
+   echo "LSB_SUB_QUEUE=\"$DEFAULT_INTELMPI_QUEUE\"" >> $LSB_SUB_MODIFY_FILE
+fi
+
+#useful for debugging purposes
+#echo "LSB_SUB_PARM_FILE contains:"
+#more $LSB_SUB_PARM_FILE
+#echo "LSB_SUB_MODIFY_FILE contains:"
+#more $LSB_SUB_MODIFY_FILE
+#exit $LSB_SUB_ABORT_VALUE
+

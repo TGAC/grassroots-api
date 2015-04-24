@@ -1,0 +1,130 @@
+# $Id: make_cluster,v 1.2 2010/11/02 07:42:29 boliu Exp $
+#
+# This script is sourced by other scripts to create configuration 
+# directories if necessary, and creates a default cluster configuration.
+#
+# Before sourcing this file, LSF_MANAGER and LSF_CLUSTER_NAME must be defined.
+
+# Create a directory and change ownership to the manager
+make_sharedir()
+{
+    sharedir=$1
+    if is_root ; then
+        CHOWN=chown
+    else
+        CHOWN=true
+    fi
+    if test ! -d "$sharedir"
+    then
+        make_dir "$sharedir"
+        find "$sharedir"/. -exec $CHOWN $LSF_MANAGER {} \;
+    fi
+
+    $CHOWN $LSF_MANAGER $sharedir
+}
+
+
+# main routine
+
+if [ -f $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME ]
+then
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+        mv -f $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME $LSF_CONFDIR/lsf.cluster.${LSF_CLUSTER_NAME}.old 
+    else
+        if yesno "Configuration for cluster $LSF_CLUSTER_NAME already exists.  Replace it?" >$LSNULFILE
+        then
+    	    echo "Saving old cluster file as" $LSF_CONFDIR/lsf.cluster.${LSF_CLUSTER_NAME}.old
+	    mv -f $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME $LSF_CONFDIR/lsf.cluster.${LSF_CLUSTER_NAME}.old
+        else
+	    exit 0
+        fi
+    fi
+fi
+
+if is_root ; then
+    CHOWN=chown
+else
+    CHOWN=true
+fi
+
+# Create $LSF_CONFDIR if needed
+make_dir $LSF_CONFDIR
+$CHOWN $LSF_MANAGER $LSF_CONFDIR
+
+# Create lsf.shared if necessary
+if grep -i "^ClusterName" $LSF_CONFDIR/lsf.shared >$LSNULFILE 2>&1
+then
+    true
+else
+    if [ -f $LSF_CONFDIR/lsf.shared ]
+    then
+	echo "Saving $LSF_CONFDIR/lsf.shared in $LSF_CONFDIR/lsf.shared.old"
+	mv -f $LSF_CONFDIR/lsf.shared $LSF_CONFDIR/lsf.shared.old
+    else true; fi
+    cp conf/lsf.shared $LSF_CONFDIR/lsf.shared
+    $CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.shared
+    chmod 644 $LSF_CONFDIR/lsf.shared
+fi
+
+# Add cluster entry to lsf.shared file if necessary
+if  sed -n -e "/^Begin Cluster/,/^End Cluster/p" <$LSF_CONFDIR/lsf.shared | grep "^$LSF_CLUSTER_NAME" >$LSNULFILE 2>&1
+then
+    echo "$LSF_CONFDIR/lsf.shared already has an entry for cluster $LSF_CLUSTER_NAME"
+else
+    echo "Adding entry for cluster $LSF_CLUSTER_NAME to $LSF_CONFDIR/lsf.shared"
+    ed $LSF_CONFDIR/lsf.shared <<ED_SCRIPT >$LSNULFILE
+/End Cluster/i
+$LSF_CLUSTER_NAME
+.
+w
+q
+ED_SCRIPT
+fi
+
+# Create the lsf.cluster.<cluster> file
+# The old lsf.cluster.<cluster> file was backed up above.
+sed -e s/@MANAGER@/$LSF_MANAGER/ <conf/TMPL.lsf.cluster >$LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+$CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+chmod 644 $LSF_CONFDIR/lsf.cluster.$LSF_CLUSTER_NAME
+
+# Create lsf.task if necessary
+# format and content of this file hasn't changed, so don't move old one
+if [ -f $LSF_CONFDIR/lsf.task ]
+then
+    :
+else
+    cp conf/lsf.task $LSF_CONFDIR/lsf.task
+    chmod 644 $LSF_CONFDIR/lsf.task
+    $CHOWN $LSF_MANAGER $LSF_CONFDIR/lsf.task
+fi
+
+echo Installing lsbatch directories and configurations ...
+# Install default lsbatch config files and logdir
+if [ -d $LSB_CONFDIR/$LSF_CLUSTER_NAME ] ; then
+    if [ "$UNATTENDED_INSTALL" = "y" ]; then
+	rm -rf $LSB_CONFDIR/${LSF_CLUSTER_NAME}.old
+	mv -f $LSB_CONFDIR/$LSF_CLUSTER_NAME $LSB_CONFDIR/$LSF_CLUSTER_NAME.old
+    else
+        if yesno "LSF Batch configuration for cluster <$LSF_CLUSTER_NAME> already exists.  Replace it?" N "" >$LSNULFILE
+        then
+    	    echo "Saving old configuration as" $LSB_CONFDIR/${LSF_CLUSTER_NAME}.old
+    	    rm -rf $LSB_CONFDIR/${LSF_CLUSTER_NAME}.old
+    	    mv -f $LSB_CONFDIR/$LSF_CLUSTER_NAME $LSB_CONFDIR/$LSF_CLUSTER_NAME.old
+        else
+    	    exit 0
+        fi
+    fi
+else
+    true
+fi
+
+make_dir $LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir
+cp conf/configdir/lsb* $LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir
+chmod 644 $LSB_CONFDIR/$LSF_CLUSTER_NAME/configdir/*
+find $LSB_CONFDIR/$LSF_CLUSTER_NAME/. -exec $CHOWN $LSF_MANAGER {} \;
+make_sharedir $LSB_SHAREDIR/$LSF_CLUSTER_NAME/logdir
+make_sharedir $LSB_SHAREDIR/$LSF_CLUSTER_NAME/live_confdir
+make_sharedir $LSB_SHAREDIR/$LSF_CLUSTER_NAME/lsf_indir
+make_sharedir $LSB_SHAREDIR/$LSF_CLUSTER_NAME/lsf_cmddir
+chmod 777 $LSB_SHAREDIR/$LSF_CLUSTER_NAME/lsf_indir
+chmod 777 $LSB_SHAREDIR/$LSF_CLUSTER_NAME/lsf_cmddir
