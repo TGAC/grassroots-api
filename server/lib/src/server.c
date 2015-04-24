@@ -592,52 +592,79 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 }
 
 
-static bool AddServiceResultsToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s)
+static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	json_t *status_p = json_object ();
+	json_t *result_p = json_object ();
 
-	if (status_p)
+	if (result_p)
 		{
-			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
+			if (json_object_set_new (result_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
 					Service *service_p = GetServiceFromStatusTable (service_id);
 
 					if (service_p)
 						{
-							OperationStatus status = GetCurrentServiceStatus (service_p, service_id);
 							const char *service_name_s = GetServiceName (service_p);
+							OperationStatus status = GetCurrentServiceStatus (service_p, service_id);
 
-							success_flag = true;
-
-							if (json_object_set_new (status_p, SERVICE_NAME_S, json_string (service_name_s)) != 0)
+							if (json_object_set_new (result_p, RESOURCE_TITLE_S, json_string (service_name_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service name %s to status json", service_name_s);
-									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service name to status json"));
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service name %s to results json", service_name_s);
+									json_object_set_new (result_p, ERROR_S, json_string ("Failed to add service name to results json"));
 									success_flag = false;
 								}
 
-							if (json_object_set_new (status_p, SERVICE_STATUS_S, json_integer (status)) != 0)
+							if (json_object_set_new (result_p, RESOURCE_VALUE_S, json_string (uuid_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
-									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add resource uuid for name %s to results json", service_name_s);
+									json_object_set_new (result_p, ERROR_S, json_string ("Failed to add resource uuid to results json"));
 									success_flag = false;
+								}
+
+
+							/* Check that the service has finished */
+							if (status == OS_SUCCEEDED || status == OS_FINISHED)
+								{
+									json_t *service_result_p = GetServiceResults (service_p, service_id);
+
+									success_flag = true;
+
+									if (json_object_set_new (result_p, RESOURCE_PROTOCOL_S, json_string (PROTOCOL_INLINE_S)) != 0)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to add protocol for name %s to results json", service_name_s);
+											json_object_set_new (result_p, ERROR_S, json_string ("Failed to add protocol to results json"));
+											success_flag = false;
+										}
+
+
+									if (json_object_set_new (result_p, RESOURCE_DATA_S, service_result_p) != 0)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to add data for name %s to results json", service_name_s);
+											json_object_set_new (result_p, ERROR_S, json_string ("Failed to add datas to results json"));
+											success_flag = false;
+										}
+
+								}		/* if (status == OS_SUCCEEDED || status == OS_FINISHED) */
+							else
+								{
+									json_object_set_new (result_p, ERROR_S, json_string ("service still running"));
 								}
 
 						}		/* if (service_p) */
 					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, "Failed to find %s in services table", uuid_s);
-							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
+							json_object_set_new (result_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
 						}
 				}
 			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, "Failed to add service uuid_s %s to status json", uuid_s);
-					json_object_set_new (status_p, ERROR_S, json_string ("Failed to add uuid to status json"));
+					json_object_set_new (result_p, ERROR_S, json_string ("Failed to add uuid to status json"));
 				}
 
-			success_flag = (json_array_append_new (services_p, status_p) == 0);
+			success_flag = (json_array_append_new (results_p, result_p) == 0);
 		}		/* if (status_p) */
 
 
