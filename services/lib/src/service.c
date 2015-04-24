@@ -582,7 +582,7 @@ static void GenerateServiceUUID (Service *service_p)
 }
 
 
-OperationStatus DefaultGetServiceStatus (const Service *service_p, const uuid_t service_id)
+OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id)
 {
 	return service_p -> se_status;
 }

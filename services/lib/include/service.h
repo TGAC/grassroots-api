@@ -359,7 +359,7 @@ WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (const Service *serv
 WHEATIS_SERVICE_API void SetCurrentServiceStatus (Service *service_p, const uuid_t service_id, const OperationStatus status);
 
 
-WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (const Service *service_p, const uuid_t service_id);
+WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);
 
 #ifdef __cplusplus
 }
