@@ -68,7 +68,7 @@ bool DestroyServicesStatusTable (void)
 }
 
 
-bool AddServiceToStatusTable (uuid_t job_key, ServiceJob *job_p)
+bool AddServiceJobToStatusTable (uuid_t job_key, ServiceJob *job_p)
 {
 	UUIDJobNode *node_p = AllocateUUIDJobNode (job_key, job_p);
 

@@ -210,7 +210,7 @@ HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const u
 
 
 
-bool AddServiceToStatusTable (uuid_t service_key, Service *service_p)
+bool AddServiceJobToStatusTable (uuid_t service_key, Service *service_p)
 {
 	bool success_flag = false;
 	Service *existing_service_p = GetServiceJobFromStatusTable (service_key);

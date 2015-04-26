@@ -98,7 +98,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	json_t *op_p = NULL;
 	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
 	json_t *uuid_p = NULL;
-	uuid_t uuid;
 
 	if (!credentials_p)
 		{
@@ -274,8 +273,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 				}
 			else
 				{
-					bool success_flag;
-					
 					res_p = json_object ();
 					
 					if (res_p)
@@ -401,10 +398,25 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 
 															for (i = 0; i < num_jobs; ++ i, ++ job_p)
 																{
-																	if (job_p -> sj_status == OS_STARTED)
+																	json_t *job_status_json_p = GetServiceJobStatusAsJSON (job_p);
+
+																	if (job_status_json_p)
+																		{
+																			if (json_array_append_new (res_p, job_status_json_p) != 0)
+																				{
+
+																				}
+																		}
+
+																	if (job_p -> sj_status == OS_STARTED || job_p -> sj_status == OS_SUCCEEDED)
 																		{
 																			keep_service_flag = true;
-																			i = num_jobs;		/* force exit from loop */
+
+																			if (!AddServiceJobToStatusTable (job_p -> sj_id, job_p))
+																				{
+
+																				}
+
 																		}
 																}
 
@@ -562,12 +574,12 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 		{
 			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
-					Service *service_p = GetServiceJobFromStatusTable (service_id);
+					ServiceJob *job_p = GetServiceJobFromStatusTable (service_id);
 
-					if (service_p)
+					if (job_p)
 						{
-							OperationStatus status = GetCurrentServiceStatus (service_p, service_id);
-							const char *service_name_s = GetServiceName (service_p);
+							OperationStatus status = job_p -> sj_status;
+							const char *service_name_s = GetServiceName (job_p -> sj_service_p);
 
 							success_flag = true;
 
@@ -605,25 +617,26 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 }
 
 
-static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const char *uuid_s)
+static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	Service *service_p = GetServiceJobFromStatusTable (service_id);
+	ServiceJob *job_p = GetServiceJobFromStatusTable (job_id);
 	json_t *service_result_p = NULL;
 
-	if (service_p)
+	if (job_p)
 		{
-			OperationStatus status = GetCurrentServiceStatus (service_p, service_id);
+			const OperationStatus status = job_p -> sj_status;
+			const char *service_name_s = GetServiceName (job_p -> sj_service_p);
 
 			/* Check that the service has finished */
 			if (status == OS_SUCCEEDED || status == OS_FINISHED)
 				{
-					service_result_p = GetServiceResults (service_p, service_id);
+					service_result_p = GetServiceResults (job_p -> sj_service_p, job_id);
 					success_flag = true;
 				}		/* if (status == OS_SUCCEEDED || status == OS_FINISHED) */
 			else
 				{
-					service_result_p = json_pack ("{s:s,s:s,s:i}", SERVICE_NAME_S, GetServiceName (service_p), SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, status);
+					service_result_p = json_pack ("{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, status);
 				}
 
 			if (service_result_p)
@@ -639,7 +652,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const
 										{
 											json_object_clear (result_item_p);
 											json_decref (result_item_p);
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to add service result for %s %s", GetServiceName (service_p), uuid_s);
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to add service result for %s %s", service_name_s, uuid_s);
 										}
 
 
@@ -652,7 +665,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const
 								{
 									json_object_clear (service_result_p);
 									json_decref (service_result_p);
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service result for %s %s", GetServiceName (service_p), uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service result for %s %s", service_name_s, uuid_s);
 								}
 						}
 				}
@@ -666,11 +679,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const
 
 	if (success_flag)
 		{
-			if (service_p)
-				{
-
-					CloseService (service_p);
-				}
+			CloseService (job_p -> sj_service_p);
 		}
 
 	return success_flag;

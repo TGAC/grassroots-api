@@ -77,6 +77,22 @@ json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
 }
 
 
+json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
+{
+	json_t *json_p = NULL;
+	char *uuid_s = GetUUIDAsString (job_p);
+
+	if (uuid_s)
+		{
+			json_error_t error;
+			json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, job_p -> sj_status);
+
+			FreeUUIDString (uuid_s);
+		}
+
+	return json_p;
+}
+
 
 
 json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)

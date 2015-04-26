@@ -62,7 +62,7 @@ HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const u
 }
 
 
-bool AddServiceToStatusTable (uuid_t user_key, Service *service_p)
+bool AddServiceJobToStatusTable (uuid_t user_key, Service *service_p)
 {
 	bool success_flag = false;
 	LinkedList *services_p = NULL;

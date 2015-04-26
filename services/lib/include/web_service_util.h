@@ -15,6 +15,7 @@
 #include "parameter_set.h"
 #include "byte_buffer.h"
 #include "curl_tools.h"
+#include "service_job.h"
 
 
 typedef enum MatchType

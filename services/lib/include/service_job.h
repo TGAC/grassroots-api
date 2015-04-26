@@ -75,6 +75,10 @@ WHEATIS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (const ServiceJob *job_p);
 
 
+WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p);
+
+
+
 #ifdef __cplusplus
 }
 #endif

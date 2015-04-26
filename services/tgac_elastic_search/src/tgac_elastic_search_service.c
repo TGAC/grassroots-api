@@ -19,6 +19,7 @@
 typedef struct
 {
 	ServiceData essd_base_data;
+	CurlTool *essd_curl_tool_p;
 } ElasticSearchServiceData;
 
 
@@ -66,6 +67,41 @@ static bool CloseElasticSearchRestService (Service *service_p);
 static const char * const GetRootRestURI (void);
 
 
+static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id);
+
+static ElasticSearchServiceData *AllocateElasticSearchServiceData (void);
+
+static void FreeElasticSearchServiceData (ElasticSearchServiceData *data_p);
+
+
+
+static ElasticSearchServiceData *AllocateElasticSearchServiceData (void)
+{
+	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) AllocMemory (sizeof (ElasticSearchServiceData));
+
+	if (data_p)
+		{
+			data_p -> essd_curl_tool_p = AllocateCurlTool ();
+
+			if (data_p -> essd_curl_tool_p)
+				{
+					return data_p;
+				}
+
+			FreeMemory (data_p);
+		}
+
+	return NULL;
+}
+
+
+static void FreeElasticSearchServiceData (ElasticSearchServiceData *data_p)
+{
+	FreeCurlTool (data_p -> essd_curl_tool_p);
+	FreeMemory (data_p);
+}
+
+
 /*
  * API FUNCTIONS
  */
@@ -80,25 +116,30 @@ ServicesArray *GetServices (const json_t *config_p)
 			
 			if (services_p)
 				{		
-					ServiceData *data_p = NULL;
+					ServiceData *data_p = (ServiceData *) AllocateElasticSearchServiceData ();
 					
-					InitialiseService (compress_service_p,
-						GetElasticSearchRestServiceName,
-						GetElasticSearchRestServiceDesciption,
-						GetElasticSearchRestServiceURI,
-						RunElasticSearchRestService,
-						IsFileForElasticSearchRestService,
-						GetElasticSearchRestServiceParameters,
-						ReleaseElasticSearchRestServiceParameters,
-						CloseElasticSearchRestService,
-						GetElasticSearchRestServiceResults,
-						NULL,
-						true,
-						data_p);
-					
-					* (services_p -> sa_services_pp) = compress_service_p;
+					if (data_p)
+						{
+							InitialiseService (compress_service_p,
+								GetElasticSearchRestServiceName,
+								GetElasticSearchRestServiceDesciption,
+								GetElasticSearchRestServiceURI,
+								RunElasticSearchRestService,
+								IsFileForElasticSearchRestService,
+								GetElasticSearchRestServiceParameters,
+								ReleaseElasticSearchRestServiceParameters,
+								CloseElasticSearchRestService,
+								GetElasticSearchRestServiceResults,
+								NULL,
+								true,
+								data_p);
 							
-					return services_p;
+							* (services_p -> sa_services_pp) = compress_service_p;
+
+							return services_p;
+						}
+
+					FreeServicesArray (services_p);
 				}
 				
 			FreeService (compress_service_p);
@@ -209,6 +250,7 @@ static void ReleaseElasticSearchRestServiceParameters (Service *service_p, Param
 
 static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
+	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) (service_p -> se_data_p);
 	/* We only have one task */
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1);
 
@@ -218,10 +260,6 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 
 			job_p -> sj_status = OS_FAILED_TO_START;
 
-			CurlTool *curl_tool_p = AllocateCurlTool ();
-
-			if (curl_tool_p)
-				{
 					SharedType field;
 
 					if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_FIELD, &field, true))
@@ -233,62 +271,32 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 									/* Is keyword valid? */
 									if (!IsStringEmpty (keyword.st_string_value_s))
 										{
-											results_json_p = json_array ();
+											ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
-											if (results_json_p)
+											if (buffer_p)
 												{
-													ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-													if (buffer_p)
+													/* build the uri to call */
+													if (AppendStringsToByteBuffer (buffer_p, GetRootRestURI (), field.st_string_value_s, "/", keyword.st_string_value_s, NULL))
 														{
-															/* build the uri to call */
-															if (AppendStringsToByteBuffer (buffer_p, GetRootRestURI (), field.st_string_value_s, "/", keyword.st_string_value_s, NULL))
+															const char * const uri_s = GetByteBufferData (buffer_p);
+
+															if (SetUriForCurlTool (data_p -> essd_curl_tool_p, uri_s))
 																{
-																	const char * const uri_s = GetByteBufferData (buffer_p);
+																	CURLcode curl_res = RunCurlTool (data_p -> essd_curl_tool_p);
 
-																	if (SetUriForCurlTool (curl_tool_p, uri_s))
-																		{
-																			CURLcode curl_res = RunCurlTool (curl_tool_p);
+																	job_p -> sj_status = (curl_res == CURLE_OK) ? OS_SUCCEEDED : OS_FAILED;
+																}		/* if (SetUriForCurlTool (curl_tool_p, uri_s)) */
 
-																			if (curl_res == CURLE_OK)
-																				{
-																					const char * const data_s = GetCurlToolData (curl_tool_p);
+														}		/* if (AppendStringsToByteBuffer (buffer_p, field.st_string_value_s, "/", keyword.st_string_value_s, NULL)) */
 
-																					if (data_s)
-																						{
-																							json_error_t error;
-
-																							results_json_p = json_loads (data_s, 0, &error);
-
-																							if (results_json_p)
-																								{
-																									res = OS_SUCCEEDED;
-																								}
-																							else
-																								{
-
-																								}		/* if (!results_json_p) */
-
-																						}		/* if (data_s) */
-
-																				}		/* if (res == CURLE_OK) */
-
-																		}		/* if (SetUriForCurlTool (curl_tool_p, uri_s)) */
-
-																}		/* if (AppendStringsToByteBuffer (buffer_p, field.st_string_value_s, "/", keyword.st_string_value_s, NULL)) */
-
-															FreeByteBuffer (buffer_p);
-														}		/* if (buffer_p) */
-												}
+													FreeByteBuffer (buffer_p);
+												}		/* if (buffer_p) */
 
 										}		/* if (!IsStringEmpty (keyword.st_string_value_s)) */
 
 								}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true)) */
 
 						}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_FIELD, &field, true)) */
-
-					FreeCurlTool (curl_tool_p);
-				}
 
 		}		/* if (service_p -> se_jobs_p) */
 	
@@ -303,4 +311,7 @@ static bool IsFileForElasticSearchRestService (Service *service_p, Resource *res
 
 	return interested_flag;
 }
+
+
+static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id);
 

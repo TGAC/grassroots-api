@@ -68,8 +68,6 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_get_results_fn = get_results_fn;
 	service_p -> se_data_p = data_p;
 	
-	service_p -> se_get_status_fn = get_status_fn;
-
 	service_p -> se_is_specific_service_flag = specific_flag;
 	
 	if (service_p -> se_data_p)
@@ -556,12 +554,6 @@ ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, co
 void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p)
 {
 	return service_p -> se_release_params_fn (service_p, params_p);
-}
-
-
-OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id)
-{
-	return service_p -> se_get_status_fn (service_p, service_id);
 }
 
 

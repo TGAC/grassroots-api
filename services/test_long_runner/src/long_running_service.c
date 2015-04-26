@@ -206,7 +206,6 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
 	json_t *resource_json_p = NULL;
-	bool success_flag = false;
 
 	TimedTask *task_p = NULL;
 
