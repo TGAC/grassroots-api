@@ -19,7 +19,7 @@
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {
 public:
-	ExternalBlastTool (ServiceJob *job_p);
+	ExternalBlastTool (ServiceJob *job_p, const char *name_s);
 	virtual ~ExternalBlastTool ();
 
 	virtual bool ParseParameters (ParameterSet *params_p);

@@ -71,24 +71,7 @@ ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
 
 json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
 {
-	json_t *json_p = NULL;
-	char *uuid_s = GetUUIDAsString (job_p -> sj_id);
-
-	if (uuid_s)
-		{
-			json_error_t error;
-			json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, job_p -> sj_status);
-
-			if (job_p -> sj_status == OS_SUCCEEDED)
-				{
-					if (!AddJobResultsToJSON (job_p, json_p))
-						{
-
-						}
-				}
-
-			FreeUUIDString (uuid_s);
-		}
+	json_t *json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
 
 	return json_p;
 }
@@ -124,14 +107,5 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 		}
 
 	return jobs_json_p;
-}
-
-
-bool AddJobResultsToJSON (ServiceJob *job_p, json_t *json_p)
-{
-	bool success_flag = false;
-	const char *protocol_s = GetServiceJobResultProtocol (job_p -> sj_service_p, job_p);
-
-	return success_flag;
 }
 

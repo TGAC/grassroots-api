@@ -12,9 +12,13 @@ typedef struct
 {
 	ServiceData bsd_base_data;
 	BlastToolSet *bsd_blast_tools_p;
+
+	/* A NULL-terminated array of the databases available to search */
+	char **bsd_database_names_pp;
 } BlastServiceData;
 
 
+static char *S_DATABASES_PP [] = { "", NULL };
 
 /*
  * STATIC PROTOTYPES
@@ -49,6 +53,8 @@ static bool AddDatabaseParams (ParameterSet *param_set_p);
 static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id);
 
 static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
+
+static bool IsDatabaseForRun (const ParameterSet *params_p, const char **available_database_names_pp);
 
 
 /*
@@ -118,6 +124,8 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 
 			if (data_p -> bsd_blast_tools_p)
 				{
+					data_p -> bsd_database_names_pp = S_DATABASES_PP;
+
 					return data_p;
 				}
 
@@ -166,6 +174,7 @@ static bool AddDatabaseParams (ParameterSet *param_set_p)
 
 	return success_flag;
 }
+
 
 static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 {
@@ -442,15 +451,38 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id
 }
 
 
+static bool IsDatabaseForRun (const ParameterSet *params_p, const char **available_database_names_pp)
+{
+	/* For the demo, simply run against all databases */
+	bool run_flag = true;
+
+	return run_flag;
+}
+
+
 static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
-	OperationStatus res = OS_FAILED_TO_START;
 	json_t *result_json_p = NULL;
-	json_t *final_json_p = NULL;
 	
 	/* count how many jobs we a running */
-	size_t num_jobs = 1;
+	size_t num_jobs = 0;
+	char **name_pp = S_DATABASES_PP;
+
+	/* For the demo, simply run against all databases */
+	while (*name_pp)
+		{
+			/*
+			if (IsDatabaseForRun (params_p, S_DATABASES_PP))
+				{
+					++ num_jobs;
+				}
+			*/
+
+			++ num_jobs;
+			++ name_pp;
+		}
+
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
 
 	if (service_p -> se_jobs_p)
@@ -458,9 +490,10 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			size_t i;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			for (i = 0; i < num_jobs; ++ i, ++ job_p)
+			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
-					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p);
+					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp);
+					job_p -> sj_status = OS_FAILED_TO_START;
 
 					if (tool_p)
 						{
@@ -468,32 +501,12 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 								{
 									if (RunBlast (tool_p))
 										{
-											const char *result_s = tool_p -> GetResults ();
-
-											if (result_s)
-												{
-													const char *title_s = "blast result";
-
-													result_json_p = GetBlastResultAsJSON (service_p, tool_p -> GetUUID ());
-
-													if (result_json_p)
-														{
-															res = OS_SUCCEEDED;
-														}
-												}
-										}
-									else
-										{
-											res = OS_FAILED;
+											job_p -> sj_status = tool_p -> GetStatus ();
 										}
 								}
-
 						}
 				}
-
-
 		}
-
 
 		
 //	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p, tool_p -> GetUUID ());

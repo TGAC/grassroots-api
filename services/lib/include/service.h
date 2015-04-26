@@ -110,10 +110,7 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-	json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t service_id);
-
-
-	OperationStatus (*se_get_status_fn) (struct Service *service_p, const uuid_t service_id);
+	json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t job_id);
 
 
 	/**

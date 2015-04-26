@@ -12,13 +12,13 @@
 #include "system_blast_tool.hpp"
 
 
-BlastTool *CreateBlastTool (ServiceJob *job_p)
+BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s)
 {
 	/**
 	 * In the future, this would query the system to determine which type
 	 * of blast tool to use, probably set by an admin. 
 	 */
-	return new SystemBlastTool (job_p);
+	return new SystemBlastTool (job_p, name_s);
 }
 
 
@@ -29,10 +29,11 @@ void FreeBlastTool (BlastTool *tool_p)
 
 
 
-BlastTool :: BlastTool (ServiceJob *service_job_p)
+BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s)
 {
 	bt_status = OS_IDLE;
 	bt_job_p = service_job_p;
+	bt_name_s = name_s;
 }
 
 

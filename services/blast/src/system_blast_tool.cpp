@@ -9,8 +9,8 @@
 #include "streams.h"
 
 
-SystemBlastTool :: SystemBlastTool (ServiceJob *job_p)
-: ExternalBlastTool (job_p)
+SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s)
+: ExternalBlastTool (job_p, name_s)
 {
 
 }

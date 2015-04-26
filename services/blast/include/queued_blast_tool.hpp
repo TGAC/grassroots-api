@@ -16,7 +16,7 @@
 class BLAST_SERVICE_LOCAL QueuedBlastTool : public ExternalBlastTool
 {
 public:
-	QueuedBlastTool (Service *service_p);
+	QueuedBlastTool (Service *service_p, const char *name_s);
 	virtual ~QueuedBlastTool ();
 
 	virtual OperationStatus Run ();

@@ -16,7 +16,7 @@
 class BLAST_SERVICE_LOCAL SystemBlastTool : public ExternalBlastTool
 {
 public:
-	SystemBlastTool (ServiceJob *service_job_p);
+	SystemBlastTool (ServiceJob *service_job_p, const char *name_s);
 	virtual ~SystemBlastTool ();
 
 	virtual OperationStatus Run ();

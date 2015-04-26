@@ -16,7 +16,7 @@ class BLAST_SERVICE_LOCAL BlastTool
 {
 public:
 
-	BlastTool (ServiceJob *job_p);
+	BlastTool (ServiceJob *job_p, const char *name_s);
 
 	virtual ~BlastTool ();
 
@@ -48,6 +48,7 @@ public:
 
 protected:
 	OperationStatus bt_status;
+	const char *bt_name_s;
 	ServiceJob *bt_job_p;
 
 	/** All of the command line arguments */
@@ -113,7 +114,7 @@ extern "C"
  * 
  * @return The BlastTool or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p);
+BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s);
 
 
 /**
