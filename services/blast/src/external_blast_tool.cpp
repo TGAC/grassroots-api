@@ -12,8 +12,8 @@
 #include "temp_file.hpp"
 
 
-ExternalBlastTool :: ExternalBlastTool (Service *service_p)
-: BlastTool (service_p)
+ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p)
+: BlastTool (job_p)
 {
 	ebt_buffer_p = AllocateByteBuffer (1024);
 	ebt_input_p = 0;

@@ -44,6 +44,8 @@ static ParameterSet *GetWebSearchServiceParameters (Service *service_p, Resource
 
 static void ReleaseWebSearchServiceParameters (Service *service_p, ParameterSet *params_p);
 
+ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+
 
 static bool IsResourceForWebSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -201,7 +203,7 @@ static bool CloseWebSearchService (Service *service_p)
 }
 
 
-json_t *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	WebSearchServiceData *service_data_p = (WebSearchServiceData *) (service_p -> se_data_p);
 	WebServiceData *data_p = & (service_data_p -> wssd_base_data);
@@ -254,7 +256,7 @@ json_t *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json
 						
 		}		/* if (param_set_p) */
 
-	return res_json_p;
+	return service_p -> se_jobs_p;
 }
 
 

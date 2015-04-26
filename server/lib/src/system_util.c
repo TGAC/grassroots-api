@@ -4,7 +4,7 @@
 
 #include "handler_utils.h"
 #include "streams.h"
-
+#include "running_services_table.h"
 
 
 bool InitInformationSystem ()

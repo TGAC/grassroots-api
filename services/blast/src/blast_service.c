@@ -32,7 +32,7 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 
 static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -442,42 +442,63 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id
 }
 
 
-static json_t *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *result_json_p = NULL;
 	json_t *final_json_p = NULL;
-	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool ();
-
 	
-	if (tool_p -> ParseParameters (param_set_p))
+	/* count how many jobs we a running */
+	size_t num_jobs = 1;
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
+
+	if (service_p -> se_jobs_p)
 		{
-			if (RunBlast (tool_p))
+			size_t i;
+			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+
+			for (i = 0; i < num_jobs; ++ i, ++ job_p)
 				{
-					const char *result_s = tool_p -> GetResults ();
+					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p);
 
-					if (result_s)
+					if (tool_p)
 						{
-							const char *title_s = "blast result";
-
-							result_json_p = GetBlastResultAsJSON (service_p, tool_p -> GetUUID ());
-
-							if (result_json_p)
+							if (tool_p -> ParseParameters (param_set_p))
 								{
-									res = OS_SUCCEEDED;
+									if (RunBlast (tool_p))
+										{
+											const char *result_s = tool_p -> GetResults ();
+
+											if (result_s)
+												{
+													const char *title_s = "blast result";
+
+													result_json_p = GetBlastResultAsJSON (service_p, tool_p -> GetUUID ());
+
+													if (result_json_p)
+														{
+															res = OS_SUCCEEDED;
+														}
+												}
+										}
+									else
+										{
+											res = OS_FAILED;
+										}
 								}
+
 						}
 				}
-			else
-				{
-					res = OS_FAILED;
-				}
+
+
 		}
+
+
 		
-	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p, tool_p -> GetUUID ());
+//	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p, tool_p -> GetUUID ());
 		
-	return final_json_p;
+	return service_p -> se_jobs_p;
 }
 
 

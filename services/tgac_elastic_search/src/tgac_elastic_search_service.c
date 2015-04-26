@@ -8,7 +8,7 @@
 #include "string_utils.h"
 #include "filesystem_utils.h"
 #include "curl_tools.h"
-
+#include "service_job.h"
 
 #define TAG_SEARCH_FIELD MAKE_TAG ('E', 'S', 'F', 'D')
 #define TAG_SEARCH_KEYWORD MAKE_TAG ('E', 'S', 'K', 'Y')
@@ -57,7 +57,7 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 
 static void ReleaseElasticSearchRestServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -207,7 +207,7 @@ static void ReleaseElasticSearchRestServiceParameters (Service *service_p, Param
 }
 
 
-static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *res_json_p = NULL;
@@ -286,7 +286,7 @@ static json_t *RunElasticSearchRestService (Service *service_p, ParameterSet *pa
 	
 	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p, NULL);
 
-	return res_json_p;
+	return service_p -> se_jobs_p;
 }
 
 

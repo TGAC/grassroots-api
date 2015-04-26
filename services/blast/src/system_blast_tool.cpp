@@ -9,8 +9,8 @@
 #include "streams.h"
 
 
-SystemBlastTool :: SystemBlastTool (Service *service_p)
-: ExternalBlastTool (service_p)
+SystemBlastTool :: SystemBlastTool (ServiceJob *job_p)
+: ExternalBlastTool (job_p)
 {
 
 }
@@ -47,17 +47,14 @@ const char *SystemBlastTool :: GetResults ()
 OperationStatus SystemBlastTool :: Run ()
 {
 	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
-	SetCurrentServiceStatus (bt_service_p, bt_uuid, OS_STARTED);
-	int res = system (command_line_s);
+	int res;
 
-	OperationStatus status = OS_FAILED;
+	bt_job_p -> sj_status = OS_STARTED;
+	res = system (command_line_s);
 
-	if (res == 0)
-		{
-			status = OS_SUCCEEDED;
-		}
+	bt_job_p -> sj_status = (res == 0) ? OS_SUCCEEDED : OS_FAILED;
 
-	return status;
+	return bt_job_p -> sj_status;
 }
 
 

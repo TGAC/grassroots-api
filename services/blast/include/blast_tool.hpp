@@ -6,7 +6,7 @@
 #include "blast_service.h"
 #include "byte_buffer.h"
 
-
+#include "service_job.h"
 
 
 /**
@@ -16,7 +16,7 @@ class BLAST_SERVICE_LOCAL BlastTool
 {
 public:
 
-	BlastTool (Service *service_p);
+	BlastTool (ServiceJob *job_p);
 
 	virtual ~BlastTool ();
 
@@ -48,9 +48,7 @@ public:
 
 protected:
 	OperationStatus bt_status;
-	Service *bt_service_p;
-
-	uuid_t bt_uuid;
+	ServiceJob *bt_job_p;
 
 	/** All of the command line arguments */
 	std :: vector <char *> bt_command_line_args;
@@ -115,7 +113,7 @@ extern "C"
  * 
  * @return The BlastTool or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_API BlastTool *CreateBlastTool (Service *service_p);
+BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p);
 
 
 /**

@@ -7,6 +7,8 @@
 #include "handler_utils.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
+#include "service.h"
+#include "service_job.h"
 
 #include "sequence.h"
 
@@ -33,7 +35,7 @@ static ParameterSet *GetEnsemblRestServiceParameters (Service *service_p, Resour
 
 static void ReleaseEnsemblRestServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -152,7 +154,7 @@ static void ReleaseEnsemblRestServiceParameters (Service *service_p, ParameterSe
 }
 
 
-static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *res_json_p = NULL;
@@ -177,7 +179,7 @@ static json_t *RunEnsemblRestService (Service *service_p, ParameterSet *param_se
 
 	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p, NULL);
 
-	return res_json_p;
+	return service_p -> se_jobs_p;
 }
 
 

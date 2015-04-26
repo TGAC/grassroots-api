@@ -213,7 +213,7 @@ HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const u
 bool AddServiceToStatusTable (uuid_t service_key, Service *service_p)
 {
 	bool success_flag = false;
-	Service *existing_service_p = GetServiceFromStatusTable (service_key);
+	Service *existing_service_p = GetServiceJobFromStatusTable (service_key);
 
 	if (existing_service_p)
 		{
@@ -238,7 +238,7 @@ bool AddServiceToStatusTable (uuid_t service_key, Service *service_p)
 }
 
 
-void ServiceFinished (uuid_t service_key, const OperationStatus status)
+void ServiceJobFinished (uuid_t service_key, const OperationStatus status)
 {
 	Service *service_p = (Service *) GetFromHashTable (s_running_services_p, service_key);
 
@@ -250,9 +250,9 @@ void ServiceFinished (uuid_t service_key, const OperationStatus status)
 
 
 
-Service *RemoveServiceFromStatusTable (const uuid_t service_key)
+Service *RemoveServiceJobFromStatusTable (const uuid_t service_key)
 {
-	Service *service_p = GetServiceFromStatusTable (service_key);
+	Service *service_p = GetServiceJobFromStatusTable (service_key);
 
 	if (service_p)
 		{
@@ -263,7 +263,7 @@ Service *RemoveServiceFromStatusTable (const uuid_t service_key)
 }
 
 
-Service *GetServiceFromStatusTable (const uuid_t service_key)
+Service *GetServiceJobFromStatusTable (const uuid_t service_key)
 {
 	Service *service_p = (Service *) GetFromHashTable (s_running_services_p, &service_key);
 

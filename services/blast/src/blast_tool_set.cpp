@@ -59,9 +59,9 @@ BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 }
 
 
-BlastTool *BlastToolSet :: GetNewBlastTool ()
+BlastTool *BlastToolSet :: GetNewBlastTool (ServiceJob *job_p)
 {
-	BlastTool *tool_p = CreateBlastTool (bts_service_p);
+	BlastTool *tool_p = CreateBlastTool (job_p);
 
 	if (tool_p)
 		{

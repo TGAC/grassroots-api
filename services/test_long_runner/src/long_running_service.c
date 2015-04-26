@@ -13,7 +13,7 @@ typedef struct
 {
 	time_t tt_start;
 	time_t tt_end;
-	uuid_t tt_id;
+	ServiceJob *tt_job_p;
 } TimedTask;
 
 /*
@@ -43,7 +43,7 @@ static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resour
 
 static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static json_t *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -57,7 +57,7 @@ static void InitTimedTask (TimedTask *task_p);
 
 static void StartTimedTask (TimedTask *task_p, size_t duration);
 
-static OperationStatus GetTimedTaskStatus (TimedTask *task_p);
+static OperationStatus GetCurrentTimedTaskStatus (TimedTask *task_p);
 
 static json_t *GetTimedTaskResult (TimedTask *task_p);
 
@@ -142,11 +142,11 @@ static bool CloseLongRunningService (Service *service_p)
 {
 	bool close_flag = false;
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	OperationStatus status = GetTimedTaskStatus (& (data_p -> lsd_task_0));
+	OperationStatus status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_0));
 
 	if (status == OS_SUCCEEDED || status == OS_IDLE || status == OS_FAILED)
 		{
-			OperationStatus status = GetTimedTaskStatus (& (data_p -> lsd_task_1));
+			OperationStatus status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_1));
 
 			if (status == OS_SUCCEEDED || status == OS_IDLE || status == OS_FAILED)
 				{
@@ -202,154 +202,68 @@ static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSe
 }
 
 
-static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t service_id)
+static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job_id)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	json_t *results_json_p = json_array ();
+	json_t *resource_json_p = NULL;
+	bool success_flag = false;
 
-	if (results_json_p)
+	TimedTask *task_p = NULL;
+
+	if (uuid_compare (data_p -> lsd_task_0.tt_job_p -> sj_id, job_id) == 0)
 		{
-			bool success_flag = false;
-			json_t *result_json_p = NULL;
-
-			if (uuid_compare (service_id, data_p -> lsd_task_0.tt_id) == 0)
-				{
-					result_json_p = GetTimedTaskResult (& (data_p -> lsd_task_0));
-				}
-			else if (uuid_compare (service_id, data_p -> lsd_task_1.tt_id) == 0)
-				{
-					result_json_p = GetTimedTaskResult (& (data_p -> lsd_task_1));
-				}
-			else
-				{
-					char *id_s = GetUUIDAsString (service_id);
-
-					if (id_s)
-						{
-							result_json_p = json_pack ("{s:s,s:s}", SERVICES_ID_S, id_s, ERROR_S, "No matching id");
-							FreeUUIDString (id_s);
-						}
-					else
-						{
-							result_json_p = json_pack ("{s:s}", ERROR_S, "No matching id");
-						}
-				}
-
-			if (result_json_p)
-				{
-					json_t *resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_json_p);
-
-					if (resource_json_p)
-						{
-							success_flag = (json_array_append_new (results_json_p, resource_json_p) == 0);
-						}
-					else
-						{
-							json_object_clear (result_json_p);
-							json_decref (result_json_p);
-						}
-				}
-
-			if (!success_flag)
-				{
-					json_object_clear (results_json_p);
-					json_decref (results_json_p);
-					results_json_p = NULL;
-				}
+			task_p = & (data_p -> lsd_task_0);
+		}
+	else if (uuid_compare (data_p -> lsd_task_1.tt_job_p -> sj_id, job_id) == 0)
+		{
+			task_p = & (data_p -> lsd_task_1);
 		}
 
-	return results_json_p;
+	if (task_p)
+		{
+			json_error_t error;
+			json_t *result_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, task_p -> tt_job_p -> sj_status);
+			resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_p);
+		}
+
+	return resource_json_p;
 }
 
 
-static json_t *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
+	const size_t NUM_TASKS = 2;
 
-	OperationStatus res_0 = OS_FAILED_TO_START;
-	OperationStatus res_1 = OS_FAILED_TO_START;
-	json_t *task_0_json_p = NULL;
-	json_t *task_1_json_p = NULL;
-	json_t *result_0_json_p = NULL;
-	json_t *result_1_json_p = NULL;
-	json_t *final_json_p = NULL;
-	json_error_t error;
-	bool success_flag = false;
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, NUM_TASKS);
 
-	/* simulate a task that takes 1 minute */
-	StartTimedTask (& (data_p -> lsd_task_0), 60);
-	res_0 = GetTimedTaskStatus (& (data_p -> lsd_task_0));
-	if (res_0 == OS_STARTED)
+	if (service_p -> se_jobs_p)
 		{
-			AddServiceToStatusTable (data_p -> lsd_task_0.tt_id, service_p);
-		}
+			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-	/* simulate a task that takes 3 minutes */
-	StartTimedTask (& (data_p -> lsd_task_1), 180);
-	res_1 = GetTimedTaskStatus (& (data_p -> lsd_task_1));
-	if (res_0 == OS_STARTED)
-		{
-			AddServiceToStatusTable (data_p -> lsd_task_1.tt_id, service_p);
-		}
-
-	task_0_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, res_0);
-
-	if (task_0_json_p)
-		{
-			task_1_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, res_1);
-
-			if (task_1_json_p)
+			/* simulate a task that takes 1 minute */
+			data_p -> lsd_task_0.tt_job_p = job_p;
+			StartTimedTask (& (data_p -> lsd_task_0), 60);
+			job_p -> sj_status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_0));
+			if (job_p -> sj_status == OS_STARTED)
 				{
-					result_0_json_p = CreateServiceResponseAsJSON (service_p, res_0, task_0_json_p, data_p -> lsd_task_0.tt_id);
-
-					if (result_0_json_p)
-						{
-							task_0_json_p = NULL;
-
-							result_1_json_p = CreateServiceResponseAsJSON (service_p, res_1, task_1_json_p, data_p -> lsd_task_1.tt_id);
-
-							if (result_1_json_p)
-								{
-									final_json_p = json_pack ("[o,o]", result_0_json_p, result_1_json_p);
-
-									if (final_json_p)
-										{
-											result_0_json_p = NULL;
-											result_1_json_p = NULL;
-
-											success_flag = true;
-										}
-									else
-										{
-											json_object_clear (result_1_json_p);
-											json_decref (result_1_json_p);
-										}
-								}
-
-							if ((!success_flag) && result_0_json_p)
-								{
-									json_object_clear (result_0_json_p);
-									json_decref (result_0_json_p);
-								}
-						}
-
-					if ((!success_flag) && task_1_json_p)
-						{
-							json_object_clear (task_1_json_p);
-							json_decref (task_1_json_p);
-						}
+					AddServiceJobToStatusTable (job_p -> sj_id, job_p);
 				}
 
-			if ((!success_flag) && task_0_json_p)
+			++ job_p;
+
+			/* simulate a task that takes 3 minutes */
+			data_p -> lsd_task_1.tt_job_p = job_p;
+			StartTimedTask (& (data_p -> lsd_task_1), 180);
+			job_p -> sj_status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_1));
+			if (job_p -> sj_status == OS_STARTED)
 				{
-					json_object_clear (task_0_json_p);
-					json_decref (task_0_json_p);
+					AddServiceJobToStatusTable (job_p -> sj_id, job_p);
 				}
-		}
 
+		}		/* if (service_p -> se_jobs_p) */
 
-
-	return final_json_p;
+	return service_p -> se_jobs_p;
 }
 
 
@@ -359,33 +273,18 @@ static bool IsFileForLongRunningService (Service *service_p, Resource *resource_
 }
 
 
-static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uuid_t service_id)
+static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uuid_t job_id)
 {
 	OperationStatus status = OS_ERROR;
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	OperationStatus status_0 = GetTimedTaskStatus (& (data_p -> lsd_task_0));
-	OperationStatus status_1 = GetTimedTaskStatus (& (data_p -> lsd_task_1));
 
-	if (service_id)
+	if (service_p -> se_jobs_p)
 		{
-			if (uuid_compare (service_id, data_p -> lsd_task_0.tt_id) == 0)
+			ServiceJob *job_p = GetJobById (service_p -> se_jobs_p, job_id);
+
+			if (job_p)
 				{
-					status = status_0;
-				}
-			else if (uuid_compare (service_id, data_p -> lsd_task_1.tt_id) == 0)
-				{
-					status = status_1;
-				}
-		}
-	else
-		{
-			if (status_0 == OS_STARTED || status_1 == OS_STARTED)
-				{
-					status = OS_STARTED;
-				}
-			else
-				{
-					status = (status_0 > status_1) ? status_0 : status_1;
+					status = job_p -> sj_status;
 				}
 		}
 
@@ -397,23 +296,18 @@ static void InitTimedTask (TimedTask *task_p)
 {
 	task_p -> tt_start = 0;
 	task_p -> tt_end = 0;
-	uuid_clear (task_p -> tt_id);
+	task_p -> tt_job_p = NULL;
 }
 
 
 static void StartTimedTask (TimedTask *task_p, size_t duration)
 {
-	if (uuid_is_null (task_p -> tt_id))
-		{
-			uuid_generate (task_p -> tt_id);
-		}
-
 	time (& (task_p -> tt_start));
 	task_p -> tt_end = task_p -> tt_start + duration;
 }
 
 
-static OperationStatus GetTimedTaskStatus (TimedTask *task_p)
+static OperationStatus GetCurrentTimedTaskStatus (TimedTask *task_p)
 {
 	OperationStatus status = OS_IDLE;
 

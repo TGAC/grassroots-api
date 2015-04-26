@@ -11,6 +11,7 @@
 #include "hash_table.h"
 #include "wheatis_service_manager_library.h"
 #include "service.h"
+#include "service_job.h"
 
 #include "uuid/uuid.h"
 
@@ -33,20 +34,20 @@ WHEATIS_SERVICE_MANAGER_API bool InitServicesStatusTable (void);
 WHEATIS_SERVICE_MANAGER_API bool DestroyServicesStatusTable (void);
 
 
-WHEATIS_SERVICE_MANAGER_API bool AddServiceToStatusTable (uuid_t service_key, Service *service_p);
+WHEATIS_SERVICE_MANAGER_API bool AddServiceJobToStatusTable (uuid_t job_key, ServiceJob *job_p);
 
 
-WHEATIS_SERVICE_MANAGER_API Service *GetServiceFromStatusTable (const uuid_t service_key);
+WHEATIS_SERVICE_MANAGER_API ServiceJob *GetServiceJobFromStatusTable (const uuid_t key);
 
 
-WHEATIS_SERVICE_MANAGER_API Service *RemoveServiceFromStatusTable (const uuid_t service_key);
+WHEATIS_SERVICE_MANAGER_API ServiceJob *RemoveServiceJobFromStatusTable (const uuid_t key);
 
 
 
 /**
  *
  */
-WHEATIS_SERVICE_MANAGER_LOCAL void ServiceFinished (uuid_t service_key, const OperationStatus status);
+WHEATIS_SERVICE_MANAGER_LOCAL void ServiceJobFinished (uuid_t job_key);
 
 
 

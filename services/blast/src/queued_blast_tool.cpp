@@ -9,8 +9,8 @@
 #include "streams.h"
 
 
-QueuedBlastTool :: QueuedBlastTool (Service *service_p)
-: ExternalBlastTool (service_p)
+QueuedBlastTool :: QueuedBlastTool (ServiceJob *job_p)
+: ExternalBlastTool (job_p)
 {
 
 }
@@ -27,6 +27,6 @@ OperationStatus QueuedBlastTool :: Run ()
 	PrintLog (STM_LEVEL_INFO, "%s %d: SystemBlastTool :: Run", __FILE__, __LINE__);
 	PostRun ();
 
-	return bt_status;
+	return bt_job_p -> sj_status;
 }
 

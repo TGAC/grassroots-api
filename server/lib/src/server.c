@@ -390,17 +390,37 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 											if (params_p)
 												{
 													OperationStatus status;
+													ServiceJobSet *jobs_p = RunService (service_p, params_p, credentials_p);
+													bool keep_service_flag = false;
 
-													service_res_p = RunService (service_p, params_p, credentials_p);
-
-													status = GetCurrentServiceStatus (service_p, NULL);
-
-													if (status == OS_STARTED)
+													if (jobs_p)
 														{
-															/* since we've checked for a single node */
-															LinkedListRemHead (services_p);
-															node_p -> sn_service_p = NULL;
-															FreeServiceNode ((ListItem * const) node_p);
+															const size_t num_jobs = jobs_p -> sjs_num_jobs;
+															size_t i;
+															ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+
+															for (i = 0; i < num_jobs; ++ i, ++ job_p)
+																{
+																	if (job_p -> sj_status == OS_STARTED)
+																		{
+																			keep_service_flag = true;
+																			i = num_jobs;		/* force exit from loop */
+																		}
+																}
+
+															if (keep_service_flag)
+																{
+																	/* since we've checked for a single node */
+																	LinkedListRemHead (services_p);
+																	node_p -> sn_service_p = NULL;
+																	FreeServiceNode ((ListItem * const) node_p);
+																}
+
+															service_res_p = GetServiceJobSetAsJSON (jobs_p);
+														}		/* if (jobs_p) */
+													else
+														{
+
 														}
 
 												}		/* if (params_p) */
@@ -542,7 +562,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 		{
 			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
-					Service *service_p = GetServiceFromStatusTable (service_id);
+					Service *service_p = GetServiceJobFromStatusTable (service_id);
 
 					if (service_p)
 						{
@@ -588,7 +608,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 static bool AddServiceResultsToJSON (json_t *results_p, uuid_t service_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	Service *service_p = GetServiceFromStatusTable (service_id);
+	Service *service_p = GetServiceJobFromStatusTable (service_id);
 	json_t *service_result_p = NULL;
 
 	if (service_p)

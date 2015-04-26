@@ -74,7 +74,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 
 static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -345,10 +345,9 @@ static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *
 }
 
 
-static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	OperationStatus res = OS_FAILED_TO_START;
-	json_t *res_json_p = NULL;
 	SharedType input_resource;
 	
 	if (GetParameterValueFromParameterSet (param_set_p, TAG_COMPRESS_INPUT_FILE, &input_resource, true))
@@ -363,16 +362,13 @@ static json_t *RunCompressService (Service *service_p, ParameterSet *param_set_p
 					if (algorithm_s)
 						{
 							res = (Compress (input_resource_p, algorithm_s, credentials_p) == 0) ? OS_SUCCEEDED : OS_FAILED;
-								
 						}		/* if (algorithm_s) */
 										
 				}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */			
 								
 		}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */
 	
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, NULL, NULL);
-
-	return res_json_p;
+	return service_p -> se_jobs_p;
 }
 
 

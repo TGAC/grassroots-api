@@ -45,7 +45,7 @@ static const char *GetIrodsSearchServiceDesciption (Service *service_p);
 static ParameterSet *GetIrodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -456,7 +456,7 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 }
 
 
-static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	OperationStatus res = OS_FAILED_TO_START;
 	json_t *res_json_p = NULL;
@@ -539,7 +539,7 @@ static json_t *RunIrodsSearchService (Service *service_p, ParameterSet *param_se
 			res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p, NULL);
 		}		/* if (search_p) */
 
-	return res_json_p;
+	return service_p -> se_jobs_p;
 }
 
 

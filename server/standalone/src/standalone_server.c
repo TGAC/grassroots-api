@@ -57,7 +57,6 @@ int main (int argc, char *argv [])
 {
 	struct addrinfo *address_p = NULL;
 	const char *port_s = DEFAULT_SERVER_PORT;
-	char *root_dir_s = NULL;
 	int backlog = 4;
 	int i = 0;
 	

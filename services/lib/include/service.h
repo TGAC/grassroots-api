@@ -9,6 +9,7 @@
 #include "typedefs.h"
 #include "handler.h"
 #include "user_details.h"
+#include "operation.h"
 
 #include "uuid/uuid.h"
 
@@ -56,17 +57,7 @@ PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
 /* forward declarations */
 struct Plugin;
 struct Service;
-
-typedef enum OperationStatus
-{
-	OS_ERROR = -1,
-	OS_IDLE,
-	OS_FAILED_TO_START,
-	OS_STARTED,
-	OS_FINISHED,
-	OS_FAILED,
-	OS_SUCCEEDED
-} OperationStatus;
+struct ServiceJobSet;
 
 
 
@@ -91,7 +82,7 @@ typedef struct Service
 
 	bool se_is_specific_service_flag;
 
-	json_t *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 	bool (*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -132,13 +123,10 @@ typedef struct Service
 
 	bool (*se_close_fn) (struct Service *service_p);
 
-
-	/** Is the service currently in an open state? */
-	OperationStatus se_status;
-
 	/** Unique Id for this service */
 	uuid_t se_id;
 
+	struct ServiceJobSet *se_jobs_p;
 
 	/**w
 	 * Any custom data that the service needs to store.
@@ -177,7 +165,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
-	json_t *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
+	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
 	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
@@ -187,7 +175,11 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	bool specific_flag,
 	ServiceData *data_p);
 
-WHEATIS_SERVICE_API json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+//WHEATIS_SERVICE_API json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+
+
+WHEATIS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+
 
 WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -354,9 +346,6 @@ WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_
 
 
 WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id);
-
-
-WHEATIS_SERVICE_API void SetCurrentServiceStatus (Service *service_p, const uuid_t service_id, const OperationStatus status);
 
 
 WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);

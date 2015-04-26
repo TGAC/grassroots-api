@@ -76,7 +76,7 @@ WHEATIS_SERVICE_API bool AddParametersToPostWebService (WebServiceData *data_p, 
 WHEATIS_SERVICE_API bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_set_p);
 
 
-WHEATIS_SERVICE_API json_t *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+WHEATIS_SERVICE_API ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 
 WHEATIS_SERVICE_API bool AddMatchTypeParameter (ParameterSet *param_set_p);

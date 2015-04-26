@@ -21,7 +21,7 @@ public:
 
 	void AddTool (BlastTool *tool_p);
 
-	BlastTool *GetNewBlastTool ();
+	BlastTool *GetNewBlastTool (ServiceJob *job_p);
 
 	BlastTool *GetBlastTool (const uuid_t id);
 

@@ -45,6 +45,7 @@ SRCS 	= \
 	parameter.c \
 	parameter_set.c \
 	service.c \
+	service_job.c \
 	service_config.c \
 	service_matcher.c \
 	tag_item.c \

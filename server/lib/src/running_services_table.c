@@ -112,7 +112,7 @@ bool AddServiceToStatusTable (uuid_t user_key, Service *service_p)
 }
 
 
-void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus status)
+void ServiceJobFinished (uuid_t user_key, Service *service_p, const OperationStatus status)
 {
 	LinkedList *services_p = NULL;
 
@@ -155,7 +155,7 @@ void ServiceFinished (uuid_t user_key, Service *service_p, const OperationStatus
 }
 
 
-Service *GetServiceFromStatusTable (const uuid_t user_key, const uuid_t service_key)
+Service *GetServiceJobFromStatusTable (const uuid_t user_key, const uuid_t service_key)
 {
 	LinkedList *services_p = NULL;
 	Service *service_p = NULL;

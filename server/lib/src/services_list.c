@@ -2,42 +2,42 @@
 
 #include "linked_list.h"
 
-
+#include "service_job.h"
 
 /* TODO move this to a hash table for production */
 typedef struct
 {
-	ListItem usn_node;
-	uuid_t usn_id;
-	Service *usn_service_p;
-} UUIDServiceNode;
+	ListItem ujn_node;
+	uuid_t ujn_id;
+	ServiceJob *ujn_job_p;
+} UUIDJobNode;
 
 static LinkedList s_running_services;
 
 
-static UUIDServiceNode *AllocateUUIDServiceNode (uuid_t id, Service *service_p);
+static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *service_p);
 
-static void FreeUUIDServiceNode (ListItem * const node_p);
+static void FreeUUIDJobNode (ListItem * const node_p);
 
 
-static UUIDServiceNode *AllocateUUIDServiceNode (uuid_t id, Service *service_p)
+static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *job_p)
 {
-	UUIDServiceNode *node_p = (UUIDServiceNode *) AllocMemory (sizeof (UUIDServiceNode));
+	UUIDJobNode *node_p = (UUIDJobNode *) AllocMemory (sizeof (UUIDJobNode));
 
 	if (node_p)
 		{
-			node_p -> usn_node.ln_prev_p = NULL;
-			node_p -> usn_node.ln_next_p = NULL;
+			node_p -> ujn_node.ln_prev_p = NULL;
+			node_p -> ujn_node.ln_next_p = NULL;
 
-			uuid_copy (node_p -> usn_id, id);
-			node_p -> usn_service_p = service_p;
+			uuid_copy (node_p -> ujn_id, id);
+			node_p -> ujn_job_p = job_p;
 		}
 
 	return node_p;
 }
 
 
-static void FreeUUIDServiceNode (ListItem * const node_p)
+static void FreeUUIDJobNode (ListItem * const node_p)
 {
 	FreeMemory (node_p);
 }
@@ -68,9 +68,9 @@ bool DestroyServicesStatusTable (void)
 }
 
 
-bool AddServiceToStatusTable (uuid_t service_key, Service *service_p)
+bool AddServiceToStatusTable (uuid_t job_key, ServiceJob *job_p)
 {
-	UUIDServiceNode *node_p = AllocateUUIDServiceNode (service_key, service_p);
+	UUIDJobNode *node_p = AllocateUUIDJobNode (job_key, job_p);
 
 	if (node_p)
 		{
@@ -81,61 +81,60 @@ bool AddServiceToStatusTable (uuid_t service_key, Service *service_p)
 }
 
 
-Service *GetServiceFromStatusTable (const uuid_t service_key)
+ServiceJob *GetServiceJobFromStatusTable (const uuid_t job_key)
 {
-	UUIDServiceNode *node_p = (UUIDServiceNode *) s_running_services.ll_head_p;
+	UUIDJobNode *node_p = (UUIDJobNode *) s_running_services.ll_head_p;
 
 	while (node_p)
 		{
-			if (uuid_compare (node_p -> usn_id, service_key) == 0)
+			if (uuid_compare (node_p -> ujn_id, job_key) == 0)
 				{
-					return (node_p -> usn_service_p);
+					return (node_p -> ujn_job_p);
 				}
 
-			node_p = (UUIDServiceNode *) (node_p -> usn_node.ln_next_p);
+			node_p = (UUIDJobNode *) (node_p -> ujn_node.ln_next_p);
 		}
 
 	return NULL;
 }
 
 
-Service *RemoveServiceFromStatusTable (const uuid_t service_key)
+ServiceJob *RemoveServiceJobFromStatusTable (const uuid_t job_key)
 {
-	Service *service_p = NULL;
-	UUIDServiceNode *node_p = (UUIDServiceNode *) s_running_services.ll_head_p;
+	ServiceJob *job_p = NULL;
+	UUIDJobNode *node_p = (UUIDJobNode *) s_running_services.ll_head_p;
 
 	while (node_p)
 		{
-			if (uuid_compare (node_p -> usn_id, service_key) == 0)
+			if (uuid_compare (node_p -> ujn_id, job_key) == 0)
 				{
-					service_p = node_p -> usn_service_p;
+					job_p = node_p -> ujn_job_p;
 
 					LinkedListRemove (&s_running_services, (ListItem * const) node_p);
 
-					node_p -> usn_service_p = NULL;
-					FreeUUIDServiceNode ((ListItem * const) node_p);
+					node_p -> ujn_job_p = NULL;
+					FreeUUIDJobNode ((ListItem * const) node_p);
 
 					node_p = NULL;
 				}
 			else
 				{
-					node_p = (UUIDServiceNode *) (node_p -> usn_node.ln_next_p);
+					node_p = (UUIDJobNode *) (node_p -> ujn_node.ln_next_p);
 				}
 		}
 
 
-	return service_p;
+	return job_p;
 }
 
 
 
-void ServiceFinished (uuid_t service_key, const OperationStatus status)
+void ServiceJobFinished (uuid_t job_key)
 {
-	Service *service_p = RemoveServiceFromStatusTable (service_key);
+	ServiceJob *job_p = RemoveServiceJobFromStatusTable (job_key);
 
-	if (service_p)
+	if (job_p)
 		{
-			SetCurrentServiceStatus (service_p, service_key, status);
 		}
 }
 

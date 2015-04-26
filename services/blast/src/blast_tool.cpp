@@ -12,13 +12,13 @@
 #include "system_blast_tool.hpp"
 
 
-BlastTool *CreateBlastTool (Service *service_p)
+BlastTool *CreateBlastTool (ServiceJob *job_p)
 {
 	/**
 	 * In the future, this would query the system to determine which type
 	 * of blast tool to use, probably set by an admin. 
 	 */
-	return new SystemBlastTool (service_p);
+	return new SystemBlastTool (job_p);
 }
 
 
@@ -29,12 +29,10 @@ void FreeBlastTool (BlastTool *tool_p)
 
 
 
-BlastTool :: BlastTool (Service *service_p)
+BlastTool :: BlastTool (ServiceJob *service_job_p)
 {
 	bt_status = OS_IDLE;
-	bt_service_p = service_p;
-
-	GenerateUUID (&bt_uuid);
+	bt_job_p = service_job_p;
 }
 
 
@@ -46,7 +44,7 @@ OperationStatus BlastTool :: GetStatus () const
 
 const uuid_t &BlastTool :: GetUUID () const
 {
-	return bt_uuid;
+	return bt_job_p -> sj_id;
 }
 
 
@@ -116,17 +114,13 @@ OperationStatus ThreadedBlastTool :: Run ()
 
 void BlastTool :: PreRun ()
 {
-	bt_status = OS_STARTED;
-
-	SetCurrentServiceStatus (bt_service_p, bt_uuid, bt_status);
+	bt_job_p -> sj_status = OS_STARTED;
 }
 
 
 void BlastTool :: PostRun ()
 {
-	bt_status = OS_SUCCEEDED;
-
-	SetCurrentServiceStatus (bt_service_p, bt_uuid, bt_status);
+	bt_job_p -> sj_status = OS_SUCCEEDED;
 }
 
 

@@ -34,7 +34,7 @@ static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *reso
 
 static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -184,7 +184,7 @@ static bool CloseWebService (Service *service_p)
 }
 
 
-static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 	OperationStatus res = OS_FAILED_TO_START;
@@ -240,7 +240,7 @@ static json_t *RunWebService (Service *service_p, ParameterSet *param_set_p, jso
 						
 		}		/* if (param_set_p) */
 
-	return res_json_p;
+	return service_p -> se_jobs_p;
 }
 
 	
