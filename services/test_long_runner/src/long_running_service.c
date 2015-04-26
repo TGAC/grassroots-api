@@ -283,7 +283,16 @@ static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uu
 
 			if (job_p)
 				{
-					status = job_p -> sj_status;
+					if (data_p -> lsd_task_0.tt_job_p == job_p)
+						{
+							status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_0));
+						}
+					else if (data_p -> lsd_task_0.tt_job_p == job_p)
+						{
+							status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_0));
+						}
+
+					job_p -> sj_status = status;
 				}
 		}
 
