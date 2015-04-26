@@ -16,7 +16,7 @@
 #include "streams.h"
 #include "curl_tools.h"
 #include "web_service_util.h"
-
+#include "service_job.h"
 
 /*
  * STATIC PROTOTYPES
@@ -40,6 +40,8 @@ static bool IsResourceForWebService (Service *service_p, Resource *resource_p, H
 
 
 static WebServiceData *AllocateWebServiceData (json_t *config_p);
+
+static json_t *GetWebServiceResults (Service *service_p, const uuid_t job_id);
 
 
 static void FreeWebServiceData (WebServiceData *data_p);
@@ -72,6 +74,26 @@ void ReleaseService (Service *service_p)
 
 
 
+static json_t *GetWebServiceResults (Service *service_p, const uuid_t job_id)
+{
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
+	ServiceJob *job_p = GetJobById (service_p -> se_jobs_p, job_id);
+	json_t *res_p = NULL;
+
+	if (job_p)
+		{
+			if (job_p -> sj_status == OS_SUCCEEDED)
+				{
+					json_error_t error;
+					const char *buffer_data_p = GetCurlToolData (data_p -> wsd_curl_data_p);
+					res_p = json_loads (buffer_data_p, 0, &error);
+				}
+		}		/* if (job_p) */
+
+	return res_p;
+}
+
+
 
 static Service *GetWebService (json_t *operation_json_p, size_t i)
 {									
@@ -92,7 +114,7 @@ static Service *GetWebService (json_t *operation_json_p, size_t i)
 						GetWebServiceParameters,
 						ReleaseWebServiceParameters,
 						CloseWebService,
-						NULL,
+						GetWebServiceResults,
 						NULL,
 						false,
 						data_p);
@@ -187,58 +209,47 @@ static bool CloseWebService (Service *service_p)
 static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
-	OperationStatus res = OS_FAILED_TO_START;
-	json_t *res_json_p = NULL;
-	
-	if (param_set_p)
+
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1);
+
+	if (service_p -> se_jobs_p)
 		{
-			bool success_flag = true;
+			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			ResetByteBuffer (data_p -> wsd_buffer_p);					
+			job_p -> sj_status = OS_FAILED_TO_START;
 
-			switch (data_p -> wsd_method)
+			if (param_set_p)
 				{
-					case SM_POST:
-						success_flag = AddParametersToPostWebService (data_p, param_set_p);
-						break;
-						
-					case SM_GET:
-						success_flag = AddParametersToGetWebService (data_p, param_set_p);
-						break;
-						
-					case SM_BODY:
-						success_flag = AddParametersToBodyWebService (data_p, param_set_p);
-						break;
-						
-					default:
-						break;
-				}
-							
-			if (success_flag)
-				{
-					json_error_t error;
-					json_t *web_service_response_json_p = NULL;
-					const char *service_name_s = GetServiceName (service_p);
-					
-					res = (CallCurlWebservice (data_p)) ? OS_SUCCEEDED : OS_FAILED;	
-					
-					if (res == OS_SUCCEEDED)
+					bool success_flag = true;
+
+					ResetByteBuffer (data_p -> wsd_buffer_p);
+
+					switch (data_p -> wsd_method)
 						{
-							const char *buffer_data_p = GetCurlToolData (data_p -> wsd_curl_data_p);
-							web_service_response_json_p = json_loads (buffer_data_p, 0, &error);
+							case SM_POST:
+								success_flag = AddParametersToPostWebService (data_p, param_set_p);
+								break;
 
-							if (!web_service_response_json_p)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\n%s\n", service_name_s, error.text, buffer_data_p);
-								}
+							case SM_GET:
+								success_flag = AddParametersToGetWebService (data_p, param_set_p);
+								break;
 
-							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p, NULL);
+							case SM_BODY:
+								success_flag = AddParametersToBodyWebService (data_p, param_set_p);
+								break;
 
-						}		/* if (res == OS_SUCCEEDED) */
+							default:
+								break;
+						}
 
-				}		/* if (success_flag) */
-						
-		}		/* if (param_set_p) */
+					if (success_flag)
+						{
+							job_p -> sj_status = (CallCurlWebservice (data_p)) ? OS_SUCCEEDED : OS_FAILED;
+						}		/* if (success_flag) */
+
+				}		/* if (param_set_p) */
+
+		}		/* if (service_p -> se_jobs_p) */
 
 	return service_p -> se_jobs_p;
 }
@@ -256,7 +267,4 @@ static bool IsResourceForWebService (Service *service_p, Resource *resource_p, H
 
 	return interested_flag;
 }
-
-
-
 

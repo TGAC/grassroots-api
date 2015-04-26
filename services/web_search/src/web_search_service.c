@@ -17,6 +17,7 @@
 #include "curl_tools.h"
 #include "selector.hpp"
 #include "web_service_util.h"
+#include "service_job.h"
 
 
 typedef struct WebSearchServiceData
@@ -52,6 +53,7 @@ static bool IsResourceForWebSearchService (Service *service_p, Resource *resourc
 
 static WebSearchServiceData *AllocateWebSearchServiceData (json_t *config_p);
 
+static json_t *GetWebSearchServiceResults (Service *service_p, const uuid_t job_id);
 
 static void FreeWebSearchServiceData (WebSearchServiceData *data_p);
 
@@ -102,7 +104,7 @@ static Service *GetWebSearchService (json_t *operation_json_p, size_t i)
 						GetWebSearchServiceParameters,
 						ReleaseWebSearchServiceParameters,
 						CloseWebSearchService,
-						NULL,
+						GetWebSearchServiceResults,
 						NULL,
 						false,
 						data_p);
@@ -207,59 +209,80 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 {
 	WebSearchServiceData *service_data_p = (WebSearchServiceData *) (service_p -> se_data_p);
 	WebServiceData *data_p = & (service_data_p -> wssd_base_data);
-	OperationStatus res = OS_FAILED_TO_START;
-	json_t *res_json_p = NULL;
 	
-	if (param_set_p)
+	/* We only have one task */
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1);
+
+	if (service_p -> se_jobs_p)
 		{
-			bool success_flag = true;
+			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			ResetByteBuffer (data_p -> wsd_buffer_p);
+			job_p -> sj_status = OS_FAILED_TO_START;
 
-			switch (data_p -> wsd_method)
+			if (param_set_p)
 				{
-					case SM_POST:
-						success_flag = AddParametersToPostWebService (data_p, param_set_p);
-						break;
-						
-					case SM_GET:
-						success_flag = AddParametersToGetWebService (data_p, param_set_p);
-						break;
-						
-					case SM_BODY:
-						success_flag = AddParametersToBodyWebService (data_p, param_set_p);
-						break;
-						
-					default:
-						break;
-				}
+					bool success_flag = true;
 
-			if (success_flag)
-				{
-					if (CallCurlWebservice (data_p))
+					ResetByteBuffer (data_p -> wsd_buffer_p);
+
+					switch (data_p -> wsd_method)
 						{
-							json_error_t error;
-							const char * const data_s = GetCurlToolData (data_p -> wsd_curl_data_p);
-							json_t *web_service_response_json_p = GetMatchingLinksAsJSON (data_s, service_data_p -> wssd_css_selector_s, data_p -> wsd_base_uri_s);
-							const char *service_name_s = GetServiceName (service_p);
+							case SM_POST:
+								success_flag = AddParametersToPostWebService (data_p, param_set_p);
+								break;
 
-							if (!web_service_response_json_p)
+							case SM_GET:
+								success_flag = AddParametersToGetWebService (data_p, param_set_p);
+								break;
+
+							case SM_BODY:
+								success_flag = AddParametersToBodyWebService (data_p, param_set_p);
+								break;
+
+							default:
+								break;
+						}
+
+					if (success_flag)
+						{
+							if (CallCurlWebservice (data_p))
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\ndata:\n%s\n", service_name_s, error.text, data_s);
-								}
+									job_p -> sj_status = OS_SUCCEEDED;
+								}		/* if (CallCurlWebservice (data_p)) */
 
-							res_json_p = CreateServiceResponseAsJSON (service_p, res, web_service_response_json_p, NULL);
+						}		/* if (success_flag) */
 
-						}		/* if (CallCurlWebservice (data_p)) */
-
-				}		/* if (success_flag) */
-						
-		}		/* if (param_set_p) */
+				}		/* if (param_set_p) */
+		}
 
 	return service_p -> se_jobs_p;
 }
 
 
+static json_t *GetWebSearchServiceResults (Service *service_p, const uuid_t job_id)
+{
+	WebSearchServiceData *data_p = (WebSearchServiceData *) (service_p -> se_data_p);
+	ServiceJob *job_p = GetJobById (service_p -> se_jobs_p, job_id);
+	json_t *res_p = NULL;
+
+	if (job_p)
+		{
+			if (job_p -> sj_status == OS_SUCCEEDED)
+				{
+					json_error_t error;
+					const char * const data_s = GetCurlToolData (data_p -> wssd_base_data.wsd_curl_data_p);
+					const char *service_name_s = GetServiceName (service_p);
+
+					if (!res_p)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to decode response from %s, error is %s:\ndata:\n%s\n", service_name_s, error.text, data_s);
+						}
+
+				}
+		}		/* if (job_p) */
+
+	return res_p;
+}
 
 	
 	

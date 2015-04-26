@@ -91,7 +91,7 @@ ServicesArray *GetServices (const json_t *config_p)
 						GetElasticSearchRestServiceParameters,
 						ReleaseElasticSearchRestServiceParameters,
 						CloseElasticSearchRestService,
-						NULL,
+						GetElasticSearchRestServiceResults,
 						NULL,
 						true,
 						data_p);
@@ -209,83 +209,89 @@ static void ReleaseElasticSearchRestServiceParameters (Service *service_p, Param
 
 static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
-	OperationStatus res = OS_FAILED_TO_START;
-	json_t *res_json_p = NULL;
-	json_t *results_json_p = NULL;
-	CurlTool *curl_tool_p = AllocateCurlTool ();
+	/* We only have one task */
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1);
 
-	if (curl_tool_p)
+	if (service_p -> se_jobs_p)
 		{
-			SharedType field;
+			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_FIELD, &field, true))
+			job_p -> sj_status = OS_FAILED_TO_START;
+
+			CurlTool *curl_tool_p = AllocateCurlTool ();
+
+			if (curl_tool_p)
 				{
-					SharedType keyword;
+					SharedType field;
 
-					if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true))
+					if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_FIELD, &field, true))
 						{
-							/* Is keyword valid? */
-							if (!IsStringEmpty (keyword.st_string_value_s))
+							SharedType keyword;
+
+							if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true))
 								{
-									results_json_p = json_array ();
-
-									if (results_json_p)
+									/* Is keyword valid? */
+									if (!IsStringEmpty (keyword.st_string_value_s))
 										{
-											ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+											results_json_p = json_array ();
 
-											if (buffer_p)
+											if (results_json_p)
 												{
-													/* build the uri to call */
-													if (AppendStringsToByteBuffer (buffer_p, GetRootRestURI (), field.st_string_value_s, "/", keyword.st_string_value_s, NULL))
+													ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+													if (buffer_p)
 														{
-															const char * const uri_s = GetByteBufferData (buffer_p);
-
-															if (SetUriForCurlTool (curl_tool_p, uri_s))
+															/* build the uri to call */
+															if (AppendStringsToByteBuffer (buffer_p, GetRootRestURI (), field.st_string_value_s, "/", keyword.st_string_value_s, NULL))
 																{
-																	CURLcode curl_res = RunCurlTool (curl_tool_p);
+																	const char * const uri_s = GetByteBufferData (buffer_p);
 
-																	if (curl_res == CURLE_OK)
+																	if (SetUriForCurlTool (curl_tool_p, uri_s))
 																		{
-																			const char * const data_s = GetCurlToolData (curl_tool_p);
+																			CURLcode curl_res = RunCurlTool (curl_tool_p);
 
-																			if (data_s)
+																			if (curl_res == CURLE_OK)
 																				{
-																					json_error_t error;
+																					const char * const data_s = GetCurlToolData (curl_tool_p);
 
-																					results_json_p = json_loads (data_s, 0, &error);
-
-																					if (results_json_p)
+																					if (data_s)
 																						{
-																							res = OS_SUCCEEDED;
-																						}
-																					else
-																						{
+																							json_error_t error;
 
-																						}		/* if (!results_json_p) */
+																							results_json_p = json_loads (data_s, 0, &error);
 
-																				}		/* if (data_s) */
+																							if (results_json_p)
+																								{
+																									res = OS_SUCCEEDED;
+																								}
+																							else
+																								{
 
-																		}		/* if (res == CURLE_OK) */
+																								}		/* if (!results_json_p) */
 
-																}		/* if (SetUriForCurlTool (curl_tool_p, uri_s)) */
+																						}		/* if (data_s) */
 
-														}		/* if (AppendStringsToByteBuffer (buffer_p, field.st_string_value_s, "/", keyword.st_string_value_s, NULL)) */
+																				}		/* if (res == CURLE_OK) */
 
-													FreeByteBuffer (buffer_p);
-												}		/* if (buffer_p) */
-										}
+																		}		/* if (SetUriForCurlTool (curl_tool_p, uri_s)) */
 
-								}		/* if (!IsStringEmpty (keyword.st_string_value_s)) */
+																}		/* if (AppendStringsToByteBuffer (buffer_p, field.st_string_value_s, "/", keyword.st_string_value_s, NULL)) */
 
-						}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true)) */
+															FreeByteBuffer (buffer_p);
+														}		/* if (buffer_p) */
+												}
 
-				}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_FIELD, &field, true)) */
+										}		/* if (!IsStringEmpty (keyword.st_string_value_s)) */
 
-			FreeCurlTool (curl_tool_p);
-		}
+								}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_KEYWORD, &keyword, true)) */
+
+						}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_SEARCH_FIELD, &field, true)) */
+
+					FreeCurlTool (curl_tool_p);
+				}
+
+		}		/* if (service_p -> se_jobs_p) */
 	
-	res_json_p = CreateServiceResponseAsJSON (service_p, res, results_json_p, NULL);
-
 	return service_p -> se_jobs_p;
 }
 
