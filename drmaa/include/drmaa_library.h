@@ -1,8 +1,8 @@
 /**@file irods_util_library.h
 */ 
 
-#ifndef WHEATIS_NETWORK_LIBRARY_H
-#define WHEATIS_NETWORK_LIBRARY_H
+#ifndef WHEATIS_DRMAA_LIBRARY_H
+#define WHEATIS_DRMAA_LIBRARY_H
 
 #ifdef __cplusplus
 	extern "C" {
@@ -18,15 +18,15 @@
 */
 
 #ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
-  #ifdef  WHEATIS_NETWORK_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
-    #define WHEATIS_NETWORK_API LIB_HELPER_SYMBOL_EXPORT
+  #ifdef  WHEATIS_DRMAA_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
+    #define WHEATIS_DRMAA_API LIB_HELPER_SYMBOL_EXPORT
   #else
-    #define WHEATIS_NETWORK_API LIB_HELPER_SYMBOL_IMPORT
-  #endif /* #ifdef WHEATIS_NETWORK_LIBRARY_EXPORTS */
-  #define WHEATIS_NETWORK_LOCAL LIB_HELPER_SYMBOL_LOCAL
+    #define WHEATIS_DRMAA_API LIB_HELPER_SYMBOL_IMPORT
+  #endif /* #ifdef WHEATIS_DRMAA_LIBRARY_EXPORTS */
+  #define WHEATIS_DRMAA_LOCAL LIB_HELPER_SYMBOL_LOCAL
 #else /* SHARED_LIBRARY is not defined: this means LIB is a static lib. */
-  #define WHEATIS_NETWORK_API
-  #define WHEATIS_NETWORK_LOCAL
+  #define WHEATIS_DRMAA_API
+  #define WHEATIS_DRMAA_LOCAL
 #endif /* #ifdef SHARED_LIBRARY */
 
 #ifdef __cplusplus
@@ -34,6 +34,6 @@
 #endif
 
 
-#endif 	/* #ifndef WHEATIS_NETWORK_LIBRARY_H */
+#endif 	/* #ifndef WHEATIS_DRMAA_LIBRARY_H */
 
 
