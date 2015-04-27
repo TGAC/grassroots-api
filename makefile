@@ -109,7 +109,7 @@ all:
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C util 
 	$(MAKE) -C network
-	$(MAKE) -C drmaa
+#	$(MAKE) -C drmaa
 	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib
@@ -133,7 +133,7 @@ all:
 install: install_init install_references install_images
 	$(MAKE) -C util install
 	$(MAKE) -C network install
-	$(MAKE) -C drmaa install
+#	$(MAKE) -C drmaa install
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
@@ -157,7 +157,7 @@ install: install_init install_references install_images
 clean: 
 	$(MAKE) -C util clean
 	$(MAKE) -C network clean
-	$(MAKE) -C drmaa clean
+#	$(MAKE) -C drmaa clean
 	$(MAKE) -C irods/lib clean
 	$(MAKE) -C handlers/lib clean
 	$(MAKE) -C services/lib clean

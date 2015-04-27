@@ -12,6 +12,9 @@
 #include "byte_buffer.h"
 #include "temp_file.hpp"
 
+class ExternalBlastTool;
+
+typedef bool (ExternalBlastTool :: *ParseArgCallback) (const char *arg_s);
 
 /**
  * A class that will run Blast as a forked process.
@@ -28,9 +31,11 @@ protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_input_p;
 	TempFile *ebt_output_p;
+	ParseArgCallback ebt_arg_callback;
 
 	const char *GetOutputData ();
 
+	bool AddArgToInternalBuffer (const char * const arg_s);
 };
 
 

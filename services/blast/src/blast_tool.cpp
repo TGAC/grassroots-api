@@ -11,14 +11,26 @@
 
 #include "system_blast_tool.hpp"
 
+#ifdef DRMAA_ENABLED
+#include "drmaa_blast_tool.hpp"
+#endif
+
 
 BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s)
 {
+	BlastTool *tool_p = 0;
+
 	/**
 	 * In the future, this would query the system to determine which type
 	 * of blast tool to use, probably set by an admin. 
 	 */
-	return new SystemBlastTool (job_p, name_s);
+	#ifdef DRMAA_ENABLED
+	tool_p = new DrmaaBlastTool (job_p, name_s);
+	#else
+	tool_p = new SystemBlastTool (job_p, name_s);
+	#endif
+
+	return tool_p;
 }
 
 

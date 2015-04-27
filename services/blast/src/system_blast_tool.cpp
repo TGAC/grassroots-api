@@ -25,10 +25,10 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 {
 	bool success_flag = false;
 
-	if (AppendStringToByteBuffer (ebt_buffer_p, "blastn "))
+	if ((this ->*ebt_arg_callback) ("blastn "))
 		{
 			/* TESTING REMOVE THIS WHEN DATABASE SELECTOR IS ACTIVE */
-			if (AppendStringToByteBuffer (ebt_buffer_p, "-db testdb "))
+			if ((this ->*ebt_arg_callback) ("-db testdb "))
 				{
 					success_flag = ExternalBlastTool :: ParseParameters (params_p);
 				}

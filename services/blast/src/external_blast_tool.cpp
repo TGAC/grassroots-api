@@ -18,6 +18,7 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s)
 	ebt_buffer_p = AllocateByteBuffer (1024);
 	ebt_input_p = 0;
 	ebt_output_p = 0;
+	ebt_arg_callback = &ExternalBlastTool :: AddArgToInternalBuffer;
 }
 
 
@@ -34,6 +35,24 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 		}
 
 	FreeByteBuffer (ebt_buffer_p);
+}
+
+
+bool ExternalBlastTool :: AddArgToInternalBuffer (const char *arg_s)
+{
+	bool success_flag = true;
+
+	if (ebt_buffer_p -> bb_current_index > 0)
+		{
+			success_flag = AppendStringToByteBuffer (ebt_buffer_p, " ");
+		}
+
+	if (success_flag)
+		{
+			success_flag =  AppendStringToByteBuffer (ebt_buffer_p, arg_s);
+		}
+
+	return success_flag;
 }
 
 
@@ -112,7 +131,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 	if (filename_s)
 		{
-			success_flag = AppendStringsToByteBuffer (ebt_buffer_p, "-query ", filename_s, NULL);
+			if ((this ->*ebt_arg_callback) ("-query"))
+				{
+					if ((this ->*ebt_arg_callback) (filename_s))
+						{
+							success_flag = true;
+						}
+				}
 		}
 
 
@@ -126,7 +151,21 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 					memset (&to, 0, sizeof (SharedType));
 					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &value, true))
 						{
-							success_flag = AppendStringsToByteBuffer (ebt_buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL);
+							ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+							success_flag = false;
+
+							if (buffer_p)
+								{
+									if (AppendStringsToByteBuffer (buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL))
+										{
+											if ((this ->*ebt_arg_callback) (GetByteBufferData (buffer_p)))
+												{
+													success_flag = true;
+												}
+										}
+
+									FreeByteBuffer (buffer_p);
+								}
 						}
 				}
 		}
@@ -143,7 +182,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -reward ", value_s, NULL);
+							if ((this ->*ebt_arg_callback) ("-reward"))
+								{
+									if ((this ->*ebt_arg_callback) (value_s))
+										{
+											success_flag = true;
+										}
+								}
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -162,7 +207,14 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -penalty ", value_s, NULL);
+							if ((this ->*ebt_arg_callback) ("-penalty"))
+								{
+									if ((this ->*ebt_arg_callback) (value_s))
+										{
+											success_flag = true;
+										}
+								}
+
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -180,7 +232,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -max_target_seqs ", value_s, NULL);
+							if ((this ->*ebt_arg_callback) ("-max_target_seqs"))
+								{
+									if ((this ->*ebt_arg_callback) (value_s))
+										{
+											success_flag = true;
+										}
+								}
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -198,7 +256,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -evalue ", value_s, NULL);
+							if ((this ->*ebt_arg_callback) ("-evalue"))
+								{
+									if ((this ->*ebt_arg_callback) (value_s))
+										{
+											success_flag = true;
+										}
+								}
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -217,7 +281,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -word_size ", value_s, NULL);
+							if ((this ->*ebt_arg_callback) ("-word_size"))
+								{
+									if ((this ->*ebt_arg_callback) (value_s))
+										{
+											success_flag = true;
+										}
+								}
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
@@ -228,11 +298,19 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 	/* Output File */
 	if (success_flag)
 		{
+			success_flag = false;
 			ebt_output_p = TempFile :: GetTempFile ("r");
 
 			if (ebt_output_p)
 				{
-					success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -out ", ebt_output_p -> GetFilename (), NULL);
+					if ((this ->*ebt_arg_callback) ("-out"))
+						{
+							if ((this ->*ebt_arg_callback) (ebt_output_p -> GetFilename ()))
+								{
+									success_flag = true;
+								}
+						}
+
 
 					ebt_output_p -> Close ();
 				}
