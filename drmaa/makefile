@@ -52,12 +52,13 @@ include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 .PHONY:	test test_install
 
 all: test
+install: test_install
 
 test:
 	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
 
 
 test_install: test install
-	@echo "Installing $(TEST_EXE_NAME) to $(DIR_INSTALL_ROOT)"
-	cp $(BUILD)/$(TEST_EXE_NAME) $(DIR_INSTALL_ROOT)/  
+	@echo "Installing $(TEST_EXE_NAME) to $(DIR_WHEATIS_INSTALL)"
+	cp $(BUILD)/$(TEST_EXE_NAME) $(DIR_WHEATIS_INSTALL)/  
 

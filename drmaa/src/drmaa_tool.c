@@ -247,7 +247,6 @@ static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p)
 static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss)
 {
 	FreeMemory (args_ss);
-	drmaa_set_vector_attribute (tool_p -> dt_job_p, DRMAA_V_ARGV, NULL, NULL, 0);
 }
 
 
