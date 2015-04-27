@@ -3,6 +3,7 @@
     "operationId":6
   },
   "services": [
-		"a263bd85-e6fe-4131-a228-16b1194e29ee" 
+    "702e00cc-ff7f-0000-88ce-dc7976fc45b5",
+    "702e00cc-ff7f-0000-f1dc-bb658a664f0d"
   ]
 }

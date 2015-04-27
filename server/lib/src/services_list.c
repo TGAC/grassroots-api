@@ -19,6 +19,9 @@ static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *service_p);
 
 static void FreeUUIDJobNode (ListItem * const node_p);
 
+static UUIDJobNode *GetServiceJobNode (const uuid_t job_key);
+
+
 
 static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *job_p)
 {
@@ -70,18 +73,29 @@ bool DestroyServicesStatusTable (void)
 
 bool AddServiceJobToStatusTable (uuid_t job_key, ServiceJob *job_p)
 {
-	UUIDJobNode *node_p = AllocateUUIDJobNode (job_key, job_p);
+	bool success_flag = false;
+	UUIDJobNode *node_p = GetServiceJobNode (job_key);
 
 	if (node_p)
 		{
-			LinkedListAddTail (&s_running_services, (ListItem * const) node_p);
+			success_flag = (node_p -> ujn_job_p == job_p);
+		}
+	else
+		{
+			UUIDJobNode *node_p = AllocateUUIDJobNode (job_key, job_p);
+
+			if (node_p)
+				{
+					LinkedListAddTail (&s_running_services, (ListItem * const) node_p);
+					success_flag = true;
+				}
 		}
 
-	return (node_p != NULL);
+	return success_flag;
 }
 
 
-ServiceJob *GetServiceJobFromStatusTable (const uuid_t job_key)
+static UUIDJobNode *GetServiceJobNode (const uuid_t job_key)
 {
 	UUIDJobNode *node_p = (UUIDJobNode *) s_running_services.ll_head_p;
 
@@ -89,13 +103,21 @@ ServiceJob *GetServiceJobFromStatusTable (const uuid_t job_key)
 		{
 			if (uuid_compare (node_p -> ujn_id, job_key) == 0)
 				{
-					return (node_p -> ujn_job_p);
+					return node_p;
 				}
 
 			node_p = (UUIDJobNode *) (node_p -> ujn_node.ln_next_p);
 		}
 
 	return NULL;
+}
+
+
+ServiceJob *GetServiceJobFromStatusTable (const uuid_t job_key)
+{
+	UUIDJobNode *node_p = GetServiceJobNode (job_key);
+
+	return (node_p ? node_p -> ujn_job_p : NULL);
 }
 
 

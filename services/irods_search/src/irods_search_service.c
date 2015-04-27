@@ -166,7 +166,7 @@ ServicesArray *GetServices (const json_t *config_p)
 					FreeServicesArray (services_p);
 				}
 
-			FreeService (irods_service_p);
+			FreeMemory (irods_service_p);
 		}
 
 	return NULL;

@@ -243,23 +243,26 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 			/* simulate a task that takes 1 minute */
 			data_p -> lsd_task_0.tt_job_p = job_p;
 			StartTimedTask (& (data_p -> lsd_task_0), 60);
+
 			job_p -> sj_status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_0));
+			/*
 			if (job_p -> sj_status == OS_STARTED)
 				{
 					AddServiceJobToStatusTable (job_p -> sj_id, job_p);
 				}
-
+			*/
 			++ job_p;
 
 			/* simulate a task that takes 3 minutes */
 			data_p -> lsd_task_1.tt_job_p = job_p;
 			StartTimedTask (& (data_p -> lsd_task_1), 180);
 			job_p -> sj_status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_1));
+			/*
 			if (job_p -> sj_status == OS_STARTED)
 				{
 					AddServiceJobToStatusTable (job_p -> sj_id, job_p);
 				}
-
+			*/
 		}		/* if (service_p -> se_jobs_p) */
 
 	return service_p -> se_jobs_p;
