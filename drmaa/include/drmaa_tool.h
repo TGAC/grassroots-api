@@ -10,7 +10,11 @@
 
 #include "drmaa_library.h"
 #include "drmaa.h"
-#include "string_linked_list.h"
+#include "typedefs.h"
+#include "linked_list.h"
+
+
+#define MAX_LEN_JOBID 100
 
 
 typedef struct DrmaaTool

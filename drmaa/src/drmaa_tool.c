@@ -1,12 +1,17 @@
+#include <string.h>
+
 #include "drmaa_tool.h"
 #include "streams.h"
+#include "string_utils.h"
+#include "memory_allocations.h"
+#include "string_linked_list.h"
 
 
 static bool SetValue (char **dest_ss, char *value_s);
 
-static char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
+static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
-static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, char **args_ss);
+static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss);
 
 
 
@@ -120,6 +125,8 @@ bool SetDrmaaToolQueueName (DrmaaTool *tool_p, char *queue_name_s)
 	if (SetValue (& (tool_p -> dt_queue_name_s), queue_name_s))
 		{
 			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_NATIVE_SPECIFICATION, tool_p -> dt_queue_name_s, NULL, 0);
+
+			success_flag = true;
 		}
 
 	return success_flag;
@@ -133,7 +140,7 @@ bool AddDrmaaToolArgument (DrmaaTool *tool_p, char *arg_s)
 
 	if (node_p)
 		{
-			LinkedListAddTail (tool_p, (ListItem * const) node_p);
+			LinkedListAddTail (tool_p -> dt_args_p, (ListItem * const) node_p);
 			success_flag = true;
 		}
 
@@ -146,7 +153,7 @@ bool RunDrmaaToolSynchronously (DrmaaTool *tool_p)
 {
 	bool success_flag = false;
 
-	char **args_ss = CreateAndAddArgsArray (tool_p);
+	const char **args_ss = CreateAndAddArgsArray (tool_p);
 
 	if (args_ss)
 		{
@@ -190,7 +197,7 @@ bool RunDrmaaToolSynchronously (DrmaaTool *tool_p)
 									if (signal_status)
 										{
 											char termsig [DRMAA_SIGNAL_BUFFER+1];
-											drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, stat, NULL, 0);
+											drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, tool_p -> dt_stat, NULL, 0);
 											PrintLog (STM_LEVEL_SEVERE, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
 										}
 									else
@@ -208,13 +215,13 @@ bool RunDrmaaToolSynchronously (DrmaaTool *tool_p)
 }
 
 
-static char **CreateAndAddArgsArray (const DrmaaTool *tool_p)
+static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p)
 {
-	char **args_ss = (char **) AllocMemory (((tool_p -> dt_args_p -> ll_size) + 1) * sizeof (char *));
+	const char **args_ss = (const char **) AllocMemory (((tool_p -> dt_args_p -> ll_size) + 1) * sizeof (const char *));
 
 	if (args_ss)
 		{
-			char **arg_ss = args_ss;
+			const char **arg_ss = args_ss;
 			StringListNode *node_p = (StringListNode *) (tool_p -> dt_args_p -> ll_head_p);
 
 			while (node_p)
@@ -237,10 +244,9 @@ static char **CreateAndAddArgsArray (const DrmaaTool *tool_p)
 }
 
 
-static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, char **args_ss)
+static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss)
 {
 	FreeMemory (args_ss);
-	drmaa_set_vector_attribute (tool_p -> dt_job_p, DRMAA_V_ARGV, NULL, NULL, 0);
 }
 
 

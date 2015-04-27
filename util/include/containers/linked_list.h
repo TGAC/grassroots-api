@@ -9,9 +9,6 @@
 #include "typedefs.h"
 #include "wheatis_util_library.h"
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
 
 
 /******** FORWARD DECLARATION ******/
@@ -48,7 +45,10 @@ typedef struct LinkedList
 
 } LinkedList;
 
-
+#ifdef __cplusplus
+extern "C" 
+{
+#endif
 
 /**
  * Create a new LinkedList.
