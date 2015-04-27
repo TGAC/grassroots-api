@@ -16,7 +16,7 @@ endif
 
 export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
 
-TEST_EXE_NAME = network_test
+TEST_EXE_NAME = drmaa_tool_test
 
 BUILD		= debug
 
@@ -50,7 +50,7 @@ include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 
 test:
-	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -g -o $(BUILD)/$(TEST_EXE_NAME)
+	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
 
 
 test_install: test install
