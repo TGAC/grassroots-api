@@ -28,31 +28,18 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
-	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_SERVER_INC) \
-	-I$(DIR_HTMLCXX_INC) \
-	-I$(DIR_JANSSON_INC) \
-	-I$(DIR_UUID_INC)
-	
+	-I$(DIR_LSF_DRMAA_INCLUDE)
 	
 SRCS 	= \
-	lsf_example.c 
+	lsf_example.c \
+	drmaa_tool.c
 	
 
 BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
-	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
-	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
-#	-L/usr/local/lib/ -lpolarssl \
-	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
-	-L../extras/hcxselect-1.1/src \
-	-L $(DIR_HTMLCXX_LIB) \
-	-lhcxselect \
-	-lhtmlcxx \
-	-Wl,-Bsymbolic-functions -Wl,-z,relro \
-#	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp
+	-L$(DIR_LSF_DRMAA_LIB) -ldrmaa
 
-CPPFLAGS += -DWHEATIS_LSF_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I../extras/hcxselect-1.1/src
+CPPFLAGS += -DWHEATIS_DRMAA_LIBRARY_EXPORTS
 
 LDFLAGS += $(BASE_LDFLAGS)
 

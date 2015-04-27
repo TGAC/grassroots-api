@@ -7,9 +7,14 @@
 #include <string.h>
 #include <getopt.h>
 #include "drmaa.h"
+
+#include "typedefs.h"
+#include "streams.h"
+
 #define MAX_LEN_JOBID 100
 
 static int RunJob (const char *job_path, const char * const inline_query_s, const char * const db_name_s, const char * const output_path_s);
+
 
 int main(int argc, char *argv[])
 {
