@@ -24,7 +24,7 @@ public:
 
 	virtual const char *GetResults ();
 
-	virtual OperationStatus GetStatus () const;
+	virtual OperationStatus GetStatus ();
 
 private:
 	DrmaaTool *dbt_drmaa_tool_p;

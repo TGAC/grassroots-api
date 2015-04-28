@@ -51,7 +51,7 @@ bool DrmaaBlastTool :: AddArg (const char *arg_s)
 
 
 
-OperationStatus DrmaaBlastTool :: GetStatus () const
+OperationStatus DrmaaBlastTool :: GetStatus ()
 {
 	bt_status = GetDrmaaToolStatus (dbt_drmaa_tool_p);
 

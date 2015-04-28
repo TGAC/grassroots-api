@@ -51,7 +51,7 @@ BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s)
 }
 
 
-OperationStatus BlastTool :: GetStatus () const
+OperationStatus BlastTool :: GetStatus ()
 {
 	return bt_job_p -> sj_status;
 }
