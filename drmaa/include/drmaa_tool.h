@@ -42,13 +42,13 @@ WHEATIS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
 WHEATIS_DRMAA_API void FreeDrmaaTool (DrmaaTool *tool_p);
 
 
-WHEATIS_DRMAA_API bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, char *path_s);
+WHEATIS_DRMAA_API bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, const char *path_s);
 
 
-WHEATIS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, char *queue_name_s);
+WHEATIS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s);
 
 
-WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, char *arg_s);
+WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s);
 
 
 WHEATIS_DRMAA_API bool RunDrmaaToolSynchronously (DrmaaTool *tool_p);
