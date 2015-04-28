@@ -6,18 +6,25 @@
  */
 
 #include <cstring>
-
+#include <unistd.h>
 #include "temp_file.hpp"
 
 
 
 
-TempFile *TempFile :: GetTempFile (const char *mode_s)
+TempFile *TempFile :: GetTempFile (char *template_s, const char *mode_s)
 {
 	TempFile *tf_p = new TempFile;
 
-	if ((tmpnam (tf_p -> tf_name_s)) != NULL)
+	int fd = 	mkstemp (template_s);
+
+	if (fd >= 1)
 		{
+			// Call unlink so that whenever the file is closed or the program exits
+			// the temporary file is deleted
+			unlink (template_s);
+			tf_p -> tf_name_s = template_s;
+
 			if ((strcmp (mode_s, "r") == 0) || (tf_p -> Open (mode_s)))
 				{
 					return tf_p;
@@ -117,7 +124,7 @@ TempFile :: TempFile ()
 {
 	tf_handle_f = 0;
 	tf_data_s = 0;
-	memset (tf_name_s, 0, sizeof (char) * L_tmpnam);
+	tf_name_s = 0;
 }
 
 
@@ -128,6 +135,11 @@ TempFile :: ~TempFile ()
 	if (tf_data_s)
 		{
 			FreeMemory (tf_data_s);
+		}
+
+	if (tf_name_s)
+		{
+			FreeMemory (tf_name_s);
 		}
 }
 

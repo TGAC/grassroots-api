@@ -9,8 +9,8 @@
 #include "streams.h"
 
 
-SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s)
-: ExternalBlastTool (job_p, name_s)
+SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
+: ExternalBlastTool (job_p, name_s, working_directory_s)
 {
 
 }
@@ -27,11 +27,7 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 
 	if ((this ->*ebt_arg_callback) ("blastn "))
 		{
-			/* TESTING REMOVE THIS WHEN DATABASE SELECTOR IS ACTIVE */
-			if ((this ->*ebt_arg_callback) ("-db testdb "))
-				{
-					success_flag = ExternalBlastTool :: ParseParameters (params_p);
-				}
+			success_flag = ExternalBlastTool :: ParseParameters (params_p);
 		}
 
 	return success_flag;

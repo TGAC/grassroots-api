@@ -12,13 +12,24 @@
 #include "temp_file.hpp"
 
 
-ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s)
+ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 : BlastTool (job_p, name_s)
 {
+	bool success_flag = false;
+
 	ebt_buffer_p = AllocateByteBuffer (1024);
 	ebt_input_p = 0;
 	ebt_output_p = 0;
 	ebt_arg_callback = &ExternalBlastTool :: AddArgToInternalBuffer;
+	ebt_working_directory_s = working_directory_s;
+
+	if ((this ->*ebt_arg_callback) ("-db"))
+		{
+			if ((this ->*ebt_arg_callback) (name_s))
+				{
+					success_flag = true;
+				}
+		}
 }
 
 
@@ -99,24 +110,33 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					ebt_input_p = TempFile :: GetTempFile ("w");
+					char *buffer_p = GetTempFilenameBuffer ();
 
-					if (ebt_input_p)
+					if (buffer_p)
 						{
-							if (ebt_input_p -> Print (sequence_s))
+							ebt_input_p = TempFile :: GetTempFile (buffer_p, "w");
+
+							if (ebt_input_p)
 								{
-									filename_s = ebt_input_p -> GetFilename ();
+									if (ebt_input_p -> Print (sequence_s))
+										{
+											filename_s = ebt_input_p -> GetFilename ();
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
+										}
+
+									ebt_input_p -> Close ();
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
+									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file \"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
 								}
-
-							ebt_input_p -> Close ();
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file \"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
+							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to allocate temp file buffer\"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
 						}
 				}
 			else
@@ -298,25 +318,31 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 	/* Output File */
 	if (success_flag)
 		{
+			char *buffer_p = GetTempFilenameBuffer ();
+
 			success_flag = false;
-			ebt_output_p = TempFile :: GetTempFile ("r");
 
-			if (ebt_output_p)
+			if (buffer_p)
 				{
-					if ((this ->*ebt_arg_callback) ("-out"))
+					ebt_input_p = TempFile :: GetTempFile (buffer_p, "w");
+
+					if (ebt_output_p)
 						{
-							if ((this ->*ebt_arg_callback) (ebt_output_p -> GetFilename ()))
+							if ((this ->*ebt_arg_callback) ("-out"))
 								{
-									success_flag = true;
+									if ((this ->*ebt_arg_callback) (ebt_output_p -> GetFilename ()))
+										{
+											success_flag = true;
+										}
 								}
+
+
+							ebt_output_p -> Close ();
 						}
-
-
-					ebt_output_p -> Close ();
-				}
-			else
-				{
-					success_flag = false;
+					else
+						{
+							success_flag = false;
+						}
 				}
 		}
 
@@ -336,3 +362,44 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 	return success_flag;
 }
 
+
+/* need a buffer where the final 6 chars are XXXXXX, see mkstemp */
+char *ExternalBlastTool :: GetTempFilenameBuffer ()
+{
+	char *buffer_s = 0;
+	const char FILE_TEMPLATE_S [] = "blast-XXXXXX";
+	const size_t working_dir_length = strlen (ebt_working_directory_s);
+	const size_t file_template_length = strlen (FILE_TEMPLATE_S);
+
+	size_t size = 1 + working_dir_length;
+	bool needs_slash_flag = (* (ebt_working_directory_s + (size - 1)) != GetFileSeparatorChar ());
+
+	if (needs_slash_flag)
+		{
+			++ size;
+		}
+
+	size += file_template_length;
+
+	buffer_s = (char *) AllocMemory (size * sizeof (char));
+
+	if (buffer_s)
+		{
+			char *buffer_p = buffer_s;
+
+			memcpy (buffer_p, ebt_working_directory_s, working_dir_length * sizeof (char));
+			buffer_p +=  working_dir_length * sizeof (char);
+
+			if (needs_slash_flag)
+				{
+					*buffer_p = GetFileSeparatorChar ();
+					++ buffer_p;
+				}
+
+			memcpy (buffer_p, FILE_TEMPLATE_S, file_template_length * sizeof (char));
+			buffer_p += file_template_length * sizeof (char);
+			*buffer_p = '\0';
+		}
+
+	return buffer_s;
+}

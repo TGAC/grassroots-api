@@ -9,10 +9,12 @@
 #include "streams.h"
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s)
-: ExternalBlastTool (job_p, name_s)
+DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
+: ExternalBlastTool (job_p, name_s, working_directory_s)
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool ("/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn");
+	SetDrmaaToolQueueName(dbt_drmaa_tool_p, "-q webservices");
+
 	ebt_arg_callback = &DrmaaBlastTool :: AddArgToDrmaaTool;
 }
 
@@ -33,9 +35,15 @@ OperationStatus DrmaaBlastTool :: Run ()
 	int res;
 
 	bt_job_p -> sj_status = OS_STARTED;
-	res = system (command_line_s);
 
-	bt_job_p -> sj_status = (res == 0) ? OS_SUCCEEDED : OS_FAILED;
+	if (RunDrmaaToolSynchronously (dbt_drmaa_tool_p))
+		{
+			bt_job_p -> sj_status = OS_SUCCEEDED;
+		}
+	else
+		{
+			bt_job_p -> sj_status = OS_FAILED;
+		}
 
 	return bt_job_p -> sj_status;
 }

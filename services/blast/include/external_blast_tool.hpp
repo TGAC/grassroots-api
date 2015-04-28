@@ -22,7 +22,7 @@ typedef bool (ExternalBlastTool :: *ParseArgCallback) (const char *arg_s);
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {
 public:
-	ExternalBlastTool (ServiceJob *job_p, const char *name_s);
+	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
 	virtual ~ExternalBlastTool ();
 
 	virtual bool ParseParameters (ParameterSet *params_p);
@@ -32,8 +32,10 @@ protected:
 	TempFile *ebt_input_p;
 	TempFile *ebt_output_p;
 	ParseArgCallback ebt_arg_callback;
+	const char *ebt_working_directory_s;
 
 	const char *GetOutputData ();
+	char *GetTempFilenameBuffer ();
 
 	bool AddArgToInternalBuffer (const char * const arg_s);
 };

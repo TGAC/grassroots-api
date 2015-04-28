@@ -16,7 +16,7 @@
 #endif
 
 
-BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s)
+BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
 	BlastTool *tool_p = 0;
 
@@ -25,9 +25,9 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s)
 	 * of blast tool to use, probably set by an admin. 
 	 */
 	#ifdef DRMAA_ENABLED
-	tool_p = new DrmaaBlastTool (job_p, name_s);
+	tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s);
 	#else
-	tool_p = new SystemBlastTool (job_p, name_s);
+	tool_p = new SystemBlastTool (job_p, name_s, working_directory_s);
 	#endif
 
 	return tool_p;

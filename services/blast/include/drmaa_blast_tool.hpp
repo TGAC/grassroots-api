@@ -17,11 +17,10 @@
 class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 {
 public:
-	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s);
+	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s);
 	virtual ~DrmaaBlastTool ();
 
 	virtual OperationStatus Run ();
-
 
 	virtual const char *GetResults ();
 

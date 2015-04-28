@@ -114,7 +114,7 @@ extern "C"
  * 
  * @return The BlastTool or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s);
+BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
 
 
 /**
