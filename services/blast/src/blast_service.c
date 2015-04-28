@@ -33,6 +33,19 @@ static char *S_DATABASES_PP [] =
 	NULL
 };
 
+static const char *S_DATABASE_DESCRIPTIONS_PP [] =
+{
+	"Jia et al Aegilops tauschii AL8/78 DD genome assembly 429,892 sequences; 3,313,764,331 total bases",
+	"Brenchley et al Chinese Spring CS42 cDNA assemblies repeat-filtered against TREP 97,481 sequences; 93,340,842 total bases",
+	"Brenchley et al Chinese Spring CS42 5x Liverpool 454 assembly 25,572,861 sequences; 11,088,752,193 total bases",
+	"Brenchley et al Chinese Spring CS42 orthologous group sub-assemblies 949,279 sequences; 437,512,281 total bases",
+	"Bailey TGAC IWGSC v2 10,234,906 sequences; 10,352,209,564 total bases",
+	"Chapman et al Synthetic W7984 (Triticum turgidum L. subsp. durum var 'Altar 84' + Aegilops tauschii) x T. aestivum Opata M85 262,724 sequences; 6,378,515,436 total bases",
+	"Ling et al Triticum urartu G1812 (PI428198) AA genome assembly 499,222 sequences; 3,747,163,292 total bases",
+	NULL
+};
+
+
 static const char * const S_WORKING_DIR_S = "/tgac/services/wheatis/";
 
 /*
@@ -530,17 +543,27 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	if (service_p -> se_jobs_p)
 		{
 			size_t i;
+			const char **description_pp;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
 			name_pp = S_DATABASES_PP;
+			description_pp = S_DATABASE_DESCRIPTIONS_PP;
+
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
 					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp, S_WORKING_DIR_S);
+
 					job_p -> sj_status = OS_FAILED_TO_START;
 
 					if (tool_p)
 						{
+							if (*description_pp)
+								{
+									SetServiceJobDescription (job_p, *description_pp);
+									++ description_pp;
+								}
+
 							if (tool_p -> ParseParameters (param_set_p))
 								{
 									if (RunBlast (tool_p))
