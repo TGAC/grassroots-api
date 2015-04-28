@@ -101,7 +101,7 @@ json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
 json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 {
 	json_t *json_p = NULL;
-	char *uuid_s = GetUUIDAsString (job_p);
+	char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 
 	if (uuid_s)
 		{

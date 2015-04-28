@@ -21,7 +21,7 @@ public:
 
 	void AddTool (BlastTool *tool_p);
 
-	BlastTool *GetNewBlastTool (ServiceJob *job_p, const char *name_s);
+	BlastTool *GetNewBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
 
 	BlastTool *GetBlastTool (const uuid_t id);
 

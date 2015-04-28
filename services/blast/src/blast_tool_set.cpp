@@ -59,9 +59,9 @@ BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 }
 
 
-BlastTool *BlastToolSet :: GetNewBlastTool (ServiceJob *job_p, const char *name_s)
+BlastTool *BlastToolSet :: GetNewBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
-	BlastTool *tool_p = CreateBlastTool (job_p, name_s);
+	BlastTool *tool_p = CreateBlastTool (job_p, name_s, working_directory_s);
 
 	if (tool_p)
 		{

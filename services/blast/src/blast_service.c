@@ -20,6 +20,8 @@ typedef struct
 
 static char *S_DATABASES_PP [] = { "", NULL };
 
+static const char * const S_WORKING_DIR_S = "/tgac/services/wheatis/";
+
 /*
  * STATIC PROTOTYPES
  */
@@ -492,7 +494,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
-					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp);
+					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp, S_WORKING_DIR_S);
 					job_p -> sj_status = OS_FAILED_TO_START;
 
 					if (tool_p)
