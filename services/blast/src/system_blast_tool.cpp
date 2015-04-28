@@ -25,7 +25,7 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 {
 	bool success_flag = false;
 
-	if ((this ->*ebt_arg_callback) ("blastn "))
+	if (AddArg ("blastn "))
 		{
 			success_flag = ExternalBlastTool :: ParseParameters (params_p);
 		}

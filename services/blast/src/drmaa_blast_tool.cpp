@@ -14,8 +14,6 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const c
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool ("/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn");
 	SetDrmaaToolQueueName(dbt_drmaa_tool_p, "-q webservices");
-
-	ebt_arg_callback = &DrmaaBlastTool :: AddArgToDrmaaTool;
 }
 
 DrmaaBlastTool :: ~DrmaaBlastTool ()
