@@ -41,7 +41,7 @@
 #define TAG_BLAST_SUBRANGE_TO MAKE_TAG ('B', 'Q', 'T', 'O')
 #define TAG_BLAST_MATCH_SCORE MAKE_TAG ('B', 'M', 'T', 'C')
 #define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
-#define TAG_BLAST_OUTPUT_FORMAT MAKE_TAG ('B', 'O', 'U', 'F')
+#define TAG_BLAST_OUTPUT_FORMAT MAKE_TAG ('B', 'F', 'M', 'T')
 
 #ifdef __cplusplus
 extern "C"

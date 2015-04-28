@@ -130,12 +130,12 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file \"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
+									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file for query \"%s\"", sequence_s);
 								}
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to allocate temp file buffer\"%s\" for query \"%s\"", ebt_input_p -> GetFilename (), sequence_s);
+							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
 						}
 				}
 			else
@@ -328,9 +328,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_EXPECT_THRESHOLD, &value, true))
 				{
-					if (value.st_data_value > 0.0)
+					if (value.st_ulong_value > 0)
 						{
-							char *value_s = ConvertDoubleToString (value.st_data_value);
+							char *value_s = ConvertIntegerToString (value.st_ulong_value);
 
 							if (value_s)
 								{
@@ -372,9 +372,6 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 						}		/* if (value_s) */
 				}
 		}
-
-
-
 
 
 	/* Output Format */
