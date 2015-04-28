@@ -31,6 +31,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_LSF_DRMAA_INC) \
 	-I$(DIR_UUID_INC) \
+	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I/tgac/common/lsf/9.1.1/include/
 	
 SRCS 	= \
@@ -46,6 +47,14 @@ CPPFLAGS += -DWHEATIS_DRMAA_LIBRARY_EXPORTS
 
 LDFLAGS += $(BASE_LDFLAGS)
 
+EXE_LDFLAGS = -L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
+	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
+	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME)\
+	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
+	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
+	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
+	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
+	-L$(DIR_SHARED_IRODS_LIB) -lirods
 
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
@@ -55,7 +64,7 @@ all: test
 install: test_install
 
 test:
-	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
+	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(EXE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
 
 
 test_install: test install

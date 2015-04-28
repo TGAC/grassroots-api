@@ -6,7 +6,7 @@
 #include "streams.h"
 #include "running_services_table.h"
 
-#ifdef DDRMAA_ENABLED
+#ifdef DRMAA_ENABLED
 #include "drmaa_util.h"
 #endif
 
@@ -24,7 +24,7 @@ bool InitInformationSystem ()
 								{
 									bool res_flag = true;
 
-									#ifdef DDRMAA_ENABLED
+									#ifdef DRMAA_ENABLED
 									res_flag = InitDrmaa ();
 									#endif
 
@@ -42,7 +42,7 @@ bool DestroyInformationSystem ()
 {
 	bool res_flag = true;
 
-	#ifdef DDRMAA_ENABLED
+	#ifdef DRMAA_ENABLED
 	ExitDrmaa ();
 	#endif
 	

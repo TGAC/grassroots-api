@@ -59,6 +59,12 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
 	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 
+ifneq ($(DRMAA_ENABLED),)
+LDFLAGS += -L$(DIR_WHEATIS_DRMAA_LIB) -l$(WHEATIS_DRMAA_LIB_NAME) -L$(DIR_LSF_DRMAA_LIB) -ldrmaa
+INCLUDES += -I$(DIR_LSF_DRMAA_INC) -I$(DIR_WHEATIS_DRMAA_INC) 
+CPPFLAGS += -DDRMAA_ENABLED=1
+endif
+
 .PHONY:	all 
 
 include $(DIR_ROOT)/generic_makefiles/executable.makefile
