@@ -323,7 +323,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (buffer_p)
 				{
-					ebt_input_p = TempFile :: GetTempFile (buffer_p, "w");
+					ebt_output_p = TempFile :: GetTempFile (buffer_p, "w");
 
 					if (ebt_output_p)
 						{
