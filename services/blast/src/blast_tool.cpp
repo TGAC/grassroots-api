@@ -25,9 +25,20 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 	 * of blast tool to use, probably set by an admin. 
 	 */
 	#ifdef DRMAA_ENABLED
-	tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s);
+	try
+		{
+			tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s);
+		}
+	catch (std :: bad_alloc ex)
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to create drmaa blast tool");
+		}
+
 	#else
-	tool_p = new SystemBlastTool (job_p, name_s, working_directory_s);
+	if (!tool_p)
+		{
+			tool_p = new SystemBlastTool (job_p, name_s, working_directory_s);
+		}
 	#endif
 
 	return tool_p;

@@ -13,6 +13,12 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const c
 : ExternalBlastTool (job_p, name_s, working_directory_s)
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool ("/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn");
+
+	if (!dbt_drmaa_tool_p)
+		{
+			throw std :: bad_alloc;
+		}
+
 	SetDrmaaToolQueueName(dbt_drmaa_tool_p, "-q webservices");
 }
 
