@@ -65,7 +65,7 @@ LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_
 
 
 ifneq ($(DRMAA_ENABLED),)
-SRCS += drma_blast_tool.cpp
+SRCS += drmaa_blast_tool.cpp
 LDFLAGS += -L$(DIR_WHEATIS_DRMAA_LIB) -l$(WHEATIS_DRMAA_LIB_NAME)
 endif
 
