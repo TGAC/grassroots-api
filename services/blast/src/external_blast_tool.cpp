@@ -159,6 +159,55 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 				}
 		}
 
+	/* Output File */
+	if (success_flag)
+		{
+			char *buffer_p = GetTempFilenameBuffer ();
+
+			success_flag = false;
+
+			if (buffer_p)
+				{
+					ebt_output_p = TempFile :: GetTempFile (buffer_p, "w");
+
+					if (ebt_output_p)
+						{
+							if (AddArg ("-out"))
+								{
+									if (AddArg (ebt_output_p -> GetFilename ()))
+										{
+											success_flag = true;
+										}
+								}
+
+
+							ebt_output_p -> Close ();
+						}
+					else
+						{
+							success_flag = false;
+						}
+				}
+		}
+
+
+	/* Db */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (bt_job_p -> sj_name_s)
+				{
+					if (AddArg ("-db"))
+						{
+							if (AddArg (bt_job_p -> sj_name_s))
+								{
+									success_flag = true;
+								}
+						}
+				}
+		}
+
 
 	/* Query Location */
 	if (success_flag)
@@ -321,36 +370,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 		}
 
 
-	/* Output File */
-	if (success_flag)
-		{
-			char *buffer_p = GetTempFilenameBuffer ();
 
-			success_flag = false;
-
-			if (buffer_p)
-				{
-					ebt_output_p = TempFile :: GetTempFile (buffer_p, "w");
-
-					if (ebt_output_p)
-						{
-							if (AddArg ("-out"))
-								{
-									if (AddArg (ebt_output_p -> GetFilename ()))
-										{
-											success_flag = true;
-										}
-								}
-
-
-							ebt_output_p -> Close ();
-						}
-					else
-						{
-							success_flag = false;
-						}
-				}
-		}
 
 
 	/* Output Format */
@@ -376,24 +396,6 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 						}		/* if (value_s) */
 				}
 		}
-
-	/* Db */
-	if (success_flag)
-		{
-			success_flag = false;
-
-			if (bt_job_p -> sj_name_s)
-				{
-					if (AddArg ("-db"))
-						{
-							if (AddArg (bt_job_p -> sj_name_s))
-								{
-									success_flag = true;
-								}
-						}
-				}
-		}
-
 
 	return success_flag;
 }
