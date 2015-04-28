@@ -27,7 +27,7 @@ public:
 private:
 	DrmaaTool *dbt_drmaa_tool_p;
 
-	bool AddArgToDrmaaTool (const char * const arg_s);
+	virtual bool AddArg (const char * const arg_s);
 
 };
 

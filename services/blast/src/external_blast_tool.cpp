@@ -49,7 +49,7 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 }
 
 
-bool ExternalBlastTool :: AddArgToInternalBuffer (const char *arg_s)
+bool ExternalBlastTool :: AddArg (const char *arg_s)
 {
 	bool success_flag = true;
 
