@@ -27,6 +27,7 @@
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
+static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
 #ifdef _DEBUG
@@ -70,9 +71,46 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 /* register_hooks: Adds a hook to the httpd process */
 static void RegisterHooks (apr_pool_t *pool_p) 
 {
+  ap_hook_post_config (WheatISPostConfig, NULL, NULL, APR_HOOK_REALLY_FIRST);
 	ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_FIRST);
-  
-  InitInformationSystem ();
+}
+
+
+
+static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
+{
+  void *data_p = NULL;
+  const char *userdata_key_s = "wheatis_post_config";
+  int ret = HTTP_INTERNAL_SERVER_ERROR;
+
+  /* Apache loads DSO modules twice. We want to wait until the second
+   * load before setting up our global mutex and shared memory segment.
+   * To avoid the first call to the post_config hook, we set some
+   * dummy userdata in a pool that lives longer than the first DSO
+   * load, and only run if that data is set on subsequent calls to
+   * this hook. */
+  apr_pool_userdata_get (&data_p, userdata_key_s, s->process->pool);
+
+  if (data_p == NULL)
+  	{
+      /* WARNING: This must *not* be apr_pool_userdata_setn(). The
+       * reason for this is because the static symbol section of the
+       * DSO may not be at the same address offset when it is reloaded.
+       * Since setn() does not make a copy and only compares addresses,
+       * the get() will be unable to find the original userdata. */
+      apr_pool_userdata_set ((const void *) 1, userdata_key_s, apr_pool_cleanup_null, s->process->pool);
+
+      ret = OK; /* This would be the first time through */
+  	}
+  else
+  	{
+  		if (InitInformationSystem ())
+  			{
+  				ret = OK;
+  			}
+  	}
+
+  return ret;
 }
 
 

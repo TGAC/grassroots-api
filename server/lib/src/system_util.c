@@ -24,7 +24,7 @@ bool InitInformationSystem ()
 								{
 									bool res_flag = true;
 
-									#ifdef DDRMAA_ENABLED
+									#ifdef DRMAA_ENABLED
 									res_flag = InitDrmaa ();
 									#endif
 
