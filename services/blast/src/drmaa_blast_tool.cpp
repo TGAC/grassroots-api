@@ -5,6 +5,8 @@
  *      Author: tyrrells
  */
 
+#include <new>
+
 #include "drmaa_blast_tool.hpp"
 #include "streams.h"
 
@@ -16,7 +18,7 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const c
 
 	if (!dbt_drmaa_tool_p)
 		{
-			throw std :: bad_alloc;
+			throw std :: bad_alloc ();
 		}
 
 	SetDrmaaToolQueueName(dbt_drmaa_tool_p, "-q webservices");

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "drmaa_tool.h"
+#include "drmaa_util.h"
 
 int main (int argc, char *argv [])
 {
@@ -30,6 +31,8 @@ int main (int argc, char *argv [])
 
 	if (program_name_s)
 		{
+			if (InitDrmaa ())
+			{
 			DrmaaTool *tool_p = AllocateDrmaaTool (program_name_s);
 
 			if (tool_p)
@@ -69,7 +72,8 @@ int main (int argc, char *argv [])
 					
 					FreeDrmaaTool (tool_p);
 				}		/* if (SetDrmaaToolQueueName ("-q webservices")) */
-
+			ExitDrmaa ();
+			}
 		}		/* if (program_name_s) */
 
 	return ret;
