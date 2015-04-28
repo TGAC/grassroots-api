@@ -208,6 +208,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 				}
 		}
 
+	//return success_flag;
 
 	/* Query Location */
 	if (success_flag)
@@ -327,20 +328,23 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_EXPECT_THRESHOLD, &value, true))
 				{
-					char *value_s = ConvertDoubleToString (value.st_data_value);
-
-					if (value_s)
+					if (value.st_data_value > 0.0)
 						{
-							if (AddArg ("-evalue"))
-								{
-									if (AddArg (value_s))
-										{
-											success_flag = true;
-										}
-								}
+							char *value_s = ConvertDoubleToString (value.st_data_value);
 
-							FreeCopiedString (value_s);
-						}		/* if (value_s) */
+							if (value_s)
+								{
+									if (AddArg ("-evalue"))
+										{
+											if (AddArg (value_s))
+												{
+													success_flag = true;
+												}
+										}
+
+									FreeCopiedString (value_s);
+								}		/* if (value_s) */
+						}
 				}
 		}
 
