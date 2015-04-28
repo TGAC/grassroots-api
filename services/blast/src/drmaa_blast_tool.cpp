@@ -31,7 +31,6 @@ const char *DrmaaBlastTool :: GetResults ()
 
 OperationStatus DrmaaBlastTool :: Run ()
 {
-	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
 	int res;
 
 	bt_job_p -> sj_status = OS_STARTED;

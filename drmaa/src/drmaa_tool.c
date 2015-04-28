@@ -7,7 +7,7 @@
 #include "string_linked_list.h"
 
 
-static bool SetValue (char **dest_ss, char *value_s);
+static bool SetValue (char **dest_ss, const char *value_s);
 
 static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
@@ -103,7 +103,7 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 }
 
 
-bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, char *path_s)
+bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, const char *path_s)
 {
 	bool success_flag = false;
 
@@ -118,7 +118,7 @@ bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, char *path_s)
 }
 
 
-bool SetDrmaaToolQueueName (DrmaaTool *tool_p, char *queue_name_s)
+bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s)
 {
 	bool success_flag = false;
 
@@ -133,7 +133,7 @@ bool SetDrmaaToolQueueName (DrmaaTool *tool_p, char *queue_name_s)
 }
 
 
-bool AddDrmaaToolArgument (DrmaaTool *tool_p, char *arg_s)
+bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s)
 {
 	bool success_flag = false;
 	StringListNode *node_p = AllocateStringListNode (arg_s, MF_DEEP_COPY);
@@ -250,7 +250,7 @@ static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_s
 }
 
 
-static bool SetValue (char **dest_ss, char *value_s)
+static bool SetValue (char **dest_ss, const char *value_s)
 {
 	bool success_flag = false;
 	char *new_value_s = CopyToNewString (value_s, 0, false);
