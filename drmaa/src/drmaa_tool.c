@@ -18,56 +18,42 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 
 	if (tool_p)
 		{
-			if (drmaa_init (NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1) == DRMAA_ERRNO_SUCCESS)
+			if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS)
 				{
-					if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS)
-						{
-							tool_p -> dt_program_name_s = CopyToNewString (program_name_s, 0, false);
+					tool_p -> dt_program_name_s = CopyToNewString (program_name_s, 0, false);
 
-							if (tool_p -> dt_program_name_s)
+					if (tool_p -> dt_program_name_s)
+						{
+							tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode);
+
+							if (tool_p -> dt_args_p)
 								{
-									tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode);
+									memset (tool_p -> dt_id_s, 0, sizeof (tool_p -> dt_id_s));
+									memset (tool_p -> dt_id_out_s, 0, sizeof (tool_p -> dt_id_out_s));
 
-									if (tool_p -> dt_args_p)
-										{
-											memset (tool_p -> dt_id_s, 0, sizeof (tool_p -> dt_id_s));
-											memset (tool_p -> dt_id_out_s, 0, sizeof (tool_p -> dt_id_out_s));
+									tool_p -> dt_queue_name_s = NULL;
+									tool_p -> dt_working_directory_s = NULL;
+									tool_p -> dt_stat = -1;
 
-											tool_p -> dt_queue_name_s = NULL;
-											tool_p -> dt_working_directory_s = NULL;
-											tool_p -> dt_stat = -1;
+									/* join output/error file */
+									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_JOIN_FILES, "y", NULL, 0);
 
-											/* join output/error file */
-											drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_JOIN_FILES, "y", NULL, 0);
+									/* run jobs in user's home directory */
+									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD, NULL, 0);
 
-											/* run jobs in user's home directory */
-											drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD, NULL, 0);
+									/* the job to be run */
+									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_REMOTE_COMMAND, program_name_s, NULL, 0);
 
-											/* the job to be run */
-											drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_REMOTE_COMMAND, program_name_s, NULL, 0);
+									/* path for output */
+									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_OUTPUT_PATH, ":" DRMAA_PLACEHOLDER_HD "/DRMAA_JOB", NULL, 0);
 
-											/* path for output */
-											drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_OUTPUT_PATH, ":" DRMAA_PLACEHOLDER_HD "/DRMAA_JOB", NULL, 0);
+									return tool_p;
+								}		/* if (tool_p -> dt_args_p) */
 
-											return tool_p;
-										}		/* if (tool_p -> dt_args_p) */
+						}		/* if (tool_p -> dt_program_name_s) */
 
-								}		/* if (tool_p -> dt_program_name_s) */
-
-							drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
-						}		/* if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS) */
-
-
-					if (drmaa_exit (tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) -1) != DRMAA_ERRNO_SUCCESS)
-						{
-							PrintErrors (STM_LEVEL_SEVERE, "drmaa_exit() failed: %s\n", tool_p -> dt_diagnosis_s);
-						}
-
-				}		/* if (drmaa_init (NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1) == DRMAA_ERRNO_SUCCESS) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, "drmaa_init() failed: %s\n", tool_p -> dt_diagnosis_s);
-				}
+					drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
+				}		/* if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS) */
 
 			FreeMemory (tool_p);
 		}
@@ -81,11 +67,6 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 	if (tool_p -> dt_job_p)
 		{
 			drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
-		}
-
-	if (drmaa_exit (tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) -1) != DRMAA_ERRNO_SUCCESS)
-		{
-			PrintErrors (STM_LEVEL_SEVERE, "drmaa_exit() failed: %s\n", tool_p -> dt_diagnosis_s);
 		}
 
 	FreeLinkedList (tool_p -> dt_args_p);

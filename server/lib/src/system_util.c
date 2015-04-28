@@ -6,6 +6,9 @@
 #include "streams.h"
 #include "running_services_table.h"
 
+#ifdef DDRMAA_ENABLED
+#include "drmaa_util.h"
+#endif
 
 bool InitInformationSystem ()
 {
@@ -19,7 +22,13 @@ bool InitInformationSystem ()
 
 							if (c == 0)
 								{
-									return true;
+									bool res_flag = true;
+
+									#ifdef DDRMAA_ENABLED
+									res_flag = InitDrmaa ();
+									#endif
+
+									return res_flag;
 								}
 						}
 				}
@@ -32,6 +41,10 @@ bool InitInformationSystem ()
 bool DestroyInformationSystem ()
 {
 	bool res_flag = true;
+
+	#ifdef DDRMAA_ENABLED
+	ExitDrmaa ();
+	#endif
 	
 	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
@@ -40,8 +53,4 @@ bool DestroyInformationSystem ()
 
 	return res_flag;
 }
-
-
-
-
 
