@@ -165,25 +165,32 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 		{
 			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true))
 				{
-					SharedType to;
-
-					memset (&to, 0, sizeof (SharedType));
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &value, true))
+					if (value.st_string_value_s)
 						{
-							ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-							success_flag = false;
+							SharedType to;
 
-							if (buffer_p)
+							memset (&to, 0, sizeof (SharedType));
+
+							if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &to, true))
 								{
-									if (AppendStringsToByteBuffer (buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL))
+									if (to.st_string_value_s)
 										{
-											if (AddArg (GetByteBufferData (buffer_p)))
+											ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+											success_flag = false;
+
+											if (buffer_p)
 												{
-													success_flag = true;
+													if (AppendStringsToByteBuffer (buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL))
+														{
+															if (AddArg (GetByteBufferData (buffer_p)))
+																{
+																	success_flag = true;
+																}
+														}
+
+													FreeByteBuffer (buffer_p);
 												}
 										}
-
-									FreeByteBuffer (buffer_p);
 								}
 						}
 				}
