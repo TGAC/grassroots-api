@@ -145,8 +145,60 @@ bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s)
 }
 
 
+OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
+{
+	OperationStatus status = OS_ERROR;
+	char error_s [DRMAA_ERROR_STRING_BUFFER];
+	int drmaa_status;
+	int res = drmaa_job_ps (tool_p -> dt_id_s, &drmaa_status, error_s, DRMAA_ERROR_STRING_BUFFER);
 
-bool RunDrmaaToolSynchronously (DrmaaTool *tool_p)
+	if (res == DRMAA_ERRNO_SUCCESS)
+		{
+			switch (drmaa_status)
+				{
+					case DRMAA_PS_QUEUED_ACTIVE:
+					case DRMAA_PS_SYSTEM_ON_HOLD:
+					case DRMAA_PS_USER_ON_HOLD:
+					case DRMAA_PS_USER_SYSTEM_ON_HOLD:
+						status = OS_PENDING;
+						break;
+
+					case DRMAA_PS_UNDETERMINED:
+						status = OS_ERROR;
+						break;
+
+					case DRMAA_PS_RUNNING:
+						status = OS_STARTED;
+						break;
+
+					case DRMAA_PS_FAILED:
+						status = OS_FAILED;
+						break;
+
+					case DRMAA_PS_DONE:
+						status = OS_SUCCEEDED;
+						break;
+
+					case DRMAA_PS_SYSTEM_SUSPENDED:
+					case DRMAA_PS_USER_SUSPENDED:
+					case DRMAA_PS_USER_SYSTEM_SUSPENDED:
+						status = OS_STARTED;
+						break;
+
+					default:
+						break;
+				}
+		}
+	else
+		{
+
+		}
+
+	return status;
+}
+
+
+bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 {
 	bool success_flag = false;
 
@@ -167,42 +219,45 @@ bool RunDrmaaToolSynchronously (DrmaaTool *tool_p)
 
 			if (success_flag)
 				{
-					result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, & (tool_p -> dt_stat),
-						DRMAA_TIMEOUT_WAIT_FOREVER, NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
-
-					success_flag = (result == DRMAA_ERRNO_SUCCESS) ? true : false;
-
-					if (success_flag)
+					if (!async_flag)
 						{
-							int exited;
-							int exit_status;
+							result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, & (tool_p -> dt_stat),
+								DRMAA_TIMEOUT_WAIT_FOREVER, NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
 
-							drmaa_wifexited (&exited, tool_p -> dt_stat, NULL, 0);
+							success_flag = (result == DRMAA_ERRNO_SUCCESS) ? true : false;
 
-							if (exited)
+							if (success_flag)
 								{
-									drmaa_wexitstatus (&exit_status, tool_p -> dt_stat, NULL, 0);
+									int exited;
+									int exit_status;
 
-									PrintLog (STM_LEVEL_INFO, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
-								}
-							else
-								{
-									int signal_status;
+									drmaa_wifexited (&exited, tool_p -> dt_stat, NULL, 0);
 
-									drmaa_wifsignaled (&signal_status, tool_p -> dt_stat, NULL, 0);
-
-									if (signal_status)
+									if (exited)
 										{
-											char termsig [DRMAA_SIGNAL_BUFFER+1];
-											drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, tool_p -> dt_stat, NULL, 0);
-											PrintLog (STM_LEVEL_SEVERE, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
+											drmaa_wexitstatus (&exit_status, tool_p -> dt_stat, NULL, 0);
+
+											PrintLog (STM_LEVEL_INFO, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
 										}
 									else
 										{
-											PrintLog (STM_LEVEL_SEVERE, "job <%s> is aborted\n", tool_p -> dt_id_s);
+											int signal_status;
+
+											drmaa_wifsignaled (&signal_status, tool_p -> dt_stat, NULL, 0);
+
+											if (signal_status)
+												{
+													char termsig [DRMAA_SIGNAL_BUFFER+1];
+													drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, tool_p -> dt_stat, NULL, 0);
+													PrintLog (STM_LEVEL_SEVERE, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
+												}
+											else
+												{
+													PrintLog (STM_LEVEL_SEVERE, "job <%s> is aborted\n", tool_p -> dt_id_s);
+												}
 										}
 								}
-						}
+						}		/* if (!async_flag) */
 				}
 
 			FreeAndRemoveArgsArray (tool_p, args_ss);
@@ -210,6 +265,7 @@ bool RunDrmaaToolSynchronously (DrmaaTool *tool_p)
 
 	return success_flag;
 }
+
 
 
 static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p)

@@ -12,6 +12,7 @@
 #include "drmaa.h"
 #include "typedefs.h"
 #include "linked_list.h"
+#include "operation.h"
 
 
 #define MAX_LEN_JOBID 100
@@ -51,8 +52,10 @@ WHEATIS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *que
 WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s);
 
 
-WHEATIS_DRMAA_API bool RunDrmaaToolSynchronously (DrmaaTool *tool_p);
+WHEATIS_DRMAA_API bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag);
 
+
+WHEATIS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 
 
 

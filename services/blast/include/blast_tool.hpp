@@ -40,7 +40,7 @@ public:
 	
 	void PostRun ();
 
-	OperationStatus GetStatus () const;
+	virtual OperationStatus GetStatus () const;
 
 	virtual const char *GetResults () = 0;
 

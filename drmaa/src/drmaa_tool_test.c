@@ -48,7 +48,7 @@ int main (int argc, char *argv [])
 																{
 																	if (AddDrmaaToolArgument (tool_p, output_filename_s))
 																		{
-																			if (RunDrmaaToolSynchronously (tool_p))
+																			if (RunDrmaaTool (tool_p, false))
 																				{
 																					printf ("drmaa test ran successfully\n");
 																				}
