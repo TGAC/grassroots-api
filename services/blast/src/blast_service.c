@@ -311,7 +311,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, "short_queries", "Short queries", "Automatically adjust parameters for short input sequences", TAG_BLAST_SHORT_QUERIES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 				{
-					def.st_data_value = 10.0;
+					def.st_ulong_value = 10;
 
 					if (grouped_param_pp)
 						{
@@ -319,7 +319,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 							++ grouped_param_pp;
 						}
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_REAL, "expect_threshold", "Expect threshold", "Expected number of chance matches in a random model" , TAG_BLAST_EXPECT_THRESHOLD, NULL, def, NULL, NULL, level, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "expect_threshold", "Expect threshold", "Expected number of chance matches in a random model" , TAG_BLAST_EXPECT_THRESHOLD, NULL, def, NULL, NULL, level, NULL)) != NULL)
 						{
 							def.st_ulong_value = 28;
 
