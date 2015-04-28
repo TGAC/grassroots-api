@@ -291,7 +291,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 5;
+	size_t num_group_params = 6;
 	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 	Parameter **grouped_param_pp = grouped_params_pp;
 	uint8 level = PL_INTERMEDIATE | PL_ALL;
@@ -341,7 +341,8 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", TAG_BLAST_WORD_SIZE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 										{
-											const char * const group_name_s = "General Algorithm Parameters";
+											/* default to xml */
+											def.st_ulong_value = 5;
 
 											if (grouped_param_pp)
 												{
@@ -349,13 +350,24 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 													++ grouped_param_pp;
 												}
 
-											if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+											if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, NULL, def, NULL, NULL, level, NULL)) != NULL)
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
-													FreeMemory (grouped_params_pp);
-												}
+													const char * const group_name_s = "General Algorithm Parameters";
 
-											success_flag = true;
+													if (grouped_param_pp)
+														{
+															*grouped_param_pp = param_p;
+															++ grouped_param_pp;
+														}
+
+													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+														{
+															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+															FreeMemory (grouped_params_pp);
+														}
+
+													success_flag = true;
+												}
 										}
 								}
 						}

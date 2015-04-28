@@ -345,18 +345,48 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 				}
 		}
 
-	/* Db */
-/*
+
+	/* Output Format */
 	if (success_flag)
 		{
 			success_flag = false;
 
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_DATABASE_NAME, &value, true))
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true))
 				{
-					success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " -db ", value.st_string_value_s, NULL);
+					char *value_s = ConvertIntegerToString (value.st_ulong_value);
+
+					if (value_s)
+						{
+							if (AddArg ("-outfmt"))
+								{
+									if (AddArg (value_s))
+										{
+											success_flag = true;
+										}
+								}
+
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
 				}
 		}
-*/
+
+	/* Db */
+	if (success_flag)
+		{
+			success_flag = false;
+
+			if (bt_job_p -> sj_name_s)
+				{
+					if (AddArg ("-db"))
+						{
+							if (AddArg (bt_job_p -> sj_name_s))
+								{
+									success_flag = true;
+								}
+						}
+				}
+		}
+
 
 	return success_flag;
 }
