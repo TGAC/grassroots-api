@@ -28,7 +28,6 @@ protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_input_p;
 	TempFile *ebt_output_p;
-	ParseArgCallback ebt_arg_callback;
 	const char *ebt_working_directory_s;
 
 	const char *GetOutputData ();

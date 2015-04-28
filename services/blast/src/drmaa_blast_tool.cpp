@@ -46,7 +46,7 @@ OperationStatus DrmaaBlastTool :: Run ()
 }
 
 
-bool DrmaaBlastTool :: AddArgToDrmaaTool (const char *arg_s)
+bool DrmaaBlastTool :: AddArg (const char *arg_s)
 {
 	bool success_flag = AddDrmaaToolArgument (dbt_drmaa_tool_p, arg_s);
 

@@ -20,12 +20,11 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, c
 	ebt_buffer_p = AllocateByteBuffer (1024);
 	ebt_input_p = 0;
 	ebt_output_p = 0;
-	ebt_arg_callback = &ExternalBlastTool :: AddArgToInternalBuffer;
 	ebt_working_directory_s = working_directory_s;
 
-	if ((this ->*ebt_arg_callback) ("-db"))
+	if (AddArg ("-db"))
 		{
-			if ((this ->*ebt_arg_callback) (name_s))
+			if (AddArg (name_s))
 				{
 					success_flag = true;
 				}
@@ -151,9 +150,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 	if (filename_s)
 		{
-			if ((this ->*ebt_arg_callback) ("-query"))
+			if (AddArg ("-query"))
 				{
-					if ((this ->*ebt_arg_callback) (filename_s))
+					if (AddArg (filename_s))
 						{
 							success_flag = true;
 						}
@@ -178,7 +177,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 								{
 									if (AppendStringsToByteBuffer (buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL))
 										{
-											if ((this ->*ebt_arg_callback) (GetByteBufferData (buffer_p)))
+											if (AddArg (GetByteBufferData (buffer_p)))
 												{
 													success_flag = true;
 												}
@@ -202,9 +201,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							if ((this ->*ebt_arg_callback) ("-reward"))
+							if (AddArg ("-reward"))
 								{
-									if ((this ->*ebt_arg_callback) (value_s))
+									if (AddArg (value_s))
 										{
 											success_flag = true;
 										}
@@ -227,9 +226,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							if ((this ->*ebt_arg_callback) ("-penalty"))
+							if (AddArg ("-penalty"))
 								{
-									if ((this ->*ebt_arg_callback) (value_s))
+									if (AddArg (value_s))
 										{
 											success_flag = true;
 										}
@@ -252,9 +251,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							if ((this ->*ebt_arg_callback) ("-max_target_seqs"))
+							if (AddArg ("-max_target_seqs"))
 								{
-									if ((this ->*ebt_arg_callback) (value_s))
+									if (AddArg (value_s))
 										{
 											success_flag = true;
 										}
@@ -276,9 +275,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							if ((this ->*ebt_arg_callback) ("-evalue"))
+							if (AddArg ("-evalue"))
 								{
-									if ((this ->*ebt_arg_callback) (value_s))
+									if (AddArg (value_s))
 										{
 											success_flag = true;
 										}
@@ -301,9 +300,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (value_s)
 						{
-							if ((this ->*ebt_arg_callback) ("-word_size"))
+							if (AddArg ("-word_size"))
 								{
-									if ((this ->*ebt_arg_callback) (value_s))
+									if (AddArg (value_s))
 										{
 											success_flag = true;
 										}
@@ -328,9 +327,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 					if (ebt_output_p)
 						{
-							if ((this ->*ebt_arg_callback) ("-out"))
+							if (AddArg ("-out"))
 								{
-									if ((this ->*ebt_arg_callback) (ebt_output_p -> GetFilename ()))
+									if (AddArg (ebt_output_p -> GetFilename ()))
 										{
 											success_flag = true;
 										}
