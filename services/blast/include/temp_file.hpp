@@ -18,7 +18,7 @@ using namespace std;
 class BLAST_SERVICE_LOCAL TempFile
 {
 public:
-	static TempFile *GetTempFile (const char *mode_s);
+	static TempFile *GetTempFile (char *template_s, const char *mode_s);
 
 	~TempFile ();
 
@@ -34,7 +34,7 @@ public:
 	bool IsOpen () const;
 
 private:
-	char tf_name_s [L_tmpnam];
+	char *tf_name_s;
 	FILE *tf_handle_f;
 	char *tf_data_s;
 

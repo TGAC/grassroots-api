@@ -16,7 +16,7 @@ endif
 
 export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
 
-TEST_EXE_NAME = network_test
+TEST_EXE_NAME = drmaa_tool_test
 
 BUILD		= debug
 
@@ -27,32 +27,22 @@ VPATH	= \
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_WHEATIS_UTIL_INC) \
-	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_SERVER_INC) \
-	-I$(DIR_HTMLCXX_INC) \
-	-I$(DIR_JANSSON_INC) \
-	-I$(DIR_UUID_INC)
-	
+	-I$(DIR_WHEATIS_UTIL_INC)/containers \
+	-I$(DIR_LSF_DRMAA_INC) \
+	-I$(DIR_UUID_INC) \
+	-I/tgac/common/lsf/9.1.1/include/
 	
 SRCS 	= \
-	lsf_example.c 
+	drmaa_tool.c
 	
 
-BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
+BASE_LDFLAGS = -ldl \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
-	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
-	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
-#	-L/usr/local/lib/ -lpolarssl \
-	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
-	-L../extras/hcxselect-1.1/src \
-	-L $(DIR_HTMLCXX_LIB) \
-	-lhcxselect \
-	-lhtmlcxx \
-	-Wl,-Bsymbolic-functions -Wl,-z,relro \
-#	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp
+	-L$(DIR_JANSSON_LIB) -ljansson \
+	-L$(DIR_LSF_DRMAA_LIB) -ldrmaa
 
-CPPFLAGS += -DWHEATIS_LSF_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I../extras/hcxselect-1.1/src
+CPPFLAGS += -DWHEATIS_DRMAA_LIBRARY_EXPORTS
 
 LDFLAGS += $(BASE_LDFLAGS)
 
@@ -61,12 +51,15 @@ include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	test test_install
 
+all: test
+install: test_install
 
 test:
-	$(COMP)  -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/test.c -g -o $(BUILD)/$(TEST_EXE_NAME)
+	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
 
 
 test_install: test install
-	@echo "Installing $(TEST_EXE_NAME) to $(DIR_INSTALL_ROOT)"
-	cp $(BUILD)/$(TEST_EXE_NAME) $(DIR_INSTALL_ROOT)/  
+	@echo "Installing $(TEST_EXE_NAME) to $(DIR_WHEATIS_INSTALL)"
+	cp $(BUILD)/$(TEST_EXE_NAME) $(DIR_WHEATIS_INSTALL)/  
+
 

@@ -89,6 +89,16 @@ export DIR_BLAST_INC=$(DIR_BLAST)/include/ncbi-tools++
 export DIR_BLAST_LIB=$(DIR_BLAST)/lib
 # END BLAST CONFIGURATION
 
+# BEGIN LSF_DRMAA CONFIGURATION
+ifneq ($(LSF_DRMAA_HOME),)
+DIR_LSF_DRMAA=$(LSF_DRMAA_HOME)
+else
+DIR_LSF_DRMAA=/usr/local
+endif
+export DIR_LSF_DRMAA_INC=$(DIR_LSF_DRMAA)/include
+export DIR_LSF_DRMAA_LIB=$(DIR_LSF_DRMAA)/lib
+# END LSF_DRMAA CONFIGURATION
+
 
 include project.properties
 
@@ -99,6 +109,7 @@ all:
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C util 
 	$(MAKE) -C network
+#	$(MAKE) -C drmaa
 	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib
@@ -122,6 +133,7 @@ all:
 install: install_init install_references install_images
 	$(MAKE) -C util install
 	$(MAKE) -C network install
+#	$(MAKE) -C drmaa install
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
@@ -145,6 +157,7 @@ install: install_init install_references install_images
 clean: 
 	$(MAKE) -C util clean
 	$(MAKE) -C network clean
+#	$(MAKE) -C drmaa clean
 	$(MAKE) -C irods/lib clean
 	$(MAKE) -C handlers/lib clean
 	$(MAKE) -C services/lib clean
