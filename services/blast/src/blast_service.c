@@ -4,6 +4,7 @@
 #include "memory_allocations.h"
 
 #include "blast_tool_set.hpp"
+#include "string_utils.h"
 
 /*
  * STATIC DATATYPES
@@ -21,12 +22,14 @@ typedef struct
 static char *S_DATABASES_PP [] =
 {
 	"/tgac/public/databases/blast/aegilops_tauschii/GCA_000347335.1/Aegilops_tauschii.GCA_000347335.1.26.dna.genome",
+/*
 	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/allCdnaFinalAssemblyAllContigs_vs_TREPalle05_notHits_gt100bp",
 	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/CS_5xDNA_all",
 	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/subassemblies_TEcleaned_Hv80Bd75Sb70Os70_30aa_firstBestHit_assembly_ml40_mi99",
 	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/IWGSCv2.0",
 	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/Triticum_aestivum.IWGSC2.26.dna.genome",
 	"/tgac/public/databases/blast/triticum_urartu/GCA_000347455.1/Triticum_urartu.GCA_000347455.1.26.dna.genome",
+*/
 	NULL
 };
 
@@ -95,7 +98,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								GetBlastServiceParameters,
 								ReleaseBlastServiceParameters,
 								CloseBlastService,
-								NULL,
+								GetBlastResultAsJSON,
 								GetBlastServiceStatus,
 								true,
 								data_p);
@@ -427,39 +430,66 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 }
 
 
-static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id)
+static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 {
-	json_t *results_json_p = json_array ();
-/*
-	if (results_json_p)
+	json_t *blast_result_json_p = NULL;
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (job_id);
+
+	if (tool_p)
 		{
-			bool success_flag = false;
-			json_t *result_json_p = json_string (blast_result_s);
+			OperationStatus status = tool_p -> GetStatus ();
+			const char * const name_s = tool_p -> GetName ();
 
-			if (result_json_p)
+			if (status == OS_SUCCEEDED)
 				{
-					json_t *resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, result_json_p);
+					const char *result_s = tool_p -> GetResults ();
 
-					if (resource_json_p)
+					if (result_s)
 						{
-							success_flag = (json_array_append_new (results_json_p, resource_json_p) == 0);
+							json_t *result_json_p = json_string (result_s);
+
+							if (result_json_p)
+								{
+									blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, name_s, result_json_p);
+
+									if (!blast_result_json_p)
+										{
+											json_object_clear (blast_result_json_p);
+											json_decref (blast_result_json_p);
+										}
+								}
 						}
-					else
+				}
+			else
+				{
+					json_error_t error;
+					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, status);
+
+					if (blast_result_json_p)
 						{
-							json_object_clear (result_json_p);
-							json_decref (result_json_p);
+							char *uuid_s = GetUUIDAsString (job_id);
+
+							if (uuid_s)
+								{
+									if (json_object_set_new (blast_result_json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to add service id %s to blast result json", uuid_s);
+										}
+
+									FreeUUIDString (uuid_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to create idsdtring for blast result json", uuid_s);
+								}
 						}
 				}
 
-			if (!success_flag)
-				{
-					json_object_clear (results_json_p);
-					json_decref (results_json_p);
-					results_json_p = NULL;
-				}
-		}
-*/
-	return results_json_p;
+		}		/* if (tool_p) */
+
+
+	return blast_result_json_p;
 }
 
 
@@ -501,6 +531,8 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 		{
 			size_t i;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+
+			name_pp = S_DATABASES_PP;
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{

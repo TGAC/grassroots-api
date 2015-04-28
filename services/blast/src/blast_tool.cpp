@@ -46,18 +46,26 @@ BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s)
 	bt_status = OS_IDLE;
 	bt_job_p = service_job_p;
 	bt_name_s = name_s;
+
+	SetServiceJobName (service_job_p, name_s);
 }
 
 
 OperationStatus BlastTool :: GetStatus () const
 {
-	return bt_status;
+	return bt_job_p -> sj_status;
 }
 
 
 const uuid_t &BlastTool :: GetUUID () const
 {
 	return bt_job_p -> sj_id;
+}
+
+
+const char *BlastTool :: GetName () const
+{
+	return bt_name_s;
 }
 
 

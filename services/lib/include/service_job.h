@@ -8,7 +8,7 @@
 #ifndef SERVICE_JOB_H_
 #define SERVICE_JOB_H_
 
-
+#include "typedefs.h"
 #include "wheatis_service_library.h"
 #include "operation.h"
 #include "jansson.h"
@@ -30,6 +30,11 @@ typedef struct ServiceJob
 
 	/** Is the service currently in an open state? */
 	enum OperationStatus sj_status;
+
+	char *sj_name_s;
+
+	char *sj_description_s;
+
 } ServiceJob;
 
 
@@ -57,7 +62,16 @@ extern "C"
 #endif
 
 
-WHEATIS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p);
+WHEATIS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s);
+
+
+WHEATIS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
+
+
+WHEATIS_SERVICE_API bool SetServiceJobDescription (ServiceJob *job_p, const char * const description_s);
+
+
+WHEATIS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * const name_s);
 
 
 WHEATIS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, size_t num_jobs);
@@ -77,6 +91,8 @@ WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (const ServiceJob *job_p);
 
 WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p);
 
+
+WHEATIS_SERVICE_API const char *GetServiceJobName (const ServiceJob *job_p);
 
 
 #ifdef __cplusplus

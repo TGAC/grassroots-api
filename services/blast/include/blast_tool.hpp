@@ -46,6 +46,8 @@ public:
 
 	const uuid_t &GetUUID () const;
 
+	const char *GetName () const;
+
 protected:
 	OperationStatus bt_status;
 	const char *bt_name_s;

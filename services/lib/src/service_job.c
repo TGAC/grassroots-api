@@ -11,12 +11,23 @@
 	#define SERVICE_JOB_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-void InitServiceJob (ServiceJob *job_p, Service *service_p)
+
+void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s)
 {
 	job_p -> sj_service_p = service_p;
 	uuid_generate (job_p -> sj_id);
 	job_p -> sj_status = OS_IDLE;
 
+	if (job_name_s)
+		{
+			job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
+		}
+	else
+		{
+			job_p -> sj_name_s = NULL;
+		}
+
+	job_p -> sj_description_s = NULL;
 
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 		{
@@ -29,6 +40,32 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p)
 				}
 		}
 	#endif
+}
+
+
+void ClearServiceJob (ServiceJob *job_p)
+{
+	if (job_p -> sj_name_s)
+		{
+			FreeCopiedString (job_p -> sj_name_s);
+		}
+}
+
+
+
+bool SetServiceJobName (ServiceJob *job_p, const char * const name_s)
+{
+	bool success_flag = ReplaceStringValue (& (job_p -> sj_name_s), name_s);
+
+	return success_flag;
+}
+
+
+bool SetServiceJobDescription (ServiceJob *job_p, const char * const description_s)
+{
+	bool success_flag = ReplaceStringValue (& (job_p -> sj_description_s), description_s);
+
+	return success_flag;
 }
 
 
@@ -50,7 +87,7 @@ ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs)
 
 					for (i = 0; i < num_jobs; ++ i)
 						{
-							InitServiceJob (jobs_p + i, service_p);
+							InitServiceJob (jobs_p + i, service_p, NULL);
 						}
 
 					return job_set_p;
@@ -63,10 +100,18 @@ ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs)
 }
 
 
-void FreeServiceJobSet (ServiceJobSet *job_set_p)
+void FreeServiceJobSet (ServiceJobSet *jobs_p)
 {
-	FreeMemory (job_set_p -> sjs_jobs_p);
-	FreeMemory (job_set_p);
+	ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+	size_t i = jobs_p -> sjs_num_jobs;
+
+	for ( ; i > 0; -- i, ++ job_p)
+		{
+			ClearServiceJob (job_p);
+		}
+
+	FreeMemory (jobs_p -> sjs_jobs_p);
+	FreeMemory (jobs_p);
 }
 
 
@@ -90,6 +135,7 @@ ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
 }
 
 
+
 json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
 {
 	json_t *json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
@@ -108,6 +154,25 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 			json_error_t error;
 
 			json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, job_p -> sj_status);
+
+			if (json_p)
+				{
+					if (job_p -> sj_name_s)
+						{
+							if (json_object_set_new (json_p, JOB_NAME_S, json_string (job_p -> sj_name_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add job name %s to job status json", job_p -> sj_name_s);
+								}
+						}
+
+					if (job_p -> sj_description_s)
+						{
+							if (json_object_set_new (json_p, JOB_DESCRIPTION_S, json_string (job_p -> sj_description_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add job description %s to job status json", job_p -> sj_description_s);
+								}
+						}
+				}
 
 			FreeUUIDString (uuid_s);
 		}
@@ -159,4 +224,7 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 
 	return jobs_json_p;
 }
+
+
+
 

@@ -6,9 +6,6 @@
 #include "memory_allocations.h"
 #include "string_linked_list.h"
 
-
-static bool SetValue (char **dest_ss, const char *value_s);
-
 static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
 static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss);
@@ -107,7 +104,7 @@ bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, const char *path_s)
 {
 	bool success_flag = false;
 
-	if (SetValue (& (tool_p -> dt_working_directory_s), path_s))
+	if (ReplaceStringValue (& (tool_p -> dt_working_directory_s), path_s))
 		{
 			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_WD, tool_p -> dt_working_directory_s, NULL, 0);
 
@@ -122,7 +119,7 @@ bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s)
 {
 	bool success_flag = false;
 
-	if (SetValue (& (tool_p -> dt_queue_name_s), queue_name_s))
+	if (ReplaceStringValue (& (tool_p -> dt_queue_name_s), queue_name_s))
 		{
 			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_NATIVE_SPECIFICATION, tool_p -> dt_queue_name_s, NULL, 0);
 
@@ -249,24 +246,4 @@ static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_s
 	FreeMemory (args_ss);
 }
 
-
-static bool SetValue (char **dest_ss, const char *value_s)
-{
-	bool success_flag = false;
-	char *new_value_s = CopyToNewString (value_s, 0, false);
-
-	if (new_value_s)
-		{
-			if (*dest_ss)
-				{
-					FreeCopiedString (*dest_ss);
-				}
-
-			*dest_ss = new_value_s;
-			success_flag = true;
-		}
-
-	return success_flag;
-
-}
 

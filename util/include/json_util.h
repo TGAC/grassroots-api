@@ -47,18 +47,18 @@ PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
 PREFIX const char *OPERATION_INFORMATION_URI_S VAL("about_uri");
 PREFIX const char *OPERATION_ICON_PATH_S VAL("icon");
 
-
 PREFIX const char *SERVICES_NAME_S VAL("services");
 PREFIX const char *SERVICES_ID_S VAL("path");
 PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");
-
 
 PREFIX const char *SERVICE_NAME_S VAL("service");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_S VAL("status");
 PREFIX const char *SERVICE_RESULTS_S VAL("results");
 
+PREFIX const char *JOB_NAME_S VAL("name");
+PREFIX const char *JOB_DESCRIPTION_S VAL("description");
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
 

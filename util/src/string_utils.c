@@ -783,3 +783,23 @@ void FreeUUIDString (char *uuid_s)
 {
 	FreeMemory (uuid_s);
 }
+
+
+bool ReplaceStringValue (char **dest_ss, const char *value_s)
+{
+	bool success_flag = false;
+	char *new_value_s = CopyToNewString (value_s, 0, false);
+
+	if (new_value_s)
+		{
+			if (*dest_ss)
+				{
+					FreeCopiedString (*dest_ss);
+				}
+
+			*dest_ss = new_value_s;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
