@@ -18,7 +18,17 @@ typedef struct
 } BlastServiceData;
 
 
-static char *S_DATABASES_PP [] = { "", NULL };
+static char *S_DATABASES_PP [] =
+{
+	"/tgac/public/databases/blast/aegilops_tauschii/GCA_000347335.1/Aegilops_tauschii.GCA_000347335.1.26.dna.genome",
+	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/allCdnaFinalAssemblyAllContigs_vs_TREPalle05_notHits_gt100bp",
+	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/CS_5xDNA_all",
+	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/subassemblies_TEcleaned_Hv80Bd75Sb70Os70_30aa_firstBestHit_assembly_ml40_mi99",
+	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/IWGSCv2.0",
+	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/Triticum_aestivum.IWGSC2.26.dna.genome",
+	"/tgac/public/databases/blast/triticum_urartu/GCA_000347455.1/Triticum_urartu.GCA_000347455.1.26.dna.genome",
+	NULL
+};
 
 static const char * const S_WORKING_DIR_S = "/tgac/services/wheatis/";
 
