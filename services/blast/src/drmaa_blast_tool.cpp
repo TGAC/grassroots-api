@@ -5,7 +5,7 @@
  *      Author: tyrrells
  */
 
-#include "system_blast_tool.hpp"
+#include "drmaa_blast_tool.hpp"
 #include "streams.h"
 
 
