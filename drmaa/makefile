@@ -60,8 +60,7 @@ include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	test test_install
 
-all: test
-install: test_install
+install: test test_install
 
 test:
 	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(EXE_LDFLAGS) $(INCLUDES)  $(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
