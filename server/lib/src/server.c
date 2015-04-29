@@ -677,11 +677,6 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const cha
 			service_result_p = json_pack ("{s:s,s:s}", SERVICE_UUID_S, uuid_s, ERROR_S, "Failed to fine uuid in services table");
 		}
 
-	if (success_flag)
-		{
-			CloseService (job_p -> sj_service_p);
-		}
-
 	return success_flag;
 }
 
@@ -706,6 +701,8 @@ static json_t *GetServiceData (const json_t * const req_p, const json_t *credent
 										{
 											size_t i;
 											json_t *service_uuid_json_p;
+											size_t num_successes = 0;
+											size_t num_uuids = json_array_size (service_uuids_json_p);
 
 											json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
 												{
@@ -716,12 +713,22 @@ static json_t *GetServiceData (const json_t * const req_p, const json_t *credent
 
 															if (ConvertStringToUUID (uuid_s, service_id))
 																{
-																	callback_fn (res_services_p, service_id, uuid_s);
+																	if (callback_fn (res_services_p, service_id, uuid_s))
+																		{
+																			++ num_successes;
+																		}
 																}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
 
 														}		/* if (json_is_string (service_uuid_json_p)) */
 
 												}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+
+
+											if (num_uuids == num_successes)
+												{
+													//CloseService (job_p -> sj_service_p);
+												}
+
 										}
 									else
 										{

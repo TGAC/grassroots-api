@@ -130,7 +130,7 @@ all:
 	$(MAKE) -C services/tgac_elastic_search
 	$(MAKE) -C services/test_long_runner
 					
-install: install_init install_references install_images
+install: install_init install_references install_images all
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 #	$(MAKE) -C drmaa install
