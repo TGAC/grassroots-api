@@ -144,10 +144,26 @@ json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
 }
 
 
+OperationStatus GetServiceJobStatus (ServiceJob *job_p)
+{
+	OperationStatus status;
+
+	if (job_p -> sj_service_p -> se_get_status_fn)
+		{
+			job_p -> sj_status = job_p -> sj_service_p -> se_get_status_fn (job_p -> sj_service_p, job_p -> sj_id);
+		}
+
+	return job_p -> sj_status;
+}
+
+
 json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 {
 	json_t *json_p = NULL;
 	char *uuid_s = GetUUIDAsString (job_p -> sj_id);
+
+	/* Make sure that the job's status is up to date */
+	GetServiceJobStatus (job_p);
 
 	if (uuid_s)
 		{

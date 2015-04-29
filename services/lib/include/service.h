@@ -112,6 +112,7 @@ typedef struct Service
 
 	json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t job_id);
 
+	OperationStatus (*se_get_status_fn) (struct Service *service_p, const uuid_t job_id);
 
 	/**
 	 * Function to release the ParameterSet for this Service.

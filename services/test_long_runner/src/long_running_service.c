@@ -240,9 +240,9 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 		{
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			/* simulate a task that takes 1 minute */
+			/* simulate a task that takes 15 seconds */
 			data_p -> lsd_task_0.tt_job_p = job_p;
-			StartTimedTask (& (data_p -> lsd_task_0), 60);
+			StartTimedTask (& (data_p -> lsd_task_0), 15);
 
 			job_p -> sj_status = GetCurrentTimedTaskStatus (& (data_p -> lsd_task_0));
 			/*

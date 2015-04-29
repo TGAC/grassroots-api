@@ -65,6 +65,7 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_get_params_fn = get_parameters_fn;
 	service_p -> se_release_params_fn = release_parameters_fn;
 	service_p -> se_close_fn = close_fn;
+	service_p -> se_get_status_fn = get_status_fn;
 	service_p -> se_get_results_fn = get_results_fn;
 	service_p -> se_data_p = data_p;
 	

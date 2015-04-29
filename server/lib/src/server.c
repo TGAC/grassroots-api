@@ -578,7 +578,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 
 					if (job_p)
 						{
-							OperationStatus status = job_p -> sj_status;
+							OperationStatus status = GetServiceJobStatus (job_p);
 							const char *service_name_s = GetServiceName (job_p -> sj_service_p);
 
 							success_flag = true;
@@ -625,7 +625,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const cha
 
 	if (job_p)
 		{
-			const OperationStatus status = job_p -> sj_status;
+			const OperationStatus status = GetServiceJobStatus (job_p);
 			const char *service_name_s = GetServiceName (job_p -> sj_service_p);
 
 			/* Check that the service has finished */
