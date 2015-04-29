@@ -46,7 +46,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
-static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid);
+static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid);
 
 static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p, const char *keyword_s);
 
@@ -234,74 +234,57 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 				}
 
 			
-			if (json_is_array (op_p))
+			res_p = json_array ();
+
+			if (res_p)
 				{
-					res_p = json_array ();
-					
-					if (res_p)
+					if (json_is_array (op_p))
 						{
 							size_t i;
 							json_t *value_p;
 
 							json_array_foreach (op_p, i, value_p) 
 								{
-									json_t *service_res_p = RunServiceFromJSON (value_p, credentials_p, res_p, user_uuid);
-									
-									if (service_res_p)
+									int8 res = RunServiceFromJSON (value_p, credentials_p, res_p, user_uuid);
+
+									if (res < 0)
 										{
-											if (json_array_append_new (res_p, service_res_p) == 0)
+											char *value_s = json_dumps (value_p, JSON_INDENT (2));
+
+											if (value_s)
 												{
-													success_flag = true;
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
+													free (value_s);
 												}
 											else
 												{
-													// error
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
 												}
 										}
-									else
-										{
-											// error
-										}
-								}				
-							
+								}		/* json_array_foreach (op_p, i, value_p) */
 						}
 					else
 						{
-							// error
-						}
-					
-				}
-			else
-				{
-					res_p = json_object ();
-					
-					if (res_p)
-						{
-							json_t *service_res_p = RunServiceFromJSON (op_p, credentials_p, res_p, user_uuid);
-							
-							if (service_res_p)
-								{
-									const char *service_name_s = GetServiceNameFromJSON (req_p);
+							int8 res = RunServiceFromJSON (op_p, credentials_p, res_p, user_uuid);
 
-									if (json_object_set_new (res_p, service_name_s, service_res_p) == 0)
+							if (res < 0)
+								{
+									char *value_s = json_dumps (op_p, JSON_INDENT (2));
+
+									if (value_s)
 										{
-											success_flag = true;
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
+											free (value_s);
 										}
 									else
 										{
-											// error
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
 										}
 								}
-							else
-								{
-									// error
-								}
 						}
-					else
-						{
-							// error
-						}
-				}					
+
+				}		/* if (res_p) */
+
 		}
 
 		
@@ -332,11 +315,11 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 /******************************/
 
 
-static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid)
+static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid)
 {
 	/* Get the requested operation */
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);
-	json_t *service_res_p = NULL;
+	int res = 0;
 	
 	#if SERVER_DEBUG >= STM_LEVEL_INFO
 	char *req_s = json_dumps (req_p, JSON_PRESERVE_ORDER | JSON_INDENT (2));
@@ -396,6 +379,8 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 															size_t i;
 															ServiceJob *job_p = jobs_p -> sjs_jobs_p;
 
+															res = 1;
+
 															for (i = 0; i < num_jobs; ++ i, ++ job_p)
 																{
 																	json_t *job_status_json_p = GetServiceJobStatusAsJSON (job_p);
@@ -428,7 +413,6 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 																	FreeServiceNode ((ListItem * const) node_p);
 																}
 
-															service_res_p = GetServiceJobSetAsJSON (jobs_p);
 														}		/* if (jobs_p) */
 													else
 														{
@@ -455,7 +439,7 @@ static json_t *RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, j
 		}
 	#endif
 		
-	return service_res_p;
+	return res;
 }
 
 
