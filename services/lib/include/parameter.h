@@ -77,6 +77,13 @@ typedef union SharedType
 } SharedType;
 
 
+typedef struct SharedTypePair
+{
+	SharedType stp_current_value;
+	SharedType stp_default_value;
+} SharedTypePair;
+
+
 
 typedef struct ParameterMultiOption
 {
@@ -141,12 +148,6 @@ typedef struct Parameter
 	char *pa_description_s;
 
 	/**
-	 * The default value for this parameter. It requires use
-	 * of pa_type to access the correct value.
-	 */
-	SharedType pa_default;
-
-	/**
 	 * If the parameter can only take one of a
 	 * constrained set of values, this will be
 	 * an array of the possible options. If it's
@@ -176,13 +177,12 @@ typedef struct Parameter
 	ParameterLevel pa_level;
 
 
-	/**
-	 * The current value for this parameter. It requires use
-	 * of pa_type to access the correct value.
-	 */
-	SharedType pa_current_value;
+	uint32 (*pa_num_values_fn) (struct Parameter *param_p);
 
-	
+	SharedType *(*pa_access_default_value_fn) (struct Parameter *param_p, uint32 index);
+
+	SharedType *(*pa_access_current_value_fn) (struct Parameter *param_p, uint32 index);
+
 	uint32 pa_tag;
 
 	HashTable *pa_store_p;
@@ -190,6 +190,16 @@ typedef struct Parameter
 
 	ParameterGroup *pa_group_p;
 } Parameter;
+
+
+
+typedef struct MultiValueParamater
+{
+	Parameter mvp_base_param;
+
+	LinkedList *mvp_values_p;
+
+} MultiValueParamater;
 
 
 typedef struct ParameterNode
@@ -217,6 +227,12 @@ WHEATIS_SERVICE_API bool SetParameterMultiOption (ParameterMultiOptionArray *opt
 
 
 WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+
+
+WHEATIS_SERVICE_API bool InitParameter (Parameter *parameter_p, ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+
+
+WHEATIS_SERVICE_API void ClearParameter (Parameter *parameter_p);
 
 
 WHEATIS_SERVICE_API void FreeParameter (Parameter *param_p);
