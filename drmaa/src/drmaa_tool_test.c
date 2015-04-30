@@ -2,6 +2,9 @@
 #include "drmaa_tool.h"
 #include "drmaa_util.h"
 
+
+DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_s, const char *query_filename_s, const char *output_filename_s);
+
 int main (int argc, char *argv [])
 {
 	int ret = 10;
@@ -32,49 +35,132 @@ int main (int argc, char *argv [])
 	if (program_name_s)
 		{
 			if (InitDrmaa ())
-			{
-			DrmaaTool *tool_p = AllocateDrmaaTool (program_name_s);
-
-			if (tool_p)
 				{
-					if (SetDrmaaToolQueueName (tool_p, "-q webservices"))
+					#define NUM_TOOLS (3)
+
+					DrmaaTool *tools_pp [NUM_TOOLS] = { 0 };
+					size_t i;
+					bool success_flag = true;
+
+					for (i = 0; i < NUM_TOOLS; ++ i)
 						{
-							if (AddDrmaaToolArgument (tool_p, "-db"))
+							DrmaaTool *tool_p = CreateBlastDrmaaJob (program_name_s, db_name_s, query_filename_s, output_filename_s);
+
+							if (tool_p)
 								{
-									if (AddDrmaaToolArgument (tool_p, db_name_s))
+									* (tools_pp + i) = tool_p;
+								}
+							else
+								{
+									success_flag = false;
+									i = NUM_TOOLS;
+								}
+						}
+
+					if (success_flag)
+						{
+							for (i = 0; i < NUM_TOOLS; ++ i)
+								{
+									success_flag = RunDrmaaTool (* (tools_pp + i), true);
+
+									if (!success_flag)
 										{
-											if (AddDrmaaToolArgument (tool_p, "-query"))
+											printf ("failed to run drmaa tool %lu\n", i);
+										}
+								}
+
+							if (success_flag)
+								{
+									bool loop_flag = true;
+
+									/* pause for 5 seconds */
+									sleep (5);
+
+									while (loop_flag)
+										{
+											bool all_finished_flag = true;
+
+											for (i = 0; i < NUM_TOOLS; ++ i)
 												{
-													if (AddDrmaaToolArgument (tool_p, query_filename_s))
+													DrmaaTool *tool_p = * (tools_pp + i);
+
+													OperationStatus status = GetDrmaaToolStatus (tool_p);
+													printf ("drmaa tool %lu status %lu\n", i, status);
+
+													if (status == OS_STARTED || status == OS_PENDING)
 														{
-															if (AddDrmaaToolArgument (tool_p, "-out"))
-																{
-																	if (AddDrmaaToolArgument (tool_p, output_filename_s))
-																		{
-																			if (RunDrmaaTool (tool_p, false))
-																				{
-																					printf ("drmaa test ran successfully\n");
-																				}
+															all_finished_flag = false;
+														}
+												}
 
-																		}		/* if (AddDrmaaToolArgument (tool_p, output_filename_s)) */
+											if (all_finished_flag)
+												{
+													loop_flag = false;
+												}
+											else
+												{
+													/* pause for 1 seconds */
+													sleep (1);
+												}
+										}
+								}
+						}
 
-																}		/* if (AddDrmaaToolArgument (tool_p, "-out")) */
+					for (i = 0; i < NUM_TOOLS; ++ i)
+						{
+							if (* (tools_pp + i))
+								{
+									FreeDrmaaTool (* (tools_pp + i));
+								}
+						}
 
-														}		/* if (AddDrmaaToolArgument (tool_p, query_filename_s)) */
+					ExitDrmaa ();
+				}		/* if (InitDrmaa ()) */
 
-												}		/* if (AddDrmaaToolArgument (tool_p, "-query")) */
-
-										}		/* if (AddDrmaaToolArgument (tool_p, db_name_s)) */
-
-								}		/* if (AddDrmaaToolArgument (tool_p, "-db")) */
-
-						}		/* if (tool_p) */
-					
-					FreeDrmaaTool (tool_p);
-				}		/* if (SetDrmaaToolQueueName ("-q webservices")) */
-			ExitDrmaa ();
-			}
 		}		/* if (program_name_s) */
 
 	return ret;
+}
+
+
+
+DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_s, const char *query_filename_s, const char *output_filename_s)
+{
+	DrmaaTool *tool_p = AllocateDrmaaTool (program_name_s);
+
+	if (tool_p)
+		{
+			if (SetDrmaaToolQueueName (tool_p, "-q webservices"))
+				{
+					if (AddDrmaaToolArgument (tool_p, "-db"))
+						{
+							if (AddDrmaaToolArgument (tool_p, db_name_s))
+								{
+									if (AddDrmaaToolArgument (tool_p, "-query"))
+										{
+											if (AddDrmaaToolArgument (tool_p, query_filename_s))
+												{
+													if (AddDrmaaToolArgument (tool_p, "-out"))
+														{
+															if (AddDrmaaToolArgument (tool_p, output_filename_s))
+																{
+																	return tool_p;
+																}		/* if (AddDrmaaToolArgument (tool_p, output_filename_s)) */
+
+														}		/* if (AddDrmaaToolArgument (tool_p, "-out")) */
+
+												}		/* if (AddDrmaaToolArgument (tool_p, query_filename_s)) */
+
+										}		/* if (AddDrmaaToolArgument (tool_p, "-query")) */
+
+								}		/* if (AddDrmaaToolArgument (tool_p, db_name_s)) */
+
+						}		/* if (AddDrmaaToolArgument (tool_p, "-db")) */
+
+				}		/* if (SetDrmaaToolQueueName ("-q webservices")) */
+
+			FreeDrmaaTool (tool_p);
+		}		/* if (tool_p) */
+
+	return NULL;
 }
