@@ -164,6 +164,86 @@ void FreeParameter (Parameter *param_p)
 }
 
 
+
+bool InitParameter (Parameter *param_p, ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
+{
+	bool success_flag = false;
+
+	char *new_name_s = CopyToNewString (name_s, 0, true);
+
+	if (new_name_s)
+		{
+			bool success_flag = true;
+			char *new_description_s = NULL;
+
+			if (description_s)
+				{
+					new_description_s = CopyToNewString (description_s, 0, true);
+					success_flag = (new_description_s != NULL);
+				}		/* if (description_s) */
+
+			if (success_flag)
+				{
+					char *new_display_name_s = NULL;
+
+					if (display_name_s)
+						{
+							new_display_name_s = CopyToNewString (display_name_s, 0, true);
+							success_flag = (new_display_name_s != NULL);
+						}
+
+					if (success_flag)
+						{
+							HashTable *store_p = GetHashTableOfStrings (8, 75);
+
+							if (store_p)
+								{
+									param_p -> pa_type = type;
+									param_p -> pa_name_s = new_name_s;
+									param_p -> pa_display_name_s = new_display_name_s;
+									param_p -> pa_description_s = new_description_s;
+									param_p -> pa_options_p = options_p;
+									param_p -> pa_check_value_fn = check_value_fn;
+									param_p -> pa_default = default_value;
+									param_p -> pa_bounds_p = bounds_p;
+									param_p -> pa_level = level;
+									param_p -> pa_tag = tag;
+									param_p -> pa_store_p = store_p;
+									param_p -> pa_group_p = NULL;
+
+									memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
+
+									return true;
+								}		/* if (store_p) */
+
+
+							if (new_display_name_s)
+								{
+									FreeCopiedString (new_display_name_s);
+								}		/* if (new_description_s) */
+
+						}		/* if (success_flag) */
+
+						if (new_description_s)
+							{
+								FreeCopiedString (new_description_s);
+							}		/* if (new_description_s) */
+
+					}		/* if (success_flag) */
+
+				FreeCopiedString (new_name_s);
+			}		/* if (new_name_s) */
+
+	return success_flag;
+}
+
+
+WHEATIS_SERVICE_API void ClearParameter (Parameter *parameter_p);
+
+
+
+
+
 ParameterBounds *AllocateParameterBounds (void)
 {
 	ParameterBounds *bounds_p = (ParameterBounds *) AllocMemory (sizeof (ParameterBounds));
