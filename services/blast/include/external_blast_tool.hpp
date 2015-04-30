@@ -31,7 +31,7 @@ protected:
 	const char *ebt_working_directory_s;
 
 	const char *GetOutputData ();
-	char *GetTempFilenameBuffer ();
+	char *GetTempFilenameBuffer (const char * const prefix_s);
 
 	virtual bool AddArg (const char * const arg_s);
 };

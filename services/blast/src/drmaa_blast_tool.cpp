@@ -37,7 +37,7 @@ const char *DrmaaBlastTool :: GetResults ()
 
 OperationStatus DrmaaBlastTool :: Run ()
 {
-	if (RunDrmaaTool (dbt_drmaa_tool_p, false))
+	if (RunDrmaaTool (dbt_drmaa_tool_p, true))
 		{
 			bt_job_p -> sj_status = OS_STARTED;
 		}
