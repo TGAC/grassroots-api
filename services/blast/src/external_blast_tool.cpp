@@ -109,7 +109,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					char *buffer_p = GetTempFilenameBuffer ();
+					char *buffer_p = GetTempFilenameBuffer ("blast-input");
 
 					if (buffer_p)
 						{
@@ -162,7 +162,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 	/* Output File */
 	if (success_flag)
 		{
-			char *buffer_p = GetTempFilenameBuffer ();
+			char *buffer_p = GetTempFilenameBuffer ("blast-output");
 
 			success_flag = false;
 
@@ -403,22 +403,21 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 
 /* need a buffer where the final 6 chars are XXXXXX, see mkstemp */
-char *ExternalBlastTool :: GetTempFilenameBuffer ()
+char *ExternalBlastTool :: GetTempFilenameBuffer (const char * const prefix_s)
 {
 	char *buffer_s = 0;
-	const char FILE_TEMPLATE_S [] = "blast-XXXXXX";
+	const char SUFFIX_S [] = "-XXXXXX";
 	const size_t working_dir_length = strlen (ebt_working_directory_s);
-	const size_t file_template_length = strlen (FILE_TEMPLATE_S);
+	const size_t suffix_length = strlen (SUFFIX_S);
+	const size_t prefix_length = strlen (prefix_s);
 
-	size_t size = 1 + working_dir_length;
+	size_t size = 1 + working_dir_length + prefix_length + suffix_length;
 	bool needs_slash_flag = (* (ebt_working_directory_s + (size - 1)) != GetFileSeparatorChar ());
 
 	if (needs_slash_flag)
 		{
 			++ size;
 		}
-
-	size += file_template_length;
 
 	buffer_s = (char *) AllocMemory (size * sizeof (char));
 
@@ -435,8 +434,11 @@ char *ExternalBlastTool :: GetTempFilenameBuffer ()
 					++ buffer_p;
 				}
 
-			memcpy (buffer_p, FILE_TEMPLATE_S, file_template_length * sizeof (char));
-			buffer_p += file_template_length * sizeof (char);
+			memcpy (buffer_p, prefix_s, prefix_length * sizeof (char));
+			buffer_p +=  prefix_length * sizeof (char);
+
+			memcpy (buffer_p, SUFFIX_S, suffix_length * sizeof (char));
+			buffer_p += suffix_length * sizeof (char);
 			*buffer_p = '\0';
 		}
 

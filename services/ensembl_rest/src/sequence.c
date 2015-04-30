@@ -192,7 +192,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 
 	def.st_string_value_s = NULL;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Sequence ID", NULL, "An Ensembl stable ID", TAG_SEQUENCE_ID, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Sequence ID", NULL, "An Ensembl stable ID", TAG_SEQUENCE_ID, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 		{
 			ParameterMultiOptionArray *output_type_options_p = NULL;
 			SharedType output_types_p [ST_NUM_TYPES];
@@ -215,7 +215,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 				{
 					def.st_string_value_s = output_types_p [0].st_string_value_s;
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Type", NULL,
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Type", NULL,
 					  "Type of sequence. Defaults to genomic where applicable, i.e. not translations. cdna refers to the spliced transcript sequence with UTR; cds refers to the spliced transcript sequence without UTR.",
 					  TAG_SEQUENCE_TYPE, output_type_options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
@@ -239,7 +239,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 								{
 									def.st_string_value_s = output_formats_p [0].st_string_value_s;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Output Format", NULL,
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Output Format", NULL,
 									  "The filetype that any results will be in",
 									  TAG_CONTENT_TYPE, output_format_options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 										{

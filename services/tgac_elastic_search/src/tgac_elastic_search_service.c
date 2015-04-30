@@ -222,11 +222,11 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 				{
 					def.st_string_value_s = values [0].st_string_value_s;
 
-					if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Search field", NULL, "The field to search", TAG_SEARCH_FIELD, options_p, def, NULL, NULL, PL_ALL, NULL))
+					if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Search field", NULL, "The field to search", TAG_SEARCH_FIELD, options_p, def, NULL, NULL, PL_ALL, NULL))
 						{
 							def.st_string_value_s = "";
 
-							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Search term", NULL, "The term to search for in the given field", TAG_SEARCH_KEYWORD, NULL, def, NULL, NULL, PL_ALL, NULL))
+							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Search term", NULL, "The term to search for in the given field", TAG_SEARCH_KEYWORD, NULL, def, NULL, NULL, PL_ALL, NULL))
 								{
 									return param_set_p;
 								}

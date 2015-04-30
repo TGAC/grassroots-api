@@ -15,7 +15,10 @@ typedef struct SingleValueParameter
 {
 	Parameter svp_base_param;
 
-	SharedTypePair svp_value;
+	SharedType svp_current_value;
+
+	SharedType svp_default_value;
+
 
 } SingleValueParameter;
 
@@ -31,6 +34,12 @@ WHEATIS_SERVICE_API SingleValueParameter *AllocateSingleValueParameter (Paramete
 
 
 WHEATIS_SERVICE_API void FreeSingleValueParameter (SingleValueParameter *param_p);
+
+
+WHEATIS_SERVICE_API bool SetSingleValuedParameterValue (SingleValueParameter * const param_p, const void *value_p);
+
+
+WHEATIS_SERVICE_API char *GetSingleParameterValueAsString (const SingleValueParameter * const param_p, bool *alloc_flag_p);
 
 
 #ifdef __cplusplus

@@ -307,7 +307,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 				
 			def.st_resource_value_p = resource_p;		
 
-			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, S_INPUT_PARAM_NAME_S, NULL, "The input file to read", TAG_COMPRESS_INPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL))
+			if (CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_READ, false, S_INPUT_PARAM_NAME_S, NULL, "The input file to read", TAG_COMPRESS_INPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL))
 				{
 					ParameterMultiOptionArray *options_p = NULL;
 					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Raw", "Use Zip", "Use GZip" };
@@ -323,7 +323,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 						{
 							def.st_string_value_s = values [0].st_string_value_s;
 
-							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Compression algorithm", NULL, "The algorithm to use to compress the data with", TAG_COMPRESS_ALGORITHM, options_p, def, NULL, NULL, PL_ALL, NULL))
+							if (CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Compression algorithm", NULL, "The algorithm to use to compress the data with", TAG_COMPRESS_ALGORITHM, options_p, def, NULL, NULL, PL_ALL, NULL))
 								{
 									return param_set_p;
 								}

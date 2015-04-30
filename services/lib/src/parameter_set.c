@@ -81,13 +81,13 @@ void FreeParameterSet (ParameterSet *params_p)
 
 
 
-Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type,
-	const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, 
+Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, bool multi_valued_flag
+,	const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p,
 	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	bool success_flag = false;
-	Parameter *param_p = AllocateParameter (type, name_s, display_name_s, description_s, tag, options_p, default_value, current_value_p, bounds_p, level, check_value_fn);
+	Parameter *param_p = AllocateParameter (type, multi_valued_flag, name_s, display_name_s, description_s, tag, options_p, default_value, current_value_p, bounds_p, level, check_value_fn);
 	
 	if (param_p)
 		{
@@ -258,27 +258,27 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 
 
-uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p)
-{
-	uint32 matched_count = 0;
-	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
-	
-	while (node_p)
-		{
-			Parameter *param_p = node_p -> pn_parameter_p;
-			TagItem *tag_p = FindMatchingTag (tags_p, param_p -> pa_tag);
-			
-			if (tag_p)
-				{
-					tag_p -> ti_value = param_p -> pa_current_value;
-					++ matched_count;
-				}
-
-			node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-		}		/* while (node_p) */
-		
-	return matched_count;
-}
+//uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p)
+//{
+//	uint32 matched_count = 0;
+//	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+//
+//	while (node_p)
+//		{
+//			Parameter *param_p = node_p -> pn_parameter_p;
+//			TagItem *tag_p = FindMatchingTag (tags_p, param_p -> pa_tag);
+//
+//			if (tag_p)
+//				{
+//					tag_p -> ti_value = param_p -> pa_current_value;
+//					++ matched_count;
+//				}
+//
+//			node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+//		}		/* while (node_p) */
+//
+//	return matched_count;
+//}
 
 
 Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag)
@@ -647,7 +647,7 @@ Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag)
 
 	if (node_p)
 		{
-			Parameter *param_p = node_p -> pn_parameter_p;
+			param_p = node_p -> pn_parameter_p;
 
 			LinkedListRemove (params_p -> ps_params_p, (ListItem * const) node_p);
 
