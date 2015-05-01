@@ -584,11 +584,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 	while (*name_pp)
 		{
-			if (all_flag)
-				{
-					++ num_jobs;
-				}
-			else if (GetParameterFromParameterSetByName (param_set_p, *name_pp))
+			if (all_flag || (GetParameterFromParameterSetByName (param_set_p, *name_pp)))
 				{
 					++ num_jobs;
 				}
@@ -619,7 +615,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 								{
 									if (*description_pp)
 										{
-											SetServiceJobDescription (job_p, param_p -> pa_description_s);
+											SetServiceJobDescription (job_p, *description_pp);
 											++ description_pp;
 										}
 
