@@ -155,6 +155,16 @@ WHEATIS_SERVICE_API json_t *GetParameterGroupsAsJSON (const LinkedList * const p
 WHEATIS_SERVICE_API Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag);
 
 
+/**
+ * Get all of the Parameters within a given ParameterGroup.
+ *
+ * @param params_p The ParameterSet to search.
+ * @param name_s The name of the ParameterGroup to get the Parameters for.
+ * @return Upon success, an array of matching Parameter pointers terminated by a NULL.
+ * Upon failure a NULL is returned.
+ */
+WHEATIS_SERVICE_API Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
+
 
 #ifdef __cplusplus
 }

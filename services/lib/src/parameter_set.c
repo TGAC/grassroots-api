@@ -659,6 +659,15 @@ Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag)
 }
 
 
+Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)
+{
+	Parameter **params_pp = NULL;
+
+	return params_pp;
+}
+
+
+
 static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag)
 {
 	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);

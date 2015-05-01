@@ -109,7 +109,7 @@ all:
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C util 
 	$(MAKE) -C network
-	$(MAKE) -C drmaa
+#	$(MAKE) -C drmaa
 	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib

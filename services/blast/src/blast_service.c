@@ -19,7 +19,7 @@ typedef struct
 } BlastServiceData;
 
 
-static char *S_DATABASES_PP [] =
+const char *S_DATABASES_PP [] =
 {
 	"/tgac/public/databases/blast/aegilops_tauschii/GCA_000347335.1/Aegilops_tauschii.GCA_000347335.1.26.dna.genome",
 	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/allCdnaFinalAssemblyAllContigs_vs_TREPalle05_notHits_gt100bp",
@@ -28,11 +28,10 @@ static char *S_DATABASES_PP [] =
 	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/IWGSCv2.0",
 	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/Triticum_aestivum.IWGSC2.26.dna.genome",
 	"/tgac/public/databases/blast/triticum_urartu/GCA_000347455.1/Triticum_urartu.GCA_000347455.1.26.dna.genome",
-
 	NULL
 };
 
-static const char *S_DATABASE_DESCRIPTIONS_PP [] =
+const char *S_DATABASE_DESCRIPTIONS_PP [] =
 {
 	"Jia et al Aegilops tauschii AL8/78 DD genome assembly 429,892 sequences; 3,313,764,331 total bases",
 	"Brenchley et al Chinese Spring CS42 cDNA assemblies repeat-filtered against TREP 97,481 sequences; 93,340,842 total bases",
@@ -151,7 +150,7 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 
 			if (data_p -> bsd_blast_tools_p)
 				{
-					data_p -> bsd_database_names_pp = S_DATABASES_PP;
+					data_p -> bsd_database_names_pp = NULL;
 
 					return data_p;
 				}
@@ -197,7 +196,55 @@ static const char *GetBlastServiceDesciption (Service *service_p)
  */
 static bool AddDatabaseParams (ParameterSet *param_set_p)
 {
-	bool success_flag = false;
+	bool success_flag = true;
+	Parameter *param_p = NULL;
+	SharedType def;
+	size_t num_group_params = 7;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
+
+	const char **name_ss = S_DATABASES_PP;
+	const char **description_ss = S_DATABASE_DESCRIPTIONS_PP;
+
+	def.st_boolean_value = true;
+	uint8 a = 0;
+	uint8 b = 0;
+
+	while ((*name_ss) && (*description_ss) && success_flag)
+		{
+			/* try and get the local name of the database */
+			const char *local_name_s = strrchr (*name_ss, GetFileSeparatorChar ());
+			uint32 tag = MAKE_TAG ('B', 'D', a, b);
+
+			if (local_name_s)
+				{
+					++ local_name_s;
+				}
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, *name_ss, local_name_s, *description_ss, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+				{
+					if (grouped_param_pp)
+						{
+							*grouped_param_pp = param_p;
+							++ grouped_param_pp;
+						}
+
+					if (b == 0xFF)
+						{
+							b = 0;
+							++ a;
+						}
+
+					++ name_ss;
+					++ description_ss;
+				}
+			else
+				{
+					success_flag = false;
+				}
+
+		}		/* while ((*name_ss) && (*description_ss) && success_flag) */
+
 
 	return success_flag;
 }
@@ -533,7 +580,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	
 	/* count how many jobs we a running */
 	size_t num_jobs = 0;
-	char **name_pp = S_DATABASES_PP;
+	char **name_pp = (char **) S_DATABASES_PP;
 
 	/* For the demo, simply run against all databases */
 	while (*name_pp)
@@ -557,7 +604,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			const char **description_pp;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			name_pp = S_DATABASES_PP;
+			name_pp = (char **) S_DATABASES_PP;
 			description_pp = S_DATABASE_DESCRIPTIONS_PP;
 
 
