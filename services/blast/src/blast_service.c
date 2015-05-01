@@ -580,10 +580,15 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	/* count how many jobs we a running */
 	size_t num_jobs = 0;
 	const char **name_pp = S_DATABASES_PP;
+	bool all_flag = true;
 
 	while (*name_pp)
 		{
-			if (GetParameterFromParameterSetByName (param_set_p, *name_pp))
+			if (all_flag)
+				{
+					++ num_jobs;
+				}
+			else if (GetParameterFromParameterSetByName (param_set_p, *name_pp))
 				{
 					++ num_jobs;
 				}
@@ -598,13 +603,11 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			size_t i;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 			const char **description_pp = S_DATABASE_DESCRIPTIONS_PP;
-			bool all_flag = true;
 			name_pp = S_DATABASES_PP;
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
 					Parameter *param_p;
-					bool run_flag = true;
 
 					if (all_flag)
 						{
