@@ -313,5 +313,8 @@ static bool IsFileForElasticSearchRestService (Service *service_p, Resource *res
 }
 
 
-static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id);
+static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id)
+{
+	return NULL;
+}
 
