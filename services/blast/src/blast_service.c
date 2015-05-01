@@ -597,24 +597,27 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 		{
 			size_t i;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-
+			const char **description_pp = S_DATABASE_DESCRIPTIONS_PP;
+			bool all_flag = true;
 			name_pp = S_DATABASES_PP;
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
 					Parameter *param_p;
+					bool run_flag = true;
 
-					if ((param_p = GetParameterFromParameterSetByName (param_set_p, *name_pp)) != NULL)
+					if (all_flag)
 						{
-							BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, param_p -> pa_name_s, S_WORKING_DIR_S);
+							BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp, S_WORKING_DIR_S);
 
 							job_p -> sj_status = OS_FAILED_TO_START;
 
 							if (tool_p)
 								{
-									if (param_p -> pa_description_s)
+									if (*description_pp)
 										{
 											SetServiceJobDescription (job_p, param_p -> pa_description_s);
+											++ description_pp;
 										}
 
 									if (tool_p -> ParseParameters (param_set_p))
@@ -625,8 +628,35 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 												}
 										}
 								}
-						}
 
+						}
+					else
+						{
+							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, *name_pp);
+
+							if (param_p)
+								{
+									BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, param_p -> pa_name_s, S_WORKING_DIR_S);
+
+									job_p -> sj_status = OS_FAILED_TO_START;
+
+									if (tool_p)
+										{
+											if (param_p -> pa_description_s)
+												{
+													SetServiceJobDescription (job_p, param_p -> pa_description_s);
+												}
+
+											if (tool_p -> ParseParameters (param_set_p))
+												{
+													if (RunBlast (tool_p))
+														{
+															job_p -> sj_status = tool_p -> GetStatus ();
+														}
+												}
+										}
+								}
+						}
 				}
 		}
 		
