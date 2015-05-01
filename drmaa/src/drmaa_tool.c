@@ -5,10 +5,14 @@
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "string_linked_list.h"
+#include "byte_buffer.h"
+
 
 static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
 static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss);
+
+static char *BuildNativeSpecification (const DrmaaTool *tool_p);
 
 
 
@@ -33,7 +37,11 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 
 									tool_p -> dt_queue_name_s = NULL;
 									tool_p -> dt_working_directory_s = NULL;
-									tool_p -> dt_stat = -1;
+
+									tool_p -> dt_num_cores = 0;
+									tool_p -> dt_host_name_s = NULL;
+									tool_p -> dt_user_name_s = NULL;
+									tool_p -> dt_mb_mem_usage = 0;
 
 									/* join output/error file */
 									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_JOIN_FILES, "y", NULL, 0);
@@ -183,66 +191,107 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 {
 	bool success_flag = false;
 
-	const char **args_ss = CreateAndAddArgsArray (tool_p);
-
-	if (args_ss)
+	if (BuildNativeSpecification (tool_p))
 		{
-			/*run a job*/
-			int result = drmaa_run_job (tool_p -> dt_id_s, sizeof (tool_p -> dt_id_s) - 1, tool_p -> dt_job_p, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
+			const char **args_ss = CreateAndAddArgsArray (tool_p);
 
-			if (result == DRMAA_ERRNO_SUCCESS)
+			if (args_ss)
 				{
-					success_flag = true;
-				}
+					/*run a job*/
+					int result = drmaa_run_job (tool_p -> dt_id_s, sizeof (tool_p -> dt_id_s) - 1, tool_p -> dt_job_p, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
 
-			drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
-			tool_p -> dt_job_p = NULL;
-
-			if (success_flag)
-				{
-					if (!async_flag)
+					if (result == DRMAA_ERRNO_SUCCESS)
 						{
-							result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, & (tool_p -> dt_stat),
-								DRMAA_TIMEOUT_WAIT_FOREVER, NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
+							success_flag = true;
+						}
 
-							success_flag = (result == DRMAA_ERRNO_SUCCESS) ? true : false;
+					drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
+					tool_p -> dt_job_p = NULL;
 
-							if (success_flag)
+					if (success_flag)
+						{
+							if (!async_flag)
 								{
-									int exited;
-									int exit_status;
+									result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, & (tool_p -> dt_stat),
+										DRMAA_TIMEOUT_WAIT_FOREVER, NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
 
-									drmaa_wifexited (&exited, tool_p -> dt_stat, NULL, 0);
+									success_flag = (result == DRMAA_ERRNO_SUCCESS) ? true : false;
 
-									if (exited)
+									if (success_flag)
 										{
-											drmaa_wexitstatus (&exit_status, tool_p -> dt_stat, NULL, 0);
+											int exited;
+											int exit_status;
+											int stat;
 
-											PrintLog (STM_LEVEL_INFO, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
-										}
-									else
-										{
-											int signal_status;
+											drmaa_wifexited (&exited, stat, NULL, 0);
 
-											drmaa_wifsignaled (&signal_status, tool_p -> dt_stat, NULL, 0);
-
-											if (signal_status)
+											if (exited)
 												{
-													char termsig [DRMAA_SIGNAL_BUFFER+1];
-													drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, tool_p -> dt_stat, NULL, 0);
-													PrintLog (STM_LEVEL_SEVERE, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
+													drmaa_wexitstatus (&exit_status, stat, NULL, 0);
+
+													PrintLog (STM_LEVEL_INFO, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
 												}
 											else
 												{
-													PrintLog (STM_LEVEL_SEVERE, "job <%s> is aborted\n", tool_p -> dt_id_s);
+													int signal_status;
+
+													drmaa_wifsignaled (&signal_status, stat, NULL, 0);
+
+													if (signal_status)
+														{
+															char termsig [DRMAA_SIGNAL_BUFFER+1];
+															drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, stat, NULL, 0);
+															PrintLog (STM_LEVEL_SEVERE, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
+														}
+													else
+														{
+															PrintLog (STM_LEVEL_SEVERE, "job <%s> is aborted\n", tool_p -> dt_id_s);
+														}
 												}
 										}
-								}
-						}		/* if (!async_flag) */
-				}
+								}		/* if (!async_flag) */
+						}
 
-			FreeAndRemoveArgsArray (tool_p, args_ss);
-		}		/* if (args_ss) */
+					FreeAndRemoveArgsArray (tool_p, args_ss);
+				}		/* if (args_ss) */
+
+		}		/* if (BuildNativeSpecification (tool_p)) */
+
+	return success_flag;
+}
+
+
+bool SetDrmaaToolCores (DrmaaTool *tool_p, uint32 num_cores)
+{
+	tool_p -> dt_num_cores = num_cores;
+	return true;
+}
+
+
+bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem)
+{
+	tool_p -> dt_mb_mem_usage = mem;
+
+	return true;
+}
+
+
+bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s)
+{
+	bool success_flag = false;
+
+	if (ReplaceStringValue (& (tool_p -> dt_host_name_s), host_name_s))
+		{
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_name_s)
+{
+	bool success_flag = (drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_JOB_NAME, job_name_s, NULL, 0) == DRMAA_ERRNO_SUCCESS);
 
 	return success_flag;
 }
@@ -284,3 +333,86 @@ static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_s
 }
 
 
+
+static bool BuildNativeSpecification (const DrmaaTool *tool_p)
+{
+	bool success_flag = true;
+	char *value_s = NULL;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+	if (buffer_p)
+		{
+			if (tool_p -> dt_queue_name_s)
+				{
+					success_flag = AddStringsToByteBuffer (buffer_p, "-q ", tool_p -> dt_queue_name_s, NULL);
+				}
+
+			if (tool_p -> dt_host_name_s)
+				{
+					success_flag = AddStringsToByteBuffer (buffer_p, " -m ", tool_p -> dt_host_name_s, NULL);
+				}
+
+			if (success_flag)
+				{
+					if (tool_p -> dt_num_cores)
+						{
+							char *temp_s = ConvertIntegerToString (tool_p -> dt_num_cores);
+
+							if (temp_s)
+								{
+									success_flag = AddStringsToByteBuffer (buffer_p, " -n ", temp_s, NULL);
+									FreeCopiedString (temp_s);
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+				}
+
+			if (success_flag)
+				{
+					if (tool_p -> dt_mb_mem_usage)
+						{
+							char *temp_s = ConvertIntegerToString (tool_p -> dt_mb_mem_usage);
+
+							if (temp_s)
+								{
+									success_flag = AddStringsToByteBuffer (buffer_p, " -R \"rusage[mem=", temp_s, "]\"", NULL);
+									FreeCopiedString (temp_s);
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+				}
+
+
+			if (success_flag)
+				{
+					const char *data_s = GetByteBufferData (buffer_p);
+
+					char *spec_s = CopyToNewString (data_s, 0, false);
+
+					if (spec_s)
+						{
+							success_flag = (drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_NATIVE_SPECIFICATION, spec_s, NULL, 0) == DRMAA_ERRNO_SUCCESS);
+							FreeCopiedString (spec_s);
+						}
+					else
+						{
+							success_flag = false;
+						}
+				}
+
+
+			FreeByteBuffer (buffer_p);
+		}
+	else
+		{
+			success_flag = false;
+		}
+
+	return success_flag;
+}
