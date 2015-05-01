@@ -21,7 +21,7 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const c
 			throw std :: bad_alloc ();
 		}
 
-	dbt_async_flag = async_flag
+	dbt_async_flag = async_flag;
 	SetDrmaaToolQueueName (dbt_drmaa_tool_p, "webservices");
 }
 

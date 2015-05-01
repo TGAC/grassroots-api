@@ -17,7 +17,7 @@
 class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 {
 public:
-	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s);
+	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s, bool async_flag);
 	virtual ~DrmaaBlastTool ();
 
 	virtual OperationStatus Run ();

@@ -3,7 +3,7 @@
 
 #include "drmaa_tool.h"
 #include "drmaa_util.h"
-
+#include "memory_allocations.h"
 
 DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_s, const char *query_filename_s, const char *output_filename_s);
 

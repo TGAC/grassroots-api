@@ -12,7 +12,7 @@ static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
 static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss);
 
-static char *BuildNativeSpecification (const DrmaaTool *tool_p);
+static bool BuildNativeSpecification (const DrmaaTool *tool_p);
 
 
 
@@ -212,7 +212,9 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 						{
 							if (!async_flag)
 								{
-									result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, & (tool_p -> dt_stat),
+									int stat;
+
+									result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, &stat,
 										DRMAA_TIMEOUT_WAIT_FOREVER, NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
 
 									success_flag = (result == DRMAA_ERRNO_SUCCESS) ? true : false;
@@ -344,12 +346,12 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 		{
 			if (tool_p -> dt_queue_name_s)
 				{
-					success_flag = AddStringsToByteBuffer (buffer_p, "-q ", tool_p -> dt_queue_name_s, NULL);
+					success_flag = AppendStringsToByteBuffer (buffer_p, "-q ", tool_p -> dt_queue_name_s, NULL);
 				}
 
 			if (tool_p -> dt_host_name_s)
 				{
-					success_flag = AddStringsToByteBuffer (buffer_p, " -m ", tool_p -> dt_host_name_s, NULL);
+					success_flag = AppendStringsToByteBuffer (buffer_p, " -m ", tool_p -> dt_host_name_s, NULL);
 				}
 
 			if (success_flag)
@@ -360,7 +362,7 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 
 							if (temp_s)
 								{
-									success_flag = AddStringsToByteBuffer (buffer_p, " -n ", temp_s, NULL);
+									success_flag = AppendStringsToByteBuffer (buffer_p, " -n ", temp_s, NULL);
 									FreeCopiedString (temp_s);
 								}
 							else
@@ -378,7 +380,7 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 
 							if (temp_s)
 								{
-									success_flag = AddStringsToByteBuffer (buffer_p, " -R \"rusage[mem=", temp_s, "]\"", NULL);
+									success_flag = AppendStringsToByteBuffer (buffer_p, " -R \"rusage[mem=", temp_s, "]\"", NULL);
 									FreeCopiedString (temp_s);
 								}
 							else
@@ -416,3 +418,4 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 
 	return success_flag;
 }
+
