@@ -580,21 +580,17 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	
 	/* count how many jobs we a running */
 	size_t num_jobs = 0;
-	char **name_pp = (char **) S_DATABASES_PP;
+	const char **name_pp = S_DATABASES_PP;
 
-	/* For the demo, simply run against all databases */
 	while (*name_pp)
 		{
-			/*
-			if (IsDatabaseForRun (params_p, S_DATABASES_PP))
+			if (GetParameterFromParameterSetByName (param_set_p, *name_pp))
 				{
 					++ num_jobs;
 				}
-			*/
 
-			++ num_jobs;
 			++ name_pp;
-		}
+		}		/* while (*name_pp) */
 
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
 
@@ -604,32 +600,35 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			const char **description_pp;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-			name_pp = (char **) S_DATABASES_PP;
-			description_pp = S_DATABASE_DESCRIPTIONS_PP;
-
+			name_pp = S_DATABASES_PP;
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
-					BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp, S_WORKING_DIR_S);
+					Parameter *param_p;
 
-					job_p -> sj_status = OS_FAILED_TO_START;
-
-					if (tool_p)
+					if ((param_p = GetParameterFromParameterSetByName (param_set_p, *name_pp)) != NULL)
 						{
-							if (*description_pp)
-								{
-									SetServiceJobDescription (job_p, *description_pp);
-									++ description_pp;
-								}
+							BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, param_p -> pa_name_s, S_WORKING_DIR_S);
 
-							if (tool_p -> ParseParameters (param_set_p))
+							job_p -> sj_status = OS_FAILED_TO_START;
+
+							if (tool_p)
 								{
-									if (RunBlast (tool_p))
+									if (param_p -> pa_description_s)
 										{
-											job_p -> sj_status = tool_p -> GetStatus ();
+											SetServiceJobDescription (job_p, param_p -> pa_description_s);
+										}
+
+									if (tool_p -> ParseParameters (param_set_p))
+										{
+											if (RunBlast (tool_p))
+												{
+													job_p -> sj_status = tool_p -> GetStatus ();
+												}
 										}
 								}
 						}
+
 				}
 		}
 

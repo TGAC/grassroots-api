@@ -23,12 +23,15 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const c
 
 	dbt_async_flag = async_flag;
 	SetDrmaaToolQueueName (dbt_drmaa_tool_p, "webservices");
+	SetDrmaaToolJobName (dbt_drmaa_tool_p, name_s);
 }
+
 
 DrmaaBlastTool :: ~DrmaaBlastTool ()
 {
 	FreeDrmaaTool (dbt_drmaa_tool_p);
 }
+
 
 const char *DrmaaBlastTool :: GetResults ()
 {
@@ -57,7 +60,6 @@ bool DrmaaBlastTool :: AddArg (const char *arg_s)
 
 	return success_flag;
 }
-
 
 
 OperationStatus DrmaaBlastTool :: GetStatus ()
