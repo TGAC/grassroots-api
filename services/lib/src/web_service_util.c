@@ -252,7 +252,7 @@ bool AddMatchTypeParameter (ParameterSet *param_set_p)
 
 			def.st_string_value_s = match_types_p [0].st_string_value_s;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, "Query matching", NULL,
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Query matching", NULL,
 			  "How the query will be interpreted by the service.",
 			  TAG_WEB_SERVICE_UTIL_MATCH_TYPE, match_type_options_p, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 				{

@@ -109,7 +109,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					char *buffer_p = GetTempFilenameBuffer ("blast_input");
+					char *buffer_p = GetTempFilenameBuffer ("blast-input");
 
 					if (buffer_p)
 						{
@@ -162,7 +162,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 	/* Output File */
 	if (success_flag)
 		{
-			char *buffer_p = GetTempFilenameBuffer ("blast_output");
+			char *buffer_p = GetTempFilenameBuffer ("blast-output");
 
 			success_flag = false;
 

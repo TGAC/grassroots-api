@@ -348,7 +348,7 @@ static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_co
 
 											def.st_string_value_s = param_options_p -> st_string_value_s;
 
-											param_p = AllocateParameter (PT_KEYWORD, name_s, display_name_s, description_s, TAG_IRODS_KEYWORD, options_array_p, def, NULL, NULL, PL_ALL, NULL);
+											param_p = AllocateParameter (PT_KEYWORD, false, name_s, display_name_s, description_s, TAG_IRODS_KEYWORD, options_array_p, def, NULL, NULL, PL_ALL, NULL);
 
 											if (param_p)
 												{

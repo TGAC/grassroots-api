@@ -74,14 +74,16 @@ typedef union SharedType
 	
 	Resource *st_resource_value_p;
 
+	LinkedList *st_multiple_values_p;
+
 } SharedType;
 
 
-typedef struct SharedTypePair
+typedef struct SharedTypeNode
 {
-	SharedType stp_current_value;
-	SharedType stp_default_value;
-} SharedTypePair;
+	ListItem stn_node;
+	SharedType stn_value;
+} SharedTypeNode;
 
 
 
@@ -137,6 +139,9 @@ typedef struct Parameter
 	/** The type of the parameter. */
 	ParameterType pa_type;
 
+	/** Does the parameter store multiple values? */
+	bool pa_multi_valued_flag;
+
 	/** The name of the parameter. */
 	char *pa_name_s;
 
@@ -146,6 +151,12 @@ typedef struct Parameter
 
 	/** The description for this parameter. */
 	char *pa_description_s;
+
+	/**
+	 * The default value for this parameter. It requires use
+	 * of pa_type to access the correct value.
+	 */
+	SharedType pa_default;
 
 	/**
 	 * If the parameter can only take one of a
@@ -177,11 +188,12 @@ typedef struct Parameter
 	ParameterLevel pa_level;
 
 
-	uint32 (*pa_num_values_fn) (struct Parameter *param_p);
+	/**
+	 * The current value for this parameter. It requires use
+	 * of pa_type to access the correct value.
+	 */
+	SharedType pa_current_value;
 
-	SharedType *(*pa_access_default_value_fn) (struct Parameter *param_p, uint32 index);
-
-	SharedType *(*pa_access_current_value_fn) (struct Parameter *param_p, uint32 index);
 
 	uint32 pa_tag;
 
@@ -190,16 +202,6 @@ typedef struct Parameter
 
 	ParameterGroup *pa_group_p;
 } Parameter;
-
-
-
-typedef struct MultiValueParamater
-{
-	Parameter mvp_base_param;
-
-	LinkedList *mvp_values_p;
-
-} MultiValueParamater;
 
 
 typedef struct ParameterNode
@@ -226,13 +228,7 @@ WHEATIS_SERVICE_API void FreeParameterMultiOptionArray (ParameterMultiOptionArra
 WHEATIS_SERVICE_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
-WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
-
-
-WHEATIS_SERVICE_API bool InitParameter (Parameter *parameter_p, ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
-
-
-WHEATIS_SERVICE_API void ClearParameter (Parameter *parameter_p);
+WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 WHEATIS_SERVICE_API void FreeParameter (Parameter *param_p);
@@ -306,6 +302,14 @@ WHEATIS_SERVICE_API const char *GetUIName (const Parameter * const parameter_p);
 
 
 WHEATIS_SERVICE_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
+
+
+
+WHEATIS_SERVICE_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
+
+
+WHEATIS_SERVICE_API void FreeSharedTypeNode (ListItem *node_p);
+
 
 
 #ifdef __cplusplus

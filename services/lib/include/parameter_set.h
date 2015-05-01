@@ -90,7 +90,7 @@ WHEATIS_SERVICE_API void FreeParameterSet (ParameterSet *params_p);
 WHEATIS_SERVICE_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
 
 
-WHEATIS_SERVICE_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type,
+WHEATIS_SERVICE_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag, 
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, 
 	ParameterBounds *bounds_p, uint8 level,

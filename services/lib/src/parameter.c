@@ -57,7 +57,12 @@ static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLev
 static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p);
 
 
-Parameter *AllocateParameter (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
+static LinkedList *CreateSharedTypesList (const SharedType *values_p);
+
+static LinkedList *CopySharedTypesList (const LinkedList *source_p);
+
+
+Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	char *new_name_s = CopyToNewString (name_s, 0, true);
 
@@ -93,19 +98,28 @@ Parameter *AllocateParameter (ParameterType type, const char * const name_s, con
 									if (param_p)
 										{
 											param_p -> pa_type = type;
+											param_p -> pa_multi_valued_flag = multi_valued_flag;
 											param_p -> pa_name_s = new_name_s;
 											param_p -> pa_display_name_s = new_display_name_s;
 											param_p -> pa_description_s = new_description_s;
 											param_p -> pa_options_p = options_p;
 											param_p -> pa_check_value_fn = check_value_fn;
-											param_p -> pa_default = default_value;
 											param_p -> pa_bounds_p = bounds_p;
 											param_p -> pa_level = level;
 											param_p -> pa_tag = tag;
 											param_p -> pa_store_p = store_p;
 											param_p -> pa_group_p = NULL;
 
-											memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
+
+											if (multi_valued_flag)
+												{
+
+												}
+											else
+												{
+													param_p -> pa_default = default_value;
+													memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
+												}
 
 											return param_p;
 										}		/* if (param_p) */
@@ -162,86 +176,6 @@ void FreeParameter (Parameter *param_p)
 
 	FreeMemory (param_p);
 }
-
-
-
-bool InitParameter (Parameter *param_p, ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
-{
-	bool success_flag = false;
-
-	char *new_name_s = CopyToNewString (name_s, 0, true);
-
-	if (new_name_s)
-		{
-			bool success_flag = true;
-			char *new_description_s = NULL;
-
-			if (description_s)
-				{
-					new_description_s = CopyToNewString (description_s, 0, true);
-					success_flag = (new_description_s != NULL);
-				}		/* if (description_s) */
-
-			if (success_flag)
-				{
-					char *new_display_name_s = NULL;
-
-					if (display_name_s)
-						{
-							new_display_name_s = CopyToNewString (display_name_s, 0, true);
-							success_flag = (new_display_name_s != NULL);
-						}
-
-					if (success_flag)
-						{
-							HashTable *store_p = GetHashTableOfStrings (8, 75);
-
-							if (store_p)
-								{
-									param_p -> pa_type = type;
-									param_p -> pa_name_s = new_name_s;
-									param_p -> pa_display_name_s = new_display_name_s;
-									param_p -> pa_description_s = new_description_s;
-									param_p -> pa_options_p = options_p;
-									param_p -> pa_check_value_fn = check_value_fn;
-									param_p -> pa_default = default_value;
-									param_p -> pa_bounds_p = bounds_p;
-									param_p -> pa_level = level;
-									param_p -> pa_tag = tag;
-									param_p -> pa_store_p = store_p;
-									param_p -> pa_group_p = NULL;
-
-									memcpy (& (param_p -> pa_current_value), current_value_p ? current_value_p : & (param_p -> pa_default), sizeof (SharedType));
-
-									return true;
-								}		/* if (store_p) */
-
-
-							if (new_display_name_s)
-								{
-									FreeCopiedString (new_display_name_s);
-								}		/* if (new_description_s) */
-
-						}		/* if (success_flag) */
-
-						if (new_description_s)
-							{
-								FreeCopiedString (new_description_s);
-							}		/* if (new_description_s) */
-
-					}		/* if (success_flag) */
-
-				FreeCopiedString (new_name_s);
-			}		/* if (new_name_s) */
-
-	return success_flag;
-}
-
-
-WHEATIS_SERVICE_API void ClearParameter (Parameter *parameter_p);
-
-
-
 
 
 ParameterBounds *AllocateParameterBounds (void)
@@ -1579,6 +1513,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									 */
 									const char *description_s = NULL;
 									const char *display_name_s = NULL;
+									bool multi_valued_flag = false;
 									SharedType def;
 									ParameterMultiOptionArray *options_p = NULL;
 									ParameterBounds *bounds_p = NULL;
@@ -1617,7 +1552,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 										
 									if (success_flag)
 										{
-											param_p = AllocateParameter (pt, name_s, display_name_s, description_s, tag, options_p, def, &current_value, bounds_p, level, NULL);
+											param_p = AllocateParameter (pt, multi_valued_flag, name_s, display_name_s, description_s, tag, options_p, def, &current_value, bounds_p, level, NULL);
 
 											if (param_p)
 												{
@@ -1678,7 +1613,7 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 				{
 					const char *src_s = (value_p -> st_boolean_value == true) ? "true" : "false";
 					value_s = CopyToNewString (src_s, 0, false);
-					*alloc_flag_p = true;	
+					*alloc_flag_p = true;
 				}
 				break;
 
@@ -1721,6 +1656,29 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 }
 
 
+
+SharedTypeNode *AllocateSharedTypeNode (SharedType value)
+{
+	SharedTypeNode *node_p = (SharedTypeNode *) AllocMemory (sizeof (SharedTypeNode));
+
+	if (node_p)
+		{
+			node_p -> stn_node.ln_prev_p = NULL;
+			node_p -> stn_node.ln_next_p = NULL;
+
+			memcpy (& (node_p -> stn_value), &value, sizeof (SharedType));
+		}
+
+	return node_p;
+}
+
+
+void FreeSharedTypeNode (ListItem *node_p)
+{
+	FreeMemory (node_p);
+}
+
+
 static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p)
 {
 	bool success_flag = true;
@@ -1738,4 +1696,79 @@ static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *js
 
 	return success_flag;
 }
+
+
+
+static LinkedList *CreateSharedTypesList (const SharedType *values_p)
+{
+	LinkedList *values_list_p = AllocateLinkedList (FreeSharedTypeNode);
+
+	if (values_list_p)
+		{
+			bool success_flag = true;
+			const SharedType *value_p = values_p;
+
+			while (value_p && success_flag)
+				{
+					SharedTypeNode *node_p = AllocateSharedTypeNode (*value_p);
+
+					if (node_p)
+						{
+							LinkedListAddTail (values_list_p, (ListItem * const) node_p);
+							++ value_p;
+						}
+					else
+						{
+							success_flag = false;
+						}
+				}		/* while (value_p && success_flag) */
+
+			if (success_flag)
+				{
+					return values_list_p;
+				}
+
+			FreeLinkedList (values_list_p);
+		}
+
+	return NULL;
+}
+
+
+static LinkedList *CopySharedTypesList (const LinkedList *source_p)
+{
+	LinkedList *dest_p = AllocateLinkedList (FreeSharedTypeNode);
+
+	if (dest_p)
+		{
+			bool success_flag = true;
+			const SharedTypeNode *src_node_p = (SharedTypeNode *) (source_p -> ll_head_p);
+
+			while (src_node_p && success_flag)
+				{
+					SharedTypeNode *dest_node_p = AllocateSharedTypeNode (src_node_p -> stn_value);
+
+					if (dest_node_p)
+						{
+							LinkedListAddTail (dest_p, (ListItem * const) dest_node_p);
+							src_node_p = (SharedTypeNode *) (src_node_p -> stn_node.ln_next_p);
+						}
+					else
+						{
+							success_flag = false;
+						}
+				}		/* while (value_p && success_flag) */
+
+			if (success_flag)
+				{
+					return dest_p;
+				}
+
+			FreeLinkedList (dest_p);
+		}
+
+	return NULL;
+}
+
+
 
