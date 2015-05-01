@@ -576,7 +576,6 @@ static bool IsDatabaseForRun (const ParameterSet *params_p, const char **availab
 static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
-	json_t *result_json_p = NULL;
 	
 	/* count how many jobs we a running */
 	size_t num_jobs = 0;
@@ -597,7 +596,6 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	if (service_p -> se_jobs_p)
 		{
 			size_t i;
-			const char **description_pp;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
 			name_pp = S_DATABASES_PP;
@@ -631,9 +629,6 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 				}
 		}
-
-		
-//	final_json_p = CreateServiceResponseAsJSON (service_p, res, result_json_p, tool_p -> GetUUID ());
 		
 	return service_p -> se_jobs_p;
 }
