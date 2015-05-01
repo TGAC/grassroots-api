@@ -27,7 +27,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 	#ifdef DRMAA_ENABLED
 	try
 		{
-			tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s);
+			tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s, true);
 		}
 	catch (std :: bad_alloc ex)
 		{

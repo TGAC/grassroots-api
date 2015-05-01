@@ -11,7 +11,7 @@
 #include "streams.h"
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
+DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, bool async_flag)
 : ExternalBlastTool (job_p, name_s, working_directory_s)
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool ("/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn");
@@ -21,7 +21,8 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const c
 			throw std :: bad_alloc ();
 		}
 
-	SetDrmaaToolQueueName(dbt_drmaa_tool_p, "-q webservices");
+	dbt_async_flag = async_flag
+	SetDrmaaToolQueueName (dbt_drmaa_tool_p, "webservices");
 }
 
 DrmaaBlastTool :: ~DrmaaBlastTool ()
@@ -37,7 +38,7 @@ const char *DrmaaBlastTool :: GetResults ()
 
 OperationStatus DrmaaBlastTool :: Run ()
 {
-	if (RunDrmaaTool (dbt_drmaa_tool_p, true))
+	if (RunDrmaaTool (dbt_drmaa_tool_p, dbt_async_flag))
 		{
 			bt_job_p -> sj_status = OS_STARTED;
 		}

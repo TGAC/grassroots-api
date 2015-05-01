@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "drmaa_tool.h"
 #include "drmaa_util.h"
 
@@ -8,6 +10,7 @@ DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_
 int main (int argc, char *argv [])
 {
 	int ret = 10;
+	int num_runs = 5;
 	char *program_name_s = "/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn";
 	char *query_filename_s = "/tgac/services/wheatis/query.txt";
 	char *output_filename_s = "/tgac/services/wheatis/drmaa_test.txt";
@@ -15,17 +18,20 @@ int main (int argc, char *argv [])
 
 	switch (argc)
 		{
+			case 6:
+				db_name_s = argv [5];
+
 			case 5:
-				db_name_s = argv [4];
+				output_filename_s = argv [4];
 
 			case 4:
-				output_filename_s = argv [3];
+				query_filename_s = argv [3];
 
 			case 3:
-				query_filename_s = argv [2];
+				program_name_s = argv [2];
 
 			case 2:
-				program_name_s = argv [1];
+				num_runs = atoi (argv [1]);
 				break;
 
 			default:
@@ -36,83 +42,87 @@ int main (int argc, char *argv [])
 		{
 			if (InitDrmaa ())
 				{
-					#define NUM_TOOLS (30)
+					DrmaaTool **tools_pp = AllocMemoryArray (num_runs, sizeof (DrmaaTool *));
 
-					DrmaaTool *tools_pp [NUM_TOOLS] = { 0 };
-					size_t i;
-					bool success_flag = true;
-
-					for (i = 0; i < NUM_TOOLS; ++ i)
+					if (tools_pp)
 						{
-							DrmaaTool *tool_p = CreateBlastDrmaaJob (program_name_s, db_name_s, query_filename_s, output_filename_s);
+							size_t i;
+							bool success_flag = true;
 
-							if (tool_p)
+							for (i = 0; i < num_runs; ++ i)
 								{
-									* (tools_pp + i) = tool_p;
-								}
-							else
-								{
-									success_flag = false;
-									i = NUM_TOOLS;
-								}
-						}
+									DrmaaTool *tool_p = CreateBlastDrmaaJob (program_name_s, db_name_s, query_filename_s, output_filename_s);
 
-					if (success_flag)
-						{
-							for (i = 0; i < NUM_TOOLS; ++ i)
-								{
-									success_flag = RunDrmaaTool (* (tools_pp + i), true);
-
-									if (!success_flag)
+									if (tool_p)
 										{
-											printf ("failed to run drmaa tool %lu\n", i);
+											* (tools_pp + i) = tool_p;
+										}
+									else
+										{
+											success_flag = false;
+											i = num_runs;
 										}
 								}
 
 							if (success_flag)
 								{
-									bool loop_flag = true;
-
-									/* pause for 5 seconds */
-									sleep (5);
-
-									while (loop_flag)
+									for (i = 0; i < num_runs; ++ i)
 										{
-											bool all_finished_flag = true;
+											success_flag = RunDrmaaTool (* (tools_pp + i), true);
 
-											for (i = 0; i < NUM_TOOLS; ++ i)
+											if (!success_flag)
 												{
-													DrmaaTool *tool_p = * (tools_pp + i);
+													printf ("failed to run drmaa tool %lu\n", i);
+												}
+										}
 
-													OperationStatus status = GetDrmaaToolStatus (tool_p);
-													printf ("drmaa tool %lu status %lu\n", i, status);
+									if (success_flag)
+										{
+											bool loop_flag = true;
 
-													if (status == OS_STARTED || status == OS_PENDING)
+											/* pause for 5 seconds */
+											sleep (5);
+
+											while (loop_flag)
+												{
+													bool all_finished_flag = true;
+
+													for (i = 0; i < num_runs; ++ i)
 														{
-															all_finished_flag = false;
-														}
-												}
+															DrmaaTool *tool_p = * (tools_pp + i);
 
-											if (all_finished_flag)
-												{
-													loop_flag = false;
-												}
-											else
-												{
-													/* pause for 1 seconds */
-													sleep (1);
+															OperationStatus status = GetDrmaaToolStatus (tool_p);
+															printf ("drmaa tool %lu status %lu\n", i, status);
+
+															if (status == OS_STARTED || status == OS_PENDING)
+																{
+																	all_finished_flag = false;
+																}
+														}
+
+													if (all_finished_flag)
+														{
+															loop_flag = false;
+														}
+													else
+														{
+															/* pause for 1 seconds */
+															sleep (1);
+														}
 												}
 										}
 								}
-						}
 
-					for (i = 0; i < NUM_TOOLS; ++ i)
-						{
-							if (* (tools_pp + i))
+							for (i = 0; i < num_runs; ++ i)
 								{
-									FreeDrmaaTool (* (tools_pp + i));
+									if (* (tools_pp + i))
+										{
+											FreeDrmaaTool (* (tools_pp + i));
+										}
 								}
-						}
+
+							FreeMemory (tools_pp);
+						}		/* if (tools_pp) */
 
 					ExitDrmaa ();
 				}		/* if (InitDrmaa ()) */
@@ -130,7 +140,7 @@ DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_
 
 	if (tool_p)
 		{
-			if (SetDrmaaToolQueueName (tool_p, "-q webservices"))
+			if (SetDrmaaToolQueueName (tool_p, "webservices"))
 				{
 					if (AddDrmaaToolArgument (tool_p, "-db"))
 						{
@@ -157,7 +167,7 @@ DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_
 
 						}		/* if (AddDrmaaToolArgument (tool_p, "-db")) */
 
-				}		/* if (SetDrmaaToolQueueName ("-q webservices")) */
+				}		/* if (SetDrmaaToolQueueName ("webservices")) */
 
 			FreeDrmaaTool (tool_p);
 		}		/* if (tool_p) */

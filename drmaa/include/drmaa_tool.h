@@ -28,7 +28,10 @@ typedef struct DrmaaTool
 	char dt_id_s [MAX_LEN_JOBID];
 	char dt_id_out_s [MAX_LEN_JOBID];
 	char dt_diagnosis_s [DRMAA_ERROR_STRING_BUFFER];
-	int dt_stat;
+	uint32 dt_num_cores;
+	uint32 dt_mb_mem_usage;
+	char *dt_host_name_s;
+	char *dt_user_name_s;
 } DrmaaTool;
 
 
@@ -47,6 +50,18 @@ WHEATIS_DRMAA_API bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, c
 
 
 WHEATIS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s);
+
+
+WHEATIS_DRMAA_API bool SetDrmaaToolCores (DrmaaTool *tool_p, uint32 num_cores);
+
+
+WHEATIS_DRMAA_API bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem);
+
+
+WHEATIS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s);
+
+
+WHEATIS_DRMAA_API bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_name_s);
 
 
 WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s);
