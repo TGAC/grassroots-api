@@ -36,7 +36,7 @@ int main (int argc, char *argv [])
 		{
 			if (InitDrmaa ())
 				{
-					#define NUM_TOOLS (3)
+					#define NUM_TOOLS (30)
 
 					DrmaaTool *tools_pp [NUM_TOOLS] = { 0 };
 					size_t i;
