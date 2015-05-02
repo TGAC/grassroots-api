@@ -24,17 +24,17 @@ public:
 	ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p = 0);
 	virtual ~ParamTextBox ();
 
-	virtual QWidget *GetQWidget ();
-
 	virtual void RemoveConnection ();
-
 
 	virtual void SetDefaultValue ();
 
 	virtual bool SetValueFromText (const char *value_s);
 
-protected:
+protected:	
 	QLineEdit *ptb_text_box_p;
+
+	virtual QWidget *GetQWidget ();
+
 
 };
 

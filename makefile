@@ -141,7 +141,7 @@ install: install_init install_references install_images all
 	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
-	$(MAKE) -C drmaa install
+#	$(MAKE) -C drmaa install
 	$(MAKE) -C server/httpd/mod_wheatis install
 	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	

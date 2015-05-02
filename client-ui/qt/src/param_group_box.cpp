@@ -14,7 +14,7 @@ ParamGroupBox :: ParamGroupBox (const char * const name_s)
 
 void ParamGroupBox :: AddParameterWidget (BaseParamWidget *param_widget_p)
 {
-	QWidget *widget_p = param_widget_p -> GetQWidget ();
+	QWidget *widget_p = param_widget_p -> GetUIQWidget ();
 	QLabel *label_p = param_widget_p -> GetLabel ();
 
 	pg_layout_p -> addRow (label_p, widget_p);

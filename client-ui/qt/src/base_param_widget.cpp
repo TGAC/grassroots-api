@@ -9,6 +9,11 @@ BaseParamWidget	:: BaseParamWidget (Parameter * const param_p, const PrefsWidget
 {
 	bpw_param_name_s = CopyToNewString (param_p -> pa_name_s, 0, false);	
 	bpw_label_p = new QLabel (GetUIName (param_p));
+
+	if (param_p -> pa_description_s)
+		{
+			bpw_label_p -> setToolTip (param_p -> pa_description_s);
+		}
 }
 
 
@@ -92,3 +97,17 @@ void BaseParamWidget :: CheckLevelDisplay (const ParameterLevel ui_level, const 
 }
 
 
+QWidget *BaseParamWidget :: GetUIQWidget ()
+{
+	QWidget *w_p = GetQWidget ();
+
+	if (w_p)
+		{
+			if (bpw_param_p -> pa_description_s)
+				{
+					w_p -> setToolTip (bpw_param_p -> pa_description_s);
+				}
+		}
+
+	return w_p;
+}

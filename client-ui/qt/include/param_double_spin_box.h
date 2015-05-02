@@ -27,7 +27,11 @@ public:
 
 	virtual bool SetValueFromText (const char *value_s);
 
+
+protected:
 	virtual QWidget *GetQWidget ();
+
+
 
 private:
 	QDoubleSpinBox *pdsb_spinner_p;

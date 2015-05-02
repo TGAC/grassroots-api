@@ -246,6 +246,17 @@ static bool AddDatabaseParams (ParameterSet *param_set_p)
 		}		/* while ((*name_ss) && (*description_ss) && success_flag) */
 
 
+	if (success_flag)
+		{
+			const char * const group_name_s = "Available Databases";
+
+			if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+					FreeMemory (grouped_params_pp);
+				}
+		}
+
 	return success_flag;
 }
 
@@ -483,7 +494,10 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 						{
 							if (AddScoringParams (param_set_p))
 								{
-									return param_set_p;
+									if (AddDatabaseParams (param_set_p))
+										{
+											return param_set_p;
+										}
 								}
 						}
 				}
