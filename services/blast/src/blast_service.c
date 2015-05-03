@@ -5,6 +5,13 @@
 
 #include "blast_tool_set.hpp"
 #include "string_utils.h"
+#include "wheatis_config.h"
+
+typedef struct DatabaseInfo
+{
+	const char *di_name_s;
+	const char *di_description_s;
+} DatabaseInfo;
 
 /*
  * STATIC DATATYPES
@@ -14,34 +21,11 @@ typedef struct
 	ServiceData bsd_base_data;
 	BlastToolSet *bsd_blast_tools_p;
 
+	const char *bsd_working_dir_s;
+
 	/* A NULL-terminated array of the databases available to search */
-	char **bsd_database_names_pp;
+	DatabaseInfo *bsd_databases_p;
 } BlastServiceData;
-
-
-const char *S_DATABASES_PP [] =
-{
-	"/tgac/public/databases/blast/aegilops_tauschii/GCA_000347335.1/Aegilops_tauschii.GCA_000347335.1.26.dna.genome",
-	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/allCdnaFinalAssemblyAllContigs_vs_TREPalle05_notHits_gt100bp",
-	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/CS_5xDNA_all",
-	"/tgac/public/databases/blast/triticum_aestivum/brenchley_CS42/subassemblies_TEcleaned_Hv80Bd75Sb70Os70_30aa_firstBestHit_assembly_ml40_mi99",
-	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/IWGSCv2.0",
-	"/tgac/public/databases/blast/triticum_aestivum/IWGSC/v2/Triticum_aestivum.IWGSC2.26.dna.genome",
-	"/tgac/public/databases/blast/triticum_urartu/GCA_000347455.1/Triticum_urartu.GCA_000347455.1.26.dna.genome",
-	NULL
-};
-
-const char *S_DATABASE_DESCRIPTIONS_PP [] =
-{
-	"Jia et al Aegilops tauschii AL8/78 DD genome assembly 429,892 sequences; 3,313,764,331 total bases",
-	"Brenchley et al Chinese Spring CS42 cDNA assemblies repeat-filtered against TREP 97,481 sequences; 93,340,842 total bases",
-	"Brenchley et al Chinese Spring CS42 5x Liverpool 454 assembly 25,572,861 sequences; 11,088,752,193 total bases",
-	"Brenchley et al Chinese Spring CS42 orthologous group sub-assemblies 949,279 sequences; 437,512,281 total bases",
-	"Bailey TGAC IWGSC v2 10,234,906 sequences; 10,352,209,564 total bases",
-	"Chapman et al Synthetic W7984 (Triticum turgidum L. subsp. durum var 'Altar 84' + Aegilops tauschii) x T. aestivum Opata M85 262,724 sequences; 6,378,515,436 total bases",
-	"Ling et al Triticum urartu G1812 (PI428198) AA genome assembly 499,222 sequences; 3,747,163,292 total bases",
-	NULL
-};
 
 
 static const char * const S_WORKING_DIR_S = "/tgac/services/wheatis/";
@@ -49,6 +33,8 @@ static const char * const S_WORKING_DIR_S = "/tgac/services/wheatis/";
 /*
  * STATIC PROTOTYPES
  */
+
+static bool GetBlastServiceConfig (BlastServiceData *data_p);
 
 static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p);
 
@@ -74,7 +60,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p);
 
 static bool AddScoringParams (ParameterSet *param_set_p);
 
-static bool AddDatabaseParams (ParameterSet *param_set_p);
+static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id);
 
@@ -138,7 +124,92 @@ void ReleaseServices (ServicesArray *services_p)
 /*
  * STATIC FUNCTIONS 
  */
- 
+
+
+static bool GetBlastServiceConfig (BlastServiceData *data_p)
+{
+	bool success_flag = false;
+	const json_t *blast_config_p = GetServiceConfig (GetServiceName (data_p -> bsd_base_data.sd_service_p));
+
+	if (blast_config_p)
+		{
+			json_t *value_p = json_object_get (blast_config_p, "working_directory");
+
+			if (value_p)
+				{
+					if (json_is_string (value_p))
+						{
+							data_p -> bsd_working_dir_s = json_string_value (value_p);
+							success_flag = true;
+						}
+				}
+
+			if (success_flag)
+				{
+					value_p = json_object_get (blast_config_p, "databases");
+
+					success_flag = false;
+
+					if (value_p)
+						{
+							if (json_is_array (value_p))
+								{
+									size_t i = json_array_size (value_p);
+									DatabaseInfo *databases_p = (DatabaseInfo *) AllocMemoryArray (i + 1, sizeof (DatabaseInfo));
+
+									if (databases_p)
+										{
+											json_t *db_json_p;
+											DatabaseInfo *db_p = databases_p;
+
+											json_array_foreach (value_p, i, db_json_p)
+												{
+													json_t *name_p = json_object_get (db_json_p, "name");
+
+													if (name_p && (json_is_string (name_p)))
+														{
+															json_t *description_p = json_object_get (db_json_p, "description");
+
+															if (description_p && (json_is_string (description_p)))
+																{
+																	db_p -> di_name_s = json_string_value (name_p);
+																	db_p -> di_description_s = json_string_value (description_p);
+
+																	success_flag = true;
+																	++ db_p;
+																}		/* if (description_p) */
+
+														}		/* if (name_p) */
+
+												}		/* json_array_foreach (value_p, i, db_json_p) */
+
+										}		/* if (databases_p) */
+
+								if (success_flag)
+									{
+										value_p = json_object_get (blast_config_p, "blast_tool");
+
+										if (value_p)
+											{
+												if (json_is_string (value_p))
+													{
+
+													}
+											}
+
+									}
+
+								}		/* if (json_is_array (value_p)) */
+
+						}		/* if (value_p) */
+
+				}		/* if (success_flag) */
+
+		}		/* if (blast_config_p) */
+
+	return success_flag;
+}
+
 
 static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 {
@@ -150,9 +221,15 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 
 			if (data_p -> bsd_blast_tools_p)
 				{
-					data_p -> bsd_database_names_pp = NULL;
+					data_p -> bsd_working_dir_s = NULL;
+					data_p -> bsd_databases_p = NULL;
 
-					return data_p;
+					if (GetBlastServiceConfig (data_p))
+						{
+							return data_p;
+						}
+
+					FreeBlastToolSet (data_p -> bsd_blast_tools_p);
 				}
 
 			FreeMemory (data_p);
@@ -194,7 +271,7 @@ static const char *GetBlastServiceDesciption (Service *service_p)
 /*
  * The list of databases that can be searched
  */
-static bool AddDatabaseParams (ParameterSet *param_set_p)
+static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 {
 	bool success_flag = true;
 	Parameter *param_p = NULL;
@@ -202,18 +279,17 @@ static bool AddDatabaseParams (ParameterSet *param_set_p)
 	size_t num_group_params = 7;
 	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 	Parameter **grouped_param_pp = grouped_params_pp;
+	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 
-	const char **name_ss = S_DATABASES_PP;
-	const char **description_ss = S_DATABASE_DESCRIPTIONS_PP;
 
 	def.st_boolean_value = true;
 	uint8 a = 0;
 	uint8 b = 0;
 
-	while ((*name_ss) && (*description_ss) && success_flag)
+	while (db_p && success_flag)
 		{
 			/* try and get the local name of the database */
-			const char *local_name_s = strrchr (*name_ss, GetFileSeparatorChar ());
+			const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
 			uint32 tag = MAKE_TAG ('B', 'D', a, b);
 
 			if (local_name_s)
@@ -221,7 +297,7 @@ static bool AddDatabaseParams (ParameterSet *param_set_p)
 					++ local_name_s;
 				}
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, *name_ss, local_name_s, *description_ss, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, local_name_s, db_p -> di_description_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 				{
 					if (grouped_param_pp)
 						{
@@ -235,15 +311,14 @@ static bool AddDatabaseParams (ParameterSet *param_set_p)
 							++ a;
 						}
 
-					++ name_ss;
-					++ description_ss;
+					++ db_p;
 				}
 			else
 				{
 					success_flag = false;
 				}
 
-		}		/* while ((*name_ss) && (*description_ss) && success_flag) */
+		}		/* while (db_p && success_flag) */
 
 
 	if (success_flag)
@@ -488,13 +563,15 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 	
 	if (param_set_p)
 		{
+			BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+
 			if (AddQuerySequenceParams (param_set_p))
 				{
 					if (AddGeneralAlgorithmParams (param_set_p))
 						{
 							if (AddScoringParams (param_set_p))
 								{
-									if (AddDatabaseParams (param_set_p))
+									if (AddDatabaseParams (blast_data_p, param_set_p))
 										{
 											return param_set_p;
 										}
@@ -593,18 +670,18 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	
 	/* count how many jobs we a running */
 	size_t num_jobs = 0;
-	const char **name_pp = S_DATABASES_PP;
+	const DatabaseInfo *db_p = blast_data_p -> bsd_databases_p;
 	bool all_flag = true;
 
-	while (*name_pp)
+	while (db_p)
 		{
-			if (all_flag || (GetParameterFromParameterSetByName (param_set_p, *name_pp)))
+			if (all_flag || (GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s)))
 				{
 					++ num_jobs;
 				}
 
-			++ name_pp;
-		}		/* while (*name_pp) */
+			++ db_p;
+		}		/* while (db_p) */
 
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
 
@@ -612,27 +689,22 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 		{
 			size_t i;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-			const char **description_pp = S_DATABASE_DESCRIPTIONS_PP;
-			name_pp = S_DATABASES_PP;
 
-			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
+			db_p = blast_data_p -> bsd_databases_p;
+
+			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
 				{
 					const char *db_name_s = NULL;
 					const char *description_s = NULL;
 
 					if (all_flag)
 						{
-							db_name_s = *name_pp;
-
-							if (*description_pp)
-								{
-									description_s = *description_pp;
-									++ description_pp;
-								}
+							db_name_s = db_p -> di_name_s;
+							description_s = db_p -> di_description_s;
 						}
 					else
 						{
-							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, *name_pp);
+							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
 
 							if (param_p)
 								{

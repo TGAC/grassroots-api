@@ -16,6 +16,15 @@
 #endif
 
 
+const char *BlastTool :: bt_tool_type_s = "system";
+
+
+void BlastTool :: SetBlastToolType (const char *type_s)
+{
+	BlastTool :: bt_tool_type_s = type_s;
+}
+
+
 BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
 	BlastTool *tool_p = 0;
@@ -25,21 +34,32 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 	 * of blast tool to use, probably set by an admin. 
 	 */
 	#ifdef DRMAA_ENABLED
-	try
+	if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
 		{
-			tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s, true);
+			try
+				{
+					tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s, true);
+				}
+			catch (std :: bad_alloc ex)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to create drmaa blast tool");
+				}
 		}
-	catch (std :: bad_alloc ex)
+	#endif
+
+	if (!tool_p)
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to create drmaa blast tool");
+			if (strcmp (BlastTool :: bt_tool_type_s, "queued") == 0)
+				{
+	//				tool_p = new QueuedBlastTool (job_p, name_s, working_directory_s);
+				}
 		}
 
-	#else
 	if (!tool_p)
 		{
 			tool_p = new SystemBlastTool (job_p, name_s, working_directory_s);
 		}
-	#endif
+
 
 	return tool_p;
 }
@@ -82,16 +102,6 @@ const char *BlastTool :: GetName () const
 
 BlastTool :: ~BlastTool ()
 {	
-	std :: vector <char *> :: size_type i;
-	
-	for (i = bt_allocated_args.size (); i > 0; -- i)
-		{
-			char *data_s = bt_allocated_args.back ();
-			
-			bt_allocated_args.pop_back ();
-			
-			free (data_s);
-		}
 }
 
 
@@ -104,17 +114,6 @@ OperationStatus RunBlast (BlastTool *tool_p)
 	tool_p -> PostRun  ();
 
 	return status;
-}
-
-
-void BlastTool :: AddArgument (char *arg_s, bool newly_allocated_flag)
-{
-	bt_command_line_args.push_back (arg_s);	
-	
-	if (newly_allocated_flag)
-		{
-			bt_allocated_args.push_back (arg_s);			
-		}
 }
 
 
@@ -155,15 +154,4 @@ void BlastTool :: PostRun ()
 	bt_job_p -> sj_status = OS_SUCCEEDED;
 }
 
-
-void BlastTool :: PringArgsToLog ()
-{
-	std :: vector <char *> :: size_type i;
-	const std :: vector <char *> :: size_type num_args = bt_command_line_args.size ();
-	
-	for (i = 0; i < num_args; ++ i)
-		{
-			WriteToLog (NULL, LOG_INFO, "%s %d: arg [%d]=\"%s\"\n", __FILE__, __LINE__, (int) i, bt_command_line_args [i]);	
-		}
-}
 
