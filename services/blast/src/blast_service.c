@@ -617,31 +617,18 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ name_pp)
 				{
-					Parameter *param_p;
+					const char *db_name_s = NULL;
+					const char *description_s = NULL;
 
 					if (all_flag)
 						{
-							BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, *name_pp, S_WORKING_DIR_S);
+							db_name_s = *name_pp;
 
-							job_p -> sj_status = OS_FAILED_TO_START;
-
-							if (tool_p)
+							if (*description_pp)
 								{
-									if (*description_pp)
-										{
-											SetServiceJobDescription (job_p, *description_pp);
-											++ description_pp;
-										}
-
-									if (tool_p -> ParseParameters (param_set_p))
-										{
-											if (RunBlast (tool_p))
-												{
-													job_p -> sj_status = tool_p -> GetStatus ();
-												}
-										}
+									description_s = *description_pp;
+									++ description_pp;
 								}
-
 						}
 					else
 						{
@@ -649,23 +636,33 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 							if (param_p)
 								{
-									BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, param_p -> pa_name_s, S_WORKING_DIR_S);
+									db_name_s = param_p -> pa_name_s;
+								}
 
-									job_p -> sj_status = OS_FAILED_TO_START;
+							if (param_p -> pa_description_s)
+								{
+									description_s = param_p -> pa_description_s;
+								}
+						}
 
-									if (tool_p)
+					if (db_name_s)
+						{
+							BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, S_WORKING_DIR_S);
+
+							job_p -> sj_status = OS_FAILED_TO_START;
+
+							if (tool_p)
+								{
+									if (description_s)
 										{
-											if (param_p -> pa_description_s)
-												{
-													SetServiceJobDescription (job_p, param_p -> pa_description_s);
-												}
+											SetServiceJobDescription (job_p, description_s);
+										}
 
-											if (tool_p -> ParseParameters (param_set_p))
+									if (tool_p -> ParseParameters (param_set_p))
+										{
+											if (RunBlast (tool_p))
 												{
-													if (RunBlast (tool_p))
-														{
-															job_p -> sj_status = tool_p -> GetStatus ();
-														}
+													job_p -> sj_status = tool_p -> GetStatus ();
 												}
 										}
 								}
