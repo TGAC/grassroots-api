@@ -80,7 +80,7 @@ bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t 
 	
 	if (space_remaining <= data_length)
 		{
-			success_flag = ResizeByteBuffer (buffer_p, (buffer_p -> bb_size) + data_length - space_remaining);
+			success_flag = ResizeByteBuffer (buffer_p, (buffer_p -> bb_size) + data_length - space_remaining + 1);
 		}
 		
 	if (success_flag)
