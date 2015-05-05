@@ -46,7 +46,9 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 	str.append (name_s);
 	str.append ("</b>");
 
-	QLabel *label_p = 0;
+	QLabel *label_p = new QLabel (str, this);
+	label_p -> setSizePolicy (QSizePolicy :: Fixed, QSizePolicy :: Fixed);
+	info_layout_p -> addWidget (label_p);
 
 
 	str.clear ();

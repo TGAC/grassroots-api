@@ -6,7 +6,7 @@
 static json_t *s_config_p = NULL;
 
 
-WHEATIS_SERVICE_MANAGER_LOCAL bool InitConfig (const char *filename_s)
+bool InitConfig (const char *filename_s)
 {
 	bool success_flag = false;
 	json_error_t error;
@@ -41,7 +41,7 @@ bool DestroyConfig (void)
 }
 
 
-const json_t *GetServiceConfig (const char * const service_name_s)
+const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 {
 	const json_t *res_p = NULL;
 
