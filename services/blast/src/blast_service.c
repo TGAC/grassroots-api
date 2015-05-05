@@ -730,17 +730,21 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	bool all_flag = false;
 
 	/* count the number of databases to search */
-	while (db_p)
+	if (db_p)
 		{
-			if (all_flag || (GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s)))
+			while (db_p -> di_name_s)
 				{
-					++ num_jobs;
-				}
+					if (all_flag || (GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s)))
+						{
+							++ num_jobs;
+						}
 
-			++ db_p;
-		}		/* while (db_p) */
+					++ db_p;
+				}		/* while (db_p) */
+		}
 
-
+	if (num_jobs > 0)
+		{
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
 
 	if (service_p -> se_jobs_p)
@@ -829,7 +833,8 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 				}
 
 		}		/* if (service_p -> se_jobs_p) */
-		
+		}		/* if (num_jobs > 0) */
+
 	return service_p -> se_jobs_p;
 }
 
