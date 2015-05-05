@@ -5,6 +5,9 @@
 #include "handler_utils.h"
 #include "streams.h"
 #include "running_services_table.h"
+#include "wheatis_config.h"
+#include "string_utils.h"
+#include "service_config.h"
 
 #ifdef DRMAA_ENABLED
 #include "drmaa_util.h"
@@ -23,9 +26,23 @@ bool InitInformationSystem ()
 							if (c == 0)
 								{
 									bool res_flag = true;
+									const char *root_path_s = GetServerRootDirectory ();
+									char *full_services_path_s = MakeFilename (root_path_s, "wheatis.config");
+
+									if (full_services_path_s)
+										{
+											if (!InitConfig (full_services_path_s))
+												{
+													PrintErrors (STM_LEVEL_WARNING, "Failed to load config file from %s", full_services_path_s);
+												}
+											FreeCopiedString (full_services_path_s);
+										}		/* if (full_services_path_s) */
 
 									#ifdef DRMAA_ENABLED
-									res_flag = InitDrmaa ();
+									if (res_flag)
+										{
+											res_flag = InitDrmaa ();
+										}
 									#endif
 
 									return res_flag;

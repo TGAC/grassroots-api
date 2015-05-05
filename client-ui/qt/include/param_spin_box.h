@@ -21,11 +21,14 @@ public:
 	ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, bool signed_flag, QWidget *parent_p = 0);
 	virtual ~ParamSpinBox ();
 
-	virtual QWidget *GetQWidget ();
 
 	virtual bool SetValueFromText (const char *value_s);
 
 	virtual void SetDefaultValue ();
+
+protected:
+	virtual QWidget *GetQWidget ();
+
 
 private:
 	QSpinBox *psb_spin_box_p;

@@ -24,18 +24,6 @@ public:
 
 	virtual bool ParseParameters (ParameterSet *params_p) = 0;
 
-	/**
-	 * Add an argument to Blast prior to its run.
-	 * 
-	 * @param arg_s The argument to add.
-	 * @param newly_allocated_flag If arg_s uses a memory allocation outside of iRods management
-	 * set this to <code>true</code> and this BlastTool destructor will deallocate it.
-	 */ 
-	void AddArgument (char *arg_s, bool newly_allocated_flag);
-
-	void PringArgsToLog ();
-	
-
 	void PreRun ();
 	
 	void PostRun ();
@@ -48,20 +36,15 @@ public:
 
 	const char *GetName () const;
 
+	static void SetBlastToolType (const char *type_s);
+
+	static const char *bt_tool_type_s;
+
 protected:
 	OperationStatus bt_status;
 	const char *bt_name_s;
 	ServiceJob *bt_job_p;
 
-	/** All of the command line arguments */
-	std :: vector <char *> bt_command_line_args;
-
-	/** 
-	 * The arguments that were newly allocated and will
-	 * need freeing to ensure there are not any memory
-	 * leaks.
-	 */
-	std :: vector <char *> bt_allocated_args;
 };
 
 

@@ -1,0 +1,64 @@
+#include "wheatis_config.h"
+
+#include "streams.h"
+#include "json_util.h"
+
+static json_t *s_config_p = NULL;
+
+
+WHEATIS_SERVICE_MANAGER_LOCAL bool InitConfig (const char *filename_s)
+{
+	bool success_flag = false;
+	json_error_t error;
+
+	s_config_p = json_loads (filename_s, 0, &error);
+
+	if (s_config_p)
+		{
+			success_flag = true;
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to load config from %s", filename_s);
+		}
+
+	return success_flag;
+}
+
+
+bool DestroyConfig (void)
+{
+	bool success_flag = true;
+
+	if (s_config_p)
+		{
+			success_flag = (json_object_clear (s_config_p) == 0);
+
+			json_decref (s_config_p);
+		}
+
+	return success_flag;
+}
+
+
+const json_t *GetServiceConfig (const char * const service_name_s)
+{
+	const json_t *res_p = NULL;
+
+	if (s_config_p)
+		{
+			json_t *json_p = json_object_get (s_config_p, SERVICES_NAME_S);
+
+			if (json_p)
+				{
+					if (json_is_object (json_p))
+						{
+							res_p = json_object_get (json_p, service_name_s);
+						}		/* if (json_is_object (json_p)) */
+
+				}		/* if (json_p) */
+
+		}		/* if (s_config_p) */
+
+	return res_p;
+}

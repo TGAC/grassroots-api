@@ -45,7 +45,8 @@ INCLUDES = \
 SRCS 	= \
 	services_list.c \
 	server.c \
-	system_util.c
+	system_util.c \
+	wheatis_config.c
 
 CPPFLAGS += -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS 
 

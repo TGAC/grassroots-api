@@ -18,8 +18,8 @@ public:
 
 	virtual ~BaseParamWidget ();
 
+	QWidget *GetUIQWidget ();
 
-	virtual QWidget *GetQWidget () = 0;
 
 	QLabel *GetLabel () const;
 
@@ -42,6 +42,9 @@ protected:
 	const PrefsWidget * const bpw_prefs_widget_p;
 	QLabel *bpw_label_p;
 	char *bpw_param_name_s;
+
+	virtual QWidget *GetQWidget () = 0;
+
 };
 
 #endif		/* #ifndef BASE_PARAM_WIDGET_H */

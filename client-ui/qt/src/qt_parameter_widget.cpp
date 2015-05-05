@@ -127,7 +127,7 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 		{
 			ParameterGroup *group_p = param_group_node_p -> pgn_param_group_p;
 			ParamGroupBox *box_p = new ParamGroupBox (group_p -> pg_name_s);
-			const Parameter **param_pp = group_p -> pg_params_pp;
+			Parameter **param_pp = group_p -> pg_params_pp;
 
 			for (uint32 i = group_p -> pg_num_params; i > 0; -- i, ++ param_pp)
 				{
@@ -173,10 +173,7 @@ void QTParameterWidget :: AddParameterWidget (Parameter *param_p, ParamGroupBox 
 				}
 			else
 				{
-					QWidget *widget_p = child_p -> GetQWidget ();
-					QLabel *label_p = child_p ->  GetLabel ();
-
-					AddRow (label_p, widget_p, 1);
+					AddRow (child_p -> GetLabel (), child_p -> GetUIQWidget (), 1);
 				}
 
 			qpw_widgets_map.insert (param_p, child_p);
@@ -337,9 +334,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 
 	if (widget_p)
 		{
-			QWidget *w_p = widget_p -> GetQWidget ();
-
-			w_p -> setToolTip (param_p -> pa_description_s);
+			QWidget *w_p = widget_p -> GetUIQWidget ();
 
 			widget_p -> SetDefaultValue ();
 

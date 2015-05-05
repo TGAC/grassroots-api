@@ -23,12 +23,12 @@ public:
 
 	~FileChooserWidget ();
 
-
-	virtual QWidget *GetQWidget ();
-
 	virtual void SetDefaultValue ();
 
 	virtual bool SetValueFromText (const char *value_s);
+
+protected:
+	virtual QWidget *GetQWidget ();
 
 private:
 	QWidget *fcw_widget_p;
