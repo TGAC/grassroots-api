@@ -25,6 +25,8 @@ public:
 
 	BlastTool *GetBlastTool (const uuid_t id);
 
+	size_t GetSize () const;
+
 private:
 	vector <BlastTool *> bts_tools;
 	Service *bts_service_p;

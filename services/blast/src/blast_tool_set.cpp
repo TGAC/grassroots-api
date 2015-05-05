@@ -44,14 +44,19 @@ void BlastToolSet :: AddTool (BlastTool *tool_p)
 
 BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 {
-	for (size_t i = bts_tools.size () - 1; i >= 0; -- i)
-		{
-			BlastTool *tool_p = bts_tools [i];
-			const uuid_t &tool_id = tool_p -> GetUUID ();
+	size_t i = bts_tools.size ();
 
-			if (uuid_compare (id, tool_id) == 0)
+	if (i > 0)
+		{
+			for (-- i; i >= 0; -- i)
 				{
-					return tool_p;
+					BlastTool *tool_p = bts_tools [i];
+					const uuid_t &tool_id = tool_p -> GetUUID ();
+
+					if (uuid_compare (id, tool_id) == 0)
+						{
+							return tool_p;
+						}
 				}
 		}
 
@@ -69,4 +74,10 @@ BlastTool *BlastToolSet :: GetNewBlastTool (ServiceJob *job_p, const char *name_
 		}
 
 	return tool_p;
+}
+
+
+size_t BlastToolSet :: GetSize () const
+{
+	return bts_tools.size ();
 }
