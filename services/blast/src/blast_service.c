@@ -686,7 +686,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					char *buffer_p = GetTempFilenameBuffer ("blast-input", working_directory_s);
+					char *buffer_p = GetTempFilenameBuffer ("blast-", working_directory_s);
 
 					if (buffer_p)
 						{
@@ -790,13 +790,11 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 							for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
 								{
-									const char *db_name_s = NULL;
-									const char *description_s = NULL;
+									bool run_flag = false;
 
 									if (all_flag)
 										{
-											db_name_s = db_p -> di_name_s;
-											description_s = db_p -> di_description_s;
+											run_flag = true;
 										}
 									else
 										{
@@ -804,33 +802,57 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 											if (param_p)
 												{
-													db_name_s = param_p -> pa_name_s;
-												}
-
-											if (param_p -> pa_description_s)
-												{
-													description_s = param_p -> pa_description_s;
+													if (param_p -> pa_current_value.st_boolean_value)
+														{
+															run_flag = true;
+														}
 												}
 										}
 
-									if (db_name_s)
+									if (run_flag)
 										{
-											BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+											const char *db_name_s = NULL;
+											const char *description_s = NULL;
 
-											job_p -> sj_status = OS_FAILED_TO_START;
-
-											if (tool_p)
+											if (all_flag)
 												{
-													if (description_s)
+													db_name_s = db_p -> di_name_s;
+													description_s = db_p -> di_description_s;
+												}
+											else
+												{
+													Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+													if (param_p)
 														{
-															SetServiceJobDescription (job_p, description_s);
+															db_name_s = param_p -> pa_name_s;
 														}
 
-													if (tool_p -> ParseParameters (param_set_p, filename_s))
+													if (param_p -> pa_description_s)
 														{
-															if (RunBlast (tool_p))
+															description_s = param_p -> pa_description_s;
+														}
+												}
+
+											if (db_name_s)
+												{
+													BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+
+													job_p -> sj_status = OS_FAILED_TO_START;
+
+													if (tool_p)
+														{
+															if (description_s)
 																{
-																	job_p -> sj_status = tool_p -> GetStatus ();
+																	SetServiceJobDescription (job_p, description_s);
+																}
+
+															if (tool_p -> ParseParameters (param_set_p, filename_s))
+																{
+																	if (RunBlast (tool_p))
+																		{
+																			job_p -> sj_status = tool_p -> GetStatus ();
+																		}
 																}
 														}
 												}

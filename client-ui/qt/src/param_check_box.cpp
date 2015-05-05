@@ -45,7 +45,7 @@ bool ParamCheckBox :: UpdateConfig (int state)
 				break;
 		}
 
-	bool b = SetParameterValue (bpw_param_p, &value);
+	b = SetParameterValue (bpw_param_p, &value);
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
 
