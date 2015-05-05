@@ -24,9 +24,30 @@ ParamCheckBox ::	~ParamCheckBox ()
 
 bool ParamCheckBox :: UpdateConfig (int state)
 {
-	bool b = SetParameterValue (bpw_param_p, &state);
+	bool b = false;
+	bool value = false;
 
-	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << state;
+	switch (state)
+		{
+			case Qt::Checked:
+				{
+					value = true;
+				}
+				break;
+
+			case Qt :: Unchecked:
+				{
+					value = false;
+				}
+				break;
+
+			default:
+				break;
+		}
+
+	bool b = SetParameterValue (bpw_param_p, &value);
+
+	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
 
 	return b;
 }
