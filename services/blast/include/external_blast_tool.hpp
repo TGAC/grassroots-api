@@ -22,16 +22,14 @@ public:
 	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
 	virtual ~ExternalBlastTool ();
 
-	virtual bool ParseParameters (ParameterSet *params_p);
+	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s);
 
 protected:
 	ByteBuffer *ebt_buffer_p;
-	TempFile *ebt_input_p;
 	TempFile *ebt_output_p;
 	const char *ebt_working_directory_s;
 
 	const char *GetOutputData ();
-	char *GetTempFilenameBuffer (const char * const prefix_s);
 
 	virtual bool AddArg (const char * const arg_s);
 };
