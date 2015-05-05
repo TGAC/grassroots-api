@@ -43,6 +43,27 @@
 #define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
 #define TAG_BLAST_OUTPUT_FORMAT MAKE_TAG ('B', 'F', 'M', 'T')
 
+
+typedef struct DatabaseInfo
+{
+	const char *di_name_s;
+	const char *di_description_s;
+} DatabaseInfo;
+
+
+typedef struct
+{
+	ServiceData bsd_base_data;
+	BlastToolSet *bsd_blast_tools_p;
+
+	const char *bsd_working_dir_s;
+
+	/* A NULL-terminated array of the databases available to search */
+	DatabaseInfo *bsd_databases_p;
+
+} BlastServiceData;
+
+
 #ifdef __cplusplus
 extern "C"
 {

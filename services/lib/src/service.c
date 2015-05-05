@@ -73,7 +73,14 @@ void InitialiseService (Service * const service_p,
 	
 	if (service_p -> se_data_p)
 		{
+			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);
+
 			service_p -> se_data_p -> sd_service_p = service_p;
+
+			if (service_name_s)
+				{
+					service_p -> se_data_p -> sd_config_p = GetGlobalServiceConfig (service_name_s);
+				}
 		}
 
 	ClearUUID (& (service_p -> se_id));

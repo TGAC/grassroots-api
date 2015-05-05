@@ -11,9 +11,17 @@
 #include "streams.h"
 
 
+
+void DrmaaBlastTool :: SetCoresPerSearch (uint32 cores)
+{
+	dbt_drmaa_tool_p -> dt_num_cores = cores;
+}
+
+
 DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, bool async_flag)
 : ExternalBlastTool (job_p, name_s, working_directory_s)
 {
+
 	dbt_drmaa_tool_p = AllocateDrmaaTool ("/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn");
 
 	if (!dbt_drmaa_tool_p)

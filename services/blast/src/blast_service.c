@@ -8,25 +8,6 @@
 #include "wheatis_config.h"
 #include "temp_file.hpp"
 
-typedef struct DatabaseInfo
-{
-	const char *di_name_s;
-	const char *di_description_s;
-} DatabaseInfo;
-
-/*
- * STATIC DATATYPES
- */
-typedef struct 
-{
-	ServiceData bsd_base_data;
-	BlastToolSet *bsd_blast_tools_p;
-
-	const char *bsd_working_dir_s;
-
-	/* A NULL-terminated array of the databases available to search */
-	DatabaseInfo *bsd_databases_p;
-} BlastServiceData;
 
 /*
  * STATIC PROTOTYPES
@@ -130,8 +111,7 @@ void ReleaseServices (ServicesArray *services_p)
 static bool GetBlastServiceConfig (BlastServiceData *data_p)
 {
 	bool success_flag = false;
-	const char *service_name_s = GetServiceName (data_p -> bsd_base_data.sd_service_p);
-	const json_t *blast_config_p = GetGlobalServiceConfig (service_name_s);
+	const json_t *blast_config_p = data_p -> bsd_base_data.sd_config_p;
 
 	if (blast_config_p)
 		{
@@ -208,6 +188,16 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 													}
 											}
 
+										value_p = json_object_get (blast_config_p, "cores_per_search");
+
+										if (value_p)
+											{
+												if (json_is_integer (value_p))
+													{
+														data_p -> bsd_cores_per_search = json_integer_value (value_p);
+													}
+											}
+
 									}
 
 								}		/* if (json_is_array (value_p)) */
@@ -234,6 +224,7 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 				{
 					data_p -> bsd_working_dir_s = NULL;
 					data_p -> bsd_databases_p = NULL;
+					data_p -> bsd_cores_per_search = 1;
 
 					return data_p;
 				}

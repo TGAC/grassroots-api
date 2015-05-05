@@ -17,6 +17,7 @@
 class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 {
 public:
+
 	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s, bool async_flag);
 	virtual ~DrmaaBlastTool ();
 
@@ -25,6 +26,8 @@ public:
 	virtual const char *GetResults ();
 
 	virtual OperationStatus GetStatus ();
+
+	void SetCoresPerSearch (uint32 cores);
 
 private:
 	DrmaaTool *dbt_drmaa_tool_p;

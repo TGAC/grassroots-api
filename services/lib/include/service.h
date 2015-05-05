@@ -65,6 +65,8 @@ typedef struct ServiceData
 {
 	/** The service that owns this data. */
 	struct Service *sd_service_p;
+
+	const json_t *sd_config_p;
 } ServiceData;
 
 
