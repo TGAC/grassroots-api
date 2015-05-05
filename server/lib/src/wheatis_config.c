@@ -11,7 +11,7 @@ WHEATIS_SERVICE_MANAGER_LOCAL bool InitConfig (const char *filename_s)
 	bool success_flag = false;
 	json_error_t error;
 
-	s_config_p = json_loads (filename_s, 0, &error);
+	s_config_p = json_load_file (filename_s, 0, &error);
 
 	if (s_config_p)
 		{
