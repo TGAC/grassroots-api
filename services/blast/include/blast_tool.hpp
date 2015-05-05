@@ -22,7 +22,7 @@ public:
 
 	virtual OperationStatus Run () = 0;
 
-	virtual bool ParseParameters (ParameterSet *params_p) = 0;
+	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s) = 0;
 
 	void PreRun ();
 	

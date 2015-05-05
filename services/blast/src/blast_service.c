@@ -6,6 +6,7 @@
 #include "blast_tool_set.hpp"
 #include "string_utils.h"
 #include "wheatis_config.h"
+#include "temp_file.hpp"
 
 typedef struct DatabaseInfo
 {
@@ -26,9 +27,6 @@ typedef struct
 	/* A NULL-terminated array of the databases available to search */
 	DatabaseInfo *bsd_databases_p;
 } BlastServiceData;
-
-
-static const char * const S_WORKING_DIR_S = "/tgac/services/wheatis/";
 
 /*
  * STATIC PROTOTYPES
@@ -65,8 +63,6 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id);
 
 static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
-
-static bool IsDatabaseForRun (const ParameterSet *params_p, const char **available_database_names_pp);
 
 
 /*
@@ -310,7 +306,7 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 							++ local_name_s;
 						}
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, local_name_s, db_p -> di_description_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 						{
 							if (grouped_param_pp)
 								{
@@ -675,12 +671,52 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 }
 
 
-static bool IsDatabaseForRun (const ParameterSet *params_p, const char **available_database_names_pp)
+static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s)
 {
-	/* For the demo, simply run against all databases */
-	bool run_flag = true;
+	TempFile *tf_p = NULL;
+	SharedType value;
 
-	return run_flag;
+	memset (&value, 0, sizeof (SharedType));
+
+	/* Input query */
+	if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_INPUT_QUERY, &value, true))
+		{
+			char *sequence_s = value.st_string_value_s;
+
+			if (!IsStringEmpty (sequence_s))
+				{
+					char *buffer_p = GetTempFilenameBuffer ("blast-input", working_directory_s);
+
+					if (buffer_p)
+						{
+							tf_p = TempFile :: GetTempFile (buffer_p, "w");
+
+							if (tf_p)
+								{
+									if (!tf_p -> Print (sequence_s))
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"", tf_p -> GetFilename (), sequence_s);
+										}
+
+									tf_p -> Close ();
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file for query \"%s\"", sequence_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
+						}
+				}
+			else
+				{
+				}
+		}
+
+
+	return tf_p;
 }
 
 
@@ -691,8 +727,9 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 	/* count how many jobs we a running */
 	size_t num_jobs = 0;
 	const DatabaseInfo *db_p = blast_data_p -> bsd_databases_p;
-	bool all_flag = true;
+	bool all_flag = false;
 
+	/* count the number of databases to search */
 	while (db_p)
 		{
 			if (all_flag || (GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s)))
@@ -703,64 +740,95 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			++ db_p;
 		}		/* while (db_p) */
 
+
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
 
 	if (service_p -> se_jobs_p)
 		{
 			size_t i;
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+			TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s);
+			const char *filename_s = NULL;
 
-			db_p = blast_data_p -> bsd_databases_p;
-
-			for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
+			if (tf_p)
 				{
-					const char *db_name_s = NULL;
-					const char *description_s = NULL;
+					filename_s = tf_p -> GetFilename ();
+				}
+			else
+				{
+					SharedType value;
 
-					if (all_flag)
+					memset (&value, 0, sizeof (SharedType));
+
+					/* try to get the input file */
+					if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_INPUT_FILE, &value, true))
 						{
-							db_name_s = db_p -> di_name_s;
-							description_s = db_p -> di_description_s;
+							filename_s = value.st_string_value_s;
 						}
-					else
+				}
+
+			if (filename_s)
+				{
+					db_p = blast_data_p -> bsd_databases_p;
+
+					for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
 						{
-							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+							const char *db_name_s = NULL;
+							const char *description_s = NULL;
 
-							if (param_p)
+							if (all_flag)
 								{
-									db_name_s = param_p -> pa_name_s;
+									db_name_s = db_p -> di_name_s;
+									description_s = db_p -> di_description_s;
 								}
-
-							if (param_p -> pa_description_s)
+							else
 								{
-									description_s = param_p -> pa_description_s;
-								}
-						}
+									Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
 
-					if (db_name_s)
-						{
-							BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, S_WORKING_DIR_S);
-
-							job_p -> sj_status = OS_FAILED_TO_START;
-
-							if (tool_p)
-								{
-									if (description_s)
+									if (param_p)
 										{
-											SetServiceJobDescription (job_p, description_s);
+											db_name_s = param_p -> pa_name_s;
 										}
 
-									if (tool_p -> ParseParameters (param_set_p))
+									if (param_p -> pa_description_s)
 										{
-											if (RunBlast (tool_p))
+											description_s = param_p -> pa_description_s;
+										}
+								}
+
+							if (db_name_s)
+								{
+									BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+
+									job_p -> sj_status = OS_FAILED_TO_START;
+
+									if (tool_p)
+										{
+											if (description_s)
 												{
-													job_p -> sj_status = tool_p -> GetStatus ();
+													SetServiceJobDescription (job_p, description_s);
+												}
+
+											if (tool_p -> ParseParameters (param_set_p, filename_s))
+												{
+													if (RunBlast (tool_p))
+														{
+															job_p -> sj_status = tool_p -> GetStatus ();
+														}
 												}
 										}
 								}
-						}
+
+						}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p) */
+
+				}		/* if (filename_s) */
+
+			if (tf_p)
+				{
+					TempFile :: DeleteTempFile (tf_p);
 				}
-		}
+
+		}		/* if (service_p -> se_jobs_p) */
 		
 	return service_p -> se_jobs_p;
 }

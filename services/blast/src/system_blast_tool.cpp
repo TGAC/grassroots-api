@@ -21,13 +21,13 @@ SystemBlastTool :: ~SystemBlastTool ()
 }
 
 
-bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
+bool SystemBlastTool :: ParseParameters (ParameterSet *params_p, const char *filename_s)
 {
 	bool success_flag = false;
 
 	if (AddArg ("blastn "))
 		{
-			success_flag = ExternalBlastTool :: ParseParameters (params_p);
+			success_flag = ExternalBlastTool :: ParseParameters (params_p, filename_s);
 		}
 
 	return success_flag;

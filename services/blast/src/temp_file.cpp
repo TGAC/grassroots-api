@@ -11,7 +11,6 @@
 
 
 
-
 TempFile *TempFile :: GetTempFile (char *template_s, const char *mode_s)
 {
 	TempFile *tf_p = new TempFile;
@@ -33,6 +32,12 @@ TempFile *TempFile :: GetTempFile (char *template_s, const char *mode_s)
 	delete tf_p;
 
 	return 0;
+}
+
+
+void TempFile :: DeleteTempFile (TempFile *tf_p)
+{
+	delete tf_p;
 }
 
 
@@ -142,4 +147,47 @@ TempFile :: ~TempFile ()
 		}
 }
 
+
+/* need a buffer where the final 6 chars are XXXXXX, see mkstemp */
+char *GetTempFilenameBuffer (const char * const prefix_s, const char * const working_directory_s)
+{
+	char *buffer_s = 0;
+	const char SUFFIX_S [] = "-XXXXXX";
+	const size_t working_dir_length = strlen (working_directory_s);
+	const size_t suffix_length = strlen (SUFFIX_S);
+	const size_t prefix_length = strlen (prefix_s);
+
+	size_t size = 1 + working_dir_length + prefix_length + suffix_length;
+	bool needs_slash_flag = (* (working_directory_s + (size - 1)) != GetFileSeparatorChar ());
+
+	if (needs_slash_flag)
+		{
+			++ size;
+		}
+
+	buffer_s = (char *) AllocMemory (size * sizeof (char));
+
+	if (buffer_s)
+		{
+			char *buffer_p = buffer_s;
+
+			memcpy (buffer_p, working_directory_s, working_dir_length * sizeof (char));
+			buffer_p +=  working_dir_length * sizeof (char);
+
+			if (needs_slash_flag)
+				{
+					*buffer_p = GetFileSeparatorChar ();
+					++ buffer_p;
+				}
+
+			memcpy (buffer_p, prefix_s, prefix_length * sizeof (char));
+			buffer_p +=  prefix_length * sizeof (char);
+
+			memcpy (buffer_p, SUFFIX_S, suffix_length * sizeof (char));
+			buffer_p += suffix_length * sizeof (char);
+			*buffer_p = '\0';
+		}
+
+	return buffer_s;
+}
 
