@@ -100,9 +100,13 @@ ServicesArray *GetServices (const json_t *config_p)
 								true,
 								data_p);
 							
-							* (services_p -> sa_services_pp) = blast_service_p;
+							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
+								{
+									* (services_p -> sa_services_pp) = blast_service_p;
 
-							return services_p;
+									return services_p;
+								}
+
 						}
 
 					FreeServicesArray (services_p);
@@ -129,7 +133,8 @@ void ReleaseServices (ServicesArray *services_p)
 static bool GetBlastServiceConfig (BlastServiceData *data_p)
 {
 	bool success_flag = false;
-	const json_t *blast_config_p = GetServiceConfig (GetServiceName (data_p -> bsd_base_data.sd_service_p));
+	const char *service_name_s = GetServiceName (data_p -> bsd_base_data.sd_service_p);
+	const json_t *blast_config_p = GetGlobalServiceConfig (service_name_s);
 
 	if (blast_config_p)
 		{
@@ -183,6 +188,15 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 												}		/* json_array_foreach (value_p, i, db_json_p) */
 
+											if (success_flag)
+												{
+													data_p -> bsd_databases_p = databases_p;
+												}
+											else
+												{
+													FreeMemory (databases_p);
+												}
+
 										}		/* if (databases_p) */
 
 								if (success_flag)
@@ -193,7 +207,7 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 											{
 												if (json_is_string (value_p))
 													{
-
+														BlastTool :: SetBlastToolType (json_string_value (value_p));
 													}
 											}
 
@@ -224,12 +238,7 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 					data_p -> bsd_working_dir_s = NULL;
 					data_p -> bsd_databases_p = NULL;
 
-					if (GetBlastServiceConfig (data_p))
-						{
-							return data_p;
-						}
-
-					FreeBlastToolSet (data_p -> bsd_blast_tools_p);
+					return data_p;
 				}
 
 			FreeMemory (data_p);
@@ -273,7 +282,7 @@ static const char *GetBlastServiceDesciption (Service *service_p)
  */
 static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 {
-	bool success_flag = true;
+	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
 	size_t num_group_params = 7;
@@ -282,43 +291,54 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 
 
-	def.st_boolean_value = true;
-	uint8 a = 0;
-	uint8 b = 0;
-
-	while (db_p && success_flag)
+	if (db_p)
 		{
-			/* try and get the local name of the database */
-			const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
-			uint32 tag = MAKE_TAG ('B', 'D', a, b);
+			uint8 a = 0;
+			uint8 b = 0;
 
-			if (local_name_s)
-				{
-					++ local_name_s;
-				}
+			def.st_boolean_value = true;
+			success_flag = true;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, local_name_s, db_p -> di_description_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+			while ((db_p -> di_name_s) && success_flag)
 				{
-					if (grouped_param_pp)
+					/* try and get the local name of the database */
+					const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
+					uint32 tag = MAKE_TAG ('B', 'D', a, b);
+
+					if (local_name_s)
 						{
-							*grouped_param_pp = param_p;
-							++ grouped_param_pp;
+							++ local_name_s;
 						}
 
-					if (b == 0xFF)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, local_name_s, db_p -> di_description_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 						{
-							b = 0;
-							++ a;
+							if (grouped_param_pp)
+								{
+									*grouped_param_pp = param_p;
+									++ grouped_param_pp;
+								}
+
+							if (b == 0xFF)
+								{
+									b = 0;
+									++ a;
+								}
+							else
+								{
+									++ b;
+								}
+
+							++ db_p;
+						}
+					else
+						{
+							success_flag = false;
 						}
 
-					++ db_p;
-				}
-			else
-				{
-					success_flag = false;
-				}
+				}		/* while (db_p && success_flag) */
 
-		}		/* while (db_p && success_flag) */
+		}		/* if (db_p) */
+
 
 
 	if (success_flag)

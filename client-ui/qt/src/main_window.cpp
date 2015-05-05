@@ -60,8 +60,6 @@ MainWindow :: ~MainWindow ()
 {
 }
 
-
-
 void MainWindow :: Accept ()
 {
 	RunServices (true);
