@@ -735,9 +735,21 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 		{
 			while (db_p -> di_name_s)
 				{
-					if (all_flag || (GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s)))
+					if (all_flag)
 						{
 							++ num_jobs;
+						}
+					else
+						{
+							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+							if (param_p)
+								{
+									if (param_p -> pa_current_value.st_boolean_value)
+										{
+											++ num_jobs;
+										}
+								}
 						}
 
 					++ db_p;
