@@ -109,7 +109,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 	/* Output File */
 	if (success_flag)
 		{
-			char *buffer_p = GetTempFilenameBuffer (filename_s, ebt_working_directory_s);
+			char *buffer_p = GetTempFilenameBuffer (filename_s, NULL);
 
 			success_flag = false;
 

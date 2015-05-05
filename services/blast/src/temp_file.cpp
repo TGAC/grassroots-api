@@ -153,12 +153,17 @@ char *GetTempFilenameBuffer (const char * const prefix_s, const char * const wor
 {
 	char *buffer_s = 0;
 	const char SUFFIX_S [] = "-XXXXXX";
-	const size_t working_dir_length = strlen (working_directory_s);
+	const size_t working_dir_length = working_directory_s ? strlen (working_directory_s) : 0;
 	const size_t suffix_length = strlen (SUFFIX_S);
 	const size_t prefix_length = strlen (prefix_s);
 
 	size_t size = 1 + working_dir_length + prefix_length + suffix_length;
-	bool needs_slash_flag = (* (working_directory_s + (size - 1)) != GetFileSeparatorChar ());
+	bool needs_slash_flag = false;
+
+	if (working_directory_s)
+		{
+			needs_slash_flag = (* (working_directory_s + (size - 1)) != GetFileSeparatorChar ());
+		}
 
 	if (needs_slash_flag)
 		{
@@ -171,13 +176,16 @@ char *GetTempFilenameBuffer (const char * const prefix_s, const char * const wor
 		{
 			char *buffer_p = buffer_s;
 
-			memcpy (buffer_p, working_directory_s, working_dir_length * sizeof (char));
-			buffer_p +=  working_dir_length * sizeof (char);
-
-			if (needs_slash_flag)
+			if (working_directory_s)
 				{
-					*buffer_p = GetFileSeparatorChar ();
-					++ buffer_p;
+					memcpy (buffer_p, working_directory_s, working_dir_length * sizeof (char));
+					buffer_p +=  working_dir_length * sizeof (char);
+
+					if (needs_slash_flag)
+						{
+							*buffer_p = GetFileSeparatorChar ();
+							++ buffer_p;
+						}
 				}
 
 			memcpy (buffer_p, prefix_s, prefix_length * sizeof (char));

@@ -64,6 +64,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id
 
 static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
 
+static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s);
 
 /*
  * API FUNCTIONS
@@ -745,94 +746,94 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 	if (num_jobs > 0)
 		{
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
 
-	if (service_p -> se_jobs_p)
-		{
-			size_t i;
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-			TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s);
-			const char *filename_s = NULL;
-
-			if (tf_p)
+			if (service_p -> se_jobs_p)
 				{
-					filename_s = tf_p -> GetFilename ();
-				}
-			else
-				{
-					SharedType value;
+					size_t i;
+					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+					TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s);
+					const char *filename_s = NULL;
 
-					memset (&value, 0, sizeof (SharedType));
-
-					/* try to get the input file */
-					if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_INPUT_FILE, &value, true))
+					if (tf_p)
 						{
-							filename_s = value.st_string_value_s;
+							filename_s = tf_p -> GetFilename ();
 						}
-				}
-
-			if (filename_s)
-				{
-					db_p = blast_data_p -> bsd_databases_p;
-
-					for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
+					else
 						{
-							const char *db_name_s = NULL;
-							const char *description_s = NULL;
+							SharedType value;
 
-							if (all_flag)
+							memset (&value, 0, sizeof (SharedType));
+
+							/* try to get the input file */
+							if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_INPUT_FILE, &value, true))
 								{
-									db_name_s = db_p -> di_name_s;
-									description_s = db_p -> di_description_s;
+									filename_s = value.st_string_value_s;
 								}
-							else
+						}
+
+					if (filename_s)
+						{
+							db_p = blast_data_p -> bsd_databases_p;
+
+							for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
 								{
-									Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+									const char *db_name_s = NULL;
+									const char *description_s = NULL;
 
-									if (param_p)
+									if (all_flag)
 										{
-											db_name_s = param_p -> pa_name_s;
+											db_name_s = db_p -> di_name_s;
+											description_s = db_p -> di_description_s;
 										}
-
-									if (param_p -> pa_description_s)
+									else
 										{
-											description_s = param_p -> pa_description_s;
-										}
-								}
+											Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
 
-							if (db_name_s)
-								{
-									BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
-
-									job_p -> sj_status = OS_FAILED_TO_START;
-
-									if (tool_p)
-										{
-											if (description_s)
+											if (param_p)
 												{
-													SetServiceJobDescription (job_p, description_s);
+													db_name_s = param_p -> pa_name_s;
 												}
 
-											if (tool_p -> ParseParameters (param_set_p, filename_s))
+											if (param_p -> pa_description_s)
 												{
-													if (RunBlast (tool_p))
+													description_s = param_p -> pa_description_s;
+												}
+										}
+
+									if (db_name_s)
+										{
+											BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+
+											job_p -> sj_status = OS_FAILED_TO_START;
+
+											if (tool_p)
+												{
+													if (description_s)
 														{
-															job_p -> sj_status = tool_p -> GetStatus ();
+															SetServiceJobDescription (job_p, description_s);
+														}
+
+													if (tool_p -> ParseParameters (param_set_p, filename_s))
+														{
+															if (RunBlast (tool_p))
+																{
+																	job_p -> sj_status = tool_p -> GetStatus ();
+																}
 														}
 												}
 										}
-								}
 
-						}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p) */
+								}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p) */
 
-				}		/* if (filename_s) */
+						}		/* if (filename_s) */
 
-			if (tf_p)
-				{
-					TempFile :: DeleteTempFile (tf_p);
-				}
+					if (tf_p)
+						{
+							TempFile :: DeleteTempFile (tf_p);
+						}
 
-		}		/* if (service_p -> se_jobs_p) */
+				}		/* if (service_p -> se_jobs_p) */
 		}		/* if (num_jobs > 0) */
 
 	return service_p -> se_jobs_p;
