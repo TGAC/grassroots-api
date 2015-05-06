@@ -44,7 +44,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 	#ifdef DRMAA_ENABLED
 	if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
 		{
-			bool async_flag = true;
+			bool async_flag = false;
 
 			if (program_name_s)
 				{

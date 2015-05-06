@@ -769,7 +769,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 							db_p = blast_data_p -> bsd_databases_p;
 							i = 0;
 
-							while (db_p && (num_jobs_ran < num_jobs))
+							while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
 								{
 									bool run_flag = false;
 
@@ -777,7 +777,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 										{
 											run_flag = true;
 										}
-									else
+									else 
 										{
 											Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
 
