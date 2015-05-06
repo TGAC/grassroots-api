@@ -12,7 +12,7 @@
 #include "temp_file.hpp"
 
 
-ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
+ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s)
 {
 	bool success_flag = false;
@@ -20,6 +20,7 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, c
 	ebt_buffer_p = AllocateByteBuffer (1024);
 	ebt_output_p = 0;
 	ebt_working_directory_s = working_directory_s;
+	ebt_blast_s = blast_program_name_s;
 
 	if (AddArg ("-db"))
 		{

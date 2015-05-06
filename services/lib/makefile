@@ -30,6 +30,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
+	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \

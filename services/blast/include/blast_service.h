@@ -33,7 +33,7 @@ typedef struct DatabaseInfo
 } DatabaseInfo;
 
 
-typedef struct
+typedef BLAST_SERVICE_LOCAL struct
 {
 	ServiceData bsd_base_data;
 	BlastToolSet *bsd_blast_tools_p;

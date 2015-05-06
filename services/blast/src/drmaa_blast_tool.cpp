@@ -18,11 +18,10 @@ void DrmaaBlastTool :: SetCoresPerSearch (uint32 cores)
 }
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, bool async_flag)
-: ExternalBlastTool (job_p, name_s, working_directory_s)
+DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s, bool async_flag)
+: ExternalBlastTool (job_p, name_s, working_directory_s, blast_program_name_s)
 {
-
-	dbt_drmaa_tool_p = AllocateDrmaaTool ("/tgac/software/testing/blast/2.2.30/x86_64/bin/blastn");
+	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
 
 	if (!dbt_drmaa_tool_p)
 		{

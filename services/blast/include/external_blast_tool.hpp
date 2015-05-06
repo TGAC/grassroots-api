@@ -19,7 +19,7 @@
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {
 public:
-	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
+	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s);
 	virtual ~ExternalBlastTool ();
 
 	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s);
@@ -28,6 +28,7 @@ protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_output_p;
 	const char *ebt_working_directory_s;
+	const char *ebt_blast_s;
 
 	const char *GetOutputData ();
 

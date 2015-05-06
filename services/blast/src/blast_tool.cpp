@@ -29,6 +29,13 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 {
 	BlastTool *tool_p = 0;
 	BlastServiceData *data_p = (BlastServiceData *) (job_p -> sj_service_p -> se_data_p);
+  const char *program_name_s = GetJSONString (data_p -> bsd_base_data.sd_config_p, "blast_command");
+	
+	if (!program_name_s)
+		{
+			program_name_s = "blastn";
+		}	
+
 
 	/**
 	 * In the future, this would query the system to determine which type
@@ -37,16 +44,16 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 	#ifdef DRMAA_ENABLED
 	if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
 		{
-			const char *program_name_s = GetJSONString (data_p -> bsd_base_data.se_config_p, "blast_command");
 			bool async_flag = true;
 
 			if (program_name_s)
 				{
-					const json_t *json_p = json_object_get (data_p -> bsd_base_data.se_config_p, "drmaa_cores_per_search");
+					DrmaaBlastTool *drmaa_tool_p = 0;
+					const json_t *json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "drmaa_cores_per_search");
 
 					try
 						{
-							tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s, async_flag, program_name_s);
+							drmaa_tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s, program_name_s, async_flag);
 						}
 					catch (std :: bad_alloc ex)
 						{
@@ -57,10 +64,11 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 						{
 							if (json_is_integer (json_p))
 								{
-									tool_p -> SetCoresPerSearch (json_integer_value (json_p));
+									drmaa_tool_p -> SetCoresPerSearch (json_integer_value (json_p));
 								}
 						}
 
+					tool_p = drmaa_tool_p;
 				}
 		}
 	#endif
@@ -75,7 +83,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 	if (!tool_p)
 		{
-			tool_p = new SystemBlastTool (job_p, name_s, working_directory_s);
+			tool_p = new SystemBlastTool (job_p, name_s, working_directory_s, program_name_s);
 		}
 
 

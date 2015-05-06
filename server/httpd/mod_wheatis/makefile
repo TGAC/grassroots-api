@@ -9,8 +9,10 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
+ifeq ($(DIR_APACHE),)
 HTTPD := $(shell httpd -V) 
 DIR_APACHE := $(filter HTTPD_ROOT=%, $(HTTPD))
+endif
 
 ifneq ($(DIR_APACHE),)
 DIR_APACHE:=$(subst HTTPD_ROOT=,,$(DIR_APACHE))
@@ -19,7 +21,6 @@ DIR_APACHE_INC := $(DIR_APACHE)/include
 DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
 APACHE_SET = true
 endif
-
 
 
 ifeq ($(DIR_ROOT),)
