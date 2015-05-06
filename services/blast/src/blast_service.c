@@ -765,9 +765,11 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 					if (filename_s)
 						{
+							size_t num_jobs_ran = 0;
 							db_p = blast_data_p -> bsd_databases_p;
+							i = 0;
 
-							for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p)
+							while (db_p && (num_jobs_ran < num_jobs))
 								{
 									bool run_flag = false;
 
@@ -831,13 +833,17 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 																	if (RunBlast (tool_p))
 																		{
 																			job_p -> sj_status = tool_p -> GetStatus ();
+																			++ num_jobs_ran;
+																			++ job_p;
 																		}
 																}
 														}
 												}
-										}
+										}		/* if (run_flag) */
 
-								}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p, ++ db_p) */
+									++ db_p;
+								}		/* while (db_p && (num_jobs_ran < num_jobs)) */
+
 
 						}		/* if (filename_s) */
 

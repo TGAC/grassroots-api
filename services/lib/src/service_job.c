@@ -157,6 +157,7 @@ OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 }
 
 
+
 json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 {
 	json_t *json_p = NULL;
@@ -208,6 +209,19 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 
 	return json_p;
 }
+
+
+ServiceJob *CreateServiceJobFromJSON (const json_t *json_p)
+{
+
+}
+
+
+bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p)
+{
+
+}
+
 
 
 
