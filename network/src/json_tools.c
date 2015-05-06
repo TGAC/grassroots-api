@@ -18,7 +18,7 @@ json_t *LoadConfig (const char *path_s);
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
 
-
+static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection *connection_p);
 
 
 
@@ -455,5 +455,83 @@ const char *GetUserUUIDStringFromJSON (const json_t *credentials_p)
 {
 	return GetJSONString (credentials_p, CREDENTIALS_UUID_S);
 }
+
+
+
+json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p)
+{
+	return GetServicesInfoRequest (ids_pp, num_ids, OP_CHECK_SERVICE_STATUS, connection_p);
+}
+
+
+json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p)
+{
+	return GetServicesInfoRequest (ids_pp, num_ids, OP_GET_SERVICE_RESULTS, connection_p);
+}
+
+
+
+static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection *connection_p)
+{
+	json_error_t error;
+	json_t *req_p = json_pack_ex (&error, 0, "{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, status);
+
+	if (req_p)
+		{
+			json_t *services_p = json_array ();
+
+			if (services_p)
+				{
+					if (json_object_set (req_p, SERVICES_NAME_S, services_p) == 0)
+						{
+							uint32 i = num_ids;
+							const uuid_t **id_pp = ids_pp;
+							bool success_flag = true;
+
+							while ((i > 0) && success_flag)
+								{
+									char *uuid_s = GetUUIDAsString (**id_pp);
+
+									if (uuid_s)
+										{
+											if (json_array_append_new (services_p, json_string (uuid_s)) == 0)
+												{
+													-- i;
+													++ id_pp;
+												}
+											else
+												{
+													success_flag = false;
+												}
+
+											FreeUUIDString (uuid_s);
+										}
+									else
+										{
+											success_flag = false;
+										}
+
+								}		/* while ((i > 0) && success_flag) */
+
+							if (success_flag)
+								{
+									return req_p;
+								}		/* if (success_flag) */
+
+						}		/* if (json_object_set (req_p, SERVICES_NAME_S, services_p) == 0) */
+					else
+						{
+							json_decref (services_p);
+						}
+
+				}		/* if (services_p) */
+
+			json_object_clear (req_p);
+			json_decref (req_p);
+		}		/* if (req_p) */
+
+	return NULL;
+}
+
 
 

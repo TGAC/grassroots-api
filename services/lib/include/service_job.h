@@ -92,6 +92,12 @@ WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (const ServiceJob *job_p);
 WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p);
 
 
+WHEATIS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
+
+
+WHEATIS_SERVICE_API bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p);
+
+
 WHEATIS_SERVICE_API OperationStatus GetServiceJobStatus (ServiceJob *job_p);
 
 

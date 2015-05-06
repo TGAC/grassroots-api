@@ -31,6 +31,7 @@ typedef enum Operation {
 
 typedef enum OperationStatus
 {
+	OS_LOWER_LIMIT = -4,
 	OS_FAILED = -3,
 	OS_FAILED_TO_START = -2,
 	OS_ERROR = -1,
@@ -38,7 +39,8 @@ typedef enum OperationStatus
 	OS_PENDING,
 	OS_STARTED,
 	OS_FINISHED,
-	OS_SUCCEEDED
+	OS_SUCCEEDED,
+	OS_UPPER_LIMIT
 } OperationStatus;
 
 
