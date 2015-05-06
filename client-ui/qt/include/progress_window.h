@@ -1,0 +1,7 @@
+#ifndef PROGRESS_WINDOW_H
+#define PROGRESS_WINDOW_H
+
+
+
+
+#endif // PROGRESS_WINDOW_H

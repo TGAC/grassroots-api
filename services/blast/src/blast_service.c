@@ -3,7 +3,7 @@
 #include "blast_service.h"
 #include "memory_allocations.h"
 
-#include "blast_tool_set.hpp"
+
 #include "string_utils.h"
 #include "wheatis_config.h"
 #include "temp_file.hpp"
@@ -187,17 +187,6 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 														BlastTool :: SetBlastToolType (json_string_value (value_p));
 													}
 											}
-
-										value_p = json_object_get (blast_config_p, "cores_per_search");
-
-										if (value_p)
-											{
-												if (json_is_integer (value_p))
-													{
-														data_p -> bsd_cores_per_search = json_integer_value (value_p);
-													}
-											}
-
 									}
 
 								}		/* if (json_is_array (value_p)) */
@@ -224,7 +213,6 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 				{
 					data_p -> bsd_working_dir_s = NULL;
 					data_p -> bsd_databases_p = NULL;
-					data_p -> bsd_cores_per_search = 1;
 
 					return data_p;
 				}
@@ -677,7 +665,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					char *buffer_p = GetTempFilenameBuffer ("blast-", working_directory_s);
+					char *buffer_p = GetTempFilenameBuffer ("blast", working_directory_s);
 
 					if (buffer_p)
 						{

@@ -99,7 +99,9 @@ SOURCES += \
     src/results_window.cpp \
     src/keyword_widget.cpp \
     src/ui_utils.cpp \
-    src/param_group_box.cpp
+    src/param_group_box.cpp \
+    src/progress_window.cpp \
+    src/progress_widget.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -130,7 +132,9 @@ HEADERS  += \
     include/keyword_widget.h \
     include/runnable_widget.h \
     include/ui_utils.h \
-    include/param_group_box.h
+    include/param_group_box.h \
+    include/progress_window.h \
+    include/progress_widget.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \

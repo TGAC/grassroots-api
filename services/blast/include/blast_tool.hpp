@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "blast_service.h"
+#include "blast_service_api.h"
 #include "byte_buffer.h"
 
 #include "service_job.h"
