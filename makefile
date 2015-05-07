@@ -108,8 +108,12 @@ drmaa: util network
 
 all: drmaa	
 
-install:
+install_drmaa:
 	$(MAKE) -C drmaa install
+else
+
+install_drmaa:
+
 endif
 
 
@@ -139,7 +143,7 @@ all:
 	$(MAKE) -C services/tgac_elastic_search
 	$(MAKE) -C services/test_long_runner
 					
-install: install_init install_references install_images all
+install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 	$(MAKE) -C irods/lib install
