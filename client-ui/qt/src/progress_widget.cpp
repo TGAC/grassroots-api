@@ -79,8 +79,15 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 	setLayout (layout_p);
 }
 
+
 ProgressWidget ::	~ProgressWidget ()
 {
+}
+
+
+const uuid_t *ProgressWidget ::	GetUUID () const
+{
+	return &pw_id;
 }
 
 

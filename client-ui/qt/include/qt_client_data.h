@@ -3,9 +3,10 @@
 
 #include <QApplication>
 
-#include "main_window.h"
-#include "results_window.h"
 #include "client.h"
+
+class MainWindow;
+class ResultsWindow;
 
 typedef struct QTClientData
 {

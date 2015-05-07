@@ -17,6 +17,7 @@
 #include "string_utils.h"
 
 #include "qt_client_data.h"
+#include "results_window.h"
 
 #ifdef _DEBUG
 	#define CLIENT_UI_API_DEBUG (DEBUG_FINE)
