@@ -79,8 +79,10 @@ LDFLAGS += -ldl \
 
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	all test
+.PHONY:	util all test
 
+
+util: all
 
 test:
 	$(COMP) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm  $(INCLUDES)  test.c -o test

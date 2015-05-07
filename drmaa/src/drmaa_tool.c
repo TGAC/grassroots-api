@@ -55,8 +55,6 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 									/* path for output */
 									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_OUTPUT_PATH, ":/tgac/services/wheatis/out", NULL, 0);
 
-									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_ERROR_PATH, ":/tgac/services/wheatis/err", NULL, 0);
-
 									return tool_p;
 								}		/* if (tool_p -> dt_args_p) */
 
@@ -358,8 +356,7 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 
 			if (success_flag)
 				{
-	/*
-				if (tool_p -> dt_num_cores)
+					if (tool_p -> dt_num_cores > 1)
 						{
 							char *temp_s = ConvertIntegerToString (tool_p -> dt_num_cores);
 
@@ -373,7 +370,6 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 									success_flag = false;
 								}
 						}
-*/
 				}
 
 			if (success_flag)

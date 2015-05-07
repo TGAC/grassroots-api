@@ -66,7 +66,9 @@ LDFLAGS += $(BASE_LDFLAGS)
 
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
-.PHONY:	test test_install
+.PHONY:	test test_install network
+
+network: all
 
 
 test:

@@ -807,11 +807,15 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 													if (param_p)
 														{
 															db_name_s = param_p -> pa_name_s;
-														}
 
-													if (param_p -> pa_description_s)
-														{
-															description_s = param_p -> pa_description_s;
+															if (param_p -> pa_description_s)
+																{
+																	description_s = param_p -> pa_description_s;
+																}
+															else
+																{
+																	description_s = db_p -> di_description_s;
+																}
 														}
 												}
 
