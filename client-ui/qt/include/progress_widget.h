@@ -20,6 +20,7 @@ public:
 
 	~ProgressWidget ();
 
+	const uuid_t *GetUUID () const;
 
 private:
 	QProgressBar *pw_progress_p;

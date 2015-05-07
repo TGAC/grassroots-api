@@ -26,9 +26,10 @@ using namespace std;
 
 
 
-PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, const bool tabbed_display_flag)
+PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, const bool tabbed_display_flag, QTClientData *data_p)
 :	QWidget (parent_p),
-	pw_level (initial_level)
+	pw_level (initial_level),
+	pw_data_p (data_p)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 
