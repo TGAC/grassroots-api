@@ -109,7 +109,7 @@ all:
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C util 
 	$(MAKE) -C network
-	$(MAKE) -C drmaa
+#	$(MAKE) -C drmaa
 	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib
@@ -141,7 +141,7 @@ install: install_init install_references install_images all
 	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
-	$(MAKE) -C drmaa install
+#	$(MAKE) -C drmaa install
 	$(MAKE) -C server/httpd/mod_wheatis install
 	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	

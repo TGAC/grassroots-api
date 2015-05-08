@@ -24,7 +24,7 @@ unix {
 }
 
 
-DIR_WHEATIS = ../../..
+DIR_WHEATIS = ../..
 
 DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis
 DIR_WHEATIS_EXTRAS = $$DIR_WHEATIS_INSTALL_ROOT/extras
