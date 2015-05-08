@@ -385,6 +385,7 @@ json_t *GetOperationAsJSON (Operation op)
 
 
 
+
 json_t *CallServices (json_t *client_params_json_p, const char * const username_s, const char * const password_s, Connection *connection_p)
 {
 	json_t *services_json_p = NULL;

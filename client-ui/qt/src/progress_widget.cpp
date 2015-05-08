@@ -16,31 +16,13 @@ ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *js
 
 			if (uuid_parse (uuid_s, id) == 0)
 				{
-					json_t *status_p = json_object_get (json_p, SERVICE_STATUS_S);
+					OperationStatus status;
 
-					if (status_p)
+					if (SetStatusFromJSON (json_p, &status))
 						{
-							if (json_is_integer (status_p))
-								{
-									int i = json_integer_value (status_p);
-
-									if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
-										{
-											OperationStatus status = (OperationStatus) i;
-											const char *name_s = GetJSONString (json_p, JOB_NAME_S);
-
-											if (name_s)
-												{
-													const char *description_s = GetJSONString (json_p, JOB_DESCRIPTION_S);
-
-													widget_p = new ProgressWidget (id, status, name_s, description_s);
-												}		/* if (name_s) */
-
-										}		/* if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT)) */
-
-								}		/* if (json_is_integer (status_p)) */
-
-						}		/* if (status_p) */
+							const char *name_s = GetJSONString (json_p, JOB_NAME_S);
+							const char *description_s = GetJSONString (json_p, JOB_DESCRIPTION_S);
+						}
 
 				}		/* if (uuid_parse (uuid_s, id) == 0) */
 
@@ -75,6 +57,9 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 	pw_progress_p -> setMaximum (0);
 	layout_p -> addWidget (pw_progress_p);
 
+	pw_status_p = new QLabel;
+	SetStatus (status);
+	layout_p -> addWidget (pw_status_p);
 
 	setLayout (layout_p);
 }
@@ -90,4 +75,68 @@ const uuid_t *ProgressWidget ::	GetUUID () const
 	return &pw_id;
 }
 
+void ProgressWidget :: SetStatus (OperationStatus status)
+{
+	const char *text_s = "";
 
+	switch (status)
+		{
+			case OS_FAILED:
+			case OS_FAILED_TO_START:
+			case OS_ERROR:
+				text_s = "Failed";
+				break;
+
+			case OS_IDLE:
+				text_s = "Idle";
+				break;
+
+			case OS_PENDING:
+				text_s = "Waiting to start";
+				break;
+
+			case OS_STARTED:
+				text_s = "Started";
+				break;
+
+			case OS_FINISHED:
+				text_s = "Finished";
+				break;
+
+			case OS_SUCCEEDED:
+				text_s = "Succeeded";
+				break;
+
+			default:
+				break;
+		}
+
+
+	pw_status_p -> setText (text_s);
+}
+
+
+bool ProgressWidget :: GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p)
+{
+	bool success_flag = false;
+	json_t *status_p = json_object_get (json_p, SERVICE_STATUS_S);
+
+	if (status_p)
+		{
+			if (json_is_integer (status_p))
+				{
+					int i = json_integer_value (status_p);
+
+					if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
+						{
+							*status_p = (OperationStatus) i;
+
+							success_flag = true;
+						}		/* if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT)) */
+
+				}		/* if (json_is_integer (status_p)) */
+
+		}		/* if (status_p) */
+
+	return success_flag;
+}

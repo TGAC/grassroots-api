@@ -14,7 +14,9 @@
 #include "runnable_widget.h"
 #include "service_prefs_widget.h"
 #include "services_list.h"
-#include "qt_client_data.h"
+
+
+class QTClientData;
 
 /**
  * @brief The PrefsWidget class

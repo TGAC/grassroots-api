@@ -8,7 +8,8 @@
 
 #include "progress_widget.h"
 #include "jansson.h"
-#include "qt_client_data.h"
+
+class QTClientData;
 
 class ProgressWindow : public QWidget
 {
