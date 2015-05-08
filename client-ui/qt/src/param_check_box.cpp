@@ -1,6 +1,8 @@
 #include <QDebug>
 
 #include "param_check_box.h"
+
+#include "progress_window.h"
 #include "prefs_widget.h"
 
 #include "string_utils.h"

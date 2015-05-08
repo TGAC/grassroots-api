@@ -20,6 +20,11 @@ public:
 
 	~ProgressWidget ();
 
+	const uuid_t *GetUUID () const;
+
+	void SetStatus (OperationStatus status);
+
+	bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p);
 
 private:
 	QProgressBar *pw_progress_p;
@@ -29,7 +34,6 @@ private:
 	uuid_t pw_id;
 
 	ProgressWidget (uuid_t id, OperationStatus status, const char *name_s, const char *description_s);
-
 };
 
 #endif // PROGRESS_WIDGET_H

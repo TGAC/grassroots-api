@@ -21,6 +21,7 @@
 #include "json_tools.h"
 
 #include "main_window.h"
+#include "results_window.h"
 #include "filesystem_utils.h"
 
 #include "qt_client_data.h"
@@ -36,8 +37,7 @@ MainWindow :: MainWindow (QTClientData *data_p)
 	QTabWidget *tabs_p = new QTabWidget;
 	setCentralWidget (tabs_p);
 
-
-	mw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false);
+	mw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false, data_p);
 	connect (mw_prefs_widget_p, &PrefsWidget :: RunServices, this, &MainWindow :: RunServices);
 	tabs_p -> addTab (mw_prefs_widget_p, QIcon ("images/list_wand"), "All Services");
 
@@ -84,11 +84,14 @@ void MainWindow :: RunServices (bool run_flag)
 
 			if (services_json_p)
 				{
+
+					/*
 					uint32 i = mw_client_data_p -> qcd_results_p ->  AddAllResultsPagesFromJSON (services_json_p);
 
 					UIUtils :: CentreWidget (this, mw_client_data_p -> qcd_results_p);
 
 					mw_client_data_p -> qcd_results_p -> show ();
+					*/
 				}
 		}
 	else

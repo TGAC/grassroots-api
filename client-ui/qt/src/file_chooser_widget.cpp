@@ -4,6 +4,7 @@
 #include <QGridLayout>
 
 #include "file_chooser_widget.h"
+#include "progress_window.h"
 #include "prefs_widget.h"
 
 

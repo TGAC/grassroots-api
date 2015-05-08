@@ -16,7 +16,10 @@
 #include "memory_allocations.h"
 #include "string_utils.h"
 
+#include "results_window.h"
+
 #include "qt_client_data.h"
+#include "progress_window.h"
 
 #ifdef _DEBUG
 	#define CLIENT_UI_API_DEBUG (DEBUG_FINE)
@@ -103,6 +106,8 @@ static QTClientData *AllocateQTClientData (void)
 
 					QObject :: connect (data_p -> qcd_window_p, &MainWindow :: Closed, data_p -> qcd_app_p, &QApplication :: quit);
 					data_p -> qcd_results_p = new ResultsWindow (data_p -> qcd_window_p);
+
+					data_p -> qcd_progress_p = new ProgressWindow (data_p -> qcd_window_p, data_p);
 
 					data_p -> qcd_init_flag = false;
 				}

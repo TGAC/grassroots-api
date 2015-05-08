@@ -16,6 +16,8 @@
 #include "services_list.h"
 
 
+class QTClientData;
+
 /**
  * @brief The PrefsWidget class
  */
@@ -36,7 +38,7 @@ public:
 	/***** FUNCTIONS *****/
 	/*********************/
 
-	explicit PrefsWidget (QWidget *parent_p, ParameterLevel initial_level, bool tabbed_display_flag);
+	explicit PrefsWidget (QWidget *parent_p, ParameterLevel initial_level, bool tabbed_display_flag, QTClientData *data_p);
 
 	~PrefsWidget ();
 
@@ -61,6 +63,7 @@ private:
 	ParameterLevel pw_level;
 	ServiceUI *pw_services_ui_p;
 	QList <ServicePrefsWidget *> pw_service_widgets;
+	QTClientData *pw_data_p;
 };
 
 
