@@ -217,12 +217,13 @@ int main (int argc, char *argv [])
 
 				if (connection_p)
 					{
-						json_t *req_p = NULL;
-						json_t *response_p = NULL;
 						Client *client_p = LoadClient ("clients", client_s, connection_p);
 
 						if (client_p)
 							{
+								json_t *req_p = NULL;
+								json_t *response_p = NULL;
+
 								switch (api_id)
 									{
 										case OP_LIST_ALL_SERVICES:
@@ -337,8 +338,12 @@ int main (int argc, char *argv [])
 
 										default:
 											break;
-									}
-							}
+									}		/* switch (api_id) */
+
+								WipeJSON (req_p);
+								WipeJSON (response_p);
+
+							}		/* if (client_p) */
 
 						FreeConnection (connection_p);
 					}

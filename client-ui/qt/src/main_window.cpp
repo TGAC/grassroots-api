@@ -84,6 +84,20 @@ void MainWindow :: RunServices (bool run_flag)
 
 			if (services_json_p)
 				{
+					if (json_is_array (services_json_p))
+						{
+							ProgressWindow *progress_p = mw_client_data_p -> qcd_progress_p;
+							size_t i;
+							json_t *service_json_p;
+
+							json_array_foreach (services_json_p, i, service_json_p)
+								{
+									progress_p -> AddProgressItemFromJSON (service_json_p);
+								}
+
+							progress_p -> show ();
+						}
+
 
 					/*
 					uint32 i = mw_client_data_p -> qcd_results_p ->  AddAllResultsPagesFromJSON (services_json_p);
@@ -199,8 +213,7 @@ void MainWindow :: SaveConfiguration ()
 
 						}
 
-					json_object_clear (res_p);
-					json_decref (res_p);
+					WipeJSON (res_p);
 				}
 
 		}		/* if (! (filename.isNull () || filename.isEmpty ())) */

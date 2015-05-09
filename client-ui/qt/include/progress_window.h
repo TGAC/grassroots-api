@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QTimer>
 
 #include "progress_widget.h"
 #include "jansson.h"
@@ -19,9 +20,12 @@ public:
 
 	bool AddProgressItemFromJSON (const json_t *json_p);
 
-	json_t *BuildStatusRequest ();
 
 	json_t *BuildResultsRequest ();
+
+public slots:
+	void UpdateStatuses ();
+	void show ();
 
 protected:
 	virtual void dropEvent (QDropEvent *event_p);
@@ -30,7 +34,8 @@ protected:
 private:
 	QList <ProgressWidget *> pw_widgets;
 	QTClientData *pw_data_p;
-
+	QTimer *pw_timer_p;
+	bool pw_timer_started_flag;
 };
 
 #endif // PROGRESS_WINDOW_H

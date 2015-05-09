@@ -84,6 +84,7 @@ void ServicesList :: AddService (const char * const service_name_s, ServicePrefs
 			QIcon icon (icon_path_s);
 
 			item_p = new ServicesListItem (icon, service_name, sl_services_p);
+			FreeCopiedString (icon_path_s);
 		}
 	else
 		{

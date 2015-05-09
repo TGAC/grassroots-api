@@ -268,10 +268,17 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 				{
 					/* get a randomish duration between 0 and 120 seconds */
 					size_t duration = rand () % 120;
+					char buffer_s [256];
 
 					task_p -> tt_job_p = job_p;
 					StartTimedTask (task_p, duration);
 					job_p -> sj_status = GetCurrentTimedTaskStatus (task_p);
+
+					sprintf (buffer_s, "job %lu\0", i);
+					SetServiceJobName (job_p, buffer_s);
+
+					sprintf (buffer_s, "start %lu end %lu\0", task_p -> tt_start, task_p -> tt_end);
+					SetServiceJobDescription (job_p, buffer_s);
 				}
 
 		}		/* if (service_p -> se_jobs_p) */

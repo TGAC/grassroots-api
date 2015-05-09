@@ -43,12 +43,17 @@ WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, c
 
 WHEATIS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p);
 
+WHEATIS_NETWORK_API void WipeJSON (json_t *json_p);
+
 WHEATIS_NETWORK_API const char *GetUserUUIDStringFromJSON (const json_t *credentials_p);
 
 
 WHEATIS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
 
 WHEATIS_NETWORK_API json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
+
+
+WHEATIS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p);
 
 
 #ifdef __cplusplus

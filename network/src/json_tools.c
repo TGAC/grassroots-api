@@ -4,6 +4,7 @@
 #include "server.h"
 #include "json_util.h"
 #include "streams.h"
+#include "string_utils.h"
 
 
 #ifdef _DEBUG
@@ -20,6 +21,23 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 
 static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection *connection_p);
 
+
+void WipeJSON (json_t *json_p)
+{
+	if (json_p)
+		{
+			if (json_is_array (json_p))
+				{
+					json_array_clear (json_p);
+				}
+			else if (json_is_object (json_p))
+				{
+					json_object_clear (json_p);
+				}
+
+			json_decref (json_p);
+		}
+}
 
 
 json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
@@ -533,6 +551,34 @@ static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_i
 
 	return NULL;
 }
+
+
+
+bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p)
+{
+	bool success_flag = false;
+	json_t *status_json_p = json_object_get (service_json_p, SERVICE_STATUS_S);
+
+	if (status_json_p)
+		{
+			if (json_is_integer (status_json_p))
+				{
+					int i = json_integer_value (status_json_p);
+
+					if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
+						{
+							*status_p = (OperationStatus) i;
+
+							success_flag = true;
+						}		/* if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT)) */
+
+				}		/* if (json_is_integer (status_p)) */
+
+		}		/* if (status_p) */
+
+	return success_flag;
+}
+
 
 
 

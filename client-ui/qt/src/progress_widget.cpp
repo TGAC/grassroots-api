@@ -3,7 +3,7 @@
 
 #include "progress_widget.h"
 #include "json_util.h"
-
+#include "json_tools.h"
 
 ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *json_p)
 {
@@ -18,10 +18,12 @@ ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *js
 				{
 					OperationStatus status;
 
-					if (SetStatusFromJSON (json_p, &status))
+					if (GetStatusFromJSON (json_p, &status))
 						{
 							const char *name_s = GetJSONString (json_p, JOB_NAME_S);
 							const char *description_s = GetJSONString (json_p, JOB_DESCRIPTION_S);
+
+							widget_p = new ProgressWidget (id, status, name_s, description_s);
 						}
 
 				}		/* if (uuid_parse (uuid_s, id) == 0) */
@@ -41,13 +43,17 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 
 	QVBoxLayout *info_layout_p = new QVBoxLayout;
 
-	pw_title_p = new QLabel (name_s);
+	QString s = "<b>";
+	s.append (name_s);
+	s.append ("</a>");
+
+	pw_title_p = new QLabel (s);
 	info_layout_p -> addWidget (pw_title_p);
 
 	if (description_s)
 		{
 			pw_description_p = new QLabel (description_s);
-			info_layout_p -> addWidget (pw_title_p);
+			info_layout_p -> addWidget (pw_description_p);
 		}
 
 	layout_p -> addLayout (info_layout_p);
@@ -115,28 +121,3 @@ void ProgressWidget :: SetStatus (OperationStatus status)
 	pw_status_p -> setText (text_s);
 }
 
-
-bool ProgressWidget :: GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p)
-{
-	bool success_flag = false;
-	json_t *status_p = json_object_get (json_p, SERVICE_STATUS_S);
-
-	if (status_p)
-		{
-			if (json_is_integer (status_p))
-				{
-					int i = json_integer_value (status_p);
-
-					if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
-						{
-							*status_p = (OperationStatus) i;
-
-							success_flag = true;
-						}		/* if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT)) */
-
-				}		/* if (json_is_integer (status_p)) */
-
-		}		/* if (status_p) */
-
-	return success_flag;
-}

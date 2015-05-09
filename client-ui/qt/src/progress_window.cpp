@@ -1,4 +1,5 @@
 #include <QVBoxLayout>
+#include <QPushButton>
 
 
 #include "progress_widget.h"
@@ -11,14 +12,23 @@
 
 
 ProgressWindow :: ProgressWindow (QMainWindow *parent_p, QTClientData *data_p)
-: QWidget (parent_p),
-	pw_data_p (data_p)
+:	pw_data_p (data_p)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 
 	setLayout (layout_p);
 
 	setAcceptDrops (true);
+
+  pw_timer_p = new QTimer (this);
+  connect (pw_timer_p, &QTimer :: timeout, this, &ProgressWindow :: UpdateStatuses);
+
+  pw_timer_started_flag = false;
+
+  QPushButton *check_button_p = new QPushButton (tr ("Check Statuses"));
+  connect (check_button_p, &QPushButton :: clicked, this, &ProgressWindow :: UpdateStatuses);
+
+  layout_p -> addWidget (check_button_p);
 }
 
 
@@ -26,6 +36,11 @@ ProgressWindow ::	~ProgressWindow ()
 {
 }
 
+
+
+void ProgressWindow :: show ()
+{
+}
 
 bool ProgressWindow :: AddProgressItemFromJSON (const json_t *json_p)
 {
@@ -40,12 +55,19 @@ bool ProgressWindow :: AddProgressItemFromJSON (const json_t *json_p)
 			success_flag = true;
 		}
 
+	if (pw_timer_started_flag == false)
+		{
+//			pw_timer_p -> start (5000);
+			pw_timer_started_flag = true;
+		}
+
+
 	return success_flag;
 }
 
 
 
-json_t *ProgressWindow :: BuildStatusRequest ()
+void ProgressWindow :: UpdateStatuses ()
 {
 	json_t *req_p = 0;
 	const size_t size = pw_widgets.size ();
@@ -131,7 +153,13 @@ json_t *ProgressWindow :: BuildStatusRequest ()
 
 																			if (progress_widget_p)
 																				{
-																					json_t *status_json_p = json_object_get (service_json_p, SERVICE_STATUS_S);
+																					OperationStatus status;
+
+																					if (GetStatusFromJSON (service_json_p, &status))
+																						{
+																							progress_widget_p -> SetStatus (status);
+																						}
+
 																				}		/* if (progress_widget_p) */
 
 																		}
@@ -146,10 +174,6 @@ json_t *ProgressWindow :: BuildStatusRequest ()
 
 										}		/* if (json_is_array (services_json_p)) */
 
-									for (size_t i = 0; i < size; ++ i)
-										{
-											* (ids_pp + i) = pw_widgets.at (i) -> GetUUID ();
-										}
 
 								}		/* if (services_json_p) */
 
@@ -160,7 +184,6 @@ json_t *ProgressWindow :: BuildStatusRequest ()
 			FreeMemory (ids_pp);
 		}		/* if (ids_pp) */
 
-	return req_p;
 }
 
 

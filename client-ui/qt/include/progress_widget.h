@@ -24,8 +24,6 @@ public:
 
 	void SetStatus (OperationStatus status);
 
-	bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p);
-
 private:
 	QProgressBar *pw_progress_p;
 	QLabel *pw_status_p;

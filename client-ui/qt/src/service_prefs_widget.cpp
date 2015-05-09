@@ -122,8 +122,7 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 										}
 									else
 										{
-											json_object_clear (param_set_json_p);
-											json_decref (param_set_json_p);
+											WipeJSON (param_set_json_p);
 											param_set_json_p = NULL;
 										}
 								}
@@ -145,8 +144,7 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 
 	if (!success_flag)
 		{
-			json_object_clear (service_json_p);
-			json_decref (service_json_p);
+			WipeJSON (service_json_p);
 			service_json_p = NULL;
 		}
 

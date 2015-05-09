@@ -409,7 +409,8 @@ static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p)
 
 bool SetCurlToolForJSONPost (CurlTool *tool_p)
 {
-	bool success_flag = true;
+	bool success_flag = false;
+	CURLcode ret;
 
 	tool_p -> ct_headers_list_p = curl_slist_append (tool_p -> ct_headers_list_p, "Accept: application/json");
 	tool_p -> ct_headers_list_p = curl_slist_append (tool_p -> ct_headers_list_p, "Content-Type: application/json");
@@ -421,6 +422,20 @@ bool SetCurlToolForJSONPost (CurlTool *tool_p)
 			{ CURLOPT_LASTENTRY, (const char *) NULL }
 		};
 
+
+	ret = curl_easy_setopt (tool_p, params [0].cp_opt, params [0].cp_value_s);
+
+	if (ret == CURLE_OK)
+		{
+			ret = curl_easy_setopt (tool_p, params [1].cp_opt, params [1].cp_value_s);
+
+			if (ret == CURLE_OK)
+				{
+					success_flag = true;
+				}
+		}
+
+/*
 	const CURLParam *param_p = params;
 
 	while (success_flag && (param_p -> cp_value_s))
@@ -434,10 +449,11 @@ bool SetCurlToolForJSONPost (CurlTool *tool_p)
 			else
 				{
 					success_flag = false;
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+					Pr-intErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
 				}
 				
-		}		/* while (continue_flag && param_p) */
+		}		 while (continue_flag && param_p)
+*/
 				
 	
 	return success_flag;

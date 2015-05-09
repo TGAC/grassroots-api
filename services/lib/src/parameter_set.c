@@ -585,7 +585,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 					
 				}		/* if (params_p) */
 			
-			#ifdef DEBUG
+			#ifdef _DEBUG
 			if (root_s)
 				{
 					free (root_s);
