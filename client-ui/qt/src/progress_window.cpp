@@ -20,8 +20,8 @@ ProgressWindow :: ProgressWindow (QMainWindow *parent_p, QTClientData *data_p)
 
 	setAcceptDrops (true);
 
-  pw_timer_p = new QTimer (this);
-  connect (pw_timer_p, &QTimer :: timeout, this, &ProgressWindow :: UpdateStatuses);
+  //pw_timer_p = new QTimer (this);
+ // connect (pw_timer_p, &QTimer :: timeout, this, &ProgressWindow :: UpdateStatuses);
 
   pw_timer_started_flag = false;
 
