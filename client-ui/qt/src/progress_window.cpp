@@ -14,11 +14,7 @@
 ProgressWindow :: ProgressWindow (QMainWindow *parent_p, QTClientData *data_p)
 :	pw_data_p (data_p)
 {
-	QVBoxLayout *layout_p = new QVBoxLayout;
 
-	setLayout (layout_p);
-
-	setAcceptDrops (true);
 
   //pw_timer_p = new QTimer (this);
  // connect (pw_timer_p, &QTimer :: timeout, this, &ProgressWindow :: UpdateStatuses);
@@ -28,6 +24,9 @@ ProgressWindow :: ProgressWindow (QMainWindow *parent_p, QTClientData *data_p)
   QPushButton *check_button_p = new QPushButton (tr ("Check Statuses"));
   connect (check_button_p, &QPushButton :: clicked, this, &ProgressWindow :: UpdateStatuses);
 
+  QVBoxLayout *layout_p = new QVBoxLayout;
+
+  setLayout (layout_p);
   layout_p -> addWidget (check_button_p);
 }
 
@@ -208,16 +207,3 @@ json_t *ProgressWindow :: BuildResultsRequest ()
 	return req_p;
 }
 
-
-
-
-void ProgressWindow :: dropEvent (QDropEvent *event_p)
-{
-
-}
-
-
-void ProgressWindow :: dragEnterEvent (QDragEnterEvent *event_p)
-{
-
-}

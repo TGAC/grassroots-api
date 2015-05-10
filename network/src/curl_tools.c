@@ -414,7 +414,7 @@ bool SetCurlToolForJSONPost (CurlTool *tool_p)
 
 	const CURLParam params [] =
 		{
-			{ CURLOPT_POST, 1 },
+///			{ CURLOPT_POST, 1 },
 			{ CURLOPT_HTTPHEADER, (const char *) (tool_p -> ct_headers_list_p)  },
 			{ CURLOPT_LASTENTRY, (const char *) NULL }
 		};
