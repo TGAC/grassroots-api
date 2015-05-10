@@ -21,7 +21,7 @@
 #else
 
 #ifdef WIN32
-	#define USE_NEDMALLOC_ALLOCATOR
+//	#define USE_NEDMALLOC_ALLOCATOR
 #elif defined UNIX
 
 #endif

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="UserMacros">
+    <WHEATIS_SRC_ROOT>I:\projects\wheatis</WHEATIS_SRC_ROOT>
+    <WHEATIS_INSTALL>I:\wheatis_test</WHEATIS_INSTALL>
+  </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <BuildMacro Include="WHEATIS_SRC_ROOT">
+      <Value>$(WHEATIS_SRC_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="WHEATIS_INSTALL">
+      <Value>$(WHEATIS_INSTALL)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
