@@ -7,6 +7,7 @@
 #include "string_utils.h"
 #include "wheatis_config.h"
 #include "temp_file.hpp"
+#include "json_tools.h"
 
 
 /*
@@ -613,8 +614,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 
 									if (!blast_result_json_p)
 										{
-											json_object_clear (blast_result_json_p);
-											json_decref (blast_result_json_p);
+											WipeJSON (result_json_p);
 										}
 								}
 						}

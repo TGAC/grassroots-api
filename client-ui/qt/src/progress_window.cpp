@@ -39,6 +39,7 @@ ProgressWindow ::	~ProgressWindow ()
 
 void ProgressWindow :: show ()
 {
+	QWidget :: show ();
 }
 
 bool ProgressWindow :: AddProgressItemFromJSON (const json_t *json_p)
