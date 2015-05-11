@@ -20,10 +20,11 @@ ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *js
 
 					if (GetStatusFromJSON (json_p, &status))
 						{
+							const char *service_name_s = GetJSONString (json_p, JOB_SERVICE_S);
 							const char *name_s = GetJSONString (json_p, JOB_NAME_S);
 							const char *description_s = GetJSONString (json_p, JOB_DESCRIPTION_S);
 
-							widget_p = new ProgressWidget (id, status, name_s, description_s);
+							widget_p = new ProgressWidget (id, status, name_s, description_s, service_name_s);
 						}
 
 				}		/* if (uuid_parse (uuid_s, id) == 0) */
@@ -35,7 +36,7 @@ ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *js
 
 
 
-ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char *name_s, const char *description_s)
+ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char *name_s, const char *description_s, const char *service_name_s)
 {
 	QHBoxLayout *layout_p = new QHBoxLayout;
 
@@ -44,8 +45,10 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 	QVBoxLayout *info_layout_p = new QVBoxLayout;
 
 	QString s = "<b>";
+	s.append (service_name_s);
+	s.append (" - ");
 	s.append (name_s);
-	s.append ("</a>");
+	s.append ("</b>");
 
 	pw_title_p = new QLabel (s);
 	info_layout_p -> addWidget (pw_title_p);
@@ -58,14 +61,29 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 
 	layout_p -> addLayout (info_layout_p);
 
+
+	pw_progress_label_p = new QLabel;
+	pw_anim_p = new QMovie ("images/anim_progress.gif");
+	pw_progress_label_p -> setMovie (pw_anim_p);
+	layout_p -> addWidget (pw_progress_label_p);
+
+	/*
 	pw_progress_p = new QProgressBar;
 	pw_progress_p -> setMinimum (0);
 	pw_progress_p -> setMaximum (0);
 	layout_p -> addWidget (pw_progress_p);
-
+	*/
 	pw_status_p = new QLabel;
 	SetStatus (status);
 	layout_p -> addWidget (pw_status_p);
+
+
+	pw_results_button_p = new QPushButton (tr ("View Results"));
+	pw_results_button_p -> setEnabled (false);
+	connect (pw_results_button_p, &QPushButton :: clicked, this, &ProgressWidget :: ShowResults);
+	layout_p -> addWidget (pw_results_button_p);
+
+
 
 	setLayout (layout_p);
 }
@@ -81,6 +99,13 @@ const uuid_t *ProgressWidget ::	GetUUID () const
 	return &pw_id;
 }
 
+
+void ProgressWidget :: ShowResults (bool checked_flag)
+{
+
+}
+
+
 void ProgressWidget :: SetStatus (OperationStatus status)
 {
 	const char *text_s = "";
@@ -91,6 +116,7 @@ void ProgressWidget :: SetStatus (OperationStatus status)
 			case OS_FAILED_TO_START:
 			case OS_ERROR:
 				text_s = "Failed";
+				pw_anim_p -> stop ();
 				break;
 
 			case OS_IDLE:
@@ -103,14 +129,17 @@ void ProgressWidget :: SetStatus (OperationStatus status)
 
 			case OS_STARTED:
 				text_s = "Started";
+				pw_anim_p -> start ();
 				break;
 
 			case OS_FINISHED:
 				text_s = "Finished";
+				pw_anim_p -> stop ();
 				break;
 
 			case OS_SUCCEEDED:
 				text_s = "Succeeded";
+				pw_anim_p -> stop ();
 				break;
 
 			default:

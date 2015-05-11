@@ -84,10 +84,7 @@ void ProgressWindow :: UpdateStatuses ()
 
 			if (req_p)
 				{
-					const char *username_s = NULL;
-					const char *password_s = NULL;
-
-					json_t *statuses_json_p = CallServices (req_p, username_s, password_s, pw_data_p -> qcd_base_data.cd_connection_p);
+					json_t *statuses_json_p = MakeRemoteJsonCall (req_p, pw_data_p -> qcd_base_data.cd_connection_p);
 
 					if (statuses_json_p)
 						{
@@ -97,12 +94,12 @@ void ProgressWindow :: UpdateStatuses ()
 								{
 									if (json_is_array (services_json_p))
 										{
-											size_t num_services = json_array_size (services_json_p);
-											ProgressWidget *progress_widget_p = 0;
+											const size_t num_services = json_array_size (services_json_p);
+											size_t i;
+											json_t *service_json_p;
 
-											for (size_t i = 0; i < num_services; ++ i)
+											json_array_foreach (services_json_p, i, service_json_p)
 												{
-													json_t *service_json_p = json_array_get (services_json_p, i);
 													json_t *uuid_json_p = json_object_get (service_json_p, SERVICE_UUID_S);
 
 													if (uuid_json_p)
@@ -115,13 +112,14 @@ void ProgressWindow :: UpdateStatuses ()
 																	if (uuid_parse (uuid_s, uuid) == 0)
 																		{
 																			size_t j = i;
+																			ProgressWidget *progress_widget_p = 0;
 
 																			while ((progress_widget_p == 0) && (j < num_services))
 																				{
-																					ProgressWidget *widget_p = pw_widgets.at (i);
+																					ProgressWidget *widget_p = pw_widgets.at (j);
 																					const uuid_t *id_p = widget_p -> GetUUID ();
 
-																					if (uuid_compare (*id_p, uuid))
+																					if (uuid_compare (*id_p, uuid) == 0)
 																						{
 																							progress_widget_p = widget_p;
 																						}
@@ -137,10 +135,10 @@ void ProgressWindow :: UpdateStatuses ()
 
 																					while ((progress_widget_p == 0) && (j < i))
 																						{
-																							ProgressWidget *widget_p = pw_widgets.at (i);
+																							ProgressWidget *widget_p = pw_widgets.at (j);
 																							const uuid_t *id_p = widget_p -> GetUUID ();
 
-																							if (uuid_compare (*id_p, uuid))
+																							if (uuid_compare (*id_p, uuid) == 0)
 																								{
 																									progress_widget_p = widget_p;
 																								}
@@ -161,9 +159,7 @@ void ProgressWindow :: UpdateStatuses ()
 																						}
 
 																				}		/* if (progress_widget_p) */
-
 																		}
-
 																}
 
 														}		/* if (uuid_json_p) */

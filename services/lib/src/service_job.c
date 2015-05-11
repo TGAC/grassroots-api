@@ -174,6 +174,8 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 
 			if (json_p)
 				{
+					const char *service_name_s = GetServiceName (job_p -> sj_service_p);
+
 					if (job_p -> sj_name_s)
 						{
 							if (json_object_set_new (json_p, JOB_NAME_S, json_string (job_p -> sj_name_s)) != 0)
@@ -187,6 +189,14 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 							if (json_object_set_new (json_p, JOB_DESCRIPTION_S, json_string (job_p -> sj_description_s)) != 0)
 								{
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to add job description %s to job status json", job_p -> sj_description_s);
+								}
+						}
+
+					if (service_name_s)
+						{
+							if (json_object_set_new (json_p, JOB_SERVICE_S, json_string (service_name_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service %s to job status json", service_name_s);
 								}
 						}
 				}

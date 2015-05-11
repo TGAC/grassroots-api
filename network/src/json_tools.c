@@ -501,7 +501,7 @@ static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_i
 
 			if (services_p)
 				{
-					if (json_object_set (req_p, SERVICES_NAME_S, services_p) == 0)
+					if (json_object_set_new (req_p, SERVICES_NAME_S, services_p) == 0)
 						{
 							uint32 i = num_ids;
 							const uuid_t **id_pp = ids_pp;
@@ -537,7 +537,7 @@ static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_i
 									return req_p;
 								}		/* if (success_flag) */
 
-						}		/* if (json_object_set (req_p, SERVICES_NAME_S, services_p) == 0) */
+						}		/* if (json_object_set_new- (req_p, SERVICES_NAME_S, services_p) == 0) */
 					else
 						{
 							json_decref (services_p);
