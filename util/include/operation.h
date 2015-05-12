@@ -25,6 +25,9 @@ typedef enum Operation {
 	/** Get results from completed job */
 	OP_GET_SERVICE_RESULTS,
 
+	/** Tell the server that the jobs are no longer needed */
+	OP_DISCARD_JOBS,
+
 	OP_NUM_OPERATIONS
 } Operation;
 

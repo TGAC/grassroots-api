@@ -15,6 +15,8 @@ ProgressWindow :: ProgressWindow (QMainWindow *parent_p, QTClientData *data_p)
 :	pw_data_p (data_p)
 {
 
+	setWindowTitle (tr ("Jobs Progress"));
+	setWindowIcon (QIcon ("images/progress"));
 
   //pw_timer_p = new QTimer (this);
  // connect (pw_timer_p, &QTimer :: timeout, this, &ProgressWindow :: UpdateStatuses);
