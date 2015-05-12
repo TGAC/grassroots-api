@@ -11,6 +11,7 @@ DIR_OBJS = $(BUILD)
 
 ifeq ($(DIR_APACHE),)
 HTTPD := $(shell httpd -V) 
+APXS := $(shell apxs)
 DIR_APACHE := $(filter HTTPD_ROOT=%, $(HTTPD))
 endif
 
@@ -20,6 +21,11 @@ DIR_APACHE_MODULES := $(DIR_APACHE)/modules
 DIR_APACHE_INC := $(DIR_APACHE)/include
 DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
 APACHE_SET = true
+
+ifeq ($(APXS),)
+APXS = $(DIR_APACHE)/bin/apxs
+endif
+
 endif
 
 
@@ -37,7 +43,7 @@ CFLAGS 	+=  -Wc,-Wall  -Wc,-fpic
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -Wc,-O3 -Wc,-s
  	LDFLAGS += Wl,-s
-gti pull#	CFLAGS 	+= -g
+#	CFLAGS 	+= -g
 	CFLAGS 	+= -Wc,-g -Wc,-pg -Wc,-Wall -Wc,-O0
 	LDFLAGS += -Wl,pg
 	CPPFLAGS += -Wc,-D_DEBUG
@@ -105,7 +111,7 @@ all:
 	@echo "IRODS_HOME $$IRODS_HOME -"
 	@echo "DIR_APACHE _ $(DIR_APACHE) _"
 	@echo "APACHE INC $(DIR_APACHE_INC)"
-	apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
+	$(APXS) -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
