@@ -106,8 +106,6 @@ ifeq ($(DRMAA_ENABLED),1)
 drmaa: util network
 	$(MAKE) -C drmaa
 
-all: drmaa	
-
 install_drmaa:
 	$(MAKE) -C drmaa install
 else
