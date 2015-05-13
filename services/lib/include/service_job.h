@@ -14,8 +14,10 @@
 #include "jansson.h"
 #include "uuid/uuid.h"
 
-/* forward declaration */
+/* forward declarations */
 struct Service;
+struct ServiceJob;
+
 
 /**
  * A datatype to represent a running task.
@@ -35,6 +37,8 @@ typedef struct ServiceJob
 
 	char *sj_description_s;
 
+
+	bool (*sj_close_fn) (struct ServiceJob *job_p);
 } ServiceJob;
 
 
@@ -62,7 +66,7 @@ extern "C"
 #endif
 
 
-WHEATIS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s);
+WHEATIS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s, bool (*close_fn) (ServiceJob *job_p));
 
 
 WHEATIS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
@@ -74,7 +78,7 @@ WHEATIS_SERVICE_API bool SetServiceJobDescription (ServiceJob *job_p, const char
 WHEATIS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * const name_s);
 
 
-WHEATIS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, size_t num_jobs);
+WHEATIS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p));
 
 
 WHEATIS_SERVICE_API void FreeServiceJobSet (ServiceJobSet *job_set_p);
@@ -89,7 +93,7 @@ WHEATIS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (const ServiceJob *job_p);
 
 
-WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p);
+WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p);
 
 
 WHEATIS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
@@ -102,6 +106,12 @@ WHEATIS_SERVICE_API OperationStatus GetServiceJobStatus (ServiceJob *job_p);
 
 
 WHEATIS_SERVICE_API const char *GetServiceJobName (const ServiceJob *job_p);
+
+
+WHEATIS_SERVICE_API bool CloseServiceJob (const ServiceJob *job_p);
+
+
+WHEATIS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 
 
 #ifdef __cplusplus

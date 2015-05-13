@@ -52,7 +52,7 @@ typedef struct
 
 
 
-static WheatISConfig s_config;
+//static WheatISConfig s_config;
 
 
 /* Define our module as an entity and assign a function for registering hooks  */
@@ -77,11 +77,12 @@ static void RegisterHooks (apr_pool_t *pool_p)
 
 
 
-static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s)
+static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *server_p)
 {
   void *data_p = NULL;
   const char *userdata_key_s = "wheatis_post_config";
   int ret = HTTP_INTERNAL_SERVER_ERROR;
+  apr_pool_t *server_pool_p = server_p -> process -> pool;
 
   /* Apache loads DSO modules twice. We want to wait until the second
    * load before setting up our global mutex and shared memory segment.
@@ -89,7 +90,7 @@ static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *p
    * dummy userdata in a pool that lives longer than the first DSO
    * load, and only run if that data is set on subsequent calls to
    * this hook. */
-  apr_pool_userdata_get (&data_p, userdata_key_s, s->process->pool);
+  apr_pool_userdata_get (&data_p, userdata_key_s, server_pool_p);
 
   if (data_p == NULL)
   	{
@@ -98,7 +99,7 @@ static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *p
        * DSO may not be at the same address offset when it is reloaded.
        * Since setn() does not make a copy and only compares addresses,
        * the get() will be unable to find the original userdata. */
-      apr_pool_userdata_set ((const void *) 1, userdata_key_s, apr_pool_cleanup_null, s->process->pool);
+      apr_pool_userdata_set ((const void *) 1, userdata_key_s, apr_pool_cleanup_null, server_pool_p);
 
       ret = OK; /* This would be the first time through */
   	}
@@ -145,11 +146,7 @@ static int WheatISHandler (request_rec *req_p)
 						if (json_req_p)
 							{
 								int socket_fd = -1;
-								json_t *res_p = NULL;
-
-								res = OK;
-
-								res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
+								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
 
 								if (res_p)
 									{
@@ -157,13 +154,23 @@ static int WheatISHandler (request_rec *req_p)
 
 										if (res_s)
 											{
+												res = OK;
+
 												ap_rputs (res_s, req_p);
 
 												free (res_s);
 											}		/* if (res_s) */
+										else
+											{
+												res = HTTP_INTERNAL_SERVER_ERROR;
+											}
 
 										json_decref (res_p);
 									}		/* if (res_p) */
+								else
+									{
+										res = HTTP_INTERNAL_SERVER_ERROR;
+									}
 
 								json_decref (json_req_p);
 							}		/* if (json_req_p) */
@@ -173,7 +180,6 @@ static int WheatISHandler (request_rec *req_p)
   			{
   				res = HTTP_METHOD_NOT_ALLOWED;
   			}
-
 
   	}		/* if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) */
 	 

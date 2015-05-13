@@ -32,7 +32,7 @@
 	typedef int16_t int16;
 	typedef uint16_t uint16;
 
-/*
+
 	#define UINT32_FMT_IDENT "u"
 	#define INT32_FMT_IDENT "d"
 	#define DOUBLE64_FMT_IDENT "lf"
@@ -40,11 +40,19 @@
 	#define INT8_FMT_IDENT "c"
 	#define UINT16_FMT_IDENT "hu"
 	#define INT16_FMT_IDENT "hd"
-*/
-
+	#define SIZET_FMT_IDENT "lu"
 #endif
-	   
-   
+
+
+#define UINT32_FMT "%" UINT32_FMT_IDENT
+#define INT32_FMT "%" INT32_FMT_IDENT
+#define DOUBLE64_FMT "%" DOUBLE64_FMT_IDENT
+#define UINT8_FMT "%" UINT8_FMT_IDENT
+#define INT8_FMT "%" INT8_FMT_IDENT
+#define SIZET_FMT "%" SIZET_FMT_IDENT
+
+
+
      
 /**
  * An enum specifying whether a file is located on a 

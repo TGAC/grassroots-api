@@ -74,6 +74,8 @@ static ElasticSearchServiceData *AllocateElasticSearchServiceData (void);
 static void FreeElasticSearchServiceData (ElasticSearchServiceData *data_p);
 
 
+static bool CleanUpElasticSearchJob (ServiceJob *job_p);
+
 
 static ElasticSearchServiceData *AllocateElasticSearchServiceData (void)
 {
@@ -252,7 +254,7 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 {
 	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) (service_p -> se_data_p);
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpElasticSearchJob);
 
 	if (service_p -> se_jobs_p)
 		{
@@ -316,5 +318,13 @@ static bool IsFileForElasticSearchRestService (Service *service_p, Resource *res
 static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id)
 {
 	return NULL;
+}
+
+
+static bool CleanUpElasticSearchJob (ServiceJob *job_p)
+{
+	bool cleaned_up_flag = true;
+
+	return cleaned_up_flag;
 }
 

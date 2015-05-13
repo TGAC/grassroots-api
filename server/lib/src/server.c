@@ -64,6 +64,8 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 
 static bool AddServiceResultsToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
 
+static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p);
+
 
 /***************************/
 /***** API DEFINITIONS *****/
@@ -211,6 +213,10 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 					case OP_GET_SERVICE_RESULTS:
 						res_p = GetServiceResultsAsJSON (req_p, credentials_p);
+						break;
+
+					case OP_CLEAN_UP_JOBS:
+						CleanUpJobs (req_p, credentials_p);
 						break;
 
 					default:
@@ -758,6 +764,59 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 }
 
 
+static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p)
+{
+	json_t *service_uuids_json_p = json_object_get (req_p, SERVICES_NAME_S);
+
+	if (service_uuids_json_p)
+		{
+			if (json_is_array (service_uuids_json_p))
+				{
+					size_t i;
+					json_t *service_uuid_json_p;
+					size_t num_successes = 0;
+					size_t num_uuids = json_array_size (service_uuids_json_p);
+
+					json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
+						{
+							if (json_is_string (service_uuid_json_p))
+								{
+									const char *uuid_s = json_string_value (service_uuid_json_p);
+									uuid_t job_id;
+
+									if (ConvertStringToUUID (uuid_s, job_id))
+										{
+											ServiceJob *job_p = RemoveServiceJobFromStatusTable (job_id);
+
+											if (job_p)
+												{
+													Service *service_p = job_p -> sj_service_p;
+
+													CloseServiceJob (job_p);
+
+													if (!IsServiceLive (service_p))
+														{
+															CloseService (service_p);
+														}
+												}
+
+										}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
+
+								}		/* if (json_is_string (service_uuid_json_p)) */
+
+						}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+				}
+			else
+				{
+
+				}
+
+		}		/* if (service_uuids_json_p) */
+
+	return true;
+}
+
+
 static json_t *GetNamedServices (const json_t * const req_p, const json_t *credentials_p)
 {
 	json_t *res_p = NULL;
@@ -944,7 +1003,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 											/* Now run the service */
 											if (param_flag)
 												{
-													service_res_p = RunService (service_p, params_p, config_p);
+													ServiceJobSet *jobs_set_p = RunService (service_p, params_p, config_p);
 												}
 
 											ReleaseServiceParameters (service_p, params_p);

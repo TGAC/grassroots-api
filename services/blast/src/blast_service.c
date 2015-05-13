@@ -48,6 +48,11 @@ static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t s
 
 static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s);
 
+
+static bool CleanUpBlastJob (ServiceJob *job_p);
+
+
+
 /*
  * API FUNCTIONS
  */
@@ -737,11 +742,10 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 	if (num_jobs > 0)
 		{
-			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs, CleanUpBlastJob);
 
 			if (service_p -> se_jobs_p)
 				{
-					size_t i;
 					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 					TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s);
 					const char *filename_s = NULL;
@@ -767,7 +771,6 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 						{
 							size_t num_jobs_ran = 0;
 							db_p = blast_data_p -> bsd_databases_p;
-							i = 0;
 
 							while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
 								{
@@ -921,3 +924,12 @@ static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t s
 	return status;
 }
 
+
+
+static bool CleanUpBlastJob (ServiceJob *job_p)
+{
+	bool cleaned_up_flag = true;
+
+
+	return cleaned_up_flag;
+}

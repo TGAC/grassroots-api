@@ -63,6 +63,9 @@ static OperationStatus GetCurrentTimedTaskStatus (TimedTask *task_p);
 static json_t *GetTimedTaskResult (TimedTask *task_p);
 
 
+static bool CleanUpLongRunningJob (ServiceJob *job_p);
+
+
 /*
  * API FUNCTIONS
  */
@@ -256,7 +259,7 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job
 static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, data_p -> lsd_num_tasks);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, data_p -> lsd_num_tasks, CleanUpLongRunningJob);
 
 	if (service_p -> se_jobs_p)
 		{
@@ -274,10 +277,10 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 					StartTimedTask (task_p, duration);
 					job_p -> sj_status = GetCurrentTimedTaskStatus (task_p);
 
-					sprintf (buffer_s, "job %lu\0", i);
+					sprintf (buffer_s, "job " INT32_FMT, i);
 					SetServiceJobName (job_p, buffer_s);
 
-					sprintf (buffer_s, "start %lu end %lu\0", task_p -> tt_start, task_p -> tt_end);
+					sprintf (buffer_s, "start " SIZET_FMT " end " SIZET_FMT, task_p -> tt_start, task_p -> tt_end);
 					SetServiceJobDescription (job_p, buffer_s);
 				}
 
@@ -373,4 +376,43 @@ static json_t *GetTimedTaskResult (TimedTask *task_p)
 	json_t *result_p = json_pack ("{s:i,s:i}", "Started", task_p -> tt_start, "Ended", task_p -> tt_end);
 
 	return result_p;
+}
+
+
+static bool CleanUpLongRunningJob (ServiceJob *job_p)
+{
+	bool cleaned_up_flag = true;
+	Service *service_p = job_p -> sj_service_p;
+
+	if (service_p -> se_jobs_p)
+		{
+			if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id))
+				{
+					LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
+					TimedTask *task_p = data_p -> lsd_tasks_p;
+					uint32 i;
+
+					for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
+						{
+							if (task_p -> tt_job_p == job_p)
+								{
+									OperationStatus status = GetCurrentTimedTaskStatus (task_p);
+
+									if (status != OS_STARTED)
+										{
+											InitTimedTask (task_p);
+											cleaned_up_flag = true;
+
+											job_p -> sj_status = OS_CLEANED_UP;
+
+											i = data_p -> lsd_num_tasks; 		/* force exit from loop */
+										}
+								}
+						}		/* for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p) */
+
+				}		/* if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id)) */
+
+		}		/* if (service_p -> se_jobs_p) */
+
+	return cleaned_up_flag;
 }

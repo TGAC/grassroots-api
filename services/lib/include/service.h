@@ -57,6 +57,7 @@ PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
 /* forward declarations */
 struct Plugin;
 struct Service;
+struct ServiceJob;
 struct ServiceJobSet;
 
 
@@ -175,8 +176,6 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	bool specific_flag,
 	ServiceData *data_p);
 
-//WHEATIS_SERVICE_API json_t *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
-
 
 WHEATIS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
@@ -257,6 +256,15 @@ WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const cha
 
 
 WHEATIS_SERVICE_API bool CloseService (Service *service_p);
+
+
+/**
+ * Has the Service got any jobs still running?
+ *
+ * @param service_p The Service to check.
+ * @return <code>true</code> if the Service still has active jobs, <code>false</code> otherwise.
+ */
+WHEATIS_SERVICE_API  bool IsServiceLive (Service *service_p);
 
 
 /**
@@ -349,6 +357,8 @@ WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p,
 
 
 WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);
+
+
 
 #ifdef __cplusplus
 }
