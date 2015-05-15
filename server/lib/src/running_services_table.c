@@ -1,6 +1,5 @@
 #include "running_services_table.h"
-#include "pthread.h"
-
+#include "apr_thread_mutex_h"
 typedef struct UUIDServiceNode
 {
 	ServiceNode usn_node;
@@ -155,7 +154,7 @@ void ServiceJobFinished (uuid_t user_key, Service *service_p, const OperationSta
 }
 
 
-Service *GetServiceJobFromStatusTable (const uuid_t user_key, const uuid_t service_key)
+Service *GetServiceJobFromJobsManager (const uuid_t user_key, const uuid_t service_key)
 {
 	LinkedList *services_p = NULL;
 	Service *service_p = NULL;

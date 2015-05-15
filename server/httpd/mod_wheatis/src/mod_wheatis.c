@@ -24,11 +24,18 @@
 #include "service_config.h"
 #include "system_util.h"
 
+#include "mod_wheatis_config.h"
+
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
 static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
+
+static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p);
+
+static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *vhost_config_p);
+
 
 #ifdef _DEBUG
 	#define MOD_WHEATIS_DEBUG	(STM_LEVEL_FINE)
@@ -45,11 +52,6 @@ static const command_rec s_wheatis_directives [] =
 
 
 
-typedef struct
-{
-	const char *wisc_root_path_s;
-} WheatISConfig;
-
 
 
 //static WheatISConfig s_config;
@@ -61,8 +63,8 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
     STANDARD20_MODULE_STUFF,
     NULL,            			// Per-directory configuration handler
     NULL,            			// Merge handler for per-directory configurations
-    NULL,            			// Per-server configuration handler
-    NULL,            			// Merge handler for per-server configurations
+    CreateServerConfig,		// Per-server configuration handler
+    MergeServerConfig,		// Merge handler for per-server configurations
     s_wheatis_directives,	// Any directives we may have for httpd
     RegisterHooks    			// Our hook registering function
 };
@@ -77,7 +79,34 @@ static void RegisterHooks (apr_pool_t *pool_p)
 
 
 
-static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *server_p)
+static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
+{
+	WheatISConfig *config_p = apr_palloc (pool_p, sizeof (WheatISConfig));
+
+	if (config_p)
+		{
+			apr_status_t status;
+
+			config_p -> wisc_root_path_s = NULL;
+
+
+			status = apr_thread_mutex_create (& (config_p -> wisc_mutex_p), APR_THREAD_MUTEX_UNNESTED, pool_p);
+		}
+
+	return ((void *) config_p);
+}
+
+
+
+static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *vhost_config_p)
+{
+	/* currenty ignore the vhosts config */
+	return base_config_p;
+}
+
+
+
+static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_t *temp_p, server_rec *server_p)
 {
   void *data_p = NULL;
   const char *userdata_key_s = "wheatis_post_config";
@@ -107,9 +136,12 @@ static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *p
   	{
   		if (InitInformationSystem ())
   			{
+
   				ret = OK;
   			}
   	}
+
+
 
   return ret;
 }
@@ -146,6 +178,7 @@ static int WheatISHandler (request_rec *req_p)
 						if (json_req_p)
 							{
 								int socket_fd = -1;
+						    WheatISConfig *config_p = ap_get_module_config (req_p -> server -> module_config, &wheatis_module);
 								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
 
 								if (res_p)

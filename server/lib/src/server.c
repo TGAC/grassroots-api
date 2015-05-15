@@ -16,7 +16,7 @@
 
 #include "math_utils.h"
 #include "string_utils.h"
-#include "running_services_table.h"
+#include "jobs_manager.h"
 #include "parameter_set.h"
 
 #include "uuid/uuid.h"
@@ -564,7 +564,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 		{
 			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
-					ServiceJob *job_p = GetServiceJobFromStatusTable (service_id);
+					ServiceJob *job_p = GetServiceJobFromJobsManager (service_id);
 
 					if (job_p)
 						{
@@ -610,7 +610,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	ServiceJob *job_p = GetServiceJobFromStatusTable (job_id);
+	ServiceJob *job_p = GetServiceJobFromJobsManager (job_id);
 	json_t *service_result_p = NULL;
 
 	if (job_p)
@@ -786,7 +786,7 @@ static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p
 
 									if (ConvertStringToUUID (uuid_s, job_id))
 										{
-											ServiceJob *job_p = RemoveServiceJobFromStatusTable (job_id);
+											ServiceJob *job_p = RemoveServiceJobFromJobsManager (job_id);
 
 											if (job_p)
 												{

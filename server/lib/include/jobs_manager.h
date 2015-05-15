@@ -5,11 +5,10 @@
  *      Author: tyrrells
  */
 
-#ifndef SERVICES_STATUSES_TABLE_H_
-#define SERVICES_STATUSES_TABLE_H_
+#ifndef JOBS_MANAGER_H
+#define JOBS_MANAGER_H
 
 #include "hash_table.h"
-#include "wheatis_service_manager_library.h"
 #include "service.h"
 #include "service_job.h"
 
@@ -28,26 +27,26 @@
  * be allowed to become before it is extended.
  * @return The HashTable or NULL is there was an error.
  */
-WHEATIS_SERVICE_MANAGER_API bool InitServicesStatusTable (void);
+bool InitJobsManager (void *data_p);
 
 
-WHEATIS_SERVICE_MANAGER_API bool DestroyServicesStatusTable (void);
+bool DestroyJobsManager (void *data_p);
 
 
-WHEATIS_SERVICE_MANAGER_API bool AddServiceJobToStatusTable (uuid_t job_key, ServiceJob *job_p);
+bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p);
 
 
-WHEATIS_SERVICE_MANAGER_API ServiceJob *GetServiceJobFromStatusTable (const uuid_t key);
+ServiceJob *GetServiceJobFromJobsManager (const uuid_t key);
 
 
-WHEATIS_SERVICE_MANAGER_API ServiceJob *RemoveServiceJobFromStatusTable (const uuid_t key);
+ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t key);
 
 
 
 /**
  *
  */
-WHEATIS_SERVICE_MANAGER_LOCAL void ServiceJobFinished (uuid_t job_key);
+void ServiceJobFinished (uuid_t job_key);
 
 
 
@@ -58,4 +57,4 @@ WHEATIS_SERVICE_MANAGER_LOCAL void ServiceJobFinished (uuid_t job_key);
 }
 #endif
 
-#endif /* SERVICES_STATUSES_TABLE_H_ */
+#endif /* JOBS_MANAGER_H */

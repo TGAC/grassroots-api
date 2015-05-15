@@ -4,7 +4,7 @@
 #include "long_running_service.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
-#include "running_services_table.h"
+#include "jobs_manager.h"
 
 static uint32 S_DEFAULT_DURATION = 30;
 

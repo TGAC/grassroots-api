@@ -74,11 +74,13 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
-	-I$(DIR_JANSSON_INC)	
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_UUID_INC)	
 		
 SRCS 	= \
 	src/mod_wheatis.c \
-	src/key_value_pair.c  
+	src/key_value_pair.c \
+	src/apache_jobs_manager.c
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \

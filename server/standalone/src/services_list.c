@@ -1,4 +1,4 @@
-#include "running_services_table.h"
+#include "jobs_manager.h"
 
 #include "linked_list.h"
 
@@ -55,7 +55,7 @@ static void FreeUUIDJobNode (ListItem * const node_p)
  * be allowed to become before it is extended.
  * @return The HashTable or NULL is there was an error.
  */
-bool InitServicesStatusTable (void)
+bool InitJobsManager (void *data_p)
 {
 	InitLinkedList (&s_running_services);
 
@@ -63,7 +63,7 @@ bool InitServicesStatusTable (void)
 }
 
 
-bool DestroyServicesStatusTable (void)
+bool DestroyJobsManager (void *data_p)
 {
 	ClearLinkedList (&s_running_services);
 
@@ -113,7 +113,7 @@ static UUIDJobNode *GetServiceJobNode (const uuid_t job_key)
 }
 
 
-ServiceJob *GetServiceJobFromStatusTable (const uuid_t job_key)
+ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 {
 	UUIDJobNode *node_p = GetServiceJobNode (job_key);
 
@@ -121,7 +121,7 @@ ServiceJob *GetServiceJobFromStatusTable (const uuid_t job_key)
 }
 
 
-ServiceJob *RemoveServiceJobFromStatusTable (const uuid_t job_key)
+ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 {
 	ServiceJob *job_p = NULL;
 	UUIDJobNode *node_p = (UUIDJobNode *) s_running_services.ll_head_p;
@@ -153,7 +153,7 @@ ServiceJob *RemoveServiceJobFromStatusTable (const uuid_t job_key)
 
 void ServiceJobFinished (uuid_t job_key)
 {
-	ServiceJob *job_p = RemoveServiceJobFromStatusTable (job_key);
+	ServiceJob *job_p = RemoveServiceJobFromJobsManager (job_key);
 
 	if (job_p)
 		{

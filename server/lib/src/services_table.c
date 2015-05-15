@@ -168,7 +168,7 @@ static void PrintUUIDBucket (const HashBucket * const bucket_p, OutputStream * c
 }
 
 
-bool InitServicesStatusTable (void)
+bool InitJobsManager (void)
 {
 	if (!s_running_services_p)
 		{
@@ -179,7 +179,7 @@ bool InitServicesStatusTable (void)
 }
 
 
-bool DestroyServicesStatusTable (void)
+bool DestroyJobsManager (void)
 {
 	if (s_running_services_p)
 		{
@@ -213,7 +213,7 @@ HashTable *GetHashTableOfServiceStatuses (const uint32 initial_capacity, const u
 bool AddServiceJobToStatusTable (uuid_t service_key, Service *service_p)
 {
 	bool success_flag = false;
-	Service *existing_service_p = GetServiceJobFromStatusTable (service_key);
+	Service *existing_service_p = GetServiceJobFromJobsManager (service_key);
 
 	if (existing_service_p)
 		{
@@ -250,9 +250,9 @@ void ServiceJobFinished (uuid_t service_key, const OperationStatus status)
 
 
 
-Service *RemoveServiceJobFromStatusTable (const uuid_t service_key)
+Service *RemoveServiceJobFromJobsManager (const uuid_t service_key)
 {
-	Service *service_p = GetServiceJobFromStatusTable (service_key);
+	Service *service_p = GetServiceJobFromJobsManager (service_key);
 
 	if (service_p)
 		{
@@ -263,7 +263,7 @@ Service *RemoveServiceJobFromStatusTable (const uuid_t service_key)
 }
 
 
-Service *GetServiceJobFromStatusTable (const uuid_t service_key)
+Service *GetServiceJobFromJobsManager (const uuid_t service_key)
 {
 	Service *service_p = (Service *) GetFromHashTable (s_running_services_p, &service_key);
 

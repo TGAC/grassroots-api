@@ -3,7 +3,7 @@
 
 #include "string_utils.h"
 
-#include "running_services_table.h"
+#include "jobs_manager.h"
 
 #ifdef _DEBUG
 	#define SERVICE_JOB_DEBUG	(STM_LEVEL_FINE)
@@ -144,7 +144,7 @@ bool CloseServiceJob (const ServiceJob *job_p)
 
 	if (close_flag)
 		{
-			RemoveServiceJobFromStatusTable (job_p -> sj_id);
+			RemoveServiceJobFromJobsManager (job_p -> sj_id);
 		}
 
 	return close_flag;

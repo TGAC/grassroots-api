@@ -4,7 +4,7 @@
 
 #include "handler_utils.h"
 #include "streams.h"
-#include "running_services_table.h"
+#include "jobs_manager.h"
 #include "wheatis_config.h"
 #include "string_utils.h"
 #include "service_config.h"
@@ -19,7 +19,7 @@ bool InitInformationSystem ()
 		{
 			if (InitDefaultOutputStream ())
 				{
-					if (InitServicesStatusTable ())
+					if (InitJobsManager ())
 						{
 							CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
 
@@ -65,7 +65,7 @@ bool DestroyInformationSystem ()
 	
 	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
-	DestroyServicesStatusTable ();
+	DestroyJobsManager ();
 	curl_global_cleanup ();
 
 	return res_flag;
