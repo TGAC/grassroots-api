@@ -89,8 +89,12 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 
 			config_p -> wisc_root_path_s = NULL;
 
-
 			status = apr_thread_mutex_create (& (config_p -> wisc_mutex_p), APR_THREAD_MUTEX_UNNESTED, pool_p);
+
+			if (status != APR_SUCCESS)
+				{
+
+				}
 		}
 
 	return ((void *) config_p);

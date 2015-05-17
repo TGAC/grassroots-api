@@ -226,7 +226,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
 		{
-			bool success_flag = false;
 			uuid_t user_uuid;
 			const char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
 
@@ -375,7 +374,6 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 											if (params_p)
 												{
-													OperationStatus status;
 													ServiceJobSet *jobs_p = RunService (service_p, params_p, credentials_p);
 													bool keep_service_flag = false;
 
@@ -403,7 +401,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																		{
 																			keep_service_flag = true;
 
-																			if (!AddServiceJobToStatusTable (job_p -> sj_id, job_p))
+																			if (!AddServiceJobToJobsManager (job_p -> sj_id, job_p))
 																				{
 
 																				}

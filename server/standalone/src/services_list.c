@@ -71,7 +71,7 @@ bool DestroyJobsManager (void *data_p)
 }
 
 
-bool AddServiceJobToStatusTable (uuid_t job_key, ServiceJob *job_p)
+bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 {
 	bool success_flag = false;
 	UUIDJobNode *node_p = GetServiceJobNode (job_key);
