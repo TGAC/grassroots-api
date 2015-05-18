@@ -15,6 +15,8 @@ typedef struct
 {
 	const char *wisc_root_path_s;
 	apr_thread_mutex_t *wisc_mutex_p;
+	apr_pool_t *wisc_pool_p;
+	server_rec *wisc_server_p;
 } WheatISConfig;
 
 

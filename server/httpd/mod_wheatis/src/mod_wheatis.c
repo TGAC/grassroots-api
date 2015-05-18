@@ -88,12 +88,13 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 			apr_status_t status;
 
 			config_p -> wisc_root_path_s = NULL;
+			config_p -> wisc_server_p = server_p;
 
 			status = apr_thread_mutex_create (& (config_p -> wisc_mutex_p), APR_THREAD_MUTEX_UNNESTED, pool_p);
 
-			if (status != APR_SUCCESS)
+			if (status == APR_SUCCESS)
 				{
-
+					status = apr_pool_create (& (config_p -> wisc_pool_p), pool_p);
 				}
 		}
 
@@ -140,12 +141,30 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
   	{
   		if (InitInformationSystem ())
   			{
+  				ApacheOutputStream *log_p = AllocateApacheOutputStream ();
 
-  				ret = OK;
+  				if (log_p)
+  					{
+  	  				ApacheOutputStream *error_p = AllocateApacheOutputStream ();
+
+  	  				if (error_p)
+  	  					{
+  	  						/* Mark the streams for deletion when the server pool expires */
+  								apr_pool_cleanup_register (server_pool_p, log_p, DeallocateApacheOutputStream, apr_pool_cleanup_null);
+  								apr_pool_cleanup_register (server_pool_p, error_p, DeallocateApacheOutputStream, apr_pool_cleanup_null);
+
+  								SetDefaultLogStream (log_p);
+  								SetDefaultErrorStream (error_p);
+
+  								ret = OK;
+  	  					}
+  	  				else
+  	  					{
+  	  						DeallocateApacheOutputStream (log_p);
+  	  					}
+  					}
   			}
   	}
-
-
 
   return ret;
 }

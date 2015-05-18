@@ -15,9 +15,8 @@
 
 
 static apr_hash_t *s_running_jobs_p = NULL;
-static apr_pool_t *s_mem_pool_p = NULL;
 
-static WheatISConfig *s_config_p;
+static WheatISConfig *s_config_p  = NULL;
 
 
 static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
@@ -28,7 +27,14 @@ static void *APRAllocMemory (size_t l);
 
 static void *APRAllocMemory (size_t l)
 {
-	return apr_palloc (s_mem_pool_p, l);
+	void *mem_p = NULL;
+
+	if (s_config_p)
+		{
+			return apr_palloc (s_config_p -> wisc_pool_p, l);
+		}
+
+	return mem_p;
 }
 
 
@@ -48,29 +54,22 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 }
 
 
-
-/**
- * Create a HashTable where both the keys are strings and the values are services
- *
- * @param initital_capacity The initial number of HashBuckets for the HashTable.
- * @param load_percentage The percentage value for how full the HashTable should
- * be allowed to become before it is extended.
- * @return The HashTable or NULL is there was an error.
- */
-bool InitJobsManager (WheatISConfig *config_p, apr_pool_t *pool_p)
+bool InitJobsManager (WheatISConfig *config_p)
 {
-	s_config_p = config_p;
-	s_running_jobs_p = apr_hash_make_custom (pool_p, HashUUIDForAPR);
+	if (!s_running_jobs_p)
+		{
+			s_running_jobs_p = apr_hash_make_custom (s_config_p -> wisc_pool_p, HashUUIDForAPR);
+		}
 
 	return ((s_running_jobs_p != NULL) ? true : false);
 }
 
 
-bool DestroyJobsManager (apr_pool_t *pool_p)
+bool DestroyJobsManager (void *config_p)
 {
 	if (s_running_jobs_p)
 		{
-			apr_hash_index_t *index_p =  apr_hash_first (pool_p, s_running_jobs_p);
+			apr_hash_index_t *index_p =  apr_hash_first (s_config_p -> wisc_pool_p, s_running_jobs_p);
 			char *key_s = NULL;
 			apr_ssize_t keylen = 0;
 
@@ -169,6 +168,7 @@ ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 
 					if (job_p)
 						{
+							/* remove the entry from the hash table */
 							apr_hash_set (s_running_jobs_p, uuid_s, APR_HASH_KEY_STRING, NULL);
 						}
 
