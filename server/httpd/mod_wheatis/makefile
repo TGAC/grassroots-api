@@ -80,7 +80,7 @@ INCLUDES = \
 SRCS 	= \
 	src/mod_wheatis.c \
 	src/key_value_pair.c \
-	src/apache_jobs_manager.c
+	src/apr_jobs_manager.c
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
