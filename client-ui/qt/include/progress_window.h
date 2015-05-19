@@ -23,6 +23,7 @@ public:
 
 public slots:
 	void UpdateStatuses ();
+	void ViewResults ();
 	void show ();
 
 private:

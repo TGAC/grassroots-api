@@ -14,11 +14,12 @@
 #include "operation.h"
 
 
+class ProgressWindow;
 
 class ProgressWidget : public QWidget
 {
 public:
-	static ProgressWidget *CreateProgressWidgetFromJSON (const json_t *json_p);
+	static ProgressWidget *CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p);
 
 	~ProgressWidget ();
 
@@ -38,8 +39,12 @@ private:
 	QLabel *pw_description_p;
 	QPushButton *pw_results_button_p;
 	uuid_t pw_id;
+	ProgressWindow *pw_parent_p;
 
-	ProgressWidget (uuid_t id, OperationStatus status, const char *name_s, const char *description_s, const char *service_name_s);
+
+	ProgressWidget (uuid_t id, OperationStatus status, const char *name_s, const char *description_s, const char *service_name_s, ProgressWindow *parent_p);
+
+	void GetServiceResults ();
 };
 
 #endif // PROGRESS_WIDGET_H
