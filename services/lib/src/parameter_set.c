@@ -7,6 +7,7 @@
 
 #include "streams.h"
 #include "json_util.h"
+#include "json_tools.h"
 #include "tag_item.h"
 
 

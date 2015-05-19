@@ -108,7 +108,7 @@ WHEATIS_SERVICE_API OperationStatus GetServiceJobStatus (ServiceJob *job_p);
 WHEATIS_SERVICE_API const char *GetServiceJobName (const ServiceJob *job_p);
 
 
-WHEATIS_SERVICE_API bool CloseServiceJob (const ServiceJob *job_p);
+WHEATIS_SERVICE_API bool CloseServiceJob (ServiceJob *job_p);
 
 
 WHEATIS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);

@@ -122,7 +122,7 @@ bool IsServiceLive (Service *service_p)
 }
 
 
-json_t *GetServiceResults (Service *service_p, uuid_t service_id)
+json_t *GetServiceResults (Service *service_p, const uuid_t service_id)
 {
 	json_t *results_p = NULL;
 

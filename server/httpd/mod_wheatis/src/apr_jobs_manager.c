@@ -91,16 +91,16 @@ bool DestroyAPRJobsManager (void)
 				{
 					ServiceJob *job_p = NULL;
 
-					apr_hash_this (index_p, (const void **) &key_s, &keylen,(void**) &job_p);
+					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &job_p);
 					if (job_p)
 						{
 							//FreeServiceJob (job_p);
 						}
 
-					index_p = apr_hash_next(index_p);
+					index_p = apr_hash_next (index_p);
 				}
 
-			apr_hash_clear(s_config_p -> ajmc_running_jobs_p);
+			apr_hash_clear (s_config_p -> ajmc_running_jobs_p);
 			s_config_p -> ajmc_running_jobs_p = NULL;
 		}
 

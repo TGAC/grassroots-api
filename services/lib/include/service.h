@@ -273,7 +273,7 @@ WHEATIS_SERVICE_API  bool IsServiceLive (Service *service_p);
  * @param service_p The Service to get the results for
  * @return The results or NULL if they are not any.
  */
-WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, uuid_t service_id);
+WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
 
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions
