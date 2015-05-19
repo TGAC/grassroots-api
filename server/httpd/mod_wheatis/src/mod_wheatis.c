@@ -27,6 +27,7 @@
 #include "apache_output_stream.h"
 
 #include "mod_wheatis_config.h"
+#include "apr_jobs_manager.h"
 
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
@@ -153,14 +154,22 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
 
   	  				if (error_p)
   	  					{
-  	  						/* Mark the streams for deletion when the server pool expires */
-  								apr_pool_cleanup_register (server_pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
-  								apr_pool_cleanup_register (server_pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
+  	  						if (InitAPRJobsManager (server_pool_p))
+  	  							{
+											/* Mark the streams for deletion when the server pool expires */
+											apr_pool_cleanup_register (server_pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
+											apr_pool_cleanup_register (server_pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
 
-  								SetDefaultLogStream (log_p);
-  								SetDefaultErrorStream (error_p);
+											SetDefaultLogStream (log_p);
+											SetDefaultErrorStream (error_p);
 
-  								ret = OK;
+											ret = OK;
+  	  							}
+  	  						else
+  	  							{
+  	  	  						FreeOutputStream (error_p);
+  	  	  						FreeOutputStream (log_p);
+  	  							}
   	  					}
   	  				else
   	  					{
