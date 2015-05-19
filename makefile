@@ -103,6 +103,8 @@ export DIR_LSF_DRMAA_LIB=$(DIR_LSF_DRMAA)/lib
 include project.properties
 
 ifeq ($(DRMAA_ENABLED),1)
+all: drmaa
+
 drmaa: util network
 	$(MAKE) -C drmaa
 
