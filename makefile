@@ -1,8 +1,7 @@
 COPY	= cp 
 
-export DIR_WHEATIS_INSTALL = /opt/wheatis
 export DIR_ROOT = $(realpath .)
-
+export WHEATIS_VERSION = live
 
 include dependencies.properties
 
@@ -116,6 +115,11 @@ install_drmaa:
 
 endif
 
+info:
+	@echo "installing wheatis to $(DIR_WHEATIS_INSTALL)"
+	@echo "installing apache module to $(DIR_APACHE)/modules"
+	@echo "APXS=$(APXS)"	
+	@echo "WHEATIS_VERSION=$(WHEATIS_VERSION)"
 
 all: 	
 	@echo "BUILD = " $(BUILD)
@@ -165,6 +169,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C services/ensembl_rest install
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install
+	git log -1 > $(DIR_WHEATIS_INSTALL)/wheatis.version
 	
 clean: 
 	$(MAKE) -C util clean
