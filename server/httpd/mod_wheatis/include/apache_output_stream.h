@@ -12,9 +12,6 @@
 
 #include "streams.h"
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
 
 typedef struct ApacheOutputStream
 {
@@ -23,19 +20,17 @@ typedef struct ApacheOutputStream
 } ApacheOutputStream;
 
 
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
 OutputStream *AllocateApacheOutputStream (server_rec *server_p);
 
-
 void DeallocateApacheOutputStream (OutputStream *stream_p);
-
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif	/* FILE_OUTPUT_STREAM_H */
-
-
 
 
 #endif /* APACHE_OUTPUT_STREAM_H_ */

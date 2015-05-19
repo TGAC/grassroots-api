@@ -239,13 +239,17 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 
 ServiceJob *CreateServiceJobFromJSON (const json_t *json_p)
 {
+	ServiceJob *job_p = NULL;
 
+	return job_p;
 }
 
 
 bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p)
 {
+	bool success_flag = false;
 
+	return success_flag;
 }
 
 

@@ -23,6 +23,8 @@
 #include "jansson.h"
 #include "service_config.h"
 #include "system_util.h"
+#include "streams.h"
+#include "apache_output_stream.h"
 
 #include "mod_wheatis_config.h"
 
@@ -35,6 +37,8 @@ static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char
 static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p);
 
 static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *vhost_config_p);
+
+static apr_status_t CleanUpOutputStream (void *value_p);
 
 
 #ifdef _DEBUG
@@ -141,17 +145,17 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
   	{
   		if (InitInformationSystem ())
   			{
-  				ApacheOutputStream *log_p = AllocateApacheOutputStream ();
+  				OutputStream *log_p = AllocateApacheOutputStream (server_p);
 
   				if (log_p)
   					{
-  	  				ApacheOutputStream *error_p = AllocateApacheOutputStream ();
+  	  				OutputStream *error_p = AllocateApacheOutputStream (server_p);
 
   	  				if (error_p)
   	  					{
   	  						/* Mark the streams for deletion when the server pool expires */
-  								apr_pool_cleanup_register (server_pool_p, log_p, DeallocateApacheOutputStream, apr_pool_cleanup_null);
-  								apr_pool_cleanup_register (server_pool_p, error_p, DeallocateApacheOutputStream, apr_pool_cleanup_null);
+  								apr_pool_cleanup_register (server_pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
+  								apr_pool_cleanup_register (server_pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
 
   								SetDefaultLogStream (log_p);
   								SetDefaultErrorStream (error_p);
@@ -160,7 +164,7 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
   	  					}
   	  				else
   	  					{
-  	  						DeallocateApacheOutputStream (log_p);
+  	  						FreeOutputStream (log_p);
   	  					}
   					}
   			}
@@ -169,6 +173,14 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
   return ret;
 }
 
+
+static apr_status_t CleanUpOutputStream (void *value_p)
+{
+	OutputStream *stream_p = (OutputStream *) value_p;
+	FreeOutputStream (stream_p);
+
+	return APR_SUCCESS;
+}
 
 
 /* Handler for the "WheatISRoot" directive */

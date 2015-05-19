@@ -8,6 +8,7 @@
 #include "apr_hash.h"
 
 #include "jobs_manager.h"
+#include "apr_jobs_manager.h"
 
 #include "service_job.h"
 #include "mod_wheatis_config.h"
@@ -45,7 +46,8 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 
 	if (uuid_s)
 		{
-			res = apr_hashfunc_default (uuid_s, APR_HASH_KEY_STRING);
+			apr_ssize_t len = APR_HASH_KEY_STRING;
+			res = apr_hashfunc_default (uuid_s, &len);
 
 			FreeCopiedString (uuid_s);
 		}
@@ -54,7 +56,7 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 }
 
 
-bool InitJobsManager (WheatISConfig *config_p)
+bool InitAPRJobsManager (WheatISConfig *config_p)
 {
 	if (!s_running_jobs_p)
 		{
@@ -65,7 +67,7 @@ bool InitJobsManager (WheatISConfig *config_p)
 }
 
 
-bool DestroyJobsManager (void *config_p)
+bool DestroyAPRJobsManager (void)
 {
 	if (s_running_jobs_p)
 		{

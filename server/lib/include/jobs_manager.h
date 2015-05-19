@@ -19,19 +19,6 @@
 #endif
 
 
-/**
- * Create a HashTable where both the keys are strings and the values are services
- *
- * @param initital_capacity The initial number of HashBuckets for the HashTable.
- * @param load_percentage The percentage value for how full the HashTable should
- * be allowed to become before it is extended.
- * @return The HashTable or NULL is there was an error.
- */
-bool InitJobsManager (void *data_p);
-
-
-bool DestroyJobsManager (void *data_p);
-
 
 bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p);
 

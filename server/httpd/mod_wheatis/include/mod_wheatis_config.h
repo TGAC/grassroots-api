@@ -8,6 +8,7 @@
 #ifndef MOD_WHEATIS_CONFIG_H_
 #define MOD_WHEATIS_CONFIG_H_
 
+#include "httpd.h"
 #include "apr_thread_mutex.h"
 
 

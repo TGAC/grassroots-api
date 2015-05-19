@@ -1,8 +1,10 @@
 #include "httpd.h"
 #include "http_log.h"
 
+#include "apr_strings.h"
 
 #include "apache_output_stream.h"
+#include "memory_allocations.h"
 
 
 static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, const char *message_s, va_list args);
@@ -33,7 +35,8 @@ OutputStream *AllocateApacheOutputStream (server_rec *server_p)
 
 void DeallocateApacheOutputStream (OutputStream *stream_p)
 {
-	FreeMemory (stream_p);
+	ApacheOutputStream *apache_stream_p = (ApacheOutputStream *) stream_p;
+	FreeMemory (apache_stream_p);
 }
 
 
@@ -43,18 +46,15 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 	ApacheOutputStream *apache_stream_p = (ApacheOutputStream *) stream_p;
 	char *value_s = apr_pvsprintf (apache_stream_p -> aos_server_p -> process -> pool, message_s, args);
 	int ap_level;
-	bool error_flag = false;
 
 	switch (level)
 		{
 			case STM_LEVEL_SEVERE:
 				ap_level = APLOG_CRIT;
-				error_flag = true;
 				break;
 
 			case STM_LEVEL_WARNING:
 				ap_level = APLOG_WARNING;
-				error_flag = true;
 				break;
 
 			case STM_LEVEL_INFO:
@@ -73,15 +73,9 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 				break;
 		}
 
+	ap_log_error (APLOG_MARK, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "%s", value_s);
 
-	if (error_flag)
-		{
-			ap_log_error (APLOG_MARK, ap_level, 0, apache_stream_p -> aos_server_p, value_s);
-		}
-	else
-		{
-			ap_log_data (APLOG_MARK, ap_level, 0, apache_stream_p -> aos_server_p, value_s);
-		}
+	return 0;
 }
 
 
