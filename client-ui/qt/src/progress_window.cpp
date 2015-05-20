@@ -239,21 +239,40 @@ void ProgressWindow :: ViewResults ()
 														}		/* if (GetStatusFromJSON (service_json_p, &status)) */
 
 
-															json_t *uuid_json_p = json_object_get (service_json_p, SERVICE_UUID_S);
+													json_t *uuid_json_p = json_object_get (service_json_p, SERVICE_UUID_S);
 
-															if (uuid_json_p)
+													if (uuid_json_p)
+														{
+															if (json_is_string (uuid_json_p))
 																{
-																	if (json_is_string (uuid_json_p))
+																	const char *uuid_s = json_string_value (uuid_json_p);
+																	uuid_t uuid;
+
+																	if (uuid_parse (uuid_s, uuid) == 0)
 																		{
-																			const char *uuid_s = json_string_value (uuid_json_p);
-																			uuid_t uuid;
+																			size_t j = i;
+																			ProgressWidget *progress_widget_p = 0;
 
-																			if (uuid_parse (uuid_s, uuid) == 0)
+																			while ((progress_widget_p == 0) && (j < num_services))
 																				{
-																					size_t j = i;
-																					ProgressWidget *progress_widget_p = 0;
+																					ProgressWidget *widget_p = pw_widgets.at (j);
+																					const uuid_t *id_p = widget_p -> GetUUID ();
 
-																					while ((progress_widget_p == 0) && (j < num_services))
+																					if (uuid_compare (*id_p, uuid) == 0)
+																						{
+																							progress_widget_p = widget_p;
+																						}
+																					else
+																						{
+																							++ j;
+																						}
+																				}
+
+																			if (!progress_widget_p)
+																				{
+																					j = 0;
+
+																					while ((progress_widget_p == 0) && (j < i))
 																						{
 																							ProgressWidget *widget_p = pw_widgets.at (j);
 																							const uuid_t *id_p = widget_p -> GetUUID ();
@@ -267,44 +286,27 @@ void ProgressWindow :: ViewResults ()
 																									++ j;
 																								}
 																						}
+																				}		/* if (!progress_widget_p) */
 
-																					if (!progress_widget_p)
+																			if (progress_widget_p)
+																				{
+																					OperationStatus status;
+
+																					if (GetStatusFromJSON (service_json_p, &status))
 																						{
-																							j = 0;
-
-																							while ((progress_widget_p == 0) && (j < i))
-																								{
-																									ProgressWidget *widget_p = pw_widgets.at (j);
-																									const uuid_t *id_p = widget_p -> GetUUID ();
-
-																									if (uuid_compare (*id_p, uuid) == 0)
-																										{
-																											progress_widget_p = widget_p;
-																										}
-																									else
-																										{
-																											++ j;
-																										}
-																								}
+																							progress_widget_p -> SetStatus (status);
 																						}
 
-																					if (progress_widget_p)
-																						{
-																							OperationStatus status;
+																				}		/* if (progress_widget_p) */
 
-																							if (GetStatusFromJSON (service_json_p, &status))
-																								{
-																									progress_widget_p -> SetStatus (status);
-																								}
+																		}		/* if (uuid_parse (uuid_s, uuid) == 0) */
 
-																						}		/* if (progress_widget_p) */
-																				}
-																		}
+																}		/* if (json_is_string (uuid_json_p)) */
 
-																}		/* if (uuid_json_p) */
-														}		/* if (status_json_p) */
+														}		/* if (uuid_json_p) */
 
-												}		/* for (size_t i = 0; i < num_services; ++ i) */
+												}		/* if (json_array_foreach (services_json_p, i, service_json_p)) */
+
 
 										}		/* if (json_is_array (services_json_p)) */
 

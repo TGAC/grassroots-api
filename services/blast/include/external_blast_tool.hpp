@@ -24,6 +24,8 @@ public:
 
 	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s);
 
+	virtual bool SetOutputFilename (const char *filename_s);
+
 protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_output_p;

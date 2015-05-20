@@ -43,7 +43,7 @@ CFLAGS 	+=  -Wc,-Wall  -Wc,-fpic
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -Wc,-O3 -Wc,-s
  	LDFLAGS += Wl,-s
-#	CFLAGS 	+= -g
+else
 	CFLAGS 	+= -Wc,-g -Wc,-pg -Wc,-Wall -Wc,-O0
 	LDFLAGS += -Wl,pg
 	CPPFLAGS += -Wc,-D_DEBUG

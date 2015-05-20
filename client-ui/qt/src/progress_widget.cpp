@@ -4,6 +4,8 @@
 #include "progress_widget.h"
 #include "json_util.h"
 #include "json_tools.h"
+#include "memory_allocations.h"
+
 
 ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p)
 {
@@ -74,7 +76,6 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 	layout_p -> addWidget (pw_progress_p);
 	*/
 	pw_status_p = new QLabel;
-	SetStatus (status);
 	layout_p -> addWidget (pw_status_p);
 
 
@@ -84,6 +85,9 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 	layout_p -> addWidget (pw_results_button_p);
 
 	pw_parent_p = parent_p;
+
+
+	SetStatus (status);
 
 	setLayout (layout_p);
 }
@@ -102,122 +106,13 @@ const uuid_t *ProgressWidget ::	GetUUID () const
 
 void ProgressWidget ::	GetServiceResults ()
 {
-	json_t *req_p = 0;
-	const uuid_t **ids_pp = (const uuid_t **) AllocMemoryArray (1, sizeof (const uuid_t *));
 
-	if (ids_pp)
-		{
-			*ids_pp = GetUUID ();
-
-			req_p = GetServicesStatusRequest (ids_pp, 1, pw_data_p -> qcd_base_data.cd_connection_p);
-
-			if (req_p)
-				{
-					json_t *statuses_json_p = MakeRemoteJsonCall (req_p, pw_data_p -> qcd_base_data.cd_connection_p);
-
-					if (statuses_json_p)
-						{
-							json_t *services_json_p = json_object_get (statuses_json_p, SERVICES_NAME_S);
-
-							if (services_json_p)
-								{
-									if (json_is_array (services_json_p))
-										{
-											const size_t num_services = json_array_size (services_json_p);
-											size_t i;
-											json_t *service_json_p;
-
-											json_array_foreach (services_json_p, i, service_json_p)
-												{
-													json_t *uuid_json_p = json_object_get (service_json_p, SERVICE_UUID_S);
-
-													if (uuid_json_p)
-														{
-															if (json_is_string (uuid_json_p))
-																{
-																	const char *uuid_s = json_string_value (uuid_json_p);
-																	uuid_t uuid;
-
-																	if (uuid_parse (uuid_s, uuid) == 0)
-																		{
-																			size_t j = i;
-																			ProgressWidget *progress_widget_p = 0;
-
-																			while ((progress_widget_p == 0) && (j < num_services))
-																				{
-																					ProgressWidget *widget_p = pw_widgets.at (j);
-																					const uuid_t *id_p = widget_p -> GetUUID ();
-
-																					if (uuid_compare (*id_p, uuid) == 0)
-																						{
-																							progress_widget_p = widget_p;
-																						}
-																					else
-																						{
-																							++ j;
-																						}
-																				}
-
-																			if (!progress_widget_p)
-																				{
-																					j = 0;
-
-																					while ((progress_widget_p == 0) && (j < i))
-																						{
-																							ProgressWidget *widget_p = pw_widgets.at (j);
-																							const uuid_t *id_p = widget_p -> GetUUID ();
-
-																							if (uuid_compare (*id_p, uuid) == 0)
-																								{
-																									progress_widget_p = widget_p;
-																								}
-																							else
-																								{
-																									++ j;
-																								}
-																						}
-																				}
-
-																			if (progress_widget_p)
-																				{
-																					OperationStatus status;
-
-																					if (GetStatusFromJSON (service_json_p, &status))
-																						{
-																							progress_widget_p -> SetStatus (status);
-																						}
-
-																				}		/* if (progress_widget_p) */
-																		}
-																}
-
-														}		/* if (uuid_json_p) */
-
-
-
-												}		/* for (size_t i = 0; i < num_services; ++ i) */
-
-										}		/* if (json_is_array (services_json_p)) */
-
-
-								}		/* if (services_json_p) */
-
-						}		/* if (statuses_json_p) */
-
-				}		/* if (req_p) */
-
-			FreeMemory (ids_pp);
-		}		/* if (ids_pp) */
 }
 
 
 void ProgressWidget :: ShowResults (bool checked_flag)
 {
-	uint32 i = mw_client_data_p -> qcd_results_p ->  AddAllResultsPagesFromJSON (services_json_p);
 
-	UIUtils :: CentreWidget (this, mw_client_data_p -> qcd_results_p);
-
-	mw_client_data_p -> qcd_results_p -> show ();
 }
 
 

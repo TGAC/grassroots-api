@@ -17,7 +17,8 @@
 
 #include "uuid/uuid.h"
 
-#define UUID_BUFFER_SIZE (37)
+#define UUID_STRING_BUFFER_SIZE (37)
+#define UUID_RAW_SIZE (16)
 
 #ifdef __cplusplus
 	extern "C" {
@@ -186,9 +187,6 @@ WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
 
 WHEATIS_UTIL_API char *GetUUIDAsString (const uuid_t id);
-
-
-WHEATIS_UTIL_API char *GetUUIDAsStringCustom (const uuid_t id, void *(*alloc_fn) (size_t size));
 
 
 WHEATIS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);

@@ -14,6 +14,12 @@
 #include "mod_wheatis_config.h"
 #include "string_utils.h"
 
+#ifdef _DEBUG
+	#define APR_JOBS_MANAGER_DEBUG	(STM_LEVEL_FINEST)
+#else
+	#define APR_JOBS_MANAGER_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 /**************************/
 
 typedef struct APRJobsManagerConfig
@@ -34,6 +40,9 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
 
 static void *APRAllocMemory (size_t l);
 
+static void DebugJobsManager (apr_hash_t *table_p);
+
+static char *GetUUIDAsStringCustom (const uuid_t id, void *(*alloc_fn) (size_t size));
 
 /**************************/
 
@@ -112,56 +121,78 @@ bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 {
 	bool success_flag = false;
 
-	const char *uuid_s = GetUUIDAsStringCustom (job_key, APRAllocMemory);
+	apr_status_t status = apr_thread_mutex_lock (s_config_p -> ajmc_mutex_p);
 
-	if (uuid_s)
+	if (status == APR_SUCCESS)
 		{
-			apr_status_t status = apr_thread_mutex_lock (s_config_p -> ajmc_mutex_p);
+			apr_hash_set (s_config_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE, job_p);
 
-			if (status == APR_SUCCESS)
+			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
 				{
-					apr_hash_set (s_config_p -> ajmc_running_jobs_p, uuid_s, APR_HASH_KEY_STRING, job_p);
+					char *uuid_s = GetUUIDAsString (job_key);
 
-					status = apr_thread_mutex_unlock (s_config_p -> ajmc_mutex_p);
-					success_flag = true;
-
-					if (status != APR_SUCCESS)
+					if (uuid_s)
 						{
+							PrintLog (STM_LEVEL_FINE, "Added %s to jobs manager\n", uuid_s);
+							FreeCopiedString (uuid_s);
+						}
+				}
+			#endif
 
-						}		/* if (status != APR_SUCCESS) */
+			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+			DebugJobsManager (s_config_p -> ajmc_running_jobs_p);
+			#endif
 
-				}		/* if (status == APR_SUCCESS) */
 
-		}		/* if (uuid_s) */
+			status = apr_thread_mutex_unlock (s_config_p -> ajmc_mutex_p);
+			success_flag = true;
+
+			if (status != APR_SUCCESS)
+				{
+
+				}		/* if (status != APR_SUCCESS) */
+
+		}		/* if (status == APR_SUCCESS) */
 
 	return success_flag;
 }
 
 
+
 ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 {
 	ServiceJob *job_p = NULL;
-	char *uuid_s = GetUUIDAsString (job_key);
+	apr_status_t status = apr_thread_mutex_lock (s_config_p -> ajmc_mutex_p);
 
-	if (uuid_s)
+	if (status == APR_SUCCESS)
 		{
-			apr_status_t status = apr_thread_mutex_lock (s_config_p -> ajmc_mutex_p);
+			job_p = (ServiceJob *) apr_hash_get (s_config_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE);
 
-			if (status == APR_SUCCESS)
+			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
 				{
-					job_p = (ServiceJob *) apr_hash_get (s_config_p -> ajmc_running_jobs_p, uuid_s, APR_HASH_KEY_STRING);
+					char *uuid_s = GetUUIDAsString (job_key);
 
-					status = apr_thread_mutex_unlock (s_config_p -> ajmc_mutex_p);
-
-					if (status != APR_SUCCESS)
+					if (uuid_s)
 						{
+							PrintLog (STM_LEVEL_FINE, "Getting %s from jobs manager gave %x\n", uuid_s, job_p);
+							FreeCopiedString (uuid_s);
+						}
+				}
+			#endif
 
-						}		/* if (status != APR_SUCCESS) */
+			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+			DebugJobsManager (s_config_p -> ajmc_running_jobs_p);
+			#endif
 
-				}		/* if (status == APR_SUCCESS) */
+			status = apr_thread_mutex_unlock (s_config_p -> ajmc_mutex_p);
 
-			FreeCopiedString (uuid_s);
-		}		/* if (uuid_s) */
+			if (status != APR_SUCCESS)
+				{
+
+				}		/* if (status != APR_SUCCESS) */
+
+		}		/* if (status == APR_SUCCESS) */
+
 
 	return job_p;
 }
@@ -170,33 +201,43 @@ ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 {
 	ServiceJob *job_p = NULL;
-	char *uuid_s = GetUUIDAsString (job_key);
+	apr_status_t status = apr_thread_mutex_lock (s_config_p -> ajmc_mutex_p);
 
-	if (uuid_s)
+	if (status == APR_SUCCESS)
 		{
-			apr_status_t status = apr_thread_mutex_lock (s_config_p -> ajmc_mutex_p);
+			job_p = (ServiceJob *) apr_hash_get (s_config_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE);
 
-			if (status == APR_SUCCESS)
+			if (job_p)
 				{
-					job_p = (ServiceJob *) apr_hash_get (s_config_p -> ajmc_running_jobs_p, uuid_s, APR_HASH_KEY_STRING);
+					/* remove the entry from the hash table */
+					apr_hash_set (s_config_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE, NULL);
+				}
 
-					if (job_p)
+			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
+				{
+					char *uuid_s = GetUUIDAsString (job_key);
+
+					if (uuid_s)
 						{
-							/* remove the entry from the hash table */
-							apr_hash_set (s_config_p -> ajmc_running_jobs_p, uuid_s, APR_HASH_KEY_STRING, NULL);
+							PrintLog (STM_LEVEL_FINE, "removed %s to jobs manager\n", uuid_s);
+							FreeCopiedString (uuid_s);
 						}
+				}
+			#endif
 
-					status = apr_thread_mutex_unlock (s_config_p -> ajmc_mutex_p);
+			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+			DebugJobsManager (s_config_p -> ajmc_running_jobs_p);
+			#endif
 
-					if (status != APR_SUCCESS)
-						{
+			status = apr_thread_mutex_unlock (s_config_p -> ajmc_mutex_p);
 
-						}		/* if (status != APR_SUCCESS) */
+			if (status != APR_SUCCESS)
+				{
 
-				}		/* if (status == APR_SUCCESS) */
+				}		/* if (status != APR_SUCCESS) */
 
-			FreeCopiedString (uuid_s);
-		}		/* if (uuid_s) */
+		}		/* if (status == APR_SUCCESS) */
+
 
 	return job_p;
 }
@@ -209,6 +250,19 @@ void ServiceJobFinished (uuid_t job_key)
 	if (job_p)
 		{
 		}
+}
+
+
+static char *GetUUIDAsStringCustom (const uuid_t id, void *(*alloc_fn) (size_t size))
+{
+	char *uuid_s = (char *) alloc_fn (UUID_STRING_BUFFER_SIZE * sizeof (char));
+
+	if (uuid_s)
+		{
+			ConvertUUIDToString (id, uuid_s);
+		}
+
+	return uuid_s;
 }
 
 
@@ -245,4 +299,19 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 static apr_status_t CleanUpAPRJobsManagerConfig (void *value_p)
 {
 	return (DestroyAPRJobsManager () ? APR_SUCCESS : APR_EGENERAL);
+}
+
+
+static void DebugJobsManager (apr_hash_t *table_p)
+{
+	apr_hash_index_t *index_p;
+	uint32 size = apr_hash_count (table_p);
+
+	PrintLog (STM_LEVEL_FINE, "Jobs manager size %lu\n", size);
+
+	for (index_p = apr_hash_first (s_config_p -> ajmc_pool_p, table_p); index_p; index_p = apr_hash_next (index_p))
+		{
+			const char *key_s = (const char *) apr_hash_this_key (index_p);
+			PrintLog (STM_LEVEL_FINE, "key %s\n", key_s);
+		}
 }

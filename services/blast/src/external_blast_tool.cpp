@@ -120,14 +120,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 
 					if (ebt_output_p)
 						{
-							if (AddArg ("-out"))
-								{
-									if (AddArg (ebt_output_p -> GetFilename ()))
-										{
-											success_flag = true;
-										}
-								}
-
+							success_flag = SetOutputFilename (ebt_output_p -> GetFilename ());
 
 							ebt_output_p -> Close ();
 						}
@@ -343,6 +336,22 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
+				}
+		}
+
+	return success_flag;
+}
+
+
+bool ExternalBlastTool :: SetOutputFilename (const char *filename_s)
+{
+	bool success_flag = false;
+
+	if (AddArg ("-out"))
+		{
+			if (AddArg (filename_s))
+				{
+					success_flag = true;
 				}
 		}
 

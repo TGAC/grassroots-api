@@ -76,3 +76,26 @@ OperationStatus DrmaaBlastTool :: GetStatus ()
 	return bt_status;
 }
 
+
+
+bool DrmaaBlastTool :: SetOutputFilename (const char *filename_s)
+{
+	bool success_flag = false;
+
+	if (ExternalBlastTool :: SetOutputFilename (filename_s))
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					if (AppendStringsToByteBuffer (buffer_p, ":", filename_s, ".out", NULL))
+						{
+							success_flag = SetDrmaaToolOutputFilename (dbt_drmaa_tool_p, GetByteBufferData (buffer_p));
+						}
+
+					FreeByteBuffer (buffer_p);
+				}
+		}
+
+	return success_flag;
+}
