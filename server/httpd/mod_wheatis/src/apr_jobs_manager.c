@@ -133,7 +133,7 @@ bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 
 					if (uuid_s)
 						{
-							PrintLog (STM_LEVEL_FINE, "Added %s to jobs manager\n", uuid_s);
+							PrintLog (STM_LEVEL_FINE, "Added %s to jobs manager", uuid_s);
 							FreeCopiedString (uuid_s);
 						}
 				}
@@ -174,7 +174,7 @@ ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 
 					if (uuid_s)
 						{
-							PrintLog (STM_LEVEL_FINE, "Getting %s from jobs manager gave %x\n", uuid_s, job_p);
+							PrintLog (STM_LEVEL_FINE, "Getting %s from jobs manager gave %x", uuid_s, job_p);
 							FreeCopiedString (uuid_s);
 						}
 				}
@@ -219,7 +219,7 @@ ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 
 					if (uuid_s)
 						{
-							PrintLog (STM_LEVEL_FINE, "removed %s to jobs manager\n", uuid_s);
+							PrintLog (STM_LEVEL_FINE, "Removed %s from jobs manager", uuid_s);
 							FreeCopiedString (uuid_s);
 						}
 				}
@@ -307,11 +307,41 @@ static void DebugJobsManager (apr_hash_t *table_p)
 	apr_hash_index_t *index_p;
 	uint32 size = apr_hash_count (table_p);
 
-	PrintLog (STM_LEVEL_FINE, "Jobs manager size %lu\n", size);
+	PrintLog (STM_LEVEL_FINE, "Jobs manager %x size %lu", table_p, size);
 
 	for (index_p = apr_hash_first (s_config_p -> ajmc_pool_p, table_p); index_p; index_p = apr_hash_next (index_p))
 		{
-			//const char *key_s = (const char *) apr_hash_this_key (index_p);
-			//PrintLog (STM_LEVEL_FINE, "key %s\n", key_s);
+			const uuid_t *key_p = NULL;
+			ServiceJob *job_p = NULL;
+			apr_ssize_t key_length;
+
+			apr_hash_this (index_p, (const void **) &key_p, &key_length, (void **) &job_p);
+
+			if (key_p)
+				{
+					char *uuid_s = GetUUIDAsString (*key_p);
+
+					if (uuid_s)
+						{
+							PrintLog (STM_LEVEL_FINE, "key %s", uuid_s);
+							FreeCopiedString (uuid_s);
+						}
+				}
+
+			if (job_p)
+				{
+					const char *service_name_s = NULL;
+
+					if (job_p -> sj_service_p)
+						{
+							service_name_s = GetServiceName (job_p -> sj_service_p);
+						}
+
+					PrintLog (STM_LEVEL_FINE, "job name %s service %s", job_p -> sj_name_s, service_name_s);
+				}
+			else
+				{
+					PrintLog (STM_LEVEL_FINE, "No job\n");
+				}
 		}
 }
