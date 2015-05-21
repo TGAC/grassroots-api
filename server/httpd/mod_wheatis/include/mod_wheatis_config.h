@@ -9,13 +9,16 @@
 #define MOD_WHEATIS_CONFIG_H_
 
 #include "httpd.h"
-#include "apr_thread_mutex.h"
+#include "apr_global_mutex.h"
 
 
 typedef struct
 {
 	const char *wisc_root_path_s;
 	server_rec *wisc_server_p;
+
+	/** Our cross-thread/cross-process mutex */
+	apr_global_mutex_t *wisc_mutex_p;
 } WheatISConfig;
 
 

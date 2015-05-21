@@ -32,6 +32,7 @@
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
+static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p);
 static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s);
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
@@ -78,8 +79,11 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 /* register_hooks: Adds a hook to the httpd process */
 static void RegisterHooks (apr_pool_t *pool_p) 
 {
-  ap_hook_post_config (WheatISPostConfig, NULL, NULL, APR_HOOK_REALLY_FIRST);
-	ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_FIRST);
+  ap_hook_post_config (WheatISPostConfig, NULL, NULL, APR_HOOK_MIDDLE);
+
+  ap_hook_child_init (WheatISChildInit, NULL, NULL, APR_HOOK_MIDDLE);
+
+	ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
 
@@ -92,6 +96,7 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 		{
 			config_p -> wisc_root_path_s = NULL;
 			config_p -> wisc_server_p = server_p;
+			config_p -> wisc_mutex_p = NULL;
 		}
 
 	return ((void *) config_p);
@@ -105,6 +110,70 @@ static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *v
 	return base_config_p;
 }
 
+
+
+static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
+{
+	WheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
+
+	/* Now that we are in a child process, we have to reconnect
+	 * to the global mutex and the shared segment. We also
+	 * have to find out the base address of the segment, in case
+	 * it moved to a new address. */
+
+//    rv = apr_global_mutex_child_init(&scfg->mutex,
+//                                     scfg->shmcounterlockfile, p);
+//    if (rv != APR_SUCCESS) {
+//        ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Failed to attach to "
+//                     "mod_shm_counter global mutex file '%s'",
+//                     scfg->shmcounterlockfile);
+//        return;
+//    }
+
+    /* We only need to attach to the segment if we didn't inherit
+     * it from the parent process (ie. Windows) */
+//    if (!scfg->counters_shm) {
+//        rv = apr_shm_attach(&scfg->counters_shm, scfg->shmcounterfile, p);
+//        if (rv != APR_SUCCESS) {
+//            ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Failed to attach to "
+//                         "mod_shm_counter shared memory file '%s'",
+//                         scfg->shmcounterfile ?
+//                             /* Just in case the file was NULL. */
+//                             scfg->shmcounterfile : "NULL");
+//            return;
+//        }
+//    }
+//
+//    scfg->counters = apr_shm_baseaddr_get(scfg->counters_shm);
+//
+
+	if (InitInformationSystem ())
+		{
+			OutputStream *log_p = AllocateApacheOutputStream (server_p);
+
+			if (log_p)
+				{
+					OutputStream *error_p = AllocateApacheOutputStream (server_p);
+
+					if (error_p)
+						{
+							/* Mark the streams for deletion when the server pool expires */
+							apr_pool_t *pool_p = server_p -> process -> pool;
+
+							apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
+							apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
+
+							SetDefaultLogStream (log_p);
+							SetDefaultErrorStream (error_p);
+						}
+					else
+						{
+							FreeOutputStream (log_p);
+						}
+				}
+
+		}		/* If (InitInformationSystem ()) */
+}
 
 
 static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_t *temp_p, server_rec *server_p)
@@ -135,39 +204,15 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
   	}
   else
   	{
-  		if (InitInformationSystem ())
-  			{
-  				OutputStream *log_p = AllocateApacheOutputStream (server_p);
+  		/*
+  		 * We are now in the parent process before any child processes have been started, so this is
+  		 * where any global shared memory should be allocated
+       */
 
-  				if (log_p)
-  					{
-  	  				OutputStream *error_p = AllocateApacheOutputStream (server_p);
-
-  	  				if (error_p)
-  	  					{
-  	  						if (InitAPRJobsManager (server_pool_p))
-  	  							{
-											/* Mark the streams for deletion when the server pool expires */
-											apr_pool_cleanup_register (server_pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
-											apr_pool_cleanup_register (server_pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
-
-											SetDefaultLogStream (log_p);
-											SetDefaultErrorStream (error_p);
-
-											ret = OK;
-  	  							}
-  	  						else
-  	  							{
-  	  	  						FreeOutputStream (error_p);
-  	  	  						FreeOutputStream (log_p);
-  	  							}
-  	  					}
-  	  				else
-  	  					{
-  	  						FreeOutputStream (log_p);
-  	  					}
-  					}
-  			}
+			if (InitAPRJobsManager (server_pool_p))
+				{
+					ret = OK;
+				}
   	}
 
   return ret;
