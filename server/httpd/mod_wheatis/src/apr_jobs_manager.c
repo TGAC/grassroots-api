@@ -311,7 +311,7 @@ static void DebugJobsManager (apr_hash_t *table_p)
 
 	for (index_p = apr_hash_first (s_config_p -> ajmc_pool_p, table_p); index_p; index_p = apr_hash_next (index_p))
 		{
-			const char *key_s = (const char *) apr_hash_this_key (index_p);
-			PrintLog (STM_LEVEL_FINE, "key %s\n", key_s);
+			//const char *key_s = (const char *) apr_hash_this_key (index_p);
+			//PrintLog (STM_LEVEL_FINE, "key %s\n", key_s);
 		}
 }

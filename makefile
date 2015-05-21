@@ -1,7 +1,7 @@
 COPY	= cp 
 
 export DIR_ROOT = $(realpath .)
-export WHEATIS_VERSION = live
+export WHEATIS_VERSION = test
 
 include dependencies.properties
 
