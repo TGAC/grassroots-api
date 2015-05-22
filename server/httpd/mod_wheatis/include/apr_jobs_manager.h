@@ -10,13 +10,14 @@
 
 #include "httpd.h"
 
+#include "mod_wheatis_config.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-bool InitAPRJobsManager (apr_pool_t *server_pool_p);
+APRJobsManager *InitAPRJobsManager (apr_pool_t *server_pool_p);
 
 
 #ifdef __cplusplus

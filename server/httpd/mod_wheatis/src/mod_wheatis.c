@@ -90,13 +90,13 @@ static void RegisterHooks (apr_pool_t *pool_p)
 
 static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 {
-	WheatISConfig *config_p = apr_palloc (pool_p, sizeof (WheatISConfig));
+	ModWheatISConfig *config_p = apr_palloc (pool_p, sizeof (ModWheatISConfig));
 
 	if (config_p)
 		{
 			config_p -> wisc_root_path_s = NULL;
 			config_p -> wisc_server_p = server_p;
-			config_p -> wisc_mutex_p = NULL;
+			config_p -> wisc_jobs_manager_p = NULL;
 		}
 
 	return ((void *) config_p);
@@ -114,7 +114,7 @@ static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *v
 
 static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 {
-	WheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
+	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
 
 	/* Now that we are in a child process, we have to reconnect
 	 * to the global mutex and the shared segment. We also
@@ -176,7 +176,7 @@ static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 }
 
 
-static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_t *temp_p, server_rec *server_p)
+static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_pool_t *temp_p, server_rec *server_p)
 {
   void *data_p = NULL;
   const char *userdata_key_s = "wheatis_post_config";
@@ -208,8 +208,10 @@ static int WheatISPostConfig (apr_pool_t *config_p, apr_pool_t *log_p, apr_pool_
   		 * We are now in the parent process before any child processes have been started, so this is
   		 * where any global shared memory should be allocated
        */
+  		ModWheatISConfig *config_p = (ModWheatISConfig *) ap_get_module_config (server_p -> module_config, &wheatis_module);
+  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (config_pool_p);
 
-			if (InitAPRJobsManager (server_pool_p))
+			if (config_p -> wisc_jobs_manager_p)
 				{
 					ret = OK;
 				}
@@ -258,7 +260,7 @@ static int WheatISHandler (request_rec *req_p)
 						if (json_req_p)
 							{
 								int socket_fd = -1;
-						    WheatISConfig *config_p = ap_get_module_config (req_p -> server -> module_config, &wheatis_module);
+						    ModWheatISConfig *config_p = ap_get_module_config (req_p -> server -> module_config, &wheatis_module);
 								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
 
 								if (res_p)
