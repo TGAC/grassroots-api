@@ -11,9 +11,13 @@
 #include "httpd.h"
 #include "apr_global_mutex.h"
 
+#include "jobs_manager.h"
+
 
 typedef struct APRJobsManager
 {
+	JobsManager ajmc_base_manager;
+
 	apr_hash_t *ajmc_running_jobs_p;
 
 	/** Our cross-thread/cross-process mutex */

@@ -14,30 +14,42 @@
 
 #include "uuid/uuid.h"
 
+typedef struct JobsManager
+{
+	bool (*jm_add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
+
+
+	ServiceJob *(*jm_get_job_fn)  (JobsManager *manager_p, const uuid_t key);
+
+
+	ServiceJob *(*jm_remove_job_fn) (JobsManager *manager_p, const uuid_t key);
+
+} JobsManager;
+
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
 
-
-bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p);
-
-
-ServiceJob *GetServiceJobFromJobsManager (const uuid_t key);
-
-
-ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t key);
+void InitJobsManager (JobsManager *manager_p,
+                      bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p),
+											ServiceJob *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key),
+											ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key));
 
 
+bool AddServiceJobToJobsManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
+
+
+ServiceJob *GetServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
+
+
+ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
 
 /**
  *
  */
-void ServiceJobFinished (uuid_t job_key);
-
-
-
-
+void ServiceJobFinished (JobsManager *manager_p, uuid_t job_key);
 
 
 #ifdef __cplusplus

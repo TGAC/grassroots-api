@@ -23,8 +23,6 @@
 /**************************/
 
 
-static APRJobsManager *s_manager_p = NULL;
-
 static const char s_mutex_filename_s [] = "logs/wheatis_lock";
 
 /**************************/
@@ -33,61 +31,65 @@ static apr_status_t CleanUpAPRJobsManagerConfig (void *value_p);
 
 static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
 
-static void *APRAllocMemory (size_t l);
+static void DebugJobsManager (APRJobsManager *manager_p);
 
-static void DebugJobsManager (apr_hash_t *table_p);
+static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, ServiceJob *job_p);
 
-static char *GetUUIDAsStringCustom (const uuid_t id, void *(*alloc_fn) (size_t size));
+static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key);
+
+static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key);
+
 
 /**************************/
 
 APRJobsManager *InitAPRJobsManager (apr_pool_t *pool_p)
 {
-	if (!s_manager_p)
+	APRJobsManager manager_p = (APRJobsManager *) AllocMemory (sizeof (APRJobsManager));
+
+	if (manager_p)
 		{
-			s_manager_p = (APRJobsManager *) AllocMemory (sizeof (APRJobsManager));
+			bool success_flag = false;
 
-			if (s_manager_p)
+			InitJobsManager (& (manager_p -> ajmc_base_manager), AddServiceJobToAPRJobsManager, GetServiceJobFromAprJobsManager, RemoveServiceJobFromAprJobsManager);
+
+			apr_status_t status = apr_global_mutex_create (& (manager_p -> ajmc_mutex_p), s_mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
+
+			if (status == APR_SUCCESS)
 				{
-					bool success_flag = false;
+					manager_p -> ajmc_running_jobs_p = apr_hash_make_custom (pool_p, HashUUIDForAPR);
 
-					apr_status_t status = apr_global_mutex_create (& (s_manager_p -> ajmc_mutex_p), APR_THREAD_MUTEX_UNNESTED, pool_p);
-
-					if (status == APR_SUCCESS)
+					if (manager_p -> ajmc_running_jobs_p)
 						{
-							s_manager_p -> ajmc_running_jobs_p = apr_hash_make_custom (pool_p, HashUUIDForAPR);
+							manager_p -> ajmc_pool_p = pool_p;
 
-							if (s_manager_p -> ajmc_running_jobs_p)
-								{
-									s_manager_p -> ajmc_pool_p = pool_p;
+							apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRJobsManagerConfig, apr_pool_cleanup_null);
 
-									apr_pool_cleanup_register (pool_p, s_manager_p, CleanUpAPRJobsManagerConfig, apr_pool_cleanup_null);
-
-									success_flag = true;
-								}
-							else
-								{
-									apr_global_mutex_destroy (s_manager_p -> ajmc_mutex_p);
-								}
+							success_flag = true;
 						}
-
-					if (!success_flag)
+					else
 						{
-							FreeMemory (s_manager_p);
-							s_manager_p = NULL;
+							apr_global_mutex_destroy (manager_p -> ajmc_mutex_p);
+							manager_p -> ajmc_mutex_p = NULL;
 						}
+				}
+
+			if (!success_flag)
+				{
+					FreeMemory (manager_p);
+					manager_p = NULL;
 				}
 		}
 
-	return s_manager_p;
+
+	return manager_p;
 }
 
 
-bool DestroyAPRJobsManager (void)
+bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 {
-	if (s_manager_p)
+	if (jobs_manager_p)
 		{
-			apr_hash_index_t *index_p =  apr_hash_first (s_manager_p -> ajmc_pool_p, s_manager_p -> ajmc_running_jobs_p);
+			apr_hash_index_t *index_p =  apr_hash_first (jobs_manager_p -> ajmc_pool_p, jobs_manager_p -> ajmc_running_jobs_p);
 			char *key_s = NULL;
 			apr_ssize_t keylen = 0;
 
@@ -104,23 +106,65 @@ bool DestroyAPRJobsManager (void)
 					index_p = apr_hash_next (index_p);
 				}
 
-			apr_hash_clear (s_manager_p -> ajmc_running_jobs_p);
-			s_manager_p -> ajmc_running_jobs_p = NULL;
+			apr_hash_clear (jobs_manager_p -> ajmc_running_jobs_p);
+			jobs_manager_p -> ajmc_running_jobs_p = NULL;
+
+
+			apr_global_mutex_destroy (jobs_manager_p -> ajmc_mutex_p);
+			jobs_manager_p -> ajmc_mutex_p = NULL;
+
+			FreeMemory (jobs_manager_p);
 		}
 
 	return true;
 }
 
 
-bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
+static bool WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
+{
+	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
+
+  /* Now that we are in a child process, we have to reconnect
+   * to the global mutex and the shared segment. We also
+   * have to find out the base address of the segment, in case
+   * it moved to a new address. */
+	apr_status_t res = apr_global_mutex_child_init (& (config_p -> wisc_jobs_manager_p), s_mutex_filename_s, pool_p);
+
+	if (res != APR_SUCCESS)
+		{
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to attach to wheatis global mutex file '%s', res %d", s_mutex_filename_s, res);
+			return false;
+    }
+
+    /* We only need to attach to the segment if we didn't inherit
+     * it from the parent process (ie. Windows) */
+    if (!scfg->counters_shm) {
+        rv = apr_shm_attach(&scfg->counters_shm, scfg->shmcounterfile, p);
+        if (rv != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Failed to attach to "
+                         "mod_shm_counter shared memory file '%s'",
+                         scfg->shmcounterfile ?
+                             /* Just in case the file was NULL. */
+                             scfg->shmcounterfile : "NULL");
+            return;
+        }
+    }
+
+    scfg->counters = apr_shm_baseaddr_get(scfg->counters_shm);
+}
+
+
+
+static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, ServiceJob *job_p)
 {
 	bool success_flag = false;
+	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
 
-	apr_status_t status = apr_global_mutex_lock (s_manager_p -> ajmc_mutex_p);
+	apr_status_t status = apr_global_mutex_lock (manager_p -> ajmc_mutex_p);
 
 	if (status == APR_SUCCESS)
 		{
-			apr_hash_set (s_manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE, job_p);
+			apr_hash_set (manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE, job_p);
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
 				{
@@ -135,11 +179,11 @@ bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 			#endif
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-			DebugJobsManager (s_manager_p -> ajmc_running_jobs_p);
+			DebugJobsManager (manager_p -> ajmc_running_jobs_p);
 			#endif
 
 
-			status = apr_global_mutex_unlock (s_manager_p -> ajmc_mutex_p);
+			status = apr_global_mutex_unlock (manager_p -> ajmc_mutex_p);
 			success_flag = true;
 
 			if (status != APR_SUCCESS)
@@ -154,14 +198,16 @@ bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 
 
 
-ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
+static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key)
 {
 	ServiceJob *job_p = NULL;
-	apr_status_t status = apr_global_mutex_lock (s_manager_p -> ajmc_mutex_p);
+	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
+
+	apr_status_t status = apr_global_mutex_lock (manager_p -> ajmc_mutex_p);
 
 	if (status == APR_SUCCESS)
 		{
-			job_p = (ServiceJob *) apr_hash_get (s_manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE);
+			job_p = (ServiceJob *) apr_hash_get (manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE);
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
 				{
@@ -176,10 +222,10 @@ ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 			#endif
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-			DebugJobsManager (s_manager_p -> ajmc_running_jobs_p);
+			DebugJobsManager (manager_p -> ajmc_running_jobs_p);
 			#endif
 
-			status = apr_global_mutex_unlock (s_manager_p -> ajmc_mutex_p);
+			status = apr_global_mutex_unlock (manager_p -> ajmc_mutex_p);
 
 			if (status != APR_SUCCESS)
 				{
@@ -193,19 +239,21 @@ ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 }
 
 
-ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
+static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key)
 {
 	ServiceJob *job_p = NULL;
-	apr_status_t status = apr_global_mutex_lock (s_manager_p -> ajmc_mutex_p);
+	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
+
+	apr_status_t status = apr_global_mutex_lock (manager_p -> ajmc_mutex_p);
 
 	if (status == APR_SUCCESS)
 		{
-			job_p = (ServiceJob *) apr_hash_get (s_manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE);
+			job_p = (ServiceJob *) apr_hash_get (manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE);
 
 			if (job_p)
 				{
 					/* remove the entry from the hash table */
-					apr_hash_set (s_manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE, NULL);
+					apr_hash_set (manager_p -> ajmc_running_jobs_p, job_key, UUID_RAW_SIZE, NULL);
 				}
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
@@ -221,10 +269,10 @@ ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 			#endif
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-			DebugJobsManager (s_manager_p -> ajmc_running_jobs_p);
+			DebugJobsManager (manager_p -> ajmc_running_jobs_p);
 			#endif
 
-			status = apr_global_mutex_unlock (s_manager_p -> ajmc_mutex_p);
+			status = apr_global_mutex_unlock (manager_p -> ajmc_mutex_p);
 
 			if (status != APR_SUCCESS)
 				{
@@ -245,32 +293,6 @@ void ServiceJobFinished (uuid_t job_key)
 	if (job_p)
 		{
 		}
-}
-
-
-static char *GetUUIDAsStringCustom (const uuid_t id, void *(*alloc_fn) (size_t size))
-{
-	char *uuid_s = (char *) alloc_fn (UUID_STRING_BUFFER_SIZE * sizeof (char));
-
-	if (uuid_s)
-		{
-			ConvertUUIDToString (id, uuid_s);
-		}
-
-	return uuid_s;
-}
-
-
-static void *APRAllocMemory (size_t l)
-{
-	void *mem_p = NULL;
-
-	if (s_manager_p -> ajmc_pool_p)
-		{
-			return apr_palloc (s_manager_p -> ajmc_pool_p, l);
-		}
-
-	return mem_p;
 }
 
 
@@ -297,14 +319,14 @@ static apr_status_t CleanUpAPRJobsManagerConfig (void *value_p)
 }
 
 
-static void DebugJobsManager (apr_hash_t *table_p)
+static void DebugJobsManager (APRJobsManager *manager_p)
 {
 	apr_hash_index_t *index_p;
-	uint32 size = apr_hash_count (table_p);
+	uint32 size = apr_hash_count (manager_p -> ajmc_running_jobs_p);
 
-	PrintLog (STM_LEVEL_FINE, "Jobs manager %x size %lu", table_p, size);
+	PrintLog (STM_LEVEL_FINE, "Jobs manager %x size %lu", manager_p -> ajmc_running_jobs_p, size);
 
-	for (index_p = apr_hash_first (s_manager_p -> ajmc_pool_p, table_p); index_p; index_p = apr_hash_next (index_p))
+	for (index_p = apr_hash_first (manager_p -> ajmc_pool_p, manager_p -> ajmc_running_jobs_p); index_p; index_p = apr_hash_next (index_p))
 		{
 			const uuid_t *key_p = NULL;
 			ServiceJob *job_p = NULL;

@@ -112,40 +112,17 @@ static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *v
 
 
 
+
+
 static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 {
 	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
+	apr_status_t res;
 
 	/* Now that we are in a child process, we have to reconnect
 	 * to the global mutex and the shared segment. We also
 	 * have to find out the base address of the segment, in case
 	 * it moved to a new address. */
-
-//    rv = apr_global_mutex_child_init(&scfg->mutex,
-//                                     scfg->shmcounterlockfile, p);
-//    if (rv != APR_SUCCESS) {
-//        ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Failed to attach to "
-//                     "mod_shm_counter global mutex file '%s'",
-//                     scfg->shmcounterlockfile);
-//        return;
-//    }
-
-    /* We only need to attach to the segment if we didn't inherit
-     * it from the parent process (ie. Windows) */
-//    if (!scfg->counters_shm) {
-//        rv = apr_shm_attach(&scfg->counters_shm, scfg->shmcounterfile, p);
-//        if (rv != APR_SUCCESS) {
-//            ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s, "Failed to attach to "
-//                         "mod_shm_counter shared memory file '%s'",
-//                         scfg->shmcounterfile ?
-//                             /* Just in case the file was NULL. */
-//                             scfg->shmcounterfile : "NULL");
-//            return;
-//        }
-//    }
-//
-//    scfg->counters = apr_shm_baseaddr_get(scfg->counters_shm);
-//
 
 	if (InitInformationSystem ())
 		{
