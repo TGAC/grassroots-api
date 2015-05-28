@@ -14,15 +14,19 @@
 
 #include "uuid/uuid.h"
 
+/* forward declaration */
+struct JobsManager;
+
+
 typedef struct JobsManager
 {
-	bool (*jm_add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
+	bool (*jm_add_job_fn) (struct JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
 
 
-	ServiceJob *(*jm_get_job_fn)  (JobsManager *manager_p, const uuid_t key);
+	ServiceJob *(*jm_get_job_fn)  (struct JobsManager *manager_p, const uuid_t key);
 
 
-	ServiceJob *(*jm_remove_job_fn) (JobsManager *manager_p, const uuid_t key);
+	ServiceJob *(*jm_remove_job_fn) (struct JobsManager *manager_p, const uuid_t key);
 
 } JobsManager;
 

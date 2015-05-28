@@ -186,7 +186,7 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
   		 * where any global shared memory should be allocated
        */
   		ModWheatISConfig *config_p = (ModWheatISConfig *) ap_get_module_config (server_p -> module_config, &wheatis_module);
-  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (config_pool_p);
+  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, config_pool_p);
 
 			if (config_p -> wisc_jobs_manager_p)
 				{

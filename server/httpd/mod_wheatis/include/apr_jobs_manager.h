@@ -17,7 +17,7 @@ extern "C"
 {
 #endif
 
-APRJobsManager *InitAPRJobsManager (apr_pool_t *server_pool_p);
+APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *server_pool_p);
 
 
 #ifdef __cplusplus

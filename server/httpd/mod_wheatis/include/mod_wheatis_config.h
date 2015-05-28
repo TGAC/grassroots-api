@@ -10,6 +10,8 @@
 
 #include "httpd.h"
 #include "apr_global_mutex.h"
+#include "ap_provider.h"
+#include "ap_socache.h"
 
 #include "jobs_manager.h"
 
@@ -26,6 +28,11 @@ typedef struct APRJobsManager
 	apr_pool_t *ajmc_pool_p;
 
 	char *ajmc_mutex_lock_filename_s;
+
+	server_rec *ajmc_server_p;
+
+	ap_socache_provider_t *ajmc_socache_provider_p;
+	ap_socache_instance_t *ajmc_socache_instance_p;
 
 } APRJobsManager;
 
