@@ -29,12 +29,21 @@
 #include "mod_wheatis_config.h"
 #include "apr_jobs_manager.h"
 
+
+
+static char *s_provider_name_s = NULL;
+
+
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
 static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p);
+
+static int WheatISPreConfig (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p);
 static int WheatISPostConfig (apr_pool_t *pconf, apr_pool_t *plog, apr_pool_t *ptemp, server_rec *s);
+
 static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
+static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const char *arg_s);
 
 static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p);
 
@@ -53,14 +62,9 @@ static apr_status_t CleanUpOutputStream (void *value_p);
 static const command_rec s_wheatis_directives [] =
 {
 	AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),
+	AP_INIT_TAKE1 ("WheatISSOCache", SetWheatISCacheProvider, NULL, RSRC_CONF, "The provider for the Jobs Cache"),
 	{ NULL }
 };
-
-
-
-
-
-//static WheatISConfig s_config;
 
 
 /* Define our module as an entity and assign a function for registering hooks  */
@@ -76,16 +80,33 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 };
 
 
+const module *GetWheatISModule (void)
+{
+	return &wheatis_module;
+}
+
+
 /* register_hooks: Adds a hook to the httpd process */
 static void RegisterHooks (apr_pool_t *pool_p) 
 {
-  ap_hook_post_config (WheatISPostConfig, NULL, NULL, APR_HOOK_MIDDLE);
+	ap_hook_pre_config (WheatISPreConfig, NULL, NULL, APR_HOOK_MIDDLE);
+
+	ap_hook_post_config (WheatISPostConfig, NULL, NULL, APR_HOOK_MIDDLE);
 
   ap_hook_child_init (WheatISChildInit, NULL, NULL, APR_HOOK_MIDDLE);
 
 	ap_hook_handler (WheatISHandler, NULL, NULL, APR_HOOK_MIDDLE);
 }
 
+
+
+static int WheatISPreConfig (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p)
+{
+	int res = OK;
+
+
+	return res;
+}
 
 
 static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
@@ -96,6 +117,7 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 		{
 			config_p -> wisc_root_path_s = NULL;
 			config_p -> wisc_server_p = server_p;
+			config_p -> wisc_provider_name_s = NULL;
 			config_p -> wisc_jobs_manager_p = NULL;
 		}
 
@@ -186,12 +208,17 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
   		 * where any global shared memory should be allocated
        */
   		ModWheatISConfig *config_p = (ModWheatISConfig *) ap_get_module_config (server_p -> module_config, &wheatis_module);
-  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, config_pool_p);
 
-			if (config_p -> wisc_jobs_manager_p)
-				{
-					ret = OK;
-				}
+  		if (s_provider_name_s)
+  			{
+  	  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, config_pool_p, s_provider_name_s);
+
+  	  		if (config_p -> wisc_jobs_manager_p)
+  					{
+  						ret = OK;
+  					}
+  			}
+
   	}
 
   return ret;
@@ -214,6 +241,37 @@ static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char
 
 	return NULL;
 }
+
+
+/* Get the cache provider that we are going to use for the jobs manager storage */
+static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const char *arg_s)
+{
+  const char *err_msg_s = ap_check_cmd_context (cmd_p, GLOBAL_ONLY);
+
+  if (!err_msg_s)
+  	{
+  	  /* Argument is of form 'name:args' or just 'name'. */
+  	  const char *sep_s = ap_strchr_c (arg_s, ':');
+
+  	  if (sep_s)
+  	  	{
+  	  		s_provider_name_s = apr_pstrmemdup (cmd_p -> pool, arg_s, sep_s - arg_s);
+  	      ++ sep_s;
+  	  	}
+  	  else
+  	  	{
+  	  		s_provider_name_s = apr_pstrdup (cmd_p -> pool, arg_s);
+  	  	}
+
+  	}		/* if (!err_msg_s)*/
+  else
+  	{
+  		err_msg_s = apr_psprintf (cmd_p -> pool, "WheatISSOCache: %s", err_msg_s);
+  	}
+
+  return err_msg_s;
+}
+
 
 
 /* The handler function for our module.
