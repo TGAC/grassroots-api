@@ -142,8 +142,6 @@ bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_p
 			PrintErrors (STM_LEVEL_SEVERE, "failed to register %s mutex", s_cache_id_s);
 		}
 
-	manager_p -> ajm_configured_flag = false;
-
 	return success_flag;
 }
 
@@ -154,61 +152,65 @@ static bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *con
 	apr_interval_time_t expiry = 0;
 	struct ap_socache_hints job_cache_hints = { UUID_STRING_BUFFER_SIZE, sizeof (ServiceJob *), expiry };
 	apr_status_t res;
+	bool success_flag = true;
 
 	/*
 	 * Have we got a valid set of config directives?
 	 */
 	if (manager_p -> ajm_configured_flag)
 		{
-			if (!manager_p -> ajm_socache_provider_p)
+			if (manager_p -> ajm_socache_provider_p)
 				{
-					ap_log_perror(APLOG_MARK, APLOG_CRIT, 0, plog, APLOGNO(01674)
-					              "Please select a socache provider with AuthnCacheSOCache "
-					              "(no default found on this platform). Maybe you need to "
-					              "load mod_socache_shmcb or another socache module first");
-					return 500; /* An HTTP status would be a misnomer! */
+					/* We have socache_provider, but do not have socache_instance. This should
+					 * happen only when using "default" socache_provider, so create default
+					 * socache_instance in this case. */
+					if (!manager_p -> ajm_socache_instance_p)
+						{
+							const char *err_msg_s = manager_p -> ajm_socache_provider_p -> create (& (manager_p -> ajm_socache_instance_p), NULL, config_pool_p, config_pool_p);
+
+							if (err_msg_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "failed to create mod_socache_shmcb socache instance: %s", err_msg_s);
+									success_flag = false;
+								}
+						}
+
+					if (success_flag)
+						{
+							res = ap_global_mutex_create (&authn_cache_mutex, NULL, s_cache_id_s, NULL, server_p, config_pool_p, 0);
+							if (res != APR_SUCCESS)
+								{
+									PrintErrorrs (STM_LEVEL_SEVERE, "failed to create %s mutex", s_cache_id_s);
+									return 500; /* An HTTP status would be a misnomer! */
+								}
+
+							apr_pool_cleanup_register (config_pool_p, NULL, remove_lock, apr_pool_cleanup_null);
+
+							res = manager_p -> ajm_socache_provider_p -> init (manager_p -> ajm_socache_instance_p, s_cache_id_s, &job_cache_hints, server_p, config_pool_p);
+							if (res != APR_SUCCESS)
+								{
+									ap_log_perror(APLOG_MARK, APLOG_CRIT, rv, plog, APLOGNO(01677)
+																"failed to initialise %s cache", authn_cache_id);
+									return 500; /* An HTTP status would be a misnomer! */
+								}
+
+							apr_pool_cleanup_register (config_pool_p, (void *) server_p, destroy_cache, apr_pool_cleanup_null);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Please select a socache provider with AuthnCacheSOCache (no default found on this platform). Maybe you need to load mod_socache_shmcb or another socache module first");
+					success_flag = false;
 				}
 		}
 	else
 		{
-			return OK; /* don't waste the overhead of creating mutex & cache */
+			return true; /* don't waste the overhead of creating mutex & cache */
 		}
 
 
-	/* We have socache_provider, but do not have socache_instance. This should
-	 * happen only when using "default" socache_provider, so create default
-	 * socache_instance in this case. */
-	if (!manager_p -> ajm_socache_instance_p)
-		{
-			const char *err_msg_s = manager_p -> ajm_socache_provider_p -> create (& (manager_p -> ajm_socache_instance_p), NULL, temp_pool_p, config_pool_p);
 
-			if (err_msg_s)
-				{
-					ap_log_perror(APLOG_MARK, APLOG_CRIT, 0, plog, APLOGNO(02612)
-					              "failed to create mod_socache_shmcb socache "
-					              "instance: %s", errmsg);
-					return 500;
-				}
-		}
-
-	rv = ap_global_mutex_create (&authn_cache_mutex, NULL, authn_cache_id, NULL, s, pconf, 0);
-	if (rv != APR_SUCCESS)
-		{
-			ap_log_perror(APLOG_MARK, APLOG_CRIT, rv, plog, APLOGNO(01675)
-			              "failed to create %s mutex", authn_cache_id);
-			return 500; /* An HTTP status would be a misnomer! */
-		}
-	apr_pool_cleanup_register (pconf, NULL, remove_lock, apr_pool_cleanup_null);
-
-	rv = socache_provider -> init (socache_instance, authn_cache_id, &authn_cache_hints, s, pconf);
-	if (rv != APR_SUCCESS)
-		{
-			ap_log_perror(APLOG_MARK, APLOG_CRIT, rv, plog, APLOGNO(01677)
-			              "failed to initialise %s cache", authn_cache_id);
-			return 500; /* An HTTP status would be a misnomer! */
-		}
-	apr_pool_cleanup_register (pconf, (void*) s, destroy_cache, apr_pool_cleanup_null);
-	return OK;
+	return success_flag;
 }
 
 

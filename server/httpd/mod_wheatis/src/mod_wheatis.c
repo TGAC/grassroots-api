@@ -30,10 +30,6 @@
 #include "apr_jobs_manager.h"
 
 
-
-static char *s_provider_name_s = NULL;
-
-
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int WheatISHandler (request_rec *req_p);
@@ -209,9 +205,9 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
        */
   		ModWheatISConfig *config_p = (ModWheatISConfig *) ap_get_module_config (server_p -> module_config, &wheatis_module);
 
-  		if (s_provider_name_s)
+  		if (config_p -> wisc_provider_name_s)
   			{
-  	  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, config_pool_p, s_provider_name_s);
+  	  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, config_pool_p, config_p -> wisc_provider_name_s);
 
   	  		if (config_p -> wisc_jobs_manager_p)
   					{
@@ -246,6 +242,7 @@ static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char
 /* Get the cache provider that we are going to use for the jobs manager storage */
 static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const char *arg_s)
 {
+	ModWheatISConfig *config_p = (ModWheatISConfig *) ap_get_module_config (cmd_p -> server -> module_config, &wheatis_module);
   const char *err_msg_s = ap_check_cmd_context (cmd_p, GLOBAL_ONLY);
 
   if (!err_msg_s)
@@ -255,12 +252,12 @@ static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const
 
   	  if (sep_s)
   	  	{
-  	  		s_provider_name_s = apr_pstrmemdup (cmd_p -> pool, arg_s, sep_s - arg_s);
+  	  		config_p -> wisc_provider_name_s = apr_pstrmemdup (cmd_p -> pool, arg_s, sep_s - arg_s);
   	      ++ sep_s;
   	  	}
   	  else
   	  	{
-  	  		s_provider_name_s = apr_pstrdup (cmd_p -> pool, arg_s);
+  	  		config_p -> wisc_provider_name_s = apr_pstrdup (cmd_p -> pool, arg_s);
   	  	}
 
   	}		/* if (!err_msg_s)*/

@@ -35,8 +35,6 @@ typedef struct APRJobsManager
 	ap_socache_provider_t *ajm_socache_provider_p;
 	ap_socache_instance_t *ajm_socache_instance_p;
 
-	bool ajm_configured_flag;
-
 } APRJobsManager;
 
 typedef struct
