@@ -6,7 +6,7 @@
 
 #include "jansson.h"
 #include "linked_list.h"
-#include "wheatis_service_library.h"
+#include "wheatis_params_library.h"
 #include "tags.h"
 #include "resource.h"
 #include "hash_table.h"
@@ -219,52 +219,52 @@ typedef struct ParameterNode
 #endif
 
 
-WHEATIS_SERVICE_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
+WHEATIS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
 
 
-WHEATIS_SERVICE_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
+WHEATIS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
 
 
-WHEATIS_SERVICE_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
+WHEATIS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
-WHEATIS_SERVICE_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
-WHEATIS_SERVICE_API void FreeParameter (Parameter *param_p);
+WHEATIS_PARAMS_API void FreeParameter (Parameter *param_p);
 
 
-WHEATIS_SERVICE_API ParameterBounds *AllocateParameterBounds (void);
+WHEATIS_PARAMS_API ParameterBounds *AllocateParameterBounds (void);
 
 
-WHEATIS_SERVICE_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
+WHEATIS_PARAMS_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
 
 
-WHEATIS_SERVICE_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
+WHEATIS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
 
 
-WHEATIS_SERVICE_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
+WHEATIS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
 
 
-WHEATIS_SERVICE_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+WHEATIS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
-WHEATIS_SERVICE_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
+WHEATIS_PARAMS_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
 
 
-WHEATIS_SERVICE_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
+WHEATIS_PARAMS_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
 
 
-WHEATIS_SERVICE_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
+WHEATIS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
 
-WHEATIS_SERVICE_API bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s);
+WHEATIS_PARAMS_API bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s);
 
 
-WHEATIS_SERVICE_API void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s);
+WHEATIS_PARAMS_API void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s);
 
 
-WHEATIS_SERVICE_API const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s);
+WHEATIS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s);
 
 
 /**
@@ -278,7 +278,7 @@ WHEATIS_SERVICE_API const char *GetParameterKeyValue (const Parameter * const pa
  * @return A newly-allocated json-based description of the Parameter or <code>NULL</code>
  * upon error. When you no longer require the value you need to call json_decref upon it.
  */
-WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
+WHEATIS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
 
 
 /**
@@ -288,27 +288,27 @@ WHEATIS_SERVICE_API json_t *GetParameterAsJSON (const Parameter * const paramete
  * @return A newly-allocated Parameter derived from the json-based description
  * or <code>NULL</code> upon error.
  */
-WHEATIS_SERVICE_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
+WHEATIS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
 
 
 
-WHEATIS_SERVICE_API bool IsJSONParameterConcise (const json_t * const json_p);
+WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
 
 
-WHEATIS_SERVICE_API void ClearSharedType (SharedType *st_p);
+WHEATIS_PARAMS_API void ClearSharedType (SharedType *st_p);
 
 
-WHEATIS_SERVICE_API const char *GetUIName (const Parameter * const parameter_p);
+WHEATIS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
 
 
-WHEATIS_SERVICE_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
+WHEATIS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
 
-WHEATIS_SERVICE_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
+WHEATIS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
 
 
-WHEATIS_SERVICE_API void FreeSharedTypeNode (ListItem *node_p);
+WHEATIS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
 
 
 
