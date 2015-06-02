@@ -35,6 +35,7 @@ typedef struct APRJobsManager
 	ap_socache_provider_t *ajm_socache_provider_p;
 	ap_socache_instance_t *ajm_socache_instance_p;
 
+
 } APRJobsManager;
 
 typedef struct
@@ -53,6 +54,7 @@ extern "C"
 
 
 const module *GetWheatISModule (void);
+
 
 
 #ifdef __cplusplus

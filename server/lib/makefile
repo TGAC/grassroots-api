@@ -43,6 +43,7 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)	
 	
 SRCS 	= \
+	jobs_manager.c \
 	server.c \
 	system_util.c \
 	wheatis_config.c

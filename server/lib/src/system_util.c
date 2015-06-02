@@ -13,6 +13,7 @@
 #include "drmaa_util.h"
 #endif
 
+
 bool InitInformationSystem ()
 {
 	if (InitHandlerUtil ())

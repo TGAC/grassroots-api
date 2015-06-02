@@ -1,8 +1,8 @@
 #include "jobs_manager.h"
 
-bool InitJobsManager (void *data_p)
+JobsManager *GetJobsManager (void)
 {
-	return true;
+	return NULL;
 }
 
 
@@ -12,18 +12,18 @@ bool DestroyJobsManager (void *data_p)
 }
 
 
-bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
+bool AddServiceJobToJobsManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p)
 {
 	return true;
 }
 
-ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
+ServiceJob *GetServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t job_key)
 {
 	return NULL;
 }
 
 
-ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
+ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t job_key)
 {
 	return NULL;
 }

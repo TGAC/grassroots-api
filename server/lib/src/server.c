@@ -382,6 +382,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 															const size_t num_jobs = jobs_p -> sjs_num_jobs;
 															size_t i;
 															ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+															JobsManager *manager_p = GetJobsManager ();
 
 															res = 1;
 
@@ -401,7 +402,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																		{
 																			keep_service_flag = true;
 
-																			if (!AddServiceJobToJobsManager (job_p -> sj_id, job_p))
+																			if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
 																				{
 
 																				}
@@ -562,7 +563,8 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 		{
 			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
-					ServiceJob *job_p = GetServiceJobFromJobsManager (service_id);
+					JobsManager *manager_p = GetJobsManager ();
+					ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, service_id);
 
 					if (job_p)
 						{
@@ -608,7 +610,8 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	ServiceJob *job_p = GetServiceJobFromJobsManager (job_id);
+	JobsManager *manager_p = GetJobsManager ();
+	ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, job_id);
 	json_t *service_result_p = NULL;
 
 	if (job_p)
@@ -774,6 +777,7 @@ static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p
 					json_t *service_uuid_json_p;
 					size_t num_successes = 0;
 					size_t num_uuids = json_array_size (service_uuids_json_p);
+					JobsManager *manager_p = GetJobsManager ();
 
 					json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
 						{
@@ -784,7 +788,7 @@ static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p
 
 									if (ConvertStringToUUID (uuid_s, job_id))
 										{
-											ServiceJob *job_p = RemoveServiceJobFromJobsManager (job_id);
+											ServiceJob *job_p = RemoveServiceJobFromJobsManager (manager_p, job_id);
 
 											if (job_p)
 												{

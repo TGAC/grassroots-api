@@ -11,7 +11,7 @@
 #include "hash_table.h"
 #include "service.h"
 #include "service_job.h"
-
+#include "wheatis_service_manager_library.h"
 #include "uuid/uuid.h"
 
 /* forward declaration */
@@ -35,20 +35,22 @@ typedef struct JobsManager
 	extern "C" {
 #endif
 
+WHEATIS_SERVICE_MANAGER_API JobsManager *GetJobsManager (void);
 
-void InitJobsManager (JobsManager *manager_p,
+
+WHEATIS_SERVICE_MANAGER_API void InitJobsManager (JobsManager *manager_p,
                       bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p),
 											ServiceJob *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key),
 											ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key));
 
 
-bool AddServiceJobToJobsManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
+WHEATIS_SERVICE_MANAGER_API bool AddServiceJobToJobsManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
 
 
-ServiceJob *GetServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
+WHEATIS_SERVICE_MANAGER_API ServiceJob *GetServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
 
 
-ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
+WHEATIS_SERVICE_MANAGER_API ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
 
 /**
  *

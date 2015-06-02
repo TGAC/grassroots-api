@@ -140,14 +140,7 @@ ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
 
 bool CloseServiceJob (ServiceJob *job_p)
 {
-	bool close_flag =  job_p -> sj_close_fn (job_p);
-
-	if (close_flag)
-		{
-			RemoveServiceJobFromJobsManager (job_p -> sj_id);
-		}
-
-	return close_flag;
+	return (job_p -> sj_close_fn (job_p));
 }
 
 

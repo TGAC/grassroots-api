@@ -12,7 +12,15 @@ typedef struct
 	ServiceJob *ujn_job_p;
 } UUIDJobNode;
 
-static LinkedList s_running_services;
+
+typedef struct ServicesListManager
+{
+	JobsManager slm_base_manager;
+	LinkedList slm_running_services;
+} ServicesListManager;
+
+
+static ServicesListManager *s_manager_p = NULL;
 
 
 static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *service_p);
@@ -21,6 +29,12 @@ static void FreeUUIDJobNode (ListItem * const node_p);
 
 static UUIDJobNode *GetServiceJobNode (const uuid_t job_key);
 
+
+static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key);
+
+static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key);
+
+static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
 
 
 static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *job_p)
@@ -46,32 +60,30 @@ static void FreeUUIDJobNode (ListItem * const node_p)
 }
 
 
-
-/**
- * Create a HashTable where both the keys are strings and the values are services
- *
- * @param initital_capacity The initial number of HashBuckets for the HashTable.
- * @param load_percentage The percentage value for how full the HashTable should
- * be allowed to become before it is extended.
- * @return The HashTable or NULL is there was an error.
- */
-bool InitJobsManager (void *data_p)
+JobsManager *GetJobsManager (void)
 {
-	InitLinkedList (&s_running_services);
+	if (!s_manager_p)
+		{
+			s_manager_p = (ServicesListManager *) AllocMemory (sizeof (ServicesListManager));
+
+			InitJobsManager (& (s_manager_p -> slm_base_manager), AddServiceJobToServicesListManager, GetServiceJobFromServicesListManager, RemoveServiceJobFromServicesListManager);
+			InitLinkedList (& (s_manager_p -> slm_running_services));
+		}
+
+	return (& (s_manager_p -> slm_base_manager));
+}
+
+
+bool DestroyJobsManager ()
+{
+	ClearLinkedList (& (s_manager_p -> slm_running_services));
+	FreeMemory (s_manager_p);
 
 	return true;
 }
 
 
-bool DestroyJobsManager (void *data_p)
-{
-	ClearLinkedList (&s_running_services);
-
-	return true;
-}
-
-
-bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
+static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p)
 {
 	bool success_flag = false;
 	UUIDJobNode *node_p = GetServiceJobNode (job_key);
@@ -86,7 +98,7 @@ bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 
 			if (node_p)
 				{
-					LinkedListAddTail (&s_running_services, (ListItem * const) node_p);
+					LinkedListAddTail (& (s_manager_p -> slm_running_services), (ListItem * const) node_p);
 					success_flag = true;
 				}
 		}
@@ -97,7 +109,7 @@ bool AddServiceJobToJobsManager (uuid_t job_key, ServiceJob *job_p)
 
 static UUIDJobNode *GetServiceJobNode (const uuid_t job_key)
 {
-	UUIDJobNode *node_p = (UUIDJobNode *) s_running_services.ll_head_p;
+	UUIDJobNode *node_p = (UUIDJobNode *) s_manager_p -> slm_running_services.ll_head_p;
 
 	while (node_p)
 		{
@@ -113,7 +125,7 @@ static UUIDJobNode *GetServiceJobNode (const uuid_t job_key)
 }
 
 
-ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
+static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key)
 {
 	UUIDJobNode *node_p = GetServiceJobNode (job_key);
 
@@ -121,10 +133,10 @@ ServiceJob *GetServiceJobFromJobsManager (const uuid_t job_key)
 }
 
 
-ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
+static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key)
 {
 	ServiceJob *job_p = NULL;
-	UUIDJobNode *node_p = (UUIDJobNode *) s_running_services.ll_head_p;
+	UUIDJobNode *node_p = (UUIDJobNode *) s_manager_p -> slm_running_services.ll_head_p;
 
 	while (node_p)
 		{
@@ -132,7 +144,7 @@ ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 				{
 					job_p = node_p -> ujn_job_p;
 
-					LinkedListRemove (&s_running_services, (ListItem * const) node_p);
+					LinkedListRemove (& (s_manager_p -> slm_running_services), (ListItem * const) node_p);
 
 					node_p -> ujn_job_p = NULL;
 					FreeUUIDJobNode ((ListItem * const) node_p);
@@ -151,9 +163,9 @@ ServiceJob *RemoveServiceJobFromJobsManager (const uuid_t job_key)
 
 
 
-void ServiceJobFinished (uuid_t job_key)
+void ServiceJobFinished (JobsManager *manager_p, uuid_t job_key)
 {
-	ServiceJob *job_p = RemoveServiceJobFromJobsManager (job_key);
+	ServiceJob *job_p = RemoveServiceJobFromServicesListManager (& (s_manager_p -> slm_base_manager), job_key);
 
 	if (job_p)
 		{

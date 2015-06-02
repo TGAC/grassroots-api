@@ -63,6 +63,9 @@ static const command_rec s_wheatis_directives [] =
 };
 
 
+static APRJobsManager *s_jobs_manager_p = NULL;
+
+
 /* Define our module as an entity and assign a function for registering hooks  */
 module AP_MODULE_DECLARE_DATA wheatis_module =
 {
@@ -79,6 +82,12 @@ module AP_MODULE_DECLARE_DATA wheatis_module =
 const module *GetWheatISModule (void)
 {
 	return &wheatis_module;
+}
+
+
+JobsManager *GetJobsManager (void)
+{
+	return s_jobs_manager_p;
 }
 
 
@@ -211,6 +220,10 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
 
   	  		if (config_p -> wisc_jobs_manager_p)
   					{
+  	  				s_jobs_manager_p = config_p -> wisc_jobs_manager_p;
+
+							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_jobs_manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
+
   						ret = OK;
   					}
   			}

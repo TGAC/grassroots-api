@@ -12,6 +12,7 @@
 #include "wheatis_service_library.h"
 #include "operation.h"
 #include "jansson.h"
+
 #include "uuid/uuid.h"
 
 /* forward declarations */

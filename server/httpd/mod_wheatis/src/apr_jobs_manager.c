@@ -31,8 +31,6 @@ static const char s_cache_id_s [] = "wheatis-socache";
 
 /**************************/
 
-static apr_status_t CleanUpAPRJobsManagerConfig (void *value_p);
-
 static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
 
 static void DebugJobsManager (APRJobsManager *manager_p);
@@ -72,7 +70,7 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 							manager_p -> ajm_server_p = server_p;
 
-							apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRJobsManagerConfig, apr_pool_cleanup_null);
+							apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
 
 							success_flag = true;
 						}
@@ -92,6 +90,7 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 	return manager_p;
 }
+
 
 bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 {
@@ -120,7 +119,13 @@ bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 			apr_global_mutex_destroy (jobs_manager_p -> ajm_mutex_p);
 			jobs_manager_p -> ajm_mutex_p = NULL;
 
-			FreeMemory(jobs_manager_p);
+
+			if (jobs_manager_p -> ajm_socache_instance_p)
+				{
+					jobs_manager_p -> ajm_socache_provider_p -> destroy (jobs_manager_p -> ajm_socache_instance_p, jobs_manager_p -> ajm_server_p);
+				}
+
+			FreeMemory (jobs_manager_p);
 		}
 
 	return true;
@@ -129,8 +134,8 @@ bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 
 bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_pool_p)
 {
-	apr_status_t status = ap_mutex_register (config_pool_p, s_cache_id_s, NULL, APR_LOCK_DEFAULT, 0);
 	bool success_flag = false;
+	apr_status_t status = ap_mutex_register (config_pool_p, s_cache_id_s, NULL, APR_LOCK_DEFAULT, 0);
 
 	if (status == APR_SUCCESS)
 		{
@@ -157,57 +162,45 @@ static bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *con
 	/*
 	 * Have we got a valid set of config directives?
 	 */
-	if (manager_p -> ajm_configured_flag)
+	if (manager_p -> ajm_socache_provider_p)
 		{
-			if (manager_p -> ajm_socache_provider_p)
+			/* We have socache_provider, but do not have socache_instance. This should
+			 * happen only when using "default" socache_provider, so create default
+			 * socache_instance in this case. */
+			if (!manager_p -> ajm_socache_instance_p)
 				{
-					/* We have socache_provider, but do not have socache_instance. This should
-					 * happen only when using "default" socache_provider, so create default
-					 * socache_instance in this case. */
-					if (!manager_p -> ajm_socache_instance_p)
+					const char *err_msg_s = manager_p -> ajm_socache_provider_p -> create (& (manager_p -> ajm_socache_instance_p), NULL, config_pool_p, config_pool_p);
+
+					if (err_msg_s)
 						{
-							const char *err_msg_s = manager_p -> ajm_socache_provider_p -> create (& (manager_p -> ajm_socache_instance_p), NULL, config_pool_p, config_pool_p);
-
-							if (err_msg_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, "failed to create mod_socache_shmcb socache instance: %s", err_msg_s);
-									success_flag = false;
-								}
-						}
-
-					if (success_flag)
-						{
-							res = ap_global_mutex_create (&authn_cache_mutex, NULL, s_cache_id_s, NULL, server_p, config_pool_p, 0);
-							if (res != APR_SUCCESS)
-								{
-									PrintErrorrs (STM_LEVEL_SEVERE, "failed to create %s mutex", s_cache_id_s);
-									return 500; /* An HTTP status would be a misnomer! */
-								}
-
-							apr_pool_cleanup_register (config_pool_p, NULL, remove_lock, apr_pool_cleanup_null);
-
-							res = manager_p -> ajm_socache_provider_p -> init (manager_p -> ajm_socache_instance_p, s_cache_id_s, &job_cache_hints, server_p, config_pool_p);
-							if (res != APR_SUCCESS)
-								{
-									ap_log_perror(APLOG_MARK, APLOG_CRIT, rv, plog, APLOGNO(01677)
-																"failed to initialise %s cache", authn_cache_id);
-									return 500; /* An HTTP status would be a misnomer! */
-								}
-
-							apr_pool_cleanup_register (config_pool_p, (void *) server_p, destroy_cache, apr_pool_cleanup_null);
+							PrintErrors (STM_LEVEL_SEVERE, "failed to create mod_socache_shmcb socache instance: %s", err_msg_s);
+							success_flag = false;
 						}
 				}
-			else
+
+			if (success_flag)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Please select a socache provider with AuthnCacheSOCache (no default found on this platform). Maybe you need to load mod_socache_shmcb or another socache module first");
-					success_flag = false;
+					res = ap_global_mutex_create (& (manager_p -> ajm_mutex_p), NULL, s_cache_id_s, NULL, server_p, config_pool_p, 0);
+
+					if (res != APR_SUCCESS)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "failed to create %s mutex", s_cache_id_s);
+							success_flag = false;
+						}
+
+					res = manager_p -> ajm_socache_provider_p -> init (manager_p -> ajm_socache_instance_p, s_cache_id_s, &job_cache_hints, server_p, config_pool_p);
+					if (res != APR_SUCCESS)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to initialise %s cache", s_cache_id_s);
+							success_flag = false;
+						}
 				}
 		}
 	else
 		{
-			return true; /* don't waste the overhead of creating mutex & cache */
+			PrintErrors (STM_LEVEL_SEVERE, "Please select a socache provider with AuthnCacheSOCache (no default found on this platform). Maybe you need to load mod_socache_shmcb or another socache module first");
+			success_flag = false;
 		}
-
 
 
 	return success_flag;
@@ -224,7 +217,7 @@ static bool WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 	 * to the global mutex and the shared segment. We also
 	 * have to find out the base address of the segment, in case
 	 * it moved to a new address. */
-	apr_status_t res = apr_global_mutex_child_init (& (config_p -> wisc_jobs_manager_p), s_mutex_filename_s, pool_p);
+	apr_status_t res = apr_global_mutex_child_init (& (config_p -> wisc_jobs_manager_p -> ajm_mutex_p), s_mutex_filename_s, pool_p);
 
 	if (res != APR_SUCCESS)
 		{
@@ -254,7 +247,15 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 					apr_time_t end_of_time = ~0;
 
 					/* store it */
-					status = manager_p -> ajm_socache_instance_p -> store (manager_p -> ajm_socache_instance_p, manager_p -> ajm_server_p, (unsigned char *) uuid_s, UUID_STRING_BUFFER_SIZE, end_of_time, (unsigned char *) job_p, sizeof (job_p), manager_p -> ajm_pool_p);
+					status = manager_p -> ajm_socache_provider_p -> store (manager_p -> ajm_socache_instance_p,
+					                              manager_p -> ajm_server_p,
+					                              (unsigned char *) uuid_s,
+					                              UUID_STRING_BUFFER_SIZE,
+					                              end_of_time,
+					                              (unsigned char *) job_p,
+					                              sizeof (job_p),
+					                              manager_p -> ajm_pool_p);
+
 
 					#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
 					PrintLog (STM_LEVEL_FINE, "Added %s to jobs manager", uuid_s);
@@ -266,7 +267,7 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 				}
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-			DebugJobsManager (manager_p -> ajm_running_jobs_p);
+			DebugJobsManager (manager_p);
 			#endif
 
 			status = apr_global_mutex_unlock (manager_p -> ajm_mutex_p);
@@ -296,14 +297,17 @@ static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p,
 
 			if (uuid_s)
 				{
+					unsigned int len = sizeof (ServiceJob *);
+
+					status = manager_p -> ajm_socache_provider_p -> retrieve (manager_p -> ajm_socache_instance_p, manager_p -> ajm_server_p, (unsigned char *) uuid_s, UUID_STRING_BUFFER_SIZE, (unsigned char *) job_p, &len, manager_p -> ajm_pool_p);
+
 					PrintLog (STM_LEVEL_FINE, "Getting %s from jobs manager gave %x", uuid_s, job_p);
-					status = manager_p -> ajm_socache_provider_p -> retrieve (manager_p -> ajm_socache_instance_p, manager_p -> ajm_server_p, (unsigned char *) uuid_s, UUID_STRING_BUFFER_SIZE, job_p, sizeof (job_p), manager_p -> ajm_pool_p);
 
 					FreeCopiedString (uuid_s);
 				}
 
 #if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-			DebugJobsManager (manager_p -> ajm_running_jobs_p);
+			DebugJobsManager (manager_p);
 #endif
 
 			status = apr_global_mutex_unlock (manager_p -> ajm_mutex_p);
@@ -331,7 +335,8 @@ static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager
 
 			if (uuid_s)
 				{
-					status = manager_p -> ajm_socache_provider_p -> retrieve (manager_p -> ajm_socache_instance_p, manager_p -> ajm_server_p, (unsigned char *) uuid_s, UUID_STRING_BUFFER_SIZE, job_p, sizeof (job_p), manager_p -> ajm_pool_p);
+					unsigned int len = sizeof (job_p);
+					status = manager_p -> ajm_socache_provider_p -> retrieve (manager_p -> ajm_socache_instance_p, manager_p -> ajm_server_p, (unsigned char *) uuid_s, UUID_STRING_BUFFER_SIZE, (unsigned char *) job_p, &len, manager_p -> ajm_pool_p);
 					PrintLog (STM_LEVEL_FINE, "Removing %s from jobs manager gave %x", uuid_s, job_p);
 
 					status = manager_p -> ajm_socache_provider_p -> remove (manager_p -> ajm_socache_instance_p, manager_p -> ajm_server_p, (unsigned char *) uuid_s, UUID_STRING_BUFFER_SIZE, manager_p -> ajm_pool_p);
@@ -340,7 +345,7 @@ static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager
 				}
 
 #if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-			DebugJobsManager (manager_p -> ajm_running_jobs_p);
+			DebugJobsManager (manager_p);
 #endif
 
 			status = apr_global_mutex_unlock (manager_p -> ajm_mutex_p);
@@ -364,6 +369,7 @@ void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key)
 		}
 }
 
+
 static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 {
 	unsigned int res = 0;
@@ -380,9 +386,12 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 	return res;
 }
 
+
 static apr_status_t CleanUpAPRJobsManagerConfig (void *value_p)
 {
-	return (DestroyAPRJobsManager () ? APR_SUCCESS : APR_EGENERAL);
+	APRJobsManager *manager_p = NULL;
+
+	return (DestroyAPRJobsManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
 }
 
 
