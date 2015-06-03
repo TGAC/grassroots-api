@@ -44,7 +44,8 @@ INCLUDES = \
 SRCS 	= \
 	parameter.c \
 	parameter_set.c \
-	tag_item.c 
+	tag_item.c \
+	user_details.c
 
 CPPFLAGS += -DUNIX -DWHEATIS_PARAMS_LIBRARY_EXPORTS
 

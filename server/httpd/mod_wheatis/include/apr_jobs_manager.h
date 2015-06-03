@@ -21,6 +21,9 @@ extern "C"
 APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s);
 
 
+bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p);
+
+
 apr_status_t CleanUpAPRJobsManager (void *value_p);
 
 

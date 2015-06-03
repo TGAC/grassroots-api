@@ -208,7 +208,7 @@ static bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *con
 
 
 
-static bool WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
+bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 {
 	bool success_flag = false;
 	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, GetWheatISModule ());
@@ -387,7 +387,7 @@ static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 }
 
 
-static apr_status_t CleanUpAPRJobsManagerConfig (void *value_p)
+apr_status_t CleanUpAPRJobsManager (void *value_p)
 {
 	APRJobsManager *manager_p = NULL;
 

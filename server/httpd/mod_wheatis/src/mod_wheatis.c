@@ -4,6 +4,7 @@
 #include "http_protocol.h"
 #include "http_request.h"
 #include "http_config.h"
+#include "http_log.h"
 
 #include "apr_strings.h"
 #include "apr_network_io.h"
@@ -57,8 +58,8 @@ static apr_status_t CleanUpOutputStream (void *value_p);
 
 static const command_rec s_wheatis_directives [] =
 {
+	AP_INIT_TAKE1 ("WheatISSOCache", SetWheatISCacheProvider, NULL, ACCESS_CONF, "The provider for the Jobs Cache"),
 	AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),
-	AP_INIT_TAKE1 ("WheatISSOCache", SetWheatISCacheProvider, NULL, RSRC_CONF, "The provider for the Jobs Cache"),
 	{ NULL }
 };
 
@@ -87,7 +88,7 @@ const module *GetWheatISModule (void)
 
 JobsManager *GetJobsManager (void)
 {
-	return s_jobs_manager_p;
+	return (& (s_jobs_manager_p -> ajm_base_manager));
 }
 
 
@@ -133,7 +134,7 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 
 static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *vhost_config_p)
 {
-	/* currenty ignore the vhosts config */
+	/* currently ignore the vhosts config */
 	return base_config_p;
 }
 
@@ -150,33 +151,36 @@ static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 	 * to the global mutex and the shared segment. We also
 	 * have to find out the base address of the segment, in case
 	 * it moved to a new address. */
-
-	if (InitInformationSystem ())
+	if (APRJobsManagerChildInit (pool_p, server_p))
 		{
-			OutputStream *log_p = AllocateApacheOutputStream (server_p);
-
-			if (log_p)
+			if (InitInformationSystem ())
 				{
-					OutputStream *error_p = AllocateApacheOutputStream (server_p);
+					OutputStream *log_p = AllocateApacheOutputStream (server_p);
 
-					if (error_p)
+					if (log_p)
 						{
-							/* Mark the streams for deletion when the server pool expires */
-							apr_pool_t *pool_p = server_p -> process -> pool;
+							OutputStream *error_p = AllocateApacheOutputStream (server_p);
 
-							apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
-							apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
+							if (error_p)
+								{
+									/* Mark the streams for deletion when the server pool expires */
+									apr_pool_t *pool_p = server_p -> process -> pool;
 
-							SetDefaultLogStream (log_p);
-							SetDefaultErrorStream (error_p);
+									apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
+									apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
+
+									SetDefaultLogStream (log_p);
+									SetDefaultErrorStream (error_p);
+								}
+							else
+								{
+									FreeOutputStream (log_p);
+								}
 						}
-					else
-						{
-							FreeOutputStream (log_p);
-						}
-				}
 
-		}		/* If (InitInformationSystem ()) */
+				}		/* If (InitInformationSystem ()) */
+
+		}		/* if (APRJobsManagerChildInit (pool_p, server_p)) */
 }
 
 
@@ -227,7 +231,10 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
   						ret = OK;
   					}
   			}
-
+  		else
+  			{
+  				ap_log_error (APLOG_MARK, APLOG_CRIT, ret, server_p, "You need to specify an socache module to load for WheatIS to work");
+  			}
   	}
 
   return ret;

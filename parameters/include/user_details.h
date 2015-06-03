@@ -1,7 +1,7 @@
 #ifndef USER_DETAILS_H
 #define USER_DETAILS_H
 
-#include "wheatis_service_library.h"
+#include "wheatis_params_library.h"
 
 typedef struct UserDetails
 {
@@ -16,9 +16,9 @@ extern "C"
 #endif	
 	
 
-WHEATIS_SERVICE_API UserDetails *AllocateUserDetails (const char *username_s);
+WHEATIS_PARAMS_API UserDetails *AllocateUserDetails (const char *username_s);
 
-WHEATIS_SERVICE_API void FreeUserDetails (UserDetails *user_details_p);
+WHEATIS_PARAMS_API void FreeUserDetails (UserDetails *user_details_p);
 
 
 #ifdef __cplusplus

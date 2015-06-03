@@ -29,9 +29,11 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC) \
 	-I$(DIR_WHEATIS_UTIL_INC)/containers \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
+	-I$(DIR_WHEATIS_PARAMS_INC) \
 	-I$(DIR_WHEATIS_NETWORK_INC) \
 	-I$(DIR_WHEATIS_SERVER_INC) \
 	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_WHEATIS_PARAMS_INC) \
 	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
@@ -42,15 +44,10 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
-	client.c \
-	parameter.c \
-	parameter_set.c \
 	service.c \
 	service_job.c \
 	service_config.c \
 	service_matcher.c \
-	tag_item.c \
-	user_details.c \
 	web_service_util.c
 
 CPPFLAGS += -DUNIX -DWHEATIS_SERVICE_LIBRARY_EXPORTS
