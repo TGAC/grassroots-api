@@ -29,6 +29,8 @@ public:
 
 	void SetCoresPerSearch (uint32 cores);
 
+	virtual bool SetOutputFilename (const char *filename_s);
+
 private:
 	DrmaaTool *dbt_drmaa_tool_p;
 	bool dbt_async_flag;

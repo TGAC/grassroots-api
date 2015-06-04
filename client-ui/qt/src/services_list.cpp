@@ -4,6 +4,8 @@
 #include "services_list.h"
 
 #include "filesystem_utils.h"
+#include "string_utils.h"
+
 
 ServicesList :: ServicesList (QWidget *parent_p)
 : QListWidget (parent_p)

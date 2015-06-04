@@ -3,7 +3,7 @@
 
 #include "string_utils.h"
 
-
+#include "jobs_manager.h"
 
 #ifdef _DEBUG
 	#define SERVICE_JOB_DEBUG	(STM_LEVEL_FINE)
@@ -12,7 +12,7 @@
 #endif
 
 
-void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s)
+void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
 {
 	job_p -> sj_service_p = service_p;
 	uuid_generate (job_p -> sj_id);
@@ -28,6 +28,9 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 		}
 
 	job_p -> sj_description_s = NULL;
+
+
+	job_p -> sj_close_fn = close_fn;
 
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 		{
@@ -69,7 +72,7 @@ bool SetServiceJobDescription (ServiceJob *job_p, const char * const description
 }
 
 
-ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs)
+ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p))
 {
 	ServiceJob *jobs_p  = (ServiceJob *) AllocMemory (sizeof (ServiceJob) * num_jobs);
 
@@ -87,7 +90,7 @@ ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs)
 
 					for (i = 0; i < num_jobs; ++ i)
 						{
-							InitServiceJob (jobs_p + i, service_p, NULL);
+							InitServiceJob (jobs_p + i, service_p, NULL, close_job_fn);
 						}
 
 					return job_set_p;
@@ -135,6 +138,12 @@ ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
 }
 
 
+bool CloseServiceJob (ServiceJob *job_p)
+{
+	return (job_p -> sj_close_fn (job_p));
+}
+
+
 
 json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
 {
@@ -158,7 +167,7 @@ OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 
 
 
-json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
+json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 {
 	json_t *json_p = NULL;
 	char *uuid_s = GetUUIDAsString (job_p -> sj_id);
@@ -174,6 +183,8 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 
 			if (json_p)
 				{
+					const char *service_name_s = GetServiceName (job_p -> sj_service_p);
+
 					if (job_p -> sj_name_s)
 						{
 							if (json_object_set_new (json_p, JOB_NAME_S, json_string (job_p -> sj_name_s)) != 0)
@@ -187,6 +198,14 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 							if (json_object_set_new (json_p, JOB_DESCRIPTION_S, json_string (job_p -> sj_description_s)) != 0)
 								{
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to add job description %s to job status json", job_p -> sj_description_s);
+								}
+						}
+
+					if (service_name_s)
+						{
+							if (json_object_set_new (json_p, JOB_SERVICE_S, json_string (service_name_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service %s to job status json", service_name_s);
 								}
 						}
 				}
@@ -213,16 +232,18 @@ json_t *GetServiceJobStatusAsJSON (const ServiceJob *job_p)
 
 ServiceJob *CreateServiceJobFromJSON (const json_t *json_p)
 {
+	ServiceJob *job_p = NULL;
 
+	return job_p;
 }
 
 
 bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p)
 {
+	bool success_flag = false;
 
+	return success_flag;
 }
-
-
 
 
 json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
@@ -256,5 +277,29 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 }
 
 
+
+bool AreAnyJobsLive (const ServiceJobSet *jobs_p)
+{
+	size_t i = jobs_p -> sjs_num_jobs;
+	const ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+
+	for ( ; i > 0; -- i, ++ job_p)
+		{
+			switch (job_p -> sj_status)
+				{
+					case OS_IDLE:
+					case OS_PENDING:
+					case OS_STARTED:
+					case OS_SUCCEEDED:
+					case OS_FINISHED:
+						return true;
+
+					default:
+						break;
+				}
+		}
+
+	return false;
+}
 
 

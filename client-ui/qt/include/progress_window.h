@@ -3,8 +3,6 @@
 
 #include <QWidget>
 #include <QMainWindow>
-#include <QDragEnterEvent>
-#include <QDropEvent>
 #include <QTimer>
 
 #include "progress_widget.h"
@@ -25,17 +23,14 @@ public:
 
 public slots:
 	void UpdateStatuses ();
+	void ViewResults ();
 	void show ();
 
-protected:
-	virtual void dropEvent (QDropEvent *event_p);
-	virtual void dragEnterEvent (QDragEnterEvent *event_p);
-
 private:
-	QList <ProgressWidget *> pw_widgets;
-	QTClientData *pw_data_p;
 	QTimer *pw_timer_p;
 	bool pw_timer_started_flag;
+	QList <ProgressWidget *> pw_widgets;
+	QTClientData *pw_data_p;
 };
 
 #endif // PROGRESS_WINDOW_H

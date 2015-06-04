@@ -25,6 +25,9 @@ typedef enum Operation {
 	/** Get results from completed job */
 	OP_GET_SERVICE_RESULTS,
 
+	/** Tell the server that the jobs are no longer needed */
+	OP_CLEAN_UP_JOBS,
+
 	OP_NUM_OPERATIONS
 } Operation;
 
@@ -40,6 +43,7 @@ typedef enum OperationStatus
 	OS_STARTED,
 	OS_FINISHED,
 	OS_SUCCEEDED,
+	OS_CLEANED_UP,
 	OS_UPPER_LIMIT
 } OperationStatus;
 

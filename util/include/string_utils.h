@@ -17,7 +17,8 @@
 
 #include "uuid/uuid.h"
 
-#define UUID_BUFFER_SIZE (37)
+#define UUID_STRING_BUFFER_SIZE (37)
+#define UUID_RAW_SIZE (16)
 
 #ifdef __cplusplus
 	extern "C" {

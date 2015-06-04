@@ -5,7 +5,7 @@
 #include "parameter.h"
 #include "tags.h"
 
-#include "wheatis_service_library.h"
+#include "wheatis_params_library.h"
 
 
 
@@ -14,7 +14,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_SERVICE_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
+WHEATIS_PARAMS_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
 
 
 #ifdef __cplusplus

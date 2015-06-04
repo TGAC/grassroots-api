@@ -7,6 +7,8 @@
 #include <QIcon>
 
 #include "service_prefs_widget.h"
+#include "json_tools.h"
+
 
 #ifdef _DEBUG
 	#define SERVICE_PREFS_WIDGET_DEBUG (DEBUG_FINE)

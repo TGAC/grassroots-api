@@ -26,14 +26,14 @@
 #define TAG_BLAST_OUTPUT_FORMAT MAKE_TAG ('B', 'F', 'M', 'T')
 
 
-BLAST_SERVICE_LOCAL typedef struct DatabaseInfo
+typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 {
 	const char *di_name_s;
 	const char *di_description_s;
 } DatabaseInfo;
 
 
-BLAST_SERVICE_LOCAL typedef struct BlastServiceData
+ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 {
 	ServiceData bsd_base_data;
 	BlastToolSet *bsd_blast_tools_p;

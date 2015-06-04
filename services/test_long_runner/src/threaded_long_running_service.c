@@ -255,15 +255,13 @@ static json_t *GetLongRunningResultsAsJSON (OperationStatus status)
 						}
 					else
 						{
-							json_object_clear (result_json_p);
-							json_decref (result_json_p);
-						}
+							WipeJSON (result_json_p);
+					}
 				}
 
 			if (!success_flag)
 				{
-					json_object_clear (results_json_p);
-					json_decref (results_json_p);
+					WipeJSON (results_json_p);
 					results_json_p = NULL;
 				}
 		}

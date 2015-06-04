@@ -42,6 +42,12 @@ WHEATIS_UTIL_API bool InitDefaultOutputStream (void);
 WHEATIS_UTIL_API void FreeDefaultOutputStream (void);
 
 
+WHEATIS_UTIL_API void SetDefaultErrorStream (OutputStream *stream_p);
+
+
+WHEATIS_UTIL_API void SetDefaultLogStream (OutputStream *stream_p);
+
+
 WHEATIS_UTIL_API void FreeOutputStream (struct OutputStream *stream_p);
 
 

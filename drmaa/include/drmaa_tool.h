@@ -24,6 +24,7 @@ typedef struct DrmaaTool
 	LinkedList *dt_args_p;
 	char *dt_queue_name_s;
 	char *dt_working_directory_s;
+	char *dt_output_filename_s;
 	drmaa_job_template_t *dt_job_p;
 	char dt_id_s [MAX_LEN_JOBID];
 	char dt_id_out_s [MAX_LEN_JOBID];
@@ -62,6 +63,10 @@ WHEATIS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host
 
 
 WHEATIS_DRMAA_API bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_name_s);
+
+
+/** Redirect the stdout/stderr streams to a file */
+WHEATIS_DRMAA_API bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char *output_name_s);
 
 
 WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s);

@@ -54,8 +54,6 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 
 static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p);
 
-static int ReadBody2 (request_rec *req_p, ByteBuffer *buffer_p);
-
 
 /**********************************/
 /********** API METHODS ***********/
@@ -103,7 +101,7 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 	
 	if (buffer_p)
 		{
-			int res = ReadBody2 (req_p, buffer_p);
+			int res = ReadRequestBody (req_p, buffer_p);
 			
 			if (res == 0)
 				{
@@ -411,7 +409,7 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 }
 
 
-static int ReadBody2 (request_rec *req_p, ByteBuffer *buffer_p)
+static int ReadRequestBody (request_rec *req_p, ByteBuffer *buffer_p)
 {
 	int ret = ap_setup_client_block (req_p, REQUEST_CHUNKED_ERROR);
 

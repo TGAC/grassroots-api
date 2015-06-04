@@ -1,8 +1,7 @@
 COPY	= cp 
 
-export DIR_WHEATIS_INSTALL = /opt/wheatis
 export DIR_ROOT = $(realpath .)
-
+export WHEATIS_VERSION = test
 
 include dependencies.properties
 
@@ -103,10 +102,10 @@ export DIR_LSF_DRMAA_LIB=$(DIR_LSF_DRMAA)/lib
 include project.properties
 
 ifeq ($(DRMAA_ENABLED),1)
+all: drmaa
+
 drmaa: util network
 	$(MAKE) -C drmaa
-
-all: drmaa	
 
 install_drmaa:
 	$(MAKE) -C drmaa install
@@ -116,6 +115,11 @@ install_drmaa:
 
 endif
 
+info:
+	@echo "installing wheatis to $(DIR_WHEATIS_INSTALL)"
+	@echo "installing apache module to $(DIR_APACHE)/modules"
+	@echo "APXS=$(APXS)"	
+	@echo "WHEATIS_VERSION=$(WHEATIS_VERSION)"
 
 all: 	
 	@echo "BUILD = " $(BUILD)
@@ -123,6 +127,7 @@ all:
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C util 
 	$(MAKE) -C network
+	$(MAKE) -C parameters
 	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
 	$(MAKE) -C services/lib
@@ -132,6 +137,7 @@ all:
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
 	$(MAKE) -C server/httpd/mod_wheatis
+	$(MAKE) -C clients/lib
 	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
@@ -146,6 +152,7 @@ all:
 install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C util install
 	$(MAKE) -C network install
+	$(MAKE) -C parameters install
 	$(MAKE) -C irods/lib install
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
@@ -155,6 +162,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
 	$(MAKE) -C server/httpd/mod_wheatis install
+	$(MAKE) -C clients/lib install
 	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
@@ -165,10 +173,12 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C services/ensembl_rest install
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install
+	git log -1 > $(DIR_WHEATIS_INSTALL)/wheatis.version
 	
 clean: 
 	$(MAKE) -C util clean
 	$(MAKE) -C network clean
+	$(MAKE) -C parameters clean
 	$(MAKE) -C irods/lib clean
 	$(MAKE) -C handlers/lib clean
 	$(MAKE) -C services/lib clean
@@ -179,6 +189,7 @@ clean:
 	$(MAKE) -C server/standalone clean 
 	$(MAKE) -C drmaa clean
 	$(MAKE) -C server/httpd/mod_wheatis clean
+	$(MAKE) -C clients/lib clean
 	$(MAKE) -C clients/standalone clean
 #	$(MAKE) -C clients/web-server-client clean	
 	$(MAKE) -C services/blast clean

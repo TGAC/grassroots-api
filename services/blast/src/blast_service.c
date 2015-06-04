@@ -7,6 +7,7 @@
 #include "string_utils.h"
 #include "wheatis_config.h"
 #include "temp_file.hpp"
+#include "json_tools.h"
 
 
 /*
@@ -46,6 +47,13 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id
 static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
 
 static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s);
+
+
+static uint32 GetNumberOfDatabases (const BlastServiceData *data_p);
+
+static bool CleanUpBlastJob (ServiceJob *job_p);
+
+
 
 /*
  * API FUNCTIONS
@@ -253,6 +261,24 @@ static const char *GetBlastServiceDesciption (Service *service_p)
 }
 
 
+static uint32 GetNumberOfDatabases (const BlastServiceData *data_p)
+{
+	uint32 i = 0;
+	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
+
+	if (db_p)
+		{
+			while (db_p -> di_name_s)
+				{
+					++ i;
+					++ db_p;
+				}
+		}
+
+	return i;
+}
+
+
 /*
  * The list of databases that can be searched
  */
@@ -261,72 +287,76 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 7;
-	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	Parameter **grouped_param_pp = grouped_params_pp;
-	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
+	size_t num_group_params = GetNumberOfDatabases (data_p);
 
-
-	if (db_p)
+	if (num_group_params)
 		{
-			uint8 a = 0;
-			uint8 b = 0;
+			Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+			Parameter **grouped_param_pp = grouped_params_pp;
+			const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 
-			def.st_boolean_value = true;
-			success_flag = true;
-
-			while ((db_p -> di_name_s) && success_flag)
+			if (db_p)
 				{
-					/* try and get the local name of the database */
-					const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
-					uint32 tag = MAKE_TAG ('B', 'D', a, b);
+					uint8 a = 0;
+					uint8 b = 0;
 
-					if (local_name_s)
-						{
-							++ local_name_s;
-						}
+					def.st_boolean_value = true;
+					success_flag = true;
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+					while ((db_p -> di_name_s) && success_flag)
 						{
-							if (grouped_param_pp)
+							/* try and get the local name of the database */
+							const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
+							uint32 tag = MAKE_TAG ('B', 'D', a, b);
+
+							if (local_name_s)
 								{
-									*grouped_param_pp = param_p;
-									++ grouped_param_pp;
+									++ local_name_s;
 								}
 
-							if (b == 0xFF)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 								{
-									b = 0;
-									++ a;
+									if (grouped_param_pp)
+										{
+											*grouped_param_pp = param_p;
+											++ grouped_param_pp;
+										}
+
+									if (b == 0xFF)
+										{
+											b = 0;
+											++ a;
+										}
+									else
+										{
+											++ b;
+										}
+
+									++ db_p;
 								}
 							else
 								{
-									++ b;
+									success_flag = false;
 								}
 
-							++ db_p;
-						}
-					else
-						{
-							success_flag = false;
-						}
+						}		/* while (db_p && success_flag) */
 
-				}		/* while (db_p && success_flag) */
-
-		}		/* if (db_p) */
+				}		/* if (db_p) */
 
 
 
-	if (success_flag)
-		{
-			const char * const group_name_s = "Available Databases";
-
-			if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+			if (success_flag)
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
-					FreeMemory (grouped_params_pp);
+					const char * const group_name_s = "Available Databases";
+
+					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							FreeMemory (grouped_params_pp);
+						}
 				}
-		}
+
+		}		/* if (num_group_params) */
 
 	return success_flag;
 }
@@ -613,8 +643,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 
 									if (!blast_result_json_p)
 										{
-											json_object_clear (blast_result_json_p);
-											json_decref (blast_result_json_p);
+											WipeJSON (result_json_p);
 										}
 								}
 						}
@@ -737,11 +766,10 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 	if (num_jobs > 0)
 		{
-			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs);
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs, CleanUpBlastJob);
 
 			if (service_p -> se_jobs_p)
 				{
-					size_t i;
 					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 					TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s);
 					const char *filename_s = NULL;
@@ -767,7 +795,6 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 						{
 							size_t num_jobs_ran = 0;
 							db_p = blast_data_p -> bsd_databases_p;
-							i = 0;
 
 							while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
 								{
@@ -921,3 +948,12 @@ static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t s
 	return status;
 }
 
+
+
+static bool CleanUpBlastJob (ServiceJob *job_p)
+{
+	bool cleaned_up_flag = true;
+
+
+	return cleaned_up_flag;
+}

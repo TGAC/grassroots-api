@@ -69,7 +69,7 @@ extern "C"
  * @param description_s The description to use for the ParameterSet.
  * @return The newly created ParameterSet or NULL upon error.
  */
-WHEATIS_SERVICE_API ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s);
+WHEATIS_PARAMS_API ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s);
 
 
 /**
@@ -77,7 +77,7 @@ WHEATIS_SERVICE_API ParameterSet *AllocateParameterSet (const char *name_s, cons
  * 
  * @param params_p The ParameterSet to free.
  */
-WHEATIS_SERVICE_API void FreeParameterSet (ParameterSet *params_p);
+WHEATIS_PARAMS_API void FreeParameterSet (ParameterSet *params_p);
 
 
 /**
@@ -87,10 +87,10 @@ WHEATIS_SERVICE_API void FreeParameterSet (ParameterSet *params_p);
  * @param param_p The Parameter to add.
  * @return <code>true</code> if the Parameter was added successfully, <code>false</code> otherwise.
  */
-WHEATIS_SERVICE_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
+WHEATIS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
 
 
-WHEATIS_SERVICE_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
+WHEATIS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag, 
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, 
 	ParameterBounds *bounds_p, uint8 level,
@@ -109,7 +109,7 @@ WHEATIS_SERVICE_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet
  * @return The json-based representation of the ParameterSet or <code>NULL</code> if there was
  * an error.
  */
-WHEATIS_SERVICE_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
+WHEATIS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
 
 
 /**
@@ -120,39 +120,39 @@ WHEATIS_SERVICE_API json_t *GetParameterSetAsJSON (const ParameterSet * const pa
  * @return  The newly-generated ParameterSet or <code>NULL</code> if there was
  * an error.
  */
-WHEATIS_SERVICE_API ParameterSet *CreateParameterSetFromJSON (const json_t * const json_p);
+WHEATIS_PARAMS_API ParameterSet *CreateParameterSetFromJSON (const json_t * const json_p);
 
 
 
-WHEATIS_SERVICE_API uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p);
+WHEATIS_PARAMS_API uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p);
 
 
-WHEATIS_SERVICE_API Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
+WHEATIS_PARAMS_API Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
 
-WHEATIS_SERVICE_API Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s);
+WHEATIS_PARAMS_API Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s);
 
-WHEATIS_SERVICE_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
-
-
-WHEATIS_SERVICE_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *params_p);
+WHEATIS_PARAMS_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
 
 
-WHEATIS_SERVICE_API void FreeParameterSetNode (ListItem *node_p);
+WHEATIS_PARAMS_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *params_p);
 
 
-WHEATIS_SERVICE_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, Parameter **params_pp, const uint32 num_params);
+WHEATIS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
 
 
-WHEATIS_SERVICE_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
+WHEATIS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, Parameter **params_pp, const uint32 num_params);
 
 
-WHEATIS_SERVICE_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, const json_t * const json_p);
+WHEATIS_PARAMS_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
 
 
-WHEATIS_SERVICE_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
+WHEATIS_PARAMS_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, const json_t * const json_p);
 
 
-WHEATIS_SERVICE_API Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag);
+WHEATIS_PARAMS_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
+
+
+WHEATIS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag);
 
 
 /**
@@ -163,7 +163,7 @@ WHEATIS_SERVICE_API Parameter *DetachParameterByTag (ParameterSet *params_p, con
  * @return Upon success, an array of matching Parameter pointers terminated by a NULL.
  * Upon failure a NULL is returned.
  */
-WHEATIS_SERVICE_API Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
+WHEATIS_PARAMS_API Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 
 
 #ifdef __cplusplus

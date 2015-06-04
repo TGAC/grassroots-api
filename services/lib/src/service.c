@@ -109,7 +109,20 @@ bool CloseService (Service *service_p)
 }
 
 
-json_t *GetServiceResults (Service *service_p, uuid_t service_id)
+bool IsServiceLive (Service *service_p)
+{
+	bool is_live_flag = false;
+
+	if (service_p -> se_jobs_p)
+		{
+			is_live_flag = AreAnyJobsLive (service_p -> se_jobs_p);
+		}
+
+	return is_live_flag;
+}
+
+
+json_t *GetServiceResults (Service *service_p, const uuid_t service_id)
 {
 	json_t *results_p = NULL;
 

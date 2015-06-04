@@ -4,7 +4,7 @@
 
 #include "handler_utils.h"
 #include "streams.h"
-#include "running_services_table.h"
+#include "jobs_manager.h"
 #include "wheatis_config.h"
 #include "string_utils.h"
 #include "service_config.h"
@@ -13,40 +13,38 @@
 #include "drmaa_util.h"
 #endif
 
+
 bool InitInformationSystem ()
 {
 	if (InitHandlerUtil ())
 		{
 			if (InitDefaultOutputStream ())
 				{
-					if (InitServicesStatusTable ())
+					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
+
+					if (c == 0)
 						{
-							CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
+							bool res_flag = true;
+							const char *root_path_s = GetServerRootDirectory ();
+							char *full_services_path_s = MakeFilename (root_path_s, "wheatis.config");
 
-							if (c == 0)
+							if (full_services_path_s)
 								{
-									bool res_flag = true;
-									const char *root_path_s = GetServerRootDirectory ();
-									char *full_services_path_s = MakeFilename (root_path_s, "wheatis.config");
-
-									if (full_services_path_s)
+									if (!InitConfig (full_services_path_s))
 										{
-											if (!InitConfig (full_services_path_s))
-												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to load config file from %s", full_services_path_s);
-												}
-											FreeCopiedString (full_services_path_s);
-										}		/* if (full_services_path_s) */
-
-									#ifdef DRMAA_ENABLED
-									if (res_flag)
-										{
-											res_flag = InitDrmaa ();
+											PrintErrors (STM_LEVEL_WARNING, "Failed to load config file from %s", full_services_path_s);
 										}
-									#endif
+									FreeCopiedString (full_services_path_s);
+								}		/* if (full_services_path_s) */
 
-									return res_flag;
+							#ifdef DRMAA_ENABLED
+							if (res_flag)
+								{
+									res_flag = InitDrmaa ();
 								}
+							#endif
+
+							return res_flag;
 						}
 				}
 		}
@@ -65,7 +63,6 @@ bool DestroyInformationSystem ()
 	
 	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
-	DestroyServicesStatusTable ();
 	curl_global_cleanup ();
 
 	return res_flag;

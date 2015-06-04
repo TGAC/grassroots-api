@@ -501,7 +501,7 @@ static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_i
 
 			if (services_p)
 				{
-					if (json_object_set (req_p, SERVICES_NAME_S, services_p) == 0)
+					if (json_object_set_new (req_p, SERVICES_NAME_S, services_p) == 0)
 						{
 							uint32 i = num_ids;
 							const uuid_t **id_pp = ids_pp;
@@ -537,7 +537,7 @@ static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_i
 									return req_p;
 								}		/* if (success_flag) */
 
-						}		/* if (json_object_set (req_p, SERVICES_NAME_S, services_p) == 0) */
+						}		/* if (json_object_set_new- (req_p, SERVICES_NAME_S, services_p) == 0) */
 					else
 						{
 							json_decref (services_p);
@@ -581,4 +581,24 @@ bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p)
 
 
 
+bool GetUUIDFromJSON (const json_t *service_json_p, uuid_t uuid)
+{
+	bool success_flag = false;
+	json_t *uuid_json_p = json_object_get (service_json_p, SERVICE_UUID_S);
+
+	if (uuid_json_p)
+		{
+			if (json_is_string (uuid_json_p))
+				{
+					const char *uuid_s = json_string_value (uuid_json_p);
+
+					if (uuid_parse (uuid_s, uuid) == 0)
+						{
+							success_flag = true;
+						}
+				}
+		}
+
+	return success_flag;
+}
 

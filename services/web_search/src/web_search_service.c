@@ -59,6 +59,8 @@ static void FreeWebSearchServiceData (WebSearchServiceData *data_p);
 
 static bool CloseWebSearchService (Service *service_p);
 
+static bool CleanUpWebSearchServiceJob (ServiceJob *job_p);
+
 /*
  * API FUNCTIONS
  */
@@ -211,7 +213,7 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 	WebServiceData *data_p = & (service_data_p -> wssd_base_data);
 	
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpWebSearchServiceJob);
 
 	if (service_p -> se_jobs_p)
 		{
@@ -283,8 +285,6 @@ static json_t *GetWebSearchServiceResults (Service *service_p, const uuid_t job_
 
 	return res_p;
 }
-
-	
 	
 
 static bool IsResourceForWebSearchService (Service *service_p, Resource *resource_p, Handler *handler_p)
@@ -299,3 +299,10 @@ static bool IsResourceForWebSearchService (Service *service_p, Resource *resourc
 	return interested_flag;
 }
 
+
+static bool CleanUpWebSearchServiceJob (ServiceJob *job_p)
+{
+	bool cleaned_up_flag = true;
+
+	return cleaned_up_flag;
+}

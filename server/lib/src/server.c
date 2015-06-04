@@ -16,7 +16,7 @@
 
 #include "math_utils.h"
 #include "string_utils.h"
-#include "running_services_table.h"
+#include "jobs_manager.h"
 #include "parameter_set.h"
 
 #include "uuid/uuid.h"
@@ -63,6 +63,8 @@ static json_t *GetServiceData (const json_t * const req_p, const json_t *credent
 static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
 
 static bool AddServiceResultsToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
+
+static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p);
 
 
 /***************************/
@@ -213,6 +215,10 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						res_p = GetServiceResultsAsJSON (req_p, credentials_p);
 						break;
 
+					case OP_CLEAN_UP_JOBS:
+						CleanUpJobs (req_p, credentials_p);
+						break;
+
 					default:
 						break;
 				}		/* switch (op) */
@@ -220,7 +226,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
 		{
-			bool success_flag = false;
 			uuid_t user_uuid;
 			const char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
 
@@ -369,7 +374,6 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 											if (params_p)
 												{
-													OperationStatus status;
 													ServiceJobSet *jobs_p = RunService (service_p, params_p, credentials_p);
 													bool keep_service_flag = false;
 
@@ -378,6 +382,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 															const size_t num_jobs = jobs_p -> sjs_num_jobs;
 															size_t i;
 															ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+															JobsManager *manager_p = GetJobsManager ();
 
 															res = 1;
 
@@ -397,7 +402,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																		{
 																			keep_service_flag = true;
 
-																			if (!AddServiceJobToStatusTable (job_p -> sj_id, job_p))
+																			if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
 																				{
 
 																				}
@@ -558,7 +563,8 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 		{
 			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
-					ServiceJob *job_p = GetServiceJobFromStatusTable (service_id);
+					JobsManager *manager_p = GetJobsManager ();
+					ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, service_id);
 
 					if (job_p)
 						{
@@ -604,7 +610,8 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
 {
 	bool success_flag = false;
-	ServiceJob *job_p = GetServiceJobFromStatusTable (job_id);
+	JobsManager *manager_p = GetJobsManager ();
+	ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, job_id);
 	json_t *service_result_p = NULL;
 
 	if (job_p)
@@ -755,6 +762,60 @@ static json_t *GetServiceResultsAsJSON (const json_t * const req_p, const json_t
 static json_t *GetServiceStatus (const json_t * const req_p, const json_t *credentials_p)
 {
 	return GetServiceData (req_p, credentials_p, AddServiceStatusToJSON);
+}
+
+
+static bool CleanUpJobs (const json_t * const req_p, const json_t *credentials_p)
+{
+	json_t *service_uuids_json_p = json_object_get (req_p, SERVICES_NAME_S);
+
+	if (service_uuids_json_p)
+		{
+			if (json_is_array (service_uuids_json_p))
+				{
+					size_t i;
+					json_t *service_uuid_json_p;
+					size_t num_successes = 0;
+					size_t num_uuids = json_array_size (service_uuids_json_p);
+					JobsManager *manager_p = GetJobsManager ();
+
+					json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
+						{
+							if (json_is_string (service_uuid_json_p))
+								{
+									const char *uuid_s = json_string_value (service_uuid_json_p);
+									uuid_t job_id;
+
+									if (ConvertStringToUUID (uuid_s, job_id))
+										{
+											ServiceJob *job_p = RemoveServiceJobFromJobsManager (manager_p, job_id);
+
+											if (job_p)
+												{
+													Service *service_p = job_p -> sj_service_p;
+
+													CloseServiceJob (job_p);
+
+													if (!IsServiceLive (service_p))
+														{
+															CloseService (service_p);
+														}
+												}
+
+										}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
+
+								}		/* if (json_is_string (service_uuid_json_p)) */
+
+						}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+				}
+			else
+				{
+
+				}
+
+		}		/* if (service_uuids_json_p) */
+
+	return true;
 }
 
 
@@ -944,7 +1005,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 											/* Now run the service */
 											if (param_flag)
 												{
-													service_res_p = RunService (service_p, params_p, config_p);
+													ServiceJobSet *jobs_set_p = RunService (service_p, params_p, config_p);
 												}
 
 											ReleaseServiceParameters (service_p, params_p);

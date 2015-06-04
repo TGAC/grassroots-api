@@ -7,6 +7,7 @@
 
 #include "streams.h"
 #include "json_util.h"
+#include "json_tools.h"
 #include "tag_item.h"
 
 
@@ -222,8 +223,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 													if (!success_flag)
 														{
-															json_object_clear (group_names_p);
-															json_decref (group_names_p);
+															WipeJSON (group_names_p);
 														}
 
 												}		/* if (group_names_p) */
@@ -242,8 +242,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 					if (!success_flag)
 						{
-							json_object_clear (param_set_json_p);
-							json_decref (param_set_json_p);
+							WipeJSON (param_set_json_p);
 							param_set_json_p = NULL;
 						}
 

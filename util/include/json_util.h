@@ -58,6 +58,7 @@ PREFIX const char *SERVICE_STATUS_S VAL("status");
 PREFIX const char *SERVICE_RESULTS_S VAL("results");
 
 PREFIX const char *JOB_NAME_S VAL("name");
+PREFIX const char *JOB_SERVICE_S VAL("service");
 PREFIX const char *JOB_DESCRIPTION_S VAL("description");
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");

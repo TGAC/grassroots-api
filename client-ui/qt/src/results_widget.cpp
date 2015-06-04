@@ -47,7 +47,13 @@ uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p)
         }   /* for (size_t i = 0; i < size; ++ i) */
 
     }   /*  if (json_is_array (json_p)) */
-
+	else
+		{
+			if (AddResultsPageFromJSON (json_p))
+				{
+					++ num_pages;
+				}
+		}
 
   setUpdatesEnabled (true);
 

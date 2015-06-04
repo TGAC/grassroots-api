@@ -31,6 +31,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_IRODS_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_WHEATIS_HANDLER_INC) \
+	-I$(DIR_WHEATIS_PARAMS_INC) \
 	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
@@ -43,7 +44,7 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)	
 	
 SRCS 	= \
-	services_list.c \
+	jobs_manager.c \
 	server.c \
 	system_util.c \
 	wheatis_config.c

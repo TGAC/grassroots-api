@@ -37,6 +37,7 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 
 									tool_p -> dt_queue_name_s = NULL;
 									tool_p -> dt_working_directory_s = NULL;
+									tool_p -> dt_output_filename_s = NULL;
 
 									tool_p -> dt_num_cores = 0;
 									tool_p -> dt_host_name_s = NULL;
@@ -86,6 +87,22 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 		}
 
 	FreeMemory (tool_p);
+}
+
+
+
+bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char *output_name_s)
+{
+	bool success_flag = false;
+
+	if (ReplaceStringValue (& (tool_p -> dt_working_directory_s), output_name_s))
+		{
+			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_OUTPUT_PATH, tool_p -> dt_working_directory_s, NULL, 0);
+
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 
 

@@ -765,10 +765,9 @@ bool ConvertStringToUUID (const char *id_s, uuid_t id)
 }
 
 
-
 char *GetUUIDAsString (const uuid_t id)
 {
-	char *uuid_s = (char *) AllocMemory (UUID_BUFFER_SIZE * sizeof (char));
+	char *uuid_s = (char *) AllocMemory (UUID_STRING_BUFFER_SIZE * sizeof (char));
 
 	if (uuid_s)
 		{

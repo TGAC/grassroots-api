@@ -11,6 +11,7 @@ DIR_OBJS = $(BUILD)
 
 ifeq ($(DIR_APACHE),)
 HTTPD := $(shell httpd -V) 
+APXS := $(shell apxs)
 DIR_APACHE := $(filter HTTPD_ROOT=%, $(HTTPD))
 endif
 
@@ -20,6 +21,11 @@ DIR_APACHE_MODULES := $(DIR_APACHE)/modules
 DIR_APACHE_INC := $(DIR_APACHE)/include
 DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
 APACHE_SET = true
+
+ifeq ($(APXS),)
+APXS = $(DIR_APACHE)/bin/apxs
+endif
+
 endif
 
 
@@ -37,7 +43,7 @@ CFLAGS 	+=  -Wc,-Wall  -Wc,-fpic
 ifeq ($(BUILD),release)
 	CFLAGS 	+= -Wc,-O3 -Wc,-s
  	LDFLAGS += Wl,-s
-gti pull#	CFLAGS 	+= -g
+else
 	CFLAGS 	+= -Wc,-g -Wc,-pg -Wc,-Wall -Wc,-O0
 	LDFLAGS += -Wl,pg
 	CPPFLAGS += -Wc,-D_DEBUG
@@ -60,6 +66,7 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_IRODS_INC) \
 	-I$(DIR_WHEATIS_SERVICES_INC) \
 	-I$(DIR_WHEATIS_HANDLER_INC) \
+	-I$(DIR_WHEATIS_PARAMS_INC) \
 	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
@@ -68,11 +75,14 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
-	-I$(DIR_JANSSON_INC)	
+	-I$(DIR_JANSSON_INC) \
+	-I$(DIR_UUID_INC)	
 		
 SRCS 	= \
 	src/mod_wheatis.c \
-	src/key_value_pair.c  
+	src/key_value_pair.c \
+	src/apr_jobs_manager.c \
+	src/apache_output_stream.c
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
@@ -80,6 +90,7 @@ LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_NETWORK_LIB) -l$(WHEATIS_NETWORK_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVER_LIB) -l$(WHEATIS_SERVER_LIB_NAME) \
+	-L$(DIR_WHEATIS_PARAMS_LIB) -l$(WHEATIS_PARAMS_LIB_NAME) \
 	-L$(SHARED_IRODS_HOME)/lib -lirods
 
  
@@ -105,7 +116,7 @@ all:
 	@echo "IRODS_HOME $$IRODS_HOME -"
 	@echo "DIR_APACHE _ $(DIR_APACHE) _"
 	@echo "APACHE INC $(DIR_APACHE_INC)"
-	apxs -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
+	$(APXS) -n $(NAME) $(INCLUDES) -D UNIX=1 -D BUILD=$(BUILD) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -c $(SRCS)
 		
 clean:
 	@rm -fr src/*.o src/*.lo src/*.slo src/*.la
