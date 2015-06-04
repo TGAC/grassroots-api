@@ -46,6 +46,14 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p);
 
 static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *vhost_config_p);
 
+
+static void *CreateDirectoryConfig (apr_pool_t *pool_p, char *context_s);
+static void *MergeDirectoryConfig (apr_pool_t *pool_p, void *base_config_p, void *new_config_p);
+
+
+static ModWheatISConfig *CreateConfig (apr_pool_t *pool_p, server_rec *server_p);
+
+
 static apr_status_t CleanUpOutputStream (void *value_p);
 
 
@@ -58,7 +66,7 @@ static apr_status_t CleanUpOutputStream (void *value_p);
 
 static const command_rec s_wheatis_directives [] =
 {
-	AP_INIT_TAKE1 ("WheatISSOCache", SetWheatISCacheProvider, NULL, ACCESS_CONF, "The provider for the Jobs Cache"),
+	AP_INIT_TAKE1 ("WheatISCache", SetWheatISCacheProvider, NULL, ACCESS_CONF, "The provider for the Jobs Cache"),
 	AP_INIT_TAKE1 ("WheatISRoot", SetWheatISRootPath, NULL, ACCESS_CONF, "The path to the WheatIS installation"),
 	{ NULL }
 };
@@ -71,12 +79,12 @@ static APRJobsManager *s_jobs_manager_p = NULL;
 module AP_MODULE_DECLARE_DATA wheatis_module =
 {
     STANDARD20_MODULE_STUFF,
-    NULL,            			// Per-directory configuration handler
-    NULL,            			// Merge handler for per-directory configurations
-    CreateServerConfig,		// Per-server configuration handler
-    MergeServerConfig,		// Merge handler for per-server configurations
-    s_wheatis_directives,	// Any directives we may have for httpd
-    RegisterHooks    			// Our hook registering function
+    CreateDirectoryConfig,   	// Per-directory configuration handler
+    MergeDirectoryConfig,   	// Merge handler for per-directory configurations
+    CreateServerConfig,				// Per-server configuration handler
+    MergeServerConfig,				// Merge handler for per-server configurations
+    s_wheatis_directives,			// Any directives we may have for httpd
+    RegisterHooks    					// Our hook registering function
 };
 
 
@@ -117,6 +125,18 @@ static int WheatISPreConfig (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, 
 
 static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 {
+	return ((void *) CreateConfig (pool_p, server_p));
+}
+
+
+static void *CreateDirectoryConfig (apr_pool_t *pool_p, char *context_s)
+{
+	return ((void *) CreateConfig (pool_p, NULL));
+}
+
+
+static ModWheatISConfig *CreateConfig (apr_pool_t *pool_p, server_rec *server_p)
+{
 	ModWheatISConfig *config_p = apr_palloc (pool_p, sizeof (ModWheatISConfig));
 
 	if (config_p)
@@ -127,7 +147,14 @@ static void *CreateServerConfig (apr_pool_t *pool_p, server_rec *server_p)
 			config_p -> wisc_jobs_manager_p = NULL;
 		}
 
-	return ((void *) config_p);
+	return config_p;
+}
+
+
+static void *MergeDirectoryConfig (apr_pool_t *pool_p, void *base_config_p, void *new_config_p)
+{
+	/* currently ignore the vhosts config */
+	return base_config_p;
 }
 
 
@@ -262,7 +289,7 @@ static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char
 /* Get the cache provider that we are going to use for the jobs manager storage */
 static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const char *arg_s)
 {
-	ModWheatISConfig *config_p = (ModWheatISConfig *) ap_get_module_config (cmd_p -> server -> module_config, &wheatis_module);
+	ModWheatISConfig *config_p = (ModWheatISConfig *) cfg_p;
   const char *err_msg_s = ap_check_cmd_context (cmd_p, GLOBAL_ONLY);
 
   if (!err_msg_s)
@@ -312,7 +339,7 @@ static int WheatISHandler (request_rec *req_p)
 						if (json_req_p)
 							{
 								int socket_fd = -1;
-						    ModWheatISConfig *config_p = ap_get_module_config (req_p -> server -> module_config, &wheatis_module);
+						    ModWheatISConfig *config_p = ap_get_module_config (req_p -> per_dir_config, &wheatis_module);
 								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
 
 								if (res_p)

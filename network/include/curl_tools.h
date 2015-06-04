@@ -36,9 +36,9 @@ WHEATIS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
  * write to buffer callback.
  * 
  * @param buffer_p If this is not NULL, then set the curl object 
- * to write its reponse to this buffer. This can be NULL <code>NULL<code>.
+ * to write its reponse to this buffer. This can be NULL <code>NULL</code>.
  * @see AddCurlCallback
- * @return The CURL object or <code>NULL<code> upon error.
+ * @return The CURL object or <code>NULL</code> upon error.
  */
 WHEATIS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
 
