@@ -48,7 +48,10 @@ WHEATIS_NETWORK_API void FreeByteBuffer (ByteBuffer *buffer_p);
  * @return <code>true</code> if the resize was successful <code>false</code>
  * upon failure. If the call failed, the contents of the data buffer are preserved.
  */
-WHEATIS_NETWORK_API bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
+#ifndef DOXYGEN
+WHEATIS_NETWORK_API
+#endif
+bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
 
 
 /**
