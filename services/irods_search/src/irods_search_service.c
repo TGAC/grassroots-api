@@ -102,7 +102,7 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 							FreeParameterSet (params_p);
 						}		/* if (params_p) */
 
-					CloseConnection (connection_p);
+					CloseIRODSConnection (connection_p);
 				}		/* if (connection_p) */
 
 			FreeMemory (data_p);
@@ -116,7 +116,7 @@ static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p)
 {
 	if (data_p -> issd_connection_p)
 		{
-			CloseConnection (data_p -> issd_connection_p);
+			CloseIRODSConnection (data_p -> issd_connection_p);
 			data_p -> issd_connection_p = NULL;
 		}
 
@@ -197,7 +197,7 @@ static rcComm_t *GetIRODSConnection (const json_t *config_p)
 
 	if (config_p)
 		{
-			connection_p = CreateConnectionFromJSON (config_p);
+			connection_p = CreateIRODSConnectionFromJSON (config_p);
 		}
 
 	return connection_p;

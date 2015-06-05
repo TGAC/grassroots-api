@@ -8,7 +8,7 @@
 #endif
 
 
-rcComm_t *CreateConnectionFromJSON (const json_t *config_p)
+rcComm_t *CreateIRODSConnectionFromJSON (const json_t *config_p)
 {
 	rcComm_t *connection_p = NULL;
 	const json_t *irods_credentials_p = NULL;
@@ -44,7 +44,7 @@ rcComm_t *CreateConnectionFromJSON (const json_t *config_p)
 
 					if (password_s)
 						{
-							connection_p = CreateConnection (username_s, password_s);
+							connection_p = CreateIRODSConnection (username_s, password_s);
 						}
 				}
 		}
@@ -53,7 +53,7 @@ rcComm_t *CreateConnectionFromJSON (const json_t *config_p)
 }
 
 
-rcComm_t *CreateConnection (const char *username_s, const char *password_s)
+rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
 {
 	rodsEnv env;
 	rErrMsg_t err;
@@ -85,7 +85,7 @@ rcComm_t *CreateConnection (const char *username_s, const char *password_s)
 }
 
 
-void CloseConnection (rcComm_t *connection_p)
+void CloseIRODSConnection (rcComm_t *connection_p)
 {
 	rcDisconnect (connection_p);
 }

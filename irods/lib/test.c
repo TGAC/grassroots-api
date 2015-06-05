@@ -31,7 +31,7 @@ int main (int argc, char *argv [])
 			password_s = argv [2];
 		}
 
-	connection_p = CreateConnection (username_s, password_s);
+	connection_p = CreateIRODSConnection (username_s, password_s);
 
 	if (connection_p)
 		{
@@ -72,7 +72,7 @@ int main (int argc, char *argv [])
 
 			//TestExecuteQueryString (connection_p);
 
-			CloseConnection (connection_p);
+			CloseIRODSConnection (connection_p);
 		}		/* if (connection_p) */
 
 	return result;
