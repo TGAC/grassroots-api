@@ -1,3 +1,8 @@
+/**
+ * @file byte_buffer.h
+ * @addtogroup Network
+ * @{
+ */
 #ifndef BYTE_BUFFER_H
 #define BYTE_BUFFER_H
 
@@ -10,17 +15,19 @@
  * A datatype to allow an automatically growing buffer for appending
  * data to.
  */
-typedef struct ByteBuffer 
+typedef struct ByteBuffer
 {
 	char *bb_data_p;
 	size_t bb_size;
 	size_t bb_current_index;
 } ByteBuffer;
 
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
 
 /**
  * Allocate a ByteBuffer.
@@ -90,6 +97,9 @@ WHEATIS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buff
 #ifdef __cplusplus
 }
 #endif
+
+
+/* @} */
 
 
 #endif		/* #ifndef BYTE_BUFFER_H */
