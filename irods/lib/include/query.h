@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @addtogroup iRODS
+ * @brief Routines to query data objects and collections
+ * @{
+ */
 #ifndef IRODS_QUERY_H
 #define IRODS_QUERY_H
 
@@ -78,6 +84,7 @@ IRODS_UTIL_API void PrintQueryResults (FILE *out_f, const QueryResults * const r
 IRODS_UTIL_API void PrintQueryResult (FILE *out_f, const QueryResult * const result_p);
 
 
+/** @private */
 IRODS_UTIL_LOCAL QueryResults *GenerateQueryResults (const genQueryOut_t *results_p);
 
 
@@ -87,9 +94,11 @@ IRODS_UTIL_API void FreeQueryResults (QueryResults *result_p);
 IRODS_UTIL_API const char *GetColumnNameForId (const int id);
 
 
+/** @private */
 IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 
 
+/** @private */
 IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
 
 
@@ -119,6 +128,9 @@ IRODS_UTIL_API QueryResults *GetAllMetadataAttributeNames (rcComm_t *connection_
 
 
 IRODS_UTIL_API QueryResults *GetAllMetadataAttributeValues (rcComm_t *connection_p, const int key_id, const char * const key_s, const int value_id);
+
+
+/** @} */
 
 
 #ifdef __cplusplus
