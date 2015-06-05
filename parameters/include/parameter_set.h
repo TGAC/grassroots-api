@@ -1,3 +1,6 @@
+/**
+ * @file
+ */
 #ifndef PARAMETER_SET_H
 #define PARAMETER_SET_H
 
@@ -18,19 +21,19 @@ typedef struct ParameterGroupNode
 
 
 /**
- * A set of Parameters along with an optional name
+ * @brief A set of Parameters along with an optional name
  * and description.
  */
 typedef struct ParameterSet
 {
-	/** 
-	 * An optional name for the ParameterSet. 
+	/**
+	 * An optional name for the ParameterSet.
 	 * This can be NULL.
 	 */
 	const char *ps_name_s;
 
-	/** 
-	 * An optional description for the ParameterSet. 
+	/**
+	 * An optional description for the ParameterSet.
 	 * This can be NULL.
 	 */
 	const char *ps_description_s;
@@ -64,61 +67,66 @@ extern "C"
 
 /**
  * Create a new ParameterSet containing no parameters.
- * 
+ *
  * @param name_s The name to use for the ParameterSet.
  * @param description_s The description to use for the ParameterSet.
- * @return The newly created ParameterSet or NULL upon error.
+ * @return The newly created ParameterSet or <code>NULL</code> upon error.
+ * @memberof ParameterSet
  */
 WHEATIS_PARAMS_API ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s);
 
 
 /**
  * Free a ParameterSet and all of its Parameters.
- * 
+ *
  * @param params_p The ParameterSet to free.
+ * @memberof ParameterSet
  */
 WHEATIS_PARAMS_API void FreeParameterSet (ParameterSet *params_p);
 
 
 /**
  * Add a Parameter to a ParameterSet.
- * 
+ *
  * @param params_p The ParameterSet to amend.
  * @param param_p The Parameter to add.
  * @return <code>true</code> if the Parameter was added successfully, <code>false</code> otherwise.
+ * @memberof ParameterSet
  */
 WHEATIS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
 
 
 WHEATIS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
-	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag, 
-	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, 
+	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag,
+	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p,
 	ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 /**
- * Generate a json-based description of a ParameterSet. This uses the Swagger definitions 
+ * Generate a json-based description of a ParameterSet. This uses the Swagger definitions
  * as much as possible.
- * 
+ *
  * @param param_set_p The ParameterSet to generate the description for.
  * @param full_definition_flag If this is <code>true</code> then all of the details for each of
- * the Parameters will get added. If this is <code>false</code> then just the name and 
- * current value of each Parameter will get added. This is useful is you just want to send 
- * the values to use when running a service. 
+ * the Parameters will get added. If this is <code>false</code> then just the name and
+ * current value of each Parameter will get added. This is useful is you just want to send
+ * the values to use when running a service.
  * @return The json-based representation of the ParameterSet or <code>NULL</code> if there was
  * an error.
+ * @memberof ParameterSet
  */
 WHEATIS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
 
 
 /**
- * Create a new ParameterSet from a json-based description. This uses the Swagger definitions 
+ * Create a new ParameterSet from a json-based description. This uses the Swagger definitions
  * as much as possible.
- * 
+ *
  * @param json_p The json-based representation of the ParameterSet..
  * @return  The newly-generated ParameterSet or <code>NULL</code> if there was
  * an error.
+ * @memberof ParameterSet
  */
 WHEATIS_PARAMS_API ParameterSet *CreateParameterSetFromJSON (const json_t * const json_p);
 
@@ -127,16 +135,51 @@ WHEATIS_PARAMS_API ParameterSet *CreateParameterSetFromJSON (const json_t * cons
 WHEATIS_PARAMS_API uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p);
 
 
+/**
+ * Get the Parameter with a given tag from a ParameterSet.
+ *
+ * @param params_p The ParameterSet to search.
+ * @param tag The Tag to try and match.
+ * @return  The Parameter with the matching Tag or <code>NULL</code> if it could not
+ * be found
+ * @memberof ParameterSet
+ */
 WHEATIS_PARAMS_API Parameter *GetParameterFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
 
+
+/**
+ * Get the Parameter with a given name from a ParameterSet.
+ *
+ * @param params_p The ParameterSet to search.
+ * @param name_s The Parameter name to try and match.
+ * @return  The Parameter with the matching name or <code>NULL</code> if it could not
+ * be found
+ * @memberof ParameterSet
+ */
 WHEATIS_PARAMS_API Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s);
+
 
 WHEATIS_PARAMS_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
 
 
+/**
+ * Allocate a new ParameterSetNode to point to the given ParameterSet
+ *
+ * @param params_p The ParameterSet that this ParameterSetNode will point to.
+ * @return  The newly-generated ParameterSetNode or <code>NULL</code> if there was
+ * an error.
+ * @memberof ParameterSetNode
+ */
 WHEATIS_PARAMS_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *params_p);
 
 
+/**
+ * Free a ParameterSetNode and its associated ParameterSet.
+ *
+ * @param node_p The ParameterSetNode to free.
+ * @see FreeParameterSet
+ * @memberof ParameterSetNode
+ */
 WHEATIS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
 
 
@@ -152,6 +195,17 @@ WHEATIS_PARAMS_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, c
 WHEATIS_PARAMS_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
 
 
+/**
+ * Remove the Parameter with a given tag from a ParameterSet.
+ *
+ * @param params_p The ParameterSet to search.
+ * @param tag The Tag to try and match.
+ * @return If found, the Parameter with the matching Tag will be be removed from the ParameterSet
+ * and returned. If it could not be found <code>NULL</code> will be returned.
+ * be found.
+ * @see GetParameterFromParameterSetByTag
+ * @memberof ParameterSet
+ */
 WHEATIS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag);
 
 

@@ -1,6 +1,9 @@
-/**@file wheatis_util_library.h
-*/ 
-
+/**
+ * @file
+ * @defgroup Parameters Parameters Library
+ * @brief The dataypes and methods for dealing
+ * with parameters.
+ */
 #ifndef WHEATIS_PARAMS_LIBRARY_H
 #define WHEATIS_PARAMS_LIBRARY_H
 

@@ -71,7 +71,7 @@ typedef union SharedType
 	char *st_string_value_s;
 
 	char st_char_value;
-	
+
 	Resource *st_resource_value_p;
 
 	LinkedList *st_multiple_values_p;
@@ -231,18 +231,45 @@ WHEATIS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *opti
 WHEATIS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
+/**
+ * Free a Parameter.
+ *
+ * @param param_p The Parameter to free.
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API void FreeParameter (Parameter *param_p);
 
 
+/**
+ * Allocate a ParameterBounds.
+ *
+ * @return The ParameterBounds or <code>NULL</code> upon error.
+ * @memberof ParameterBounds
+ */
 WHEATIS_PARAMS_API ParameterBounds *AllocateParameterBounds (void);
 
 
 WHEATIS_PARAMS_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
 
 
+/**
+ * Make a copy of a ParameterBounds.
+ *
+ * @param src_p The ParameterBounds to copy.
+ * @param pt The ParameterType that the given ParameterBounds refers to.
+ * @return The newly-allocate ParameterBounds copy or <code>NULL</code> upon error.
+ * @memberof ParameterBounds
+ */
 WHEATIS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
 
 
+/**
+ * Free a ParameterBounds.
+ *
+ * @param bounds_p The ParameterBounds to free.
+ * @pt The ParameterTye that the given ParameterBounds refers to.
+ * @memberof ParameterBounds
+ */
 WHEATIS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
 
 
@@ -255,6 +282,14 @@ WHEATIS_PARAMS_API const char *CheckForSignedReal (const Parameter * const param
 WHEATIS_PARAMS_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
 
 
+/**
+ * Set the current value of a Parameter.
+ *
+ * @param parameter_p The Parameter to update.
+ * @param value_p The value to update the Parameter to.
+ * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
 
@@ -273,10 +308,11 @@ WHEATIS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const par
  * @param parameter_p The Parameter to get.
  * @param full_definition_flag If this is <code>true</code> then all of the details for this
  * Parameter will get added. If this is <code>false</code> then just the name and current value
- * will get added. This is useful is you just want to send the values to use when running a 
+ * will get added. This is useful is you just want to send the values to use when running a
  * service.
  * @return A newly-allocated json-based description of the Parameter or <code>NULL</code>
  * upon error. When you no longer require the value you need to call json_decref upon it.
+ * @memberof Parameter
  */
 WHEATIS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
 
@@ -287,6 +323,7 @@ WHEATIS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter
  * @param json_p The json-based decription of the Parameter.
  * @return A newly-allocated Parameter derived from the json-based description
  * or <code>NULL</code> upon error.
+ * @memberof Parameter
  */
 WHEATIS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
 
