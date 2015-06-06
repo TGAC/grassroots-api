@@ -320,6 +320,27 @@ WHEATIS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray
 WHEATIS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
+/**
+ * Allocate a Parameter
+ *
+ * @param type The ParameterType for this Parameter.
+ * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
+ * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * This can be <code>NULL</code>.
+ * @param description_s The description of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param tag The Tag for this Parameter.
+ * @param options_p This can be used to constrain the Parameter to a fixed set of values. If this is <code>NULL</code> then the Parameter can be set to any value.
+ * @param default_value The default value for this Parameter.
+ * @param current_value_p If this is not <code>NULL</code>, then copy this value as the current value of the Parameter. If this is <code>NULL</code>, then current value for this Parameter
+ * will be set to be a copy of its default value.
+ * @param bounds_p If this is not <code>NULL</code>, then this will be used to specify the minimum and maximum values that this Parameter can take. If this is <code>NULL</code>,
+ * then the Parameter can take any value.
+ * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
+ * @param check_value_fn If this is not <code>NULL</code>, then this will be used to check whether the Parameter has been set to a valid value.
+ * @return A newly-allocated Parameter or <code>NULL</code> upon error.
+ * @memberof Parameter.
+ */
 WHEATIS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
@@ -372,6 +393,29 @@ WHEATIS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBounds *
 WHEATIS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
 
 
+
+/**
+ * Allocate a ParameterNode with an associated Parameter.
+ *
+ * @param type The ParameterType for this Parameter.
+ * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
+ * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * This can be <code>NULL</code>.
+ * @param description_s The description of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param tag The Tag for this Parameter.
+ * @param options_p This can be used to constrain the Parameter to a fixed set of values. If this is <code>NULL</code> then the Parameter can be set to any value.
+ * @param default_value The default value for this Parameter.
+ * @param current_value_p If this is not <code>NULL</code>, then copy this value as the current value of the Parameter. If this is <code>NULL</code>, then current value for this Parameter
+ * will be set to be a copy of its default value.
+ * @param bounds_p If this is not <code>NULL</code>, then this will be used to specify the minimum and maximum values that this Parameter can take. If this is <code>NULL</code>,
+ * then the Parameter can take any value.
+ * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
+ * @param check_value_fn If this is not <code>NULL</code>, then this will be used to check whether the Parameter has been set to a valid value.
+ * @return A newly-allocated ParameterNode with a Parameter set to the given values or <code>NULL</code> upon error.
+ * @memberof ParameterNode.
+ * @see AllocateParameter
+ */
 WHEATIS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
@@ -469,6 +513,16 @@ WHEATIS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json
 
 
 
+/**
+ * Does the JSON fragment describe a full set of a Parameter's features or
+ * just enough to get its current value.
+ *
+ * @param json_p The JSON fragment
+ * @return <code>true</code> if the JSON fragment contains only enough data
+ * to get the current value of the Parameter. If the fragment contains data such
+ * as the display name, description, etc. then this will return <code>false</code>.
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
 
 
@@ -481,6 +535,13 @@ WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
 WHEATIS_PARAMS_API void ClearSharedType (SharedType *st_p);
 
 
+/**
+ * Get the name to use for a Client to use for this Parameter.
+ *
+ * @param parameter_p The Parameter to get the value for.
+ * @return The Parameter's display name if it is not <code>NULL</code>, else
+ * the Parameter's name.
+ */
 WHEATIS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
 
 

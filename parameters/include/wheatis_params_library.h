@@ -1,7 +1,7 @@
 /**
  * @file
  * @defgroup Parameters Parameters Library
- * @brief The dataypes and methods for dealing
+ * @brief The datatypes and methods for dealing
  * with parameters.
  */
 #ifndef WHEATIS_PARAMS_LIBRARY_H
