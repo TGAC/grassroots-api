@@ -24,6 +24,7 @@ extern "C"
  * @param tags_p The TagItem to search.
  * @param tag The Tag to search for.
  * @return The matching TagItem or <code>NULL</code> if it could not be found.
+ * @memberof TagItem
  */
 WHEATIS_PARAMS_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
 

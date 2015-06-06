@@ -83,38 +83,78 @@ typedef union SharedType
 } SharedType;
 
 
+/**
+ * A datatype allowing a SharedType to be stored
+ * on a LinkedList.
+ */
 typedef struct SharedTypeNode
 {
+	/** The basic ListItem */
 	ListItem stn_node;
+
+	/** The SharedType value */
 	SharedType stn_value;
 } SharedTypeNode;
 
 
-
+/**
+ * A ParameterMultiOption is used when a Parameter
+ * wants to constrain the possible values to one from
+ * a fixed set.
+ * @see ParameterMultiOptionArray
+ */
 typedef struct ParameterMultiOption
 {
+	/** The user-friendly description for this value */
 	char *pmo_description_s;
+
+	/** The internal value for this option */
 	SharedType pmo_value;
 } ParameterMultiOption;
 
 
-typedef struct ParameterMultiOptionArray
+/**
+ * A ParameterMultiOptionArray is a set of ParameterMultiOptions
+ * that a user can choose one of.
+ * @see ParameterMultiOption
+ */
+ typedef struct ParameterMultiOptionArray
 {
+	/** The array of possible options that the user can choose from */
 	ParameterMultiOption *pmoa_options_p;
+
+	/** The number of options pointed to by pmoa_options_p */
 	uint32 pmoa_num_options;
+
+	/** The ParameterType for these options */
 	ParameterType pmoa_values_type;
 } ParameterMultiOptionArray;
 
 
+/**
+ * A datatype used for numeric parameters that
+ * have a finite range of values.
+ */
 typedef struct ParameterBounds
 {
+	/** The minimum value that the Parameter can take. */
 	SharedType pb_lower;
+
+	/** The maximum value that the Parameter can take. */
 	SharedType pb_upper;
 } ParameterBounds;
 
+
+/**
+ * A datatype consisting of a Tag as a key and a
+ * SharedType as a value.
+ */
 typedef struct TagItem
 {
+	/** The Tag key */
 	Tag ti_tag;
+
+	/** The SharedTye value */
 	SharedType ti_value;
 } TagItem;
 
@@ -141,10 +181,13 @@ typedef struct ParameterGroup
 
 
 
-
 /**
- * The datatype that stores all of the information about a
- * Parameter.
+ * @brief The datatype that stores all of the information about a Parameter.
+ *
+ * A Parameter stores all of the information required for a Service or Client to
+ * set or get the information required for a settable option. This includes a name,
+ * description, the datatype of this parameter and much more. The Parameter can also
+ * hold arbitrary key-value pairs of char * for extra information if needed.
  */
 typedef struct Parameter
 {
@@ -159,7 +202,6 @@ typedef struct Parameter
 
 	/** An optional user-friendly name of the parameter to use for client user interfaces. */
 	char *pa_display_name_s;
-
 
 	/** The description for this parameter. */
 	char *pa_description_s;
@@ -199,7 +241,6 @@ typedef struct Parameter
 	 */
 	ParameterLevel pa_level;
 
-
 	/**
 	 * The current value for this parameter. It requires use
 	 * of pa_type to access the correct value.
@@ -209,6 +250,10 @@ typedef struct Parameter
 	/** A tag representing this Parameter */
 	Tag pa_tag;
 
+	/**
+	 * A map allowing the Parameter to store an arbitrary set of key-value
+	 * pairs. Both the keys and values are char *.
+	 */
 	HashTable *pa_store_p;
 
 	/**
@@ -240,12 +285,38 @@ typedef struct ParameterNode
 #endif
 
 
-WHEATIS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_p, SharedType *values_p, ParameterType pt);
+/**
+ * Allocate a ParameterMultiOptionArray.
+ *
+ * @param num_options The number of ParameterMultiOptions in this ParameterMultiOptionArray.
+ * @param descriptions_ss An array of strings of num_options size to use the ParameterMultiOption descriptions.
+ * @param values_p An array of SharedTypes of num_options size to use the ParameterMultiOption values.
+ * @param pt The ParameterType for the values in this ParameterMultiOptionArray.
+ * @return The newly-allocated ParameterMultiOptionArray or <code>NULL</code> upon error.
+ * @memberof ParameterMultiOptionArray
+ */
+WHEATIS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_ss, SharedType *values_p, ParameterType pt);
 
 
+/**
+ * Free a ParameterMultiOptionArray.
+ *
+ * @param options_p The ParameterMultiOptionArray to free.
+ * @memberof ParameterMultiOptionArray
+ */
 WHEATIS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
 
 
+/**
+ * Set an entry in a ParameterMultiOptionArray.
+ *
+ * @param options_p The ParameterMultiOptionArray to free.
+ * @param index The index of ParameterMultiOption to adjust in this ParameterMultiOptionArray.
+ * @param description_s The description to set for the given ParameterMultiOption.
+ * @param value  The SharedType value to set for the given ParameterMultiOption.
+ * @return <code>true</code> if the ParameterMultiOption was updated successfullly, <code>false</code> otherwise
+ * @memberof ParameterMultiOptionArray
+ */
 WHEATIS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
@@ -270,6 +341,13 @@ WHEATIS_PARAMS_API void FreeParameter (Parameter *param_p);
 WHEATIS_PARAMS_API ParameterBounds *AllocateParameterBounds (void);
 
 
+/**
+ * Test whether a given ParameterLevel matches or exceeds another.
+ *
+ * @param param_level The level to check.
+ * @param threshold The level to check against.
+ * @return <code>true</code> if the param_level matched or exceeded the threshold, <code>false</code> otherwise.
+ */
 WHEATIS_PARAMS_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
 
 
@@ -297,9 +375,23 @@ WHEATIS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const Pa
 WHEATIS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
+/**
+ * Check whether the value of a Parameter is a non-negative real value.
+ *
+ * @param parameter_p The Parameter to check.
+ * @return An error message string on failure or <code>NULL</code> if the value
+ * is a non-negative real number.
+ */
 WHEATIS_PARAMS_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
 
 
+/**
+ * Check whether the value of a Parameter is not <code>NULL</code>.
+ *
+ * @param parameter_p The Parameter to check.
+ * @return An error message string on failure or <code>NULL</code> if the value
+ * is a not <code>NULL</code>.
+ */
 WHEATIS_PARAMS_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
 
 
@@ -314,12 +406,39 @@ WHEATIS_PARAMS_API const char *CheckForNotNull (const Parameter * const paramete
 WHEATIS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
 
+/**
+ * Add a key value pair to a Parameter.
+ *
+ * @param parameter_p The Parameter to update.
+ * @param key_s The key to add to the Parameter. A deep copy of this will be made by the
+ * Parameter so the value passed in can go out of scope withut issues.
+ * can go out of scope
+ * @param value_s The value to add to the Parameter. A deep copy of this will be made by the
+ * Parameter so the value passed in can go out of scope withut issues.
+ * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s);
 
 
+/**
+ * Remove a key value pair from a Parameter.
+ *
+ * @param parameter_p The Parameter to update.
+ * @param key_s The key to remove from the Parameter. Its associated value will also be removed.
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s);
 
 
+/**
+ * Get a value from a Parameter.
+ *
+ * @param parameter_p The Parameter to query.
+ * @param key_s The key used to get the associated value from the Parameter.
+ * @return The matching value or <code>NULL</code> if the key did not exist for the Parameter.
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s);
 
 
@@ -357,6 +476,7 @@ WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
  * Clear the value of a SharedType.
  *
  * @param st_p The SharedType to clear.
+ * @memberof SharedType
  */
 WHEATIS_PARAMS_API void ClearSharedType (SharedType *st_p);
 
@@ -397,7 +517,6 @@ WHEATIS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
  * @memberof SharedTypeNode
  */
 WHEATIS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
-
 
 
 #ifdef __cplusplus
