@@ -21,8 +21,13 @@ struct Parameter;
  */
 typedef enum ParameterType
 {
+	/** A boolean parameter */
 	PT_BOOLEAN,
+
+	/** A 32-bit integer */
 	PT_SIGNED_INT,
+
+	/** A non-negative 32-bit integer */
 	PT_UNSIGNED_INT,
 	PT_SIGNED_REAL,
 	PT_UNSIGNED_REAL,
@@ -44,7 +49,6 @@ typedef enum ParameterType
  * Parameters that a user wishes to work with can
  * be adjusted within the user interface.
  */
-
 typedef uint8 ParameterLevel;
 
 #define PL_BASIC (1)
@@ -122,8 +126,16 @@ typedef struct TagItem
  */
 typedef struct ParameterGroup
 {
+	/** The name of the ParameterGroup */
 	char *pg_name_s;
+
+	/** The number of Parameters in this ParameterGroup */
 	uint32 pg_num_params;
+
+	/**
+	 * An array of pointers to the Parameters that make up
+	 * this ParameterGroup.
+	 */
 	struct Parameter **pg_params_pp;
 } ParameterGroup;
 
@@ -194,22 +206,31 @@ typedef struct Parameter
 	 */
 	SharedType pa_current_value;
 
-
-	uint32 pa_tag;
+	/** A tag representing this Parameter */
+	Tag pa_tag;
 
 	HashTable *pa_store_p;
 
-
+	/**
+	 * The ParameterGroup to which this Parameter belongs. If this
+	 * Parameter is not in a ParameterGroup, then this will be
+	 * <code>NULL</code>
+	 */
 	ParameterGroup *pa_group_p;
 } Parameter;
 
 
+/**
+ * A datatype for storing Parameters in a
+ * LinkedList.
+ */
 typedef struct ParameterNode
 {
+	/** The ListItem */
 	ListItem pn_node;
 
+	/** Pointer to the associated Parameter. */
 	Parameter *pn_parameter_p;
-
 } ParameterNode;
 
 
@@ -332,19 +353,49 @@ WHEATIS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json
 WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
 
 
+/**
+ * Clear the value of a SharedType.
+ *
+ * @param st_p The SharedType to clear.
+ */
 WHEATIS_PARAMS_API void ClearSharedType (SharedType *st_p);
 
 
 WHEATIS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
 
 
+/**
+ * Get the current value of a Parameter as a string.
+ *
+ * @param param_p The Parameter to get the current value for.
+ * @param alloc_flag_p If the returned value had to be newly created, for example if
+ * the type of this Parameter is a number, then this will be set to <code>true</code>
+ * and the returned value will need to be freed using FreeCopiedString to avoid a memory
+ * leak. If this is <code>false</code> then the returned value points directly to a string
+ * within the Parameter's current value.
+ * @return The Parameter value as a string or <code>NULL</code> if there was an error.
+ * @see FreeCopiedString
+ * @memberof Parameter
+ */
 WHEATIS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
-
+/**
+ * Allocate a SharedTypeNode set to the given value.
+ *
+ * @param value The value that will be copied to the SharedTypeNode.
+ * @return The newly-allocated SharedTypeNodeor <code>NULL</code> if there was an error.
+ * @memberof SharedTypeNode
+ */
 WHEATIS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
 
 
+/**
+ * Free a SharedTypeNode.
+ *
+ * @param node_p The SharedTypeNode to free.
+ * @memberof SharedTypeNode
+ */
 WHEATIS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
 
 

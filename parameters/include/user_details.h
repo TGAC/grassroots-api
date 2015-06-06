@@ -8,10 +8,19 @@
 
 #include "wheatis_params_library.h"
 
+
+/**
+ * @brief  A datatype to store user credentials
+ */
 typedef struct UserDetails
 {
+	/** The username */
 	char *ud_username_s;
+
+	/** The encrypted password */
 	char *ud_password_s;
+
+	/** An OAth token for time-based authentication */
 	char *ud_oath_totp_token_s;
 } UserDetails;
 
