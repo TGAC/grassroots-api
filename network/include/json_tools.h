@@ -31,6 +31,17 @@ WHEATIS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username
 
 WHEATIS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s);
 
+
+/**
+ * Extract the user credentials from a JSON fragment.
+ *
+ * @param root_p The JSON fragment to inspect.
+ * @param username_ss Pointer to the username to update.
+ * @param password_ss Pointer to the encrypted password to update.
+ * @return <code>true</code> if the credentials were extracted from
+ * the JSON fragment successfully,
+ * <code>false</code> otherwise.
+ */
 WHEATIS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
 
 WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const char * const protocol_s, const char * const filename_s);
@@ -51,7 +62,18 @@ WHEATIS_NETWORK_API json_t *GetNamedServicesRequest (const char * const username
  */
 WHEATIS_NETWORK_API json_t *GetCheckServicesRequest (const char * const username_s, const char * const password_s, const char * const service_uuid_s);
 
+
+/**
+ * Add the given credentials in the correct position in a JSON fragment.
+ *
+ * @param root_p The JSON fragment to update.
+ * @param username_s The username to add.
+ * @param password_s The encrypted password to add.
+ * @return <code>true</code> if the JSON fragment was updated successfully,
+ * <code>false</code> otherwise.
+ */
 WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s);
+
 
 /**
  * Get the JSON fragment for a given Operation.
