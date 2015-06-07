@@ -1,6 +1,8 @@
-/**@file irods_util_library.h
-*/ 
-
+/**
+ * @file
+ * @defgroup Network Network Library
+ * @brief The datatypes and methods for network functionality.
+ */
 #ifndef WHEATIS_NETWORK_LIBRARY_H
 #define WHEATIS_NETWORK_LIBRARY_H
 

@@ -25,7 +25,7 @@ bool InitDrmaa (void)
 	bool success_flag = false;
 	int res;
 
-	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINEST, "About to Init Drmaa");
 	#endif
 
@@ -36,7 +36,7 @@ bool InitDrmaa (void)
 			success_flag = true;
 		}
 
-	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINEST, "Init Drmaa %d res %d %s", success_flag, res, s_drmaa_diagnosis_s);
 	#endif
 
@@ -49,7 +49,7 @@ bool ExitDrmaa (void)
 	bool res_flag = true;
 	int res;
 
-	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINEST, "About to Exit Drmaa");
 	#endif
 
@@ -64,7 +64,7 @@ bool ExitDrmaa (void)
 			PrintErrors (STM_LEVEL_SEVERE, "drmaa_exit() failed: %s\n", s_drmaa_diagnosis_s);
 		}
 
-	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINEST, "Exit Drmaa %d res %d %s", res_flag, res, s_drmaa_diagnosis_s);
 	#endif
 
