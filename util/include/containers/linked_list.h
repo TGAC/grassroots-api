@@ -177,7 +177,9 @@ WHEATIS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListItem * co
  * @param list_p The LinkedList to search.
  * @param node_p The ListNode to search for.
  * @param compare_nodes_fn Function used to compare the ListNodes.
- * @return The matching ListNode or NULL if it could not be found on the LinkedList.
+ * @param index_p Address where the index of the matching item will be stored
+ * if it is found.
+ * @return The matching ListNode or <code>NULL</code> if it could not be found on the LinkedList.
  */
 WHEATIS_UTIL_API ListItem *LinkedListBinarySearch (const LinkedList * const list_p, const ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p);
 

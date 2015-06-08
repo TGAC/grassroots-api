@@ -37,37 +37,64 @@ typedef struct ClientData
 /**
  * @brief A datatype which defines an available client, its capabilities and
  * its parameters.
+ *
+ * Client defines the interface that an instance needs to fulfil to access a
+ * Server. This is achieved using a variety of callback functions.
  */
 typedef struct Client
 {
 	/**
-	 * The platform-specific plugin that the code for the Client is
+	 * The platform-specific Plugin that the code for the Client is
 	 * stored in.
 	 */
 	struct Plugin *cl_plugin_p;
 
 	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p);
 
+	/**
+	 * @brief Launch the Client.
+	 *
+	 * Run the Client.
+	 * @param client_data_p
+	 * @return Any resultant data after the Client has finished running.
+	 */
 	json_t *(*cl_run_fn) (ClientData *client_data_p);
 
  	/**
- 	 * Function to get the user-friendly name of the Client.
+ 	 * @brief Function to get the user-friendly name of the Client.
+ 	 *
+ 	 * @param client_data_p The ClientData belonging to this Client.
+ 	 * @return The name of the Client to display to the user.
  	 */
 	const char *(*cl_get_client_name_fn) (ClientData *client_data_p);
 
-	/**
-	 * Function to get the user-friendly description of the Client.
-	 */
+
+ 	/**
+ 	 * @brief Function to get the user-friendly description of the Client.
+ 	 *
+ 	 * @param client_data_p The ClientData belonging to this Client.
+ 	 * @return The name of the Client to display to the user.
+ 	 */
 	const char *(*cl_get_client_description_fn) (ClientData *client_data_p);
 
 
 	/**
-	 * Function to get the user-friendly description of the Client.
+	 * @brief Display the results of running 1 or more Services in the Client.
+	 *
+	 * The Client will process the response from the Server and show the results
+	 * to the user.
+	 * @param client_data_p The base data for this Client.
+	 * @param response_p The response from the Server detailing the results from the
+	 * Services that have run on the Server.
+	 * @return Any resultant data after the Client has finished displaying the results.
 	 */
 	json_t *(*cl_display_results_fn) (ClientData *client_data_p, const json_t *response_p);
 
 	/**
-	 * Any custom data that the Client needs to store.
+	 * @brief Any custom data that the Client needs to store.
+	 *
+	 * A pointer to a base ClientData that can be cast to an appropriate subclass by the
+	 * Client in use.
 	 */
 	ClientData *cl_data_p;
 
