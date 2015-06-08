@@ -13,7 +13,7 @@
 
 
 /**
- * Compate two doubles taking the epsilon
+ * Compare two doubles taking the epsilon
  * of this computer into account.
  *
  * @param d1 The first double to compare.
@@ -41,7 +41,7 @@ WHEATIS_UTIL_API int CompareFloats (const float f1, const float f2);
  * "number getting" routine that notifies us of any errors.
  *
  * @param str_pp Pointer to char * where we start getting the number from.
- * @param data_p Pointer where the number will be stored if the converesion was successful.
+ * @param data_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
 WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p);

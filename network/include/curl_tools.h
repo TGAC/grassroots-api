@@ -14,6 +14,12 @@
 #include "byte_buffer.h"
 #include "selector.hpp"
 
+/**
+ * @brief A tool for making http(s) requests and responses.
+ *
+ * A datatype that uses CURL to perform http(s) requests
+ * and responses.
+ */
 typedef struct CurlTool
 {
 	CURL *ct_curl_p;
@@ -55,7 +61,7 @@ WHEATIS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
  * write to buffer callback.
  *
  * @param buffer_p If this is not NULL, then set the curl object
- * to write its reponse to this buffer. This can be NULL <code>NULL</code>.
+ * to write its response to this buffer. This can be NULL <code>NULL</code>.
  * @see AddCurlCallback
  * @return The CURL object or <code>NULL</code> upon error.
  */
@@ -80,7 +86,7 @@ WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_da
  * the given buffer.
  *
  * @return The CURL object to add the callback for.
- * @param buffer_p The ByteBuffer which will store the CURL object's repsonse.
+ * @param buffer_p The ByteBuffer which will store the CURL object's response.
  */
 WHEATIS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
 
