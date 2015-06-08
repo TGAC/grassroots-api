@@ -31,8 +31,22 @@ typedef struct CurlTool
 #endif
 
 
+/**
+ * Allocate a CurlTool
+ *
+ * @return A newly-allocated CurlTool or <code>NULL</code> upon error.
+ * @memberof CurlTool.
+ * @see FreeCurlTool
+ */
 WHEATIS_NETWORK_API CurlTool *AllocateCurlTool (void);
 
+
+/**
+ * Free a CurlTool
+ *
+ * @param curl_p The CurlTool to free.
+ * @memberof CurlTool.
+ */
 WHEATIS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
 
 
@@ -60,6 +74,7 @@ WHEATIS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_eng
 
 WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca_cert_name_s, const char * const cert_name_s, const char *key_name_s, const bool verify_certs, ByteBuffer *buffer_p);
 
+
 /**
  * Add a callback to write the HTTP response for this CURL object to
  * the given buffer.
@@ -70,21 +85,74 @@ WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_da
 WHEATIS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
 
 
+/**
+ * Set the URI that the CurlTool will try to get the html data from.
+ *
+ * @param tool_p The CurlTool to update.
+ * @param uri_s The URI to set the CurlTool for.
+ * @return <code>true</code> if the CurlTool was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof CurlTool
+ */
 WHEATIS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s);
 
 
+/**
+ * @brief Run a CurlTool.
+ * This will get the CurlTool to get all of the data from its given URI.
+ * @return CURLE_OK if successful or an error code upon failure.
+ */
 WHEATIS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
 
 
+/**
+ * @brief Set up a CurlTool to do a JSON post when it is run.
+ *
+ * @param tool_p The CurlTool to update.
+ * @return <code>true</code> if the CurlTool was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof CurlTool
+ */
 WHEATIS_NETWORK_API bool SetCurlToolForJSONPost (CurlTool *tool_p);
 
 
+/**
+ * @brief Get the downloaded data from a CurlTool.
+ * If the CurlTool has been run successfully, this will get a read-only
+ * version of the downloaded data. <code>RunCurlTool</code> must have been
+ * run prior to this.
+ * @return The downloaded data or <code>NULL</code> upon error.
+ * @see RunCurlTool
+ * @memberof CurlTool
+ */
 WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
 
 
+/**
+ * @brief Run a CurlTool and select a subset of the data.
+ * This will set up a CurlTool to a given URI and download the data. If successful, it
+ * will then extract a set of HtmlLinks using the given selector.
+ * @param tool_p The CurlTool to use.
+ * @param uri_s The URI for the CurlTool to download from.
+ * @param selector_s The CSS selector to use to extract the HtmlLinkArray with.
+ * @return A newly-allocated HtmlLinkArray if successful or <code>NULL</code>
+ * upon error.
+ * @memberof CurlTool
+ * @see GetMatchingLinks
+ */
 WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s);
 
 
+/**
+ * @brief Send a JSON request using a CurlTool.
+ * @param tool_p The CurlTool to use.
+ * @param req_p The json data to send.
+ * @return <code>true</code> if the CurlTool made the request and received a response
+ * successfully. The resultant data can be retrieved using <code>GetCurlToolData</code>.
+ * If the call was unsuccessful, then <code>false</code> will be returned.
+ * @see GetCurlToolData
+ * @memberof CurlTool
+ */
 WHEATIS_NETWORK_API bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p);
 
 

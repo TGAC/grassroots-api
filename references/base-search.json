@@ -1,8 +1,9 @@
+{
 	"schema_version": 0.1,
 	"provider": {
-		"name": "Agris",
+		"name": "BASE",
 		"description": "A service to search for academic articles.",
-		"uri": "http://agris.fao.org/agris-search/index.do"
+		"uri": "https://www.base-search.net/about/en/index.php"
 	},
 	"services": {
     "path": "Agris Search service",
@@ -11,17 +12,17 @@
     "plugin": "web_search_service",
     "operations": [
 			{
-				"operationId": "Agris Web Search service",
+				"operationId": "BASE Web Search service",
 				"summary": "An operation to obtain matching articles",
-				"description": "An operation to obtain matching articles from Agris",
-				"about_uri": "http://agris.fao.org/agris-search/index.do",
-				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
+				"description": "An operation to obtain matching articles from AGRIS",
+				"about_uri": "https://www.base-search.net/about/en/index.php",
+				"uri": "https://www.base-search.net/",
 				"method": "GET",
-				"selector": "li.result-item h3 a",
+				"selector": "ResultsBox h2 a",
 				"parameter_set": {
 					"parameters": [
 						{
-							"param": "query",
+							"param": "lookfor",
 							"name": "Query",
 							"default": "",
 							"current_value": "",
@@ -35,3 +36,4 @@
 			}
 		]
   }
+}

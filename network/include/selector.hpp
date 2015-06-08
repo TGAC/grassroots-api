@@ -11,10 +11,18 @@
 #include "network_library.h"
 #include "jansson.h"
 
+/**
+ * @brief A datatype representing an http link.
+ */
 typedef struct HtmlLink
 {
+	/** A title for the link */
 	char *hl_title_s;
+
+	/** The URI of the link. */
 	char *hl_uri_s;
+
+	/** The CDATA section of the link. */
 	char *hl_data_s;
 } HtmlLink;
 
@@ -61,6 +69,7 @@ WHEATIS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, c
  * to the server emitting data_s. The resulting links will be absolute full URIs.
  * @return The HtmlLinkArray or <code>NULL</code> upon error.
  * @member of HtmlLinkArray
+ * @see FreeHtmlLinkArray
  */
 WHEATIS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const selector_s, const char * const base_uri_s);
 

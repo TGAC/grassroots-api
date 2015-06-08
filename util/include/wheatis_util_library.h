@@ -1,4 +1,5 @@
 /**@file wheatis_util_library.h
+ * @defgroup Utility Utility Library
 */ 
 
 #ifndef WHEATIS_UTIL_LIBRARY_H

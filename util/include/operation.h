@@ -1,37 +1,46 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
+/**
+ * @brief The various Operations that a Server can perform.
+ */
 typedef enum Operation {
-	OP_NONE = -1,
+	OP_NONE = -1,               //!< OP_NONE
 	
 	/** Get list of all available services */
-	OP_LIST_ALL_SERVICES,
+	OP_LIST_ALL_SERVICES,       //!< OP_LIST_ALL_SERVICES
 	
 	/** Get list of data objects and collections modified within a given time period */
-	OP_IRODS_MODIFIED_DATA,
+	OP_IRODS_MODIFIED_DATA,     //!< OP_IRODS_MODIFIED_DATA
 
 	/** Query services to see if they can work on file */
-	OP_LIST_INTERESTED_SERVICES,
+	OP_LIST_INTERESTED_SERVICES,//!< OP_LIST_INTERESTED_SERVICES
 	
 	/** Call any services that have a keyword parameter with a given keyword */
-	OP_RUN_KEYWORD_SERVICES,
+	OP_RUN_KEYWORD_SERVICES,    //!< OP_RUN_KEYWORD_SERVICES
 
 	/** Get list of services matching the given names */
-	OP_GET_NAMED_SERVICES,
+	OP_GET_NAMED_SERVICES,      //!< OP_GET_NAMED_SERVICES
 
 	/** Get status of running services */
-	OP_CHECK_SERVICE_STATUS,
+	OP_CHECK_SERVICE_STATUS,    //!< OP_CHECK_SERVICE_STATUS
 
 	/** Get results from completed job */
-	OP_GET_SERVICE_RESULTS,
+	OP_GET_SERVICE_RESULTS,     //!< OP_GET_SERVICE_RESULTS
 
 	/** Tell the server that the jobs are no longer needed */
-	OP_CLEAN_UP_JOBS,
+	OP_CLEAN_UP_JOBS,           //!< OP_CLEAN_UP_JOBS
 
-	OP_NUM_OPERATIONS
+	OP_NUM_OPERATIONS           //!< OP_NUM_OPERATIONS
 } Operation;
 
 
+/**
+ * @brief The current status of an Operation.
+ * @details Each Operation has an OperationStatus detailing its current
+ * state. Any value less than zero indicates an error with OS_LOWER_LIMIT
+ * and OS_UPPER_LIMIT defining the exclusive boundary values.
+ */
 typedef enum OperationStatus
 {
 	OS_LOWER_LIMIT = -4,
