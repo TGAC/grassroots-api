@@ -73,10 +73,11 @@ WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p);
  * Compare two doubles taking the epsilon
  * of this computer into account.
  *
- * @param f1 The first float to compare.
- * @param f2 The second float to compare.
- * @return -1 if f1 is less than f2, +1 if f1 is
- * greater than f2 and 0 if they are identical.
+ * @param v1_p Pointer to the first double to compare.
+ * @param v2_p Pointer to the second double to compare.
+ * @return -1 if the first double is less than the second,
+ * +1 if the first double is greater than the second
+ * and 0 if they are identical.
  */
 WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 

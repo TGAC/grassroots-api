@@ -14,7 +14,7 @@
 
 
 /**
- * A datatype detailing the addon services
+ * @brief A datatype detailing the addon services
  * that the wheatis offers. These are the
  * equivalent to iRods microservices.
  */
@@ -23,6 +23,9 @@
 struct Plugin;
 struct Service;
 
+/**
+ * @brief The base structure for storing Service configuration data.
+ */
 typedef struct ServiceData
 {
 	/** The service that owns this data. */
@@ -55,8 +58,6 @@ extern "C"
 
 
 WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p, const json_t *service_config_p);
-
-
 
 
 #ifdef __cplusplus

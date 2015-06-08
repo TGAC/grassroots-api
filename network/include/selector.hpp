@@ -54,7 +54,7 @@ extern "C"
  * @param base_uri_s The URI to prepend to any links. This is useful when the links in data_s are local
  * to the server emitting data_s. The resulting links will be absolute full URIs.
  * @return The JSON fragment or <code>NULL</code> upon error.
- * @member of HtmlLinkArray
+ * @memberof HtmlLinkArray
  * @see GetMatchingLinks
  */
 WHEATIS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const selector_s, const char * const base_uri_s);
@@ -68,7 +68,7 @@ WHEATIS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, c
  * @param base_uri_s The URI to prepend to any links. This is useful when the links in data_s are local
  * to the server emitting data_s. The resulting links will be absolute full URIs.
  * @return The HtmlLinkArray or <code>NULL</code> upon error.
- * @member of HtmlLinkArray
+ * @memberof HtmlLinkArray
  * @see FreeHtmlLinkArray
  */
 WHEATIS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const selector_s, const char * const base_uri_s);
@@ -78,7 +78,7 @@ WHEATIS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, 
  * Free a HtmlLinkArray
  *
  * @param links_ The HtmlLinkArray to free.
- * @member of HtmlLinkArray
+ * @memberof HtmlLinkArray
  */
 WHEATIS_NETWORK_API void FreeHtmlLinkArray (HtmlLinkArray *links_p);
 

@@ -423,6 +423,7 @@ WHEATIS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const ch
  * Check whether the value of a Parameter is a non-negative real value.
  *
  * @param parameter_p The Parameter to check.
+ * @param value_p The value to check.
  * @return An error message string on failure or <code>NULL</code> if the value
  * is a non-negative real number.
  */
@@ -433,6 +434,7 @@ WHEATIS_PARAMS_API const char *CheckForSignedReal (const Parameter * const param
  * Check whether the value of a Parameter is not <code>NULL</code>.
  *
  * @param parameter_p The Parameter to check.
+ * @param value_p The value to check.
  * @return An error message string on failure or <code>NULL</code> if the value
  * is a not <code>NULL</code>.
  */
