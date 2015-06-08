@@ -56,23 +56,87 @@ RESOURCE_PREFIX const char *PROTOCOL_INLINE_S RESOURCE_VAL("inline");
 extern "C" {
 #endif
 
+
+/**
+ * @brief Allocate a Resource.
+ *
+ * @param protocol_s The protocol for the Resource. A deep copy will be made of this
+ * so the value passed in dose not need to remain in scope.
+ * @param value_s The value for the Resource. A deep copy will be made of this
+ * so the value passed in dose not need to remain in scope.
+ * @param title_s The title for the Resource. A deep copy will be made of this
+ * so the value passed in dose not need to remain in scope.
+ * @return A newly-allocated Resource or <code>NULL</code> upon error.
+ * @memberof Resource
+ */
 WHEATIS_NETWORK_API Resource *AllocateResource (const char *protocol_s, const char *value_s, const char *title_s);
 
+
+/**
+ * @brief Initialise a Resource ready for use.
+ *
+ * @param resource_p The Resource to initialise.
+ * @memberof Resource
+ */
 WHEATIS_NETWORK_API void InitResource (Resource *resource_p);
 
+
+/**
+ * @brief Free a Resource and its associated data.
+ *
+ * @param resource_p The Resource to free.
+ * @memberof Resource
+ */
 WHEATIS_NETWORK_API void FreeResource (Resource *resource_p);
 
+
+/**
+ * @brief Clear a Resource.
+ *
+ * Clear and free any memory used for the Resource's fields
+ * and set them to <code>NULL</code>
+ * @param resource_p The Resource to clear.
+ * @memberof Resource
+ */
 WHEATIS_NETWORK_API void ClearResource (Resource *resource_p);
 
+
+/**
+ * @brief Set the fields of a Resource.
+ *
+ * @param protocol_s The new value for the protocol for the Resource. A deep copy will be made of this
+ * so the value passed in dose not need to remain in scope. Any previous value will be freed.
+ * @param value_s The new value for the value for the Resource. A deep copy will be made of this
+ * so the value passed in dose not need to remain in scope. Any previous value will be freed.
+ * @param title_s The new value for the title for the Resource. A deep copy will be made of this
+ * so the value passed in dose not need to remain in scope. Any previous value will be freed.
+ * @memberof Resource
+ */
 WHEATIS_NETWORK_API bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char *value_s, const char *title_s);
+
 
 WHEATIS_NETWORK_API bool SetResourceData (Resource *resource_p, json_t *data_p, const bool owns_data_flag);
 
+
+/**
+ * @brief Copy the data from one Resource to another.
+ *
+ * This will make a deep copy of each field in the source Resource into the
+ * equivalent field in the destination Resource.
+ * @param src_p The Resource to copy from.
+ * @param dest_p The Resource to copy to.
+ * @return <code>true</code> if all of the fields were copied correctly, <code>false</code>
+ * otherwise. Upon failure, the destination Resource will remain unaltered.
+ * @memberof Resource
+ */
 WHEATIS_NETWORK_API bool CopyResource (const Resource * const src_p, Resource * const dest_p);
+
 
 WHEATIS_NETWORK_API Resource *ParseStringToResource (const char * const resource_s);
 
+
 WHEATIS_NETWORK_API bool GetResourceProtocolAndPath (const char * const resource_s, char ** const path_ss, char ** const protocol_ss);
+
 
 WHEATIS_NETWORK_API json_t *GetResourceAsJSONByParts (const char * const protocol_s, const char * const path_s, const char * const title_s, json_t *data_p);
 
