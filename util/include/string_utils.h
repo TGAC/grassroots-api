@@ -1,8 +1,5 @@
 /**@file string_utils.h
-*/
-
-/** \file string_utils.h
- *  \brief A set of string functions.
+ * @brief A set of string functions.
  *
  *  A variety of functions for manipulating strings.
  */
@@ -186,15 +183,44 @@ WHEATIS_UTIL_API char *ConvertIntegerToString (const int value);
 WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
 
+/**
+ * Get the string representation of a uuid_t.
+ *
+ * @param id The uuid_t to get the string representation of.
+ * @return A newly-allocated string of the id or <code>NULL<code> upon error.
+ * @see FreeUUIDString.
+ */
 WHEATIS_UTIL_API char *GetUUIDAsString (const uuid_t id);
 
 
+/**
+ * Convert a uuid_t into a given string buffer.
+ *
+ * @param id The uuid_t to get the string representation of.
+ * @param The buffer to write the representation to. This must be at least
+ * UUID_STRING_BUFFER_SIZE bytes long.
+ * @see UUID_STRING_BUFFER_SIZE
+ */
 WHEATIS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);
 
 
+
+/**
+ * Convert the string representation of a uuid_t to a uuid_t.
+ *
+ * @param id_s The buffer containing the representation.
+ * @param id The uuid_t to set.
+ * @return <code>true</code> if the uuid_t was set successfully, <code>false</code> otherwise.
+ */
 WHEATIS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
 
 
+/**
+ * Free a string representation of a uuid_t.
+ *
+ * @param uuid_s The string representation to free.
+ * @see GetUUIDAsString.
+ */
 WHEATIS_UTIL_API void FreeUUIDString (char *uuid_s);
 
 

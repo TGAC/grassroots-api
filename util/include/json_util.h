@@ -122,12 +122,43 @@ extern "C"
 {
 #endif
 
+
+/**
+ * Print a json fragment to a FILE pointer.
+ *
+ * @param out_f The FILE to print to.
+ * @param json_p The json object to print.
+ * @param prefix_s An optional string to precede the json output in the given FILE.
+ * @return O if successful, less than 0 upon error.
+ */
 WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
 
+
+/**
+ * Get the value for a given key in a json_t object.
+ *
+ * @param json_p The json object to query.
+ * @param key_s The key to search for.
+ * @return The corresponding value or <code>NULL</code> if the key does not exist in the
+ * given json_t object.
+ */
 WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 
+/**
+ * Allocate a JsonNode that points to the given json object.
+ *
+ * @param json_p The json obect for the JsonNode to point to.
+ * @return A newly-allocate JsonNode or <code>NULL</code> upon error.
+ * @see FreeJsonNode
+ */
 WHEATIS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
 
+
+/**
+ * Free a JsonNode.
+ *
+ * @param node_p The JsonNode free.
+ */
 WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
 
 
