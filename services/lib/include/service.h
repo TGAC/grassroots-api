@@ -310,6 +310,7 @@ WHEATIS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const cha
 WHEATIS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
 
 
+
 WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
 
 
