@@ -134,7 +134,19 @@ WHEATIS_NETWORK_API bool CopyResource (const Resource * const src_p, Resource * 
 
 WHEATIS_NETWORK_API Resource *ParseStringToResource (const char * const resource_s);
 
-
+/**
+ * @brief Get the protocol and path parts of a Resource.
+ *
+ * @param resource_p The Resource to get the values from.
+ * @param path_ss A pointer to where the path part of the Resource will be copied to. This will
+ * need to be freed with <code>FreeCopiedString</code> when it is finished with.
+ * @param protocol_ss A pointer to where the protocol part of the Resource will be copied to. This will
+ * need to be freed with <code>FreeCopiedString</code> when it is finished with.
+ * @return <code>true</code> if all of the fields were copied correctly, <code>false</code>
+ * otherwise. Upon failure, the destination path_ss and protocol_ss variables will remain unaltered.
+ * @memberof Resource
+ * @see FreeCopiedString
+ */
 WHEATIS_NETWORK_API bool GetResourceProtocolAndPath (const char * const resource_s, char ** const path_ss, char ** const protocol_ss);
 
 
