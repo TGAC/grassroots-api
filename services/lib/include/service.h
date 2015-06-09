@@ -212,7 +212,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
  * @param service_p The Service to run.
  * @param param_set_p The ParameterSet to run the Service with.
  * @param credentials_p An optional set of UserDetails as json.
- * @param A newly-allocated ServiceJobSet containing the details for the new jobs or
+ * @return A newly-allocated ServiceJobSet containing the details for the new jobs or
  * <code>NULL</code> upon error.
  * @memberof Service
  */
