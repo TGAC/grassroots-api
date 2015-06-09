@@ -21,13 +21,26 @@
 #include "query.h"
 
 
+/**
+ * A set of SearchTerms to use when running a search.
+ *
+ */
 typedef struct IrodsSearch
 {
+	/**
+	 * A LinkedList of SearchTermNodes
+	 * @see SearchTermNode
+	 */
 	LinkedList *is_search_terms_p;
 } IrodsSearch;
 
 
-
+/**
+ * @brief A datatype for storing the values needed for an iRODS search.
+ *
+ * A SearchTerm contains the values needed to build an SQL-style query
+ * to run on an iRODS server.
+ */
 typedef struct SearchTerm
 {
 	const char *st_clause_s;
@@ -42,9 +55,15 @@ typedef struct SearchTerm
 } SearchTerm;
 
 
+/**
+ * A datatype for storing a SearchTerm on a LinkedList.
+ */
 typedef struct SearchTermNode
 {
+	/** The Listnode */
 	ListItem stn_node;
+
+	/** The SearchTerm to store on the list */
 	SearchTerm stn_term;
 } SearchTermNode;
 

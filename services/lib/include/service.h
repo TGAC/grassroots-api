@@ -129,7 +129,7 @@ typedef struct Service
 
 	struct ServiceJobSet *se_jobs_p;
 
-	/**w
+	/**
 	 * Any custom data that the service needs to store.
 	 */
 	ServiceData *se_data_p;
@@ -137,16 +137,28 @@ typedef struct Service
 } Service;
 
 
+/**
+ * A datatype for storing Services on a LinkedList
+ */
 typedef struct
 {
+	/** The List Node */
 	ListItem sn_node;
+
+	/* The Service */
 	Service *sn_service_p;
 } ServiceNode;
 
 
+/**
+ * A datatype for having a set of Services.
+ */
 typedef struct ServicesArray
 {
+	/** An array of pointers to Services */
 	Service **sa_services_pp;
+
+	/** The number of Services in the array */
 	uint32 sa_num_services;	
 } ServicesArray;
 
@@ -271,9 +283,22 @@ WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
 WHEATIS_SERVICE_API void FreeService (Service *service_p);
 
 
+/**
+ * @brief Allocate a ServiceNode pointing to the given Service.
+ *
+ * @param service_p The Service to store on the ServiceNode.
+ * @return A newly-allocated ServiceNode or <code>NULL</code> upon error.
+ * @memberof ServiceNode
+ */
 WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
 
 
+/**
+ * @brief Free a ServiceNode.
+ *
+ * @param node_p The ServiceNode to free.
+ * @memberof ServiceNode
+ */
 WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
 
