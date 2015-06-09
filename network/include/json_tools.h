@@ -17,16 +17,18 @@ extern "C"
 {
 #endif
 
-/**
- *
- */
-WHEATIS_NETWORK_API int SendJsonRawRequest (const json_t *json_p, RawConnection *connection_p);
 
 /**
+ * @brief Generate a request to get a list of of iRODS objects modified within a given period.
  *
+ * This will generate the required json_t request to send from a Client to a Server to get a list of
+ * modified iRODS data objects.
+ * @param username_s The encrypted iRODS username.
+ * @param password_s The encrypted iRODS password.
+ * @param from_s The start of the interval in the form YYYYMMDDhhmmss.
+ * @param to_s The start of the interval in the form YYYYMMDDhhmmss.
+ * @return The json_t object for this request or <code>NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetLoginJsonRequest (const char * const username_s, const char *password_s);
-
 WHEATIS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
 
 
@@ -124,6 +126,23 @@ WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * cons
 WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
 
 
+/**
+ * @brief Generate the request to run an Operation.
+ *
+ * @param username_s An optional username (encrypted).
+ * @param password_s An optional password (encrypted).
+ * @param op The Operation to perform.
+ * @param op_key_s The key to be used to attach the associated Operation-specific data with.
+ * @see KEY_IRODS
+ * @see	KEY_FILE_DATA
+ * @see	KEY_QUERY
+ * @see KEY_FILENAME
+ * @see KEY_DIRNAME
+ * @see KEY_PROTOCOL
+ * @see KEY_INTERVAL
+ * @param op_data_p The Operation-specific data.
+ * @return The json_t for the request or <code>NULL</code> upon error.
+ */
 WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p);
 
 /**

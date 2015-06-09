@@ -217,7 +217,7 @@ const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *r
 		{
 			RawConnection *raw_connection_p = (RawConnection *) connection_p;
 
-			if (SendJsonRawRequest (req_p, raw_connection_p) > 0)
+			if (SendJsonRequestViaRawConnection (raw_connection_p, req_p) > 0)
 				{
 					if (AtomicReceiveViaRawConnection (raw_connection_p) > 0)
 						{
@@ -241,6 +241,23 @@ const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *r
 
 	return (success_flag ? GetConnectionData (connection_p) : NULL);
 }
+
+
+
+int SendJsonRequestViaRawConnection (RawConnection *connection_p, const json_t *json_p)
+{
+	int res = -1;
+	char *req_s = json_dumps (json_p, 0);
+
+	if (req_s)
+		{
+			res = AtomicSendStringViaRawConnection (req_s, connection_p);
+			free (req_s);
+		}
+
+	return res;
+}
+
 
 
 static void FreeWebConnection (WebConnection *connection_p)

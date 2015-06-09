@@ -62,22 +62,6 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 
 
 
-int SendJsonRawRequest (const json_t *json_p, RawConnection *connection_p)
-{
-	int res = -1;
-	char *req_s = json_dumps (json_p, 0);
-	
-	if (req_s)
-		{
-			res = AtomicSendStringViaRawConnection (req_s, connection_p);
-			free (req_s);
-		}
-		
-	return res;
-}
-
-
-
 /*
  {
 	credentials:
