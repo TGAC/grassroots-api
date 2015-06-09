@@ -18,9 +18,12 @@
 #include "linked_list.h"
 
 
-
+/**
+ * A datatype for accessing a single result of a search on an iRODS server.
+ */
 typedef struct QueryResult
 {
+	/** @privatesection */
 	/*
 	 * Due to the columnNames array being in the same file as the
 	 * definition of columnName_t (rodsGenQueryNames.h) we get
@@ -36,9 +39,15 @@ typedef struct QueryResult
 } QueryResult;
 
 
+/**
+ * A datatype for holding an array of the results of a search on an iRODS server.
+ */
 typedef struct QueryResults
 {
+	/** The number of results in the array */
 	int qr_num_results;
+
+	/** The array of results */
 	QueryResult *qr_values_p;
 } QueryResults;
 
@@ -145,6 +154,7 @@ IRODS_UTIL_API int PrintQueryOutput (FILE *out_f, const genQueryOut_t *query_res
  *
  * @param out_f The FILE to write to.
  * @param result_p The QueryResults to print.
+ * @memberof QueryResults
  */
 IRODS_UTIL_API void PrintQueryResults (FILE *out_f, const QueryResults * const result_p);
 
@@ -154,6 +164,7 @@ IRODS_UTIL_API void PrintQueryResults (FILE *out_f, const QueryResults * const r
  *
  * @param out_f The FILE to write to.
  * @param query_result_p The QueryResult to print.
+ * @memberof QueryResults
  */
 IRODS_UTIL_API void PrintQueryResult (FILE *out_f, const QueryResult * const result_p);
 
@@ -166,6 +177,7 @@ IRODS_UTIL_LOCAL QueryResults *GenerateQueryResults (const genQueryOut_t *result
  * Free a QueryResults
  *
  * @param result_p The QueryResults to free.
+ * @memberof QueryResults
  */
 IRODS_UTIL_API void FreeQueryResults (QueryResults *result_p);
 
@@ -181,9 +193,25 @@ IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 IRODS_UTIL_LOCAL bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
 
 
+/**
+ * @brief Get the json representation of a QueryResults.
+
+ * @param result_p The QueryResults to get the json for.
+ * @return The json_t object representing the QueryResults
+ * or <code>NULL</code> upon error.
+ * @memberof QueryResults
+ */
 IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
 
 
+/**
+ * @brief Get the json representation of a QueryResults in the format of a Resource.
+
+ * @param qrs_p The QueryResults to get the json for.
+ * @return The json_t object representing the QueryResults
+ * or <code>NULL</code> upon error.
+ * @memberof QueryResults
+ */
 IRODS_UTIL_API json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p);
 
 
