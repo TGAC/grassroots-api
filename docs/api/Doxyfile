@@ -774,7 +774,8 @@ INPUT_ENCODING         = UTF-8
 # *.qsf, *.as and *.js.
 
 FILE_PATTERNS          = *.h \
-                         *.hpp
+                         *.hpp \
+                         *.md
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
@@ -891,7 +892,7 @@ FILTER_SOURCE_PATTERNS =
 # (index.html). This can be useful if you have a project on for instance GitHub
 # and want to reuse the introduction page also for the doxygen output.
 
-USE_MDFILE_AS_MAINPAGE = 
+USE_MDFILE_AS_MAINPAGE = readme.md
 
 #---------------------------------------------------------------------------
 # Configuration options related to source browsing
@@ -1955,7 +1956,12 @@ PREDEFINED             = WHEATIS_NETWORK_API \
                          WHEATIS_CLIENT_API \
                          IRODS_UTIL_API \
                          RESOURCE_VAL(x)= \
-                         RESOURCE_PREFIX
+                         RESOURCE_PREFIX \
+                         WHEATIS_SERVICE_API \
+                         "WHEATIS_SERVICE_LOCAL=/** @private */" \
+                         "WHEATIS_NETWORK_LOCAL=/** @private */" \
+                         "WHEATIS_PARAMS_LOCAL=/** @prviate */" \
+                         "IRODS_UTIL_LOCAL=/** @private */"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
