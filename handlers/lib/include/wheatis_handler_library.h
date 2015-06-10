@@ -1,5 +1,7 @@
-/**@file wheatis_util_library.h
-*/ 
+/**@file
+ * @defgroup Handler Handler Library
+ * @brief
+ */
 
 #ifndef WHEATIS_HANDLER_LIBRARY_H
 #define WHEATIS_HANDLER_LIBRARY_H

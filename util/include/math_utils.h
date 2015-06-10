@@ -13,7 +13,7 @@
 
 
 /**
- * Compate two doubles taking the epsilon
+ * Compare two doubles taking the epsilon
  * of this computer into account.
  *
  * @param d1 The first double to compare.
@@ -25,7 +25,7 @@ WHEATIS_UTIL_API int CompareDoubles (const double d1, const double d2);
 
 
 /**
- * Compate two floats taking the epsilon
+ * Compare two floats taking the epsilon
  * of this computer into account.
  *
  * @param f1 The first float to compare.
@@ -41,7 +41,7 @@ WHEATIS_UTIL_API int CompareFloats (const float f1, const float f2);
  * "number getting" routine that notifies us of any errors.
  *
  * @param str_pp Pointer to char * where we start getting the number from.
- * @param data_p Pointer where the number will be stored if the converesion was successful.
+ * @param data_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
 WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p);
@@ -52,8 +52,8 @@ WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p)
  * "number getting" routine that notifies us of any errors.
  *
  * @param str_pp Pointer to char * where we start getting the number from.
- * @param data_p Pointer where the number will be stored if the conversion was successful.
- * @return TRUE if the conversion was successful, FALSE otherwise.
+ * @param answer_p Pointer where the number will be stored if the conversion was successful.
+ * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
  */
 WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
 
@@ -63,16 +63,37 @@ WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
  * "number getting" routine that notifies us of any errors.
  *
  * @param str_pp Pointer to char * where we start getting the number from.
- * @param data_p Pointer where the number will be stored if the conversion was successful.
+ * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
 WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p);
 
 
+/**
+ * Compare two doubles taking the epsilon
+ * of this computer into account.
+ *
+ * @param v1_p Pointer to the first double to compare.
+ * @param v2_p Pointer to the second double to compare.
+ * @return -1 if the first double is less than the second,
+ * +1 if the first double is greater than the second
+ * and 0 if they are identical.
+ */
 WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 
 
-
+/**
+ * @brief Get the string representation of a number.
+ *
+ * Convert the number into a string.
+ *
+ * @param d The number to convert.
+ * @param num_dps The number of decimal places for the number when converting.
+ * @return A newly-allocates string representation of the number or
+ * <code>NULL</code> upon error. This string needs to be freed using <code>
+ * FreeCopiedString</code> to avoid a memory leak.
+ * @see FreeCopiedString
+ */
 WHEATIS_UTIL_API char *ConvertNumberToString (double d, int8 num_dps);
 
 

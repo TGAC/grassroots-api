@@ -214,8 +214,9 @@ WHEATIS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, cons
  *
  * @param params_p The ParameterSet to search.
  * @param name_s The name of the ParameterGroup to get the Parameters for.
- * @return Upon success, an array of matching Parameter pointers terminated by a NULL.
- * Upon failure a NULL is returned.
+ * @return Upon success, an array of matching Parameter pointers terminated by a <code>NULL</code>.
+ * Upon failure a <code>NULL</code> is returned.
+ * @memberof ParameterSet
  */
 WHEATIS_PARAMS_API Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 

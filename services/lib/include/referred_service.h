@@ -14,7 +14,7 @@
 
 
 /**
- * A datatype detailing the addon services
+ * @brief A datatype detailing the addon services
  * that the wheatis offers. These are the
  * equivalent to iRods microservices.
  */
@@ -23,6 +23,9 @@
 struct Plugin;
 struct Service;
 
+/**
+ * @brief The base structure for storing Service configuration data.
+ */
 typedef struct ServiceData
 {
 	/** The service that owns this data. */
@@ -36,32 +39,26 @@ typedef struct ServiceData
  */
 typedef struct ReferredService
 {
+	/** The Service that this ReferredService is using. */
 	Service *rs_service_p;
+
+	/** The configuration for this ReferredService */
 	json_t *rs_config_p;
 } ReferredService;
 
 
+/**
+ * A datatype for storing a ReferredService on a LinkedList
+ */
 typedef struct
 {
+	/** The base Listnode. */
 	ListItem rsn_node;
+
+	/** The ReferredService */
 	ReferredService *rsn_service_p;
 } ReferredServiceNode;
 
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-
-WHEATIS_SERVICE_API struct Service *GetServiceFromPlugin (struct Plugin * const plugin_p, const json_t *service_config_p);
-
-
-
-
-#ifdef __cplusplus
-}
-#endif
 
 
 #endif		/* #ifndef WHEATIS_REFERRED_SERVICE_H */

@@ -159,7 +159,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char
  * Add an argument to the program that a DrmaaTool will run.
  *
  * @param tool_p The DrmaaTool to add the argument for.
- * @param output_name_s The argument to add. The DrmaaTool will make a copy of this so the parameter
+ * @param arg_s The argument to add. The DrmaaTool will make a copy of this so the parameter
  * does not need to remain in memory after this call.
  * @return <code>true</code> if the argument was added successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool

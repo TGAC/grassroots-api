@@ -166,6 +166,8 @@ WHEATIS_NETWORK_API void FreeConnection (Connection *connection_p);
 WHEATIS_NETWORK_API const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *req_p);
 
 
+WHEATIS_NETWORK_LOCAL int SendJsonRequestViaRawConnection (RawConnection *connection_p, const json_t *json_p);
+
 /** @} */
 
 

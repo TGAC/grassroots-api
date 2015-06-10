@@ -9,42 +9,98 @@
 struct ServiceMatcher;
 
 
+/** A callback function used to run a ServiceMatcher. */
+typedef bool (*RunServiceMatcherCallback) (struct ServiceMatcher *matcher_p, Service *service_p);
+
+/** A callback function used to free a ServiceMatcher. */
+typedef void (*DestroyServiceMatcherCallback) (struct ServiceMatcher *matcher_p);
+
+
+/**
+ * @brief A datatype used to find any Services that match given criteria.
+ */
 typedef struct ServiceMatcher
 {
-	bool (*sm_match_fn) (struct ServiceMatcher *matcher_p, Service *service_p);
-	void (*sm_destroy_fn) (struct ServiceMatcher *matcher_p);
+	/**
+	 * Callback function to run against a given Service to see if is a match.
+	 *
+	 * @see RunServiceMatcher
+	 */
+	RunServiceMatcherCallback sm_match_fn;
+
+	/**
+	 * @brief Callback to call when destroying a custom ServiceMatcher.
+	 * @param matcher_p The ServiceMatcher to destroy.
+	 * @see FreeServiceMatcher
+	 */
+	DestroyServiceMatcherCallback sm_destroy_fn;
 } ServiceMatcher;
 
 
+/**
+ * @brief A ServiceMatcher that matches a Service if it can run on a given Resource.
+ */
 typedef struct ResourceServiceMatcher
 {
+	/** The base matcher */
 	ServiceMatcher rsm_base_matcher;
+
+	/** The Resource to test if a Service can operate upon. */
 	Resource *rsm_resource_p;
+
+	/** The Handler to access the Resource. */
 	Handler *rsm_handler_p;
 } ResourceServiceMatcher;
 
 
+/**
+ * @brief A ServiceMatcher that matches a Service by its name.
+ */
 typedef struct NameServiceMatcher
 {
+	/** The base matcher */
 	ServiceMatcher nsm_base_matcher;
+
+	/** The name of the Service to match */
 	const char *nsm_service_name_s;
 } NameServiceMatcher;
 
 
+/**
+ * @brief A ServiceMatcher that matches a Service by its Plugin name
+ *
+ * Find a Service by matching the name of the Plugin that it was loaded from.
+ * This is used when working with a ReferredService.
+ */
 typedef struct PluginNameServiceMatcher
 {
+	/** The base matcher */
 	ServiceMatcher pnsm_base_matcher;
+
+	/** The name of the Service's Plugin to match */
 	const char *pnsm_plugin_name_s;
 } PluginNameServiceMatcher;
 
 
+/**
+ * @brief A ServiceMatcher that matches a Service by its Plugin name and an Service name.
+ *
+ * Find a Service by matching the name of the Plugin that it was loaded from as well as having
+ * a matching Service name too.
+ */
 typedef struct PluginOperationNameServiceMatcher
 {
+	/** The base matcher for matching by Plugin name */
 	PluginNameServiceMatcher ponsm_base_matcher;
+
+	/** The Service name to match */
 	const char *ponsm_operation_name_s;
 } PluginOperationNameServiceMatcher;
 
 
+/**
+ * @brief A ServiceMatcher that will find any Service with a keyword parameter.
+ */
 typedef struct KeywordServiceMatcher
 {
 	ServiceMatcher ksm_base_matcher;
@@ -57,52 +113,122 @@ extern "C"
 #endif
 
 
+/**
+ * Allocate an empty ServiceMatcher.
+ *
+ * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API ServiceMatcher *AllocateServiceMatcher (void);
 
+/**
+ * Allocate a ResourceServiceMatcher.
+ *
+ * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API ServiceMatcher *AllocateResourceServiceMatcher (Resource *resource_p, Handler *handler_p);
 
+
+/**
+ * Allocate a NameServiceMatcher.
+ *
+ * @param name_s The name of the Service to match.
+ * @return A newly-allocated NameServiceMatcher or <code>NULL</code> upon error.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API ServiceMatcher *AllocateOperationNameServiceMatcher (const char *name_s);
 
+
+/**
+ * Allocate a PluginNameServiceMatcher.
+ *
+ * @param plugin_name_s The name of the Plugin for a Service to match.
+ * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginNameServiceMatcher (const char *plugin_name_s);
 
+
+/**
+ * Allocate a PluginOperationNameServiceMatcher.
+ *
+ * @param plugin_name_s The name of the Plugin for a Service to match.
+ * @param service_name_s The name of the Service to match.
+ * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginOperationNameServiceMatcher (const char *plugin_name_s, const char *service_name_s);
 
+
+/**
+ * Allocate a KeywordServiceMatcher.
+ *
+ * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API ServiceMatcher *AllocateKeywordServiceMatcher (void);
 
 
-WHEATIS_SERVICE_API void InitServiceMatcher (ServiceMatcher *matcher_p, bool (*match_fn) (ServiceMatcher *matcher_p, Service *service_p));
-
-WHEATIS_SERVICE_API void InitResourceServiceMatcher (ResourceServiceMatcher *matcher_p, Resource *resource_p, Handler *handler_p);
-
-WHEATIS_SERVICE_API void InitOperationNameServiceMatcher (NameServiceMatcher *matcher_p, const char *name_s);
-
-WHEATIS_SERVICE_API void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
-
-
-WHEATIS_SERVICE_API void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *matcher_p, const char *plugin_name_s, const char *operation_name_s);
+/**
+ * Initialise a ServiceMatcher.
+ *
+ * @param matcher_p The ServiceMatcher to initialise.
+ * @param match_fn The callback function to use for determining matching Services.
+ * @memberof ServiceMatcher
+ */
+WHEATIS_SERVICE_LOCAL void InitServiceMatcher (ServiceMatcher *matcher_p, RunServiceMatcherCallback match_fn);
 
 
-WHEATIS_SERVICE_API void InitKeywordServiceMatcher (KeywordServiceMatcher *matcher_p);
+WHEATIS_SERVICE_LOCAL void InitResourceServiceMatcher (ResourceServiceMatcher *matcher_p, Resource *resource_p, Handler *handler_p);
+
+WHEATIS_SERVICE_LOCAL void InitOperationNameServiceMatcher (NameServiceMatcher *matcher_p, const char *name_s);
+
+WHEATIS_SERVICE_LOCAL void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
 
 
+WHEATIS_SERVICE_LOCAL void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *matcher_p, const char *plugin_name_s, const char *operation_name_s);
+
+
+WHEATIS_SERVICE_LOCAL void InitKeywordServiceMatcher (KeywordServiceMatcher *matcher_p);
+
+
+/**
+ * Set the Plugin name to match for a PluginNameServiceMatcher.
+ *
+ * @param matcher_p The PluginNameServiceMatcher to update.
+ * @param plugin_name_s The Plugin name to search for.
+ * @memberof PluginNameServiceMatcher
+ */
 WHEATIS_SERVICE_API void SetPluginNameForServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
 
 
-
+/**
+ * @brief Run a ServiceMatcher on a given Service.
+ * @param matcher_p The ServiceMatcher to run
+ * @param service_p The Service to check.
+ * @return <code>true</code> if the Service was a match, <code>false</code> otherwise.
+ * @memberof ServiceMatcher
+ */
 WHEATIS_SERVICE_API bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_API bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p);
+WHEATIS_SERVICE_LOCAL bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_API bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p);
+WHEATIS_SERVICE_LOCAL bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_API bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p);
+WHEATIS_SERVICE_LOCAL bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_API bool MatchServiceByPluginAndOperationsName (ServiceMatcher *matcher_p, Service *service_p);
+WHEATIS_SERVICE_LOCAL bool MatchServiceByPluginAndOperationsName (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_API bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Service *service_p);
+WHEATIS_SERVICE_LOCAL bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Service *service_p);
 
 
-WHEATIS_SERVICE_LOCAL void FreeServiceMatcher (ServiceMatcher *matcher_p);
+/**
+ * @brief Free a ServiceMatcher
+ * @param matcher_p The ServiceMatcher to free
+ * @memberof ServiceMatcher
+ */
+WHEATIS_SERVICE_API void FreeServiceMatcher (ServiceMatcher *matcher_p);
 
 WHEATIS_SERVICE_LOCAL void FreeResourceServiceMatcher (ServiceMatcher *matcher_p);
 

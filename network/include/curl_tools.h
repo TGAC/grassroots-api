@@ -14,6 +14,12 @@
 #include "byte_buffer.h"
 #include "selector.hpp"
 
+/**
+ * @brief A tool for making http(s) requests and responses.
+ *
+ * A datatype that uses CURL to perform http(s) requests
+ * and responses.
+ */
 typedef struct CurlTool
 {
 	CURL *ct_curl_p;
@@ -55,7 +61,7 @@ WHEATIS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
  * write to buffer callback.
  *
  * @param buffer_p If this is not NULL, then set the curl object
- * to write its reponse to this buffer. This can be NULL <code>NULL</code>.
+ * to write its response to this buffer. This can be NULL <code>NULL</code>.
  * @see AddCurlCallback
  * @return The CURL object or <code>NULL</code> upon error.
  */
@@ -69,9 +75,30 @@ WHEATIS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
  */
 WHEATIS_NETWORK_API void FreeCurl (CURL *curl_p);
 
-
+/**
+ * @brief Set the cryptographic engine to use.
+ *
+ * @param curl_p The CURL instance to set the SSL engine for.
+ * @param cryptograph_engine_name_s The name of the cryptographic engine
+ * to use. For the valid names see the CURL documentation.
+ * @return <code>true</code> if the SSL engine name was set successfully,
+ * <code>false</code> otherwise.
+ */
 WHEATIS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s);
 
+
+/**
+ * Call a secure web address
+ *
+ * @param url_s The address to get the data from.
+ * @param header_data_s The value to use for CURLOPT_CAINFO. See the Curl documentation.
+ * @param ca_cert_name_s The value to use for CURLOPT_CAINFO. See the Curl documentation.
+ * @param cert_name_s The value to use for CURLOPT_SSLCERT. See the Curl documentation.
+ * @param key_name_s The value to use for CURLOPT_SSLKEY. See the Curl documentation.
+ * @param verify_certs If this is true then CURLOPT_SSL_VERIFYPEER will be set. See the Curl documentation.
+ * @param buffer_p Where the data from the address will be written to
+ * @return <code>true</code> if the call was successful, <code>false</code> otherwise.
+ */
 WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca_cert_name_s, const char * const cert_name_s, const char *key_name_s, const bool verify_certs, ByteBuffer *buffer_p);
 
 
@@ -80,7 +107,7 @@ WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_da
  * the given buffer.
  *
  * @return The CURL object to add the callback for.
- * @param buffer_p The ByteBuffer which will store the CURL object's repsonse.
+ * @param buffer_p The ByteBuffer which will store the CURL object's response.
  */
 WHEATIS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
 

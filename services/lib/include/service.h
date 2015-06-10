@@ -129,7 +129,7 @@ typedef struct Service
 
 	struct ServiceJobSet *se_jobs_p;
 
-	/**w
+	/**
 	 * Any custom data that the service needs to store.
 	 */
 	ServiceData *se_data_p;
@@ -137,16 +137,28 @@ typedef struct Service
 } Service;
 
 
+/**
+ * A datatype for storing Services on a LinkedList
+ */
 typedef struct
 {
+	/** The List Node */
 	ListItem sn_node;
+
+	/* The Service */
 	Service *sn_service_p;
 } ServiceNode;
 
 
+/**
+ * A datatype for having a set of Services.
+ */
 typedef struct ServicesArray
 {
+	/** An array of pointers to Services */
 	Service **sa_services_pp;
+
+	/** The number of Services in the array */
 	uint32 sa_num_services;	
 } ServicesArray;
 
@@ -162,6 +174,23 @@ extern "C"
 WHEATIS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
 
 
+/**
+ *
+ * @param service_p
+ * @param get_service_name_fn
+ * @param get_service_description_fn
+ * @param se_get_service_info_uri_fn
+ * @param run_fn
+ * @param match_fn
+ * @param get_parameters_fn
+ * @param release_parameters_fn
+ * @param close_fn
+ * @param get_results_fn
+ * @param get_status_fn
+ * @param specific_flag
+ * @param data_p
+ * @memberof Service
+ */
 WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
@@ -177,6 +206,16 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	ServiceData *data_p);
 
 
+/**
+ * @brief Run a Service.
+ *
+ * @param service_p The Service to run.
+ * @param param_set_p The ParameterSet to run the Service with.
+ * @param credentials_p An optional set of UserDetails as json.
+ * @return A newly-allocated ServiceJobSet containing the details for the new jobs or
+ * <code>NULL</code> upon error.
+ * @memberof Service
+ */
 WHEATIS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 
@@ -188,6 +227,7 @@ WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_
  *
  * @param service_p The Service to get the name for.
  * @return The name of Service.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API const char *GetServiceName (Service *service_p);
 
@@ -197,6 +237,7 @@ WHEATIS_SERVICE_API const char *GetServiceName (Service *service_p);
  *
  * @param service_p The Service to get the description for.
  * @return The description of Service.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
 
@@ -207,6 +248,7 @@ WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
  *
  * @param service_p The Service to get the description for.
  * @return The address of the page or NULL if there isn't one.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API const char *GetServiceInformationURI (Service *service_p);
 
@@ -217,6 +259,7 @@ WHEATIS_SERVICE_API const char *GetServiceInformationURI (Service *service_p);
  * @return The newly-created ParameterSet or <code>NULL</code> upon error. This
  * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
  * @see FreeParameterSet.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
@@ -226,6 +269,7 @@ WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Reso
  *
  * @param service_p The Service to get the id for.
  * @return The string of the id.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
 
@@ -234,13 +278,27 @@ WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
  * Free a Service and its associated Parameters and ServiceData.
  *
  * @param service_p The Service to free.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API void FreeService (Service *service_p);
 
 
+/**
+ * @brief Allocate a ServiceNode pointing to the given Service.
+ *
+ * @param service_p The Service to store on the ServiceNode.
+ * @return A newly-allocated ServiceNode or <code>NULL</code> upon error.
+ * @memberof ServiceNode
+ */
 WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
 
 
+/**
+ * @brief Free a ServiceNode.
+ *
+ * @param node_p The ServiceNode to free.
+ * @memberof ServiceNode
+ */
 WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
 
@@ -252,9 +310,16 @@ WHEATIS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const cha
 WHEATIS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
 
 
+
 WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
 
 
+/**
+ * @brief Close a Service
+ *
+ * @param service_p The Service to close.
+ * @memberof Service
+ */
 WHEATIS_SERVICE_API bool CloseService (Service *service_p);
 
 
@@ -263,6 +328,7 @@ WHEATIS_SERVICE_API bool CloseService (Service *service_p);
  *
  * @param service_p The Service to check.
  * @return <code>true</code> if the Service still has active jobs, <code>false</code> otherwise.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API  bool IsServiceLive (Service *service_p);
 
@@ -272,6 +338,7 @@ WHEATIS_SERVICE_API  bool IsServiceLive (Service *service_p);
  *
  * @param service_p The Service to get the results for
  * @return The results or NULL if they are not any.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
 
@@ -282,34 +349,91 @@ WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t 
  * @param service_p The Service to generate the description for.
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
+ * @memberof Service
  */
 WHEATIS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag);
 
 
+/**
+ * @brief Get the description of a Service
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The description or <code>NULL</code> if it could not be found.
+ */
 WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
 
 
+/**
+ * @brief Get the name of a Service
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The name or <code>NULL</code> if it could not be found.
+ */
 WHEATIS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
 
 
+/**
+ * @brief Get the description of an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The description or <code>NULL</code> if it could not be found.
+ */
 WHEATIS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
 
 
+/**
+ * @brief Get the name of an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The name or <code>NULL</code> if it could not be found.
+ */
 WHEATIS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
 
 
+/**
+ * @brief Get the URI of an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The URI or <code>NULL</code> if it could not be found.
+ */
 WHEATIS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
 
 
+/**
+ * @brief Get the path to an icon for a Service.
+
+ * @param root_p The json_t representation of a Service.
+ * @return The path to the icon or <code>NULL</code> if it could not be found.
+ */
 WHEATIS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
 
 
+/**
+ *
+ * @param plugin_p
+ * @return
+ */
 WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
-
+/**
+ *
+ * @param services_list_p
+ * @param resource_p
+ * @param json_p
+ * @param add_service_ids_flag
+ * @return
+ */
 WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag);
 
 
+/**
+ * @brief Free a ParameterSet that was got from a call to <code>GetServiceParameters</code>.
+ *
+ * @param service_p The Service used for the previous call to <code>GetServiceParameters</code>
+ * @param params_p The ParameterSet to free.s
+ * @memberof Service
+ * @see GetServiceParameters
+ */
 WHEATIS_SERVICE_API void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p);
 
 
@@ -317,6 +441,7 @@ WHEATIS_SERVICE_API void ReleaseServiceParameters (Service *service_p, Parameter
  * Free a ServicesArray and each of its Services.
  *
  * @param services_p The ServicesArray to free.
+ * @memberof ServicesArray
  */
 WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
 
@@ -325,34 +450,44 @@ WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
  * Allocate an empty ServicesArray.
  *
  * @param num_services The number of potential Services that the ServicesArray will hold.
+ * @return A newly-allocated ServicesArray with space for the given number of Services or
+ * <code>NULL</code> upon error.
+ * @memberof ServicesArray
  */
 WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
 
-/**
- * Free a ServicesArray and each of its Services.
- *
- * @param services_p The ServicesArray to free.
- */
-WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
-
-
-/**
- * Allocate an empty ServicesArray.
- *
- * @param num_services The number of potential Services that the ServicesArray will hold.
- */
-WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
 
 
 WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
-
+/**
+ *
+ * @param service_p
+ * @param status
+ * @param result_json_p
+ * @param service_id
+ * @return
+ */
 WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p, const uuid_t service_id);
 
-
+/**
+ *
+ * @param config_p
+ * @param plugin_name_s
+ * @param get_service_fn
+ * @return
+ */
 WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 
+/**
+ * @brief Get the OperationStatus for an operation in a Service.
+ *
+ * @param service_p The Service to query.
+ * @param service_id The uuid_t for the Operation whose OperationStatus is wanted.
+ * @return The OperationStatus for the given Operation
+ * @memberof Service
+ */
 WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id);
 
 
