@@ -54,8 +54,24 @@ WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename, const char
 WHEATIS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path);
 WHEATIS_UTIL_API char *GetCurrentWorkingDirectory (void);
 
-WHEATIS_UTIL_API bool IsDirectory (const char * const path);
+/**
+ * Check whether the given path refers to a directory.
+ *
+ * @param path_s The path to check.
+ * @return <code>true</code> if the path exists and is a directory, <code>false</code>
+ * otherwise.
+ */
+WHEATIS_UTIL_API bool IsDirectory (const char * const path_s);
 
+
+/**
+ * Makes sure that a given directory path exists.
+ *
+ * @param path_s The path to check. It can be an arbitrary number of levels deep.
+ * @return <code>true</code> if the path already exists. If not, the all of directories
+ * will attempt to be created. If this succeed then <code>true</code> will be returned, <code>false</code>
+ * otherwise.
+ */
 WHEATIS_UTIL_API bool EnsureDirectoryPath (const char * const path_s);
 
 
