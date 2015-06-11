@@ -12,14 +12,6 @@
 
 
 
-typedef struct ParameterGroupNode
-{
-	ListItem pgn_node;
-	ParameterGroup *pgn_param_group_p;
-} ParameterGroupNode;
-
-
-
 /**
  * @brief A set of Parameters along with an optional name
  * and description.
@@ -52,9 +44,15 @@ typedef struct ParameterSet
 } ParameterSet;
 
 
+/**
+ * A datatype for storing a ParameterSet on a LinkedList
+ */
 typedef struct ParameterSetNode
 {
+	/** The base list node */
 	ListItem psn_node;
+
+	/** Pointer to the associated ParameterSet */
 	ParameterSet *psn_param_set_p;
 } ParameterSetNode;
 

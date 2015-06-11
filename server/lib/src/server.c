@@ -925,6 +925,10 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 
 
 
+//static json_t GetRemoteServices (const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
+
+
+
 static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 {
 	json_t *json_p = NULL;

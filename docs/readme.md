@@ -15,7 +15,7 @@ For more information, see the [Server](server.md "Server guide") documentation.
 
 ### Client
 
-A Client is what is used to connect to a WheatIS Server and interact with 
+A Client is what is used to connect to a WheatIS Server and call Services.
 
 ### Services
 
@@ -26,12 +26,15 @@ A Client is what is used to connect to a WheatIS Server and interact with
 
 There are a number of support libraries that any component within the WheatIS system can take advantage of.
 
-#### Drmaa
+#### DRMAA
+
+[DRMAA](http://www.drmaa.org/) is an API to allow access to computing grids, clusters and cloud-based services. The WheatIS DRMAA library wraps up calls to specify things such as queues to submit jobs to, number of nodes to use, job monitoring, *etc.*
 
 #### Network
 
 #### iRODS
 
+[iRODS](http://irods.org/) is a data storage layer that abstracts out where the data is stored as well as having the ability to add metadata to files and directories to allow for searching. The WheatIS iRODS library adds an API to simplify searching on various criteria.
 
 
 #### Handler
