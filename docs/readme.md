@@ -7,11 +7,11 @@ The Wheat information System (WheatIS) is a set of computing tools to allow user
 
 Using a similar approach to that used by the [Apache httpd server] (http://httpd.apache.org), the WheatIS consists of a core [Server](#server) and a set of external modules, called [Services](services_lib.md), that provide the scientific functionality. The access to the system is via a [Client](#clients). The WheatIS server can also be linked to other WheatIS servers allowing the functionality of both to be shared without having to perform any additional installation. Servers, Services and Clients are all interface specifications in that they declare an Application Programming Interface (API) that need to be implemented. 
 
-All of the communication between users and a Server is by JSON-based messages.
-
-
+All of the Server-Server and Server-Client communication is by JSON-based messages.
 
 ### Server
+
+For more information, see the [Server](server.md "Server guide") documentation.
 
 ### Client
 
@@ -24,7 +24,7 @@ A Client is what is used to connect to a WheatIS Server and interact with
 
 ### Support libraries
 
-There are a number of suppor
+There are a number of support libraries that any component within the WheatIS system can take advantage of.
 
 #### Drmaa
 
@@ -38,7 +38,9 @@ There are a number of suppor
 
 #### Utility
 
-#### Parameters
+#### Parameters Library
+
+The Parameters library stores all of the functionality that is needed to define, change, and manipulate Service configuration options by a Client. 
 
 #### Client
 
@@ -81,4 +83,4 @@ The current system of installation requires building from source.
     
     `DRMAA_ENABLED` if this is set to 1 then the wheatis drmaa support library will be built.
 
-2. If you now run make it will compile the code and then run make install to install WheatIS.
+2. If you now run `make` it will compile the code and then run `make install` to install WheatIS.
