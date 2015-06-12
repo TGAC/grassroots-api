@@ -85,11 +85,12 @@ typedef struct Service
 
 	bool se_is_specific_service_flag;
 
-	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 
 	bool (*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
 	bool (*se_has_permissions_fn) (struct Service *service_p, const UserDetails * const user_p);
+
 
  	/**
  	 * Function to get the user-friendly name of the service.
