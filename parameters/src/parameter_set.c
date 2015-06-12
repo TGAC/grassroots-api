@@ -17,6 +17,19 @@
 	#define PARAMETER_SET_DEBUG	(STM_LEVEL_NONE)
 #endif
 
+/**
+ * A datatype for storing a ParameterGroup on a LinkedList.
+ */
+typedef struct ParameterGroupNode
+{
+	/** The base list node */
+	ListItem pgn_node;
+
+	/* Pointer to the associate ParameterGroup */
+	ParameterGroup *pgn_param_group_p;
+} ParameterGroupNode;
+
+
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
 static void FreeParameterNode (ListItem *node_p);
 

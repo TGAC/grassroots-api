@@ -40,6 +40,7 @@ PREFIX const char *PROVIDER_NAME_S VAL("name");
 PREFIX const char *PROVIDER_DESCRIPTION_S VAL("description");
 PREFIX const char *PROVIDER_URI_S VAL("uri");
 
+PREFIX const char *SERVER_UUID_S VAL("server_uuid");
 
 PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
 PREFIX const char *OPERATION_ID_S VAL("operationId");
@@ -110,9 +111,19 @@ PREFIX const char *CREDENTIALS_ENCRYPTION_METHOD_S VAL("encrypt_method");
 PREFIX const char *CREDENTIALS_ENCRYPTION_KEY_S VAL("encrypt_key");
 
 
+/**
+ * A datatype for storing a json_t on a LinkedList.
+ *
+ * @see LinkedList
+ */
 typedef struct JsonNode
 {
+	/**
+	 * The base List node
+	 */
 	ListItem jn_node;
+
+	/** Pointer to the json object. */
 	json_t *jn_json_p;
 } JsonNode;
 
@@ -144,11 +155,13 @@ WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const 
  */
 WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 
+
 /**
  * Allocate a JsonNode that points to the given json object.
  *
  * @param json_p The json obect for the JsonNode to point to.
- * @return A newly-allocate JsonNode or <code>NULL</code> upon error.
+ * @return A newly-allocated JsonNode or <code>NULL</code> upon error.
+ * @memberof JsonNode
  * @see FreeJsonNode
  */
 WHEATIS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
@@ -157,7 +170,9 @@ WHEATIS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
 /**
  * Free a JsonNode.
  *
- * @param node_p The JsonNode free.
+ * @param node_p The JsonNode to free. The number of references to the
+ * associated json object will be decremented by 1.
+ * @memberof JsonNode
  */
 WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
 

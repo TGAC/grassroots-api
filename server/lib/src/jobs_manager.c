@@ -36,11 +36,3 @@ ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_
 	return (manager_p -> jm_remove_job_fn (manager_p, job_key));
 }
 
-
-/**
- *
- */
-void ServiceJobFinished (JobsManager *manager_p, uuid_t job_key)
-{
-}
-

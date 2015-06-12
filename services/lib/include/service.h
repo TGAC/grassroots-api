@@ -83,9 +83,26 @@ typedef struct Service
 	 */
 	struct Plugin *se_plugin_p;
 
+	/**
+	 * @brief Is the service self-contained.
+	 *
+	 * If a Service has a specific task that it can perform then this
+	 * is <code>true</code>. If it is a utility that is reused for different
+	 * Services, such as a generic web search service, then this is <code>false<code>
+	 */
 	bool se_is_specific_service_flag;
 
-	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+	/**
+	 * Run this Service.
+	 *
+	 * @param service_p The Service to run.
+	 * @param param_set_p The ParameterSet to run the Service with.
+	 * @param credentials_p An optional set of credentials if the Service requires it.
+	 * @return A newly-allocated ServiceJobSet with the status of the ServiceJobs started
+	 * by this call or <code>NULL</code> if there was an error.
+	 * @see RunService
+	 */
+	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 	bool (*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -210,12 +227,15 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 /**
  * @brief Run a Service.
  *
+ * This is a convenience wrapper around se_run_fn.
+ *
  * @param service_p The Service to run.
  * @param param_set_p The ParameterSet to run the Service with.
  * @param credentials_p An optional set of UserDetails as json.
  * @return A newly-allocated ServiceJobSet containing the details for the new jobs or
  * <code>NULL</code> upon error.
  * @memberof Service
+ * @see se_run_fn
  */
 WHEATIS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
