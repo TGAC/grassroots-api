@@ -157,6 +157,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								NULL,
 								NULL,
 								true,
+								true,
 								data_p);
 							
 							* (services_p -> sa_services_pp) = irods_service_p;

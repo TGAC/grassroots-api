@@ -119,6 +119,7 @@ static Service *GetWebService (json_t *operation_json_p, size_t i)
 						GetWebServiceResults,
 						NULL,
 						false,
+						true,
 						data_p);
 
 					return web_service_p;

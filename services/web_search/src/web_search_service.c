@@ -109,6 +109,7 @@ static Service *GetWebSearchService (json_t *operation_json_p, size_t i)
 						GetWebSearchServiceResults,
 						NULL,
 						false,
+						true,
 						data_p);
 
 					return web_service_p;

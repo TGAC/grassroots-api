@@ -134,6 +134,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								GetElasticSearchRestServiceResults,
 								NULL,
 								true,
+								true,
 								data_p);
 							
 							* (services_p -> sa_services_pp) = compress_service_p;

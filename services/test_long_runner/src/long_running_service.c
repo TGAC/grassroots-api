@@ -95,6 +95,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								GetLongRunningResultsAsJSON,
 								GetLongRunningServiceStatus,
 								true,
+								false,
 								data_p);
 							
 							* (services_p -> sa_services_pp) = service_p;

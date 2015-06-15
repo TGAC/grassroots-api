@@ -53,10 +53,6 @@ SRCS 	= \
 	external_blast_tool.cpp \
 	system_blast_tool.cpp \
 	temp_file.cpp
-#	blast_search.cpp 
-	
-
-
 	
 
 CPPFLAGS += -DBLAST_LIBRARY_EXPORTS 

@@ -75,14 +75,6 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 	if (!tool_p)
 		{
-			if (strcmp (BlastTool :: bt_tool_type_s, "queued") == 0)
-				{
-	//				tool_p = new QueuedBlastTool (job_p, name_s, working_directory_s);
-				}
-		}
-
-	if (!tool_p)
-		{
 			tool_p = new SystemBlastTool (job_p, name_s, working_directory_s, program_name_s);
 		}
 
@@ -104,7 +96,10 @@ BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s)
 	bt_job_p = service_job_p;
 	bt_name_s = name_s;
 
-	SetServiceJobName (service_job_p, name_s);
+	if (service_job_p)
+		{
+			SetServiceJobName (service_job_p, name_s);
+		}
 }
 
 

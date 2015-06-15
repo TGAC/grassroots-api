@@ -72,22 +72,25 @@ ServicesArray *GetServices (const json_t *config_p)
 					
 					if (data_p)
 						{
-							InitialiseService (blast_service_p,
-								GetBlastServiceName,
-								GetBlastServiceDesciption,
-								NULL,
-								RunBlastService,
-								IsFileForBlastService,
-								GetBlastServiceParameters,
-								ReleaseBlastServiceParameters,
-								CloseBlastService,
-								GetBlastResultAsJSON,
-								GetBlastServiceStatus,
-								true,
-								data_p);
-							
-							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
+							BlastServiceData *blast_data_p = (BlastServiceData *) data_p;
+
+							if (GetBlastServiceConfig (blast_data_p))
 								{
+									InitialiseService (blast_service_p,
+										GetBlastServiceName,
+										GetBlastServiceDesciption,
+										NULL,
+										RunBlastService,
+										IsFileForBlastService,
+										GetBlastServiceParameters,
+										ReleaseBlastServiceParameters,
+										CloseBlastService,
+										GetBlastResultAsJSON,
+										GetBlastServiceStatus,
+										true,
+										blast_data_p -> bsd_blast_tools_p -> AreBlastToolsSynchronous (),
+										data_p);
+
 									* (services_p -> sa_services_pp) = blast_service_p;
 
 									return services_p;

@@ -64,6 +64,14 @@ BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 }
 
 
+bool BlastToolSet :: AreBlastToolsSynchronous ()
+{
+	bool sync_flag = true;
+
+	return sync_flag;
+}
+
+
 BlastTool *BlastToolSet :: GetNewBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
 	BlastTool *tool_p = CreateBlastTool (job_p, name_s, working_directory_s);

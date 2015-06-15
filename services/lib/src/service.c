@@ -55,6 +55,7 @@ void InitialiseService (Service * const service_p,
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
 	bool specific_flag,
+	bool synchronouse_flag,
 	ServiceData *data_p)
 {
 	service_p -> se_get_service_name_fn = get_service_name_fn;
@@ -70,7 +71,8 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_data_p = data_p;
 	
 	service_p -> se_is_specific_service_flag = specific_flag;
-	
+	service_p -> se_synchronous_flag = synchronouse_flag;
+
 	if (service_p -> se_data_p)
 		{
 			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);

@@ -142,6 +142,13 @@ typedef struct Service
 
 	bool (*se_close_fn) (struct Service *service_p);
 
+	/**
+	 * If this is <code>true</code> then when the Service is ran, it will not return
+	 * until the job has completed. If <code>false</code>, then the Service will
+	 * return straight away and the job will run in the background.
+	 */
+	bool se_synchronous_flag;
+
 	/** Unique Id for this service */
 	uuid_t se_id;
 
@@ -221,6 +228,7 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
 	bool specific_flag,
+	bool synchronouse_flag,
 	ServiceData *data_p);
 
 
