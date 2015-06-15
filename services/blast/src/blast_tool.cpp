@@ -25,6 +25,26 @@ void BlastTool :: SetBlastToolType (const char *type_s)
 }
 
 
+/**
+ * TODO: Don't like that this is not dealt with by the subclassed
+ * BlastTool itself. Need to rework to be like this
+ *
+ * @return <code>true</code> if the BlastTool runs synchronous, <code>
+ * false</code> if it runs asynchronously.
+ */
+bool IsBlastToolSynchronous ()
+{
+	bool sync_flag = true;
+
+	if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
+		{
+			sync_flag = false;
+		}
+
+	return sync_flag;
+}
+
+
 BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
 	BlastTool *tool_p = 0;
@@ -81,6 +101,9 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 	return tool_p;
 }
+
+
+
 
 
 void FreeBlastTool (BlastTool *tool_p)

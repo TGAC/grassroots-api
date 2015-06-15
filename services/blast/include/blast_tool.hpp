@@ -32,8 +32,6 @@ public:
 
 	virtual const char *GetResults () = 0;
 
-	virtual bool IsSynchronous () = 0;
-
 	const uuid_t &GetUUID () const;
 
 	const char *GetName () const;
@@ -124,6 +122,9 @@ BLAST_SERVICE_API OperationStatus RunBlast (BlastTool *tool_p);
 
 
 BLAST_SERVICE_API OperationStatus GetBlastStatus (BlastTool *tool_p);
+
+
+BLAST_SERVICE_API bool IsBlastToolSynchronous ();
 
 
 #ifdef __cplusplus

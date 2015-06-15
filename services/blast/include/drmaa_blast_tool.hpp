@@ -25,8 +25,6 @@ public:
 
 	virtual const char *GetResults ();
 
-	virtual bool IsSynchronous ();
-
 	virtual OperationStatus GetStatus ();
 
 	void SetCoresPerSearch (uint32 cores);

@@ -689,24 +689,28 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 												{
 													if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, json_p))
 														{
-															bool b = true;
-
-															if (add_id_flag)
+															if (json_object_set_new (operation_p, OPERATION_SYNCHRONOUS_S, service_p -> se_synchronous_flag ? json_true () : json_false ()) == 0)
 																{
-																	if (!IsUUIDSet (service_p -> se_id))
+																	bool b = true;
+
+																	if (add_id_flag)
 																		{
-																			GenerateServiceUUID (service_p);
+																			if (!IsUUIDSet (service_p -> se_id))
+																				{
+																					GenerateServiceUUID (service_p);
+																				}
+
+																			b = AddServiceUUIDToJSON (service_p, operation_p);
 																		}
 
-																	b = AddServiceUUIDToJSON (service_p, operation_p);
-																}
+																	if (b)
+																		{
+																			AddOperationInformationURIToJSON (service_p, operation_p);
 
-															if (b)
-																{
-																	AddOperationInformationURIToJSON (service_p, operation_p);
+																			success_flag = true;
+																		}		/* if (b) */
 
-																	success_flag = true;
-																}		/* if (AddServiceUUIDToJSON (service_p, operation_p)) */
+																}		/* if (json_object_set_new (operation_p, OPERATION_SYNCHRONOUS_S, service_p -> se_synchronous_flag ? json_true () : json_false ()) == 0) */
 
 														}		/* if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, json_p)) */
 

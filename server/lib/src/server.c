@@ -19,6 +19,7 @@
 #include "jobs_manager.h"
 #include "parameter_set.h"
 
+#include "servers_pool.h"
 #include "uuid/uuid.h"
 
 //#include "irods_handle.h"
@@ -165,6 +166,75 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 		}
 	#endif
 
+
+	/*
+	 * Is this request for an external server?
+	 */
+	uuid_p = json_object_get (req_p, SERVER_UUID_S);
+	if (uuid_p)
+		{
+			/*
+			 * Find the matching external server,
+			 * Remove the server uuid and proxy
+			 * the request/response
+			 */
+			if (json_is_string (uuid_p))
+				{
+					const char *uuid_s = json_string_value (uuid_p);
+					uuid_t key;
+
+					if (ConvertStringToUUID (uuid_s, key))
+						{
+							ServersManager *manager_p = GetServersManager ();
+
+							if (manager_p)
+								{
+									ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, key);
+
+									if (external_server_p)
+										{
+											/* remove the server's uuid */
+											if (json_object_del (req_p, SERVER_UUID_S) == 0)
+												{
+													/* we can now proxy the request off to the given server */
+													json_t *response_p = MakeRemoteJSONCallToExternalServer (external_server_p, req_p);
+
+													if (response_p)
+														{
+															/*
+															 * We now need to add the ExternalServer's
+															 * uuid back in. Not sure if we can use uuid_s
+															 * as it may have gone out of scope when we called
+															 * json_obtject_del, so best to recreate it.
+															 */
+															char buffer [UUID_STRING_BUFFER_SIZE];
+
+															ConvertUUIDToString (key, buffer);
+
+															if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer) == 0))
+																{
+
+																}		/* if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer) == 0)) */
+
+														}		/* if (response_p) */
+
+												}		/* if (json_object_del (req_p, SERVER_UUID_S) == 0) */
+
+										}		/* if (external_server_p)*/
+
+								}		/* if (manager_p) */
+
+						}		/* if (ConvertStringToUUID (uuid_s, key)) */
+
+				}		/* if (json_is_string (uuid_p)) */
+
+		}		/* if (uuid_p) */
+	else
+		{
+			/* the request is for this server */
+		}
+
+
 	if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
 		{
 			Operation op = GetOperation (op_p);
@@ -291,7 +361,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 				}		/* if (res_p) */
 
-		}
+		}		/* 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL) */
 
 		
 	#if SERVER_DEBUG >= STM_LEVEL_FINE
