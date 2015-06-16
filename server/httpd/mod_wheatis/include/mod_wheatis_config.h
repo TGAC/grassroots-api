@@ -49,7 +49,7 @@ typedef struct APRJobsManager
 	/** The base JobsManager */
 	JobsManager ajm_base_manager;
 
-	APRGlobalStorage ajm_store;
+	APRGlobalStorage *ajm_store_p;
 } APRJobsManager;
 
 
@@ -58,7 +58,7 @@ typedef struct APRServersManager
 	/** The base ServersManager */
 	ServersManager asm_base_manager;
 
-	APRGlobalStorage asm_store;
+	APRGlobalStorage *asm_store_p;
 
 } APRServersManager;
 

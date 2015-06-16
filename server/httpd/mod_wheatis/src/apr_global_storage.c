@@ -7,16 +7,8 @@
 
 #include "memory_allocations.h"
 #include "apr_thread_mutex.h"
-#include "apr_hash.h"
 #include "typedefs.h"
-
-
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, server_rec *server_p);
-
-APRGlobalStorage *AllocateAPRGlobalStorage (void);
-
-void FreeAPRGlobalStorage (APRGlobalStorage *storage_p);
-
+#include "apr_global_storage.h"
 
 APRGlobalStorage *AllocateAPRGlobalStorage (void)
 {
@@ -51,7 +43,7 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 
 					storage_p -> ags_server_p = server_p;
 
-					apr_pool_cleanup_register (pool_p, storage_p, DestroyAPRGlobalStorage, apr_pool_cleanup_null);
+					apr_pool_cleanup_register (pool_p, storage_p, FreeAPRGlobalStorage, apr_pool_cleanup_null);
 
 					success_flag = true;
 				}
@@ -65,6 +57,12 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 	return success_flag;
 }
 
+
+void FreeAPRGlobalStorage (APRGlobalStorage *storage_p)
+{
+	DestroyAPRGlobalStorage (storage_p);
+	FreeMemory (storage_p);
+}
 
 void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 {
@@ -99,6 +97,5 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 					storage_p -> ags_socache_provider_p -> destroy (storage_p -> ags_socache_instance_p, storage_p -> ags_server_p);
 				}
 		}
-
 }
 
