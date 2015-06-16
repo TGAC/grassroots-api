@@ -81,6 +81,9 @@ typedef struct
 
 	/** The JobsManager that the module is using. */
 	APRJobsManager *wisc_jobs_manager_p;
+
+	/** The ServersManager that the module is using. */
+	APRServersManager *wisc_servers_manager_p;
 } ModWheatISConfig;
 
 
