@@ -4,6 +4,7 @@
 #include "typedefs.h"
 #include "wheatis_service_manager_library.h"
 #include "jansson.h"
+#include "operation.h"
 
 #define DEFAULT_SERVER_PORT	("9991")
 
@@ -15,13 +16,14 @@
 #define KEY_PROTOCOL	("protocol")
 #define KEY_INTERVAL	("interval")
 
+/*
 typedef json_t (*server_callback_fn) (json_t *req_p, json_t *credentials_p);
 
 typedef struct ServerOperations
 {
 	server_callback_fn [OP_NUM_OPERATIONS];
 } ServerOperations;
-
+*/
  
 #ifdef __cplusplus
 	extern "C" {

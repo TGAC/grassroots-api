@@ -50,14 +50,13 @@ typedef struct ServersManager
 	 * @brief Add an ExternalServer to the ServersManager.
 	 *
 	 * @param manager_p The ServersManager to add the ExternalServer to.
-	 * @param key The uuid_t for the ExternalServer to search for.
 	 * @param server_p The ExternalServer to add.
 	 * @return <code>true</code> if the ExternalServer was added successfully,
 	 * <code>false</code> otherwise.
 	 * @memberof ServersManager
 	 * @see AddExternalServerToServersManager
 	 */
-	bool (*sm_add_server_fn) (struct ServersManager *manager_p, uuid_t key, ExternalServer *server_p);
+	bool (*sm_add_server_fn) (struct ServersManager *manager_p, ExternalServer *server_p);
 
 	/**
 	 * @brief Find an ExternalServer.
@@ -110,7 +109,7 @@ WHEATIS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
  * @param remove_server_fn The callback function to set for sm_remove_server_fn for the given ServersManager.
  */
 WHEATIS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
-                      bool (*add_server_fn) (ServersManager *manager_p, uuid_t key, ExternalServer *job_p),
+                      bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
 											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
 											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key));
 
@@ -122,14 +121,13 @@ WHEATIS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
  * for the given ServersManager.
  *
  * @param manager_p The ServersManager to add the ExternalServer to.
- * @param key The uuid_t for the ExternalServer to search for.
  * @param server_p The ExternalServer to add.
  * @return <code>true</code> if the ExternalServer was added successfully,
  * <code>false</code> otherwise.
  * @memberof ServersManager
  * @see sm_add_server_fn
  */
-WHEATIS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersManager *manager_p, uuid_t key, ExternalServer *server_p);
+WHEATIS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServer *server_p);
 
 
 /**

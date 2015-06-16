@@ -20,6 +20,7 @@ typedef struct ServicesListManager
 } ServicesListManager;
 
 
+
 static ServicesListManager *s_manager_p = NULL;
 
 

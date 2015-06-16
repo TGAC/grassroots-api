@@ -23,28 +23,44 @@
  * @see JobsManager
  */
 
+typedef struct APRGlobalStorage
+{
+	/** @privatesection */
+	apr_hash_t *ags_entries_p;
+
+	/** Our cross-thread/cross-process mutex */
+	apr_global_mutex_t *ags_mutex_p;
+
+	/** The pool to use for any temporary memory allocations */
+	apr_pool_t *ags_pool_p;
+
+	char *ags_mutex_lock_filename_s;
+
+	server_rec *ags_server_p;
+
+	ap_socache_provider_t *ags_socache_provider_p;
+	ap_socache_instance_t *ags_socache_instance_p;
+
+} APRGlobalStorage;
+
+
 typedef struct APRJobsManager
 {
 	/** The base JobsManager */
 	JobsManager ajm_base_manager;
 
-	/** @privatesection */
-	apr_hash_t *ajm_running_jobs_p;
-
-	/** Our cross-thread/cross-process mutex */
-	apr_global_mutex_t *ajm_mutex_p;
-
-	/** The pool to use for any temporary memory allocations */
-	apr_pool_t *ajm_pool_p;
-
-	char *ajm_mutex_lock_filename_s;
-
-	server_rec *ajm_server_p;
-
-	ap_socache_provider_t *ajm_socache_provider_p;
-	ap_socache_instance_t *ajm_socache_instance_p;
-
+	APRGlobalStorage ajm_store;
 } APRJobsManager;
+
+
+typedef struct APRServersManager
+{
+	/** The base ServersManager */
+	ServersManager asm_base_manager;
+
+	APRGlobalStorage asm_store;
+
+} APRServersManager;
 
 
 /** @publicsection */

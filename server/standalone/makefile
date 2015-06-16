@@ -45,6 +45,7 @@ INCLUDES = \
 
 SRCS = \
 	services_list.c \
+	servers_manager.c \
 	standalone_server.c
 
 

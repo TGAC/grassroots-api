@@ -47,6 +47,7 @@ SRCS 	= \
 	jobs_manager.c \
 	server.c \
 	system_util.c \
+	servers_pool.c \
 	wheatis_config.c
 
 CPPFLAGS += -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS 
