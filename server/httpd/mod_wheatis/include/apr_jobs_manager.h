@@ -11,6 +11,7 @@
 #include "httpd.h"
 
 #include "mod_wheatis_config.h"
+#include "apr_global_storage.h"
 
 #ifdef __cplusplus
 extern "C"

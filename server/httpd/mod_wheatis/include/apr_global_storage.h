@@ -25,10 +25,13 @@ void FreeAPRGlobalStorage (APRGlobalStorage *storage_p);
 
 void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p);
 
+
+unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
+
+
 #ifdef __cplusplus
 }
 #endif
-
 
 
 #endif /* APR_GLOBAL_STORAGE_H_ */

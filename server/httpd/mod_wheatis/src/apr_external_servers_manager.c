@@ -30,10 +30,6 @@ static const char s_cache_id_s [] = "wheatis-socache";
 
 /**************************/
 
-static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
-
-static void DebugJobsManager (APRJobsManager *manager_p);
-
 
 static bool AddExternalServerToAprServersManager (ServersManager *manager_p, ExternalServer *server_p);
 

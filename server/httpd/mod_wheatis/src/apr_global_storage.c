@@ -64,6 +64,7 @@ void FreeAPRGlobalStorage (APRGlobalStorage *storage_p)
 	FreeMemory (storage_p);
 }
 
+
 void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 {
 	if (storage_p)

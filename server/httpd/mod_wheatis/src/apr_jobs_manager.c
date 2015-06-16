@@ -31,7 +31,6 @@ static const char s_cache_id_s [] = "wheatis-socache";
 
 /**************************/
 
-static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
 
 static void DebugJobsManager (APRJobsManager *manager_p);
 
@@ -52,43 +51,19 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 	if (manager_p)
 		{
-			bool success_flag = false;
+			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage ();
 
-			InitJobsManager (&(manager_p -> ajm_base_manager), AddServiceJobToAPRJobsManager, GetServiceJobFromAprJobsManager, RemoveServiceJobFromAprJobsManager);
-
-			apr_status_t status = apr_global_mutex_create (& (manager_p -> ajm_mutex_p), s_mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
-
-			if (status == APR_SUCCESS)
+			if (storage_p)
 				{
-					PostConfigAPRJobsManager (manager_p, pool_p, server_p, provider_name_s);
+					manager_p -> ajm_store_p = storage_p;
 
-					manager_p -> ajm_running_jobs_p = apr_hash_make_custom (pool_p, HashUUIDForAPR);
-
-					if (manager_p -> ajm_running_jobs_p)
-						{
-							manager_p -> ajm_pool_p = pool_p;
-
-							manager_p -> ajm_server_p = server_p;
-
-							apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
-
-							success_flag = true;
-						}
-					else
-						{
-							apr_global_mutex_destroy (manager_p -> ajm_mutex_p);
-							manager_p -> ajm_mutex_p = NULL;
-						}
+					return manager_p;
 				}
 
-			if (!success_flag)
-				{
-					FreeMemory (manager_p);
-					manager_p = NULL;
-				}
+			FreeMemory (manager_p);
 		}
 
-	return manager_p;
+	return NULL;
 }
 
 
@@ -96,35 +71,7 @@ bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 {
 	if (jobs_manager_p)
 		{
-			apr_hash_index_t *index_p =	apr_hash_first (jobs_manager_p -> ajm_pool_p, jobs_manager_p -> ajm_running_jobs_p);
-			char *key_s = NULL;
-			apr_ssize_t keylen = 0;
-
-			while (index_p)
-				{
-					ServiceJob *job_p = NULL;
-
-					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &job_p);
-					if (job_p)
-						{
-							//FreeServiceJob (job_p);
-						}
-
-					index_p = apr_hash_next (index_p);
-				}
-
-			apr_hash_clear (jobs_manager_p -> ajm_running_jobs_p);
-			jobs_manager_p -> ajm_running_jobs_p = NULL;
-
-			apr_global_mutex_destroy (jobs_manager_p -> ajm_mutex_p);
-			jobs_manager_p -> ajm_mutex_p = NULL;
-
-
-			if (jobs_manager_p -> ajm_socache_instance_p)
-				{
-					jobs_manager_p -> ajm_socache_provider_p -> destroy (jobs_manager_p -> ajm_socache_instance_p, jobs_manager_p -> ajm_server_p);
-				}
-
+			FreeAPRGlobalStorage (jobs_manager_p -> ajm_store_p);
 			FreeMemory (jobs_manager_p);
 		}
 
