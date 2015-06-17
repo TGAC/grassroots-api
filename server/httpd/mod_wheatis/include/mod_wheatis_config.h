@@ -15,6 +15,8 @@
 #include "ap_socache.h"
 
 #include "jobs_manager.h"
+#include "servers_pool.h"
+
 
 /**
  * @brief A datatype to manage all of the ServiceJobs on a WheatIS system running on Apache httpd.

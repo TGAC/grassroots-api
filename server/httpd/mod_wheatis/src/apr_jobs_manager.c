@@ -317,22 +317,6 @@ void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key)
 }
 
 
-static unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
-{
-	unsigned int res = 0;
-	char *uuid_s = GetUUIDAsString ((const uint8 *) key_s);
-
-	if (uuid_s)
-		{
-			apr_ssize_t len = APR_HASH_KEY_STRING;
-			res = apr_hashfunc_default (uuid_s, &len);
-
-			FreeCopiedString (uuid_s);
-		}
-
-	return res;
-}
-
 
 apr_status_t CleanUpAPRJobsManager (void *value_p)
 {

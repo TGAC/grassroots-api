@@ -100,3 +100,19 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 		}
 }
 
+
+unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
+{
+	unsigned int res = 0;
+	char *uuid_s = GetUUIDAsString ((const uint8 *) key_s);
+
+	if (uuid_s)
+		{
+			apr_ssize_t len = APR_HASH_KEY_STRING;
+			res = apr_hashfunc_default (uuid_s, &len);
+
+			FreeCopiedString (uuid_s);
+		}
+
+	return res;
+}
