@@ -25,8 +25,8 @@
 
 /**************************/
 
-static const char s_mutex_filename_s [] = "logs/wheatis_lock";
-static const char s_cache_id_s [] = "wheatis-socache";
+static const char s_mutex_filename_s [] = "logs/wheatis_servers_manager_lock";
+static const char s_cache_id_s [] = "wheatis_servers_manager_cache";
 
 /**************************/
 
@@ -48,8 +48,13 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 
 	if (manager_p)
 		{
-			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage ();
-
+			unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
+			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p,
+			                                                        HashUUIDForAPR,
+			                                                        make_key_fn,
+			                                                        server_p,
+			                                                        s_mutex_filename_s,
+			                                                        s_cache_id_s);
 			if (storage_p)
 				{
 					manager_p -> asm_store_p = storage_p;

@@ -49,8 +49,14 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 	if (manager_p)
 		{
-			const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
-			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p, HashUUIDForAPR, make_key_fn, server_p, s_mutex_filename_s, s_cache_id_s)
+			unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
+			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p,
+			                                                        HashUUIDForAPR,
+			                                                        make_key_fn,
+			                                                        server_p,
+			                                                        s_mutex_filename_s,
+			                                                        s_cache_id_s);
+
 
 			if (storage_p)
 				{
