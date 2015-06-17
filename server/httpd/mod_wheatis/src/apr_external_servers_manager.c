@@ -40,9 +40,6 @@ static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *m
 static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key);
 
 
-static bool PostConfigAPRJobsManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
-
-
 /**************************/
 
 APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s)
@@ -56,6 +53,8 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 			if (storage_p)
 				{
 					manager_p -> asm_store_p = storage_p;
+
+					InitServersManager (& (manager_p -> asm_base_manager), AddExternalServerToAprServersManager, GetExternalServerFromAprServersManager, RemoveExternalServerFromAprServersManager);
 
 					return manager_p;
 				}
@@ -106,35 +105,34 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 }
 
 
-static bool AddServiceJobToAPRServersManager (ServersManager *servers_manager_p, uuid_t job_key, ServiceJob *job_p)
+static bool AddExternalServerToAprServersManager (ServersManager *servers_manager_p, ExternalServer *server_p)
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
 
-	return AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, job_key, UUID_RAW_SIZE, job_p, sizeof (ServiceJob));
+	return AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_id, UUID_RAW_SIZE, server_p, sizeof (ExternalServer));
 }
 
 
-static ServiceJob *GetServiceJobFromAprServersManager (ServersManager *servers_manager_p, const uuid_t job_key)
+static ServiceJob *GetExternalServerFromAprServersManager (ServersManager *servers_manager_p, const uuid_t key)
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
 
-	return ((ServiceJob *) GetObjectFromAPRGlobalStorage (manager_p -> asm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob)));
+	return ((ExternalServer *) GetObjectFromAPRGlobalStorage (manager_p -> asm_store_p, key, UUID_RAW_SIZE, sizeof (ExternalServer)));
 }
 
 
-static ServiceJob *RemoveServiceJobFromAprServersManager (ServersManager *servers_manager_p, const uuid_t job_key)
+static ServiceJob *RemoveExternalServerFromAprServersManager (ServersManager *servers_manager_p, const uuid_t key)
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
 
-	return ((ServiceJob *) RemoveObjectFromAPRGlobalStorage (manager_p -> asm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob)));
+	return ((ExternalServer *) RemoveObjectFromAPRGlobalStorage (manager_p -> asm_store_p, key, UUID_RAW_SIZE, sizeof (ExternalServer)));
 }
 
 
-
-apr_status_t CleanUpAPRJobsManager (void *value_p)
+apr_status_t CleanUpAPRServersManager (void *value_p)
 {
-	APRServersManager *manager_p = NULL;
+	APRServersManager *manager_p = (APRServersManager *) value_p;
 
-	return (DestroyAPRJobsManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
+	return (DestroyAPRServersManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
 }
 

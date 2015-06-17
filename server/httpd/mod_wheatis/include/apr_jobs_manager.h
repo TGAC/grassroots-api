@@ -57,6 +57,9 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p);
 apr_status_t CleanUpAPRJobsManager (void *value_p);
 
 
+
+bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
+
 #ifdef __cplusplus
 }
 #endif

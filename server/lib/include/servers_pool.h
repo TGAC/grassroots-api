@@ -23,7 +23,7 @@ typedef struct ExternalServer
 	char *es_uri_s;
 
 	/** The Connection to the ExternalServer */
-	Connection *es_connnection_p;
+	Connection *es_connection_p;
 
 	/**
 	 * @brief A unique id to identify the ExternalServer.

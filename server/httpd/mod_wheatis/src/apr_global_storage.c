@@ -10,18 +10,20 @@
 #include "typedefs.h"
 #include "apr_global_storage.h"
 #include "streams.h"
+#include "string_utils.h"
 
 
-static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
+
+static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
 
 
-APRGlobalStorage *AllocateAPRGlobalStorage (void)
+APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, const unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s)
 {
 	APRGlobalStorage *store_p = (APRGlobalStorage *) AllocMemory (sizeof (APRGlobalStorage));
 
 	if (store_p)
 		{
-			if (InitAPRGlobalStorage (store_p))
+			if (InitAPRGlobalStorage (store_p, pool_p, hash_fn, make_key_fn, server_p, mutex_filename_s, cache_id_s))
 				{
 					return store_p;
 				}
@@ -33,7 +35,7 @@ APRGlobalStorage *AllocateAPRGlobalStorage (void)
 }
 
 
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s)
+bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s)
 {
 	bool success_flag = false;
 	apr_status_t status = apr_global_mutex_create (& (storage_p -> ags_mutex_p), mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
@@ -47,6 +49,9 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 					storage_p -> ags_pool_p = pool_p;
 					storage_p -> ags_server_p = server_p;
 					storage_p -> ags_make_key_fn = make_key_fn;
+
+					storage_p -> ags_cache_id_s = cache_id_s;
+					storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
 
 					apr_pool_cleanup_register (pool_p, storage_p, FreeAPRGlobalStorage, apr_pool_cleanup_null);
 
@@ -123,8 +128,24 @@ unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 }
 
 
+unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint32 *key_len_p)
+{
+	unsigned char *res_p = NULL;
+	char *uuid_s = GetUUIDAsString ((const uint8 *) data_p);
 
-bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length)
+	if (uuid_s)
+		{
+			res_p = (unsigned char *) uuid_s;
+			*key_len_p = UUID_STRING_BUFFER_SIZE;
+		}
+
+	return res_p;
+}
+
+
+
+
+bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length)
 {
 	bool success_flag = false;
 	unsigned int key_len = 0;
@@ -175,20 +196,20 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, 
 
 
 
-void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned int value_length)
+void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length)
 {
 	return FindObjectFromAPRGlobalStorage (storage_p, raw_key_p, raw_key_length, value_length, false);
 }
 
 
-void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned int value_length)
+void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length)
 {
 	return FindObjectFromAPRGlobalStorage (storage_p, raw_key_p, raw_key_length, value_length, true);
 }
 
 
 
-static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag)
+static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag)
 {
 	void *result_p = NULL;
 	unsigned int key_len = 0;

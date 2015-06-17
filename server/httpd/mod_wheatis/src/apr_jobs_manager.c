@@ -26,13 +26,12 @@
 
 /**************************/
 
-static const char s_mutex_filename_s [] = "logs/wheatis_lock";
-static const char s_cache_id_s [] = "wheatis-socache";
+static const char s_mutex_filename_s [] = "logs/wheatis_jobs_manager_lock";
+static const char s_cache_id_s [] = "wheatis_jobs_manager_cache";
 
 /**************************/
 
 
-static void DebugJobsManager (APRJobsManager *manager_p);
 
 static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, ServiceJob *job_p);
 
@@ -40,7 +39,6 @@ static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p,
 
 static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key);
 
-static bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
 
 
 /**************************/
@@ -51,11 +49,14 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 	if (manager_p)
 		{
-			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage ();
+			const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
+			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p, HashUUIDForAPR, make_key_fn, server_p, s_mutex_filename_s, s_cache_id_s)
 
 			if (storage_p)
 				{
 					manager_p -> ajm_store_p = storage_p;
+
+					InitJobsManager (& (manager_p -> ajm_base_manager), AddServiceJobToAPRJobsManager, GetServiceJobFromAprJobsManager, RemoveServiceJobFromAprJobsManager);
 
 					return manager_p;
 				}
@@ -85,7 +86,8 @@ bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_p
 }
 
 
-static bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s)
+
+bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s)
 {
 	/* Set up the maximum expiry time as we never want it to expire */
 	apr_interval_time_t expiry = 0;
@@ -109,7 +111,7 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
 
-	return AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, job_p, sizeof (ServiceJob));
+	return AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, (unsigned char *) job_p, sizeof (ServiceJob));
 }
 
 
@@ -142,7 +144,7 @@ void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key)
 
 apr_status_t CleanUpAPRJobsManager (void *value_p)
 {
-	APRJobsManager *manager_p = NULL;
+	APRJobsManager *manager_p = (APRJobsManager *) value_p;
 
 	return (DestroyAPRJobsManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
 }

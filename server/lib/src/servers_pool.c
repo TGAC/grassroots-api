@@ -1,6 +1,7 @@
 #include "servers_pool.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
+#include "streams.h"
 
 
 void InitServersManager (ServersManager *manager_p,
@@ -51,7 +52,7 @@ ExternalServer *AllocateExternalServer (char *uri_s, ConnectionType ct)
 
 					if (server_p)
 						{
-							server_p -> es_connnection_p = connection_p;
+							server_p -> es_connection_p = connection_p;
 							server_p -> es_uri_s = copied_uri_s;
 							uuid_generate (server_p -> es_id);
 
@@ -71,7 +72,7 @@ ExternalServer *AllocateExternalServer (char *uri_s, ConnectionType ct)
 void FreeExternalServer (ExternalServer *server_p)
 {
 	FreeCopiedString (server_p -> es_uri_s);
-	FreeConnection (server_p -> es_connnection_p);
+	FreeConnection (server_p -> es_connection_p);
 
 	FreeMemory (server_p);
 }
@@ -79,6 +80,21 @@ void FreeExternalServer (ExternalServer *server_p)
 
 json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *request_p)
 {
+	json_t *response_p = NULL;
+	const char *result_s = MakeRemoteJsonCallViaConnection (server_p -> es_connection_p, request_p);
 
+	if (result_s)
+		{
+			json_error_t error;
+
+			response_p = json_loads (result_s, 0, &error);
+
+			if (!response_p)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to make call to external server %s, error at %d, %d %s\n", server_p -> es_uri_s, error.line, error.column, error.source);
+				}
+		}
+
+	return response_p;
 }
 

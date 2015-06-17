@@ -41,7 +41,7 @@ typedef struct APRGlobalStorage
 	ap_socache_provider_t *ags_socache_provider_p;
 	ap_socache_instance_t *ags_socache_instance_p;
 
-	const unsigned char *(*ags_make_key_fn) (void *raw_key_p, uint32 raw_key_length, uint32 *key_len_p);
+	const unsigned char *(*ags_make_key_fn) (const void *raw_key_p, uint32 raw_key_length, uint32 *key_len_p);
 } APRGlobalStorage;
 
 
@@ -51,8 +51,7 @@ extern "C"
 {
 #endif
 
-
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p);
+bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s);
 
 APRGlobalStorage *AllocateAPRGlobalStorage (void);
 
@@ -62,11 +61,13 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p);
 
 unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
 
-bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length);
+unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint32 *key_len_p);
 
-void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned int value_length);
+bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length);
 
-void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, void *raw_key_p, unsigned int raw_key_length, unsigned int value_length);
+void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length);
+
+void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length);
 
 
 bool InitAPRGlobalStorageForChild (APRGlobalStorage *storage_p, apr_pool_t *pool_p);
