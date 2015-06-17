@@ -16,34 +16,7 @@
 
 #include "jobs_manager.h"
 #include "servers_pool.h"
-
-
-/**
- * @brief A datatype to manage all of the ServiceJobs on a WheatIS system running on Apache httpd.
- *
- *
- * @see JobsManager
- */
-
-typedef struct APRGlobalStorage
-{
-	/** @privatesection */
-	apr_hash_t *ags_entries_p;
-
-	/** Our cross-thread/cross-process mutex */
-	apr_global_mutex_t *ags_mutex_p;
-
-	/** The pool to use for any temporary memory allocations */
-	apr_pool_t *ags_pool_p;
-
-	char *ags_mutex_lock_filename_s;
-
-	server_rec *ags_server_p;
-
-	ap_socache_provider_t *ags_socache_provider_p;
-	ap_socache_instance_t *ags_socache_instance_p;
-
-} APRGlobalStorage;
+#include "apr_global_storage.h"
 
 
 typedef struct APRJobsManager
