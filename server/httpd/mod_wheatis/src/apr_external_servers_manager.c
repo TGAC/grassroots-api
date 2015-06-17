@@ -84,13 +84,13 @@ bool DestroyAPRServersManager (APRServersManager *manager_p)
 
 
 
-bool APRJobsManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *config_pool_p)
+bool APRServersManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *config_pool_p)
 {
 	return PreConfigureGlobalStorage (manager_p -> asm_store_p, config_pool_p);
 }
 
 
-static bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s)
+bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s)
 {
 	/* Set up the maximum expiry time as we never want it to expire */
 	apr_interval_time_t expiry = 0;
@@ -101,7 +101,7 @@ static bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_
 
 
 
-bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
+bool APRServersManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 {
 	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, GetWheatISModule ());
 	bool success_flag = InitAPRGlobalStorageForChild (config_p -> wisc_servers_manager_p -> asm_store_p, pool_p);
