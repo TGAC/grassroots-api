@@ -160,35 +160,6 @@ void FreeServiceNode (ListItem * const node_p)
 }
 
 
-json_t *GetServiceConfig (const char * const filename_s)
-{
-	json_t *config_p = NULL;
-	FILE *config_f = fopen (filename_s, "r");
-	
-	if (config_f)
-		{
-			json_error_t error;
-			
-			config_p = json_loadf (config_f, 0, &error);
-			
-			if (!config_p)
-				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
-				}
-				
-			if (fclose (config_f) != 0)
-				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to close service config file \"%s\"", filename_s);
-				}
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to open service config file \"%s\"", filename_s);			
-		}
-	
-	
-	return config_p;
-}
 
 
 /**
@@ -226,7 +197,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 								{
 									while (reference_file_node_p)
 										{
-											json_t *config_p = GetServiceConfig (reference_file_node_p -> sln_string_s);
+											json_t *config_p = LoadJSONConfig (reference_file_node_p -> sln_string_s);
 
 											if (config_p)
 												{

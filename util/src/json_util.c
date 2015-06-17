@@ -2,7 +2,7 @@
 #define ALLOCATE_JSON_TAGS
 #include "json_util.h"
 #include "memory_allocations.h"
-
+#include "streams.h"
 
 JsonNode *AllocateJsonNode (json_t *json_p)
 {
@@ -20,7 +20,7 @@ JsonNode *AllocateJsonNode (json_t *json_p)
 void FreeJsonNode (ListItem *node_p)
 {
 	JsonNode *json_node_p = (JsonNode *) node_p;
-	
+
 	json_decref (json_node_p -> jn_json_p);
 	FreeMemory (json_node_p);
 }
@@ -58,6 +58,37 @@ int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const pref
 	
 					
 	return result;
+}
+
+
+json_t *LoadJSONConfig (const char * const filename_s)
+{
+	json_t *config_p = NULL;
+	FILE *config_f = fopen (filename_s, "r");
+
+	if (config_f)
+		{
+			json_error_t error;
+
+			config_p = json_loadf (config_f, 0, &error);
+
+			if (!config_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
+				}
+
+			if (fclose (config_f) != 0)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to close service config file \"%s\"", filename_s);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to open service config file \"%s\"", filename_s);
+		}
+
+
+	return config_p;
 }
 
 

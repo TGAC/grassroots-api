@@ -200,4 +200,5 @@ WHEATIS_SERVICE_MANAGER_API void FreeExternalServer (ExternalServer *server_p);
 WHEATIS_SERVICE_MANAGER_API json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *request_p);
 
 
+
 #endif /* SERVERS_POOL_H_ */

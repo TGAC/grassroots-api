@@ -179,6 +179,9 @@ WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
 
 
 
+WHEATIS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
+
+
 #ifdef __cplusplus
 }
 #endif
