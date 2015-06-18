@@ -79,12 +79,12 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)	
 		
 SRCS 	= \
-	src/mod_wheatis.c \
-	src/key_value_pair.c \
 	src/apr_global_storage.c \
 	src/apr_jobs_manager.c \
 	src/apr_external_servers_manager.c \
-	src/apache_output_stream.c
+	src/apache_output_stream.c \
+	src/mod_wheatis.c \
+	src/key_value_pair.c
 
 LDFLAGS += -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
