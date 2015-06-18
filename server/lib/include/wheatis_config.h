@@ -26,6 +26,9 @@ WHEATIS_SERVICE_MANAGER_LOCAL bool DestroyConfig (void);
 WHEATIS_SERVICE_MANAGER_API const json_t *GetGlobalServiceConfig (const char * const service_name_s);
 
 
+WHEATIS_SERVICE_MANAGER_API void ConnectToExternalServers (void);
+
+
 #ifdef __cplusplus
 }
 #endif

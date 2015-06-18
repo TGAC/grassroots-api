@@ -62,3 +62,33 @@ const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 
 	return res_p;
 }
+
+
+void ConnectToExternalServers (void)
+{
+	if (s_config_p)
+		{
+			json_t *servers_p = json_object_get (s_config_p, SERVERS_S);
+
+			if (servers_p)
+				{
+					if (json_is_object (servers_p))
+						{
+							AddExternalServerFromJSON (servers_p);
+						}		/* if (json_is_object (json_p)) */
+					else if (json_is_array (servers_p))
+						{
+							size_t index;
+							json_t *element_p;
+
+							json_array_foreach (servers_p, index, element_p)
+								{
+									AddExternalServerFromJSON (element_p);
+								}
+						}
+
+				}		/* if (servers_p) */
+
+		}		/* if (s_config_p) */
+
+}

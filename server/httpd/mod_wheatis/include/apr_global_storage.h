@@ -32,16 +32,16 @@ typedef struct APRGlobalStorage
 	/** The pool to use for any temporary memory allocations */
 	apr_pool_t *ags_pool_p;
 
-	char *ags_mutex_lock_filename_s;
+	const char *ags_mutex_lock_filename_s;
 
-	char *ags_cache_id_s;
+	const char *ags_cache_id_s;
 
 	server_rec *ags_server_p;
 
 	ap_socache_provider_t *ags_socache_provider_p;
 	ap_socache_instance_t *ags_socache_instance_p;
 
-	const unsigned char *(*ags_make_key_fn) (const void *raw_key_p, uint32 raw_key_length, uint32 *key_len_p);
+	unsigned char *(*ags_make_key_fn) (const void *raw_key_p, uint32 raw_key_length, uint32 *key_len_p);
 } APRGlobalStorage;
 
 
@@ -51,7 +51,7 @@ extern "C"
 {
 #endif
 
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s);
+bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s);
 
 APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s);
 

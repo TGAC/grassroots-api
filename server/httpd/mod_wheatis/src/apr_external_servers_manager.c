@@ -10,12 +10,12 @@
 #include "apr_hash.h"
 
 #include "servers_pool.h"
-#include "apr_jobs_manager.h"
 
 #include "mod_wheatis_config.h"
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "util_mutex.h"
+#include "apr_servers_manager.h"
 
 #ifdef _DEBUG
 #define APR_SERVERS_MANAGER_DEBUG	(STM_LEVEL_FINEST)
@@ -38,6 +38,7 @@ static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *m
 
 
 static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key);
+
 
 
 /**************************/
@@ -114,11 +115,11 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
 
-	return AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_id, UUID_RAW_SIZE, server_p, sizeof (ExternalServer));
+	return AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_id, UUID_RAW_SIZE, (unsigned char *) server_p, sizeof (ExternalServer));
 }
 
 
-static ServiceJob *GetExternalServerFromAprServersManager (ServersManager *servers_manager_p, const uuid_t key)
+static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *servers_manager_p, const uuid_t key)
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
 
@@ -126,7 +127,7 @@ static ServiceJob *GetExternalServerFromAprServersManager (ServersManager *serve
 }
 
 
-static ServiceJob *RemoveExternalServerFromAprServersManager (ServersManager *servers_manager_p, const uuid_t key)
+static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *servers_manager_p, const uuid_t key)
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
 

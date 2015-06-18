@@ -40,7 +40,14 @@ PREFIX const char *PROVIDER_NAME_S VAL("name");
 PREFIX const char *PROVIDER_DESCRIPTION_S VAL("description");
 PREFIX const char *PROVIDER_URI_S VAL("uri");
 
+PREFIX const char *SERVERS_S VAL("servers");
 PREFIX const char *SERVER_UUID_S VAL("server_uuid");
+PREFIX const char *SERVER_NAME_S VAL("server_name");
+PREFIX const char *SERVER_CONNECTION_TYPE_S VAL("server_connection");
+PREFIX const char *SERVER_URI_S VAL("server_uri");
+
+PREFIX const char *CONNECTION_RAW_S VAL("connection_raw");
+PREFIX const char *CONNECTION_WEB_S VAL("connection_web");
 
 PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
 PREFIX const char *OPERATION_ID_S VAL("operationId");

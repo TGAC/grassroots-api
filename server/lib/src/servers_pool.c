@@ -1,7 +1,10 @@
+#include <string.h>
+
 #include "servers_pool.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "streams.h"
+#include "json_util.h"
 
 
 void InitServersManager (ServersManager *manager_p,
@@ -33,7 +36,77 @@ ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_
 }
 
 
-ExternalServer *AllocateExternalServer (char *uri_s, ConnectionType ct)
+
+bool AddExternalServerFromJSON (const json_t *json_p)
+{
+	bool success_flag = false;
+	ServersManager *manager_p = GetServersManager ();
+
+	if (manager_p)
+		{
+			const char *name_s = GetJSONString (json_p, SERVER_NAME_S);
+
+			if (name_s)
+				{
+					const char *uri_s = GetJSONString (json_p, SERVER_URI_S);
+
+					if (uri_s)
+						{
+							ExternalServer *server_p = NULL;
+							ConnectionType ct = CT_WEB;
+							const char *type_s = GetJSONString (json_p, SERVER_CONNECTION_TYPE_S);
+
+							if (type_s)
+								{
+									if (strcmp (type_s, CONNECTION_RAW_S) == 0)
+										{
+											ct = CT_RAW;
+										}
+								}		/* if (type_s) */
+
+							server_p = AllocateExternalServer (name_s, uri_s, ct);
+
+							if (server_p)
+								{
+									if (AddExternalServerToServersManager (manager_p, server_p))
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Failed to add external server %s on %s to manager", name_s, uri_s);
+											FreeExternalServer (server_p);
+										}
+
+								}		/* if (server_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to allocate external server %s on %s", name_s, uri_s);
+								}
+
+						}		/* if (uri_s) */
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to find uri for external server on %s", name_s);
+						}
+
+				}		/* if (name_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to find name for external server");
+				}
+
+		}		/* if (manager_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to get external servers manager");
+		}
+
+	return success_flag;
+}
+
+
+ExternalServer *AllocateExternalServer (const char *name_s, const char *uri_s, ConnectionType ct)
 {
 	Connection *connection_p = NULL;
 
@@ -44,23 +117,31 @@ ExternalServer *AllocateExternalServer (char *uri_s, ConnectionType ct)
 
 	if (connection_p)
 		{
-			char *copied_uri_s = CopyToNewString (uri_s, 0, false);
+			char *copied_name_s = CopyToNewString (name_s, 0, false);
 
-			if (copied_uri_s)
+			if (copied_name_s)
 				{
-					ExternalServer *server_p = (ExternalServer *) AllocMemory (sizeof (ExternalServer));
+					char *copied_uri_s = CopyToNewString (uri_s, 0, false);
 
-					if (server_p)
+					if (copied_uri_s)
 						{
-							server_p -> es_connection_p = connection_p;
-							server_p -> es_uri_s = copied_uri_s;
-							uuid_generate (server_p -> es_id);
+							ExternalServer *server_p = (ExternalServer *) AllocMemory (sizeof (ExternalServer));
 
-							return server_p;
-						}
+							if (server_p)
+								{
+									server_p -> es_connection_p = connection_p;
+									server_p -> es_name_s = copied_name_s;
+									server_p -> es_uri_s = copied_uri_s;
+									uuid_generate (server_p -> es_id);
 
-					FreeCopiedString (copied_uri_s);
-				}		/* if (copied_uri_s) */
+									return server_p;
+								}
+
+							FreeCopiedString (copied_uri_s);
+						}		/* if (copied_uri_s) */
+
+					FreeCopiedString (copied_name_s);
+				}		/* if (copied_name_s) */
 
 			FreeConnection (connection_p);
 		}		/* if (connection_p) */
@@ -72,6 +153,7 @@ ExternalServer *AllocateExternalServer (char *uri_s, ConnectionType ct)
 void FreeExternalServer (ExternalServer *server_p)
 {
 	FreeCopiedString (server_p -> es_uri_s);
+	FreeCopiedString (server_p -> es_name_s);
 	FreeConnection (server_p -> es_connection_p);
 
 	FreeMemory (server_p);

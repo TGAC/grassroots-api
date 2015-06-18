@@ -11,7 +11,7 @@
 #include "apr_global_storage.h"
 #include "streams.h"
 #include "string_utils.h"
-
+#include "util_mutex.h"
 
 
 static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
@@ -34,8 +34,7 @@ APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t h
 	return NULL;
 }
 
-
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, const unsigned char *(*make_key_fn) (void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s)
+bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s)
 {
 	bool success_flag = false;
 	apr_status_t status = apr_global_mutex_create (& (storage_p -> ags_mutex_p), mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
@@ -53,7 +52,7 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 					storage_p -> ags_cache_id_s = cache_id_s;
 					storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
 
-					apr_pool_cleanup_register (pool_p, storage_p, FreeAPRGlobalStorage, apr_pool_cleanup_null);
+					apr_pool_cleanup_register (pool_p, storage_p, (const void *) FreeAPRGlobalStorage, apr_pool_cleanup_null);
 
 					success_flag = true;
 				}
@@ -85,18 +84,18 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 
 			while (index_p)
 				{
-					ExternalServer *server_p = NULL;
+//					ExternalServer *server_p = NULL;
 
-					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &server_p);
-					if (server_p)
-						{
-							FreeExternalServer (server_p);
-						}
+//					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &server_p);
+//					if (server_p)
+//						{
+//							FreeExternalServer (server_p);
+//						}
 
 					index_p = apr_hash_next (index_p);
 				}
 
-			apr_hash_clear (storage_p -> ags_pool_p);
+			apr_hash_clear (storage_p -> ags_entries_p);
 			storage_p -> ags_pool_p = NULL;
 
 			apr_global_mutex_destroy (storage_p -> ags_mutex_p);
@@ -221,13 +220,14 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 			if (status == APR_SUCCESS)
 				{
+
 					/* get the value */
 					status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
 																			 storage_p -> ags_server_p,
 					                              key_p,
 					                              key_len,
 					                              result_p,
-					                              value_length,
+					                              &value_length,
 					                              storage_p -> ags_pool_p);
 
 					if ((status == APR_SUCCESS) && (result_p != NULL) && (remove_flag == true))

@@ -211,7 +211,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 															ConvertUUIDToString (key, buffer);
 
-															if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer) == 0))
+															if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer)) == 0)
 																{
 
 																}		/* if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer) == 0)) */

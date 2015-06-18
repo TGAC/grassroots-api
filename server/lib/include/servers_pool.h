@@ -19,6 +19,9 @@
  */
 typedef struct ExternalServer
 {
+	/** The user-friendly name of the server */
+	char *es_name_s;
+
 	/** The URI for the Server */
 	char *es_uri_s;
 
@@ -166,13 +169,14 @@ WHEATIS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManag
 /**
  * Allocate an ExternalServer
  *
- * @param uri_s The URI for the ExternalServer
+ * @param name_s The user-friendly name for the server
+ * @param uri_s The URI to call for the ExternalServer's Services.
  * @param ct The ConnectionType of how to connect to the ExternalServer
  * @return A newly-allocated ExternalServer or <code>NULL</code> upon error.
  * @see FreeExternalServer
  * @memberof ExternalServer
  */
-WHEATIS_SERVICE_MANAGER_API ExternalServer *AllocateExternalServer (char *uri_s, ConnectionType ct);
+WHEATIS_SERVICE_MANAGER_API ExternalServer *AllocateExternalServer (const char *name_s, const char *uri_s, ConnectionType ct);
 
 
 /**
@@ -199,6 +203,22 @@ WHEATIS_SERVICE_MANAGER_API void FreeExternalServer (ExternalServer *server_p);
  */
 WHEATIS_SERVICE_MANAGER_API json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *request_p);
 
+
+/**
+ * @brief Add an ExternalServer from a JSON-based definition.
+ *
+ * This will read in the SERVERS_S json object within the global
+ * configuration file and build the ExternalServer definitions
+ * from it.
+ *
+ * @param json_p The global configuration json_t object.
+ * @return bool <code>true</code> if the ExternalServer was generated
+ * successfully, <code>false</code> otherwise.
+ * @memberof ExternalServer
+ * @see SERVERS_S
+ * @see ServersManager
+ */
+WHEATIS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *json_p);
 
 
 #endif /* SERVERS_POOL_H_ */

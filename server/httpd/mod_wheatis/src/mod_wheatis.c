@@ -29,7 +29,7 @@
 
 #include "mod_wheatis_config.h"
 #include "apr_jobs_manager.h"
-
+#include "apr_servers_manager.h"
 
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
@@ -74,6 +74,7 @@ static const command_rec s_wheatis_directives [] =
 
 static APRJobsManager *s_jobs_manager_p = NULL;
 
+static APRServersManager *s_servers_manager_p = NULL;
 
 /* Define our module as an entity and assign a function for registering hooks  */
 module AP_MODULE_DECLARE_DATA wheatis_module =
@@ -99,6 +100,12 @@ JobsManager *GetJobsManager (void)
 	return (& (s_jobs_manager_p -> ajm_base_manager));
 }
 
+
+
+ServersManager *GetServersManager (void)
+{
+	return (& (s_servers_manager_p -> asm_base_manager));
+}
 
 /* register_hooks: Adds a hook to the httpd process */
 static void RegisterHooks (apr_pool_t *pool_p) 
@@ -145,6 +152,7 @@ static ModWheatISConfig *CreateConfig (apr_pool_t *pool_p, server_rec *server_p)
 			config_p -> wisc_server_p = server_p;
 			config_p -> wisc_provider_name_s = NULL;
 			config_p -> wisc_jobs_manager_p = NULL;
+			config_p -> wisc_servers_manager_p = NULL;
 		}
 
 	return config_p;
@@ -257,6 +265,18 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
 
   						ret = OK;
   					}
+
+  	  		config_p -> wisc_servers_manager_p = InitAPRServersManager (server_p, config_pool_p, config_p -> wisc_provider_name_s);
+
+  	  		if (config_p -> wisc_servers_manager_p)
+  					{
+  	  				s_servers_manager_p = config_p -> wisc_servers_manager_p;
+
+							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_servers_manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
+
+  						ret = OK;
+  					}
+
   			}
   		else
   			{
