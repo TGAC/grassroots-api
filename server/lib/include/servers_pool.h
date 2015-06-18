@@ -12,7 +12,7 @@
 
 #include "connection.h"
 #include "wheatis_service_manager_library.h"
-
+#include "linked_list.h"
 
 /**
  * @brief A datatype to allow access to an external WheatIS Server
@@ -33,6 +33,20 @@ typedef struct ExternalServer
 	 */
 	uuid_t es_id;
 } ExternalServer;
+
+
+/**
+ * A datatype for storing a
+ */
+typedef struct ExternalServerNode
+{
+	ListItem esn_node;
+
+	ExternalServer *esn_server_p;
+} ExternalServerNode;
+
+
+
 
 
 /* forward declaration */
@@ -198,6 +212,28 @@ WHEATIS_SERVICE_MANAGER_API void FreeExternalServer (ExternalServer *server_p);
  * @memberof ExternalServer
  */
 WHEATIS_SERVICE_MANAGER_API json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *request_p);
+
+
+/**
+ * Allocate an ExternalServerNode
+ *
+ * @param uri_s The URI for the ExternalServer
+ * @param ct The ConnectionType of how to connect to the ExternalServer
+ * @return A newly-allocated ExternalServerNode or <code>NULL</code> upon error.
+ * @see FreeExternalServerNode
+ * @memberof ExternalServerNode
+ */
+WHEATIS_SERVICE_MANAGER_API ExternalServerNode *AllocateExternalServerNode (char *uri_s, ConnectionType ct);
+
+
+/**
+ * Free an ExternalServerNode.
+ *
+ * @param node_p The ExternalServerNode to free.
+ * @memberof ExternalServerNode
+ */
+WHEATIS_SERVICE_MANAGER_API void FreeExternalServerNode (ListItem *node_p);
+
 
 
 

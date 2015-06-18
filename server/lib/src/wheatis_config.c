@@ -62,3 +62,9 @@ const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 
 	return res_p;
 }
+
+
+LinkedList *GetExternalServers (void)
+{
+
+}
