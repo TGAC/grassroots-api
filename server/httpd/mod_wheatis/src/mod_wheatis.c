@@ -150,7 +150,7 @@ static ModWheatISConfig *CreateConfig (apr_pool_t *pool_p, server_rec *server_p)
 		{
 			config_p -> wisc_root_path_s = NULL;
 			config_p -> wisc_server_p = server_p;
-			config_p -> wisc_provider_name_s = NULL;
+			config_p -> wisc_provider_name_s = "shmcb";
 			config_p -> wisc_jobs_manager_p = NULL;
 			config_p -> wisc_servers_manager_p = NULL;
 		}
@@ -310,7 +310,7 @@ static const char *SetWheatISRootPath (cmd_parms *cmd_p, void *cfg_p, const char
 static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const char *arg_s)
 {
 	ModWheatISConfig *config_p = (ModWheatISConfig *) cfg_p;
-  const char *err_msg_s = ap_check_cmd_context (cmd_p, GLOBAL_ONLY);
+  const char *err_msg_s = NULL; //ap_check_cmd_context (cmd_p, GLOBAL_ONLY);
 
   if (!err_msg_s)
   	{
