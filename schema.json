@@ -111,7 +111,7 @@
 				},
 				"wheatis_type": {
 					"type": "integer",
-					"description": "A more finely-grained description of the parameter type. See ParameterType in services/lib/include/parameter.h"
+					"description": "A more finely-grained description of the parameter type. See ParameterType in parameter/lib/include/parameter.h"
 				},
 				"current_value": {
 					"type": "object",
