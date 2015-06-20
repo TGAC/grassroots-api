@@ -7,7 +7,7 @@ The Wheat information System (WheatIS) is a set of computing tools to allow user
 
 Using a similar approach to that used by the [Apache httpd server] (http://httpd.apache.org), the WheatIS consists of a core [Server](#server) and a set of external modules, called [Services](services_lib.md), that provide the scientific functionality. The access to the system is via a [Client](#clients). The WheatIS server can also be linked to other WheatIS servers allowing the functionality of both to be shared without having to perform any additional installation. Servers, Services and Clients are all interface specifications in that they declare an Application Programming Interface (API) that need to be implemented. 
 
-All of the Server-Server and Server-Client communication is by JSON-based messages.
+All of the Server-Server and Server-Client communication is by JSON-based messages as described in the [Schema guide](schema.md "Schema Guide")
 
 ### Server
 
