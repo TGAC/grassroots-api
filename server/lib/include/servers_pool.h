@@ -12,7 +12,7 @@
 
 #include "connection.h"
 #include "wheatis_service_manager_library.h"
-
+#include "linked_list.h"
 
 /**
  * @brief A datatype to allow access to an external WheatIS Server
@@ -36,6 +36,20 @@ typedef struct ExternalServer
 	 */
 	uuid_t es_id;
 } ExternalServer;
+
+
+/**
+ * A datatype for storing a
+ */
+typedef struct ExternalServerNode
+{
+	ListItem esn_node;
+
+	ExternalServer *esn_server_p;
+} ExternalServerNode;
+
+
+
 
 
 /* forward declaration */
