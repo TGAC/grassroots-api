@@ -94,7 +94,7 @@ An array of [Operation](#Operation) objects that the Service can perform.
 
 ## ParameterSet {#ParameterSet}
 
-The list of Parameters is contained within a ***ParameterSet***
+The list of [Parameters](#Parameter) is contained within a **ParameterSet** along with hints on how to group them together to display to the user.
 
 * **parameters**:
 This is an array of [Parameter](#Parameter) objects.

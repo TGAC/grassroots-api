@@ -263,6 +263,8 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
 
 							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_jobs_manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
 
+							PostConfigAPRJobsManager (s_jobs_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
+
   						ret = OK;
   					}
 
@@ -273,6 +275,8 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
   	  				s_servers_manager_p = config_p -> wisc_servers_manager_p;
 
 							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_servers_manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
+
+							PostConfigAPRServersManager (s_servers_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
 
   						ret = OK;
   					}

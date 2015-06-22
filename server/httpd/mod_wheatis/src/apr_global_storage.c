@@ -52,6 +52,9 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 					storage_p -> ags_cache_id_s = cache_id_s;
 					storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
 
+					storage_p -> ags_socache_instance_p = NULL;
+					storage_p -> ags_socache_provider_p = NULL;
+
 					apr_pool_cleanup_register (pool_p, storage_p, (const void *) FreeAPRGlobalStorage, apr_pool_cleanup_null);
 
 					success_flag = true;

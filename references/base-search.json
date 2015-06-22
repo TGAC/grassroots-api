@@ -6,7 +6,7 @@
 		"uri": "https://www.base-search.net/about/en/index.php"
 	},
 	"services": {
-    "path": "Agris Search service",
+    "path": "BASE Web Search service",
     "summary": "A service to obtain articles",
 		"description": "A service to obtain articles using search terms",    
     "plugin": "web_search_service",
@@ -14,7 +14,7 @@
 			{
 				"operationId": "BASE Web Search service",
 				"summary": "An operation to obtain matching articles",
-				"description": "An operation to obtain matching articles from AGRIS",
+				"description": "An operation to obtain matching articles from BASE",
 				"about_uri": "https://www.base-search.net/about/en/index.php",
 				"uri": "https://www.base-search.net/",
 				"method": "GET",
