@@ -38,18 +38,6 @@ typedef struct ExternalServer
 } ExternalServer;
 
 
-/**
- * A datatype for storing a
- */
-typedef struct ExternalServerNode
-{
-	ListItem esn_node;
-
-	ExternalServer *esn_server_p;
-} ExternalServerNode;
-
-
-
 
 
 /* forward declaration */

@@ -9,7 +9,7 @@ MAKEDEPEND 	= gcc -MM -MF
 
 DIR_OBJS = $(BUILD)
 
-DIR_APACHE=/opt/wheatis-live/apache
+#DIR_APACHE=/opt/wheatis-live/apache
 
 ifeq ($(DIR_APACHE),)
 HTTPD := $(shell httpd -V) 
@@ -25,8 +25,8 @@ DIR_APACHE_CONF_EXTRA = $(DIR_APACHE)/conf/extra
 APACHE_SET = true
 
 ifeq ($(APXS),)
-#APXS = $(DIR_APACHE)/bin/apxs
-APXS=/opt/wheatis-live/apache
+APXS = $(DIR_APACHE)/bin/apxs
+#APXS=/opt/wheatis-live/apache
 endif
 
 endif

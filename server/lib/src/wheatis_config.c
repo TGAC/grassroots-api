@@ -1,5 +1,5 @@
 #include "wheatis_config.h"
-
+#include "servers_pool.h"
 #include "streams.h"
 #include "json_util.h"
 
@@ -89,4 +89,5 @@ void ConnectToExternalServers (void)
 				}		/* if (servers_p) */
 
 		}		/* if (s_config_p) */
+}
 
