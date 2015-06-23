@@ -1,10 +1,10 @@
 ﻿# Schema
 
-All of the messages between Servers and Clients use a JSON-based schema. A full example of this is shown below and then each part will get described in turn.
+All of the messages between Servers and Clients use a JSON-based schema. A full example of this is shown below and then each part will get described in turn. There are [Examples](examples.md)
 
 ## Example {#Example}
 
-~~~~~~.json
+~~~~~~{.json}
 {
   "services": "TGAC Elastic Search service",
   "description": "A service to access the TGAC Elastic Search data",
@@ -63,6 +63,33 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
 }
 ~~~~~~
 
+## Operations
+
+The Operations tag is used to call an API on the Server.
+
+* **operationId** (required): A number which equates to a particular API call for the Operation.
+
+ Value | C variable | Description  
+--- | --- | ---
+0 | OP_LIST_ALL_SERVICES | Get a list of all of the Services that the Server can offer. 
+1 | OP_IRODS_MODIFIED_DATA | Get a list of all of a user's iRODS data objects and collections that have been modified within a given period. 
+2 | OP_LIST_INTERESTED_SERVICES | Get a list of the Services that are able to run on a given Resource. 
+3 | OP_RUN_KEYWORD_SERVICES | Run all of the Services that have Keyword Parameters. 
+4 | OP_GET_NAMED_SERVICES | Get the full description of a named Service. 
+5 | OP_CHECK_SERVICE_STATUS | For asynchornously-running jobs, check the status of these jobs.
+6 | OP_GET_SERVICE_RESULTS | For asynchornously-running jobs, get their results. 
+7 | OP_CLEAN_UP_JOBS | For asynchornously-running jobs, clean up any temporary resources that they used.
+ 
+ So, for example, the JSON-based request to get a list of all available Services is:
+
+ ~~~.json
+{
+		"operations": {
+			"operationId": 0
+		}
+}
+ ~~~
+ 
 ## Service
 
 * **name** (required):
@@ -130,8 +157,8 @@ The current value of the parameter.
 within an Operation to allow a Service to search for a Parameter by a tag value rather than a name if preferred. The
 ```MAKE_TAG``` macro can be used which constructs a 32-bit number from 4 given characters *e.g.* 
 
- ~~~~~~.c
-MAKE_TAG(a,b,c,d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
+ ~~~~~~{.c}
+ MAKE_TAG(a,b,c,d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
  ~~~~~~
 
 * **wheatis_type** (required): 
@@ -158,7 +185,7 @@ The elements in this array have two fields:
  * *description*: The user-friendly name of the parameter for displaying to a user. If this is not set, then the value for the *value* will be used instead.
 
  An example of this is: 
-~~~~~~.json
+~~~~~{.json}
  "enum": 
  [
       { "description": "Use Raw", "value": "z" },
