@@ -70,6 +70,7 @@ bool AddExternalServerFromJSON (const json_t *json_p)
 								{
 									if (AddExternalServerToServersManager (manager_p, server_p))
 										{
+											PrintErrors (STM_LEVEL_INFO, "Added external server %s on %s to manager with id %s", name_s, uri_s, server_p -> es_id);
 											success_flag = true;
 										}
 									else

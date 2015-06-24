@@ -63,6 +63,7 @@ const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 	return res_p;
 }
 
+
 void ConnectToExternalServers (void)
 {
 	if (s_config_p)

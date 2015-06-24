@@ -30,7 +30,11 @@ bool InitInformationSystem ()
 
 							if (full_services_path_s)
 								{
-									if (!InitConfig (full_services_path_s))
+									if (InitConfig (full_services_path_s))
+										{
+											ConnectToExternalServers ();
+										}
+									else
 										{
 											PrintErrors (STM_LEVEL_WARNING, "Failed to load config file from %s", full_services_path_s);
 										}
