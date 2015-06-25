@@ -4,7 +4,7 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
 
 ## Example {#Example}
 
-~~~~~~{.json}
+~~~.json
 {
   "services": "TGAC Elastic Search service",
   "description": "A service to access the TGAC Elastic Search data",
@@ -61,7 +61,7 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
     }
   }
 }
-~~~~~~
+~~~
 
 ## Operations
 

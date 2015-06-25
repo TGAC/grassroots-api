@@ -238,7 +238,8 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 	if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
 		{
 			Operation op = GetOperation (op_p);
-			
+			ServersManager *servers_manager_p = GetServersManager ();
+
 			switch (op)
 				{
 					case OP_LIST_ALL_SERVICES:
@@ -294,6 +295,9 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						break;
 				}		/* switch (op) */
 				
+
+			res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op_p);
+
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
 		{
@@ -618,7 +622,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 	const char *username_s = NULL;
 	const char *password_s = NULL;
 												
-
+	/* Get the local services */
 	res_p = GetServices (SERVICES_PATH_S, username_s, password_s, NULL, NULL, credentials_p);
 
 	return res_p;

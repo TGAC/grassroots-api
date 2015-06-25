@@ -223,4 +223,24 @@ WHEATIS_SERVICE_MANAGER_API json_t *MakeRemoteJSONCallToExternalServer (External
 WHEATIS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *json_p);
 
 
+
+/**
+ * @brief Add operations from ExternalServers.
+ *
+ * This will iterate through all of the ExternalServers that a ServersManager has
+ * and add JSON objects to an existing JSON object so that all operations appear
+ * to be on this Server as far as the Client is concerned
+ *
+ * @param manager_p The ServersManager to add the ExternalServer to.
+ * @param res_p The JSON object to add data to.
+ * @param op The Operation to check on each of the ExternalServers.
+ * @return the resultant JSON object from the ExternalServers which will be res_p if it is not NULL.
+ * If res_p is NULL, then this will be a newly-allocated object. If no services could be found,
+ * this will return <code>NULL</code>.
+ * @memberof ServersManager
+ */
+WHEATIS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);
+
+
+
 #endif /* SERVERS_POOL_H_ */
