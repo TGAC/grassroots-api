@@ -296,7 +296,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 				}		/* switch (op) */
 				
 
-			res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op_p);
+//			res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op_p);
 
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)

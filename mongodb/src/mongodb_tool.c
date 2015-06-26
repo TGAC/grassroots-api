@@ -39,7 +39,7 @@ void ExitMongo (void)
 
 MongoTool *AllocateMongoTool (void)
 {
-	mongo_client_t *client_p = mongoc_client_pool_pop (s_clients_p);
+	mongoc_client_t *client_p = mongoc_client_pool_pop (s_clients_p);
 
 	if (client_p)
 		{
@@ -64,7 +64,7 @@ void FreeMongoTool (MongoTool *tool_p)
 {
 	if (tool_p -> mt_collection_p)
 		{
-			mongoc_colletion_destoy (tool_p -> mt_collection_p);
+			mongoc_colletion_destroy (tool_p -> mt_collection_p);
 		}
 
 	FreeMemory (tool_p);
@@ -80,7 +80,7 @@ bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collec
 		{
 			if (tool_p -> mt_collection_p)
 				{
-					mongoc_colletion_destoy (tool_p -> mt_collection_p);
+					mongoc_colletion_destroy (tool_p -> mt_collection_p);
 				}
 
 			tool_p -> mt_collection_p = collection_p;
@@ -89,3 +89,19 @@ bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collec
 
 	return success_flag;
 }
+
+
+
+bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
+{
+	bool success_flag = false;
+
+	if (tool_p -> mt_collection_p)
+		{
+
+		}		/* if (tool_p -> mt_collection_p) */
+
+	return success_flag;
+}
+
+

@@ -10,7 +10,7 @@
 
 #include "mongoc.h"
 #include "typedefs.h"
-
+#include "jansson.h"
 
 
 typedef struct MongoTool
@@ -41,6 +41,8 @@ bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collec
 MongoTool *AllocateMongoTool (void);
 
 void FreeMongoTool (MongoTool *tool_p);
+
+bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
 
 
 #endif /* MONGODB_TOOL_H_ */

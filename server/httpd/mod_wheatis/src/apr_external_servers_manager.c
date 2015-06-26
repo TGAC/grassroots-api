@@ -16,6 +16,8 @@
 #include "memory_allocations.h"
 #include "util_mutex.h"
 #include "apr_servers_manager.h"
+#include "json_tools.h"
+
 
 #ifdef _DEBUG
 #define APR_SERVERS_MANAGER_DEBUG	(STM_LEVEL_FINEST)
@@ -157,7 +159,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 			if (response_s)
 				{
-					json_t *server_response_p = json_loads (response_s, error);
+					json_t *server_response_p = json_loads (response_s, 0, &error);
 
 					if (server_response_p)
 						{

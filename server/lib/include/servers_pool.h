@@ -13,6 +13,8 @@
 #include "connection.h"
 #include "wheatis_service_manager_library.h"
 #include "linked_list.h"
+#include "operation.h"
+
 
 /**
  * @brief A datatype to allow access to an external WheatIS Server

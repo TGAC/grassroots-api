@@ -104,7 +104,7 @@ DIR_MONGODB=$(MONGODB_HOME)
 else
 DIR_MONGODB=/usr/local
 endif
-export DIR_MONGODB_INC=$(DIR_MONGODB)/include
+export DIR_MONGODB_INC=$(DIR_MONGODB)/include/libmongoc-1.0
 export DIR_MONGODB_LIB=$(DIR_MONGODB)/lib
 # END MONGODB CONFIGURATION
 
@@ -115,7 +115,7 @@ DIR_BSON=$(BSON_HOME)
 else
 DIR_BSON=/usr/local
 endif
-export DIR_BSON_INC=$(DIR_BSON)/include
+export DIR_BSON_INC=$(DIR_BSON)/include/libbson-1.0
 export DIR_BSON_LIB=$(DIR_BSON)/lib
 # END BSON CONFIGURATION
 
