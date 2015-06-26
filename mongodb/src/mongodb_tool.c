@@ -7,6 +7,7 @@
 
 #include "mongodb_tool.h"
 #include "memory_allocations.h"
+#include "streams.h"
 
 mongoc_client_pool_t *s_clients_p = NULL;
 
@@ -91,6 +92,28 @@ bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collec
 }
 
 
+bson_t *ConvertJSONToBSON (const json_t *json_p)
+{
+	bson_t *bson_p = NULL;
+	char *value_s = json_dumps (json_p, JSON_INDENT (2));
+
+	if (value_s)
+		{
+			bson_error_t error;
+
+			bson_p = bson_new_from_json (value_s, &error);
+
+			if (!bson_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to convert %s to BSON, error %s\n", value_s, error.message);
+				}
+
+			free (value_s);
+		}		/* if (value_s) */
+
+	return bson_p;
+}
+
 
 bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 {
@@ -98,6 +121,18 @@ bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 
 	if (tool_p -> mt_collection_p)
 		{
+			bson_t *bson_p = ConvertJSONToBSON (json_p);
+
+			if (bson_p)
+				{
+					bson_error_t error;
+
+					bool b = mongoc_collection_insert (mongoc_collection_t          *collection,
+					                          mongoc_insert_flags_t         flags,
+					                          const bson_t                 *document,
+					                          const mongoc_write_concern_t *write_concern,
+					                          bson_error_t                 *error);
+				}		/* if (bson_p) */
 
 		}		/* if (tool_p -> mt_collection_p) */
 
