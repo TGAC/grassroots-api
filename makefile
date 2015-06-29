@@ -98,6 +98,26 @@ export DIR_LSF_DRMAA_INC=$(DIR_LSF_DRMAA)/include
 export DIR_LSF_DRMAA_LIB=$(DIR_LSF_DRMAA)/lib
 # END LSF_DRMAA CONFIGURATION
 
+# BEGIN MONGODB CONFIGURATION
+ifneq ($(MONGODB_HOME),)
+DIR_MONGODB=$(MONGODB_HOME)
+else
+DIR_MONGODB=/usr/local
+endif
+export DIR_MONGODB_INC=$(DIR_MONGODB)/include/libmongoc-1.0
+export DIR_MONGODB_LIB=$(DIR_MONGODB)/lib
+# END MONGODB CONFIGURATION
+
+
+# BEGIN BSON CONFIGURATION
+ifneq ($(BSON_HOME),)
+DIR_BSON=$(BSON_HOME)
+else
+DIR_BSON=/usr/local
+endif
+export DIR_BSON_INC=$(DIR_BSON)/include/libbson-1.0
+export DIR_BSON_LIB=$(DIR_BSON)/lib
+# END BSON CONFIGURATION
 
 include project.properties
 
@@ -137,6 +157,7 @@ all:
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
 	$(MAKE) -C server/httpd/mod_wheatis
+	$(MAKE) -C mongodb 
 	$(MAKE) -C clients/lib
 	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
@@ -162,6 +183,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
 	$(MAKE) -C server/httpd/mod_wheatis install
+	$(MAKE) -C mongodb install
 	$(MAKE) -C clients/lib install
 	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
@@ -187,6 +209,7 @@ clean:
 	$(MAKE) -C handlers/dropbox clean
 	$(MAKE) -C server/lib clean 
 	$(MAKE) -C server/standalone clean 
+	$(MAKE) -C mongodb clean
 	$(MAKE) -C drmaa clean
 	$(MAKE) -C server/httpd/mod_wheatis clean
 	$(MAKE) -C clients/lib clean
