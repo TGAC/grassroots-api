@@ -1,4 +1,4 @@
-# MongoDB Interaction
+﻿# MongoDB Interaction
 
 One of the facilities that WheatIS provides is an API to access a [MongoDB](https://www.mongodb.org/) instance through JSON-based messages. All of the MongoDB messages are accessed using a "**mongodb**" key. 
 
@@ -52,3 +52,24 @@ The response from the Server will be a list of "**success**" values along with t
 ~~~
 
 ## Deleting documents
+
+To delete documents from a collection, a Client would send a list of the queries that would specify which documents to remove.
+
+~~~{.json}
+{
+	"mongodb": {
+		"collection": "bands",
+		"delete": [{
+			"id": "123456789012345678901234"
+		}, {
+			"id": "1112223334445556667778889"
+		}, {
+			"crop": "wheat"
+		}]
+	}
+}
+~~~
+
+## Updating docuements
+
+Documents that were previously added can be subsequently updated.
