@@ -11,7 +11,7 @@
 #include "mongoc.h"
 #include "typedefs.h"
 #include "jansson.h"
-
+#include "mongodb_library.h"
 
 typedef struct MongoTool
 {
@@ -30,19 +30,60 @@ typedef struct MongoTool
 } MongoTool;
 
 
-bool InitMongo (const char *connection_s);
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_JSON_TAGS is defined then it will
+ * become
+ *
+ * 		const char *SERVICE_NAME_S = "path";
+ *
+ * ALLOCATE_RESOURCE_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * resource.c.
+ */
+#ifdef ALLOCATE_MONGODB_TAGS
+	#define MONGODB_PREFIX WHEATIS_MONGODB_API
+	#define MONGODB_VAL(x)	= x
+#else
+	#define MONGODB_PREFIX extern
+	#define MONGODB_VAL(x)
+#endif
 
-void ExitMongo (void);
+
+MONGODB_PREFIX const char *MONGO_ID_S MONGODB_VAL("id");
 
 
-bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+WHEATIS_MONGODB_API bool InitMongo (const char *connection_s);
+
+WHEATIS_MONGODB_API void ExitMongo (void);
 
 
-MongoTool *AllocateMongoTool (void);
+WHEATIS_MONGODB_API bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
 
-void FreeMongoTool (MongoTool *tool_p);
 
-bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
+WHEATIS_MONGODB_API MongoTool *AllocateMongoTool (void);
+
+WHEATIS_MONGODB_API void FreeMongoTool (MongoTool *tool_p);
+
+WHEATIS_MONGODB_API bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
+
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 
 #endif /* MONGODB_TOOL_H_ */

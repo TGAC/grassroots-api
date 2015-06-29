@@ -64,6 +64,8 @@
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtWidgets"/>
 									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtCore"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/opt/mongodb/drivers/c/include/libmongoc-1.0"/>
+									<listOptionValue builtIn="false" value="/opt/mongodb/drivers/c/include/libbson-1.0"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1492231850" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -115,15 +117,6 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
-	<storageModule moduleId="scannerConfiguration">
-		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063;cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.c.compiler.base.797115336;cdt.managedbuild.tool.gnu.c.compiler.input.1332274428">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
-		</scannerConfigBuildInfo>
-	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 		<buildTargets>
 			<target name="install" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
@@ -158,5 +151,14 @@
 				<runAllBuilders>true</runAllBuilders>
 			</target>
 		</buildTargets>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.c.compiler.base.797115336;cdt.managedbuild.tool.gnu.c.compiler.input.1332274428">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.77732421;cdt.managedbuild.toolchain.gnu.base.77732421.498779973;cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063;cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 	</storageModule>
 </cproject>

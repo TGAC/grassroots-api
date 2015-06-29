@@ -65,7 +65,7 @@ void FreeMongoTool (MongoTool *tool_p)
 {
 	if (tool_p -> mt_collection_p)
 		{
-			mongoc_colletion_destroy (tool_p -> mt_collection_p);
+			mongoc_collection_destroy (tool_p -> mt_collection_p);
 		}
 
 	FreeMemory (tool_p);
@@ -81,7 +81,7 @@ bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collec
 		{
 			if (tool_p -> mt_collection_p)
 				{
-					mongoc_colletion_destroy (tool_p -> mt_collection_p);
+					mongoc_collection_destroy (tool_p -> mt_collection_p);
 				}
 
 			tool_p -> mt_collection_p = collection_p;
@@ -101,7 +101,7 @@ bson_t *ConvertJSONToBSON (const json_t *json_p)
 		{
 			bson_error_t error;
 
-			bson_p = bson_new_from_json (value_s, &error);
+			bson_p = bson_new_from_json ((const uint8 *) value_s, -1, &error);
 
 			if (!bson_p)
 				{
@@ -115,9 +115,10 @@ bson_t *ConvertJSONToBSON (const json_t *json_p)
 }
 
 
-bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
+
+bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 {
-	bool success_flag = false;
+	bson_oid_t *id_p = NULL;
 
 	if (tool_p -> mt_collection_p)
 		{
@@ -125,18 +126,50 @@ bool InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 
 			if (bson_p)
 				{
-					bson_error_t error;
+					bson_oid_t *id_p = (bson_oid_t *) AllocMemory (sizeof (bson_oid_t));
 
-					bool b = mongoc_collection_insert (mongoc_collection_t          *collection,
-					                          mongoc_insert_flags_t         flags,
-					                          const bson_t                 *document,
-					                          const mongoc_write_concern_t *write_concern,
-					                          bson_error_t                 *error);
+					if (id_p)
+						{
+							bool success_flag = false;
+							bson_oid_init (id_p, NULL);
+
+							if (BSON_APPEND_OID (bson_p, MONGO_ID_S, id_p))
+								{
+									bson_error_t error;
+									success_flag = mongoc_collection_insert (tool_p -> mt_collection_p, MONGOC_INSERT_NONE, bson_p, NULL, &error);
+
+									if (!success_flag)
+										{
+											char *value_s = json_dumps (json_p, JSON_INDENT (2));
+
+											if (value_s)
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to insert %s, error %s\n", value_s, error.message);
+													free (value_s);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to insert json doc, error %s\n", error.message);
+												}
+
+										}		/* if (!success_flag) */
+
+								}		/* if (BSON_APPEND_OID (bson_p, MONGO_ID_S, id_p)) */
+
+							if (!success_flag)
+								{
+									FreeMemory (id_p);
+									id_p = NULL;
+								}
+
+						}		/* if (id_p) */
+
 				}		/* if (bson_p) */
 
 		}		/* if (tool_p -> mt_collection_p) */
 
-	return success_flag;
+	return id_p;
 }
+
 
 
