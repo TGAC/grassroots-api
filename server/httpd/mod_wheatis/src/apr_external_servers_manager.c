@@ -149,7 +149,6 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 	json_t error;
 	json_t *op_p = json_pack ("{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, op);
 
-
 	if (op_p)
 		{
 			ExternalServer *server_p;
@@ -178,6 +177,15 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 									case OP_RUN_KEYWORD_SERVICES:
 									case OP_GET_SERVICE_RESULTS:
 										element_name_s = SERVICE_RESULTS_S;
+										break;
+
+									case OP_IRODS_MODIFIED_DATA:
+										break;
+
+									case OP_CHECK_SERVICE_STATUS:
+										break;
+
+									case OP_CLEAN_UP_JOBS:
 										break;
 
 									default:
@@ -212,14 +220,14 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 													if (json_is_array (src_p))
 														{
-															size_t index;
+															size_t index = 0;
 															json_t *value_p;
 
-															json_array_foreach (src_p, index, value_p)
+															while ((value_p = json_array_get (src_p, index)) != NULL)
 																{
 																	if (json_array_append_new (dest_p, value_p) != 0)
 																		{
-
+																			++ index;
 																		}
 																}
 														}
@@ -255,61 +263,6 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 		{
 
 		}
-
-	switch (op)
-		{
-			case OP_LIST_ALL_SERVICES:
-				res_p = GetAllServices (req_p, credentials_p);
-				break;
-
-			case OP_IRODS_MODIFIED_DATA:
-				res_p = GetAllModifiedData (req_p, credentials_p);
-				break;
-
-			case OP_LIST_INTERESTED_SERVICES:
-				res_p = GetInterestedServices (req_p, credentials_p);
-				break;
-
-			case OP_RUN_KEYWORD_SERVICES:
-				{
-					json_t *keyword_json_group_p = json_object_get (req_p, KEY_QUERY);
-
-					if (keyword_json_group_p)
-						{
-							json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEY_QUERY);
-
-							if (keyword_json_value_p)
-								{
-									if (json_is_string (keyword_json_value_p))
-										{
-											const char *keyword_s = json_string_value (keyword_json_value_p);
-
-											res_p = RunKeywordServices (req_p, credentials_p, keyword_s);
-										}
-								}
-						}
-				}
-				break;
-
-			case OP_GET_NAMED_SERVICES:
-				res_p = GetNamedServices (req_p, credentials_p);
-				break;
-
-			case OP_CHECK_SERVICE_STATUS:
-				res_p = GetServiceStatus (req_p, credentials_p);
-				break;
-
-			case OP_GET_SERVICE_RESULTS:
-				res_p = GetServiceResultsAsJSON (req_p, credentials_p);
-				break;
-
-			case OP_CLEAN_UP_JOBS:
-				res_p = CleanUpJobs (req_p, credentials_p);
-				break;
-
-			default:
-				break;
-		}		/* switch (op) */
 
 
 }
