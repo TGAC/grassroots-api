@@ -148,7 +148,8 @@ apr_status_t CleanUpAPRServersManager (void *value_p)
 json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op)
 {
 	/* build the request that we will send to each external server */
-	json_t error;
+	json_error_t error;
+	json_t *result_p = NULL;
 	json_t *op_p = json_pack ("{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, op);
 
 	if (op_p)

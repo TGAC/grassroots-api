@@ -26,7 +26,7 @@ typedef struct MongoTool
 
 	mongoc_collection_t *mt_collection_p;
 
-
+	mongoc_cursor_t *mt_cursor_p;
 } MongoTool;
 
 

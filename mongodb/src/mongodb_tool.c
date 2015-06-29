@@ -50,6 +50,7 @@ MongoTool *AllocateMongoTool (void)
 				{
 					tool_p -> mt_client_p = client_p;
 					tool_p -> mt_collection_p = NULL;
+					tool_p -> mt_cursor_p = NULL;
 
 					return tool_p;
 				}		/* if (tool_p) */
@@ -66,6 +67,11 @@ void FreeMongoTool (MongoTool *tool_p)
 	if (tool_p -> mt_collection_p)
 		{
 			mongoc_collection_destroy (tool_p -> mt_collection_p);
+		}
+
+	if (tool_p -> mt_cursor_p)
+		{
+			mongoc_cursor_destroy (tool_p -> mt_cursor_p);
 		}
 
 	FreeMemory (tool_p);
@@ -114,6 +120,29 @@ bson_t *ConvertJSONToBSON (const json_t *json_p)
 	return bson_p;
 }
 
+
+json_t ConvertBSONToJSON (const bson_t *bson_p)
+{
+	json_t *json_p = NULL;
+	char *value_s = bson_as_json (bson_p, NULL);
+
+	if (value_s)
+		{
+			json_error_t error;
+
+			json_p = json_loads (value_s, 0, &error);
+
+			if (!json_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to convert %s to JSON, error %s\n", value_s, error.text);
+				}
+
+			bson_free (value_s);
+		}		/* if (value_s) */
+
+	return json_p;
+
+}
 
 
 bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
@@ -172,4 +201,146 @@ bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 }
 
 
+
+bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *json_p)
+{
+	bool success_flag = false;
+
+	if (tool_p -> mt_collection_p)
+		{
+			bson_t *data_p = ConvertJSONToBSON (json_p);
+
+			if (data_p)
+				{
+					bson_t *query_p = BCON_NEW (MONGO_ID_S, BCON_OID (id_p));
+
+					if (query_p)
+						{
+							bson_t *update_statement_p = bson_new ();
+
+							if (update_statement_p)
+								{
+									if (bson_append_document (update_statement_p, "$set", -1, data_p))
+										{
+											bson_error_t error;
+
+									    if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error))
+									    	{
+									    		success_flag = true;
+												}		/* if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error)) */
+
+										}		/* if (bson_append_document (update_statement_p, "$set", -1, bson_p)) */
+
+									bson_destroy (update_statement_p);
+								}		/* if (query_p) */
+
+							bson_destroy (query_p);
+						}		/* if (query_p) */
+
+					bson_destroy (data_p);
+				}		/* if (data_p) */
+
+		}		/* if (tool_p -> mt_collection_p) */
+
+	return id_p;
+}
+
+
+bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, const bool remove_first_match_only_flag)
+{
+	bool success_flag = false;
+
+	if (tool_p -> mt_collection_p)
+		{
+			bson_t *selector_p = ConvertJSONToBSON (selector_json_p);
+
+			if (selector_p)
+				{
+					bson_error_t error;
+					mongoc_remove_flags_t flags = remove_first_match_only_flag ? MONGOC_REMOVE_SINGLE_REMOVE : MONGOC_REMOVE_NONE;
+
+					if (mongoc_collection_remove (tool_p -> mt_collection_p, flags, selector_p, NULL, &error))
+						{
+							success_flag = true;
+						}		/* if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error)) */
+
+					bson_destroy (selector_p);
+				}		/* if (selector_p) */
+
+		}		/* if (tool_p -> mt_collection_p) */
+
+	return success_flag;
+}
+
+
+
+bool FindMatchingMongoDocuments (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss)
+{
+	bool success_flag = false;
+
+	if (tool_p -> mt_collection_p)
+		{
+			bson_t *query_p = ConvertJSONToBSON (query_json_p);
+
+			if (query_p)
+				{
+					bson_t *fields_p = NULL;
+
+					if (fields_ss)
+						{
+							mongoc_cursor_t *cursor_p = mongoc_collection_find (tool_p -> mt_collection_p, MONGOC_QUERY_NONE, 0, 0, 0, query_p, fields_p, NULL);
+
+							if (cursor_p)
+								{
+									if (tool_p -> mt_cursor_p)
+										{
+											mongoc_cursor_destroy (tool_p -> mt_cursor_p);
+										}
+
+									tool_p -> mt_cursor_p = cursor_p;
+									success_flag = true;
+								}
+						}		/* if (fields_ss) */
+
+					if (fields_p)
+						{
+							bson_destroy (fields_p);
+						}		/* if (fields_p) */
+
+					bson_destroy (query_p);
+				}		/* if (query_p) */
+
+		}		/* if (tool_p -> mt_collection_p) */
+
+	return success_flag;
+}
+
+
+bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p))
+{
+	bool success_flag = true;
+
+	if (tool_p -> mt_cursor_p)
+		{
+			const bson_t *document_p = NULL;
+
+			while (success_flag && (mongoc_cursor_next (tool_p -> mt_cursor_p, &document_p)))
+				{
+					success_flag = process_bson_fn (document_p);
+				}
+
+			if (!mongoc_cursor_more (tool_p -> mt_cursor_p))
+				{
+					mongoc_cursor_destroy (tool_p -> mt_cursor_p);
+					tool_p -> mt_cursor_p = NULL;
+				}
+
+		}		/* if (tool_p -> mt_cursor_p) */
+	else
+		{
+			success_flag = false;
+		}
+
+	return success_flag;
+}
 
