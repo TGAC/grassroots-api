@@ -1,35 +1,35 @@
 #include <QDebug>
 
-#include "param_text_box.h"
+#include "param_line_edit.h"
 #include "prefs_widget.h"
 
 #include "string_utils.h"
 
 
-ParamTextBox :: ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p)
+ParamLineEdit :: ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
 	ptb_text_box_p = new QLineEdit (parent_p);
 	ptb_text_box_p -> setEchoMode (echo);
 
-	connect (ptb_text_box_p, &QLineEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
+	connect (ptb_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
 
-ParamTextBox ::	~ParamTextBox ()
+ParamLineEdit ::	~ParamLineEdit ()
 {
 	delete ptb_text_box_p;
 	ptb_text_box_p = NULL;
 }
 
 
-void ParamTextBox :: RemoveConnection ()
+void ParamLineEdit :: RemoveConnection ()
 {
-	disconnect (ptb_text_box_p, &QLineEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
+	disconnect (ptb_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
 
-void ParamTextBox :: SetDefaultValue ()
+void ParamLineEdit :: SetDefaultValue ()
 {
 	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
 
@@ -37,13 +37,13 @@ void ParamTextBox :: SetDefaultValue ()
 }
 
 
-QWidget *ParamTextBox :: GetQWidget ()
+QWidget *ParamLineEdit :: GetQWidget ()
 {
 	return ptb_text_box_p;
 }
 
 
-bool ParamTextBox :: UpdateConfig (const QString &value_r)
+bool ParamLineEdit :: UpdateConfig (const QString &value_r)
 {
 	QByteArray ba = value_r.toLocal8Bit ();
 	const char *value_s = ba.constData ();
@@ -52,7 +52,7 @@ bool ParamTextBox :: UpdateConfig (const QString &value_r)
 }
 
 
-bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
+bool ParamLineEdit :: UpdateConfigValue (const char * const value_s)
 {
 	bool success_flag = SetParameterValue (bpw_param_p, value_s);
 
@@ -63,7 +63,7 @@ bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
 
 
 
-bool ParamTextBox :: SetValueFromText (const char *value_s)
+bool ParamLineEdit :: SetValueFromText (const char *value_s)
 {
 	QString s = ptb_text_box_p -> text ();
 	qDebug () << "old " << s;

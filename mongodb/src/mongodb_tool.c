@@ -121,7 +121,7 @@ bson_t *ConvertJSONToBSON (const json_t *json_p)
 }
 
 
-json_t ConvertBSONToJSON (const bson_t *bson_p)
+json_t *ConvertBSONToJSON (const bson_t *bson_p)
 {
 	json_t *json_p = NULL;
 	char *value_s = bson_as_json (bson_p, NULL);
@@ -141,7 +141,6 @@ json_t ConvertBSONToJSON (const bson_t *bson_p)
 		}		/* if (value_s) */
 
 	return json_p;
-
 }
 
 

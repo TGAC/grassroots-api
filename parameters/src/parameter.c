@@ -912,6 +912,10 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				}
 				break;
 
+			case PT_JSON:
+				value_p = json_deep_copy (val_p -> st_json_p);
+				break;
+
 			default:
 				break;
 		}		/* switch (pt) */
@@ -1023,6 +1027,18 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 										success_flag = true;
 									}
 							}
+						break;
+
+					case PT_JSON:
+						{
+							json_t *copied_value_p = json_deep_copy (json_value_p);
+
+							if (copied_value_p)
+								{
+									value_p -> st_json_p = copied_value_p;
+									success_flag = true;
+								}
+						}
 						break;
 
 					default:

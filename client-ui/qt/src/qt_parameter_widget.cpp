@@ -11,13 +11,14 @@
 #include "param_double_spin_box.h"
 #include "param_spin_box.h"
 #include "param_combo_box.h"
-#include "param_text_box.h"
+#include "param_line_edit.h"
 
 #include "prefs_widget.h"
 
 
 // WHEATIS INCLUDES
 #include "parameter.h"
+#include "parameter_set.h"
 #include "string_utils.h"
 
 
@@ -309,11 +310,11 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 
 					case PT_STRING:
 					case PT_KEYWORD:
-						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p, QLineEdit :: Normal);
+						widget_p = new ParamLineEdit (param_p, qpw_prefs_widget_p, QLineEdit :: Normal);
 						break;
 
 					case PT_PASSWORD:
-						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p, QLineEdit :: Password);
+						widget_p = new ParamLineEdit (param_p, qpw_prefs_widget_p, QLineEdit :: Password);
 						break;
 
 					case PT_SIGNED_INT:
@@ -326,6 +327,11 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 
 					case PT_DIRECTORY:
 						widget_p = new FileChooserWidget (param_p, qpw_prefs_widget_p, QFileDialog :: Directory);
+						break;
+
+					case PT_LARGE_STRING:
+					case PT_JSON:
+
 						break;
 
 				default:

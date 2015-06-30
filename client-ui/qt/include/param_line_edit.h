@@ -11,7 +11,7 @@
 
 
 
-class ParamTextBox : public BaseParamWidget
+class ParamLineEdit : public BaseParamWidget
 {
 	Q_OBJECT
 
@@ -21,8 +21,8 @@ private slots:
 	bool UpdateConfigValue (const char * const value_s);
 
 public:
-	ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p = 0);
-	virtual ~ParamTextBox ();
+	ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p = 0);
+	virtual ~ParamLineEdit ();
 
 	virtual void RemoveConnection ();
 

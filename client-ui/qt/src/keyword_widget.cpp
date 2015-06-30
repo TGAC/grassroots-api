@@ -42,5 +42,5 @@ void KeywordWidget :: TextEntered ()
 
 json_t *KeywordWidget :: GetUserValuesAsJSON (bool full_flag)
 {
-
+	return NULL;
 }

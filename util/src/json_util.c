@@ -43,7 +43,7 @@ int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const pref
 			if (json_s)
 				{
 					fprintf (out_f, "%s\n", json_s);
-					json_free_t (json_s);
+					free (json_s);
 				}
 			else
 				{

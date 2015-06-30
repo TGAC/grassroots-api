@@ -39,6 +39,7 @@ typedef enum ParameterType
 	PT_PASSWORD,
 	PT_KEYWORD,
 	PT_LARGE_STRING,
+	PT_JSON,
 	PT_NUM_TYPES
 } ParameterType;
 
@@ -80,6 +81,7 @@ typedef union SharedType
 
 	LinkedList *st_multiple_values_p;
 
+	json_t *st_json_p;
 } SharedType;
 
 
@@ -178,6 +180,20 @@ typedef struct ParameterGroup
 	 */
 	struct Parameter **pg_params_pp;
 } ParameterGroup;
+
+
+/**
+ * A datatype allowing a ParameterGroup to be stored
+ * on a LinkedList.
+ */
+typedef struct ParameterGroupNode
+{
+	/** The basic ListItem */
+	ListItem pgn_node;
+
+	/** The SharedType value */
+	ParameterGroup *pgn_param_group_p;
+} ParameterGroupNode;
 
 
 

@@ -267,7 +267,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 		}
 
-
+	return res_p;
 }
 
 
