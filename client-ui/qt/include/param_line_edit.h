@@ -1,5 +1,5 @@
-#ifndef PARAMETER_TEXT_BOX_H
-#define PARAMETER_TEXT_BOX_H
+#ifndef PARAMETER_LINE_EDIT_H
+#define PARAMETER_LINE_EDIT_H
 
 
 #include <QWidget>
@@ -31,7 +31,7 @@ public:
 	virtual bool SetValueFromText (const char *value_s);
 
 protected:	
-	QLineEdit *ptb_text_box_p;
+	QLineEdit *ple_text_box_p;
 
 	virtual QWidget *GetQWidget ();
 
@@ -39,4 +39,4 @@ protected:
 };
 
 
-#endif		/* #ifndef PARAMETER_TEXT_BOX_H */
+#endif		/* #ifndef PARAMETER_LINE_EDIT_H */

@@ -9,23 +9,23 @@
 ParamLineEdit :: ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
-	ptb_text_box_p = new QLineEdit (parent_p);
-	ptb_text_box_p -> setEchoMode (echo);
+	ple_text_box_p = new QLineEdit (parent_p);
+	ple_text_box_p -> setEchoMode (echo);
 
-	connect (ptb_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
+	connect (ple_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
 
 ParamLineEdit ::	~ParamLineEdit ()
 {
-	delete ptb_text_box_p;
-	ptb_text_box_p = NULL;
+	delete ple_text_box_p;
+	ple_text_box_p = NULL;
 }
 
 
 void ParamLineEdit :: RemoveConnection ()
 {
-	disconnect (ptb_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
+	disconnect (ple_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
 
@@ -33,13 +33,13 @@ void ParamLineEdit :: SetDefaultValue ()
 {
 	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
 
-	ptb_text_box_p -> setText (value_s);
+	ple_text_box_p -> setText (value_s);
 }
 
 
 QWidget *ParamLineEdit :: GetQWidget ()
 {
-	return ptb_text_box_p;
+	return ple_text_box_p;
 }
 
 
@@ -65,12 +65,12 @@ bool ParamLineEdit :: UpdateConfigValue (const char * const value_s)
 
 bool ParamLineEdit :: SetValueFromText (const char *value_s)
 {
-	QString s = ptb_text_box_p -> text ();
+	QString s = ple_text_box_p -> text ();
 	qDebug () << "old " << s;
 
-	ptb_text_box_p -> setText (value_s);
+	ple_text_box_p -> setText (value_s);
 
-	s = ptb_text_box_p -> text ();
+	s = ple_text_box_p -> text ();
 	qDebug () << "new " << s;
 
 	return true;

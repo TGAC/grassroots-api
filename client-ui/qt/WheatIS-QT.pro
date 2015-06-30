@@ -112,7 +112,8 @@ SOURCES += \
     src/param_group_box.cpp \
     src/progress_window.cpp \
     src/progress_widget.cpp \
-    src/param_line_edit.cpp
+    src/param_line_edit.cpp \
+    src/param_text_box.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -145,7 +146,8 @@ HEADERS  += \
     include/param_group_box.h \
     include/progress_window.h \
     include/progress_widget.h \
-    include/param_line_edit.h
+    include/param_line_edit.h \
+    include/param_text_box.h
 
 LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \
