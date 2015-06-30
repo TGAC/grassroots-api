@@ -4,6 +4,13 @@
 #include "memory_allocations.h"
 #include "parameter.h"
 #include "service_job.h"
+#include "mongo_tool.h"
+
+
+typedef struct MongoDBServiceData
+{
+	MongoTool *msd_tool_p;
+} MongoDBServiceData;
 
 /*
  * STATIC PROTOTYPES
@@ -45,7 +52,7 @@ static bool CleanUpMongoDBServiceJob (ServiceJob *job_p);
 
 ServicesArray *GetServices (json_t *config_p)
 {
-	return GetReferenceServicesFromJSON (config_p, "web_service", GetMongoDBService);
+	return GetReferenceServicesFromJSON (config_p, "mongodb_service", GetMongoDBService);
 }
 
 
@@ -86,15 +93,15 @@ static json_t *GetMongoDBServiceResults (Service *service_p, const uuid_t job_id
 
 static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 {									
-	Service *web_service_p = (Service *) AllocMemory (sizeof (Service));
+	Service *mongodb_service_p = (Service *) AllocMemory (sizeof (Service));
 	
-	if (web_service_p)
+	if (mongodb_service_p)
 		{
 			ServiceData *data_p = (ServiceData *) AllocateMongoDBServiceData (operation_json_p);
 			
 			if (data_p)
 				{
-					InitialiseService (web_service_p,
+					InitialiseService (mongodb_service_p,
 						GetMongoDBServiceName,
 						GetMongoDBServiceDesciption,
 						GetMongoDBServiceInformationUri,
@@ -109,11 +116,11 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 						true,
 						data_p);
 
-					return web_service_p;
+					return mongodb_service_p;
 				}
 			
-			FreeMemory (web_service_p);
-		}		/* if (web_service_p) */
+			FreeMemory (mongodb_service_p);
+		}		/* if (mongodb_service_p) */
 			
 	return NULL;
 }
