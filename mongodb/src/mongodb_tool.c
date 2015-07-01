@@ -342,7 +342,7 @@ bool FindMatchingMongoDocuments (MongoTool *tool_p, const json_t *query_json_p, 
 }
 
 
-bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p))
+bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p)
 {
 	bool success_flag = true;
 
@@ -352,7 +352,7 @@ bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const 
 
 			while (success_flag && (mongoc_cursor_next (tool_p -> mt_cursor_p, &document_p)))
 				{
-					success_flag = process_bson_fn (document_p);
+					success_flag = process_bson_fn (document_p, data_p);
 				}
 
 			if (!mongoc_cursor_more (tool_p -> mt_cursor_p))
@@ -368,5 +368,54 @@ bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const 
 		}
 
 	return success_flag;
+}
+
+
+
+json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p)
+{
+	json_t *result_p = NULL;
+
+	if (tool_p)
+		{
+			result_p = json_object ();
+
+			if (result_p)
+				{
+					json_t *results_array_p = json_array ();
+
+					if (results_array_p)
+						{
+
+						}		/* if (results_array_p) */
+
+				}		/* if (result_p) */
+
+		}		/* if (tool_p) */
+
+	return result_p;
+}
+
+
+bool AddBSONDocumentToJSONArray (bson_t *document_p, void *data_p)
+{
+	bool success_flag = false;
+	json_t *json_p = (json_t *) data_p;
+	json_t *row_p = ConvertBSONToJSON (document_p);
+
+	if (row_p)
+		{
+			if (json_array_append_new (json_p, row_p) == 0)
+				{
+					success_flag = true;
+				}		/* if (json_array_append_new (json_p, row_p) == 0) */
+			else
+				{
+					WipeJSON (row_p);
+				}
+		}		/* if (row_p) */
+
+	return success_flag;
+
 }
 
