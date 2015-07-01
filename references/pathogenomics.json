@@ -8,16 +8,25 @@
     "path": "Pathogenomics service",
     "summary": "A service to obtain articles",
 		"description": "A service to obtain articles using search terms",    
-    "plugin": "web_search_service",
+    "plugin": "mongodb_service",
     "operations": [
 			{
-				"operationId": "Agris Web Search service",
+				"operationId": "Pathogenomics geojson service",
 				"summary": "An operation to obtain matching articles",
 				"description": "An operation to obtain matching articles from Agris",
 				"about_uri": "http://agris.fao.org/agris-search/index.do",
-				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
-				"method": "GET",
-				"selector": "li.result-item h3 a",
+				"tables": [{
+					"name": "sample_metadata",
+					"primary_key": "sample_id"
+				}, {
+					"name": "sample_location",
+					"mapped_keys": [{
+						"sample_id": {
+							"table": "sample_metadata",
+							"field": "sample_id"
+						}
+					}],
+				}]
 				"parameter_set": {
 					"parameters": [
 						{
