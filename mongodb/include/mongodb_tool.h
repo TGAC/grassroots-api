@@ -55,8 +55,13 @@ typedef struct MongoTool
 #endif
 
 
-MONGODB_PREFIX const char *MONGO_ID_S MONGODB_VAL("id");
-
+MONGODB_PREFIX const char *MONGO_ID_S MONGODB_VAL("_id");
+MONGODB_PREFIX const char *MONGO_COLLECTION_S MONGODB_VAL("collection");
+MONGODB_PREFIX const char *MONGO_OPERATION_S MONGODB_VAL("operation");
+MONGODB_PREFIX const char *MONGO_OPERATION_INSERT_S MONGODB_VAL("insert");
+MONGODB_PREFIX const char *MONGO_OPERATION_SEARCH_S MONGODB_VAL("search");
+MONGODB_PREFIX const char *MONGO_OPERATION_REMOVE_S MONGODB_VAL("remove");
+MONGODB_PREFIX const char *MONGO_OPERATION_DATA_S MONGODB_VAL("data");
 
 #ifdef __cplusplus
 extern "C"
@@ -69,7 +74,7 @@ WHEATIS_MONGODB_API bool InitMongo (const char *connection_s);
 WHEATIS_MONGODB_API void ExitMongo (void);
 
 
-WHEATIS_MONGODB_API bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
+WHEATIS_MONGODB_API bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
 
 
 WHEATIS_MONGODB_API MongoTool *AllocateMongoTool (void);

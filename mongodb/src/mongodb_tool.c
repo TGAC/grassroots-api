@@ -8,6 +8,7 @@
 #include "mongodb_tool.h"
 #include "memory_allocations.h"
 #include "streams.h"
+#include "json_tools.h"
 
 mongoc_client_pool_t *s_clients_p = NULL;
 
@@ -78,7 +79,7 @@ void FreeMongoTool (MongoTool *tool_p)
 }
 
 
-bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collection_s)
+bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s)
 {
 	bool success_flag = false;
 	mongoc_collection_t *collection_p =  mongoc_client_get_collection (tool_p -> mt_client_p, collection_s, collection_s);

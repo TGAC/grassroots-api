@@ -11,7 +11,7 @@
 
 
 ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
-: BaseParamWidget (param_p, options_widget_p)
+: BaseParamWidget (param_p, options_widget_p), pcb_group_p (0)
 {
 	pcb_combo_box_p = new QComboBox (parent_p);
 
