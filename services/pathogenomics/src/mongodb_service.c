@@ -286,11 +286,22 @@ static bool ProcessRequest (MongoTool *tool_p, json_t *data_p)
 
 													bson_oid_init_from_string (&oid, id_s);
 
+													if (json_object_del (values_p, MONGO_ID_S) == 0)
+														{
+															success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+														}
+
 												}
 										}
 									else
 										{
 											bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+											if (id_p)
+												{
+													success_flag = true;
+													FreeMemory (id_p);
+												}
 										}
 
 								}		/* if (values_p) */
