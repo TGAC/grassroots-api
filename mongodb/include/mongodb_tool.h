@@ -55,8 +55,13 @@ typedef struct MongoTool
 #endif
 
 
-MONGODB_PREFIX const char *MONGO_ID_S MONGODB_VAL("id");
-
+MONGODB_PREFIX const char *MONGO_ID_S MONGODB_VAL("_id");
+MONGODB_PREFIX const char *MONGO_COLLECTION_S MONGODB_VAL("collection");
+MONGODB_PREFIX const char *MONGO_OPERATION_S MONGODB_VAL("operation");
+MONGODB_PREFIX const char *MONGO_OPERATION_INSERT_S MONGODB_VAL("insert");
+MONGODB_PREFIX const char *MONGO_OPERATION_SEARCH_S MONGODB_VAL("search");
+MONGODB_PREFIX const char *MONGO_OPERATION_REMOVE_S MONGODB_VAL("remove");
+MONGODB_PREFIX const char *MONGO_OPERATION_DATA_S MONGODB_VAL("data");
 
 #ifdef __cplusplus
 extern "C"
@@ -69,7 +74,7 @@ WHEATIS_MONGODB_API bool InitMongo (const char *connection_s);
 WHEATIS_MONGODB_API void ExitMongo (void);
 
 
-WHEATIS_MONGODB_API bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
+WHEATIS_MONGODB_API bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
 
 
 WHEATIS_MONGODB_API MongoTool *AllocateMongoTool (void);
@@ -99,8 +104,13 @@ WHEATIS_MONGODB_API bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *
 WHEATIS_MONGODB_API bool FindMatchingMongoDocuments (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss);
 
 
-WHEATIS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p));
+WHEATIS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p);
 
+
+WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p);
+
+
+WHEATIS_MONGODB_API bool AddBSONDocumentToJSONArray (bson_t *document_p, void *data_p);
 
 
 #ifdef __cplusplus

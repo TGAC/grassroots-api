@@ -182,21 +182,6 @@ typedef struct ParameterGroup
 } ParameterGroup;
 
 
-/**
- * A datatype allowing a ParameterGroup to be stored
- * on a LinkedList.
- */
-typedef struct ParameterGroupNode
-{
-	/** The basic ListItem */
-	ListItem pgn_node;
-
-	/** The SharedType value */
-	ParameterGroup *pgn_param_group_p;
-} ParameterGroupNode;
-
-
-
 
 /**
  * @brief The datatype that stores all of the information about a Parameter.

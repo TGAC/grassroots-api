@@ -8,6 +8,7 @@
 #include "mongodb_tool.h"
 #include "memory_allocations.h"
 #include "streams.h"
+#include "json_tools.h"
 
 mongoc_client_pool_t *s_clients_p = NULL;
 
@@ -78,7 +79,7 @@ void FreeMongoTool (MongoTool *tool_p)
 }
 
 
-bool GetMongoCollection (MongoTool *tool_p, const char *db_s, const char *collection_s)
+bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s)
 {
 	bool success_flag = false;
 	mongoc_collection_t *collection_p =  mongoc_client_get_collection (tool_p -> mt_client_p, collection_s, collection_s);
@@ -283,23 +284,50 @@ bool FindMatchingMongoDocuments (MongoTool *tool_p, const json_t *query_json_p, 
 
 			if (query_p)
 				{
+					bool success_flag = true;
 					bson_t *fields_p = NULL;
+					mongoc_cursor_t *cursor_p = NULL;
 
+					/*
+					 * Add the fields to retrieve
+					 */
 					if (fields_ss)
 						{
-							mongoc_cursor_t *cursor_p = mongoc_collection_find (tool_p -> mt_collection_p, MONGOC_QUERY_NONE, 0, 0, 0, query_p, fields_p, NULL);
+							fields_p = bson_new ();
 
-							if (cursor_p)
+							if (fields_p)
 								{
-									if (tool_p -> mt_cursor_p)
-										{
-											mongoc_cursor_destroy (tool_p -> mt_cursor_p);
-										}
+									const char **field_ss = fields_ss;
 
-									tool_p -> mt_cursor_p = cursor_p;
-									success_flag = true;
-								}
+									while (success_flag && field_ss)
+										{
+											if (BSON_APPEND_INT32 (fields_p, *field_ss, 1))
+												{
+													++ field_ss;
+												}
+											else
+												{
+													success_flag = false;
+												}
+
+										}		/* while (success_flag && field_ss) */
+
+								}		/* if (fields_p) */
+
 						}		/* if (fields_ss) */
+
+					cursor_p = mongoc_collection_find (tool_p -> mt_collection_p, MONGOC_QUERY_NONE, 0, 0, 0, query_p, fields_p, NULL);
+
+					if (cursor_p)
+						{
+							if (tool_p -> mt_cursor_p)
+								{
+									mongoc_cursor_destroy (tool_p -> mt_cursor_p);
+								}
+
+							tool_p -> mt_cursor_p = cursor_p;
+							success_flag = true;
+						}
 
 					if (fields_p)
 						{
@@ -315,7 +343,7 @@ bool FindMatchingMongoDocuments (MongoTool *tool_p, const json_t *query_json_p, 
 }
 
 
-bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p))
+bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p)
 {
 	bool success_flag = true;
 
@@ -325,7 +353,7 @@ bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const 
 
 			while (success_flag && (mongoc_cursor_next (tool_p -> mt_cursor_p, &document_p)))
 				{
-					success_flag = process_bson_fn (document_p);
+					success_flag = process_bson_fn (document_p, data_p);
 				}
 
 			if (!mongoc_cursor_more (tool_p -> mt_cursor_p))
@@ -341,5 +369,54 @@ bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const 
 		}
 
 	return success_flag;
+}
+
+
+
+json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p)
+{
+	json_t *result_p = NULL;
+
+	if (tool_p)
+		{
+			result_p = json_object ();
+
+			if (result_p)
+				{
+					json_t *results_array_p = json_array ();
+
+					if (results_array_p)
+						{
+
+						}		/* if (results_array_p) */
+
+				}		/* if (result_p) */
+
+		}		/* if (tool_p) */
+
+	return result_p;
+}
+
+
+bool AddBSONDocumentToJSONArray (bson_t *document_p, void *data_p)
+{
+	bool success_flag = false;
+	json_t *json_p = (json_t *) data_p;
+	json_t *row_p = ConvertBSONToJSON (document_p);
+
+	if (row_p)
+		{
+			if (json_array_append_new (json_p, row_p) == 0)
+				{
+					success_flag = true;
+				}		/* if (json_array_append_new (json_p, row_p) == 0) */
+			else
+				{
+					WipeJSON (row_p);
+				}
+		}		/* if (row_p) */
+
+	return success_flag;
+
 }
 

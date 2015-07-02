@@ -251,6 +251,68 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 	return service_p -> se_jobs_p;
 }
 
+
+
+static bool ProcessRequest (MongoTool *tool_p, json_t *data_p)
+{
+	bool success_flag = false;
+	const char *collection_s = GetJSONString (data_p, MONGO_COLLECTION_S);
+
+	if (collection_s)
+		{
+			const char *operation_s = GetJSONString (data_p, MONGO_OPERATION_S);
+
+			if (operation_s)
+				{
+					if (strcmp (operation_s, MONGO_OPERATION_INSERT_S))
+						{
+							json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
+
+							if (values_p)
+								{
+									/**
+									 * Is it an insert or an update?
+									 */
+									const char *id_s = GetJSONString (values_p, MONGO_ID_S);
+
+									if (id_s)
+										{
+											bson_oid_t oid;
+
+											if (bson_oid_is_valid (id_s, strlen (id_s)))
+												{
+													bson_t *query_p = NULL;
+													bson_t *update_p = NULL;
+
+													bson_oid_init_from_string (&oid, id_s);
+
+													if (json_object_del (values_p, MONGO_ID_S) == 0)
+														{
+															success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+														}
+
+												}
+										}
+									else
+										{
+											bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+											if (id_p)
+												{
+													success_flag = true;
+													FreeMemory (id_p);
+												}
+										}
+
+								}		/* if (values_p) */
+						}
+				}		/* if (operation_s) */
+
+		}		/* if (collection_s) */
+
+	return success_flag;
+}
+
 	
 
 static bool IsResourceForMongoDBService (Service *service_p, Resource *resource_p, Handler *handler_p)
