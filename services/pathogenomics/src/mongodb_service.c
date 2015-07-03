@@ -52,7 +52,22 @@ static bool CleanUpMongoDBServiceJob (ServiceJob *job_p);
 
 ServicesArray *GetServices (json_t *config_p)
 {
-	return GetReferenceServicesFromJSON (config_p, "mongodb_service", GetMongoDBService);
+	ServicesArray *services_p = AllocateServicesArray (1);
+
+	if (services_p)
+		{
+			Service *service_p = GetMongoDBService (config_p, 0);
+
+			if (service_p)
+				{
+					* (services_p -> sa_services_pp) = service_p;
+					return services_p;
+				}
+
+			FreeServicesArray (services_p);
+		}
+
+	return NULL;
 }
 
 
@@ -153,43 +168,49 @@ static void FreeMongoDBServiceData (MongoDBServiceData *data_p)
 
 static const char *GetMongoDBServiceName (Service *service_p)
 {
-	MongoDBServiceData *data_p = (MongoDBServiceData *) (service_p -> se_data_p);
-	
-	return (data_p -> wsd_name_s);
+	return "Pathogenomics Geoservice";
 }
 
 
 static const char *GetMongoDBServiceDesciption (Service *service_p)
 {
-	MongoDBServiceData *data_p = (MongoDBServiceData *) (service_p -> se_data_p);
-
-	return (data_p -> wsd_description_s);
+	return "A service to analyse the spread of Wheat-related diseases both geographically and temporally";
 }
 
 
 static const char *GetMongoDBServiceInformationUri (Service *service_p)
 {
-	MongoDBServiceData *data_p = (MongoDBServiceData *) (service_p -> se_data_p);
-
-	return (data_p -> wsd_info_uri_s);
+	return NULL;
 }
-
 
 
 static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
 {
-	MongoDBServiceData *data_p = (MongoDBServiceData *) (service_p -> se_data_p);
+	ParameterSet *params_p  = AllocateParameterSet ("Pathogenomics service parameters", "The parameters used for the Pathogenomics service");
 
-	return (data_p -> wsd_params_p);
+	if (params_p)
+		{
+			Parameter *param_p = NULL;
+			SharedType def;
+
+			def.st_ulong_value = S_DEFAULT_DURATION;
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "duration", "Duration in seconds", "Duration in seconds", TAG_LONG_RUNNING_DURATION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+				{
+					return param_set_p;
+				}
+
+
+			FreeParameterSet (params_p);
+		}
+
+	return NULL;
 }
 
 
 static void ReleaseMongoDBServiceParameters (Service *service_p, ParameterSet *params_p)
 {
-	/*
-	 * As the parameters are cached, we release the parameters when the service is destroyed
-	 * so we need to do anything here.
-	 */
+	FreeParameterSet (params_p);
 }
 
 
