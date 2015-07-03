@@ -274,68 +274,79 @@ bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, con
 
 
 
-bool FindMatchingMongoDocuments (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss)
+bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss)
+{
+	bool success_flag = false;
+	bson_t *query_p = ConvertJSONToBSON (query_json_p);
+
+	if (query_p)
+		{
+			success_flag = FindMatchingMongoDocuments (tool_p, query_p, fields_ss);
+			bson_destroy (query_p);
+		}
+
+	return success_flag;
+}
+
+
+
+bool FindMatchingMongoDocuments (MongoTool *tool_p, const bson_t *query_p, const char **fields_ss)
 {
 	bool success_flag = false;
 
 	if (tool_p -> mt_collection_p)
 		{
-			bson_t *query_p = ConvertJSONToBSON (query_json_p);
+			bson_t *fields_p = NULL;
+			mongoc_cursor_t *cursor_p = NULL;
 
-			if (query_p)
+			success_flag = true;
+
+			/*
+			 * Add the fields to retrieve
+			 */
+			if (fields_ss)
 				{
-					bool success_flag = true;
-					bson_t *fields_p = NULL;
-					mongoc_cursor_t *cursor_p = NULL;
-
-					/*
-					 * Add the fields to retrieve
-					 */
-					if (fields_ss)
-						{
-							fields_p = bson_new ();
-
-							if (fields_p)
-								{
-									const char **field_ss = fields_ss;
-
-									while (success_flag && field_ss)
-										{
-											if (BSON_APPEND_INT32 (fields_p, *field_ss, 1))
-												{
-													++ field_ss;
-												}
-											else
-												{
-													success_flag = false;
-												}
-
-										}		/* while (success_flag && field_ss) */
-
-								}		/* if (fields_p) */
-
-						}		/* if (fields_ss) */
-
-					cursor_p = mongoc_collection_find (tool_p -> mt_collection_p, MONGOC_QUERY_NONE, 0, 0, 0, query_p, fields_p, NULL);
-
-					if (cursor_p)
-						{
-							if (tool_p -> mt_cursor_p)
-								{
-									mongoc_cursor_destroy (tool_p -> mt_cursor_p);
-								}
-
-							tool_p -> mt_cursor_p = cursor_p;
-							success_flag = true;
-						}
+					fields_p = bson_new ();
 
 					if (fields_p)
 						{
-							bson_destroy (fields_p);
+							const char **field_ss = fields_ss;
+
+							while (success_flag && field_ss)
+								{
+									if (BSON_APPEND_INT32 (fields_p, *field_ss, 1))
+										{
+											++ field_ss;
+										}
+									else
+										{
+											success_flag = false;
+										}
+
+								}		/* while (success_flag && field_ss) */
+
 						}		/* if (fields_p) */
 
-					bson_destroy (query_p);
-				}		/* if (query_p) */
+				}		/* if (fields_ss) */
+
+			cursor_p = mongoc_collection_find (tool_p -> mt_collection_p, MONGOC_QUERY_NONE, 0, 0, 0, query_p, fields_p, NULL);
+
+			if (cursor_p)
+				{
+					if (tool_p -> mt_cursor_p)
+						{
+							mongoc_cursor_destroy (tool_p -> mt_cursor_p);
+						}
+
+					tool_p -> mt_cursor_p = cursor_p;
+					success_flag = true;
+				}
+
+			if (fields_p)
+				{
+					bson_destroy (fields_p);
+				}		/* if (fields_p) */
+
 
 		}		/* if (tool_p -> mt_collection_p) */
 

@@ -5,6 +5,9 @@
 #include "library.h"
 #include "mongodb_service_library.h"
 
+
+#define PATHOGENOMICS_DB_S ("pathogenomics")
+
 #ifdef __cplusplus
 extern "C"
 {

@@ -7,6 +7,10 @@
 #include "mongo_tool.h"
 
 
+#define TAG_UPDATE MAKE_TAG('P', 'G', 'U', 'P')
+#define TAG_QUERY MAKE_TAG('P', 'G', 'Q', 'U')
+#define TAG_REMOVE MAKE_TAG('P', 'G', 'R', 'M')
+
 typedef struct MongoDBServiceData
 {
 	MongoTool *msd_tool_p;
@@ -193,13 +197,18 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 			Parameter *param_p = NULL;
 			SharedType def;
 
-			def.st_ulong_value = S_DEFAULT_DURATION;
+			def.st_json_p = NULL;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "duration", "Duration in seconds", "Duration in seconds", TAG_LONG_RUNNING_DURATION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_JSON, false, "update", "Update", "Add data to the system", TAG_UPDATE, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 				{
-					return param_set_p;
+					if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_JSON, false, "search", "Search", "Find data to the system", TAG_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+						{
+							if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_JSON, false, "delete", "Delete", "Delete data to the system", TAG_REMOVE, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+								{
+									return params_p;
+								}
+						}
 				}
-
 
 			FreeParameterSet (params_p);
 		}
@@ -323,6 +332,80 @@ static bool ProcessRequest (MongoTool *tool_p, json_t *data_p)
 													success_flag = true;
 													FreeMemory (id_p);
 												}
+										}
+
+									if (success_flag)
+										{
+											/**
+											 * Add the fields to the list of available fields for this
+											 * collection
+											 */
+											char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+
+											if (fields_collection_s)
+												{
+													json_t *field_p = json_object_new ();
+
+													if (field_p)
+														{
+															const char *fields_ss [2] = { NULL, NULL };
+															const char *key_s;
+
+
+															SetMongoToolCollection (tool_p, PATHOGENOMICS_DB_S, fields_collection_s);
+
+															json_object_foreach (values_p, key_s, value_p)
+																{
+																	bson_t *query_p = BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+
+																	if (query_p)
+																		{
+																			int32 value = 0;
+																			*fields_ss = key_s;
+
+																			if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+																				{
+																					const bson_t *doc_p = NULL;
+
+																					/* should only be one of these */
+																					while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+																						{
+																							json_t *json_value_p = ConvertBSONToJSON (doc_p);
+
+																							if (json_value_p)
+																								{
+																									json_t *count_p = json_object_get (json_value_p, key_s);
+
+																									if (count_p)
+																										{
+																											if (json_is_integer (count_p))
+																												{
+																													value = json_integer_value (count_p);
+																												}
+																										}
+
+																									WipeJSON (json_value_p);
+																								}
+																					   }
+																				}
+
+																			++ value;
+
+																			/*
+																			 * Now need to set key_s = value into the collection
+																			 */
+
+																			bson_destroy (query_p);
+																		}
+																}		/* json_object_foreach (values_p, key_s, value_p) */
+
+
+														}		/* if (field_p) */
+
+
+													FreeCopiedString (fields_collection_s);
+												}		/* if (fields_collection_s) */
+
 										}
 
 								}		/* if (values_p) */
