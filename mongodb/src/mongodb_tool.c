@@ -4,7 +4,7 @@
  *  Created on: 26 Jun 2015
  *      Author: billy
  */
-
+#define ALLOCATE_MONGODB_TAGS (1)
 #include "mongodb_tool.h"
 #include "memory_allocations.h"
 #include "streams.h"
@@ -398,6 +398,25 @@ json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p)
 
 					if (results_array_p)
 						{
+							if (json_object_set_new (result_p, "results", results_array_p) == 0)
+								{
+									bool success_flag = false;
+									bson_t *query_p = bson_new ();
+
+									if (query_p)
+										{
+											if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+												{
+													if (!IterateOverMongoResults (tool_p, AddBSONDocumentToJSONArray, results_array_p))
+														{
+														}
+
+												}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
+
+											bson_destroy (query_p);
+										}		/* if (query_p) */
+
+								}		/* if (json_object_set_new (result_p, "results", results_array_p) == 0) */
 
 						}		/* if (results_array_p) */
 
@@ -431,3 +450,23 @@ bool AddBSONDocumentToJSONArray (bson_t *document_p, void *data_p)
 
 }
 
+
+
+bool GetAllDocuments (MongoTool *tool_p)
+{
+	bool success_flag = false;
+	bson_t *query_p = bson_new ();
+
+	if (query_p)
+		{
+			if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+				{
+					if (IterateOverMongoResults (tool_p, AddBSONDocumentToJSONArray, void *data_p)
+
+				}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
+
+			bson_destroy (query_p);
+		}		/* if (query_p) */
+
+	return success_flag;
+}
