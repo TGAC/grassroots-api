@@ -281,7 +281,7 @@ bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_js
 
 	if (query_p)
 		{
-			success_flag = FindMatchingMongoDocuments (tool_p, query_p, fields_ss);
+			success_flag = FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss);
 			bson_destroy (query_p);
 		}
 

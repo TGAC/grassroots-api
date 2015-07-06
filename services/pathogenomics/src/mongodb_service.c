@@ -49,6 +49,13 @@ static bool CloseMongoDBService (Service *service_p);
 static bool CleanUpMongoDBServiceJob (ServiceJob *job_p);
 
 
+
+static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+
+static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+
+static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+
 /*
  * API FUNCTIONS
  */
@@ -294,122 +301,18 @@ static bool ProcessRequest (MongoTool *tool_p, json_t *data_p)
 
 			if (operation_s)
 				{
-					if (strcmp (operation_s, MONGO_OPERATION_INSERT_S))
+					if (strcmp (operation_s, MONGO_OPERATION_INSERT_S) == 0)
 						{
-							json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
-
-							if (values_p)
-								{
-									/**
-									 * Is it an insert or an update?
-									 */
-									const char *id_s = GetJSONString (values_p, MONGO_ID_S);
-
-									if (id_s)
-										{
-											bson_oid_t oid;
-
-											if (bson_oid_is_valid (id_s, strlen (id_s)))
-												{
-													bson_t *query_p = NULL;
-													bson_t *update_p = NULL;
-
-													bson_oid_init_from_string (&oid, id_s);
-
-													if (json_object_del (values_p, MONGO_ID_S) == 0)
-														{
-															success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
-														}
-
-												}
-										}
-									else
-										{
-											bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
-
-											if (id_p)
-												{
-													success_flag = true;
-													FreeMemory (id_p);
-												}
-										}
-
-									if (success_flag)
-										{
-											/**
-											 * Add the fields to the list of available fields for this
-											 * collection
-											 */
-											char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
-
-											if (fields_collection_s)
-												{
-													json_t *field_p = json_object_new ();
-
-													if (field_p)
-														{
-															const char *fields_ss [2] = { NULL, NULL };
-															const char *key_s;
-
-
-															SetMongoToolCollection (tool_p, PATHOGENOMICS_DB_S, fields_collection_s);
-
-															json_object_foreach (values_p, key_s, value_p)
-																{
-																	bson_t *query_p = BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
-
-																	if (query_p)
-																		{
-																			int32 value = 0;
-																			*fields_ss = key_s;
-
-																			if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
-																				{
-																					const bson_t *doc_p = NULL;
-
-																					/* should only be one of these */
-																					while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
-																						{
-																							json_t *json_value_p = ConvertBSONToJSON (doc_p);
-
-																							if (json_value_p)
-																								{
-																									json_t *count_p = json_object_get (json_value_p, key_s);
-
-																									if (count_p)
-																										{
-																											if (json_is_integer (count_p))
-																												{
-																													value = json_integer_value (count_p);
-																												}
-																										}
-
-																									WipeJSON (json_value_p);
-																								}
-																					   }
-																				}
-
-																			++ value;
-
-																			/*
-																			 * Now need to set key_s = value into the collection
-																			 */
-
-																			bson_destroy (query_p);
-																		}
-																}		/* json_object_foreach (values_p, key_s, value_p) */
-
-
-														}		/* if (field_p) */
-
-
-													FreeCopiedString (fields_collection_s);
-												}		/* if (fields_collection_s) */
-
-										}
-
-								}		/* if (values_p) */
-						}
+							success_flag = InsertData (tool_p, data_p, collection_s);
+						}		/* if (strcmp (operation_s, MONGO_OPERATION_INSERT_S)) */
+					else if (strcmp (operation_s, MONGO_OPERATION_SEARCH_S) == 0)
+						{
+							success_flag = SearchData (tool_p, data_p, collection_s);
+						}		/* else if (strcmp (operation_s, MONGO_OPERATION_SEARCH_S) == 0) */
+					else if (strcmp (operation_s, MONGO_OPERATION_REMOVE_S) == 0)
+						{
+							success_flag = DeleteData (tool_p, data_p, collection_s);
+						}		/* else if (strcmp (operation_s, MONGO_OPERATION_REMOVE_S) == 0) */
 				}		/* if (operation_s) */
 
 		}		/* if (collection_s) */
@@ -417,7 +320,307 @@ static bool ProcessRequest (MongoTool *tool_p, json_t *data_p)
 	return success_flag;
 }
 
+
+static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+{
+	bool success_flag = false;
+	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
+
+	if (values_p)
+		{
+			const char **fields_ss = NULL;
+			json_t *fields_p = json_object_get (data_p, MONGO_OPERATION_FIELDS_S);
+
+			if (fields_p)
+				{
+					if (json_is_array (fields_p))
+						{
+							size_t size = json_array_size (fields_p);
+
+							fields_ss = AllocMemoryArray (size + 1, sizeof (const char *));
+
+							if (fields_ss)
+								{
+									const char **field_ss = fields_ss;
+									size_t i;
+									json_t *field_p;
+
+									json_array_foreach (fields_p, i, field_p)
+										{
+											if (json_is_string (field_p))
+												{
+													*field_ss = json_string_value (field_p);
+													++ field_ss;
+												}
+											else
+												{
+													char *dump_s = json_dumps (field_p, JSON_INDENT (2));
+
+													PrintErrors (STM_LEVEL_WARNING, "Failed to get field from %s", dump_s);
+													free (dump_s);
+												}
+										}
+
+								}		/* if (fields_ss) */
+
+						}		/* if (json_is_array (fields_p)) */
+
+				}		/* if (fields_p) */
+
+			success_flag = FindMatchingMongoDocumentsByJSON (tool_p, values_p, fields_ss);
+
+			if (fields_ss)
+				{
+					FreeMemory (fields_ss);
+				}
+		}		/* if (values_p) */
+
+	return success_flag;
+}
+
+
+static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+{
+	bool success_flag = false;
+	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
+
+	if (values_p)
+		{
+			/**
+			 * Is it an insert or an update?
+			 */
+			const char *id_s = GetJSONString (values_p, MONGO_ID_S);
+
+			if (id_s)
+				{
+					bson_oid_t oid;
+
+					if (bson_oid_is_valid (id_s, strlen (id_s)))
+						{
+							bson_t *query_p = NULL;
+							bson_t *update_p = NULL;
+
+							bson_oid_init_from_string (&oid, id_s);
+
+							if (json_object_del (values_p, MONGO_ID_S) == 0)
+								{
+									success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+								}
+
+						}
+				}
+			else
+				{
+					bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+					if (id_p)
+						{
+							success_flag = true;
+							FreeMemory (id_p);
+						}
+				}
+
+			if (success_flag)
+				{
+					/**
+					 * Add the fields to the list of available fields for this
+					 * collection
+					 */
+					char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+
+					if (fields_collection_s)
+						{
+							json_t *field_p = json_object_new ();
+
+							if (field_p)
+								{
+									const char *fields_ss [2] = { NULL, NULL };
+									const char *key_s;
+									json_t *value_p;
+
+									SetMongoToolCollection (tool_p, PATHOGENOMICS_DB_S, fields_collection_s);
+
+									json_object_foreach (values_p, key_s, value_p)
+										{
+											bson_t *query_p = BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+
+											if (query_p)
+												{
+													int32 value = 0;
+													*fields_ss = key_s;
+
+													if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+														{
+															const bson_t *doc_p = NULL;
+
+															/* should only be one of these */
+															while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+																{
+																	json_t *json_value_p = ConvertBSONToJSON (doc_p);
+
+																	if (json_value_p)
+																		{
+																			json_t *count_p = json_object_get (json_value_p, key_s);
+
+																			if (count_p)
+																				{
+																					if (json_is_integer (count_p))
+																						{
+																							value = json_integer_value (count_p);
+																						}
+																				}
+
+																			WipeJSON (json_value_p);
+																		}
+																 }
+														}
+
+													++ value;
+
+													/*
+													 * Now need to set key_s = value into the collection
+													 */
+
+													bson_destroy (query_p);
+												}
+										}		/* json_object_foreach (values_p, key_s, value_p) */
+
+
+								}		/* if (field_p) */
+
+
+							FreeCopiedString (fields_collection_s);
+						}		/* if (fields_collection_s) */
+
+				}
+
+		}		/* if (values_p) */
+
+	return success_flag;
+}
 	
+
+
+static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+{
+	bool success_flag = false;
+	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
+
+	if (values_p)
+		{
+			/**
+			 * Is it an insert or an update?
+			 */
+			const char *id_s = GetJSONString (values_p, MONGO_ID_S);
+
+			if (id_s)
+				{
+					bson_oid_t oid;
+
+					if (bson_oid_is_valid (id_s, strlen (id_s)))
+						{
+							bson_t *query_p = NULL;
+							bson_t *update_p = NULL;
+
+							bson_oid_init_from_string (&oid, id_s);
+
+							if (json_object_del (values_p, MONGO_ID_S) == 0)
+								{
+									success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+								}
+
+						}
+				}
+			else
+				{
+					bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+					if (id_p)
+						{
+							success_flag = true;
+							FreeMemory (id_p);
+						}
+				}
+
+			if (success_flag)
+				{
+					/**
+					 * Add the fields to the list of available fields for this
+					 * collection
+					 */
+					char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+
+					if (fields_collection_s)
+						{
+							json_t *field_p = json_object_new ();
+
+							if (field_p)
+								{
+									const char *fields_ss [2] = { NULL, NULL };
+									const char *key_s;
+									json_t *value_p;
+
+									SetMongoToolCollection (tool_p, PATHOGENOMICS_DB_S, fields_collection_s);
+
+									json_object_foreach (values_p, key_s, value_p)
+										{
+											bson_t *query_p = BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+
+											if (query_p)
+												{
+													int32 value = 0;
+													*fields_ss = key_s;
+
+													if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+														{
+															const bson_t *doc_p = NULL;
+
+															/* should only be one of these */
+															while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+																{
+																	json_t *json_value_p = ConvertBSONToJSON (doc_p);
+
+																	if (json_value_p)
+																		{
+																			json_t *count_p = json_object_get (json_value_p, key_s);
+
+																			if (count_p)
+																				{
+																					if (json_is_integer (count_p))
+																						{
+																							value = json_integer_value (count_p);
+																						}
+																				}
+
+																			WipeJSON (json_value_p);
+																		}
+																 }
+														}
+
+													++ value;
+
+													/*
+													 * Now need to set key_s = value into the collection
+													 */
+
+													bson_destroy (query_p);
+												}
+										}		/* json_object_foreach (values_p, key_s, value_p) */
+
+
+								}		/* if (field_p) */
+
+
+							FreeCopiedString (fields_collection_s);
+						}		/* if (fields_collection_s) */
+
+				}
+
+		}		/* if (values_p) */
+
+	return success_flag;
+}
+
 
 static bool IsResourceForMongoDBService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
