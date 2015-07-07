@@ -63,6 +63,7 @@ MONGODB_PREFIX const char *MONGO_OPERATION_SEARCH_S MONGODB_VAL("search");
 MONGODB_PREFIX const char *MONGO_OPERATION_REMOVE_S MONGODB_VAL("remove");
 MONGODB_PREFIX const char *MONGO_OPERATION_DATA_S MONGODB_VAL("data");
 MONGODB_PREFIX const char *MONGO_OPERATION_FIELDS_S MONGODB_VAL("fields");
+MONGODB_PREFIX const char *MONGO_OPERATION_GET_ALL_S MONGODB_VAL("dump");
 
 #ifdef __cplusplus
 extern "C"
@@ -111,10 +112,10 @@ WHEATIS_MONGODB_API bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, co
 WHEATIS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p);
 
 
-WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p);
+WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
 
-WHEATIS_MONGODB_API bool AddBSONDocumentToJSONArray (bson_t *document_p, void *data_p);
+WHEATIS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
 
 
 #ifdef __cplusplus

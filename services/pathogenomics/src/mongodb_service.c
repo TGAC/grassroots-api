@@ -10,6 +10,10 @@
 #define TAG_UPDATE MAKE_TAG('P', 'G', 'U', 'P')
 #define TAG_QUERY MAKE_TAG('P', 'G', 'Q', 'U')
 #define TAG_REMOVE MAKE_TAG('P', 'G', 'R', 'M')
+#define TAG_DUMP MAKE_TAG('P', 'G', 'D', 'P')
+#define TAG_COLLECTION MAKE_TAG('P', 'G', 'C', 'O')
+
+
 
 typedef struct MongoDBServiceData
 {
@@ -212,7 +216,14 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 						{
 							if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_JSON, false, "delete", "Delete", "Delete data to the system", TAG_REMOVE, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 								{
-									return params_p;
+									if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_BOOLEAN, false, "dump", "Dump", "Get all of the data in the system", TAG_DUMP, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+										{
+											if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_STRING, false, "collection", "Collection", "The collection to act upon", TAG_COLLECTION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+												{
+													return params_p;
+												}
+											return params_p;
+										}
 								}
 						}
 				}
@@ -254,32 +265,65 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 			if (param_set_p)
 				{
-					bool success_flag = true;
+					/* get the collection to work on */
+					SharedType value;
 
-					ResetByteBuffer (data_p -> wsd_buffer_p);
-
-					switch (data_p -> wsd_method)
+					if (GetParameterValueFromParameterSet (param_set_p, TAG_COLLECTION, &value, true))
 						{
-							case SM_POST:
-								success_flag = AddParametersToPostMongoDBService (data_p, param_set_p);
-								break;
+							const char *collection_s = value.st_string_value_s;
 
-							case SM_GET:
-								success_flag = AddParametersToGetMongoDBService (data_p, param_set_p);
-								break;
+							MongoTool *tool_p = AllocateMongoTool ();
 
-							case SM_BODY:
-								success_flag = AddParametersToBodyMongoDBService (data_p, param_set_p);
-								break;
+							if (tool_p)
+								{
+									json_t *response_p = NULL;
+									Parameter *param_p = GetParameterValueFromParameterSet (param_set_p, TAG_DUMP, &value, true);
 
-							default:
-								break;
-						}
+									if (param_p)
+										{
+											response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
 
-					if (success_flag)
-						{
-							job_p -> sj_status = (CallCurlWebservice (data_p)) ? OS_SUCCEEDED : OS_FAILED;
-						}		/* if (success_flag) */
+											job_p -> sj_status = (response_p != NULL) ? OS_SUCCEEDED : OS_FAILED;
+										}
+									else
+										{
+											json_error_t error;
+											bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+
+											job_p -> sj_status = OS_FAILED;
+
+
+											if (GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true))
+												{
+													data_fn = InsertData
+												}
+											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL)
+												{
+													data_fn = SearchData;
+												}
+											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL)
+												{
+													data_fn = DeleteData
+												}
+
+											if (data_fn)
+												{
+													if (data_fn (tool_p, data_p, collection_s))
+														{
+															json_error_t error;
+
+															response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
+															job_p -> sj_status = OS_SUCCEEDED;
+														}
+												}
+
+										}
+
+								}		/* if (tool_p) */
+
+
+							GetParameterValueFromParameterSet()
+						}		/* if (collection_s) */
 
 				}		/* if (param_set_p) */
 
@@ -288,37 +332,6 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 	return service_p -> se_jobs_p;
 }
 
-
-
-static bool ProcessRequest (MongoTool *tool_p, json_t *data_p)
-{
-	bool success_flag = false;
-	const char *collection_s = GetJSONString (data_p, MONGO_COLLECTION_S);
-
-	if (collection_s)
-		{
-			const char *operation_s = GetJSONString (data_p, MONGO_OPERATION_S);
-
-			if (operation_s)
-				{
-					if (strcmp (operation_s, MONGO_OPERATION_INSERT_S) == 0)
-						{
-							success_flag = InsertData (tool_p, data_p, collection_s);
-						}		/* if (strcmp (operation_s, MONGO_OPERATION_INSERT_S)) */
-					else if (strcmp (operation_s, MONGO_OPERATION_SEARCH_S) == 0)
-						{
-							success_flag = SearchData (tool_p, data_p, collection_s);
-						}		/* else if (strcmp (operation_s, MONGO_OPERATION_SEARCH_S) == 0) */
-					else if (strcmp (operation_s, MONGO_OPERATION_REMOVE_S) == 0)
-						{
-							success_flag = DeleteData (tool_p, data_p, collection_s);
-						}		/* else if (strcmp (operation_s, MONGO_OPERATION_REMOVE_S) == 0) */
-				}		/* if (operation_s) */
-
-		}		/* if (collection_s) */
-
-	return success_flag;
-}
 
 
 static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
