@@ -295,7 +295,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 											if (GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true))
 												{
-													data_fn = InsertData
+													data_fn = InsertData;
 												}
 											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL)
 												{
@@ -308,13 +308,11 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 											if (data_fn)
 												{
-													if (data_fn (tool_p, data_p, collection_s))
-														{
-															json_error_t error;
+													json_error_t error;
+													bool success_flag = data_fn (tool_p, data_p, collection_s);
 
-															response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
-															job_p -> sj_status = OS_SUCCEEDED;
-														}
+													response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
+													job_p -> sj_status = OS_SUCCEEDED;
 												}
 
 										}
