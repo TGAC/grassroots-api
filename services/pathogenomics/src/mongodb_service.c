@@ -1,10 +1,14 @@
 #include <string.h>
 
+#include "jansson.h"
+
 #include "mongodb_service.h"
 #include "memory_allocations.h"
 #include "parameter.h"
 #include "service_job.h"
-#include "mongo_tool.h"
+#include "mongodb_tool.h"
+#include "string_utils.h"
+#include "json_tools.h"
 
 
 #define TAG_UPDATE MAKE_TAG('P', 'G', 'U', 'P')
@@ -158,25 +162,28 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 
 static MongoDBServiceData *AllocateMongoDBServiceData (json_t *op_json_p)
 {
-	MongoDBServiceData *data_p = (MongoDBServiceData *) AllocMemory (sizeof (MongoDBServiceData));
+	MongoTool *tool_p = AllocateMongoTool ();
 	
-	if (data_p)
+	if (tool_p)
 		{
-			if (!InitMongoDBServiceData (data_p, op_json_p))
+			MongoDBServiceData *data_p = (MongoDBServiceData *) AllocMemory (sizeof (MongoDBServiceData));
+
+			if (data_p)
 				{
-					FreeMemory (data_p);
-					data_p = NULL;
+					data_p -> msd_tool_p = tool_p;
 				}
+
+			FreeMongoTool (tool_p);
 		}
-		
-	return data_p;
+
+	return NULL;
 }
 
 
 static void FreeMongoDBServiceData (MongoDBServiceData *data_p)
 {
-	ClearMongoDBServiceData (data_p);
-	
+	FreeMongoTool (data_p -> msd_tool_p);
+
 	FreeMemory (data_p);
 }
 
@@ -277,7 +284,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 							if (tool_p)
 								{
 									json_t *response_p = NULL;
-									Parameter *param_p = GetParameterValueFromParameterSet (param_set_p, TAG_DUMP, &value, true);
+									Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
 
 									if (param_p)
 										{
@@ -287,8 +294,8 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 										}
 									else
 										{
-											json_error_t error;
 											bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+											json_t *json_param_p = NULL;
 
 											job_p -> sj_status = OS_FAILED;
 
@@ -296,31 +303,41 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 											if (GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true))
 												{
 													data_fn = InsertData;
+													json_param_p = value.st_json_p;
 												}
 											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL)
 												{
 													data_fn = SearchData;
+													json_param_p = value.st_json_p;
 												}
 											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL)
 												{
-													data_fn = DeleteData
+													data_fn = DeleteData;
+													json_param_p = value.st_json_p;
 												}
 
 											if (data_fn)
 												{
 													json_error_t error;
-													bool success_flag = data_fn (tool_p, data_p, collection_s);
+													bool success_flag = data_fn (tool_p, json_param_p, collection_s);
 
 													response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
-													job_p -> sj_status = OS_SUCCEEDED;
+
+													if (response_p)
+														{
+															job_p -> sj_status = OS_SUCCEEDED;
+														}
+													else
+														{
+															job_p -> sj_status = OS_FAILED;
+														}
+
 												}
 
 										}
 
 								}		/* if (tool_p) */
 
-
-							GetParameterValueFromParameterSet()
 						}		/* if (collection_s) */
 
 				}		/* if (param_set_p) */
@@ -348,7 +365,7 @@ static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collectio
 						{
 							size_t size = json_array_size (fields_p);
 
-							fields_ss = AllocMemoryArray (size + 1, sizeof (const char *));
+							fields_ss = (const char **) AllocMemoryArray (size + 1, sizeof (const char *));
 
 							if (fields_ss)
 								{
@@ -408,9 +425,6 @@ static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collectio
 
 					if (bson_oid_is_valid (id_s, strlen (id_s)))
 						{
-							bson_t *query_p = NULL;
-							bson_t *update_p = NULL;
-
 							bson_oid_init_from_string (&oid, id_s);
 
 							if (json_object_del (values_p, MONGO_ID_S) == 0)
@@ -441,7 +455,7 @@ static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collectio
 
 					if (fields_collection_s)
 						{
-							json_t *field_p = json_object_new ();
+							json_t *field_p = json_object ();
 
 							if (field_p)
 								{

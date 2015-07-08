@@ -40,7 +40,9 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC) \
-	-I$(DIR_UUID_INC)
+	-I$(DIR_UUID_INC) \
+	-I$(DIR_MONGODB_INC) \
+	-I$(DIR_BSON_INC) \
 	
 SRCS 	= \
 	mongodb_service.c \

@@ -169,7 +169,8 @@ all:
 	$(MAKE) -C services/ensembl_rest
 	$(MAKE) -C services/tgac_elastic_search
 	$(MAKE) -C services/test_long_runner
-					
+	$(MAKE) -C services/pathogenomics 
+						
 install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C util install
 	$(MAKE) -C network install
@@ -195,6 +196,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C services/ensembl_rest install
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install
+	$(MAKE) -C services/pathogenomics install	
 	git log -1 > $(DIR_WHEATIS_INSTALL)/wheatis.version
 	
 clean: 
@@ -223,6 +225,7 @@ clean:
 	$(MAKE) -C services/ensembl_rest clean
 	$(MAKE) -C services/tgac_elastic_search clean
 	$(MAKE) -C services/test_long_runner clean
+	$(MAKE) -C services/pathogenomics clean
 	
 install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)

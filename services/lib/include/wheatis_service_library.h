@@ -4,11 +4,14 @@
 #ifndef WHEATIS_SERVICE_LIBRARY_H
 #define WHEATIS_SERVICE_LIBRARY_H
 
+
+#include "library.h"
+
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-#include "library.h"
+
 
 /*
 ** Now we use the generic helper definitions above to define LIB_API and LIB_LOCAL.

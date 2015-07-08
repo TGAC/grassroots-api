@@ -1,10 +1,9 @@
 #ifndef MONGODB_SERVICE_H
 #define MONGODB_SERVICE_H
 
-#include "service.h"
-#include "library.h"
-#include "mongodb_service_library.h"
 
+#include "mongodb_service_library.h"
+#include "service.h"
 
 #define PATHOGENOMICS_DB_S ("pathogenomics")
 
