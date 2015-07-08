@@ -58,6 +58,22 @@ typedef struct ParameterSetNode
 
 
 
+/**
+ * A datatype for storing a ParameterGroup on a LinkedList
+ */
+typedef struct ParameterGroupNode
+{
+	/** The base list node */
+	ListItem pgn_node;
+
+	/** Pointer to the associated ParameterGroup */
+	ParameterGroup *pgn_param_group_p;
+} ParameterGroupNode;
+
+
+
+
+
 #ifdef __cplusplus
 extern "C"
 {

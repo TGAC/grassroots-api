@@ -11,6 +11,8 @@ DIR_OBJS = $(BUILD)
 
 #DIR_APACHE=/opt/wheatis-live/apache
 
+echo "DIR_APACHE=$(DIR_APACHE)"
+
 ifeq ($(DIR_APACHE),)
 HTTPD := $(shell httpd -V) 
 APXS := $(shell apxs)
