@@ -463,11 +463,21 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 															for (i = 0; i < num_jobs; ++ i, ++ job_p)
 																{
-																	json_t *job_status_json_p = GetServiceJobStatusAsJSON (job_p);
+																	json_t *job_json_p = NULL;
 
-																	if (job_status_json_p)
+																	if (job_p -> sj_status == OS_SUCCEEDED)
 																		{
-																			if (json_array_append_new (res_p, job_status_json_p) != 0)
+																			/* add the result directly */
+																			job_json_p = GetServiceJobAsJSON (job_p);
+																		}
+																	else
+																		{
+																			job_json_p = GetServiceJobStatusAsJSON (job_p);
+																		}
+
+																	if (job_json_p)
+																		{
+																			if (json_array_append_new (res_p, job_json_p) != 0)
 																				{
 
 																				}
