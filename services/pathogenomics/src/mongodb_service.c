@@ -115,8 +115,8 @@ static json_t *GetMongoDBServiceResults (Service *service_p, const uuid_t job_id
 			if (job_p -> sj_status == OS_SUCCEEDED)
 				{
 					json_error_t error;
-					const char *buffer_data_p = GetCurlToolData (data_p -> wsd_curl_data_p);
-					res_p = json_loads (buffer_data_p, 0, &error);
+					//const char *buffer_data_p = GetCurlToolData (data_p -> wsd_curl_data_p);
+					//res_p = json_loads (buffer_data_p, 0, &error);
 				}
 		}		/* if (job_p) */
 

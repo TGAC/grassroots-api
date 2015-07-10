@@ -125,7 +125,6 @@ static int WheatISPreConfig (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, 
 {
 	int res = OK;
 
-
 	return res;
 }
 
