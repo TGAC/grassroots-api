@@ -73,8 +73,11 @@ static const command_rec s_wheatis_directives [] =
 
 
 static APRJobsManager *s_jobs_manager_p = NULL;
+static const char * const s_jobs_manager_cache_id_s = "wheatis-jobs-socache";
 
 static APRServersManager *s_servers_manager_p = NULL;
+static const char * const s_servers_manager_cache_id_s = "wheatis-servers-socache";
+
 
 /* Define our module as an entity and assign a function for registering hooks  */
 module AP_MODULE_DECLARE_DATA wheatis_module =
@@ -108,7 +111,7 @@ ServersManager *GetServersManager (void)
 }
 
 /* register_hooks: Adds a hook to the httpd process */
-static void RegisterHooks (apr_pool_t *pool_p) 
+static void RegisterHooks (apr_pool_t *pool_p)
 {
 	ap_hook_pre_config (WheatISPreConfig, NULL, NULL, APR_HOOK_MIDDLE);
 
@@ -123,7 +126,19 @@ static void RegisterHooks (apr_pool_t *pool_p)
 
 static int WheatISPreConfig (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p)
 {
-	int res = OK;
+	int res = 500;
+	apr_status_t status = ap_mutex_register (config_pool_p, s_jobs_manager_cache_id_s, NULL, APR_LOCK_DEFAULT, 0);
+
+	if (status == APR_SUCCESS)
+		{
+			status = ap_mutex_register (config_pool_p, s_servers_manager_cache_id_s, NULL, APR_LOCK_DEFAULT, 0);
+
+			if (status == APR_SUCCESS)
+				{
+					res = OK;
+				}		/* if (status == APR_SUCCESS) */
+
+		}		/* if (status == APR_SUCCESS) */
 
 	return res;
 }
@@ -259,26 +274,25 @@ static int WheatISPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_
   	  		if (config_p -> wisc_jobs_manager_p)
   					{
   	  				s_jobs_manager_p = config_p -> wisc_jobs_manager_p;
-
 							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_jobs_manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
-
 							PostConfigAPRJobsManager (s_jobs_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
 
-  						ret = OK;
-  					}
+							config_p -> wisc_servers_manager_p = InitAPRServersManager (server_p, config_pool_p, config_p -> wisc_provider_name_s);
 
-  	  		config_p -> wisc_servers_manager_p = InitAPRServersManager (server_p, config_pool_p, config_p -> wisc_provider_name_s);
+							if (config_p -> wisc_servers_manager_p)
+								{
+									s_servers_manager_p = config_p -> wisc_servers_manager_p;
+									apr_pool_cleanup_register (config_pool_p, config_p -> wisc_servers_manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
+									PostConfigAPRServersManager (s_servers_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
 
-  	  		if (config_p -> wisc_servers_manager_p)
-  					{
-  	  				s_servers_manager_p = config_p -> wisc_servers_manager_p;
+									ret = OK;
+								}
+							else
+								{
 
-							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_servers_manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
+								}
 
-							PostConfigAPRServersManager (s_servers_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
-
-  						ret = OK;
-  					}
+  					}		/* if (config_p -> wisc_jobs_manager_p) */
 
   			}
   		else
@@ -347,12 +361,12 @@ static const char *SetWheatISCacheProvider (cmd_parms *cmd_p, void *cfg_p, const
 static int WheatISHandler (request_rec *req_p)
 {
 	int res = DECLINED;
-	
+
   /* First off, we need to check if this is a call for the wheatis handler.
    * If it is, we accept it and do our things, it not, we simply return DECLINED,
    * and Apache will try somewhere else.
    */
-  if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) 
+  if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0))
   	{
   		if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST))
   			{
@@ -399,7 +413,7 @@ static int WheatISHandler (request_rec *req_p)
   			}
 
   	}		/* if ((req_p -> handler) && (strcmp (req_p -> handler, "wheatis-handler") == 0)) */
-	 
+
   return res;
 }
 
