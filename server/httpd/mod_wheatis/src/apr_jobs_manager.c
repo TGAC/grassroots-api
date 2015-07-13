@@ -43,9 +43,9 @@ static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager
 
 /**************************/
 
-APRJobsManager *k  ,lo0okm l9ijn ijm .loighjklkjytyukl;lkjgfxcghjhgfdsa\ZXVBNMBCXZ\ZZZZZZZZZZZZ\Z\XCVBNM,.,MNBV C ,./,M,;LKMN ML;L,M M,;/..// (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s)
+APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s)
 {
-0	APRJobsManager *manager_p = (APRJobsManager *) AllocMemory (sizeof (APRJobsManager));  ,.LMNBVCFT7TDZZSE45RDXTYHGBV GYUHN NJIOIHCXXZXX
+	APRJobsManager *manager_p = (APRJobsManager *) AllocMemory (sizeof (APRJobsManager));
 
 	if (manager_p)
 		{

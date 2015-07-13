@@ -17,13 +17,13 @@
 static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
 
 
-APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s)
+APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
 {
 	APRGlobalStorage *store_p = (APRGlobalStorage *) AllocMemory (sizeof (APRGlobalStorage));
 
 	if (store_p)
 		{
-			if (InitAPRGlobalStorage (store_p, pool_p, hash_fn, make_key_fn, server_p, mutex_filename_s, cache_id_s))
+			if (InitAPRGlobalStorage (store_p, pool_p, hash_fn, make_key_fn, server_p, mutex_filename_s, cache_id_s, provider_name_s))
 				{
 					return store_p;
 				}
@@ -34,10 +34,13 @@ APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t h
 	return NULL;
 }
 
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s)
+bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
 {
 	bool success_flag = false;
 	apr_status_t status = apr_global_mutex_create (& (storage_p -> ags_mutex_p), mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
+
+	bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p)
+
 
 	if (status == APR_SUCCESS)
 		{
