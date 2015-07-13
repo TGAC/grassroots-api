@@ -465,30 +465,37 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																{
 																	json_t *job_json_p = NULL;
 
-																	if (job_p -> sj_status == OS_SUCCEEDED)
-																		{
-																			/* add the result directly */
-																			job_json_p = GetServiceJobAsJSON (job_p);
-																		}
-																	else
-																		{
-																			job_json_p = GetServiceJobStatusAsJSON (job_p);
-																		}
 
-																	if (job_json_p)
+																	if (AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
 																		{
-																			if (json_array_append_new (res_p, job_json_p) != 0)
+																			if (job_p -> sj_status == OS_SUCCEEDED)
 																				{
-
+																					/* add the result directly */
+																					job_json_p = GetServiceJobAsJSON (job_p);
 																				}
-																		}
-
-																	if (job_p -> sj_status == OS_STARTED || job_p -> sj_status == OS_SUCCEEDED)
-																		{
-																			keep_service_flag = true;
-
-																			if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
+																			else
 																				{
+																					job_json_p = GetServiceJobStatusAsJSON (job_p);
+																				}
+
+																			if (job_json_p)
+																				{
+																					json_t *job_reponse_p = CreateServiceResponseAsJSON (job_p -> sj_service_p, job_p -> sj_status, job_json_p, job_p -> sj_id);
+
+																					if (json_array_append_new (res_p, job_reponse_p) != 0)
+																						{
+
+																						}
+																				}
+
+																			if (job_p -> sj_status == OS_STARTED || job_p -> sj_status == OS_SUCCEEDED)
+																				{
+																					keep_service_flag = true;
+
+																					if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
+																						{
+
+																						}
 
 																				}
 

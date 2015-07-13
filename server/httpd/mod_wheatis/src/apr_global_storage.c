@@ -36,40 +36,41 @@ APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t h
 
 bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
 {
-	bool success_flag = false;
-	apr_status_t status = apr_global_mutex_create (& (storage_p -> ags_mutex_p), mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
+	ap_socache_provider_t *provider_p = ap_lookup_provider (AP_SOCACHE_PROVIDER_GROUP, provider_name_s, AP_SOCACHE_PROVIDER_VERSION);
 
-	bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p)
-
-
-	if (status == APR_SUCCESS)
+	if (provider_p)
 		{
-			storage_p -> ags_entries_p = apr_hash_make_custom (pool_p, hash_fn);
+			apr_status_t status = apr_global_mutex_create (& (storage_p -> ags_mutex_p), mutex_filename_s, APR_THREAD_MUTEX_UNNESTED, pool_p);
 
-			if (storage_p -> ags_entries_p)
+			if (status == APR_SUCCESS)
 				{
-					storage_p -> ags_pool_p = pool_p;
-					storage_p -> ags_server_p = server_p;
-					storage_p -> ags_make_key_fn = make_key_fn;
+					storage_p -> ags_entries_p = apr_hash_make_custom (pool_p, hash_fn);
 
-					storage_p -> ags_cache_id_s = cache_id_s;
-					storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
+					if (storage_p -> ags_entries_p)
+						{
+							storage_p -> ags_pool_p = pool_p;
+							storage_p -> ags_server_p = server_p;
+							storage_p -> ags_make_key_fn = make_key_fn;
 
-					storage_p -> ags_socache_instance_p = NULL;
-					storage_p -> ags_socache_provider_p = NULL;
+							storage_p -> ags_cache_id_s = cache_id_s;
+							storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
 
-					apr_pool_cleanup_register (pool_p, storage_p, (const void *) FreeAPRGlobalStorage, apr_pool_cleanup_null);
+							storage_p -> ags_socache_instance_p = NULL;
+							storage_p -> ags_socache_provider_p = provider_p;
 
-					success_flag = true;
-				}
-			else
-				{
+							apr_pool_cleanup_register (pool_p, storage_p, (const void *) FreeAPRGlobalStorage, apr_pool_cleanup_null);
+
+							return true;
+						}
+
 					apr_global_mutex_destroy (storage_p -> ags_mutex_p);
 					storage_p -> ags_mutex_p = NULL;
-				}
-		}
+				}		/* if (status == APR_SUCCESS) */
 
-	return success_flag;
+
+		}		/* if (provider_p) */
+
+	return false;
 }
 
 
@@ -147,6 +148,39 @@ unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint3
 	return res_p;
 }
 
+
+void PrintAPRGlobalStorage (APRGlobalStorage *storage_p)
+{
+  /**
+   * Dump all cached objects through an iterator callback.
+   * @param instance The cache instance
+   * @param s Associated server context (for processing and logging)
+   * @param userctx User defined pointer passed through to the iterator
+   * @param iterator The user provided callback function which will receive
+   * individual calls for each unexpired id/data pair
+   * @param pool Pool for temporary allocations.
+   * @return APR status value; APR_NOTFOUND if the object was not
+   * found
+   */
+  apr_status_t (*iterate)(ap_socache_instance_t *instance, server_rec *s,
+                          void *userctx, ap_socache_iterator_t *iterator,
+                          apr_pool_t *pool);
+}
+
+
+static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
+    server_rec *s,
+    void *userctx,
+    const unsigned char *id,
+    unsigned int idlen,
+    const unsigned char *data,
+    unsigned int datalen,
+    apr_pool_t *pool)
+{
+	apr_status_t ret = OK;
+
+	return OK;
+}
 
 
 

@@ -26,14 +26,21 @@ unix {
 
 DIR_WHEATIS = ../..
 
-DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-0/wheatis
+DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-live/wheatis
 DIR_WHEATIS_EXTRAS = $$DIR_WHEATIS_INSTALL_ROOT/extras
 
 
-DIR_WHEATIS_CLIENT = $$DIR_WHEATIS/clients/lib
-DIR_WHEATIS_CLIENT_INC = $$DIR_WHEATIS_CLIENT/include
-DIR_WHEATIS_CLIENT_LIB = $$DIR_WHEATIS_CLIENT/$$BUILD
-WHEATIS_CLIENT_LIB_NAME = wheatis_clients
+
+DIR_WHEATIS_PARAMS = $$DIR_WHEATIS/parameters
+DIR_WHEATIS_PARAMS_INC = $$DIR_WHEATIS_PARAMS/include
+DIR_WHEATIS_PARAMS_LIB = $$DIR_WHEATIS_PARAMS/$$BUILD
+WHEATIS_PARAMS_LIB_NAME = wheatis_params
+
+DIR_WHEATIS_CLIENTS = $$DIR_WHEATIS/clients/lib
+DIR_WHEATIS_CLIENTS_INC = $$DIR_WHEATIS_CLIENTS/include
+DIR_WHEATIS_CLIENTS_LIB = $$DIR_WHEATIS_CLIENTS/$$BUILD
+WHEATIS_CLIENTS_LIB_NAME = wheatis_clients
+
 
 DIR_WHEATIS_UTIL = $$DIR_WHEATIS/util
 DIR_WHEATIS_UTIL_INC = $$DIR_WHEATIS_UTIL/include
@@ -55,11 +62,6 @@ DIR_WHEATIS_SERVICE_INC = $$DIR_WHEATIS_SERVICE/include
 DIR_WHEATIS_SERVICE_LIB = $$DIR_WHEATIS_SERVICE/$$BUILD
 WHEATIS_SERVICE_LIB_NAME = wheatis_service
 
-DIR_WHEATIS_PARAMETER = $$DIR_WHEATIS/parameters
-DIR_WHEATIS_PARAMETER_INC = $$DIR_WHEATIS_PARAMETER/include
-DIR_WHEATIS_PARAMETER_LIB = $$DIR_WHEATIS_PARAMETER/$$BUILD
-WHEATIS_PARAMETER_LIB_NAME = wheatis_params
-
 DIR_WHEATIS_HANDLER = $$DIR_WHEATIS/handlers/lib
 DIR_WHEATIS_HANDLER_INC = $$DIR_WHEATIS_HANDLER/include
 DIR_WHEATIS_HANDLER_LIB = $$DIR_WHEATIS_HANDLER/$$BUILD
@@ -74,14 +76,14 @@ WHEATIS_UUID_LIB_NAME = uuid
 DEFINES += "UNIX"
 
 INCLUDEPATH += include \
-	$$DIR_WHEATIS_CLIENT_INC \
-	$$DIR_WHEATIS_UTIL_INC \
+  $$DIR_WHEATIS_CLIENTS_INC \
+  $$DIR_WHEATIS_PARAMS_INC \
+  $$DIR_WHEATIS_UTIL_INC \
 	$$DIR_WHEATIS_UTIL_INC/containers \
 	$$DIR_WHEATIS_UTIL_INC/io \
 	$$DIR_WHEATIS_SERVICE_INC \
 	$$DIR_WHEATIS_NETWORK_INC \
   $$DIR_WHEATIS_HANDLER_INC \
-	$$DIR_WHEATIS_PARAMETER_INC \
 	$$DIR_WHEATIS_UUID_INC
 
 
@@ -92,6 +94,8 @@ SOURCES += \
     src/param_combo_box.cpp \
     src/param_double_spin_box.cpp \
     src/param_spin_box.cpp \
+#    src/param_line_edit.cpp \
+    src/param_text_box.cpp \
     src/prefs_widget.cpp \
     src/qt_parameter_widget.cpp \
     src/client_ui_api.cpp \
@@ -111,9 +115,7 @@ SOURCES += \
     src/ui_utils.cpp \
     src/param_group_box.cpp \
     src/progress_window.cpp \
-    src/progress_widget.cpp \
-    src/param_line_edit.cpp \
-    src/param_text_box.cpp
+    src/progress_widget.cpp
 
 HEADERS  += \
     include/wheatis_ui.h \
@@ -123,6 +125,7 @@ HEADERS  += \
     include/param_combo_box.h \
     include/param_double_spin_box.h \
     include/param_spin_box.h \
+    include/param_text_box.h \
     include/prefs_widget.h \
     include/qt_parameter_widget.h \
     include/client_ui_api.h \
@@ -145,16 +148,13 @@ HEADERS  += \
     include/ui_utils.h \
     include/param_group_box.h \
     include/progress_window.h \
-    include/progress_widget.h \
-    include/param_line_edit.h \
-    include/param_text_box.h
+    include/progress_widget.h
 
-LIBS += -L$$DIR_WHEATIS_INSTALL_ROOT/lib  \
-	-l$$WHEATIS_UTIL_LIB_NAME \
-	-l$$WHEATIS_SERVICE_LIB_NAME \
-	-l$$WHEATIS_PARAMETER_LIB_NAME \
-	-l$$WHEATIS_CLIENT_LIB_NAME \
-	 -lpthread -ljansson
+LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
+ -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \
+ -L$$DIR_WHEATIS_CLIENTS_LIB  -l$$WHEATIS_CLIENTS_LIB_NAME \
+ -L$$DIR_WHEATIS_PARAMS_LIB  -l$$WHEATIS_PARAMS_LIB_NAME \
+   -lpthread -ljansson
 
-target.path = /opt/wheatis-0/wheatis/clients/
+target.path = /opt/wheatis-live/wheatis/clients/
 INSTALLS += target

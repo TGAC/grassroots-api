@@ -12,7 +12,7 @@
 #include "param_spin_box.h"
 #include "param_combo_box.h"
 #include "param_line_edit.h"
-
+#include "param_text_box.h"
 #include "prefs_widget.h"
 
 
@@ -310,11 +310,11 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 
 					case PT_STRING:
 					case PT_KEYWORD:
-						widget_p = new ParamLineEdit (param_p, qpw_prefs_widget_p, QLineEdit :: Normal);
+						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p);
 						break;
 
 					case PT_PASSWORD:
-						widget_p = new ParamLineEdit (param_p, qpw_prefs_widget_p, QLineEdit :: Password);
+						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p);
 						break;
 
 					case PT_SIGNED_INT:

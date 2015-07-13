@@ -43,6 +43,7 @@ static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager
 
 /**************************/
 
+
 APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s)
 {
 	APRJobsManager *manager_p = (APRJobsManager *) AllocMemory (sizeof (APRJobsManager));
@@ -51,11 +52,12 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 		{
 			unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
 			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p,
-			                                                        HashUUIDForAPR,
-			                                                        make_key_fn,
-			                                                        server_p,
-			                                                        s_mutex_filename_s,
-			                                                        s_cache_id_s);
+																															HashUUIDForAPR,
+																															make_key_fn,
+																															server_p,
+																															s_mutex_filename_s,
+																															s_cache_id_s,
+																															provider_name_s);
 
 
 			if (storage_p)
@@ -69,6 +71,7 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 			FreeMemory (manager_p);
 		}
+
 
 	return NULL;
 }

@@ -26,6 +26,7 @@
 #include "system_util.h"
 #include "streams.h"
 #include "apache_output_stream.h"
+#include "util_mutex.h"
 
 #include "mod_wheatis_config.h"
 #include "apr_jobs_manager.h"

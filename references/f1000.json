@@ -18,7 +18,7 @@
 				"about_uri": "http://f1000research.com/",
 				"uri": "http://f1000research.com/search",
 				"method": "GET",
-				"selector": "div.six div.article-title-and-info > a",
+				"selector": "div.article-browse-wrapper div.article-title-text > a",
 				"parameter_set": {
 					"parameters": [
 						{

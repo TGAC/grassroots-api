@@ -57,7 +57,8 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 			                                                        make_key_fn,
 			                                                        server_p,
 			                                                        s_mutex_filename_s,
-			                                                        s_cache_id_s);
+			                                                        s_cache_id_s,
+			                                                        provider_name_s);
 			if (storage_p)
 				{
 					manager_p -> asm_store_p = storage_p;
@@ -154,7 +155,8 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 	if (op_p)
 		{
-			ExternalServer *server_p;
+			/** @TODO */
+			ExternalServer *server_p = NULL;
 
 			const char *response_s = MakeRemoteJsonCallViaConnection (server_p -> es_connection_p, op_p);
 

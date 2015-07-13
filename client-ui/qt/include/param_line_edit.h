@@ -30,13 +30,15 @@ public:
 
 	virtual bool SetValueFromText (const char *value_s);
 
+
 protected:	
 	QLineEdit *ple_text_box_p;
 
 	virtual QWidget *GetQWidget ();
 
-
 };
+
+
 
 
 #endif		/* #ifndef PARAMETER_LINE_EDIT_H */
