@@ -61,6 +61,8 @@ static bool CloseWebSearchService (Service *service_p);
 
 static bool CleanUpWebSearchServiceJob (ServiceJob *job_p);
 
+static json_t *CreateWebSearchServiceResults (WebSearchServiceData *data_p);
+
 /*
  * API FUNCTIONS
  */
@@ -252,6 +254,8 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 							if (CallCurlWebservice (data_p))
 								{
 									job_p -> sj_status = OS_SUCCEEDED;
+
+									job_p -> sj_result_p = CreateWebSearchServiceResults (service_data_p);
 								}		/* if (CallCurlWebservice (data_p)) */
 
 						}		/* if (success_flag) */
@@ -261,6 +265,20 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 		}
 
 	return service_p -> se_jobs_p;
+}
+
+
+static json_t *CreateWebSearchServiceResults (WebSearchServiceData *data_p)
+{
+	json_t *res_p = NULL;
+	const char * const data_s = GetCurlToolData (data_p -> wssd_base_data.wsd_curl_data_p);
+
+	if (data_s && *data_s)
+		{
+			res_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_css_selector_s, data_p -> wssd_base_data.wsd_base_uri_s);
+		}
+
+	return res_p;
 }
 
 
@@ -274,20 +292,12 @@ static json_t *GetWebSearchServiceResults (Service *service_p, const uuid_t job_
 		{
 			if (job_p -> sj_status == OS_SUCCEEDED)
 				{
-					const char *service_name_s = GetServiceName (service_p);
-					const char * const data_s = GetCurlToolData (data_p -> wssd_base_data.wsd_curl_data_p);
-
-					if (data_s && *data_s)
+					if (!job_p -> sj_result_p)
 						{
-							res_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_css_selector_s, data_p -> wssd_base_data.wsd_base_uri_s);
+							job_p -> sj_result_p = CreateWebSearchServiceResults (data_p);
+						}
 
-							if (res_p)
-								{
-
-								}
-
-						}		/* if (data_s && *data_s) */
-
+					res_p = job_p -> sj_result_p;
 				}
 		}		/* if (job_p) */
 

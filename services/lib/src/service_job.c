@@ -2,6 +2,7 @@
 #include "service.h"
 
 #include "string_utils.h"
+#include "json_tools.h"
 
 #include "jobs_manager.h"
 
@@ -29,8 +30,9 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 	job_p -> sj_description_s = NULL;
 
-
 	job_p -> sj_close_fn = close_fn;
+
+	job_p -> sj_result_p = NULL;
 
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 		{
@@ -52,6 +54,14 @@ void ClearServiceJob (ServiceJob *job_p)
 		{
 			FreeCopiedString (job_p -> sj_name_s);
 		}
+
+	if (job_p -> sj_result_p)
+		{
+			WipeJSON (job_p -> sj_result_p);
+			job_p -> sj_result_p = NULL;
+		}
+
+	job_p -> sj_status = OS_CLEANED_UP;
 }
 
 
@@ -140,14 +150,35 @@ ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
 
 bool CloseServiceJob (ServiceJob *job_p)
 {
-	return (job_p -> sj_close_fn (job_p));
+	const bool success_flag = (job_p -> sj_close_fn (job_p));
+
+	if (job_p -> sj_result_p)
+		{
+			WipeJSON (job_p -> sj_result_p);
+			job_p -> sj_result_p = NULL;
+		}
+
+	return success_flag;
 }
 
 
 
-json_t *GetServiceJobAsJSON (const ServiceJob *job_p)
+json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 {
-	json_t *json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
+	json_t *json_p = NULL;
+	OperationStatus old_status = job_p -> sj_status;
+	OperationStatus current_status = GetServiceJobStatus (job_p);
+
+	if (old_status == current_status)
+		{
+			json_p = job_p -> sj_result_p;
+		}
+
+	if (!json_p)
+		{
+			json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
+			job_p -> sj_result_p = json_p;
+		}
 
 	return json_p;
 }

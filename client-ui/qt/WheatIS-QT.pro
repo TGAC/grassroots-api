@@ -26,7 +26,7 @@ unix {
 
 DIR_WHEATIS = ../..
 
-DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-live/wheatis
+DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-0/wheatis
 DIR_WHEATIS_EXTRAS = $$DIR_WHEATIS_INSTALL_ROOT/extras
 
 
@@ -156,5 +156,5 @@ LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_PARAMS_LIB  -l$$WHEATIS_PARAMS_LIB_NAME \
    -lpthread -ljansson
 
-target.path = /opt/wheatis-live/wheatis/clients/
+target.path = /opt/wheatis-0/wheatis/clients/
 INSTALLS += target

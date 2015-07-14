@@ -23,6 +23,8 @@ APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t h
 
 	if (store_p)
 		{
+			memset (store_p, 0, sizeof (APRGlobalStorage));
+
 			if (InitAPRGlobalStorage (store_p, pool_p, hash_fn, make_key_fn, server_p, mutex_filename_s, cache_id_s, provider_name_s))
 				{
 					return store_p;
@@ -85,29 +87,35 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 {
 	if (storage_p)
 		{
-			apr_hash_index_t *index_p =	apr_hash_first (storage_p -> ags_pool_p, storage_p -> ags_entries_p);
-			char *key_s = NULL;
-			apr_ssize_t keylen = 0;
-
-			while (index_p)
+			if (storage_p -> ags_entries_p)
 				{
-//					ExternalServer *server_p = NULL;
+					apr_hash_index_t *index_p =	apr_hash_first (storage_p -> ags_pool_p, storage_p -> ags_entries_p);
+					char *key_s = NULL;
+					apr_ssize_t keylen = 0;
 
-//					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &server_p);
-//					if (server_p)
-//						{
-//							FreeExternalServer (server_p);
-//						}
+					while (index_p)
+						{
+		//					ExternalServer *server_p = NULL;
 
-					index_p = apr_hash_next (index_p);
+		//					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &server_p);
+		//					if (server_p)
+		//						{
+		//							FreeExternalServer (server_p);
+		//						}
+
+							index_p = apr_hash_next (index_p);
+						}
+
+					apr_hash_clear (storage_p -> ags_entries_p);
 				}
 
-			apr_hash_clear (storage_p -> ags_entries_p);
 			storage_p -> ags_pool_p = NULL;
 
-			apr_global_mutex_destroy (storage_p -> ags_mutex_p);
-			storage_p -> ags_mutex_p = NULL;
-
+			if (storage_p -> ags_mutex_p)
+				{
+					apr_global_mutex_destroy (storage_p -> ags_mutex_p);
+					storage_p -> ags_mutex_p = NULL;
+				}
 
 			if (storage_p -> ags_socache_instance_p)
 				{

@@ -468,7 +468,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 																	if (AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
 																		{
-																			if (job_p -> sj_status == OS_SUCCEEDED)
+																			if (GetServiceJobStatus (job_p) == OS_SUCCEEDED)
 																				{
 																					/* add the result directly */
 																					job_json_p = GetServiceJobAsJSON (job_p);

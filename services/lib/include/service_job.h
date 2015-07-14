@@ -49,6 +49,11 @@ typedef struct ServiceJob
 	 * this callback function can be set.
 	 */
 	bool (*sj_close_fn) (struct ServiceJob *job_p);
+
+	/**
+	 * @private
+	 */
+	json_t *sj_result_p;
 } ServiceJob;
 
 
@@ -177,7 +182,7 @@ WHEATIS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
  * @return The json_t object representing the ServiceJob.
  * or <code>NULL</code> upon error.
  * @memberof ServiceJob
- */WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (const ServiceJob *job_p);
+ */WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
 
 
 /**
