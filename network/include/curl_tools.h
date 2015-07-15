@@ -167,8 +167,7 @@ WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
  * @memberof CurlTool
  * @see GetMatchingLinks
  */
-WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s);
-
+WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s);
 
 /**
  * @brief Send a JSON request using a CurlTool.

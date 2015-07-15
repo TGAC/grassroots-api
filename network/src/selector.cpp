@@ -26,20 +26,21 @@ using namespace htmlcxx :: HTML;
 
 static HtmlLinkArray *AllocateHtmlLinksArray (const size_t num_links);
 
-static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s, const char * const base_uri_s);
+
+static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char *title_selector_s, const char * const data_s, const char * const base_uri_s);
 
 static void ClearHtmlLink (HtmlLink *link_p);
-static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p, const bool include_child_text_flag);
+static char *GetInnerText (const htmlcxx :: HTML :: Node *node_p, const char *data_s, ByteBuffer *buffer_p, const bool include_child_text_flag);
 
 static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s, const char *base_uri_s);
 
 static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p);
 
 
-json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const selector_s, const char *uri_s)
+json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s)
 {
 	json_t *res_p = NULL;
-	HtmlLinkArray *links_p = GetMatchingLinks (data_s, selector_s, uri_s);
+	HtmlLinkArray *links_p = GetMatchingLinks (data_s, link_selector_s, title_selector_s, base_uri_s);
 
 	if (links_p)
 		{
@@ -88,32 +89,32 @@ static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p)
 }
 
 
-HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const selector_s, const char * const base_uri_s)
+HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s)
 {
 	string source (data_s);
 	ParserDom parser;
-	tree <Node> dom = parser.parseTree (source);
+	tree <htmlcxx :: HTML :: Node> dom = parser.parseTree (source);
 	hcxselect :: Selector s (dom);
 	bool success_flag = false;
 	HtmlLinkArray *links_p = NULL;
 
 	try
 		{
-			s = s.select (selector_s);
+			s = s.select (link_selector_s);
 			success_flag = true;
 		}
 	catch (hcxselect::ParseException &ex)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Parse error on '%s' - %s\n", selector_s, ex.what ());
+			PrintErrors (STM_LEVEL_SEVERE, "Parse error on '%s' - %s\n", link_selector_s, ex.what ());
 		}
 	catch (...)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Error parsing '%s'\n", selector_s);
+			PrintErrors (STM_LEVEL_SEVERE, "Error parsing '%s'\n", link_selector_s);
 		}
 
 	if (success_flag)
 		{
-			links_p = AllocateHtmlLinksArrayFromSet (s, data_s, base_uri_s);
+			links_p = AllocateHtmlLinksArrayFromSet (s, title_selector_s, data_s, base_uri_s);
 
 		}
 
@@ -143,7 +144,8 @@ static HtmlLinkArray *AllocateHtmlLinksArray (const size_t num_links)
 	return NULL;
 }
 
-static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char * const data_s, const char * const base_uri_s)
+
+static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector &selector_r, const char *title_selector_s, const char * const data_s, const char * const base_uri_s)
 {
 	const size_t num_links = selector_r.size ();
 	HtmlLinkArray *links_p = AllocateHtmlLinksArray (num_links);
@@ -157,7 +159,7 @@ static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector
 				{
 					for (hcxselect::Selector::const_iterator it = selector_r.begin (); it != selector_r.end (); ++ it, ++ link_p)
 						{
-							Node *node_p = & ((*it) -> data);
+							htmlcxx :: HTML :: Node *node_p = & ((*it) -> data);
 							const string &tag_name_r = node_p -> tagName ();
 
 							const map <string, string> &attrs_r = node_p -> attributes ();
@@ -217,17 +219,13 @@ static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector
 
 
 
-static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *buffer_p, const bool include_child_text_flag)
+static char *GetInnerText (const htmlcxx :: HTML :: Node *node_p, const char *data_s, ByteBuffer *buffer_p, const bool include_child_text_flag)
 {
+	const string &text_r = node_p -> text ();
 	char *inner_text_s = NULL;
-	const char *start_p = data_s + (node_p -> offset ()) + 1;
+	const char *start_p = data_s + (node_p -> offset ()) + text_r.length ();
 
-	while (*start_p && (*start_p != '>'))
-		{
-			++ start_p;
-		}
-
-	if (start_p)
+	if (*start_p)
 		{
 			const char *end_p = data_s + (node_p -> offset ()) + (node_p -> length ()) - 1;
 
@@ -236,7 +234,7 @@ static char *GetInnerText (const Node *node_p, const char *data_s, ByteBuffer *b
 					-- end_p;
 				}
 
-			if (end_p)
+			if (*end_p == '<')
 				{
 					bool space_flag = false;
 					bool success_flag = true;

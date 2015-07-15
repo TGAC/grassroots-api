@@ -205,7 +205,7 @@ CURLcode RunCurlTool (CurlTool *tool_p)
 }
 
 
-HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const selector_s)
+HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s)
 {
 	HtmlLinkArray *links_p = NULL;
 
@@ -221,7 +221,7 @@ HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char 
 		{
 			const char *data_s = GetCurlToolData (tool_p);
 
-			links_p = GetMatchingLinks (data_s, selector_s, uri_s);
+			links_p = GetMatchingLinks (data_s, link_selector_s, title_selector_s, uri_s);
 		}
 
 	return links_p;

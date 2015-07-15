@@ -23,7 +23,8 @@
 typedef struct WebSearchServiceData
 {
 	WebServiceData wssd_base_data;
-	const char *wssd_css_selector_s;
+	const char *wssd_link_selector_s;
+	const char *wssd_title_selector_s;
 } WebSearchServiceData;
 
 /*
@@ -134,10 +135,12 @@ static WebSearchServiceData *AllocateWebSearchServiceData (json_t *op_json_p)
 
 			if (InitWebServiceData (data_p, op_json_p))
 				{
-					service_data_p -> wssd_css_selector_s = GetJSONString (op_json_p, "selector");
+					service_data_p -> wssd_link_selector_s = GetJSONString (op_json_p, "link_selector");
 
-					if (service_data_p -> wssd_css_selector_s)
+					if (service_data_p -> wssd_link_selector_s)
 						{
+							service_data_p -> wssd_title_selector_s = GetJSONString (op_json_p, "title_selector");
+
 							return service_data_p;
 						}
 
@@ -275,7 +278,7 @@ static json_t *CreateWebSearchServiceResults (WebSearchServiceData *data_p)
 
 	if (data_s && *data_s)
 		{
-			res_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_css_selector_s, data_p -> wssd_base_data.wsd_base_uri_s);
+			res_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_link_selector_s, data_p -> wssd_title_selector_s, data_p -> wssd_base_data.wsd_base_uri_s);
 		}
 
 	return res_p;

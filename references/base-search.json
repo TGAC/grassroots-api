@@ -18,7 +18,7 @@
 				"about_uri": "https://www.base-search.net/about/en/index.php",
 				"uri": "https://www.base-search.net/",
 				"method": "GET",
-				"selector": "ResultsBox h2 a",
+				"link_selector": "ResultsBox h2 a",
 				"parameter_set": {
 					"parameters": [
 						{

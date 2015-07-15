@@ -24,12 +24,10 @@ unix {
 }
 
 
-DIR_WHEATIS = ../..
+include(dependencies.pri)
 
-DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-live/wheatis
+
 DIR_WHEATIS_EXTRAS = $$DIR_WHEATIS_INSTALL_ROOT/extras
-
-
 
 DIR_WHEATIS_PARAMS = $$DIR_WHEATIS/parameters
 DIR_WHEATIS_PARAMS_INC = $$DIR_WHEATIS_PARAMS/include
@@ -76,7 +74,8 @@ WHEATIS_UUID_LIB_NAME = uuid
 DEFINES += "UNIX"
 
 INCLUDEPATH += include \
-  $$DIR_WHEATIS_CLIENTS_INC \
+	$$DIR_WHEATIS_UUID_INC \
+	$$DIR_WHEATIS_CLIENTS_INC \
   $$DIR_WHEATIS_PARAMS_INC \
   $$DIR_WHEATIS_UTIL_INC \
 	$$DIR_WHEATIS_UTIL_INC/containers \
@@ -84,7 +83,7 @@ INCLUDEPATH += include \
 	$$DIR_WHEATIS_SERVICE_INC \
 	$$DIR_WHEATIS_NETWORK_INC \
   $$DIR_WHEATIS_HANDLER_INC \
-	$$DIR_WHEATIS_UUID_INC
+
 
 
 SOURCES += \
@@ -155,7 +154,12 @@ LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_SERVICE_LIB  -l$$WHEATIS_SERVICE_LIB_NAME \
  -L$$DIR_WHEATIS_CLIENTS_LIB  -l$$WHEATIS_CLIENTS_LIB_NAME \
  -L$$DIR_WHEATIS_PARAMS_LIB  -l$$WHEATIS_PARAMS_LIB_NAME \
-   -lpthread -ljansson
+ -L$$DIR_WHEATIS_UUID_LIB  -l$$WHEATIS_UUID_LIB_NAME \
+	 -lpthread -ljansson
 
-target.path = /opt/wheatis-live/wheatis/clients/
+target.path = $$DIR_WHEATIS_INSTALL_ROOT/clients/
 INSTALLS += target
+
+OTHER_FILES += \
+    dependencies.pri \
+    example_dependencies.pri

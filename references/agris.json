@@ -17,7 +17,7 @@
 				"about_uri": "http://agris.fao.org/agris-search/index.do",
 				"uri": "http://agris.fao.org/agris-search/searchIndex.do",
 				"method": "GET",
-				"selector": "li.result-item h3 a",
+				"link_selector": "li.result-item h3 a",
 				"parameter_set": {
 					"parameters": [
 						{
