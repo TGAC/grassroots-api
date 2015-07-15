@@ -26,7 +26,7 @@ unix {
 
 DIR_WHEATIS = ../..
 
-DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-0/wheatis
+DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-live/wheatis
 DIR_WHEATIS_EXTRAS = $$DIR_WHEATIS_INSTALL_ROOT/extras
 
 
@@ -94,7 +94,7 @@ SOURCES += \
     src/param_combo_box.cpp \
     src/param_double_spin_box.cpp \
     src/param_spin_box.cpp \
-#    src/param_line_edit.cpp \
+    src/param_line_edit.cpp \
     src/param_text_box.cpp \
     src/prefs_widget.cpp \
     src/qt_parameter_widget.cpp \
@@ -126,6 +126,7 @@ HEADERS  += \
     include/param_double_spin_box.h \
     include/param_spin_box.h \
     include/param_text_box.h \
+    include/param_line_edit.h \
     include/prefs_widget.h \
     include/qt_parameter_widget.h \
     include/client_ui_api.h \
@@ -156,5 +157,5 @@ LIBS += -L$$DIR_WHEATIS_UTIL_LIB  -l$$WHEATIS_UTIL_LIB_NAME \
  -L$$DIR_WHEATIS_PARAMS_LIB  -l$$WHEATIS_PARAMS_LIB_NAME \
    -lpthread -ljansson
 
-target.path = /opt/wheatis-0/wheatis/clients/
+target.path = /opt/wheatis-live/wheatis/clients/
 INSTALLS += target

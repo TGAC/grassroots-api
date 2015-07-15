@@ -42,7 +42,7 @@ QWidget *ParamTextBox :: GetQWidget ()
 }
 
 
-bool ParamTextBox :: UpdateConfig (void)
+bool ParamTextBox :: UpdateConfig ()
 {
 	QString s = ptb_text_box_p -> toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();

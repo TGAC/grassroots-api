@@ -84,18 +84,44 @@ void MainWindow :: RunServices (bool run_flag)
 
 			if (services_json_p)
 				{
+
 					if (json_is_array (services_json_p))
 						{
+							int status;
 							ProgressWindow *progress_p = mw_client_data_p -> qcd_progress_p;
+							bool show_progress_flag = false;
+							ResultsWindow *results_p = mw_client_data_p -> qcd_results_p;
+							bool show_results_flag = false;
+
 							size_t i;
 							json_t *service_json_p;
 
 							json_array_foreach (services_json_p, i, service_json_p)
 								{
-									progress_p -> AddProgressItemFromJSON (service_json_p);
+									if (GetJSONInteger (service_json_p, SERVICE_STATUS_S, &status))
+										{
+											if (status == OS_SUCCEEDED)
+												{
+													results_p -> AddAllResultsPagesFromJSON (service_json_p);
+													show_results_flag = true;
+												}
+											else
+												{
+													progress_p -> AddProgressItemFromJSON (service_json_p);
+													show_progress_flag = true;
+												}
+										}
 								}
 
-							progress_p -> show ();
+							if (show_progress_flag)
+								{
+									progress_p -> show ();
+								}
+
+							if (show_results_flag)
+								{
+									results_p -> show ();
+								}
 						}
 
 

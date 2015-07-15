@@ -6,7 +6,6 @@
 #include "string_utils.h"
 
 
-
 ParamLineEdit :: ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
@@ -22,7 +21,6 @@ ParamLineEdit ::	~ParamLineEdit ()
 	delete ple_text_box_p;
 	ple_text_box_p = NULL;
 }
-
 
 void ParamLineEdit :: RemoveConnection ()
 {
@@ -44,9 +42,25 @@ QWidget *ParamLineEdit :: GetQWidget ()
 }
 
 
-bool ParamLineEdit :: UpdateConfig (const QString &value_r)
+bool ParamLineEdit :: SetValueFromText (const char *value_s)
 {
-	QByteArray ba = value_r.toLocal8Bit ();
+	QString s = ple_text_box_p -> text ();
+	qDebug () << "old " << s;
+
+	ple_text_box_p -> setText (value_s);
+
+	s = ple_text_box_p -> text ();
+	qDebug () << "new " << s;
+
+	return true;
+}
+
+
+
+bool ParamLineEdit :: UpdateConfig ()
+{
+	QString s = ple_text_box_p -> text ();
+	QByteArray ba = s.toLocal8Bit ();
 	const char *value_s = ba.constData ();
 
 	return UpdateConfigValue (value_s);
@@ -64,15 +78,3 @@ bool ParamLineEdit :: UpdateConfigValue (const char * const value_s)
 
 
 
-bool ParamLineEdit :: SetValueFromText (const char *value_s)
-{
-	QString s = ple_text_box_p -> text ();
-	qDebug () << "old " << s;
-
-	ple_text_box_p -> setText (value_s);
-
-	s = ple_text_box_p -> text ();
-	qDebug () << "new " << s;
-
-	return true;
-}

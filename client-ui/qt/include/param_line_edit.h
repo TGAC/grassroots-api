@@ -13,31 +13,30 @@
 
 class ParamLineEdit : public BaseParamWidget
 {
-	Q_OBJECT
+  Q_OBJECT
 
 
 private slots:
-	bool UpdateConfig (const QString &value_r);
-	bool UpdateConfigValue (const char * const value_s);
+  bool UpdateConfig ();
+  bool UpdateConfigValue (const char * const value_s);
 
 public:
-	ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo, QWidget *parent_p = 0);
-	virtual ~ParamLineEdit ();
+  ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo = QLineEdit :: Normal, QWidget *parent_p = 0);
+  virtual ~ParamLineEdit ();
 
-	virtual void RemoveConnection ();
+  virtual void RemoveConnection ();
 
-	virtual void SetDefaultValue ();
+  virtual void SetDefaultValue ();
 
-	virtual bool SetValueFromText (const char *value_s);
+  virtual bool SetValueFromText (const char *value_s);
 
+protected:
+  QLineEdit *ple_text_box_p;
 
-protected:	
-	QLineEdit *ple_text_box_p;
+  virtual QWidget *GetQWidget ();
 
-	virtual QWidget *GetQWidget ();
 
 };
-
 
 
 
