@@ -15,6 +15,8 @@
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "util_mutex.h"
+
+#define ALLOCATE_APR_SERVERS_MANAGER_TAGS (1)
 #include "apr_servers_manager.h"
 #include "json_tools.h"
 
@@ -28,7 +30,6 @@
 /**************************/
 
 static const char s_mutex_filename_s [] = "logs/wheatis_servers_manager_lock";
-static const char s_cache_id_s [] = "wheatis_servers_manager_cache";
 
 /**************************/
 
@@ -57,7 +58,7 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 			                                                        make_key_fn,
 			                                                        server_p,
 			                                                        s_mutex_filename_s,
-			                                                        s_cache_id_s,
+			                                                        APR_SERVERS_MANAGER_CACHE_ID_S,
 			                                                        provider_name_s);
 			if (storage_p)
 				{
@@ -90,6 +91,8 @@ bool DestroyAPRServersManager (APRServersManager *manager_p)
 
 bool APRServersManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *config_pool_p)
 {
+	manager_p -> asm_store_p -> ags_cache_id_s = APR_SERVERS_MANAGER_CACHE_ID_S;
+
 	return PreConfigureGlobalStorage (manager_p -> asm_store_p, config_pool_p);
 }
 

@@ -245,7 +245,7 @@ bool EnsureDirectoryExists (const char * const path_s)
  * @param callback_fn The callback_fn to denote progress (currently unused).
  * @return true on success, false on error with errno set to the appropriate value.
  */
-bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ())
+bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void))
 {
 	FILE *in_f = fopen (src_filename_s, "rb");
 	bool success_flag = false;

@@ -212,7 +212,7 @@ WHEATIS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
  * @return <code>true</code> if the copy was successful <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) ());
+WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void));
 
 
 /**

@@ -13,6 +13,36 @@
 #include "mod_wheatis_config.h"
 #include "apr_global_storage.h"
 
+
+
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_JSON_TAGS is defined then it will
+ * become
+ *
+ * 		const char *SERVICE_NAME_S = "path";
+ *
+ * ALLOCATE_RESOURCE_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * resource.c.
+ */
+#ifdef ALLOCATE_APR_JOBS_MANAGER_TAGS
+	#define APR_JOBS_MANAGER_PREFIX
+	#define APR_JOBS_MANAGER_VAL(x)	= x
+#else
+	#define APR_JOBS_MANAGER_PREFIX extern
+	#define APR_JOBS_MANAGER_VAL(x)
+#endif
+
+
+APR_JOBS_MANAGER_PREFIX const char *APR_JOBS_MANAGER_CACHE_ID_S APR_JOBS_MANAGER_VAL("wheatis-jobs-socache");
+
+
 #ifdef __cplusplus
 extern "C"
 {

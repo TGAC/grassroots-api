@@ -10,6 +10,8 @@
 #include "apr_hash.h"
 
 #include "jobs_manager.h"
+
+#define ALLOCATE_APR_JOBS_MANAGER_TAGS (1)
 #include "apr_jobs_manager.h"
 
 #include "service_job.h"
@@ -27,7 +29,6 @@
 /**************************/
 
 static const char s_mutex_filename_s [] = "logs/wheatis_jobs_manager_lock";
-static const char s_cache_id_s [] = "wheatis_jobs_manager_cache";
 
 /**************************/
 
@@ -56,7 +57,7 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 																															make_key_fn,
 																															server_p,
 																															s_mutex_filename_s,
-																															s_cache_id_s,
+																															APR_JOBS_MANAGER_CACHE_ID_S,
 																															provider_name_s);
 
 
@@ -91,6 +92,8 @@ bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 
 bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_pool_p)
 {
+	manager_p -> ajm_store_p -> ags_cache_id_s = APR_JOBS_MANAGER_CACHE_ID_S;
+
 	return PreConfigureGlobalStorage (manager_p -> ajm_store_p, config_pool_p);
 }
 
