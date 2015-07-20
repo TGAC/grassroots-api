@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?fileVersion 4.0.0?>
-
-<cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="cdt.managedbuild.toolchain.gnu.base.77732421">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.77732421" moduleId="org.eclipse.cdt.core.settings" name="Default">
@@ -12,12 +10,12 @@
 					</externalSetting>
 				</externalSettings>
 				<extensions>
-					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
 					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -29,10 +27,6 @@
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.2021463785" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.565589051" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtWidgets"/>
-									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtCore"/>
-									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtGui"/>
-									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/util/include}&quot;"/>
 								</option>
@@ -60,8 +54,6 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.421634025" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
 								<option id="gnu.both.asm.option.include.paths.1593502275" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtWidgets"/>
-									<listOptionValue builtIn="false" value="/usr/users/ga002/tyrrells/Qt/5.3/gcc_64/include/QtCore"/>
 									<listOptionValue builtIn="false" value="/opt/mongodb/drivers/c/include/libmongoc-1.0"/>
 									<listOptionValue builtIn="false" value="/opt/mongodb/drivers/c/include/libbson-1.0"/>
 								</option>

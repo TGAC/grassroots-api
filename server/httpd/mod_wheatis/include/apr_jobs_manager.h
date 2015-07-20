@@ -90,6 +90,14 @@ apr_status_t CleanUpAPRJobsManager (void *value_p);
 
 bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
 
+bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_pool_p);
+
+void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key);
+
+
+bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p);
+
+
 #ifdef __cplusplus
 }
 #endif

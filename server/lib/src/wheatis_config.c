@@ -41,6 +41,19 @@ bool DestroyConfig (void)
 }
 
 
+const json_t *GetGlobalConfigValue (const char *key_s)
+{
+	const json_t *value_p = NULL;
+
+	if (s_config_p)
+		{
+			value_p = json_object_get (s_config_p, key_s);
+		}
+
+	return value_p;
+}
+
+
 const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 {
 	const json_t *res_p = NULL;

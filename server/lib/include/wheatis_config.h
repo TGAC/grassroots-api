@@ -29,6 +29,9 @@ WHEATIS_SERVICE_MANAGER_API const json_t *GetGlobalServiceConfig (const char * c
 WHEATIS_SERVICE_MANAGER_API void ConnectToExternalServers (void);
 
 
+WHEATIS_SERVICE_MANAGER_API const json_t *GetGlobalConfigValue (const char *key_s);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -885,13 +885,13 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 												{
 													PrintErrors (STM_LEVEL_SEVERE, "Failed to add service json description for %s to list\n", GetServiceName (service_node_p -> sn_service_p));
 												}
-											
-											service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 										}
 									else
 										{
 											PrintErrors (STM_LEVEL_SEVERE, "Failed to get service json description for %s\n", GetServiceName (service_node_p -> sn_service_p));
 										}
+
+									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 								}
 
 						}		/* if (services_list_p) */

@@ -8,6 +8,7 @@
 #include "wheatis_config.h"
 #include "string_utils.h"
 #include "service_config.h"
+#include "mongodb_util.h"
 
 #ifdef DRMAA_ENABLED
 #include "drmaa_util.h"
@@ -16,6 +17,8 @@
 
 bool InitInformationSystem ()
 {
+	bool res_flag = false;
+
 	if (InitHandlerUtil ())
 		{
 			if (InitDefaultOutputStream ())
@@ -24,7 +27,6 @@ bool InitInformationSystem ()
 
 					if (c == 0)
 						{
-							bool res_flag = true;
 							const char *root_path_s = GetServerRootDirectory ();
 							char *full_services_path_s = MakeFilename (root_path_s, "wheatis.config");
 
@@ -32,6 +34,11 @@ bool InitInformationSystem ()
 								{
 									if (InitConfig (full_services_path_s))
 										{
+											if (InitMongo ())
+												{
+													res_flag = true;
+												}
+
 											ConnectToExternalServers ();
 										}
 									else
@@ -48,7 +55,6 @@ bool InitInformationSystem ()
 								}
 							#endif
 
-							return res_flag;
 						}
 				}
 		}

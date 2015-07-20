@@ -41,14 +41,17 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC) \
-	-I$(DIR_UUID_INC)	
+	-I$(DIR_UUID_INC) \
+	-I$(DIR_MONGODB_INC) \
+	-I$(DIR_BSON_INC) \
 	
 SRCS 	= \
 	jobs_manager.c \
 	server.c \
 	system_util.c \
 	servers_pool.c \
-	wheatis_config.c
+	wheatis_config.c \
+	mongodb_util.c
 
 CPPFLAGS += -DWHEATIS_SERVICE_MANAGER_LIBRARY_EXPORTS 
 
@@ -59,7 +62,8 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_WHEATIS_IRODS_LIB) -l$(WHEATIS_IRODS_LIB_NAME) \
 	-L$(DIR_WHEATIS_SERVICES_LIB) -l$(WHEATIS_SERVICES_LIB_NAME) \
 	-L$(DIR_WHEATIS_HANDLER_LIB) -l$(WHEATIS_HANDLER_LIB_NAME) \
-	-L$(DIR_WHEATIS_PARAMS_LIB) -l$(WHEATIS_PARAMS_LIB_NAME)
+	-L$(DIR_WHEATIS_PARAMS_LIB) -l$(WHEATIS_PARAMS_LIB_NAME) \
+	-L$(DIR_MONGODB_LIB) -lmongoc-1.0
 
 
 ifneq ($(DRMAA_ENABLED),)

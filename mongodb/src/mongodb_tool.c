@@ -9,55 +9,30 @@
 #include "memory_allocations.h"
 #include "streams.h"
 #include "json_tools.h"
+#include "wheatis_config.h"
+#include "mongodb_util.h"
 
-mongoc_client_pool_t *s_clients_p = NULL;
-
-
-bool InitMongo (const char *uri_s)
-{
-//	mongoc_uri_t *uri_p = mongoc_uri_new ("mongodb://mdb1.example.com/?minPoolSize=16");
-	mongoc_uri_t *uri_p = mongoc_uri_new (uri_s);
-
-	if (uri_p)
-		{
-			s_clients_p = mongoc_client_pool_new (uri_p);
-
-			mongoc_uri_destroy (uri_p);
-		}
-
-	return (s_clients_p != NULL);
-}
-
-
-void ExitMongo (void)
-{
-	if (s_clients_p)
-		{
-			mongoc_client_pool_destroy (s_clients_p);
-			s_clients_p = NULL;
-		}
-}
 
 
 MongoTool *AllocateMongoTool (void)
 {
-	mongoc_client_t *client_p = mongoc_client_pool_pop (s_clients_p);
+	MongoTool *tool_p = (MongoTool *) AllocMemory (sizeof (MongoTool));
 
-	if (client_p)
+	if (tool_p)
 		{
-			MongoTool *tool_p = (MongoTool *) AllocMemory (sizeof (MongoTool));
+			mongoc_client_t *client_p = GetMongoClient ();
 
-			if (tool_p)
+			if (client_p)
 				{
 					tool_p -> mt_client_p = client_p;
 					tool_p -> mt_collection_p = NULL;
 					tool_p -> mt_cursor_p = NULL;
 
 					return tool_p;
-				}		/* if (tool_p) */
+				}		/* if (client_p) */
 
-			mongoc_client_pool_push (s_clients_p, client_p);
-		}		/* if (client_p) */
+			FreeMemory (tool_p);
+		}		/* if (tool_p) */
 
 	return NULL;
 }
@@ -73,6 +48,11 @@ void FreeMongoTool (MongoTool *tool_p)
 	if (tool_p -> mt_cursor_p)
 		{
 			mongoc_cursor_destroy (tool_p -> mt_cursor_p);
+		}
+
+	if (tool_p -> mt_client_p)
+		{
+			ReleaseMongoClient (tool_p -> mt_client_p);
 		}
 
 	FreeMemory (tool_p);

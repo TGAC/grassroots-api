@@ -806,6 +806,10 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
 				break;
 
+			case PT_JSON:
+				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("json")) == 0);
+				break;
+
 			default:
 				break;
 		}		/* switch (param_p -> pa_type) */
@@ -838,6 +842,7 @@ static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root
 static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s)
 {
 	bool success_flag = false;
+	bool null_flag = false;
 	json_t *value_p = NULL;
 
 	switch (pt)
@@ -912,8 +917,18 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				}
 				break;
 
+			/*
+			 * A json value can legitimately be NULL
+			 */
 			case PT_JSON:
-				value_p = json_deep_copy (val_p -> st_json_p);
+				if (val_p -> st_json_p)
+					{
+						value_p = json_deep_copy (val_p -> st_json_p);
+					}
+				else
+					{
+						null_flag = true;
+					}
 				break;
 
 			default:
@@ -926,7 +941,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 		}		/* if (default_value_p) */
 	else
 		{
-			success_flag = false;
+			success_flag = null_flag;
 		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
@@ -1047,7 +1062,11 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 			
 
 		}		/* if (json_value_p) */
-
+	else
+		{
+			/* json params are allowed to be NULL */
+			success_flag = (param_type == PT_JSON);
+		}
 
 	return success_flag;
 }

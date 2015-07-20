@@ -171,6 +171,8 @@ static MongoDBServiceData *AllocateMongoDBServiceData (json_t *op_json_p)
 			if (data_p)
 				{
 					data_p -> msd_tool_p = tool_p;
+
+					return data_p;
 				}
 
 			FreeMongoTool (tool_p);
@@ -229,7 +231,6 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 												{
 													return params_p;
 												}
-											return params_p;
 										}
 								}
 						}

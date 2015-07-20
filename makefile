@@ -307,3 +307,10 @@ install_irods_dev:
 	$(COPY) $$IRODS_HOME/server/icat/include/* $(DIR_SHARED_IRODS_INC)/server/icat/include
 	@mkdir -p $(DIR_SHARED_IRODS_INC)/server/re/include
 	$(COPY) $$IRODS_HOME/server/re/include/* $(DIR_SHARED_IRODS_INC)/server/re/include
+
+install_mongodb_c:
+	cd $(DIR_ROOT)/extras/mongodb-c-driver-1.1.8; \
+	./configure --prefix=$(DIR_MONGODB) --enable-html-docs=yes; \
+	make; \
+	make install		
+	
