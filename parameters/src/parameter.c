@@ -577,6 +577,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 							json_error_t err;
 							json_t *json_value_p = json_loads (value_s, 0, &err);
 
+
 							if (json_value_p)
 								{
 									/* If we have a previous value, delete it */

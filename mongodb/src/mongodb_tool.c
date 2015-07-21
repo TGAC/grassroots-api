@@ -62,7 +62,7 @@ void FreeMongoTool (MongoTool *tool_p)
 bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s)
 {
 	bool success_flag = false;
-	mongoc_collection_t *collection_p =  mongoc_client_get_collection (tool_p -> mt_client_p, collection_s, collection_s);
+	mongoc_collection_t *collection_p =  mongoc_client_get_collection (tool_p -> mt_client_p, db_s, collection_s);
 
 	if (collection_p)
 		{

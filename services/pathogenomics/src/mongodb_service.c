@@ -10,14 +10,22 @@
 #include "string_utils.h"
 #include "json_tools.h"
 
+#ifdef _DEBUG
+	#define MONGODB_SERVICE_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define MONGODB_SERVICE_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 
 #define TAG_UPDATE MAKE_TAG('P', 'G', 'U', 'P')
 #define TAG_QUERY MAKE_TAG('P', 'G', 'Q', 'U')
 #define TAG_REMOVE MAKE_TAG('P', 'G', 'R', 'M')
 #define TAG_DUMP MAKE_TAG('P', 'G', 'D', 'P')
 #define TAG_COLLECTION MAKE_TAG('P', 'G', 'C', 'O')
+#define TAG_DATABASE MAKE_TAG('P', 'G', 'D', 'B')
 
 
+static const char *S_DATABASE_S = "geodb";
 
 typedef struct MongoDBServiceData
 {
@@ -288,6 +296,8 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 									Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
 									bool run_flag = false;
 
+									SetMongoToolCollection (tool_p, S_DATABASE_S, collection_s);
+
 									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 										{
 											response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
@@ -321,6 +331,14 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 												{
 													json_error_t error;
 													bool success_flag = data_fn (tool_p, json_param_p, collection_s);
+
+													#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+														{
+															char *dump_s = json_dumps (json_param_p, JSON_INDENT (2));
+															PrintLog (STM_LEVEL_FINE, "mongo param: %s", dump_s);
+															free (dump_s);
+														}
+													#endif
 
 													response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
 
