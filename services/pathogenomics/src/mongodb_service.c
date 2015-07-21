@@ -286,8 +286,9 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 								{
 									json_t *response_p = NULL;
 									Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
+									bool run_flag = false;
 
-									if (param_p)
+									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 										{
 											response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
 
@@ -300,18 +301,17 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 											job_p -> sj_status = OS_FAILED;
 
-
-											if (GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true))
+											if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
 												{
 													data_fn = InsertData;
 													json_param_p = value.st_json_p;
 												}
-											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL)
+											else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
 												{
 													data_fn = SearchData;
 													json_param_p = value.st_json_p;
 												}
-											else if ((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL)
+											else if ((GetParameterValueFromParameterSet (param_set_p, TAG_REMOVE, &value, true)) && (value.st_json_p))
 												{
 													data_fn = DeleteData;
 													json_param_p = value.st_json_p;

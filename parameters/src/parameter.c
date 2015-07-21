@@ -451,6 +451,7 @@ const char *GetParameterKeyValue (const Parameter * const parameter_p, const cha
 bool SetParameterValue (Parameter * const param_p, const void *value_p)
 {
 	bool success_flag = false;
+
 	switch (param_p -> pa_type)
 		{
 			case PT_BOOLEAN:
@@ -566,6 +567,30 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 					success_flag = CopyResource (param_p -> pa_current_value.st_resource_value_p, new_res_p);
 				}
 			break;
+
+			case PT_JSON:
+				{
+					char *value_s = (char *) value_p;
+
+					if (value_s)
+						{
+							json_error_t err;
+							json_t *json_value_p = json_loads (value_s, 0, &err);
+
+							if (json_value_p)
+								{
+									/* If we have a previous value, delete it */
+									if (param_p -> pa_current_value.st_json_p)
+										{
+											WipeJSON (param_p -> pa_current_value.st_json_p);
+										}
+
+									param_p -> pa_current_value.st_json_p = json_value_p;
+									success_flag = true;
+								}
+						}
+				}
+				break;
 
 			default:
 				break;
@@ -1539,7 +1564,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 						{
 							SharedType current_value;
 
-							memset (&current_value, 0, sizeof (SharedType));
+ 							memset (&current_value, 0, sizeof (SharedType));
 							
 							if (GetValueFromJSON (root_p, PARAM_CURRENT_VALUE_S, pt, &current_value))
 								{
