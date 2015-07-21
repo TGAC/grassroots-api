@@ -135,7 +135,7 @@ bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 
 			if (bson_p)
 				{
-					bson_oid_t *id_p = (bson_oid_t *) AllocMemory (sizeof (bson_oid_t));
+					id_p = (bson_oid_t *) AllocMemory (sizeof (bson_oid_t));
 
 					if (id_p)
 						{
@@ -292,7 +292,7 @@ bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p,
 						{
 							const char **field_ss = fields_ss;
 
-							while (success_flag && field_ss)
+							while (success_flag && *field_ss)
 								{
 									if (BSON_APPEND_INT32 (fields_p, *field_ss, 1))
 										{
