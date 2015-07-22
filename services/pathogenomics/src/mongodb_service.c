@@ -484,7 +484,7 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 
 							json_object_foreach (values_p, key_s, value_p)
 								{
-									bson_t *query_p = BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+									bson_t *query_p = bson_new (); //BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
 
 									if (query_p)
 										{

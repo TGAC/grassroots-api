@@ -13,6 +13,13 @@
 #include "mongodb_util.h"
 
 
+#ifdef _DEBUG
+	#define MONGODB_TOOL_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define MONGODB_TOOL_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
 
 MongoTool *AllocateMongoTool (void)
 {
@@ -308,6 +315,21 @@ bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p,
 						}		/* if (fields_p) */
 
 				}		/* if (fields_ss) */
+
+
+			#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+			{
+				size_t len;
+				char *dump_s = bson_as_json (query_p, &len);
+
+				if (dump_s)
+					{
+						PrintLog (STM_LEVEL_FINE, "query: %s", dump_s);
+						bson_free (dump_s);
+					}
+			}
+			#endif
+
 
 			cursor_p = mongoc_collection_find (tool_p -> mt_collection_p, MONGOC_QUERY_NONE, 0, 0, 0, query_p, fields_p, NULL);
 
