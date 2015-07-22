@@ -309,7 +309,7 @@ install_irods_dev:
 	$(COPY) $$IRODS_HOME/server/re/include/* $(DIR_SHARED_IRODS_INC)/server/re/include
 
 install_mongodb_c:
-	cd $(DIR_ROOT)/extras/mongodb-c-driver-1.1.8; \
+	cd $(DIR_ROOT)/extras/mongo-c-driver-1.1.10; \
 	./configure --prefix=$(DIR_MONGODB) --enable-html-docs=yes; \
 	make; \
 	make install		
