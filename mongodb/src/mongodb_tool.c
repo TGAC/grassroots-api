@@ -211,6 +211,16 @@ bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *jso
 										{
 											bson_error_t error;
 
+											#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+											char buffer_s [25];
+
+											bson_oid_to_string (id_p, buffer_s);
+											PrintLog (STM_LEVEL_FINE, "UpdateMongoDocument id %s", buffer_s);
+											LogBSON (query_p, STM_LEVEL_FINE, "UpdateMongoDocument query_p");
+											LogBSON (update_statement_p, STM_LEVEL_FINE, "UpdateMongoDocument update_statement_p");
+											#endif
+
+
 									    if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error))
 									    	{
 									    		success_flag = true;
@@ -275,6 +285,59 @@ bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_js
 	return success_flag;
 }
 
+void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefix_s)
+{
+	bson_iter_t iter;
+	bson_iter_t sub_iter;
+
+	if (bson_iter_init_find (&iter, bson_p, "mysubdoc") &&
+	    (BSON_ITER_HOLDS_DOCUMENT (&iter) ||
+	     BSON_ITER_HOLDS_ARRAY (&iter)) &&
+	    bson_iter_recurse (&iter, &sub_iter)) {
+	   while (bson_iter_next (&sub_iter)) {
+	      printf ("Found key \"%s\" in sub document.\n",
+	              bson_iter_key (&sub_iter));
+	   }
+	}
+}
+
+void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s)
+{
+	size_t len;
+	char *dump_s = bson_as_json (bson_p, &len);
+
+	if (dump_s)
+		{
+			if (prefix_s)
+				{
+					PrintLog (level, "%s %s", prefix_s, dump_s);
+				}
+			else
+				{
+					PrintLog (level, "%s", dump_s);
+
+				}
+			bson_free (dump_s);
+		}
+}
+
+
+void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s)
+{
+	char buffer_s [25];
+
+	bson_oid_to_string (bson_p, buffer_s);
+
+	if (prefix_s)
+		{
+			PrintLog (level, "%s %s", prefix_s, buffer_s);
+		}
+	else
+		{
+			PrintLog (level, "%s", buffer_s);
+
+		}
+}
 
 
 bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p, const char **fields_ss)
@@ -318,16 +381,7 @@ bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p,
 
 
 			#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-			{
-				size_t len;
-				char *dump_s = bson_as_json (query_p, &len);
-
-				if (dump_s)
-					{
-						PrintLog (STM_LEVEL_FINE, "query: %s", dump_s);
-						bson_free (dump_s);
-					}
-			}
+			LogBSON (query_p, STM_LEVEL_FINE, "mongo query");
 			#endif
 
 

@@ -472,7 +472,7 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 			if (fields_collection_s)
 				{
 					json_t *field_p = json_object ();
-					bson_value_t doc_id;
+					bson_oid_t doc_id;
 
 					if (field_p)
 						{
@@ -502,12 +502,25 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 													while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
 														{
 															bson_iter_t iter;
+															bson_iter_t sub_iter;
 															json_t *json_value_p = NULL;
 
-															if (bson_iter_init_find (&iter, doc_p, "_id"))
+															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+															LogBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
+															#endif
+
+															if (bson_iter_init (&iter, doc_p))
 																{
-																	const bson_value_t *src_p = bson_iter_value (&iter);
-																	bson_value_copy (src_p, &doc_id);
+																	if (bson_iter_find (&iter, "_id"))
+																		{
+																			const bson_oid_t *src_p = (const bson_oid_t  *) bson_iter_value (&iter);
+																			bson_oid_copy (src_p, &doc_id);
+
+																			#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+																			LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
+																			LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
+																			#endif
+																		}
 																}
 
 															json_value_p = ConvertBSONToJSON (doc_p);

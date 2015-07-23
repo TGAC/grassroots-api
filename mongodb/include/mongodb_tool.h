@@ -118,6 +118,11 @@ WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t 
 WHEATIS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
 
 
+WHEATIS_MONGODB_API void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
+
+
+WHEATIS_MONGODB_API void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s);
+
 #ifdef __cplusplus
 }
 #endif
