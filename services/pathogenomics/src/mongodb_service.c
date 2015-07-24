@@ -10,6 +10,8 @@
 #include "string_utils.h"
 #include "json_tools.h"
 
+#include "string_linked_list.h"
+
 #ifdef _DEBUG
 	#define MONGODB_SERVICE_DEBUG	(STM_LEVEL_FINE)
 #else
@@ -71,6 +73,10 @@ static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collectio
 static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
 
 static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+
+static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag);
+
+static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
 
 /*
  * API FUNCTIONS
@@ -502,7 +508,6 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 													while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
 														{
 															bson_iter_t iter;
-															bson_iter_t sub_iter;
 															json_t *json_value_p = NULL;
 
 															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
@@ -638,3 +643,160 @@ static bool CleanUpMongoDBServiceJob (ServiceJob *job_p)
 }
 
 
+
+static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter)
+{
+	int32 num_lines = 0;
+
+	if (data_s)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					json_t *json_data_p = json_object ();
+
+					if (json_data_p)
+						{
+							LinkedList *headers_p = GetTableRow (&data_s, delimiter, buffer_p, false);
+
+							if (headers_p)
+								{
+									uint32 line_number = 2;
+									LinkedList *row_p = NULL;
+
+									while ((row_p = GetTableRow (&data_s, delimiter, buffer_p, true)) != NULL)
+										{
+											if (headers_p -> ll_size == row_p -> ll_size)
+												{
+													StringListNode *header_node_p = (StringListNode *) (headers_p -> ll_head_p);
+													StringListNode *row_node_p = (StringListNode *) (row_p -> ll_head_p);
+													bson_oid_t *id_p = NULL;
+
+													while (header_node_p)
+														{
+															const char *row_value_s = row_node_p -> sln_string_s;
+
+															if (row_value_s)
+																{
+																	if (json_object_set_new (json_data_p, header_node_p -> sln_string_s, json_string (row_value_s)) != 0)
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to insert %s: %s into json object", header_node_p -> sln_string_s, row_value_s);
+																		}
+																}
+
+															header_node_p = (StringListNode *) (header_node_p -> sln_node.ln_next_p);
+															row_node_p = (StringListNode *) (row_node_p -> sln_node.ln_next_p) ;
+														}		/* while (header_node_p) */
+
+													/*
+													The ID header is the unique identifier so check to see if it is already
+													in the collection
+													*/
+
+													id_p = InsertJSONIntoMongoCollection (tool_p, json_data_p);
+													if (!id_p)
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to insert json object into collection");
+														}
+
+													json_object_clear (json_data_p);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "" UINT32_FMT " headers and " UINT32_FMT "rows  for line " UINT32_FMT, headers_p -> ll_size, row_p -> ll_size, line_number);
+												}
+
+											++ line_number;
+										}
+
+								}	/* if (headers_p) */
+
+							WipeJSON (json_data_p);
+						}		/* if (json_data_p) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+
+		}
+
+
+	return num_lines;
+}
+
+
+static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag)
+{
+	bool success_flag = true;
+	const char *buffer_s = NULL;
+	LinkedList *row_p = AllocateLinkedList (FreeStringListNode);
+
+	if (row_p)
+		{
+			bool loop_flag = (*buffer_s != '\0');
+
+			buffer_s = *data_ss;
+			ResetByteBuffer (buffer_p);
+
+			while (loop_flag && success_flag)
+				{
+					if (*buffer_s == delimiter)
+						{
+							/* For an empty column this can be an empty string */
+							const char *data_s = GetByteBufferData (buffer_p);
+							StringListNode *node_p = NULL;
+
+							if (*data_s != '\0')
+								{
+									node_p = AllocateStringListNode (data_s, MF_DEEP_COPY);
+								}
+							else if (empty_strings_allowed_flag)
+								{
+									node_p = AllocateStringListNode (data_s, MF_SHADOW_USE);
+								}
+
+							if (node_p)
+								{
+									LinkedListAddTail (row_p, (ListItem * const) node_p);
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+					else
+						{
+							switch (*buffer_s)
+								{
+									case '\r':
+									case '\n':
+										loop_flag = false;
+										break;
+
+									default:
+										success_flag = AppendToByteBuffer (buffer_p, buffer_s, 1);
+										break;
+								}
+						}
+
+					if (loop_flag && success_flag)
+						{
+							++ buffer_s;
+							loop_flag = (*buffer_s != '\0');
+						}
+				}		/*( while (loop_flag) */
+
+		}		/* if (row_p) */
+
+	if (success_flag)
+		{
+			*data_ss = buffer_s;
+		}
+	else
+		{
+			FreeLinkedList (row_p);
+			row_p = NULL;
+		}
+
+	return row_p;
+}
