@@ -285,12 +285,13 @@ bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_js
 	return success_flag;
 }
 
+
 void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefix_s)
 {
 	bson_iter_t iter;
 	bson_iter_t sub_iter;
 
-	if (bson_iter_init_find (&iter, bson_p, "mysubdoc") &&
+	if (bson_iter_init (&iter, bson_p) &&
 	    (BSON_ITER_HOLDS_DOCUMENT (&iter) ||
 	     BSON_ITER_HOLDS_ARRAY (&iter)) &&
 	    bson_iter_recurse (&iter, &sub_iter)) {
@@ -300,6 +301,7 @@ void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefi
 	   }
 	}
 }
+
 
 void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s)
 {

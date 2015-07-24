@@ -123,6 +123,10 @@ WHEATIS_MONGODB_API void LogBSON (const bson_t *bson_p, const int level, const c
 
 WHEATIS_MONGODB_API void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s);
 
+
+WHEATIS_MONGODB_API void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
+
+
 #ifdef __cplusplus
 }
 #endif

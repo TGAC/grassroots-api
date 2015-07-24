@@ -506,14 +506,20 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 															json_t *json_value_p = NULL;
 
 															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
-															LogBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
+															LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
 															#endif
 
 															if (bson_iter_init (&iter, doc_p))
 																{
 																	if (bson_iter_find (&iter, "_id"))
 																		{
-																			const bson_oid_t *src_p = (const bson_oid_t  *) bson_iter_value (&iter);
+																			const bson_oid_t *src_p = NULL;
+
+																			if (BSON_ITER_HOLDS_OID (&iter))
+																				{
+																					src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
+																				}
+
 																			bson_oid_copy (src_p, &doc_id);
 
 																			#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
