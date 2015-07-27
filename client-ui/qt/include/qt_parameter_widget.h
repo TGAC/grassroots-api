@@ -20,7 +20,7 @@ class PrefsWidget;
 
 
 
-class  QTParameterWidget : public QWidget
+class QTParameterWidget : public QWidget
 {
 	Q_OBJECT
 

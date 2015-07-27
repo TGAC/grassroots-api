@@ -37,6 +37,8 @@ public:
 
 	const char *GetParameterName () const;
 
+	virtual void RefreshValue ();
+
 protected:
 	Parameter * const bpw_param_p;
 	const PrefsWidget * const bpw_prefs_widget_p;

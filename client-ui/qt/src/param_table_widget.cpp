@@ -1,23 +1,24 @@
+#include "param_table_widget.h"
+
 #include <stdio.h>
 
 #include <QDebug>
 #include <QMimeData>
 
-#include "param_text_box.h"
 #include "prefs_widget.h"
 
 #include "string_utils.h"
 #include "byte_buffer.h"
 
 
-DroppableTextBox :: DroppableTextBox (QWidget *parent_p)
-: QPlainTextEdit (parent_p)
+DroppableTableWidget :: DroppableTableWidget (QWidget *parent_p)
+: QTableWidget (parent_p)
 {
 	setAcceptDrops (true);
 
 }
 
-void DroppableTextBox :: dropEvent (QDropEvent *event_p)
+void DroppableTableWidget :: dropEvent (QDropEvent *event_p)
 {
 	QList <QUrl> urls = event_p -> mimeData () -> urls ();
 
@@ -36,16 +37,15 @@ void DroppableTextBox :: dropEvent (QDropEvent *event_p)
 				}		/* if (! (filename.isEmpty ())) */
 
 		}		/* if (! (urls.isEmpty ())) */
-
 }
 
-void DroppableTextBox :: dragEnterEvent (QDragEnterEvent *event_p)
+void DroppableTableWidget :: dragEnterEvent (QDragEnterEvent *event_p)
 {
 	event_p -> acceptProposedAction ();
 }
 
 
-void DroppableTextBox :: LoadText (const char *filename_s)
+void DroppableTableWidget :: LoadText (const char *filename_s)
 {
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
@@ -91,54 +91,69 @@ void DroppableTextBox :: LoadText (const char *filename_s)
 }
 
 
-ParamTextBox :: ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
+ParamTableWidget :: ParamTableWidget (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
-	ptb_text_box_p = new DroppableTextBox (parent_p);
-
-	connect (ptb_text_box_p, &QPlainTextEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
-
+	ptw_table_p = new DroppableTableWidget (parent_p);
 }
 
 
-ParamTextBox ::	~ParamTextBox ()
+ParamTableWidget ::	~ParamTableWidget ()
 {
-	delete ptb_text_box_p;
-	ptb_text_box_p = NULL;
+	delete ptw_table_p;
+	ptw_table_p = NULL;
 }
 
 
-void ParamTextBox :: RemoveConnection ()
+void ParamTableWidget :: RemoveConnection ()
 {
-	disconnect (ptb_text_box_p, &QPlainTextEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
 }
 
 
-void ParamTextBox :: SetDefaultValue ()
+void ParamTableWidget :: SetDefaultValue ()
 {
 	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
-
-	ptb_text_box_p -> setPlainText (value_s);
 }
 
 
-QWidget *ParamTextBox :: GetQWidget ()
+QWidget *ParamTableWidget :: GetQWidget ()
 {
-	return ptb_text_box_p;
+	return ptw_table_p;
 }
 
 
-bool ParamTextBox :: UpdateConfig ()
+void ParamTableWidget :: RefreshValue ()
 {
-	QString s = ptb_text_box_p -> toPlainText ();
-	QByteArray ba = s.toLocal8Bit ();
-	const char *value_s = ba.constData ();
 
-	return UpdateConfigValue (value_s);
 }
 
 
-bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
+
+void ParamTableWidget :: UpdateParameter ()
+{
+	const int num_rows = ptw_table_p -> rows ();
+	const int num_cols = ptw_table_p -> cols ();
+
+	for (int i = 0; i < num_rows; ++ i)
+		{
+			for (int i = 0; i < num_cols; ++ i)
+				{
+
+				}
+
+		}
+
+
+}
+
+
+bool ParamTableWidget :: UpdateConfig ()
+{
+	return true;
+}
+
+
+bool ParamTableWidget :: UpdateConfigValue (const char * const value_s)
 {
 	bool success_flag = SetParameterValue (bpw_param_p, value_s);
 
@@ -149,7 +164,7 @@ bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
 
 
 
-bool ParamTextBox :: SetValueFromText (const char *value_s)
+bool ParamTableWidget :: SetValueFromText (const char *value_s)
 {
 	QString s = ptb_text_box_p -> toPlainText ();
 	qDebug () << "old " << s;
