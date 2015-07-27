@@ -78,6 +78,8 @@ static LinkedList *GetTableRow (const char **data_ss, const char delimiter, Byte
 
 static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
 
+static bool AddUploadParams (ParameterSet *param_set_p);
+
 /*
  * API FUNCTIONS
  */
@@ -243,7 +245,10 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 										{
 											if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_STRING, false, "collection", "Collection", "The collection to act upon", TAG_COLLECTION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 												{
-													return params_p;
+													if (AddUploadParams (params_p))
+														{
+															return params_p;
+														}
 												}
 										}
 								}
@@ -254,6 +259,47 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 		}
 
 	return NULL;
+}
+
+
+
+static bool AddUploadParams (ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	Parameter *param_p = NULL;
+	SharedType def;
+	size_t num_group_params = 2;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
+
+	def.st_char_value = '|';
+
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_CHAR, false, "delimiter", "Delimiter", "The character delimiting columns", TAG_DELIMITER, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+		{
+			def.st_string_value_s = NULL;
+
+			if (grouped_param_pp)
+				{
+					*grouped_param_pp = param_p;
+					++ grouped_param_pp;
+				}
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "data", "Data to upload", "The data to upload", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+				{
+					const char * const group_name_s = "Query Sequence Parameters";
+
+
+					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							FreeMemory (grouped_params_pp);
+						}
+
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
 }
 
 
@@ -693,6 +739,18 @@ static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const
 													The ID header is the unique identifier so check to see if it is already
 													in the collection
 													*/
+
+													#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+														{
+															char *dump_s = json_dumps (json_data_p, JSON_INDENT (2));
+
+															if (dump_s)
+																{
+																	PrintLog (STM_LEVEL_FINE, "json row %s", dump_s);
+																	free (dump_s);
+																}
+														}
+													#endif
 
 													id_p = InsertJSONIntoMongoCollection (tool_p, json_data_p);
 													if (!id_p)
