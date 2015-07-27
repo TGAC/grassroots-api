@@ -239,7 +239,7 @@ bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *jso
 
 		}		/* if (tool_p -> mt_collection_p) */
 
-	return id_p;
+	return success_flag;
 }
 
 
