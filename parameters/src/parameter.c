@@ -810,6 +810,10 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("boolean")) == 0);
 				break;
 
+			case PT_CHAR:
+				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("character")) == 0);
+				break;
+
 			case PT_SIGNED_INT:
 			case PT_UNSIGNED_INT:
 				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("integer")) == 0);
@@ -821,6 +825,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				break;
 
 			case PT_STRING:
+			case PT_LARGE_STRING:
 			case PT_PASSWORD:
 			case PT_FILE_TO_WRITE:
 			case PT_DIRECTORY:
@@ -877,6 +882,17 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				value_p = (val_p -> st_boolean_value == true) ? json_true () : json_false ();
 				break;
 
+			case PT_CHAR:
+				{
+					char buffer_s [2];
+
+					*buffer_s = val_p -> st_char_value;
+					* (buffer_s + 1) = '\0';
+
+					value_p = json_string (buffer_s);
+				}
+				break;
+
 			case PT_SIGNED_INT:
 				value_p = json_integer (val_p -> st_long_value);
 				break;
@@ -891,6 +907,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				break;
 
 			case PT_STRING:
+			case PT_LARGE_STRING:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
 				if (val_p -> st_string_value_s)
@@ -1002,6 +1019,19 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 							}
 						break;
 
+					case PT_CHAR:
+						if (json_is_string (json_value_p))
+							{
+								const char *value_s = json_string_value (json_value_p);
+
+								if (value_s && (strlen (value_s) == 1))
+									{
+										value_p -> st_char_value = *value_s;
+										success_flag = true;
+									}
+							}
+						break;
+
 					case PT_SIGNED_INT:
 						if (json_is_integer (json_value_p))
 							{
@@ -1051,6 +1081,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 						break;
 					
 					case PT_STRING:
+					case PT_LARGE_STRING:
 					case PT_PASSWORD:
 					case PT_KEYWORD:
 						if (json_is_string (json_value_p))
@@ -1127,6 +1158,18 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										value_s = (option_p -> pmo_value.st_boolean_value) ? "true" : "false";
 										break;
 
+									case PT_CHAR:
+										value_s = (char *) AllocMemory (2 * sizeof (char));
+
+										if (value_s)
+											{
+												*value_s = option_p -> pmo_value.st_char_value;
+												* (value_s + 1) = '\0';
+
+												alloc_flag = true;
+											}
+										break;
+
 									case PT_SIGNED_INT:
 										value_s = ConvertIntegerToString (option_p -> pmo_value.st_long_value);
 										alloc_flag = (value_s != NULL);
@@ -1144,6 +1187,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										break;
 
 									case PT_STRING:
+									case PT_LARGE_STRING:
 									case PT_PASSWORD:
 									case PT_KEYWORD:
 										value_s = option_p -> pmo_value.st_string_value_s;

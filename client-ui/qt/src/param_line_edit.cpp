@@ -12,6 +12,7 @@ ParamLineEdit :: ParamLineEdit (Parameter * const param_p, const PrefsWidget * c
 	ple_text_box_p = new QLineEdit (parent_p);
 	ple_text_box_p -> setEchoMode (echo);
 
+
 	connect (ple_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
@@ -30,15 +31,34 @@ void ParamLineEdit :: RemoveConnection ()
 
 void ParamLineEdit :: SetDefaultValue ()
 {
-	const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
 
-	ple_text_box_p -> setText (value_s);
+	if (bpw_param_p -> pa_type == PT_CHAR)
+		{
+			char value_s [2];
+
+			*value_s = bpw_param_p -> pa_default.st_char_value;
+			* (value_s + 1) = '\0';
+
+			ple_text_box_p -> setText (value_s);
+
+		}
+	else
+		{
+			const char *value_s = bpw_param_p -> pa_default.st_string_value_s;
+
+			ple_text_box_p -> setText (value_s);
+		}
 }
 
 
 QWidget *ParamLineEdit :: GetQWidget ()
 {
 	return ple_text_box_p;
+}
+
+void ParamLineEdit :: SetMaxLength (int l)
+{
+	ple_text_box_p -> setMaxLength (l);
 }
 
 

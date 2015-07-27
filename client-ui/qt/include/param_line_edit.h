@@ -30,6 +30,9 @@ public:
 
   virtual bool SetValueFromText (const char *value_s);
 
+  void SetMaxLength (int l);
+
+
 protected:
   QLineEdit *ple_text_box_p;
 

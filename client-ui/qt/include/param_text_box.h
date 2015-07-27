@@ -11,6 +11,19 @@
 #include "base_param_widget.h"
 
 
+class DroppableTextBox : public QPlainTextEdit
+{
+public:
+	DroppableTextBox (QWidget *parent_p);
+
+protected:
+	virtual void dragEnterEvent (QDragEnterEvent *event_p);
+
+	virtual void dropEvent (QDropEvent *event_p);
+
+	void LoadText (const char *filename_s);
+};
+
 
 class ParamTextBox : public BaseParamWidget
 {
@@ -32,15 +45,9 @@ public:
 	virtual bool SetValueFromText (const char *value_s);
 
 protected:
-	QPlainTextEdit *ptb_text_box_p;
+	DroppableTextBox *ptb_text_box_p;
 
 	virtual QWidget *GetQWidget ();
-
-	virtual void dragEnterEvent (QDragEnterEvent *event_p);
-
-	virtual void dropEvent (QDropEvent *event_p);
-
-	void LoadText (const char *filename_s);
 };
 
 

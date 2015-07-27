@@ -295,6 +295,14 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						widget_p = new ParamCheckBox (param_p, qpw_prefs_widget_p);
 						break;
 
+					case PT_CHAR:
+						{
+							ParamLineEdit *editor_p = new ParamLineEdit (param_p, qpw_prefs_widget_p, QLineEdit :: Normal);
+							editor_p -> SetMaxLength (1);
+							widget_p = editor_p;
+						}
+						break;
+
 					case PT_SIGNED_REAL:
 					case PT_UNSIGNED_REAL:
 						widget_p = new ParamDoubleSpinBox (param_p, qpw_prefs_widget_p);

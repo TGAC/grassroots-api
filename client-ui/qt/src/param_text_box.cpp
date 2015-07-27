@@ -9,14 +9,101 @@
 #include "string_utils.h"
 #include "byte_buffer.h"
 
+
+DroppableTextBox :: DroppableTextBox (QWidget *parent_p)
+: QPlainTextEdit (parent_p)
+{
+	setAcceptDrops (true);
+
+}
+
+void DroppableTextBox :: dropEvent (QDropEvent *event_p)
+{
+	QList <QUrl> urls = event_p -> mimeData () -> urls ();
+
+	if (! (urls.isEmpty ()))
+		{
+			QString filename = urls.first ().toLocalFile ();
+
+			if (! ((filename.isEmpty ()) || (filename.isNull ())))
+				{
+					QByteArray ba = filename.toLocal8Bit ();
+					const char * const filename_s = ba.constData ();
+
+					qDebug () << "dropped " << filename;
+
+					LoadText (filename_s);
+				}		/* if (! (filename.isEmpty ())) */
+
+		}		/* if (! (urls.isEmpty ())) */
+
+}
+
+void DroppableTextBox :: dragEnterEvent (QDragEnterEvent *event_p)
+{
+	event_p -> acceptProposedAction ();
+}
+
+
+void DroppableTextBox :: LoadText (const char *filename_s)
+{
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+	if (buffer_p)
+		{
+			FILE *in_f = fopen (filename_s, "r");
+
+			if (in_f)
+				{
+					bool loop_flag = true;
+					bool success_flag = true;
+					char *buffer_s = NULL;
+
+					while (loop_flag)
+						{
+							if (GetLineFromFile (in_f, &buffer_s))
+								{
+									if (!AppendStringToByteBuffer (buffer_p, buffer_s))
+										{
+											success_flag = false;
+										}
+
+								}
+							else
+							{
+								loop_flag = false;
+							}
+						}
+
+					if (success_flag)
+					{
+						const char *data_s = GetByteBufferData (buffer_p);
+
+						clear();
+						insertPlainText (data_s);
+					}
+
+					fclose (in_f);
+				}
+
+			FreeByteBuffer (buffer_p);
+		}
+}
+
+
+
+
+
+
+
+
 ParamTextBox :: ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
-	ptb_text_box_p = new QPlainTextEdit (parent_p);
+	ptb_text_box_p = new DroppableTextBox (parent_p);
 
 	connect (ptb_text_box_p, &QPlainTextEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
 
-	ptb_text_box_p -> setAcceptDrops (true);
 }
 
 
@@ -80,81 +167,5 @@ bool ParamTextBox :: SetValueFromText (const char *value_s)
 
 	return true;
 }
-
-
-void ParamTextBox :: dropEvent (QDropEvent *event_p)
-{
-	QList <QUrl> urls = event_p -> mimeData () -> urls ();
-
-	if (! (urls.isEmpty ()))
-		{
-			QString filename = urls.first ().toLocalFile ();
-
-			if (! ((filename.isEmpty ()) || (filename.isNull ())))
-				{
-					QByteArray ba = filename.toLocal8Bit ();
-					const char * const filename_s = ba.constData ();
-
-					qDebug () << "dropped " << filename;
-
-					LoadText (filename_s);
-				}		/* if (! (filename.isEmpty ())) */
-
-		}		/* if (! (urls.isEmpty ())) */
-
-}
-
-void ParamTextBox :: dragEnterEvent (QDragEnterEvent *event_p)
-{
-	event_p -> acceptProposedAction ();
-}
-
-
-void ParamTextBox :: LoadText (const char *filename_s)
-{
-	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-	if (buffer_p)
-		{
-			FILE *in_f = fopen (filename_s, "r");
-
-			if (in_f)
-				{
-					bool loop_flag = true;
-					bool success_flag = true;
-					char *buffer_s = NULL;
-
-					while (loop_flag)
-						{
-							if (GetLineFromFile (in_f, &buffer_s))
-								{
-									if (!AppendStringToByteBuffer (buffer_p, buffer_s))
-										{
-											success_flag = false;
-										}
-
-								}
-							else
-							{
-								loop_flag = false;
-							}
-						}
-
-					if (success_flag)
-					{
-						const char *data_s = GetByteBufferData (buffer_p);
-
-						ptb_text_box_p -> clear();
-						ptb_text_box_p -> insertPlainText (data_s);
-					}
-
-					fclose (in_f);
-				}
-
-			FreeByteBuffer (buffer_p);
-		}
-}
-
-
 
 

@@ -25,6 +25,8 @@
 #define TAG_DUMP MAKE_TAG('P', 'G', 'D', 'P')
 #define TAG_COLLECTION MAKE_TAG('P', 'G', 'C', 'O')
 #define TAG_DATABASE MAKE_TAG('P', 'G', 'D', 'B')
+#define TAG_DELIMITER MAKE_TAG('P', 'G', 'D', 'L')
+#define TAG_FILE MAKE_TAG('P', 'G', 'F', 'I')
 
 
 static const char *S_DATABASE_S = "geodb";
@@ -284,10 +286,11 @@ static bool AddUploadParams (ParameterSet *param_set_p)
 					++ grouped_param_pp;
 				}
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "data", "Data to upload", "The data to upload", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "data", "Data to upload", "The data to upload", TAG_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
-					const char * const group_name_s = "Query Sequence Parameters";
+					const char * const group_name_s = "Spreadsheet Import Parameters";
 
+					*grouped_param_pp = param_p;
 
 					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 						{
