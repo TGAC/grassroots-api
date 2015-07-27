@@ -2,7 +2,9 @@
 #define PARAM_TEXT_BOX_H
 
 #include <QWidget>
-#include <QTextEdit>
+#include <QPlainTextEdit>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 #include "parameter.h"
 
@@ -30,11 +32,18 @@ public:
 	virtual bool SetValueFromText (const char *value_s);
 
 protected:
-	QTextEdit *ptb_text_box_p;
+	QPlainTextEdit *ptb_text_box_p;
 
 	virtual QWidget *GetQWidget ();
 
+	virtual void dragEnterEvent (QDragEnterEvent *event_p);
 
+	virtual void dropEvent (QDropEvent *event_p);
+
+	void LoadText (const char *filename_s);
 };
+
+
+
 
 #endif // PARAM_TEXT_BOX_H

@@ -10,6 +10,8 @@
 #include "string_utils.h"
 #include "json_tools.h"
 
+#include "string_linked_list.h"
+
 #ifdef _DEBUG
 	#define MONGODB_SERVICE_DEBUG	(STM_LEVEL_FINE)
 #else
@@ -71,6 +73,12 @@ static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collectio
 static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
 
 static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+
+static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag);
+
+static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
+
+static bool AddUploadParams (ParameterSet *param_set_p);
 
 /*
  * API FUNCTIONS
@@ -237,7 +245,10 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 										{
 											if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_STRING, false, "collection", "Collection", "The collection to act upon", TAG_COLLECTION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 												{
-													return params_p;
+													if (AddUploadParams (params_p))
+														{
+															return params_p;
+														}
 												}
 										}
 								}
@@ -248,6 +259,47 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 		}
 
 	return NULL;
+}
+
+
+
+static bool AddUploadParams (ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	Parameter *param_p = NULL;
+	SharedType def;
+	size_t num_group_params = 2;
+	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
+	Parameter **grouped_param_pp = grouped_params_pp;
+
+	def.st_char_value = '|';
+
+	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_CHAR, false, "delimiter", "Delimiter", "The character delimiting columns", TAG_DELIMITER, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+		{
+			def.st_string_value_s = NULL;
+
+			if (grouped_param_pp)
+				{
+					*grouped_param_pp = param_p;
+					++ grouped_param_pp;
+				}
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "data", "Data to upload", "The data to upload", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+				{
+					const char * const group_name_s = "Query Sequence Parameters";
+
+
+					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							FreeMemory (grouped_params_pp);
+						}
+
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
 }
 
 
@@ -502,18 +554,23 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 													while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
 														{
 															bson_iter_t iter;
-															bson_iter_t sub_iter;
 															json_t *json_value_p = NULL;
 
 															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
-															LogBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
+															LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
 															#endif
 
 															if (bson_iter_init (&iter, doc_p))
 																{
 																	if (bson_iter_find (&iter, "_id"))
 																		{
-																			const bson_oid_t *src_p = (const bson_oid_t  *) bson_iter_value (&iter);
+																			const bson_oid_t *src_p = NULL;
+
+																			if (BSON_ITER_HOLDS_OID (&iter))
+																				{
+																					src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
+																				}
+
 																			bson_oid_copy (src_p, &doc_id);
 
 																			#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
@@ -632,3 +689,172 @@ static bool CleanUpMongoDBServiceJob (ServiceJob *job_p)
 }
 
 
+
+static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter)
+{
+	int32 num_lines = 0;
+
+	if (data_s)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					json_t *json_data_p = json_object ();
+
+					if (json_data_p)
+						{
+							LinkedList *headers_p = GetTableRow (&data_s, delimiter, buffer_p, false);
+
+							if (headers_p)
+								{
+									uint32 line_number = 2;
+									LinkedList *row_p = NULL;
+
+									while ((row_p = GetTableRow (&data_s, delimiter, buffer_p, true)) != NULL)
+										{
+											if (headers_p -> ll_size == row_p -> ll_size)
+												{
+													StringListNode *header_node_p = (StringListNode *) (headers_p -> ll_head_p);
+													StringListNode *row_node_p = (StringListNode *) (row_p -> ll_head_p);
+													bson_oid_t *id_p = NULL;
+
+													while (header_node_p)
+														{
+															const char *row_value_s = row_node_p -> sln_string_s;
+
+															if (row_value_s)
+																{
+																	if (json_object_set_new (json_data_p, header_node_p -> sln_string_s, json_string (row_value_s)) != 0)
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to insert %s: %s into json object", header_node_p -> sln_string_s, row_value_s);
+																		}
+																}
+
+															header_node_p = (StringListNode *) (header_node_p -> sln_node.ln_next_p);
+															row_node_p = (StringListNode *) (row_node_p -> sln_node.ln_next_p) ;
+														}		/* while (header_node_p) */
+
+													/*
+													The ID header is the unique identifier so check to see if it is already
+													in the collection
+													*/
+
+													#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+														{
+															char *dump_s = json_dumps (json_data_p, JSON_INDENT (2));
+
+															if (dump_s)
+																{
+																	PrintLog (STM_LEVEL_FINE, "json row %s", dump_s);
+																	free (dump_s);
+																}
+														}
+													#endif
+
+													id_p = InsertJSONIntoMongoCollection (tool_p, json_data_p);
+													if (!id_p)
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to insert json object into collection");
+														}
+
+													json_object_clear (json_data_p);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "" UINT32_FMT " headers and " UINT32_FMT "rows  for line " UINT32_FMT, headers_p -> ll_size, row_p -> ll_size, line_number);
+												}
+
+											++ line_number;
+										}
+
+								}	/* if (headers_p) */
+
+							WipeJSON (json_data_p);
+						}		/* if (json_data_p) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+
+		}
+
+
+	return num_lines;
+}
+
+
+static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag)
+{
+	bool success_flag = true;
+	const char *buffer_s = NULL;
+	LinkedList *row_p = AllocateLinkedList (FreeStringListNode);
+
+	if (row_p)
+		{
+			bool loop_flag = (*buffer_s != '\0');
+
+			buffer_s = *data_ss;
+			ResetByteBuffer (buffer_p);
+
+			while (loop_flag && success_flag)
+				{
+					if (*buffer_s == delimiter)
+						{
+							/* For an empty column this can be an empty string */
+							const char *data_s = GetByteBufferData (buffer_p);
+							StringListNode *node_p = NULL;
+
+							if (*data_s != '\0')
+								{
+									node_p = AllocateStringListNode (data_s, MF_DEEP_COPY);
+								}
+							else if (empty_strings_allowed_flag)
+								{
+									node_p = AllocateStringListNode (data_s, MF_SHADOW_USE);
+								}
+
+							if (node_p)
+								{
+									LinkedListAddTail (row_p, (ListItem * const) node_p);
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+					else
+						{
+							switch (*buffer_s)
+								{
+									case '\r':
+									case '\n':
+										loop_flag = false;
+										break;
+
+									default:
+										success_flag = AppendToByteBuffer (buffer_p, buffer_s, 1);
+										break;
+								}
+						}
+
+					if (loop_flag && success_flag)
+						{
+							++ buffer_s;
+							loop_flag = (*buffer_s != '\0');
+						}
+				}		/*( while (loop_flag) */
+
+		}		/* if (row_p) */
+
+	if (success_flag)
+		{
+			*data_ss = buffer_s;
+		}
+	else
+		{
+			FreeLinkedList (row_p);
+			row_p = NULL;
+		}
+
+	return row_p;
+}
