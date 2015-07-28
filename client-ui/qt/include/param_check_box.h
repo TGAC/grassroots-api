@@ -24,6 +24,8 @@ public:
 
 	virtual bool SetValueFromText (const char *value_s);
 
+	virtual bool StoreParameterValue ();
+
 protected:
 	virtual QWidget *GetQWidget ();
 

@@ -68,6 +68,8 @@ void DroppableTextBox :: LoadText (const char *filename_s)
 											success_flag = false;
 										}
 
+									FreeLineBuffer (buffer_s);
+
 								}
 							else
 							{
@@ -95,9 +97,6 @@ ParamTextBox :: ParamTextBox (Parameter * const param_p, const PrefsWidget * con
 :		BaseParamWidget (param_p, options_widget_p)
 {
 	ptb_text_box_p = new DroppableTextBox (parent_p);
-
-	connect (ptb_text_box_p, &QPlainTextEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
-
 }
 
 
@@ -110,7 +109,6 @@ ParamTextBox ::	~ParamTextBox ()
 
 void ParamTextBox :: RemoveConnection ()
 {
-	disconnect (ptb_text_box_p, &QPlainTextEdit :: textChanged, this, &ParamTextBox :: UpdateConfig);
 }
 
 
@@ -122,27 +120,23 @@ void ParamTextBox :: SetDefaultValue ()
 }
 
 
+
 QWidget *ParamTextBox :: GetQWidget ()
 {
 	return ptb_text_box_p;
 }
 
 
-bool ParamTextBox :: UpdateConfig ()
+
+bool ParamTextBox :: StoreParameterValue ()
 {
 	QString s = ptb_text_box_p -> toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();
 	const char *value_s = ba.constData ();
 
-	return UpdateConfigValue (value_s);
-}
-
-
-bool ParamTextBox :: UpdateConfigValue (const char * const value_s)
-{
 	bool success_flag = SetParameterValue (bpw_param_p, value_s);
 
-	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
+	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s << " " << success_flag;
 
 	return success_flag;
 }

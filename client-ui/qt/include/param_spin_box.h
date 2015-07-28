@@ -14,8 +14,6 @@ class ParamSpinBox : public BaseParamWidget
 {
 	Q_OBJECT
 
-private slots:
-	bool UpdateConfig (int value);
 
 public:
 	ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, bool signed_flag, QWidget *parent_p = 0);
@@ -25,6 +23,7 @@ public:
 	virtual bool SetValueFromText (const char *value_s);
 
 	virtual void SetDefaultValue ();
+	virtual bool StoreParameterValue ();
 
 protected:
 	virtual QWidget *GetQWidget ();

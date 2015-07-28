@@ -286,7 +286,7 @@ static bool AddUploadParams (ParameterSet *param_set_p)
 					++ grouped_param_pp;
 				}
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "data", "Data to upload", "The data to upload", TAG_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_TABLE, false, "data", "Data to upload", "The data to upload", TAG_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					const char * const group_name_s = "Spreadsheet Import Parameters";
 

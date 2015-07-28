@@ -20,10 +20,6 @@ ParamDoubleSpinBox :: ParamDoubleSpinBox (Parameter * const param_p, const Prefs
 		{
 			pdsb_spinner_p -> setMaximum (1000000.0);
 		}
-
-	void (QDoubleSpinBox :: * signal_fn) (double) = &QDoubleSpinBox :: valueChanged;
-	connect (pdsb_spinner_p, signal_fn, this, &ParamDoubleSpinBox :: UpdateConfig);
-
 }
 
 
@@ -37,8 +33,9 @@ void ParamDoubleSpinBox :: SetDefaultValue ()
 }
 
 
-bool ParamDoubleSpinBox :: UpdateConfig (double value)
+bool ParamDoubleSpinBox :: StoreParameterValue ()
 {
+	const double value = pdsb_spinner_p -> value ();
 	bool b = SetParameterValue (bpw_param_p, &value);
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;

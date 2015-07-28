@@ -15,7 +15,6 @@ class FileChooserWidget : public BaseParamWidget
 
 private slots:
 	void ChooseFile ();
-	bool UpdateConfig (const QString &value_r);
 
 
 public:
@@ -26,6 +25,8 @@ public:
 	virtual void SetDefaultValue ();
 
 	virtual bool SetValueFromText (const char *value_s);
+
+	virtual bool StoreParameterValue ();
 
 protected:
 	virtual QWidget *GetQWidget ();

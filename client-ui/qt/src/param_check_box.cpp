@@ -12,9 +12,6 @@ ParamCheckBox :: ParamCheckBox (Parameter * const param_p, const PrefsWidget * c
 : BaseParamWidget (param_p, options_widget_p)
 {
 	pcb_check_box_p = new QCheckBox (parent_p);
-
-	void (QCheckBox :: * signal_fn) (int) = &QCheckBox :: stateChanged;
-	connect (pcb_check_box_p, signal_fn, this, &ParamCheckBox :: UpdateConfig);
 }
 
 
@@ -24,34 +21,11 @@ ParamCheckBox ::	~ParamCheckBox ()
 }
 
 
-bool ParamCheckBox :: UpdateConfig (int state)
+
+bool ParamCheckBox :: StoreParameterValue ()
 {
-	bool b = false;
-	bool value = false;
-
-	switch (state)
-		{
-			case Qt::Checked:
-				{
-					value = true;
-				}
-				break;
-
-			case Qt :: Unchecked:
-				{
-					value = false;
-				}
-				break;
-
-			default:
-				break;
-		}
-
-	b = SetParameterValue (bpw_param_p, &value);
-
-	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
-
-	return b;
+	bpw_param_p -> pa_current_value.st_boolean_value = pcb_check_box_p -> isChecked ();
+	return true;
 }
 
 

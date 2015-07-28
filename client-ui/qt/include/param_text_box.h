@@ -30,10 +30,6 @@ class ParamTextBox : public BaseParamWidget
 	Q_OBJECT
 
 
-private slots:
-	bool UpdateConfig ();
-	bool UpdateConfigValue (const char * const value_s);
-
 public:
 	ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
 	virtual ~ParamTextBox ();
@@ -43,6 +39,8 @@ public:
 	virtual void SetDefaultValue ();
 
 	virtual bool SetValueFromText (const char *value_s);
+
+	virtual bool StoreParameterValue ();
 
 protected:
 	DroppableTextBox *ptb_text_box_p;

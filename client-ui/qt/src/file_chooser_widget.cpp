@@ -45,15 +45,6 @@ void FileChooserWidget :: ChooseFile ()
 }
 
 
-bool FileChooserWidget :: UpdateConfig (const QString &value_r)
-{
-	QByteArray ba = value_r.toLocal8Bit ();
-	const char * value_s = ba.constData ();
-
-	return SetValueFromText (value_s);
-}
-
-
 bool FileChooserWidget :: SetValueFromText (const char *value_s)
 {
 	fcw_chooser_p -> setCurrentText (value_s);
@@ -84,6 +75,18 @@ void FileChooserWidget :: SetDefaultValue ()
 }
 
 
+
+bool FileChooserWidget :: StoreParameterValue ()
+{
+	QString value = fcw_chooser_p -> currentText ();
+	QByteArray ba = value.toLocal8Bit ();
+	const char * value_s = ba.constData ();
+
+	return SetValueFromText (value_s);
+}
+
+
+
 FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWidget * const prefs_widget_p, QFileDialog :: FileMode mode)
 	: BaseParamWidget (param_p, prefs_widget_p),
 		fcw_file_mode (mode)
@@ -95,7 +98,6 @@ FileChooserWidget :: FileChooserWidget (Parameter * const param_p, const PrefsWi
 	QPushButton *browse_button_p = new QPushButton (tr ("Browse"));
 	connect (browse_button_p, &QPushButton :: clicked, this, &FileChooserWidget :: ChooseFile);
 
-	connect (fcw_chooser_p, &QComboBox :: currentTextChanged, this, &FileChooserWidget :: UpdateConfig);
 
 
 	fcw_widget_p = new QWidget;

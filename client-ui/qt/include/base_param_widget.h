@@ -37,7 +37,7 @@ public:
 
 	const char *GetParameterName () const;
 
-	virtual void RefreshValue ();
+	virtual bool StoreParameterValue () = 0;
 
 protected:
 	Parameter * const bpw_param_p;

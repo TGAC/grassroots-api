@@ -207,6 +207,7 @@ ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const
 						break;
 					
 					case PT_STRING:
+					case PT_LARGE_STRING:
 					case PT_PASSWORD:
 					case PT_KEYWORD:
 						{
@@ -236,7 +237,7 @@ ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const
 
 void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt)
 {
-	if ((pt == PT_STRING) || (pt == PT_PASSWORD) || (pt == PT_FILE_TO_READ) || (pt == PT_FILE_TO_WRITE) || (pt == PT_DIRECTORY))
+	if ((pt == PT_STRING) || (pt == PT_LARGE_STRING) || (pt == PT_PASSWORD) || (pt == PT_FILE_TO_READ) || (pt == PT_FILE_TO_WRITE) || (pt == PT_DIRECTORY))
 		{
 			if (bounds_p -> pb_lower.st_string_value_s)
 				{
@@ -327,7 +328,7 @@ void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
 					FreeCopiedString (option_p -> pmo_description_s);
 				}
 
-			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD))
+			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD) || (options_p -> pmoa_values_type == PT_LARGE_STRING) || (options_p -> pmoa_values_type == PT_TABLE))
 				{
 					FreeCopiedString (option_p -> pmo_value.st_string_value_s);
 				}
@@ -365,7 +366,7 @@ bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32
 
 	if (success_flag)
 		{
-			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD))
+			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD) || (options_p -> pmoa_values_type == PT_LARGE_STRING) || (options_p -> pmoa_values_type == PT_TABLE))
 				{
 					char *value_s = CopyToNewString (value.st_string_value_s, 0, false);
 
@@ -532,8 +533,9 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 				}
 				break;
 
-
+			case PT_LARGE_STRING:
 			case PT_STRING:
+			case PT_TABLE:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
 				{
@@ -825,6 +827,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				break;
 
 			case PT_STRING:
+			case PT_TABLE:
 			case PT_LARGE_STRING:
 			case PT_PASSWORD:
 			case PT_FILE_TO_WRITE:
@@ -907,6 +910,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				break;
 
 			case PT_STRING:
+			case PT_TABLE:
 			case PT_LARGE_STRING:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
@@ -1080,6 +1084,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 						}
 						break;
 					
+					case PT_TABLE:
 					case PT_STRING:
 					case PT_LARGE_STRING:
 					case PT_PASSWORD:
@@ -1186,6 +1191,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										alloc_flag = (value_s != NULL);
 										break;
 
+									case PT_TABLE:
 									case PT_STRING:
 									case PT_LARGE_STRING:
 									case PT_PASSWORD:
@@ -1745,6 +1751,8 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 				*alloc_flag_p = false;
 				break;
 
+			case PT_TABLE:
+			case PT_LARGE_STRING:
 			case PT_STRING:
 			case PT_PASSWORD:
 			case PT_KEYWORD:

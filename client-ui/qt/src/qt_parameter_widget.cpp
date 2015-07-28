@@ -14,6 +14,7 @@
 #include "param_line_edit.h"
 #include "param_text_box.h"
 #include "prefs_widget.h"
+#include "param_table_widget.h"
 
 
 // WHEATIS INCLUDES
@@ -342,6 +343,10 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p);
 						break;
 
+					case PT_TABLE:
+						widget_p = new ParamTableWidget (param_p, qpw_prefs_widget_p);
+						break;
+
 				default:
 						break;
 
@@ -363,5 +368,18 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 
 json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
 {
+	/* make sure that all of the parameter values are up to date */
+	QList <BaseParamWidget *> widgets = qpw_widgets_map.values ();
+
+	for (int i = widgets.size () - 1; i >= 0; -- i)
+		{
+			BaseParamWidget *widget_p = widgets.at (i);
+
+			if (! (widget_p -> StoreParameterValue ()))
+				{
+					PrintErrors (STM_LEVEL_SEVERE, "Failed to set parameter value for %s", widget_p -> GetParameterName ());
+				}
+		}
+
 	return GetParameterSetAsJSON (qpw_params_p, false);
 }

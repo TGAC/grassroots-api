@@ -20,9 +20,6 @@ ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * con
 		{
 			psb_spin_box_p -> setMaximum (1000000);
 		}
-
-	void (QSpinBox :: * signal_fn) (int) = &QSpinBox :: valueChanged;
-	connect (psb_spin_box_p, signal_fn, this, &ParamSpinBox :: UpdateConfig);
 }
 
 
@@ -50,9 +47,9 @@ void ParamSpinBox :: SetDefaultValue ()
 		}
 }
 
-
-bool ParamSpinBox :: UpdateConfig (int value)
+bool ParamSpinBox :: StoreParameterValue ()
 {
+	const int value = psb_spin_box_p -> value ();
 	bool b = SetParameterValue (bpw_param_p, &value);
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;

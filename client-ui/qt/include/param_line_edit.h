@@ -17,8 +17,7 @@ class ParamLineEdit : public BaseParamWidget
 
 
 private slots:
-  bool UpdateConfig ();
-  bool UpdateConfigValue (const char * const value_s);
+	bool UpdateConfigValue (const char * const value_s);
 
 public:
   ParamLineEdit (Parameter * const param_p, const PrefsWidget * const options_widget_p, QLineEdit :: EchoMode echo = QLineEdit :: Normal, QWidget *parent_p = 0);
@@ -32,6 +31,7 @@ public:
 
   void SetMaxLength (int l);
 
+	virtual bool StoreParameterValue ();
 
 protected:
   QLineEdit *ple_text_box_p;

@@ -15,8 +15,6 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 {
 	pcb_combo_box_p = new QComboBox (parent_p);
 
-	void (QComboBox :: * signal_fn) (int) = &QComboBox :: currentIndexChanged;
-	connect (pcb_combo_box_p, signal_fn, this, &ParamComboBox :: UpdateConfig);
 
 	ParameterMultiOption *option_p = bpw_param_p -> pa_options_p -> pmoa_options_p;
 	const int num_options = static_cast <int> (bpw_param_p -> pa_options_p -> pmoa_num_options);
@@ -72,13 +70,14 @@ ParamComboBox ::	~ParamComboBox ()
 }
 
 
-bool ParamComboBox :: UpdateConfig (int index)
+bool ParamComboBox :: StoreParameterValue ()
 {
+	QVariant v = pcb_combo_box_p -> currentData ();
 	bool success_flag = false;
-	QVariant v = pcb_combo_box_p -> itemData (index);
 
 	switch (bpw_param_p -> pa_type)
 		{
+			case PT_LARGE_STRING:
 			case PT_STRING:
 			case PT_FILE_TO_READ:
 			case PT_FILE_TO_WRITE:

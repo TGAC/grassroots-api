@@ -38,10 +38,6 @@ void BaseParamWidget :: RemoveConnection ()
 }
 
 
-void BaseParamWidget :: RefreshValue ()
-{
-
-}
 
 QLabel *BaseParamWidget :: GetLabel () const
 {

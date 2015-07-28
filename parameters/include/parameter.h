@@ -40,6 +40,7 @@ typedef enum ParameterType
 	PT_KEYWORD,
 	PT_LARGE_STRING,
 	PT_JSON,
+	PT_TABLE,
 	PT_NUM_TYPES
 } ParameterType;
 

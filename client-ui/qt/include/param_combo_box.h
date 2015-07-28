@@ -15,8 +15,6 @@ class ParamComboBox : public BaseParamWidget
 {
 	Q_OBJECT
 
-private slots:
-	bool UpdateConfig (int state);
 
 public:
 	ParamComboBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
@@ -26,6 +24,8 @@ public:
 	virtual void SetDefaultValue ();
 
 	virtual bool SetValueFromText (const char *value_s);
+
+	virtual bool StoreParameterValue ();
 
 protected:
 	virtual QWidget *GetQWidget ();

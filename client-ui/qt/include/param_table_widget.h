@@ -14,7 +14,15 @@
 class DroppableTableWidget : public QTableWidget
 {
 public:
-	DroppableTableWidget (QWidget *parent_p);
+	DroppableTableWidget (QWidget *parent_p, char delimiter);
+
+	void SetRow (const int row, const char *data_s);
+
+	void SetDelimiter (char delimiter);
+	char GetDelimiter ();
+
+	char *GetValueAsText ();
+	bool SetValueFromText (const char *data_s);
 
 protected:
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);
@@ -22,17 +30,17 @@ protected:
 	virtual void dropEvent (QDropEvent *event_p);
 
 	void LoadText (const char *filename_s);
+
+
+
+private:
+	char dtw_delimiter;
 };
 
 
 class ParamTableWidget : public BaseParamWidget
 {
 	Q_OBJECT
-
-
-private slots:
-	bool UpdateConfig (int row, int column);
-	bool UpdateConfigValue (const char * const value_s);
 
 public:
 	ParamTableWidget (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
@@ -44,8 +52,8 @@ public:
 
 	virtual bool SetValueFromText (const char *value_s);
 
-	virtual void RefreshValue ();
 
+	virtual bool StoreParameterValue ();
 
 protected:
 	DroppableTableWidget *ptw_table_p;

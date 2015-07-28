@@ -12,8 +12,6 @@ ParamLineEdit :: ParamLineEdit (Parameter * const param_p, const PrefsWidget * c
 	ple_text_box_p = new QLineEdit (parent_p);
 	ple_text_box_p -> setEchoMode (echo);
 
-
-	connect (ple_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
 
@@ -25,7 +23,6 @@ ParamLineEdit ::	~ParamLineEdit ()
 
 void ParamLineEdit :: RemoveConnection ()
 {
-	disconnect (ple_text_box_p, &QLineEdit :: textChanged, this, &ParamLineEdit :: UpdateConfig);
 }
 
 
@@ -77,7 +74,7 @@ bool ParamLineEdit :: SetValueFromText (const char *value_s)
 
 
 
-bool ParamLineEdit :: UpdateConfig ()
+bool ParamLineEdit :: StoreParameterValue ()
 {
 	QString s = ple_text_box_p -> text ();
 	QByteArray ba = s.toLocal8Bit ();
