@@ -201,6 +201,15 @@ WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
 WHEATIS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
 
 
+
+WHEATIS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter);
+
+
+WHEATIS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

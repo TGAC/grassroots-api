@@ -1,8 +1,13 @@
+#include <string.h>
 
 #define ALLOCATE_JSON_TAGS
+
 #include "json_util.h"
 #include "memory_allocations.h"
 #include "streams.h"
+#include "string_linked_list.h"
+#include "string_utils.h"
+
 
 JsonNode *AllocateJsonNode (json_t *json_p)
 {
@@ -140,14 +145,12 @@ bool SetJSONHTML (json_t *json_p, const char *key_s, const char *html_s)
 
 
 
-json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimiter, const char row_delimiter)
+json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter)
 {
 	json_t *json_values_p = NULL;
-	const char *current_row_s = data_s;
-	const char *next_row_s;
-	int col = 0;
+	char *current_row_s = data_s;
+	char *next_row_s;
 	bool loop_flag = true;
-	bool valid_row_flag = false;
 	bool success_flag = true;
 	LinkedList *headers_p = AllocateLinkedList (FreeStringListNode);
 
@@ -158,8 +161,8 @@ json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimite
 
 			if (next_row_s)
 				{
-					const char *current_token_s = current_row_s;
-					const char *next_token_s = NULL;
+					char *current_token_s = current_row_s;
+					char *next_token_s = NULL;
 
 					while (loop_flag && success_flag)
 						{
@@ -178,7 +181,7 @@ json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimite
 
 											if (node_p)
 												{
-													LinkedListAddTail (headers_p, (const ListItem *) node_p);
+													LinkedListAddTail (headers_p, (ListItem *) node_p);
 												}
 											else
 												{
@@ -196,7 +199,7 @@ json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimite
 
 									if (node_p)
 										{
-											LinkedListAddTail (headers_p, (const ListItem *) node_p);
+											LinkedListAddTail (headers_p, (ListItem *) node_p);
 										}
 									else
 										{
@@ -213,9 +216,58 @@ json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimite
 			/* Did we get the headers successfully? */
 			if (success_flag)
 				{
+					json_values_p = json_array ();
 
-				}
+					if (json_values_p)
+						{
+							loop_flag = true;
 
+							/* Now loop through each row creating a json object for it */
+							while (loop_flag && success_flag)
+								{
+									next_row_s = strchr (current_row_s, row_delimiter);
+
+									if (next_row_s)
+										{
+											json_t *row_p;
+
+											/*
+											 * Temporarily terminate the current row to treat it as string
+											 */
+											*next_row_s = '\0';
+											row_p = ConvertRowToJSON (current_row_s, headers_p, column_delimiter);
+
+											if (row_p)
+												{
+													if (json_array_append_new (json_values_p, row_p) != 0)
+														{
+															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to json rows", current_row_s);
+														}
+												}
+
+											*next_row_s = row_delimiter;
+										}		/* if (next_row_s) */
+									else
+										{
+											json_t *row_p;
+
+											row_p = ConvertRowToJSON (current_row_s, headers_p, column_delimiter);
+
+											if (row_p)
+												{
+													if (json_array_append_new (json_values_p, row_p) != 0)
+														{
+															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to json rows", current_row_s);
+														}
+												}
+
+											loop_flag = false;
+										}
+								}		/* while (loop_flag && success_flag) */
+
+						}		/* if (json_values_p) */
+
+				}		/* if (success_flag) */
 
 			FreeLinkedList (headers_p);
 		}		/* if (headers_p) */
@@ -224,4 +276,53 @@ json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimite
 	return json_values_p;
 }
 
+
+json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter)
+{
+	json_t *row_json_p = json_object ();
+
+	if (row_json_p)
+		{
+			StringListNode *header_p = (StringListNode *) (headers_p -> ll_head_p);
+			char *current_token_s = row_s;
+			char *next_token_s = NULL;
+
+			while (header_p)
+				{
+					if (*current_token_s != delimiter)
+						{
+							++ current_token_s;
+						}
+					else
+						{
+							next_token_s = strchr (current_token_s, delimiter);
+
+							if (next_token_s)
+								{
+									int res;
+
+									*next_token_s = '\0';
+									res = json_object_set_new (row_json_p, header_p -> sln_string_s, json_string (current_token_s));
+									*next_token_s = delimiter;
+
+									if (res != 0)
+										{
+
+										}
+
+									current_token_s = next_token_s + 1;
+								}
+							else
+								{
+
+								}
+						}
+
+					header_p = (StringListNode *) (header_p -> sln_node.ln_next_p);
+				}		/* while (header_p) */
+
+		}		/* if (row_json_p) */
+
+	return row_json_p;
+}
 

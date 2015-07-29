@@ -363,20 +363,23 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 										}
 									else
 										{
-											bool data_uploaded_flag = false;
+											bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+											json_t *json_param_p = NULL;
 
-											param_p -> GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
+											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
 
 											if (param_p)
 												{
-													data_uploaded_flag = ImportTableData (tool_p, collection_s, param_p -> pa_current_value.st_string_value_s);
+													json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, '|', '\n');
+
+													if (json_param_p)
+														{
+															data_fn = InsertData;
+														}
 												}
 
-											if (!data_uploaded_flag)
+											if (!json_param_p)
 												{
-													bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
-													json_t *json_param_p = NULL;
-
 													job_p -> sj_status = OS_FAILED;
 
 													if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
@@ -423,6 +426,11 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 												}		/* if (!data_uploaded_flag) */
 
+
+											if (json_param_p != value.st_json_p)
+												{
+													WipeJSON (json_param_p);
+												}
 										}
 
 								}		/* if (tool_p) */
