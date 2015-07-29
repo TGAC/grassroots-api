@@ -138,3 +138,90 @@ bool SetJSONHTML (json_t *json_p, const char *key_s, const char *html_s)
 	return success_flag;
 }
 
+
+
+json_t *ConvertTabularDataToJSON (const char *data_s, const char column_delimiter, const char row_delimiter)
+{
+	json_t *json_values_p = NULL;
+	const char *current_row_s = data_s;
+	const char *next_row_s;
+	int col = 0;
+	bool loop_flag = true;
+	bool valid_row_flag = false;
+	bool success_flag = true;
+	LinkedList *headers_p = AllocateLinkedList (FreeStringListNode);
+
+	if (headers_p)
+		{
+			/* Get the keys from the first row */
+			next_row_s = strchr (current_row_s, row_delimiter);
+
+			if (next_row_s)
+				{
+					const char *current_token_s = current_row_s;
+					const char *next_token_s = NULL;
+
+					while (loop_flag && success_flag)
+						{
+							char *value_s = NULL;
+							bool alloc_flag = false;
+
+							next_token_s = strchr (current_token_s, column_delimiter);
+
+							if (next_token_s)
+								{
+									value_s = CopyToNewString (current_token_s, next_token_s - current_token_s, false);
+
+									if (value_s)
+										{
+											StringListNode *node_p = AllocateStringListNode (value_s, MF_SHALLOW_COPY);
+
+											if (node_p)
+												{
+													LinkedListAddTail (headers_p, (const ListItem *) node_p);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, "Failed to allocate header node for %s", value_s);
+													success_flag = false;
+													FreeCopiedString (value_s);
+												}
+										}		/* if (value_s) */
+
+									current_token_s = next_token_s + 1;
+								}
+							else
+								{
+									StringListNode *node_p = AllocateStringListNode (current_token_s, MF_DEEP_COPY);
+
+									if (node_p)
+										{
+											LinkedListAddTail (headers_p, (const ListItem *) node_p);
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Failed to allocate header node for %s", current_token_s);
+											success_flag = false;
+										}
+
+									loop_flag = false;
+								}
+						}		/* while (loop_flag && success_flag) */
+
+				}		/* if (next_row_s) */
+
+			/* Did we get the headers successfully? */
+			if (success_flag)
+				{
+
+				}
+
+
+			FreeLinkedList (headers_p);
+		}		/* if (headers_p) */
+
+
+	return json_values_p;
+}
+
+

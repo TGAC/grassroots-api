@@ -36,6 +36,7 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 	QVBoxLayout *info_layout_p = new QVBoxLayout;
 
 	qpw_layout_p = new QGridLayout;
+	qpw_layout_p -> setColumnStretch (1, 100);
 	qpw_layout_p -> setAlignment (Qt :: AlignVCenter);
 
 	layout_p -> addLayout (info_layout_p);
@@ -118,6 +119,7 @@ void QTParameterWidget :: AddRow (QWidget *first_p, QWidget *second_p, const int
 
 	qpw_layout_p -> addWidget (first_p, row, 0);
 	qpw_layout_p -> addWidget (second_p, row, 1, row_span, 1, 0);
+	second_p -> setSizePolicy (QSizePolicy :: Fixed, QSizePolicy :: Expanding);
 }
 
 
@@ -174,6 +176,7 @@ void QTParameterWidget :: AddParameterWidget (Parameter *param_p, ParamGroupBox 
 			if (group_p)
 				{
 					group_p -> AddParameterWidget (child_p);
+					//group_p -> setSizePolicy (QSizePolicy :: Fixed, QSizePolicy :: Expanding);
 				}
 			else
 				{

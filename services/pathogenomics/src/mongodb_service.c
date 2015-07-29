@@ -82,6 +82,8 @@ static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const
 
 static bool AddUploadParams (ParameterSet *param_set_p);
 
+static bool ImportTableData (MongoTool *tool_p,  const char *collection_s, const char *data_s);
+
 /*
  * API FUNCTIONS
  */
@@ -361,52 +363,65 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 										}
 									else
 										{
-											bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
-											json_t *json_param_p = NULL;
+											bool data_uploaded_flag = false;
 
-											job_p -> sj_status = OS_FAILED;
+											param_p -> GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
 
-											if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
+											if (param_p)
 												{
-													data_fn = InsertData;
-													json_param_p = value.st_json_p;
-												}
-											else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
-												{
-													data_fn = SearchData;
-													json_param_p = value.st_json_p;
-												}
-											else if ((GetParameterValueFromParameterSet (param_set_p, TAG_REMOVE, &value, true)) && (value.st_json_p))
-												{
-													data_fn = DeleteData;
-													json_param_p = value.st_json_p;
+													data_uploaded_flag = ImportTableData (tool_p, collection_s, param_p -> pa_current_value.st_string_value_s);
 												}
 
-											if (data_fn)
+											if (!data_uploaded_flag)
 												{
-													json_error_t error;
-													bool success_flag = data_fn (tool_p, json_param_p, collection_s);
+													bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+													json_t *json_param_p = NULL;
 
-													#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+													job_p -> sj_status = OS_FAILED;
+
+													if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
 														{
-															char *dump_s = json_dumps (json_param_p, JSON_INDENT (2));
-															PrintLog (STM_LEVEL_FINE, "mongo param: %s", dump_s);
-															free (dump_s);
+															data_fn = InsertData;
+															json_param_p = value.st_json_p;
 														}
-													#endif
-
-													response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
-
-													if (response_p)
+													else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
 														{
-															job_p -> sj_status = OS_SUCCEEDED;
+															data_fn = SearchData;
+															json_param_p = value.st_json_p;
 														}
-													else
+													else if ((GetParameterValueFromParameterSet (param_set_p, TAG_REMOVE, &value, true)) && (value.st_json_p))
 														{
-															job_p -> sj_status = OS_FAILED;
+															data_fn = DeleteData;
+															json_param_p = value.st_json_p;
 														}
 
-												}
+													if (data_fn)
+														{
+															json_error_t error;
+															bool success_flag = data_fn (tool_p, json_param_p, collection_s);
+
+															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+																{
+																	char *dump_s = json_dumps (json_param_p, JSON_INDENT (2));
+																	PrintLog (STM_LEVEL_FINE, "mongo param: %s", dump_s);
+																	free (dump_s);
+																}
+															#endif
+
+															response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
+
+															if (response_p)
+																{
+																	job_p -> sj_status = OS_SUCCEEDED;
+																}
+															else
+																{
+																	job_p -> sj_status = OS_FAILED;
+																}
+
+														}
+
+												}		/* if (!data_uploaded_flag) */
 
 										}
 
@@ -421,6 +436,45 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 	return service_p -> se_jobs_p;
 }
 
+
+static bool ImportTableData (MongoTool *tool_p,  const char *collection_s, const char *data_s, const char *delimiter_s)
+{
+	bool success_flag = false;
+	const char *current_line_s = data_s;
+	const char *next_line_s = NULL;
+
+	bool loop_flag = true;
+
+	while (loop_flag)
+		{
+			char *value_s = NULL;
+			bool alloc_flag = false;
+
+			next_line_s = strchr (current_line_s, '\n');
+
+			if (next_line_s)
+				{
+					value_s = CopyToNewString (current_line_s, next_line_s - current_line_s, false);
+
+					if (value_s)
+						{
+
+							alloc_flag = true;
+						}
+
+
+					current_line_s = next_line_s + 1;
+				}
+			else
+				{
+					loop_flag = false;
+				}
+		}
+
+
+
+	return success_flag;
+}
 
 
 static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
