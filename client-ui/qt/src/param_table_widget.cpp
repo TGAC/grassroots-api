@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include <QDebug>
+#include <QFont>
 #include <QMimeData>
 #include <QTableWidgetItem>
 
@@ -48,6 +49,9 @@ void DroppableTableWidget :: dropEvent (QDropEvent *event_p)
 					qDebug () << "dropped " << filename;
 
 					LoadText (filename_s);
+
+					qDebug () << "rows " << rowCount () << " cols " << columnCount ();
+
 				}		/* if (! (filename.isEmpty ())) */
 
 		}		/* if (! (urls.isEmpty ())) */
@@ -56,6 +60,18 @@ void DroppableTableWidget :: dropEvent (QDropEvent *event_p)
 void DroppableTableWidget :: dragEnterEvent (QDragEnterEvent *event_p)
 {
 	event_p -> acceptProposedAction ();
+	event_p -> accept ();
+}
+
+void DroppableTableWidget :: dragMoveEvent (QDragMoveEvent *event_p)
+{
+	event_p -> accept ();
+}
+
+
+bool DroppableTableWidget :: dropMimeData (int row, int column, const QMimeData *data_p, Qt :: DropAction action)
+{
+	return true;
 }
 
 
@@ -65,29 +81,42 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 	const char *next_token_s;
 	int col = 0;
 	bool loop_flag = true;
+	bool valid_row_flag = false;
+
+	if (row >= rowCount ())
+		{
+			setRowCount (row + 1);
+		}
 
 	while (loop_flag)
 		{
 			char *value_s = NULL;
 			bool alloc_flag = false;
 
-			next_token_s = strchr (current_token_s, dtw_delimiter);
-
-			if (next_token_s)
+			if (*current_token_s != dtw_delimiter)
 				{
-					value_s = CopyToNewString (current_token_s, next_token_s - current_token_s, false);
+					next_token_s = strchr (current_token_s, dtw_delimiter);
 
-					if (value_s)
+					if (next_token_s)
 						{
-							alloc_flag = true;
+							value_s = CopyToNewString (current_token_s, next_token_s - current_token_s, false);
+
+							if (value_s)
+								{
+									alloc_flag = true;
+								}
+							current_token_s = next_token_s + 1;
+
 						}
-					current_token_s = next_token_s;
-					++ col;
+					else
+						{
+							value_s = const_cast <char *> (current_token_s);
+							loop_flag = false;
+						}
 				}
 			else
 				{
-					value_s = const_cast <char *> (current_token_s);
-					loop_flag = false;
+					++ current_token_s;
 				}
 
 			QTableWidgetItem *item_p = item (row, col);
@@ -99,7 +128,32 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 			else
 				{
 					item_p = new QTableWidgetItem (value_s);
+
+					if (col >= columnCount ())
+						{
+							setColumnCount (col + 1);
+						}
+
+
 					setItem (row, col, item_p);
+				}
+
+
+			if (row == 0)
+				{
+					QFont font;
+					font.setBold (true);
+
+					item_p -> setFont (font);
+				}
+
+			qDebug () << "num rows " << rowCount () << " num cols " << columnCount ();
+
+			++ col;
+
+			if (alloc_flag)
+				{
+					FreeCopiedString (value_s);
 				}
 		}
 }
@@ -172,11 +226,15 @@ void DroppableTableWidget :: LoadText (const char *filename_s)
 {
 	FILE *in_f = fopen (filename_s, "r");
 
+	qDebug () << "rows " << rowCount () << " cols " << columnCount ();
+
 	if (in_f)
 		{
 			bool loop_flag = true;
 			char *buffer_s = NULL;
 			int row = 0;
+
+			setSortingEnabled (false);
 
 			while (loop_flag)
 				{
@@ -192,8 +250,12 @@ void DroppableTableWidget :: LoadText (const char *filename_s)
 					}
 				}
 
+			setSortingEnabled (true);
+
 			fclose (in_f);
 		}
+
+	qDebug () << "rows " << rowCount () << " cols " << columnCount ();
 }
 
 

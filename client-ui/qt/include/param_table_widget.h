@@ -13,6 +13,8 @@
 
 class DroppableTableWidget : public QTableWidget
 {
+	Q_OBJECT
+
 public:
 	DroppableTableWidget (QWidget *parent_p, char delimiter);
 
@@ -28,10 +30,11 @@ protected:
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);
 
 	virtual void dropEvent (QDropEvent *event_p);
+	virtual void dragMoveEvent (QDragMoveEvent *event_p);
 
 	void LoadText (const char *filename_s);
 
-
+	virtual bool dropMimeData (int row, int column, const QMimeData * data, Qt::DropAction action);
 
 private:
 	char dtw_delimiter;
