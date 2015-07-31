@@ -374,6 +374,10 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 													if (json_param_p)
 														{
+															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+															PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
+															#endif
+
 															data_fn = InsertData;
 														}
 												}

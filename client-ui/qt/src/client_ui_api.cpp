@@ -20,6 +20,8 @@
 
 #include "qt_client_data.h"
 #include "progress_window.h"
+#include "json_util.h"
+
 
 #ifdef _DEBUG
 	#define CLIENT_UI_API_DEBUG (DEBUG_FINE)
@@ -176,10 +178,9 @@ static int AddServiceToQTClient (ClientData *client_data_p, const char * const s
 static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t *response_p)
 {
 	json_t *res_p = NULL;
+
 	#if CLIENT_UI_API_DEBUG >= DL_FINE
-	char *dump_s = json_dumps (response_p, JSON_INDENT (2));
-	PrintLog (STM_LEVEL_FINE, "response:\n%s\n", dump_s);
-	free (dump_s);
+	PrintJSONToLog (response_p, "response:\n", STM_LEVEL_FINE);
 	#endif
 
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);

@@ -13,7 +13,7 @@
 #include "linked_list.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
-
+#include "json_util.h"
 
 #ifdef _DEBUG
 	#define CLIENT_DEBUG (STM_LEVEL_FINE)
@@ -61,11 +61,7 @@ int AddServiceToClient (Client *client_p, const char * const service_name_s, con
 json_t *DisplayResultsInClient (Client *client_p, const json_t *response_p)
 {
 	#if CLIENT_DEBUG >= STM_LEVEL_FINE
-	{
-		char *dump_s = json_dumps (response_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-		printf ("DisplayResultsInClient:\n%s\n", dump_s);
-		free (dump_s);
-	}
+	PrintJSONToLog (response_p, STM_LEVEL_FINE, "DisplayResultsInClient: ");
 	#endif
 
 

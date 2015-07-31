@@ -16,12 +16,16 @@ class DroppableTableWidget : public QTableWidget
 	Q_OBJECT
 
 public:
-	DroppableTableWidget (QWidget *parent_p, char delimiter);
+	DroppableTableWidget (QWidget *parent_p, char row_delimiter, char column_delimter);
 
 	void SetRow (const int row, const char *data_s);
 
-	void SetDelimiter (char delimiter);
-	char GetDelimiter ();
+	void SetColumnDelimiter (char delimiter);
+	char GetColumnDelimiter () const;
+
+	void SetRowDelimiter (char delimiter);
+	char GetRowDelimiter () const;
+
 
 	char *GetValueAsText ();
 	bool SetValueFromText (const char *data_s);
@@ -37,7 +41,8 @@ protected:
 	virtual bool dropMimeData (int row, int column, const QMimeData * data, Qt::DropAction action);
 
 private:
-	char dtw_delimiter;
+	char dtw_row_delimiter;
+	char dtw_column_delimiter;
 };
 
 

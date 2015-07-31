@@ -208,6 +208,7 @@ WHEATIS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char colu
 WHEATIS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
 
+WHEATIS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level);
 
 
 #ifdef __cplusplus

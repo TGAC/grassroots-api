@@ -13,24 +13,40 @@
 #include "byte_buffer.h"
 
 
-DroppableTableWidget :: DroppableTableWidget (QWidget *parent_p, char delimiter)
+DroppableTableWidget :: DroppableTableWidget (QWidget *parent_p, char row_delimiter, char column_delimter)
 : QTableWidget (parent_p)
 {
 	setAcceptDrops (true);
-	SetDelimiter (delimiter);
+	SetRowDelimiter (row_delimiter);
+	SetColumnDelimiter (column_delimter);
 }
 
 
-void DroppableTableWidget :: SetDelimiter (char delimiter)
+void DroppableTableWidget :: SetColumnDelimiter (char delimiter)
 {
-	dtw_delimiter = delimiter;
+	dtw_column_delimiter = delimiter;
 }
 
 
-char DroppableTableWidget :: GetDelimiter ()
+char DroppableTableWidget :: GetColumnDelimiter () const
 {
-	return dtw_delimiter;
+	return dtw_column_delimiter;
 }
+
+
+void DroppableTableWidget :: SetRowDelimiter (char delimiter)
+{
+	dtw_row_delimiter = delimiter;
+}
+
+
+char DroppableTableWidget :: GetRowDelimiter () const
+{
+	return dtw_row_delimiter;
+}
+
+
+
 
 
 void DroppableTableWidget :: dropEvent (QDropEvent *event_p)
@@ -93,9 +109,9 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 			char *value_s = NULL;
 			bool alloc_flag = false;
 
-			if (*current_token_s != dtw_delimiter)
+			if (*current_token_s != dtw_column_delimiter)
 				{
-					next_token_s = strchr (current_token_s, dtw_delimiter);
+					next_token_s = strchr (current_token_s, dtw_column_delimiter);
 
 					if (next_token_s)
 						{
@@ -187,14 +203,22 @@ char *DroppableTableWidget :: GetValueAsText ()
 
 							if (success_flag)
 								{
-									success_flag = AppendToByteBuffer (buffer_p, &dtw_delimiter, 1);
+									success_flag = AppendToByteBuffer (buffer_p, &dtw_column_delimiter, 1);
 								}
 
 							if (!success_flag)
 								{
 									i = num_rows;
 									j = num_cols;
+								}
+						}
 
+					if (success_flag)
+						{
+							if (!AppendToByteBuffer (buffer_p, &dtw_row_delimiter, 1))
+								{
+									success_flag = false;
+									i = num_rows;
 								}
 						}
 				}
@@ -209,6 +233,7 @@ char *DroppableTableWidget :: GetValueAsText ()
 			FreeByteBuffer (buffer_p);
 		}
 
+	qDebug () << value_s << endl;
 	return value_s;
 }
 
@@ -262,7 +287,7 @@ void DroppableTableWidget :: LoadText (const char *filename_s)
 ParamTableWidget :: ParamTableWidget (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
-	ptw_table_p = new DroppableTableWidget (parent_p, '|');
+	ptw_table_p = new DroppableTableWidget (parent_p, '\n', '|');
 }
 
 

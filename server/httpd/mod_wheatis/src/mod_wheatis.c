@@ -194,8 +194,7 @@ static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *v
 
 static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 {
-	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
-	apr_status_t res;
+//	ModWheatISConfig *config_p = ap_get_module_config (server_p -> module_config, &wheatis_module);
 
 	/* Now that we are in a child process, we have to reconnect
 	 * to the global mutex and the shared segment. We also

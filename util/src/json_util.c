@@ -9,6 +9,12 @@
 #include "string_utils.h"
 
 
+#ifdef _DEBUG
+	#define JSON_UTIL_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define JSON_UTIL_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 JsonNode *AllocateJsonNode (json_t *json_p)
 {
 	JsonNode *json_node_p = (JsonNode *) AllocMemory (sizeof (JsonNode));
@@ -164,6 +170,12 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 					char *current_token_s = current_row_s;
 					char *next_token_s = NULL;
 
+
+					/*
+					 * Temporarily terminate the current row to treat it as string
+					 */
+					*next_row_s = '\0';
+
 					while (loop_flag && success_flag)
 						{
 							char *value_s = NULL;
@@ -211,6 +223,8 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 								}
 						}		/* while (loop_flag && success_flag) */
 
+					*next_row_s = row_delimiter;
+					current_row_s = next_row_s + 1;
 				}		/* if (next_row_s) */
 
 			/* Did we get the headers successfully? */
@@ -243,9 +257,15 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 														{
 															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to json rows", current_row_s);
 														}
+
+													#if JSON_UTIL_DEBUG >= STM_LEVEL_FINE
+													PrintJSONToLog (row_p, "row_p ", STM_LEVEL_FINE);
+													PrintJSONToLog (json_values_p, "json_values_p ", STM_LEVEL_FINE);
+													#endif
 												}
 
 											*next_row_s = row_delimiter;
+											current_row_s = next_row_s + 1;
 										}		/* if (next_row_s) */
 									else
 										{
@@ -326,3 +346,22 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 	return row_json_p;
 }
 
+
+void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level)
+{
+	char *json_s = json_dumps (json_p, JSON_INDENT (2));
+
+	if (json_s)
+		{
+			if (prefix_s)
+				{
+					PrintLog (level, "%s %s", prefix_s, json_s);
+				}
+			else
+				{
+					PrintLog (level, "%s", json_s);
+				}
+
+			free (json_s);
+		}
+}

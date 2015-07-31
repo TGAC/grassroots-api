@@ -333,8 +333,6 @@ bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_
 
 bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s, struct ap_socache_hints *cache_hints_p)
 {
-	/* Set up the maximum expiry time as we never want it to expire */
-	apr_interval_time_t expiry = 0;
 	apr_status_t res;
 	bool success_flag = true;
 
