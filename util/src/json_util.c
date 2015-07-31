@@ -170,7 +170,6 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 					char *current_token_s = current_row_s;
 					char *next_token_s = NULL;
 
-
 					/*
 					 * Temporarily terminate the current row to treat it as string
 					 */
@@ -259,6 +258,7 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 														}
 
 													#if JSON_UTIL_DEBUG >= STM_LEVEL_FINE
+													PrintLog (STM_LEVEL_FINE, "row: %s", current_row_s);
 													PrintJSONToLog (row_p, "row_p ", STM_LEVEL_FINE);
 													PrintJSONToLog (json_values_p, "json_values_p ", STM_LEVEL_FINE);
 													#endif
@@ -309,7 +309,7 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 
 			while (header_p)
 				{
-					if (*current_token_s != delimiter)
+					if (*current_token_s == delimiter)
 						{
 							++ current_token_s;
 						}
@@ -349,7 +349,7 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 
 void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level)
 {
-	char *json_s = json_dumps (json_p, JSON_INDENT (2));
+	char *json_s = json_dumps (json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
 	if (json_s)
 		{

@@ -9,6 +9,7 @@
 #include "mongodb_tool.h"
 #include "string_utils.h"
 #include "json_tools.h"
+#include "wheatis_config.h"
 
 #include "string_linked_list.h"
 
@@ -31,9 +32,13 @@
 
 static const char *S_DATABASE_S = "geodb";
 
+static const char s_default_column_delimiter =  '|';
+
 typedef struct MongoDBServiceData
 {
 	MongoTool *msd_tool_p;
+
+	const char *msd_geocoding_uri_s;
 } MongoDBServiceData;
 
 /*
@@ -81,8 +86,6 @@ static LinkedList *GetTableRow (const char **data_ss, const char delimiter, Byte
 static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
 
 static bool AddUploadParams (ParameterSet *param_set_p);
-
-static bool ImportTableData (MongoTool *tool_p,  const char *collection_s, const char *data_s);
 
 /*
  * API FUNCTIONS
@@ -151,10 +154,12 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 	
 	if (mongodb_service_p)
 		{
-			ServiceData *data_p = (ServiceData *) AllocateMongoDBServiceData (operation_json_p);
+			MongoDBServiceData *data_p = AllocateMongoDBServiceData (operation_json_p);
 			
 			if (data_p)
 				{
+					const json_t *config_p = NULL;
+
 					InitialiseService (mongodb_service_p,
 						GetMongoDBServiceName,
 						GetMongoDBServiceDesciption,
@@ -168,9 +173,19 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 						NULL,
 						false,
 						true,
-						data_p);
+						(ServiceData *) data_p);
 
-					return mongodb_service_p;
+					if ((config_p = GetGlobalServiceConfig (GetMongoDBServiceName (mongodb_service_p))) != NULL)
+						{
+							data_p -> msd_geocoding_uri_s = GetJSONString (config_p, "geocoding_uri");
+
+							if (data_p -> msd_geocoding_uri_s)
+								{
+									return mongodb_service_p;
+								}
+						}
+
+					FreeMongoDBServiceData (data_p);
 				}
 			
 			FreeMemory (mongodb_service_p);
@@ -191,6 +206,7 @@ static MongoDBServiceData *AllocateMongoDBServiceData (json_t *op_json_p)
 			if (data_p)
 				{
 					data_p -> msd_tool_p = tool_p;
+					data_p -> msd_geocoding_uri_s = NULL;
 
 					return data_p;
 				}
@@ -276,7 +292,7 @@ static bool AddUploadParams (ParameterSet *param_set_p)
 	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 	Parameter **grouped_param_pp = grouped_params_pp;
 
-	def.st_char_value = '|';
+	def.st_char_value = s_default_column_delimiter;
 
 	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_CHAR, false, "delimiter", "Delimiter", "The character delimiting columns", TAG_DELIMITER, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 		{
@@ -345,101 +361,117 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 						{
 							const char *collection_s = value.st_string_value_s;
 
-							MongoTool *tool_p = AllocateMongoTool ();
-
-							if (tool_p)
+							if (collection_s)
 								{
-									json_t *response_p = NULL;
-									Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
-									bool run_flag = false;
+									MongoTool *tool_p = AllocateMongoTool ();
 
-									SetMongoToolCollection (tool_p, S_DATABASE_S, collection_s);
-
-									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
+									if (tool_p)
 										{
-											response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
+											json_t *response_p = NULL;
+											Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
+											bool run_flag = false;
 
-											job_p -> sj_status = (response_p != NULL) ? OS_SUCCEEDED : OS_FAILED;
-										}
-									else
-										{
-											bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
-											json_t *json_param_p = NULL;
+											SetMongoToolCollection (tool_p, S_DATABASE_S, collection_s);
 
-											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
-
-											if (param_p)
+											if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 												{
-													json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, '|', '\n');
+													response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
+
+													job_p -> sj_status = (response_p != NULL) ? OS_SUCCEEDED : OS_FAILED;
+												}
+											else
+												{
+													bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+													json_t *json_param_p = NULL;
+													char delimiter = s_default_column_delimiter;
+
+													/* Get the current delimiter */
+													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
+													if (param_p)
+														{
+															delimiter = param_p -> pa_current_value.st_char_value;
+														}
+
+
+													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
+
+													if (param_p)
+														{
+															json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, delimiter, '\n');
+
+															if (json_param_p)
+																{
+																	#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+																	PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
+																	#endif
+
+																	data_fn = InsertData;
+																}
+														}
 
 													if (json_param_p)
 														{
-															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
-															PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
-															#endif
+															job_p -> sj_status = OS_FAILED;
 
-															data_fn = InsertData;
-														}
+															if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
+																{
+																	data_fn = InsertData;
+																	json_param_p = value.st_json_p;
+																}
+															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
+																{
+																	data_fn = SearchData;
+																	json_param_p = value.st_json_p;
+																}
+															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_REMOVE, &value, true)) && (value.st_json_p))
+																{
+																	data_fn = DeleteData;
+																	json_param_p = value.st_json_p;
+																}
+
+															if (data_fn)
+																{
+																	json_error_t error;
+																	bool success_flag = data_fn (tool_p, json_param_p, collection_s);
+
+																	#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+																		{
+																			char *dump_s = json_dumps (json_param_p, JSON_INDENT (2));
+																			PrintLog (STM_LEVEL_FINE, "mongo param: %s", dump_s);
+																			free (dump_s);
+																		}
+																	#endif
+
+																	response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
+
+																	if (response_p)
+																		{
+																			job_p -> sj_status = OS_SUCCEEDED;
+																		}
+																	else
+																		{
+																			job_p -> sj_status = OS_FAILED;
+																		}
+
+																}
+
+															if (json_param_p != value.st_json_p)
+																{
+																	WipeJSON (json_param_p);
+																}
+
+														}		/* if (json_param_p) */
+
 												}
 
-											if (!json_param_p)
-												{
-													job_p -> sj_status = OS_FAILED;
+										}		/* if (tool_p) */
+								}		/* if (collection_s) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "no collection specified");
+								}
 
-													if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
-														{
-															data_fn = InsertData;
-															json_param_p = value.st_json_p;
-														}
-													else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
-														{
-															data_fn = SearchData;
-															json_param_p = value.st_json_p;
-														}
-													else if ((GetParameterValueFromParameterSet (param_set_p, TAG_REMOVE, &value, true)) && (value.st_json_p))
-														{
-															data_fn = DeleteData;
-															json_param_p = value.st_json_p;
-														}
-
-													if (data_fn)
-														{
-															json_error_t error;
-															bool success_flag = data_fn (tool_p, json_param_p, collection_s);
-
-															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
-																{
-																	char *dump_s = json_dumps (json_param_p, JSON_INDENT (2));
-																	PrintLog (STM_LEVEL_FINE, "mongo param: %s", dump_s);
-																	free (dump_s);
-																}
-															#endif
-
-															response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
-
-															if (response_p)
-																{
-																	job_p -> sj_status = OS_SUCCEEDED;
-																}
-															else
-																{
-																	job_p -> sj_status = OS_FAILED;
-																}
-
-														}
-
-												}		/* if (!data_uploaded_flag) */
-
-
-											if (json_param_p != value.st_json_p)
-												{
-													WipeJSON (json_param_p);
-												}
-										}
-
-								}		/* if (tool_p) */
-
-						}		/* if (collection_s) */
+						}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_COLLECTION, &value, true)) */
 
 				}		/* if (param_set_p) */
 
@@ -448,45 +480,6 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 	return service_p -> se_jobs_p;
 }
 
-
-static bool ImportTableData (MongoTool *tool_p,  const char *collection_s, const char *data_s, const char *delimiter_s)
-{
-	bool success_flag = false;
-	const char *current_line_s = data_s;
-	const char *next_line_s = NULL;
-
-	bool loop_flag = true;
-
-	while (loop_flag)
-		{
-			char *value_s = NULL;
-			bool alloc_flag = false;
-
-			next_line_s = strchr (current_line_s, '\n');
-
-			if (next_line_s)
-				{
-					value_s = CopyToNewString (current_line_s, next_line_s - current_line_s, false);
-
-					if (value_s)
-						{
-
-							alloc_flag = true;
-						}
-
-
-					current_line_s = next_line_s + 1;
-				}
-			else
-				{
-					loop_flag = false;
-				}
-		}
-
-
-
-	return success_flag;
-}
 
 
 static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
@@ -544,6 +537,40 @@ static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collectio
 		}		/* if (values_p) */
 
 	return success_flag;
+}
+
+
+static char *CheckDataIsValid (const json_t *row_p)
+{
+	char *errors_s = NULL;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+	if (buffer_p)
+		{
+			/*
+			 * Each row the pathogenmics must contain an ID field
+			 * not the mongo _id, and the ability to get a geojson
+			 * stub and a date.
+			 */
+
+			if (!json_object_get (row_p, "ID"))
+				{
+					if (!AppendStringToByteBuffer (buffer_p, "The row does not have an ID field"))
+						{
+						}
+				}
+
+			// http://api.opencagedata.com/geocode/v1/geojson?pretty=1&key=1a9d04b5e924fd52d1f306d924d023a5&query=Osisek,+Croatia'
+
+
+			//msd_geocoding_uri_s
+
+
+		}		/* if (buffer_p) */
+
+
+
+	return errors_s;
 }
 
 

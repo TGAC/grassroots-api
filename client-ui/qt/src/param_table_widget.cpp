@@ -265,9 +265,16 @@ void DroppableTableWidget :: LoadText (const char *filename_s)
 				{
 					if (GetLineFromFile (in_f, &buffer_s))
 						{
-							SetRow (row, buffer_s);
+							if (*buffer_s)
+								{
+									SetRow (row, buffer_s);
 
-							++ row;
+									++ row;
+								}
+							else
+								{
+									loop_flag = false;
+								}
 						}
 					else
 					{
