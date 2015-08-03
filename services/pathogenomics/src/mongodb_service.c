@@ -2,6 +2,7 @@
 
 #include "jansson.h"
 
+#define ALLOCATE_PATHOGENOMICS_TAGS
 #include "mongodb_service.h"
 #include "memory_allocations.h"
 #include "parameter.h"
@@ -10,6 +11,7 @@
 #include "string_utils.h"
 #include "json_tools.h"
 #include "wheatis_config.h"
+#include "country_codes.h"
 
 #include "string_linked_list.h"
 
@@ -86,6 +88,8 @@ static LinkedList *GetTableRow (const char **data_ss, const char delimiter, Byte
 static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
 
 static bool AddUploadParams (ParameterSet *param_set_p);
+
+static json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p);
 
 /*
  * API FUNCTIONS
@@ -540,7 +544,7 @@ static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collectio
 }
 
 
-static char *CheckDataIsValid (const json_t *row_p)
+static char *CheckDataIsValid (const json_t *row_p, MongoDBServiceData *data_p)
 {
 	char *errors_s = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
@@ -553,9 +557,9 @@ static char *CheckDataIsValid (const json_t *row_p)
 			 * stub and a date.
 			 */
 
-			if (!json_object_get (row_p, "ID"))
+			if (!json_object_get (row_p, PG_ID_S))
 				{
-					if (!AppendStringToByteBuffer (buffer_p, "The row does not have an ID field"))
+					if (!AppendStringsToByteBuffer (buffer_p, "The row does not have an ",  PG_ID_S,  " field", NULL))
 						{
 						}
 				}
@@ -571,6 +575,149 @@ static char *CheckDataIsValid (const json_t *row_p)
 
 
 	return errors_s;
+}
+
+
+static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBServiceData *data_p)
+{
+	bool success_flag = false;
+	const char *id_s = GetJSONString (row_p, PG_ID_S);
+
+	if (id_s)
+		{
+			json_t *location_data_p = GetLocationData (row_p, data_p);
+
+			if (location_data_p)
+				{
+					json_error_t error;
+					json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_GEOJSON_S, location_data_p);
+
+					if (row_json_p)
+						{
+							bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
+
+							if (id_p)
+								{
+
+									FreeMemory (id_p);
+								}
+
+							WipeJSON (location_data_p);
+						}
+					WipeJSON (location_data_p);
+				}		/* if (location_data_p) */
+
+		}		/* if (id_s) */
+
+	return success_flag;
+}
+
+
+static json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
+{
+	json_t *res_p = NULL;
+
+	const char *gps_s = GetJSONString (row_p, PG_GPS_S);
+
+	if (gps_s)
+		{
+
+		}
+	else
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s))
+						{
+							const char *value_s = GetJSONString (row_p, PG_TOWN_S);
+							bool success_flag = true;
+
+							/* town */
+							if (value_s)
+								{
+									success_flag = AppendStringToByteBuffer (buffer_p, value_s);
+								}
+
+							/* county */
+							if (success_flag)
+								{
+									value_s = GetJSONString (row_p, PG_COUNTY_S);
+
+									if (value_s)
+										{
+											success_flag = AppendStringsToByteBuffer (buffer_p, ", ", value_s, NULL);
+										}		/* if (value_s) */
+
+								}		/* if (success_flag) */
+
+
+							/* country */
+							if (success_flag)
+								{
+									const char *country_code_s = NULL;
+									value_s = GetJSONString (row_p, PG_COUNTRY_S);
+
+									country_code_s = GetCountryCodeFromName (value_s);
+
+									if (country_code_s)
+										{
+											success_flag = AppendStringsToByteBuffer (buffer_p, "&countrycode=", country_code_s, NULL);
+										}
+
+								}		/* if (success_flag) */
+
+
+							if (success_flag)
+								{
+									CurlTool *curl_tool_p = AllocateCurlTool ();
+
+									if (curl_tool_p)
+										{
+											const char *uri_s = GetByteBufferData (buffer_p);
+
+											if (SetUriForCurlTool (curl_tool_p, uri_s))
+												{
+													CURLcode c = RunCurlTool (curl_tool_p);
+
+													if (c == CURLE_OK)
+														{
+															const char *response_s = GetCurlToolData (curl_tool_p);
+
+															if (response_s)
+																{
+																	json_error_t error;
+
+																	res_p = json_loads (response_s, 0, &error);
+
+																	if (!res_p)
+																		{
+
+																		}
+																}
+														}
+													else
+														{
+
+														}
+												}
+
+
+											FreeCurlTool (curl_tool_p);
+										}		/* if (curl_tool_p) */
+
+								}
+
+						}		/* if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s)) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+
+		}
+
+
+	return res_p;
 }
 
 
