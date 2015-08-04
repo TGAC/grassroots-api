@@ -177,6 +177,9 @@ WHEATIS_UTIL_API bool IsStringEmpty (const char *value_s);
 WHEATIS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 
 
+WHEATIS_UTIL_API int Strnicmp (const char *c0_p, const char *c1_p, size_t length);
+
+
 WHEATIS_UTIL_API char *ConvertIntegerToString (const int value);
 
 

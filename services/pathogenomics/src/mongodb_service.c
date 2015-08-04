@@ -38,6 +38,8 @@ static const char s_default_column_delimiter =  '|';
 
 typedef struct MongoDBServiceData
 {
+	ServiceData bsd_base_data;
+
 	MongoTool *msd_tool_p;
 
 	const char *msd_geocoding_uri_s;
@@ -76,12 +78,13 @@ static bool CloseMongoDBService (Service *service_p);
 static bool CleanUpMongoDBServiceJob (ServiceJob *job_p);
 
 
+static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s);
 
-static bool InsertData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s);
 
-static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
 
-static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
 
 static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag);
 
@@ -90,6 +93,8 @@ static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const
 static bool AddUploadParams (ParameterSet *param_set_p);
 
 static json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p);
+
+static bool ConvertDate (json_t *row_p);
 
 /*
  * API FUNCTIONS
@@ -385,7 +390,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 												}
 											else
 												{
-													bool (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+													uint32 (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
 													json_t *json_param_p = NULL;
 													char delimiter = s_default_column_delimiter;
 
@@ -436,7 +441,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 															if (data_fn)
 																{
 																	json_error_t error;
-																	bool success_flag = data_fn (tool_p, json_param_p, collection_s);
+																	uint32 num_successes = data_fn (tool_p, json_param_p, collection_s);
 
 																	#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
 																		{
@@ -446,7 +451,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 																		}
 																	#endif
 
-																	response_p = json_pack_ex (&error, 0, "{s:b,s:s,s:o}", "status", success_flag, "collection", collection_s, "results", data_p);
+																	response_p = json_pack_ex (&error, 0, "{s:i,s:s,s:o}", "status", num_successes, "collection", collection_s, "results", data_p);
 
 																	if (response_p)
 																		{
@@ -486,7 +491,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 
 
-static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
 {
 	bool success_flag = false;
 	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
@@ -540,7 +545,7 @@ static bool SearchData (MongoTool *tool_p, json_t *data_p, const char *collectio
 				}
 		}		/* if (values_p) */
 
-	return success_flag;
+ 	return success_flag ? 1 : 0;;
 }
 
 
@@ -567,7 +572,10 @@ static char *CheckDataIsValid (const json_t *row_p, MongoDBServiceData *data_p)
 			// http://api.opencagedata.com/geocode/v1/geojson?pretty=1&key=1a9d04b5e924fd52d1f306d924d023a5&query=Osisek,+Croatia'
 
 
-			//msd_geocoding_uri_s
+			/*
+			 * Convert the date into YYYYMMDD format to allow us to get ranges using them as
+			 * numbers
+			 */
 
 
 		}		/* if (buffer_p) */
@@ -575,6 +583,151 @@ static char *CheckDataIsValid (const json_t *row_p, MongoDBServiceData *data_p)
 
 
 	return errors_s;
+}
+
+
+static bool ConvertDate (json_t *row_p)
+{
+	bool success_flag = false;
+	const char *date_s = GetJSONString (row_p, PG_DATE_S);
+	char buffer_s [9];
+
+	if (date_s)
+		{
+			/* Is it DD/MM/YYYY */
+			if ((strlen (date_s) == 10) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
+				{
+					memcpy (buffer_s, date_s + 6, 4 * sizeof (char));
+					memcpy (buffer_s + 4, date_s + 3, 2 * sizeof (char));
+					memcpy (buffer_s + 6, date_s, 2 * sizeof (char));
+
+					* (buffer_s + 8) = '\0';
+					success_flag = true;
+				}
+			else
+				{
+					#define NUM_MONTHS (12)
+					const char *months_ss [NUM_MONTHS] = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" };
+
+					bool loop_flag = true;
+					uint month_index = 0;
+					uint8 i = 0;
+
+					while (loop_flag)
+						{
+							const char *month_s = * (months_ss + i);
+
+							if (Strnicmp (month_s, date_s, strlen (month_s)) == 0)
+								{
+									month_index = i;
+									loop_flag = false;
+								}
+							else
+								{
+									++ i;
+
+									if (i == NUM_MONTHS)
+										{
+											loop_flag = false;
+										}
+								}
+
+						}		/* while (loop_flag) */
+
+					if (month_index > 0)
+						{
+							const char *value_p = date_s + strlen (* (months_ss + month_index));
+
+							loop_flag = (*value_p != '\0');
+
+							while (loop_flag)
+								{
+									if (isdigit (*value_p))
+										{
+											loop_flag = false;
+										}
+									else
+										{
+											++ value_p;
+
+											loop_flag = (*value_p != '\0');
+										}
+								}
+
+							if (*value_p != '\0')
+								{
+									/* Do we have a number? */
+									if (isdigit (* (value_p + 1)))
+										{
+											bool match_flag = false;
+
+											/* Do we have a 2 digit year... */
+											if (* (value_p + 2) == '\0')
+												{
+													*buffer_s = '2';
+													* (buffer_s + 1) = '0';
+
+													memcpy (buffer_s + 2, value_p, 2 * sizeof (char));
+													match_flag = true;
+												}
+											/* ... or a 4 digit one? */
+											else if ((isdigit (* (value_p + 2))) && (isdigit (* (value_p + 3))))
+												{
+													memcpy (buffer_s, value_p, 4 * sizeof (char));
+													match_flag = true;
+												}
+
+											if (match_flag)
+												{
+													char month_s [3];
+
+													sprintf (month_s, "%02d", month_index + 1);
+													memcpy (buffer_s + 4, month_s, 2 * sizeof (char));
+
+													* (buffer_s + 6) = '0';
+													* (buffer_s + 7) = '1';
+													* (buffer_s + 8) = '\0';
+													success_flag = true;
+												}
+
+										}
+								}
+						}		/* if (month_index > 0) */
+				}
+
+			if (success_flag)
+				{
+					if (json_object_set_new (row_p, PG_DATE_S, json_string (buffer_s)) != 0)
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to set date to %s", buffer_s);
+							success_flag = false;
+						}
+				}
+
+			if (!success_flag)
+				{
+					char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+					PrintErrors (STM_LEVEL_WARNING, "Failed to convert date from %s for %s", date_s, dump_s);
+
+					free (dump_s);
+				}
+		}		/* if (date_s) */
+	else
+		{
+			char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+			PrintErrors (STM_LEVEL_WARNING, "No date for %s", date_s, dump_s);
+
+			free (dump_s);
+		}
+
+
+
+
+
+
+	return success_flag;
 }
 
 
@@ -721,9 +874,45 @@ static json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 }
 
 
-static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s)
+static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s)
+{
+	uint32 num_imports = 0;
+
+	if (json_is_array (values_p))
+		{
+			json_t *value_p;
+			size_t i;
+
+			json_array_foreach (values_p, i, value_p)
+				{
+					if (ConvertDate (value_p))
+						{
+							if (InsertSingleItem (tool_p, value_p, collection_s))
+								{
+									++ num_imports;
+								}
+						}
+				}
+		}
+	else
+		{
+			if (ConvertDate (values_p))
+				{
+					if (InsertSingleItem (tool_p, values_p, collection_s))
+						{
+							++ num_imports;
+						}
+				}
+		}
+
+	return num_imports;
+}
+
+
+static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s)
 {
 	bool success_flag = false;
+	bool add_fields_flag = false;
 
 	/**
 	 * Is it an insert or an update?
@@ -756,7 +945,7 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 				}
 		}
 
-	if (success_flag)
+	if (success_flag && add_fields_flag)
 		{
 			/**
 			 * Add the fields to the list of available fields for this
@@ -897,7 +1086,7 @@ static bool InsertData (MongoTool *tool_p, json_t *values_p, const char *collect
 	
 
 
-static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
 {
 	bool success_flag = false;
 	json_t *selector_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
@@ -907,7 +1096,7 @@ static bool DeleteData (MongoTool *tool_p, json_t *data_p, const char *collectio
 			success_flag = RemoveMongoDocuments (tool_p, selector_p, false);
 		}		/* if (values_p) */
 
-	return success_flag;
+	return success_flag ? 1 : 0;
 }
 
 

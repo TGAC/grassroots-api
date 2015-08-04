@@ -736,6 +736,52 @@ int Stricmp (const char *c0_p, const char *c1_p)
 }
 
 
+int Strnicmp (const char *c0_p, const char *c1_p, size_t length)
+{
+	int res = 0;
+
+	if (c0_p != c1_p)
+		{
+			bool loop_flag = (length > 0);
+			int i0;
+			int i1;
+			char c0;
+			char c1;
+
+			while (loop_flag)
+				{
+					c0 = tolower (*c0_p);
+					c1 = tolower (*c1_p);
+
+					if ((c0 == c1) && (c0 != '\0'))
+						{
+							++ c0_p;
+							++ c1_p;
+
+							-- length;
+							if (length == 0)
+								{
+									loop_flag = false;
+								}
+						}
+					else
+						{
+							loop_flag = false;
+						}
+				}
+
+			/* The comparison must be performed as if the characters were unsigned characters. */
+			i0 = (unsigned char) c0;
+			i1 = (unsigned char) c1;
+
+			res = i0 - i1;
+		}
+
+	return res;
+}
+
+
+
 void ClearUUID (uuid_t *id_p)
 {
 	uuid_clear (*id_p);

@@ -23,7 +23,7 @@ PATHOGENOMICS_PREFIX const char *PG_POSTCODE_S = "Postal code";
 PATHOGENOMICS_PREFIX const char *PG_TOWN_S = "Town";
 PATHOGENOMICS_PREFIX const char *PG_COUNTY_S = "County";
 PATHOGENOMICS_PREFIX const char *PG_COUNTRY_S = "Country";
-
+PATHOGENOMICS_PREFIX const char *PG_DATE_S = "Date collected";
 PATHOGENOMICS_PREFIX const char *PG_GEOJSON_S = "GeoJSON";
 
 
