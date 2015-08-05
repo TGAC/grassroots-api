@@ -34,7 +34,7 @@ bool InitInformationSystem ()
 								{
 									if (InitConfig (full_services_path_s))
 										{
-											if (InitMongo ())
+											if (InitMongoDB ())
 												{
 													res_flag = true;
 												}
@@ -73,6 +73,7 @@ bool DestroyInformationSystem ()
 	
 	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
+	ExitMongoDB ();
 	curl_global_cleanup ();
 
 	return res_flag;

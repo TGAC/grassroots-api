@@ -9,6 +9,7 @@
 #include "string_hash_table.h"
 #include "parameter_set.h"
 
+#include "json_tools.h"
 #include "json_util.h"
 
 #ifdef _DEBUG

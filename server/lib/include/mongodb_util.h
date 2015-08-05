@@ -19,7 +19,7 @@
 
 WHEATIS_SERVICE_MANAGER_API bool InitMongoDB (void);
 
-WHEATIS_SERVICE_MANAGER_API bool ExitMongoDB (void);
+WHEATIS_SERVICE_MANAGER_API void ExitMongoDB (void);
 
 WHEATIS_SERVICE_MANAGER_API mongoc_client_t *GetMongoClient (void);
 

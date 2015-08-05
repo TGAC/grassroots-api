@@ -47,8 +47,8 @@ INCLUDES = \
 	
 SRCS 	= \
 	mongodb_service.c \
-	country_codes.c
-	
+	country_codes.c \
+	sample_metadata.c	
 
 CPPFLAGS += -DMONGODB_SERVICE_EXPORTS 
 

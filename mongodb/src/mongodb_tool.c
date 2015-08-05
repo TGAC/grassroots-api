@@ -120,7 +120,14 @@ json_t *ConvertBSONToJSON (const bson_t *bson_p)
 
 			json_p = json_loads (value_s, 0, &error);
 
-			if (!json_p)
+			if (json_p)
+				{
+					#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+					PrintLog (STM_LEVEL_FINE, "raw bson data:\n", value_s);
+					PrintJSONToLog (json_p, "bson to json data:", STM_LEVEL_FINE);
+					#endif
+				}
+			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, "Failed to convert %s to JSON, error %s\n", value_s, error.text);
 				}

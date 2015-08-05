@@ -20,6 +20,9 @@ extern "C"
 MONGODB_SERVICE_API const char *GetCountryCodeFromName (const char * const country_name_s);
 
 
+MONGODB_SERVICE_API bool IsValidCountryCode (const char * const code_s);
+
+
 #ifdef __cplusplus
 }
 #endif

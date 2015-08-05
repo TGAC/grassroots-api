@@ -31,7 +31,11 @@ ByteBuffer *AllocateByteBuffer (size_t initial_size)
 
 void FreeByteBuffer (ByteBuffer *buffer_p)
 {
-	FreeMemory (buffer_p -> bb_data_p);
+	if (buffer_p -> bb_data_p)
+		{
+			FreeMemory (buffer_p -> bb_data_p);
+		}
+
 	FreeMemory (buffer_p);
 }
 
@@ -147,3 +151,14 @@ const char *GetByteBufferData (const ByteBuffer * const buffer_p)
 	return buffer_p -> bb_data_p;
 }
 
+
+
+char *DetachByteBufferData (ByteBuffer * const buffer_p)
+{
+	char *value_s = buffer_p -> bb_data_p;
+
+	buffer_p -> bb_data_p = NULL;
+	FreeByteBuffer (buffer_p);
+
+	return value_s;
+}

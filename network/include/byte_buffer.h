@@ -154,6 +154,18 @@ WHEATIS_NETWORK_API size_t GetByteBufferSize (const ByteBuffer * const buffer_p)
 WHEATIS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buffer_p);
 
 
+
+/**
+ * Get the data stored in a ByteBuffer and free a ByteBuffer
+ *
+ * @param buffer_p The ByteBuffer to get the data from which will be deallocated
+ * after this call.
+ * @return The data as valid c-style string.
+ * @memberof ByteBuffer
+ */
+WHEATIS_NETWORK_API char *DetachByteBufferData (ByteBuffer * const buffer_p);
+
+
 #ifdef __cplusplus
 }
 #endif

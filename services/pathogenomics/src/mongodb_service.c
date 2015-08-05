@@ -12,7 +12,7 @@
 #include "json_tools.h"
 #include "wheatis_config.h"
 #include "country_codes.h"
-
+#include "sample_metadata.h"
 #include "string_linked_list.h"
 
 #ifdef _DEBUG
@@ -36,14 +36,6 @@ static const char *S_DATABASE_S = "geodb";
 
 static const char s_default_column_delimiter =  '|';
 
-typedef struct MongoDBServiceData
-{
-	ServiceData bsd_base_data;
-
-	MongoTool *msd_tool_p;
-
-	const char *msd_geocoding_uri_s;
-} MongoDBServiceData;
 
 /*
  * STATIC PROTOTYPES
@@ -78,23 +70,19 @@ static bool CloseMongoDBService (Service *service_p);
 static bool CleanUpMongoDBServiceJob (ServiceJob *job_p);
 
 
-static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s);
+static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *service_data_p);
 
-static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s);
+static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *service_data_p);
 
-static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p);
 
-static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s);
+static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p);
 
 static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag);
 
 static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
 
 static bool AddUploadParams (ParameterSet *param_set_p);
-
-static json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p);
-
-static bool ConvertDate (json_t *row_p);
 
 /*
  * API FUNCTIONS
@@ -190,7 +178,17 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 
 							if (data_p -> msd_geocoding_uri_s)
 								{
-									return mongodb_service_p;
+									data_p -> msd_samples_collection_s = GetJSONString (config_p, "samples_collection");
+
+									if (data_p -> msd_samples_collection_s)
+										{
+											data_p -> msd_geojson_collection_s = GetJSONString (config_p, "geojson_collection");
+
+											if (data_p -> msd_geojson_collection_s)
+												{
+													return mongodb_service_p;
+												}
+										}
 								}
 						}
 
@@ -272,6 +270,8 @@ static ParameterSet *GetMongoDBServiceParameters (Service *service_p, Resource *
 								{
 									if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_BOOLEAN, false, "dump", "Dump", "Get all of the data in the system", TAG_DUMP, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
+											def.st_string_value_s = "samples";
+
 											if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_STRING, false, "collection", "Collection", "The collection to act upon", TAG_COLLECTION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 												{
 													if (AddUploadParams (params_p))
@@ -390,7 +390,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 												}
 											else
 												{
-													uint32 (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s) = NULL;
+													uint32 (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p) = NULL;
 													json_t *json_param_p = NULL;
 													char delimiter = s_default_column_delimiter;
 
@@ -441,7 +441,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 															if (data_fn)
 																{
 																	json_error_t error;
-																	uint32 num_successes = data_fn (tool_p, json_param_p, collection_s);
+																	uint32 num_successes = data_fn (tool_p, json_param_p, collection_s, data_p);
 
 																	#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
 																		{
@@ -491,7 +491,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 
 
-static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p)
 {
 	bool success_flag = false;
 	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
@@ -572,309 +572,81 @@ static char *CheckDataIsValid (const json_t *row_p, MongoDBServiceData *data_p)
 			// http://api.opencagedata.com/geocode/v1/geojson?pretty=1&key=1a9d04b5e924fd52d1f306d924d023a5&query=Osisek,+Croatia'
 
 
-			/*
-			 * Convert the date into YYYYMMDD format to allow us to get ranges using them as
-			 * numbers
-			 */
 
-
+			if (GetByteBufferSize (buffer_p) > 0)
+				{
+					errors_s = DetachByteBufferData (buffer_p);
+				}
 		}		/* if (buffer_p) */
-
 
 
 	return errors_s;
 }
 
 
-static bool ConvertDate (json_t *row_p)
+
+static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBServiceData *data_p, const char *id_s)
 {
 	bool success_flag = false;
-	const char *date_s = GetJSONString (row_p, PG_DATE_S);
-	char buffer_s [9];
+	json_t *location_data_p = GetLocationData (row_p, data_p);
 
-	if (date_s)
+	if (location_data_p)
 		{
-			/* Is it DD/MM/YYYY */
-			if ((strlen (date_s) == 10) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
+			json_error_t error;
+			json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_GEOJSON_S, location_data_p);
+
+			if (row_json_p)
 				{
-					memcpy (buffer_s, date_s + 6, 4 * sizeof (char));
-					memcpy (buffer_s + 4, date_s + 3, 2 * sizeof (char));
-					memcpy (buffer_s + 6, date_s, 2 * sizeof (char));
+					bson_oid_t *id_p = NULL;
 
-					* (buffer_s + 8) = '\0';
-					success_flag = true;
-				}
-			else
-				{
-					#define NUM_MONTHS (12)
-					const char *months_ss [NUM_MONTHS] = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" };
+					#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+					PrintJSONToLog (row_json_p, "location data:", STM_LEVEL_FINE);
+					#endif
 
-					bool loop_flag = true;
-					uint month_index = 0;
-					uint8 i = 0;
 
-					while (loop_flag)
+					if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_geojson_collection_s))
 						{
-							const char *month_s = * (months_ss + i);
+							json_error_t error;
+							json_t *query_json_p = json_pack_ex (&error, 0, "{s:s}", PG_ID_S, id_s);
 
-							if (Strnicmp (month_s, date_s, strlen (month_s)) == 0)
+							if (query_json_p)
 								{
-									month_index = i;
-									loop_flag = false;
-								}
-							else
-								{
-									++ i;
+									const char *fields_ss [2];
 
-									if (i == NUM_MONTHS)
+									*fields_ss = PG_ID_S;
+									* (fields_ss + 1) = NULL;
+
+									if (FindMatchingMongoDocumentsByJSON (tool_p, query_json_p, fields_ss))
 										{
-											loop_flag = false;
-										}
-								}
 
-						}		/* while (loop_flag) */
+											id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
 
-					if (month_index > 0)
-						{
-							const char *value_p = date_s + strlen (* (months_ss + month_index));
-
-							loop_flag = (*value_p != '\0');
-
-							while (loop_flag)
-								{
-									if (isdigit (*value_p))
-										{
-											loop_flag = false;
-										}
-									else
-										{
-											++ value_p;
-
-											loop_flag = (*value_p != '\0');
-										}
-								}
-
-							if (*value_p != '\0')
-								{
-									/* Do we have a number? */
-									if (isdigit (* (value_p + 1)))
-										{
-											bool match_flag = false;
-
-											/* Do we have a 2 digit year... */
-											if (* (value_p + 2) == '\0')
+											if (id_p)
 												{
-													*buffer_s = '2';
-													* (buffer_s + 1) = '0';
-
-													memcpy (buffer_s + 2, value_p, 2 * sizeof (char));
-													match_flag = true;
-												}
-											/* ... or a 4 digit one? */
-											else if ((isdigit (* (value_p + 2))) && (isdigit (* (value_p + 3))))
-												{
-													memcpy (buffer_s, value_p, 4 * sizeof (char));
-													match_flag = true;
-												}
-
-											if (match_flag)
-												{
-													char month_s [3];
-
-													sprintf (month_s, "%02d", month_index + 1);
-													memcpy (buffer_s + 4, month_s, 2 * sizeof (char));
-
-													* (buffer_s + 6) = '0';
-													* (buffer_s + 7) = '1';
-													* (buffer_s + 8) = '\0';
 													success_flag = true;
+													FreeMemory (id_p);
 												}
 
 										}
-								}
-						}		/* if (month_index > 0) */
-				}
-
-			if (success_flag)
-				{
-					if (json_object_set_new (row_p, PG_DATE_S, json_string (buffer_s)) != 0)
-						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to set date to %s", buffer_s);
-							success_flag = false;
-						}
-				}
-
-			if (!success_flag)
-				{
-					char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-
-					PrintErrors (STM_LEVEL_WARNING, "Failed to convert date from %s for %s", date_s, dump_s);
-
-					free (dump_s);
-				}
-		}		/* if (date_s) */
-	else
-		{
-			char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-
-			PrintErrors (STM_LEVEL_WARNING, "No date for %s", date_s, dump_s);
-
-			free (dump_s);
-		}
 
 
+								}		/* if (query_json_p) */
+						}		/* if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_geojson_collection_s)) */
 
+					WipeJSON (row_json_p);
+				}		/* if (row_json_p) */
 
+			WipeJSON (location_data_p);
+		}		/* if (location_data_p) */
 
 
 	return success_flag;
 }
 
 
-static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBServiceData *data_p)
-{
-	bool success_flag = false;
-	const char *id_s = GetJSONString (row_p, PG_ID_S);
-
-	if (id_s)
-		{
-			json_t *location_data_p = GetLocationData (row_p, data_p);
-
-			if (location_data_p)
-				{
-					json_error_t error;
-					json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_GEOJSON_S, location_data_p);
-
-					if (row_json_p)
-						{
-							bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
-
-							if (id_p)
-								{
-
-									FreeMemory (id_p);
-								}
-
-							WipeJSON (location_data_p);
-						}
-					WipeJSON (location_data_p);
-				}		/* if (location_data_p) */
-
-		}		/* if (id_s) */
-
-	return success_flag;
-}
 
 
-static json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
-{
-	json_t *res_p = NULL;
-
-	const char *gps_s = GetJSONString (row_p, PG_GPS_S);
-
-	if (gps_s)
-		{
-
-		}
-	else
-		{
-			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-			if (buffer_p)
-				{
-					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s))
-						{
-							const char *value_s = GetJSONString (row_p, PG_TOWN_S);
-							bool success_flag = true;
-
-							/* town */
-							if (value_s)
-								{
-									success_flag = AppendStringToByteBuffer (buffer_p, value_s);
-								}
-
-							/* county */
-							if (success_flag)
-								{
-									value_s = GetJSONString (row_p, PG_COUNTY_S);
-
-									if (value_s)
-										{
-											success_flag = AppendStringsToByteBuffer (buffer_p, ", ", value_s, NULL);
-										}		/* if (value_s) */
-
-								}		/* if (success_flag) */
-
-
-							/* country */
-							if (success_flag)
-								{
-									const char *country_code_s = NULL;
-									value_s = GetJSONString (row_p, PG_COUNTRY_S);
-
-									country_code_s = GetCountryCodeFromName (value_s);
-
-									if (country_code_s)
-										{
-											success_flag = AppendStringsToByteBuffer (buffer_p, "&countrycode=", country_code_s, NULL);
-										}
-
-								}		/* if (success_flag) */
-
-
-							if (success_flag)
-								{
-									CurlTool *curl_tool_p = AllocateCurlTool ();
-
-									if (curl_tool_p)
-										{
-											const char *uri_s = GetByteBufferData (buffer_p);
-
-											if (SetUriForCurlTool (curl_tool_p, uri_s))
-												{
-													CURLcode c = RunCurlTool (curl_tool_p);
-
-													if (c == CURLE_OK)
-														{
-															const char *response_s = GetCurlToolData (curl_tool_p);
-
-															if (response_s)
-																{
-																	json_error_t error;
-
-																	res_p = json_loads (response_s, 0, &error);
-
-																	if (!res_p)
-																		{
-
-																		}
-																}
-														}
-													else
-														{
-
-														}
-												}
-
-
-											FreeCurlTool (curl_tool_p);
-										}		/* if (curl_tool_p) */
-
-								}
-
-						}		/* if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s)) */
-
-					FreeByteBuffer (buffer_p);
-				}		/* if (buffer_p) */
-
-		}
-
-
-	return res_p;
-}
-
-
-static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s)
+static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *data_p)
 {
 	uint32 num_imports = 0;
 
@@ -885,23 +657,17 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 			json_array_foreach (values_p, i, value_p)
 				{
-					if (ConvertDate (value_p))
+					if (InsertSingleItem (tool_p, value_p, collection_s, data_p))
 						{
-							if (InsertSingleItem (tool_p, value_p, collection_s))
-								{
-									++ num_imports;
-								}
+							++ num_imports;
 						}
 				}
 		}
 	else
 		{
-			if (ConvertDate (values_p))
+			if (InsertSingleItem (tool_p, values_p, collection_s, data_p))
 				{
-					if (InsertSingleItem (tool_p, values_p, collection_s))
-						{
-							++ num_imports;
-						}
+					++ num_imports;
 				}
 		}
 
@@ -909,184 +675,202 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 }
 
 
-static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s)
+
+
+static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *data_p)
 {
 	bool success_flag = false;
 	bool add_fields_flag = false;
 
-	/**
-	 * Is it an insert or an update?
-	 */
-	const char *id_s = GetJSONString (values_p, MONGO_ID_S);
-
-	if (id_s)
+	if (ConvertDate (values_p))
 		{
-			bson_oid_t oid;
+			const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
 
-			if (bson_oid_is_valid (id_s, strlen (id_s)))
+			if (pathogenomics_id_s)
 				{
-					bson_oid_init_from_string (&oid, id_s);
-
-					if (json_object_del (values_p, MONGO_ID_S) == 0)
+					if (InsertLocationData (tool_p, values_p, data_p, pathogenomics_id_s))
 						{
-							success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
-						}
+							/**
+							 * Is it an insert or an update?
+							 */
+							const char *id_s = GetJSONString (values_p, MONGO_ID_S);
 
-				}
-		}
-	else
-		{
-			bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
-
-			if (id_p)
-				{
-					success_flag = true;
-					FreeMemory (id_p);
-				}
-		}
-
-	if (success_flag && add_fields_flag)
-		{
-			/**
-			 * Add the fields to the list of available fields for this
-			 * collection
-			 */
-			char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
-
-			if (fields_collection_s)
-				{
-					json_t *field_p = json_object ();
-					bson_oid_t doc_id;
-
-					if (field_p)
-						{
-							const char *fields_ss [2] = { NULL, NULL };
-							const char *key_s;
-							json_t *value_p;
-
-							SetMongoToolCollection (tool_p, S_DATABASE_S, fields_collection_s);
-
-							json_object_foreach (values_p, key_s, value_p)
+							if (id_s)
 								{
-									bson_t *query_p = bson_new (); //BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+									bson_oid_t oid;
 
-									if (query_p)
+									if (bson_oid_is_valid (id_s, strlen (id_s)))
 										{
-											int32 value = 0;
-											json_t *update_p = NULL;
-											json_error_t error;
+											bson_oid_init_from_string (&oid, id_s);
 
-											*fields_ss = key_s;
-
-											if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+											if (json_object_del (values_p, MONGO_ID_S) == 0)
 												{
-													const bson_t *doc_p = NULL;
-
-													/* should only be one of these */
-													while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
-														{
-															bson_iter_t iter;
-															json_t *json_value_p = NULL;
-
-															#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
-															LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
-															#endif
-
-															if (bson_iter_init (&iter, doc_p))
-																{
-																	if (bson_iter_find (&iter, "_id"))
-																		{
-																			const bson_oid_t *src_p = NULL;
-
-																			if (BSON_ITER_HOLDS_OID (&iter))
-																				{
-																					src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
-																				}
-
-																			bson_oid_copy (src_p, &doc_id);
-
-																			#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
-																			LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
-																			LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
-																			#endif
-																		}
-																}
-
-															json_value_p = ConvertBSONToJSON (doc_p);
-
-															if (json_value_p)
-																{
-																	json_t *count_p = json_object_get (json_value_p, key_s);
-
-																	if (count_p)
-																		{
-																			if (json_is_integer (count_p))
-																				{
-																					value = json_integer_value (count_p);
-																				}
-																		}
-
-																	WipeJSON (json_value_p);
-																}
-														 }
+													success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
 												}
 
-											++ value;
-
-											/*
-											 * Now need to set key_s = value into the collection
-											 */
-											update_p = json_pack_ex (&error, 0, "{s:i}", key_s, value);
-
-											if (update_p)
-												{
-													if (value == 1)
-														{
-															bson_oid_t *fields_id_p = InsertJSONIntoMongoCollection (tool_p, update_p);
-
-															if (fields_id_p)
-																{
-																	FreeMemory (fields_id_p);
-																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
-																	success_flag = false;
-																}
-														}
-													else
-														{
-															if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
-																{
-																	PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
-																}
-														}
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
-													success_flag = false;
-												}
-
-											bson_destroy (query_p);
 										}
-								}		/* json_object_foreach (values_p, key_s, value_p) */
+								}
+							else
+								{
+									bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+									if (id_p)
+										{
+											success_flag = true;
+											FreeMemory (id_p);
+										}
+								}
 
 
-						}		/* if (field_p) */
+							if (success_flag && add_fields_flag)
+								{
+									/**
+									 * Add the fields to the list of available fields for this
+									 * collection
+									 */
+									char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+
+									if (fields_collection_s)
+										{
+											json_t *field_p = json_object ();
+											bson_oid_t doc_id;
+
+											if (field_p)
+												{
+													const char *fields_ss [2] = { NULL, NULL };
+													const char *key_s;
+													json_t *value_p;
+
+													SetMongoToolCollection (tool_p, S_DATABASE_S, fields_collection_s);
+
+													json_object_foreach (values_p, key_s, value_p)
+														{
+															bson_t *query_p = bson_new (); //BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+
+															if (query_p)
+																{
+																	int32 value = 0;
+																	json_t *update_p = NULL;
+																	json_error_t error;
+
+																	*fields_ss = key_s;
+
+																	if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+																		{
+																			const bson_t *doc_p = NULL;
+
+																			/* should only be one of these */
+																			while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+																				{
+																					bson_iter_t iter;
+																					json_t *json_value_p = NULL;
+
+																					#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+																					LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
+																					#endif
+
+																					if (bson_iter_init (&iter, doc_p))
+																						{
+																							if (bson_iter_find (&iter, "_id"))
+																								{
+																									const bson_oid_t *src_p = NULL;
+
+																									if (BSON_ITER_HOLDS_OID (&iter))
+																										{
+																											src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
+																										}
+
+																									bson_oid_copy (src_p, &doc_id);
+
+																									#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+																									LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
+																									LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
+																									#endif
+																								}
+																						}
+
+																					json_value_p = ConvertBSONToJSON (doc_p);
+
+																					if (json_value_p)
+																						{
+																							json_t *count_p = json_object_get (json_value_p, key_s);
+
+																							if (count_p)
+																								{
+																									if (json_is_integer (count_p))
+																										{
+																											value = json_integer_value (count_p);
+																										}
+																								}
+
+																							WipeJSON (json_value_p);
+																						}
+																				 }
+																		}
+
+																	++ value;
+
+																	/*
+																	 * Now need to set key_s = value into the collection
+																	 */
+																	update_p = json_pack_ex (&error, 0, "{s:i}", key_s, value);
+
+																	if (update_p)
+																		{
+																			if (value == 1)
+																				{
+																					bson_oid_t *fields_id_p = InsertJSONIntoMongoCollection (tool_p, update_p);
+
+																					if (fields_id_p)
+																						{
+																							FreeMemory (fields_id_p);
+																						}
+																					else
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+																							success_flag = false;
+																						}
+																				}
+																			else
+																				{
+																					if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+																						}
+																				}
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
+																			success_flag = false;
+																		}
+
+																	bson_destroy (query_p);
+																}
+														}		/* json_object_foreach (values_p, key_s, value_p) */
 
 
-					FreeCopiedString (fields_collection_s);
-				}		/* if (fields_collection_s) */
+												}		/* if (field_p) */
 
-		}
+
+											FreeCopiedString (fields_collection_s);
+										}		/* if (fields_collection_s) */
+
+								}
+
+						}		/* if (InsertLocationData (tool_p, values_p, data_p)) */
+
+				}		/* if (pathogenomics_id_s) */
+
+		}		/* if (ConvertDate (values_p)) */
+
 
 	return success_flag;
 }
 	
 
 
-static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s)
+static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p)
 {
 	bool success_flag = false;
 	json_t *selector_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);

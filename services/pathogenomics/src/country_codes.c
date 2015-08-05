@@ -10,10 +10,11 @@
 
 #include "country_codes.h"
 #include "typedefs.h"
+#include "string_utils.h"
 
-const uint32 S_NUM_COUNTRIES = 249;
+static const uint32 S_NUM_COUNTRIES = 249;
 
-CountryCode s_countries_p [S_NUM_COUNTRIES] =
+static CountryCode s_countries_by_name_p [S_NUM_COUNTRIES] =
 /* "Country name","Code" */
 {
 	{ "Afghanistan","AF" },
@@ -268,9 +269,267 @@ CountryCode s_countries_p [S_NUM_COUNTRIES] =
 };
 
 
+static const char *s_country_codes_p [] =
+{
+	"AD",
+	"AE",
+	"AF",
+	"AG",
+	"AI",
+	"AL",
+	"AM",
+	"AO",
+	"AQ",
+	"AR",
+	"AS",
+	"AT",
+	"AU",
+	"AW",
+	"AX",
+	"AZ",
+	"BA",
+	"BB",
+	"BD",
+	"BE",
+	"BF",
+	"BG",
+	"BH",
+	"BI",
+	"BJ",
+	"BL",
+	"BM",
+	"BN",
+	"BO",
+	"BQ",
+	"BR",
+	"BS",
+	"BT",
+	"BV",
+	"BW",
+	"BY",
+	"BZ",
+	"CA",
+	"CC",
+	"CD",
+	"CF",
+	"CG",
+	"CH",
+	"CI",
+	"CK",
+	"CL",
+	"CM",
+	"CN",
+	"CO",
+	"CR",
+	"CU",
+	"CV",
+	"CW",
+	"CX",
+	"CY",
+	"CZ",
+	"DE",
+	"DJ",
+	"DK",
+	"DM",
+	"DO",
+	"DZ",
+	"EC",
+	"EE",
+	"EG",
+	"EH",
+	"ER",
+	"ES",
+	"ET",
+	"FI",
+	"FJ",
+	"FK",
+	"FM",
+	"FO",
+	"FR",
+	"GA",
+	"GB",
+	"GD",
+	"GE",
+	"GF",
+	"GG",
+	"GH",
+	"GI",
+	"GL",
+	"GM",
+	"GN",
+	"GP",
+	"GQ",
+	"GR",
+	"GS",
+	"GT",
+	"GU",
+	"GW",
+	"GY",
+	"HK",
+	"HM",
+	"HN",
+	"HR",
+	"HT",
+	"HU",
+	"ID",
+	"IE",
+	"IL",
+	"IM",
+	"IN",
+	"IO",
+	"IQ",
+	"IR",
+	"IS",
+	"IT",
+	"JE",
+	"JM",
+	"JO",
+	"JP",
+	"KE",
+	"KG",
+	"KH",
+	"KI",
+	"KM",
+	"KN",
+	"KP",
+	"KR",
+	"KW",
+	"KY",
+	"KZ",
+	"LA",
+	"LB",
+	"LC",
+	"LI",
+	"LK",
+	"LR",
+	"LS",
+	"LT",
+	"LU",
+	"LV",
+	"LY",
+	"MA",
+	"MC",
+	"MD",
+	"ME",
+	"MF",
+	"MG",
+	"MH",
+	"MK",
+	"ML",
+	"MM",
+	"MN",
+	"MO",
+	"MP",
+	"MQ",
+	"MR",
+	"MS",
+	"MT",
+	"MU",
+	"MV",
+	"MW",
+	"MX",
+	"MY",
+	"MZ",
+	"NA",
+	"NC",
+	"NE",
+	"NF",
+	"NG",
+	"NI",
+	"NL",
+	"NO",
+	"NP",
+	"NR",
+	"NU",
+	"NZ",
+	"OM",
+	"PA",
+	"PE",
+	"PF",
+	"PG",
+	"PH",
+	"PK",
+	"PL",
+	"PM",
+	"PN",
+	"PR",
+	"PS",
+	"PT",
+	"PW",
+	"PY",
+	"QA",
+	"RE",
+	"RO",
+	"RS",
+	"RU",
+	"RW",
+	"SA",
+	"SB",
+	"SC",
+	"SD",
+	"SE",
+	"SG",
+	"SH",
+	"SI",
+	"SJ",
+	"SK",
+	"SL",
+	"SM",
+	"SN",
+	"SO",
+	"SR",
+	"SS",
+	"ST",
+	"SV",
+	"SX",
+	"SY",
+	"SZ",
+	"TC",
+	"TD",
+	"TF",
+	"TG",
+	"TH",
+	"TJ",
+	"TK",
+	"TL",
+	"TM",
+	"TN",
+	"TO",
+	"TR",
+	"TT",
+	"TV",
+	"TW",
+	"TZ",
+	"UA",
+	"UG",
+	"UM",
+	"US",
+	"UY",
+	"UZ",
+	"VA",
+	"VC",
+	"VE",
+	"VG",
+	"VI",
+	"VN",
+	"VU",
+	"WF",
+	"WS",
+	"YE",
+	"YT",
+	"ZA",
+	"ZM",
+	"ZW"
+
+};
+
+
 static int CompareCountriesByName (const void *v0_p, const void  *v1_p);
 
+static int CompareCountryCodeStrings (const void *v0_p, const void  *v1_p);
 
+
+/**********************************************************************/
 
 const char *GetCountryCodeFromName (const char * const country_name_s)
 {
@@ -281,7 +540,7 @@ const char *GetCountryCodeFromName (const char * const country_name_s)
 	key.cc_code_s = NULL;
 	key.cc_name_s = country_name_s;
 
-	country_p = (CountryCode *) bsearch (&key, s_countries_p, S_NUM_COUNTRIES, sizeof (CountryCode), CompareCountriesByName);
+	country_p = (CountryCode *) bsearch (&key, s_countries_by_name_p, S_NUM_COUNTRIES, sizeof (CountryCode), CompareCountriesByName);
 
 	if (country_p)
 		{
@@ -292,6 +551,10 @@ const char *GetCountryCodeFromName (const char * const country_name_s)
 }
 
 
+bool IsValidCountryCode (const char * const code_s)
+{
+	return ((CountryCode *) bsearch (&code_s, s_country_codes_p, S_NUM_COUNTRIES, sizeof (const char *), CompareCountryCodeStrings) ? true : false);
+}
 
 
 static int CompareCountriesByName (const void *v0_p, const void  *v1_p)
@@ -299,5 +562,14 @@ static int CompareCountriesByName (const void *v0_p, const void  *v1_p)
 	const CountryCode * const country0_p = (const CountryCode * const) v0_p;
 	const CountryCode * const country1_p = (const CountryCode * const) v1_p;
 
-	return strcmp (country0_p -> cc_name_s, country1_p -> cc_name_s);
+	return Stricmp (country0_p -> cc_name_s, country1_p -> cc_name_s);
+}
+
+
+static int CompareCountryCodeStrings (const void *v0_p, const void  *v1_p)
+{
+	const char * const country0_s = (const char * const) v0_p;
+	const char * const country1_s = (const char * const) v1_p;
+
+	return Stricmp (country0_s, country1_s);
 }

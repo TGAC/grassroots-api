@@ -4,6 +4,7 @@
 
 #include "mongodb_service_library.h"
 #include "service.h"
+#include "mongodb_tool.h"
 
 #define PATHOGENOMICS_DB_S ("pathogenomics")
 
@@ -17,14 +18,29 @@
 #endif
 
 
-PATHOGENOMICS_PREFIX const char *PG_ID_S = "ID";
-PATHOGENOMICS_PREFIX const char *PG_GPS_S = "GPS";
-PATHOGENOMICS_PREFIX const char *PG_POSTCODE_S = "Postal code";
-PATHOGENOMICS_PREFIX const char *PG_TOWN_S = "Town";
-PATHOGENOMICS_PREFIX const char *PG_COUNTY_S = "County";
-PATHOGENOMICS_PREFIX const char *PG_COUNTRY_S = "Country";
-PATHOGENOMICS_PREFIX const char *PG_DATE_S = "Date collected";
-PATHOGENOMICS_PREFIX const char *PG_GEOJSON_S = "GeoJSON";
+PATHOGENOMICS_PREFIX const char *PG_ID_S PATHOGENOMICS_VAL ("ID");
+PATHOGENOMICS_PREFIX const char *PG_GPS_S PATHOGENOMICS_VAL ("GPS");
+PATHOGENOMICS_PREFIX const char *PG_POSTCODE_S PATHOGENOMICS_VAL ("Postal code");
+PATHOGENOMICS_PREFIX const char *PG_TOWN_S PATHOGENOMICS_VAL ("Town");
+PATHOGENOMICS_PREFIX const char *PG_COUNTY_S PATHOGENOMICS_VAL ("County");
+PATHOGENOMICS_PREFIX const char *PG_COUNTRY_S PATHOGENOMICS_VAL ("Country");
+PATHOGENOMICS_PREFIX const char *PG_DATE_S PATHOGENOMICS_VAL ("Date collected");
+PATHOGENOMICS_PREFIX const char *PG_GEOJSON_S PATHOGENOMICS_VAL ("GeoJSON");
+
+
+typedef struct MongoDBServiceData
+{
+	ServiceData bsd_base_data;
+
+	MongoTool *msd_tool_p;
+
+	const char *msd_geocoding_uri_s;
+
+	const char *msd_samples_collection_s;
+
+	const char *msd_geojson_collection_s;
+
+} MongoDBServiceData;
 
 
 

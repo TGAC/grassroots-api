@@ -12,15 +12,19 @@
 #include "mongodb_service_library.h"
 #include "mongodb_tool.h"
 
+#include "mongodb_service.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 
-MONGODB_SERVICE_LOCAL bson_t *GetSamples (MongoTool *tool_p, json_t *query_p);
+
+MONGODB_SERVICE_LOCAL json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p);
 
 
+MONGODB_SERVICE_LOCAL bool ConvertDate (json_t *row_p);
 
 
 #ifdef __cplusplus
