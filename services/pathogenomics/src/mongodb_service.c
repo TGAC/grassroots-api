@@ -618,17 +618,22 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 
 									if (FindMatchingMongoDocumentsByJSON (tool_p, query_json_p, fields_ss))
 										{
-
-											id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
-
-											if (id_p)
+											/* does the id already exist? */
+											if (HasMongoQueryResults (tool_p))
 												{
-													success_flag = true;
-													FreeMemory (id_p);
+
 												}
+											else
+												{
+													id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
 
+													if (id_p)
+														{
+															success_flag = true;
+															FreeMemory (id_p);
+														}
+												}
 										}
-
 
 								}		/* if (query_json_p) */
 						}		/* if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_geojson_collection_s)) */

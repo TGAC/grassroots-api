@@ -112,6 +112,9 @@ WHEATIS_MONGODB_API bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, co
 WHEATIS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p);
 
 
+WHEATIS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
+
+
 WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
 

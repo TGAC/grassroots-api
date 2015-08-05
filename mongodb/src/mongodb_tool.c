@@ -419,6 +419,19 @@ bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p,
 }
 
 
+bool HasMongoQueryResults (MongoTool *tool_p)
+{
+	bool results_flag = false;
+
+	if (tool_p -> mt_cursor_p)
+		{
+			results_flag = mongoc_cursor_more (tool_p -> mt_cursor_p);
+		}
+
+	return results_flag;
+}
+
+
 bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p)
 {
 	bool success_flag = true;
