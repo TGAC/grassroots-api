@@ -11,6 +11,7 @@
 #include "json_tools.h"
 #include "wheatis_config.h"
 #include "mongodb_util.h"
+#include "json_util.h"
 
 
 #ifdef _DEBUG

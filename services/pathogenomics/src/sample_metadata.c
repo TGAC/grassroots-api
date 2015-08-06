@@ -168,34 +168,36 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 				{
 					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s))
 						{
-							const char *value_s = GetJSONString (row_p, PG_TOWN_S);
+							const char *town_s = GetJSONString (row_p, PG_TOWN_S);
+							const char *county_s = NULL;
+							const char *country_code_s = NULL;
 							bool success_flag = true;
 							bool added_query_flag = false;
 
 							/* town */
-							if (value_s)
+							if (town_s)
 								{
-									success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", value_s, NULL);
+									success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", town_s, NULL);
 									added_query_flag = true;
 								}
 
 							/* county */
 							if (success_flag)
 								{
-									value_s = GetJSONString (row_p, PG_COUNTY_S);
+									county_s = GetJSONString (row_p, PG_COUNTY_S);
 
-									if (value_s)
+									if (county_s)
 										{
 											if (added_query_flag)
 												{
-													success_flag = AppendStringsToByteBuffer (buffer_p, ", ", value_s, NULL);
+													success_flag = AppendStringsToByteBuffer (buffer_p, ", ", county_s, NULL);
 												}
 											else
 												{
-													success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", value_s, NULL);
+													success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", county_s, NULL);
 													added_query_flag = true;
 												}
-										}		/* if (value_s) */
+										}		/* if (county_s) */
 
 								}		/* if (success_flag) */
 
@@ -203,8 +205,7 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 							/* country */
 							if (success_flag)
 								{
-									const char *country_code_s = NULL;
-									value_s = GetJSONString (row_p, PG_COUNTRY_S);
+									const char *value_s = GetJSONString (row_p, PG_COUNTRY_S);
 
 									if (value_s)
 										{
@@ -246,17 +247,23 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 															if (response_s)
 																{
 																	json_error_t error;
+																	json_t *raw_res_p = NULL;
 
 																	PrintLog (STM_LEVEL_INFO, "geo response for %s\n%s\n", uri_s, response_s);
 
-																	res_p = json_loads (response_s, 0, &error);
+																	raw_res_p = json_loads (response_s, 0, &error);
 
-																	if (res_p)
+																	if (raw_res_p)
 																		{
 																			char *dump_s = json_dumps (res_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
 																			PrintLog (STM_LEVEL_INFO, "json:\n%s\n", dump_s);
 																			free (dump_s);
+
+
+																			res_p = RefineLocationData (raw_res_p, town_s, county_s, country_code_s);
+
+																			WipeJSON (raw_res_p);
 																		}
 																	else
 																		{
@@ -286,3 +293,47 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 
 	return res_p;
 }
+
+
+
+json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
+{
+	json_t *res_p = NULL;
+	json_t *results_array_p = json_object_get (raw_data_p, "results");
+
+	if (results_array_p)
+		{
+			if (json_is_array (results_array_p))
+				{
+					size_t index;
+					json_t *result_p;
+
+					json_array_foreach (results_array_p, index, result_p)
+						{
+							json_t *address_p = json_object_get (result_p, "components");
+
+							if (address_p)
+								{
+									if (county_s)
+										{
+											const char *result_county_s = GetJSONString (address_p, "county");
+
+											if (result_county_s)
+												{
+													if (Stricmp (county_s, result_county_s) == 0)
+														{
+
+														}
+												}
+										}
+								}		/* if (address_p) */
+
+						}		/* json_array_foreach (raw_res_p, index, raw_result_p) */
+
+				}		/* if (json_is_array (results_p)) */
+
+		}		/* if (results_p) */
+
+	return res_p;
+}
+

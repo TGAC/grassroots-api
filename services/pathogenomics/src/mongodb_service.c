@@ -545,7 +545,7 @@ static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collect
 				}
 		}		/* if (values_p) */
 
- 	return success_flag ? 1 : 0;;
+ 	return (success_flag ? 1 : 0);
 }
 
 
@@ -603,39 +603,39 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 					PrintJSONToLog (row_json_p, "location data:", STM_LEVEL_FINE);
 					#endif
 
-
 					if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_geojson_collection_s))
 						{
-							json_error_t error;
-							json_t *query_json_p = json_pack_ex (&error, 0, "{s:s}", PG_ID_S, id_s);
+							json_t *results_p = NULL;
+							bson_t query;
 
-							if (query_json_p)
+							bson_init (&query);
+							bson_append_utf8 (&query, PG_ID_S, -1, id_s, -1);
+
+							results_p = GetAllMongoResultsAsJSON (tool_p, &query);
+
+							/* does the id already exist? */
+							if (results_p && ((json_is_array (results_p)) && (json_array_size (results_p) >= 0)))
 								{
-									const char *fields_ss [2];
+									bson_oid_t oid;
 
-									*fields_ss = PG_ID_S;
-									* (fields_ss + 1) = NULL;
+									#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
+									PrintJSONToLog (results_p, "results:", STM_LEVEL_FINE);
+									#endif
 
-									if (FindMatchingMongoDocumentsByJSON (tool_p, query_json_p, fields_ss))
+									success_flag = UpdateMongoDocument (tool_p, &oid, row_json_p);
+									WipeJSON (results_p);
+								}		/* if (results_p) */
+							else
+								{
+									id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
+
+									if (id_p)
 										{
-											/* does the id already exist? */
-											if (HasMongoQueryResults (tool_p))
-												{
-
-												}
-											else
-												{
-													id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
-
-													if (id_p)
-														{
-															success_flag = true;
-															FreeMemory (id_p);
-														}
-												}
+											success_flag = true;
+											FreeMemory (id_p);
 										}
+								}
 
-								}		/* if (query_json_p) */
 						}		/* if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_geojson_collection_s)) */
 
 					WipeJSON (row_json_p);
@@ -700,30 +700,34 @@ static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *c
 							 */
 							const char *id_s = GetJSONString (values_p, MONGO_ID_S);
 
-							if (id_s)
+							if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_samples_collection_s))
 								{
-									bson_oid_t oid;
-
-									if (bson_oid_is_valid (id_s, strlen (id_s)))
+									if (id_s)
 										{
-											bson_oid_init_from_string (&oid, id_s);
+											bson_oid_t oid;
 
-											if (json_object_del (values_p, MONGO_ID_S) == 0)
+											if (bson_oid_is_valid (id_s, strlen (id_s)))
 												{
-													success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+													bson_oid_init_from_string (&oid, id_s);
+
+													if (json_object_del (values_p, MONGO_ID_S) == 0)
+														{
+															success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+														}
+
 												}
-
 										}
-								}
-							else
-								{
-									bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
-
-									if (id_p)
+									else
 										{
-											success_flag = true;
-											FreeMemory (id_p);
+											bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+											if (id_p)
+												{
+													success_flag = true;
+													FreeMemory (id_p);
+												}
 										}
+
 								}
 
 
