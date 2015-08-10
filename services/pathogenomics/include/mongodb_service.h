@@ -28,19 +28,24 @@ PATHOGENOMICS_PREFIX const char *PG_DATE_S PATHOGENOMICS_VAL ("Date collected");
 PATHOGENOMICS_PREFIX const char *PG_GEOJSON_S PATHOGENOMICS_VAL ("GeoJSON");
 
 
-typedef struct MongoDBServiceData
+typedef struct MongoDBServiceData MongoDBServiceData;
+
+
+struct MongoDBServiceData
 {
 	ServiceData bsd_base_data;
 
 	MongoTool *msd_tool_p;
 
-	const char *msd_geocoding_uri_s;
-
 	const char *msd_samples_collection_s;
 
-	const char *msd_geojson_collection_s;
+	const char *msd_locations_collection_s;
 
-} MongoDBServiceData;
+	json_t *(*msd_geocoder_fn) (const json_t *row_p, struct MongoDBServiceData *data_p);
+
+	const char *msd_geocoder_uri_s;
+
+};
 
 
 
