@@ -190,7 +190,7 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 										{
 											if (added_query_flag)
 												{
-													success_flag = AppendStringsToByteBuffer (buffer_p, ", ", county_s, NULL);
+													success_flag = AppendStringsToByteBuffer (buffer_p, ",%20", county_s, NULL);
 												}
 											else
 												{
