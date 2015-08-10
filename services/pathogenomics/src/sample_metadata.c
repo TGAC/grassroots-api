@@ -9,6 +9,16 @@
 #include "string_utils.h"
 #include "country_codes.h"
 #include "curl_tools.h"
+#include "json_util.h"
+#include "json_tools.h"
+
+
+#ifdef _DEBUG
+	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 
 bool ConvertDate (json_t *row_p)
 {
@@ -314,6 +324,12 @@ json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const
 
 							if (address_p)
 								{
+									bool match_flag = false;
+
+									#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
+									PrintJSONToLog (address_p, "Address: ", STM_LEVEL_FINE);
+									#endif
+
 									if (county_s)
 										{
 											const char *result_county_s = GetJSONString (address_p, "county");
@@ -322,10 +338,13 @@ json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const
 												{
 													if (Stricmp (county_s, result_county_s) == 0)
 														{
-
+															match_flag = true;
 														}
 												}
-										}
+										}		/* if (county_s) */
+
+
+
 								}		/* if (address_p) */
 
 						}		/* json_array_foreach (raw_res_p, index, raw_result_p) */

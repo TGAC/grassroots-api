@@ -27,6 +27,8 @@ MONGODB_SERVICE_LOCAL json_t *GetLocationData (const json_t *row_p, MongoDBServi
 MONGODB_SERVICE_LOCAL bool ConvertDate (json_t *row_p);
 
 
+MONGODB_SERVICE_LOCAL json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+
 #ifdef __cplusplus
 }
 #endif
