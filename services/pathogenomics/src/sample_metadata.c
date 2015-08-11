@@ -19,9 +19,6 @@
 	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-static json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
-
-
 
 bool ConvertDate (json_t *row_p)
 {
@@ -163,7 +160,7 @@ bool ConvertDate (json_t *row_p)
 }
 
 
-json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p)
+json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p)
 {
 	json_t *res_p = NULL;
 
@@ -211,7 +208,7 @@ json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p
 
 													if (country_code_s)
 														{
-															success_flag = AppendStringsToByteBuffer (buffer_p, "&country:", country_code_s, NULL);
+															success_flag = AppendStringsToByteBuffer (buffer_p, "|country:", country_code_s, NULL);
 														}
 
 
@@ -219,13 +216,15 @@ json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p
 
 										}		/* if (success_flag) */
 
-								}
+								}		/* if (postcode_s) */
 							else
 								{
+									town_s = GetJSONString (row_p, PG_TOWN_S);
+
 									/* town */
 									if (town_s)
 										{
-											success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", town_s, NULL);
+											success_flag = AppendStringsToByteBuffer (buffer_p, "&address=", town_s, NULL);
 											added_query_flag = true;
 										}
 
@@ -242,7 +241,7 @@ json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p
 														}
 													else
 														{
-															success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", county_s, NULL);
+															success_flag = AppendStringsToByteBuffer (buffer_p, "&address=", county_s, NULL);
 															added_query_flag = true;
 														}
 												}		/* if (county_s) */
@@ -266,7 +265,7 @@ json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p
 
 													if (country_code_s)
 														{
-															success_flag = AppendStringsToByteBuffer (buffer_p, "&components=country", country_code_s, NULL);
+															success_flag = AppendStringsToByteBuffer (buffer_p, "&components=country:", country_code_s, NULL);
 														}
 												}
 										}
@@ -301,13 +300,13 @@ json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p
 
 																	if (raw_res_p)
 																		{
-																			char *dump_s = json_dumps (res_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+																			char *dump_s = json_dumps (raw_res_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
 																			PrintLog (STM_LEVEL_INFO, "json:\n%s\n", dump_s);
 																			free (dump_s);
 
 
-																			res_p = RefineLocationData (raw_res_p, town_s, county_s, country_code_s);
+																			res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
 
 																			WipeJSON (raw_res_p);
 																		}
@@ -336,12 +335,11 @@ json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p
 
 		}
 
-
 	return res_p;
-
 }
 
-json_t *GetLocationDataByOpenCage (const json_t *row_p, MongoDBServiceData *data_p)
+
+json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row_p)
 {
 	json_t *res_p = NULL;
 
@@ -452,7 +450,7 @@ json_t *GetLocationDataByOpenCage (const json_t *row_p, MongoDBServiceData *data
 																			free (dump_s);
 
 
-																			res_p = RefineLocationData (raw_res_p, town_s, county_s, country_code_s);
+																			res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
 
 																			WipeJSON (raw_res_p);
 																		}
@@ -486,8 +484,407 @@ json_t *GetLocationDataByOpenCage (const json_t *row_p, MongoDBServiceData *data
 }
 
 
+/*
+ {
+    "results" : [
+      {
+         "address_components" : [
+            {
+               "long_name" : "Werbig",
+               "short_name" : "Werbig",
+               "types" : [ "sublocality_level_1", "sublocality", "political" ]
+            },
+            {
+               "long_name" : "Brandenburg",
+               "short_name" : "BB",
+               "types" : [ "administrative_area_level_1", "political" ]
+            },
+            {
+               "long_name" : "Germany",
+               "short_name" : "DE",
+               "types" : [ "country", "political" ]
+            }
+         ],
+         "formatted_address" : "Werbig, Germany",
+         "geometry" : {
+            "bounds" : {
+               "northeast" : {
+                  "lat" : 52.5949616,
+                  "lng" : 14.4702795
+               },
+               "southwest" : {
+                  "lat" : 52.54852649999999,
+                  "lng" : 14.3639304
+               }
+            },
+            "location" : {
+               "lat" : 52.5718829,
+               "lng" : 14.3937375
+            },
+            "location_type" : "APPROXIMATE",
+            "viewport" : {
+               "northeast" : {
+                  "lat" : 52.5949616,
+                  "lng" : 14.4702795
+               },
+               "southwest" : {
+                  "lat" : 52.54852649999999,
+                  "lng" : 14.3639304
+               }
+            }
+         },
+         "place_id" : "ChIJQzFlvbR5B0cRQL6B1kggIQo",
+         "types" : [ "sublocality_level_1", "sublocality", "political" ]
+      },
+      {
+         "address_components" : [
+            {
+               "long_name" : "Werbig",
+               "short_name" : "Werbig",
+               "types" : [ "sublocality_level_1", "sublocality", "political" ]
+            },
+            {
+               "long_name" : "Bad Belzig",
+               "short_name" : "Bad Belzig",
+               "types" : [ "locality", "political" ]
+            },
+            {
+               "long_name" : "Brandenburg",
+               "short_name" : "BB",
+               "types" : [ "administrative_area_level_1", "political" ]
+            },
+            {
+               "long_name" : "Germany",
+               "short_name" : "DE",
+               "types" : [ "country", "political" ]
+            }
+         ],
+         "formatted_address" : "Werbig, Bad Belzig, Germany",
+         "geometry" : {
+            "bounds" : {
+               "northeast" : {
+                  "lat" : 52.2306637,
+                  "lng" : 12.5418018
+               },
+               "southwest" : {
+                  "lat" : 52.1621099,
+                  "lng" : 12.4341461
+               }
+            },
+            "location" : {
+               "lat" : 52.2024014,
+               "lng" : 12.4757793
+            },
+            "location_type" : "APPROXIMATE",
+            "viewport" : {
+               "northeast" : {
+                  "lat" : 52.2306637,
+                  "lng" : 12.5418018
+               },
+               "southwest" : {
+                  "lat" : 52.1621099,
+                  "lng" : 12.4341461
+               }
+            }
+         },
+         "place_id" : "ChIJGdomWMeiqEcRVKxTUIFd3gs",
+         "types" : [ "sublocality_level_1", "sublocality", "political" ]
+      },
+      {
+         "address_components" : [
+            {
+               "long_name" : "Werbig",
+               "short_name" : "Werbig",
+               "types" : [ "sublocality_level_1", "sublocality", "political" ]
+            },
+            {
+               "long_name" : "Niederer Fläming",
+               "short_name" : "Niederer Fläming",
+               "types" : [ "locality", "political" ]
+            },
+            {
+               "long_name" : "Brandenburg",
+               "short_name" : "BB",
+               "types" : [ "administrative_area_level_1", "political" ]
+            },
+            {
+               "long_name" : "Germany",
+               "short_name" : "DE",
+               "types" : [ "country", "political" ]
+            },
+            {
+               "long_name" : "14913",
+               "short_name" : "14913",
+               "types" : [ "postal_code" ]
+            }
+         ],
+         "formatted_address" : "Werbig, 14913 Niederer Fläming, Germany",
+         "geometry" : {
+            "bounds" : {
+               "northeast" : {
+                  "lat" : 51.9568939,
+                  "lng" : 13.2256467
+               },
+               "southwest" : {
+                  "lat" : 51.9140655,
+                  "lng" : 13.1596687
+               }
+            },
+            "location" : {
+               "lat" : 51.9320151,
+               "lng" : 13.1920298
+            },
+            "location_type" : "APPROXIMATE",
+            "viewport" : {
+               "northeast" : {
+                  "lat" : 51.9568939,
+                  "lng" : 13.2256467
+               },
+               "southwest" : {
+                  "lat" : 51.9140655,
+                  "lng" : 13.1596687
+               }
+            }
+         },
+         "place_id" : "ChIJsceHQvDYp0cR8BCC1kggIQo",
+         "types" : [ "sublocality_level_1", "sublocality", "political" ]
+      }
+   ],
+   "status" : "OK"
+}
 
-static json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
+ */
+json_t *RefineLocationDataForGoogle (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
+{
+	json_t *res_p = NULL;
+	json_t *results_array_p = json_object_get (raw_data_p, "results");
+
+	if (results_array_p)
+		{
+			if (json_is_array (results_array_p))
+				{
+					size_t index;
+					json_t *result_p;
+
+					json_array_foreach (results_array_p, index, result_p)
+						{
+							json_t *address_p = json_object_get (result_p, "components");
+
+							if (address_p)
+								{
+									bool match_flag = false;
+
+									#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
+									PrintJSONToLog (address_p, "Address: ", STM_LEVEL_FINE);
+									#endif
+
+									if (county_s)
+										{
+											const char *result_county_s = GetJSONString (address_p, "county");
+
+											if (result_county_s)
+												{
+													if (Stricmp (county_s, result_county_s) == 0)
+														{
+															match_flag = true;
+														}
+												}
+										}		/* if (county_s) */
+
+
+
+								}		/* if (address_p) */
+
+						}		/* json_array_foreach (raw_res_p, index, raw_result_p) */
+
+				}		/* if (json_is_array (results_p)) */
+
+		}		/* if (results_p) */
+
+	return res_p;
+}
+
+
+/*
+ {
+    "licenses" : [
+       {
+          "name" : "CC-BY-SA",
+          "url" : "http://creativecommons.org/licenses/by-sa/3.0/"
+       },
+       {
+          "name" : "ODbL",
+          "url" : "http://opendatacommons.org/licenses/odbl/summary/"
+       }
+    ],
+    "rate" : {
+       "limit" : 2500,
+       "remaining" : 2489,
+       "reset" : 1439337600
+    },
+    "results" : [
+       {
+          "annotations" : {
+             "DMS" : {
+                "lat" : "52\u00b0 37' 42.98160'' N",
+                "lng" : "1\u00b0 17' 32.17200'' E"
+             },
+             "MGRS" : "31UCU8441732326",
+             "Maidenhead" : "JO02pp50bu",
+             "Mercator" : {
+                "x" : 143854.838,
+                "y" : 6880612.848
+             },
+             "OSGB" : {
+                "easting" : 622783.039,
+                "gridref" : "TG 227 085",
+                "northing" : 308555.893
+             },
+             "OSM" : {
+                "url" : "http://www.openstreetmap.org/?mlat=52.62861&mlon=1.29227#map=17/52.62861/1.29227"
+             },
+             "callingcode" : 44,
+             "geohash" : "u12gmktpb54r76b7ngce",
+             "sun" : {
+                "rise" : {
+                   "astronomical" : 1439257860,
+                   "civil" : 1439265060,
+                   "nautical" : 1439261940
+                },
+                "set" : {
+                   "astronomical" : 1439330700,
+                   "civil" : 1439323680,
+                   "nautical" : 1439326800
+                }
+             },
+             "timezone" : {
+                "name" : "Europe/London",
+                "now_in_dst" : 1,
+                "offset_sec" : 3600,
+                "offset_string" : 100,
+                "short_name" : "BST"
+             },
+             "what3words" : {
+                "words" : "dragon.crunch.coins"
+             }
+          },
+          "bounds" : {
+             "northeast" : {
+                "lat" : 52.6849096,
+                "lng" : 1.5407848
+             },
+             "southwest" : {
+                "lat" : 52.555435,
+                "lng" : 1.2038691
+             }
+          },
+          "components" : {
+             "city" : "Norwich",
+             "country" : "United Kingdom",
+             "country_code" : "gb",
+             "county" : "Norfolk",
+             "state" : "England",
+             "state_district" : "East of England"
+          },
+          "confidence" : 5,
+          "formatted" : "Norwich, Norfolk, United Kingdom",
+          "geometry" : {
+             "lat" : 52.628606,
+             "lng" : 1.29227
+          }
+       },
+       {
+          "annotations" : {
+             "DMS" : {
+                "lat" : "52\u00b0 37' 36.40656'' N",
+                "lng" : "1\u00b0 18' 24.44434'' E"
+             },
+             "MGRS" : "31UCU8539432100",
+             "Maidenhead" : "JO02pp60tk",
+             "Mercator" : {
+                "x" : 145471.208,
+                "y" : 6880278.724
+             },
+             "OSGB" : {
+                "easting" : 623774.629,
+                "gridref" : "TG 237 083",
+                "northing" : 308397.845
+             },
+             "OSM" : {
+                "url" : "http://www.openstreetmap.org/?mlat=52.62678&mlon=1.30679#map=17/52.62678/1.30679"
+             },
+             "callingcode" : 44,
+             "geohash" : "u12gmsrt4qv26np1jsqv",
+             "sun" : {
+                "rise" : {
+                   "astronomical" : 1439257860,
+                   "civil" : 1439265060,
+                   "nautical" : 1439261940
+                },
+                "set" : {
+                   "astronomical" : 1439330700,
+                   "civil" : 1439323680,
+                   "nautical" : 1439326740
+                }
+             },
+             "timezone" : {
+                "name" : "Europe/London",
+                "now_in_dst" : 1,
+                "offset_sec" : 3600,
+                "offset_string" : 100,
+                "short_name" : "BST"
+             },
+             "what3words" : {
+                "words" : "ample.sketch.cares"
+             }
+          },
+          "bounds" : {
+             "northeast" : {
+                "lat" : 52.6271858,
+                "lng" : 1.3078487
+             },
+             "southwest" : {
+                "lat" : 52.6263854,
+                "lng" : 1.306142
+             }
+          },
+          "components" : {
+             "city" : "Norwich",
+             "country" : "United Kingdom",
+             "country_code" : "gb",
+             "county" : "Norfolk",
+             "postcode" : "NR1 1EF",
+             "road" : "Station Approach",
+             "state" : "England",
+             "state_district" : "East of England",
+             "station" : "Norwich",
+             "suburb" : "Thorpe Hamlet"
+          },
+          "confidence" : 10,
+          "formatted" : "Norwich, Station Approach, Norwich NR1 1EF, United Kingdom",
+          "geometry" : {
+             "lat" : 52.6267796,
+             "lng" : 1.3067900949115
+          }
+       }
+    ],
+    "status" : {
+       "code" : 200,
+       "message" : "OK"
+    },
+    "stay_informed" : {
+       "blog" : "http://blog.opencagedata.com",
+       "twitter" : "https://twitter.com/opencagedata"
+    },
+    "thanks" : "For using an OpenCage Data API",
+    "timestamp" : {
+       "created_http" : "Tue, 11 Aug 2015 16:18:05 GMT",
+       "created_unix" : 1439309885
+    },
+    "total_results" : 2
+ }
+*/
+json_t *RefineLocationDataForOpenCage (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
 {
 	json_t *res_p = NULL;
 	json_t *results_array_p = json_object_get (raw_data_p, "results");

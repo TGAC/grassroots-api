@@ -21,16 +21,20 @@ extern "C"
 
 
 
-MONGODB_SERVICE_LOCAL json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p);
+MONGODB_SERVICE_LOCAL json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p);
 
 
-MONGODB_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (const json_t *row_p, MongoDBServiceData *data_p);
+MONGODB_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row_p);
 
 
 MONGODB_SERVICE_LOCAL bool ConvertDate (json_t *row_p);
 
 
-MONGODB_SERVICE_LOCAL json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+MONGODB_SERVICE_LOCAL json_t *RefineLocationDataForGoogle (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+
+
+MONGODB_SERVICE_LOCAL json_t *RefineLocationDataForOpenCage (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+
 
 #ifdef __cplusplus
 }

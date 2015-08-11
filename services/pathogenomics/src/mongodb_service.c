@@ -176,6 +176,10 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 
 					if ((config_p = GetGlobalServiceConfig (GetMongoDBServiceName (mongodb_service_p))) != NULL)
 						{
+							if (ConfigureMongoDBService (data_p, config_p))
+								{
+									return mongodb_service_p;
+								}
 						}
 
 					FreeMongoDBServiceData (data_p);
@@ -236,13 +240,15 @@ static bool ConfigureMongoDBService (MongoDBServiceData *data_p, const json_t *s
 
 					if (data_p -> msd_geocoder_uri_s)
 						{
-							if (strcmp (value_s, "google"))
+							if (strcmp (value_s, "google") == 0)
 								{
 									data_p -> msd_geocoder_fn = GetLocationDataByGoogle;
+									data_p -> msd_refine_location_fn = RefineLocationDataForGoogle;
 								}
-							else if (strcmp (value_s, "opencage"))
+							else if (strcmp (value_s, "opencage") == 0)
 								{
 									data_p -> msd_geocoder_fn = GetLocationDataByOpenCage;
+									data_p -> msd_refine_location_fn = RefineLocationDataForOpenCage;
 								}
 							else
 								{
@@ -283,6 +289,7 @@ static MongoDBServiceData *AllocateMongoDBServiceData (json_t *op_json_p)
 				{
 					data_p -> msd_tool_p = tool_p;
 					data_p -> msd_geocoder_fn = NULL;
+					data_p -> msd_refine_location_fn = NULL;
 					data_p -> msd_geocoder_uri_s = NULL;
 					data_p -> msd_locations_collection_s = NULL;
 					data_p -> msd_samples_collection_s = NULL;
@@ -660,7 +667,7 @@ static char *CheckDataIsValid (const json_t *row_p, MongoDBServiceData *data_p)
 static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBServiceData *data_p, const char *id_s)
 {
 	bool success_flag = false;
-	json_t *location_data_p = data_p -> msd_geocoder_fn (row_p, data_p);
+	json_t *location_data_p = data_p -> msd_geocoder_fn (data_p, row_p);
 
 	if (location_data_p)
 		{

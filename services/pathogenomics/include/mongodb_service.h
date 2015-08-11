@@ -41,7 +41,9 @@ struct MongoDBServiceData
 
 	const char *msd_locations_collection_s;
 
-	json_t *(*msd_geocoder_fn) (const json_t *row_p, struct MongoDBServiceData *data_p);
+	json_t *(*msd_geocoder_fn) (struct MongoDBServiceData *data_p, const json_t *row_p);
+
+	json_t *(*msd_refine_location_fn) (struct MongoDBServiceData *data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
 
 	const char *msd_geocoder_uri_s;
 
