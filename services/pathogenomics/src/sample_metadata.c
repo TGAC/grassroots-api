@@ -19,6 +19,9 @@
 	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_NONE)
 #endif
 
+static json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+
+
 
 bool ConvertDate (json_t *row_p)
 {
@@ -160,7 +163,7 @@ bool ConvertDate (json_t *row_p)
 }
 
 
-json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
+json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p)
 {
 	json_t *res_p = NULL;
 
@@ -176,7 +179,185 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 
 			if (buffer_p)
 				{
-					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s))
+					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoder_uri_s))
+						{
+							const char *postcode_s = GetJSONString (row_p, PG_POSTCODE_S);
+							const char *town_s = NULL;
+							const char *county_s = NULL;
+							const char *country_s = GetJSONString (row_p, PG_COUNTRY_S);
+							const char *country_code_s = NULL;
+							bool success_flag = true;
+							bool added_query_flag = false;
+
+
+							/* post code */
+							if (postcode_s)
+								{
+									success_flag = AppendStringsToByteBuffer (buffer_p, "components=postal_code:", postcode_s, NULL);
+
+									/* country */
+									if (success_flag)
+										{
+											if (country_s)
+												{
+													if (IsValidCountryCode (country_s))
+														{
+															country_code_s = country_s;
+														}
+													else
+														{
+															country_code_s = GetCountryCodeFromName (country_s);
+														}
+
+													if (country_code_s)
+														{
+															success_flag = AppendStringsToByteBuffer (buffer_p, "&country:", country_code_s, NULL);
+														}
+
+
+												}
+
+										}		/* if (success_flag) */
+
+								}
+							else
+								{
+									/* town */
+									if (town_s)
+										{
+											success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", town_s, NULL);
+											added_query_flag = true;
+										}
+
+									/* county */
+									if (success_flag)
+										{
+											county_s = GetJSONString (row_p, PG_COUNTY_S);
+
+											if (county_s)
+												{
+													if (added_query_flag)
+														{
+															success_flag = AppendStringsToByteBuffer (buffer_p, ",%20", county_s, NULL);
+														}
+													else
+														{
+															success_flag = AppendStringsToByteBuffer (buffer_p, "&query=", county_s, NULL);
+															added_query_flag = true;
+														}
+												}		/* if (county_s) */
+
+										}		/* if (success_flag) */
+
+
+									/* country */
+									if (success_flag)
+										{
+											if (country_s)
+												{
+													if (IsValidCountryCode (country_s))
+														{
+															country_code_s = country_s;
+														}
+													else
+														{
+															country_code_s = GetCountryCodeFromName (country_s);
+														}
+
+													if (country_code_s)
+														{
+															success_flag = AppendStringsToByteBuffer (buffer_p, "&components=country", country_code_s, NULL);
+														}
+												}
+										}
+
+								}
+
+
+							if (success_flag)
+								{
+									CurlTool *curl_tool_p = AllocateCurlTool ();
+
+									if (curl_tool_p)
+										{
+											const char *uri_s = GetByteBufferData (buffer_p);
+
+											if (SetUriForCurlTool (curl_tool_p, uri_s))
+												{
+													CURLcode c = RunCurlTool (curl_tool_p);
+
+													if (c == CURLE_OK)
+														{
+															const char *response_s = GetCurlToolData (curl_tool_p);
+
+															if (response_s)
+																{
+																	json_error_t error;
+																	json_t *raw_res_p = NULL;
+
+																	PrintLog (STM_LEVEL_INFO, "geo response for %s\n%s\n", uri_s, response_s);
+
+																	raw_res_p = json_loads (response_s, 0, &error);
+
+																	if (raw_res_p)
+																		{
+																			char *dump_s = json_dumps (res_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																			PrintLog (STM_LEVEL_INFO, "json:\n%s\n", dump_s);
+																			free (dump_s);
+
+
+																			res_p = RefineLocationData (raw_res_p, town_s, county_s, country_code_s);
+
+																			WipeJSON (raw_res_p);
+																		}
+																	else
+																		{
+
+																		}
+																}
+														}
+													else
+														{
+
+														}
+												}
+
+
+											FreeCurlTool (curl_tool_p);
+										}		/* if (curl_tool_p) */
+
+								}
+
+						}		/* if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoding_uri_s)) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+
+		}
+
+
+	return res_p;
+
+}
+
+json_t *GetLocationDataByOpenCage (const json_t *row_p, MongoDBServiceData *data_p)
+{
+	json_t *res_p = NULL;
+
+	const char *gps_s = GetJSONString (row_p, PG_GPS_S);
+
+	if (gps_s)
+		{
+
+		}
+	else
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoder_uri_s))
 						{
 							const char *town_s = GetJSONString (row_p, PG_TOWN_S);
 							const char *county_s = NULL;
@@ -200,7 +381,7 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 										{
 											if (added_query_flag)
 												{
-													success_flag = AppendStringsToByteBuffer (buffer_p, ", ", county_s, NULL);
+													success_flag = AppendStringsToByteBuffer (buffer_p, ",%20", county_s, NULL);
 												}
 											else
 												{
@@ -306,7 +487,7 @@ json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p)
 
 
 
-json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
+static json_t *RefineLocationData (json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
 {
 	json_t *res_p = NULL;
 	json_t *results_array_p = json_object_get (raw_data_p, "results");

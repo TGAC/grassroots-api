@@ -21,7 +21,10 @@ extern "C"
 
 
 
-MONGODB_SERVICE_LOCAL json_t *GetLocationData (const json_t *row_p, MongoDBServiceData *data_p);
+MONGODB_SERVICE_LOCAL json_t *GetLocationDataByGoogle (const json_t *row_p, MongoDBServiceData *data_p);
+
+
+MONGODB_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (const json_t *row_p, MongoDBServiceData *data_p);
 
 
 MONGODB_SERVICE_LOCAL bool ConvertDate (json_t *row_p);

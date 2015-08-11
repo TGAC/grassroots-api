@@ -62,6 +62,8 @@ static MongoDBServiceData *AllocateMongoDBServiceData (json_t *config_p);
 
 static json_t *GetMongoDBServiceResults (Service *service_p, const uuid_t job_id);
 
+static bool ConfigureMongoDBService (MongoDBServiceData *data_p, const json_t *service_config_p);
+
 
 static void FreeMongoDBServiceData (MongoDBServiceData *data_p);
 
@@ -174,22 +176,6 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 
 					if ((config_p = GetGlobalServiceConfig (GetMongoDBServiceName (mongodb_service_p))) != NULL)
 						{
-							data_p -> msd_geocoding_uri_s = GetJSONString (config_p, "geocoding_uri");
-
-							if (data_p -> msd_geocoding_uri_s)
-								{
-									data_p -> msd_samples_collection_s = GetJSONString (config_p, "samples_collection");
-
-									if (data_p -> msd_samples_collection_s)
-										{
-											data_p -> msd_geojson_collection_s = GetJSONString (config_p, "geojson_collection");
-
-											if (data_p -> msd_geojson_collection_s)
-												{
-													return mongodb_service_p;
-												}
-										}
-								}
 						}
 
 					FreeMongoDBServiceData (data_p);
@@ -202,6 +188,89 @@ static Service *GetMongoDBService (json_t *operation_json_p, size_t i)
 }
 
 
+static bool ConfigureMongoDBService (MongoDBServiceData *data_p, const json_t *service_config_p)
+{
+	bool success_flag = false;
+	const char *value_s = GetJSONString (service_config_p, "default_geocoder");
+
+	data_p -> msd_geocoder_uri_s = NULL;
+
+	if (value_s)
+		{
+			json_t *geocoders_p = json_object_get (service_config_p, "geocoders");
+
+			if (geocoders_p)
+				{
+					data_p -> msd_geocoder_uri_s = NULL;
+
+					if (json_is_array (geocoders_p))
+						{
+							const size_t size = json_array_size (geocoders_p);
+							size_t i = 0;
+
+							while (i < size)
+								{
+									json_t *geocoder_p = json_array_get (geocoders_p, i);
+									const char *name_s = GetJSONString (geocoder_p, "name");
+
+									if (name_s && (strcmp (name_s, value_s) == 0))
+										{
+											data_p -> msd_geocoder_uri_s = GetJSONString (geocoder_p, "uri");
+											i = size;
+										}
+									else
+										{
+											++ i;
+										}
+								}
+						}
+					else
+						{
+							const char *name_s = GetJSONString (geocoders_p, "name");
+
+							if (name_s && (strcmp (name_s, value_s) == 0))
+								{
+									data_p -> msd_geocoder_uri_s = GetJSONString (geocoders_p, "uri");
+								}
+						}
+
+					if (data_p -> msd_geocoder_uri_s)
+						{
+							if (strcmp (value_s, "google"))
+								{
+									data_p -> msd_geocoder_fn = GetLocationDataByGoogle;
+								}
+							else if (strcmp (value_s, "opencage"))
+								{
+									data_p -> msd_geocoder_fn = GetLocationDataByOpenCage;
+								}
+							else
+								{
+									data_p -> msd_geocoder_fn = NULL;
+								}
+						}
+				}
+		}
+
+	if (data_p -> msd_geocoder_fn)
+		{
+			data_p -> msd_samples_collection_s = GetJSONString (service_config_p, "samples_collection");
+
+			if (data_p -> msd_samples_collection_s)
+				{
+					data_p -> msd_locations_collection_s = GetJSONString (service_config_p, "locations_collection");
+
+					if (data_p -> msd_locations_collection_s)
+						{
+							success_flag = true;
+						}
+				}
+		}
+
+
+	return success_flag;
+}
+
 static MongoDBServiceData *AllocateMongoDBServiceData (json_t *op_json_p)
 {
 	MongoTool *tool_p = AllocateMongoTool ();
@@ -213,7 +282,10 @@ static MongoDBServiceData *AllocateMongoDBServiceData (json_t *op_json_p)
 			if (data_p)
 				{
 					data_p -> msd_tool_p = tool_p;
-					data_p -> msd_geocoding_uri_s = NULL;
+					data_p -> msd_geocoder_fn = NULL;
+					data_p -> msd_geocoder_uri_s = NULL;
+					data_p -> msd_locations_collection_s = NULL;
+					data_p -> msd_samples_collection_s = NULL;
 
 					return data_p;
 				}
@@ -588,7 +660,7 @@ static char *CheckDataIsValid (const json_t *row_p, MongoDBServiceData *data_p)
 static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBServiceData *data_p, const char *id_s)
 {
 	bool success_flag = false;
-	json_t *location_data_p = GetLocationData (row_p, data_p);
+	json_t *location_data_p = data_p -> msd_geocoder_fn (row_p, data_p);
 
 	if (location_data_p)
 		{
@@ -603,7 +675,7 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 					PrintJSONToLog (row_json_p, "location data:", STM_LEVEL_FINE);
 					#endif
 
-					if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_geojson_collection_s))
+					if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> msd_locations_collection_s))
 						{
 							json_t *results_p = NULL;
 							bson_t query;
