@@ -122,6 +122,7 @@ const char *GetJSONString (const json_t *json_p, const char * const key_s)
 
 
 
+
 bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p)
 {
 	bool success_flag = false;
@@ -137,7 +138,24 @@ bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_
 		}
 
 	return success_flag;
+}
 
+
+bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p)
+{
+	bool success_flag = false;
+	json_t *json_value_p = json_object_get (json_p, key_s);
+
+	if (json_value_p)
+		{
+			if (json_is_real (json_value_p))
+				{
+					*value_p = json_real_value (json_value_p);
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
 }
 
 

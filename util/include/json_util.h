@@ -165,21 +165,32 @@ WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * c
 
 
 /**
- * Get the value for a given key in a json_t object.
+ * Get the integer value for a given key in a json_t object.
  *
  * @param json_p The json object to query.
  * @param key_s The key to search for.
  * @param value_p Where the corresponding value will be stored if the key exists and relates to an int.
- * @return <code>true</code> if the value was retreived successfully, <code>false</code> otherwise.
+ * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
  */
 WHEATIS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p);
 
 
 
 /**
+ * Get the double value for a given key in a json_t object.
+ *
+ * @param json_p The json object to query.
+ * @param key_s The key to search for.
+ * @param value_p Where the corresponding value will be stored if the key exists and relates to a double.
+ * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ */
+WHEATIS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p);
+
+
+/**
  * Allocate a JsonNode that points to the given json object.
  *
- * @param json_p The json obect for the JsonNode to point to.
+ * @param json_p The json object for the JsonNode to point to.
  * @return A newly-allocated JsonNode or <code>NULL</code> upon error.
  * @memberof JsonNode
  * @see FreeJsonNode

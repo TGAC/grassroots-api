@@ -672,7 +672,7 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 	if (location_data_p)
 		{
 			json_error_t error;
-			json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_GEOJSON_S, location_data_p);
+			json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_LOCATION_S, location_data_p);
 
 			if (row_json_p)
 				{

@@ -20,6 +20,9 @@
 #endif
 
 
+static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p);
+
+
 bool ConvertDate (json_t *row_p)
 {
 	bool success_flag = false;
@@ -306,9 +309,10 @@ json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p
 																			free (dump_s);
 
 
-																			res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
+																			//res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
 
-																			WipeJSON (raw_res_p);
+																			//WipeJSON (raw_res_p);
+																			res_p = raw_res_p;
 																		}
 																	else
 																		{
@@ -449,10 +453,14 @@ json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row
 																			PrintLog (STM_LEVEL_INFO, "json:\n%s\n", dump_s);
 																			free (dump_s);
 
-
+																			/*
 																			res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
 
 																			WipeJSON (raw_res_p);
+																			*/
+
+																			/** TODO */
+																			res_p = raw_res_p;
 																		}
 																	else
 																		{
@@ -652,57 +660,139 @@ json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row
    ],
    "status" : "OK"
 }
+*/
 
- */
 json_t *RefineLocationDataForGoogle (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
 {
-	json_t *res_p = NULL;
-	json_t *results_array_p = json_object_get (raw_data_p, "results");
+	json_t *refined_data_p = NULL;
+	json_t *results_p = json_object_get (raw_data_p, "results");
 
-	if (results_array_p)
+	if (results_p)
 		{
-			if (json_is_array (results_array_p))
+			if (json_is_array (results_p))
 				{
-					size_t index;
-					json_t *result_p;
+					const size_t size = json_array_size (results_p);
+					size_t i = 0;
 
-					json_array_foreach (results_array_p, index, result_p)
+					while (i < size)
 						{
-							json_t *address_p = json_object_get (result_p, "components");
+							json_t *result_p = json_array_get (results_p, i);
 
-							if (address_p)
+							refined_data_p = FillInPathogenomicsFromGoogleData (result_p);
+
+							if (refined_data_p)
 								{
-									bool match_flag = false;
-
-									#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
-									PrintJSONToLog (address_p, "Address: ", STM_LEVEL_FINE);
-									#endif
-
-									if (county_s)
-										{
-											const char *result_county_s = GetJSONString (address_p, "county");
-
-											if (result_county_s)
-												{
-													if (Stricmp (county_s, result_county_s) == 0)
-														{
-															match_flag = true;
-														}
-												}
-										}		/* if (county_s) */
-
-
-
-								}		/* if (address_p) */
-
-						}		/* json_array_foreach (raw_res_p, index, raw_result_p) */
+									i = size;
+								}
+							else
+								{
+									++ i;
+								}
+						}		/* while (i < size) */
 
 				}		/* if (json_is_array (results_p)) */
 
 		}		/* if (results_p) */
 
-	return res_p;
+	return refined_data_p;
 }
+
+
+static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
+{
+	json_t *geometry_p = json_object_get (result_p, "geometry");
+
+	if (geometry_p)
+		{
+			json_t *location_p = json_object_get (geometry_p, "location");
+			bool match_flag = false;
+			const char * const LATITUDE_KEY_S = "lat";
+			const char * const LONGTITUDE_KEY_S = "lng";
+
+			#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
+			PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE);
+			#endif
+
+			if (location_p)
+				{
+					double latitude;
+
+					if (GetJSONReal (location_p, LATITUDE_KEY_S, &latitude))
+						{
+							double longtitude;
+
+							if (GetJSONReal (location_p, LONGTITUDE_KEY_S, &longtitude))
+								{
+									json_t *viewport_p = json_object_get (geometry_p, "viewport");
+
+									if (viewport_p)
+										{
+											json_t *corner_p = json_object_get (viewport_p, "northeast");
+
+											if (corner_p)
+												{
+													double north;
+
+													if (GetJSONReal (location_p, LATITUDE_KEY_S, &north))
+														{
+															double east;
+
+															if (GetJSONReal (location_p, LONGTITUDE_KEY_S, &east))
+																{
+																	corner_p = json_object_get (viewport_p, "southwest");
+
+																	if (corner_p)
+																		{
+																			double south;
+
+																			if (GetJSONReal (location_p, LATITUDE_KEY_S, &south))
+																				{
+																					double west;
+
+																					if (GetJSONReal (location_p, LONGTITUDE_KEY_S, &west))
+																						{
+																							json_t *res_p = json_object ();
+
+																							if (res_p)
+																								{
+																									if ((json_object_set_new (res_p, PG_LATITUDE_S, json_real (latitude)) == 0) &&
+																											(json_object_set_new (res_p, PG_LONGTITUDE_S, json_real (longtitude)) == 0) &&
+																											(json_object_set_new (res_p, PG_NORTH_BOUND_S, json_real (north)) == 0) &&
+																											(json_object_set_new (res_p, PG_SOUTH_BOUND_S, json_real (south)) == 0) &&
+																											(json_object_set_new (res_p, PG_EAST_BOUND_S, json_real (east)) == 0) &&
+																											(json_object_set_new (res_p, PG_WEST_BOUND_S, json_real (west)) == 0))
+																										{
+																											return res_p;
+																										}
+
+																									WipeJSON (res_p);
+																								}		/* if (res_p) */
+
+																						}		/* if (west_s) */
+
+																				}		/* if (south_s) */
+
+																		}		/* if (corner_p) */
+
+																}		/* if (east_s) */
+
+														}		/* if (north_s) */
+
+												}		/* if (corner_p) */
+
+										}		/* if (viewport_p) */
+
+								}		/* if (longtitude_s) */
+
+						}		/* if (latitude_s) */
+
+				}		/* if (location_p) */
+
+		}		/* if (geometry_p) */
+
+	return NULL;
+}
+
 
 
 /*
@@ -930,6 +1020,7 @@ json_t *RefineLocationDataForOpenCage (MongoDBServiceData *service_data_p, json_
 				}		/* if (json_is_array (results_p)) */
 
 		}		/* if (results_p) */
+
 
 	return res_p;
 }
