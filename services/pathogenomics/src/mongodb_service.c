@@ -720,7 +720,7 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 					WipeJSON (row_json_p);
 				}		/* if (row_json_p) */
 
-			WipeJSON (location_data_p);
+//			WipeJSON (location_data_p);
 		}		/* if (location_data_p) */
 
 

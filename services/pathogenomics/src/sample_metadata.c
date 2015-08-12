@@ -303,16 +303,11 @@ json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p
 
 																	if (raw_res_p)
 																		{
-																			char *dump_s = json_dumps (raw_res_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+																			PrintJSONToLog (raw_res_p, "raw: ", STM_LEVEL_FINE);
+																			res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
 
-																			PrintLog (STM_LEVEL_INFO, "json:\n%s\n", dump_s);
-																			free (dump_s);
-
-
-																			//res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
-
-																			//WipeJSON (raw_res_p);
-																			res_p = raw_res_p;
+																			PrintJSONToLog (res_p, "res: ", STM_LEVEL_FINE);
+																			WipeJSON (raw_res_p);
 																		}
 																	else
 																		{
