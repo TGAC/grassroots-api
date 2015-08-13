@@ -72,13 +72,13 @@ static bool CloseMongoDBService (Service *service_p);
 static bool CleanUpMongoDBServiceJob (ServiceJob *job_p);
 
 
-static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *service_data_p);
+static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *service_data_p, json_t *errors_p);
 
-static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *service_data_p);
+static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *service_data_p);
 
-static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p);
+static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p, json_t *errors_p);
 
-static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p);
+static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p, json_t *errors_p);
 
 static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag);
 
@@ -469,7 +469,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 												}
 											else
 												{
-													uint32 (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p) = NULL;
+													uint32 (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p, json_t *errors_p) = NULL;
 													json_t *json_param_p = NULL;
 													char delimiter = s_default_column_delimiter;
 
@@ -520,7 +520,8 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 															if (data_fn)
 																{
 																	json_error_t error;
-																	uint32 num_successes = data_fn (tool_p, json_param_p, collection_s, data_p);
+																	json_t *errors_p = json_array ();
+																	uint32 num_successes = data_fn (tool_p, json_param_p, collection_s, data_p, errors_p);
 
 																	#if MONGODB_SERVICE_DEBUG >= STM_LEVEL_FINE
 																		{
@@ -530,7 +531,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 																		}
 																	#endif
 
-																	response_p = json_pack_ex (&error, 0, "{s:i,s:s,s:o}", "status", num_successes, "collection", collection_s, "results", data_p);
+																	response_p = json_pack_ex (&error, 0, "{s:i,s:s,s:o,s:o}", "status", num_successes, "collection", collection_s, "results", data_p, "errors", errors_p);
 
 																	if (response_p)
 																		{
@@ -570,7 +571,7 @@ static ServiceJobSet *RunMongoDBService (Service *service_p, ParameterSet *param
 
 
 
-static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p)
+static uint32 SearchData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p, json_t *errors_p)
 {
 	bool success_flag = false;
 	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
@@ -719,8 +720,11 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 
 					WipeJSON (row_json_p);
 				}		/* if (row_json_p) */
+			else
+				{
+					WipeJSON (location_data_p);
+				}
 
-//			WipeJSON (location_data_p);
 		}		/* if (location_data_p) */
 
 
@@ -729,8 +733,32 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, MongoDBS
 
 
 
+static bool AddErrorMessage (json_t *errors_p, const json_t *values_p)
+{
+	bool success_flag = false;
+	const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
 
-static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *data_p)
+	if (pathogenomics_id_s)
+		{
+			json_t *error_p = json_object ();
+
+			if (error_p)
+				{
+					if (json_object_set_new (error_p, "ID", json_string (pathogenomics_id_s)) == 0)
+						{
+							if (json_array_append_new (errors_p, error_p) == 0)
+								{
+									success_flag = true;
+								}
+						}
+				}
+		}
+
+	return success_flag;
+}
+
+
+static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *data_p, json_t *errors_p)
 {
 	uint32 num_imports = 0;
 
@@ -741,7 +769,16 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 			json_array_foreach (values_p, i, value_p)
 				{
-					if (InsertSingleItem (tool_p, value_p, collection_s, data_p))
+					const char *error_s = InsertSingleItem (tool_p, value_p, collection_s, data_p);
+
+					if (error_s)
+						{
+							if (!AddErrorMessage (errors_p, values_p))
+								{
+
+								}
+						}
+					else
 						{
 							++ num_imports;
 						}
@@ -749,7 +786,16 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 		}
 	else
 		{
-			if (InsertSingleItem (tool_p, values_p, collection_s, data_p))
+			const char *error_s = InsertSingleItem (tool_p, values_p, collection_s, data_p);
+
+			if (error_s)
+				{
+					if (!AddErrorMessage (errors_p, values_p))
+						{
+
+						}
+				}
+			else
 				{
 					++ num_imports;
 				}
@@ -761,17 +807,18 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 
 
-static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *data_p)
+static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, MongoDBServiceData *data_p)
 {
-	bool success_flag = false;
+	const char *error_s = NULL;
 	bool add_fields_flag = false;
 
-	if (ConvertDate (values_p))
-		{
-			const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
+	const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
 
-			if (pathogenomics_id_s)
+	if (pathogenomics_id_s)
+		{
+			if (ConvertDate (values_p))
 				{
+
 					if (InsertLocationData (tool_p, values_p, data_p, pathogenomics_id_s))
 						{
 							/**
@@ -791,7 +838,10 @@ static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *c
 
 													if (json_object_del (values_p, MONGO_ID_S) == 0)
 														{
-															success_flag = UpdateMongoDocument (tool_p, &oid, values_p);
+															if (!UpdateMongoDocument (tool_p, &oid, values_p))
+																{
+																	error_s = "Failed to update data";
+																}
 														}
 
 												}
@@ -802,15 +852,18 @@ static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *c
 
 											if (id_p)
 												{
-													success_flag = true;
 													FreeMemory (id_p);
+												}
+											else
+												{
+													error_s = "Failed to insert data";
 												}
 										}
 
 								}
 
 
-							if (success_flag && add_fields_flag)
+							if ((error_s == NULL) && add_fields_flag)
 								{
 									/**
 									 * Add the fields to the list of available fields for this
@@ -916,7 +969,7 @@ static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *c
 																					else
 																						{
 																							PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
-																							success_flag = false;
+																							error_s = "Failed to insert data into fields collection";
 																						}
 																				}
 																			else
@@ -924,13 +977,15 @@ static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *c
 																					if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
 																						{
 																							PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+																							error_s = "Failed to update data in fields collection";
 																						}
 																				}
 																		}
 																	else
 																		{
+
 																			PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
-																			success_flag = false;
+																			error_s = "Failed to create JSON data to update fields collection";
 																		}
 
 																	bson_destroy (query_p);
@@ -947,18 +1002,29 @@ static bool InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *c
 								}
 
 						}		/* if (InsertLocationData (tool_p, values_p, data_p)) */
+					else
+						{
+							error_s = "Failed to add location data into system";
+						}
 
-				}		/* if (pathogenomics_id_s) */
+				}		/* if (ConvertDate (values_p)) */
+			else
+				{
+					error_s = "Could not get date";
+				}
 
-		}		/* if (ConvertDate (values_p)) */
+		}		/* if (pathogenomics_id_s) */
+	else
+		{
+			error_s = "Could not get pathogenomics id";
+		}
 
-
-	return success_flag;
+	return error_s;
 }
 	
 
 
-static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p)
+static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, MongoDBServiceData *service_data_p, json_t *errors_p)
 {
 	bool success_flag = false;
 	json_t *selector_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);

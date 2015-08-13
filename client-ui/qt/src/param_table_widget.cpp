@@ -19,6 +19,7 @@ DroppableTableWidget :: DroppableTableWidget (QWidget *parent_p, char row_delimi
 	setAcceptDrops (true);
 	SetRowDelimiter (row_delimiter);
 	SetColumnDelimiter (column_delimter);
+	dtw_unpack_text_content_flag = true;
 }
 
 
@@ -115,13 +116,59 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 
 					if (next_token_s)
 						{
-							value_s = CopyToNewString (current_token_s, next_token_s - current_token_s, false);
+							if (dtw_unpack_text_content_flag)
+								{
+									const char *first_value_p = current_token_s;
+									bool found_flag = false;
+
+									while ((!found_flag) && (first_value_p < next_token_s))
+										{
+											if (*first_value_p == '\"')
+												{
+													found_flag = true;
+												}
+
+											++ first_value_p;
+										}
+
+									if (found_flag)
+										{
+											const char *last_value_p = next_token_s;
+
+											found_flag = false;
+
+											while ((!found_flag) && (last_value_p > first_value_p))
+												{
+													if (*last_value_p == '\"')
+														{
+															found_flag = true;
+														}
+													else
+														{
+															-- last_value_p;
+														}
+												}
+
+											if (found_flag)
+												{
+													value_s = CopyToNewString (first_value_p, last_value_p - first_value_p, false);
+												}
+										}
+
+								}
+
+							if (!value_s)
+								{
+									value_s = CopyToNewString (current_token_s, next_token_s - current_token_s, false);
+								}
 
 							if (value_s)
 								{
 									alloc_flag = true;
 								}
+
 							current_token_s = next_token_s + 1;
+
 
 						}
 					else

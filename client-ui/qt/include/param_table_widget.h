@@ -43,6 +43,7 @@ protected:
 private:
 	char dtw_row_delimiter;
 	char dtw_column_delimiter;
+	bool dtw_unpack_text_content_flag;
 };
 
 
