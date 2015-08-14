@@ -286,6 +286,8 @@ bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_js
 
 	if (query_p)
 		{
+			char *value_s = bson_as_json (query_p, NULL);
+
 			success_flag = FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss);
 			bson_destroy (query_p);
 		}
@@ -461,6 +463,28 @@ bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const 
 	return success_flag;
 }
 
+
+json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p)
+{
+	json_t *results_array_p = NULL;
+
+	if (tool_p)
+		{
+			results_array_p = json_array ();
+
+			if (results_array_p)
+				{
+					if (!IterateOverMongoResults (tool_p, AddBSONDocumentToJSONArray, results_array_p))
+						{
+						}
+
+				}		/* if (results_array_p) */
+
+		}		/* if (tool_p) */
+
+	return results_array_p;
+
+}
 
 
 json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p)

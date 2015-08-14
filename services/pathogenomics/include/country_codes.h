@@ -1,7 +1,7 @@
 #ifndef COUNTRY_CODES_H
 #define COUNTRY_CODES_H
 
-#include "mongodb_service_library.h"
+#include "pathogenomics_service_library.h"
 
 
 typedef struct CountryCode
@@ -17,10 +17,10 @@ extern "C"
 #endif
 
 
-MONGODB_SERVICE_API const char *GetCountryCodeFromName (const char * const country_name_s);
+PATHOGENOMICS_SERVICE_LOCAL const char *GetCountryCodeFromName (const char * const country_name_s);
 
 
-MONGODB_SERVICE_API bool IsValidCountryCode (const char * const code_s);
+PATHOGENOMICS_SERVICE_LOCAL bool IsValidCountryCode (const char * const code_s);
 
 
 #ifdef __cplusplus

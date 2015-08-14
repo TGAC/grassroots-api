@@ -118,6 +118,9 @@ WHEATIS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
 WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
 
+WHEATIS_MONGODB_API json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p);
+
+
 WHEATIS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
 
 

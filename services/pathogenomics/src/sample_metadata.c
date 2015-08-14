@@ -163,7 +163,7 @@ bool ConvertDate (json_t *row_p)
 }
 
 
-json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p)
+json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p)
 {
 	json_t *res_p = NULL;
 
@@ -179,7 +179,7 @@ json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p
 
 			if (buffer_p)
 				{
-					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoder_uri_s))
+					if (AppendStringToByteBuffer (buffer_p, data_p -> psd_geocoder_uri_s))
 						{
 							const char *postcode_s = GetJSONString (row_p, PG_POSTCODE_S);
 							const char *town_s = NULL;
@@ -304,7 +304,7 @@ json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p
 																	if (raw_res_p)
 																		{
 																			PrintJSONToLog (raw_res_p, "raw: ", STM_LEVEL_FINE);
-																			res_p = data_p -> msd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
+																			res_p = data_p -> psd_refine_location_fn (data_p, raw_res_p, town_s, county_s, country_code_s);
 
 																			PrintJSONToLog (res_p, "res: ", STM_LEVEL_FINE);
 																			WipeJSON (raw_res_p);
@@ -338,7 +338,7 @@ json_t *GetLocationDataByGoogle (MongoDBServiceData *data_p, const json_t *row_p
 }
 
 
-json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row_p)
+json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p)
 {
 	json_t *res_p = NULL;
 
@@ -354,7 +354,7 @@ json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row
 
 			if (buffer_p)
 				{
-					if (AppendStringToByteBuffer (buffer_p, data_p -> msd_geocoder_uri_s))
+					if (AppendStringToByteBuffer (buffer_p, data_p -> psd_geocoder_uri_s))
 						{
 							const char *town_s = GetJSONString (row_p, PG_TOWN_S);
 							const char *county_s = NULL;
@@ -657,7 +657,7 @@ json_t *GetLocationDataByOpenCage (MongoDBServiceData *data_p, const json_t *row
 }
 */
 
-json_t *RefineLocationDataForGoogle (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
+json_t *RefineLocationDataForGoogle (PathogenomicsServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
 {
 	json_t *refined_data_p = NULL;
 	json_t *results_p = json_object_get (raw_data_p, "results");
@@ -969,7 +969,7 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
     "total_results" : 2
  }
 */
-json_t *RefineLocationDataForOpenCage (MongoDBServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
+json_t *RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
 {
 	json_t *res_p = NULL;
 	json_t *results_array_p = json_object_get (raw_data_p, "results");

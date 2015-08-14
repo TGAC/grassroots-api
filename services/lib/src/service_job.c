@@ -34,6 +34,8 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 	job_p -> sj_result_p = NULL;
 
+	job_p -> sj_metadata_p = NULL;
+
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 		{
 			char *uuid_s = GetUUIDAsString (job_p -> sj_id);
@@ -59,6 +61,12 @@ void ClearServiceJob (ServiceJob *job_p)
 		{
 			WipeJSON (job_p -> sj_result_p);
 			job_p -> sj_result_p = NULL;
+		}
+
+	if (job_p -> sj_metadata_p)
+		{
+			WipeJSON (job_p -> sj_metadata_p);
+			job_p -> sj_metadata_p = NULL;
 		}
 
 	job_p -> sj_status = OS_CLEANED_UP;

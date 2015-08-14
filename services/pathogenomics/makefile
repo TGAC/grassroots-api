@@ -1,4 +1,4 @@
-NAME 		= mongodb_service
+NAME 		= pathogenomics_service
 DIR_SRC = src
 DIR_INCLUDE = include
 CC		= g++
@@ -46,11 +46,11 @@ INCLUDES = \
 	-I$(DIR_BSON_INC) \
 	
 SRCS 	= \
-	mongodb_service.c \
+	pathogenomics_service.c \
 	country_codes.c \
 	sample_metadata.c	
 
-CPPFLAGS += -DMONGODB_SERVICE_EXPORTS 
+CPPFLAGS += -DPATHOGENOMICS_SERVICE_EXPORTS 
 
 LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
