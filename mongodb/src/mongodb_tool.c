@@ -279,6 +279,133 @@ bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, con
 
 
 
+bson_t *GenerateQuery (const json_t *json_p)
+{
+	bson_t *query_p = NULL;
+
+	/*
+	 * loop through each of the key:value queries
+	 *
+	 * if value is not an object or array, treat the statement as key = value
+	 * if value is an array, treat it as in.
+	 * if value is an object, value can have the following fields:
+	 *
+	 * key:  one of "=", "<", "<=", ">", ">=", "in", "range", "not"
+	 * value: can be single value or array. For a "range" key, it will be an array
+	 * of 2 elements that are the inclusive lower and upper bounds.
+	 */
+
+	if (json_p)
+		{
+			query_p = bson_new ();
+
+			if (query_p)
+				{
+					const char *key_s;
+					json_t *value_p;
+
+					json_object_foreach (json_p, key_s, value_p)
+						{
+							bool success_flag = false;
+
+							switch (json_typeof (json_p))
+								{
+									/*
+										JSON_OBJECT
+										JSON_ARRAY
+										JSON_STRING
+										JSON_INTEGER
+										JSON_REAL
+										JSON_TRUE
+										JSON_FALSE
+										JSON_NULL
+									 */
+									case JSON_STRING:
+										success_flag = BSON_APPEND_UTF8 (query_p, key_s, json_string_value (value_p));
+										break;
+
+									case JSON_INTEGER:
+										#if JSON_INTEGER_IS_LONG_LONG
+											success_flag = BSON_APPEND_INT64 (query_p, key_s, json_integer_value (value_p));
+										#else
+											success_flag = BSON_APPEND_INT32 (query_p, key_s, json_integer_value (value_p));
+										#endif
+										break;
+
+									case JSON_REAL:
+										success_flag = BSON_APPEND_DOUBLE (query_p, key_s, json_double_value (value_p));
+										break;
+
+									case JSON_TRUE:
+										success_flag = BSON_APPEND_BOOL (query_p, key_s, true);
+										break;
+
+									case JSON_FALSE:
+										success_flag = BSON_APPEND_BOOL (query_p, key_s, false);
+										break;
+
+									case JSON_STRING:
+										success_flag = BSON_APPEND_UTF8 (query_p, key_s, json_string_value (value_p));
+										break;
+
+									case JSON_ARRAY:
+										{
+											const size_t size = json_array_size (value_p);
+											size_t i;
+
+											for (i = 0; i < size; ++ i)
+												{
+													json_t *element_p = json_array_get (value_p, i);
+
+													switch (json_typeof (element_p))
+														{
+															case JSON_INTEGER:
+																#if JSON_INTEGER_IS_LONG_LONG
+																	success_flag = BSON_APPEND_INT64 (query_p, key_s, json_integer_value (value_p));
+																#else
+																	success_flag = BSON_APPEND_INT32 (query_p, key_s, json_integer_value (value_p));
+																#endif
+																break;
+
+															default:
+																break;
+														}
+
+													BSON_APPEND_ARRAY()
+												}
+										}
+										break;
+
+									case JSON_OBJECT:
+
+										break;
+
+									case JSON_NULL:
+										success_flag = true;
+										break;
+
+									default:
+										break;
+								}		/* switch (json_typeof (json_p)) */
+
+							if (success_flag)
+								{
+
+								}
+
+						}		/* json_object_foreach (json_p, key_p, value_p) */
+
+				}		/* if (query_p) */
+
+		}		/* if (json_p) */
+
+
+
+
+	return query_p;
+}
+
+
 bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss)
 {
 	bool success_flag = false;

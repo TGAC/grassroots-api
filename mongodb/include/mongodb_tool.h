@@ -94,9 +94,6 @@ WHEATIS_MONGODB_API bson_t *ConvertJSONToBSON (const json_t *json_p);
 WHEATIS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
 
 
-WHEATIS_MONGODB_API bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
-
-
 WHEATIS_MONGODB_API bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *json_p);
 
 
