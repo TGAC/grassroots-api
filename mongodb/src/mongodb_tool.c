@@ -4,6 +4,8 @@
  *  Created on: 26 Jun 2015
  *      Author: billy
  */
+#include <math.h>
+
 #define ALLOCATE_MONGODB_TAGS (1)
 #include "mongodb_tool.h"
 #include "memory_allocations.h"
@@ -279,7 +281,7 @@ bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, con
 
 
 
-bson_t *GenerateQuery (const json_t *json_p)
+bson_t *GenerateQuery (json_t *json_p)
 {
 	bson_t *query_p = NULL;
 
@@ -333,7 +335,7 @@ bson_t *GenerateQuery (const json_t *json_p)
 										break;
 
 									case JSON_REAL:
-										success_flag = BSON_APPEND_DOUBLE (query_p, key_s, json_double_value (value_p));
+										success_flag = BSON_APPEND_DOUBLE (query_p, key_s, json_real_value (value_p));
 										break;
 
 									case JSON_TRUE:
@@ -344,40 +346,116 @@ bson_t *GenerateQuery (const json_t *json_p)
 										success_flag = BSON_APPEND_BOOL (query_p, key_s, false);
 										break;
 
-									case JSON_STRING:
-										success_flag = BSON_APPEND_UTF8 (query_p, key_s, json_string_value (value_p));
-										break;
-
 									case JSON_ARRAY:
 										{
-											const size_t size = json_array_size (value_p);
-											size_t i;
+											bson_t *in_p = bson_new ();
 
-											for (i = 0; i < size; ++ i)
+											if (in_p)
 												{
-													json_t *element_p = json_array_get (value_p, i);
-
-													switch (json_typeof (element_p))
+													if (bson_append_array_begin (query_p, key_s, -1, in_p))
 														{
-															case JSON_INTEGER:
-																#if JSON_INTEGER_IS_LONG_LONG
-																	success_flag = BSON_APPEND_INT64 (query_p, key_s, json_integer_value (value_p));
-																#else
-																	success_flag = BSON_APPEND_INT32 (query_p, key_s, json_integer_value (value_p));
-																#endif
-																break;
+															const size_t size = json_array_size (value_p);
+															size_t i;
+															uint32 buffer_length = ((uint32) (ceil (log10 ((double) size)))) + 2;
 
-															default:
-																break;
-														}
+															char *buffer_s = (char *) AllocMemory (buffer_length * sizeof (char));
 
-													BSON_APPEND_ARRAY()
-												}
+															if (buffer_s)
+																{
+																	for (i = 0; i < size; ++ i)
+																		{
+																			if (sprintf (buffer_s, SIZET_FMT, i) >= 0)
+																				{
+																					json_t *element_p = json_array_get (value_p, i);
+
+																					switch (json_typeof (element_p))
+																						{
+																							case JSON_INTEGER:
+																								#if JSON_INTEGER_IS_LONG_LONG
+																									success_flag = BSON_APPEND_INT64 (in_p, buffer_s, json_integer_value (value_p));
+																								#else
+																									success_flag = BSON_APPEND_INT32 (in_p, buffer_s, json_integer_value (value_p));
+																								#endif
+																								break;
+
+																							case JSON_STRING:
+																								success_flag = BSON_APPEND_UTF8 (in_p, buffer_s, json_string_value (value_p));
+																								break;
+
+																							case JSON_REAL:
+																								success_flag = BSON_APPEND_DOUBLE (in_p, buffer_s, json_real_value (value_p));
+																								break;
+
+
+																							default:
+																								break;
+																						}
+
+																				}
+																		}
+
+																	FreeMemory (buffer_s);
+																}		/* if (buffer_s) */
+
+															if (!bson_append_array_end (query_p, in_p))
+																{
+
+																}
+
+														}		/* if (bson_append_array_begin (query_p, key_s, -1, in_p)) */
+
+												}		/* if (in_p) */
+
 										}
 										break;
 
 									case JSON_OBJECT:
+										{
+											/*
+											 * key:  one of "=", "<", "<=", ">", ">=", "in", "range", "not"
+											 * value: can be single value or array. For a "range" key, it will be an array
+											 * of 2 elements that are the inclusive lower and upper bounds.
+											 */
+											json_t *value_p = NULL;
 
+											if ((value_p = json_object_get (json_p, "=")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, "<")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, "<=")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, ">")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, ">=")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, "in")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, "range")) != NULL)
+												{
+
+												}
+											else if ((value_p = json_object_get (json_p, "not")) != NULL)
+												{
+
+												}
+											else
+												{
+
+												}
+
+										}
 										break;
 
 									case JSON_NULL:
@@ -398,8 +476,6 @@ bson_t *GenerateQuery (const json_t *json_p)
 				}		/* if (query_p) */
 
 		}		/* if (json_p) */
-
-
 
 
 	return query_p;
