@@ -364,7 +364,9 @@ bson_t *GenerateQuery (json_t *json_p)
 																{
 																	for (i = 0; i < size; ++ i)
 																		{
-																			if (sprintf (buffer_s, SIZET_FMT, i) >= 0)
+																			const char *index_p;
+
+																			if (bson_uint32_to_string (i, &index_p, buffer_s, buffer_length) > 0)
 																				{
 																					json_t *element_p = json_array_get (value_p, i);
 
@@ -372,18 +374,18 @@ bson_t *GenerateQuery (json_t *json_p)
 																						{
 																							case JSON_INTEGER:
 																								#if JSON_INTEGER_IS_LONG_LONG
-																									success_flag = BSON_APPEND_INT64 (in_p, buffer_s, json_integer_value (value_p));
+																									success_flag = BSON_APPEND_INT64 (in_p, index_p, json_integer_value (value_p));
 																								#else
-																									success_flag = BSON_APPEND_INT32 (in_p, buffer_s, json_integer_value (value_p));
+																									success_flag = BSON_APPEND_INT32 (in_p, index_p, json_integer_value (value_p));
 																								#endif
 																								break;
 
 																							case JSON_STRING:
-																								success_flag = BSON_APPEND_UTF8 (in_p, buffer_s, json_string_value (value_p));
+																								success_flag = BSON_APPEND_UTF8 (in_p, index_p, json_string_value (value_p));
 																								break;
 
 																							case JSON_REAL:
-																								success_flag = BSON_APPEND_DOUBLE (in_p, buffer_s, json_real_value (value_p));
+																								success_flag = BSON_APPEND_DOUBLE (in_p, index_p, json_real_value (value_p));
 																								break;
 
 
@@ -416,43 +418,59 @@ bson_t *GenerateQuery (json_t *json_p)
 											 * value: can be single value or array. For a "range" key, it will be an array
 											 * of 2 elements that are the inclusive lower and upper bounds.
 											 */
-											json_t *value_p = NULL;
+											json_t *op_p = json_object_get (json_p, "operator");
+											json_t *op_value_p = json_object_get (json_p, "value");
 
-											if ((value_p = json_object_get (json_p, "=")) != NULL)
+											if (op_p && op_value_p)
 												{
+													if (json_is_string (op_p))
+														{
+															bson_t *op_bson_p = bson_new ();
 
-												}
-											else if ((value_p = json_object_get (json_p, "<")) != NULL)
-												{
+															if (op_bson_p)
+																{
 
-												}
-											else if ((value_p = json_object_get (json_p, "<=")) != NULL)
-												{
+																}
+															const char *op_s = json_string_value (op_p);
 
-												}
-											else if ((value_p = json_object_get (json_p, ">")) != NULL)
-												{
+															if (strcmp (op_p, "=") == 0)
+																{
 
-												}
-											else if ((value_p = json_object_get (json_p, ">=")) != NULL)
-												{
+																}
+															else if (strcmp (op_p, "<") == 0)
+																{
 
-												}
-											else if ((value_p = json_object_get (json_p, "in")) != NULL)
-												{
+																}
+															else if (strcmp (op_p, "<=") == 0)
+																{
 
-												}
-											else if ((value_p = json_object_get (json_p, "range")) != NULL)
-												{
+																}
+															else if (strcmp (op_p, ">") == 0)
+																{
 
-												}
-											else if ((value_p = json_object_get (json_p, "not")) != NULL)
-												{
+																}
+															else if (strcmp (op_p, ">=") == 0)
+																{
 
-												}
-											else
-												{
+																}
+															else if (strcmp (op_p, "in") == 0)
+																{
 
+																}
+															else if (strcmp (op_p, "range") == 0)
+																{
+
+																}
+															else if (strcmp (op_p, "!=") == 0)
+																{
+
+																}
+															else
+																{
+
+																}
+
+														}
 												}
 
 										}
