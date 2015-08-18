@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include <QDebug>
+#include <QFontMetrics>
 #include <QMimeData>
 
 #include "param_text_box.h"
@@ -15,6 +16,10 @@ DroppableTextBox :: DroppableTextBox (QWidget *parent_p)
 {
 	setAcceptDrops (true);
 
+	/* Set tab width to 2 spaces */
+	QFontMetrics metrics (font ());
+	int space_width = metrics.width (' ');
+	setTabStopWidth (2 * space_width);
 }
 
 void DroppableTextBox :: dropEvent (QDropEvent *event_p)

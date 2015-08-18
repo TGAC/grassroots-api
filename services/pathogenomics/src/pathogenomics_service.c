@@ -81,10 +81,6 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const char *collec
 
 static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collection_s, PathogenomicsServiceData *service_data_p, json_t *errors_p);
 
-static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag);
-
-static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter);
-
 static bool AddUploadParams (ParameterSet *param_set_p);
 
 /*
@@ -429,6 +425,43 @@ static bool ClosePathogenomicsService (Service *service_p)
 }
 
 
+static json_type GetPathogenomicsJSONFieldType (const char *name_s, const void *data_p)
+{
+	json_type t = JSON_STRING;
+	PathogenomicsServiceData *service_data_p = (PathogenomicsServiceData *) (data_p);
+	const json_t *config_p = GetGlobalServiceConfig (GetPathogenomicsServiceName (service_data_p -> psd_base_data.sd_service_p));
+
+	if (config_p)
+		{
+			const json_t *field_defs_p = json_object_get (config_p, "field_defs");
+
+			if (field_defs_p)
+				{
+					const char *field_def_s = GetJSONString (field_defs_p, name_s);
+
+					if (field_def_s)
+						{
+							if (strcmp (field_def_s, "int") == 0)
+								{
+									t = JSON_INTEGER;
+								}
+							else if (strcmp (field_def_s, "real") == 0)
+								{
+									t = JSON_REAL;
+								}
+							else if (strcmp (field_def_s, "bool") == 0)
+								{
+									t = JSON_TRUE;
+								}
+						}
+				}
+		}
+
+	return t;
+}
+
+
+
 static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	PathogenomicsServiceData *data_p = (PathogenomicsServiceData *) (service_p -> se_data_p);
@@ -470,8 +503,8 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 												}
 											else
 												{
-													uint32 (*data_fn) (MongoTool *tool_p, json_t *data_p, const char *collection_s, PathogenomicsServiceData *service_data_p, json_t *errors_p) = NULL;
 													json_t *json_param_p = NULL;
+													bool update_flag = false;
 													char delimiter = s_default_column_delimiter;
 
 													/* Get the current delimiter */
@@ -486,7 +519,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 													if (param_p)
 														{
-															json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, delimiter, '\n');
+															json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, delimiter, '\n', GetPathogenomicsJSONFieldType, data_p);
 
 															if (json_param_p)
 																{
@@ -494,7 +527,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																	PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
 																	#endif
 
-																	data_fn = InsertData;
+																	update_flag = true;
 																}
 														}
 
@@ -507,9 +540,13 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 															job_p -> sj_status = OS_FAILED;
 
-															if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
+															if (update_flag)
 																{
-																	num_successes = InsertData (tool_p,  value.st_json_p, collection_s, data_p, errors_p);
+																	num_successes = InsertData (tool_p, value.st_json_p, collection_s, data_p, errors_p);
+																}
+															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
+																{
+																	num_successes = InsertData (tool_p, value.st_json_p, collection_s, data_p, errors_p);
 																}
 															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
 																{
@@ -1127,172 +1164,3 @@ static bool CleanUpPathogenomicsServiceJob (ServiceJob *job_p)
 }
 
 
-
-static int32 UploadDelimitedTable (MongoTool *tool_p,  const char *data_s, const char delimiter)
-{
-	int32 num_lines = 0;
-
-	if (data_s)
-		{
-			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-			if (buffer_p)
-				{
-					json_t *json_data_p = json_object ();
-
-					if (json_data_p)
-						{
-							LinkedList *headers_p = GetTableRow (&data_s, delimiter, buffer_p, false);
-
-							if (headers_p)
-								{
-									uint32 line_number = 2;
-									LinkedList *row_p = NULL;
-
-									while ((row_p = GetTableRow (&data_s, delimiter, buffer_p, true)) != NULL)
-										{
-											if (headers_p -> ll_size == row_p -> ll_size)
-												{
-													StringListNode *header_node_p = (StringListNode *) (headers_p -> ll_head_p);
-													StringListNode *row_node_p = (StringListNode *) (row_p -> ll_head_p);
-													bson_oid_t *id_p = NULL;
-
-													while (header_node_p)
-														{
-															const char *row_value_s = row_node_p -> sln_string_s;
-
-															if (row_value_s)
-																{
-																	if (json_object_set_new (json_data_p, header_node_p -> sln_string_s, json_string (row_value_s)) != 0)
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to insert %s: %s into json object", header_node_p -> sln_string_s, row_value_s);
-																		}
-																}
-
-															header_node_p = (StringListNode *) (header_node_p -> sln_node.ln_next_p);
-															row_node_p = (StringListNode *) (row_node_p -> sln_node.ln_next_p) ;
-														}		/* while (header_node_p) */
-
-													/*
-													The ID header is the unique identifier so check to see if it is already
-													in the collection
-													*/
-
-													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-														{
-															char *dump_s = json_dumps (json_data_p, JSON_INDENT (2));
-
-															if (dump_s)
-																{
-																	PrintLog (STM_LEVEL_FINE, "json row %s", dump_s);
-																	free (dump_s);
-																}
-														}
-													#endif
-
-													id_p = InsertJSONIntoMongoCollection (tool_p, json_data_p);
-													if (!id_p)
-														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to insert json object into collection");
-														}
-
-													json_object_clear (json_data_p);
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, "" UINT32_FMT " headers and " UINT32_FMT "rows  for line " UINT32_FMT, headers_p -> ll_size, row_p -> ll_size, line_number);
-												}
-
-											++ line_number;
-										}
-
-								}	/* if (headers_p) */
-
-							WipeJSON (json_data_p);
-						}		/* if (json_data_p) */
-
-					FreeByteBuffer (buffer_p);
-				}		/* if (buffer_p) */
-
-		}
-
-
-	return num_lines;
-}
-
-
-static LinkedList *GetTableRow (const char **data_ss, const char delimiter, ByteBuffer *buffer_p, bool empty_strings_allowed_flag)
-{
-	bool success_flag = true;
-	const char *buffer_s = NULL;
-	LinkedList *row_p = AllocateLinkedList (FreeStringListNode);
-
-	if (row_p)
-		{
-			bool loop_flag = (*buffer_s != '\0');
-
-			buffer_s = *data_ss;
-			ResetByteBuffer (buffer_p);
-
-			while (loop_flag && success_flag)
-				{
-					if (*buffer_s == delimiter)
-						{
-							/* For an empty column this can be an empty string */
-							const char *data_s = GetByteBufferData (buffer_p);
-							StringListNode *node_p = NULL;
-
-							if (*data_s != '\0')
-								{
-									node_p = AllocateStringListNode (data_s, MF_DEEP_COPY);
-								}
-							else if (empty_strings_allowed_flag)
-								{
-									node_p = AllocateStringListNode (data_s, MF_SHADOW_USE);
-								}
-
-							if (node_p)
-								{
-									LinkedListAddTail (row_p, (ListItem * const) node_p);
-								}
-							else
-								{
-									success_flag = false;
-								}
-						}
-					else
-						{
-							switch (*buffer_s)
-								{
-									case '\r':
-									case '\n':
-										loop_flag = false;
-										break;
-
-									default:
-										success_flag = AppendToByteBuffer (buffer_p, buffer_s, 1);
-										break;
-								}
-						}
-
-					if (loop_flag && success_flag)
-						{
-							++ buffer_s;
-							loop_flag = (*buffer_s != '\0');
-						}
-				}		/*( while (loop_flag) */
-
-		}		/* if (row_p) */
-
-	if (success_flag)
-		{
-			*data_ss = buffer_s;
-		}
-	else
-		{
-			FreeLinkedList (row_p);
-			row_p = NULL;
-		}
-
-	return row_p;
-}

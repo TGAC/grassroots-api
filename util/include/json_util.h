@@ -8,6 +8,9 @@
 
 #include "jansson.h"
 #include "linked_list.h"
+#include "string_linked_list.h"
+
+
 
 /*
  * The following preprocessor macros allow us to declare
@@ -136,6 +139,17 @@ typedef struct JsonNode
 } JsonNode;
 
 
+
+typedef struct FieldNode
+{
+	StringListNode fn_base_node;
+
+	json_type fn_type;
+
+} FieldNode;
+
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -209,11 +223,33 @@ WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
 
 
 
+
+/**
+ * Allocate a FieldNode that points to the given json object.
+ *
+ * @param name_s The json object for the newly to point to.
+ * @return A newly-allocated newly or <code>NULL</code> upon error.
+ * @memberof FieldNode
+ * @see FreeFieldNode
+ */
+WHEATIS_UTIL_API FieldNode *AllocateFieldNode (const char *name_s, const MEM_FLAG mf, json_type field_type);
+
+/**
+ * Free a FieldNode.
+ *
+ * @param node_p The FieldNode to free.
+ * @memberof FieldNode
+ */
+WHEATIS_UTIL_API void FreeFieldNode (ListItem *node_p);
+
+
 WHEATIS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
 
 
+WHEATIS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
-WHEATIS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter);
+
+WHEATIS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, json_type field_type);
 
 
 WHEATIS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);

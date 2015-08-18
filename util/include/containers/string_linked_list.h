@@ -47,6 +47,10 @@ typedef struct StringListNode
 WHEATIS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag);
 
 
+
+WHEATIS_UTIL_API bool InitStringListNode (StringListNode *node_p, const char * const value_s, const MEM_FLAG mem_flag);
+
+
 /**
  * Free a StringListNode.
  * Whether the sln_string_p will be freed depends upon the
@@ -55,6 +59,9 @@ WHEATIS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_
  * @param node_p The ListNode to free.
  */
 WHEATIS_UTIL_API void FreeStringListNode (ListItem * const node_p);
+
+
+WHEATIS_UTIL_API void ClearStringListNode (StringListNode *node_p);
 
 
 /**

@@ -37,6 +37,38 @@ void FreeJsonNode (ListItem *node_p)
 }
 
 
+FieldNode *AllocateFieldNode (const char *name_s, const MEM_FLAG mf, json_type field_type)
+{
+	FieldNode *node_p = (FieldNode *) AllocMemory (sizeof (FieldNode));
+
+	if (node_p)
+		{
+			if (InitStringListNode (& (node_p -> fn_base_node), name_s, mf))
+				{
+					node_p -> fn_type = field_type;
+
+					return node_p;
+				}
+
+			FreeMemory (node_p);
+		}
+
+	return NULL;
+}
+
+
+
+void FreeFieldNode (ListItem *node_p)
+{
+	FieldNode *field_node_p = (FieldNode *) node_p;
+
+	ClearStringListNode (& (field_node_p -> fn_base_node));
+
+	FreeMemory (field_node_p);
+}
+
+
+
 int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s)
 {
 	int result = 0;
@@ -169,14 +201,15 @@ bool SetJSONHTML (json_t *json_p, const char *key_s, const char *html_s)
 
 
 
-json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter)
+
+json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p)
 {
 	json_t *json_values_p = NULL;
 	char *current_row_s = data_s;
 	char *next_row_s;
 	bool loop_flag = true;
 	bool success_flag = true;
-	LinkedList *headers_p = AllocateLinkedList (FreeStringListNode);
+	LinkedList *headers_p = AllocateLinkedList (FreeFieldNode);
 
 	if (headers_p)
 		{
@@ -206,7 +239,15 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 
 									if (value_s)
 										{
-											StringListNode *node_p = AllocateStringListNode (value_s, MF_SHALLOW_COPY);
+											FieldNode *node_p = NULL;
+											json_type field_type = JSON_STRING;
+
+											if (get_type_fn)
+												{
+													field_type = get_type_fn (value_s, type_data_p);
+												}
+
+											node_p = AllocateFieldNode (value_s, MF_SHALLOW_COPY, field_type);
 
 											if (node_p)
 												{
@@ -315,13 +356,67 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 }
 
 
+json_t *GetJSONFromString (const char * const value_s, json_type field_type)
+{
+	json_t *value_p = NULL;
+
+	switch (field_type)
+		{
+			case JSON_STRING:
+				value_p = json_string (value_s);
+				break;
+
+			case JSON_INTEGER:
+				{
+					int i;
+
+					if (GetValidInteger (&value_s, &i))
+						{
+							value_p = json_integer (i);
+						}
+				}
+				break;
+
+			case JSON_REAL:
+				{
+					double d;
+
+					if (GetValidRealNumber (&value_s, &d))
+						{
+							value_p = json_real (d);
+						}
+				}
+				break;
+
+			case JSON_TRUE:
+			case JSON_FALSE:
+				if (Stricmp (value_s, "true") == 0)
+					{
+						value_p = json_true ();
+					}
+				else if (Stricmp (value_s, "false") == 0)
+					{
+						value_p = json_false ();
+					}
+				break;
+
+			case JSON_OBJECT:
+			case JSON_ARRAY:
+			case JSON_NULL:
+				break;
+		}
+
+	return value_p;
+}
+
+
 json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter)
 {
 	json_t *row_json_p = json_object ();
 
 	if (row_json_p)
 		{
-			StringListNode *header_p = (StringListNode *) (headers_p -> ll_head_p);
+			FieldNode *header_p = (FieldNode *) (headers_p -> ll_head_p);
 			char *current_token_s = row_s;
 			char *next_token_s = NULL;
 
@@ -337,10 +432,16 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 
 							if (next_token_s)
 								{
-									int res;
+									int res = -1;
+									json_t *value_p = GetJSONFromString (current_token_s, header_p -> fn_type);
 
 									*next_token_s = '\0';
-									res = json_object_set_new (row_json_p, header_p -> sln_string_s, json_string (current_token_s));
+
+									if (value_p)
+										{
+											res = json_object_set_new (row_json_p, header_p -> fn_base_node.sln_string_s, value_p);
+										}
+
 									*next_token_s = delimiter;
 
 									if (res != 0)
@@ -356,7 +457,7 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 								}
 						}
 
-					header_p = (StringListNode *) (header_p -> sln_node.ln_next_p);
+					header_p = (StringListNode *) (header_p -> fn_base_node.sln_node.ln_next_p);
 				}		/* while (header_p) */
 
 		}		/* if (row_json_p) */

@@ -9,60 +9,81 @@ LinkedList *AllocateStringLinkedList (void)
 	return AllocateLinkedList (FreeStringListNode);
 }
 
-StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag)
+StringListNode *AllocateStringListNode (const char * const value_s, const MEM_FLAG mem_flag)
 {
 	StringListNode *node_p = (StringListNode *) AllocMemory (sizeof (StringListNode));
 
 	if (node_p)
 		{
-			char *dest_p = NULL;
-
-			switch (mem_flag)
+			if (!InitStringListNode (node_p, value_s, mem_flag))
 				{
-					case MF_DEEP_COPY:
-						dest_p = CopyToNewString (str_p, 0, false);
-
-						if (dest_p)
-							{
-								node_p -> sln_string_s = dest_p;
-							}
-						else
-							{
-								FreeMemory (node_p);
-								node_p = NULL;
-							}
-						break;
-
-					case MF_SHALLOW_COPY:
-					case MF_SHADOW_USE:
-						node_p -> sln_string_s = (char *) str_p;
-						break;
-						
-						
-					case MF_ALREADY_FREED:
-					default:
-					 	break;
+					return node_p;
 				}
 
-			if (node_p)
-				{
-					node_p -> sln_string_flag = mem_flag;
-				}
+			FreeMemory (node_p);
 		}
 
-	return node_p;
+	return NULL;
 }
+
+
+bool InitStringListNode (StringListNode *node_p, const char * const value_s, const MEM_FLAG mem_flag)
+{
+	bool success_flag = false;
+	char *dest_s = NULL;
+
+	switch (mem_flag)
+		{
+			case MF_DEEP_COPY:
+				dest_s = CopyToNewString (value_s, 0, false);
+
+				if (dest_s)
+					{
+						node_p -> sln_string_s = dest_s;
+						success_flag = true;
+					}
+				else
+					{
+						FreeMemory (node_p);
+						node_p = NULL;
+					}
+				break;
+
+			case MF_SHALLOW_COPY:
+			case MF_SHADOW_USE:
+				node_p -> sln_string_s = (char *) value_s;
+				success_flag = true;
+				break;
+
+
+			case MF_ALREADY_FREED:
+			default:
+			 	break;
+		}
+
+
+	return success_flag;
+}
+
 
 
 void FreeStringListNode (ListItem * const node_p)
 {
 	StringListNode * const str_node_p = (StringListNode * const) node_p;
 
-	switch (str_node_p -> sln_string_flag)
+	ClearStringListNode (str_node_p);
+
+	FreeMemory (str_node_p);
+}
+
+
+void ClearStringListNode (StringListNode *node_p)
+{
+	switch (node_p -> sln_string_flag)
 		{
 			case MF_DEEP_COPY:
 			case MF_SHALLOW_COPY:
-				FreeMemory (str_node_p -> sln_string_s);
+				FreeMemory (node_p -> sln_string_s);
 				break;
 
 			case MF_SHADOW_USE:
@@ -70,8 +91,6 @@ void FreeStringListNode (ListItem * const node_p)
 			default:
 				break;
 		}
-
-	FreeMemory (str_node_p);
 }
 
 
