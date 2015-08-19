@@ -542,7 +542,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 															if (update_flag)
 																{
-																	num_successes = InsertData (tool_p, value.st_json_p, collection_s, data_p, errors_p);
+																	num_successes = InsertData (tool_p, json_param_p, collection_s, data_p, errors_p);
 																}
 															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
 																{
@@ -773,7 +773,7 @@ static char *CheckDataIsValid (const json_t *row_p, PathogenomicsServiceData *da
 static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
 {
 	bool success_flag = false;
-	json_t *location_data_p = data_p -> psd_geocoder_fn (data_p, row_p);
+	json_t *location_data_p = data_p -> psd_geocoder_fn (data_p, row_p, id_s);
 
 	if (location_data_p)
 		{

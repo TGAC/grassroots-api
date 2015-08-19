@@ -48,7 +48,7 @@ struct PathogenomicsServiceData
 
 	const char *psd_locations_collection_s;
 
-	json_t *(*psd_geocoder_fn) (struct PathogenomicsServiceData *data_p, const json_t *row_p);
+	json_t *(*psd_geocoder_fn) (struct PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
 
 	json_t *(*psd_refine_location_fn) (struct PathogenomicsServiceData *data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
 

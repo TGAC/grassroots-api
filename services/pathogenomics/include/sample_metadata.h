@@ -21,10 +21,10 @@ extern "C"
 
 
 
-PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p);
+PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
 
 
-PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p);
+PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
 
 
 PATHOGENOMICS_SERVICE_LOCAL bool ConvertDate (json_t *row_p);

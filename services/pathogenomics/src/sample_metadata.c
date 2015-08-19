@@ -11,7 +11,7 @@
 #include "curl_tools.h"
 #include "json_util.h"
 #include "json_tools.h"
-
+#include "math_utils.h"
 
 #ifdef _DEBUG
 	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_FINE)
@@ -134,9 +134,20 @@ bool ConvertDate (json_t *row_p)
 
 			if (success_flag)
 				{
-					if (json_object_set_new (row_p, PG_DATE_S, json_string (buffer_s)) != 0)
+					int32 date = 0;
+					const char *temp_s = buffer_s;
+
+					if (GetValidInteger (&temp_s, &date))
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to set date to %s", buffer_s);
+							if (json_object_set_new (row_p, PG_DATE_S, json_integer (date)) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to set date to " INT32_FMT, date);
+									success_flag = false;
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, "Failed to get date from %s", buffer_s);
 							success_flag = false;
 						}
 				}
@@ -163,7 +174,23 @@ bool ConvertDate (json_t *row_p)
 }
 
 
-json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p)
+void ReplaceChars (char *value_s, char old_data, char new_data)
+{
+	char *value_p = value_s;
+
+	while (*value_p != '\0')
+		{
+			if (*value_p == old_data)
+				{
+					*value_p = new_data;
+				}
+
+			++ value_p;
+		}
+}
+
+
+json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s)
 {
 	json_t *res_p = NULL;
 
@@ -193,7 +220,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 							/* post code */
 							if (postcode_s)
 								{
-									success_flag = AppendStringsToByteBuffer (buffer_p, "components=postal_code:", postcode_s, NULL);
+									success_flag = AppendStringsToByteBuffer (buffer_p, "&components=postal_code:", postcode_s, NULL);
 
 									/* country */
 									if (success_flag)
@@ -203,6 +230,10 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 													if (IsValidCountryCode (country_s))
 														{
 															country_code_s = country_s;
+														}
+													else if (strcmp (country_s, "UK") == 0)
+														{
+															country_s = "GB";
 														}
 													else
 														{
@@ -284,6 +315,10 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 										{
 											const char *uri_s = GetByteBufferData (buffer_p);
 
+											ReplaceChars ((char *) uri_s, ' ', '+');
+
+											PrintLog (STM_LEVEL_INFO, "uri for %s is \"%s\"\n", id_s, uri_s);
+
 											if (SetUriForCurlTool (curl_tool_p, uri_s))
 												{
 													CURLcode c = RunCurlTool (curl_tool_p);
@@ -338,7 +373,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 }
 
 
-json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p)
+json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s)
 {
 	json_t *res_p = NULL;
 

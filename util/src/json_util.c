@@ -433,9 +433,11 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 							if (next_token_s)
 								{
 									int res = -1;
-									json_t *value_p = GetJSONFromString (current_token_s, header_p -> fn_type);
+									json_t *value_p = NULL;
 
 									*next_token_s = '\0';
+
+									value_p = GetJSONFromString (current_token_s, header_p -> fn_type);
 
 									if (value_p)
 										{

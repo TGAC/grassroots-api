@@ -15,7 +15,7 @@ StringListNode *AllocateStringListNode (const char * const value_s, const MEM_FL
 
 	if (node_p)
 		{
-			if (!InitStringListNode (node_p, value_s, mem_flag))
+			if (InitStringListNode (node_p, value_s, mem_flag))
 				{
 					return node_p;
 				}
@@ -40,6 +40,7 @@ bool InitStringListNode (StringListNode *node_p, const char * const value_s, con
 				if (dest_s)
 					{
 						node_p -> sln_string_s = dest_s;
+						node_p -> sln_string_flag = mem_flag;
 						success_flag = true;
 					}
 				else
@@ -52,6 +53,7 @@ bool InitStringListNode (StringListNode *node_p, const char * const value_s, con
 			case MF_SHALLOW_COPY:
 			case MF_SHADOW_USE:
 				node_p -> sln_string_s = (char *) value_s;
+				node_p -> sln_string_flag = mem_flag;
 				success_flag = true;
 				break;
 
@@ -60,7 +62,6 @@ bool InitStringListNode (StringListNode *node_p, const char * const value_s, con
 			default:
 			 	break;
 		}
-
 
 	return success_flag;
 }
