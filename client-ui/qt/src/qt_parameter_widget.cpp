@@ -35,10 +35,13 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	QVBoxLayout *info_layout_p = new QVBoxLayout;
 
+/*
 	qpw_layout_p = new QGridLayout;
 	qpw_layout_p -> setColumnStretch (1, 100);
 	qpw_layout_p -> setAlignment (Qt :: AlignVCenter);
-
+*/
+	qpw_layout_p = new QFormLayout;
+	qpw_layout_p -> setFieldGrowthPolicy(QFormLayout :: ExpandingFieldsGrow);
 	layout_p -> addLayout (info_layout_p);
 
 	setLayout (layout_p);
@@ -97,6 +100,7 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 		{
 			AddParameters (qpw_params_p);
 		}		/* if (parameters_p) */
+
 }
 
 void QTParameterWidget :: OpenLink (const QString &link_r)
@@ -116,10 +120,12 @@ void QTParameterWidget :: OpenLink (const QString &link_r)
 void QTParameterWidget :: AddRow (QWidget *first_p, QWidget *second_p, const int row_span)
 {
 	int row = qpw_layout_p -> rowCount ();
-
+/*
 	qpw_layout_p -> addWidget (first_p, row, 0);
 	qpw_layout_p -> addWidget (second_p, row, 1, row_span, 1, 0);
-	second_p -> setSizePolicy (QSizePolicy :: Fixed, QSizePolicy :: Expanding);
+	second_p -> setSizePolicy (QSizePolicy :: Expanding, QSizePolicy :: Expanding);
+*/
+	qpw_layout_p -> addRow (first_p, second_p);
 }
 
 
@@ -145,8 +151,12 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 				}
 
 			int row = qpw_layout_p -> rowCount ();
+/*
 			qpw_layout_p -> addWidget (box_p, row, 0, group_p -> pg_num_params, 2, Qt :: AlignVCenter);
+			qpw_layout_p -> setColumnStretch (0, 100);
+*/
 
+			qpw_layout_p -> addRow (box_p);
 			qpw_groupings.append (box_p);
 
 			param_group_node_p = reinterpret_cast <ParameterGroupNode *> (param_group_node_p -> pgn_node.ln_next_p);

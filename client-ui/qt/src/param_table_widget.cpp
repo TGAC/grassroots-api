@@ -92,13 +92,77 @@ bool DroppableTableWidget :: dropMimeData (int row, int column, const QMimeData 
 }
 
 
+char *DroppableTableWidget :: GetEntry (const char *start_s, const char *end_s)
+{
+	char *value_s = NULL;
+
+	if (!end_s)
+		{
+			size_t l = strlen (start_s);
+			end_s = start_s + l;
+		}
+
+	if (dtw_unpack_text_content_flag)
+		{
+			const char *first_value_p = start_s;
+			bool found_flag = false;
+
+			while ((!found_flag) && (first_value_p < end_s))
+				{
+					if (*first_value_p == '\"')
+						{
+							found_flag = true;
+						}
+
+					++ first_value_p;
+				}
+
+			if (found_flag)
+				{
+					if (end_s)
+						{
+							const char *last_value_p = end_s;
+
+							found_flag = false;
+
+							while ((!found_flag) && (last_value_p > first_value_p))
+								{
+									if (*last_value_p == '\"')
+										{
+											found_flag = true;
+										}
+									else
+										{
+											-- last_value_p;
+										}
+								}
+
+							if (found_flag)
+								{
+									value_s = CopyToNewString (first_value_p, last_value_p - first_value_p, false);
+								}
+						}
+					else
+						{
+							value_s = CopyToNewString (first_value_p, 0, false);
+						}
+				}
+
+		}
+	else
+		{
+			value_s = CopyToNewString (start_s, end_s - start_s, false);
+		}
+
+	return value_s;
+}
+
 void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 {
 	const char *current_token_s = data_s;
 	const char *next_token_s;
 	int col = 0;
 	bool loop_flag = true;
-	bool valid_row_flag = false;
 
 	if (row >= rowCount ())
 		{
@@ -108,7 +172,6 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 	while (loop_flag)
 		{
 			char *value_s = NULL;
-			bool alloc_flag = false;
 
 			if (*current_token_s != dtw_column_delimiter)
 				{
@@ -116,64 +179,18 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 
 					if (next_token_s)
 						{
-							if (dtw_unpack_text_content_flag)
-								{
-									const char *first_value_p = current_token_s;
-									bool found_flag = false;
-
-									while ((!found_flag) && (first_value_p < next_token_s))
-										{
-											if (*first_value_p == '\"')
-												{
-													found_flag = true;
-												}
-
-											++ first_value_p;
-										}
-
-									if (found_flag)
-										{
-											const char *last_value_p = next_token_s;
-
-											found_flag = false;
-
-											while ((!found_flag) && (last_value_p > first_value_p))
-												{
-													if (*last_value_p == '\"')
-														{
-															found_flag = true;
-														}
-													else
-														{
-															-- last_value_p;
-														}
-												}
-
-											if (found_flag)
-												{
-													value_s = CopyToNewString (first_value_p, last_value_p - first_value_p, false);
-												}
-										}
-
-								}
+							value_s = GetEntry (current_token_s, next_token_s);
 
 							if (!value_s)
 								{
 									value_s = CopyToNewString (current_token_s, next_token_s - current_token_s, false);
 								}
 
-							if (value_s)
-								{
-									alloc_flag = true;
-								}
-
 							current_token_s = next_token_s + 1;
-
-
 						}
 					else
 						{
-							value_s = const_cast <char *> (current_token_s);
+							value_s = GetEntry (current_token_s, NULL);
 							loop_flag = false;
 						}
 				}
@@ -214,11 +231,8 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 
 			++ col;
 
-			if (alloc_flag)
-				{
-					FreeCopiedString (value_s);
-				}
-		}
+			FreeCopiedString (value_s);
+		}		/* while (loop_flag) */
 }
 
 

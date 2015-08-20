@@ -188,6 +188,18 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 			job_p -> sj_result_p = json_p;
 		}
 
+
+	if (json_p)
+		{
+			if (job_p -> sj_metadata_p)
+				{
+					if (json_object_set (json_p, SERVICE_METADATA_S, job_p -> sj_metadata_p) != 0)
+						{
+							PrintJSONToLog (json_p, "Failed to add metadata to service job json: ", STM_LEVEL_WARNING);
+						}
+				}
+		}
+
 	return json_p;
 }
 

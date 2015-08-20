@@ -37,6 +37,7 @@ protected:
 	virtual void dragMoveEvent (QDragMoveEvent *event_p);
 
 	void LoadText (const char *filename_s);
+	char *GetEntry (const char *start_s, const char *end_s);
 
 	virtual bool dropMimeData (int row, int column, const QMimeData * data, Qt::DropAction action);
 
@@ -44,6 +45,7 @@ private:
 	char dtw_row_delimiter;
 	char dtw_column_delimiter;
 	bool dtw_unpack_text_content_flag;
+
 };
 
 

@@ -1,0 +1,90 @@
+"ID"|"UKCPVS ID"|"Date collected"|"Name/Collector"|"Company"|"Country"|"County"|"Town"|"Postal code"|"GPS"|"Further Location information"|"Rust (YR/SR/LR)"|"Host"|"Variety"|"KASP assays? (Selected/In progress/Completed/Failed)"|"RNA-seq? (Selected/In progress/Completed/Failed)"|"Library name"|"Public comments"|"Private comments"
+"14.0002"||12/06/2014|"Tilman - A"|"BASF"|"Czech Republic"||"Rokytnice"|"CZ6 751 04"||"Trial site of BASF Rokytnice - CZ6 751 04 Rokytnice"|"YR"|"Wheat"|"Tilman"|"Completed"|"Completed"|"LIB10869"||"vaclav.sklenar@basf.com"
+"14.0008"||19/05/2014|"Susanne Kirchmaier"|"Raiffeisen Ware Austria RWA AG"|"Austria"||||"48,098662, 14,901602"|"2301 GroB Enzersdorf 48,098662, 14,901602 Austria"|"YR"|"Wheat"|"Sax"||"Completed"|"LIB10875"||"via Alison NIAB"
+"14.0009"||22/05/2014|"Susanne Kirchmaier"|"Raiffeisen Ware Austria RWA AG"|"Austria"||||"48,098662, 14.901602"|"3300 GieBhubl 48,098662, 14.901602 Austria "|"YR"|"Wheat"|"Sax"||"Completed"|"LIB10876"||"via Alison NIAB"
+"14.0019"|"14/20"|07/03/2014|"Amelia Hubbard"|"NIAB"|"UK"||||||"YR"|"Wheat"|"Panorama"||"Completed"|"LIB10884"||"14/20"
+"14.0020"|"14/21"|07/03/2014|"Amelia Hubbard"|"NIAB"|"UK"||||||"YR"|"Wheat"|"Target"||"Completed"|"LIB10885"||"14/21"
+"14.0021"|"14/22"|18/03/2014|"Amelia Hubbard"|"NIAB"|"UK"||||||"YR"|"Wheat"|"Victo mix"||"Completed"|"LIB10886"||"14/22"
+"14.0022"|"14/23"|"-"|"Amelia Hubbard"|"NIAB"|"UK"||||||"YR"|"Wheat"|"Victo mix"||"Completed"|||"14/23"
+"14.0023"|"14/24"|"-"|"Amelia Hubbard"|"NIAB"|"UK"||||||"YR"|"Wheat"|"Cocoon"||"Completed"|"LIB10887"||"14/24"
+"14.0046"||25/06/2014|"Hamon"|"BASF"|"France"||"BUCY SAINT LIPHARD"|||"BASF Agro, La Corbilliere, Route de Saint Peravy, 45140 BUCY SAINT LIPHARD"|"YR"|"Wheat"|"Hysun"|"Completed"|"Completed"|"LIB10903"||
+"14.0047"||25/06/2014|"Hamon"|"BASF"|"France"||"BUCY SAINT LIPHARD"|||"BASF Agro, La Corbilliere, Route de Saint Peravy, 45140 BUCY SAINT LIPHARD"|"YR"|"Wheat"|"Karur"|"Completed"|"Completed"|"LIB10904"||
+"14.0049"||17/06/2014|2|"BASF"|"Poland"|||||"46-113"|"YR"|"Wheat"|"Zeppelin"|"Completed"|"Failed"|"LIB14890"||
+"14.0050"||15/06/2014|3|"BASF"|"Poland"|||||"48-210"|"YR"|"Wheat"||"Completed"||||
+"14.0069"||11/06/2014|"Todor Manslov"|"BASF"|"Bulgaria"||||" N:42 609769 E-23 579836"|"BG; 2210 Novi Han N:42 609769 E-23 579836"|"YR"|"Wheat"|"Enola"|"Completed"|"Completed"|"LIB12424"|"Leaf"|
+"14.0070"||12/06/2014|"Dimithger Kuymuzhisev"|"BASF"|"Bulgaria"||||"N 45.3111.6 E 27.49.01.3"|"BG; 9300 Dobrick N 45.3111.6 E 27.49.01.3"|"YR"|"Wheat"|"Enola"|"Completed"|||"Piece of ear"|
+"14.0071"||15/06/2014|"Todor Manslov"|"BASF"|"Bulgaria"||||"N: 42 048082 E: 24.12293"|"BG: 4641 Dorkovo N: 42 048082 E: 24.12293"|"YR"|"Wheat"|"Enola"|"Completed"|||"Piece of ear"|
+"14.0072"||03/07/2014|"Pedro Liberol"|"BASF"|"Spain"||||"42 35 56,67 N 1 38 12/31 W"|"Paligono = 2; Parcela = 57. GARINOAIN (Navarra). 42 35 56,67 N 1 38 12/31 W"|"YR"|"Wheat"|"Trigo CAMARGO"|"Completed"|"Completed"|"LIB12425"||"Large uncut leaf samples - not well covered in RNA later"
+"14.0073"||04/07/2014|"Felix Ibirien"|"BASF"|"Spain"||||"42 21 7,13 N 1 40 28,62 W"|"Paligono = 8; Porcela = 1091. CAPARROSO (Navarra). 42 21 7,13 N 1 40 28,62 W"|"YR"|"Wheat"|"Trigo CAMARGO"|"Completed"|"Failed"|"LIB12426"||"Large uncut leaf samples - not well covered in RNA later"
+"14.0074"||03/07/2014|"Ebrencio Guinea"|"BASF"|"Spain"||||" 42 48 50 N 03 03 54 W"|"Paligo = 13; Parcela = 122. ESPESO (ALAVA). 42 48 50 N 03 03 54 W"|"YR"|"Wheat"|"TRIGO PALEDOR"|"Completed"|"Failed"|"LIB12427"||"Large uncut leaf samples - not well covered in RNA later"
+"14.0075"||03/07/2014|"Mario Perez Carro"|"BASF"|"Spain"||||" 42 42 12 N 03 00 43 W"|"Poligono = 408; Porcela = 331. SUZANA (Burgos). 42 42 12 N 03 00 43 W"|"YR"|"Wheat"|"TRIGO PALEDOR"|"Completed"|"Failed"|"LIB12428"||"Large uncut leaf samples - not well covered in RNA later"
+"14.0083"||28/05/2014|"Prochnow"|"BASF"|"Germany"||"Bohl-Iggelheim"||||"YR"|"Wheat"|"Akteur"|"Completed"|"Failed"|"LIB12436"||
+"14.0085"||03/06/2014|"Prochnow"|"BASF"|"Germany"||"Groitzsch"||||"YR"|"Wheat"|"Akteur"|"Completed"|"Completed"|"LIB12438"||
+"14.0099"||24/05/2014|"Dario"|"-"|"Romania"|||||"-"|"YR"|"Wheat"|||"Completed"|"LIB12452"||"Received leaves - we then put them in RNA later. Two samples taken - this is sample 1: Alison NIAB contact?"
+"14.0100"||24/05/2014|"Dario"|"-"|"Romania"|||||"-"|"YR"|"Wheat"||||||"Above. This is sample 2."
+"14.0113"||11/06/2014|"Claude Pope"|"INRA"|"France"|||||"France - 85"|"YR"|"Durum Wheat"|"Luminur"||||"J14542 - repeat of above"|
+"14.0114"||"July 2014"|"Viktor"|"KWS"|"Germany"||"Werbig"|||"Werbig"|"YR"|"Rye"||||||
+"14.0115"||"July 2014"|"Viktor"|"KWS"|"Germany"||"Werbig"|||"Werbig"|"YR"|"Rye"|||"Completed"|"LIB12457"||"repeat of above"
+"14.0122"||"July 2014"|"Viktor"|"KWS"|"Germany"||"Werbig"|||"Werbig"|"YR"|"Rye"||||||"repeat of above"
+"14.0125"||"July 2014"|"Viktor"|"KWS"|"Germany"||"Werbig"|||"Werbig"|"YR"|"Rye"||||||"repeat of above"
+"14.0127"|"14/602"|Jul-14||"Agrii"|"UK"||||||"YR"|"Wheat"|"Vuka"||"Completed"|"LIB12460"||"NIAB: 14/602"
+"14.0129"|"14/121"|23/06/2014||"NIAB"|"UK"|"Hampshire"|" Broughton"|"S020 8DS"||"Hampshire, Broughton, S020 8DS"|"YR"|"Wheat"|"Panacea"||"Completed"|"LIB12462"||"NIAB: 14/121"
+"14.0133"|"14/125"|23/06/2014||"NIAB"|"UK"|"East Lothian"|" East lothian"|" EH41 4JR"||"Gilchriston farm, Nr Humbie, East lothian, EH41 4JR"|"YR"|"Wheat"|"Icon"|||||"NIAB: 14/125"
+"14.0138"|"14/129"|23/06/2014||"NIAB"|"UK"|"Angus"|"Luthermuir"|"AB30 IPX"||"Luthermuir, Angus, AB30 IPX"|"YR"|"Wheat"|"Solstice"|||||"NIAB: 14/129"
+"14.0140"|"14/127"|23/06/2014||"NIAB"|"UK"|"East Lothian"|"Nr Humbie"|" EH41 4JR"||"Gilchriston farm, Nr Humbie, East lothian, EH41 4JR"|"YR"|"Wheat"|"LGW65 (Energise)"||"Completed"|"LIB12473"||"NIAB: 14/127"
+"14.0142"|"14/124"|23/06/2014||"NIAB"|"UK"|"East Lothian"|"Nr Humbie"|" EH41 4JR"||"Gilchriston farm, Nr Humbie, East lothian, EH41 4JR"|"YR"|"Wheat"|"JB Diego"||"Completed"|"LIB12475"||"NIAB: 14/124"
+"14.0143"|"14/117"|23/06/2014||"NIAB"|"UK"|"Norfolk"|"Morley"|||"Morley"|"YR"|"Wheat"|"KWS Cashel"|||||"NIAB: 14/117"
+"14.0144"|"14/104"|23/06/2014||"NIAB"|"UK"|"Oxfordshire"|"Alkerton"|" OX15 6EP"||"Alkerton, Oxfordshire, OX15 6EP"|"YR"|"Wheat"|"Cougar"|||||"NIAB: 14/104"
+"14.0148"|"14/26"|"01/042014"||"NIAB"|"UK"|"Norfolk"|"Wymondham"||||"YR"|"Wheat"|"Victo"||"Completed"|"LIB12480"||"NIAB: 14/26"
+"14.0150"|"14/05"|Dec-13||"NIAB"|"UK"|"Cambridgeshire"|"Boxworth"||||"YR"|"Wheat"|"JB Diego"|||||"NIAB: 14/05"
+"14.0151"|"14/15"|23/01/2014||"NIAB"|"UK"|"Lincolnshire"|"Caythorpe"||||"YR"|"Wheat"|"Oakley"||"Completed"|"LIB14888"||"NIAB: 14/15"
+"14.0163"|"14/55"|23/05/2014||"NIAB"|"UK"|"Kent"||" CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"Cordiale"||"Completed"|"LIB12493"||"NIAB: 14/55"
+"14.0164"|"14/33"|06/05/2014||"NIAB"|"UK"|"North Yorkshire"||" LS24 9NT"||"HH LS24 9NT"|"YR"|"Wheat"|"Victo"|||||"NIAB: 14/33"
+"14.0168"|"14/58"|23/05/2014||"NIAB"|"UK"|"Kent"||"CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"Timber"|||||"NIAB: 14/58"
+"14.0169"|"F23"|16/05/2014||"NIAB"|||||||"YR"|"Wheat"|"Ambition"||"Completed"|"LIB12497"||"NIAB: F23"
+"14.0171"|"14/46"|16/05/2014||"NIAB"|"UK"|"Shropshire"|"Telford"||||"YR"|"Wheat"|"KWS Kielder"||"Failed"|"LIB12498"||"NIAB: 14/46"
+"14.0172"|"14/44"|13/05/2014||"NIAB"|"UK"|"Hertfordshire"|"Dunmow"|"CM23 5HN"|||"YR"|"Wheat"|"Scout"||"Completed"|"LIB12499"||"NIAB: 14/44"
+"14.0173"|"F18"|08/05/2014||"NIAB"|"UK"|||||"F29, HQTG"|"YR"|"Wheat"|"Kranich"||"Completed"|"LIB12500"||"NIAB: F18"
+"14.0174"|"14/47"|16/05/2014||"NIAB"|"UK"|"Dorset"|"Sturminster Newton"|||"Sturminster, Newton"|"YR"|"Wheat"|"Solstice"||"Completed"|"LIB12501"||"NIAB: 14/47"
+"14.0175"|"14/53"|23/05/2014||"NIAB"|"UK"|"Kent"||"CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"Claire"||"Completed"|"LIB12502"||"NIAB: 14/53"
+"14.0179"|"14/54"|23/05/2014||"NIAB"|"UK"|"Kent"||" CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"KWS Sterling"||"Completed"|"LIB12505"||"NIAB: 14/54"
+"14.0180"|"14/57"|23/05/2014||"NIAB"|"UK"|"Kent"||" CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"Robigus"||"Completed"|"LIB12506"||"NIAB:14/57"
+"14.0183"|"14/50"|23/05/2014||"NIAB"|"UK"|"Kent"||" CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"Oakley"||"Completed"|"LIB14873"||"NIAB: 14/50"
+"14.0184"|"14/48"|23/05/2014||"NIAB"|"UK"|"Cambridgeshire"||" PE16 6JP"||"Chatteris PE16 6JP"|"YR"|"Wheat"|"unknown"|||||"NIAB: 14/48"
+"14.0185"|"14/48"|19/05/2014||"NIAB"||||||"Unknown"|"YR"|"Wheat"||||||"NIAB: 14/48"
+"14.0188"|"F22"|16/05/2014||"NIAB"|||||||"YR"|"Wheat"|"Kranich"||"Completed"|"LIB14875"||"NIAB: F22"
+"14.0190"|"14/52"|23/05/2014||"NIAB"|"UK"|"Kent"||" CT4 5PX"||"Wadden Hall Farm , CT4 5PX"|"YR"|"Wheat"|"Warrior"||"Completed"|"LIB14876"||"NIAB: 14/52"
+"14.0194"|"14/83"|02/06/2014||"NIAB"|||||||"YR"|"Wheat"||||||"NIAB: 14/83"
+"14.0195"|"14/69"|May-14||"NIAB"|"UK"|"Cambridgeshire"|"Fulbourn"||||"YR"|"Wheat"|"Galiant"||"Completed"|"LIB14061"||"NIAB: 14/69"
+"14.0196"|"14/87"|05/06/2014||"NIAB"|"UK"|"Cambridgeshire"||||"Noon folly - plot 4"|"YR"|"Spring Wheat"|"unknown breeding line SPRING WHEAT"|||||"NIAB: 14/87"
+"14.0197"|"14/77"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"Timber"|||||"NIAB: 14/77"
+"14.0198"|"14/79"|02/06/2014||"NIAB"|"UK"|"Hertfordshire"|||||"YR"|"Wheat"|"Delphi (prob rogue)"|||||"NIAB: 14/79"
+"14.0199"|"14/86"|06/06/2014||"NIAB"|"UK"|"Kent"||||"plot 3/NLT2"|"YR"|"Wheat"||||||"NIAB: 14/86"
+"14.0200"|"14/68"|27/05/2014||"NIAB"|||||||"YR"|"Wheat"|"Solstice"|||||"NIAB: 14/68"
+"14.0202"|"14/71"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"Victo"|||||"NIAB: 14/71"
+"14.0203"|"14/75"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"KWS Sterling"||"Completed"|"LIB14879"||"NIAB: 14/75"
+"14.0204"|"14/89"|09/06/2014||"NIAB"|"UK"|"Norfolk"|"Morley"|" NR18 9DF"||"Morley, NR18 9DF"|"YR"|"Wheat"|"Panacea"|||||"NIAB: 14/89"
+"14.0208"|"14/74"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"Cordiale"|||||"NIAB: 14/74"
+"14.0209"|"14/76"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"Relay"|||||"NIAB: 14/76"
+"14.0212"|"T14/06"|05/06/2014||"NIAB"|"UK"|||||"plot 10"|"YR"|"Triticale"|"spring triticale"|||||"NIAB: T14/06"
+"14.0213"|"14/73"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"Claire"|||||"NIAB: 14/73"
+"14.0218"|"14/63"|||"NIAB"|"UK"|"Norfolk"|"Morley"||||"YR"|"Wheat"|"Cordiale"||"Completed"|"LIB14882"||"NIAB: 14/63"
+"14.0219"|"14/72"|02/06/2014||"NIAB"|"UK"|"Hampshire"|"Sutton Scotney"|" SO21 3NE"||"Norton, Sutton Scotney, Wincester SO21 3NE"|"YR"|"Wheat"|"Warrior"|||||"NIAB: 14/72"
+"14.0222"|"14/62"|May-14||"NIAB"|"UK"|"Norfolk"|"Morley"|||"Morley"|"YR"|"Wheat"|"Robigus"|||||"NIAB: 14/62"
+"14.0223"||"July 2014"|"Rosemary Bayles"|"-"|"UK"|||"LD8 2NT"|||"YR"|"Wheat"|"AC Barrie"||||"half of a stripe"|
+"14.0225"||"Early August 2014"|"Rosemary Bayles"|"-"|"UK"|||"LD8 2NT"|||"YR"|"Wheat"|"AC Barrie"||"Completed"|"LIB14075"|"single stripe"|
+"14.0226"||"Early August 2014"|"Rosemary Bayles"|"-"|"UK"|||"LD8 2NT"|||"YR"|"Wheat"|"AC Barrie"||"Completed"|"LIB14883"|"single stripe"|
+"14.0227"||"Early August 2014"|"Rosemary Bayles"|"-"|"UK"|||"LD8 2NT"|||"YR"|"Wheat"|"AC Barrie"||"Completed"|"LIB14077"|"single stripe"|
+"14.0228a"||06/05/2014|||"Germany"||||||"YR"||||||"Sample A 1 of 4"|
+"14.0237"||09/12/2014|"Dave Hodson"||"Ethiopia"||"Sembo"|||"Sembo"|"YR"|"Wheat"|"Digalu"||"Completed"|"LIB14656"|"4E YR 2"|
+"14.0238"||01/12/2014|"Dave Hodson"||"Ethiopia"||"Sinanars"|||"Sinanars"|"YR"|"Wheat"|"Hidasse"||"Completed"|"LIB14657"|"4E YR 3"|
+"14.0239"||01/12/2014|"Dave Hodson"||"Ethiopia"||"Sinanars"|||"Sinanars"|"YR"||"Henkolo"||"Completed"|"LIB14658"|"4E YR 4"|
+"14.0252"||10/01/2014|"Clare Lewis"||"UK"|||"NR4 7UH"||"JIC, Burkhard"|"YR"|"Wheat"||||||"78-66 SS1"
+"14.0253"|"12/83"|08/01/2014|"Clare Lewis"||"UK"|||"NR4 7UH"||"JIC, Burkhard"|"YR"|"Wheat"||||||"12/83"
+"14.0254"|"14/601"|30/07/2014|"A. Hubbard"|"NIAB"|||||||"YR"|"Wheat"|"Victo"|||||"14/601"
+"14.0255"|"14/602"|30/07/2014|"A. Hubbard"|"NIAB"|||||||"YR"|"Wheat"|"Victo"|||||"14/602"
+"14.0256"|"14/603"|30/07/2014|"A. Hubbard"|"NIAB"|||||||"YR"|"Wheat"|"Victo"|||||"14/603"
+"14.0257"|"14/1"|19/09/2014|"A. Hubbard"|"NIAB"|||||||"YR"|||||||"CF 14/1"
+"14.0258"|"14/2"|19/09/2014|"A. Hubbard"|"NIAB"|||||||"YR"|||||||"CF 14/2"
+"14.0259"|"14/3"|01/10/2014|"A. Hubbard"|"NIAB"|||||||"YR"|||||||"CF 14/3"
+"14.0260"|"14/3"|01/10/2014|"A. Hubbard"|"NIAB"|||||||"YR"|||||||"CF 14/3 2nd tube, older leaf"

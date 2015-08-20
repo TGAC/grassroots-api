@@ -882,6 +882,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 								{
 
 								}
+							PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
 						}
 					else
 						{
@@ -899,6 +900,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 						{
 
 						}
+					PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
 				}
 			else
 				{

@@ -53,7 +53,8 @@ private:
 
 	QHash <Parameter *, BaseParamWidget *> qpw_widgets_map;
 
-	QGridLayout *qpw_layout_p;
+	//QGridLayout *qpw_layout_p;
+	QFormLayout *qpw_layout_p;
 
 	ParameterLevel qpw_level;
 

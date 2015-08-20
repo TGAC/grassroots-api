@@ -68,6 +68,7 @@ PREFIX const char *SERVICE_NAME_S VAL("service");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_S VAL("status");
 PREFIX const char *SERVICE_RESULTS_S VAL("results");
+PREFIX const char *SERVICE_METADATA_S VAL("metadata");
 
 PREFIX const char *JOB_NAME_S VAL("name");
 PREFIX const char *JOB_SERVICE_S VAL("service");
