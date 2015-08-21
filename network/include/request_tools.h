@@ -22,19 +22,6 @@ extern "C"
 
 
 /**
- * Make a call from a Client to a Server.
- *
- * @param client_results_p The request data to send from the Client to the Server.
- * @param username_s An optional username, this can be <code>NULL</code>.
- * @param password_s An optional encrypted password, this can be <code>NULL</code>.
- * @param connection_p The connection to the Server.
- * @return The response of the Server to the Client or <code>NULL</code> upon error.
- * @memberof Connection
- */
-WHEATIS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
-
-
-/**
  * Receive data over a RawConnection
  * 
  * @param connection_p The RawConnection to use to receive the data with.

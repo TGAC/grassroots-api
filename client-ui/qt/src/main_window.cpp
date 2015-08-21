@@ -100,7 +100,7 @@ void MainWindow :: RunServices (bool run_flag)
 								{
 									if (GetJSONInteger (service_json_p, SERVICE_STATUS_S, &status))
 										{
-											if (status == OS_SUCCEEDED)
+											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
 												{
 													results_p -> AddAllResultsPagesFromJSON (service_json_p);
 													show_results_flag = true;

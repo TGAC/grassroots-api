@@ -239,6 +239,8 @@ WHEATIS_UTIL_API void GenerateUUID (uuid_t *id_p);
 WHEATIS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src_s);
 
 
+WHEATIS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
+
 #ifdef __cplusplus
 }
 #endif

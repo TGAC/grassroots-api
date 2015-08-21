@@ -410,7 +410,7 @@ static bool CalculateFileInformationFromIRodsHandler (struct Handler *handler_p,
 			
 			info_p -> fi_size = irods_handler_p -> irh_stat_p -> objSize;
 
-			if (GetValidLong (&time_s, &t))
+			if (GetValidLong (&time_s, &t, NULL))
 				{
 					info_p -> fi_last_modified = t;
 				}

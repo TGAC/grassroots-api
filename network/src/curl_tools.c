@@ -126,7 +126,7 @@ CURL *GetCurl (ByteBuffer *buffer_p)
 				{
 					if (AddCurlCallback (curl_p, buffer_p))
 						{
-							#if CURL_TOOLS_DEBUG >= STM_LEVEL_FINE
+							#if CURL_TOOLS_DEBUG >= STM_LEVEL_FINER
 							curl_easy_setopt (curl_p, CURLOPT_VERBOSE, 1L);
 							#endif
 						}

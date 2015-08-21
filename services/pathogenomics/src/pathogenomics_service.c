@@ -489,7 +489,6 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 									if (tool_p)
 										{
-											json_t *response_p = NULL;
 											Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
 											bool run_flag = false;
 
@@ -497,9 +496,18 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 											if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 												{
-													response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
+													json_t *response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
 
-													job_p -> sj_status = (response_p != NULL) ? OS_SUCCEEDED : OS_FAILED;
+													if (response_p)
+														{
+															job_p -> sj_status = OS_SUCCEEDED;
+															job_p -> sj_result_p = response_p;
+														}
+													else
+														{
+															job_p -> sj_status = OS_FAILED;
+															job_p -> sj_result_p = NULL;
+														}
 												}
 											else
 												{
@@ -537,6 +545,12 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 															json_error_t error;
 															json_t *errors_p = json_array ();
 															json_t *metadata_p = NULL;
+															uint32 size = 1;
+
+															if (json_is_array (json_param_p))
+																{
+																	size = json_array_size (json_param_p);
+																}
 
 															job_p -> sj_status = OS_FAILED;
 
@@ -557,7 +571,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																			if (json_is_array (results_p))
 																				{
 																					num_successes = json_array_size (results_p);
-																					response_p = results_p;
+																					job_p -> sj_result_p = results_p;
 																				}
 
 																		}
@@ -565,6 +579,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																	if (!metadata_p)
 																		{
 																			WipeJSON (errors_p);
+																			errors_p = NULL;
 																		}
 
 																}
@@ -572,8 +587,6 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																{
 																	num_successes = DeleteData (tool_p,  value.st_json_p, collection_s, data_p, errors_p);
 																}
-
-
 
 															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s,s:o}", "status", num_successes, "collection", collection_s, "errors", errors_p);
 
@@ -589,24 +602,35 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 															if (metadata_p)
 																{
+																	if (errors_p)
+																		{
+																			if (json_object_set (metadata_p, "errors", errors_p) != 0)
+																				{
+
+																				}
+																		}
+
+
 																	job_p -> sj_metadata_p = metadata_p;
 																}
 
-															if (response_p)
+															if (num_successes == 0)
+																{
+																	job_p -> sj_status = OS_FAILED;
+																}
+															else if (num_successes == size)
 																{
 																	job_p -> sj_status = OS_SUCCEEDED;
-																	job_p -> sj_result_p = response_p;
 																}
 															else
 																{
-																	job_p -> sj_status = OS_FAILED;
-																	job_p -> sj_result_p = NULL;
+																	job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
+																}
 
-																	if (errors_p)
-																		{
-																			WipeJSON (errors_p);
-																		}
 
+															if (errors_p)
+																{
+																	WipeJSON (errors_p);
 																}
 
 
@@ -617,7 +641,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 														}		/* if (json_param_p) */
 
-												}
+												}		/* if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true)) else */
 
 										}		/* if (tool_p) */
 								}		/* if (collection_s) */

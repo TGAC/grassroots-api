@@ -166,6 +166,11 @@ WHEATIS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buff
 WHEATIS_NETWORK_API char *DetachByteBufferData (ByteBuffer * const buffer_p);
 
 
+
+
+WHEATIS_NETWORK_API void ReplaceCharsInByteBuffer (ByteBuffer *buffer_p, char old_data, char new_data);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -255,7 +255,7 @@ char *DroppableTableWidget :: GetValueAsText ()
 
 							if (item_p)
 								{
-									QString s = item_p -> text ();
+									QString s = item_p -> text ().trimmed ();
 									QByteArray ba = s.toLocal8Bit ();
 									const char *item_value_s = ba.constData ();
 

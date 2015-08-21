@@ -137,7 +137,7 @@ bool ConvertDate (json_t *row_p)
 					int32 date = 0;
 					const char *temp_s = buffer_s;
 
-					if (GetValidInteger (&temp_s, &date))
+					if (GetValidInteger (&temp_s, &date, NULL))
 						{
 							if (json_object_set_new (row_p, PG_DATE_S, json_integer (date)) != 0)
 								{
@@ -174,21 +174,6 @@ bool ConvertDate (json_t *row_p)
 }
 
 
-void ReplaceChars (char *value_s, char old_data, char new_data)
-{
-	char *value_p = value_s;
-
-	while (*value_p != '\0')
-		{
-			if (*value_p == old_data)
-				{
-					*value_p = new_data;
-				}
-
-			++ value_p;
-		}
-}
-
 
 json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s)
 {
@@ -198,7 +183,51 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 
 	if (gps_s)
 		{
+			/*
+			 * Start to try and scan the coords as decimals
+			 */
+			const char *value_s = gps_s;
+			double latitude;
+			double longtitude;
+			bool match_flag = false;
 
+			if (GetValidRealNumber (&value_s, &latitude, ","))
+				{
+					while (!isdigit (*value_s))
+						{
+							++ value_s;
+						}
+
+					if (*value_s != '\0')
+						{
+							if (GetValidRealNumber (&value_s, &longtitude, ","))
+								{
+									while ((isspace (*value_s)) && (*value_s != '\0'))
+										{
+											++ value_s;
+										}
+
+									match_flag = (*value_s == '\0');
+								}
+						}
+				}
+
+			if (match_flag)
+				{
+					json_t *res_p = json_object ();
+
+					if (res_p)
+						{
+							if ((json_object_set_new (res_p, PG_LATITUDE_S, json_real (latitude)) == 0) &&
+									(json_object_set_new (res_p, PG_LONGTITUDE_S, json_real (longtitude)) == 0))
+								{
+									return res_p;
+								}
+
+							WipeJSON (res_p);
+						}		/* if (res_p) */
+
+				}
 		}
 	else
 		{
@@ -220,7 +249,15 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 							/* post code */
 							if (postcode_s)
 								{
-									success_flag = AppendStringsToByteBuffer (buffer_p, "&components=postal_code:", postcode_s, NULL);
+									const char *value_s = postcode_s;
+
+									/* remove and leading spaces */
+									while (isspace (*value_s))
+										{
+											++ value_s;
+										}
+
+									success_flag = (*value_s != '\0') && AppendStringsToByteBuffer (buffer_p, "&components=postal_code:", value_s, NULL);
 
 									/* country */
 									if (success_flag)
@@ -233,7 +270,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 														}
 													else if (strcmp (country_s, "UK") == 0)
 														{
-															country_s = "GB";
+															country_code_s = "GB";
 														}
 													else
 														{
@@ -313,10 +350,10 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 
 									if (curl_tool_p)
 										{
-											const char *uri_s = GetByteBufferData (buffer_p);
+											const char *uri_s = NULL;
 
-											ReplaceChars ((char *) uri_s, ' ', '+');
-
+											ReplaceCharsInByteBuffer (buffer_p, ' ', '+');
+											uri_s = GetByteBufferData (buffer_p);
 											PrintLog (STM_LEVEL_INFO, "uri for %s is \"%s\"\n", id_s, uri_s);
 
 											if (SetUriForCurlTool (curl_tool_p, uri_s))
@@ -735,11 +772,10 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 	if (geometry_p)
 		{
 			json_t *location_p = json_object_get (geometry_p, "location");
-			bool match_flag = false;
 			const char * const LATITUDE_KEY_S = "lat";
 			const char * const LONGTITUDE_KEY_S = "lng";
 
-			#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
+			#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
 			PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE);
 			#endif
 
@@ -763,11 +799,11 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 												{
 													double north;
 
-													if (GetJSONReal (location_p, LATITUDE_KEY_S, &north))
+													if (GetJSONReal (corner_p, LATITUDE_KEY_S, &north))
 														{
 															double east;
 
-															if (GetJSONReal (location_p, LONGTITUDE_KEY_S, &east))
+															if (GetJSONReal (corner_p, LONGTITUDE_KEY_S, &east))
 																{
 																	corner_p = json_object_get (viewport_p, "southwest");
 
@@ -775,11 +811,11 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 																		{
 																			double south;
 
-																			if (GetJSONReal (location_p, LATITUDE_KEY_S, &south))
+																			if (GetJSONReal (corner_p, LATITUDE_KEY_S, &south))
 																				{
 																					double west;
 
-																					if (GetJSONReal (location_p, LONGTITUDE_KEY_S, &west))
+																					if (GetJSONReal (corner_p, LONGTITUDE_KEY_S, &west))
 																						{
 																							json_t *res_p = json_object ();
 

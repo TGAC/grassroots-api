@@ -446,7 +446,7 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 		{
 			int i;
 
-			if (GetValidInteger (&column_s, &i))
+			if (GetValidInteger (&column_s, &i, NULL))
 				{
 					*id_p = i;
 					success_flag = true;

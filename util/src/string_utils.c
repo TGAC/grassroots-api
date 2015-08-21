@@ -848,3 +848,20 @@ bool ReplaceStringValue (char **dest_ss, const char *value_s)
 
 	return success_flag;
 }
+
+
+
+void ReplaceChars (char *value_s, char old_data, char new_data)
+{
+	char *value_p = value_s;
+
+	while (*value_p != '\0')
+		{
+			if (*value_p == old_data)
+				{
+					*value_p = new_data;
+				}
+
+			++ value_p;
+		}
+}
