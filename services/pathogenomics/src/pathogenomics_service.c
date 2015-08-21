@@ -83,6 +83,8 @@ static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collect
 
 static bool AddUploadParams (ParameterSet *param_set_p);
 
+static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const char * const error_s);
+
 /*
  * API FUNCTIONS
  */
@@ -593,9 +595,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
 																{
-																	char *dump_s = json_dumps (json_param_p, JSON_INDENT (2));
-																	PrintLog (STM_LEVEL_FINE, "mongo param: %s", dump_s);
-																	free (dump_s);
+																	PrintJSONToLog (errors_p, "errors", STM_LEVEL_FINE);
 																}
 															#endif
 
@@ -604,9 +604,9 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																{
 																	if (errors_p)
 																		{
-																			if (json_object_set (metadata_p, "errors", errors_p) != 0)
+																			if (json_object_set_new (metadata_p, "errors", errors_p) == 0)
 																				{
-
+																					errors_p = NULL;
 																				}
 																		}
 
@@ -862,26 +862,28 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, Pathogen
 
 
 
-static bool AddErrorMessage (json_t *errors_p, const json_t *values_p)
+static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const char * const error_s)
 {
 	bool success_flag = false;
 	const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
 
 	if (pathogenomics_id_s)
 		{
-			json_t *error_p = json_object ();
+			json_error_t error;
+			json_t *error_p = json_pack_ex (&error, 0, "{s:s,s:s}", "ID", pathogenomics_id_s, "error", error_s);
 
 			if (error_p)
 				{
-					if (json_object_set_new (error_p, "ID", json_string (pathogenomics_id_s)) == 0)
+					if (json_array_append_new (errors_p, error_p) == 0)
 						{
-							if (json_array_append_new (errors_p, error_p) == 0)
-								{
-									success_flag = true;
-								}
+							success_flag = true;
 						}
 				}
 		}
+
+	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+	PrintJSONToLog (errors_p, "errors data: ", STM_LEVEL_FINE);
+	#endif
 
 	return success_flag;
 }
@@ -902,7 +904,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 					if (error_s)
 						{
-							if (!AddErrorMessage (errors_p, values_p))
+							if (!AddErrorMessage (errors_p, value_p, error_s))
 								{
 
 								}
@@ -920,7 +922,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 			if (error_s)
 				{
-					if (!AddErrorMessage (errors_p, values_p))
+					if (!AddErrorMessage (errors_p, values_p, error_s))
 						{
 
 						}
