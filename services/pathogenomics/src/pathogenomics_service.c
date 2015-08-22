@@ -590,12 +590,13 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																	num_successes = DeleteData (tool_p,  value.st_json_p, collection_s, data_p, errors_p);
 																}
 
-															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s,s:o}", "status", num_successes, "collection", collection_s, "errors", errors_p);
+															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "status", num_successes, "collection", collection_s);
 
 
 															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
 																{
-																	PrintJSONToLog (errors_p, "errors", STM_LEVEL_FINE);
+																	PrintJSONToLog (errors_p, "errors: ", STM_LEVEL_FINE);
+																	PrintJSONToLog (metadata_p, "metadata 1: ", STM_LEVEL_FINE);
 																}
 															#endif
 
@@ -610,6 +611,11 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																				}
 																		}
 
+																	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																		{
+																			PrintJSONToLog (metadata_p, "metadata 2: ", STM_LEVEL_FINE);
+																		}
+																	#endif
 
 																	job_p -> sj_metadata_p = metadata_p;
 																}
@@ -655,6 +661,13 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 				}		/* if (param_set_p) */
 
 		}		/* if (service_p -> se_jobs_p) */
+
+
+	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+		{
+			PrintJSONToLog (service_p -> se_jobs_p -> sjs_jobs_p -> sj_metadata_p, "metadata 3: ", STM_LEVEL_FINE);
+		}
+	#endif
 
 	return service_p -> se_jobs_p;
 }

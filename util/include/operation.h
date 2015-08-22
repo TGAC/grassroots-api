@@ -1,6 +1,8 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
+#include "wheatis_util_library.h"
+
 /**
  * @brief The various Operations that a Server can perform.
  */
@@ -34,7 +36,6 @@ typedef enum Operation {
 	OP_NUM_OPERATIONS           //!< OP_NUM_OPERATIONS
 } Operation;
 
-
 /**
  * @brief The current status of an Operation.
  * @details Each Operation has an OperationStatus detailing its current
@@ -54,8 +55,27 @@ typedef enum OperationStatus
 	OS_PARTIALLY_SUCCEEDED,
 	OS_SUCCEEDED,
 	OS_CLEANED_UP,
-	OS_UPPER_LIMIT
+	OS_UPPER_LIMIT,
+	OS_NUM_STATUSES = OS_UPPER_LIMIT - OS_LOWER_LIMIT + 1
 } OperationStatus;
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+WHEATIS_UTIL_API const char *GetOperationStatusAsString (const OperationStatus status);
+
+
+WHEATIS_UTIL_API OperationStatus GetOperationStatusFromString (const char *status_s);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
 
 
 

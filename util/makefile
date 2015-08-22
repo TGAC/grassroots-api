@@ -48,6 +48,7 @@ SRCS 	= \
 	linked_list.c \
 	linked_list_iterator.c \
 	math_utils.c \
+	operation.c \
 	plugin.c \
 	streams.c \
 	string_hash_table.c \
