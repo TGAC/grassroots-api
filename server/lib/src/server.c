@@ -674,7 +674,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 									success_flag = false;
 								}
 
-							if (json_object_set_new (status_p, SERVICE_STATUS_S, json_integer (status)) != 0)
+							if (json_object_set_new (status_p, SERVICE_STATUS_VALUE_S, json_integer (status)) != 0)
 								{
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
 									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
@@ -721,7 +721,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const cha
 				}		/* if (status == OS_SUCCEEDED || status == OS_FINISHED) */
 			else
 				{
-					service_result_p = json_pack ("{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, status);
+					service_result_p = json_pack ("{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICE_UUID_S, uuid_s, SERVICE_STATUS_VALUE_S, status);
 				}
 
 			if (service_result_p)
@@ -897,7 +897,7 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 									success_flag = false;
 								}
 
-							if (json_object_set_new (status_p, SERVICE_STATUS_S, json_integer (status)) != 0)
+							if (json_object_set_new (status_p, SERVICE_STATUS_VALUE_S, json_integer (status)) != 0)
 								{
 									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
 									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));

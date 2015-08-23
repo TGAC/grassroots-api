@@ -238,7 +238,7 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 		{
 			json_error_t error;
 
-			json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, job_p -> sj_status);
+			json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_UUID_S, uuid_s, SERVICE_STATUS_VALUE_S, job_p -> sj_status);
 
 			if (json_p)
 				{

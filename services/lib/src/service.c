@@ -1004,7 +1004,7 @@ json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status,
 	const char *service_name_s = GetServiceName (service_p);
 	const char *service_description_s = GetServiceDescription (service_p);
 	const char *info_uri_s = GetServiceInformationURI (service_p);
-	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_S, status);
+	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_VALUE_S, status);
 	char *uuid_s = NULL;
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE

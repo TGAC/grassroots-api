@@ -44,7 +44,7 @@ WHEATIS_UTIL_API int CompareFloats (const float f1, const float f2);
  * @param data_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p, char *alternative_decimal_points_s);
+WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p, const char * const alternative_decimal_points_s);
 
 
 /**
@@ -55,7 +55,7 @@ WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p,
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, char *alternative_decimal_points_s);
+WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alternative_decimal_points_s);
 
 
 /**
@@ -66,7 +66,7 @@ WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, char 
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p, char *alternative_decimal_points_s);
+WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p, const char * const alternative_decimal_points_s);
 
 
 /**

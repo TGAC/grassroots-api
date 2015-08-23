@@ -249,7 +249,7 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job
 	if (task_p)
 		{
 			json_error_t error;
-			json_t *result_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, task_p -> tt_job_p -> sj_status);
+			json_t *result_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_VALUE_S, task_p -> tt_job_p -> sj_status);
 			resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_p);
 		}
 

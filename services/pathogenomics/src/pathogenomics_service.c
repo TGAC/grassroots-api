@@ -516,6 +516,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 													json_t *json_param_p = NULL;
 													bool update_flag = false;
 													char delimiter = s_default_column_delimiter;
+													const char *param_name_s = NULL;
 
 													/* Get the current delimiter */
 													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
@@ -537,6 +538,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																	PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
 																	#endif
 
+																	param_name_s = param_p -> pa_name_s;
 																	update_flag = true;
 																}
 														}
@@ -560,11 +562,12 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																{
 																	num_successes = InsertData (tool_p, json_param_p, collection_s, data_p, errors_p);
 																}
-															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_UPDATE, &value, true)) && (value.st_json_p))
+															else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_UPDATE)) != NULL) && (param_p -> pa_current_value.st_json_p))
 																{
 																	num_successes = InsertData (tool_p, value.st_json_p, collection_s, data_p, errors_p);
+																	param_name_s = param_p -> pa_name_s;
 																}
-															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_QUERY, &value, true)) && (value.st_json_p))
+															else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL) && (param_p -> pa_current_value.st_json_p))
 																{
 																	json_t *results_p = SearchData (tool_p,  value.st_json_p, collection_s, data_p, errors_p);
 
@@ -584,10 +587,12 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																			errors_p = NULL;
 																		}
 
+																	param_name_s = param_p -> pa_name_s;
 																}
-															else if ((GetParameterValueFromParameterSet (param_set_p, TAG_REMOVE, &value, true)) && (value.st_json_p))
+															else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL) && (param_p -> pa_current_value.st_json_p))
 																{
 																	num_successes = DeleteData (tool_p,  value.st_json_p, collection_s, data_p, errors_p);
+																	param_name_s = param_p -> pa_name_s;
 																}
 
 															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "status", num_successes, "collection", collection_s);
@@ -605,9 +610,14 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																{
 																	if (errors_p)
 																		{
-																			if (json_object_set_new (metadata_p, "errors", errors_p) == 0)
+																			json_t *errors_obj_p = json_pack_ex (&error, 0, "{s:s,s,o}", "parameter", param_name_s, "errors", errors_p);
+
+																			if (errors_obj_p)
 																				{
-																					errors_p = NULL;
+																					if (json_object_set_new (metadata_p, "errors", errors_obj_p) == 0)
+																						{
+																							errors_p = NULL;
+																						}
 																				}
 																		}
 

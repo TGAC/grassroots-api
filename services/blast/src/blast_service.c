@@ -655,7 +655,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 			else
 				{
 					json_error_t error;
-					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, status);
+					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_VALUE_S, status);
 
 					if (blast_result_json_p)
 						{

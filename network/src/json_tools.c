@@ -541,7 +541,7 @@ static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_i
 bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p)
 {
 	bool success_flag = false;
-	json_t *status_json_p = json_object_get (service_json_p, SERVICE_STATUS_S);
+	json_t *status_json_p = json_object_get (service_json_p, SERVICE_STATUS_VALUE_S);
 
 	if (status_json_p)
 		{

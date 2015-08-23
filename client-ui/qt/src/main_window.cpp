@@ -98,7 +98,8 @@ void MainWindow :: RunServices (bool run_flag)
 
 							json_array_foreach (services_json_p, i, service_json_p)
 								{
-									if (GetJSONInteger (service_json_p, SERVICE_STATUS_S, &status))
+									if (GetJSONInteger (service_json_p, 
+SERVICE_STATUS_VALUE_, &status))
 										{
 											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
 												{

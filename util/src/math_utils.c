@@ -19,7 +19,7 @@
 static const double64 S_RANDOM_FACTOR = 1.0 / (RAND_MAX + 1.0);
 
 
-static bool GetNumber (const char **str_pp, double64 *answer_p, bool fractions_flag, char *alternative_decimal_points_s);
+static bool GetNumber (const char **str_pp, double64 *answer_p, bool fractions_flag, const char * const alternative_decimal_points_s);
 
 
 int CompareDoubles (const double d1, const double d2)
@@ -175,13 +175,13 @@ char *ConvertNumberToString (double d, int8 num_dps)
 }
 
 
-bool GetValidRealNumber (const char **str_pp, double *answer_p, char *alternative_decimal_points_s)
+bool GetValidRealNumber (const char **str_pp, double *answer_p, const char * const alternative_decimal_points_s)
 {
 	return GetNumber (str_pp, answer_p, true, alternative_decimal_points_s);
 }
 
 
-bool GetValidInteger (const char **str_pp, int *answer_p, char *alternative_decimal_points_s)
+bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alternative_decimal_points_s)
 {
 	double d;
 
@@ -197,7 +197,7 @@ bool GetValidInteger (const char **str_pp, int *answer_p, char *alternative_deci
 }
 
 
-bool GetValidLong (const char **str_pp, long *answer_p, char *alternative_decimal_points_s)
+bool GetValidLong (const char **str_pp, long *answer_p, const char * const alternative_decimal_points_s)
 {
 	double d;
 
@@ -213,7 +213,7 @@ bool GetValidLong (const char **str_pp, long *answer_p, char *alternative_decima
 }
 
 
-static bool GetNumber (const char **str_pp, double64 *answer_p, bool fractions_flag, char *alternative_decimal_points_s)
+static bool GetNumber (const char **str_pp, double64 *answer_p, bool fractions_flag, const char * const alternative_decimal_points_s)
 {
 	const char *str_p = *str_pp;
 	double64 d = 0.0;
