@@ -44,6 +44,8 @@ struct PathogenomicsServiceData
 
 	MongoTool *psd_tool_p;
 
+	const char *psd_database_s;
+
 	const char *psd_samples_collection_s;
 
 	const char *psd_locations_collection_s;

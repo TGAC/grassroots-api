@@ -112,3 +112,10 @@ QWidget *BaseParamWidget :: GetUIQWidget ()
 
 	return w_p;
 }
+
+
+
+void BaseParamWidget :: ShowErrors (const json_t *errors_p)
+{
+
+}

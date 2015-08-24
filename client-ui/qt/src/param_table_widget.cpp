@@ -428,3 +428,40 @@ bool ParamTableWidget :: SetValueFromText (const char *value_s)
 }
 
 
+
+void ParamTableWidget :: ShowErrors (const json_t *errors_p)
+{
+	if (errors_p)
+		{
+			if (json_is_array (errors_p))
+				{
+					size_t i;
+					json_t *value_p;
+					const int num_columns = columnCount ();
+
+					json_array_foreach (errors_p, i, value_p)
+						{
+							int row;
+
+							if (GetJSONInteger (value_p, "row", &row))
+								{
+									const char *error_s = GetJSONString (value_p, "error");
+
+									for (int i = num_columns - 1; i >= 0; -- i)
+										{
+											QTableWidgetItem *item_p = item (row, i);
+
+											if (item_p)
+												{
+													item_p -> setBackgroundColor (QColor :: red ());
+													item_p -> setToolTip (error_s);
+												}
+										}
+								}
+
+						}		/* json_array_foreach (errors_p, i, value_p) */
+
+				}		/* if (json_is_array (errors_p)) */
+
+		}		/* if (errors_p) */
+}

@@ -5,7 +5,7 @@
 #include <QLabel>
 
 #include "parameter.h"
-
+#include "jansson.h"
 
 class PrefsWidget;
 
@@ -38,6 +38,8 @@ public:
 	const char *GetParameterName () const;
 
 	virtual bool StoreParameterValue () = 0;
+
+	virtual void ShowErrors (const json_t *errors_p);
 
 protected:
 	Parameter * const bpw_param_p;

@@ -33,7 +33,6 @@
 #define TAG_FILE MAKE_TAG('P', 'G', 'F', 'I')
 
 
-static const char *S_DATABASE_S = "geodb";
 
 static const char s_default_column_delimiter =  '|';
 
@@ -83,7 +82,8 @@ static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const char *collect
 
 static bool AddUploadParams (ParameterSet *param_set_p);
 
-static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const char * const error_s);
+static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const size_t row, const char * const error_s);
+
 
 /*
  * API FUNCTIONS
@@ -194,84 +194,91 @@ static Service *GetPathogenomicsService (json_t *operation_json_p, size_t i)
 static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, const json_t *service_config_p)
 {
 	bool success_flag = false;
-	const char *value_s = GetJSONString (service_config_p, "default_geocoder");
 
-	data_p -> psd_geocoder_uri_s = NULL;
 
-	if (value_s)
+	data_p -> psd_database_s = GetJSONString (service_config_p, "database");
+
+	if (data_p -> psd_database_s)
 		{
-			json_t *geocoders_p = json_object_get (service_config_p, "geocoders");
+			const char *value_s = GetJSONString (service_config_p, "default_geocoder");
 
-			if (geocoders_p)
+			data_p -> psd_geocoder_uri_s = NULL;
+
+			if (value_s)
 				{
-					data_p -> psd_geocoder_uri_s = NULL;
+					json_t *geocoders_p = json_object_get (service_config_p, "geocoders");
 
-					if (json_is_array (geocoders_p))
+					if (geocoders_p)
 						{
-							const size_t size = json_array_size (geocoders_p);
-							size_t i = 0;
+							data_p -> psd_geocoder_uri_s = NULL;
 
-							while (i < size)
+							if (json_is_array (geocoders_p))
 								{
-									json_t *geocoder_p = json_array_get (geocoders_p, i);
-									const char *name_s = GetJSONString (geocoder_p, "name");
+									const size_t size = json_array_size (geocoders_p);
+									size_t i = 0;
 
-									if (name_s && (strcmp (name_s, value_s) == 0))
+									while (i < size)
 										{
-											data_p -> psd_geocoder_uri_s = GetJSONString (geocoder_p, "uri");
-											i = size;
-										}
-									else
-										{
-											++ i;
-										}
-								}
-						}
-					else
-						{
-							const char *name_s = GetJSONString (geocoders_p, "name");
+											json_t *geocoder_p = json_array_get (geocoders_p, i);
+											const char *name_s = GetJSONString (geocoder_p, "name");
 
-							if (name_s && (strcmp (name_s, value_s) == 0))
-								{
-									data_p -> psd_geocoder_uri_s = GetJSONString (geocoders_p, "uri");
-								}
-						}
-
-					if (data_p -> psd_geocoder_uri_s)
-						{
-							if (strcmp (value_s, "google") == 0)
-								{
-									data_p -> psd_geocoder_fn = GetLocationDataByGoogle;
-									data_p -> psd_refine_location_fn = RefineLocationDataForGoogle;
-								}
-							else if (strcmp (value_s, "opencage") == 0)
-								{
-									data_p -> psd_geocoder_fn = GetLocationDataByOpenCage;
-									data_p -> psd_refine_location_fn = RefineLocationDataForOpenCage;
+											if (name_s && (strcmp (name_s, value_s) == 0))
+												{
+													data_p -> psd_geocoder_uri_s = GetJSONString (geocoder_p, "uri");
+													i = size;
+												}
+											else
+												{
+													++ i;
+												}
+										}
 								}
 							else
 								{
-									data_p -> psd_geocoder_fn = NULL;
+									const char *name_s = GetJSONString (geocoders_p, "name");
+
+									if (name_s && (strcmp (name_s, value_s) == 0))
+										{
+											data_p -> psd_geocoder_uri_s = GetJSONString (geocoders_p, "uri");
+										}
+								}
+
+							if (data_p -> psd_geocoder_uri_s)
+								{
+									if (strcmp (value_s, "google") == 0)
+										{
+											data_p -> psd_geocoder_fn = GetLocationDataByGoogle;
+											data_p -> psd_refine_location_fn = RefineLocationDataForGoogle;
+										}
+									else if (strcmp (value_s, "opencage") == 0)
+										{
+											data_p -> psd_geocoder_fn = GetLocationDataByOpenCage;
+											data_p -> psd_refine_location_fn = RefineLocationDataForOpenCage;
+										}
+									else
+										{
+											data_p -> psd_geocoder_fn = NULL;
+										}
+								}
+						}
+				}		/* if (value_s) */
+
+			if (data_p -> psd_geocoder_fn)
+				{
+					data_p -> psd_samples_collection_s = GetJSONString (service_config_p, "samples_collection");
+
+					if (data_p -> psd_samples_collection_s)
+						{
+							data_p -> psd_locations_collection_s = GetJSONString (service_config_p, "locations_collection");
+
+							if (data_p -> psd_locations_collection_s)
+								{
+									success_flag = true;
 								}
 						}
 				}
-		}
 
-	if (data_p -> psd_geocoder_fn)
-		{
-			data_p -> psd_samples_collection_s = GetJSONString (service_config_p, "samples_collection");
-
-			if (data_p -> psd_samples_collection_s)
-				{
-					data_p -> psd_locations_collection_s = GetJSONString (service_config_p, "locations_collection");
-
-					if (data_p -> psd_locations_collection_s)
-						{
-							success_flag = true;
-						}
-				}
-		}
-
+		} /* if (data_p -> psd_database_s) */
 
 	return success_flag;
 }
@@ -290,6 +297,7 @@ static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *op_js
 					data_p -> psd_geocoder_fn = NULL;
 					data_p -> psd_refine_location_fn = NULL;
 					data_p -> psd_geocoder_uri_s = NULL;
+					data_p -> psd_database_s = NULL;
 					data_p -> psd_locations_collection_s = NULL;
 					data_p -> psd_samples_collection_s = NULL;
 
@@ -494,7 +502,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 											Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
 											bool run_flag = false;
 
-											SetMongoToolCollection (tool_p, S_DATABASE_S, collection_s);
+											SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_s);
 
 											if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 												{
@@ -835,7 +843,7 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, Pathogen
 					PrintJSONToLog (row_json_p, "location data:", STM_LEVEL_FINE);
 					#endif
 
-					if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> psd_locations_collection_s))
+					if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_locations_collection_s))
 						{
 							json_t *results_p = NULL;
 							bson_t query;
@@ -885,7 +893,7 @@ static bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, Pathogen
 
 
 
-static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const char * const error_s)
+static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const size_t row, const char * const error_s)
 {
 	bool success_flag = false;
 	const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
@@ -893,7 +901,7 @@ static bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const cha
 	if (pathogenomics_id_s)
 		{
 			json_error_t error;
-			json_t *error_p = json_pack_ex (&error, 0, "{s:s,s:s}", "ID", pathogenomics_id_s, "error", error_s);
+			json_t *error_p = json_pack_ex (&error, 0, "{s:s,s:i,s:s}", "ID", pathogenomics_id_s, "row", row, "error", error_s);
 
 			if (error_p)
 				{
@@ -927,7 +935,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 					if (error_s)
 						{
-							if (!AddErrorMessage (errors_p, value_p, error_s))
+							if (!AddErrorMessage (errors_p, value_p, i + 1, error_s))
 								{
 
 								}
@@ -945,7 +953,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 			if (error_s)
 				{
-					if (!AddErrorMessage (errors_p, values_p, error_s))
+					if (!AddErrorMessage (errors_p, values_p, 1, error_s))
 						{
 
 						}
@@ -982,7 +990,7 @@ static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const 
 							 */
 							const char *id_s = GetJSONString (values_p, MONGO_ID_S);
 
-							if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> psd_samples_collection_s))
+							if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s))
 								{
 									if (id_s)
 										{
@@ -1038,7 +1046,7 @@ static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const 
 													const char *key_s;
 													json_t *value_p;
 
-													SetMongoToolCollection (tool_p, S_DATABASE_S, fields_collection_s);
+													SetMongoToolCollection (tool_p, data_p -> psd_database_s, fields_collection_s);
 
 													json_object_foreach (values_p, key_s, value_p)
 														{

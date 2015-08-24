@@ -66,6 +66,8 @@ public:
 
 	virtual bool StoreParameterValue ();
 
+	virtual void ShowErrors (const json_t *errors_p);
+
 protected:
 	DroppableTableWidget *ptw_table_p;
 	char ptw_delimiter;
