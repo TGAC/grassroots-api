@@ -105,19 +105,7 @@ bool PrefsWidget :: SetServiceParams (json_t *services_config_p)
 
 					if (service_name_s)
 						{
-							ServicePrefsWidget *service_widget_p = 0;
-
-							/* find the service widget */
-							for (int i = pw_service_widgets.size () - 1; i >= 0; -- i)
-								{
-									ServicePrefsWidget *widget_p = pw_service_widgets.at (i);
-
-									if (strcmp (widget_p -> GetServiceName (), service_name_s) == 0)
-										{
-											service_widget_p = widget_p;
-											i = -1;		// force exit from loop
-										}
-								}
+							ServicePrefsWidget *service_widget_p = GetServicePrefsWidget (service_name_s);
 
 							if (service_widget_p)
 								{
@@ -132,6 +120,40 @@ bool PrefsWidget :: SetServiceParams (json_t *services_config_p)
 
 	return success_flag;
 
+}
+
+
+ServicePrefsWidget *PrefsWidget :: GetServicePrefsWidget (const char * const service_name_s)
+{
+	ServicePrefsWidget *service_widget_p = 0;
+
+	/* find the service widget */
+	for (int i = pw_service_widgets.size () - 1; i >= 0; -- i)
+		{
+			ServicePrefsWidget *widget_p = pw_service_widgets.at (i);
+
+			if (strcmp (widget_p -> GetServiceName (), service_name_s) == 0)
+				{
+					service_widget_p = widget_p;
+					i = -1;		// force exit from loop
+				}
+		}
+
+	return service_widget_p;
+}
+
+
+bool PrefsWidget :: SetServiceErrors (const char *service_name_s, const json_t * const errors_p)
+{
+	bool success_flag = false;
+	ServicePrefsWidget *service_widget_p = GetServicePrefsWidget (service_name_s);
+
+	if (service_widget_p)
+		{
+			success_flag = service_widget_p -> SetServiceErrors (errors_p);
+		}
+
+	return success_flag;
 }
 
 

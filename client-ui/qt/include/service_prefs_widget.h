@@ -27,6 +27,9 @@ public:
 
 	void CheckInterfaceLevel (ParameterLevel level);
 
+	bool SetServiceErrors (const json_t * const errors_p);
+
+
 signals:
 	void RunStatusChanged (const char * const service_name_s, bool status);
 

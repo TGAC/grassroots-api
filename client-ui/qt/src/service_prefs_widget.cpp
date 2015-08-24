@@ -177,7 +177,6 @@ bool ServicePrefsWidget :: SetServiceParams (json_t *service_config_p)
 			SetRunFlag (false);
 		}
 
-
 	/* Set the params */
 	json_p = json_object_get (service_config_p, PARAM_SET_KEY_S);
 
@@ -227,6 +226,47 @@ bool ServicePrefsWidget :: SetServiceParams (json_t *service_config_p)
 
 	return success_flag;
 }
+
+
+bool ServicePrefsWidget :: SetServiceErrors (const json_t * const errors_p)
+{
+	bool success_flag = false;
+
+	if (json_is_array (errors_p))
+		{
+			json_t *error_p;
+			size_t i;
+
+			json_array_foreach (errors_p, i, error_p)
+				{
+					const char *param_name_s = GetJSONString (error_p, PARAM_NAME_S);
+
+					if (param_name_s)
+						{
+							BaseParamWidget *widget_p = spw_params_widget_p -> GetWidgetForParameter (param_name_s);
+
+							if (widget_p)
+								{
+									json_t *param_errors_p = json_object_get (error_p, PARAM_ERRORS_S);
+
+									if (param_errors_p)
+										{
+											widget_p -> ShowErrors (param_errors_p);
+										}
+
+								}
+						}		/* if (param_name_s) */
+
+
+				}		/* json_array_foreach (json_p, i, param_p) */
+
+
+		}		/* if (json_is_array (json_p)) */
+
+
+	return success_flag;
+}
+
 
 
 void ServicePrefsWidget :: CheckInterfaceLevel (ParameterLevel level)

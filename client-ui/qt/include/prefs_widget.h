@@ -50,9 +50,11 @@ public:
 
 	bool SetServiceParams (json_t *service_config_p);
 
+	bool SetServiceErrors (const char *service_name_s, const json_t * const errors_p);
 
 	virtual json_t *GetUserValuesAsJSON (bool full_flag);
 
+	ServicePrefsWidget *GetServicePrefsWidget (const char * const service_name_s);
 
 private:
 

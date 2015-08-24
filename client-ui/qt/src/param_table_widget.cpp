@@ -437,7 +437,7 @@ void ParamTableWidget :: ShowErrors (const json_t *errors_p)
 				{
 					size_t i;
 					json_t *value_p;
-					const int num_columns = columnCount ();
+					const int num_columns = ptw_table_p -> columnCount ();
 
 					json_array_foreach (errors_p, i, value_p)
 						{
@@ -446,14 +446,15 @@ void ParamTableWidget :: ShowErrors (const json_t *errors_p)
 							if (GetJSONInteger (value_p, "row", &row))
 								{
 									const char *error_s = GetJSONString (value_p, "error");
+									QBrush b (Qt :: red);
 
 									for (int i = num_columns - 1; i >= 0; -- i)
 										{
-											QTableWidgetItem *item_p = item (row, i);
+											QTableWidgetItem *item_p = ptw_table_p -> item (row, i);
 
 											if (item_p)
 												{
-													item_p -> setBackgroundColor (QColor :: red ());
+													item_p -> setBackground (b);
 													item_p -> setToolTip (error_s);
 												}
 										}

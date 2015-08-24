@@ -110,6 +110,17 @@ void MainWindow :: RunServices (bool run_flag)
 													progress_p -> AddProgressItemFromJSON (service_json_p);
 													show_progress_flag = true;
 												}
+
+											const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+											if (service_name_s)
+												{
+													json_t *errors_p = json_object_get (service_json_p, "errors");
+
+													if (errors_p)
+														{
+															mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
+														}
+												}
 										}
 								}
 

@@ -603,7 +603,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																	param_name_s = param_p -> pa_name_s;
 																}
 
-															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "status", num_successes, "collection", collection_s);
+															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "mun", num_successes, "collection", collection_s);
 
 
 															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
@@ -614,29 +614,32 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 															#endif
 
 
+														if (errors_p)
+															{
+																json_t *errors_obj_p = json_pack_ex (&error, 0, "{s:s,s,o}", "parameter", param_name_s, "errors", errors_p);
+
+																if (errors_obj_p)
+																	{
+																		job_p -> sj_errors_p = errors_obj_p;
+																	}
+																else
+																	{
+																		WipeJSON (errors_p);
+																	}
+															}
+
 															if (metadata_p)
 																{
-																	if (errors_p)
-																		{
-																			json_t *errors_obj_p = json_pack_ex (&error, 0, "{s:s,s,o}", "parameter", param_name_s, "errors", errors_p);
-
-																			if (errors_obj_p)
-																				{
-																					if (json_object_set_new (metadata_p, "errors", errors_obj_p) == 0)
-																						{
-																							errors_p = NULL;
-																						}
-																				}
-																		}
-
-																	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																		{
-																			PrintJSONToLog (metadata_p, "metadata 2: ", STM_LEVEL_FINE);
-																		}
-																	#endif
-
 																	job_p -> sj_metadata_p = metadata_p;
 																}
+
+															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																{
+																	PrintJSONToLog (job_p -> sj_errors_p, "job errors: ", STM_LEVEL_FINE);
+																	PrintJSONToLog (job_p -> sj_metadata_p, "job metadata: ", STM_LEVEL_FINE);
+																}
+															#endif
+
 
 															if (num_successes == 0)
 																{
@@ -650,13 +653,6 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																{
 																	job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
 																}
-
-
-															if (errors_p)
-																{
-																	WipeJSON (errors_p);
-																}
-
 
 															if (json_param_p != value.st_json_p)
 																{

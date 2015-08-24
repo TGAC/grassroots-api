@@ -67,12 +67,16 @@ PREFIX const char *SERVICE_RUN_S VAL("run");
 PREFIX const char *SERVICE_NAME_S VAL("service");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_VALUE_S VAL("status");
+PREFIX const char *SERVICE_STATUS_S VAL("status_text");
 PREFIX const char *SERVICE_RESULTS_S VAL("results");
 PREFIX const char *SERVICE_METADATA_S VAL("metadata");
 
 PREFIX const char *JOB_NAME_S VAL("name");
 PREFIX const char *JOB_SERVICE_S VAL("service");
 PREFIX const char *JOB_DESCRIPTION_S VAL("description");
+PREFIX const char *JOB_RESULTS_S VAL("results");
+PREFIX const char *JOB_ERRORS_S VAL("errors");
+PREFIX const char *JOB_METADATA_S VAL("metadata");
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
 
@@ -97,6 +101,7 @@ PREFIX const char *PARAM_GROUP_S VAL("group");
 PREFIX const char *PARAM_MIN_S  VAL("min");
 PREFIX const char *PARAM_MAX_S  VAL("max");
 PREFIX const char *PARAM_LEVEL_S  VAL("level");
+PREFIX const char *PARAM_ERRORS_S  VAL("errors");
 
 PREFIX const char *SHARED_TYPE_DESCRIPTION_S  VAL("description");
 PREFIX const char *SHARED_TYPE_VALUE_S  VAL("value");

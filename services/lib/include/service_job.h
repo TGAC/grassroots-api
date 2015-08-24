@@ -56,6 +56,9 @@ typedef struct ServiceJob
 	json_t *sj_result_p;
 
 	json_t *sj_metadata_p;
+
+	json_t *sj_errors_p;
+
 } ServiceJob;
 
 

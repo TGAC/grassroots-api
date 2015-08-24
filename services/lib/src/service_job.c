@@ -36,6 +36,8 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 	job_p -> sj_metadata_p = NULL;
 
+	job_p -> sj_errors_p = NULL;
+
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 		{
 			char *uuid_s = GetUUIDAsString (job_p -> sj_id);
@@ -67,6 +69,12 @@ void ClearServiceJob (ServiceJob *job_p)
 		{
 			WipeJSON (job_p -> sj_metadata_p);
 			job_p -> sj_metadata_p = NULL;
+		}
+
+	if (job_p -> sj_errors_p)
+		{
+			WipeJSON (job_p -> sj_errors_p);
+			job_p -> sj_errors_p = NULL;
 		}
 
 	job_p -> sj_status = OS_CLEANED_UP;
@@ -173,43 +181,85 @@ bool CloseServiceJob (ServiceJob *job_p)
 
 json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 {
-	json_t *json_p = NULL;
-	OperationStatus old_status = job_p -> sj_status;
-	OperationStatus current_status = GetServiceJobStatus (job_p);
+	json_t *job_json_p = json_object ();
 
-	if (old_status == current_status)
+	if (job_json_p)
 		{
-			json_p = job_p -> sj_result_p;
-		}
+			json_t *results_json_p = NULL;
+			OperationStatus old_status = job_p -> sj_status;
+			OperationStatus current_status = GetServiceJobStatus (job_p);
 
-	if (!json_p)
-		{
-			json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
-			job_p -> sj_result_p = json_p;
-		}
-
-	/* If we have metadata, make sure we have an object to return it in */
-	if ((!json_p) && (job_p -> sj_metadata_p))
-		{
-			json_p = json_object ();
-		}
-
-	if (json_p)
-		{
-			if (job_p -> sj_metadata_p)
+			if (old_status == current_status)
 				{
-					PrintJSONToLog (job_p -> sj_metadata_p, "metadata", STM_LEVEL_FINE);
+					results_json_p = job_p -> sj_result_p;
+				}
 
-					if (json_object_set (json_p, SERVICE_METADATA_S, job_p -> sj_metadata_p) != 0)
+			if (!results_json_p)
+				{
+					results_json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
+					job_p -> sj_result_p = results_json_p;
+				}
+
+			if (results_json_p)
+				{
+					if (json_object_set (job_json_p, JOB_RESULTS_S, results_json_p) == 0)
 						{
-							PrintJSONToLog (json_p, "Failed to add metadata to service job json: ", STM_LEVEL_WARNING);
+							bool success_flag = true;
+
+							if (job_p -> sj_errors_p)
+								{
+									success_flag = (json_object_set (job_json_p, JOB_ERRORS_S, results_json_p) == 0);
+
+									if (!success_flag)
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Failed to add errors to job json");
+										}
+								}
+
+							if (success_flag)
+								{
+									/* If we have metadata, make sure we have an object to return it in */
+									if (job_p -> sj_metadata_p)
+										{
+											success_flag = (json_object_set (job_json_p, JOB_METADATA_S, results_json_p) == 0);
+										}
+								}
+
+							if (success_flag)
+								{
+									const char *status_s = GetOperationStatusAsString (job_p -> sj_status);
+
+									if (status_s)
+										{
+											success_flag = (json_object_set_new (job_json_p, SERVICE_STATUS_S, json_string (status_s)) == 0);
+										}
+									else
+										{
+											success_flag = (json_object_set (job_json_p, SERVICE_STATUS_VALUE_S, json_integer (status)) == 0);
+										}
+
+										}
+								}
+
+							if (success_flag)
+								{
+									json_object_set_new (job_json_p, SERVICE_UUID_S, json_string (job_p -> sj_id))
+								}
+
 						}
 				}
-		}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Failed to get job results");
+				}
+		}		/* if (job_json_p) */
 
-
-	return json_p;
+	return job_json_p;
 }
+
+
+
+
 
 
 OperationStatus GetServiceJobStatus (ServiceJob *job_p)
