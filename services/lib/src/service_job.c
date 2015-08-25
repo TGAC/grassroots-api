@@ -202,10 +202,10 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 
 			if (results_json_p)
 				{
+					bool success_flag = true;
+
 					if (json_object_set (job_json_p, JOB_RESULTS_S, results_json_p) == 0)
 						{
-							bool success_flag = true;
-
 							if (job_p -> sj_errors_p)
 								{
 									success_flag = (json_object_set (job_json_p, JOB_ERRORS_S, results_json_p) == 0);
@@ -235,15 +235,17 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 										}
 									else
 										{
-											success_flag = (json_object_set (job_json_p, SERVICE_STATUS_VALUE_S, json_integer (status)) == 0);
+											success_flag = (json_object_set (job_json_p, SERVICE_STATUS_VALUE_S, json_integer (current_status)) == 0);
 										}
 
-										}
 								}
 
 							if (success_flag)
 								{
-									json_object_set_new (job_json_p, SERVICE_UUID_S, json_string (job_p -> sj_id))
+									char buffer_s [UUID_STRING_BUFFER_SIZE];
+
+									ConvertUUIDToString (job_p -> sj_id, buffer_s);
+									success_flag = (json_object_set_new (job_json_p, SERVICE_UUID_S, json_string (buffer_s)) == 0);
 								}
 
 						}
@@ -253,6 +255,9 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 					PrintErrors (STM_LEVEL_WARNING, "Failed to get job results");
 				}
 		}		/* if (job_json_p) */
+
+	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER);
+
 
 	return job_json_p;
 }

@@ -838,7 +838,7 @@ json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p)
 
 									if (!query_p)
 										{
-											bson_t *query_p = bson_new ();
+											query_p = bson_new ();
 											alloc_query_flag = (query_p != NULL);
 										}
 

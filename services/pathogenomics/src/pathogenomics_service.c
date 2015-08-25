@@ -510,6 +510,8 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 													if (response_p)
 														{
+															PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER);
+
 															job_p -> sj_status = OS_SUCCEEDED;
 															job_p -> sj_result_p = response_p;
 														}

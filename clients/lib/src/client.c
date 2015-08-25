@@ -61,7 +61,7 @@ int AddServiceToClient (Client *client_p, const char * const service_name_s, con
 json_t *DisplayResultsInClient (Client *client_p, const json_t *response_p)
 {
 	#if CLIENT_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (response_p, STM_LEVEL_FINE, "DisplayResultsInClient: ");
+	PrintJSONToLog (response_p, "DisplayResultsInClient: ", STM_LEVEL_FINE);
 	#endif
 
 
