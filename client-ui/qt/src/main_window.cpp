@@ -98,30 +98,73 @@ void MainWindow :: RunServices (bool run_flag)
 
 							json_array_foreach (services_json_p, i, service_json_p)
 								{
-									if (GetJSONInteger (service_json_p, SERVICE_STATUS_VALUE_S, &status))
+									const char *service_name_s = NULL;
+									json_t *metadata_p = json_object_get (service_json_p, SERVICE_METADATA_S);
+									json_t *jobs_array_p = json_object_get (service_json_p, SERVICE_JOBS_S);
+
+									if (metadata_p)
 										{
-											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
-												{
-													results_p -> AddAllResultsPagesFromJSON (service_json_p);
-													show_results_flag = true;
-												}
-											else
-												{
-													progress_p -> AddProgressItemFromJSON (service_json_p);
-													show_progress_flag = true;
-												}
-
-											const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
-											if (service_name_s)
-												{
-													json_t *errors_p = json_object_get (service_json_p, "errors");
-
-													if (errors_p)
-														{
-															mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
-														}
-												}
+											service_name_s = GetJSONString (metadata_p, SERVICE_NAME_S);
 										}
+
+									if (jobs_array_p && json_is_array (jobs_array_p))
+										{
+											size_t j;
+											json_t *job_p;
+
+											json_array_foreach (jobs_array_p, j, job_p)
+												{
+													/* Get the job status */
+													OperationStatus status = OS_ERROR;
+													const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
+
+													if (value_s)
+														{
+															status = GetOperationStatusFromString (value_s);
+														}
+													else
+														{
+															int i;
+
+															if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
+																{
+																	if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
+																		{
+																			status = (OperationStatus) i;
+																		}
+																}
+														}
+
+													if (status != OS_ERROR)
+														{
+															json_t *errors_p = NULL;
+
+															if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
+																{
+																	results_p -> AddAllResultsPagesFromJSON (job_p);
+																	show_results_flag = true;
+																}
+															else
+																{
+																	progress_p -> AddProgressItemFromJSON (job_p);
+																	show_progress_flag = true;
+																}
+
+															errors_p = json_object_get (job_p, "errors");
+
+															if (errors_p)
+																{
+																	if (service_name_s)
+																		{
+																			mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
+																		}
+																}
+														}
+
+
+                        }   /* json_array_foreach (jobs_array_p, j, job_p) */
+
+										}		/* if (jobs_array_p) */
 								}
 
 							if (show_progress_flag)

@@ -531,6 +531,10 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																				}
 
 																		}		/* if (jobs_array_p) */
+
+																	#if SERVER_DEBUG >= STM_LEVEL_FINE
+																	PrintJSONToLog (service_json_p, "\nservice json:\n", STM_LEVEL_FINE);
+																	#endif
 																}		/* if (service_json_p) */
 
 

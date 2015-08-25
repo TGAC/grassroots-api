@@ -178,6 +178,21 @@ bool CloseServiceJob (ServiceJob *job_p)
 }
 
 
+static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p)
+{
+	bool success_flag = true;
+
+	if (child_p)
+		{
+			if (json_object_set_new (parent_p, key_s, child_p) != 0)
+				{
+					success_flag = false;
+				}
+		}
+
+	return success_flag;
+}
+
 
 json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 {
@@ -188,6 +203,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 			json_t *results_json_p = NULL;
 			OperationStatus old_status = job_p -> sj_status;
 			OperationStatus current_status = GetServiceJobStatus (job_p);
+			bool success_flag = true;
 
 			if (old_status == current_status)
 				{
@@ -200,30 +216,15 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 					job_p -> sj_result_p = results_json_p;
 				}
 
-			if (results_json_p)
+			success_flag = AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p);
+
+			if (success_flag)
 				{
-					bool success_flag = true;
+					success_flag = AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p);
 
-					if (json_object_set (job_json_p, JOB_RESULTS_S, results_json_p) == 0)
+					if (success_flag)
 						{
-							if (job_p -> sj_errors_p)
-								{
-									success_flag = (json_object_set (job_json_p, JOB_ERRORS_S, results_json_p) == 0);
-
-									if (!success_flag)
-										{
-											PrintErrors (STM_LEVEL_WARNING, "Failed to add errors to job json");
-										}
-								}
-
-							if (success_flag)
-								{
-									/* If we have metadata, make sure we have an object to return it in */
-									if (job_p -> sj_metadata_p)
-										{
-											success_flag = (json_object_set (job_json_p, JOB_METADATA_S, results_json_p) == 0);
-										}
-								}
+							success_flag = AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p);
 
 							if (success_flag)
 								{
@@ -238,26 +239,21 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 											success_flag = (json_object_set (job_json_p, SERVICE_STATUS_VALUE_S, json_integer (current_status)) == 0);
 										}
 
+									if (success_flag)
+										{
+											char buffer_s [UUID_STRING_BUFFER_SIZE];
+
+											ConvertUUIDToString (job_p -> sj_id, buffer_s);
+											success_flag = (json_object_set_new (job_json_p, SERVICE_UUID_S, json_string (buffer_s)) == 0);
+										}
+
 								}
-
-							if (success_flag)
-								{
-									char buffer_s [UUID_STRING_BUFFER_SIZE];
-
-									ConvertUUIDToString (job_p -> sj_id, buffer_s);
-									success_flag = (json_object_set_new (job_json_p, SERVICE_UUID_S, json_string (buffer_s)) == 0);
-								}
-
 						}
 				}
-			else
-				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to get job results");
-				}
+
 		}		/* if (job_json_p) */
 
 	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER);
-
 
 	return job_json_p;
 }

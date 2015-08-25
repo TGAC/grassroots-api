@@ -605,7 +605,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 																	param_name_s = param_p -> pa_name_s;
 																}
 
-															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "mun", num_successes, "collection", collection_s);
+															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "successful entries", num_successes, "collection", collection_s);
 
 
 															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
@@ -618,15 +618,35 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 														if (errors_p)
 															{
-																json_t *errors_obj_p = json_pack_ex (&error, 0, "{s:s,s,o}", "parameter", param_name_s, "errors", errors_p);
+																bool added_errors_flag = false;
+																json_t *errors_array_p = json_array ();
 
-																if (errors_obj_p)
+																if (errors_array_p)
 																	{
-																		job_p -> sj_errors_p = errors_obj_p;
-																	}
-																else
+																		json_t *error_obj_p = json_pack_ex (&error, 0, "{s:s,s,o}", PARAM_NAME_S, param_name_s, JOB_ERRORS_S, errors_p);
+
+																		if (error_obj_p)
+																			{
+																				if (json_array_append (errors_array_p, error_obj_p) == 0)
+																					{
+																						job_p -> sj_errors_p = errors_array_p;
+																						added_errors_flag = true;
+																					}
+																				else
+																					{
+																						WipeJSON (error_obj_p);
+																					}
+																			}
+																	}		/* if (errors_array_p) */
+
+																if (!added_errors_flag)
 																	{
 																		WipeJSON (errors_p);
+
+																		if (errors_array_p)
+																			{
+																				WipeJSON (errors_array_p);
+																			}
 																	}
 															}
 

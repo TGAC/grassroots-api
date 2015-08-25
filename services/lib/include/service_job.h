@@ -187,7 +187,8 @@ WHEATIS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
  * @return The json_t object representing the ServiceJob.
  * or <code>NULL</code> upon error.
  * @memberof ServiceJob
- */WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
+ */
+WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
 
 
 /**
