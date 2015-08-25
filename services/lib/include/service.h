@@ -497,7 +497,7 @@ WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services
  * @param service_id
  * @return
  */
-WHEATIS_SERVICE_API json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p, const uuid_t service_id);
+WHEATIS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *result_json_p);
 
 /**
  *

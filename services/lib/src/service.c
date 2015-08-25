@@ -998,73 +998,38 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
       }
     }, 
 */
-json_t *CreateServiceResponseAsJSON (Service *service_p, OperationStatus status, json_t *result_json_p, const uuid_t service_id)
+bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 {
 	json_error_t error;
 	const char *service_name_s = GetServiceName (service_p);
 	const char *service_description_s = GetServiceDescription (service_p);
 	const char *info_uri_s = GetServiceInformationURI (service_p);
-	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s, SERVICE_STATUS_VALUE_S, status);
-	char *uuid_s = NULL;
+	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s);
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
 	char *dump_s = NULL;
 	#endif
 
-	if (service_id)
-		{
-			uuid_s = GetUUIDAsString (service_id);
-		}
-	else
-		{
-			const uuid_t *id_p = GetServiceUUID (service_p);
-			uuid_s = GetUUIDAsString (*id_p);
-		}
-
-	if (uuid_s)
-		{
-			if (json_object_set_new (json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
-				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to add uuid  \"%s\" to service response for \"%s\"", uuid_s, service_name_s);
-				}
-
-			FreeUUIDString (uuid_s);
-		}
-
-
-	if (info_uri_s)
-		{
-			if (json_object_set_new (json_p, OPERATION_INFORMATION_URI_S, json_string (info_uri_s)) != 0)
-				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
-				}
-		}
-
-
-	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	dump_s = json_dumps (result_json_p, JSON_INDENT (2));
-	PrintLog (STM_LEVEL_FINE, "result json:\n%s", dump_s);
-	free (dump_s);
-
-	dump_s = json_dumps (json_p, JSON_INDENT (2));
-	PrintLog (STM_LEVEL_FINE, "resp json:\n%s", dump_s);
-	free (dump_s);
-	#endif
-
 
 	if (json_p)
 		{
-			if (result_json_p)
+			if (info_uri_s)
 				{
-					if (!json_object_set_new (json_p, SERVICE_RESULTS_S, result_json_p) == 0)
+					if (json_object_set_new (json_p, OPERATION_INFORMATION_URI_S, json_string (info_uri_s)) != 0)
 						{
-							char *dump_s = json_dumps (result_json_p, JSON_INDENT (2));
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to service response for %s\n", dump_s, service_name_s);
-
-							free (dump_s);
-							json_decref (json_p);
-							json_p = NULL;
+							PrintErrors (STM_LEVEL_WARNING, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
 						}
+				}
+
+
+			if (json_object_set_new (response_p, SERVICE_METADATA_S, json_p) != 0)
+				{
+					char *dump_s = json_dumps (json_p, JSON_INDENT (2));
+					PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to service response for %s\n", dump_s, service_name_s);
+
+					free (dump_s);
+					json_decref (json_p);
+					json_p = NULL;
 				}
 		}
 	else

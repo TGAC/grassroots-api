@@ -459,49 +459,82 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 															ServiceJob *job_p = jobs_p -> sjs_jobs_p;
 															JobsManager *manager_p = GetJobsManager ();
 
-															res = 1;
+															json_t *service_json_p = json_object ();
 
-															for (i = 0; i < num_jobs; ++ i, ++ job_p)
+															if (service_json_p)
 																{
-																	json_t *job_json_p = NULL;
+																	json_t *jobs_array_p = json_array ();
 
-
-																	if (AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
+																	if (jobs_array_p)
 																		{
-																			const OperationStatus job_status = GetServiceJobStatus (job_p);
-
-																			if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
+																			if (json_object_set_new (service_json_p, SERVICE_JOBS_S, jobs_array_p) == 0)
 																				{
-																					/* add the result directly */
-																					job_json_p = GetServiceJobAsJSON (job_p);
-																				}
+																					if (!AddServiceResponseHeader (service_p, service_json_p))
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, "Failed to add service response header from %s", GetServiceName (service_p));
+																						}
+
+																					res = 1;
+
+																					for (i = 0; i < num_jobs; ++ i, ++ job_p)
+																						{
+																							json_t *job_json_p = NULL;
+
+
+																							if (AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
+																								{
+																									const OperationStatus job_status = GetServiceJobStatus (job_p);
+
+																									if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
+																										{
+																											/* add the result directly */
+																											job_json_p = GetServiceJobAsJSON (job_p);
+																										}
+																									else
+																										{
+																											job_json_p = GetServiceJobStatusAsJSON (job_p);
+																										}
+
+																									if (job_json_p)
+																										{
+
+																											if (json_array_append_new (jobs_array_p, job_json_p) != 0)
+																												{
+
+																												}
+																										}
+
+																									if (job_p -> sj_status == OS_STARTED || job_p -> sj_status == OS_SUCCEEDED)
+																										{
+																											keep_service_flag = true;
+
+																											if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
+																												{
+
+																												}
+
+																										}
+
+																								}
+
+																						}
+
+																					if (json_array_append_new (res_p, service_json_p) != 0)
+																						{
+
+																						}
+
+																				}		/* if (json_object_set_new (res_p, SERVICE_JOBS_S, jobs_array_p) == 0) */
 																			else
 																				{
-																					job_json_p = GetServiceJobStatusAsJSON (job_p);
+																					WipeJSON (jobs_array_p);
 																				}
 
-																			if (job_json_p)
-																				{
+																		}		/* if (jobs_array_p) */
+																}		/* if (service_json_p) */
 
-																					if (json_array_append_new (res_p, job_json_p) != 0)
-																						{
 
-																						}
-																				}
 
-																			if (job_p -> sj_status == OS_STARTED || job_p -> sj_status == OS_SUCCEEDED)
-																				{
-																					keep_service_flag = true;
-
-																					if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
-																						{
-
-																						}
-
-																				}
-
-																		}
-																}
 
 															if (keep_service_flag)
 																{

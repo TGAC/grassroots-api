@@ -70,6 +70,8 @@ PREFIX const char *SERVICE_STATUS_VALUE_S VAL("status");
 PREFIX const char *SERVICE_STATUS_S VAL("status_text");
 PREFIX const char *SERVICE_RESULTS_S VAL("results");
 PREFIX const char *SERVICE_METADATA_S VAL("metadata");
+PREFIX const char *SERVICE_JOBS_S VAL("jobs");
+
 
 PREFIX const char *JOB_NAME_S VAL("name");
 PREFIX const char *JOB_SERVICE_S VAL("service");

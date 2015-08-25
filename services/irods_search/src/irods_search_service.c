@@ -538,7 +538,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 
 			FreeIrodsSearch (search_p);
 
-			res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p, NULL);
+			//res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p, NULL);
 		}		/* if (search_p) */
 
 	return service_p -> se_jobs_p;
