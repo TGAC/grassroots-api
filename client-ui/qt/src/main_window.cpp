@@ -19,6 +19,7 @@
 #include "request_tools.h"
 
 #include "json_tools.h"
+#include "json_util.h"
 
 #include "main_window.h"
 #include "results_window.h"
@@ -99,12 +100,16 @@ void MainWindow :: RunServices (bool run_flag)
 							json_array_foreach (services_json_p, i, service_json_p)
 								{
 									const char *service_name_s = NULL;
+									const char *service_description_s = NULL;
+									const char *service_uri_s = NULL;
 									json_t *metadata_p = json_object_get (service_json_p, SERVICE_METADATA_S);
 									json_t *jobs_array_p = json_object_get (service_json_p, SERVICE_JOBS_S);
 
 									if (metadata_p)
 										{
 											service_name_s = GetJSONString (metadata_p, SERVICE_NAME_S);
+											service_description_s = GetJSONString (metadata_p, OPERATION_DESCRIPTION_S);
+											service_uri_s = GetJSONString (metadata_p, OPERATION_INFORMATION_URI_S);
 										}
 
 									if (jobs_array_p && json_is_array (jobs_array_p))
@@ -141,12 +146,12 @@ void MainWindow :: RunServices (bool run_flag)
 
 															if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
 																{
-																	results_p -> AddAllResultsPagesFromJSON (job_p);
+																	results_p -> AddAllResultsPagesFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
 																	show_results_flag = true;
 																}
 															else
 																{
-																	progress_p -> AddProgressItemFromJSON (job_p);
+																	progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
 																	show_progress_flag = true;
 																}
 

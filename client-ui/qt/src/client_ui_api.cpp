@@ -184,7 +184,10 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t
 	#endif
 
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
-	uint32 res = qt_data_p -> qcd_results_p -> AddAllResultsPagesFromJSON (response_p);
+	const char *service_name_s = 0;
+	const char *service_description_s = 0;
+	const char *service_uri_s = 0;
+	uint32 res = qt_data_p -> qcd_results_p -> AddAllResultsPagesFromJSON (response_p, service_name_s, service_description_s, service_uri_s);
 
 	qt_data_p -> qcd_results_p -> show ();
 

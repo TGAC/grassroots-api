@@ -18,7 +18,7 @@ ResultsWidget :: ~ResultsWidget ()
 
 
 
-uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p)
+uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
   uint32 num_pages = 0;
 
@@ -40,7 +40,7 @@ uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p)
 
       for (size_t i = 0; i < size; ++ i)
         {
-          if (AddResultsPageFromJSON (json_array_get (json_p, i)))
+          if (AddResultsPageFromJSON (json_array_get (json_p, i), service_name_s, service_description_s, service_uri_s))
             {
               ++ num_pages;
             }
@@ -49,7 +49,7 @@ uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p)
     }   /*  if (json_is_array (json_p)) */
 	else
 		{
-			if (AddResultsPageFromJSON (json_p))
+			if (AddResultsPageFromJSON (json_p, service_name_s, service_description_s, service_uri_s))
 				{
 					++ num_pages;
 				}
@@ -61,26 +61,20 @@ uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p)
 }
 
 
-bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p)
+bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	bool success_flag = false;
+	char *dump_s = json_dumps (json_p, JSON_INDENT (2));
 	json_t *results_json_p = json_object_get (json_p, SERVICE_RESULTS_S);
 
 	if (results_json_p)
 		{
-			const char *service_name_s =  GetJSONString (json_p, SERVICE_NAME_S);
+			QWidget *page_p = CreatePageFromJSON (results_json_p, service_description_s, service_uri_s);
 
-			if (service_name_s)
+			if (page_p)
 				{
-					const char *service_desc_s = GetJSONString (json_p, OPERATION_DESCRIPTION_S);
-					const char *service_uri_s = GetJSONString (json_p, OPERATION_INFORMATION_URI_S);
-					QWidget *page_p = CreatePageFromJSON (results_json_p, service_desc_s, service_uri_s);
-
-					if (page_p)
-						{
-							addTab (page_p, service_name_s);
-							success_flag = true;
-						}
+					addTab (page_p, service_name_s);
+					success_flag = true;
 				}
 		}
 

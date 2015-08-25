@@ -7,7 +7,7 @@
 #include "memory_allocations.h"
 
 
-ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p)
+ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	ProgressWidget *widget_p = NULL;
 	const char *uuid_s = GetJSONString (json_p, SERVICE_UUID_S);
@@ -22,11 +22,9 @@ ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *js
 
 					if (GetStatusFromJSON (json_p, &status))
 						{
-							const char *service_name_s = GetJSONString (json_p, JOB_SERVICE_S);
 							const char *name_s = GetJSONString (json_p, JOB_NAME_S);
-							const char *description_s = GetJSONString (json_p, JOB_DESCRIPTION_S);
 
-							widget_p = new ProgressWidget (id, status, name_s, description_s, service_name_s, parent_p);
+							widget_p = new ProgressWidget (id, status, name_s, service_description_s, service_name_s, parent_p);
 						}
 
 				}		/* if (uuid_parse (uuid_s, id) == 0) */

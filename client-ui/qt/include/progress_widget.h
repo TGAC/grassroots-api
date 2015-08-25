@@ -19,7 +19,7 @@ class ProgressWindow;
 class ProgressWidget : public QWidget
 {
 public:
-	static ProgressWidget *CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p);
+	static ProgressWidget *CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
 
 	~ProgressWidget ();
 

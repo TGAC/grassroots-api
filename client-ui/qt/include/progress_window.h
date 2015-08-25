@@ -16,7 +16,7 @@ public:
 	ProgressWindow (QMainWindow *parent_p, QTClientData *data_p);
 	~ProgressWindow ();
 
-	bool AddProgressItemFromJSON (const json_t *json_p);
+	bool AddProgressItemFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
 
 
 	json_t *BuildResultsRequest ();

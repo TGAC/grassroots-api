@@ -9,6 +9,7 @@
 
 #include "results_window.h"
 
+#include "json_util.h"
 
 ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 	: rw_data_p (0)
@@ -60,12 +61,12 @@ ResultsWindow :: ~ResultsWindow ()
 }
 
 
-uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p)
+uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {  
   ClearData ();
   rw_data_p = json_p;
 
-  return rw_results_p -> AddAllResultsPagesFromJSON (json_p);
+  return rw_results_p -> AddAllResultsPagesFromJSON (json_p, service_name_s, service_description_s, service_uri_s);
 }
 
 
@@ -98,7 +99,20 @@ void ResultsWindow :: LoadResults (const char * const filename_s)
 
 	if (results_p)
 		{
-			rw_results_p -> AddAllResultsPagesFromJSON (results_p);
+			const char *name_s = NULL;
+			const char *description_s = NULL;
+			const char *uri_s = NULL;
+
+			json_t *metadata_p = json_object_get (results_p, SERVICE_METADATA_S);
+
+			if (metadata_p)
+				{
+					name_s = GetJSONString (metadata_p, SERVICE_NAME_S);
+					description_s = GetJSONString (metadata_p, OPERATION_DESCRIPTION_S);
+					uri_s = GetJSONString (metadata_p, OPERATION_INFORMATION_URI_S);
+				}
+
+			rw_results_p -> AddAllResultsPagesFromJSON (results_p, name_s, description_s, uri_s);
 		}
 }
 

@@ -53,10 +53,10 @@ void ProgressWindow :: show ()
 }
 
 
-bool ProgressWindow :: AddProgressItemFromJSON (const json_t *json_p)
+bool ProgressWindow :: AddProgressItemFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	bool success_flag = false;
-	ProgressWidget *widget_p = ProgressWidget :: CreateProgressWidgetFromJSON (json_p, this);
+	ProgressWidget *widget_p = ProgressWidget :: CreateProgressWidgetFromJSON (json_p, this, service_name_s, service_description_s, service_uri_s);
 
 	if (widget_p)
 		{
