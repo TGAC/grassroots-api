@@ -250,8 +250,6 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 }
 
 
-
-
 bool GetService (const char * const plugin_name_s, Service **service_pp, ServiceMatcher *matcher_p, const json_t *config_p)
 {
 	Plugin *plugin_p = AllocatePlugin (plugin_name_s);

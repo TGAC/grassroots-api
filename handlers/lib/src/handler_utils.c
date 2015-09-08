@@ -221,7 +221,7 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 			free (dump_s);
 		}
 	#endif
-	
+
 	if (handlers_path_s)
 		{
 			matching_handlers_p = LoadMatchingHandlers (handlers_path_s, resource_p, tags_p);
@@ -242,7 +242,7 @@ Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p)
 							FreeLinkedList (matching_handlers_p);
 
 						}
-						
+
 				}		/* if (matching_handlers_p) */
 
 			FreeCopiedString (handlers_path_s);

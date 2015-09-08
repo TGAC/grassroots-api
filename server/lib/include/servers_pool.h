@@ -94,6 +94,7 @@ typedef struct ServersManager
 	 */
 	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const uuid_t key);
 
+
 } ServersManager;
 
 

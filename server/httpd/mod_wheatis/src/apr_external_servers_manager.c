@@ -153,7 +153,6 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 {
 	/* build the request that we will send to each external server */
 	json_error_t error;
-	json_t *result_p = NULL;
 	json_t *op_p = json_pack ("{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, op);
 
 	if (op_p)

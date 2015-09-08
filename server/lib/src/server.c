@@ -296,7 +296,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 				}		/* switch (op) */
 				
 
-//			res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op_p);
+			res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op_p);
 
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
@@ -1081,12 +1081,20 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 	
 	if (services_p)
 		{
+			ServersManager *servers_manager_p = GetServersManager ();
+
 			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, config_p);
 
 			if (services_p -> ll_size > 0)
 				{
 					json_p = GetServicesListAsJSON (services_p, resource_p, config_p, false);
 				}
+
+			if (servers_manager_p)
+				{
+					json_p = AddExternalServerOperationsToJSON (servers_manager_p, json_p, OP_LIST_ALL_SERVICES);
+				}
+
 				
 			FreeLinkedList (services_p);
 		}		/* if (services_p) */
