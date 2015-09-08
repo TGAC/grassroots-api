@@ -171,6 +171,9 @@ WHEATIS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManager 
 WHEATIS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key);
 
 
+WHEATIS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);
+
+
 /**
  * Allocate an ExternalServer
  *

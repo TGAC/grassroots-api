@@ -37,6 +37,132 @@ ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_
 
 
 
+json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op)
+{
+	/* build the request that we will send to each external server */
+	json_error_t error;
+	json_t *op_p = json_pack ("{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, op);
+
+	if (op_p)
+		{
+			/** @TODO */
+			ExternalServer *server_p = NULL;
+
+			const char *response_s = MakeRemoteJsonCallViaConnection (server_p -> es_connection_p, op_p);
+
+			if (response_s)
+				{
+					json_t *server_response_p = json_loads (response_s, 0, &error);
+
+					if (server_response_p)
+						{
+							const char *element_name_s = NULL;
+
+							/*
+							 * The elements to get are dependent on the api call
+							 */
+							switch (op)
+								{
+									case OP_LIST_ALL_SERVICES:
+									case OP_LIST_INTERESTED_SERVICES:
+									case OP_GET_NAMED_SERVICES:
+										element_name_s = SERVICES_NAME_S;
+										break;
+
+									case OP_RUN_KEYWORD_SERVICES:
+									case OP_GET_SERVICE_RESULTS:
+										element_name_s = SERVICE_RESULTS_S;
+										break;
+
+									case OP_IRODS_MODIFIED_DATA:
+										break;
+
+									case OP_CHECK_SERVICE_STATUS:
+										break;
+
+									case OP_CLEAN_UP_JOBS:
+										break;
+
+									default:
+										break;
+								}
+
+							if (element_name_s)
+								{
+									json_t *dest_p = json_object_get (res_p, element_name_s);
+
+									if (!dest_p)
+										{
+											dest_p = json_array ();
+
+											if (dest_p)
+												{
+													if (json_object_set_new (res_p, element_name_s, dest_p) != 0)
+														{
+															WipeJSON (dest_p);
+															dest_p = NULL;
+														}
+												}
+										}
+
+									if (dest_p && json_is_array (dest_p))
+										{
+											json_t *src_p = json_object_get (server_response_p, element_name_s);
+
+											if (src_p)
+												{
+													/* copy the values from the response into res_p */
+
+													if (json_is_array (src_p))
+														{
+															size_t index = 0;
+															json_t *value_p;
+
+															while ((value_p = json_array_get (src_p, index)) != NULL)
+																{
+																	if (json_array_append_new (dest_p, value_p) != 0)
+																		{
+																			++ index;
+																		}
+																}
+														}
+													else
+														{
+															if (json_array_append_new (dest_p, src_p) != 0)
+																{
+
+																}
+														}
+
+
+												}		/* if (value_p) */
+										}
+
+								}		/* if (element_name_s) */
+
+						}		/* if (server_response_p) */
+					else
+						{
+
+						}
+
+				}		/* if (response_s) */
+			else
+				{
+
+				}
+
+			WipeJSON (op_p);
+		}		/* if (op_p) */
+	else
+		{
+
+		}
+
+	return res_p;
+}
+
+
 bool AddExternalServerFromJSON (const json_t *json_p)
 {
 	bool success_flag = false;

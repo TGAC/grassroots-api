@@ -83,6 +83,8 @@ bool DestroyServersManager ()
 }
 
 
+
+
 static bool AddExternalServerToExternalServersManager (ServersManager *manager_p, ExternalServer *server_p)
 {
 	bool success_flag = false;
@@ -154,5 +156,8 @@ static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersMa
 
 	return server_p;
 }
+
+
+
 
 
