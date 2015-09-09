@@ -7,14 +7,25 @@
 #include "json_util.h"
 
 
+#ifdef _DEBUG
+	#define SERVERS_POOL_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define SERVERS_POOL_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
+
+
 void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
 											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key))
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key),
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p))
 {
 	manager_p -> sm_add_server_fn = add_server_fn;
 	manager_p -> sm_get_server_fn = get_server_fn;
 	manager_p -> sm_remove_server_fn = remove_server_fn;
+	manager_p -> sm_get_all_servers_fn = get_all_servers_fn;
 }
 
 
@@ -36,6 +47,11 @@ ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_
 }
 
 
+LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p)
+{
+	return manager_p -> sm_get_all_servers_fn (manager_p);
+}
+
 
 json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op)
 {
@@ -45,112 +61,124 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 	if (op_p)
 		{
-			/** @TODO */
-			ExternalServer *server_p = NULL;
+			LinkedList *servers_p = GetAllExternalServersFromServersManager (manager_p);
 
-			const char *response_s = MakeRemoteJsonCallViaConnection (server_p -> es_connection_p, op_p);
-
-			if (response_s)
+			if (servers_p && (servers_p -> ll_size > 0))
 				{
-					json_t *server_response_p = json_loads (response_s, 0, &error);
+					ExternalServerNode *node_p = (ExternalServerNode *) servers_p -> ll_head_p;
 
-					if (server_response_p)
+					while (node_p)
 						{
-							const char *element_name_s = NULL;
+							ExternalServer *server_p = node_p -> esn_server_p;
+							const char *response_s = MakeRemoteJsonCallViaConnection (server_p -> es_connection_p, op_p);
 
-							/*
-							 * The elements to get are dependent on the api call
-							 */
-							switch (op)
+							if (response_s)
 								{
-									case OP_LIST_ALL_SERVICES:
-									case OP_LIST_INTERESTED_SERVICES:
-									case OP_GET_NAMED_SERVICES:
-										element_name_s = SERVICES_NAME_S;
-										break;
+									json_t *server_response_p = json_loads (response_s, 0, &error);
 
-									case OP_RUN_KEYWORD_SERVICES:
-									case OP_GET_SERVICE_RESULTS:
-										element_name_s = SERVICE_RESULTS_S;
-										break;
-
-									case OP_IRODS_MODIFIED_DATA:
-										break;
-
-									case OP_CHECK_SERVICE_STATUS:
-										break;
-
-									case OP_CLEAN_UP_JOBS:
-										break;
-
-									default:
-										break;
-								}
-
-							if (element_name_s)
-								{
-									json_t *dest_p = json_object_get (res_p, element_name_s);
-
-									if (!dest_p)
+									if (server_response_p)
 										{
-											dest_p = json_array ();
+											const char *element_name_s = NULL;
 
-											if (dest_p)
+											/*
+											 * The elements to get are dependent on the api call
+											 */
+											switch (op)
 												{
-													if (json_object_set_new (res_p, element_name_s, dest_p) != 0)
-														{
-															WipeJSON (dest_p);
-															dest_p = NULL;
-														}
+													case OP_LIST_ALL_SERVICES:
+													case OP_LIST_INTERESTED_SERVICES:
+													case OP_GET_NAMED_SERVICES:
+														element_name_s = SERVICES_NAME_S;
+														break;
+
+													case OP_RUN_KEYWORD_SERVICES:
+													case OP_GET_SERVICE_RESULTS:
+														element_name_s = SERVICE_RESULTS_S;
+														break;
+
+													case OP_IRODS_MODIFIED_DATA:
+														break;
+
+													case OP_CHECK_SERVICE_STATUS:
+														break;
+
+													case OP_CLEAN_UP_JOBS:
+														break;
+
+													default:
+														break;
 												}
-										}
 
-									if (dest_p && json_is_array (dest_p))
-										{
-											json_t *src_p = json_object_get (server_response_p, element_name_s);
-
-											if (src_p)
+											if (element_name_s)
 												{
-													/* copy the values from the response into res_p */
+													json_t *dest_p = json_object_get (res_p, element_name_s);
 
-													if (json_is_array (src_p))
+													if (!dest_p)
 														{
-															size_t index = 0;
-															json_t *value_p;
+															dest_p = json_array ();
 
-															while ((value_p = json_array_get (src_p, index)) != NULL)
+															if (dest_p)
 																{
-																	if (json_array_append_new (dest_p, value_p) != 0)
+																	if (json_object_set_new (res_p, element_name_s, dest_p) != 0)
 																		{
-																			++ index;
+																			WipeJSON (dest_p);
+																			dest_p = NULL;
 																		}
 																}
 														}
-													else
-														{
-															if (json_array_append_new (dest_p, src_p) != 0)
-																{
 
-																}
+													if (dest_p && json_is_array (dest_p))
+														{
+															json_t *src_p = json_object_get (server_response_p, element_name_s);
+
+															if (src_p)
+																{
+																	/* copy the values from the response into res_p */
+
+																	if (json_is_array (src_p))
+																		{
+																			size_t index = 0;
+																			json_t *value_p;
+
+																			while ((value_p = json_array_get (src_p, index)) != NULL)
+																				{
+																					if (json_array_append_new (dest_p, value_p) != 0)
+																						{
+																							++ index;
+																						}
+																				}
+																		}
+																	else
+																		{
+																			if (json_array_append_new (dest_p, src_p) != 0)
+																				{
+
+																				}
+																		}
+
+
+																}		/* if (value_p) */
 														}
 
+												}		/* if (element_name_s) */
 
-												}		/* if (value_p) */
+										}		/* if (server_response_p) */
+									else
+										{
+
 										}
 
-								}		/* if (element_name_s) */
+								}		/* if (response_s) */
+							else
+								{
 
-						}		/* if (server_response_p) */
-					else
-						{
+								}
 
-						}
+							node_p = node_p -> esn_node.ln_next_p;
+						}		/* while (node_p) */
 
-				}		/* if (response_s) */
-			else
-				{
-
-				}
+					FreeLinkedList (servers_p);
+				}		/* if (servers_p) */
 
 			WipeJSON (op_p);
 		}		/* if (op_p) */
@@ -287,6 +315,66 @@ void FreeExternalServer (ExternalServer *server_p)
 }
 
 
+ExternalServerNode *AllocateExternalServerNode (ExternalServer *server_p, MEM_FLAG mf)
+{
+	ExternalServerNode *node_p = (ExternalServerNode *) AllocMemory (sizeof (ExternalServerNode));
+
+	if (node_p)
+		{
+			switch (mf)
+				{
+					case MF_SHADOW_USE:
+					case MF_SHALLOW_COPY:
+						node_p -> esn_server_p = server_p;
+						break;
+
+					case MF_DEEP_COPY:
+						node_p -> esn_server_p = CopyExternalServer (server_p);
+						break;
+
+					default:
+						break;
+				}
+
+			if (node_p -> esn_server_p)
+				{
+					node_p -> esn_server_mem = mf;
+					node_p -> esn_node.ln_prev_p = NULL;
+					node_p -> esn_node.ln_next_p = NULL;
+				}
+			else
+				{
+					FreeMemory (node_p);
+					node_p = NULL;
+				}
+		}
+
+	return node_p;
+}
+
+
+void FreeExternalServerNode (ListItem *node_p)
+{
+	ExternalServerNode *server_node_p = (ExternalServerNode *) node_p;
+
+	switch (server_node_p -> esn_server_mem)
+		{
+			case MF_DEEP_COPY:
+			case MF_SHALLOW_COPY:
+				FreeExternalServer (server_node_p -> esn_server_p);
+				break;
+
+			default:
+				break;
+		}
+
+	FreeMemory (server_node_p);
+}
+
+
+
+
+
 json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *request_p)
 {
 	json_t *response_p = NULL;
@@ -306,4 +394,11 @@ json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *re
 
 	return response_p;
 }
+
+
+ExternalServer *CopyExternalServer (const ExternalServer * const src_p)
+{
+	return NULL;
+}
+
 

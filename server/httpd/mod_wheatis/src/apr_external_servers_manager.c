@@ -43,6 +43,11 @@ static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *m
 static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key);
 
 
+static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *manager_p);
+
+
+static apr_status_t AddExternalServerFromSOCache (ap_socache_instance_t *instance_p, server_rec *server_p, void *user_data_p, const unsigned char *id_s, unsigned int id_length, const unsigned char *data_p, unsigned int data_length, apr_pool_t *pool_p);
+
 
 /**************************/
 
@@ -64,7 +69,11 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 				{
 					manager_p -> asm_store_p = storage_p;
 
-					InitServersManager (& (manager_p -> asm_base_manager), AddExternalServerToAprServersManager, GetExternalServerFromAprServersManager, RemoveExternalServerFromAprServersManager);
+					InitServersManager (& (manager_p -> asm_base_manager),
+					                    AddExternalServerToAprServersManager,
+					                    GetExternalServerFromAprServersManager,
+					                    RemoveExternalServerFromAprServersManager,
+					                    GetAllExternalServersFromAprServersManager);
 
 					return manager_p;
 				}
@@ -141,6 +150,23 @@ static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager
 }
 
 
+static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *servers_manager_p)
+{
+	LinkedList *servers_p = AllocateLinkedList (FreeExternalServerNode);
+
+	if (servers_p)
+		{
+			APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
+			ap_socache_iterator_t *iterator_p = AddExternalServerFromSOCache;
+
+			IterateOverAPRGlobalStorage (manager_p -> asm_store_p, iterator_p, servers_p);
+
+		}		/* if (servers_p) */
+
+	return servers_p;
+}
+
+
 apr_status_t CleanUpAPRServersManager (void *value_p)
 {
 	APRServersManager *manager_p = (APRServersManager *) value_p;
@@ -148,3 +174,23 @@ apr_status_t CleanUpAPRServersManager (void *value_p)
 	return (DestroyAPRServersManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
 }
 
+
+
+static apr_status_t AddExternalServerFromSOCache (ap_socache_instance_t *instance_p, server_rec *server_p, void *user_data_p, const unsigned char *id_s, unsigned int id_length, const unsigned char *data_p, unsigned int data_length, apr_pool_t *pool_p)
+{
+	apr_status_t status = APR_SUCCESS;
+	LinkedList *servers_p = (LinkedList *) user_data_p;
+	ExternalServer *external_server_p = (ExternalServer *) data_p;
+	ExternalServerNode *node_p = AllocateExternalServerNode (external_server_p, MF_SHADOW_USE);
+
+	if (node_p)
+		{
+			LinkedListAddTail (servers_p, (ListItem *) node_p);
+		}
+	else
+		{
+			status = APR_ENOMEM;
+		}
+
+	return status;
+}

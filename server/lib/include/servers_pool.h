@@ -14,6 +14,7 @@
 #include "wheatis_service_manager_library.h"
 #include "linked_list.h"
 #include "operation.h"
+#include "memory_allocations.h"
 
 
 /**
@@ -40,6 +41,15 @@ typedef struct ExternalServer
 } ExternalServer;
 
 
+
+typedef struct ExternalServerNode
+{
+	ListItem esn_node;
+
+	ExternalServer *esn_server_p;
+
+	MEM_FLAG esn_server_mem;
+} ExternalServerNode;
 
 
 /* forward declaration */
@@ -95,6 +105,22 @@ typedef struct ServersManager
 	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const uuid_t key);
 
 
+
+	/**
+ 	 * @brief Get all ExternalServers.
+	 *
+	 * Get a LinkedList of ExternalServerNodes for all active ExternalServers.
+	 *
+	 * @param manager_p The ServersManager to remove the ExternalServer from.
+	 * @return A pointer to the matching ExternalServer which will have been
+	 * removed from the ServersManager or <code>NULL</code>
+	 * if it could not be found.
+	 * @memberof ServersManager
+	 * @see GetAllExternalServersFromServersManager
+	 */
+	LinkedList *(*sm_get_all_servers_fn) (struct ServersManager *manager_p);
+
+
 } ServersManager;
 
 
@@ -115,11 +141,13 @@ WHEATIS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
  * @param add_server_fn The callback function to set for sm_add_server_fn for the given ServersManager.
  * @param get_server_fn The callback function to set for sm_get_server_fn for the given ServersManager.
  * @param remove_server_fn The callback function to set for sm_remove_server_fn for the given ServersManager.
+ * @param get_all_servers_fn The callback function to set for sm_get_all_servers_fn for the given ServersManager.
  */
 WHEATIS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
 											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key));
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key),
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p));
 
 
 /**
@@ -171,6 +199,20 @@ WHEATIS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManager 
 WHEATIS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key);
 
 
+/**
+	 * @brief Get all ExternalServers.
+ *
+ * Get a LinkedList of ExternalServerNodes for all active ExternalServers.
+ *
+ * @param manager_p The ServersManager to remove the ExternalServer from.
+ * @return A LinkedList of const ExternalServerNodes or <code>NULL</code>
+ * if there are not any ExternalServers.
+ * @memberof ServersManager
+ * @see sm_get_all_servers_fn
+ */
+WHEATIS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p);
+
+
 WHEATIS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);
 
 
@@ -194,6 +236,30 @@ WHEATIS_SERVICE_MANAGER_API ExternalServer *AllocateExternalServer (const char *
  * @memberof ExternalServer
  */
 WHEATIS_SERVICE_MANAGER_API void FreeExternalServer (ExternalServer *server_p);
+
+
+
+
+/**
+ * Allocate an ExternalServerNode
+ *
+ * @param server_p The ExternalServer that this ExternalServerNode will be based upon
+ * @param mf How the ExternalServer that this node will contain will be constructed
+ * @return A newly-allocated ExternalServerNode or <code>NULL</code> upon error.
+ * @see ExternalServerNode
+ * @memberof ExternalServerNode
+ */
+WHEATIS_SERVICE_MANAGER_API ExternalServerNode *AllocateExternalServerNode (ExternalServer *server_p, MEM_FLAG mf);
+
+
+/**
+ * Free an ExternalServerNode.
+ *
+ * @param node_p The ExternalServerNode to free.
+ * @memberof ExternalServerNode
+ */
+WHEATIS_SERVICE_MANAGER_API void FreeExternalServerNode (ListItem *node_p);
+
 
 
 /**
@@ -246,6 +312,10 @@ WHEATIS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *json_p
  * @memberof ServersManager
  */
 WHEATIS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);
+
+
+
+WHEATIS_SERVICE_MANAGER_API ExternalServer *CopyExternalServer (const ExternalServer * const src_p);
 
 
 

@@ -86,6 +86,8 @@ void MainWindow :: RunServices (bool run_flag)
 			if (services_json_p)
 				{
 
+					PrintJSONToLog (services_json_p, "\n\nDATA:\n", STM_LEVEL_FINE);
+
 					if (json_is_array (services_json_p))
 						{
 							int status;

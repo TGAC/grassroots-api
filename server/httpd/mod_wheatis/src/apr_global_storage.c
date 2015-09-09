@@ -311,6 +311,28 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 }
 
 
+bool IterateOverAPRGlobalStorage (APRGlobalStorage *storage_p, ap_socache_iterator_t *iterator_p, void *data_p)
+{
+	bool did_all_elements_flag = true;
+	apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
+
+	if (status == APR_SUCCESS)
+		{
+			status = storage_p -> ags_socache_provider_p -> iterate (storage_p -> ags_socache_instance_p, storage_p -> ags_server_p, data_p, iterator_p, storage_p -> ags_pool_p);
+
+			if (status != APR_SUCCESS)
+				{
+					did_all_elements_flag = false;
+				}
+
+			status = apr_global_mutex_unlock (storage_p -> ags_mutex_p);
+		}		/* if (status == APR_SUCCESS) */
+
+
+	return did_all_elements_flag;
+}
+
+
 
 bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p)
 {

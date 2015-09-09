@@ -4,12 +4,6 @@
 
 #include "servers_pool.h"
 
-typedef struct
-{
-	ListItem esn_node;
-	ExternalServer *esn_server_p;
-} ExternalServerNode;
-
 
 typedef struct ExternalServersManager
 {
@@ -22,9 +16,6 @@ typedef struct ExternalServersManager
 static ExternalServersManager *s_manager_p = NULL;
 
 
-static ExternalServerNode *AllocateExternalServerNode (ExternalServer *server_p);
-
-static void FreeExternalServerNode (ListItem * const node_p);
 
 static ExternalServerNode *GetExternalServerNode (ExternalServersManager *manager_p, const uuid_t key);
 
@@ -35,29 +26,8 @@ static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersMa
 
 static bool AddExternalServerToExternalServersManager (ServersManager *manager_p, ExternalServer *server_p);
 
+static LinkedList *GetAllExternalServersFromExternalServersManager (ServersManager *manager_p);
 
-static ExternalServerNode *AllocateExternalServerNode (ExternalServer *server_p)
-{
-	ExternalServerNode *node_p = (ExternalServerNode *) AllocMemory (sizeof (ExternalServerNode));
-
-	if (node_p)
-		{
-			node_p -> esn_node.ln_prev_p = NULL;
-			node_p -> esn_node.ln_next_p = NULL;
-
-			node_p -> esn_server_p = server_p;
-		}
-
-	return node_p;
-}
-
-
-static void FreeExternalServerNode (ListItem * const node_p)
-{
-	ExternalServerNode *server_node_p = (ExternalServerNode *) node_p;
-	FreeExternalServer (server_node_p -> esn_server_p);
-	FreeMemory (node_p);
-}
 
 
 ServersManager *GetServersManager (void)
@@ -66,7 +36,7 @@ ServersManager *GetServersManager (void)
 		{
 			s_manager_p = (ExternalServersManager *) AllocMemory (sizeof (ExternalServersManager));
 
-			InitServersManager (& (s_manager_p -> esm_base_manager), AddExternalServerToExternalServersManager, GetExternalServerFromExternalServersManager, RemoveExternalServerFromExternalServersManager);
+			InitServersManager (& (s_manager_p -> esm_base_manager), AddExternalServerToExternalServersManager, GetExternalServerFromExternalServersManager, RemoveExternalServerFromExternalServersManager, GetAllExternalServersFromExternalServersManager);
 			InitLinkedList (& (s_manager_p -> esm_servers));
 		}
 
@@ -97,7 +67,7 @@ static bool AddExternalServerToExternalServersManager (ServersManager *manager_p
 		}
 	else
 		{
-			ExternalServerNode *node_p = AllocateExternalServerNode (server_p);
+			ExternalServerNode *node_p = AllocateExternalServerNode (server_p, MF_SHADOW_USE);
 
 			if (node_p)
 				{
@@ -159,5 +129,10 @@ static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersMa
 
 
 
+static LinkedList *GetAllExternalServersFromExternalServersManager (ServersManager *manager_p)
+{
+	ExternalServersManager *external_servers_manager_p = (ExternalServersManager *) manager_p;
+	return & (external_servers_manager_p -> esm_servers);
+}
 
 
