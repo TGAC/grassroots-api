@@ -219,7 +219,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 					if (res_p)
 						{
 							if ((json_object_set_new (res_p, PG_LATITUDE_S, json_real (latitude)) == 0) &&
-									(json_object_set_new (res_p, PG_LONGTITUDE_S, json_real (longtitude)) == 0))
+									(json_object_set_new (res_p, PG_LONGITUDE_S, json_real (longtitude)) == 0))
 								{
 									return res_p;
 								}
@@ -773,7 +773,7 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 		{
 			json_t *location_p = json_object_get (geometry_p, "location");
 			const char * const LATITUDE_KEY_S = "lat";
-			const char * const LONGTITUDE_KEY_S = "lng";
+			const char * const LONGITUDE_KEY_S = "lng";
 
 			#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
 			PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE);
@@ -787,7 +787,7 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 						{
 							double longtitude;
 
-							if (GetJSONReal (location_p, LONGTITUDE_KEY_S, &longtitude))
+							if (GetJSONReal (location_p, LONGITUDE_KEY_S, &longtitude))
 								{
 									json_t *viewport_p = json_object_get (geometry_p, "viewport");
 
@@ -803,7 +803,7 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 														{
 															double east;
 
-															if (GetJSONReal (corner_p, LONGTITUDE_KEY_S, &east))
+															if (GetJSONReal (corner_p, LONGITUDE_KEY_S, &east))
 																{
 																	corner_p = json_object_get (viewport_p, "southwest");
 
@@ -815,14 +815,14 @@ static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p)
 																				{
 																					double west;
 
-																					if (GetJSONReal (corner_p, LONGTITUDE_KEY_S, &west))
+																					if (GetJSONReal (corner_p, LONGITUDE_KEY_S, &west))
 																						{
 																							json_t *res_p = json_object ();
 
 																							if (res_p)
 																								{
 																									if ((json_object_set_new (res_p, PG_LATITUDE_S, json_real (latitude)) == 0) &&
-																											(json_object_set_new (res_p, PG_LONGTITUDE_S, json_real (longtitude)) == 0) &&
+																											(json_object_set_new (res_p, PG_LONGITUDE_S, json_real (longtitude)) == 0) &&
 																											(json_object_set_new (res_p, PG_NORTH_BOUND_S, json_real (north)) == 0) &&
 																											(json_object_set_new (res_p, PG_SOUTH_BOUND_S, json_real (south)) == 0) &&
 																											(json_object_set_new (res_p, PG_EAST_BOUND_S, json_real (east)) == 0) &&
