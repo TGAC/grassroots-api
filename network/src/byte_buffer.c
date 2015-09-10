@@ -3,6 +3,7 @@
 
 #include "byte_buffer.h"
 #include "memory_allocations.h"
+#include "string_utils.h"
 
 
 ByteBuffer *AllocateByteBuffer (size_t initial_size)

@@ -122,8 +122,10 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, ServiceJob *job_p)
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
+	unsigned int object_size = sizeof (ServiceJob);
+	bool success_flag = AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, (unsigned char *) job_p, object_size);
 
-	return AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, (unsigned char *) job_p, sizeof (ServiceJob));
+	return success_flag;
 }
 
 

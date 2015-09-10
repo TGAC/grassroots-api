@@ -19,7 +19,7 @@
 #define ALLOCATE_APR_SERVERS_MANAGER_TAGS (1)
 #include "apr_servers_manager.h"
 #include "json_tools.h"
-
+#include "wheatis_config.h"
 
 #ifdef _DEBUG
 #define APR_SERVERS_MANAGER_DEBUG	(STM_LEVEL_FINEST)
@@ -108,11 +108,20 @@ bool APRServersManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *co
 
 bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s)
 {
+	bool success_flag = false;
+
 	/* Set up the maximum expiry time as we never want it to expire */
-	apr_interval_time_t expiry = 0;
+	apr_interval_time_t expiry = APR_INT64_MAX;
 	struct ap_socache_hints cache_hints = { UUID_STRING_BUFFER_SIZE, sizeof (ExternalServer), expiry };
 
-	return PostConfigureGlobalStorage(manager_p -> asm_store_p, config_pool_p, server_p, provider_name_s, &cache_hints);
+	success_flag = PostConfigureGlobalStorage(manager_p -> asm_store_p, config_pool_p, server_p, provider_name_s, &cache_hints);
+
+//	if (success_flag)
+//		{
+//			ConnectToExternalServers ();
+//		}
+
+	return success_flag;
 }
 
 
@@ -129,8 +138,10 @@ bool APRServersManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 static bool AddExternalServerToAprServersManager (ServersManager *servers_manager_p, ExternalServer *server_p)
 {
 	APRServersManager *manager_p = (APRServersManager *) servers_manager_p;
+	unsigned int object_size = sizeof (ExternalServer);
+	bool success_flag = AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_id, UUID_RAW_SIZE, (unsigned char *) server_p, object_size);
 
-	return AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_id, UUID_RAW_SIZE, (unsigned char *) server_p, sizeof (ExternalServer));
+	return success_flag;
 }
 
 

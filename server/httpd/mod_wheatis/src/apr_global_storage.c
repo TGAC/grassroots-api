@@ -204,7 +204,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 			if (status == APR_SUCCESS)
 				{
-					apr_time_t end_of_time = ~0;
+					apr_time_t end_of_time = APR_INT64_MAX;
 
 					/* store it */
 					status = storage_p -> ags_socache_provider_p -> store (storage_p -> ags_socache_instance_p,
@@ -381,16 +381,19 @@ bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *confi
 				{
 					res = ap_global_mutex_create (& (storage_p -> ags_mutex_p), NULL, storage_p -> ags_cache_id_s, NULL, server_p, config_pool_p, 0);
 
-					if (res != APR_SUCCESS)
+					if (res == APR_SUCCESS)
+						{
+							res = storage_p -> ags_socache_provider_p -> init (storage_p -> ags_socache_instance_p, storage_p -> ags_cache_id_s, cache_hints_p, server_p, config_pool_p);
+
+							if (res != APR_SUCCESS)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to initialise %s cache", storage_p -> ags_cache_id_s);
+									success_flag = false;
+								}
+						}
+					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, "failed to create %s mutex", storage_p -> ags_cache_id_s);
-							success_flag = false;
-						}
-
-					res = storage_p -> ags_socache_provider_p -> init (storage_p -> ags_socache_instance_p, storage_p -> ags_cache_id_s, cache_hints_p, server_p, config_pool_p);
-					if (res != APR_SUCCESS)
-						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to initialise %s cache", storage_p -> ags_cache_id_s);
 							success_flag = false;
 						}
 				}

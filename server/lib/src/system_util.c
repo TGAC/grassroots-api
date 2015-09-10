@@ -27,26 +27,15 @@ bool InitInformationSystem ()
 
 					if (c == 0)
 						{
-							const char *root_path_s = GetServerRootDirectory ();
-							char *full_services_path_s = MakeFilename (root_path_s, "wheatis.config");
-
-							if (full_services_path_s)
+							if (InitConfig ())
 								{
-									if (InitConfig (full_services_path_s))
+									if (InitMongoDB ())
 										{
-											if (InitMongoDB ())
-												{
-													res_flag = true;
-												}
+											res_flag = true;
+										}
 
-											ConnectToExternalServers ();
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_WARNING, "Failed to load config file from %s", full_services_path_s);
-										}
-									FreeCopiedString (full_services_path_s);
-								}		/* if (full_services_path_s) */
+									ConnectToExternalServers ();
+								}
 
 							#ifdef DRMAA_ENABLED
 							if (res_flag)
@@ -59,7 +48,7 @@ bool InitInformationSystem ()
 				}
 		}
 
-	return false;
+	return res_flag;
 }
 
 

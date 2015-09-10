@@ -202,32 +202,36 @@ static void WheatISChildInit (apr_pool_t *pool_p, server_rec *server_p)
 	 * it moved to a new address. */
 	if (APRJobsManagerChildInit (pool_p, server_p))
 		{
-			if (InitInformationSystem ())
+			if (APRServersManagerChildInit (pool_p, server_p))
 				{
-					OutputStream *log_p = AllocateApacheOutputStream (server_p);
-
-					if (log_p)
+					if (InitInformationSystem ())
 						{
-							OutputStream *error_p = AllocateApacheOutputStream (server_p);
+							OutputStream *log_p = AllocateApacheOutputStream (server_p);
 
-							if (error_p)
+							if (log_p)
 								{
-									/* Mark the streams for deletion when the server pool expires */
-									apr_pool_t *pool_p = server_p -> process -> pool;
+									OutputStream *error_p = AllocateApacheOutputStream (server_p);
 
-									apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
-									apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
+									if (error_p)
+										{
+											/* Mark the streams for deletion when the server pool expires */
+											apr_pool_t *pool_p = server_p -> process -> pool;
 
-									SetDefaultLogStream (log_p);
-									SetDefaultErrorStream (error_p);
+											apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
+											apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
+
+											SetDefaultLogStream (log_p);
+											SetDefaultErrorStream (error_p);
+										}
+									else
+										{
+											FreeOutputStream (log_p);
+										}
 								}
-							else
-								{
-									FreeOutputStream (log_p);
-								}
-						}
 
-				}		/* If (InitInformationSystem ()) */
+						}		/* If (InitInformationSystem ()) */
+
+				}		/* if (APRServersManagerChildInit (pool_p, server_p)) */
 
 		}		/* if (APRJobsManagerChildInit (pool_p, server_p)) */
 }

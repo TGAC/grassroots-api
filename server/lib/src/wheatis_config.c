@@ -4,25 +4,15 @@
 #include "json_util.h"
 
 static json_t *s_config_p = NULL;
+static bool s_load_config_tried_flag = false;
 
 
-bool InitConfig (const char *filename_s)
+static const json_t *GetConfig (void);
+
+
+bool InitConfig (void)
 {
-	bool success_flag = false;
-	json_error_t error;
-
-	s_config_p = json_load_file (filename_s, 0, &error);
-
-	if (s_config_p)
-		{
-			success_flag = true;
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to load config from %s", filename_s);
-		}
-
-	return success_flag;
+	return (GetConfig () != NULL);
 }
 
 
@@ -79,9 +69,11 @@ const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 
 void ConnectToExternalServers (void)
 {
-	if (s_config_p)
+	const json_t *config_p = GetConfig ();
+
+	if (config_p)
 		{
-			json_t *servers_p = json_object_get (s_config_p, SERVERS_S);
+			json_t *servers_p = json_object_get (config_p, SERVERS_S);
 
 			if (servers_p)
 				{
@@ -103,5 +95,35 @@ void ConnectToExternalServers (void)
 				}		/* if (servers_p) */
 
 		}		/* if (s_config_p) */
+}
+
+
+static const json_t *GetConfig (void)
+{
+	if (!s_config_p)
+		{
+			if (!s_load_config_tried_flag)
+				{
+					const char *root_path_s = GetServerRootDirectory ();
+					char *full_config_path_s = MakeFilename (root_path_s, "wheatis.config");
+
+					if (full_config_path_s)
+						{
+							json_error_t error;
+							s_config_p = json_load_file (full_config_path_s, 0, &error);
+
+							if (!s_config_p)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to load config from %s", full_config_path_s);
+								}
+
+							s_load_config_tried_flag = true;
+
+							FreeCopiedString (full_config_path_s);
+						}
+				}
+		}
+
+	return s_config_p;
 }
 
