@@ -988,7 +988,6 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 
 
-
 static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
@@ -1006,10 +1005,10 @@ static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const 
 							/**
 							 * Is it an insert or an update?
 							 */
-							const char *id_s = GetJSONString (values_p, MONGO_ID_S);
 
-							if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s))
+							if (IsKeyValuePairInCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s, PG_ID_S, pathogenomics_id_s) == 1)
 								{
+
 									if (id_s)
 										{
 											bson_oid_t oid;

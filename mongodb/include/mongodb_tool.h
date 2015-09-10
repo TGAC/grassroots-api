@@ -130,6 +130,9 @@ WHEATIS_MONGODB_API void LogBSONOid (const bson_oid_t *bson_p, const int level, 
 WHEATIS_MONGODB_API void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
 
 
+WHEATIS_MONGODB_API int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, const char *collection_s, const char *key_s, const char *value_s);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -817,6 +817,32 @@ json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p)
 }
 
 
+
+int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, const char *collection_s, const char *key_s, const char *value_s)
+{
+	int32 res =-1;
+
+	if (SetMongoToolCollection (tool_p, database_s, collection_s))
+		{
+			json_error_t error;
+			json_t *json_p = json_pack_ex (&error, 0, "{s:s}", key_s, value_s);
+
+			if (json_p)
+				{
+					if (FindMatchingMongoDocumentsByJSON (tool_p, json_p, NULL))
+						{
+							res = HasMongoQueryResults (tool_p) ? 1 : 0;
+						}
+
+					WipeJSON (json_p);
+				}
+		}
+
+	return res;
+}
+
+
+
 json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p)
 {
 	json_t *result_p = NULL;

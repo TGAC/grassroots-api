@@ -17,7 +17,7 @@
 #endif
 
 
-WHEATIS_SERVICE_MANAGER_LOCAL bool InitConfig (voids);
+WHEATIS_SERVICE_MANAGER_LOCAL bool InitConfig (void);
 
 
 WHEATIS_SERVICE_MANAGER_LOCAL bool DestroyConfig (void);
