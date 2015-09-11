@@ -1008,41 +1008,36 @@ static const char *InsertSingleItem (MongoTool *tool_p, json_t *values_p, const 
 
 							if (IsKeyValuePairInCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s, PG_ID_S, pathogenomics_id_s) == 1)
 								{
+									/*
+									bson_oid_t oid;
 
-									if (id_s)
+									if (bson_oid_is_valid (id_s, strlen (id_s)))
 										{
-											bson_oid_t oid;
+											bson_oid_init_from_string (&oid, id_s);
 
-											if (bson_oid_is_valid (id_s, strlen (id_s)))
+											if (json_object_del (values_p, MONGO_ID_S) == 0)
 												{
-													bson_oid_init_from_string (&oid, id_s);
-
-													if (json_object_del (values_p, MONGO_ID_S) == 0)
+													if (!UpdateMongoDocument (tool_p, &oid, values_p))
 														{
-															if (!UpdateMongoDocument (tool_p, &oid, values_p))
-																{
-																	error_s = "Failed to update data";
-																}
+															error_s = "Failed to update data";
 														}
-
 												}
+
+									*/
+								}
+							else
+								{
+									bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+									if (id_p)
+										{
+											FreeMemory (id_p);
 										}
 									else
 										{
-											bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
-
-											if (id_p)
-												{
-													FreeMemory (id_p);
-												}
-											else
-												{
-													error_s = "Failed to insert data";
-												}
+											error_s = "Failed to insert data";
 										}
-
 								}
-
 
 							if ((error_s == NULL) && add_fields_flag)
 								{

@@ -94,7 +94,7 @@ WHEATIS_MONGODB_API bson_t *ConvertJSONToBSON (const json_t *json_p);
 WHEATIS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
 
 
-WHEATIS_MONGODB_API bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *json_p);
+WHEATIS_MONGODB_API bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, const json_t *json_p);
 
 
 WHEATIS_MONGODB_API bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, const bool remove_first_match_only_flag);
@@ -132,6 +132,8 @@ WHEATIS_MONGODB_API void LogAllBSON (const bson_t *bson_p, const int level, cons
 
 WHEATIS_MONGODB_API int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, const char *collection_s, const char *key_s, const char *value_s);
 
+
+WHEATIS_MONGODB_API bson_t *GenerateQuery (const json_t *json_p);
 
 #ifdef __cplusplus
 }

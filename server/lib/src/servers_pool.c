@@ -5,7 +5,7 @@
 #include "string_utils.h"
 #include "streams.h"
 #include "json_util.h"
-
+#include "json_tools.h"
 
 #ifdef _DEBUG
 	#define SERVERS_POOL_DEBUG	(STM_LEVEL_FINE)
@@ -53,7 +53,7 @@ LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p)
 }
 
 
-json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op)
+json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *ops_array_p, Operation op)
 {
 	/* build the request that we will send to each external server */
 	json_error_t error;
@@ -80,6 +80,10 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 										{
 											const char *element_name_s = NULL;
 
+											#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
+											PrintJSONToLog (ops_array_p, "local server json:\n", STM_LEVEL_FINE);
+											#endif
+
 											/*
 											 * The elements to get are dependent on the api call
 											 */
@@ -88,7 +92,69 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 													case OP_LIST_ALL_SERVICES:
 													case OP_LIST_INTERESTED_SERVICES:
 													case OP_GET_NAMED_SERVICES:
-														element_name_s = SERVICES_NAME_S;
+														{
+															json_t *src_services_p = json_object_get (server_response_p, SERVICES_NAME_S);
+
+															if (src_services_p)
+																{
+																	json_t *src_ops_p = json_object_get (src_services_p, SERVER_OPERATIONS_S);
+
+																	if (src_ops_p)
+																		{
+																			#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
+																			PrintJSONToLog (src_ops_p, "src_ops:\n", STM_LEVEL_FINE);
+																			#endif
+
+																			if (json_is_array (src_ops_p))
+																				{
+																					/* copy the values from the response into dest_ops_p */
+																					size_t i = 0;
+																					size_t size = json_array_size (src_ops_p);
+
+																					while (i < size)
+																						{
+																							json_t *src_op_p = json_array_get (src_ops_p, i);
+
+																							#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
+																							PrintJSONToLog (src_op_p, "src_op_p:\n", STM_LEVEL_FINE);
+																							#endif
+
+																							if (json_array_append_new (ops_array_p, src_op_p) == 0)
+																								{
+																									if (json_array_remove (src_ops_p, i) != 0)
+																										{
+																											PrintErrors (STM_LEVEL_WARNING, "Failed to remove src op");
+																											++ i;
+																										}
+																									-- size;
+																								}
+																							else
+																								{
+																									char *dump_s = json_dumps (src_op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																									if (dump_s)
+																										{
+																											PrintErrors (STM_LEVEL_WARNING, "Failed to add external op:\n%s\n", dump_s);
+																											free (dump_s);
+																										}
+																									else
+																										{
+																											PrintErrors (STM_LEVEL_WARNING, "Failed to add external op");
+																										}
+
+																									++ i;
+																								}
+
+																						}		/* while (i < size) */
+
+
+																				}		/* if (json_is_array (src_ops_p)) */
+
+																		}		/* if (src_ops_p) */
+
+																}		/* if (src_services_p) */
+														}
+
 														break;
 
 													case OP_RUN_KEYWORD_SERVICES:
@@ -109,58 +175,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 														break;
 												}
 
-											if (element_name_s)
-												{
-													json_t *dest_p = json_object_get (res_p, element_name_s);
-
-													if (!dest_p)
-														{
-															dest_p = json_array ();
-
-															if (dest_p)
-																{
-																	if (json_object_set_new (res_p, element_name_s, dest_p) != 0)
-																		{
-																			WipeJSON (dest_p);
-																			dest_p = NULL;
-																		}
-																}
-														}
-
-													if (dest_p && json_is_array (dest_p))
-														{
-															json_t *src_p = json_object_get (server_response_p, element_name_s);
-
-															if (src_p)
-																{
-																	/* copy the values from the response into res_p */
-
-																	if (json_is_array (src_p))
-																		{
-																			size_t index = 0;
-																			json_t *value_p;
-
-																			while ((value_p = json_array_get (src_p, index)) != NULL)
-																				{
-																					if (json_array_append_new (dest_p, value_p) != 0)
-																						{
-																							++ index;
-																						}
-																				}
-																		}
-																	else
-																		{
-																			if (json_array_append_new (dest_p, src_p) != 0)
-																				{
-
-																				}
-																		}
-
-
-																}		/* if (value_p) */
-														}
-
-												}		/* if (element_name_s) */
+											WipeJSON (server_response_p);
 
 										}		/* if (server_response_p) */
 									else
@@ -174,7 +189,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 								}
 
-							node_p = node_p -> esn_node.ln_next_p;
+							node_p = (ExternalServerNode *) node_p -> esn_node.ln_next_p;
 						}		/* while (node_p) */
 
 					FreeLinkedList (servers_p);
@@ -187,7 +202,12 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *re
 
 		}
 
-	return res_p;
+
+	#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
+	PrintJSONToLog (ops_array_p, "final ops p:\n", STM_LEVEL_FINE);
+	#endif
+
+	return ops_array_p;
 }
 
 

@@ -18,6 +18,9 @@
 
 static bool AddSimpleTypeToQuery (bson_t *query_p, const char *key_s, const json_t *value_p);
 
+static bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const json_t *update_p);
+
+
 static bson_t *AddChild (const char * const key_s, const char * const sub_key_s, const json_t * const value_p);
 
 
@@ -204,49 +207,73 @@ bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 
 
 
-bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *json_p)
+
+
+bool UpdateMongoDocumentByJSON (MongoTool *tool_p, const json_t *query_p, const json_t *update_p)
+{
+	bool success_flag = false;
+	bson_t *query_bson_p = ConvertJSONToBSON (update_p);
+
+	if (query_bson_p)
+		{
+			success_flag = UpdateMongoDocumentByBSON (tool_p, query_bson_p, update_p);
+
+			bson_destroy (query_bson_p);
+		}
+
+	return success_flag;
+
+}
+
+
+bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, const json_t *update_p)
+{
+	bool success_flag = false;
+	bson_t *query_p = BCON_NEW (MONGO_ID_S, BCON_OID (id_p));
+
+	if (query_p)
+		{
+			success_flag = UpdateMongoDocumentByBSON (tool_p, query_p, update_p);
+
+			bson_destroy (query_p);
+		}		/* if (query_p) */
+
+	return success_flag;
+}
+
+
+static bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const json_t *update_p)
 {
 	bool success_flag = false;
 
 	if (tool_p -> mt_collection_p)
 		{
-			bson_t *data_p = ConvertJSONToBSON (json_p);
+			bson_t *data_p = ConvertJSONToBSON (update_p);
 
 			if (data_p)
 				{
-					bson_t *query_p = BCON_NEW (MONGO_ID_S, BCON_OID (id_p));
+					bson_t *update_statement_p = bson_new ();
 
-					if (query_p)
+					if (update_statement_p)
 						{
-							bson_t *update_statement_p = bson_new ();
-
-							if (update_statement_p)
+							if (bson_append_document (update_statement_p, "$set", -1, data_p))
 								{
-									if (bson_append_document (update_statement_p, "$set", -1, data_p))
+									bson_error_t error;
+
+									#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+									LogBSON (query_p, STM_LEVEL_FINE, "UpdateMongoDocument query_p");
+									LogBSON (update_statement_p, STM_LEVEL_FINE, "UpdateMongoDocument update_statement_p");
+									#endif
+
+
+									if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error))
 										{
-											bson_error_t error;
+											success_flag = true;
+										}		/* if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error)) */
 
-											#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-											char buffer_s [25];
+								}		/* if (bson_append_document (update_statement_p, "$set", -1, bson_p)) */
 
-											bson_oid_to_string (id_p, buffer_s);
-											PrintLog (STM_LEVEL_FINE, "UpdateMongoDocument id %s", buffer_s);
-											LogBSON (query_p, STM_LEVEL_FINE, "UpdateMongoDocument query_p");
-											LogBSON (update_statement_p, STM_LEVEL_FINE, "UpdateMongoDocument update_statement_p");
-											#endif
-
-
-									    if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error))
-									    	{
-									    		success_flag = true;
-												}		/* if (mongoc_collection_update (tool_p -> mt_collection_p, MONGOC_UPDATE_NONE, query_p, update_statement_p, NULL, &error)) */
-
-										}		/* if (bson_append_document (update_statement_p, "$set", -1, bson_p)) */
-
-									bson_destroy (update_statement_p);
-								}		/* if (query_p) */
-
-							bson_destroy (query_p);
+							bson_destroy (update_statement_p);
 						}		/* if (query_p) */
 
 					bson_destroy (data_p);
@@ -256,6 +283,7 @@ bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, json_t *jso
 
 	return success_flag;
 }
+
 
 
 bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, const bool remove_first_match_only_flag)
@@ -560,7 +588,7 @@ bool AddToQuery (bson_t *query_p, const char *key_s, const json_t *json_clause_p
 }
 
 
-bson_t *GenerateQuery (json_t *json_p)
+bson_t *GenerateQuery (const json_t *json_p)
 {
 	bson_t *query_p = NULL;
 
