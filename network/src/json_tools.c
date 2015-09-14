@@ -8,7 +8,7 @@
 
 
 #ifdef _DEBUG
-	#define JSON_TOOLS_DEBUG	(STM_LEVEL_FINE)
+	#define JSON_TOOLS_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define JSON_TOOLS_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -48,6 +48,11 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 	if (data_s)
 		{
 			json_error_t err;
+
+			#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, "MakeRemoteJsonCall >\n%s\n", data_s);
+			FlushLog ();
+			#endif
 
 			response_p = json_loads (data_s, 0, &err);
 

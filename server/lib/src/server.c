@@ -296,7 +296,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 				}		/* switch (op) */
 				
 
-			res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op);
+			//res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op);
 
 		}
 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
@@ -369,18 +369,8 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 
 		
 	#if SERVER_DEBUG >= STM_LEVEL_FINE
-		{
-			if (res_p)
-				{
-					char *dump_s = json_dumps (res_p, JSON_INDENT (2));
-					
-					if (dump_s)
-						{
-							printf ("ProcessMessage - response: \n%s\n\n", dump_s);
-							free (dump_s);
-						}
-				}
-		}
+	PrintJSONToLog (res_p, "ProcessMessage - response: \n", STM_LEVEL_FINE);
+	FlushLog ();
 	#endif
 	
 	return res_p;

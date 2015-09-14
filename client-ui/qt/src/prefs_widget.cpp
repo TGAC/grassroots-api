@@ -101,7 +101,7 @@ bool PrefsWidget :: SetServiceParams (json_t *services_config_p)
 
 			json_array_foreach (services_config_p, i, service_config_p)
 				{
-					const char *service_name_s = GetJSONString (service_config_p, SERVICES_NAME_S);
+					const char *service_name_s = GetJSONString (service_config_p, OPERATION_ID_S);
 
 					if (service_name_s)
 						{

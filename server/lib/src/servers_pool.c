@@ -119,8 +119,12 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 																							PrintJSONToLog (src_op_p, "src_op_p:\n", STM_LEVEL_FINE);
 																							#endif
 
-																							if (json_array_append_new (ops_array_p, src_op_p) == 0)
+																							if (json_array_append (ops_array_p, src_op_p) == 0)
 																								{
+																									#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
+																									PrintJSONToLog (ops_array_p, "amended +local server json:\n", STM_LEVEL_FINE);
+																									#endif
+
 																									if (json_array_remove (src_ops_p, i) != 0)
 																										{
 																											PrintErrors (STM_LEVEL_WARNING, "Failed to remove src op");

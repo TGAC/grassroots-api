@@ -159,14 +159,28 @@ int PrintLog (const uint32 level, const char *message_s, ...)
 }
 
 
-bool FlushLog (OutputStream *stream_p)
+bool FlushLog (void)
 {
-	return (s_log_stream_p -> st_flush_fn (stream_p));
+	bool success_flag = true;
+
+	if (s_log_stream_p)
+		{
+			success_flag = s_log_stream_p -> st_flush_fn (s_log_stream_p);
+		}
+
+	return success_flag;
 }
 
 
 
-bool FlushErrors (OutputStream *stream_p)
+bool FlushErrors (void)
 {
-	return (s_error_stream_p -> st_flush_fn (stream_p));
+	bool success_flag = true;
+
+	if (s_error_stream_p)
+		{
+			success_flag = s_error_stream_p -> st_flush_fn (s_error_stream_p);
+		}
+
+	return success_flag;
 }

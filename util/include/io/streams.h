@@ -207,6 +207,13 @@ WHEATIS_UTIL_API OutputStream *GetErrorsOutput (void);
  */
 WHEATIS_UTIL_API bool FlushOutputStream (OutputStream *stream_p);
 
+
+WHEATIS_UTIL_API bool FlushLog (void);
+
+
+WHEATIS_UTIL_API bool FlushErrors (void);
+
+
 #ifdef __cplusplus
 }
 #endif

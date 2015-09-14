@@ -623,7 +623,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 			/* Add the key-value pair */
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (root_p, SERVICES_NAME_S, json_string (value_s)) == 0);
+					success_flag = (json_object_set_new (root_p, OPERATION_ID_S, json_string (value_s)) == 0);
 				}
 
 			if (success_flag)
