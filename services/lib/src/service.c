@@ -11,6 +11,7 @@
 #include "filesystem_utils.h"
 #include "service_matcher.h"
 #include "service_config.h"
+#include "json_tools.h"
 #include "json_util.h"
 #include "streams.h"
 #include "service_job.h"
@@ -628,6 +629,30 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 
 			if (success_flag)
 				{
+					const json_t *provider_p = GetProviderAsJSON ();
+
+					if (provider_p)
+						{
+							json_t *copied_provider_p = json_deep_copy (provider_p);
+
+							if (copied_provider_p)
+								{
+									if (json_object_set (root_p, SERVER_PROVIDER_S, copied_provider_p) != 0)
+										{
+											WipeJSON (copied_provider_p);
+											success_flag = false;
+										}
+								}
+							else
+								{
+									success_flag = false;
+								}
+						}
+				}
+
+
+			if (success_flag)
+				{
 					#if SERVICE_DEBUG >= STM_LEVEL_FINER
 					PrintJSON (stderr, root_p, "GetServiceAsJSON - path :: ");
 					#endif
@@ -1041,8 +1066,8 @@ bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 	free (dump_s);
 	#endif
 
-	
-	return json_p;
+
+	return (json_p != NULL);
 }
 
 

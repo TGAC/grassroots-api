@@ -416,28 +416,28 @@ bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const cha
 
 
 
-ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
+ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 {
 	ParameterSet *params_p =  NULL;
 
-	if (root_p)
+	if (op_p)
 		{
 			const char *name_s = NULL;
 			const char *description_s = NULL;
-			#ifdef _DEBUG
-			char *root_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-			printf ("param set json:\n%s\n", root_s);
+
+			#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
+			PrintJSONToLog (op_p, "CreateParameterSetFromJSON op:\n", PARAMETER_SET_DEBUG);
 			#endif
 			
 			/* Get the name */
-			json_t *json_p = json_object_get (root_p, PARAM_SET_NAME_S);
+			json_t *json_p = json_object_get (op_p, PARAM_SET_NAME_S);
 			if (json_p && json_is_string (json_p))
 				{
 					name_s = json_string_value (json_p);
 				}
 
 			/* Get the description */
-			json_p = json_object_get (root_p, PARAM_SET_DESCRIPTION_S);
+			json_p = json_object_get (op_p, PARAM_SET_DESCRIPTION_S);
 			if (json_p && json_is_string (json_p))
 				{
 					description_s = json_string_value (json_p);
@@ -450,7 +450,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 					bool success_flag = true;
 
 					/* Get the parameters array */
-					json_t *param_set_json_p = json_object_get (root_p, PARAM_SET_KEY_S);
+					json_t *param_set_json_p = json_object_get (op_p, PARAM_SET_KEY_S);
 
 					if (param_set_json_p)
 						{
@@ -467,7 +467,6 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 											json_t *param_json_p = json_array_get (params_json_p, i);
 											Parameter *param_p = CreateParameterFromJSON (param_json_p);
 											
-
 											if (param_p)
 												{
 													success_flag = AddParameterToParameterSet (params_p, param_p);
@@ -582,16 +581,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const root_p)
 
 						}		/* if (param_set_json_p) */
 
-					
 				}		/* if (params_p) */
-			
-			#ifdef _DEBUG
-			if (root_s)
-				{
-					free (root_s);
-				}
-			#endif
-		
 			
 		}		/* if (root_p) */
 	

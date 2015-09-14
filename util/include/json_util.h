@@ -38,6 +38,7 @@
 
 PREFIX const char *ERROR_S VAL("error");
 
+PREFIX const char *SERVER_MULTIPLE_PROVIDERS_S VAL("providers");
 PREFIX const char *SERVER_PROVIDER_S VAL("provider");
 PREFIX const char *PROVIDER_NAME_S VAL("name");
 PREFIX const char *PROVIDER_DESCRIPTION_S VAL("description");

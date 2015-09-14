@@ -32,6 +32,18 @@ WHEATIS_SERVICE_MANAGER_API void ConnectToExternalServers (void);
 WHEATIS_SERVICE_MANAGER_API const json_t *GetGlobalConfigValue (const char *key_s);
 
 
+WHEATIS_SERVICE_MANAGER_API const char *GetProviderName (void);
+
+
+WHEATIS_SERVICE_MANAGER_API const char *GetProviderDescription (void);
+
+
+WHEATIS_SERVICE_MANAGER_API const char *GetProviderURI (void);
+
+
+WHEATIS_SERVICE_MANAGER_API const json_t *GetProviderAsJSON (void);
+
+
 #ifdef __cplusplus
 }
 #endif

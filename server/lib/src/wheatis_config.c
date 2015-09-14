@@ -2,12 +2,15 @@
 #include "servers_pool.h"
 #include "streams.h"
 #include "json_util.h"
+#include "service_config.h"
+
 
 static json_t *s_config_p = NULL;
 static bool s_load_config_tried_flag = false;
 
 
 static const json_t *GetConfig (void);
+static const char *GetProviderElement (const char * const element_s);
 
 
 bool InitConfig (void)
@@ -98,6 +101,39 @@ void ConnectToExternalServers (void)
 }
 
 
+const char *GetProviderName (void)
+{
+	return GetProviderElement (PROVIDER_NAME_S);
+}
+
+
+const char *GetProviderDescription (void)
+{
+	return GetProviderElement (PROVIDER_DESCRIPTION_S);
+}
+
+
+const char *GetProviderURI (void)
+{
+	return GetProviderElement (PROVIDER_URI_S);
+}
+
+
+const json_t *GetProviderAsJSON (void)
+{
+	const json_t *provider_p = NULL;
+
+	json_t *config_p = GetConfig ();
+
+	if (config_p)
+		{
+			provider_p = json_object_get (config_p, SERVER_PROVIDER_S);
+		}
+
+	return provider_p;
+}
+
+
 static const json_t *GetConfig (void)
 {
 	if (!s_config_p)
@@ -127,3 +163,16 @@ static const json_t *GetConfig (void)
 	return s_config_p;
 }
 
+
+static const char *GetProviderElement (const char * const element_s)
+{
+	const char *result_s = NULL;
+	const json_t *provider_p = GetProviderAsJSON ();
+
+	if (provider_p)
+		{
+			result_s = json_object_get (provider_p, element_s);
+		}
+
+	return result_s;
+}

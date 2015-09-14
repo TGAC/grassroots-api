@@ -79,6 +79,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 									if (server_response_p)
 										{
 											const char *element_name_s = NULL;
+											const json_t *default_external_provider_p = json_object_get (server_response_p, SERVER_PROVIDER_S);
 
 											#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
 											PrintJSONToLog (ops_array_p, "local server json:\n", STM_LEVEL_FINE);
@@ -118,6 +119,19 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 																							#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
 																							PrintJSONToLog (src_op_p, "src_op_p:\n", STM_LEVEL_FINE);
 																							#endif
+
+																							/*
+																							 * If the op doesn't have an explicit provider, add
+																							 * the default one
+																							 */
+																							if (json_object_get (src_op_p, SERVER_PROVIDER_S) != 0)
+																								{
+																									if (json_object_set (src_op_p, SERVER_PROVIDER_S, default_external_provider_p) != 0)
+																										{
+
+
+																										}
+																								}
 
 																							if (json_array_append (ops_array_p, src_op_p) == 0)
 																								{
