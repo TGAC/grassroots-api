@@ -26,6 +26,13 @@
 #include "string_utils.h"
 
 
+#ifdef _DEBUG
+	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
 /*********************************/
 /******* STATIC PROTOTYPES *******/
 /*********************************/
@@ -38,6 +45,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 
 
 static char *GetFullServerURI (const char *hostname_s, const char *port_s, const char *uri_s);
+
+
+static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p);
 
 
 /*************************************/
@@ -442,9 +452,8 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 {
 	json_t *services_json_p = NULL;
 
-	#ifdef _DEBUG
-	char *response_s = json_dumps (response_p, JSON_INDENT (2));
-	printf ("res:\n%s\n", response_s);
+	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+	PrintJSONToLog (response_p, res:\n", STANDALONE_CLIENT_DEBUG);
 	#endif
 	
 	if (json_is_array (response_p))
@@ -456,40 +465,29 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 			for (i = 0; i < num_services; ++ i)
 				{
 					json_t *service_json_p = json_array_get (response_p, i);
-					const char *service_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
+					json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
 
-					#ifdef _DEBUG
-					char *service_s = json_dumps (service_json_p, JSON_INDENT (2));
-					printf ("client received service %ld:\n%s\n\n", i, service_s);
+					#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+					PrintJSONToLog (service_json_p, "next service:\n", STANDALONE_CLIENT_DEBUG);
 					#endif
 
-
-					if (service_name_s)
+					if (ops_p)
 						{
-							const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
-
-							if (service_description_s)
+							if (json_is_array (ops_p))
 								{
-									json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
+									size_t i;
+									json_t *op_p;
 
-									if (ops_p)
+									json_array_foreach (ops_p, i, op_p)
 										{
-											ParameterSet *params_p = CreateParameterSetFromJSON (ops_p);
-											
-											if (params_p)
-												{
-													const char *service_info_uri_s = GetJSONString (ops_p, OPERATION_INFORMATION_URI_S);
-
-													int res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
-												}		/* if (params_p) */
+											AddServiceDetailsToClient (client_p, op_p);
 										}
-								}		/* if (service_description_s)	*/
-
-						}		/* if (service_name_s) */
-
-					#ifdef _DEBUG
-					free (service_s);
-					#endif
+								}
+							else
+								{
+									AddServiceDetailsToClient (client_p, ops_p);
+								}
+						}
 
 				}		/* for (i = 0; i < num_services; ++ i) */
 
@@ -497,12 +495,39 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 			client_results_p = RunClient (client_p);
 		}		/* if (json_is_array (response_p)) */
 
+	return services_json_p;
+}
 
-	#ifdef _DEBUG
-	free (response_s);
+
+static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p)
+{
+	int res = -1;
+	const char *service_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
+
+	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+	PrintJSONToLog (service_json_p, "client received service:\n", STANDALONE_CLIENT_DEBUG);
 	#endif
 
-	return services_json_p;
+	if (service_name_s)
+		{
+			const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
+
+			if (service_description_s)
+				{
+					ParameterSet *params_p = CreateParameterSetFromJSON (service_json_p);
+
+					if (params_p)
+						{
+							const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
+
+							res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, params_p);
+						}		/* if (params_p) */
+
+				}		/* if (service_description_s) */
+
+		}		/* if (service_name_s) */
+
+	return res;
 }
 
 

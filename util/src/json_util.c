@@ -470,19 +470,22 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 
 void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level)
 {
-	char *json_s = json_dumps (json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-
-	if (json_s)
+	if (json_p)
 		{
-			if (prefix_s)
-				{
-					PrintLog (level, "%s %s", prefix_s, json_s);
-				}
-			else
-				{
-					PrintLog (level, "%s", json_s);
-				}
+			char *json_s = json_dumps (json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
-			free (json_s);
+			if (json_s)
+				{
+					if (prefix_s)
+						{
+							PrintLog (level, "%s %s", prefix_s, json_s);
+						}
+					else
+						{
+							PrintLog (level, "%s", json_s);
+						}
+
+					free (json_s);
+				}
 		}
 }

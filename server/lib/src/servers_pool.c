@@ -78,11 +78,11 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 
 									if (server_response_p)
 										{
-											const char *element_name_s = NULL;
-											const json_t *default_external_provider_p = json_object_get (server_response_p, SERVER_PROVIDER_S);
+											json_t *default_external_provider_p = json_object_get (server_response_p, SERVER_PROVIDER_S);
 
 											#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
 											PrintJSONToLog (ops_array_p, "local server json:\n", STM_LEVEL_FINE);
+											PrintJSONToLog (default_external_provider_p, "default_external_provider_p:\n", STM_LEVEL_FINE);
 											#endif
 
 											/*
@@ -108,63 +108,50 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 
 																			if (json_is_array (src_ops_p))
 																				{
-																					/* copy the values from the response into dest_ops_p */
-																					size_t i = 0;
-																					size_t size = json_array_size (src_ops_p);
+																					json_t *dest_p = json_object ();
 
-																					while (i < size)
+																					if (dest_p)
 																						{
-																							json_t *src_op_p = json_array_get (src_ops_p, i);
-
-																							#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
-																							PrintJSONToLog (src_op_p, "src_op_p:\n", STM_LEVEL_FINE);
-																							#endif
-
 																							/*
 																							 * If the op doesn't have an explicit provider, add
 																							 * the default one
 																							 */
-																							if (json_object_get (src_op_p, SERVER_PROVIDER_S) != 0)
+																							bool success_flag = true;
+																							json_t *provider_p = json_object_get (server_response_p, SERVER_PROVIDER_S);
+
+																							if (!provider_p)
 																								{
-																									if (json_object_set (src_op_p, SERVER_PROVIDER_S, default_external_provider_p) != 0)
+																									provider_p = default_external_provider_p;
+																								}
+
+																							if (provider_p)
+																								{
+																									if (json_object_set (dest_p, SERVER_PROVIDER_S, provider_p) != 0)
 																										{
-
-
+																											success_flag = false;
 																										}
 																								}
 
-																							if (json_array_append (ops_array_p, src_op_p) == 0)
+																							if (success_flag)
 																								{
-																									#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
-																									PrintJSONToLog (ops_array_p, "amended +local server json:\n", STM_LEVEL_FINE);
-																									#endif
+																									success_flag = false;
 
-																									if (json_array_remove (src_ops_p, i) != 0)
+																									if (json_object_set (dest_p, SERVER_OPERATIONS_S, src_ops_p) == 0)
 																										{
-																											PrintErrors (STM_LEVEL_WARNING, "Failed to remove src op");
-																											++ i;
+																											if (json_array_append (ops_array_p, dest_p) == 0)
+																												{
+																													success_flag = true;
+																												}
 																										}
-																									-- size;
-																								}
-																							else
+																								}		/* if (success_flag) */
+
+																							if (!success_flag)
 																								{
-																									char *dump_s = json_dumps (src_op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-
-																									if (dump_s)
-																										{
-																											PrintErrors (STM_LEVEL_WARNING, "Failed to add external op:\n%s\n", dump_s);
-																											free (dump_s);
-																										}
-																									else
-																										{
-																											PrintErrors (STM_LEVEL_WARNING, "Failed to add external op");
-																										}
-
-																									++ i;
+																									WipeJSON (dest_p);
 																								}
 
-																						}		/* while (i < size) */
 
+																						}		/* if (dest_p) */
 
 																				}		/* if (json_is_array (src_ops_p)) */
 
@@ -177,7 +164,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 
 													case OP_RUN_KEYWORD_SERVICES:
 													case OP_GET_SERVICE_RESULTS:
-														element_name_s = SERVICE_RESULTS_S;
+													//	element_name_s = SERVICE_RESULTS_S;
 														break;
 
 													case OP_IRODS_MODIFIED_DATA:

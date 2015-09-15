@@ -783,11 +783,11 @@ static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p)
 
 	if (name_s)
 		{
-			success_flag = (json_object_set_new (root_p, "nickname", json_string (name_s)) == 0);
+			success_flag = (json_object_set_new (root_p, OPERATION_ID_S, json_string (name_s)) == 0);
 		}
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINER
-	PrintJSON (stderr, root_p, "AddServiceNameToJSON :: nickname -> ");
+	PrintJSON (stderr, root_p, "AddServiceNameToJSON :: operationId -> ");
 	#endif
 
 	return success_flag;
@@ -801,7 +801,7 @@ static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root
 
 	if (description_s)
 		{
-			success_flag = (json_object_set_new (root_p, "summary", json_string (description_s)) == 0);
+			success_flag = (json_object_set_new (root_p, OPERATION_DESCRIPTION_S, json_string (description_s)) == 0);
 		}
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINER
