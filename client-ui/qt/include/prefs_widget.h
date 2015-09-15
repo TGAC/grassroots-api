@@ -46,7 +46,7 @@ public:
 
 
 	void CreateAndAddServicePage (const json_t * const service_json_p);
-	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s , ParameterSet *params_p);
+	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
 
 	bool SetServiceParams (json_t *service_config_p);
 

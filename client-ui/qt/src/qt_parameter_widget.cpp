@@ -21,12 +21,13 @@
 #include "parameter.h"
 #include "parameter_set.h"
 #include "string_utils.h"
+#include "provider.h"
 
 
 const int QTParameterWidget :: QPW_NUM_COLUMNS = 2;
 
 
-QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
+QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
 :	qpw_params_p (parameters_p),
 	qpw_prefs_widget_p (prefs_widget_p),
 	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
@@ -81,6 +82,52 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 			info_layout_p -> addWidget (label_p);
 		}
 
+	if (provider_p)
+		{
+			const char *provider_name_s = GetProviderName (provider_p);
+
+			if (provider_name_s)
+				{
+					const char *provider_uri_s = GetProviderURI (provider_p);
+
+					str.clear ();
+					str.append ("Provided by ");
+
+					if (provider_uri_s)
+						{
+							str.append ("<a href=\"");
+							str.append (provider_uri_s);
+							str.append ("\">");
+						}
+
+					str.append (provider_name_s);
+
+					if (provider_uri_s)
+						{
+							str.append ("</a>");
+						}
+
+					const char *provider_description_s = GetProviderDescription (provider_p);
+
+					if (provider_description_s)
+						{
+							str.append (". ");
+							str.append (provider_description_s);
+
+							label_p = new QLabel (str, this);
+							//label_p -> setWordWrap (true);
+							connect (label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
+							label_p -> setSizePolicy (QSizePolicy :: Minimum, QSizePolicy :: Fixed);
+							label_p -> setAlignment (Qt :: AlignLeft);
+							//label_p -> setFrameShape (QFrame :: Box);
+
+							info_layout_p -> addWidget (label_p);
+
+						}
+				}
+
+		}		/* if (provider_p) */
+
 
 	QFrame *line_p = new QFrame;
 	line_p -> setFrameShape (QFrame :: HLine);
@@ -89,8 +136,6 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 	line_p -> setPalette (palette);
 
 	layout_p -> addWidget (line_p);
-
-
 
 	layout_p -> insertSpacing (layout_p -> count (), 10);
 	layout_p -> addLayout (qpw_layout_p);

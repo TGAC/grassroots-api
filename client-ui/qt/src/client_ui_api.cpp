@@ -37,7 +37,7 @@ static void FreeQTClientData (QTClientData *qt_data_p);
 static const char *GetQTClientName (ClientData *client_data_p);
 static const char *GetQTClientDescription (ClientData *client_data_p);
 static json_t *RunQTClient (ClientData *client_data_p);
-static int AddServiceToQTClient (ClientData *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s,  ParameterSet *params_p);
+static int AddServiceToQTClient (ClientData *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t * const provider_p, ParameterSet *params_p);
 static json_t *DisplayResultsInQTClient (ClientData *client_data_p, const json_t *response_p);
 
 
@@ -163,12 +163,12 @@ static json_t *RunQTClient (ClientData *client_data_p)
 }
 
 
-static int AddServiceToQTClient (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, ParameterSet *params_p)
+static int AddServiceToQTClient (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t * const provider_p, ParameterSet *params_p)
 {
 	int res = 0;
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
 
-	qt_data_p -> qcd_window_p -> CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, params_p);
+	qt_data_p -> qcd_window_p -> CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
 
 	return res;
 }

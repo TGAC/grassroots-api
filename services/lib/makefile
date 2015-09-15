@@ -44,6 +44,7 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
+	provider.c \
 	service.c \
 	service_job.c \
 	service_config.c \

@@ -524,6 +524,8 @@ WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_
 
 
 
+WHEATIS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
+
 #ifdef __cplusplus
 }
 #endif

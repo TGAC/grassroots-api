@@ -246,6 +246,12 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 							bool added_query_flag = false;
 
 
+							/* Replace UK entries with GB */
+							if (strcmp (country_s, "UK") == 0)
+								{
+									 country_s = "GB";
+								}
+
 							/* post code */
 							if (postcode_s)
 								{
@@ -267,10 +273,6 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 													if (IsValidCountryCode (country_s))
 														{
 															country_code_s = country_s;
-														}
-													else if (strcmp (country_s, "UK") == 0)
-														{
-															country_code_s = "GB";
 														}
 													else
 														{

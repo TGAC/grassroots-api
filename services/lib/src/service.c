@@ -1143,3 +1143,10 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 	return NULL;
 }
 
+
+const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
+{
+	return json_object_get (service_json_p, SERVER_PROVIDER_S);
+}
+
+
