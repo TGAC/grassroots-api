@@ -310,7 +310,7 @@ install_irods_dev:
 
 install_mongodb_c:
 	cd $(DIR_ROOT)/extras/mongo-c-driver-1.1.10; \
-	./configure --prefix=$(DIR_MONGODB) --enable-html-docs=yes; \
+	./configure --prefix=$(DIR_MONGODB) \
 	make; \
 	make install		
 	

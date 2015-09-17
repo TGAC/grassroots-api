@@ -63,7 +63,8 @@ LDFLAGS = -lpthread -L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
 	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 	-L$(DIR_UUID_LIB) -luuid \
-	-L$(DIR_MONGODB_LIB) -lmongoc-1.0
+	-L$(DIR_MONGODB_LIB) -lmongoc-1.0 \
+	-L$(DIR_BSON_LIB) -lbson-1.0
 
 ifneq ($(DRMAA_ENABLED),)
 LDFLAGS += -L$(DIR_WHEATIS_DRMAA_LIB) -l$(WHEATIS_DRMAA_LIB_NAME) -L$(DIR_LSF_DRMAA_LIB) -ldrmaa

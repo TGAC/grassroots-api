@@ -31,7 +31,8 @@ INCLUDES = \
 	-I$(DIR_WHEATIS_UTIL_INC)/io \
 	-I$(DIR_MONGODB_INC) \
 	-I$(DIR_UUID_INC) \
-	-I$(DIR_BSON_INC)
+	-I$(DIR_BSON_INC) \
+	-I$(DIR_JANSSON_INC)
 	
 SRCS 	= \
 	mongodb_tool.c
