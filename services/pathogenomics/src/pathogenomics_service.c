@@ -273,7 +273,12 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, con
 
 							if (data_p -> psd_locations_collection_s)
 								{
-									success_flag = true;
+									data_p -> psd_phenotype_collection_s = GetJSONString (service_config_p, "p_collection");
+
+									if (data_p -> psd_phenotype_collection_s)
+										{
+											success_flag = true;
+										}
 								}
 						}
 				}
@@ -300,6 +305,7 @@ static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *op_js
 					data_p -> psd_database_s = NULL;
 					data_p -> psd_locations_collection_s = NULL;
 					data_p -> psd_samples_collection_s = NULL;
+					data_p -> psd_phenotype_collection_s = NULL;
 
 					return data_p;
 				}
