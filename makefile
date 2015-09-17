@@ -1,4 +1,5 @@
 COPY	= cp 
+DELETE = rm
 
 export DIR_ROOT = $(realpath .)
 export WHEATIS_VERSION = test
@@ -226,6 +227,13 @@ clean:
 	$(MAKE) -C services/tgac_elastic_search clean
 	$(MAKE) -C services/test_long_runner clean
 	$(MAKE) -C services/pathogenomics clean
+
+
+release: install
+	cd $(DIR_WHEATIS_INSTALL); \
+	$(DELETE) wheatis_release.zip
+	zip -r wheatis_release.zip handlers images lib references services wheatis.version ../apache/modules/mod_wheatis.so client
+	mv wheatis_release.zip $(DIR_ROOT)
 	
 install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)
