@@ -72,4 +72,3 @@ all: exe
 
 install: all
 	cp $(BUILD)/$(NAME) $(DIR_INSTALL)
-
