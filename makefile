@@ -231,9 +231,11 @@ clean:
 
 release: install
 	cd $(DIR_WHEATIS_INSTALL); \
-	$(DELETE) wheatis_release.zip
-	zip -r wheatis_release.zip handlers images lib references services wheatis.version ../apache/modules/mod_wheatis.so client
-	mv wheatis_release.zip $(DIR_ROOT)
+	$(DELETE) wheatis_release.zip; \
+	zip -r wheatis_release.zip handlers images lib references services wheatis.version client; \
+	cd $(DIR_APACHE)/modules; \
+	zip $(DIR_WHEATIS_INSTALL)/wheatis_release.zip mod_wheatis.so; \
+	mv $(DIR_WHEATIS_INSTALL)/wheatis_release.zip $(DIR_ROOT)
 	
 install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)
