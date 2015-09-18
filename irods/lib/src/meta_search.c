@@ -10,7 +10,7 @@
 
 
 #ifdef _DEBUG
-	#define META_SEARCH_DEBUG	(STM_LEVEL_FINE)
+	#define META_SEARCH_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define META_SEARCH_DEBUG	(STM_LEVEL_NONE)
 #endif
