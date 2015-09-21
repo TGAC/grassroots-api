@@ -321,35 +321,43 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 		{
 			if (*service_pp)
 				{
-					bool using_service_flag = RunServiceMatcher (matcher_p, *service_pp);
-					
-					if (using_service_flag)
+					const Service *service_p = *service_pp;
+					const char *service_name_s = GetServiceName (service_p);
+
+					if (!IsServiceDisabled (service_name_s))
 						{
-							ServiceNode *service_node_p = AllocateServiceNode (*service_pp);
+							bool using_service_flag = RunServiceMatcher (matcher_p, service_p);
 							
-							if (service_node_p)
+							if (using_service_flag)
 								{
-									LinkedListAddTail (matching_services_p, (ListItem *) service_node_p);
-									using_service_flag = true;
+									ServiceNode *service_node_p = AllocateServiceNode (service_p);
 									
-									++ num_matched_services;
-									
-									if (!multiple_match_flag)
+									if (service_node_p)
 										{
-											loop_flag = false;	
+											LinkedListAddTail (matching_services_p, (ListItem *) service_node_p);
+											using_service_flag = true;
+
+											++ num_matched_services;
+
+											if (!multiple_match_flag)
+												{
+													loop_flag = false;
+												}
+										}
+									else
+										{
+											/* failed to allocate service node */
 										}
 								}
-							else
+
+							if (using_service_flag)
 								{
-									/* failed to allocate service node */
+									*service_pp = NULL;
 								}
-						}
-						
-					if (using_service_flag)
-						{
-							*service_pp = NULL;
-						}	
-				}
+
+						}		/* if (!IsServiceDisabled (service_name_s)) */
+
+				}		/* if (*service_pp) */
 				
 			if (loop_flag)
 				{

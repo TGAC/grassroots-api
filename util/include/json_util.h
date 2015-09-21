@@ -65,6 +65,8 @@ PREFIX const char *SERVICES_ID_S VAL("path");
 PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");
 
+PREFIX const char *DISABLED_SERVICES_NAME_S VAL("disabled_services");
+
 PREFIX const char *SERVICE_NAME_S VAL("service");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_VALUE_S VAL("status");

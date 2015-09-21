@@ -50,6 +50,7 @@ const json_t *GetGlobalConfigValue (const char *key_s)
 const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 {
 	const json_t *res_p = NULL;
+	const json_t *config_p = GetConfig ();
 
 	if (s_config_p)
 		{
@@ -132,6 +133,60 @@ const json_t *GetProviderAsJSON (void)
 
 	return provider_p;
 }
+
+
+bool IsServiceDisabled (const char *service_name_s)
+{
+	bool disabled_flag = false;
+	const json_t *config_p = GetConfig ();
+
+	if (config_p)
+		{
+			const json_t *disabled_services_p = json_object_get (config_p, DISABLED_SERVICES_NAME_S);
+
+			if (disabled_services_p)
+				{
+					if (json_is_array (disabled_services_p))
+						{
+							size_t i = 0;
+							const size_t size = json_array_size (disabled_services_p);
+
+							while (i < size)
+								{
+									json_t *name_p = json_array_get (disabled_services_p, i);
+
+									if (json_is_string (name_p))
+										{
+											const char *value_s = json_string_value (name_p);
+
+											if (strcmp (service_name_s, value_s) == 0)
+												{
+													i = size;
+													disabled_flag = true;
+												}
+											else
+												{
+													++ i;
+												}
+										}
+									else
+										{
+											++ i;
+										}
+								}
+						}
+					else if (json_is_string (disabled_services_p))
+						{
+							const char *value_s = json_string_value (disabled_services_p);
+
+							disabled_flag = (strcmp (service_name_s, value_s) == 0);
+						}
+				}
+		}
+
+	return disabled_flag;
+}
+
 
 
 static const json_t *GetConfig (void)
