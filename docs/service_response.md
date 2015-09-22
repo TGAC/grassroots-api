@@ -1,18 +1,104 @@
-# Service Results
+﻿# Service Results
 
 When a Client sends a request to the Server asking a Service to be run, the Service will initiate one or more ServiceJobs and send a response back to the Client as soon as possible. This response will contain the status of these ServiceJobs and any results.
 
 
-## metadata
+* **service**:
+The user-friendly name of the Service which will be displayed to the user.
 
-## results
+* **description**: 
+A user-friendly description of the Service.
 
-## errors
+* **jobs**:
+An array of ServiceJobs that have been requested to run by the Client.
 
-## status and status_text
+## Jobs
+
+Each ServiceJob 
+
+* **status_text**/**status**:
+
+Each ServiceJob will have either one of these values which describe the current status of the given ServiceJob
+
+Value | status | status_text | description
+--- | --- | --- | ---
+-3 | OS_FAILED | Failed. |
+-2 | OS_FAILED_TO_START | Failed to start. |
+-1 | OS_ERROR | Error. |
+0 | OS_IDLE | Idle. |
+1 | OS_PENDING | Pending. | 
+2 | OS_STARTED | Started. |
+3 | OS_FINISHED | Finished. 
+4 | OS_PARTIALLY_SUCCEEDED | Partially succeeded. |
+5 | OS_SUCCEEDED | Succeeded. |
+6 | OS_CLEANED_UP | Cleaned up. | 
+
+**Do not** use the raw numeric values 
+const char *GetOperationStatusAsString (const OperationStatus status)
+{
+	const char *result_s = NULL;
+
+	switch (status)
+		{
+			case OS_FAILED:
+				result_s = S_FAILED_S;
+				break;
+
+			case OS_FAILED_TO_START:
+				result_s = S_FAILED_TO_START_S;
+				break;
+
+			case OS_ERROR:
+				result_s = S_ERROR_S;
+				break;
+
+			case OS_IDLE:
+				result_s = S_IDLE_S;
+				break;
+
+			case OS_PENDING:
+				result_s = S_PENDING_S;
+				break;
+
+			case OS_STARTED:
+				result_s = S_STARTED_S;
+				break;
+
+			case OS_FINISHED:
+				result_s = S_FINISHED_S;
+				break;
+
+			case OS_PARTIALLY_SUCCEEDED:
+				result_s = S_PARTIALLY_SUCCEEDED_S;
+				break;
+
+			case OS_SUCCEEDED:
+				result_s = S_SUCCEEDED_S;
+				break;
+
+			case OS_CLEANED_UP:
+				result_s = S_CLEANED_UP_S;
+				break;
+
+			default:
+				break;
+		}
+
+
+
+* **job_uuid**:
+
+* * **results**:
+
+* **errors**:
+
+* **metadata**:
+
 
 ~~~~{.json}
 {
+	"service": "Agris Web Search service",
+	"description": "An operation to obtain matching articles from Agris",
     "jobs": [
         {
             "results": [
@@ -70,11 +156,7 @@ When a Client sends a request to the Server asking a Service to be run, the Serv
             "status_text": "Succeeded",
             "service_uuid": "09571f5a-d530-4919-a847-bca6be552b9f"
         }
-    ],
-    "metadata": {
-        "service": "Agris Web Search service",
-        "description": "An operation to obtain matching articles from Agris"
-    }
+    ]
 }
 
 

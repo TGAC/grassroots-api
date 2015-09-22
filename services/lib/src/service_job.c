@@ -244,7 +244,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 											char buffer_s [UUID_STRING_BUFFER_SIZE];
 
 											ConvertUUIDToString (job_p -> sj_id, buffer_s);
-											success_flag = (json_object_set_new (job_json_p, SERVICE_UUID_S, json_string (buffer_s)) == 0);
+											success_flag = (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0);
 										}
 
 								}

@@ -1031,51 +1031,42 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
 */
 bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 {
-	json_error_t error;
+	bool success_flag = false;
 	const char *service_name_s = GetServiceName (service_p);
-	const char *service_description_s = GetServiceDescription (service_p);
-	const char *info_uri_s = GetServiceInformationURI (service_p);
-	json_t *json_p = json_pack_ex (&error, 0, "{s:s,s:s}", SERVICE_NAME_S, service_name_s, SERVICES_DESCRIPTION_S, service_description_s);
-
-	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	char *dump_s = NULL;
-	#endif
 
 
-	if (json_p)
+	if (service_name_s)
 		{
-			if (info_uri_s)
+			if (json_object_set_new (response_p, SERVICE_NAME_S, json_string (service_name_s)) == 0)
 				{
-					if (json_object_set_new (json_p, OPERATION_INFORMATION_URI_S, json_string (info_uri_s)) != 0)
+					const char *service_description_s = GetServiceDescription (service_p);
+
+					if (service_description_s)
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
+							if (json_object_set_new (response_p, SERVICES_DESCRIPTION_S, json_string (service_description_s)) == 0)
+								{
+									const char *info_uri_s = GetServiceInformationURI (service_p);
+
+									if (info_uri_s)
+										{
+											if (json_object_set_new (response_p, OPERATION_INFORMATION_URI_S, json_string (info_uri_s)) != 0)
+												{
+													PrintErrors (STM_LEVEL_WARNING, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
+												}
+										}
+
+									success_flag = true;
+								}
 						}
 				}
-
-
-			if (json_object_set_new (response_p, SERVICE_METADATA_S, json_p) != 0)
-				{
-					char *dump_s = json_dumps (json_p, JSON_INDENT (2));
-					PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to service response for %s\n", dump_s, service_name_s);
-
-					free (dump_s);
-					json_decref (json_p);
-					json_p = NULL;
-				}
 		}
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to create json service response for %s\n", service_name_s);			
-		}
+
 	
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	dump_s = json_dumps (json_p, JSON_INDENT (2));
-	PrintLog (STM_LEVEL_FINE, "final resp json:\n%s", dump_s);
-	free (dump_s);
+	PrintJSONToLog (response_p, "service response header", SERVICE_DEBUG);
 	#endif
 
-
-	return (json_p != NULL);
+	return success_flag;
 }
 
 

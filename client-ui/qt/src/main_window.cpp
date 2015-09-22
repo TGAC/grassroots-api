@@ -104,14 +104,13 @@ void MainWindow :: RunServices (bool run_flag)
 									const char *service_name_s = NULL;
 									const char *service_description_s = NULL;
 									const char *service_uri_s = NULL;
-									json_t *metadata_p = json_object_get (service_json_p, SERVICE_METADATA_S);
 									json_t *jobs_array_p = json_object_get (service_json_p, SERVICE_JOBS_S);
 
 									if (metadata_p)
 										{
-											service_name_s = GetJSONString (metadata_p, SERVICE_NAME_S);
-											service_description_s = GetJSONString (metadata_p, OPERATION_DESCRIPTION_S);
-											service_uri_s = GetJSONString (metadata_p, OPERATION_INFORMATION_URI_S);
+											service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+											service_description_s = GetJSONString (service_json_p, OPERATION_DESCRIPTION_S);
+											service_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
 										}
 
 									if (jobs_array_p && json_is_array (jobs_array_p))
