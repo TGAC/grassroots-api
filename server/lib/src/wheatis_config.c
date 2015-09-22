@@ -3,6 +3,8 @@
 #include "streams.h"
 #include "json_util.h"
 #include "service_config.h"
+#include "string_utils.h"
+#include "filesystem_utils.h"
 
 
 static json_t *s_config_p = NULL;
@@ -37,10 +39,11 @@ bool DestroyConfig (void)
 const json_t *GetGlobalConfigValue (const char *key_s)
 {
 	const json_t *value_p = NULL;
+	const json_t *config_p = GetConfig ();
 
-	if (s_config_p)
+	if (config_p)
 		{
-			value_p = json_object_get (s_config_p, key_s);
+			value_p = json_object_get (config_p, key_s);
 		}
 
 	return value_p;
@@ -52,9 +55,9 @@ const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 	const json_t *res_p = NULL;
 	const json_t *config_p = GetConfig ();
 
-	if (s_config_p)
+	if (config_p)
 		{
-			json_t *json_p = json_object_get (s_config_p, SERVICES_NAME_S);
+			json_t *json_p = json_object_get (config_p, SERVICES_NAME_S);
 
 			if (json_p)
 				{
@@ -123,8 +126,7 @@ const char *GetProviderURI (void)
 const json_t *GetProviderAsJSON (void)
 {
 	const json_t *provider_p = NULL;
-
-	json_t *config_p = GetConfig ();
+	const json_t *config_p = GetConfig ();
 
 	if (config_p)
 		{
@@ -135,56 +137,39 @@ const json_t *GetProviderAsJSON (void)
 }
 
 
-bool IsServiceDisabled (const char *service_name_s)
+bool IsServiceEnabled (const char *service_name_s)
 {
-	bool disabled_flag = false;
-	const json_t *config_p = GetConfig ();
+	bool enabled_flag = true;
+	const json_t *services_config_p = GetGlobalConfigValue (SERVICES_NAME_S);
 
-	if (config_p)
+	if (services_config_p)
 		{
-			const json_t *disabled_services_p = json_object_get (config_p, DISABLED_SERVICES_NAME_S);
+			const json_t *service_statuses_p = json_object_get (services_config_p, SERVICES_STATUS_S);
 
-			if (disabled_services_p)
+			if (service_statuses_p)
 				{
-					if (json_is_array (disabled_services_p))
-						{
-							size_t i = 0;
-							const size_t size = json_array_size (disabled_services_p);
+					const json_t *service_p = json_object_get (services_config_p, service_name_s);
 
-							while (i < size)
+					GetJSONBoolean (services_config_p, SERVICES_STATUS_DEFAULT_S, &enabled_flag);
+
+					if (service_p)
+						{
+							if (json_is_true (service_p))
 								{
-									json_t *name_p = json_array_get (disabled_services_p, i);
-
-									if (json_is_string (name_p))
-										{
-											const char *value_s = json_string_value (name_p);
-
-											if (strcmp (service_name_s, value_s) == 0)
-												{
-													i = size;
-													disabled_flag = true;
-												}
-											else
-												{
-													++ i;
-												}
-										}
-									else
-										{
-											++ i;
-										}
+									enabled_flag = true;
 								}
-						}
-					else if (json_is_string (disabled_services_p))
-						{
-							const char *value_s = json_string_value (disabled_services_p);
+							else if (json_is_false (service_p))
+								{
+									enabled_flag = false;
+								}
 
-							disabled_flag = (strcmp (service_name_s, value_s) == 0);
-						}
-				}
-		}
+						}		/* if (service_p) */
 
-	return disabled_flag;
+				}		/* if (service_statuses_p) */
+
+		}		/* if (services_config_p) */
+
+	return enabled_flag;
 }
 
 
@@ -226,7 +211,7 @@ static const char *GetProviderElement (const char * const element_s)
 
 	if (provider_p)
 		{
-			result_s = json_object_get (provider_p, element_s);
+			result_s = GetJSONString (provider_p, element_s);
 		}
 
 	return result_s;

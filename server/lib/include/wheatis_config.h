@@ -44,7 +44,7 @@ WHEATIS_SERVICE_MANAGER_API const char *GetProviderURI (void);
 WHEATIS_SERVICE_MANAGER_API const json_t *GetProviderAsJSON (void);
 
 
-WHEATIS_SERVICE_MANAGER_API  bool IsServiceDisabled (const char *service_name_s);
+WHEATIS_SERVICE_MANAGER_API  bool IsServiceEnabled (const char *service_name_s);
 
 
 #ifdef __cplusplus

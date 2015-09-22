@@ -321,10 +321,10 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 		{
 			if (*service_pp)
 				{
-					const Service *service_p = *service_pp;
+					Service *service_p = *service_pp;
 					const char *service_name_s = GetServiceName (service_p);
 
-					if (!IsServiceDisabled (service_name_s))
+					if (IsServiceEnabled (service_name_s))
 						{
 							bool using_service_flag = RunServiceMatcher (matcher_p, service_p);
 							

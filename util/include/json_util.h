@@ -64,8 +64,8 @@ PREFIX const char *SERVICES_NAME_S VAL("services");
 PREFIX const char *SERVICES_ID_S VAL("path");
 PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
 PREFIX const char *SERVICE_RUN_S VAL("run");
-
-PREFIX const char *DISABLED_SERVICES_NAME_S VAL("disabled_services");
+PREFIX const char *SERVICES_STATUS_S VAL("status");
+PREFIX const char *SERVICES_STATUS_DEFAULT_S VAL("default");
 
 PREFIX const char *SERVICE_NAME_S VAL("service");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
@@ -210,6 +210,17 @@ WHEATIS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const k
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
  */
 WHEATIS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p);
+
+
+/**
+ * Get the boolean value for a given key in a json_t object.
+ *
+ * @param json_p The json object to query.
+ * @param key_s The key to search for.
+ * @param value_p Where the corresponding value will be stored if the key exists and relates to a boolean.
+ * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ */
+WHEATIS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * const key_s, bool *value_p);
 
 
 /**
