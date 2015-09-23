@@ -17,7 +17,8 @@
 static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
 
 
-APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
+
+APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), void (*free_key_and_value_fn) (unsigned char *key_p, void *value_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
 {
 	APRGlobalStorage *store_p = (APRGlobalStorage *) AllocMemory (sizeof (APRGlobalStorage));
 
@@ -25,7 +26,7 @@ APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t h
 		{
 			memset (store_p, 0, sizeof (APRGlobalStorage));
 
-			if (InitAPRGlobalStorage (store_p, pool_p, hash_fn, make_key_fn, server_p, mutex_filename_s, cache_id_s, provider_name_s))
+			if (InitAPRGlobalStorage (store_p, pool_p, hash_fn, make_key_fn, free_key_and_value_fn, server_p, mutex_filename_s, cache_id_s, provider_name_s))
 				{
 					return store_p;
 				}
@@ -36,7 +37,8 @@ APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t h
 	return NULL;
 }
 
-bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
+
+bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), void (*free_key_and_value_fn) (unsigned char *key_p, void *value_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
 {
 	ap_socache_provider_t *provider_p = ap_lookup_provider (AP_SOCACHE_PROVIDER_GROUP, provider_name_s, AP_SOCACHE_PROVIDER_VERSION);
 
@@ -53,6 +55,7 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 							storage_p -> ags_pool_p = pool_p;
 							storage_p -> ags_server_p = server_p;
 							storage_p -> ags_make_key_fn = make_key_fn;
+							storage_p -> ags_free_key_and_value_fn = free_key_and_value_fn;
 
 							storage_p -> ags_cache_id_s = cache_id_s;
 							storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
@@ -89,19 +92,16 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 		{
 			if (storage_p -> ags_entries_p)
 				{
-					apr_hash_index_t *index_p =	apr_hash_first (storage_p -> ags_pool_p, storage_p -> ags_entries_p);
-					char *key_s = NULL;
+					unsigned char *key_s = NULL;
 					apr_ssize_t keylen = 0;
+					void *value_p = NULL;
+					apr_hash_index_t *index_p =	apr_hash_first (storage_p -> ags_pool_p, storage_p -> ags_entries_p);
 
 					while (index_p)
 						{
-		//					ExternalServer *server_p = NULL;
+							apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &value_p);
 
-		//					apr_hash_this (index_p, (const void **) &key_s, &keylen, (void **) &server_p);
-		//					if (server_p)
-		//						{
-		//							FreeExternalServer (server_p);
-		//						}
+							storage_p -> ags_free_key_and_value_fn (key_s, value_p);
 
 							index_p = apr_hash_next (index_p);
 						}

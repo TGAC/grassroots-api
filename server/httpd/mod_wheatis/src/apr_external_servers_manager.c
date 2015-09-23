@@ -49,6 +49,9 @@ static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *m
 static apr_status_t AddExternalServerFromSOCache (ap_socache_instance_t *instance_p, server_rec *server_p, void *user_data_p, const unsigned char *id_s, unsigned int id_length, const unsigned char *data_p, unsigned int data_length, apr_pool_t *pool_p);
 
 
+static void FreeAPRExternalServer (unsigned char *key_p, void *value_p);
+
+
 /**************************/
 
 APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s)
@@ -61,6 +64,7 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p,
 			                                                        HashUUIDForAPR,
 			                                                        make_key_fn,
+			                                                        FreeAPRExternalServer,
 			                                                        server_p,
 			                                                        s_mutex_filename_s,
 			                                                        APR_SERVERS_MANAGER_CACHE_ID_S,
@@ -89,7 +93,6 @@ bool DestroyAPRServersManager (APRServersManager *manager_p)
 {
 	if (manager_p)
 		{
-			FreeAPRGlobalStorage (manager_p -> asm_store_p);
 			FreeMemory (manager_p);
 		}
 
@@ -176,6 +179,23 @@ static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *s
 
 	return servers_p;
 }
+
+
+
+static void FreeAPRExternalServer (unsigned char *key_p, void *value_p)
+{
+	if (key_p)
+		{
+			FreeMemory (key_p);
+		}
+
+	if (value_p)
+		{
+			ExternalServer *server_p = (ExternalServer *) value_p;
+			FreeExternalServer (server_p);
+		}
+}
+
 
 
 apr_status_t CleanUpAPRServersManager (void *value_p)

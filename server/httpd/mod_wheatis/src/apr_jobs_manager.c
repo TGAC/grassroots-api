@@ -41,6 +41,8 @@ static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p,
 static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key);
 
 
+static void FreeAPRServerJob (unsigned char *key_p, void *value_p);
+
 
 /**************************/
 
@@ -52,9 +54,11 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 	if (manager_p)
 		{
 			unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
+
 			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p,
 																															HashUUIDForAPR,
 																															make_key_fn,
+																															FreeAPRServerJob,
 																															server_p,
 																															s_mutex_filename_s,
 																															APR_JOBS_MANAGER_CACHE_ID_S,
@@ -82,7 +86,6 @@ bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p)
 {
 	if (jobs_manager_p)
 		{
-			FreeAPRGlobalStorage (jobs_manager_p -> ajm_store_p);
 			FreeMemory (jobs_manager_p);
 		}
 
@@ -143,6 +146,22 @@ static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager
 
 	return ((ServiceJob *) RemoveObjectFromAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob)));
 }
+
+
+static void FreeAPRServerJob (unsigned char *key_p, void *value_p)
+{
+	if (key_p)
+		{
+			FreeMemory (key_p);
+		}
+
+	if (value_p)
+		{
+			 ServiceJob *job_p = (ServiceJob *) value_p;
+			 ClearServiceJob (job_p);
+		}
+}
+
 
 
 void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key)

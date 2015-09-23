@@ -255,7 +255,7 @@ How the webservice parameters will be set. This can be one of:
  * *post*: The webservice will be called using a POST request.
  * *json*: The webservice will be called using a POST request where the content of the request body is a json fragment.
 
-## Resource
+## Resource {#Resource}
 
 A Resource object describes a location and a piece of data such as a file, url, *etc.*
 
