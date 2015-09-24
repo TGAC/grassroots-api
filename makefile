@@ -234,12 +234,12 @@ build_docs:
 	doxygen
 
 release: install build_docs
-	cd $(DIR_WHEATIS_INSTALL); \
 	$(DELETE) wheatis_release.zip; \
-	zip -r wheatis_release.zip handlers images lib references services wheatis.version client docs/api; \
+	zip -r $(DIR_ROOT)/wheatis_release.zip docs/api; \
+	cd $(DIR_WHEATIS_INSTALL); \
+	zip -r $(DIR_ROOT)/wheatis_release.zip handlers images lib references services wheatis.version client; \
 	cd $(DIR_APACHE)/modules; \
-	zip $(DIR_WHEATIS_INSTALL)/wheatis_release.zip mod_wheatis.so; \
-	mv $(DIR_WHEATIS_INSTALL)/wheatis_release.zip $(DIR_ROOT)
+	zip $(DIR_ROOT)/wheatis_release.zip mod_wheatis.so; \
 	
 install_init:
 	@mkdir -p $(DIR_WHEATIS_INSTALL)
