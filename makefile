@@ -235,7 +235,8 @@ build_docs:
 
 release: install build_docs
 	$(DELETE) wheatis_release.zip; \
-	zip -r $(DIR_ROOT)/wheatis_release.zip docs/api; \
+	cd docs/api;
+	zip -r $(DIR_ROOT)/wheatis_release.zip html; \
 	cd $(DIR_WHEATIS_INSTALL); \
 	zip -r $(DIR_ROOT)/wheatis_release.zip handlers images lib references services wheatis.version client; \
 	cd $(DIR_APACHE)/modules; \
