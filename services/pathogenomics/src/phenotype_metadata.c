@@ -23,6 +23,12 @@ bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 			if (SetMongoToolCollection (tool_p, data_p -> psd_samples_collection_s))
 				{
+					bson_t *query_p;
+
+					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+						{
+
+						}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
 
 				}		/* if (SetMongoToolCollection (tool_p, data_p -> psd_samples_collection_s)) */
 
