@@ -115,6 +115,9 @@ WHEATIS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
 WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
 
+WHEATIS_MONGODB_API json_t *GetCurrentValuesAsJSON (MongoTool *tool_p, const char **fields_ss, const size_t num_fields);
+
+
 WHEATIS_MONGODB_API json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p);
 
 
@@ -134,6 +137,10 @@ WHEATIS_MONGODB_API int32 IsKeyValuePairInCollection (MongoTool *tool_p, const c
 
 
 WHEATIS_MONGODB_API bson_t *GenerateQuery (const json_t *json_p);
+
+
+WHEATIS_MONGODB_API json_t *ConvertBSONValueToJSON (const bson_value_t *value_p);
+
 
 #ifdef __cplusplus
 }

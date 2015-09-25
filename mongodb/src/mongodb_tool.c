@@ -23,6 +23,8 @@ static bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p,
 
 static bson_t *AddChild (const char * const key_s, const char * const sub_key_s, const json_t * const value_p);
 
+static int CompareStrings (const void *v0_p, const void *v1_p);
+
 
 #ifdef _DEBUG
 	#define MONGODB_TOOL_DEBUG	(STM_LEVEL_FINER)
@@ -844,6 +846,124 @@ json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p)
 
 }
 
+
+json_t *ConvertBSONValueToJSON (const bson_value_t *value_p)
+{
+	json_t *result_p = NULL;
+
+	switch (value_p -> value_type)
+		{
+			case BSON_TYPE_DOUBLE:
+				result_p = json_real (value_p -> value.v_double);
+				break;
+
+			case BSON_TYPE_UTF8:
+				result_p = json_string (value_p -> value.v_utf8.str);
+				break;
+
+			case BSON_TYPE_BOOL:
+				result_p = (value_p -> value.v_bool) ? json_true () : json_false ();
+				break;
+
+			case BSON_TYPE_INT32:
+				result_p = json_integer (value_p -> value.v_int32);
+				break;
+
+			case BSON_TYPE_INT64:
+				result_p = json_integer (value_p -> value.v_int64);
+				break;
+
+			/*
+			BSON_TYPE_DOCUMENT   = 0x03,
+			BSON_TYPE_ARRAY      = 0x04,
+			BSON_TYPE_BINARY     = 0x05,
+			BSON_TYPE_UNDEFINED  = 0x06,
+			BSON_TYPE_OID        = 0x07,
+			BSON_TYPE_BOOL       = 0x08,
+			BSON_TYPE_DATE_TIME  = 0x09,
+			BSON_TYPE_NULL       = 0x0A,
+			BSON_TYPE_REGEX      = 0x0B,
+			BSON_TYPE_DBPOINTER  = 0x0C,
+			BSON_TYPE_CODE       = 0x0D,
+			BSON_TYPE_SYMBOL     = 0x0E,
+			BSON_TYPE_CODEWSCOPE = 0x0F,
+			BSON_TYPE_TIMESTAMP  = 0x11,
+			BSON_TYPE_MAXKEY     = 0x7F,
+			BSON_TYPE_MINKEY     = 0xFF,
+			*/
+		 default:
+			 break;
+	 }
+
+	return result_p;
+}
+
+
+json_t *GetCurrentValuesAsJSON (MongoTool *tool_p, const char **fields_ss, const size_t num_fields)
+{
+	json_t *results_p = NULL;
+
+	if (HasMongoQueryResults (tool_p))
+		{
+			const bson_t *doc_p;
+
+			if (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+				{
+					bson_iter_t iter;
+
+					if (bson_iter_init (&iter, doc_p))
+						{
+							if (fields_ss)
+								{
+									size_t i = 0;
+
+									qsort (fields_ss, num_fields, sizeof (const char *), CompareStrings);
+
+									while (*fields_ss)
+										{
+										   while ((bson_iter_next (&iter)) && (i < num_fields))
+										  	 {
+										  		 const char *key_s = bson_iter_key (&iter);
+
+										  		 if (bsearch (key_s, fields_ss, num_fields, sizeof (const char *), CompareStrings))
+										  			 {
+										  				 const bson_value_t *value_p = bson_iter_value (&iter);
+										  				 json_t *converted_value_p = ConvertBSONValueToJSON (value_p);
+
+										  				 if (converted_value_p)
+										  					 {
+										  						 if (json_object_set_new (results_p, key_s, converted_value_p) != 0)
+										  							 {
+
+										  							 }
+										  					 }
+
+										  				 ++ i;
+										  			 }
+										  	 }
+
+											++ fields_ss;
+										}
+								}
+
+						}
+
+				}
+
+		}
+
+	return results_p;
+}
+
+
+
+static int CompareStrings (const void *v0_p, const void *v1_p)
+{
+	const char *s0_p = (const void *) v0_p;
+	const char *s1_p = (const void *) v1_p;
+
+	return strcmp (s0_p, s1_p);
+}
 
 
 int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, const char *collection_s, const char *key_s, const char *value_s)
