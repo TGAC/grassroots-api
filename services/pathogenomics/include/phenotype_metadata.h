@@ -10,6 +10,7 @@
 
 #include "pathogenomics_service_library.h"
 #include "mongodb_tool.h"
+#include "pathogenomics_service_data.h"
 
 #include "pathogenomics_service.h"
 
@@ -20,6 +21,7 @@ extern "C"
 #endif
 
 
+PATHOGENOMICS_SERVICE_LOCAL	bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p);
 
 
 #ifdef __cplusplus

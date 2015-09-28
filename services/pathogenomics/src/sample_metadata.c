@@ -22,6 +22,270 @@
 
 static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p);
 
+static const char *InsertSingleSampleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p);
+
+
+
+uint32 InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p)
+{
+	uint32 num_imports = 0;
+
+	if (json_is_array (values_p))
+		{
+			json_t *value_p;
+			size_t i;
+
+			json_array_foreach (values_p, i, value_p)
+				{
+					const char *error_s = InsertSingleSampleItem (tool_p, value_p, collection_s, data_p);
+
+					if (error_s)
+						{
+							if (!AddErrorMessage (errors_p, value_p, i + 1, error_s))
+								{
+
+								}
+							PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+						}
+					else
+						{
+							++ num_imports;
+						}
+				}
+		}
+	else
+		{
+			const char *error_s = InsertSingleSampleItem (tool_p, values_p, collection_s, data_p);
+
+			if (error_s)
+				{
+					if (!AddErrorMessage (errors_p, values_p, 1, error_s))
+						{
+
+						}
+					PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+				}
+			else
+				{
+					++ num_imports;
+				}
+		}
+
+	return num_imports;
+}
+
+
+
+static const char *InsertSingleSampleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
+{
+	const char *error_s = NULL;
+	bool add_fields_flag = false;
+
+	const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
+
+	if (pathogenomics_id_s)
+		{
+			if (ConvertDate (values_p))
+				{
+
+					if (InsertLocationData (tool_p, values_p, data_p, pathogenomics_id_s))
+						{
+							/**
+							 * Is it an insert or an update?
+							 */
+
+							if (IsKeyValuePairInCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s, PG_ID_S, pathogenomics_id_s) == 1)
+								{
+									/*
+									bson_oid_t oid;
+
+									if (bson_oid_is_valid (id_s, strlen (id_s)))
+										{
+											bson_oid_init_from_string (&oid, id_s);
+
+											if (json_object_del (values_p, MONGO_ID_S) == 0)
+												{
+													if (!UpdateMongoDocument (tool_p, &oid, values_p))
+														{
+															error_s = "Failed to update data";
+														}
+												}
+
+									*/
+								}
+							else
+								{
+									bson_oid_t *id_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+
+									if (id_p)
+										{
+											FreeMemory (id_p);
+										}
+									else
+										{
+											error_s = "Failed to insert data";
+										}
+								}
+
+							if ((error_s == NULL) && add_fields_flag)
+								{
+									/**
+									 * Add the fields to the list of available fields for this
+									 * collection
+									 */
+									char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+
+									if (fields_collection_s)
+										{
+											json_t *field_p = json_object ();
+											bson_oid_t doc_id;
+
+											if (field_p)
+												{
+													const char *fields_ss [2] = { NULL, NULL };
+													const char *key_s;
+													json_t *value_p;
+
+													SetMongoToolCollection (tool_p, data_p -> psd_database_s, fields_collection_s);
+
+													json_object_foreach (values_p, key_s, value_p)
+														{
+															bson_t *query_p = bson_new (); //BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+
+															if (query_p)
+																{
+																	int32 value = 0;
+																	json_t *update_p = NULL;
+																	json_error_t error;
+
+																	*fields_ss = key_s;
+
+																	if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+																		{
+																			const bson_t *doc_p = NULL;
+
+																			/* should only be one of these */
+																			while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+																				{
+																					bson_iter_t iter;
+																					json_t *json_value_p = NULL;
+
+																					#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																					LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
+																					#endif
+
+																					if (bson_iter_init (&iter, doc_p))
+																						{
+																							if (bson_iter_find (&iter, "_id"))
+																								{
+																									const bson_oid_t *src_p = NULL;
+
+																									if (BSON_ITER_HOLDS_OID (&iter))
+																										{
+																											src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
+																										}
+
+																									bson_oid_copy (src_p, &doc_id);
+
+																									#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																									LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
+																									LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
+																									#endif
+																								}
+																						}
+
+																					json_value_p = ConvertBSONToJSON (doc_p);
+
+																					if (json_value_p)
+																						{
+																							json_t *count_p = json_object_get (json_value_p, key_s);
+
+																							if (count_p)
+																								{
+																									if (json_is_integer (count_p))
+																										{
+																											value = json_integer_value (count_p);
+																										}
+																								}
+
+																							WipeJSON (json_value_p);
+																						}
+																				 }
+																		}
+
+																	++ value;
+
+																	/*
+																	 * Now need to set key_s = value into the collection
+																	 */
+																	update_p = json_pack_ex (&error, 0, "{s:i}", key_s, value);
+
+																	if (update_p)
+																		{
+																			if (value == 1)
+																				{
+																					bson_oid_t *fields_id_p = InsertJSONIntoMongoCollection (tool_p, update_p);
+
+																					if (fields_id_p)
+																						{
+																							FreeMemory (fields_id_p);
+																						}
+																					else
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+																							error_s = "Failed to insert data into fields collection";
+																						}
+																				}
+																			else
+																				{
+																					if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+																							error_s = "Failed to update data in fields collection";
+																						}
+																				}
+																		}
+																	else
+																		{
+
+																			PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
+																			error_s = "Failed to create JSON data to update fields collection";
+																		}
+
+																	bson_destroy (query_p);
+																}
+														}		/* json_object_foreach (values_p, key_s, value_p) */
+
+
+												}		/* if (field_p) */
+
+
+											FreeCopiedString (fields_collection_s);
+										}		/* if (fields_collection_s) */
+
+								}
+
+						}		/* if (InsertLocationData (tool_p, values_p, data_p)) */
+					else
+						{
+							error_s = "Failed to add location data into system";
+						}
+
+				}		/* if (ConvertDate (values_p)) */
+			else
+				{
+					error_s = "Could not get date";
+				}
+
+		}		/* if (pathogenomics_id_s) */
+	else
+		{
+			error_s = "Could not get pathogenomics id";
+		}
+
+	return error_s;
+}
+
 
 bool ConvertDate (json_t *row_p)
 {

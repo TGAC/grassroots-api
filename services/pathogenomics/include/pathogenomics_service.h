@@ -35,30 +35,6 @@ PATHOGENOMICS_PREFIX const char *PG_EAST_BOUND_S PATHOGENOMICS_VAL ("east_bound"
 PATHOGENOMICS_PREFIX const char *PG_WEST_BOUND_S PATHOGENOMICS_VAL ("west_bound");
 
 
-typedef struct PathogenomicsServiceData PathogenomicsServiceData;
-
-
-struct PathogenomicsServiceData
-{
-	ServiceData psd_base_data;
-
-	MongoTool *psd_tool_p;
-
-	const char *psd_database_s;
-
-	const char *psd_samples_collection_s;
-
-	const char *psd_locations_collection_s;
-
-	const char *psd_phenotype_collection_s;
-
-	json_t *(*psd_geocoder_fn) (struct PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
-
-	json_t *(*psd_refine_location_fn) (struct PathogenomicsServiceData *data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
-
-	const char *psd_geocoder_uri_s;
-
-};
 
 
 
@@ -72,6 +48,9 @@ PATHOGENOMICS_SERVICE_API ServicesArray *GetServices (json_t *config_p);
 
 
 PATHOGENOMICS_SERVICE_API void ReleaseServices (ServicesArray *services_p);
+
+
+PATHOGENOMICS_SERVICE_LOCAL bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const size_t row, const char * const error_s);
 
 
 #ifdef __cplusplus

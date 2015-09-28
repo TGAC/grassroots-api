@@ -18,7 +18,7 @@ bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *colle
 		{
 			const char *mapped_key_id_s = "UKCPVS ID";
 
-			if (SetMongoToolCollection (tool_p, data_p -> psd_samples_collection_s))
+			if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s))
 				{
 					bson_t *query_p = bson_new ();
 
@@ -28,14 +28,14 @@ bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *colle
 								{
 									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
 										{
-											const char * const id_key_s = "ID";
+											const char *id_key_s = "ID";
 											json_t *json_p = GetCurrentValuesAsJSON (tool_p, &id_key_s, 1);
 
 											if (json_p)
 												{
 													if (json_object_update (values_p, json_p) == 0)
 														{
-															if (SetMongoToolCollection (tool_p, data_p -> psd_phenotype_collection_s))
+															if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_phenotype_collection_s))
 																{
 																	bson_oid_t *oid_p = InsertJSONIntoMongoCollection (tool_p, values_p);
 
