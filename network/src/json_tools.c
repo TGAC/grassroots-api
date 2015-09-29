@@ -84,7 +84,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 {
 	bool success_flag = false;
 	json_error_t error;
-	json_t *credentials_p = json_pack_ex (&error, 0, "{s:s,s:s}", CREDENTIALS_USERNAME_S, username_s, CREDENTIALS_PASSWORD_S, password_s);
+	json_t *credentials_p = json_object ();
 
 	if (credentials_p)
 		{
@@ -93,23 +93,55 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 			if (config_p)
 				{
 					json_t *loaded_credentials_p = json_object_get (config_p, CREDENTIALS_S);
-					
+
 					if (loaded_credentials_p)
 						{
-							const char *key_s;
-							json_t *value_p;
-
-							json_object_foreach (loaded_credentials_p, key_s, value_p) 
+							if (json_object_set (credentials_p, CREDENTIALS_S, loaded_credentials_p) == 0)
 								{
-									json_object_set (credentials_p, key_s, value_p);
-									json_object_del (config_p, key_s);
+									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+									#endif
+
+									json_object_del (config_p, CREDENTIALS_S);
+
+									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+									#endif
 								}
-						}		
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to add loaded credentials  to credentials json");
+								}
+						}
 						
-					json_decref (config_p);
+
+				}		/* if (config_p) */
+			
+			
+			if (username_s)
+				{
+					if (json_object_set_new (credentials_p, CREDENTIALS_USERNAME_S, json_string (username_s)) != 0)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to add username %s to credentials json", username_s);
+						}
 				}
-			
-			
+
+			#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+			#endif
+
+			if (password_s)
+				{
+					if (json_object_set_new (credentials_p, CREDENTIALS_PASSWORD_S, json_string (password_s)) != 0)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to add password %s to credentials json", password_s);
+						}
+				}
+
+				#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+				PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+				#endif
+
 			if (json_object_set_new (root_p, CREDENTIALS_S, credentials_p) == 0)
 				{
 					success_flag = true;
@@ -122,7 +154,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 
 
 	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+	PrintJSONToLog (root_p, "root_p: ", JSON_TOOLS_DEBUG);
 	#endif
 
 	return success_flag;

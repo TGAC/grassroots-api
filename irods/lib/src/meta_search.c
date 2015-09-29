@@ -10,7 +10,7 @@
 
 
 #ifdef _DEBUG
-	#define META_SEARCH_DEBUG	(STM_LEVEL_INFO)
+	#define META_SEARCH_DEBUG	(STM_LEVEL_FINE)
 #else
 	#define META_SEARCH_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -20,7 +20,10 @@
  * accessible header file as far as I can see, so simply
  * declare it extern here.
  */
-//extern int printGenQI (genQueryInp_t *input_query_p);
+#if META_SEARCH_DEBUG >= STM_LEVEL_FINE
+extern int printGenQI (genQueryInp_t *input_query_p);
+#endif
+
 
 
 static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p);

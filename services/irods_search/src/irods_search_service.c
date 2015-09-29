@@ -13,7 +13,7 @@
 #include "connect.h"
 #include "streams.h"
 #include "meta_search.h"
-
+#include "service_job.h"
 
 /*
  * STATIC DATATYPES
@@ -90,13 +90,17 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 						{
 							if (AddParams (connection_p, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
 								{
-									if (AddParams (connection_p, COL_META_COLL_ATTR_NAME, COL_META_COLL_ATTR_VALUE, params_p, "Collections metadata", NULL, "The metadata tags available for iRODS collections") >= 0)
-										{
+									/*
+									 * Although we'd like to add the column metadata values separately, it seems that for irods 3.3.1 any keys added via imeta
+									 * get added to both the collection and data object keys
+									 */
+									//if (AddParams (connection_p, COL_META_COLL_ATTR_NAME, COL_META_COLL_ATTR_VALUE, params_p, "Collections metadata", NULL, "The metadata tags available for iRODS collections") >= 0)
+									//	{
 											data_p -> issd_connection_p = connection_p;
 											data_p -> issd_params_p = params_p;
 
 											return data_p;
-										}
+									//	}
 								}
 
 							FreeParameterSet (params_p);
@@ -460,81 +464,102 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 
 static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
-	OperationStatus res = OS_FAILED_TO_START;
-	json_t *res_json_p = NULL;
 	IrodsSearch *search_p = AllocateIrodsSearch ();
 
 	if (search_p)
 		{
-			ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
-			bool success_flag = true;
-			const char *clause_s = NULL;
-			json_t *query_results_json_p = NULL;
+			/* We only have one task */
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
-			while (node_p && success_flag)
+			if (service_p -> se_jobs_p)
 				{
-					Parameter *param_p = node_p -> pn_parameter_p;
-					int key_id;
+					ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+					bool success_flag = true;
+					const char *clause_s = NULL;
+					json_t *query_results_json_p = NULL;
+					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 
-					if (GetColumnId (param_p, S_KEY_ID_S, &key_id))
+					job_p -> sj_status = OS_FAILED;
+
+					while (node_p && success_flag)
 						{
-							int value_id;
+							Parameter *param_p = node_p -> pn_parameter_p;
+							int key_id;
 
-							if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
+							if (GetColumnId (param_p, S_KEY_ID_S, &key_id))
 								{
-									const char *value_s = param_p -> pa_current_value.st_string_value_s;
+									int value_id;
 
-									if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
+									if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
 										{
-											if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", value_s, value_id))
+											const char *value_s = param_p -> pa_current_value.st_string_value_s;
+
+											if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
 												{
-													success_flag = false;
+													if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", value_s, value_id))
+														{
+															success_flag = false;
+														}
 												}
-										}
+											else
+												{
+													success_flag = true;
+												}
+
+										}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
 									else
 										{
-											success_flag = true;
+											success_flag = false;
 										}
-
-								}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
+								}		/* if (GetColumnId (param_p, S_KEY_ID_S, &key_id)) */
 							else
 								{
 									success_flag = false;
 								}
-						}		/* if (GetColumnId (param_p, S_KEY_ID_S, &key_id)) */
-					else
-						{
-							success_flag = false;
-						}
+
+							if (success_flag)
+								{
+									node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+
+									if (clause_s == NULL)
+										{
+											clause_s = "AND";
+										}
+								}
+						}		/* while (node_p && success_flag) */
 
 					if (success_flag)
 						{
-							node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+							IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
+							QueryResults *results_p = NULL;
 
-							if (clause_s == NULL)
+							//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+							results_p = DoIrodsMetaSearch (search_p, data_p);
+
+							job_p -> sj_status = OS_FAILED;
+
+							if (results_p)
 								{
-									clause_s = "AND";
-								}
-						}
-				}
+									PrintQueryResults (stdout, results_p);
+									fflush (stdout);
 
-			if (success_flag)
-				{
-					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
-					QueryResults *results_p = NULL;
+									query_results_json_p = GetQueryResultAsResourcesJSON (results_p);
 
-					//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
-					results_p = DoIrodsMetaSearch (search_p, data_p);
+									if (query_results_json_p)
+										{
+											job_p -> sj_status = OS_SUCCEEDED;
+											job_p -> sj_result_p = query_results_json_p;
+										}
 
-					if (results_p)
+								}		/* if (results_p) */
+
+						}		/* if (success_flag) */
+					else
 						{
-							PrintQueryResults (stdout, results_p);
-							fflush (stdout);
-
-							query_results_json_p = GetQueryResultAsResourcesJSON (results_p);
-							res = OS_SUCCEEDED;
+							job_p -> sj_status = OS_FAILED_TO_START;
 						}
-				}
+				}		/* if (service_p -> se_jobs_p) */
+
 
 			FreeIrodsSearch (search_p);
 

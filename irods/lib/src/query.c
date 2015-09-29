@@ -663,7 +663,7 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 									if (AppendStringsToByteBuffer (buffer_p, *collection_values_pp, "/", *data_values_pp, NULL))
 										{
 											const char *value_s = GetByteBufferData (buffer_p);
-											json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_IRODS_S, value_s, NULL, NULL);
+											json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_IRODS_S, value_s, *data_values_pp, NULL);
 
 											if (resource_p)
 												{

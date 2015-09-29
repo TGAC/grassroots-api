@@ -205,7 +205,7 @@ json_t *GetResourceAsJSONByParts (const char * const protocol_s, const char * co
 				{
 					if ((path_s == NULL) || (json_object_set_new (json_p, RESOURCE_VALUE_S, json_string (path_s)) == 0))
 						{
-							if (json_object_set_new (json_p, RESOURCE_TITLE_S, json_string (title_s)) == 0)
+							if ((title_s == NULL)  || (json_object_set_new (json_p, RESOURCE_TITLE_S, json_string (title_s)) == 0))
 								{
 									if ((data_p == NULL) || (json_object_set (json_p, RESOURCE_DATA_S, data_p) == 0))
 										{

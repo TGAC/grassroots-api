@@ -23,21 +23,22 @@ ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * c
 		{
 			char *option_s = option_p -> pmo_description_s;
 			QString display_str;
-			QVariant *v_p;
+			QVariant *v_p = 0;
 
 			switch (bpw_param_p -> pa_type)
 				{
-				case PT_STRING:
-					v_p = new QVariant (option_p -> pmo_value.st_string_value_s);
-					if (!option_s)
-						{
-							option_s =	option_p -> pmo_value.st_string_value_s;
-						}
-					display_str = QString (option_s);
-					break;
+					case PT_STRING:
+					case PT_KEYWORD:
+						v_p = new QVariant (option_p -> pmo_value.st_string_value_s);
+						if (!option_s)
+							{
+								option_s =	option_p -> pmo_value.st_string_value_s;
+							}
+						display_str = QString (option_s);
+						break;
 
 					default:
-					break;
+						break;
 				}
 
 			if (v_p)
@@ -82,6 +83,7 @@ bool ParamComboBox :: StoreParameterValue ()
 			case PT_FILE_TO_READ:
 			case PT_FILE_TO_WRITE:
 			case PT_DIRECTORY:
+			case PT_KEYWORD:
 				{
 					QString s (v.toString ());
 					QByteArray ba = s.toLocal8Bit ();

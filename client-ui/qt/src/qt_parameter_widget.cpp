@@ -339,6 +339,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 			switch (param_p -> pa_type)
 				{
 					case PT_STRING:
+					case PT_KEYWORD:
 						widget_p = new ParamComboBox (param_p, qpw_prefs_widget_p);
 						break;
 
