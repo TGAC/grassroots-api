@@ -288,7 +288,7 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, con
 
 							if (data_p -> psd_locations_collection_s)
 								{
-									data_p -> psd_phenotype_collection_s = GetJSONString (service_config_p, "p_collection");
+									data_p -> psd_phenotype_collection_s = GetJSONString (service_config_p, "phenotypes_collection");
 
 									if (data_p -> psd_phenotype_collection_s)
 										{
