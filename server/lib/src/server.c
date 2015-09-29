@@ -291,6 +291,10 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						res_p = CleanUpJobs (req_p, credentials_p);
 						break;
 
+					case OP_GET_RESOURCE:
+						res_p = GetRequestedResource (req_p, credentials_p);
+						break;
+
 					default:
 						break;
 				}		/* switch (op) */
@@ -888,6 +892,14 @@ static json_t *GetServiceStatus (const json_t * const req_p, const json_t *crede
 static json_t *CleanUpJobs (const json_t * const req_p, const json_t *credentials_p)
 {
 	return GetServiceData (req_p, credentials_p, AddServiceCleanUpToJSON);
+}
+
+
+static json_t *GetRequestedResource (const json_t * const req_p, const json_t *credentials_p)
+{
+	json_t *res_p = NULL;
+
+	return res_p;
 }
 
 

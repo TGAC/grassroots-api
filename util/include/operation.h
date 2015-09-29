@@ -33,6 +33,12 @@ typedef enum Operation {
 	/** Tell the server that the jobs are no longer needed */
 	OP_CLEAN_UP_JOBS,           //!< OP_CLEAN_UP_JOBS
 
+	/**
+	 * Get a requested Resource from the Server.
+	 * @see Resource
+	 */
+	OP_GET_RESOURCE,						//!< OP_GET_RESOURCE
+
 	OP_NUM_OPERATIONS           //!< OP_NUM_OPERATIONS
 } Operation;
 

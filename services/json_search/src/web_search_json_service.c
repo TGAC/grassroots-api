@@ -23,8 +23,8 @@
 typedef struct WebSearchJSONServiceData
 {
 	WebServiceData wssjd_base_data;
-	const char *wssd_link_selector_s;
-	const char *wssd_title_selector_s;
+	const char *wssjd_results_selector_s;
+	const char *wssjd_title_selector_s;
 } WebSearchJSONServiceData;
 
 /*
@@ -216,7 +216,7 @@ static bool CloseWebSearchJSONService (Service *service_p)
 ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	WebSearchJSONServiceData *service_data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
-	WebServiceData *data_p = & (service_data_p -> wssd_base_data);
+	WebServiceData *data_p = & (service_data_p -> wssjd_base_data);
 	
 	/* We only have one task */
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpWebSearchJSONServiceJob);
@@ -274,10 +274,69 @@ ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_
 static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data_p)
 {
 	json_t *res_p = NULL;
-	const char * const data_s = GetCurlToolData (data_p -> wssd_base_data.wsd_curl_data_p);
+	const char * const data_s = GetCurlToolData (data_p -> wssjd_base_data.wsd_curl_data_p);
 
 	if (data_s && *data_s)
 		{
+			/* get the matching json tag for the selector */
+			char *selector_s = CopyToNewString (data_p -> wssjd_results_selector_s, 0, false);
+
+			if (selector_s)
+				{
+					json_error_t error;
+					json_t *parent_p = json_loads (data_s, 0, &error);
+
+					if (parent_p)
+						{
+							bool loop_flag = true;
+							bool success_flag = true;
+							char *start_p = selector_s;
+							char *end_p = start_p + 1;
+
+							while (loop_flag && success_flag)
+								{
+									json_t *child_p;
+									char *full_stop_p = strchr (start_p, '.');
+
+									if (full_stop_p)
+										{
+											*full_stop_p = '\0';
+										}
+									else
+										{
+											loop_flag = false;
+										}
+
+									child_p = json_object_get (parent_p, start_p);
+
+									if (child_p)
+										{
+											parent_p = child_p;
+										}
+									else
+										{
+											success_flag = false;
+										}
+
+									if (full_stop_p)
+										{
+											start_p = full_stop_p + 1;
+											loop_flag = (*start_p != '\0');
+										}
+								}
+
+							if (success_flag)
+								{
+
+								}
+
+							WipeJSON (parent_p);
+						}
+
+
+					FreeCopiedString (selector_s);
+				}
+
 			res_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_link_selector_s, data_p -> wssd_title_selector_s, data_p -> wssd_base_data.wsd_base_uri_s);
 		}
 
