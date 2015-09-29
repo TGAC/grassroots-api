@@ -20,7 +20,7 @@
  * accessible header file as far as I can see, so simply
  * declare it extern here.
  */
-extern int printGenQI (genQueryInp_t *input_query_p);
+//extern int printGenQI (genQueryInp_t *input_query_p);
 
 
 static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const json_p);

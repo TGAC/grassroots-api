@@ -122,10 +122,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 
 
 	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-		{
-			char *value_s = json_dumps (root_p, JSON_INDENT (2));
-			free (value_s);
-		}
+	PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
 	#endif
 
 	return success_flag;

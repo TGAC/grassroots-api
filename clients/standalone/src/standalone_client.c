@@ -453,7 +453,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 	json_t *services_json_p = NULL;
 
 	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
-	PrintJSONToLog (response_p, res:\n", STANDALONE_CLIENT_DEBUG);
+	PrintJSONToLog (response_p, "res:\n", STANDALONE_CLIENT_DEBUG);
 	#endif
 	
 	if (json_is_array (response_p))

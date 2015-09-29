@@ -28,7 +28,7 @@ class QTParameterWidget : public QWidget
 public:
 	QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level);
 
-	~QTParameterWidget ();
+	virtual ~QTParameterWidget ();
 
 	virtual void UpdateParameterLevel (const ParameterLevel level, const QWidget * const parent_widget_p);
 

@@ -30,7 +30,7 @@ public slots:
 
 public:
 	MainWindow (struct QTClientData *data_p);
-	~MainWindow ();
+	virtual ~MainWindow ();
 
 	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
 
