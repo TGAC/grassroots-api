@@ -1072,6 +1072,10 @@ bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 
 ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i))
 {
+	#if SERVICE_DEBUG >= STM_LEVEL_FINE
+	PrintJSONToLog (config_p, "GetReferenceServicesFromJSON: config", SERVICE_DEBUG);
+	#endif
+
 	if (config_p)
 		{
 			/* Make sure that the config refers to our service */

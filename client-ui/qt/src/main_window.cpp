@@ -196,8 +196,79 @@ void MainWindow :: RunServices (bool run_flag)
 
 void MainWindow :: RunKeywordSearch (QString keywords)
 {
+	const char *username_s = NULL;
+	const char *password_s = NULL;
+	QByteArray ba = keywords.toLocal8Bit ();
+	const char *keywords_s = ba.constData ();
+	json_t *query_p  = GetKeywordServicesRequest (username_s, password_s, keywords_s);
+
+	if (query_p)
+		{
+			json_t *results_p = NULL;
+
+			PrintJSONToLog (query_p, "\n\nquery:\n", STM_LEVEL_FINE);
+
+			results_p = MakeRemoteJsonCall (query_p, mw_client_data_p -> qcd_base_data.cd_connection_p);
+
+			if (results_p)
+				{
+					bool show_results_flag = false;
+
+					PrintJSONToLog (results_p, "\n\nresults\n", STM_LEVEL_FINE);
+
+					if (json_is_array (results_p))
+						{
+							size_t i;
+							const size_t size = json_array_size (results_p);
+							json_t *service_result_p;
+
+							json_array_foreach (results_p, i, service_result_p)
+								{
+									if (json_is_array (service_result_p))
+										{
+											size_t j;
+											const size_t size = json_array_size (results_p);
+											json_t *job_result_p;
+
+											json_array_foreach (service_result_p, j, job_result_p)
+												{
+													AddResults (job_result_p);
+												}
+
+										}
+									else
+										{
+											AddResults (service_result_p);
+										}
+
+								}		/* json_array_foreach (results_p, i, service_result_p) */
+
+						}		/* if (json_is_array (results_p)) */
+
+					if (show_results_flag)
+						{
+							mw_client_data_p -> qcd_results_p -> show ();
+						}
+
+				}		/* if (results_p) */
+
+			WipeJSON (query_p);
+		}		/* if (query_p) */
 
 }
+
+
+bool MainWindow :: AddResults (const json_t *job_results_p)
+{
+
+	const json_t *results_json_p = json_object_get (job_results_p, JOB_RESULTS_S);
+	const char *service_name_s = GetJSONString (job_results_p, JOB_NAME_S);
+	const char *service_description_s = GetJSONString (job_results_p, JOB_DESCRIPTION_S);
+	const char *service_uri_s = NULL;
+
+	return mw_client_data_p -> qcd_results_p -> AddResultsPageFromJSON (results_json_p, service_name_s,  service_description_s, service_uri_s);
+}
+
 
 
 void MainWindow :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p)

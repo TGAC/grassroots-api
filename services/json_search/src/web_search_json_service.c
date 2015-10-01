@@ -18,13 +18,14 @@
 #include "selector.hpp"
 #include "web_service_util.h"
 #include "service_job.h"
-
+#include "json_tools.h"
 
 typedef struct WebSearchJSONServiceData
 {
 	WebServiceData wssjd_base_data;
 	const char *wssjd_results_selector_s;
 	const char *wssjd_title_selector_s;
+	const char *wssjd_link_selector_s;
 } WebSearchJSONServiceData;
 
 /*
@@ -72,7 +73,7 @@ static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data
  
 ServicesArray *GetServices (json_t *config_p)
 {
-	return GetReferenceServicesFromJSON (config_p, "web_search_service", GetWebSearchJSONService);
+	return GetReferenceServicesFromJSON (config_p, "web_search_json_service", GetWebSearchJSONService);
 }
 
 
@@ -131,15 +132,17 @@ static WebSearchJSONServiceData *AllocateWebSearchJSONServiceData (json_t *op_js
 	
 	if (service_data_p)
 		{
-			WebServiceData *data_p = & (service_data_p -> wssd_base_data);
+			WebServiceData *data_p = & (service_data_p -> wssjd_base_data);
 
 			if (InitWebServiceData (data_p, op_json_p))
 				{
-					service_data_p -> wssd_link_selector_s = GetJSONString (op_json_p, "link_selector");
+					service_data_p -> wssjd_results_selector_s = GetJSONString (op_json_p, "results_selector");
 
-					if (service_data_p -> wssd_link_selector_s)
+					if (service_data_p -> wssjd_title_selector_s)
 						{
-							service_data_p -> wssd_title_selector_s = GetJSONString (op_json_p, "title_selector");
+							service_data_p -> wssjd_title_selector_s = GetJSONString (op_json_p, "title_selector");
+
+							service_data_p -> wssjd_link_selector_s = GetJSONString (op_json_p, "link_selector");
 
 							return service_data_p;
 						}
@@ -156,7 +159,7 @@ static WebSearchJSONServiceData *AllocateWebSearchJSONServiceData (json_t *op_js
 
 static void FreeWebSearchJSONServiceData (WebSearchJSONServiceData *data_p)
 {
-	ClearWebServiceData (& (data_p -> wssd_base_data));
+	ClearWebServiceData (& (data_p -> wssjd_base_data));
 	
 	FreeMemory (data_p);
 }
@@ -166,7 +169,7 @@ static const char *GetWebSearchJSONServiceName (Service *service_p)
 {
 	WebSearchJSONServiceData *data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
 	
-	return (data_p -> wssd_base_data.wsd_name_s);
+	return (data_p -> wssjd_base_data.wsd_name_s);
 }
 
 
@@ -174,7 +177,7 @@ static const char *GetWebSearchJSONServiceDesciption (Service *service_p)
 {
 	WebSearchJSONServiceData *data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
 
-	return (data_p -> wssd_base_data.wsd_description_s);
+	return (data_p -> wssjd_base_data.wsd_description_s);
 }
 
 
@@ -182,7 +185,7 @@ static const char *GetWebSearchJSONServiceInformationUri (Service *service_p)
 {
 	WebSearchJSONServiceData *data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
 
-	return (data_p -> wssd_base_data.wsd_info_uri_s);
+	return (data_p -> wssjd_base_data.wsd_info_uri_s);
 }
 
 
@@ -190,7 +193,7 @@ static ParameterSet *GetWebSearchJSONServiceParameters (Service *service_p, Reso
 {
 	WebSearchJSONServiceData *data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
 
-	return (data_p -> wssd_base_data.wsd_params_p);
+	return (data_p -> wssjd_base_data.wsd_params_p);
 }
 
 
@@ -291,7 +294,6 @@ static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data
 							bool loop_flag = true;
 							bool success_flag = true;
 							char *start_p = selector_s;
-							char *end_p = start_p + 1;
 
 							while (loop_flag && success_flag)
 								{
@@ -327,6 +329,68 @@ static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data
 
 							if (success_flag)
 								{
+									res_p = json_array ();
+
+									if (res_p)
+										{
+											if (json_is_array (parent_p))
+												{
+													size_t i;
+													json_t *doc_p;
+
+													json_array_foreach (parent_p, i, doc_p)
+														{
+															json_t *title_p = json_object_get (doc_p, data_p -> wssjd_title_selector_s);
+
+															if (title_p)
+																{
+																	if (json_is_array (title_p))
+																		{
+																			const size_t size = json_array_size (title_p);
+
+																			if (size > 1)
+																				{
+
+																				}
+																			else
+																				{
+																					json_t *item_p = json_array_get (title_p, 0);
+																					const char *title_s = NULL;
+																					const char *path_s = NULL;
+
+																					if (json_is_string (item_p))
+																						{
+																							title_s = json_string_value (item_p);
+																						}
+
+
+																					if (data_p -> wssjd_link_selector_s)
+																						{
+
+																						}
+
+																					if (title_s)
+																						{
+																							json_t *link_p = GetResourceAsJSONByParts (PROTOCOL_HTTP_S, path_s, title_s, NULL);
+
+																							if (link_p)
+																								{
+																									json_array_append_new (res_p, link_p);
+																								}
+																						}
+																				}
+																		}
+																	else
+																		{
+
+																		}
+																}		/* if (title_p) */
+
+														}		/* json_array_foreach (parent_p, i, doc_p) */
+
+												}		/* if (json_is_array (parent_p)) */
+
+										}		/* if (res_p) */
 
 								}
 
@@ -337,7 +401,6 @@ static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data
 					FreeCopiedString (selector_s);
 				}
 
-			res_p = GetMatchingLinksAsJSON (data_s, data_p -> wssd_link_selector_s, data_p -> wssd_title_selector_s, data_p -> wssd_base_data.wsd_base_uri_s);
 		}
 
 	return res_p;

@@ -13,6 +13,11 @@
 #endif
 
 
+static bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s);
+
+static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p);
+
+
 void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
 {
 	job_p -> sj_service_p = service_p;
@@ -178,6 +183,23 @@ bool CloseServiceJob (ServiceJob *job_p)
 }
 
 
+
+static bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s)
+{
+	bool success_flag = true;
+
+	if (value_s)
+		{
+			if (json_object_set_new (parent_p, key_s, json_string (value_s)) != 0)
+				{
+					success_flag = false;
+				}
+		}
+
+	return success_flag;
+}
+
+
 static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p)
 {
 	bool success_flag = true;
@@ -247,6 +269,20 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 											success_flag = (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0);
 										}
 
+									if (success_flag)
+										{
+											success_flag = AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s);
+										}
+
+									if (success_flag)
+										{
+											success_flag = AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s);
+										}
+
+									if (success_flag)
+										{
+											success_flag = AddValidJSONString (job_json_p, JOB_SERVICE_S, GetServiceName (job_p -> sj_service_p));
+										}
 								}
 						}
 				}

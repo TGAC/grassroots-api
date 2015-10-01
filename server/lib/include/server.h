@@ -10,7 +10,7 @@
 
 #define KEY_IRODS				("irods")
 #define	KEY_FILE_DATA		("file_data")
-#define	KEY_QUERY		("query")
+
 #define KEY_FILENAME	("file")
 #define KEY_DIRNAME		("dir")
 #define KEY_PROTOCOL	("protocol")

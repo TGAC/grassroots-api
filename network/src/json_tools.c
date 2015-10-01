@@ -297,11 +297,11 @@ json_t *GetKeywordServicesRequest (const char * const username_s, const char * c
 {
 	json_t *res_p = NULL;
 	json_error_t error;
-	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s}", KEY_QUERY, keyword_s);
+	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s}", KEYWORDS_QUERY_S, keyword_s);
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (username_s, password_s, OP_RUN_KEYWORD_SERVICES, KEY_QUERY, op_data_p);
+			res_p = GetServicesRequest (username_s, password_s, OP_RUN_KEYWORD_SERVICES, KEYWORDS_QUERY_S, op_data_p);
 		}
 	else
 		{

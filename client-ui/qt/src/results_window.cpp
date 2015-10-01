@@ -70,6 +70,15 @@ uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p, const 
 }
 
 
+bool ResultsWindow :: AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
+{
+	ClearData ();
+	rw_data_p = json_p;
+
+	return rw_results_p -> AddResultsPageFromJSON (json_p, service_name_s, service_description_s, service_uri_s);
+}
+
+
 void ResultsWindow :: SaveResults (bool clicked_flag)
 {
 	QString filename = QFileDialog :: getSaveFileName (this, tr ("Save Results"), "wheatis_results.json", tr ("JSON (*.json)"));

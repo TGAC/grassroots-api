@@ -54,6 +54,8 @@ private:
 	void AddActions ();
 	void SetParams (json_t *config_p);
 
+	bool AddResults (const json_t *job_results_p);
+
 private slots:
 	void Accept ();
 	void Reject ();

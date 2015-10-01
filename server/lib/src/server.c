@@ -69,6 +69,8 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 
 static json_t *CleanUpJobs (const json_t * const req_p, const json_t *credentials_p);
 
+static json_t *GetRequestedResource (const json_t * const req_p, const json_t *credentials_p);
+
 /***************************/
 /***** API DEFINITIONS *****/
 /***************************/
@@ -256,11 +258,11 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
 						
 					case OP_RUN_KEYWORD_SERVICES:
 						{
-							json_t *keyword_json_group_p = json_object_get (req_p, KEY_QUERY);
+							json_t *keyword_json_group_p = json_object_get (req_p, KEYWORDS_QUERY_S);
 
 							if (keyword_json_group_p)
 								{
-									json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEY_QUERY);
+									json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEYWORDS_QUERY_S);
 
 									if (keyword_json_value_p)
 										{
@@ -1164,23 +1166,32 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 											if (param_flag)
 												{
 													ServiceJobSet *jobs_set_p = RunService (service_p, params_p, config_p);
+
+													if (jobs_set_p)
+														{
+															json_t *service_res_p = GetServiceJobSetAsJSON (jobs_set_p);
+
+															if (service_res_p)
+																{
+																	if (json_array_append_new (res_p, service_res_p) != 0)
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, "Failed to add results from service \"%s\" to results list", GetServiceName (service_p));
+																		}
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to get service results as json from \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
+																}
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
+														}
 												}
 
 											ReleaseServiceParameters (service_p, params_p);
 
 										}		/* if (params_p) */
-
-									if (service_res_p)
-										{
-											if (json_array_append_new (res_p, service_res_p) != 0)
-												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to add results from service \"%s\" to results list", GetServiceName (service_p));
-												}
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
-										}
 
 									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 

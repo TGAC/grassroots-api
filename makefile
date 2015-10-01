@@ -165,6 +165,7 @@ all:
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
 	$(MAKE) -C services/web
+	$(MAKE) -C services/json_search
 	$(MAKE) -C services/web_search
 	$(MAKE) -C services/irods_search
 	$(MAKE) -C services/ensembl_rest
@@ -192,6 +193,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
 	$(MAKE) -C services/web install
+	$(MAKE) -C services/json_search install
 	$(MAKE) -C services/web_search install
 	$(MAKE) -C services/irods_search install
 	$(MAKE) -C services/ensembl_rest install
@@ -221,6 +223,7 @@ clean:
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
 	$(MAKE) -C services/web clean
+	$(MAKE) -C services/json_search clean
 	$(MAKE) -C services/web_search clean	
 	$(MAKE) -C services/irods_search clean
 	$(MAKE) -C services/ensembl_rest clean

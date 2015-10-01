@@ -134,6 +134,10 @@ PREFIX const char *CREDENTIALS_ENCRYPTION_METHOD_S VAL("encrypt_method");
 PREFIX const char *CREDENTIALS_ENCRYPTION_KEY_S VAL("encrypt_key");
 
 
+PREFIX const char *KEYWORDS_QUERY_S VAL("query");
+
+
+
 /**
  * A datatype for storing a json_t on a LinkedList.
  *
