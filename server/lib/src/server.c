@@ -450,92 +450,12 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 													if (jobs_p)
 														{
-															const size_t num_jobs = jobs_p -> sjs_num_jobs;
-															size_t i;
-															ServiceJob *job_p = jobs_p -> sjs_jobs_p;
-															JobsManager *manager_p = GetJobsManager ();
-
-															json_t *service_json_p = json_object ();
-
-															if (service_json_p)
+															if (ProcessServiceJobSet (jobs_p, res_p, &keep_service_flag))
 																{
-																	json_t *jobs_array_p = json_array ();
-
-																	if (jobs_array_p)
-																		{
-																			if (json_object_set_new (service_json_p, SERVICE_JOBS_S, jobs_array_p) == 0)
-																				{
-																					if (!AddServiceResponseHeader (service_p, service_json_p))
-																						{
-																							PrintErrors (STM_LEVEL_WARNING, "Failed to add service response header from %s", GetServiceName (service_p));
-																						}
-
-																					res = 1;
-
-																					for (i = 0; i < num_jobs; ++ i, ++ job_p)
-																						{
-																							json_t *job_json_p = NULL;
-
-
-																							if (AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
-																								{
-																									const OperationStatus job_status = GetServiceJobStatus (job_p);
-
-																									if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
-																										{
-																											/* add the result directly */
-																											job_json_p = GetServiceJobAsJSON (job_p);
-																										}
-																									else
-																										{
-																											job_json_p = GetServiceJobStatusAsJSON (job_p);
-																										}
-
-																									if (job_json_p)
-																										{
-
-																											if (json_array_append_new (jobs_array_p, job_json_p) != 0)
-																												{
-
-																												}
-																										}
-
-																									if (job_p -> sj_status == OS_STARTED || job_p -> sj_status == OS_SUCCEEDED)
-																										{
-																											keep_service_flag = true;
-
-																											if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
-																												{
-
-																												}
-
-																										}
-
-																								}
-
-																						}
-
-																					if (json_array_append_new (res_p, service_json_p) != 0)
-																						{
-
-																						}
-
-																				}		/* if (json_object_set_new (res_p, SERVICE_JOBS_S, jobs_array_p) == 0) */
-																			else
-																				{
-																					WipeJSON (jobs_array_p);
-																				}
-
-																		}		/* if (jobs_array_p) */
-
-																	#if SERVER_DEBUG >= STM_LEVEL_FINE
-																	PrintJSONToLog (service_json_p, "\nservice json:\n", STM_LEVEL_FINE);
-																	#endif
-																}		/* if (service_json_p) */
-
-
-
-
+																	++ res;
+																}
+														
+															
 															if (keep_service_flag)
 																{
 																	/* since we've checked for a single node */
@@ -1169,19 +1089,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 													if (jobs_set_p)
 														{
-															json_t *service_res_p = GetServiceJobSetAsJSON (jobs_set_p);
-
-															if (service_res_p)
-																{
-																	if (json_array_append_new (res_p, service_res_p) != 0)
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to add results from service \"%s\" to results list", GetServiceName (service_p));
-																		}
-																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to get service results as json from \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
-																}
+															ProcessServiceJobSet (jobs_set_p, res_p, NULL);
 														}
 													else
 														{

@@ -202,6 +202,11 @@ WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
 WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p);
 
 
+
+
+WHEATIS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_service_p);
+
+
 /**
  * @brief Create a ServiceJob from a json_t object.
  *

@@ -16,15 +16,17 @@ class ResultsWindow : public QWidget
 public:
   ResultsWindow (QMainWindow *parent_p);
   ~ResultsWindow ();
-  uint32 AddAllResultsPagesFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
-	bool AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
+	uint32 AddAllResultsPagesFromJSON (json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
+	bool AddResultsPageFromJSON (json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
+	void ClearData ();
 
 protected:
 	virtual void dropEvent (QDropEvent *event_p);
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);
 
 private:
-	void ClearData ();
+
+	bool AddData (json_t *data_p);
 
 	void LoadResults (const char * const filename_s);
 	void LoadResults ();
@@ -36,7 +38,7 @@ private slots:
 
 private:
   ResultsWidget *rw_results_p;
-  const json_t *rw_data_p;
+	json_t *rw_data_p;
 };
 
 

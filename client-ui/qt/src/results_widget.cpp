@@ -17,22 +17,34 @@ ResultsWidget :: ~ResultsWidget ()
 }
 
 
+void ResultsWidget :: ClearData ()
+{
+	/*
+	 * Avoid any repaints until we've added all of the pages
+	 */
+	setUpdatesEnabled (false);
+
+	for (int i = count (); i > 0; -- i)
+		{
+			QWidget *widget_p = widget (0);
+			removeTab (0);
+			delete widget_p;
+		}
+
+	setUpdatesEnabled (true);
+}
+
 
 uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
   uint32 num_pages = 0;
 
+	ClearData ();
+
   /*
    * Avoid any repaints until we've added all of the pages
    */
   setUpdatesEnabled (false);
-
-  for (int i = count (); i > 0; -- i)
-    {
-      QWidget *widget_p = widget (0);
-      removeTab (0);
-      delete widget_p;
-    }
 
   if (json_is_array (json_p))
     {

@@ -10,6 +10,8 @@
 #include "results_window.h"
 
 #include "json_util.h"
+#include "json_tools.h"
+
 
 ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 	: rw_data_p (0)
@@ -45,14 +47,32 @@ ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 
 void ResultsWindow :: ClearData ()
 {
-/*
-  if (rw_data_p)
-    {
-      json_array_clear (rw_data_p);
-      json_decref (rw_data_p);
-    }
-*/
+	rw_results_p -> ClearData();
+
+	if (rw_data_p)
+		{
+			WipeJSON (rw_data_p);
+		}
 }
+
+
+bool ResultsWindow :: AddData (json_t *data_p)
+{
+	bool success_flag = false;
+
+	if (!rw_data_p)
+		{
+			rw_data_p = json_array ();
+		}
+
+	if (rw_data_p)
+		{
+			success_flag = (json_array_append (rw_data_p, data_p) == 0);
+		}
+
+	return success_flag;
+}
+
 
 
 ResultsWindow :: ~ResultsWindow ()
@@ -61,7 +81,7 @@ ResultsWindow :: ~ResultsWindow ()
 }
 
 
-uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
+uint32 ResultsWindow :: AddAllResultsPagesFromJSON (json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {  
   ClearData ();
   rw_data_p = json_p;
@@ -70,10 +90,9 @@ uint32 ResultsWindow :: AddAllResultsPagesFromJSON (const json_t *json_p, const 
 }
 
 
-bool ResultsWindow :: AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
+bool ResultsWindow :: AddResultsPageFromJSON (json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
-	ClearData ();
-	rw_data_p = json_p;
+	AddData (json_p);
 
 	return rw_results_p -> AddResultsPageFromJSON (json_p, service_name_s, service_description_s, service_uri_s);
 }

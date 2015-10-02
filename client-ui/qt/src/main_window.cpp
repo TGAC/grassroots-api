@@ -28,6 +28,12 @@
 #include "qt_client_data.h"
 #include "ui_utils.h"
 
+#ifdef _DEBUG
+	#define MAIN_WINDOW_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define MAIN_WINDOW_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 
 MainWindow :: MainWindow (QTClientData *data_p)
 : mw_client_data_p (data_p)
@@ -216,6 +222,8 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 
 					PrintJSONToLog (results_p, "\n\nresults\n", STM_LEVEL_FINE);
 
+					mw_client_data_p -> qcd_results_p -> ClearData ();
+
 					if (json_is_array (results_p))
 						{
 							size_t i;
@@ -224,6 +232,10 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 
 							json_array_foreach (results_p, i, service_result_p)
 								{
+									#if MAIN_WINDOW_DEBUG >= STM_LEVEL_FINE
+									PrintJSONToLog (service_result_p, "service_result_p", MAIN_WINDOW_DEBUG);
+									#endif
+
 									if (json_is_array (service_result_p))
 										{
 											size_t j;
@@ -232,13 +244,16 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 
 											json_array_foreach (service_result_p, j, job_result_p)
 												{
-													AddResults (job_result_p);
+													if (AddResults (job_result_p))
+														{
+															show_results_flag = true;
+														}
 												}
 
 										}
 									else
 										{
-											AddResults (service_result_p);
+											show_results_flag = AddResults (service_result_p);
 										}
 
 								}		/* json_array_foreach (results_p, i, service_result_p) */
@@ -258,15 +273,39 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 }
 
 
-bool MainWindow :: AddResults (const json_t *job_results_p)
+bool MainWindow :: AddResults (const json_t *service_results_p)
 {
+	bool success_flag = false;
+	json_t *jobs_p = json_object_get (service_results_p, SERVICE_JOBS_S);
 
-	const json_t *results_json_p = json_object_get (job_results_p, JOB_RESULTS_S);
-	const char *service_name_s = GetJSONString (job_results_p, JOB_NAME_S);
-	const char *service_description_s = GetJSONString (job_results_p, JOB_DESCRIPTION_S);
-	const char *service_uri_s = NULL;
+	if (jobs_p)
+		{
+			const char *service_name_s = GetJSONString (service_results_p, SERVICE_NAME_S);
+			const char *service_description_s = GetJSONString (service_results_p, SERVICES_DESCRIPTION_S);
+			const char *service_uri_s = NULL;
 
-	return mw_client_data_p -> qcd_results_p -> AddResultsPageFromJSON (results_json_p, service_name_s,  service_description_s, service_uri_s);
+
+
+			if (json_is_array (jobs_p))
+				{
+					size_t i;
+					json_t *job_p;
+
+					json_array_foreach (jobs_p, i, job_p)
+						{
+							if (mw_client_data_p -> qcd_results_p -> AddResultsPageFromJSON (job_p, service_name_s,  service_description_s, service_uri_s))
+								{
+									success_flag = true;
+								}
+						}
+				}
+			else
+				{
+					success_flag = mw_client_data_p -> qcd_results_p -> AddResultsPageFromJSON (jobs_p, service_name_s,  service_description_s, service_uri_s);
+				}
+		}
+
+	return success_flag;
 }
 
 

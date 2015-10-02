@@ -14,6 +14,7 @@ public:
 
   uint32 AddAllResultsPagesFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
   bool AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
+  void ClearData ();
 
 private:
   QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);

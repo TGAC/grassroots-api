@@ -88,7 +88,7 @@ typedef struct Client
 	 * Services that have run on the Server.
 	 * @return Any resultant data after the Client has finished displaying the results.
 	 */
-	json_t *(*cl_display_results_fn) (ClientData *client_data_p, const json_t *response_p);
+	json_t *(*cl_display_results_fn) (ClientData *client_data_p, json_t *response_p);
 
 	/**
 	 * @brief Any custom data that the Client needs to store.
@@ -141,7 +141,7 @@ WHEATIS_CLIENT_API void InitialiseClient (Client * const client_p,
 	const char *(*get_client_name_fn) (ClientData *client_data_p),
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
-	json_t *(*display_results_fn) (ClientData *client_data_p, const json_t *response_p),
+	json_t *(*display_results_fn) (ClientData *client_data_p, json_t *response_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p),
 	ClientData *data_p,
 	Connection *connection_p);
@@ -166,7 +166,7 @@ WHEATIS_CLIENT_API json_t *RunClient (Client *client_p);
  * @param response_p The JSON response from a Server that ran the Services.
  * @memberof Client
  */
-WHEATIS_CLIENT_API json_t *DisplayResultsInClient (Client *client_p, const json_t *response_p);
+WHEATIS_CLIENT_API json_t *DisplayResultsInClient (Client *client_p, json_t *response_p);
 
 
 /**

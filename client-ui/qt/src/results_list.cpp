@@ -109,22 +109,27 @@ bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 	if (json_is_array (results_list_json_p))
 		{
 			const size_t size = json_array_size (results_list_json_p);
-			size_t count = 0;
 
-			rl_list_p -> clear ();
-
-			for (size_t i = 0; i < size; ++ i)
+			if (size > 0)
 				{
-					json_t *value_p = json_array_get (results_list_json_p, i);
+					size_t count = 0;
 
-					if (AddItemFromJSON (value_p))
+					rl_list_p -> clear ();
+
+					for (size_t i = 0; i < size; ++ i)
 						{
-							++ count;
-						}
+							json_t *value_p = json_array_get (results_list_json_p, i);
 
-				}		/* for (size_t i = 0; i < size; ++ i) */
+							if (AddItemFromJSON (value_p))
+								{
+									++ count;
+								}
 
-			success_flag = (count == size);
+						}		/* for (size_t i = 0; i < size; ++ i) */
+
+					success_flag = (count == size);
+				}
+
 		}		/* if (json_is_array (results_list_json_p)) */
 
 	return success_flag;

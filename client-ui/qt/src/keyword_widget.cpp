@@ -36,7 +36,6 @@ void KeywordWidget :: TextEntered ()
 {
 	QString search_text = kw_text_box_p -> text ();
 	emit RunKeywordSearch (search_text);
-	QMessageBox :: information (this, "info", search_text, QMessageBox :: Ok);
 }
 
 
