@@ -16,9 +16,9 @@
 				"summary": "An operation to obtain matching articles",
 				"description": "An operation to obtain matching articles from BASE",
 				"about_uri": "https://www.base-search.net/about/en/index.php",
-				"uri": "https://www.base-search.net/",
+				"uri": "https://www.base-search.net/Search/Results?type=all&oaboost=1&ling=1&name=&newsearch=1&refid=dcbasen",
 				"method": "GET",
-				"link_selector": "ResultsBox h2 a",
+				"link_selector": ".Results h2 a",
 				"parameter_set": {
 					"parameters": [
 						{

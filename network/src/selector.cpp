@@ -242,7 +242,11 @@ static char *GetInnerText (const htmlcxx :: HTML :: Node *node_p, const char *da
 
 					/* scroll past the < and > */
 					-- end_p;
-					++ start_p;
+
+					if (*start_p == '>')
+						{
+							++ start_p;
+						}
 
 					ResetByteBuffer (buffer_p);
 

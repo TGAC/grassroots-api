@@ -192,6 +192,19 @@ bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_s
 	char c = '?';
 	ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
 
+	/* If the url already has a ? starting the params, we need to use a & */
+	const char *c_p = strrchr (data_p -> wsd_base_uri_s, '/');
+	if (!c_p)
+		{
+			data_p -> wsd_base_uri_s;
+		}
+
+	if (strchr (c_p, '?'))
+		{
+			c = '&';
+		}
+
+
 	ResetByteBuffer (buffer_p);
 
 	while (node_p && success_flag)
