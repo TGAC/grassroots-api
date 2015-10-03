@@ -209,6 +209,94 @@ static rcComm_t *GetIRODSConnection (const json_t *config_p)
 }
 
 
+
+static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id, IrodsSearchServiceData *data_p)
+{
+	StringIntPairArray *results_p = NULL;
+	HashTable *store_p = GetHashTableOfStringInts (100, 75);
+
+	if (store_p)
+		{
+			/*
+			 * Get all attribute names
+			 */
+			QueryResults *attribute_names_p = GetAllMetadataAttributeNames (data_p -> issd_connection_p, key_col_id);
+
+			if (attribute_names_p)
+				{
+					if (attribute_names_p -> qr_num_results == 1)
+						{
+							QueryResult *result_p = attribute_names_p -> qr_values_p;
+							int i = result_p -> qr_num_values;
+							char **attribute_name_ss = result_p -> qr_values_pp;
+
+							/*
+							 * For each attribute name, test for the keyword value and store any hits
+							 */
+							for ( ; i > 0; --i, ++ attribute_name_ss)
+								{
+									/*
+									 * Get the attribute values
+									 */
+
+
+								}		/* for ( ; i > 0; --i, ++ attribute_name_ss) */
+
+						}		/* if (attribute_names_p -> qr_num_results == 1) */
+
+					FreeQueryResults (attribute_names_p);
+				}		/* if (attribute_names_p) */
+
+
+			/*
+			 * Get all of the hits and rank them by occurrence
+			 */
+			if (store_p -> ht_size > 0)
+				{
+					char **keys_pp = (char **) GetKeysIndexFromHashTable (store_p);
+
+					if (keys_pp)
+						{
+							uint32 i = store_p -> ht_size;
+							results_p = AllocateStringIntPairArray (i);
+
+							if (results_p)
+								{
+									char **key_pp = keys_pp;
+									StringIntPair *pair_p = results_p -> sipa_values_p;
+
+									for ( ; i > 0; -- i, ++ key_pp, ++ pair_p)
+										{
+											const char *key_s = *key_pp;
+											const int *count_p = GetFromHashTable (store_p, key_s);
+
+											if (count_p)
+												{
+													if (!SetStringIntPair (pair_p, key_s, MF_DEEP_COPY, *count_p))
+														{
+
+														}
+												}
+										}
+								}
+
+							FreeKeysIndex (keys_pp);
+						}
+
+				}		/* if (store_p -> ht_size > 0) */
+
+			FreeHashTable (store_p);
+		}		/* if (store_p) */
+
+
+
+
+	return results_p;
+}
+
+
+
+
 static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	size_t res = 0;

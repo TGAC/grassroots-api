@@ -865,3 +865,21 @@ void ReplaceChars (char *value_s, char old_data, char new_data)
 			++ value_p;
 		}
 }
+
+
+uint32 HashString (const void * const key_p)
+{
+	uint32 res = 0;
+
+	if (key_p)
+		{
+			const char *c_p = (const char *) key_p;
+
+			while (*c_p)
+				{
+					res = (res << 1) ^ *c_p ++;
+				}
+		}
+
+	return res;
+}

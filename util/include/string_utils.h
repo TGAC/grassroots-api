@@ -241,6 +241,11 @@ WHEATIS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src
 
 WHEATIS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
 
+
+WHEATIS_UTIL_API uint32 HashString (const void * const key_p);
+
+
+
 #ifdef __cplusplus
 }
 #endif

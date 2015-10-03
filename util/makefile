@@ -52,6 +52,7 @@ SRCS 	= \
 	plugin.c \
 	streams.c \
 	string_hash_table.c \
+	string_int_pair.c \
 	string_linked_list.c \
 	string_utils.c \
 	time_util.c \
