@@ -632,7 +632,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 			/* Add the key-value pair */
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (root_p, OPERATION_ID_S, json_string (value_s)) == 0);
+					success_flag = (json_object_set_new (root_p, SERVICE_NAME_S, json_string (value_s)) == 0);
 				}
 
 			if (success_flag)
@@ -772,7 +772,7 @@ const char *GetOperationNameFromJSON (const json_t * const root_p)
 
 	if (!result_s)
 		{
-			result_s = json_object_get (root_p, OPERATION_ID_OLD_S);
+			result_s = GetJSONString (root_p, OPERATION_ID_OLD_S);
 		}
 
 	return result_s;

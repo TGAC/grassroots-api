@@ -152,8 +152,20 @@ static bool FillStringIntHashBucket (HashBucket * const bucket_p, const void * c
 
 	if (FillStringValue (key_p, & (bucket_p -> hb_key_p), bucket_p -> hb_owns_key))
 		{
-			* ((int *) (bucket_p -> hb_value_p)) = * ((const int *) value_p);
-			success_flag = true;
+			int *dest_value_p = (int *) (bucket_p -> hb_value_p);
+
+			if (!dest_value_p)
+				{
+					dest_value_p = (int *) AllocMemory (sizeof (int));
+				}
+
+			if (dest_value_p)
+				{
+					*dest_value_p = * ((const int *) value_p);
+
+					bucket_p -> hb_value_p = dest_value_p;
+					success_flag = true;
+				}
 		}
 
 	return success_flag;

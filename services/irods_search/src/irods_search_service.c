@@ -254,7 +254,7 @@ static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value
 										{
 											if (AddIrodsSearchTerm (search_p, NULL, *attribute_name_ss, key_col_id, "=", keyword_s, value_col_id))
 												{
-													QueryResults *attr_search_results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+													QueryResults *attr_search_results_p = DoIrodsMetaSearch (search_p, data_p);
 
 													if (attr_search_results_p)
 														{
@@ -618,17 +618,18 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
 					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 					SharedType def;
+					json_t *json_res_p = NULL;
 
 					job_p -> sj_status = OS_FAILED;
 
 					/* is it a keyword search? */
-					if (GetParameterValueFromParameterSet (param_set_p, TAG_IRODS_KEYWORD, &def, true))
+					if ((GetParameterValueFromParameterSet (param_set_p, TAG_IRODS_KEYWORD, &def, true)) && (!IsStringEmpty (def.st_string_value_s)))
 						{
-							json_t *res_p = DoKeywordSearch (def.st_string_value_s, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, data_p);
+							json_res_p = DoKeywordSearch (def.st_string_value_s, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, data_p);
 
-							if (res_p)
+							if (json_res_p)
 								{
-									job_p -> sj_result_p = res_p;
+									job_p -> sj_result_p = json_res_p;
 									job_p -> sj_status = OS_SUCCEEDED;
 								}
 						}

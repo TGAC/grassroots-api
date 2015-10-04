@@ -610,7 +610,7 @@ bool IsStringEmpty (const char *value_s)
 {
 	if (value_s)
 		{
-			while (value_s)
+			while (*value_s)
 				{
 					if (isspace (*value_s))
 						{

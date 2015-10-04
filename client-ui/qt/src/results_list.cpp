@@ -11,7 +11,7 @@
 #include "viewer_widget.h"
 
 #include "json_util.h"
-#include "resource.h"
+#include "data_resource.h"
 
 
 

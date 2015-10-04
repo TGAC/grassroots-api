@@ -27,7 +27,7 @@
 
 
 #ifdef _DEBUG
-	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_FINE)
+	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -504,13 +504,13 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, const json_t *provider_p)
 {
 	int res = -1;
-	const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+	const char *op_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
 
 	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (service_json_p, "client received service:\n", STANDALONE_CLIENT_DEBUG);
 	#endif
 
-	if (service_name_s)
+	if (op_name_s)
 		{
 			const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
 
@@ -522,7 +522,7 @@ static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, 
 						{
 							const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
 
-							res = AddServiceToClient (client_p, service_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
+							res = AddServiceToClient (client_p, op_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
 						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */
