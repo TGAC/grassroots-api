@@ -1,8 +1,8 @@
-#ifndef WHEATIS_SERVICE_MANAGER_H
-#define WHEATIS_SERVICE_MANAGER_H
+#ifndef GRASSROOTS_SERVICE_MANAGER_H
+#define GRASSROOTS_SERVICE_MANAGER_H
 
 #include "typedefs.h"
-#include "wheatis_service_manager_library.h"
+#include "grassroots_service_manager_library.h"
 #include "jansson.h"
 #include "operation.h"
 
@@ -36,10 +36,10 @@ typedef struct ServerOperations
  * @param request_s The message from the client.
  * @return The response from the server.
  */
-WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd);
+GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd);
 
 
-WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd);
+GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd);
 
 
 
@@ -48,4 +48,4 @@ WHEATIS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, con
 #endif
 
 
-#endif		/* #ifndef WHEATIS_SERVICE_MANAGER_H */
+#endif		/* #ifndef GRASSROOTS_SERVICE_MANAGER_H */

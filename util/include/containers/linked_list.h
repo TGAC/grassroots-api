@@ -7,7 +7,7 @@
 #define LINKED_LIST_H
 
 #include "typedefs.h"
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 
 
 
@@ -59,7 +59,7 @@ extern "C"
  * call free ().
  * @return The new LinkedList or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListItem * const node_p));
+GRASSROOTS_UTIL_API LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListItem * const node_p));
 
 
 /**
@@ -70,7 +70,7 @@ WHEATIS_UTIL_API LinkedList *AllocateLinkedList (void (*free_node_fn_p) (ListIte
  *
  * @param list_p The LinkedList to free.
  */
-WHEATIS_UTIL_API void FreeLinkedList (LinkedList * const list_p);
+GRASSROOTS_UTIL_API void FreeLinkedList (LinkedList * const list_p);
 
 
 /**
@@ -78,7 +78,7 @@ WHEATIS_UTIL_API void FreeLinkedList (LinkedList * const list_p);
  *
  * @param list_p The LinkedList to initialise.
  */
-WHEATIS_UTIL_API void InitLinkedList (LinkedList * const list_p);
+GRASSROOTS_UTIL_API void InitLinkedList (LinkedList * const list_p);
 
 
 /**
@@ -87,7 +87,7 @@ WHEATIS_UTIL_API void InitLinkedList (LinkedList * const list_p);
  * @param list_p The LinkedList to add the ListNode to.
  * @param node_p The ListNode to add.
  */
-WHEATIS_UTIL_API void LinkedListAddHead (LinkedList * const list_p, ListItem * const node_p);
+GRASSROOTS_UTIL_API void LinkedListAddHead (LinkedList * const list_p, ListItem * const node_p);
 
 
 /**
@@ -96,7 +96,7 @@ WHEATIS_UTIL_API void LinkedListAddHead (LinkedList * const list_p, ListItem * c
  * @param list_p The LinkedList to add the ListNode to.
  * @param node_p The ListNode to add.
  */
-WHEATIS_UTIL_API void LinkedListAddTail (LinkedList * const list_p, ListItem * const node_p);
+GRASSROOTS_UTIL_API void LinkedListAddTail (LinkedList * const list_p, ListItem * const node_p);
 
 
 /**
@@ -105,7 +105,7 @@ WHEATIS_UTIL_API void LinkedListAddTail (LinkedList * const list_p, ListItem * c
  * @param list_p The LinkedList to remove the first ListNode from.
  * @return The removed ListNode or NULL if the LinkedList is empty.
  */
-WHEATIS_UTIL_API ListItem *LinkedListRemHead (LinkedList * const list_p);
+GRASSROOTS_UTIL_API ListItem *LinkedListRemHead (LinkedList * const list_p);
 
 
 /**
@@ -114,7 +114,7 @@ WHEATIS_UTIL_API ListItem *LinkedListRemHead (LinkedList * const list_p);
  * @param list_p The LinkedList to remove the last ListNode from.
  * @return The removed ListNode or NULL if the LinkedList is empty.
  */
-WHEATIS_UTIL_API ListItem *LinkedListRemTail (LinkedList * const list_p);
+GRASSROOTS_UTIL_API ListItem *LinkedListRemTail (LinkedList * const list_p);
 
 
 /**
@@ -123,7 +123,7 @@ WHEATIS_UTIL_API ListItem *LinkedListRemTail (LinkedList * const list_p);
  * @param list_p The LinkedList to remove the ListNode from.
  * @param node_p The ListNode to be removed.
  */
-WHEATIS_UTIL_API void LinkedListRemove (LinkedList * const list_p, ListItem * const node_p);
+GRASSROOTS_UTIL_API void LinkedListRemove (LinkedList * const list_p, ListItem * const node_p);
 
 
 /**
@@ -136,7 +136,7 @@ WHEATIS_UTIL_API void LinkedListRemove (LinkedList * const list_p, ListItem * co
  * It returns > 0 if node1_p should be after node2_p,
  * It returns  0 if node1_p is equal to node2_p.
  */
-WHEATIS_UTIL_API bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
+GRASSROOTS_UTIL_API bool LinkedListSort (LinkedList * const list_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
 
 
 /**
@@ -145,7 +145,7 @@ WHEATIS_UTIL_API bool LinkedListSort (LinkedList * const list_p, int (*compare_n
  * @param list_p The LinkedList to set the function for.
  * @param free_node_fn The function that will be used to free the ListNodes.
  */
-WHEATIS_UTIL_API void SetLinkedListFreeNodeFunction (LinkedList * const list_p, void (*free_node_fn) (ListItem * const node_p));
+GRASSROOTS_UTIL_API void SetLinkedListFreeNodeFunction (LinkedList * const list_p, void (*free_node_fn) (ListItem * const node_p));
 
 
 /**
@@ -156,7 +156,7 @@ WHEATIS_UTIL_API void SetLinkedListFreeNodeFunction (LinkedList * const list_p, 
  * @param node_p The ListNode to insert into the list.
  * @param compare_nodes_fn Function used to compare the ListNodes.
  */
-WHEATIS_UTIL_API void LinkedListPrioritisedInsert (LinkedList * const list_p, ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
+GRASSROOTS_UTIL_API void LinkedListPrioritisedInsert (LinkedList * const list_p, ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p));
 
 
 /**
@@ -167,7 +167,7 @@ WHEATIS_UTIL_API void LinkedListPrioritisedInsert (LinkedList * const list_p, Li
  * be inserted at the start of the list.
  * @param node_to_insert_p The ListNode to insert on the list.
  */
-WHEATIS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListItem * const prev_node_p, ListItem * const node_to_insert_p);
+GRASSROOTS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListItem * const prev_node_p, ListItem * const node_to_insert_p);
 
 
 /**
@@ -181,7 +181,7 @@ WHEATIS_UTIL_API void LinkedListInsert (LinkedList * const list_p, ListItem * co
  * if it is found.
  * @return The matching ListNode or <code>NULL</code> if it could not be found on the LinkedList.
  */
-WHEATIS_UTIL_API ListItem *LinkedListBinarySearch (const LinkedList * const list_p, const ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p);
+GRASSROOTS_UTIL_API ListItem *LinkedListBinarySearch (const LinkedList * const list_p, const ListItem * const node_p, int (*compare_nodes_fn) (const void *v1_p, const void *v2_p), int * const index_p);
 
 
 /**
@@ -193,7 +193,7 @@ WHEATIS_UTIL_API ListItem *LinkedListBinarySearch (const LinkedList * const list
  * @param src_list_p The LinkedList to remove all of the nodes from.
  * @param dest_list_p The LinkedList to which the nodes will be appended.
  */
-WHEATIS_UTIL_API void MoveListContents (LinkedList * const src_list_p, LinkedList * const dest_list_p);
+GRASSROOTS_UTIL_API void MoveListContents (LinkedList * const src_list_p, LinkedList * const dest_list_p);
 
 
 /**
@@ -205,7 +205,7 @@ WHEATIS_UTIL_API void MoveListContents (LinkedList * const src_list_p, LinkedLis
  * @return The newly created list or NULL if there was an error or if split_list_head_index
  * was not less than the length of list_p.
  */
-WHEATIS_UTIL_API LinkedList *SplitList (LinkedList * const list_p, const uint32 split_list_head_index);
+GRASSROOTS_UTIL_API LinkedList *SplitList (LinkedList * const list_p, const uint32 split_list_head_index);
 
 
 /**
@@ -213,7 +213,7 @@ WHEATIS_UTIL_API LinkedList *SplitList (LinkedList * const list_p, const uint32 
  *
  * @param list_p The LinkedList to empty.
  */
-WHEATIS_UTIL_API void ClearLinkedList (LinkedList * const list_p);
+GRASSROOTS_UTIL_API void ClearLinkedList (LinkedList * const list_p);
 
 
 #ifdef __cplusplus

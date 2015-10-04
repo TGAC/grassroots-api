@@ -47,7 +47,7 @@ typedef struct MongoTool
  * resource.c.
  */
 #ifdef ALLOCATE_MONGODB_TAGS
-	#define MONGODB_PREFIX WHEATIS_MONGODB_API
+	#define MONGODB_PREFIX GRASSROOTS_MONGODB_API
 	#define MONGODB_VAL(x)	= x
 #else
 	#define MONGODB_PREFIX extern
@@ -70,76 +70,76 @@ extern "C"
 {
 #endif
 
-WHEATIS_MONGODB_API bool InitMongo (const char *connection_s);
+GRASSROOTS_MONGODB_API bool InitMongo (const char *connection_s);
 
 
-WHEATIS_MONGODB_API void ExitMongo (void);
+GRASSROOTS_MONGODB_API void ExitMongo (void);
 
 
-WHEATIS_MONGODB_API bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
+GRASSROOTS_MONGODB_API bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
 
 
-WHEATIS_MONGODB_API MongoTool *AllocateMongoTool (void);
+GRASSROOTS_MONGODB_API MongoTool *AllocateMongoTool (void);
 
 
-WHEATIS_MONGODB_API void FreeMongoTool (MongoTool *tool_p);
+GRASSROOTS_MONGODB_API void FreeMongoTool (MongoTool *tool_p);
 
 
-WHEATIS_MONGODB_API bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
+GRASSROOTS_MONGODB_API bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
 
 
-WHEATIS_MONGODB_API bson_t *ConvertJSONToBSON (const json_t *json_p);
+GRASSROOTS_MONGODB_API bson_t *ConvertJSONToBSON (const json_t *json_p);
 
 
-WHEATIS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
+GRASSROOTS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
 
 
-WHEATIS_MONGODB_API bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, const json_t *json_p);
+GRASSROOTS_MONGODB_API bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, const json_t *json_p);
 
 
-WHEATIS_MONGODB_API bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, const bool remove_first_match_only_flag);
+GRASSROOTS_MONGODB_API bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, const bool remove_first_match_only_flag);
 
 
-WHEATIS_MONGODB_API bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss);
+GRASSROOTS_MONGODB_API bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_json_p, const char **fields_ss);
 
 
-WHEATIS_MONGODB_API bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p, const char **fields_ss);
+GRASSROOTS_MONGODB_API bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p, const char **fields_ss);
 
 
-WHEATIS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p);
+GRASSROOTS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p);
 
 
-WHEATIS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
+GRASSROOTS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
 
 
-WHEATIS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
+GRASSROOTS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
 
-WHEATIS_MONGODB_API json_t *GetCurrentValuesAsJSON (MongoTool *tool_p, const char **fields_ss, const size_t num_fields);
+GRASSROOTS_MONGODB_API json_t *GetCurrentValuesAsJSON (MongoTool *tool_p, const char **fields_ss, const size_t num_fields);
 
 
-WHEATIS_MONGODB_API json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p);
+GRASSROOTS_MONGODB_API json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool_p);
 
 
-WHEATIS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
+GRASSROOTS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
 
 
-WHEATIS_MONGODB_API void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
+GRASSROOTS_MONGODB_API void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
 
 
-WHEATIS_MONGODB_API void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s);
+GRASSROOTS_MONGODB_API void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s);
 
 
-WHEATIS_MONGODB_API void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
+GRASSROOTS_MONGODB_API void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
 
 
-WHEATIS_MONGODB_API int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, const char *collection_s, const char *key_s, const char *value_s);
+GRASSROOTS_MONGODB_API int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, const char *collection_s, const char *key_s, const char *value_s);
 
 
-WHEATIS_MONGODB_API bson_t *GenerateQuery (const json_t *json_p);
+GRASSROOTS_MONGODB_API bson_t *GenerateQuery (const json_t *json_p);
 
 
-WHEATIS_MONGODB_API json_t *ConvertBSONValueToJSON (const bson_value_t *value_p);
+GRASSROOTS_MONGODB_API json_t *ConvertBSONValueToJSON (const bson_value_t *value_p);
 
 
 #ifdef __cplusplus

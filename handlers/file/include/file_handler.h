@@ -1,9 +1,9 @@
-#ifndef WHEATIS_FILE_HANDLER_H
-#define WHEATIS_FILE_HANDLER_H
+#ifndef GRASSROOTS_FILE_HANDLER_H
+#define GRASSROOTS_FILE_HANDLER_H
 
 #include <stdio.h>
 
-#include "wheatis_file_handler_library.h"
+#include "grassroots_file_handler_library.h"
 #include "handler.h"
 
 
@@ -29,4 +29,4 @@ FILE_HANDLER_API void ReleaseHandler (Handler *handler_p);
 #endif
 
 
-#endif		/* #ifndef WHEATIS_FILE_HANDLER_H */
+#endif		/* #ifndef GRASSROOTS_FILE_HANDLER_H */

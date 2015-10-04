@@ -8,7 +8,7 @@
 #include "mongodb_util.h"
 #include "memory_allocations.h"
 #include "json_tools.h"
-#include "wheatis_config.h"
+#include "grassroots_config.h"
 #include "json_util.h"
 
 mongoc_client_pool_t *s_clients_p = NULL;

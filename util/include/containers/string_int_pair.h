@@ -10,7 +10,7 @@
 
 #include "typedefs.h"
 #include "memory_allocations.h"
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 
 
 typedef struct StringIntPair
@@ -34,16 +34,16 @@ extern "C" {
 #endif
 
 
-WHEATIS_UTIL_API StringIntPairArray *AllocateStringIntPairArray (const uint32 size);
+GRASSROOTS_UTIL_API StringIntPairArray *AllocateStringIntPairArray (const uint32 size);
 
 
-WHEATIS_UTIL_API void FreeStringIntPairArray (StringIntPairArray *array_p);
+GRASSROOTS_UTIL_API void FreeStringIntPairArray (StringIntPairArray *array_p);
 
 
-WHEATIS_UTIL_API bool SetStringIntPair (StringIntPair *pair_p, char *text_s, MEM_FLAG text_mem, const uint32 value);
+GRASSROOTS_UTIL_API bool SetStringIntPair (StringIntPair *pair_p, char *text_s, MEM_FLAG text_mem, const uint32 value);
 
 
-WHEATIS_UTIL_API void ClearStringIntPair (StringIntPair *pair_p);
+GRASSROOTS_UTIL_API void ClearStringIntPair (StringIntPair *pair_p);
 
 
 #ifdef __cplusplus

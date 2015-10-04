@@ -1,7 +1,7 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 
 /**
  * @brief The various Operations that a Server can perform.
@@ -71,10 +71,10 @@ extern "C"
 {
 #endif
 
-WHEATIS_UTIL_API const char *GetOperationStatusAsString (const OperationStatus status);
+GRASSROOTS_UTIL_API const char *GetOperationStatusAsString (const OperationStatus status);
 
 
-WHEATIS_UTIL_API OperationStatus GetOperationStatusFromString (const char *status_s);
+GRASSROOTS_UTIL_API OperationStatus GetOperationStatusFromString (const char *status_s);
 
 
 #ifdef __cplusplus

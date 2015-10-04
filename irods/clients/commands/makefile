@@ -1,4 +1,4 @@
-NAME 		= wheatis_commands
+NAME 		= grassroots_commands
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= g++
@@ -8,8 +8,8 @@ MAKEDEPEND 	= g++ -MM -MF
 DIR_IRODS	= $$IRODS_HOME
 
 
-DIR_WHEATIS_UTIL = /usr/users/ga002/tyrrells/Projects/wheatis/irods/util
-#DIR_WHEATIS_UTIL = /home/billy/Projects/wheatis/irods/util
+DIR_GRASSROOTS_UTIL = /usr/users/ga002/tyrrells/Projects/grassroots/irods/util
+#DIR_GRASSROOTS_UTIL = /home/billy/Projects/grassroots/irods/util
 
 
 BUILD		= debug
@@ -19,8 +19,8 @@ VPATH	= \
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
-	-I$(DIR_WHEATIS_UTIL)/include \
-	-I$(DIR_WHEATIS_UTIL)/include/containers \
+	-I$(DIR_GRASSROOTS_UTIL)/include \
+	-I$(DIR_GRASSROOTS_UTIL)/include/containers \
 	-I$(DIR_IRODS)/lib/api/include \
 	-I$(DIR_IRODS)/lib/core/include \
 	-I$(DIR_IRODS)/lib/md5/include \
@@ -38,7 +38,7 @@ CPPFLAGS += -DUNIX
 # Ubuntu build qt with -reduce-relocations so we need this flag
 #CFLAGS += -fPIE
 
-LDFLAGS += -lpthread -L/usr/users/ga002/tyrrells/Projects/wheatis_demo/lib -lwheatis_util
+LDFLAGS += -lpthread -L/usr/users/ga002/tyrrells/Projects/grassroots_demo/lib -lgrassroots_util
 
 OBJS = $(patsubst %.c,%.o, $(SRCS))
 EXES = $(patsubst %.c,%, $(SRCS))

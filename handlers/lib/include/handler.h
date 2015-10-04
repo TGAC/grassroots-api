@@ -1,11 +1,11 @@
-#ifndef WHEATIS_HANDLE_H
-#define WHEATIS_HANDLE_H
+#ifndef GRASSROOTS_HANDLE_H
+#define GRASSROOTS_HANDLE_H
 
 #include <stddef.h>
 #include <time.h>
 
 #include "typedefs.h"
-#include "wheatis_handler_library.h"
+#include "grassroots_handler_library.h"
 #include "plugin.h"
 #include "resource.h"
 #include "parameter.h"
@@ -67,7 +67,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
+GRASSROOTS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	bool (*init_fn) (struct Handler *handler_p, json_t *credentials_p),
 	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
 	const char *(*get_protocol_fn) (struct Handler *handler_p),
@@ -83,39 +83,39 @@ WHEATIS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	void (*free_handler_fn) (struct Handler *handler_p));
 
 
-WHEATIS_HANDLER_API bool InitHandler (struct Handler *handler_p, json_t *credentials_p);
+GRASSROOTS_HANDLER_API bool InitHandler (struct Handler *handler_p, json_t *credentials_p);
 
-WHEATIS_HANDLER_API bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
+GRASSROOTS_HANDLER_API bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
 
-WHEATIS_HANDLER_API size_t ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
+GRASSROOTS_HANDLER_API size_t ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
-WHEATIS_HANDLER_API size_t WriteToHandler (struct Handler *handler_p, const void *buffer_p, const size_t length);
+GRASSROOTS_HANDLER_API size_t WriteToHandler (struct Handler *handler_p, const void *buffer_p, const size_t length);
 
-WHEATIS_HANDLER_API size_t SeekHandler (struct Handler *handler_p, size_t offset, int whence);
+GRASSROOTS_HANDLER_API size_t SeekHandler (struct Handler *handler_p, size_t offset, int whence);
 
-WHEATIS_HANDLER_API bool CloseHandler (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API bool CloseHandler (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API bool IsHandlerForResource (struct Handler *handler_p, const Resource * resource_p);
+GRASSROOTS_HANDLER_API bool IsHandlerForResource (struct Handler *handler_p, const Resource * resource_p);
 
-WHEATIS_HANDLER_API const char *GetHandlerName (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API const char *GetHandlerName (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API const char *GetHandlerDescription (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API const char *GetHandlerDescription (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API const char *GetHandlerProtocol (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API const char *GetHandlerProtocol (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API HandlerStatus GetHandlerStatus (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API HandlerStatus GetHandlerStatus (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API bool CalculateFileInformationFromHandler (struct Handler *handler_p, FileInformation *info_p);
+GRASSROOTS_HANDLER_API bool CalculateFileInformationFromHandler (struct Handler *handler_p, FileInformation *info_p);
 
-WHEATIS_HANDLER_API void FreeHandler (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API void FreeHandler (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API HandlerNode *AllocateHandlerNode (struct Handler *handler_p);
+GRASSROOTS_HANDLER_API HandlerNode *AllocateHandlerNode (struct Handler *handler_p);
 
-WHEATIS_HANDLER_API void FreeHandlerNode (ListItem *node_p);
+GRASSROOTS_HANDLER_API void FreeHandlerNode (ListItem *node_p);
 
-WHEATIS_HANDLER_API Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p);
+GRASSROOTS_HANDLER_API Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p);
 
-WHEATIS_HANDLER_API bool DeallocatePluginHandler (Plugin * const plugin_p);
+GRASSROOTS_HANDLER_API bool DeallocatePluginHandler (Plugin * const plugin_p);
 
 
 #ifdef __cplusplus
@@ -123,4 +123,4 @@ WHEATIS_HANDLER_API bool DeallocatePluginHandler (Plugin * const plugin_p);
 #endif
 
 
-#endif		/* #ifndef WHEATIS_HANDLE_H */
+#endif		/* #ifndef GRASSROOTS_HANDLE_H */

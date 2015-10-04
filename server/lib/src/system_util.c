@@ -5,7 +5,7 @@
 #include "handler_utils.h"
 #include "streams.h"
 #include "jobs_manager.h"
-#include "wheatis_config.h"
+#include "grassroots_config.h"
 #include "string_utils.h"
 #include "service_config.h"
 #include "mongodb_util.h"

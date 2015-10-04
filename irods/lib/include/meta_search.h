@@ -93,6 +93,17 @@ IRODS_UTIL_API void FreeIrodsSearch (IrodsSearch *search_p);
 
 
 /**
+ * Clear an IrodsSearch.
+ *
+ * @param search_p The IrodsSearch to clear.
+ * @memberof IrodsSearch
+ */
+IRODS_UTIL_API void ClearIrodsSearch (IrodsSearch *search_p);
+
+
+
+
+/**
  * Perform an iRODS search.
  *
  * @param search_p The IrodsSearch to perform.

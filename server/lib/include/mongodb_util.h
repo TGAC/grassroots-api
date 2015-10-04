@@ -10,20 +10,20 @@
 
 #include "mongoc.h"
 
-#include "wheatis_service_manager_library.h"
+#include "grassroots_service_manager_library.h"
 #include "typedefs.h"
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-WHEATIS_SERVICE_MANAGER_API bool InitMongoDB (void);
+GRASSROOTS_SERVICE_MANAGER_API bool InitMongoDB (void);
 
-WHEATIS_SERVICE_MANAGER_API void ExitMongoDB (void);
+GRASSROOTS_SERVICE_MANAGER_API void ExitMongoDB (void);
 
-WHEATIS_SERVICE_MANAGER_API mongoc_client_t *GetMongoClient (void);
+GRASSROOTS_SERVICE_MANAGER_API mongoc_client_t *GetMongoClient (void);
 
-WHEATIS_SERVICE_MANAGER_API void ReleaseMongoClient (mongoc_client_t *client_p);
+GRASSROOTS_SERVICE_MANAGER_API void ReleaseMongoClient (mongoc_client_t *client_p);
 
 
 #ifdef __cplusplus

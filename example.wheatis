@@ -1,8 +1,0 @@
-{
-	"credentials": {
-		"irods":  {
-			"user": "irods",
-			"pass": "rods"
-		}
-	}
-}

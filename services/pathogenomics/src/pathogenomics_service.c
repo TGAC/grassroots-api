@@ -10,7 +10,7 @@
 #include "mongodb_tool.h"
 #include "string_utils.h"
 #include "json_tools.h"
-#include "wheatis_config.h"
+#include "grassroots_config.h"
 #include "country_codes.h"
 #include "sample_metadata.h"
 #include "phenotype_metadata.h"

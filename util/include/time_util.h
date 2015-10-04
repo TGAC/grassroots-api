@@ -4,7 +4,7 @@
 #include <time.h>
 
 #include "typedefs.h"
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 
 
 #ifdef __cplusplus
@@ -22,7 +22,7 @@ extern "C"
  * @offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm. 
  * @return true if the value was converted successfully, false otherwise.
  */
-WHEATIS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
+GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
 
 /**
@@ -33,7 +33,7 @@ WHEATIS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, str
  * @time_p The time_t to store the converted time in.
  * @return true if the value was converted successfully, false otherwise.
  */
-WHEATIS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s, time_t *time_p);
+GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s, time_t *time_p);
 
 
 
@@ -46,7 +46,7 @@ WHEATIS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s
  * @offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm. 
  * @return true if the value was converted successfully, false otherwise.
  */
-WHEATIS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
+GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
 
 /**
@@ -57,7 +57,7 @@ WHEATIS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, str
  * @time_p The time_t to store the converted time in.
  * @return true if the value was converted successfully, false otherwise.
  */
-WHEATIS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p);
+GRASSROOTS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p);
 
 
 #ifdef __cplusplus

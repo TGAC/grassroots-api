@@ -10,7 +10,7 @@
 #include "parameter.h"
 #include "tags.h"
 
-#include "wheatis_params_library.h"
+#include "grassroots_params_library.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -26,7 +26,7 @@ extern "C"
  * @return The matching TagItem or <code>NULL</code> if it could not be found.
  * @memberof TagItem
  */
-WHEATIS_PARAMS_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
+GRASSROOTS_PARAMS_API TagItem *FindMatchingTag (TagItem *tags_p, Tag tag);
 
 
 /** @} */

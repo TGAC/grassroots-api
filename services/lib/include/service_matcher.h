@@ -1,7 +1,7 @@
 #ifndef SERVICE_MATCHER_H
 #define SERVICE_MATCHER_H
 
-#include "wheatis_service_library.h"
+#include "grassroots_service_library.h"
 #include "resource.h"
 #include "handler.h"
 #include "service.h"
@@ -119,7 +119,7 @@ extern "C"
  * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API ServiceMatcher *AllocateServiceMatcher (void);
+GRASSROOTS_SERVICE_API ServiceMatcher *AllocateServiceMatcher (void);
 
 /**
  * Allocate a ResourceServiceMatcher.
@@ -127,7 +127,7 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocateServiceMatcher (void);
  * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API ServiceMatcher *AllocateResourceServiceMatcher (Resource *resource_p, Handler *handler_p);
+GRASSROOTS_SERVICE_API ServiceMatcher *AllocateResourceServiceMatcher (Resource *resource_p, Handler *handler_p);
 
 
 /**
@@ -137,7 +137,7 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocateResourceServiceMatcher (Resource *re
  * @return A newly-allocated NameServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API ServiceMatcher *AllocateOperationNameServiceMatcher (const char *name_s);
+GRASSROOTS_SERVICE_API ServiceMatcher *AllocateOperationNameServiceMatcher (const char *name_s);
 
 
 /**
@@ -147,7 +147,7 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocateOperationNameServiceMatcher (const c
  * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginNameServiceMatcher (const char *plugin_name_s);
+GRASSROOTS_SERVICE_API ServiceMatcher *AllocatePluginNameServiceMatcher (const char *plugin_name_s);
 
 
 /**
@@ -158,7 +158,7 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginNameServiceMatcher (const char
  * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginOperationNameServiceMatcher (const char *plugin_name_s, const char *service_name_s);
+GRASSROOTS_SERVICE_API ServiceMatcher *AllocatePluginOperationNameServiceMatcher (const char *plugin_name_s, const char *service_name_s);
 
 
 /**
@@ -167,7 +167,7 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocatePluginOperationNameServiceMatcher (c
  * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API ServiceMatcher *AllocateKeywordServiceMatcher (void);
+GRASSROOTS_SERVICE_API ServiceMatcher *AllocateKeywordServiceMatcher (void);
 
 
 /**
@@ -177,20 +177,20 @@ WHEATIS_SERVICE_API ServiceMatcher *AllocateKeywordServiceMatcher (void);
  * @param match_fn The callback function to use for determining matching Services.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_LOCAL void InitServiceMatcher (ServiceMatcher *matcher_p, RunServiceMatcherCallback match_fn);
+GRASSROOTS_SERVICE_LOCAL void InitServiceMatcher (ServiceMatcher *matcher_p, RunServiceMatcherCallback match_fn);
 
 
-WHEATIS_SERVICE_LOCAL void InitResourceServiceMatcher (ResourceServiceMatcher *matcher_p, Resource *resource_p, Handler *handler_p);
+GRASSROOTS_SERVICE_LOCAL void InitResourceServiceMatcher (ResourceServiceMatcher *matcher_p, Resource *resource_p, Handler *handler_p);
 
-WHEATIS_SERVICE_LOCAL void InitOperationNameServiceMatcher (NameServiceMatcher *matcher_p, const char *name_s);
+GRASSROOTS_SERVICE_LOCAL void InitOperationNameServiceMatcher (NameServiceMatcher *matcher_p, const char *name_s);
 
-WHEATIS_SERVICE_LOCAL void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
-
-
-WHEATIS_SERVICE_LOCAL void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *matcher_p, const char *plugin_name_s, const char *operation_name_s);
+GRASSROOTS_SERVICE_LOCAL void InitPluginNameServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
 
 
-WHEATIS_SERVICE_LOCAL void InitKeywordServiceMatcher (KeywordServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_LOCAL void InitPluginOperationNameServiceMatcher (PluginOperationNameServiceMatcher *matcher_p, const char *plugin_name_s, const char *operation_name_s);
+
+
+GRASSROOTS_SERVICE_LOCAL void InitKeywordServiceMatcher (KeywordServiceMatcher *matcher_p);
 
 
 /**
@@ -200,7 +200,7 @@ WHEATIS_SERVICE_LOCAL void InitKeywordServiceMatcher (KeywordServiceMatcher *mat
  * @param plugin_name_s The Plugin name to search for.
  * @memberof PluginNameServiceMatcher
  */
-WHEATIS_SERVICE_API void SetPluginNameForServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
+GRASSROOTS_SERVICE_API void SetPluginNameForServiceMatcher (PluginNameServiceMatcher *matcher_p, const char *plugin_name_s);
 
 
 /**
@@ -210,17 +210,17 @@ WHEATIS_SERVICE_API void SetPluginNameForServiceMatcher (PluginNameServiceMatche
  * @return <code>true</code> if the Service was a match, <code>false</code> otherwise.
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p);
+GRASSROOTS_SERVICE_API bool RunServiceMatcher (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_LOCAL bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p);
+GRASSROOTS_SERVICE_LOCAL bool MatchServiceByName (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_LOCAL bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p);
+GRASSROOTS_SERVICE_LOCAL bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_LOCAL bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p);
+GRASSROOTS_SERVICE_LOCAL bool MatchServiceByPluginName (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_LOCAL bool MatchServiceByPluginAndOperationsName (ServiceMatcher *matcher_p, Service *service_p);
+GRASSROOTS_SERVICE_LOCAL bool MatchServiceByPluginAndOperationsName (ServiceMatcher *matcher_p, Service *service_p);
 
-WHEATIS_SERVICE_LOCAL bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Service *service_p);
+GRASSROOTS_SERVICE_LOCAL bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Service *service_p);
 
 
 /**
@@ -228,17 +228,17 @@ WHEATIS_SERVICE_LOCAL bool MatchServiceByKeyword (ServiceMatcher *matcher_p, Ser
  * @param matcher_p The ServiceMatcher to free
  * @memberof ServiceMatcher
  */
-WHEATIS_SERVICE_API void FreeServiceMatcher (ServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_API void FreeServiceMatcher (ServiceMatcher *matcher_p);
 
-WHEATIS_SERVICE_LOCAL void FreeResourceServiceMatcher (ServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_LOCAL void FreeResourceServiceMatcher (ServiceMatcher *matcher_p);
 
-WHEATIS_SERVICE_LOCAL void FreeNameServiceMatcher (ServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_LOCAL void FreeNameServiceMatcher (ServiceMatcher *matcher_p);
 
-WHEATIS_SERVICE_LOCAL void FreePluginNameServiceMatcher (ServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_LOCAL void FreePluginNameServiceMatcher (ServiceMatcher *matcher_p);
 
-WHEATIS_SERVICE_LOCAL void FreePluginOperationNameServiceMatcher (ServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_LOCAL void FreePluginOperationNameServiceMatcher (ServiceMatcher *matcher_p);
 
-WHEATIS_SERVICE_LOCAL void FreeKeywordServiceMatcher (ServiceMatcher *matcher_p);
+GRASSROOTS_SERVICE_LOCAL void FreeKeywordServiceMatcher (ServiceMatcher *matcher_p);
 
 
 #ifdef __cplusplus

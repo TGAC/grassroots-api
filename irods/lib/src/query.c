@@ -24,6 +24,13 @@
 
 static const columnName_t *GetColumnById (const int id);
 
+static bool AddQueryResultsAsResourcesJSON (const char *full_path_s, const char *collection_s, const char *data_s, void *data_p);
+
+static bool AddQueryResultsAsStrings (const char *full_path_s, const char *collection_s, const char *data_s, void *data_p);
+
+static void IterateOverQueryResultPaths (const QueryResults * const qrs_p, bool (*callback_fn) (const char *full_path_s, const char *collection_s, const char *data_s, void *callback_data_p), void *callback_data_p);
+
+
 
 genQueryOut_t *ExecuteGenQuery (rcComm_t *connection_p, genQueryInp_t * const in_query_p)
 {
@@ -606,6 +613,19 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 }
 
 
+LinkedList *GetQueryResultsPaths(const QueryResults * const qrs_p)
+{
+	LinkedList *paths_p = AllocateStringLinkedList ();
+
+	if (paths_p)
+		{
+			IterateOverQueryResultPaths (qrs_p, AddQueryResultsAsStrings, paths_p);
+
+		}		/* if (paths_p) */
+
+	return paths_p;
+}
+
 
 json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 {
@@ -613,129 +633,139 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 
 	if (root_p)
 		{
-			/*
-			 * Find the collection and data columns
-			 */
-			QueryResult *collection_results_p = NULL;
-			QueryResult *data_results_p = NULL;
-			QueryResult *qr_p = qrs_p -> qr_values_p;
-			int i = qrs_p -> qr_num_results;
-			bool success_flag = false;
-
-			while ((i > 0) && ((data_results_p == NULL) || (collection_results_p == NULL)))
-				{
-					const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
-
-					if (col_p -> columnId == COL_COLL_NAME)
-						{
-							collection_results_p = qr_p;
-						}
-					else if (col_p -> columnId == COL_DATA_NAME)
-						{
-							data_results_p = qr_p;
-						}
-
-					++ qr_p;
-					-- i;
-
-				}		/* while ((i > 0) && ((data_results_p == NULL) || (collection_results_p == NULL))) */
-
-			if (collection_results_p && data_results_p)
-				{
-					ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-					if (buffer_p)
-						{
-							/*
-							 * We know that QueryResults is tabular so we just need
-							 * to query the first result to get the number of rows.
-							 */
-							int num_rows = data_results_p -> qr_num_values;
-							char **collection_values_pp = collection_results_p -> qr_values_pp;
-							char **data_values_pp = data_results_p -> qr_values_pp;
-
-							success_flag = true;
-
-							for (i = 0; i < num_rows; ++ i, ++ collection_values_pp, ++ data_values_pp)
-								{
-									success_flag = false;
-
-									if (AppendStringsToByteBuffer (buffer_p, *collection_values_pp, "/", *data_values_pp, NULL))
-										{
-											const char *value_s = GetByteBufferData (buffer_p);
-											json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_IRODS_S, value_s, *data_values_pp, NULL);
-
-											if (resource_p)
-												{
-													#if QUERY_DEBUG >= STM_LEVEL_FINE
-													{
-														char *dump_s = json_dumps (resource_p, JSON_INDENT (2));
-														PrintLog (STM_LEVEL_FINE, "resource:\n%s\n", dump_s);
-														free (dump_s);
-													}
-													#endif
-
-
-													if (json_array_append_new (root_p, resource_p) == 0)
-														{
-															ResetByteBuffer (buffer_p);
-															success_flag = true;
-														}
-													else
-														{
-															json_decref (resource_p);
-														}
-
-													#if QUERY_DEBUG >= STM_LEVEL_FINE
-													{
-														char *dump_s = json_dumps (resource_p, JSON_INDENT (2));
-														PrintLog (STM_LEVEL_FINE, "resource:\n%s\n", dump_s);
-														free (dump_s);
-													}
-													#endif
-
-												}
-										}
-
-									if (!success_flag)
-										{
-											i = num_rows;
-										}
-
-									#if QUERY_DEBUG >= STM_LEVEL_FINE
-									{
-										size_t size = json_array_size (root_p);
-										char *dump_s = json_dumps (root_p, JSON_INDENT (2));
-										PrintLog (STM_LEVEL_FINE, "root:\n%s\n", dump_s);
-										free (dump_s);
-									}
-									#endif
-
-								}
-
-						}		/* if (buffer_p) */
-
-				}		/* if (collection_results_p && data_results_p) */
-
-			if (!success_flag)
-				{
-					json_object_clear (root_p);
-					json_decref (root_p);
-					root_p = NULL;
-				}
-
-		}		/* if (root_p) */
+			IterateOverQueryResultPaths (qrs_p, AddQueryResultsAsResourcesJSON, root_p);
+		}
 
 	#if QUERY_DEBUG >= STM_LEVEL_FINE
-	{
-		size_t size = json_array_size (root_p);
-		char *dump_s = json_dumps (root_p, JSON_INDENT (2));
-		PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
-		free (dump_s);
-	}
+		{
+			size_t size = json_array_size (root_p);
+			PrintJSONToLog (root_p, "GetQueryResultAsResourcesJSON exit:\n", QUERY_DEBUG);
+		}
 	#endif
 
+
 	return root_p;
+}
+
+
+static bool AddQueryResultsAsStrings (const char *full_path_s, const char *collection_s, const char *data_s, void *data_p)
+{
+	bool success_flag = false;
+	LinkedList *paths_p = (LinkedList *) data_p;
+	StringListNode *node_p = AllocateStringListNode (full_path_s, MF_DEEP_COPY);
+
+	if (node_p)
+		{
+			LinkedListAddTail (paths_p, (ListItem *) node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+
+static bool AddQueryResultsAsResourcesJSON (const char *full_path_s, const char *collection_s, const char *data_s, void *data_p)
+{
+	bool success_flag = false;
+	json_t *root_p = (json_t *) data_p;
+	json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_IRODS_S, full_path_s, data_s, NULL);
+
+	if (resource_p)
+		{
+			#if QUERY_DEBUG >= STM_LEVEL_FINE
+			{
+				char *dump_s = json_dumps (resource_p, JSON_INDENT (2));
+				PrintLog (STM_LEVEL_FINE, "resource:\n%s\n", dump_s);
+				free (dump_s);
+			}
+			#endif
+
+
+			if (json_array_append_new (root_p, resource_p) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					json_decref (resource_p);
+				}
+		}		/* if (resource_p) */
+
+	return success_flag;
+}
+
+
+static void IterateOverQueryResultPaths (const QueryResults * const qrs_p, bool (*callback_fn) (const char *full_path_s, const char *collection_s, const char *data_s, void *callback_data_p), void *callback_data_p)
+{
+	/*
+	 * Find the collection and data columns
+	 */
+	QueryResult *collection_results_p = NULL;
+	QueryResult *data_results_p = NULL;
+	QueryResult *qr_p = qrs_p -> qr_values_p;
+	int i = qrs_p -> qr_num_results;
+	bool success_flag = false;
+
+	while ((i > 0) && ((data_results_p == NULL) || (collection_results_p == NULL)))
+		{
+			const columnName_t *col_p = (const columnName_t *) (qr_p -> qr_column_p);
+
+			if (col_p -> columnId == COL_COLL_NAME)
+				{
+					collection_results_p = qr_p;
+				}
+			else if (col_p -> columnId == COL_DATA_NAME)
+				{
+					data_results_p = qr_p;
+				}
+
+			++ qr_p;
+			-- i;
+
+		}		/* while ((i > 0) && ((data_results_p == NULL) || (collection_results_p == NULL))) */
+
+	if (collection_results_p && data_results_p)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					/*
+					 * We know that QueryResults is tabular so we just need
+					 * to query the first result to get the number of rows.
+					 */
+					int num_rows = data_results_p -> qr_num_values;
+					char **collection_values_pp = collection_results_p -> qr_values_pp;
+					char **data_values_pp = data_results_p -> qr_values_pp;
+
+					success_flag = true;
+
+					for (i = 0; i < num_rows; ++ i, ++ collection_values_pp, ++ data_values_pp)
+						{
+							success_flag = false;
+							const char *collection_s =  *collection_values_pp;
+							const char *data_s =  *data_values_pp;
+
+							if (AppendStringsToByteBuffer (buffer_p, collection_s, "/", data_s, NULL))
+								{
+									const char *full_path_s = GetByteBufferData (buffer_p);
+
+									success_flag = callback_fn (full_path_s, collection_s, data_s, callback_data_p);
+
+									ResetByteBuffer (buffer_p);
+								}
+
+							if (!success_flag)
+								{
+									i = num_rows;
+								}
+						}
+
+				}		/* if (buffer_p) */
+
+		}		/* if (collection_results_p && data_results_p) */
+
 }
 
 

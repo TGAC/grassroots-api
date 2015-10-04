@@ -10,7 +10,7 @@
 
 #include "jansson.h"
 
-#include "wheatis_service_library.h"
+#include "grassroots_service_library.h"
 #include "service.h"
 #include "parameter_set.h"
 #include "byte_buffer.h"
@@ -56,34 +56,34 @@ extern "C"
 #endif
 
 
-WHEATIS_SERVICE_API SubmissionMethod GetSubmissionMethod (const json_t *op_json_p);
+GRASSROOTS_SERVICE_API SubmissionMethod GetSubmissionMethod (const json_t *op_json_p);
 
 
-WHEATIS_SERVICE_API bool InitWebServiceData (WebServiceData * const data_p, json_t *op_json_p);
+GRASSROOTS_SERVICE_API bool InitWebServiceData (WebServiceData * const data_p, json_t *op_json_p);
 
 
-WHEATIS_SERVICE_API void ClearWebServiceData (WebServiceData * const data_p);
+GRASSROOTS_SERVICE_API void ClearWebServiceData (WebServiceData * const data_p);
 
 
-WHEATIS_SERVICE_API bool CallCurlWebservice (WebServiceData *data_p);
+GRASSROOTS_SERVICE_API bool CallCurlWebservice (WebServiceData *data_p);
 
 
-WHEATIS_SERVICE_API bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_set_p);
+GRASSROOTS_SERVICE_API bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_set_p);
 
 
-WHEATIS_SERVICE_API bool AddParametersToPostWebService (WebServiceData *data_p, ParameterSet *param_set_p);
+GRASSROOTS_SERVICE_API bool AddParametersToPostWebService (WebServiceData *data_p, ParameterSet *param_set_p);
 
 
-WHEATIS_SERVICE_API bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_set_p);
+GRASSROOTS_SERVICE_API bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_set_p);
 
 
-WHEATIS_SERVICE_API ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+GRASSROOTS_SERVICE_API ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 
-WHEATIS_SERVICE_API bool AddMatchTypeParameter (ParameterSet *param_set_p);
+GRASSROOTS_SERVICE_API bool AddMatchTypeParameter (ParameterSet *param_set_p);
 
 
-WHEATIS_SERVICE_API MatchType GetMatchTypeParameterValue (ParameterSet * const param_set_p);
+GRASSROOTS_SERVICE_API MatchType GetMatchTypeParameterValue (ParameterSet * const param_set_p);
 
 
 #ifdef __cplusplus

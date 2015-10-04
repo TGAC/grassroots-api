@@ -4,7 +4,7 @@
 #ifndef MATH_UTILS_H
 #define MATH_UTILS_H
 
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 #include "typedefs.h"
 
 #ifdef __cplusplus
@@ -21,7 +21,7 @@
  * @return -1 if d1 is less than d2, +1 if d1 is
  * greater than d2 and 0 if they are identical.
  */
-WHEATIS_UTIL_API int CompareDoubles (const double d1, const double d2);
+GRASSROOTS_UTIL_API int CompareDoubles (const double d1, const double d2);
 
 
 /**
@@ -33,7 +33,7 @@ WHEATIS_UTIL_API int CompareDoubles (const double d1, const double d2);
  * @return -1 if f1 is less than f2, +1 if f1 is
  * greater than f2 and 0 if they are identical.
  */
-WHEATIS_UTIL_API int CompareFloats (const float f1, const float f2);
+GRASSROOTS_UTIL_API int CompareFloats (const float f1, const float f2);
 
 
 /**
@@ -44,7 +44,7 @@ WHEATIS_UTIL_API int CompareFloats (const float f1, const float f2);
  * @param data_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p, const char * const alternative_decimal_points_s);
+GRASSROOTS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p, const char * const alternative_decimal_points_s);
 
 
 /**
@@ -55,7 +55,7 @@ WHEATIS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p,
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alternative_decimal_points_s);
+GRASSROOTS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alternative_decimal_points_s);
 
 
 /**
@@ -66,7 +66,7 @@ WHEATIS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, const
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p, const char * const alternative_decimal_points_s);
+GRASSROOTS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p, const char * const alternative_decimal_points_s);
 
 
 /**
@@ -79,7 +79,7 @@ WHEATIS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p, const c
  * +1 if the first double is greater than the second
  * and 0 if they are identical.
  */
-WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
+GRASSROOTS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 
 
 /**
@@ -94,7 +94,7 @@ WHEATIS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
  * FreeCopiedString</code> to avoid a memory leak.
  * @see FreeCopiedString
  */
-WHEATIS_UTIL_API char *ConvertNumberToString (double d, int8 num_dps);
+GRASSROOTS_UTIL_API char *ConvertNumberToString (double d, int8 num_dps);
 
 
 #ifdef __cplusplus

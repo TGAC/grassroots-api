@@ -1,7 +1,7 @@
-#ifndef WHEATIS_REFERRED_SERVICE_H
-#define WHEATIS_REFERRED_SERVICE_H
+#ifndef GRASSROOTS_REFERRED_SERVICE_H
+#define GRASSROOTS_REFERRED_SERVICE_H
 
-#include "wheatis_service_library.h"
+#include "grassroots_service_library.h"
 
 #include "linked_list.h"
 #include "parameter_set.h"
@@ -15,7 +15,7 @@
 
 /**
  * @brief A datatype detailing the addon services
- * that the wheatis offers. These are the
+ * that the grassroots offers. These are the
  * equivalent to iRods microservices.
  */
 
@@ -61,4 +61,4 @@ typedef struct
 
 
 
-#endif		/* #ifndef WHEATIS_REFERRED_SERVICE_H */
+#endif		/* #ifndef GRASSROOTS_REFERRED_SERVICE_H */

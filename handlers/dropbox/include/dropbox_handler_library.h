@@ -1,8 +1,8 @@
-/**@file wheatis_util_library.h
+/**@file grassroots_util_library.h
 */ 
 
-#ifndef WHEATIS_DROPBOX_HANDLER_LIBRARY_H
-#define WHEATIS_DROPBOX_HANDLER_LIBRARY_H
+#ifndef GRASSROOTS_DROPBOX_HANDLER_LIBRARY_H
+#define GRASSROOTS_DROPBOX_HANDLER_LIBRARY_H
 
 #ifdef __cplusplus
 	extern "C" {
@@ -34,6 +34,6 @@
 #endif
 
 
-#endif 	/* #ifndef WHEATIS_DROPBOX_HANDLER_LIBRARY_H */
+#endif 	/* #ifndef GRASSROOTS_DROPBOX_HANDLER_LIBRARY_H */
 
 

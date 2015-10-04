@@ -1,4 +1,4 @@
-NAME 		= wheatis_util
+NAME 		= grassroots_util
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= gcc
@@ -12,7 +12,7 @@ ifneq ($(PROPERTIES_SET),1)
 include $(DIR_ROOT)/project.properties
 endif
 
-export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
+export DIR_INSTALL=$(DIR_GRASSROOTS_INSTALL)/lib
 
 
 BUILD		= debug
@@ -71,7 +71,7 @@ else
 endif
 	
 
-CPPFLAGS += -DWHEATIS_UTIL_LIBRARY_EXPORTS -DUNIX 
+CPPFLAGS += -DGRASSROOTS_UTIL_LIBRARY_EXPORTS -DUNIX 
 
 LDFLAGS += -ldl \
 	-L$(DIR_JANSSON_LIB) -ljansson \

@@ -38,7 +38,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_NETWORK_API PolarSSLConnection *InitPolarSSLConnection (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
+GRASSROOTS_NETWORK_API PolarSSLConnection *InitPolarSSLConnection (const char *hostname_s, const char *port_s, struct addrinfo **server_pp);
 
 
 

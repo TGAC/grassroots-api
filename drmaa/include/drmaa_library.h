@@ -4,8 +4,8 @@
  * See [md_readme](readme.md)
 */ 
 
-#ifndef WHEATIS_DRMAA_LIBRARY_H
-#define WHEATIS_DRMAA_LIBRARY_H
+#ifndef GRASSROOTS_DRMAA_LIBRARY_H
+#define GRASSROOTS_DRMAA_LIBRARY_H
 
 #ifdef __cplusplus
 	extern "C" {
@@ -21,15 +21,15 @@
 */
 
 #ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
-  #ifdef  WHEATIS_DRMAA_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
-    #define WHEATIS_DRMAA_API LIB_HELPER_SYMBOL_EXPORT
+  #ifdef  GRASSROOTS_DRMAA_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
+    #define GRASSROOTS_DRMAA_API LIB_HELPER_SYMBOL_EXPORT
   #else
-    #define WHEATIS_DRMAA_API LIB_HELPER_SYMBOL_IMPORT
-  #endif /* #ifdef WHEATIS_DRMAA_LIBRARY_EXPORTS */
-  #define WHEATIS_DRMAA_LOCAL LIB_HELPER_SYMBOL_LOCAL
+    #define GRASSROOTS_DRMAA_API LIB_HELPER_SYMBOL_IMPORT
+  #endif /* #ifdef GRASSROOTS_DRMAA_LIBRARY_EXPORTS */
+  #define GRASSROOTS_DRMAA_LOCAL LIB_HELPER_SYMBOL_LOCAL
 #else /* SHARED_LIBRARY is not defined: this means LIB is a static lib. */
-  #define WHEATIS_DRMAA_API
-  #define WHEATIS_DRMAA_LOCAL
+  #define GRASSROOTS_DRMAA_API
+  #define GRASSROOTS_DRMAA_LOCAL
 #endif /* #ifdef SHARED_LIBRARY */
 
 #ifdef __cplusplus
@@ -37,6 +37,6 @@
 #endif
 
 
-#endif 	/* #ifndef WHEATIS_DRMAA_LIBRARY_H */
+#endif 	/* #ifndef GRASSROOTS_DRMAA_LIBRARY_H */
 
 

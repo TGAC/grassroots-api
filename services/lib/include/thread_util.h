@@ -10,13 +10,13 @@
 
 #include <pthread.h>
 
-#include "wheatis_service_manager_library.h"
+#include "grassroots_service_manager_library.h"
 
 
-WHEATIS_SERVICE_MANAGER_API pthread_t *CreateRunningThread (void *run_fn_p);
+GRASSROOTS_SERVICE_MANAGER_API pthread_t *CreateRunningThread (void *run_fn_p);
 
 
-WHEATIS_SERVICE_MANAGER_LOCAL void ThreadFinished (void);
+GRASSROOTS_SERVICE_MANAGER_LOCAL void ThreadFinished (void);
 
 
 #endif /* THREAD_UTIL_H_ */

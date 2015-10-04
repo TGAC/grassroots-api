@@ -19,7 +19,7 @@
 
 void usage ();
 
-static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p);
+static int CallGrassrootsServices (rodsEnv *env_p,  rcComm_t *conn_p);
 
 
 static void GetDataIdForFile (rcComm_t *conn_p, const char * const path_s);
@@ -446,7 +446,7 @@ usage ()
 
 
 
-static int CallWheatISServices (rodsEnv *env_p,  rcComm_t *conn_p)
+static int CallGrassrootsServices (rodsEnv *env_p,  rcComm_t *conn_p)
 {
 	int result = 0;
 	

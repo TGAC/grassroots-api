@@ -1,7 +1,7 @@
 #ifndef LINKED_LIST_ITERATOR_H
 #define LINKED_LIST_ITERATOR_H
 
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 #include "linked_list.h"
 
 struct Iterator;
@@ -16,13 +16,13 @@ typedef struct Iterator
 #endif
 
 
-WHEATIS_UTIL_API Iterator *GetLinkedListIterator (LinkedList *list_p);
+GRASSROOTS_UTIL_API Iterator *GetLinkedListIterator (LinkedList *list_p);
 
 
-WHEATIS_UTIL_API void *GetNextItemFromIterator (Iterator *iterator_p);
+GRASSROOTS_UTIL_API void *GetNextItemFromIterator (Iterator *iterator_p);
 
 
-WHEATIS_UTIL_API void FreeIterator (Iterator *iterator_p);
+GRASSROOTS_UTIL_API void FreeIterator (Iterator *iterator_p);
 
 
 #ifdef __cplusplus

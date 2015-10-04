@@ -11,7 +11,7 @@
 #include "memory_allocations.h"
 #include "streams.h"
 #include "json_tools.h"
-#include "wheatis_config.h"
+#include "grassroots_config.h"
 #include "mongodb_util.h"
 #include "json_util.h"
 

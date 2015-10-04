@@ -8,7 +8,7 @@
 
 #include "typedefs.h"
 #include "linked_list.h"
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 
 
 /**
@@ -39,7 +39,7 @@ typedef struct FileInformation
  * need to be freed with FreeCopiedString to avoid a memory leak. If there was an
  * error, then this will be <code>NULL</code>.
  */
-WHEATIS_UTIL_API char *GetFilenameOnly (const char * const full_path_to_file_s);
+GRASSROOTS_UTIL_API char *GetFilenameOnly (const char * const full_path_to_file_s);
 
 
 /**
@@ -50,7 +50,7 @@ WHEATIS_UTIL_API char *GetFilenameOnly (const char * const full_path_to_file_s);
  * directory only. This will need to be freed with FreeCopiedString to
  * avoid a memory leak. If there was an error, then this will be <code>NULL</code>.
  */
-WHEATIS_UTIL_API char *GetPathOnly (const char * const full_path_to_file_s);
+GRASSROOTS_UTIL_API char *GetPathOnly (const char * const full_path_to_file_s);
 
 
 /**
@@ -65,7 +65,7 @@ WHEATIS_UTIL_API char *GetPathOnly (const char * const full_path_to_file_s);
  * need to be freed with FreeCopiedString to avoid a memory leak. If there was an
  * error, then this will be <code>NULL</code>.
  */
-WHEATIS_UTIL_API char *MakeFilename (const char * const path_s, const char * const filename_s);
+GRASSROOTS_UTIL_API char *MakeFilename (const char * const path_s, const char * const filename_s);
 
 
 
@@ -83,7 +83,7 @@ WHEATIS_UTIL_API char *MakeFilename (const char * const path_s, const char * con
  * @return <code>true</code> if the extraction was successful <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss);
+GRASSROOTS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss);
 
 
 /**
@@ -103,7 +103,7 @@ WHEATIS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, char
  * need to be freed with FreeCopiedString to avoid a memory leak. If there was an
  * error, then this will be <code>NULL</code>.
  */
-WHEATIS_UTIL_API char *SetFileExtension (const char * const filename_s, const char * const extension_s, bool replace_flag);
+GRASSROOTS_UTIL_API char *SetFileExtension (const char * const filename_s, const char * const extension_s, bool replace_flag);
 
 
 /**
@@ -112,7 +112,7 @@ WHEATIS_UTIL_API char *SetFileExtension (const char * const filename_s, const ch
  *
  * @param value_s The string to be amended.
  */
-WHEATIS_UTIL_API void UsePlatformFileSeparator (char *value_s);
+GRASSROOTS_UTIL_API void UsePlatformFileSeparator (char *value_s);
 
 
 /**
@@ -122,7 +122,7 @@ WHEATIS_UTIL_API void UsePlatformFileSeparator (char *value_s);
  * @return <code>true</code> if the object referred to by the path
  * exists, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool IsPathValid (const char * const path_s);
+GRASSROOTS_UTIL_API bool IsPathValid (const char * const path_s);
 
 
 /**
@@ -132,7 +132,7 @@ WHEATIS_UTIL_API bool IsPathValid (const char * const path_s);
  * @return <code>true</code> if the path is absolute, <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool IsPathAbsolute (const char * const path_s);
+GRASSROOTS_UTIL_API bool IsPathAbsolute (const char * const path_s);
 
 
 /**
@@ -144,7 +144,7 @@ WHEATIS_UTIL_API bool IsPathAbsolute (const char * const path_s);
  * @return A LinkedList of StringListNode containing the matching filenames or <code>NULL</code>
  * if no matches could be found.
  */
-WHEATIS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern_s, const bool full_path_flag);
+GRASSROOTS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern_s, const bool full_path_flag);
 
 
 /**
@@ -155,7 +155,7 @@ WHEATIS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern_s, con
  *
  * @return The separator
  */
-WHEATIS_UTIL_API char GetFileSeparatorChar (void);
+GRASSROOTS_UTIL_API char GetFileSeparatorChar (void);
 
 
 /**
@@ -166,7 +166,7 @@ WHEATIS_UTIL_API char GetFileSeparatorChar (void);
  *
  * @return The string for the current directory.
  */
-WHEATIS_UTIL_API const char *GetCurrentDirectoryString (void);
+GRASSROOTS_UTIL_API const char *GetCurrentDirectoryString (void);
 
 
 /**
@@ -177,7 +177,7 @@ WHEATIS_UTIL_API const char *GetCurrentDirectoryString (void);
  *
  * @return The string for the parent directory.
  */
-WHEATIS_UTIL_API const char *GetParentDirectory (void);
+GRASSROOTS_UTIL_API const char *GetParentDirectory (void);
 
 
 /**
@@ -188,7 +188,7 @@ WHEATIS_UTIL_API const char *GetParentDirectory (void);
  *
  * @return The string for the plugin pattern.
  */
-WHEATIS_UTIL_API const char *GetPluginPattern (void);
+GRASSROOTS_UTIL_API const char *GetPluginPattern (void);
 
 
  /**
@@ -199,7 +199,7 @@ WHEATIS_UTIL_API const char *GetPluginPattern (void);
   * will attempt to be created. If this succeed then <code>true</code> will be returned, <code>false</code>
   * otherwise.
   */
-WHEATIS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
+GRASSROOTS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
 
 
 /**
@@ -212,7 +212,7 @@ WHEATIS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
  * @return <code>true</code> if the copy was successful <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void));
+GRASSROOTS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void));
 
 
 /**
@@ -222,7 +222,7 @@ WHEATIS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const ch
  * @return <code>true</code> if the change was successful <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path_s);
+GRASSROOTS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path_s);
 
 
 /**
@@ -230,7 +230,7 @@ WHEATIS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path_s);
  *
  * @return The current working directory.
  */
-WHEATIS_UTIL_API char *GetCurrentWorkingDirectory (void);
+GRASSROOTS_UTIL_API char *GetCurrentWorkingDirectory (void);
 
 
 /**
@@ -240,7 +240,7 @@ WHEATIS_UTIL_API char *GetCurrentWorkingDirectory (void);
  * @return <code>true</code> if the path exists and is a directory, <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool IsDirectory (const char * const path_s);
+GRASSROOTS_UTIL_API bool IsDirectory (const char * const path_s);
 
 
 /**
@@ -252,7 +252,7 @@ WHEATIS_UTIL_API bool IsDirectory (const char * const path_s);
  * otherwise.
  * @memberof FileInformation
  */
-WHEATIS_UTIL_API bool CalculateFileInformation (const char * const path_s, FileInformation *info_p);
+GRASSROOTS_UTIL_API bool CalculateFileInformation (const char * const path_s, FileInformation *info_p);
 
 
 /**
@@ -262,7 +262,7 @@ WHEATIS_UTIL_API bool CalculateFileInformation (const char * const path_s, FileI
  * @return <code>true</code> if the file was deleted successfully, <code>false</code>
  * otherwise.
  */
-WHEATIS_UTIL_API bool RemoveFile (const char * const path_s);
+GRASSROOTS_UTIL_API bool RemoveFile (const char * const path_s);
 
 
 #ifdef __cplusplus

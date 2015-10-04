@@ -14,6 +14,9 @@
 #include "streams.h"
 #include "meta_search.h"
 #include "service_job.h"
+#include "string_int_pair.h"
+#include "string_hash_table.h"
+
 
 /*
  * STATIC DATATYPES
@@ -210,43 +213,57 @@ static rcComm_t *GetIRODSConnection (const json_t *config_p)
 
 
 
-static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id, IrodsSearchServiceData *data_p)
+static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p)
 {
 	StringIntPairArray *results_p = NULL;
 	HashTable *store_p = GetHashTableOfStringInts (100, 75);
 
 	if (store_p)
 		{
-			/*
-			 * Get all attribute names
-			 */
-			QueryResults *attribute_names_p = GetAllMetadataAttributeNames (data_p -> issd_connection_p, key_col_id);
+			IrodsSearch *search_p = AllocateIrodsSearch ();
 
-			if (attribute_names_p)
+			if (search_p)
 				{
-					if (attribute_names_p -> qr_num_results == 1)
+					/*
+					 * Get all attribute names
+					 */
+					QueryResults *attribute_names_p = GetAllMetadataAttributeNames (data_p -> issd_connection_p, key_col_id);
+
+					if (attribute_names_p)
 						{
-							QueryResult *result_p = attribute_names_p -> qr_values_p;
-							int i = result_p -> qr_num_values;
-							char **attribute_name_ss = result_p -> qr_values_pp;
-
-							/*
-							 * For each attribute name, test for the keyword value and store any hits
-							 */
-							for ( ; i > 0; --i, ++ attribute_name_ss)
+							if (attribute_names_p -> qr_num_results == 1)
 								{
+									QueryResult *result_p = attribute_names_p -> qr_values_p;
+									int i = result_p -> qr_num_values;
+									char **attribute_name_ss = result_p -> qr_values_pp;
+
 									/*
-									 * Get the attribute values
+									 * For each attribute name, test for the keyword value and store any hits
 									 */
+									for ( ; i > 0; --i, ++ attribute_name_ss)
+										{
+											if (AddIrodsSearchTerm (search_p, NULL, *attribute_name_ss, key_col_id, "=", keyword_s, value_col_id))
+												{
+													QueryResults *attr_search_results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+
+													if (attr_search_results_p)
+														{
+															//AddQuery
+															FreeQueryResults (attr_search_results_p);
+														}		/* if (attr_search_results_p) */
+												}
+
+											ClearIrodsSearch (search_p);
+										}		/* for ( ; i > 0; --i, ++ attribute_name_ss) */
+
+								}		/* if (attribute_names_p -> qr_num_results == 1) */
+
+							FreeQueryResults (attribute_names_p);
+						}		/* if (attribute_names_p) */
 
 
-								}		/* for ( ; i > 0; --i, ++ attribute_name_ss) */
 
-						}		/* if (attribute_names_p -> qr_num_results == 1) */
-
-					FreeQueryResults (attribute_names_p);
-				}		/* if (attribute_names_p) */
-
+				}		/* if (search_p) */
 
 			/*
 			 * Get all of the hits and rank them by occurrence
@@ -267,8 +284,8 @@ static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id,
 
 									for ( ; i > 0; -- i, ++ key_pp, ++ pair_p)
 										{
-											const char *key_s = *key_pp;
-											const int *count_p = GetFromHashTable (store_p, key_s);
+											char *key_s = *key_pp;
+											const int *count_p = (const int *) GetFromHashTable (store_p, key_s);
 
 											if (count_p)
 												{
@@ -280,16 +297,16 @@ static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id,
 										}
 								}
 
-							FreeKeysIndex (keys_pp);
+							FreeKeysIndex ((void **) keys_pp);
 						}
+
+
+
 
 				}		/* if (store_p -> ht_size > 0) */
 
 			FreeHashTable (store_p);
 		}		/* if (store_p) */
-
-
-
 
 	return results_p;
 }

@@ -3,8 +3,8 @@
  * @{
  */
 
-#ifndef WHEATIS_CURL_TOOLS_H
-#define WHEATIS_CURL_TOOLS_H
+#ifndef GRASSROOTS_CURL_TOOLS_H
+#define GRASSROOTS_CURL_TOOLS_H
 
 #include <curl/curl.h>
 
@@ -44,7 +44,7 @@ typedef struct CurlTool
  * @memberof CurlTool.
  * @see FreeCurlTool
  */
-WHEATIS_NETWORK_API CurlTool *AllocateCurlTool (void);
+GRASSROOTS_NETWORK_API CurlTool *AllocateCurlTool (void);
 
 
 /**
@@ -53,7 +53,7 @@ WHEATIS_NETWORK_API CurlTool *AllocateCurlTool (void);
  * @param curl_p The CurlTool to free.
  * @memberof CurlTool.
  */
-WHEATIS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
+GRASSROOTS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
 
 
 /**
@@ -65,7 +65,7 @@ WHEATIS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
  * @see AddCurlCallback
  * @return The CURL object or <code>NULL</code> upon error.
  */
-WHEATIS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
 
 
 /**
@@ -73,7 +73,7 @@ WHEATIS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
  *
  * @param curl_p The CURL object to free.
  */
-WHEATIS_NETWORK_API void FreeCurl (CURL *curl_p);
+GRASSROOTS_NETWORK_API void FreeCurl (CURL *curl_p);
 
 /**
  * @brief Set the cryptographic engine to use.
@@ -84,7 +84,7 @@ WHEATIS_NETWORK_API void FreeCurl (CURL *curl_p);
  * @return <code>true</code> if the SSL engine name was set successfully,
  * <code>false</code> otherwise.
  */
-WHEATIS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s);
+GRASSROOTS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s);
 
 
 /**
@@ -99,7 +99,7 @@ WHEATIS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_eng
  * @param buffer_p Where the data from the address will be written to
  * @return <code>true</code> if the call was successful, <code>false</code> otherwise.
  */
-WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca_cert_name_s, const char * const cert_name_s, const char *key_name_s, const bool verify_certs, ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca_cert_name_s, const char * const cert_name_s, const char *key_name_s, const bool verify_certs, ByteBuffer *buffer_p);
 
 
 /**
@@ -109,7 +109,7 @@ WHEATIS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header_da
  * @return The CURL object to add the callback for.
  * @param buffer_p The ByteBuffer which will store the CURL object's response.
  */
-WHEATIS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
 
 
 /**
@@ -121,7 +121,7 @@ WHEATIS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
  * <code>false</code> otherwise.
  * @memberof CurlTool
  */
-WHEATIS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s);
+GRASSROOTS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * const uri_s);
 
 
 /**
@@ -129,7 +129,7 @@ WHEATIS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * const
  * This will get the CurlTool to get all of the data from its given URI.
  * @return CURLE_OK if successful or an error code upon failure.
  */
-WHEATIS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
+GRASSROOTS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
 
 
 /**
@@ -140,7 +140,7 @@ WHEATIS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
  * <code>false</code> otherwise.
  * @memberof CurlTool
  */
-WHEATIS_NETWORK_API bool SetCurlToolForJSONPost (CurlTool *tool_p);
+GRASSROOTS_NETWORK_API bool SetCurlToolForJSONPost (CurlTool *tool_p);
 
 
 /**
@@ -152,7 +152,7 @@ WHEATIS_NETWORK_API bool SetCurlToolForJSONPost (CurlTool *tool_p);
  * @see RunCurlTool
  * @memberof CurlTool
  */
-WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
+GRASSROOTS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
 
 
 /**
@@ -167,7 +167,7 @@ WHEATIS_NETWORK_API const char *GetCurlToolData (const CurlTool * const tool_p);
  * @memberof CurlTool
  * @see GetMatchingLinks
  */
-WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s);
+GRASSROOTS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s);
 
 /**
  * @brief Send a JSON request using a CurlTool.
@@ -179,7 +179,7 @@ WHEATIS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * cons
  * @see GetCurlToolData
  * @memberof CurlTool
  */
-WHEATIS_NETWORK_API bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p);
+GRASSROOTS_NETWORK_API bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p);
 
 
 #ifdef __cplusplus
@@ -187,6 +187,6 @@ WHEATIS_NETWORK_API bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_
 #endif
 
 
-#endif		/* #ifndef WHEATIS_CURL_TOOLS_H */
+#endif		/* #ifndef GRASSROOTS_CURL_TOOLS_H */
 
 /* @} */

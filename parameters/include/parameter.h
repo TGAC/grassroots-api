@@ -6,7 +6,7 @@
 
 #include "jansson.h"
 #include "linked_list.h"
-#include "wheatis_params_library.h"
+#include "grassroots_params_library.h"
 #include "tags.h"
 #include "resource.h"
 #include "hash_table.h"
@@ -298,7 +298,7 @@ typedef struct ParameterNode
  * @return The newly-allocated ParameterMultiOptionArray or <code>NULL</code> upon error.
  * @memberof ParameterMultiOptionArray
  */
-WHEATIS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_ss, SharedType *values_p, ParameterType pt);
+GRASSROOTS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_ss, SharedType *values_p, ParameterType pt);
 
 
 /**
@@ -307,7 +307,7 @@ WHEATIS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray 
  * @param options_p The ParameterMultiOptionArray to free.
  * @memberof ParameterMultiOptionArray
  */
-WHEATIS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
+GRASSROOTS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
 
 
 /**
@@ -320,7 +320,7 @@ WHEATIS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray
  * @return <code>true</code> if the ParameterMultiOption was updated successfullly, <code>false</code> otherwise
  * @memberof ParameterMultiOptionArray
  */
-WHEATIS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
+GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
 
 
 /**
@@ -344,7 +344,7 @@ WHEATIS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *opti
  * @return A newly-allocated Parameter or <code>NULL</code> upon error.
  * @memberof Parameter.
  */
-WHEATIS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+GRASSROOTS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 /**
@@ -353,7 +353,7 @@ WHEATIS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_
  * @param param_p The Parameter to free.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API void FreeParameter (Parameter *param_p);
+GRASSROOTS_PARAMS_API void FreeParameter (Parameter *param_p);
 
 
 /**
@@ -362,7 +362,7 @@ WHEATIS_PARAMS_API void FreeParameter (Parameter *param_p);
  * @return The ParameterBounds or <code>NULL</code> upon error.
  * @memberof ParameterBounds
  */
-WHEATIS_PARAMS_API ParameterBounds *AllocateParameterBounds (void);
+GRASSROOTS_PARAMS_API ParameterBounds *AllocateParameterBounds (void);
 
 
 /**
@@ -372,7 +372,7 @@ WHEATIS_PARAMS_API ParameterBounds *AllocateParameterBounds (void);
  * @param threshold The level to check against.
  * @return <code>true</code> if the param_level matched or exceeded the threshold, <code>false</code> otherwise.
  */
-WHEATIS_PARAMS_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
+GRASSROOTS_PARAMS_API bool CompareParameterLevels (const ParameterLevel param_level, const ParameterLevel threshold);
 
 
 /**
@@ -383,7 +383,7 @@ WHEATIS_PARAMS_API bool CompareParameterLevels (const ParameterLevel param_level
  * @return The newly-allocate ParameterBounds copy or <code>NULL</code> upon error.
  * @memberof ParameterBounds
  */
-WHEATIS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
+GRASSROOTS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBounds * const src_p, const ParameterType pt);
 
 
 /**
@@ -393,7 +393,7 @@ WHEATIS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBounds *
  * @pt The ParameterTye that the given ParameterBounds refers to.
  * @memberof ParameterBounds
  */
-WHEATIS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
+GRASSROOTS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
 
 
 
@@ -419,7 +419,7 @@ WHEATIS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const Pa
  * @memberof ParameterNode.
  * @see AllocateParameter
  */
-WHEATIS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+GRASSROOTS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 /**
@@ -430,7 +430,7 @@ WHEATIS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const ch
  * @return An error message string on failure or <code>NULL</code> if the value
  * is a non-negative real number.
  */
-WHEATIS_PARAMS_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
+GRASSROOTS_PARAMS_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
 
 
 /**
@@ -441,7 +441,7 @@ WHEATIS_PARAMS_API const char *CheckForSignedReal (const Parameter * const param
  * @return An error message string on failure or <code>NULL</code> if the value
  * is a not <code>NULL</code>.
  */
-WHEATIS_PARAMS_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
+GRASSROOTS_PARAMS_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
 
 
 /**
@@ -452,7 +452,7 @@ WHEATIS_PARAMS_API const char *CheckForNotNull (const Parameter * const paramete
  * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
+GRASSROOTS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
 
 
 /**
@@ -467,7 +467,7 @@ WHEATIS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const 
  * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s);
+GRASSROOTS_PARAMS_API bool AddParameterKeyValuePair (Parameter * const parameter_p, const char *key_s, const char *value_s);
 
 
 /**
@@ -477,7 +477,7 @@ WHEATIS_PARAMS_API bool AddParameterKeyValuePair (Parameter * const parameter_p,
  * @param key_s The key to remove from the Parameter. Its associated value will also be removed.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s);
+GRASSROOTS_PARAMS_API void RemoveParameterKeyValuePair (Parameter * const parameter_p, const char *key_s);
 
 
 /**
@@ -488,7 +488,7 @@ WHEATIS_PARAMS_API void RemoveParameterKeyValuePair (Parameter * const parameter
  * @return The matching value or <code>NULL</code> if the key did not exist for the Parameter.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s);
+GRASSROOTS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const parameter_p, const char *key_s);
 
 
 /**
@@ -503,7 +503,7 @@ WHEATIS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const par
  * upon error. When you no longer require the value you need to call json_decref upon it.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
+GRASSROOTS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
 
 
 /**
@@ -514,7 +514,7 @@ WHEATIS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter
  * or <code>NULL</code> upon error.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
+GRASSROOTS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json_p);
 
 
 
@@ -528,7 +528,7 @@ WHEATIS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const json
  * as the display name, description, etc. then this will return <code>false</code>.
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
+GRASSROOTS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
 
 
 /**
@@ -537,7 +537,7 @@ WHEATIS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
  * @param st_p The SharedType to clear.
  * @memberof SharedType
  */
-WHEATIS_PARAMS_API void ClearSharedType (SharedType *st_p);
+GRASSROOTS_PARAMS_API void ClearSharedType (SharedType *st_p);
 
 
 /**
@@ -547,7 +547,7 @@ WHEATIS_PARAMS_API void ClearSharedType (SharedType *st_p);
  * @return The Parameter's display name if it is not <code>NULL</code>, else
  * the Parameter's name.
  */
-WHEATIS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
+GRASSROOTS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
 
 
 /**
@@ -563,7 +563,7 @@ WHEATIS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
  * @see FreeCopiedString
  * @memberof Parameter
  */
-WHEATIS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
+GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
 /**
@@ -573,7 +573,7 @@ WHEATIS_PARAMS_API char *GetParameterValueAsString (const Parameter * const para
  * @return The newly-allocated SharedTypeNodeor <code>NULL</code> if there was an error.
  * @memberof SharedTypeNode
  */
-WHEATIS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
+GRASSROOTS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
 
 
 /**
@@ -582,7 +582,7 @@ WHEATIS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
  * @param node_p The SharedTypeNode to free.
  * @memberof SharedTypeNode
  */
-WHEATIS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
+GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
 
 
 #ifdef __cplusplus

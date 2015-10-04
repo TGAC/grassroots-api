@@ -9,7 +9,7 @@
 #define SERVICE_JOB_H_
 
 #include "typedefs.h"
-#include "wheatis_service_library.h"
+#include "grassroots_service_library.h"
 #include "operation.h"
 #include "jansson.h"
 
@@ -99,7 +99,7 @@ extern "C"
  * freed. This is used if you need any custom routines to clean up a ServiceJob.
  * @memberof ServiceJob.
  */
-WHEATIS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s, bool (*close_fn) (ServiceJob *job_p));
+GRASSROOTS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s, bool (*close_fn) (ServiceJob *job_p));
 
 
 /**
@@ -108,7 +108,7 @@ WHEATIS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *serv
  * @param job_p The ServiceJob to clear.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
+GRASSROOTS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
 
 
 /**
@@ -120,7 +120,7 @@ WHEATIS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
  * @return <code>true</code> if the name was set successfully, <code>false</code> otherwise.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API bool SetServiceJobDescription (ServiceJob *job_p, const char * const description_s);
+GRASSROOTS_SERVICE_API bool SetServiceJobDescription (ServiceJob *job_p, const char * const description_s);
 
 
 /**
@@ -132,7 +132,7 @@ WHEATIS_SERVICE_API bool SetServiceJobDescription (ServiceJob *job_p, const char
  * @return <code>true</code> if the name was set successfully, <code>false</code> otherwise.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * const name_s);
+GRASSROOTS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * const name_s);
 
 
 /**
@@ -145,7 +145,7 @@ WHEATIS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * cons
  * @return A newly-allocated ServiceJobSet or <code>NULL</code> upon error.
  * @memberof ServiceJobSet.
  */
-WHEATIS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p));
+GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p));
 
 
 /**
@@ -154,7 +154,7 @@ WHEATIS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *servic
  * @param job_set_p The ServiceJobSet to free.
  * @memberof ServiceJobSet
  */
-WHEATIS_SERVICE_API void FreeServiceJobSet (ServiceJobSet *job_set_p);
+GRASSROOTS_SERVICE_API void FreeServiceJobSet (ServiceJobSet *job_set_p);
 
 
 /**
@@ -166,7 +166,7 @@ WHEATIS_SERVICE_API void FreeServiceJobSet (ServiceJobSet *job_set_p);
  * </code> if it could not be found.
  * @memberof ServiceJobSet
  */
-WHEATIS_SERVICE_API ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id);
+GRASSROOTS_SERVICE_API ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id);
 
 
 /**
@@ -177,7 +177,7 @@ WHEATIS_SERVICE_API ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const u
  * </code> upon error.
  * @memberof ServiceJobSet
  */
-WHEATIS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p);
+GRASSROOTS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p);
 
 
 /**
@@ -188,7 +188,7 @@ WHEATIS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
  * or <code>NULL</code> upon error.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
+GRASSROOTS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
 
 
 /**
@@ -199,12 +199,12 @@ WHEATIS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
  * or <code>NULL</code> upon error.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p);
+GRASSROOTS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p);
 
 
 
 
-WHEATIS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_service_p);
+GRASSROOTS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_service_p);
 
 
 /**
@@ -219,7 +219,7 @@ WHEATIS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *re
  * @memberof ServiceJob
  * @see SetServiceJobFromJSON
  */
-WHEATIS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
+GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
 
 
 /**
@@ -231,7 +231,7 @@ WHEATIS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
  * <code>false</code> otherwise.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p);
+GRASSROOTS_SERVICE_API bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p);
 
 
 /**
@@ -241,7 +241,7 @@ WHEATIS_SERVICE_API bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t 
  * @return The current OperationStatus.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API OperationStatus GetServiceJobStatus (ServiceJob *job_p);
+GRASSROOTS_SERVICE_API OperationStatus GetServiceJobStatus (ServiceJob *job_p);
 
 
 /**
@@ -251,7 +251,7 @@ WHEATIS_SERVICE_API OperationStatus GetServiceJobStatus (ServiceJob *job_p);
  * @return The name of the ServiceJob
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API const char *GetServiceJobName (const ServiceJob *job_p);
+GRASSROOTS_SERVICE_API const char *GetServiceJobName (const ServiceJob *job_p);
 
 
 /**
@@ -264,7 +264,7 @@ WHEATIS_SERVICE_API const char *GetServiceJobName (const ServiceJob *job_p);
  * <code>false</code> otherwise.
  * @memberof ServiceJob
  */
-WHEATIS_SERVICE_API bool CloseServiceJob (ServiceJob *job_p);
+GRASSROOTS_SERVICE_API bool CloseServiceJob (ServiceJob *job_p);
 
 
 /**
@@ -275,7 +275,7 @@ WHEATIS_SERVICE_API bool CloseServiceJob (ServiceJob *job_p);
  * that are still running, <code>false</code> otherwise.
  * @memberof ServiceJobSet
  */
-WHEATIS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
+GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 
 
 #ifdef __cplusplus

@@ -9,16 +9,16 @@
 #define DRMAA_UTIL_H_
 
 
-#include "wheatis_service_manager_library.h"
+#include "grassroots_service_manager_library.h"
 #include "typedefs.h"
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-WHEATIS_SERVICE_MANAGER_API bool InitDrmaa (void);
+GRASSROOTS_SERVICE_MANAGER_API bool InitDrmaa (void);
 
-WHEATIS_SERVICE_MANAGER_API bool ExitDrmaa (void);
+GRASSROOTS_SERVICE_MANAGER_API bool ExitDrmaa (void);
 
 #ifdef __cplusplus
 }

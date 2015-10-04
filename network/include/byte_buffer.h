@@ -39,7 +39,7 @@ extern "C"
  * @return The newly-allocated ByteBuffer or <code>NULL</code> on error.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API ByteBuffer *AllocateByteBuffer (size_t initial_size);
+GRASSROOTS_NETWORK_API ByteBuffer *AllocateByteBuffer (size_t initial_size);
 
 
 /**
@@ -48,7 +48,7 @@ WHEATIS_NETWORK_API ByteBuffer *AllocateByteBuffer (size_t initial_size);
  * @param buffer_p The ByteBuffer to free.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API void FreeByteBuffer (ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_API void FreeByteBuffer (ByteBuffer *buffer_p);
 
 
 /**
@@ -61,7 +61,7 @@ WHEATIS_NETWORK_API void FreeByteBuffer (ByteBuffer *buffer_p);
  * upon failure. If the call failed, the contents of the data buffer are preserved.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
+GRASSROOTS_NETWORK_API bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size);
 
 
 /**
@@ -74,7 +74,7 @@ WHEATIS_NETWORK_API bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size
  * upon failure. If the call failed, the contents of the data buffer are preserved.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API bool ExtendByteBuffer (ByteBuffer *buffer_p, size_t increment);
+GRASSROOTS_NETWORK_API bool ExtendByteBuffer (ByteBuffer *buffer_p, size_t increment);
 
 
 /**
@@ -87,7 +87,7 @@ WHEATIS_NETWORK_API bool ExtendByteBuffer (ByteBuffer *buffer_p, size_t incremen
  * upon failure. If the call failed, the contents of the data buffer are preserved.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t data_length);
+GRASSROOTS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t data_length);
 
 
 /**
@@ -99,7 +99,7 @@ WHEATIS_NETWORK_API bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *d
  * upon failure. If the call failed, the contents of the data buffer are preserved.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API bool AppendStringToByteBuffer (ByteBuffer *buffer_p, const char * const value_s);
+GRASSROOTS_NETWORK_API bool AppendStringToByteBuffer (ByteBuffer *buffer_p, const char * const value_s);
 
 
 /**
@@ -112,7 +112,7 @@ WHEATIS_NETWORK_API bool AppendStringToByteBuffer (ByteBuffer *buffer_p, const c
  * upon failure. If the call failed, the contents of the data buffer are preserved.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...);
+GRASSROOTS_NETWORK_API bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...);
 
 
 /**
@@ -121,7 +121,7 @@ WHEATIS_NETWORK_API bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const 
  * @param buffer_p The ByteBuffer who will have all of its data emptied.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API void ResetByteBuffer (ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_API void ResetByteBuffer (ByteBuffer *buffer_p);
 
 
 /**
@@ -131,7 +131,7 @@ WHEATIS_NETWORK_API void ResetByteBuffer (ByteBuffer *buffer_p);
  * @return The space remaining by the ByteBuffer in bytes.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * const buffer_p);
+GRASSROOTS_NETWORK_API size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * const buffer_p);
 
 
 /**
@@ -141,7 +141,7 @@ WHEATIS_NETWORK_API size_t GetRemainingSpaceInByteBuffer (const ByteBuffer * con
  * @return The space used by the ByteBuffer in bytes.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API size_t GetByteBufferSize (const ByteBuffer * const buffer_p);
+GRASSROOTS_NETWORK_API size_t GetByteBufferSize (const ByteBuffer * const buffer_p);
 
 
 /**
@@ -151,7 +151,7 @@ WHEATIS_NETWORK_API size_t GetByteBufferSize (const ByteBuffer * const buffer_p)
  * @return The data as valid c-style string.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buffer_p);
+GRASSROOTS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buffer_p);
 
 
 
@@ -163,12 +163,12 @@ WHEATIS_NETWORK_API const char *GetByteBufferData (const ByteBuffer * const buff
  * @return The data as valid c-style string.
  * @memberof ByteBuffer
  */
-WHEATIS_NETWORK_API char *DetachByteBufferData (ByteBuffer * const buffer_p);
+GRASSROOTS_NETWORK_API char *DetachByteBufferData (ByteBuffer * const buffer_p);
 
 
 
 
-WHEATIS_NETWORK_API void ReplaceCharsInByteBuffer (ByteBuffer *buffer_p, char old_data, char new_data);
+GRASSROOTS_NETWORK_API void ReplaceCharsInByteBuffer (ByteBuffer *buffer_p, char old_data, char new_data);
 
 
 #ifdef __cplusplus

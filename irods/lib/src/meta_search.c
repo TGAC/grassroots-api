@@ -63,6 +63,12 @@ void FreeIrodsSearch (IrodsSearch *search_p)
 }
 
 
+void ClearIrodsSearch (IrodsSearch *search_p)
+{
+	ClearLinkedList (search_p -> is_search_terms_p);
+}
+
+
 QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
 {
 	QueryResults *results_p = NULL;

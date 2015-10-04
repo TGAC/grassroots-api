@@ -1,4 +1,4 @@
-NAME 		= wheatis_network
+NAME 		= grassroots_network
 DIR_SRC = src
 DIR_INCLUDE = include
 COMP		= gcc
@@ -14,7 +14,7 @@ ifneq ($(PROPERTIES_SET),1)
 include $(DIR_ROOT)/project.properties
 endif
 
-export DIR_INSTALL=$(DIR_WHEATIS_INSTALL)/lib
+export DIR_INSTALL=$(DIR_GRASSROOTS_INSTALL)/lib
 
 TEST_EXE_NAME = network_test
 
@@ -26,10 +26,10 @@ VPATH	= \
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
-	-I$(DIR_WHEATIS_UTIL_INC) \
-	-I$(DIR_WHEATIS_UTIL_INC)/containers \
-	-I$(DIR_WHEATIS_UTIL_INC)/io \
-	-I$(DIR_WHEATIS_SERVER_INC) \
+	-I$(DIR_GRASSROOTS_UTIL_INC) \
+	-I$(DIR_GRASSROOTS_UTIL_INC)/containers \
+	-I$(DIR_GRASSROOTS_UTIL_INC)/io \
+	-I$(DIR_GRASSROOTS_SERVER_INC) \
 	-I$(DIR_HTMLCXX_INC) \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC)
@@ -47,7 +47,7 @@ SRCS 	= \
 	
 
 BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
-	-L$(DIR_WHEATIS_UTIL_LIB) -l$(WHEATIS_UTIL_LIB_NAME) \
+	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
 	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 #	-L/usr/local/lib/ -lpolarssl \
@@ -59,7 +59,7 @@ BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
 	-Wl,-Bsymbolic-functions -Wl,-z,relro \
 #	-lidn -llber -lldap -lrt -lgssapi_krb5 -lz -lnss3 -lnssutil3 -lsmime3 -lssl3 -lplds4 -lplc4 -lnspr4 -lrtmp
 
-CPPFLAGS += -DWHEATIS_NETWORK_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I../extras/hcxselect-1.1/src
+CPPFLAGS += -DGRASSROOTS_NETWORK_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I../extras/hcxselect-1.1/src
 
 LDFLAGS += $(BASE_LDFLAGS)
 

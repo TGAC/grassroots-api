@@ -6,7 +6,7 @@
 #ifndef USER_DETAILS_H
 #define USER_DETAILS_H
 
-#include "wheatis_params_library.h"
+#include "grassroots_params_library.h"
 
 
 /**
@@ -38,7 +38,7 @@ extern "C"
  * @return A newly-allocated UserDetails or <code>NULL</code> upon error.
  * @memberof UserDetails
  */
-WHEATIS_PARAMS_API UserDetails *AllocateUserDetails (const char *username_s);
+GRASSROOTS_PARAMS_API UserDetails *AllocateUserDetails (const char *username_s);
 
 
 /**
@@ -47,7 +47,7 @@ WHEATIS_PARAMS_API UserDetails *AllocateUserDetails (const char *username_s);
  * @param user_details_p The UserDetails to free.
  * @memberof UserDetails
  */
-WHEATIS_PARAMS_API void FreeUserDetails (UserDetails *user_details_p);
+GRASSROOTS_PARAMS_API void FreeUserDetails (UserDetails *user_details_p);
 
 /** @} */
 

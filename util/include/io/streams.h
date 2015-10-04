@@ -6,7 +6,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 #include "typedefs.h"
 
 /**
@@ -95,7 +95,7 @@ typedef struct OutputStream
  * @return <code>true</code> if the initialisation was succesful,
  * <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool InitDefaultOutputStream (void);
+GRASSROOTS_UTIL_API bool InitDefaultOutputStream (void);
 
 
 /**
@@ -105,7 +105,7 @@ WHEATIS_UTIL_API bool InitDefaultOutputStream (void);
  *
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API void FreeDefaultOutputStream (void);
+GRASSROOTS_UTIL_API void FreeDefaultOutputStream (void);
 
 
 /**
@@ -114,7 +114,7 @@ WHEATIS_UTIL_API void FreeDefaultOutputStream (void);
  * @param stream_p The OutputStream to use.
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API void SetDefaultErrorStream (OutputStream *stream_p);
+GRASSROOTS_UTIL_API void SetDefaultErrorStream (OutputStream *stream_p);
 
 
 /**
@@ -123,7 +123,7 @@ WHEATIS_UTIL_API void SetDefaultErrorStream (OutputStream *stream_p);
  * @param stream_p The OutputStream to use.
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API void SetDefaultLogStream (OutputStream *stream_p);
+GRASSROOTS_UTIL_API void SetDefaultLogStream (OutputStream *stream_p);
 
 
 /**
@@ -134,7 +134,7 @@ WHEATIS_UTIL_API void SetDefaultLogStream (OutputStream *stream_p);
  * @param stream_p The OutputStream to free
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API void FreeOutputStream (struct OutputStream *stream_p);
+GRASSROOTS_UTIL_API void FreeOutputStream (struct OutputStream *stream_p);
 
 
 /**
@@ -149,7 +149,7 @@ WHEATIS_UTIL_API void FreeOutputStream (struct OutputStream *stream_p);
  * @memberof OutputStream
  * @see st_print_fn
  */
-WHEATIS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...);
+GRASSROOTS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...);
 
 
 /**
@@ -162,7 +162,7 @@ WHEATIS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char *me
  * this will return 0.
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API int PrintErrors (const uint32 level, const char *message, ...);
+GRASSROOTS_UTIL_API int PrintErrors (const uint32 level, const char *message, ...);
 
 
 /**
@@ -175,7 +175,7 @@ WHEATIS_UTIL_API int PrintErrors (const uint32 level, const char *message, ...);
  * this will return 0.
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API int PrintLog (const uint32 level, const char *message, ...);
+GRASSROOTS_UTIL_API int PrintLog (const uint32 level, const char *message, ...);
 
 
 /**
@@ -184,7 +184,7 @@ WHEATIS_UTIL_API int PrintLog (const uint32 level, const char *message, ...);
  * @return The OutputStream to send results to.
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API OutputStream *GetLogOutput (void);
+GRASSROOTS_UTIL_API OutputStream *GetLogOutput (void);
 
 
 /**
@@ -193,7 +193,7 @@ WHEATIS_UTIL_API OutputStream *GetLogOutput (void);
  * @return The OutputStream to send results to.
  * @memberof OutputStream
  */
-WHEATIS_UTIL_API OutputStream *GetErrorsOutput (void);
+GRASSROOTS_UTIL_API OutputStream *GetErrorsOutput (void);
 
 
 /**
@@ -205,13 +205,13 @@ WHEATIS_UTIL_API OutputStream *GetErrorsOutput (void);
  * @memberof OutputStream
  * @see st_flush_fn
  */
-WHEATIS_UTIL_API bool FlushOutputStream (OutputStream *stream_p);
+GRASSROOTS_UTIL_API bool FlushOutputStream (OutputStream *stream_p);
 
 
-WHEATIS_UTIL_API bool FlushLog (void);
+GRASSROOTS_UTIL_API bool FlushLog (void);
 
 
-WHEATIS_UTIL_API bool FlushErrors (void);
+GRASSROOTS_UTIL_API bool FlushErrors (void);
 
 
 #ifdef __cplusplus

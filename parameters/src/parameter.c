@@ -851,7 +851,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 
 	if (success_flag)
 		{
-			success_flag = (json_object_set_new (root_p, PARAM_WHEATIS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0);
+			success_flag = (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0);
 		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
@@ -1442,7 +1442,7 @@ static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLev
 static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType *param_type_p)
 {
 	bool success_flag = false;
-	json_t *value_p = json_object_get (json_p, PARAM_WHEATIS_TYPE_INFO_S);
+	json_t *value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_S);
 
 	if (value_p && json_is_integer (value_p))
 		{

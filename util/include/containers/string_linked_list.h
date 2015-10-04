@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 #include "linked_list.h"
 #include "memory_allocations.h"
 
@@ -44,11 +44,11 @@ typedef struct StringListNode
  * @param mem_flag How the StringListNode should store its string..
  * @return The new StringListNode or NULL upon error.
  */
-WHEATIS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag);
+GRASSROOTS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag);
 
 
 
-WHEATIS_UTIL_API bool InitStringListNode (StringListNode *node_p, const char * const value_s, const MEM_FLAG mem_flag);
+GRASSROOTS_UTIL_API bool InitStringListNode (StringListNode *node_p, const char * const value_s, const MEM_FLAG mem_flag);
 
 
 /**
@@ -58,10 +58,10 @@ WHEATIS_UTIL_API bool InitStringListNode (StringListNode *node_p, const char * c
  *
  * @param node_p The ListNode to free.
  */
-WHEATIS_UTIL_API void FreeStringListNode (ListItem * const node_p);
+GRASSROOTS_UTIL_API void FreeStringListNode (ListItem * const node_p);
 
 
-WHEATIS_UTIL_API void ClearStringListNode (StringListNode *node_p);
+GRASSROOTS_UTIL_API void ClearStringListNode (StringListNode *node_p);
 
 
 /**
@@ -69,7 +69,7 @@ WHEATIS_UTIL_API void ClearStringListNode (StringListNode *node_p);
  *
  * @return The new LinkedList or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *AllocateStringLinkedList (void);
+GRASSROOTS_UTIL_API LinkedList *AllocateStringLinkedList (void);
 
 
 /**
@@ -81,7 +81,7 @@ WHEATIS_UTIL_API LinkedList *AllocateStringLinkedList (void);
  * @param src_p The LinkedList of StringListNodes to copy.
  * @result The copied LinkedList or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const src_p);
+GRASSROOTS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const src_p);
 
 
 /**
@@ -91,7 +91,7 @@ WHEATIS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const src_
  * @param src_p The LinkedList of StringListNodes to generate the value from.
  * @return The newly-allocated string or NULL upon error.
  */
-WHEATIS_UTIL_API char *GetStringLinkedListAsString (const LinkedList * const src_p);
+GRASSROOTS_UTIL_API char *GetStringLinkedListAsString (const LinkedList * const src_p);
 
 
 
@@ -103,7 +103,7 @@ WHEATIS_UTIL_API char *GetStringLinkedListAsString (const LinkedList * const src
  * @param mem_flag How the StringListNode should store its string..
  * @return true upon success, false on error.
  */
-WHEATIS_UTIL_API bool AddStringToStringLinkedList (LinkedList *list_p, const char * const str_p, const MEM_FLAG mem_flag);
+GRASSROOTS_UTIL_API bool AddStringToStringLinkedList (LinkedList *list_p, const char * const str_p, const MEM_FLAG mem_flag);
 
 
 #ifdef __cplusplus

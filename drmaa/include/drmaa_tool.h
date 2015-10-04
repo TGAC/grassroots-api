@@ -62,7 +62,7 @@ extern "C"
  * @return A newly-allocated DrmaaTool or <code>NULL</code> upon error.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
+GRASSROOTS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
 
 
 /**
@@ -71,7 +71,7 @@ WHEATIS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
  * @param tool_p The DrmaaTool to free.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API void FreeDrmaaTool (DrmaaTool *tool_p);
+GRASSROOTS_DRMAA_API void FreeDrmaaTool (DrmaaTool *tool_p);
 
 
 /**
@@ -83,7 +83,7 @@ WHEATIS_DRMAA_API void FreeDrmaaTool (DrmaaTool *tool_p);
  * @return <code>true</code> if the current working directory  was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, const char *path_s);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, const char *path_s);
 
 /**
  * Set the queue name that a DrmaaTool will set for run its program on.
@@ -94,7 +94,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, c
  * @return <code>true</code> if the queue name was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s);
 
 
 /**
@@ -105,7 +105,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *que
  * @return <code>true</code> if the number of cores was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolCores (DrmaaTool *tool_p, uint32 num_cores);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolCores (DrmaaTool *tool_p, uint32 num_cores);
 
 
 /**
@@ -116,7 +116,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolCores (DrmaaTool *tool_p, uint32 num_cores);
  * @return <code>true</code> if the amount of memory was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem);
 
 
 /**
@@ -128,7 +128,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem);
  * @return <code>true</code> if the hostname was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s);
 
 
 /**
@@ -140,7 +140,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host
  * @return <code>true</code> if the program was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_name_s);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_name_s);
 
 
 /**
@@ -152,7 +152,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_n
  * @return <code>true</code> if the filename was set successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char *output_name_s);
+GRASSROOTS_DRMAA_API bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char *output_name_s);
 
 
 /**
@@ -164,7 +164,7 @@ WHEATIS_DRMAA_API bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char
  * @return <code>true</code> if the argument was added successfully, <code>false</code> otherwise.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s);
+GRASSROOTS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s);
 
 
 /**
@@ -178,7 +178,7 @@ WHEATIS_DRMAA_API bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_
  * status of whether the job completed successfully, use <code>GetDrmaaToolStatus</code> @see GetDrmaaToolStatus.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag);
+GRASSROOTS_DRMAA_API bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag);
 
 
 /**
@@ -188,7 +188,7 @@ WHEATIS_DRMAA_API bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag);
  * @return The current status of the job for this DrmaaTool.
  * @memberof DrmaaTool
  */
-WHEATIS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
+GRASSROOTS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 
 
 

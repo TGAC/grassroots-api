@@ -1,5 +1,5 @@
-#ifndef WHEATIS_RESOURCE_H
-#define WHEATIS_RESOURCE_H
+#ifndef GRASSROOTS_RESOURCE_H
+#define GRASSROOTS_RESOURCE_H
 
 #include "jansson.h"
 
@@ -10,8 +10,8 @@
  * @brief A datatype representing a URI.
  *
  * This represents a URI to a particular data object.
- * For example "http://wheatis.tgac.ac.uk" would have
- * a protocol of "http" and a value of "wheatist.tgac.ac.uk".
+ * For example "http://grassroots.tgac.ac.uk" would have
+ * a protocol of "http" and a value of "grassrootst.tgac.ac.uk".
  * It can have a user-friendly title and an associated json
  * object if needed.
  */
@@ -70,7 +70,7 @@ typedef struct Resource
  * resource.c.
  */
 #ifdef ALLOCATE_RESOURCE_TAGS
-	#define RESOURCE_PREFIX WHEATIS_NETWORK_API
+	#define RESOURCE_PREFIX GRASSROOTS_NETWORK_API
 	#define RESOURCE_VAL(x)	= x
 #else
 	#define RESOURCE_PREFIX extern
@@ -110,7 +110,7 @@ RESOURCE_PREFIX const char *PROTOCOL_HTTP_S RESOURCE_VAL("http");
 RESOURCE_PREFIX const char *PROTOCOL_HTTPS_S RESOURCE_VAL("https");
 
 /**
- * @brief The protocol for a data object stored within the WheatIS system inline.
+ * @brief The protocol for a data object stored within the Grassroots system inline.
  * @memberof Resource
  */
 RESOURCE_PREFIX const char *PROTOCOL_INLINE_S RESOURCE_VAL("inline");
@@ -133,7 +133,7 @@ extern "C" {
  * @return A newly-allocated Resource or <code>NULL</code> upon error.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API Resource *AllocateResource (const char *protocol_s, const char *value_s, const char *title_s);
+GRASSROOTS_NETWORK_API Resource *AllocateResource (const char *protocol_s, const char *value_s, const char *title_s);
 
 
 /**
@@ -142,7 +142,7 @@ WHEATIS_NETWORK_API Resource *AllocateResource (const char *protocol_s, const ch
  * @param resource_p The Resource to initialise.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API void InitResource (Resource *resource_p);
+GRASSROOTS_NETWORK_API void InitResource (Resource *resource_p);
 
 
 /**
@@ -151,7 +151,7 @@ WHEATIS_NETWORK_API void InitResource (Resource *resource_p);
  * @param resource_p The Resource to free.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API void FreeResource (Resource *resource_p);
+GRASSROOTS_NETWORK_API void FreeResource (Resource *resource_p);
 
 
 /**
@@ -162,7 +162,7 @@ WHEATIS_NETWORK_API void FreeResource (Resource *resource_p);
  * @param resource_p The Resource to clear.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API void ClearResource (Resource *resource_p);
+GRASSROOTS_NETWORK_API void ClearResource (Resource *resource_p);
 
 
 /**
@@ -177,7 +177,7 @@ WHEATIS_NETWORK_API void ClearResource (Resource *resource_p);
  * @return <code>true</code> if the Resource was updated successfully, <code>false</code> otherwise.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char *value_s, const char *title_s);
+GRASSROOTS_NETWORK_API bool SetResourceValue (Resource *resource_p, const char *protocol_s, const char *value_s, const char *title_s);
 
 
 /**
@@ -190,7 +190,7 @@ WHEATIS_NETWORK_API bool SetResourceValue (Resource *resource_p, const char *pro
  * @return <code>true</code> if the Resource was updated successfully, <code>false</code> otherwise.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API bool SetResourceData (Resource *resource_p, json_t *data_p, const bool owns_data_flag);
+GRASSROOTS_NETWORK_API bool SetResourceData (Resource *resource_p, json_t *data_p, const bool owns_data_flag);
 
 
 /**
@@ -204,7 +204,7 @@ WHEATIS_NETWORK_API bool SetResourceData (Resource *resource_p, json_t *data_p, 
  * otherwise. Upon failure, the destination Resource will remain unaltered.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API bool CopyResource (const Resource * const src_p, Resource * const dest_p);
+GRASSROOTS_NETWORK_API bool CopyResource (const Resource * const src_p, Resource * const dest_p);
 
 
 /**
@@ -224,7 +224,7 @@ WHEATIS_NETWORK_API bool CopyResource (const Resource * const src_p, Resource * 
  * @see PROTOCOL_INLINE_S
  * @see RESOURCE_DELIMITER_S
  */
-WHEATIS_NETWORK_API Resource *ParseStringToResource (const char * const resource_s);
+GRASSROOTS_NETWORK_API Resource *ParseStringToResource (const char * const resource_s);
 
 /**
  * @brief Get the protocol and path parts of a Resource.
@@ -239,7 +239,7 @@ WHEATIS_NETWORK_API Resource *ParseStringToResource (const char * const resource
  * @memberof Resource
  * @see FreeCopiedString
  */
-WHEATIS_NETWORK_API bool GetResourceProtocolAndPath (const char * const resource_s, char ** const path_ss, char ** const protocol_ss);
+GRASSROOTS_NETWORK_API bool GetResourceProtocolAndPath (const char * const resource_s, char ** const path_ss, char ** const protocol_ss);
 
 
 /**
@@ -253,7 +253,7 @@ WHEATIS_NETWORK_API bool GetResourceProtocolAndPath (const char * const resource
  * upon failure.
  * @memberof Resource
  */
-WHEATIS_NETWORK_API json_t *GetResourceAsJSONByParts (const char * const protocol_s, const char * const path_s, const char * const title_s, json_t *data_p);
+GRASSROOTS_NETWORK_API json_t *GetResourceAsJSONByParts (const char * const protocol_s, const char * const path_s, const char * const title_s, json_t *data_p);
 
 #ifdef __cplusplus
 }
@@ -261,4 +261,4 @@ WHEATIS_NETWORK_API json_t *GetResourceAsJSONByParts (const char * const protoco
 
 
 
-#endif		/* #ifndef WHEATIS_RESOURCE_H */
+#endif		/* #ifndef GRASSROOTS_RESOURCE_H */

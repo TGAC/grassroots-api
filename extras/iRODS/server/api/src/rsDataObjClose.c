@@ -195,7 +195,7 @@ dataObjInfo_t **outDataObjInfo)
     freeL1desc (l1descInx);
 
 
-		rodsLog (LOG_NOTICE, "rsDataObjClose: Hello from WheatIS");
+		rodsLog (LOG_NOTICE, "rsDataObjClose: Hello from Grassroots");
 
     return (status);
 }

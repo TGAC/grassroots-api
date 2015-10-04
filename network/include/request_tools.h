@@ -31,7 +31,7 @@ extern "C"
  * an error sending the initial message containing the length header.
  * @memberof RawConnection
  */
-WHEATIS_NETWORK_API int AtomicReceiveViaRawConnection (RawConnection *connection_p);
+GRASSROOTS_NETWORK_API int AtomicReceiveViaRawConnection (RawConnection *connection_p);
 
 
 
@@ -46,7 +46,7 @@ WHEATIS_NETWORK_API int AtomicReceiveViaRawConnection (RawConnection *connection
  * an error sending the initial message containing the length header.
  * @memberof RawConnection
  */
-WHEATIS_NETWORK_API int AtomicSendStringViaRawConnection (const char *data_s, RawConnection *connection_p);
+GRASSROOTS_NETWORK_API int AtomicSendStringViaRawConnection (const char *data_s, RawConnection *connection_p);
 
 
 /**
@@ -61,7 +61,7 @@ WHEATIS_NETWORK_API int AtomicSendStringViaRawConnection (const char *data_s, Ra
  * an error sending the initial message containing the length header.
  * @memberof RawConnection
  */
-WHEATIS_NETWORK_API int AtomicSendViaRawConnection (const char *buffer_p, uint32 num_to_send, RawConnection *connection_p);
+GRASSROOTS_NETWORK_API int AtomicSendViaRawConnection (const char *buffer_p, uint32 num_to_send, RawConnection *connection_p);
 
 
 #ifdef __cplusplus

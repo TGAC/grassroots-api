@@ -2,7 +2,7 @@
 #define HANDLE_UTILS_H
 
 
-#include "wheatis_handler_library.h"
+#include "grassroots_handler_library.h"
 #include "parameter.h"
 #include "handler.h"
 
@@ -14,7 +14,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p);
+GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const json_t *tags_p);
 
 
 /**
@@ -22,7 +22,7 @@ WHEATIS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, con
  *
  * @return true upon success, false on failure.
  */
-WHEATIS_HANDLER_API bool InitHandlerUtil (void);
+GRASSROOTS_HANDLER_API bool InitHandlerUtil (void);
 
 
 /**
@@ -30,13 +30,13 @@ WHEATIS_HANDLER_API bool InitHandlerUtil (void);
  *
  * @return true upon success, false on failure.
  */
-WHEATIS_HANDLER_API bool DestroyHandlerUtil (void);
+GRASSROOTS_HANDLER_API bool DestroyHandlerUtil (void);
 
 
 
-WHEATIS_HANDLER_API const char *GetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, time_t *time_p);
+GRASSROOTS_HANDLER_API const char *GetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, time_t *time_p);
 
-WHEATIS_HANDLER_API bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, const char *mapped_filename_s, const time_t last_mod_time);
+GRASSROOTS_HANDLER_API bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, const char *mapped_filename_s, const time_t last_mod_time);
 
 
 

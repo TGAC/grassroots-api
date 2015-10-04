@@ -40,22 +40,22 @@ typedef struct DirEntry
 } DirEntry;
 
 
-WHEATIS_UTIL BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type);
+GRASSROOTS_UTIL BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type);
 
 
-WHEATIS_UTIL void FreeBaseDirEntry (BaseDirEntry *entry_p);
+GRASSROOTS_UTIL void FreeBaseDirEntry (BaseDirEntry *entry_p);
 
 
-WHEATIS_UTIL DirEntry *AllocateDirEntry (char *filename_s);
+GRASSROOTS_UTIL DirEntry *AllocateDirEntry (char *filename_s);
 
 
-WHEATIS_UTIL BaseDirEntryNode *AllocateBaseDirEntryNode (char *filename_s, DirEntryType entry_type);
+GRASSROOTS_UTIL BaseDirEntryNode *AllocateBaseDirEntryNode (char *filename_s, DirEntryType entry_type);
 
 
-WHEATIS_UTIL void FreeBaseDirEntry (ListItems *node_p);
+GRASSROOTS_UTIL void FreeBaseDirEntry (ListItems *node_p);
 
 
-WHEATIS_UTIL bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_entry_p);
+GRASSROOTS_UTIL bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_entry_p);
 
 
 

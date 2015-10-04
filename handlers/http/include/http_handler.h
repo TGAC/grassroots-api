@@ -1,9 +1,9 @@
-#ifndef WHEATIS_HTTP_HANDLER_H
-#define WHEATIS_HTTP_HANDLER_H
+#ifndef GRASSROOTS_HTTP_HANDLER_H
+#define GRASSROOTS_HTTP_HANDLER_H
 
 #include <stdio.h>
 
-#include "wheatis_http_handler_library.h"
+#include "grassroots_http_handler_library.h"
 #include "handler.h"
 
 
@@ -29,4 +29,4 @@ HTTP_HANDLER_API void ReleaseHandler (Handler *handler_p);
 #endif
 
 
-#endif		/* #ifndef WHEATIS_HTTP_HANDLER_H */
+#endif		/* #ifndef GRASSROOTS_HTTP_HANDLER_H */

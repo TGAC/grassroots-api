@@ -1,7 +1,7 @@
-#ifndef WHEATIS_SERVICE_H
-#define WHEATIS_SERVICE_H
+#ifndef GRASSROOTS_SERVICE_H
+#define GRASSROOTS_SERVICE_H
 
-#include "wheatis_service_library.h"
+#include "grassroots_service_library.h"
 
 #include "byte_buffer.h"
 #include "linked_list.h"
@@ -35,7 +35,7 @@
  * json_util.c.
  */
 #ifdef ALLOCATE_PATH_TAGS
-	#define PATH_PREFIX WHEATIS_SERVICE_API
+	#define PATH_PREFIX GRASSROOTS_SERVICE_API
 	#define PATH_VAL(x)	= x
 #else
 	#define PATH_PREFIX extern
@@ -50,7 +50,7 @@ PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
 
 /**
  * A datatype detailing the addon services
- * that the wheatis offers. These are the
+ * that the grassroots offers. These are the
  * equivalent to iRods microservices.
  */
 
@@ -196,7 +196,7 @@ extern "C"
 {
 #endif
 
-WHEATIS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
+GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
 
 
 /**
@@ -216,7 +216,7 @@ WHEATIS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_
  * @param data_p
  * @memberof Service
  */
-WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
+GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
@@ -245,10 +245,10 @@ WHEATIS_SERVICE_API void InitialiseService (Service * const service_p,
  * @memberof Service
  * @see se_run_fn
  */
-WHEATIS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 
-WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
+GRASSROOTS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 /**
@@ -258,7 +258,7 @@ WHEATIS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_
  * @return The name of Service.
  * @memberof Service
  */
-WHEATIS_SERVICE_API const char *GetServiceName (Service *service_p);
+GRASSROOTS_SERVICE_API const char *GetServiceName (Service *service_p);
 
 
 /**
@@ -268,7 +268,7 @@ WHEATIS_SERVICE_API const char *GetServiceName (Service *service_p);
  * @return The description of Service.
  * @memberof Service
  */
-WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
+GRASSROOTS_SERVICE_API const char *GetServiceDescription (Service *service_p);
 
 
 
@@ -279,7 +279,7 @@ WHEATIS_SERVICE_API const char *GetServiceDescription (Service *service_p);
  * @return The address of the page or NULL if there isn't one.
  * @memberof Service
  */
-WHEATIS_SERVICE_API const char *GetServiceInformationURI (Service *service_p);
+GRASSROOTS_SERVICE_API const char *GetServiceInformationURI (Service *service_p);
 
 /**
  * Get a newly-created ParameterSet describing the parameters for a given Service.
@@ -290,7 +290,7 @@ WHEATIS_SERVICE_API const char *GetServiceInformationURI (Service *service_p);
  * @see FreeParameterSet.
  * @memberof Service
  */
-WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+GRASSROOTS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
 /**
@@ -300,7 +300,7 @@ WHEATIS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Reso
  * @return The string of the id.
  * @memberof Service
  */
-WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
+GRASSROOTS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
 
 
 /**
@@ -309,7 +309,7 @@ WHEATIS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
  * @param service_p The Service to free.
  * @memberof Service
  */
-WHEATIS_SERVICE_API void FreeService (Service *service_p);
+GRASSROOTS_SERVICE_API void FreeService (Service *service_p);
 
 
 /**
@@ -319,7 +319,7 @@ WHEATIS_SERVICE_API void FreeService (Service *service_p);
  * @return A newly-allocated ServiceNode or <code>NULL</code> upon error.
  * @memberof ServiceNode
  */
-WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
+GRASSROOTS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
 
 
 /**
@@ -328,19 +328,19 @@ WHEATIS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
  * @param node_p The ServiceNode to free.
  * @memberof ServiceNode
  */
-WHEATIS_SERVICE_API void FreeServiceNode (ListItem *node_p);
+GRASSROOTS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
 
-WHEATIS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p);
+GRASSROOTS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p);
 
-WHEATIS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p);
-
-
-WHEATIS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
+GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p);
 
 
+GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
 
-WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
+
+
+GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
 
 
 /**
@@ -349,7 +349,7 @@ WHEATIS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const cha
  * @param service_p The Service to close.
  * @memberof Service
  */
-WHEATIS_SERVICE_API bool CloseService (Service *service_p);
+GRASSROOTS_SERVICE_API bool CloseService (Service *service_p);
 
 
 /**
@@ -359,7 +359,7 @@ WHEATIS_SERVICE_API bool CloseService (Service *service_p);
  * @return <code>true</code> if the Service still has active jobs, <code>false</code> otherwise.
  * @memberof Service
  */
-WHEATIS_SERVICE_API  bool IsServiceLive (Service *service_p);
+GRASSROOTS_SERVICE_API  bool IsServiceLive (Service *service_p);
 
 
 /**
@@ -369,7 +369,7 @@ WHEATIS_SERVICE_API  bool IsServiceLive (Service *service_p);
  * @return The results or NULL if they are not any.
  * @memberof Service
  */
-WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
+GRASSROOTS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
 
 /**
  * Generate a json-based description of a Service. This uses the Swagger definitions
@@ -380,7 +380,7 @@ WHEATIS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t 
  * an error.
  * @memberof Service
  */
-WHEATIS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag);
+GRASSROOTS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag);
 
 
 /**
@@ -389,7 +389,7 @@ WHEATIS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resourc
  * @param root_p The json_t representation of a Service.
  * @return The description or <code>NULL</code> if it could not be found.
  */
-WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
+GRASSROOTS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
 
 
 /**
@@ -398,7 +398,7 @@ WHEATIS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * co
  * @param root_p The json_t representation of a Service.
  * @return The name or <code>NULL</code> if it could not be found.
  */
-WHEATIS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
+GRASSROOTS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
 
 
 /**
@@ -407,7 +407,7 @@ WHEATIS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const roo
  * @param root_p The json_t representation of a Service.
  * @return The description or <code>NULL</code> if it could not be found.
  */
-WHEATIS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
+GRASSROOTS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
 
 
 /**
@@ -416,7 +416,7 @@ WHEATIS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * 
  * @param root_p The json_t representation of a Service.
  * @return The name or <code>NULL</code> if it could not be found.
  */
-WHEATIS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
+GRASSROOTS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
 
 
 /**
@@ -425,7 +425,7 @@ WHEATIS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const r
  * @param root_p The json_t representation of a Service.
  * @return The URI or <code>NULL</code> if it could not be found.
  */
-WHEATIS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
+GRASSROOTS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
 
 
 /**
@@ -434,7 +434,7 @@ WHEATIS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t
  * @param root_p The json_t representation of a Service.
  * @return The path to the icon or <code>NULL</code> if it could not be found.
  */
-WHEATIS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
+GRASSROOTS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
 
 
 /**
@@ -442,7 +442,7 @@ WHEATIS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p
  * @param plugin_p
  * @return
  */
-WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
+GRASSROOTS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 /**
  *
@@ -452,7 +452,7 @@ WHEATIS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
  * @param add_service_ids_flag
  * @return
  */
-WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag);
+GRASSROOTS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag);
 
 
 /**
@@ -463,7 +463,7 @@ WHEATIS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, 
  * @memberof Service
  * @see GetServiceParameters
  */
-WHEATIS_SERVICE_API void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p);
+GRASSROOTS_SERVICE_API void ReleaseServiceParameters (Service *service_p, ParameterSet *params_p);
 
 
 /**
@@ -472,7 +472,7 @@ WHEATIS_SERVICE_API void ReleaseServiceParameters (Service *service_p, Parameter
  * @param services_p The ServicesArray to free.
  * @memberof ServicesArray
  */
-WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
+GRASSROOTS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
 
 
 /**
@@ -483,11 +483,11 @@ WHEATIS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
  * <code>NULL</code> upon error.
  * @memberof ServicesArray
  */
-WHEATIS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
+GRASSROOTS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
 
 
 
-WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
+GRASSROOTS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
 /**
  *
@@ -497,7 +497,7 @@ WHEATIS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services
  * @param service_id
  * @return
  */
-WHEATIS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *result_json_p);
+GRASSROOTS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *result_json_p);
 
 /**
  *
@@ -506,7 +506,7 @@ WHEATIS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *r
  * @param get_service_fn
  * @return
  */
-WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
+GRASSROOTS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 
 /**
@@ -517,18 +517,18 @@ WHEATIS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_
  * @return The OperationStatus for the given Operation
  * @memberof Service
  */
-WHEATIS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id);
+GRASSROOTS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id);
 
 
-WHEATIS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);
+GRASSROOTS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);
 
 
 
-WHEATIS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
+GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
 
 #ifdef __cplusplus
 }
 #endif
 
 
-#endif		/* #ifndef WHEATIS_SERVICE_H */
+#endif		/* #ifndef GRASSROOTS_SERVICE_H */

@@ -1,7 +1,7 @@
 #ifndef CLIENT_UI_API_H
 #define CLIENT_UI_API_H
 
-#include "wheatis_ui.h"
+//#include "grassroots_ui.h"
 #include "client.h"
 
 
@@ -10,9 +10,9 @@ extern "C"
 {
 #endif
 
-WHEATIS_CLIENT_API Client *GetClient (Connection *connection_p);
+GRASSROOTS_CLIENT_API Client *GetClient (Connection *connection_p);
 
-WHEATIS_CLIENT_API void ReleaseClient (Client *client_p);
+GRASSROOTS_CLIENT_API void ReleaseClient (Client *client_p);
 
 
 //json_t *GetUserParameters (json_t *service_p, const char * const filename_s);

@@ -9,7 +9,7 @@
 #include <stdio.h>
 
 #include "typedefs.h"
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 #include "linked_list.h"
 
 #include "uuid/uuid.h"
@@ -33,7 +33,7 @@
  * the string was successfully created, its deallocation must be done with FreeCopiedString
  * when you are finished with it.
  */
-WHEATIS_UTIL_API char *CopyToNewString (const char * const src_p, const size_t length_to_copy, bool trim);
+GRASSROOTS_UTIL_API char *CopyToNewString (const char * const src_p, const size_t length_to_copy, bool trim);
 
 
 /**
@@ -41,7 +41,7 @@ WHEATIS_UTIL_API char *CopyToNewString (const char * const src_p, const size_t l
  *
  * @param str_p The string to deallocate.
  */
-WHEATIS_UTIL_API void FreeCopiedString (char *str_p);
+GRASSROOTS_UTIL_API void FreeCopiedString (char *str_p);
 
 
 /**
@@ -52,7 +52,7 @@ WHEATIS_UTIL_API void FreeCopiedString (char *str_p);
  * After being used, *buffer_pp muet be freed.
  * @return TRUE if the line was read successfully, false if there was an error.
  */
-WHEATIS_UTIL_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
+GRASSROOTS_UTIL_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
 
 
 /**
@@ -60,7 +60,7 @@ WHEATIS_UTIL_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
  *
  * @param buffer_p Pointer to a buffer to be freed.
  */
-WHEATIS_UTIL_API void FreeLineBuffer (char *buffer_p);
+GRASSROOTS_UTIL_API void FreeLineBuffer (char *buffer_p);
 
 
 /**
@@ -72,7 +72,7 @@ WHEATIS_UTIL_API void FreeLineBuffer (char *buffer_p);
  * @return A pointer to a StringLinkedList where each node
  * refers to a token or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * const format_p, const char * const delimiters_p, const bool treat_whitespace_as_delimiter_flag);
+GRASSROOTS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * const format_p, const char * const delimiters_p, const bool treat_whitespace_as_delimiter_flag);
 
 
 
@@ -84,7 +84,7 @@ WHEATIS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * const f
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const format_p, const char * const delimiters_p);
+GRASSROOTS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const format_p, const char * const delimiters_p);
 
 
 /**
@@ -95,7 +95,7 @@ WHEATIS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const form
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
  */
-WHEATIS_UTIL_API LinkedList *ParseStringToDataLinkedList (const char * const format_p, const char * const delimiters_p);
+GRASSROOTS_UTIL_API LinkedList *ParseStringToDataLinkedList (const char * const format_p, const char * const delimiters_p);
 
 
 /**
@@ -105,7 +105,7 @@ WHEATIS_UTIL_API LinkedList *ParseStringToDataLinkedList (const char * const for
  * @param second_s  The second string to concatenate.
  * @return The newly created string or NULL if there was an error.
  */
-WHEATIS_UTIL_API char *ConcatenateStrings (const char * const first_s, const char * const second_s);
+GRASSROOTS_UTIL_API char *ConcatenateStrings (const char * const first_s, const char * const second_s);
 
 
 /**
@@ -115,7 +115,7 @@ WHEATIS_UTIL_API char *ConcatenateStrings (const char * const first_s, const cha
  * @param char_to_replace  The character to replace.
  * @param replacement_char The replacement character.
  */
-WHEATIS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_replace, const char replacement_char);
+GRASSROOTS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_replace, const char replacement_char);
 
 
 /**
@@ -130,7 +130,7 @@ WHEATIS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_repla
  * line as a comment and do not try to get the key and value.
  * @return TRUE if the key and values were successfully copied, FALSE otherwise.
  */
-WHEATIS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char comment_identifier);
+GRASSROOTS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char comment_identifier);
 
 
 /**
@@ -141,16 +141,16 @@ WHEATIS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value
  * be where the orginal word  in the buffer ends.
  * @return A copied version of the string.
  */
-WHEATIS_UTIL_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+GRASSROOTS_UTIL_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
 
 
-WHEATIS_UTIL_API bool GetNextTokenAsRealNumber (const char **start_pp, double *data_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+GRASSROOTS_UTIL_API bool GetNextTokenAsRealNumber (const char **start_pp, double *data_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
 
 
-WHEATIS_UTIL_API bool GetNextTokenAsInteger (const char **start_pp, int *value_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+GRASSROOTS_UTIL_API bool GetNextTokenAsInteger (const char **start_pp, int *value_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
 
 
-WHEATIS_UTIL_API void FreeToken (char *token_s);
+GRASSROOTS_UTIL_API void FreeToken (char *token_s);
 
 
 /**
@@ -162,7 +162,7 @@ WHEATIS_UTIL_API void FreeToken (char *token_s);
  *
  * @param numeric_string_p The string to formatted.
  */
-WHEATIS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
+GRASSROOTS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
 
 
 /**
@@ -171,19 +171,19 @@ WHEATIS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
  * @param value_s The string to test.
  * @return TRUE If the string is NULL or just whitespace, FALSE otherwise.
  */
-WHEATIS_UTIL_API bool IsStringEmpty (const char *value_s);
+GRASSROOTS_UTIL_API bool IsStringEmpty (const char *value_s);
 
 
-WHEATIS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
+GRASSROOTS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 
 
-WHEATIS_UTIL_API int Strnicmp (const char *c0_p, const char *c1_p, size_t length);
+GRASSROOTS_UTIL_API int Strnicmp (const char *c0_p, const char *c1_p, size_t length);
 
 
-WHEATIS_UTIL_API char *ConvertIntegerToString (const int value);
+GRASSROOTS_UTIL_API char *ConvertIntegerToString (const int value);
 
 
-WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
+GRASSROOTS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
 
 /**
@@ -193,7 +193,7 @@ WHEATIS_UTIL_API char *ConvertDoubleToString (const double64 value);
  * @return A newly-allocated string of the id or <code>NULL<code> upon error.
  * @see FreeUUIDString.
  */
-WHEATIS_UTIL_API char *GetUUIDAsString (const uuid_t id);
+GRASSROOTS_UTIL_API char *GetUUIDAsString (const uuid_t id);
 
 
 /**
@@ -204,7 +204,7 @@ WHEATIS_UTIL_API char *GetUUIDAsString (const uuid_t id);
  * UUID_STRING_BUFFER_SIZE bytes long.
  * @see UUID_STRING_BUFFER_SIZE
  */
-WHEATIS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);
+GRASSROOTS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);
 
 
 
@@ -215,7 +215,7 @@ WHEATIS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);
  * @param id The uuid_t to set.
  * @return <code>true</code> if the uuid_t was set successfully, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
+GRASSROOTS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
 
 
 /**
@@ -224,25 +224,25 @@ WHEATIS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
  * @param uuid_s The string representation to free.
  * @see GetUUIDAsString.
  */
-WHEATIS_UTIL_API void FreeUUIDString (char *uuid_s);
+GRASSROOTS_UTIL_API void FreeUUIDString (char *uuid_s);
 
 
-WHEATIS_UTIL_API void ClearUUID (uuid_t *id_p);
+GRASSROOTS_UTIL_API void ClearUUID (uuid_t *id_p);
 
 
-WHEATIS_UTIL_API bool IsUUIDSet (uuid_t id);
+GRASSROOTS_UTIL_API bool IsUUIDSet (uuid_t id);
 
 
-WHEATIS_UTIL_API void GenerateUUID (uuid_t *id_p);
+GRASSROOTS_UTIL_API void GenerateUUID (uuid_t *id_p);
 
 
-WHEATIS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src_s);
+GRASSROOTS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src_s);
 
 
-WHEATIS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
+GRASSROOTS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
 
 
-WHEATIS_UTIL_API uint32 HashString (const void * const key_p);
+GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 
 
 

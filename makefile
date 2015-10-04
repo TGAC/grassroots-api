@@ -2,7 +2,6 @@ COPY	= cp
 DELETE = rm
 
 export DIR_ROOT = $(realpath .)
-export WHEATIS_VERSION = test
 
 include dependencies.properties
 
@@ -137,10 +136,10 @@ install_drmaa:
 endif
 
 info:
-	@echo "installing wheatis to $(DIR_WHEATIS_INSTALL)"
+	@echo "installing grassroots to $(DIR_GRASSROOTS_INSTALL)"
 	@echo "installing apache module to $(DIR_APACHE)/modules"
 	@echo "APXS=$(APXS)"	
-	@echo "WHEATIS_VERSION=$(WHEATIS_VERSION)"
+	@echo "GRASSROOTS_VERSION=$(GRASSROOTS_VERSION)"
 
 all: 	
 	@echo "BUILD = " $(BUILD)
@@ -157,7 +156,7 @@ all:
 	$(MAKE) -C handlers/dropbox
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
-	$(MAKE) -C server/httpd/mod_wheatis
+	$(MAKE) -C server/httpd/mod_grassroots
 	$(MAKE) -C mongodb 
 	$(MAKE) -C clients/lib
 	$(MAKE) -C clients/standalone
@@ -185,7 +184,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
-	$(MAKE) -C server/httpd/mod_wheatis install
+	$(MAKE) -C server/httpd/mod_grassroots install
 	$(MAKE) -C mongodb install
 	$(MAKE) -C clients/lib install
 	$(MAKE) -C clients/standalone install
@@ -200,7 +199,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install
 	$(MAKE) -C services/pathogenomics install	
-	git log -1 > $(DIR_WHEATIS_INSTALL)/wheatis.version
+	git log -1 > $(DIR_GRASSROOTS_INSTALL)/grassroots.version
 	
 clean: 
 	$(MAKE) -C util clean
@@ -216,7 +215,7 @@ clean:
 	$(MAKE) -C server/standalone clean 
 	$(MAKE) -C mongodb clean
 	$(MAKE) -C drmaa clean
-	$(MAKE) -C server/httpd/mod_wheatis clean
+	$(MAKE) -C server/httpd/mod_grassroots clean
 	$(MAKE) -C clients/lib clean
 	$(MAKE) -C clients/standalone clean
 #	$(MAKE) -C clients/web-server-client clean	
@@ -237,32 +236,32 @@ build_docs:
 	doxygen
 
 release: install build_docs
-	$(DELETE) wheatis_release.zip; \
+	$(DELETE) grassroots_release.zip; \
 	cd docs/api;
-	zip -r $(DIR_ROOT)/wheatis_release.zip html; \
-	cd $(DIR_WHEATIS_INSTALL); \
-	zip -r $(DIR_ROOT)/wheatis_release.zip handlers images lib references services wheatis.version client; \
+	zip -r $(DIR_ROOT)/grassroots_release.zip html; \
+	cd $(DIR_GRASSROOTS_INSTALL); \
+	zip -r $(DIR_ROOT)/grassroots_release.zip handlers images lib references services grassroots.version client; \
 	cd $(DIR_APACHE)/modules; \
-	zip $(DIR_ROOT)/wheatis_release.zip mod_wheatis.so; \
+	zip $(DIR_ROOT)/grassroots_release.zip mod_grassroots.so; \
 	
 install_init:
-	@mkdir -p $(DIR_WHEATIS_INSTALL)
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/extras
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/lib
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/services
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/references
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/images
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/clients
-	@mkdir -p $(DIR_WHEATIS_INSTALL)/handlers
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/extras
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/lib
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/services
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/references
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/images
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/clients
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/handlers
 
 
 install_deps: install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_irods_dev install_uuid install_blast
 	
 install_references: 
-	$(COPY) references/* $(DIR_WHEATIS_INSTALL)/references/
+	$(COPY) references/* $(DIR_GRASSROOTS_INSTALL)/references/
 
 install_images:
-	$(COPY) images/* $(DIR_WHEATIS_INSTALL)/images
+	$(COPY) images/* $(DIR_GRASSROOTS_INSTALL)/images
 
 install_jansson:
 	cd $(DIR_ROOT)/extras/jansson-2.6; \

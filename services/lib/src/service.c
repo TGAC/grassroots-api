@@ -15,7 +15,7 @@
 #include "json_util.h"
 #include "streams.h"
 #include "service_job.h"
-#include "wheatis_config.h"
+#include "grassroots_config.h"
 
 
 #ifdef _DEBUG

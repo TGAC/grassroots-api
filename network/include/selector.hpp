@@ -59,7 +59,7 @@ extern "C"
  * @memberof HtmlLinkArray
  * @see GetMatchingLinks
  */
-WHEATIS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s);
+GRASSROOTS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s);
 
 
 /**
@@ -75,7 +75,7 @@ WHEATIS_NETWORK_API json_t *GetMatchingLinksAsJSON (const char * const data_s, c
  * @memberof HtmlLinkArray
  * @see FreeHtmlLinkArray
  */
-WHEATIS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s);
+GRASSROOTS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s);
 
 /**
  * Free a HtmlLinkArray
@@ -83,7 +83,7 @@ WHEATIS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_s, 
  * @param links_ The HtmlLinkArray to free.
  * @memberof HtmlLinkArray
  */
-WHEATIS_NETWORK_API void FreeHtmlLinkArray (HtmlLinkArray *links_p);
+GRASSROOTS_NETWORK_API void FreeHtmlLinkArray (HtmlLinkArray *links_p);
 
 
 #ifdef __cplusplus

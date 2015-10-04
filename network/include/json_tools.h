@@ -29,7 +29,7 @@ extern "C"
  * @param to_s The start of the interval in the form YYYYMMDDhhmmss.
  * @return The json_t object for this request or <code>NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
+GRASSROOTS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username_s, const char * const password_s, const char * const from_s, const char * const to_s);
 
 
 /**
@@ -40,7 +40,7 @@ WHEATIS_NETWORK_API json_t *GetModifiedFilesRequest (const char * const username
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s);
+GRASSROOTS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s);
 
 
 /**
@@ -53,7 +53,7 @@ WHEATIS_NETWORK_API json_t *GetAvailableServicesRequest (const char * const user
  * the JSON fragment successfully,
  * <code>false</code> otherwise.
  */
-WHEATIS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
+GRASSROOTS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
 
 
 /**
@@ -66,7 +66,7 @@ WHEATIS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, co
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const char * const protocol_s, const char * const filename_s);
+GRASSROOTS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const username_s, const char * const password_s, const char * const protocol_s, const char * const filename_s);
 
 
 /**
@@ -78,7 +78,7 @@ WHEATIS_NETWORK_API json_t *GetInterestedServicesRequest (const char * const use
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetKeywordServicesRequest (const char * const username_s, const char * const password_s, const char * const keyword_s);
+GRASSROOTS_NETWORK_API json_t *GetKeywordServicesRequest (const char * const username_s, const char * const password_s, const char * const keyword_s);
 
 
 /**
@@ -90,7 +90,7 @@ WHEATIS_NETWORK_API json_t *GetKeywordServicesRequest (const char * const userna
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetNamedServicesRequest (const char * const username_s, const char * const password_s, const char * const service_name_s);
+GRASSROOTS_NETWORK_API json_t *GetNamedServicesRequest (const char * const username_s, const char * const password_s, const char * const service_name_s);
 
 
 /**
@@ -102,7 +102,7 @@ WHEATIS_NETWORK_API json_t *GetNamedServicesRequest (const char * const username
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetCheckServicesRequest (const char * const username_s, const char * const password_s, const char * const service_uuid_s);
+GRASSROOTS_NETWORK_API json_t *GetCheckServicesRequest (const char * const username_s, const char * const password_s, const char * const service_uuid_s);
 
 
 /**
@@ -114,7 +114,7 @@ WHEATIS_NETWORK_API json_t *GetCheckServicesRequest (const char * const username
  * @return <code>true</code> if the JSON fragment was updated successfully,
  * <code>false</code> otherwise.
  */
-WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s);
+GRASSROOTS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s);
 
 
 /**
@@ -123,7 +123,7 @@ WHEATIS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const char * cons
  * @param op The Operation to generate the JSON for.
  * @return The JSON fragment or <code>NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
+GRASSROOTS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
 
 
 /**
@@ -143,7 +143,7 @@ WHEATIS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
  * @param op_data_p The Operation-specific data.
  * @return The json_t for the request or <code>NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p);
+GRASSROOTS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, const char * const password_s, const Operation op, const char * const op_key_s, json_t * const op_data_p);
 
 /**
  * Send a JSON-based request to the server and get the JSON-based response.
@@ -152,7 +152,7 @@ WHEATIS_NETWORK_API json_t *GetServicesRequest (const char * const username_s, c
  * @param connection_p The Connection to the Server.
  * @return The JSON response or <code>NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p);
+GRASSROOTS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p);
 
 
 /**
@@ -160,7 +160,7 @@ WHEATIS_NETWORK_API json_t *MakeRemoteJsonCall (json_t *req_p, Connection *conne
  *
  * @param json_p The json object to remove.
  */
-WHEATIS_NETWORK_API void WipeJSON (json_t *json_p);
+GRASSROOTS_NETWORK_API void WipeJSON (json_t *json_p);
 
 
 /**
@@ -169,7 +169,7 @@ WHEATIS_NETWORK_API void WipeJSON (json_t *json_p);
  * @param credentials_p The JSON fragment to parse.
  * @return The user's uuid or <code>NULL</code> if it could not be found.
  */
-WHEATIS_NETWORK_API const char *GetUserUUIDStringFromJSON (const json_t *credentials_p);
+GRASSROOTS_NETWORK_API const char *GetUserUUIDStringFromJSON (const json_t *credentials_p);
 
 
 /**
@@ -181,7 +181,7 @@ WHEATIS_NETWORK_API const char *GetUserUUIDStringFromJSON (const json_t *credent
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
+GRASSROOTS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
 
 
 /**
@@ -193,7 +193,7 @@ WHEATIS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, con
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-WHEATIS_NETWORK_API json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
+GRASSROOTS_NETWORK_API json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
 
 
 /**
@@ -204,7 +204,7 @@ WHEATIS_NETWORK_API json_t *GetServicesResultsRequest (const uuid_t **ids_pp, co
  * @return <code>true</code> if the OperationStatus value was updated successfully, <code>
  * false</code> otherwise.
  */
-WHEATIS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p);
+GRASSROOTS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, OperationStatus *status_p);
 
 
 
@@ -219,7 +219,7 @@ WHEATIS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, Operat
  * @return The response of the Server to the Client or <code>NULL</code> upon error.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
+GRASSROOTS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
 
 
 

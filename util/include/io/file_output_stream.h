@@ -4,7 +4,7 @@
 #ifndef FILE_OUTPUT_STREAM_H
 #define FILE_OUTPUT_STREAM_H
 
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 #include "streams.h"
 
 #ifdef __cplusplus
@@ -41,14 +41,14 @@ typedef struct FileOutputStream
  * @memberof FileOutputStream
  * @see DeallocateFileOutputStream
  */
-WHEATIS_UTIL_API OutputStream *AllocateFileOutputStream (const char * const filename_s);
+GRASSROOTS_UTIL_API OutputStream *AllocateFileOutputStream (const char * const filename_s);
 
 /**
  * Free a FileOutputStream
  *
  * @param stream_p The FileOutputStream to free.
  */
-WHEATIS_UTIL_API void DeallocateFileOutputStream (OutputStream *stream_p);
+GRASSROOTS_UTIL_API void DeallocateFileOutputStream (OutputStream *stream_p);
 
 #ifdef __cplusplus
 }

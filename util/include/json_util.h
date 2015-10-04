@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-#include "wheatis_util_library.h"
+#include "grassroots_util_library.h"
 
 #include "jansson.h"
 #include "linked_list.h"
@@ -29,7 +29,7 @@
  * json_util.c.
  */
 #ifdef ALLOCATE_JSON_TAGS
-	#define PREFIX WHEATIS_UTIL_API
+	#define PREFIX GRASSROOTS_UTIL_API
 	#define VAL(x)	= x
 #else
 	#define PREFIX extern
@@ -99,7 +99,7 @@ PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_STORE_S VAL("store");
 PREFIX const char *PARAM_TAG_S VAL("tag");
 PREFIX const char *PARAM_TYPE_S VAL("type");
-PREFIX const char *PARAM_WHEATIS_TYPE_INFO_S VAL("wheatis_type");
+PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type");
 PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default");
 PREFIX const char *PARAM_CURRENT_VALUE_S  VAL("current_value");
 PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
@@ -180,7 +180,7 @@ extern "C"
  * @param prefix_s An optional string to precede the json output in the given FILE.
  * @return O if successful, less than 0 upon error.
  */
-WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
+GRASSROOTS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
 
 
 /**
@@ -191,7 +191,7 @@ WHEATIS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const 
  * @return The corresponding value or <code>NULL</code> if the key does not exist in the
  * given json_t object.
  */
-WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
+GRASSROOTS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 
 
 /**
@@ -202,7 +202,7 @@ WHEATIS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * c
  * @param value_p Where the corresponding value will be stored if the key exists and relates to an int.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p);
+GRASSROOTS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p);
 
 
 
@@ -214,7 +214,7 @@ WHEATIS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const k
  * @param value_p Where the corresponding value will be stored if the key exists and relates to a double.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p);
+GRASSROOTS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p);
 
 
 /**
@@ -225,7 +225,7 @@ WHEATIS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const key_
  * @param value_p Where the corresponding value will be stored if the key exists and relates to a boolean.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
  */
-WHEATIS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * const key_s, bool *value_p);
+GRASSROOTS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * const key_s, bool *value_p);
 
 
 /**
@@ -236,7 +236,7 @@ WHEATIS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * const k
  * @memberof JsonNode
  * @see FreeJsonNode
  */
-WHEATIS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
+GRASSROOTS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
 
 
 /**
@@ -246,7 +246,7 @@ WHEATIS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
  * associated json object will be decremented by 1.
  * @memberof JsonNode
  */
-WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
+GRASSROOTS_UTIL_API void FreeJsonNode (ListItem *node_p);
 
 
 
@@ -259,7 +259,7 @@ WHEATIS_UTIL_API void FreeJsonNode (ListItem *node_p);
  * @memberof FieldNode
  * @see FreeFieldNode
  */
-WHEATIS_UTIL_API FieldNode *AllocateFieldNode (const char *name_s, const MEM_FLAG mf, json_type field_type);
+GRASSROOTS_UTIL_API FieldNode *AllocateFieldNode (const char *name_s, const MEM_FLAG mf, json_type field_type);
 
 /**
  * Free a FieldNode.
@@ -267,22 +267,22 @@ WHEATIS_UTIL_API FieldNode *AllocateFieldNode (const char *name_s, const MEM_FLA
  * @param node_p The FieldNode to free.
  * @memberof FieldNode
  */
-WHEATIS_UTIL_API void FreeFieldNode (ListItem *node_p);
+GRASSROOTS_UTIL_API void FreeFieldNode (ListItem *node_p);
 
 
-WHEATIS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
+GRASSROOTS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
 
 
-WHEATIS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
+GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
 
-WHEATIS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, json_type field_type);
+GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, json_type field_type);
 
 
-WHEATIS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
+GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
 
-WHEATIS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level);
+GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level);
 
 
 #ifdef __cplusplus

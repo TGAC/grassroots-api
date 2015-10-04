@@ -36,7 +36,7 @@ extern "C"
  * @return A newly-allocated KeyValuePair or <code>NULL</code> upon error.
  * @memberof KeyValuePair
  */
-WHEATIS_NETWORK_API KeyValuePair *AllocateKeyValuePair (const char *key_s, const char *value_s);
+GRASSROOTS_NETWORK_API KeyValuePair *AllocateKeyValuePair (const char *key_s, const char *value_s);
 
 
 /**
@@ -45,7 +45,7 @@ WHEATIS_NETWORK_API KeyValuePair *AllocateKeyValuePair (const char *key_s, const
  * @param kvp_pThe KeyValuePair to free.
  * @memberof KeyValuePair
  */
-WHEATIS_NETWORK_API void FreeKeyValuePair (KeyValuePair *kvp_p);
+GRASSROOTS_NETWORK_API void FreeKeyValuePair (KeyValuePair *kvp_p);
 
 
 #ifdef __cplusplus

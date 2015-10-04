@@ -113,7 +113,7 @@ extern "C"
  * @return A Connection to the given Server or <code>NULL</code> upon error.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API Connection *AllocateRawServerConnection (const char * const hostname_s, const char * const port_s);
+GRASSROOTS_NETWORK_API Connection *AllocateRawServerConnection (const char * const hostname_s, const char * const port_s);
 
 
 /**
@@ -123,7 +123,7 @@ WHEATIS_NETWORK_API Connection *AllocateRawServerConnection (const char * const 
  * @return A Connection to the given Server or <code>NULL</code> upon error.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API Connection *AllocateWebServerConnection (const char * const full_uri_s);
+GRASSROOTS_NETWORK_API Connection *AllocateWebServerConnection (const char * const full_uri_s);
 
 
 /**
@@ -133,7 +133,7 @@ WHEATIS_NETWORK_API Connection *AllocateWebServerConnection (const char * const 
  * @return A Connection to the given Client or <code>NULL</code> upon error.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API Connection *AllocaterRawClientConnection (int server_socket_fd);
+GRASSROOTS_NETWORK_API Connection *AllocaterRawClientConnection (int server_socket_fd);
 
 
 /**
@@ -143,7 +143,7 @@ WHEATIS_NETWORK_API Connection *AllocaterRawClientConnection (int server_socket_
  * @return The data stored in a Connection's buffer.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API const char *GetConnectionData (Connection *connection_p);
+GRASSROOTS_NETWORK_API const char *GetConnectionData (Connection *connection_p);
 
 
 /**
@@ -152,7 +152,7 @@ WHEATIS_NETWORK_API const char *GetConnectionData (Connection *connection_p);
  * @param connection_p The Connection to free.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API void FreeConnection (Connection *connection_p);
+GRASSROOTS_NETWORK_API void FreeConnection (Connection *connection_p);
 
 
 /**
@@ -163,10 +163,10 @@ WHEATIS_NETWORK_API void FreeConnection (Connection *connection_p);
  * @return The response or <code>NULL</code> upon error.
  * @memberof Connection
  */
-WHEATIS_NETWORK_API const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *req_p);
+GRASSROOTS_NETWORK_API const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *req_p);
 
 
-WHEATIS_NETWORK_LOCAL int SendJsonRequestViaRawConnection (RawConnection *connection_p, const json_t *json_p);
+GRASSROOTS_NETWORK_LOCAL int SendJsonRequestViaRawConnection (RawConnection *connection_p, const json_t *json_p);
 
 /** @} */
 
