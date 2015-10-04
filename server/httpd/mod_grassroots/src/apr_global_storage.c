@@ -421,7 +421,7 @@ bool InitAPRGlobalStorageForChild (APRGlobalStorage *storage_p, apr_pool_t *pool
 
 	if (res != APR_SUCCESS)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to attach wheatis child to global mutex file '%s', res %d", storage_p -> ags_mutex_lock_filename_s, res);
+			PrintErrors (STM_LEVEL_SEVERE, "Failed to attach grassroots child to global mutex file '%s', res %d", storage_p -> ags_mutex_lock_filename_s, res);
 		}
 	else
 		{

@@ -88,7 +88,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 
 	if (credentials_p)
 		{
-			json_t *config_p = LoadConfig (".wheatis");
+			json_t *config_p = LoadConfig (".grassroots");
 			
 			if (config_p)
 				{

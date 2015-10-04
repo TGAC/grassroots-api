@@ -64,7 +64,7 @@ int main (int argc, char *argv [])
 	const char *to_s = NULL;
 	const char *query_s = NULL;
 	const char *uri_s = NULL;
-	const char *client_s = "wheatis-qt-client";
+	const char *client_s = "grassroots-qt-client";
 	const char *protocol_s = NULL;
 	bool web_server_flag = false;
 	int api_id = -1;
@@ -504,7 +504,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, const json_t *provider_p)
 {
 	int res = -1;
-	const char *service_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
+	const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
 
 	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (service_json_p, "client received service:\n", STANDALONE_CLIENT_DEBUG);

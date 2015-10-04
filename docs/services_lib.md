@@ -1,6 +1,6 @@
 ﻿# Services {#services}
 
-Services provide the ability to perform one or more operations. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a WheatIS Server; as standalone services or as referred services. 
+Services provide the ability to perform one or more operations. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as standalone services or as referred services. 
 
 
 ## Standalone Services
@@ -12,7 +12,7 @@ Standalone services are those which perform specific-tasks.
 ## Referred Services
 
 These are Services that use generic modules for their functionality and only differ in their configuration. An example
-of this is that the WheatIS has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. The configuration files are stored in the *references* folder. For example, the WheatIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
+of this is that the GrassrootsIS has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. The configuration files are stored in the *references* folder. For example, the GrassrootsIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
   
 ~~~json
 	"schema_version": 0.1,
@@ -44,7 +44,7 @@ of this is that the WheatIS has a number of Referred Services that access variou
 							"current_value": "",
 							"type": "string",
 							"tag": 1,
-							"wheatis_type": 11,
+							"grassroots_type": 11,
 							"description": "The search term"
 						}
 					]

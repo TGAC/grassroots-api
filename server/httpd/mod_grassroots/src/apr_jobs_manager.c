@@ -28,7 +28,7 @@
 
 /**************************/
 
-static const char s_mutex_filename_s [] = "logs/wheatis_jobs_manager_lock";
+static const char s_mutex_filename_s [] = "logs/grassroots_jobs_manager_lock";
 
 /**************************/
 

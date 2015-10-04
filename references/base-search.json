@@ -28,7 +28,7 @@
 							"current_value": "",
 							"type": "string",
 							"tag": 1,
-							"wheatis_type": 11,
+							"grassroots_type": 11,
 							"description": "The search term"
 						}
 					]

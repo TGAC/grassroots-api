@@ -21,7 +21,7 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
           "type": "string",
           "tag": 1163085380,
           "default": "study_accession",
-          "wheatis_type": 5,
+          "grassroots_type": 5,
           "level": 7,
           "description": "The field to search",
           "enum": [
@@ -54,7 +54,7 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
           "default": "",
           "tag": 1163086681,
           "level": 7,
-          "wheatis_type": 5,
+          "grassroots_type": 5,
           "description": "The term to search for in the given field"
         }
       ]
@@ -67,7 +67,7 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
 
 The Operations tag is used to call an API on the Server.
 
-* **operationId** (required): A number which equates to a particular API call for the Operation.
+* **operation_id** (required): A number which equates to a particular API call for the Operation.
 
  Value | C variable | Description  
 --- | --- | ---
@@ -85,7 +85,7 @@ The Operations tag is used to call an API on the Server.
  ~~~.json
 {
 		"operations": {
-			"operationId": 0
+			"operation_id": 0
 		}
 }
  ~~~
@@ -161,7 +161,7 @@ within an Operation to allow a Service to search for a Parameter by a tag value 
  MAKE_TAG(a,b,c,d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
  ~~~~~~
 
-* **wheatis_type** (required): 
+* **grassroots_type** (required): 
 A number to describe the type of the Parameter. The values, along with their C definition, are shown below:
  1. *PT_BOOLEAN*: The variable can be true or false.
  2. *PT_SIGNED_INT*: The variable is a non-negative integer.

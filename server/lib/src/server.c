@@ -498,7 +498,12 @@ static Operation GetOperation (json_t *ops_p)
 {
 	Operation op = OP_NONE;
 	json_t *op_p = json_object_get (ops_p, OPERATION_ID_S);
-		
+
+	if (!op_p)
+		{
+			op_p = json_object_get (ops_p, OPERATION_ID_OLD_S);
+		}
+
 	if (op_p)
 		{
 			if (json_is_integer (op_p))

@@ -1,7 +1,7 @@
 /*
 	Reworked on an example taken from https://gist.github.com/silv3rm00n/5821760
 
-	A simplistic server allowing us to test the wheatis architecture. 
+	A simplistic server allowing us to test the grassroots architecture.
 */
  
 #include <stdio.h>

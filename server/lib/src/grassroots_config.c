@@ -181,7 +181,7 @@ static const json_t *GetConfig (void)
 			if (!s_load_config_tried_flag)
 				{
 					const char *root_path_s = GetServerRootDirectory ();
-					char *full_config_path_s = MakeFilename (root_path_s, "wheatis.config");
+					char *full_config_path_s = MakeFilename (root_path_s, "grassroots.config");
 
 					if (full_config_path_s)
 						{

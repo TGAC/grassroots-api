@@ -54,7 +54,8 @@ PREFIX const char *CONNECTION_RAW_S VAL("connection_raw");
 PREFIX const char *CONNECTION_WEB_S VAL("connection_web");
 
 PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
-PREFIX const char *OPERATION_ID_S VAL("operationId");
+PREFIX const char *OPERATION_ID_OLD_S VAL("operationId");
+PREFIX const char *OPERATION_ID_S VAL("operation_id");
 PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
 PREFIX const char *OPERATION_INFORMATION_URI_S VAL("about_url");
 PREFIX const char *OPERATION_ICON_PATH_S VAL("icon");

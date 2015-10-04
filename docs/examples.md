@@ -42,7 +42,7 @@ An operationId of 0 is the one for asking for all of its possible Operations.
 					"current_value": "BS00003643",
 					"type": "string",
 					"tag": 1,
-					"wheatis_type": 11,
+					"grassroots_type": 11,
 					"description": "The SNP name (a 10 character alphanumeric beginning with 'BS' or 'BA'; e.g., BS00010624 or BA0033400) to find the contig to which it maps and all other putative SNPs, validated or not, that have been mapped to it. SNP names (IDs) may take different forms depending on the platform on which the assay was developed"
 				}, {
 					"param": "contig_name",
@@ -51,7 +51,7 @@ An operationId of 0 is the one for asking for all of its possible Operations.
 					"current_value": "",
 					"type": "string",
 					"tag": 2,
-					"wheatis_type": 11,
+					"grassroots_type": 11,
 					"description": "The contig name (e.g. BC000000280)"
 				}]
 			}
@@ -68,7 +68,7 @@ An operationId of 0 is the one for asking for all of its possible Operations.
 					"current_value": "",
 					"type": "string",
 					"tag": 3,
-					"wheatis_type": 11,
+					"grassroots_type": 11,
 					"description": "Any keywords  (e.g., 'yellow rust', 'hot') "
 				}]			
 			}
@@ -90,7 +90,7 @@ An operationId of 0 is the one for asking for all of its possible Operations.
 				"current_value": "BC000000100",
 				"tag": 2,
 				"type": "string",
-				"wheatis_type": 11,
+				"grassroots_type": 11,
 				"level": 7,
 				"concise": true
 			}]

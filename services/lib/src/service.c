@@ -768,7 +768,14 @@ const char *GetOperationDescriptionFromJSON (const json_t * const root_p)
 
 const char *GetOperationNameFromJSON (const json_t * const root_p)
 {
-	return GetJSONString (root_p, OPERATION_ID_S);
+	const char *result_s = GetJSONString (root_p, OPERATION_ID_S);
+
+	if (!result_s)
+		{
+			result_s = json_object_get (root_p, OPERATION_ID_OLD_S);
+		}
+
+	return result_s;
 }
 
 

@@ -29,7 +29,7 @@
 
 /**************************/
 
-static const char s_mutex_filename_s [] = "logs/wheatis_servers_manager_lock";
+static const char s_mutex_filename_s [] = "logs/grassroots_servers_manager_lock";
 
 /**************************/
 
