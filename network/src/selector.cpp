@@ -17,7 +17,7 @@
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "byte_buffer.h"
-#include "resource.h"
+#include "data_resource.h"
 
 using namespace std;
 using namespace htmlcxx :: HTML;

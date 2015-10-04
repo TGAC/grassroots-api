@@ -11,7 +11,7 @@
 #include "typedefs.h"
 #include "memory_allocations.h"
 #include "grassroots_util_library.h"
-
+#include "jansson.h"
 
 typedef struct StringIntPair
 {
@@ -44,6 +44,12 @@ GRASSROOTS_UTIL_API bool SetStringIntPair (StringIntPair *pair_p, char *text_s, 
 
 
 GRASSROOTS_UTIL_API void ClearStringIntPair (StringIntPair *pair_p);
+
+
+GRASSROOTS_UTIL_API void SortStringIntPairsByCount (StringIntPairArray *pairs_p);
+
+
+GRASSROOTS_UTIL_API json_t *GetStringIntPairsAsResourceJSON (const StringIntPairArray *pairs_p);
 
 
 #ifdef __cplusplus

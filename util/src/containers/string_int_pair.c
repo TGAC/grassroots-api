@@ -5,7 +5,15 @@
  *      Author: billy
  */
 
+#include <stdlib.h>
+
 #include "string_int_pair.h"
+#include "string_utils.h"
+#include "filesystem_utils.h"
+#include "data_resource.h"
+
+
+static int CompareStringIntCounts (const void *v0_p, const void *v1_p);
 
 
 StringIntPairArray *AllocateStringIntPairArray (const uint32 size)
@@ -68,6 +76,10 @@ bool SetStringIntPair (StringIntPair *pair_p, char *text_s, MEM_FLAG text_mem, c
 			case MF_SHADOW_USE:
 				dest_s = text_s;
 				break;
+
+			default:
+				success_flag = false;
+				break;
 		}
 
 	if (success_flag)
@@ -104,4 +116,60 @@ void ClearStringIntPair (StringIntPair *pair_p)
 	pair_p -> sip_string_mem = MF_ALREADY_FREED;
 	pair_p -> sip_string_s = NULL;
 	pair_p -> sip_value = 0;
+}
+
+
+
+void SortStringIntPairsByCount (StringIntPairArray *pairs_p)
+{
+	qsort (pairs_p -> sipa_values_p, pairs_p -> sipa_size, sizeof (StringIntPair), CompareStringIntCounts);
+}
+
+
+
+json_t *GetStringIntPairsAsResourceJSON (const StringIntPairArray *pairs_p)
+{
+	json_t *root_p = json_array ();
+
+	if (root_p)
+		{
+			uint32 i = pairs_p -> sipa_size;
+			StringIntPair *pair_p = pairs_p -> sipa_values_p;
+
+			for ( ; i > 0; -- i, ++ pair_p)
+				{
+					json_t *resource_p = NULL;
+					char *title_s = GetFilenameOnly (pair_p -> sip_string_s);
+
+					if (title_s)
+						{
+							resource_p = GetResourceAsJSONByParts (PROTOCOL_IRODS_S, pair_p -> sip_string_s, title_s, NULL);
+							FreeCopiedString (title_s);
+						}
+					else
+						{
+							resource_p = GetResourceAsJSONByParts (PROTOCOL_IRODS_S, pair_p -> sip_string_s, pair_p -> sip_string_s, NULL);
+						}
+
+					if (resource_p)
+						{
+							if (json_array_append (root_p, resource_p) != 0)
+								{
+
+								}
+						}
+				}
+
+		}
+
+	return root_p;
+}
+
+
+static int CompareStringIntCounts (const void *v0_p, const void *v1_p)
+{
+	const StringIntPair *pair0_p = (const StringIntPair *) v0_p;
+	const StringIntPair *pair1_p = (const StringIntPair *) v1_p;
+
+	return ((pair0_p -> sip_value) - (pair1_p -> sip_value));
 }

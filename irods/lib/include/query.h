@@ -215,6 +215,9 @@ IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
 IRODS_UTIL_API json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p);
 
 
+IRODS_UTIL_API LinkedList *GetQueryResultsPaths (const QueryResults * const qrs_p);
+
+
 /**
  * Get all of the data attribute names within the iCAT system of an iRODS server.
  *

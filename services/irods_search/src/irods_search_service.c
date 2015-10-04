@@ -7,7 +7,7 @@
 #include "string_utils.h"
 #include "math_utils.h"
 #include "service.h"
-#include "resource.h"
+#include "data_resource.h"
 
 #include "query.h"
 #include "connect.h"
@@ -76,6 +76,9 @@ static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s,
 
 static bool CleanUpIrodsSearchJob (ServiceJob *job_p);
 
+static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p);
+
+
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p)
 {
@@ -99,10 +102,17 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 									 */
 									//if (AddParams (connection_p, COL_META_COLL_ATTR_NAME, COL_META_COLL_ATTR_VALUE, params_p, "Collections metadata", NULL, "The metadata tags available for iRODS collections") >= 0)
 									//	{
+									SharedType def;
+									def.st_string_value_s = NULL;
+
+									if (CreateAndAddParameterToParameterSet (params_p, PT_KEYWORD, false, "text", "Search term", "Search for matching metadata values", TAG_IRODS_KEYWORD, NULL, def, NULL, NULL, PL_ALL, NULL))
+										{
+
 											data_p -> issd_connection_p = connection_p;
 											data_p -> issd_params_p = params_p;
 
 											return data_p;
+										}
 									//	}
 								}
 
@@ -213,9 +223,9 @@ static rcComm_t *GetIRODSConnection (const json_t *config_p)
 
 
 
-static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p)
+static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p)
 {
-	StringIntPairArray *results_p = NULL;
+	json_t *res_p = NULL;
 	HashTable *store_p = GetHashTableOfStringInts (100, 75);
 
 	if (store_p)
@@ -248,7 +258,32 @@ static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id,
 
 													if (attr_search_results_p)
 														{
-															//AddQuery
+															LinkedList *matching_results_p = GetQueryResultsPaths (attr_search_results_p);
+
+															if (matching_results_p)
+																{
+																	StringListNode *node_p = (StringListNode *) (matching_results_p -> ll_head_p);
+
+																	while (node_p)
+																		{
+																			int count = 1;
+																			char *key_s = node_p -> sln_string_s;
+																			const int *count_p = (const int *) GetFromHashTable (store_p, key_s);
+
+																			if (count_p)
+																				{
+																					count = 1 + (*count_p);
+																				}
+
+																			PutInHashTable (store_p, key_s, &count);
+
+																			node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+																		}
+
+																	FreeLinkedList (matching_results_p);
+																}		/* if (matching_results_p) */
+
+
 															FreeQueryResults (attr_search_results_p);
 														}		/* if (attr_search_results_p) */
 												}
@@ -262,53 +297,55 @@ static StringIntPairArray *KeywordSearch (const char *keyword_s, int key_col_id,
 						}		/* if (attribute_names_p) */
 
 
+					/*
+					 * Get all of the hits and rank them by occurrence
+					 */
+					if (store_p -> ht_size > 0)
+						{
+							char **keys_pp = (char **) GetKeysIndexFromHashTable (store_p);
+
+							if (keys_pp)
+								{
+									uint32 i = store_p -> ht_size;
+									StringIntPairArray *results_p = AllocateStringIntPairArray (i);
+
+									if (results_p)
+										{
+											char **key_pp = keys_pp;
+											StringIntPair *pair_p = results_p -> sipa_values_p;
+
+											for ( ; i > 0; -- i, ++ key_pp, ++ pair_p)
+												{
+													char *key_s = *key_pp;
+													const int *count_p = (const int *) GetFromHashTable (store_p, key_s);
+
+													if (count_p)
+														{
+															if (!SetStringIntPair (pair_p, key_s, MF_DEEP_COPY, *count_p))
+																{
+
+																}
+														}
+												}
+
+											SortStringIntPairsByCount (results_p);
+											res_p = GetStringIntPairsAsResourceJSON (results_p);
+
+											FreeStringIntPairArray (results_p);
+										}		/* if (results_p) */
+
+									FreeKeysIndex ((void **) keys_pp);
+								}		/* if (keys_pp) */
+
+						}		/* if (store_p -> ht_size > 0) */
 
 				}		/* if (search_p) */
 
-			/*
-			 * Get all of the hits and rank them by occurrence
-			 */
-			if (store_p -> ht_size > 0)
-				{
-					char **keys_pp = (char **) GetKeysIndexFromHashTable (store_p);
-
-					if (keys_pp)
-						{
-							uint32 i = store_p -> ht_size;
-							results_p = AllocateStringIntPairArray (i);
-
-							if (results_p)
-								{
-									char **key_pp = keys_pp;
-									StringIntPair *pair_p = results_p -> sipa_values_p;
-
-									for ( ; i > 0; -- i, ++ key_pp, ++ pair_p)
-										{
-											char *key_s = *key_pp;
-											const int *count_p = (const int *) GetFromHashTable (store_p, key_s);
-
-											if (count_p)
-												{
-													if (!SetStringIntPair (pair_p, key_s, MF_DEEP_COPY, *count_p))
-														{
-
-														}
-												}
-										}
-								}
-
-							FreeKeysIndex ((void **) keys_pp);
-						}
-
-
-
-
-				}		/* if (store_p -> ht_size > 0) */
 
 			FreeHashTable (store_p);
 		}		/* if (store_p) */
 
-	return results_p;
+	return res_p;
 }
 
 
@@ -459,7 +496,7 @@ static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_co
 
 											def.st_string_value_s = param_options_p -> st_string_value_s;
 
-											param_p = AllocateParameter (PT_KEYWORD, false, name_s, display_name_s, description_s, TAG_IRODS_KEYWORD, options_array_p, def, NULL, NULL, PL_ALL, NULL);
+											param_p = AllocateParameter (PT_KEYWORD, false, name_s, display_name_s, description_s, 0, options_array_p, def, NULL, NULL, PL_ALL, NULL);
 
 											if (param_p)
 												{
@@ -578,91 +615,111 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 
 			if (service_p -> se_jobs_p)
 				{
-					ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
-					bool success_flag = true;
-					const char *clause_s = NULL;
-					json_t *query_results_json_p = NULL;
+					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
 					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+					SharedType def;
 
 					job_p -> sj_status = OS_FAILED;
 
-					while (node_p && success_flag)
+					/* is it a keyword search? */
+					if (GetParameterValueFromParameterSet (param_set_p, TAG_IRODS_KEYWORD, &def, true))
 						{
-							Parameter *param_p = node_p -> pn_parameter_p;
-							int key_id;
+							json_t *res_p = DoKeywordSearch (def.st_string_value_s, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, data_p);
 
-							if (GetColumnId (param_p, S_KEY_ID_S, &key_id))
+							if (res_p)
 								{
-									int value_id;
+									job_p -> sj_result_p = res_p;
+									job_p -> sj_status = OS_SUCCEEDED;
+								}
+						}
+					else
+						{
+							ParameterNode *node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
+							bool success_flag = true;
+							const char *clause_s = NULL;
+							json_t *query_results_json_p = NULL;
 
-									if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
+							while (node_p && success_flag)
+								{
+									Parameter *param_p = node_p -> pn_parameter_p;
+
+									if (param_p -> pa_tag != TAG_IRODS_KEYWORD)
 										{
-											const char *value_s = param_p -> pa_current_value.st_string_value_s;
+											int key_id;
 
-											if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
+											if (GetColumnId (param_p, S_KEY_ID_S, &key_id))
 												{
-													if (!AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", value_s, value_id))
+													int value_id;
+
+													if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
+														{
+															const char *value_s = param_p -> pa_current_value.st_string_value_s;
+
+															if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
+																{
+																	if (AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", value_s, value_id))
+																		{
+																			if (clause_s == NULL)
+																				{
+																					clause_s = "AND";
+																				}
+																		}
+																	else
+																		{
+																			success_flag = false;
+																		}
+																}
+															else
+																{
+																	success_flag = true;
+																}
+
+														}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
+													else
 														{
 															success_flag = false;
 														}
-												}
+												}		/* if (GetColumnId (param_p, S_KEY_ID_S, &key_id)) */
 											else
 												{
-													success_flag = true;
+													success_flag = false;
 												}
 
-										}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
-									else
+										}		/* if (param_p -> pa_tag != TAG_IRODS_KEYWORD) */
+
+									if (success_flag)
 										{
-											success_flag = false;
+											node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 										}
-								}		/* if (GetColumnId (param_p, S_KEY_ID_S, &key_id)) */
-							else
-								{
-									success_flag = false;
-								}
+								}		/* while (node_p && success_flag) */
 
 							if (success_flag)
 								{
-									node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+									QueryResults *results_p = NULL;
 
-									if (clause_s == NULL)
+									//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+									results_p = DoIrodsMetaSearch (search_p, data_p);
+
+									job_p -> sj_status = OS_FAILED;
+
+									if (results_p)
 										{
-											clause_s = "AND";
-										}
-								}
-						}		/* while (node_p && success_flag) */
+											PrintQueryResults (stdout, results_p);
+											fflush (stdout);
 
-					if (success_flag)
-						{
-							IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
-							QueryResults *results_p = NULL;
+											query_results_json_p = GetQueryResultAsResourcesJSON (results_p);
 
-							//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
-							results_p = DoIrodsMetaSearch (search_p, data_p);
+											if (query_results_json_p)
+												{
+													job_p -> sj_status = OS_SUCCEEDED;
+													job_p -> sj_result_p = query_results_json_p;
+												}
 
-							job_p -> sj_status = OS_FAILED;
+										}		/* if (results_p) */
 
-							if (results_p)
-								{
-									PrintQueryResults (stdout, results_p);
-									fflush (stdout);
-
-									query_results_json_p = GetQueryResultAsResourcesJSON (results_p);
-
-									if (query_results_json_p)
-										{
-											job_p -> sj_status = OS_SUCCEEDED;
-											job_p -> sj_result_p = query_results_json_p;
-										}
-
-								}		/* if (results_p) */
-
-						}		/* if (success_flag) */
-					else
-						{
-							job_p -> sj_status = OS_FAILED_TO_START;
+								}		/* if (success_flag) */
 						}
+
 				}		/* if (service_p -> se_jobs_p) */
 
 

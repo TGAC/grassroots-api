@@ -2,7 +2,7 @@
 #define IRODS_RESOURCE_H
 
 #include "rcConnect.h"
-#include "resource.h"
+#include "data_resource.h"
 
 #include "irods_handler_library.h"
 

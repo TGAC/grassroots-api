@@ -2,7 +2,7 @@
 
 #include "http_handler.h"
 #include "memory_allocations.h"
-#include "resource.h"
+#include "data_resource.h"
 
 
 static bool InitHttpHandler (struct Handler *handler_p, json_t *credentials_p);

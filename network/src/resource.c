@@ -1,7 +1,7 @@
 #include <string.h>
 
 #define ALLOCATE_RESOURCE_TAGS
-#include "resource.h"
+#include "data_resource.h"
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "json_util.h"

@@ -2,7 +2,7 @@
 #define SERVICE_MATCHER_H
 
 #include "grassroots_service_library.h"
-#include "resource.h"
+#include "data_resource.h"
 #include "handler.h"
 #include "service.h"
 

@@ -8,7 +8,7 @@
 #include "linked_list.h"
 #include "grassroots_params_library.h"
 #include "tags.h"
-#include "resource.h"
+#include "data_resource.h"
 #include "hash_table.h"
 
 

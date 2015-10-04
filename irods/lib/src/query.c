@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "resource.h"
+#include "data_resource.h"
 #include "query.h"
 
 
@@ -613,14 +613,13 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 }
 
 
-LinkedList *GetQueryResultsPaths(const QueryResults * const qrs_p)
+LinkedList *GetQueryResultsPaths (const QueryResults * const qrs_p)
 {
 	LinkedList *paths_p = AllocateStringLinkedList ();
 
 	if (paths_p)
 		{
 			IterateOverQueryResultPaths (qrs_p, AddQueryResultsAsStrings, paths_p);
-
 		}		/* if (paths_p) */
 
 	return paths_p;
