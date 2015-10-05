@@ -17,7 +17,7 @@ old_library='mod_grassroots.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/home/billy/Projects/grassroots-0/util/debug -L/home/billy/Projects/grassroots-0/services/lib/debug -L/home/billy/Projects/grassroots-0/handlers/lib/debug -L/home/billy/Projects/grassroots-0/irods/lib/debug -L/home/billy/Projects/grassroots-0/network/debug -L/home/billy/Projects/grassroots-0/server/lib/debug -L/opt/grassroots-0/grassroots/extras/irods/lib -lgrassroots_util -lgrassroots_service -lgrassroots_handler -lgrassroots_irods -lgrassroots_network -lgrassroots_server -lirods'
+dependency_libs=' -L/usr/users/ga002/tyrrells/Projects/wheatis-0/util/debug -L/usr/users/ga002/tyrrells/Projects/wheatis-0/services/lib/debug -L/usr/users/ga002/tyrrells/Projects/wheatis-0/handlers/lib/debug -L/usr/users/ga002/tyrrells/Projects/wheatis-0/irods/lib/debug -L/usr/users/ga002/tyrrells/Projects/wheatis-0/network/debug -L/usr/users/ga002/tyrrells/Projects/wheatis-0/server/lib/debug -L/opt/wheatis-0/grassroots/extras/irods/lib -lgrassroots_util -lgrassroots_service -lgrassroots_handler -lgrassroots_irods -lgrassroots_network -lgrassroots_server -lirods'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/opt/grassroots-0/apache/modules'
+libdir='/opt/wheatis-0/apache/modules'
