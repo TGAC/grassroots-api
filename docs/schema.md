@@ -63,7 +63,7 @@ All of the messages between Servers and Clients use a JSON-based schema. A full 
 }
 ~~~
 
-## Operations
+##Operations 
 
 The Operations tag is used to call an API on the Server.
 

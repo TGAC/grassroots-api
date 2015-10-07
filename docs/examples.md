@@ -10,7 +10,7 @@ An operationId of 0 is the one for asking for all of its possible Operations.
  ~~~{.json}
 {
 		"operations": {
-			"operationId": 0
+			"operation_id": 0
 		}
 }
  ~~~
