@@ -509,6 +509,7 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 
 											if (zone_s)
 												{
+													/** @REPLACE IRODS CALL */
 													addKeyVal (&input_query.condInput, ZONE_KW, zone_s);
 												}
 
@@ -523,6 +524,7 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 											fflush (stdout);
 											#endif
 
+											/** @REPLACE IRODS CALL */
 											/* Do the search */
 											status = rcGenQuery (connection_p, &input_query, &query_output_p);
 

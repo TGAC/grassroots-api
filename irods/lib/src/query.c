@@ -52,6 +52,8 @@ genQueryOut_t *ExecuteGenQuery (rcComm_t *connection_p, genQueryInp_t * const in
 	genQueryOut_t *out_query_p = NULL;
 	int status;
 
+
+	/** @REPLACE IRODS CALL */
 	/* Run the query */
 	status = rcGenQuery (connection_p, in_query_p, &out_query_p);
 
@@ -146,6 +148,8 @@ genQueryOut_t *ExecuteQueryString (rcComm_t *connection_p, char *query_s)
 	/* Build the query */
 	InitGenQuery (&in_query);
 
+
+	/** @REPLACE IRODS CALL */
 	/* Fill in the iRODS query structure */
 	status = fillGenQueryInpFromStrCond (query_s, &in_query);
 

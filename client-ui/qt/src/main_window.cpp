@@ -268,7 +268,10 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 										}
 									else
 										{
-											show_results_flag = AddResults (service_result_p);
+											if (AddResults (service_result_p))
+												{
+													show_results_flag = true;
+												}
 										}
 
 								}		/* json_array_foreach (results_p, i, service_result_p) */

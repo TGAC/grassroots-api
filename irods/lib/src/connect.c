@@ -73,6 +73,8 @@ rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
 	rodsEnv env;
 	rErrMsg_t err;
 	rcComm_t *connection_p = NULL;
+
+	/**@REPLACE IRODS CALL */
 	int status = getRodsEnv (&env);
 
 	if (status == 0) 
@@ -82,15 +84,17 @@ rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
 					username_s = env.rodsUserName;
 				}
 			
+			/**@REPLACE IRODS CALL */
 			connection_p = rcConnect (env.rodsHost, env.rodsPort, (char *) username_s, env.rodsZone, 0, &err);
 			
 			if (connection_p)
 				{
+					/**@REPLACE IRODSCALL */
 					status = password_s ? clientLoginWithPassword (connection_p, (char *) password_s) : clientLogin (connection_p);
 					
 					if (status != 0)
 						{
-							rcDisconnect (connection_p);
+							CloseIRODSConnection (connection_p);
 							connection_p = NULL;
 						}
 				}
@@ -102,6 +106,7 @@ rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
 
 void CloseIRODSConnection (rcComm_t *connection_p)
 {
+	/** @REPLACE IRODS CALL */
 	rcDisconnect (connection_p);
 }
 
