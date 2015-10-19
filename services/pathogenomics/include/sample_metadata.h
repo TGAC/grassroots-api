@@ -43,6 +43,13 @@ PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByGoogle (PathogenomicsServic
 PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
 
 
+/**
+ * Convert a date from the given json.
+ *
+ * If successful, the converted date will
+ *
+ * @row_p
+ */
 PATHOGENOMICS_SERVICE_LOCAL bool ConvertDate (json_t *row_p);
 
 

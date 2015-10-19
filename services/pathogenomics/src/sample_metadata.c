@@ -306,18 +306,27 @@ bool ConvertDate (json_t *row_p)
 {
 	bool success_flag = false;
 	const char *date_s = GetJSONString (row_p, PG_DATE_S);
-	char buffer_s [9];
+	char iso_date_s [11];
+	char raw_date_s [9];
+
+	/* Add the dashes between the year, month and day */
+	* (iso_date_s + 4) = '-';
+	* (iso_date_s + 7) = '-';
+	* (iso_date_s + 10) = '\0';
+	* (raw_date_s + 8) = '\0';
 
 	if (date_s)
 		{
 			/* Is it DD/MM/YYYY */
 			if ((strlen (date_s) == 10) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
 				{
-					memcpy (buffer_s, date_s + 6, 4 * sizeof (char));
-					memcpy (buffer_s + 4, date_s + 3, 2 * sizeof (char));
-					memcpy (buffer_s + 6, date_s, 2 * sizeof (char));
+					memcpy (iso_date_s, date_s + 6, 4 * sizeof (char));
+					memcpy (raw_date_s, date_s + 6, 4 * sizeof (char));
+					memcpy (iso_date_s + 5, date_s + 3, 2 * sizeof (char));
+					memcpy (raw_date_s + 4, date_s, 2 * sizeof (char));
+					memcpy (iso_date_s + 8, date_s + 3, 2 * sizeof (char));
+					memcpy (raw_date_s + 6, date_s, 2 * sizeof (char));
 
-					* (buffer_s + 8) = '\0';
 					success_flag = true;
 				}
 			else
@@ -380,16 +389,22 @@ bool ConvertDate (json_t *row_p)
 											/* Do we have a 2 digit year... */
 											if (* (value_p + 2) == '\0')
 												{
-													*buffer_s = '2';
-													* (buffer_s + 1) = '0';
+													*iso_date_s = '2';
+													* (iso_date_s + 1) = '0';
+													memcpy (iso_date_s + 2, value_p, 2 * sizeof (char));
 
-													memcpy (buffer_s + 2, value_p, 2 * sizeof (char));
+													*raw_date_s = '2';
+													* (raw_date_s + 1) = '0';
+													memcpy (raw_date_s + 2, value_p, 2 * sizeof (char));
+
 													match_flag = true;
 												}
 											/* ... or a 4 digit one? */
 											else if ((isdigit (* (value_p + 2))) && (isdigit (* (value_p + 3))))
 												{
-													memcpy (buffer_s, value_p, 4 * sizeof (char));
+													memcpy (iso_date_s, value_p, 4 * sizeof (char));
+													memcpy (raw_date_s, value_p, 4 * sizeof (char));
+
 													match_flag = true;
 												}
 
@@ -398,11 +413,15 @@ bool ConvertDate (json_t *row_p)
 													char month_s [3];
 
 													sprintf (month_s, "%02d", month_index + 1);
-													memcpy (buffer_s + 4, month_s, 2 * sizeof (char));
 
-													* (buffer_s + 6) = '0';
-													* (buffer_s + 7) = '1';
-													* (buffer_s + 8) = '\0';
+													memcpy (iso_date_s + 5, month_s, 2 * sizeof (char));
+													* (iso_date_s + 8) = '0';
+													* (iso_date_s + 9) = '1';
+
+													memcpy (raw_date_s + 4, month_s, 2 * sizeof (char));
+													* (raw_date_s + 6) = '0';
+													* (raw_date_s + 7) = '1';
+
 													success_flag = true;
 												}
 
@@ -413,20 +432,15 @@ bool ConvertDate (json_t *row_p)
 
 			if (success_flag)
 				{
-					int32 date = 0;
-					const char *temp_s = buffer_s;
-
-					if (GetValidInteger (&temp_s, &date, NULL))
+					if (json_object_set_new (row_p, PG_DATE_S, json_string (iso_date_s)) != 0)
 						{
-							if (json_object_set_new (row_p, PG_DATE_S, json_integer (date)) != 0)
-								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to set date to " INT32_FMT, date);
-									success_flag = false;
-								}
+							PrintErrors (STM_LEVEL_WARNING, "Failed to set iso date to " INT32_FMT, iso_date_s);
+							success_flag = false;
 						}
-					else
+
+					if (json_object_set_new (row_p, PG_RAW_DATE_S, json_string (raw_date_s)) != 0)
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to get date from %s", buffer_s);
+							PrintErrors (STM_LEVEL_WARNING, "Failed to set raw date to " INT32_FMT, raw_date_s);
 							success_flag = false;
 						}
 				}

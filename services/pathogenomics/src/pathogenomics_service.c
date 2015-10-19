@@ -29,6 +29,7 @@
 #include "country_codes.h"
 #include "sample_metadata.h"
 #include "phenotype_metadata.h"
+#include "genotype_metadata.h"
 #include "string_linked_list.h"
 #include "math_utils.h"
 
@@ -54,6 +55,7 @@ typedef enum
 {
 	PD_SAMPLE,
 	PD_PHENOTYPE,
+	PD_GENOTYPE,
 	PD_NUM_TYPES
 } PathogenomicsData;
 
@@ -62,6 +64,7 @@ static const char *s_data_names_pp [PD_NUM_TYPES] =
 {
 	"samples",
 	"phenotypes",
+	"genotypes"
 };
 
 
@@ -936,6 +939,10 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 			else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
 				{
 					num_imports = InsertPhenotypeData (tool_p, values_p, collection_s, data_p, errors_p);
+				}
+			else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
+				{
+					num_imports = InsertGenotypeData (tool_p, values_p, collection_s, data_p, errors_p);
 				}
 			else
 				{
