@@ -25,41 +25,50 @@
 bool InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p)
 {
 	bool success_flag = false;
-	const char *phenotype_primary_key_id_s = "Isolate";
-	const char *phenotype_primary_key_s = GetJSONString (values_p, phenotype_primary_key_id_s);
+	const char *genotype_primary_key_id_s = "ID";
+	const char *genotype_primary_key_s = GetJSONString (values_p, genotype_primary_key_id_s);
 
-	if (phenotype_primary_key_s)
+	if (genotype_primary_key_s)
 		{
-			const char *mapped_key_id_s = "UKCPVS ID";
-
 			if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_samples_collection_s))
 				{
 					bson_t *query_p = bson_new ();
 
 					if (query_p)
 						{
-							if (BSON_APPEND_UTF8 (query_p, mapped_key_id_s, phenotype_primary_key_s))
+							if (BSON_APPEND_UTF8 (query_p, genotype_primary_key_id_s, genotype_primary_key_id_s))
 								{
 									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
 										{
-											const char *id_key_s = "ID";
-											json_t *json_p = GetCurrentValuesAsJSON (tool_p, &id_key_s, 1);
+											json_t *genotype_p = json_object ();
 
-											if (json_p)
+											if (genotype_p)
 												{
-													if (json_object_update (values_p, json_p) == 0)
+													if (json_object_set (genotype_p, PG_GENOTYPE_S, values_p) == 0)
 														{
-															if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_phenotype_collection_s))
-																{
-																	bson_oid_t *oid_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+															const char *id_key_s = "ID";
+															json_t *json_p = GetCurrentValuesAsJSON (tool_p, &id_key_s, 1);
 
-																	if (oid_p)
+															if (json_p)
+																{
+																	if (json_object_update (json_p, genotype_p) == 0)
 																		{
-																			success_flag = true;
+																			if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_genotype_collection_s))
+																				{
+																					bson_oid_t *oid_p = InsertJSONIntoMongoCollection (tool_p, json_p);
+
+																					if (oid_p)
+																						{
+																							success_flag = true;
+																						}
+																				}
 																		}
 																}
-														}
-												}
+
+														}		/* if (json_object_set (genotype_p, PG_GENOTYPE_S, values_p) == 0) */
+
+												}		/* if (genotype_p) */
+
 
 										}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
 

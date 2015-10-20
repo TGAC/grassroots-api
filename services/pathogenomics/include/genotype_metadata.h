@@ -28,6 +28,7 @@
 #include "pathogenomics_service_data.h"
 
 #include "pathogenomics_service.h"
+#include "jansson.h"
 
 
 #ifdef __cplusplus

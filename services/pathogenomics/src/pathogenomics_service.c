@@ -310,7 +310,12 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, con
 
 									if (data_p -> psd_phenotype_collection_s)
 										{
-											success_flag = true;
+											data_p -> psd_genotype_collection_s = GetJSONString (service_config_p, "genotypes_collection");
+
+											if (data_p -> psd_genotype_collection_s)
+												{
+													success_flag = true;
+												}
 										}
 								}
 						}
@@ -400,6 +405,7 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 
 											values [PD_SAMPLE].st_string_value_s = (char *) s_data_names_pp [PD_SAMPLE];
 											values [PD_PHENOTYPE].st_string_value_s = (char *) s_data_names_pp [PD_PHENOTYPE];
+											values [PD_GENOTYPE].st_string_value_s = (char *) s_data_names_pp [PD_GENOTYPE];
 
 											options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING);
 

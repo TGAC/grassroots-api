@@ -20,6 +20,7 @@
 #include <QTableWidget>
 #include <QDragEnterEvent>
 #include <QDropEvent>
+#include <QPoint>
 
 #include "parameter.h"
 
@@ -29,6 +30,9 @@
 class DroppableTableWidget : public QTableWidget
 {
 	Q_OBJECT
+
+public slots:
+	void ShowPopupMenu (const QPoint &p);
 
 public:
 	DroppableTableWidget (QWidget *parent_p, char row_delimiter, char column_delimter);

@@ -21,7 +21,8 @@
 #include <QFont>
 #include <QMimeData>
 #include <QTableWidgetItem>
-
+#include <QMenu>
+#include <QAction>
 #include "prefs_widget.h"
 
 #include "string_utils.h"
@@ -35,6 +36,9 @@ DroppableTableWidget :: DroppableTableWidget (QWidget *parent_p, char row_delimi
 	SetRowDelimiter (row_delimiter);
 	SetColumnDelimiter (column_delimter);
 	dtw_unpack_text_content_flag = true;
+
+	setContextMenuPolicy (Qt :: CustomContextMenu);
+	connect (this, &DroppableTableWidget :: customContextMenuRequested, this, &DroppableTableWidget :: ShowPopupMenu);
 }
 
 
@@ -104,6 +108,18 @@ void DroppableTableWidget :: dragMoveEvent (QDragMoveEvent *event_p)
 bool DroppableTableWidget :: dropMimeData (int row, int column, const QMimeData *data_p, Qt :: DropAction action)
 {
 	return true;
+}
+
+
+void DroppableTableWidget :: ShowPopupMenu (const QPoint &p)
+{
+	QMenu *menu_p = new QMenu (this);
+
+	QAction *action_p = new QAction (tr ("Clear Table"), this);
+	connect (action_p, &QAction :: triggered, this, &DroppableTableWidget :: clear);
+	menu_p -> addAction (action_p);
+
+	menu_p->exec (mapToGlobal (p));
 }
 
 
