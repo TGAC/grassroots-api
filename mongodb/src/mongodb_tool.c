@@ -33,8 +33,6 @@
 
 static bool AddSimpleTypeToQuery (bson_t *query_p, const char *key_s, const json_t *value_p);
 
-static bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const json_t *update_p);
-
 
 static bson_t *AddChild (const char * const key_s, const char * const sub_key_s, const json_t * const value_p);
 
@@ -259,7 +257,7 @@ bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, const json_
 }
 
 
-static bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const json_t *update_p)
+bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const json_t *update_p)
 {
 	bool success_flag = false;
 
@@ -916,56 +914,86 @@ json_t *ConvertBSONValueToJSON (const bson_value_t *value_p)
 
 json_t *GetCurrentValuesAsJSON (MongoTool *tool_p, const char **fields_ss, const size_t num_fields)
 {
-	json_t *results_p = NULL;
+	json_t *results_p = json_object ();
 
-	if (HasMongoQueryResults (tool_p))
+	if (results_p)
 		{
-			const bson_t *doc_p;
-
-			if (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+			if (HasMongoQueryResults (tool_p))
 				{
-					bson_iter_t iter;
+					const bson_t *doc_p;
 
-					if (bson_iter_init (&iter, doc_p))
+					if (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
 						{
-							if (fields_ss)
+							bson_iter_t iter;
+
+							if (bson_iter_init (&iter, doc_p))
 								{
-									size_t i = 0;
-
-									qsort (fields_ss, num_fields, sizeof (const char *), CompareStrings);
-
-									while (*fields_ss)
+									if (fields_ss)
 										{
-										   while ((bson_iter_next (&iter)) && (i < num_fields))
-										  	 {
-										  		 const char *key_s = bson_iter_key (&iter);
+											size_t num_fields_found = 0;
 
-										  		 if (bsearch (key_s, fields_ss, num_fields, sizeof (const char *), CompareStrings))
-										  			 {
-										  				 const bson_value_t *value_p = bson_iter_value (&iter);
-										  				 json_t *converted_value_p = ConvertBSONValueToJSON (value_p);
+											qsort (fields_ss, num_fields, sizeof (const char *), CompareStrings);
 
-										  				 if (converted_value_p)
-										  					 {
-										  						 if (json_object_set_new (results_p, key_s, converted_value_p) != 0)
-										  							 {
+											while ((bson_iter_next (&iter)) && (num_fields_found < num_fields))
+												{
+													const char *key_s = bson_iter_key (&iter);
+													const char *found_key_s = (const char *) bsearch (key_s, *fields_ss, num_fields, sizeof (const char *), CompareStrings);
 
-										  							 }
-										  					 }
+													if (found_key_s)
+														{
+															const bson_value_t *value_p = bson_iter_value (&iter);
+															json_t *converted_value_p = ConvertBSONValueToJSON (value_p);
 
-										  				 ++ i;
-										  			 }
-										  	 }
+															if (converted_value_p)
+																{
+																	if (json_object_set_new (results_p, key_s, converted_value_p) != 0)
+																		{
 
-											++ fields_ss;
+																		}
+																}
+
+															++ num_fields_found;
+														}		/* if (bsearch (key_s, field_ss, num_fields - i, sizeof (const char *), CompareStrings)) */
+
+
+												}		/* while ((bson_iter_next (&iter)) && (num_fields_found < num_fields)) */
+
+										}		/* if (fields_ss) */
+									else
+										{
+											while (bson_iter_next (&iter))
+												{
+													const char *key_s = bson_iter_key (&iter);
+
+													const bson_value_t *value_p = bson_iter_value (&iter);
+													json_t *converted_value_p = ConvertBSONValueToJSON (value_p);
+
+													if (converted_value_p)
+														{
+															if (json_object_set_new (results_p, key_s, converted_value_p) != 0)
+																{
+
+																}
+														}
+
+												}		/* while (bson_iter_next (&iter)) */
+
 										}
-								}
 
-						}
+								}		/* if (bson_iter_init (&iter, doc_p)) */
 
+						}		/* if (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p)) */
+
+				}		/* if (HasMongoQueryResults (tool_p)) */
+
+			if (json_object_size (results_p) == 0)
+				{
+					json_decref (results_p);
+					results_p = NULL;
 				}
 
-		}
+		}		/* if (results_p) */
+
 
 	return results_p;
 }

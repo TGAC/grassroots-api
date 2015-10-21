@@ -402,10 +402,12 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 										{
 											ParameterMultiOptionArray *options_p = NULL;
 											SharedType values [PD_NUM_TYPES];
+											uint32 i;
 
-											values [PD_SAMPLE].st_string_value_s = (char *) s_data_names_pp [PD_SAMPLE];
-											values [PD_PHENOTYPE].st_string_value_s = (char *) s_data_names_pp [PD_PHENOTYPE];
-											values [PD_GENOTYPE].st_string_value_s = (char *) s_data_names_pp [PD_GENOTYPE];
+											for (i = 0; i < PD_NUM_TYPES; ++ i)
+												{
+													values [i].st_string_value_s = (char *) s_data_names_pp [i];
+												}
 
 											options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING);
 
@@ -935,25 +937,75 @@ bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const size_t row
 static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p)
 {
 	uint32 num_imports = 0;
+	const char *(*insert_fn) (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p) = NULL;
+
+	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+	PrintJSONToLog (values_p, "values_p: ", PATHOGENOMICS_SERVICE_DEBUG);
+	#endif
 
 	if (collection_s)
 		{
 			if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
 				{
-					num_imports = InsertSampleData (tool_p, values_p, collection_s, data_p, errors_p);
+					insert_fn = InsertSampleData;
 				}
 			else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
 				{
-					num_imports = InsertPhenotypeData (tool_p, values_p, collection_s, data_p, errors_p);
+					insert_fn = InsertPhenotypeData;
 				}
 			else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
 				{
-					num_imports = InsertGenotypeData (tool_p, values_p, collection_s, data_p, errors_p);
+					insert_fn = InsertGenotypeData;
 				}
 			else
 				{
 
 				}
+
+			if (insert_fn)
+				{
+					if (json_is_array (values_p))
+						{
+							json_t *value_p;
+							size_t i;
+
+							json_array_foreach (values_p, i, value_p)
+								{
+									const char *error_s = insert_fn (tool_p, value_p, collection_s, data_p);
+
+									if (error_s)
+										{
+											if (!AddErrorMessage (errors_p, value_p, i + 1, error_s))
+												{
+
+												}
+											PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+										}
+									else
+										{
+											++ num_imports;
+										}
+								}
+						}
+					else
+						{
+							const char *error_s = insert_fn (tool_p, values_p, collection_s, data_p);
+
+							if (error_s)
+								{
+									if (!AddErrorMessage (errors_p, values_p, 1, error_s))
+										{
+
+										}
+									PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+								}
+							else
+								{
+									++ num_imports;
+								}
+						}
+				}
+
 		}
 
 	return num_imports;
