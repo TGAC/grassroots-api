@@ -112,6 +112,12 @@ GRASSROOTS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
 GRASSROOTS_MONGODB_API bool UpdateMongoDocument (MongoTool *tool_p, const bson_oid_t *id_p, const json_t *json_p);
 
 
+GRASSROOTS_MONGODB_API bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const json_t *update_p);
+
+
+GRASSROOTS_MONGODB_API bool UpdateMongoDocumentByJSON (MongoTool *tool_p, const json_t *query_p, const json_t *update_p);
+
+
 GRASSROOTS_MONGODB_API bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, const bool remove_first_match_only_flag);
 
 

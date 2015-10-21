@@ -37,61 +37,8 @@
 
 static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p);
 
-static const char *InsertSingleSampleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p);
 
-
-
-uint32 InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p)
-{
-	uint32 num_imports = 0;
-
-	if (json_is_array (values_p))
-		{
-			json_t *value_p;
-			size_t i;
-
-			json_array_foreach (values_p, i, value_p)
-				{
-					const char *error_s = InsertSingleSampleItem (tool_p, value_p, collection_s, data_p);
-
-					if (error_s)
-						{
-							if (!AddErrorMessage (errors_p, value_p, i + 1, error_s))
-								{
-
-								}
-							PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
-						}
-					else
-						{
-							++ num_imports;
-						}
-				}
-		}
-	else
-		{
-			const char *error_s = InsertSingleSampleItem (tool_p, values_p, collection_s, data_p);
-
-			if (error_s)
-				{
-					if (!AddErrorMessage (errors_p, values_p, 1, error_s))
-						{
-
-						}
-					PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
-				}
-			else
-				{
-					++ num_imports;
-				}
-		}
-
-	return num_imports;
-}
-
-
-
-static const char *InsertSingleSampleItem (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
+const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
 	bool add_fields_flag = false;

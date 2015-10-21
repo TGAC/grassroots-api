@@ -178,7 +178,13 @@ char *DroppableTableWidget :: GetEntry (const char *start_s, const char *end_s)
 							value_s = CopyToNewString (first_value_p, 0, false);
 						}
 				}
-
+			else
+				{
+					if (end_s != start_s)
+						{
+							value_s = CopyToNewString (start_s, end_s - start_s, false);
+						}
+				}
 		}
 	else
 		{

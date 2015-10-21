@@ -22,9 +22,16 @@
 #include "genotype_metadata.h"
 
 
-bool InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p)
+#ifdef _DEBUG
+	#define GENOTYPE_METADATA_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define GENOTYPE_METADATA_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
+const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
 {
-	bool success_flag = false;
+	const char *error_s = NULL;
 	const char *genotype_primary_key_id_s = "ID";
 	const char *genotype_primary_key_s = GetJSONString (values_p, genotype_primary_key_id_s);
 
@@ -36,51 +43,72 @@ bool InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char *collec
 
 					if (query_p)
 						{
-							if (BSON_APPEND_UTF8 (query_p, genotype_primary_key_id_s, genotype_primary_key_id_s))
+							if (BSON_APPEND_UTF8 (query_p, genotype_primary_key_id_s, genotype_primary_key_s))
 								{
-									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+									#if GENOTYPE_METADATA_DEBUG >= STM_LEVEL_FINE
+									LogBSON (query_p, GENOTYPE_METADATA_DEBUG, "genotype query");
+									#endif
+
+									/* remove the ID field */
+									json_object_del (values_p, PG_ID_S);
+
+									if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_genotype_collection_s))
 										{
-											json_t *genotype_p = json_object ();
-
-											if (genotype_p)
+											if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
 												{
-													if (json_object_set (genotype_p, PG_GENOTYPE_S, values_p) == 0)
+													json_t *genotype_p = json_object ();
+
+													if (genotype_p)
 														{
-															const char *id_key_s = "ID";
-															json_t *json_p = GetCurrentValuesAsJSON (tool_p, &id_key_s, 1);
-
-															if (json_p)
+															if (json_object_set (genotype_p, PG_GENOTYPE_S, values_p) == 0)
 																{
-																	if (json_object_update (json_p, genotype_p) == 0)
+																	if (!UpdateMongoDocumentByBSON (tool_p, query_p, genotype_p))
 																		{
-																			if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_genotype_collection_s))
-																				{
-																					bson_oid_t *oid_p = InsertJSONIntoMongoCollection (tool_p, json_p);
-
-																					if (oid_p)
-																						{
-																							success_flag = true;
-																						}
-																				}
+																			error_s = "Failed to create update genotype document";
 																		}
 																}
+															else
+																{
+																	error_s = "Failed to update sub-document";
+																}
+														}
+													else
+														{
+															error_s = "Failed to create sub-document for updating";
+														}
 
-														}		/* if (json_object_set (genotype_p, PG_GENOTYPE_S, values_p) == 0) */
+												}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
+											else
+												{
+													json_error_t err;
+													json_t *doc_p = json_pack_ex (&err, 0, "{s:s,s:o}", PG_ID_S, genotype_primary_key_s, PG_GENOTYPE_S, values_p);
 
-												}		/* if (genotype_p) */
+													if (doc_p)
+														{
+															bson_oid_t *oid_p = InsertJSONIntoMongoCollection (tool_p, doc_p);
 
+															if (!oid_p)
+																{
+																	error_s = "Failed to update genotype data";
+																}
+														}
+													else
+														{
+															error_s = "Failed to create genotype document to insert";
+														}
 
-										}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
+												}
+
+										}		/* if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_genotype_collection_s)) */
 
 								}		/* if (BSON_APPEND_UTF8 (query_p, mapped_key_id_s, phenotype_primary_key_s)) */
 
 							bson_destroy (query_p);
 						}		/* if (query_p) */
 
-
 				}		/* if (SetMongoToolCollection (tool_p, data_p -> psd_samples_collection_s)) */
 
-		}		/* if (phenotype_primary_key_s) */
+		}		/* if (genotype_primary_key_s) */
 
-	return success_flag;
+	return error_s;
 }

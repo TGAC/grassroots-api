@@ -23,9 +23,9 @@
 #include "phenotype_metadata.h"
 
 
-bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p, json_t *errors_p)
+const char *InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
 {
-	bool success_flag = false;
+	const char *error_s = NULL;
 	const char *phenotype_primary_key_id_s = "Isolate";
 	const char *phenotype_primary_key_s = GetJSONString (values_p, phenotype_primary_key_id_s);
 
@@ -56,7 +56,7 @@ bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 																	if (oid_p)
 																		{
-																			success_flag = true;
+
 																		}
 																}
 														}
@@ -74,6 +74,6 @@ bool InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 		}		/* if (phenotype_primary_key_s) */
 
-	return success_flag;
+	return error_s;
 }
 
