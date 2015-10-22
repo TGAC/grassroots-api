@@ -163,6 +163,9 @@ GRASSROOTS_MONGODB_API bson_t *GenerateQuery (const json_t *json_p);
 GRASSROOTS_MONGODB_API json_t *ConvertBSONValueToJSON (const bson_value_t *value_p);
 
 
+GRASSROOTS_MONGODB_API const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const char * const database_s, const char * const collection_s, const char * const primary_key_id_s, const char * const mapped_id_s, const char * const object_key_s);
+
+
 #ifdef __cplusplus
 }
 #endif

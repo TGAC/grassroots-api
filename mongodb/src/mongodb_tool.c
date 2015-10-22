@@ -1110,3 +1110,126 @@ bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p)
 
 }
 
+
+
+
+const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const char * const database_s, const char * const collection_s, const char * const primary_key_id_s, const char * const mapped_id_s, const char * const object_key_s)
+{
+	const char *error_s = NULL;
+	const char *primary_key_value_s = GetJSONString (values_p, primary_key_id_s);
+
+	if (primary_key_value_s)
+		{
+			if (SetMongoToolCollection (tool_p, database_s, collection_s))
+				{
+					bson_t *query_p = bson_new ();
+
+					if (query_p)
+						{
+							const char * const insert_key_s = mapped_id_s ? mapped_id_s : primary_key_id_s;
+
+							if (BSON_APPEND_UTF8 (query_p, insert_key_s, primary_key_value_s))
+								{
+									#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+									LogBSON (query_p, MONGODB_TOOL_DEBUG, "InsertOrUpdateMongoData query: ");
+									#endif
+
+									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+										{
+											/* remove the primary_key_id_s field */
+											json_object_del (values_p, primary_key_id_s);
+
+											if (object_key_s)
+												{
+													json_t *doc_p = json_object ();
+
+													if (doc_p)
+														{
+															if (json_object_set (doc_p, object_key_s, values_p) == 0)
+																{
+																	if (!UpdateMongoDocumentByBSON (tool_p, query_p, doc_p))
+																		{
+																			error_s = "Failed to create update document";
+																		}
+																}
+															else
+																{
+																	error_s = "Failed to update sub-document";
+																}
+
+															WipeJSON (doc_p);
+														}
+													else
+														{
+															error_s = "Failed to create sub-document for updating";
+														}
+												}
+											else
+												{
+													if (!UpdateMongoDocumentByBSON (tool_p, query_p, values_p))
+														{
+															error_s = "Failed to create update document";
+														}
+												}
+
+										}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
+									else
+										{
+											json_error_t err;
+											bson_oid_t *oid_p = NULL;
+
+											if (object_key_s)
+												{
+													json_t *doc_p = json_object ();
+
+													/* remove the primary_key_id_s field */
+													json_object_del (values_p, primary_key_id_s);
+
+													doc_p = json_pack_ex (&err, 0, "{s:s,s:o}", insert_key_s, primary_key_value_s, object_key_s, values_p);
+
+													if (doc_p)
+														{
+															oid_p = InsertJSONIntoMongoCollection (tool_p, doc_p);
+
+															if (doc_p)
+																{
+																	WipeJSON (doc_p);
+																}
+														}
+													else
+														{
+															error_s = "Failed to create sub-document to insert";
+														}
+												}
+											else
+												{
+													oid_p = InsertJSONIntoMongoCollection (tool_p, values_p);
+												}
+
+
+											if (oid_p)
+												{
+													FreeMemory (oid_p);
+												}
+											else
+												{
+													error_s = "Failed to insert data";
+												}
+
+										}
+
+								}		/* if (BSON_APPEND_UTF8 (query_p, insert_key_s, primary_key_value_s)) */
+
+							bson_destroy (query_p);
+						}		/* if (query_p) */
+
+				}		/* if (SetMongoToolCollection (tool_p, database_s,collection_s)) */
+
+		}		/* if (primary_key_value_s) */
+
+	return error_s;
+}
+
+
+
+
