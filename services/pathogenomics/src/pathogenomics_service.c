@@ -561,8 +561,23 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 										{
 											Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
 											bool run_flag = false;
+											const char *collection_name_s = collection_s;
 
-											SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_s);
+											if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
+												{
+													collection_name_s = data_p -> psd_samples_collection_s;
+												}
+											else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
+												{
+													collection_name_s = data_p -> psd_phenotype_collection_s;
+												}
+											else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
+												{
+													collection_name_s = data_p -> psd_genotype_collection_s;
+												}
+
+
+											SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
 
 											if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 												{
@@ -938,6 +953,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 {
 	uint32 num_imports = 0;
 	const char *(*insert_fn) (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p) = NULL;
+	const char *collection_name_s = NULL;
 
 	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
 	PrintJSONToLog (values_p, "values_p: ", PATHOGENOMICS_SERVICE_DEBUG);
@@ -948,14 +964,17 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 			if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
 				{
 					insert_fn = InsertSampleData;
+					collection_name_s = data_p -> psd_samples_collection_s;
 				}
 			else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
 				{
 					insert_fn = InsertPhenotypeData;
+					collection_name_s = data_p -> psd_phenotype_collection_s;
 				}
 			else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
 				{
 					insert_fn = InsertGenotypeData;
+					collection_name_s = data_p -> psd_genotype_collection_s;
 				}
 			else
 				{
@@ -971,7 +990,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 							json_array_foreach (values_p, i, value_p)
 								{
-									const char *error_s = insert_fn (tool_p, value_p, collection_s, data_p);
+									const char *error_s = insert_fn (tool_p, value_p, collection_name_s, data_p);
 
 									if (error_s)
 										{
@@ -989,7 +1008,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 						}
 					else
 						{
-							const char *error_s = insert_fn (tool_p, values_p, collection_s, data_p);
+							const char *error_s = insert_fn (tool_p, values_p, collection_name_s, data_p);
 
 							if (error_s)
 								{
