@@ -537,7 +537,6 @@ static const char *s_country_codes_p [] =
 	"ZA",
 	"ZM",
 	"ZW"
-
 };
 
 
@@ -638,7 +637,7 @@ const char *GetCountryCodeFromName (const char * const country_name_s)
 
 bool IsValidCountryCode (const char * const code_s)
 {
-	return ((CountryCode *) bsearch (&code_s, s_country_codes_p, S_NUM_COUNTRIES, sizeof (const char *), CompareCountryCodeStrings) ? true : false);
+	return ((CountryCode *) bsearch (code_s, s_country_codes_p, S_NUM_COUNTRIES, sizeof (const char *), CompareCountryCodeStrings) ? true : false);
 }
 
 
@@ -654,7 +653,7 @@ static int CompareCountriesByName (const void *v0_p, const void  *v1_p)
 static int CompareCountryCodeStrings (const void *v0_p, const void  *v1_p)
 {
 	const char * const country0_s = (const char * const) v0_p;
-	const char * const country1_s = (const char * const) v1_p;
+	const char * const country1_s = * (const char ** const) v1_p;
 
 	return Stricmp (country0_s, country1_s);
 }
