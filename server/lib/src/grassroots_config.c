@@ -42,9 +42,7 @@ bool DestroyConfig (void)
 
 	if (s_config_p)
 		{
-			success_flag = (json_object_clear (s_config_p) == 0);
-
-			json_decref (s_config_p);
+			WipeJSON (s_config_p);
 		}
 
 	return success_flag;

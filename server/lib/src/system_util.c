@@ -74,11 +74,14 @@ bool DestroyInformationSystem ()
 	#ifdef DRMAA_ENABLED
 	ExitDrmaa ();
 	#endif
-	
-	FreeDefaultOutputStream ();
-	DestroyHandlerUtil ();
+
+	//FreeExternalServers ();
 	ExitMongoDB ();
+	DestroyConfig ();
 	curl_global_cleanup ();
+	
+//	FreeDefaultOutputStream ();
+	DestroyHandlerUtil ();
 
 	return res_flag;
 }

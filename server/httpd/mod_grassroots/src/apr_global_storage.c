@@ -368,7 +368,7 @@ bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_
 }
 
 
-bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s, struct ap_socache_hints *cache_hints_p)
+bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *server_pool_p, server_rec *server_p, const char *provider_name_s, struct ap_socache_hints *cache_hints_p)
 {
 	apr_status_t res;
 	bool success_flag = true;
@@ -383,7 +383,7 @@ bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *confi
 			 * socache_instance in this case. */
 			if (! (storage_p -> ags_socache_instance_p))
 				{
-					const char *err_msg_s = storage_p -> ags_socache_provider_p -> create (& (storage_p -> ags_socache_instance_p), NULL, config_pool_p, config_pool_p);
+					const char *err_msg_s = storage_p -> ags_socache_provider_p -> create (& (storage_p -> ags_socache_instance_p), NULL, server_pool_p, server_pool_p);
 
 					if (err_msg_s)
 						{
@@ -394,11 +394,11 @@ bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *confi
 
 			if (success_flag)
 				{
-					res = ap_global_mutex_create (& (storage_p -> ags_mutex_p), NULL, storage_p -> ags_cache_id_s, NULL, server_p, config_pool_p, 0);
+					res = ap_global_mutex_create (& (storage_p -> ags_mutex_p), NULL, storage_p -> ags_cache_id_s, NULL, server_p, server_pool_p, 0);
 
 					if (res == APR_SUCCESS)
 						{
-							res = storage_p -> ags_socache_provider_p -> init (storage_p -> ags_socache_instance_p, storage_p -> ags_cache_id_s, cache_hints_p, server_p, config_pool_p);
+							res = storage_p -> ags_socache_provider_p -> init (storage_p -> ags_socache_instance_p, storage_p -> ags_cache_id_s, cache_hints_p, server_p, server_pool_p);
 
 							if (res != APR_SUCCESS)
 								{

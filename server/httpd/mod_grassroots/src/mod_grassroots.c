@@ -69,8 +69,17 @@ static void *MergeDirectoryConfig (apr_pool_t *pool_p, void *base_config_p, void
 
 static ModGrassrootsConfig *CreateConfig (apr_pool_t *pool_p, server_rec *server_p);
 
+static apr_status_t CloseInformationSystem (void *data_p);
 
 static apr_status_t CleanUpOutputStream (void *value_p);
+
+
+/*
+ * Based on code taken from http://marc.info/?l=apache-modules&m=107669698011831
+ * sander@temme.net              http://www.temme.net/sander/
+ */
+static apr_status_t CleanUpPool (void *data_p);
+static int PoolDebug (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p, server_rec *server_p);
 
 
 #ifdef _DEBUG
@@ -204,7 +213,11 @@ static void *MergeServerConfig (apr_pool_t *pool_p, void *base_config_p, void *v
 }
 
 
-
+static apr_status_t CloseInformationSystem (void *data_p)
+{
+	DestroyInformationSystem ();
+	return APR_SUCCESS;
+}
 
 
 static void GrassrootsChildInit (apr_pool_t *pool_p, server_rec *server_p)
@@ -223,20 +236,22 @@ static void GrassrootsChildInit (apr_pool_t *pool_p, server_rec *server_p)
 						{
 							OutputStream *log_p = AllocateApacheOutputStream (server_p);
 
+							apr_pool_cleanup_register (pool_p, NULL, CloseInformationSystem, apr_pool_cleanup_null);
+
 							if (log_p)
 								{
 									OutputStream *error_p = AllocateApacheOutputStream (server_p);
 
+									SetDefaultLogStream (log_p);
+									apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
+
 									if (error_p)
 										{
 											/* Mark the streams for deletion when the server pool expires */
-											apr_pool_t *pool_p = server_p -> process -> pool;
+											//apr_pool_t *pool_p = server_p -> process -> pool;
 
-											apr_pool_cleanup_register (pool_p, log_p, CleanUpOutputStream, apr_pool_cleanup_null);
-											apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
-
-											SetDefaultLogStream (log_p);
 											SetDefaultErrorStream (error_p);
+											apr_pool_cleanup_register (pool_p, error_p, CleanUpOutputStream, apr_pool_cleanup_null);
 										}
 									else
 										{
@@ -288,21 +303,24 @@ static int GrassrootsPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, a
 
   		if (config_p -> wisc_provider_name_s)
   			{
-  	  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, config_pool_p, config_p -> wisc_provider_name_s);
+  	  		config_p -> wisc_jobs_manager_p = InitAPRJobsManager (server_p, server_pool_p, config_p -> wisc_provider_name_s);
 
   	  		if (config_p -> wisc_jobs_manager_p)
   					{
   	  				s_jobs_manager_p = config_p -> wisc_jobs_manager_p;
-							apr_pool_cleanup_register (config_pool_p, config_p -> wisc_jobs_manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
-							PostConfigAPRJobsManager (s_jobs_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
+							apr_pool_cleanup_register (server_pool_p, config_p -> wisc_jobs_manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
+							PostConfigAPRJobsManager (s_jobs_manager_p, server_pool_p, server_p, config_p -> wisc_provider_name_s);
 
-							config_p -> wisc_servers_manager_p = InitAPRServersManager (server_p, config_pool_p, config_p -> wisc_provider_name_s);
+							config_p -> wisc_servers_manager_p = InitAPRServersManager (server_p, server_pool_p, config_p -> wisc_provider_name_s);
 
 							if (config_p -> wisc_servers_manager_p)
 								{
 									s_servers_manager_p = config_p -> wisc_servers_manager_p;
-									apr_pool_cleanup_register (config_pool_p, config_p -> wisc_servers_manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
-									PostConfigAPRServersManager (s_servers_manager_p, config_pool_p, server_p, config_p -> wisc_provider_name_s);
+									apr_pool_cleanup_register (server_pool_p, config_p -> wisc_servers_manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
+									PostConfigAPRServersManager (s_servers_manager_p, server_pool_p, server_p, config_p -> wisc_provider_name_s);
+
+
+								  PoolDebug (config_pool_p, log_p, temp_p, server_p);
 
 									ret = OK;
 								}
@@ -319,6 +337,7 @@ static int GrassrootsPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, a
   				ap_log_error (APLOG_MARK, APLOG_CRIT, ret, server_p, "You need to specify an socache module to load for Grassroots to work");
   			}
   	}
+
 
   return ret;
 }
@@ -439,4 +458,40 @@ static int GrassrootsHandler (request_rec *req_p)
 }
 
 
+
+
+/*
+ * Based on code taken from http://marc.info/?l=apache-modules&m=107669698011831
+ * sander@temme.net              http://www.temme.net/sander/
+ */
+
+static apr_status_t CleanUpPool (void *data_p)
+{
+  //ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, NULL, "Pool cleanup in process %d: %s\n", getpid (), (char *) data_p);
+	fprintf (stdout, "Pool cleanup in process %d: %s\n", getpid (), (char *) data_p);
+	fflush (stdout);
+
+	return OK;
+}
+
+
+static int PoolDebug (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p, server_rec *server_p)
+{
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for config_pool_p [%#lx]", (void *) config_pool_p);
+	apr_pool_cleanup_register (config_pool_p, (void *) "Cleaning up config_pool_p", CleanUpPool, apr_pool_cleanup_null);
+
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for log_pool_p [%#lx]", (void *) log_pool_p);
+	apr_pool_cleanup_register (log_pool_p, (void *) "Cleaning up log_pool_p", CleanUpPool, apr_pool_cleanup_null);
+
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for temp_pool_p [%#lx]", (void *) temp_pool_p);
+	apr_pool_cleanup_register (temp_pool_p, (void *) "Cleaning up temp_pool_p", CleanUpPool, apr_pool_cleanup_null);
+
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for server_p -> process -> pool [%#lx]", (void *) server_p -> process -> pool);
+	apr_pool_cleanup_register (server_p -> process -> pool, (void *) "Cleaning up server_p -> process -> pool", CleanUpPool, apr_pool_cleanup_null);
+
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for server_p -> process -> pconf [%#lx]", (void *) server_p -> process -> pconf);
+	apr_pool_cleanup_register (server_p -> process -> pconf, (void *) "Cleaning up server_p -> process -> pconf", CleanUpPool, apr_pool_cleanup_null);
+
+	return OK;
+}
 

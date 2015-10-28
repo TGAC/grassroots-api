@@ -108,6 +108,7 @@ bool DestroyAPRServersManager (APRServersManager *manager_p)
 {
 	if (manager_p)
 		{
+			FreeAPRGlobalStorage (manager_p -> asm_store_p);
 			FreeMemory (manager_p);
 		}
 
@@ -124,7 +125,7 @@ bool APRServersManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *co
 }
 
 
-bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s)
+bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *server_pool_p, server_rec *server_p, const char *provider_name_s)
 {
 	bool success_flag = false;
 
@@ -132,7 +133,7 @@ bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *conf
 	apr_interval_time_t expiry = APR_INT64_MAX;
 	struct ap_socache_hints cache_hints = { UUID_STRING_BUFFER_SIZE, sizeof (ExternalServer), expiry };
 
-	success_flag = PostConfigureGlobalStorage(manager_p -> asm_store_p, config_pool_p, server_p, provider_name_s, &cache_hints);
+	success_flag = PostConfigureGlobalStorage(manager_p -> asm_store_p, server_pool_p, server_p, provider_name_s, &cache_hints);
 
 //	if (success_flag)
 //		{
