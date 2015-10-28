@@ -5,12 +5,7 @@
 	<storageModule moduleId="org.eclipse.cdt.core.settings">
 		<cconfiguration id="cdt.managedbuild.toolchain.gnu.base.77732421">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.base.77732421" moduleId="org.eclipse.cdt.core.settings" name="Default">
-				<externalSettings>
-					<externalSetting>
-						<entry flags="RESOLVED" kind="includePath" name="/usr/users/ga002/tyrrells/Projects/iRODS-3.3.1/lib/sha1/include"/>
-						<entry flags="RESOLVED" kind="includePath" name="/usr/users/ga002/tyrrells/Projects/iRODS-3.3.1/lib/md5i/include"/>
-					</externalSetting>
-				</externalSettings>
+				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
 					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
@@ -25,24 +20,36 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.base.77732421.498779973" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1698295521" name="cdt.managedbuild.toolchain.gnu.base" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base.256552410" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
-							<builder id="cdt.managedbuild.target.gnu.builder.base.1235842280" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
+							<builder id="cdt.managedbuild.target.gnu.builder.base.1235842280" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name=""/>
+								</outputEntries>
+							</builder>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.2021463785" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
 								<option id="gnu.cpp.compiler.option.include.paths.565589051" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/lib/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/md5/include"/>
+									<listOptionValue builtIn="false" value="/lib/api/include"/>
+									<listOptionValue builtIn="false" value="/server/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/sha1/include"/>
+									<listOptionValue builtIn="false" value="/server/re/include"/>
+									<listOptionValue builtIn="false" value="/opt/wheatis-0/apache/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1119015591" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.797115336" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
 								<option id="gnu.c.compiler.option.include.paths.1692686840" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/core/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/md5/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/api/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/core/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/sha1/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/re/include&quot;"/>
-									<listOptionValue builtIn="false" value="/usr/local/include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/lib/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/md5/include"/>
+									<listOptionValue builtIn="false" value="/lib/api/include"/>
+									<listOptionValue builtIn="false" value="/server/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/sha1/include"/>
+									<listOptionValue builtIn="false" value="/server/re/include"/>
 									<listOptionValue builtIn="false" value="/opt/wheatis-0/apache/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1332274428" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
@@ -55,7 +62,17 @@
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.421634025" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base">
-								<option id="gnu.both.asm.option.include.paths.1593502275" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath"/>
+								<option id="gnu.both.asm.option.include.paths.1593502275" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/lib/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/md5/include"/>
+									<listOptionValue builtIn="false" value="/lib/api/include"/>
+									<listOptionValue builtIn="false" value="/server/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/sha1/include"/>
+									<listOptionValue builtIn="false" value="/server/re/include"/>
+									<listOptionValue builtIn="false" value="/opt/wheatis-0/apache/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1492231850" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
@@ -65,31 +82,56 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.target.gnu.platform.base" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.770973003" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base.2021463785"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.500730769" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base.1585653063">
+								<option id="gnu.cpp.compiler.option.include.paths.1273815909" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="../wheatis/util/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/python2.7"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/lib/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/md5/include"/>
+									<listOptionValue builtIn="false" value="/lib/api/include"/>
+									<listOptionValue builtIn="false" value="/server/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/sha1/include"/>
+									<listOptionValue builtIn="false" value="/server/re/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.189615451" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2046251557" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base.797115336">
 								<option id="gnu.c.compiler.option.include.paths.1555926832" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/core/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/md5/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/api/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/core/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/lib/sha1/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${IRODS_HOME}/server/re/include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="../wheatis/util/include"/>
 									<listOptionValue builtIn="false" value="/usr/include/python2.7"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/lib/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/md5/include"/>
+									<listOptionValue builtIn="false" value="/lib/api/include"/>
+									<listOptionValue builtIn="false" value="/server/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/sha1/include"/>
+									<listOptionValue builtIn="false" value="/server/re/include"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1474779616" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.base.688672349" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base.1820768778"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.linker.base.1077634140" name="GCC C++ Linker" superClass="cdt.managedbuild.tool.gnu.cpp.linker.base.1079839809"/>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.base.966173686" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.base.421634025">
+								<option id="gnu.both.asm.option.include.paths.373813168" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="../wheatis/util/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/python2.7"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/extras/hcxselect-1.1/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/wheatis-0/wheatis-0/util/include}&quot;"/>
+									<listOptionValue builtIn="false" value="/lib/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/md5/include"/>
+									<listOptionValue builtIn="false" value="/lib/api/include"/>
+									<listOptionValue builtIn="false" value="/server/core/include"/>
+									<listOptionValue builtIn="false" value="/lib/sha1/include"/>
+									<listOptionValue builtIn="false" value="/server/re/include"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1138173100" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="util/src/io/file_streamer.c|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

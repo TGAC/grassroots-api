@@ -86,6 +86,8 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 
 					InitJobsManager (& (manager_p -> ajm_base_manager), AddServiceJobToAPRJobsManager, GetServiceJobFromAprJobsManager, RemoveServiceJobFromAprJobsManager);
 
+					apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
+
 					return manager_p;
 				}
 

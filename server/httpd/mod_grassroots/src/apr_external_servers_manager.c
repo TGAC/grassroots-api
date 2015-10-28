@@ -94,6 +94,8 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 					                    RemoveExternalServerFromAprServersManager,
 					                    GetAllExternalServersFromAprServersManager);
 
+					apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
+
 					return manager_p;
 				}
 
@@ -108,7 +110,7 @@ bool DestroyAPRServersManager (APRServersManager *manager_p)
 {
 	if (manager_p)
 		{
-			FreeAPRGlobalStorage (manager_p -> asm_store_p);
+			//FreeAPRGlobalStorage (manager_p -> asm_store_p);
 			FreeMemory (manager_p);
 		}
 

@@ -94,10 +94,13 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 }
 
 
-void FreeAPRGlobalStorage (APRGlobalStorage *storage_p)
+apr_status_t FreeAPRGlobalStorage (void *data_p)
 {
+	APRGlobalStorage *storage_p = (APRGlobalStorage *) data_p;
 	DestroyAPRGlobalStorage (storage_p);
 	FreeMemory (storage_p);
+
+	return APR_SUCCESS;
 }
 
 

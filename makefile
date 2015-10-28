@@ -331,3 +331,7 @@ install_mongodb_c:
 	make; \
 	make install		
 	
+	
+install_pooltest:
+	$(MAKE) -C server/httpd/mod_pooltest install
+
