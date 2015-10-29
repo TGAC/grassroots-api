@@ -280,7 +280,7 @@ static int GrassrootsPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, a
    * dummy userdata in a pool that lives longer than the first DSO
    * load, and only run if that data is set on subsequent calls to
    * this hook. */
-  apr_pool_userdata_get (&data_p, userdata_key_s, pool_p);
+  apr_pool_userdata_get (&data_p, userdata_key_s, server_p -> process -> pool);
 
   if (data_p == NULL)
   	{
@@ -289,7 +289,7 @@ static int GrassrootsPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, a
        * DSO may not be at the same address offset when it is reloaded.
        * Since setn() does not make a copy and only compares addresses,
        * the get() will be unable to find the original userdata. */
-      apr_pool_userdata_set ((const void *) 1, userdata_key_s, apr_pool_cleanup_null, pool_p);
+      apr_pool_userdata_set ((const void *) 1, userdata_key_s, apr_pool_cleanup_null, server_p -> process -> pool);
 
       ret = OK; /* This would be the first time through */
   	}

@@ -53,7 +53,9 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *c
 		{
 			if (ConvertDate (values_p))
 				{
-					if (InsertLocationData (tool_p, values_p, data_p, pathogenomics_id_s))
+					error_s = InsertLocationData (tool_p, values_p, data_p, pathogenomics_id_s);
+
+					if (error_s == NULL)
 						{
 							/* convert YR/SR/LR to yellow, stem or leaf rust */
 							if (ReplacePathogen (values_p))
@@ -1331,22 +1333,22 @@ static bool ReplacePathogen (json_t *data_p)
 
 	if (key_s)
 		{
-			if (strcmp ("YR", key_s) == 0)
+			if (strcmp ("YR", pathogen_s) == 0)
 				{
 					value_s = "Yellow Rust";
 				}
-			else if (strcmp ("SR", key_s) == 0)
+			else if (strcmp ("SR", pathogen_s) == 0)
 				{
 					value_s = "Stem Rust";
 				}
-			else if (strcmp ("LR", key_s) == 0)
+			else if (strcmp ("LR", pathogen_s) == 0)
 				{
 					value_s = "Leaf Rust";
 				}
 
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (data_p, key_s, json_string (value_s)) == 0);
+					success_flag = (json_object_set_new (data_p, key_s, json_string (pathogen_s)) == 0);
 				}
 		}
 

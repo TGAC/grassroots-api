@@ -548,9 +548,9 @@ static int CompareCountryCodeStrings (const void *v0_p, const void  *v1_p);
 /**********************************************************************/
 
 
-bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
+const char * InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
 {
-	bool success_flag = false;
+	const char *error_s = NULL;
 	json_t *location_data_p = data_p -> psd_geocoder_fn (data_p, row_p, id_s);
 
 	if (location_data_p)
@@ -560,46 +560,7 @@ bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsSe
 
 			if (row_json_p)
 				{
-					bson_oid_t *id_p = NULL;
-
-					#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-					PrintJSONToLog (row_json_p, "location data:", STM_LEVEL_FINE);
-					#endif
-
-					if (SetMongoToolCollection (tool_p, data_p -> psd_database_s, data_p -> psd_locations_collection_s))
-						{
-							json_t *results_p = NULL;
-							bson_t query;
-
-							bson_init (&query);
-							bson_append_utf8 (&query, PG_ID_S, -1, id_s, -1);
-
-							results_p = GetAllMongoResultsAsJSON (tool_p, &query);
-
-							/* does the id already exist? */
-							if (results_p && ((json_is_array (results_p)) && (json_array_size (results_p) >= 0)))
-								{
-									bson_oid_t oid;
-
-									#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (results_p, "results:", STM_LEVEL_FINE);
-									#endif
-
-									success_flag = UpdateMongoDocument (tool_p, &oid, row_json_p);
-									WipeJSON (results_p);
-								}		/* if (results_p) */
-							else
-								{
-									id_p = InsertJSONIntoMongoCollection (tool_p, row_json_p);
-
-									if (id_p)
-										{
-											success_flag = true;
-											FreeMemory (id_p);
-										}
-								}
-
-						}		/* if (SetMongoToolCollection (tool_p, S_DATABASE_S, data_p -> psd_geojson_collection_s)) */
+					error_s = InsertOrUpdateMongoData (tool_p, row_json_p, data_p -> psd_database_s, data_p -> psd_locations_collection_s, PG_ID_S, NULL, NULL);
 
 					WipeJSON (row_json_p);
 				}		/* if (row_json_p) */
@@ -611,7 +572,7 @@ bool InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsSe
 		}		/* if (location_data_p) */
 
 
-	return success_flag;
+	return error_s;
 }
 
 

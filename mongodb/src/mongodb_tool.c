@@ -780,7 +780,7 @@ bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p,
 						}
 
 					tool_p -> mt_cursor_p = cursor_p;
-					success_flag = true;
+					success_flag = HasMongoQueryResults (tool_p);
 				}
 
 			if (fields_p)
@@ -799,9 +799,28 @@ bool HasMongoQueryResults (MongoTool *tool_p)
 {
 	bool results_flag = false;
 
+	/*
+	 * mongoc_cursor_more is currently broken (https://jira.mongodb.org/browse/CDRIVER-516)
+	 * so we have to workaround it
+	 */
 	if (tool_p -> mt_cursor_p)
 		{
-			results_flag = mongoc_cursor_more (tool_p -> mt_cursor_p);
+			bson_error_t error;
+			mongoc_cursor_t *temp_p = mongoc_cursor_clone (tool_p -> mt_cursor_p);
+
+			if (temp_p)
+				{
+					const bson_t *bson_p = NULL;
+					results_flag = mongoc_cursor_next (temp_p, &bson_p);
+
+					if (mongoc_cursor_error (temp_p, &error))
+						{
+							results_flag = false;
+							PrintErrors (STM_LEVEL_WARNING, " mongo cursor error : %d.%d: %s\n", error.domain, error.code, error.message);
+						}
+
+					mongoc_cursor_destroy (temp_p);
+				}
 		}
 
 	return results_flag;
