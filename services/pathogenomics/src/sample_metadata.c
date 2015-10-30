@@ -1348,7 +1348,7 @@ static bool ReplacePathogen (json_t *data_p)
 
 			if (value_s)
 				{
-					success_flag = (json_object_set_new (data_p, key_s, json_string (pathogen_s)) == 0);
+					success_flag = (json_object_set_new (data_p, key_s, json_string (value_s)) == 0);
 				}
 		}
 

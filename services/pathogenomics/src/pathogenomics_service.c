@@ -532,6 +532,38 @@ static json_type GetPathogenomicsJSONFieldType (const char *name_s, const void *
 
 
 
+static const char *GetCollectionName (ParameterSet *param_set_p, PathogenomicsServiceData *data_p)
+{
+	const char *collection_name_s = NULL;
+	SharedType value;
+
+	if (GetParameterValueFromParameterSet (param_set_p, TAG_COLLECTION, &value, true))
+		{
+			const char *collection_s = value.st_string_value_s;
+
+			if (collection_s)
+				{
+					collection_name_s = collection_s;
+
+					if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
+						{
+							collection_name_s = data_p -> psd_samples_collection_s;
+						}
+					else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
+						{
+							collection_name_s = data_p -> psd_phenotype_collection_s;
+						}
+					else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
+						{
+							collection_name_s = data_p -> psd_genotype_collection_s;
+						}
+				}
+		}
+
+	return collection_name_s;
+}
+
+
 static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	PathogenomicsServiceData *data_p = (PathogenomicsServiceData *) (service_p -> se_data_p);
@@ -547,227 +579,218 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 			if (param_set_p)
 				{
 					/* get the collection to work on */
-					SharedType value;
+					const char *collection_name_s = GetCollectionName (param_set_p, data_p);
 
-					if (GetParameterValueFromParameterSet (param_set_p, TAG_COLLECTION, &value, true))
+					if (collection_name_s)
 						{
-							const char *collection_s = value.st_string_value_s;
+							MongoTool *tool_p = AllocateMongoTool ();
 
-							if (collection_s)
+							if (tool_p)
 								{
-									MongoTool *tool_p = AllocateMongoTool ();
+									Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
+									bool run_flag = false;
 
-									if (tool_p)
+									SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
+
+									/* Do we want to get a dump of the entire collection? */
+									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 										{
-											Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
-											bool run_flag = false;
-											const char *collection_name_s = collection_s;
+											json_t *response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
 
-											if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
+											if (response_p)
 												{
-													collection_name_s = data_p -> psd_samples_collection_s;
-												}
-											else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
-												{
-													collection_name_s = data_p -> psd_phenotype_collection_s;
-												}
-											else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
-												{
-													collection_name_s = data_p -> psd_genotype_collection_s;
-												}
+													PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER);
 
-
-											SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
-
-											if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
-												{
-													json_t *response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
-
-													if (response_p)
-														{
-															PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER);
-
-															job_p -> sj_status = OS_SUCCEEDED;
-															job_p -> sj_result_p = response_p;
-														}
-													else
-														{
-															job_p -> sj_status = OS_FAILED;
-															job_p -> sj_result_p = NULL;
-														}
+													job_p -> sj_status = OS_SUCCEEDED;
+													job_p -> sj_result_p = response_p;
 												}
 											else
 												{
-													json_t *json_param_p = NULL;
-													bool update_flag = false;
-													char delimiter = s_default_column_delimiter;
-													const char *param_name_s = NULL;
+													job_p -> sj_status = OS_FAILED;
+													job_p -> sj_result_p = NULL;
+												}
+										}		/* if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true)) */
+									else
+										{
+											json_t *json_param_p = NULL;
+											char delimiter = s_default_column_delimiter;
+											const char *param_name_s = NULL;
+											json_t *errors_p = json_array ();
+											uint32 num_successes = 0;
 
-													/* Get the current delimiter */
-													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
-													if (param_p)
-														{
-															delimiter = param_p -> pa_current_value.st_char_value;
-														}
+											/* Get the current delimiter */
+											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
+											if (param_p)
+												{
+													delimiter = param_p -> pa_current_value.st_char_value;
+												}
 
-
-													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
-
-													if (param_p)
-														{
-															json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, delimiter, '\n', GetPathogenomicsJSONFieldType, data_p);
-
-															if (json_param_p)
-																{
-																	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																	PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
-																	#endif
-
-																	param_name_s = param_p -> pa_name_s;
-																	update_flag = true;
-																}
-														}
+											/*
+											 * Data can be updated either from the table or as a json insert statement
+											 *
+											 * Has a tabular dataset been uploaded...
+											 */
+											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
+											if (param_p && (param_p -> pa_current_value.st_string_value_s))
+												{
+													json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, delimiter, '\n', GetPathogenomicsJSONFieldType, data_p);
 
 													if (json_param_p)
 														{
-															uint32 num_successes = 0;
-															json_error_t error;
-															json_t *errors_p = json_array ();
-															json_t *metadata_p = NULL;
-															uint32 size = 1;
-
-															if (json_is_array (json_param_p))
-																{
-																	size = json_array_size (json_param_p);
-																}
-
-															job_p -> sj_status = OS_FAILED;
-
-															if (update_flag)
-																{
-																	num_successes = InsertData (tool_p, json_param_p, collection_s, data_p, errors_p);
-																}
-															else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_UPDATE)) != NULL) && (param_p -> pa_current_value.st_json_p))
-																{
-																	num_successes = InsertData (tool_p, param_p -> pa_current_value.st_json_p, collection_s, data_p, errors_p);
-																	param_name_s = param_p -> pa_name_s;
-																}
-															else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL) && (param_p -> pa_current_value.st_json_p))
-																{
-																	json_t *results_p = SearchData (tool_p, param_p -> pa_current_value.st_json_p, collection_s, data_p, errors_p);
-
-																	if (results_p)
-																		{
-																			if (json_is_array (results_p))
-																				{
-																					num_successes = json_array_size (results_p);
-																					job_p -> sj_result_p = results_p;
-																				}
-
-																		}
-
-																	if (!metadata_p)
-																		{
-																			WipeJSON (errors_p);
-																			errors_p = NULL;
-																		}
-
-																	param_name_s = param_p -> pa_name_s;
-																}
-															else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL) && (param_p -> pa_current_value.st_json_p))
-																{
-																	num_successes = DeleteData (tool_p, param_p -> pa_current_value.st_json_p, collection_s, data_p, errors_p);
-																	param_name_s = param_p -> pa_name_s;
-																}
-
-															metadata_p = json_pack_ex (&error, 0, "{s:i,s:s}", "successful entries", num_successes, "collection", collection_s);
-
-
 															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																{
-																	PrintJSONToLog (errors_p, "errors: ", STM_LEVEL_FINE);
-																	PrintJSONToLog (metadata_p, "metadata 1: ", STM_LEVEL_FINE);
-																}
+															PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
 															#endif
 
+															param_name_s = param_p -> pa_name_s;
+														}
+												}
+											/* ... or do we have an insert statement? */
+											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_UPDATE)) != NULL) && (param_p -> pa_current_value.st_json_p))
+												{
+													json_param_p = param_p -> pa_current_value.st_json_p;
+													param_name_s = param_p -> pa_name_s;
+												}
 
-														if (errors_p)
+											/* Are we doing an update? */
+											if (json_param_p)
+												{
+													num_successes = InsertData (tool_p, json_param_p, collection_name_s, data_p, errors_p);
+												}
+											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL) && (param_p -> pa_current_value.st_json_p))
+												{
+													json_t *results_p = NULL;
+
+													json_param_p = param_p -> pa_current_value.st_json_p;
+
+													results_p = SearchData (tool_p, json_param_p, collection_name_s, data_p, errors_p);
+
+													if (results_p)
+														{
+															if (json_is_array (results_p))
+																{
+																	num_successes = json_array_size (results_p);
+																	job_p -> sj_result_p = results_p;
+																}
+														}
+
+													if (json_array_size (errors_p) == 0)
+														{
+															WipeJSON (errors_p);
+															errors_p = NULL;
+														}
+
+													param_name_s = param_p -> pa_name_s;
+												}
+											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL) && (param_p -> pa_current_value.st_json_p))
+												{
+													json_param_p = param_p -> pa_current_value.st_json_p;
+
+													num_successes = DeleteData (tool_p, json_param_p, collection_name_s, data_p, errors_p);
+													param_name_s = param_p -> pa_name_s;
+												}
+
+											if (json_param_p)
+												{
+													json_error_t error;
+													json_t *metadata_p = NULL;
+													uint32 size = 1;
+
+													if (json_is_array (json_param_p))
+														{
+															size = json_array_size (json_param_p);
+														}
+
+													job_p -> sj_status = OS_FAILED;
+
+
+
+													metadata_p = json_pack_ex (&error, 0, "{s:i}", "successful entries", num_successes);
+
+
+													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+														{
+															PrintJSONToLog (errors_p, "errors: ", STM_LEVEL_FINE);
+															PrintJSONToLog (metadata_p, "metadata 1: ", STM_LEVEL_FINE);
+														}
+													#endif
+
+
+												if (errors_p)
+													{
+														bool added_errors_flag = false;
+														json_t *errors_array_p = json_array ();
+
+														if (errors_array_p)
 															{
-																bool added_errors_flag = false;
-																json_t *errors_array_p = json_array ();
+																json_t *error_obj_p = json_pack_ex (&error, 0, "{s:s,s:o}", PARAM_NAME_S, param_name_s, JOB_ERRORS_S, errors_p);
+
+																if (error_obj_p)
+																	{
+																		if (json_array_append (errors_array_p, error_obj_p) == 0)
+																			{
+																				job_p -> sj_errors_p = errors_array_p;
+																				added_errors_flag = true;
+																			}
+																		else
+																			{
+																				WipeJSON (error_obj_p);
+																			}
+																	}
+															}		/* if (errors_array_p) */
+
+														if (!added_errors_flag)
+															{
+																WipeJSON (errors_p);
 
 																if (errors_array_p)
 																	{
-																		json_t *error_obj_p = json_pack_ex (&error, 0, "{s:s,s,o}", PARAM_NAME_S, param_name_s, JOB_ERRORS_S, errors_p);
-
-																		if (error_obj_p)
-																			{
-																				if (json_array_append (errors_array_p, error_obj_p) == 0)
-																					{
-																						job_p -> sj_errors_p = errors_array_p;
-																						added_errors_flag = true;
-																					}
-																				else
-																					{
-																						WipeJSON (error_obj_p);
-																					}
-																			}
-																	}		/* if (errors_array_p) */
-
-																if (!added_errors_flag)
-																	{
-																		WipeJSON (errors_p);
-
-																		if (errors_array_p)
-																			{
-																				WipeJSON (errors_array_p);
-																			}
+																		WipeJSON (errors_array_p);
 																	}
 															}
+													}
 
-															if (metadata_p)
-																{
-																	job_p -> sj_metadata_p = metadata_p;
-																}
+													if (metadata_p)
+														{
+															job_p -> sj_metadata_p = metadata_p;
+														}
 
-															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																{
-																	PrintJSONToLog (job_p -> sj_errors_p, "job errors: ", STM_LEVEL_FINE);
-																	PrintJSONToLog (job_p -> sj_metadata_p, "job metadata: ", STM_LEVEL_FINE);
-																}
-															#endif
+													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+														{
+															PrintJSONToLog (job_p -> sj_errors_p, "job errors: ", STM_LEVEL_FINE);
+															PrintJSONToLog (job_p -> sj_metadata_p, "job metadata: ", STM_LEVEL_FINE);
+														}
+													#endif
 
 
-															if (num_successes == 0)
-																{
-																	job_p -> sj_status = OS_FAILED;
-																}
-															else if (num_successes == size)
-																{
-																	job_p -> sj_status = OS_SUCCEEDED;
-																}
-															else
-																{
-																	job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
-																}
+													if (num_successes == 0)
+														{
+															job_p -> sj_status = OS_FAILED;
+														}
+													else if (num_successes == size)
+														{
+															job_p -> sj_status = OS_SUCCEEDED;
+														}
+													else
+														{
+															job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
+														}
 
-															if (json_param_p != value.st_json_p)
-																{
-																	WipeJSON (json_param_p);
-																}
+													/*
+													if (json_param_p != value.st_json_p)
+														{
+															WipeJSON (json_param_p);
+														}
+													*/
+												}		/* if (json_param_p) */
 
-														}		/* if (json_param_p) */
+										}		/* if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true)) else */
 
-												}		/* if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true)) else */
-
-										}		/* if (tool_p) */
-								}		/* if (collection_s) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, "no collection specified");
-								}
-
-						}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_COLLECTION, &value, true)) */
+								}		/* if (tool_p) */
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "no collection specified");
+						}
 
 				}		/* if (param_set_p) */
 
@@ -961,20 +984,17 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const char *colle
 
 	if (collection_s)
 		{
-			if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
+			if (strcmp (collection_s, data_p -> psd_samples_collection_s) == 0)
 				{
 					insert_fn = InsertSampleData;
-					collection_name_s = data_p -> psd_samples_collection_s;
 				}
-			else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
+			else if (strcmp (collection_s, data_p -> psd_phenotype_collection_s) == 0)
 				{
 					insert_fn = InsertPhenotypeData;
-					collection_name_s = data_p -> psd_phenotype_collection_s;
 				}
-			else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
+			else if (strcmp (collection_s, data_p -> psd_genotype_collection_s) == 0)
 				{
 					insert_fn = InsertGenotypeData;
-					collection_name_s = data_p -> psd_genotype_collection_s;
 				}
 			else
 				{
