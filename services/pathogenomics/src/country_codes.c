@@ -548,10 +548,18 @@ static int CompareCountryCodeStrings (const void *v0_p, const void  *v1_p);
 /**********************************************************************/
 
 
+json_t *GetLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
+{
+	json_t *location_data_p = data_p -> psd_geocoder_fn (data_p, row_p, id_s);
+
+	return location_data_p;
+}
+
+
 const char * InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
 {
 	const char *error_s = NULL;
-	json_t *location_data_p = data_p -> psd_geocoder_fn (data_p, row_p, id_s);
+	json_t *location_data_p = GetLocationData (tool_p, row_p, data_p, id_s);
 
 	if (location_data_p)
 		{

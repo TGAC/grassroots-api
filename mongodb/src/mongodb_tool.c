@@ -827,6 +827,40 @@ bool HasMongoQueryResults (MongoTool *tool_p)
 }
 
 
+int32 GetAllMongoResultsForKeyValuePair (MongoTool *tool_p, json_t **docs_pp, const char * const key_s, const char * const value_s, const char **fields_ss)
+{
+	int32 num_results = -1;
+	bson_t *query_p = bson_new ();
+
+	if (query_p)
+		{
+			if (BSON_APPEND_UTF8 (query_p, key_s, value_s))
+				{
+					#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+					LogBSON (query_p, MONGODB_TOOL_DEBUG, "InsertOrUpdateMongoData query: ");
+					#endif
+
+					num_results = true;
+
+					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+						{
+							*docs_pp = GetAllExistingMongoResultsAsJSON (tool_p);
+
+							if (*docs_pp)
+								{
+									num_results = (int32) json_array_size (*docs_pp);
+								}
+						}
+				}
+
+			bson_destroy (query_p);
+		}		/* if (query_p) */
+
+	return num_results;
+}
+
+
+
 bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p)
 {
 	bool success_flag = true;
@@ -1130,8 +1164,6 @@ bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p)
 }
 
 
-
-
 const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const char * const database_s, const char * const collection_s, const char * const primary_key_id_s, const char * const mapped_id_s, const char * const object_key_s)
 {
 	const char *error_s = NULL;
@@ -1155,9 +1187,6 @@ const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const 
 
 									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
 										{
-											/* remove the primary_key_id_s field */
-											json_object_del (values_p, primary_key_id_s);
-
 											if (object_key_s)
 												{
 													json_t *doc_p = json_object ();

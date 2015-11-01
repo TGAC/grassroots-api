@@ -34,12 +34,144 @@
 	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-
 static json_t *FillInPathogenomicsFromGoogleData (json_t *result_p);
-
 
 static bool ReplacePathogen (json_t *data_p);
 
+static bool ParseCollector (json_t *values_p);
+
+static bool SetDateForSchemaOrg (json_t *values_p, const char * const iso_date_s);
+
+
+
+static bool AddValidJSONField (json_t *json_p, const char *key_s, const char *value_s)
+{
+	bool success_flag = true;
+
+	if (key_s && value_s)
+		{
+			success_flag = (json_object_set_new (json_p, key_s, json_string (value_s)) == 0);
+		}
+
+	return success_flag;
+}
+
+static bool ParseAddressForSchemaOrg (json_t *values_p)
+{
+	bool success_flag = false;
+	const char *town_s = GetJSONString (values_p, PG_TOWN_S);
+	const char *county_s = GetJSONString (values_p, PG_COUNTY_S);
+	const char *country_s = GetJSONString (values_p, PG_COUNTRY_S);
+	const char *postcode_s = GetJSONString (values_p, PG_POSTCODE_S);
+
+	if (town_s || county_s || country_s || postcode_s)
+		{
+			json_t *postal_address_p = json_object ();
+
+			success_flag = false;
+
+			if (postal_address_p)
+				{
+					if (json_object_set_new (postal_address_p, "@type", json_string ("PostalAddress")) == 0)
+						{
+							if (AddValidJSONField (postal_address_p, "addressLocality", town_s))
+								{
+									success_flag = true;
+								}
+
+							if (AddValidJSONField (postal_address_p, "addressRegion", county_s))
+								{
+									success_flag = true;
+								}
+
+							if (AddValidJSONField (postal_address_p, "addressCountry", country_s))
+								{
+									success_flag = true;
+								}
+
+							if (AddValidJSONField (postal_address_p, "postalCode", postcode_s))
+								{
+									success_flag = true;
+								}
+
+							if (success_flag)
+								{
+									success_flag = (json_object_set_new (values_p, PG_ADDRESS_S, postal_address_p) == 0);
+								}
+						}
+
+					if (!success_flag)
+						{
+							WipeJSON (postal_address_p);
+						}
+				}
+
+		}		/* if (town_s || county_s || country_s || postcode_s) */
+
+
+	return success_flag;
+}
+
+
+
+static bool ParseCollector (json_t *values_p)
+{
+	bool success_flag = true;
+	const char *collector_s = GetJSONString (values_p, PG_COLLECTOR_S);
+
+	if (collector_s)
+		{
+			json_t *child_p = json_object ();
+
+			success_flag = false;
+
+			if (child_p)
+				{
+					if ((json_object_set_new (child_p, "@type", json_string ("Person")) == 0) &&
+							(json_object_set_new (child_p, "name", json_string (collector_s)) == 0))
+						{
+							if (json_object_set_new (values_p, PG_COLLECTOR_S, child_p) == 0)
+								{
+									success_flag = true;
+								}
+						}
+
+					if (!success_flag)
+						{
+							WipeJSON (child_p);
+						}
+				}
+		}
+
+	return success_flag;
+}
+
+
+static bool SetDateForSchemaOrg (json_t *values_p, const char * const iso_date_s)
+{
+	bool success_flag = false;
+	json_t *child_p = json_object ();
+
+	if (child_p)
+		{
+			if ((json_object_set_new (child_p, "@type", json_string ("Date")) == 0) &&
+					(json_object_set_new (child_p, "date", json_string (iso_date_s)) == 0))
+				{
+					if (json_object_set_new (values_p, PG_DATE_S, child_p) == 0)
+						{
+							success_flag = true;
+						}
+				}
+
+			if (!success_flag)
+				{
+					WipeJSON (child_p);
+				}
+		}
+
+
+	return success_flag;
+}
 
 
 const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
@@ -53,152 +185,72 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *c
 		{
 			if (ConvertDate (values_p))
 				{
-					error_s = InsertLocationData (tool_p, values_p, data_p, pathogenomics_id_s);
+					json_t *location_data_p = GetLocationData (tool_p, values_p, data_p, pathogenomics_id_s);
 
-					if (error_s == NULL)
+					if (location_data_p)
 						{
 							/* convert YR/SR/LR to yellow, stem or leaf rust */
 							if (ReplacePathogen (values_p))
 								{
-									error_s = InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_ID_S, NULL, NULL);
-
-									if ((error_s == NULL) && add_fields_flag)
+									if (ParseCollector (values_p))
 										{
-											/**
-											 * Add the fields to the list of available fields for this
-											 * collection
+											/*
+											 * The genotype data is keyed by PG_ID_S and the phenotype data is
+											 * keyed by PG_UKCPVS_ID_S. So we need to check for both of these.
+											 *
+											 * If none exist in the db, we can insert as normal.
+											 * If only one of them is set, then we can update as normal.
+											 * If both exist as separate entries, we need to merge them together
+											 * and update with our sample data.
+											 * If both exist on the same entry, then we update as normal.
 											 */
-											char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+											bool success_flag = true;
+											const char *ukcpvs_id_s = GetJSONString (values_p, PG_UKCPVS_ID_S);
 
-											if (fields_collection_s)
+											if (ukcpvs_id_s)
 												{
-													json_t *field_p = json_object ();
-													bson_oid_t doc_id;
+													json_t *ukcpvs_docs_p = NULL;
+													int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, PG_UKCPVS_ID_S, ukcpvs_id_s, NULL);
 
-													if (field_p)
+													if (num_ukcpvs_matches == 1)
 														{
-															const char *fields_ss [2] = { NULL, NULL };
-															const char *key_s;
-															json_t *value_p;
+															json_t *id_docs_p = NULL;
+															int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, PG_ID_S, pathogenomics_id_s, NULL);
 
-															SetMongoToolCollection (tool_p, data_p -> psd_database_s, fields_collection_s);
+															success_flag = false;
 
-															json_object_foreach (values_p, key_s, value_p)
+															if (num_id_matches == 1)
 																{
-																	bson_t *query_p = bson_new (); //BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+																	/* We need to merge the existing documents together and then update the values with the sample data */
 
-																	if (query_p)
+																	json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
+
+																	if (ukcpvs_doc_p)
 																		{
-																			int32 value = 0;
-																			json_t *update_p = NULL;
-																			json_error_t error;
+																			json_t *id_doc_p = json_array_get (id_docs_p, 0);
 
-																			*fields_ss = key_s;
-
-																			if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
-																				{
-																					const bson_t *doc_p = NULL;
-
-																					/* should only be one of these */
-																					while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
-																						{
-																							bson_iter_t iter;
-																							json_t *json_value_p = NULL;
-
-																							#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																							LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
-																							#endif
-
-																							if (bson_iter_init (&iter, doc_p))
-																								{
-																									if (bson_iter_find (&iter, "_id"))
-																										{
-																											const bson_oid_t *src_p = NULL;
-
-																											if (BSON_ITER_HOLDS_OID (&iter))
-																												{
-																													src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
-																												}
-
-																											bson_oid_copy (src_p, &doc_id);
-
-																											#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																											LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
-																											LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
-																											#endif
-																										}
-																								}
-
-																							json_value_p = ConvertBSONToJSON (doc_p);
-
-																							if (json_value_p)
-																								{
-																									json_t *count_p = json_object_get (json_value_p, key_s);
-
-																									if (count_p)
-																										{
-																											if (json_is_integer (count_p))
-																												{
-																													value = json_integer_value (count_p);
-																												}
-																										}
-
-																									WipeJSON (json_value_p);
-																								}
-																						 }
-																				}
-
-																			++ value;
-
-																			/*
-																			 * Now need to set key_s = value into the collection
-																			 */
-																			update_p = json_pack_ex (&error, 0, "{s:i}", key_s, value);
-
-																			if (update_p)
-																				{
-																					if (value == 1)
-																						{
-																							bson_oid_t *fields_id_p = InsertJSONIntoMongoCollection (tool_p, update_p);
-
-																							if (fields_id_p)
-																								{
-																									FreeMemory (fields_id_p);
-																								}
-																							else
-																								{
-																									PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
-																									error_s = "Failed to insert data into fields collection";
-																								}
-																						}
-																					else
-																						{
-																							if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
-																								{
-																									PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
-																									error_s = "Failed to update data in fields collection";
-																								}
-																						}
-																				}
-																			else
+																			if (id_doc_p)
 																				{
 
-																					PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
-																					error_s = "Failed to create JSON data to update fields collection";
-																				}
-
-																			bson_destroy (query_p);
+																				}		/* if (id_doc_p) */
 																		}
-																}		/* json_object_foreach (values_p, key_s, value_p) */
 
+																}		/* if (num_id_matches == 1) */
 
-														}		/* if (field_p) */
+														}		/* if (num_ukcpvs_matches == 1) */
 
+												}		/* if (ukcpvs_id_s) */
 
-													FreeCopiedString (fields_collection_s);
-												}		/* if (fields_collection_s) */
+											if (success_flag)
+												{
+													error_s = InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_ID_S, NULL, NULL);
+												}
+											else
+												{
 
-										}		/* if ((error_s == NULL) && add_fields_flag) */
+												}
+
+										}		/* if (ParseCollector (values_p)) */
 
 								}		/* if (ReplacePathogen (values_p) */
 							else
@@ -366,15 +418,16 @@ bool ConvertDate (json_t *row_p)
 
 			if (success_flag)
 				{
-					if (json_object_set_new (row_p, PG_DATE_S, json_string (iso_date_s)) != 0)
+					if (SetDateForSchemaOrg (row_p, iso_date_s))
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to set iso date to " INT32_FMT, iso_date_s);
-							success_flag = false;
+							if (json_object_set_new (row_p, PG_RAW_DATE_S, json_string (raw_date_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to set raw date to " INT32_FMT, raw_date_s);
+									success_flag = false;
+								}
 						}
-
-					if (json_object_set_new (row_p, PG_RAW_DATE_S, json_string (raw_date_s)) != 0)
+					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to set raw date to " INT32_FMT, raw_date_s);
 							success_flag = false;
 						}
 				}
@@ -401,6 +454,33 @@ bool ConvertDate (json_t *row_p)
 }
 
 
+bool GetGeoLocationObjectForSchemaOrg (json_t *parent_p, const char *key_s, const double latitude, const double longitude)
+{
+	bool success_flag = false;
+	json_t *child_p = json_object ();
+
+	if (child_p)
+		{
+			if ((json_object_set_new (child_p, "@type", json_string ("GeoCoordinates")) == 0) &&
+					(json_object_set_new (child_p, PG_LATITUDE_S, json_real (latitude)) == 0) &&
+					(json_object_set_new (child_p, PG_LONGITUDE_S, json_real (longitude)) == 0))
+				{
+					if (json_object_set_new (parent_p, key_s, child_p) == 0)
+						{
+							success_flag = true;
+
+						}
+				}
+
+			if (!success_flag)
+				{
+					WipeJSON (child_p);
+				}
+		}		/* if (child_p) */
+
+	return success_flag;
+}
+
 
 json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s)
 {
@@ -415,7 +495,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 			 */
 			const char *value_s = gps_s;
 			double latitude;
-			double longtitude;
+			double longitude;
 			bool match_flag = false;
 
 			if (GetValidRealNumber (&value_s, &latitude, ","))
@@ -427,7 +507,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 
 					if (*value_s != '\0')
 						{
-							if (GetValidRealNumber (&value_s, &longtitude, ","))
+							if (GetValidRealNumber (&value_s, &longitude, ","))
 								{
 									while ((isspace (*value_s)) && (*value_s != '\0'))
 										{
@@ -446,7 +526,7 @@ json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t 
 					if (res_p)
 						{
 							if ((json_object_set_new (res_p, PG_LATITUDE_S, json_real (latitude)) == 0) &&
-									(json_object_set_new (res_p, PG_LONGITUDE_S, json_real (longtitude)) == 0))
+									(json_object_set_new (res_p, PG_LONGITUDE_S, json_real (longitude)) == 0))
 								{
 									return res_p;
 								}
@@ -1355,3 +1435,144 @@ static bool ReplacePathogen (json_t *data_p)
 	return success_flag;
 }
 
+
+static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, const char * const collection_s, PathogenomicsServiceData *data_p)
+{
+	const char *error_s = NULL;
+
+	/**
+	 * Add the fields to the list of available fields for this
+	 * collection
+	 */
+	char *fields_collection_s = ConcatenateStrings (collection_s, ".fields");
+
+	if (fields_collection_s)
+		{
+			json_t *field_p = json_object ();
+			bson_oid_t doc_id;
+
+			if (field_p)
+				{
+					const char *fields_ss [2] = { NULL, NULL };
+					const char *key_s;
+					json_t *value_p;
+
+					SetMongoToolCollection (tool_p, data_p -> psd_database_s, fields_collection_s);
+
+					json_object_foreach (values_p, key_s, value_p)
+						{
+							bson_t *query_p = bson_new (); //BCON_NEW ("$query", "{", key_s, BCON_INT32 (1), "}");
+
+							if (query_p)
+								{
+									int32 value = 0;
+									json_t *update_p = NULL;
+									json_error_t error;
+
+									*fields_ss = key_s;
+
+									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
+										{
+											const bson_t *doc_p = NULL;
+
+											/* should only be one of these */
+											while (mongoc_cursor_next (tool_p -> mt_cursor_p, &doc_p))
+												{
+													bson_iter_t iter;
+													json_t *json_value_p = NULL;
+
+													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+													LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
+													#endif
+
+													if (bson_iter_init (&iter, doc_p))
+														{
+															if (bson_iter_find (&iter, "_id"))
+																{
+																	const bson_oid_t *src_p = NULL;
+
+																	if (BSON_ITER_HOLDS_OID (&iter))
+																		{
+																			src_p = (const bson_oid_t  *) bson_iter_oid (&iter);
+																		}
+
+																	bson_oid_copy (src_p, &doc_id);
+
+																	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																	LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
+																	LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
+																	#endif
+																}
+														}
+
+													json_value_p = ConvertBSONToJSON (doc_p);
+
+													if (json_value_p)
+														{
+															json_t *count_p = json_object_get (json_value_p, key_s);
+
+															if (count_p)
+																{
+																	if (json_is_integer (count_p))
+																		{
+																			value = json_integer_value (count_p);
+																		}
+																}
+
+															WipeJSON (json_value_p);
+														}
+												 }
+										}
+
+									++ value;
+
+									/*
+									 * Now need to set key_s = value into the collection
+									 */
+									update_p = json_pack_ex (&error, 0, "{s:i}", key_s, value);
+
+									if (update_p)
+										{
+											if (value == 1)
+												{
+													bson_oid_t *fields_id_p = InsertJSONIntoMongoCollection (tool_p, update_p);
+
+													if (fields_id_p)
+														{
+															FreeMemory (fields_id_p);
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+															error_s = "Failed to insert data into fields collection";
+														}
+												}
+											else
+												{
+													if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
+														{
+															PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+															error_s = "Failed to update data in fields collection";
+														}
+												}
+										}
+									else
+										{
+
+											PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
+											error_s = "Failed to create JSON data to update fields collection";
+										}
+
+									bson_destroy (query_p);
+								}
+						}		/* json_object_foreach (values_p, key_s, value_p) */
+
+
+				}		/* if (field_p) */
+
+
+			FreeCopiedString (fields_collection_s);
+		}		/* if (fields_collection_s) */
+
+	return error_s;
+}

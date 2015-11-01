@@ -21,6 +21,7 @@
  */
 
 #include "phenotype_metadata.h"
+#include "json_tools.h"
 
 #ifdef _DEBUG
 	#define PHENOTYPE_METADATA_DEBUG	(STM_LEVEL_FINE)
@@ -31,7 +32,53 @@
 
 const char *InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
 {
-	return InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, "Isolate", PG_UKCPVS_ID_S, PG_PHENOTYPE_S);
+	const char *error_s = NULL;
+	const char * const key_s = "Isolate";
+	const char *isolate_s = GetJSONString (values_p, key_s);
+
+	if (isolate_s)
+		{
+			/* Create a json doc with  "phenotype"=values_p and PG_UKCPVS_ID_S=isolate_s */
+			json_t *doc_p = json_object ();
+
+			if (doc_p)
+				{
+					if (json_object_set_new (doc_p, PG_UKCPVS_ID_S, json_string (isolate_s)) == 0)
+						{
+							if (json_object_del (values_p, key_s) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to remove %s from phenotype", key_s);
+								}
+
+							if (json_object_set (doc_p, PG_PHENOTYPE_S, values_p) == 0)
+								{
+									error_s = InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_UKCPVS_ID_S, NULL, NULL);
+								}
+							else
+								{
+									error_s = "Failed to add values to new phenotype data";
+								}
+
+						}		/* if (json_object_set_new (doc_p, PG_UKCPVS_ID_S, json_string (isolate_s)) == 0) */
+					else
+						{
+							error_s = "Failed to add id to new phenotype data";
+						}
+
+					WipeJSON (doc_p);
+				}		/* if (doc_p) */
+			else
+				{
+					error_s = "Failed to create phenotype data to add";
+				}
+
+		}		/* if (isolate_s) */
+	else
+		{
+			error_s = "Failed to get Isolate value";
+		}
+
+	return error_s;
 }
 
 
