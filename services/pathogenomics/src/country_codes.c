@@ -548,40 +548,40 @@ static int CompareCountryCodeStrings (const void *v0_p, const void  *v1_p);
 /**********************************************************************/
 
 
-json_t *GetLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
+bool GetLocationData (MongoTool *tool_p, json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
 {
-	json_t *location_data_p = data_p -> psd_geocoder_fn (data_p, row_p, id_s);
+	bool success_flag = data_p -> psd_geocoder_fn (data_p, row_p, id_s);
 
-	return location_data_p;
+	return success_flag;
 }
 
 
-const char * InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
-{
-	const char *error_s = NULL;
-	json_t *location_data_p = GetLocationData (tool_p, row_p, data_p, id_s);
-
-	if (location_data_p)
-		{
-			json_error_t error;
-			json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_LOCATION_S, location_data_p);
-
-			if (row_json_p)
-				{
-					error_s = InsertOrUpdateMongoData (tool_p, row_json_p, data_p -> psd_database_s, data_p -> psd_locations_collection_s, PG_ID_S, NULL, NULL);
-
-					WipeJSON (row_json_p);
-				}		/* if (row_json_p) */
-			else
-				{
-					WipeJSON (location_data_p);
-				}
-
-		}		/* if (location_data_p) */
-
-
-	return error_s;
-}
+//const char * InsertLocationData (MongoTool *tool_p, const json_t *row_p, PathogenomicsServiceData *data_p, const char *id_s)
+//{
+//	const char *error_s = NULL;
+//	json_t *location_data_p = GetLocationData (tool_p, row_p, data_p, id_s);
+//
+//	if (location_data_p)
+//		{
+//			json_error_t error;
+//			json_t *row_json_p = json_pack_ex (&error, 0, "{s:s,s:o}", PG_ID_S, id_s, PG_LOCATION_S, location_data_p);
+//
+//			if (row_json_p)
+//				{
+//					error_s = InsertOrUpdateMongoData (tool_p, row_json_p, data_p -> psd_database_s, data_p -> psd_locations_collection_s, PG_ID_S, NULL, NULL);
+//
+//					WipeJSON (row_json_p);
+//				}		/* if (row_json_p) */
+//			else
+//				{
+//					WipeJSON (location_data_p);
+//				}
+//
+//		}		/* if (location_data_p) */
+//
+//
+//	return error_s;
+//}
 
 
 const char *GetCountryCodeFromName (const char * const country_name_s)

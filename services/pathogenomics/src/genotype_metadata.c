@@ -30,7 +30,7 @@
 #endif
 
 
-const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
+const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
 	const char * const key_s = PG_ID_S;
@@ -52,7 +52,7 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char 
 
 							if (json_object_set (doc_p, PG_GENOTYPE_S, values_p) == 0)
 								{
-									error_s = InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_ID_S, NULL, PG_GENOTYPE_S);
+									error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, PG_GENOTYPE_S);
 								}
 							else
 								{

@@ -30,7 +30,7 @@
 #endif
 
 
-const char *InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
+const char *InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
 	const char * const key_s = "Isolate";
@@ -52,7 +52,7 @@ const char *InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, const char
 
 							if (json_object_set (doc_p, PG_PHENOTYPE_S, values_p) == 0)
 								{
-									error_s = InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_UKCPVS_ID_S, NULL, NULL);
+									error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_UKCPVS_ID_S, NULL, NULL);
 								}
 							else
 								{

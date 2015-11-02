@@ -840,7 +840,7 @@ int32 GetAllMongoResultsForKeyValuePair (MongoTool *tool_p, json_t **docs_pp, co
 					LogBSON (query_p, MONGODB_TOOL_DEBUG, "InsertOrUpdateMongoData query: ");
 					#endif
 
-					num_results = true;
+					num_results = 0;
 
 					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
 						{
@@ -1171,7 +1171,15 @@ const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const 
 
 	if (primary_key_value_s)
 		{
-			if (SetMongoToolCollection (tool_p, database_s, collection_s))
+			if (database_s && collection_s)
+				{
+					if (!SetMongoToolCollection (tool_p, database_s, collection_s))
+						{
+							error_s = "Failed to set database and collection name";
+						}
+				}
+
+			if (!error_s)
 				{
 					bson_t *query_p = bson_new ();
 

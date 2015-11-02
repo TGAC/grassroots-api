@@ -37,10 +37,10 @@ extern "C"
 
 
 
-PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByGoogle (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
+PATHOGENOMICS_SERVICE_LOCAL bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, const char * const id_s);
 
 
-PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, const json_t *row_p, const char * const id_s);
+PATHOGENOMICS_SERVICE_LOCAL bool GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, json_t *row_p, const char * const id_s);
 
 
 /**
@@ -53,13 +53,13 @@ PATHOGENOMICS_SERVICE_LOCAL json_t *GetLocationDataByOpenCage (PathogenomicsServ
 PATHOGENOMICS_SERVICE_LOCAL bool ConvertDate (json_t *row_p);
 
 
-PATHOGENOMICS_SERVICE_LOCAL json_t *RefineLocationDataForGoogle (PathogenomicsServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+PATHOGENOMICS_SERVICE_LOCAL bool RefineLocationDataForGoogle (PathogenomicsServiceData *service_data_p, json_t *row_p, const json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
 
 
-PATHOGENOMICS_SERVICE_LOCAL json_t *RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
+PATHOGENOMICS_SERVICE_LOCAL bool RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, json_t *row_p, const json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
 
 
-PATHOGENOMICS_SERVICE_LOCAL const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p);
+PATHOGENOMICS_SERVICE_LOCAL const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p);
 
 
 #ifdef __cplusplus
