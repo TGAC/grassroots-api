@@ -20,6 +20,7 @@
  *      Author: tyrrells
  */
 #include "genotype_metadata.h"
+#include "json_tools.h"
 
 
 #ifdef _DEBUG
@@ -31,5 +32,51 @@
 
 const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, const char *collection_s, PathogenomicsServiceData *data_p)
 {
-	return InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_ID_S, NULL, PG_GENOTYPE_S);
+	const char *error_s = NULL;
+	const char * const key_s = PG_ID_S;
+	const char *id_s = GetJSONString (values_p, key_s);
+
+	if (id_s)
+		{
+			/* Create a json doc with "genotype"=values_p and PG_ID_S=id_s */
+			json_t *doc_p = json_object ();
+
+			if (doc_p)
+				{
+					if (json_object_set_new (doc_p, PG_ID_S, json_string (id_s)) == 0)
+						{
+							if (json_object_del (values_p, key_s) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, "Failed to remove %s from genotype", key_s);
+								}
+
+							if (json_object_set (doc_p, PG_GENOTYPE_S, values_p) == 0)
+								{
+									error_s = InsertOrUpdateMongoData (tool_p, values_p, data_p -> psd_database_s, collection_s, PG_ID_S, NULL, PG_GENOTYPE_S);
+								}
+							else
+								{
+									error_s = "Failed to add values to new genotype data";
+								}
+
+						}		/* if (json_object_set_new (doc_p, PG_ID_S, json_string (id_s)) == 0) */
+					else
+						{
+							error_s = "Failed to add id to new genotype data";
+						}
+
+					WipeJSON (doc_p);
+				}		/* if (doc_p) */
+			else
+				{
+					error_s = "Failed to create genotype data to add";
+				}
+
+		}		/* if (id_s) */
+	else
+		{
+			error_s = "Failed to get ID value";
+		}
+
+	return error_s;
 }
