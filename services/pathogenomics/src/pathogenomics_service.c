@@ -559,7 +559,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 									if (tool_p)
 										{
-											Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
+											SharedType param_value;
 											bool run_flag = false;
 											const char *collection_name_s = collection_s;
 
@@ -579,7 +579,8 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 											SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
 
-											if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
+											/* get a copy of the database? */
+											if ((GetParameterValueFromParameterSet (param_set_p, TAG_DUMP, &param_value, true)) && (param_value.st_boolean_value == true))
 												{
 													json_t *response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
 
@@ -604,12 +605,11 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 													const char *param_name_s = NULL;
 
 													/* Get the current delimiter */
-													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
+													Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
 													if (param_p)
 														{
 															delimiter = param_p -> pa_current_value.st_char_value;
 														}
-
 
 													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
 
