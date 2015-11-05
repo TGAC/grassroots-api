@@ -176,6 +176,22 @@ static bool SetDateForSchemaOrg (json_t *values_p, const char * const iso_date_s
 }
 
 
+static bool AddSchemaOrgContext (json_t *values_p)
+{
+	bool success_flag = true;
+	const char * const context_key_s = "@context";
+	const char * const context_value_s = "http://schema.org";
+	const char *context_s = GetJSONString (values_p, context_key_s);
+
+	if ((!context_s) || (strcmp (context_s, context_value_s) != 0))
+		{
+			success_flag = (json_object_set_new (values_p,  context_key_s, json_string (context_value_s)) == 0);
+		}
+
+	return success_flag;
+}
+
+
 const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
@@ -185,90 +201,137 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, Pathogenomics
 
 	if (pathogenomics_id_s)
 		{
-			if (ConvertDate (values_p))
+			if (AddSchemaOrgContext (values_p))
 				{
-					if (GetLocationData (tool_p, values_p, data_p, pathogenomics_id_s))
+					if (ConvertDate (values_p))
 						{
-							/* convert YR/SR/LR to yellow, stem or leaf rust */
-							if (ReplacePathogen (values_p))
+							if (GetLocationData (tool_p, values_p, data_p, pathogenomics_id_s))
 								{
-									if (ParseCollector (values_p))
+									/* convert YR/SR/LR to yellow, stem or leaf rust */
+									if (ReplacePathogen (values_p))
 										{
-											/*
-											 * The genotype data is keyed by PG_ID_S and the phenotype data is
-											 * keyed by PG_UKCPVS_ID_S. So we need to check for both of these.
-											 *
-											 * If none exist in the db, we can insert as normal.
-											 * If only one of them is set, then we can update as normal.
-											 * If both exist as separate entries, we need to merge them together
-											 * and update with our sample data.
-											 * If both exist on the same entry, then we update as normal.
-											 */
-											bool success_flag = true;
-											const char *ukcpvs_id_s = GetJSONString (values_p, PG_UKCPVS_ID_S);
-
-											if (ukcpvs_id_s)
+											if (ParseCollector (values_p))
 												{
-													json_t *ukcpvs_docs_p = NULL;
-													int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, PG_UKCPVS_ID_S, ukcpvs_id_s, NULL);
+													/*
+													 * The genotype data is keyed by PG_ID_S and the phenotype data is
+													 * keyed by PG_UKCPVS_ID_S. So we need to check for both of these.
+													 *
+													 * If none exist in the db, we can insert as normal.
+													 * If only one of them is set, then we can update as normal.
+													 * If both exist as separate entries, we need to merge them together
+													 * and update with our sample data.
+													 * If both exist on the same entry, then we update as normal.
+													 */
+													bool success_flag = true;
+													json_t *selector_p = NULL;
+													const char *ukcpvs_id_s = GetJSONString (values_p, PG_UKCPVS_ID_S);
 
-													if (num_ukcpvs_matches == 1)
+													if (ukcpvs_id_s)
 														{
-															json_t *id_docs_p = NULL;
-															int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, PG_ID_S, pathogenomics_id_s, NULL);
+															json_t *ukcpvs_docs_p = NULL;
+															int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, PG_UKCPVS_ID_S, ukcpvs_id_s, NULL);
 
-															success_flag = false;
-
-															if (num_id_matches == 1)
+															if (num_ukcpvs_matches == 1)
 																{
-																	/* We need to merge the existing documents together and then update the values with the sample data */
+																	json_t *id_docs_p = NULL;
+																	int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, PG_ID_S, pathogenomics_id_s, NULL);
 
-																	json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
+																	success_flag = false;
 
-																	if (ukcpvs_doc_p)
+																	if (num_id_matches == 1)
 																		{
-																			json_t *id_doc_p = json_array_get (id_docs_p, 0);
+																			/* We need to merge the existing documents together and then update the values with the sample data */
 
-																			if (id_doc_p)
+																			json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
+
+																			if (ukcpvs_doc_p)
 																				{
+																					json_t *id_doc_p = json_array_get (id_docs_p, 0);
 
-																				}		/* if (id_doc_p) */
+																					if (id_doc_p)
+																						{
+																							json_error_t err;
+
+																							/* remove the mongodb _id attribute */
+																							json_object_del (ukcpvs_doc_p, MONGO_ID_S);
+
+																							/* after the update call, ukcpvs_id_s will go out of scope so store its value */
+																							selector_p = json_pack_ex (&err, 0, "{s:s}", PG_UKCPVS_ID_S, ukcpvs_id_s);
+
+																							if (selector_p)
+																								{
+																									/* Update our sample data with the values from ukcpvs_id_p */
+																									if (json_object_update (values_p, ukcpvs_doc_p) == 0)
+																										{
+																											success_flag = true;
+																										}
+																									else
+																										{
+																											error_s = "Failed to merge ukcpvs_id-based data with our sample data";
+																										}
+																								}
+																							else
+																								{
+																									error_s = "Failed to store ukcpvs_id-based data for merging";
+																								}
+
+
+																						}		/* if (id_doc_p) */
+																				}
+
+																		}		/* if (num_id_matches == 1) */
+
+																}		/* if (num_ukcpvs_matches == 1) */
+
+														}		/* if (ukcpvs_id_s) */
+
+													if (success_flag)
+														{
+															error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
+
+															if ((!error_s) && selector_p)
+																{
+																	if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																		{
+																			error_s = "Failed to remove existing phenotype doc";
 																		}
+																}
+														}
+													else
+														{
 
-																}		/* if (num_id_matches == 1) */
+														}
 
-														}		/* if (num_ukcpvs_matches == 1) */
+													if (selector_p)
+														{
+															WipeJSON (selector_p);
+														}
 
-												}		/* if (ukcpvs_id_s) */
+												}		/* if (ParseCollector (values_p)) */
 
-											if (success_flag)
-												{
-													error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
-												}
-											else
-												{
+										}		/* if (ReplacePathogen (values_p) */
+									else
+										{
+											error_s = "Failed to convert pathogen name";
+										}
 
-												}
 
-										}		/* if (ParseCollector (values_p)) */
-
-								}		/* if (ReplacePathogen (values_p) */
+								}		/* if (GetLocationData (tool_p, values_p, data_p, pathogenomics_id_s)) */
 							else
 								{
-									error_s = "Failed to convert pathogen name";
+									error_s = "Failed to add location data into system";
 								}
 
-
-						}		/* if (GetLocationData (tool_p, values_p, data_p, pathogenomics_id_s)) */
+						}		/* if (ConvertDate (values_p)) */
 					else
 						{
-							error_s = "Failed to add location data into system";
+							error_s = "Could not get date";
 						}
 
-				}		/* if (ConvertDate (values_p)) */
+				}		/* if (AddSchemaOrgContext (values_p)) */
 			else
 				{
-					error_s = "Could not get date";
+					error_s = "Could not set json-ld context to schema.org";
 				}
 
 		}		/* if (pathogenomics_id_s) */
@@ -677,7 +740,7 @@ bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, c
 																	if (raw_res_p)
 																		{
 																			PrintJSONToLog (raw_res_p, "raw: ", STM_LEVEL_FINE);
-																			got_location_flag = data_p -> psd_refine_location_fn (data_p, row_p, raw_res_p, town_s, county_s, country_code_s);
+																			got_location_flag = RefineLocationDataForGoogle (data_p, row_p, raw_res_p, town_s, county_s, country_code_s);
 
 																			WipeJSON (raw_res_p);
 																		}
@@ -1074,73 +1137,87 @@ bool RefineLocationDataForGoogle (PathogenomicsServiceData *service_data_p, json
 static bool FillInPathogenomicsFromGoogleData (const json_t *google_result_p, json_t *doc_p)
 {
 	bool success_flag = false;
+	json_t *location_values_p = json_object ();
 
-	const json_t *geometry_p = json_object_get (google_result_p, "geometry");
-
-	if (geometry_p)
+	if (location_values_p)
 		{
-			const json_t *location_p = json_object_get (geometry_p, "location");
-			const char * const LATITUDE_KEY_S = "lat";
-			const char * const LONGITUDE_KEY_S = "lng";
+			const json_t *geometry_p = json_object_get (google_result_p, "geometry");
 
-			#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE);
-			#endif
-
-			if (location_p)
+			if (geometry_p)
 				{
-					const json_t *viewport_p = json_object_get (geometry_p, "viewport");
-					double latitude;
-					double longitude;
+					const json_t *location_p = json_object_get (geometry_p, "location");
+					const char * const LATITUDE_KEY_S = "lat";
+					const char * const LONGITUDE_KEY_S = "lng";
 
-					if (GetJSONReal (location_p, LATITUDE_KEY_S, &latitude))
+					#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
+					PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE);
+					#endif
+
+					if (location_p)
 						{
-							if (GetJSONReal (location_p, LONGITUDE_KEY_S, &longitude))
-								{
-									success_flag = GetGeoLocationObjectForSchemaOrg (doc_p, PG_LOCATION_S, latitude, longitude);
-								}
-						}
+							const json_t *viewport_p = json_object_get (geometry_p, "viewport");
+							double latitude;
+							double longitude;
 
-					if (viewport_p)
-						{
-							const json_t *corner_p = json_object_get (viewport_p, "northeast");
-
-							if (corner_p)
+							if (GetJSONReal (location_p, LATITUDE_KEY_S, &latitude))
 								{
-									if (GetJSONReal (corner_p, LATITUDE_KEY_S, &latitude))
+									if (GetJSONReal (location_p, LONGITUDE_KEY_S, &longitude))
 										{
-											if (GetJSONReal (corner_p, LONGITUDE_KEY_S, &longitude))
-												{
-													if (!GetGeoLocationObjectForSchemaOrg (doc_p, PG_NORTH_EAST_LOCATION_S, latitude, longitude))
-														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to set north east location from %lf %lf ", latitude, longitude);
-														}
-												}
+											success_flag = GetGeoLocationObjectForSchemaOrg (location_values_p, PG_LOCATION_S, latitude, longitude);
 										}
 								}
 
-
-							corner_p = json_object_get (viewport_p, "northeast");
-
-							if (corner_p)
+							if (viewport_p)
 								{
-									if (GetJSONReal (corner_p, LATITUDE_KEY_S, &latitude))
-										{
-											if (GetJSONReal (corner_p, LONGITUDE_KEY_S, &longitude))
-												{
-													if (!GetGeoLocationObjectForSchemaOrg (doc_p, PG_SOUTH_WEST_LOCATION_S, latitude, longitude))
-														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to set south west location from %lf %lf ", latitude, longitude);
-														}
+									const json_t *corner_p = json_object_get (viewport_p, "northeast");
 
+									if (corner_p)
+										{
+											if (GetJSONReal (corner_p, LATITUDE_KEY_S, &latitude))
+												{
+													if (GetJSONReal (corner_p, LONGITUDE_KEY_S, &longitude))
+														{
+															if (!GetGeoLocationObjectForSchemaOrg (location_values_p, PG_NORTH_EAST_LOCATION_S, latitude, longitude))
+																{
+																	PrintErrors (STM_LEVEL_WARNING, "Failed to set north east location from %lf %lf ", latitude, longitude);
+																}
+														}
 												}
 										}
-								}
-						}		/* if (viewport_p) */
 
-				}		/* if (location_p) */
+									corner_p = json_object_get (viewport_p, "southwest");
 
-		}		/* if (geometry_p) */
+									if (corner_p)
+										{
+											if (GetJSONReal (corner_p, LATITUDE_KEY_S, &latitude))
+												{
+													if (GetJSONReal (corner_p, LONGITUDE_KEY_S, &longitude))
+														{
+															if (!GetGeoLocationObjectForSchemaOrg (location_values_p, PG_SOUTH_WEST_LOCATION_S, latitude, longitude))
+																{
+																	PrintErrors (STM_LEVEL_WARNING, "Failed to set south west location from %lf %lf ", latitude, longitude);
+																}
+														}
+												}
+										}
+								}		/* if (viewport_p) */
+
+						}		/* if (location_p) */
+
+				}		/* if (geometry_p) */
+
+			if (success_flag)
+				{
+					success_flag = (json_object_set_new (doc_p, PG_LOCATION_S, location_values_p) == 0);
+				}
+
+			if (!success_flag)
+				{
+					WipeJSON (location_values_p);
+				}
+
+		}		/* if (location_values_p) */
+
 
 	return success_flag;
 }

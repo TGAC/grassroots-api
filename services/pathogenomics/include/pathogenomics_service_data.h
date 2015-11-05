@@ -50,8 +50,6 @@ struct PathogenomicsServiceData
 
 	bool (*psd_geocoder_fn) (struct PathogenomicsServiceData *data_p, json_t *row_p, const char * const id_s);
 
-	bool (*psd_refine_location_fn) (struct PathogenomicsServiceData *data_p, json_t *row_p, const json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s);
-
 	const char *psd_geocoder_uri_s;
 
 };
