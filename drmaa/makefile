@@ -30,6 +30,7 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_UTIL_INC) \
 	-I$(DIR_GRASSROOTS_UTIL_INC)/io \
 	-I$(DIR_GRASSROOTS_UTIL_INC)/containers \
+	-I$(DIR_GRASSROOTS_PARAMS_INC) \
 	-I$(DIR_LSF_DRMAA_INC) \
 	-I$(DIR_UUID_INC) \
 	-I$(DIR_GRASSROOTS_SERVER_INC) \
@@ -42,6 +43,8 @@ SRCS 	= \
 BASE_LDFLAGS = -ldl \
 	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_NETWORK_LIB) -l$(GRASSROOTS_NETWORK_LIB_NAME) \
+	-L$(DIR_GRASSROOTS_PARAMS_LIB) -l$(GRASSROOTS_PARAMS_LIB_NAME) \
+	-L$(DIR_GRASSROOTS_SERVER_LIB) -l$(GRASSROOTS_SERVER_LIB_NAME) \
 	-L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_LSF_DRMAA_LIB) -ldrmaa
 
@@ -69,10 +72,10 @@ include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	test test_install
 
-install: test test_install
+#install: test test_install
 
 test:
-	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include $(EXE_INCLUDES) -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(EXE_LDFLAGS) $(INCLUDES) ../clients/standalone/src/services_list.c \
+	gcc $(CPPFLAGS) -Wl,--no-as-needed -I/usr/include $(EXE_INCLUDES) -L$(DIR_OBJS)/ -l$(NAME) -lm $(BASE_LDFLAGS) $(EXE_LDFLAGS) $(INCLUDES) ../clients/standalone/src/services_list.c ../clients/standalone/src/servers_manager.c \
 	$(DIR_SRC)/$(TEST_EXE_NAME).c -g -o $(BUILD)/$(TEST_EXE_NAME)
 
 

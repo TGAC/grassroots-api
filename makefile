@@ -159,7 +159,7 @@ all:
 	$(MAKE) -C server/httpd/mod_grassroots
 	$(MAKE) -C mongodb 
 	$(MAKE) -C clients/lib
-	$(MAKE) -C clients/standalone
+#	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
@@ -187,7 +187,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C server/httpd/mod_grassroots install
 	$(MAKE) -C mongodb install
 	$(MAKE) -C clients/lib install
-	$(MAKE) -C clients/standalone install
+#	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
@@ -217,7 +217,7 @@ clean:
 	$(MAKE) -C drmaa clean
 	$(MAKE) -C server/httpd/mod_grassroots clean
 	$(MAKE) -C clients/lib clean
-	$(MAKE) -C clients/standalone clean
+#	$(MAKE) -C clients/standalone clean
 #	$(MAKE) -C clients/web-server-client clean	
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
@@ -326,7 +326,7 @@ install_irods_dev:
 	$(COPY) $$IRODS_HOME/server/re/include/* $(DIR_SHARED_IRODS_INC)/server/re/include
 
 install_mongodb_c:
-	cd $(DIR_ROOT)/extras/mongo-c-driver-1.1.10; \
+	cd $(DIR_ROOT)/extras/mongo-c-driver-1.2.1; \
 	./configure --prefix=$(DIR_MONGODB) \
 	make; \
 	make install		
