@@ -45,6 +45,7 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 {
 	const char *di_name_s;
 	const char *di_description_s;
+	bool di_active_flag;
 } DatabaseInfo;
 
 

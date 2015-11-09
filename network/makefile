@@ -42,7 +42,6 @@ SRCS 	= \
 	json_tools.c \
 	key_value_pair.c \
 	request_tools.c \
-	resource.c \
 	selector.cpp
 	
 
@@ -50,6 +49,7 @@ BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
 	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
+#	-Wl,-rpath=$(DIR_GRASSROOTS_UTIL_LIB)/lib$(GRASSROOTS_UTIL_LIB_NAME).so \
 #	-L/usr/local/lib/ -lpolarssl \
 	-L/usr/lib/x86_64-linux-gnu/ -lcurl \
 	-L../extras/hcxselect-1.1/src \

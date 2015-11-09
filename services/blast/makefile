@@ -52,6 +52,7 @@ SRCS 	= \
 	blast_tool_set.cpp \
 	external_blast_tool.cpp \
 	system_blast_tool.cpp \
+	threaded_blast_tool.cpp \
 	temp_file.cpp
 	
 

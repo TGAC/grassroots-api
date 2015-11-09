@@ -2,7 +2,7 @@
 TARGET_NAME = lib$(NAME).so
 
 CFLAGS 	+= -fPIC
-LDFLAGS += -shared
+LDFLAGS += -shared -rdynamic
 
 CPPFLAGS += -DSHARED_LIBRARY 
 

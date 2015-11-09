@@ -354,6 +354,25 @@ static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *op_js
 }
 
 
+static bool AddIndexes (PathogenomicsServiceData *data_p)
+{
+	bool success_flag = true;
+	bson_t keys;
+	bson_error_t error;
+	mongoc_index_opt_t opt;
+
+	mongoc_index_opt_init (&opt);
+
+	bson_init (&keys);
+	BSON_APPEND_UTF8 (keys, PG_VARIETY_S, "text");
+	BSON_APPEND_UTF8 (keys, PG_DISEASE_S, "text");
+
+	mongoc_collection_create_index (data_p -> psd_tool_p -> mt_collection_p, &keys, &opt, &error);
+
+	return success_flag;
+}
+
+
 static void FreePathogenomicsServiceData (PathogenomicsServiceData *data_p)
 {
 	FreeMongoTool (data_p -> psd_tool_p);

@@ -28,6 +28,7 @@ INCLUDES = \
 	-I$(DIR_INCLUDE) \
 	-I$(DIR_INCLUDE)/containers \
 	-I$(DIR_INCLUDE)/io \
+	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
 	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
@@ -51,6 +52,7 @@ SRCS 	= \
 	math_utils.c \
 	operation.c \
 	plugin.c \
+	resource.c \
 	streams.c \
 	string_hash_table.c \
 	string_int_pair.c \

@@ -181,8 +181,19 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 															if (description_p && (json_is_string (description_p)))
 																{
+																	json_t *active_p = json_object_get (db_json_p, "active");
+
 																	db_p -> di_name_s = json_string_value (name_p);
 																	db_p -> di_description_s = json_string_value (description_p);
+
+																	if (active_p && (json_is_false (active_p)))
+																		{
+																			db_p -> di_active_flag = false;
+																		}
+																	else
+																		{
+																			db_p -> di_active_flag = true;
+																		}
 
 																	success_flag = true;
 																	++ db_p;
@@ -319,7 +330,6 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 					uint8 a = 0;
 					uint8 b = 0;
 
-					def.st_boolean_value = true;
 					success_flag = true;
 
 					while ((db_p -> di_name_s) && success_flag)
@@ -332,6 +342,8 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 								{
 									++ local_name_s;
 								}
+
+							def.st_boolean_value = db_p -> di_active_flag;
 
 							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 								{
