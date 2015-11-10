@@ -255,7 +255,6 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 										{
 											int exited;
 											int exit_status;
-											int stat;
 
 											drmaa_wifexited (&exited, stat, NULL, 0);
 
