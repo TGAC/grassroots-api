@@ -364,9 +364,11 @@ static bool AddIndexes (PathogenomicsServiceData *data_p)
 	mongoc_index_opt_init (&opt);
 
 	bson_init (&keys);
-	BSON_APPEND_UTF8 (keys, PG_VARIETY_S, "text");
-	BSON_APPEND_UTF8 (keys, PG_DISEASE_S, "text");
+	BSON_APPEND_UTF8 (&keys, PG_VARIETY_S, "text");
+	mongoc_collection_create_index (data_p -> psd_tool_p -> mt_collection_p, &keys, &opt, &error);
 
+	bson_reinit (&keys);
+	BSON_APPEND_UTF8 (&keys, PG_DISEASE_S, "text");
 	mongoc_collection_create_index (data_p -> psd_tool_p -> mt_collection_p, &keys, &opt, &error);
 
 	return success_flag;

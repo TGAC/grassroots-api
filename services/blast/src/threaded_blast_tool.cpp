@@ -30,15 +30,18 @@ static void *RunThreadedBlast (void *data_p);
 ThreadedBlastTool :: ThreadedBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s)
 	: SystemBlastTool (service_job_p, name_s, working_directory_s, blast_program_name_s)
 {
-	tbt_mutex = PTHREAD_MUTEX_INITIALIZER;
+	tbt_thread_p = 0;
+	tbt_mutex_p = 0;
 	tbt_thread_id = -1;
 }
 
 
 ThreadedBlastTool :: ~ThreadedBlastTool ()
 {
-
-	rc = pthread_mutex_destroy (&tbt_mutex);
+	if (tbt_mutex_p)
+		{
+			int res  = pthread_mutex_destroy (tbt_mutex_p);
+		}
 
 	if (tbt_thread_id != -1)
 		{
@@ -51,7 +54,7 @@ OperationStatus ThreadedBlastTool :: Run ()
 {
 	bt_status = OS_IDLE;
 
-	int id = pthread_create (&tbt_thread, NULL, RunThreadedBlast, NULL);
+	int id = pthread_create (tbt_thread_p, NULL, RunThreadedBlast, NULL);
 
 	if (id == 0)
 		{
@@ -76,7 +79,7 @@ OperationStatus ThreadedBlastTool :: GetStatus ()
 {
 	OperationStatus status = OS_ERROR;
 
-	int res = pthread_mutex_lock (&tbt_mutex);
+	int res = pthread_mutex_lock (tbt_mutex_p);
 	if (res)
 		{
 			/* an error has occurred */
@@ -86,7 +89,7 @@ OperationStatus ThreadedBlastTool :: GetStatus ()
 
 	status = bt_status;
 
-	res = pthread_mutex_unlock (&tbt_mutex);
+	res = pthread_mutex_unlock (tbt_mutex_p);
 	if (res)
 		{
 	    perror ("pthread_mutex_unlock");

@@ -67,8 +67,8 @@ public:
 	virtual OperationStatus GetStatus ();
 
 protected:
-	pthread_t tbt_thread;
-	pthread_mutex_t tbt_mutex;
+	pthread_t *tbt_thread_p;
+	pthread_mutex_t *tbt_mutex_p;
 	int tbt_thread_id;
 };
 
