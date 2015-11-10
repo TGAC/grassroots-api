@@ -114,3 +114,11 @@ bool DrmaaBlastTool :: SetOutputFilename (const char *filename_s)
 
 	return success_flag;
 }
+
+
+bool DrmaaBlastTool :: SetQueue (const char *queue_s)
+{
+	bool success_flag = SetDrmaaToolQueueName (dbt_drmaa_tool_p, queue_s);
+
+	return success_flag;
+}

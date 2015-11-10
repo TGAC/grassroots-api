@@ -103,6 +103,17 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 								}
 						}
 
+
+					json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "queue");
+					if (json_p)
+						{
+							if (json_is_string (json_p))
+								{
+									const char *queue_s = json_string_value (json_p);
+									drmaa_tool_p -> SetQueue (queue_s);
+								}
+						}
+
 					tool_p = drmaa_tool_p;
 				}
 		}

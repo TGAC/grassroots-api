@@ -46,6 +46,8 @@ public:
 
 	virtual bool SetOutputFilename (const char *filename_s);
 
+	bool SetQueue (const char *queue_s);
+
 private:
 	DrmaaTool *dbt_drmaa_tool_p;
 	bool dbt_async_flag;
