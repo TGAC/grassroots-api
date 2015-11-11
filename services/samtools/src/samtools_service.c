@@ -27,9 +27,11 @@
 
 typedef struct SamToolsServiceData
 {
-	ServiceData bsd_base_data;
+	ServiceData stsd_base_data;
 
 } SamToolsServiceData;
+
+const static int ST_DEFAULT_LINE_BREAK_INDEX = 60;
 
 /*
  * STATIC PROTOTYPES
@@ -58,7 +60,7 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t servic
 static bool CleanUpSamToolsJob (ServiceJob *job_p);
 
 
-static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, ByteBuffer *buffer_p);
+static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, uint32 break_index, ByteBuffer *buffer_p);
 
 
 /*
@@ -181,7 +183,12 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 
 							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "Scaffold NAME", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 								{
-									return param_set_p;
+									def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
+
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "Line break index", "Scaffold name", "Scaffold NAME", TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+										{
+											return param_set_p;
+										}
 								}
 						}
 
@@ -242,9 +249,19 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 											if (buffer_p)
 												{
+													int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
+													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK);
+
+													if (param_p)
+														{
+															break_index = param_p -> pa_current_value.st_long_value;
+														}
+
 													job_p -> sj_status = OS_FAILED;
 
-													if (GetScaffoldData (data_p, filename_s, scaffold_s, buffer_p))
+													// temporarily don't pass break index
+													break_index = 0;
+													if (GetScaffoldData (data_p, filename_s, scaffold_s, break_index, buffer_p))
 														{
 															const char *sequence_s = GetByteBufferData (buffer_p);
 															json_error_t error;
@@ -279,7 +296,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 }
 
 
-static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, ByteBuffer *buffer_p)
+static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, int break_index, ByteBuffer *buffer_p)
 {
 	bool success_flag = false;
 	faidx_t *fai_p = fai_load (filename_s);
@@ -293,14 +310,24 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 
 					if (sequence_s)
 						{
-							if (AppendToByteBuffer (buffer_p, sequence_s, (size_t) seq_len))
+							if (break_index > 0)
 								{
-									success_flag = true;
+
+
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add sequence data for scaffold name %s from %s", scaffold_name_s, filename_s);
+									if (AppendToByteBuffer (buffer_p, sequence_s, (size_t) seq_len))
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to add sequence data for scaffold name %s from %s", scaffold_name_s, filename_s);
+										}
 								}
+
+
 
 							free (sequence_s);
 						}

@@ -45,6 +45,7 @@
 
 #define TAG_SAMTOOLS_FILENAME MAKE_TAG ('S', 'T', 'F', 'L')
 #define TAG_SAMTOOLS_SCAFFOLD MAKE_TAG ('S', 'T', 'S', 'C')
+#define TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK MAKE_TAG ('S', 'T', 'L', 'B')
 
 #ifdef __cplusplus
 extern "C"
