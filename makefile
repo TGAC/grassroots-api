@@ -132,10 +132,17 @@ export DIR_HTSLIB_LIB=$(DIR_HTSLIB)/lib
 
 include project.properties
 
+lib_util:
+	$(MAKE) -C util
+ 
+lib_network:
+	$(MAKE) -C network
+
+
 ifeq ($(DRMAA_ENABLED),1)
 all: drmaa
 
-drmaa: util network
+drmaa: lib_util lib_network
 	$(MAKE) -C drmaa
 
 install_drmaa:
@@ -152,12 +159,9 @@ info:
 	@echo "APXS=$(APXS)"	
 	@echo "GRASSROOTS_VERSION=$(GRASSROOTS_VERSION)"
 
-all: 	
-	@echo "BUILD = " $(BUILD)
+all: lib_util lib_network
 	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
-	$(MAKE) -C util 
-	$(MAKE) -C network
 	$(MAKE) -C parameters
 	$(MAKE) -C irods/lib
 	$(MAKE) -C handlers/lib
