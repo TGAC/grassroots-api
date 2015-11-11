@@ -175,7 +175,7 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 				{
 					def.st_string_value_s = filename_s;
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "index", "Fasta Index filename", "Fasta Index filename", TAG_SAMTOOLS_FILENAME, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Index", "Fasta Index filename", "Fasta Index filename", TAG_SAMTOOLS_FILENAME, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
 							def.st_string_value_s = NULL;
 
