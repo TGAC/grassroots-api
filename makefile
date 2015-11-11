@@ -119,6 +119,17 @@ export DIR_BSON_INC=$(DIR_BSON)/include/libbson-1.0
 export DIR_BSON_LIB=$(DIR_BSON)/lib
 # END BSON CONFIGURATION
 
+
+# BEGIN HTSLIB CONFIGURATION
+ifneq ($(HTSLIB_HOME),)
+DIR_HTSLIB=$(HTSLIB_HOME)
+else
+DIR_HTSLIB=/usr/local
+endif
+export DIR_HTSLIB_INC=$(DIR_HTSLIB)/include
+export DIR_HTSLIB_LIB=$(DIR_HTSLIB)/lib
+# END HTSLIB CONFIGURATION
+
 include project.properties
 
 ifeq ($(DRMAA_ENABLED),1)
@@ -171,7 +182,8 @@ all:
 	$(MAKE) -C services/tgac_elastic_search
 	$(MAKE) -C services/test_long_runner
 	$(MAKE) -C services/pathogenomics 
-						
+	$(MAKE) -C services/samtools
+							
 install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C util install
 	$(MAKE) -C network install
@@ -199,6 +211,7 @@ install: install_init install_references install_images all install_drmaa
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install
 	$(MAKE) -C services/pathogenomics install	
+	$(MAKE) -C services/samtools install
 	git log -1 > $(DIR_GRASSROOTS_INSTALL)/grassroots.version
 	
 clean: 
@@ -229,7 +242,7 @@ clean:
 	$(MAKE) -C services/tgac_elastic_search clean
 	$(MAKE) -C services/test_long_runner clean
 	$(MAKE) -C services/pathogenomics clean
-
+	$(MAKE) -C services/samtools clean
 
 build_docs:
 	cd docs; \
