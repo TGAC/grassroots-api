@@ -169,18 +169,24 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 		{
 			Parameter *param_p = NULL;
 			SharedType def;
+			char *filename_s = CopyToNewString ("/tgac/references/internal/assembly/triticum_aestivum/TGAC/v1/Triticum_aestivum_CS42_TGACv1_all.fa", 0, false);
 
-			def.st_string_value_s = CopyToNewString ("scaffold", 0, false);
-
-			if (def.st_string_value_s)
+			if (filename_s)
 				{
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "Scaffold NAME", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					def.st_string_value_s = filename_s;
+
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "index", "Fasta Index filename", "Fasta Index filename", TAG_SAMTOOLS_FILENAME, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
-							return param_set_p;
+							def.st_string_value_s = NULL;
+
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "Scaffold NAME", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+								{
+									return param_set_p;
+								}
 						}
 
-					FreeCopiedString (def.st_string_value_s);
-				}
+					FreeCopiedString (filename_s);
+				}		/* if (filename_s) */
 
 			FreeParameterSet (param_set_p);
 		}		/* if (param_set_p) */
