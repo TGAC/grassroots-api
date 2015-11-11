@@ -286,7 +286,7 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 
 	if (fai_p)
 		{
-			if (AppendStringsToByteBuffer (buffer_p, ">", scaffold_name_s, "\n", NULL))
+			if (AppendStringsToByteBuffer (buffer_p, ">", scaffold_name_s, "\\\n", NULL))
 				{
 					int seq_len;
 					char *sequence_s = fai_fetch (fai_p, scaffold_name_s, &seq_len);
