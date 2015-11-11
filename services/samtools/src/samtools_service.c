@@ -60,7 +60,7 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t servic
 static bool CleanUpSamToolsJob (ServiceJob *job_p);
 
 
-static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, uint32 break_index, ByteBuffer *buffer_p);
+static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, int break_index, ByteBuffer *buffer_p);
 
 
 /*
@@ -303,7 +303,7 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 
 	if (fai_p)
 		{
-			if (AppendStringsToByteBuffer (buffer_p, ">", scaffold_name_s, "\\\n", NULL))
+			if (AppendStringsToByteBuffer (buffer_p, ">", scaffold_name_s, "\n", NULL))
 				{
 					int seq_len;
 					char *sequence_s = fai_fetch (fai_p, scaffold_name_s, &seq_len);
