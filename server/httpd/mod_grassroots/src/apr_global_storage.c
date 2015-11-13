@@ -209,7 +209,6 @@ static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
 }
 
 
-
 bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length)
 {
 	bool success_flag = false;
@@ -241,7 +240,24 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 				}		/* if (status == APR_SUCCESS) */
 			else
 				{
+					if (* (key_p + key_len) == '\0')
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to add %s", status, key_p);
+						}
+					else
+						{
+							char *key_s = CopyToNewString (key_p, key_len, false);
 
+							if (key_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to add %s", status, key_s);
+									FreeCopiedString (key_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to add", status);
+								}
+						}
 				}
 
 
@@ -250,6 +266,24 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 			if (status != APR_SUCCESS)
 				{
+					if (* (key_p + key_len) == '\0')
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after adding %s", status, key_p);
+						}
+					else
+						{
+							char *key_s = CopyToNewString (key_p, key_len, false);
+
+							if (key_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after adding %s", status, key_s);
+									FreeCopiedString (key_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after adding", status);
+								}
+						}
 
 				} /* if (status != APR_SUCCESS) */
 
@@ -311,7 +345,24 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 				}		/* if (status == APR_SUCCESS) */
 			else
 				{
+					if (* (key_p + key_len) == '\0')
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to find %s", status, key_p);
+						}
+					else
+						{
+							char *key_s = CopyToNewString (key_p, key_len, false);
 
+							if (key_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to find %s", status, key_s);
+									FreeCopiedString (key_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to find", status);
+								}
+						}
 				}
 
 
@@ -319,7 +370,24 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 			if (status != APR_SUCCESS)
 				{
+					if (* (key_p + key_len) == '\0')
+						{
+							PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after finding %s", status, key_p);
+						}
+					else
+						{
+							char *key_s = CopyToNewString (key_p, key_len, false);
 
+							if (key_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after finding %s", status, key_s);
+									FreeCopiedString (key_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after finding", status);
+								}
+						}
 				} /* if (status != APR_SUCCESS) */
 
 			FreeMemory (key_p);

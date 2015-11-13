@@ -28,7 +28,8 @@
 typedef struct SamToolsServiceData
 {
 	ServiceData stsd_base_data;
-
+	const char **stsd_index_files_ss;
+	size_t stsd_num_index_files;
 } SamToolsServiceData;
 
 const static int ST_DEFAULT_LINE_BREAK_INDEX = 60;
@@ -62,6 +63,8 @@ static bool CleanUpSamToolsJob (ServiceJob *job_p);
 
 static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, int break_index, ByteBuffer *buffer_p);
 
+static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p);
+
 
 /*
  * API FUNCTIONS
@@ -80,6 +83,8 @@ ServicesArray *GetServices (const json_t *config_p)
 					
 					if (data_p)
 						{
+							SamToolsServiceData *sam_data_p = (SamToolsServiceData *) data_p;
+
 							InitialiseService (service_p,
 								GetSamToolsServiceName,
 								GetSamToolsServiceDesciption,
@@ -97,7 +102,14 @@ ServicesArray *GetServices (const json_t *config_p)
 							
 							* (services_p -> sa_services_pp) = service_p;
 
-							return services_p;
+
+							if (GetSamToolsServiceConfig (sam_data_p))
+								{
+									* (services_p -> sa_services_pp) = service_p;
+
+									return services_p;
+								}
+
 						}
 
 					FreeServicesArray (services_p);
@@ -121,6 +133,62 @@ void ReleaseServices (ServicesArray *services_p)
  */
  
 
+static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p)
+{
+	bool success_flag = false;
+	const json_t *sam_tools_config_p = data_p -> stsd_base_data.sd_config_p;
+
+	if (sam_tools_config_p)
+		{
+			json_t *index_files_p = json_object_get (sam_tools_config_p, "index_files");
+
+			if (index_files_p)
+				{
+					if (json_is_array (index_files_p))
+						{
+							size_t size = json_array_size (index_files_p);
+
+							data_p -> stsd_index_files_ss = (const char **) AllocMemoryArray (sizeof (const char *), size);
+
+							if (data_p -> stsd_index_files_ss)
+								{
+									size_t i;
+									json_t *index_file_p;
+
+									json_array_foreach (index_files_p, i, index_file_p)
+										{
+											* ((data_p -> stsd_index_files_ss) + i) = json_string_value (index_file_p);
+										}
+
+									data_p -> stsd_num_index_files = size;
+
+									success_flag = true;
+								}
+
+						}
+					else
+						{
+							if (json_is_string (index_files_p))
+								{
+									data_p -> stsd_index_files_ss = (const char **) AllocMemoryArray (sizeof (const char *), 1);
+
+									if (data_p -> stsd_index_files_ss)
+										{
+											* (data_p -> stsd_index_files_ss) = json_string_value (index_files_p);
+											data_p -> stsd_num_index_files = 1;
+
+											success_flag = true;
+										}
+								}
+						}
+
+				}		/* if (index_files_p) */
+
+		}		/* if (blast_config_p) */
+
+	return success_flag;
+}
+
 
 
 static SamToolsServiceData *AllocateSamToolsServiceData (Service *service_p)
@@ -129,6 +197,9 @@ static SamToolsServiceData *AllocateSamToolsServiceData (Service *service_p)
 
 	if (data_p)
 		{
+			data_p -> stsd_index_files_ss = NULL;
+			data_p -> stsd_num_index_files = 0;
+
 			return data_p;
 		}
 
@@ -312,7 +383,67 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 						{
 							if (break_index > 0)
 								{
+									int i = 0;
+									int block_size;
+									char *current_p = sequence_s;
+									bool loop_flag = true;
 
+									success_flag = true;
+
+									while (loop_flag && success_flag)
+										{
+											if (AppendToByteBuffer (buffer_p, current_p, block_size))
+												{
+													if (AppendToByteBuffer (buffer_p, "\n", 1))
+														{
+															if (i + break_index < seq_len)
+																{
+																	i += break_index;
+																	current_p += break_index;
+																}
+															else
+																{
+																	loop_flag = false;
+																}
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to add new line to scaffold data %s", sequence_s);
+															success_flag = false;
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to split scaffold data %s with new lines", sequence_s);
+													success_flag = false;
+												}
+										}
+
+									if (success_flag)
+										{
+											if (seq_len > i)
+												{
+													success_flag = false;
+
+													if (AppendToByteBuffer (buffer_p, current_p, seq_len - i))
+														{
+															if (AppendToByteBuffer (buffer_p, "\n", 1))
+																{
+																	success_flag = true;
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to add new line to scaffold data %s", sequence_s);
+																	success_flag = false;
+																}
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to split scaffold data %s with new lines", sequence_s);
+															success_flag = false;
+														}
+												}
+										}
 
 								}
 							else
@@ -326,8 +457,6 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 											PrintErrors (STM_LEVEL_SEVERE, "Failed to add sequence data for scaffold name %s from %s", scaffold_name_s, filename_s);
 										}
 								}
-
-
 
 							free (sequence_s);
 						}
