@@ -14,6 +14,8 @@
 ** limitations under the License.
 */
 /* Include the required headers from httpd */
+#include <unistd.h>
+
 #include "httpd.h"
 #include "http_core.h"
 #include "http_protocol.h"
@@ -416,7 +418,8 @@ static int GrassrootsHandler (request_rec *req_p)
 							{
 								int socket_fd = -1;
 						    ModGrassrootsConfig *config_p = ap_get_module_config (req_p -> per_dir_config, &grassroots_module);
-								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd);
+						    const char *error_s = NULL;
+								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd, &error_s);
 
 								if (res_p)
 									{
@@ -439,12 +442,17 @@ static int GrassrootsHandler (request_rec *req_p)
 									}		/* if (res_p) */
 								else
 									{
-										res = HTTP_INTERNAL_SERVER_ERROR;
+										ap_rprintf (req_p, "Error processing request: %s", error_s);
+										res = HTTP_BAD_REQUEST;
 									}
 
 								json_decref (json_req_p);
 							}		/* if (json_req_p) */
-
+						else
+							{
+								ap_rprintf (req_p, "Error getting input data from request");
+								res = HTTP_BAD_REQUEST;
+							}
   			}		/* if ((req_p -> method_number == M_GET) || (req_p -> method_number == M_POST)) */
   		else
   			{
@@ -476,19 +484,19 @@ static apr_status_t CleanUpPool (void *data_p)
 
 static int PoolDebug (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p, server_rec *server_p)
 {
-  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for config_pool_p [%#lx]", (void *) config_pool_p);
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for config_pool_p [%#lx]", (unsigned long int) config_pool_p);
 	apr_pool_cleanup_register (config_pool_p, (void *) "Cleaning up config_pool_p", CleanUpPool, apr_pool_cleanup_null);
 
-  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for log_pool_p [%#lx]", (void *) log_pool_p);
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for log_pool_p [%#lx]", (unsigned long int) log_pool_p);
 	apr_pool_cleanup_register (log_pool_p, (void *) "Cleaning up log_pool_p", CleanUpPool, apr_pool_cleanup_null);
 
-  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for temp_pool_p [%#lx]", (void *) temp_pool_p);
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for temp_pool_p [%#lx]", (unsigned long int) temp_pool_p);
 	apr_pool_cleanup_register (temp_pool_p, (void *) "Cleaning up temp_pool_p", CleanUpPool, apr_pool_cleanup_null);
 
-  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for server_p -> process -> pool [%#lx]", (void *) server_p -> process -> pool);
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for server_p -> process -> pool [%#lx]", (unsigned long int) server_p -> process -> pool);
 	apr_pool_cleanup_register (server_p -> process -> pool, (void *) "Cleaning up server_p -> process -> pool", CleanUpPool, apr_pool_cleanup_null);
 
-  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for server_p -> process -> pconf [%#lx]", (void *) server_p -> process -> pconf);
+  ap_log_error (APLOG_MARK, APLOG_NOERRNO | APLOG_DEBUG, 0, server_p, "Registering for server_p -> process -> pconf [%#lx]", (unsigned long int) server_p -> process -> pconf);
 	apr_pool_cleanup_register (server_p -> process -> pconf, (void *) "Cleaning up server_p -> process -> pconf", CleanUpPool, apr_pool_cleanup_null);
 
 	return OK;

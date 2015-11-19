@@ -14,7 +14,7 @@
 ** limitations under the License.
 */
 /*
- * system_blast_tool.cpp
+ * drmaa_blast_tool.cpp
  *
  *  Created on: 22 Apr 2015
  *      Author: tyrrells
@@ -24,8 +24,13 @@
 
 #include "drmaa_blast_tool.hpp"
 #include "streams.h"
+#include "string_utils.h"
 
-
+#ifdef _DEBUG
+	#define DRMAA_BLAST_TOOL_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define DRMAA_BLAST_TOOL_DEBUG (STM_LEVEL_NONE)
+#endif
 
 void DrmaaBlastTool :: SetCoresPerSearch (uint32 cores)
 {
@@ -65,7 +70,23 @@ OperationStatus DrmaaBlastTool :: Run ()
 {
 	if (RunDrmaaTool (dbt_drmaa_tool_p, dbt_async_flag))
 		{
-			bt_job_p -> sj_status = OS_STARTED;
+			#if DRMAA_BLAST_TOOL_DEBUG >= STM_LEVEL_FINE
+				{
+					char *uuid_s = GetUUIDAsString (bt_job_p -> sj_id);
+
+					if (uuid_s)
+						{
+							PrintLog (STM_LEVEL_FINE, "Added drmma blast tool %s with job id %s", uuid_s, dbt_drmaa_tool_p -> dt_id_s);
+							FreeCopiedString (uuid_s);
+						}
+					else
+						{
+							PrintLog (STM_LEVEL_FINE, "Added drmma blast tool with job id %s", dbt_drmaa_tool_p -> dt_id_s);
+						}
+				}
+			#endif
+
+			bt_job_p -> sj_status = GetStatus ();
 		}
 	else
 		{
@@ -111,14 +132,6 @@ bool DrmaaBlastTool :: SetOutputFilename (const char *filename_s)
 					FreeByteBuffer (buffer_p);
 				}
 		}
-
-	return success_flag;
-}
-
-
-bool DrmaaBlastTool :: SetQueue (const char *queue_s)
-{
-	bool success_flag = SetDrmaaToolQueueName (dbt_drmaa_tool_p, queue_s);
 
 	return success_flag;
 }

@@ -20,6 +20,7 @@
 #include "service_config.h"
 #include "string_utils.h"
 #include "filesystem_utils.h"
+#include "json_tools.h"
 
 
 static json_t *s_config_p = NULL;

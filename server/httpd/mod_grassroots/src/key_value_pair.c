@@ -127,6 +127,7 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 					if (!params_p)
 						{
 							PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n\"%s\"\n%d %d %d\n", data_s, err.text, err.source, err.line, err.column, err.position);
+							ap_rprintf (req_p, "error decoding response: \"%s\"\n\"%s\"\n\"%s\"\n%d %d %d\n", data_s, err.text, err.source, err.line, err.column, err.position);
 						}
 				}
 

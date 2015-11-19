@@ -99,300 +99,323 @@ json_t *ProcessServerRawMessage (const char * const request_s, const int socket_
 	
 	if (req_p)
 		{
-			res_p = ProcessServerJSONMessage (req_p, socket_fd);
+			const char *error_s = NULL;
+
+			res_p = ProcessServerJSONMessage (req_p, socket_fd, &error_s);
+
+			if (error_s)
+				{
+					PrintErrors (STM_LEVEL_WARNING, "Error \"%s\" from ProcessServerJSONMessage for :\n%s\n", error_s, request_s);
+				}
+
 		}
 	else
 		{
 			/* error decoding the request */
-			
+			PrintErrors (STM_LEVEL_WARNING, "Could not get load json from:\n%s\n", request_s);
 		}	
-	
 
-	
 	return res_p;
 }
 
 
-json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd)
+json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_ss)
 {
 	json_t *res_p = NULL;
-	json_t *op_p = NULL;
-	json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
-	json_t *uuid_p = NULL;
 
-	if (!credentials_p)
+	if (req_p)
 		{
-			credentials_p = json_object ();
-
-			if (credentials_p)
+			if (json_is_object (req_p))
 				{
-					if (json_object_set_new (req_p, CREDENTIALS_S, credentials_p) != 0)
+					json_t *op_p = NULL;
+					json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
+					json_t *uuid_p = NULL;
+
+					if (!credentials_p)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to add credentials json");
-						}
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to create credentials json");
-				}
-		}
+							credentials_p = json_object ();
 
-
-	/* add a unique id if not already there */
-	if (credentials_p)
-		{
-			uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
-
-			if (!uuid_p)
-				{
-					char *uuid_s = NULL;
-					uuid_t user_id;
-
-					uuid_generate (user_id);
-
-					uuid_s = GetUUIDAsString (user_id);
-
-					if (uuid_s)
-						{
-							if (json_object_set_new (credentials_p, CREDENTIALS_UUID_S, json_string (uuid_s)) != 0)
+							if (credentials_p)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add uuid string to credentials");
-								}
-
-							FreeUUIDString (uuid_s);
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to get uuid string");
-						}
-				}
-		}
-
-	#if SERVER_DEBUG >= STM_LEVEL_FINE
-		{
-			if (req_p)
-				{
-					char *dump_s = json_dumps (req_p, JSON_INDENT (2));
-					
-					if (dump_s)
-						{
-							printf ("ProcessMessage - request: \n%s\n\n", dump_s);
-							free (dump_s);
-						}
-				}
-		}
-	#endif
-
-
-	/*
-	 * Is this request for an external server?
-	 */
-	uuid_p = json_object_get (req_p, SERVER_UUID_S);
-	if (uuid_p)
-		{
-			/*
-			 * Find the matching external server,
-			 * Remove the server uuid and proxy
-			 * the request/response
-			 */
-			if (json_is_string (uuid_p))
-				{
-					const char *uuid_s = json_string_value (uuid_p);
-					uuid_t key;
-
-					if (ConvertStringToUUID (uuid_s, key))
-						{
-							ServersManager *manager_p = GetServersManager ();
-
-							if (manager_p)
-								{
-									ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, key);
-
-									if (external_server_p)
+									if (json_object_set_new (req_p, CREDENTIALS_S, credentials_p) != 0)
 										{
-											/* remove the server's uuid */
-											if (json_object_del (req_p, SERVER_UUID_S) == 0)
-												{
-													/* we can now proxy the request off to the given server */
-													json_t *response_p = MakeRemoteJSONCallToExternalServer (external_server_p, req_p);
-
-													if (response_p)
-														{
-															/*
-															 * We now need to add the ExternalServer's
-															 * uuid back in. Not sure if we can use uuid_s
-															 * as it may have gone out of scope when we called
-															 * json_obtject_del, so best to recreate it.
-															 */
-															char buffer [UUID_STRING_BUFFER_SIZE];
-
-															ConvertUUIDToString (key, buffer);
-
-															if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer)) == 0)
-																{
-
-																}		/* if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer) == 0)) */
-
-														}		/* if (response_p) */
-
-												}		/* if (json_object_del (req_p, SERVER_UUID_S) == 0) */
-
-										}		/* if (external_server_p)*/
-
-								}		/* if (manager_p) */
-
-						}		/* if (ConvertStringToUUID (uuid_s, key)) */
-
-				}		/* if (json_is_string (uuid_p)) */
-
-		}		/* if (uuid_p) */
-	else
-		{
-			/* the request is for this server */
-		}
-
-
-	if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
-		{
-			Operation op = GetOperation (op_p);
-			ServersManager *servers_manager_p = GetServersManager ();
-
-			switch (op)
-				{
-					case OP_LIST_ALL_SERVICES:
-						res_p = GetAllServices (req_p, credentials_p);
-						break;
-					
-					case OP_IRODS_MODIFIED_DATA:
-						res_p = GetAllModifiedData (req_p, credentials_p);
-						break;
-				
-					case OP_LIST_INTERESTED_SERVICES:
-						res_p = GetInterestedServices (req_p, credentials_p);
-						break;
-						
-					case OP_RUN_KEYWORD_SERVICES:
-						{
-							json_t *keyword_json_group_p = json_object_get (req_p, KEYWORDS_QUERY_S);
-
-							if (keyword_json_group_p)
-								{
-									json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEYWORDS_QUERY_S);
-
-									if (keyword_json_value_p)
-										{
-											if (json_is_string (keyword_json_value_p))
-												{
-													const char *keyword_s = json_string_value (keyword_json_value_p);
-
-													res_p = RunKeywordServices (req_p, credentials_p, keyword_s);
-												}
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to add credentials json");
 										}
 								}
-						}
-						break;
-
-					case OP_GET_NAMED_SERVICES:
-						res_p = GetNamedServices (req_p, credentials_p);
-						break;
-
-					case OP_CHECK_SERVICE_STATUS:
-						res_p = GetServiceStatus (req_p, credentials_p);
-						break;
-
-					case OP_GET_SERVICE_RESULTS:
-						res_p = GetServiceResultsAsJSON (req_p, credentials_p);
-						break;
-
-					case OP_CLEAN_UP_JOBS:
-						res_p = CleanUpJobs (req_p, credentials_p);
-						break;
-
-					case OP_GET_RESOURCE:
-						res_p = GetRequestedResource (req_p, credentials_p);
-						break;
-
-					default:
-						break;
-				}		/* switch (op) */
-				
-
-			//res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op);
-
-		}
-	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
-		{
-			uuid_t user_uuid;
-			const char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
-
-			if (user_uuid_s)
-				{
-					uuid_parse (user_uuid_s, user_uuid);
-				}
-			else
-				{
-					uuid_clear (user_uuid);
-				}
-
-			
-			res_p = json_array ();
-
-			if (res_p)
-				{
-					if (json_is_array (op_p))
-						{
-							size_t i;
-							json_t *value_p;
-
-							json_array_foreach (op_p, i, value_p) 
+							else
 								{
-									int8 res = RunServiceFromJSON (value_p, credentials_p, res_p, user_uuid);
-
-									if (res < 0)
-										{
-											char *value_s = json_dumps (value_p, JSON_INDENT (2));
-
-											if (value_s)
-												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
-													free (value_s);
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
-												}
-										}
-								}		/* json_array_foreach (op_p, i, value_p) */
+									PrintErrors (STM_LEVEL_SEVERE, "Failed to create credentials json");
+								}
 						}
-					else
+
+
+					/* add a unique id if not already there */
+					if (credentials_p)
 						{
-							int8 res = RunServiceFromJSON (op_p, credentials_p, res_p, user_uuid);
+							uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
 
-							if (res < 0)
+							if (!uuid_p)
 								{
-									char *value_s = json_dumps (op_p, JSON_INDENT (2));
+									char *uuid_s = NULL;
+									uuid_t user_id;
 
-									if (value_s)
+									uuid_generate (user_id);
+
+									uuid_s = GetUUIDAsString (user_id);
+
+									if (uuid_s)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
-											free (value_s);
+											if (json_object_set_new (credentials_p, CREDENTIALS_UUID_S, json_string (uuid_s)) != 0)
+												{
+													PrintErrors (STM_LEVEL_SEVERE, "Failed to add uuid string to credentials");
+												}
+
+											FreeUUIDString (uuid_s);
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
+											PrintErrors (STM_LEVEL_SEVERE, "Failed to get uuid string");
 										}
 								}
 						}
 
-				}		/* if (res_p) */
+					#if SERVER_DEBUG >= STM_LEVEL_FINEST
+						{
+							if (req_p)
+								{
+									char *dump_s = json_dumps (req_p, JSON_INDENT (2));
 
-		}		/* 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL) */
+									if (dump_s)
+										{
+											printf ("ProcessMessage - request: \n%s\n\n", dump_s);
+											free (dump_s);
+										}
+								}
+						}
+					#endif
 
-		
-	#if SERVER_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (res_p, "ProcessMessage - response: \n", STM_LEVEL_FINE);
-	FlushLog ();
-	#endif
+
+					/*
+					 * Is this request for an external server?
+					 */
+					uuid_p = json_object_get (req_p, SERVER_UUID_S);
+					if (uuid_p)
+						{
+							/*
+							 * Find the matching external server,
+							 * Remove the server uuid and proxy
+							 * the request/response
+							 */
+							if (json_is_string (uuid_p))
+								{
+									const char *uuid_s = json_string_value (uuid_p);
+									uuid_t key;
+
+									if (ConvertStringToUUID (uuid_s, key))
+										{
+											ServersManager *manager_p = GetServersManager ();
+
+											if (manager_p)
+												{
+													ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, key);
+
+													if (external_server_p)
+														{
+															/* remove the server's uuid */
+															if (json_object_del (req_p, SERVER_UUID_S) == 0)
+																{
+																	/* we can now proxy the request off to the given server */
+																	json_t *response_p = MakeRemoteJSONCallToExternalServer (external_server_p, req_p);
+
+																	if (response_p)
+																		{
+																			/*
+																			 * We now need to add the ExternalServer's
+																			 * uuid back in. Not sure if we can use uuid_s
+																			 * as it may have gone out of scope when we called
+																			 * json_obtject_del, so best to recreate it.
+																			 */
+																			char buffer [UUID_STRING_BUFFER_SIZE];
+
+																			ConvertUUIDToString (key, buffer);
+
+																			if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer)) == 0)
+																				{
+
+																				}		/* if (json_object_set_new (response_p, SERVER_UUID_S, json_string (buffer) == 0)) */
+
+																		}		/* if (response_p) */
+
+																}		/* if (json_object_del (req_p, SERVER_UUID_S) == 0) */
+
+														}		/* if (external_server_p)*/
+
+												}		/* if (manager_p) */
+
+										}		/* if (ConvertStringToUUID (uuid_s, key)) */
+
+								}		/* if (json_is_string (uuid_p)) */
+
+						}		/* if (uuid_p) */
+					else
+						{
+							/* the request is for this server */
+						}
+
+
+					if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
+						{
+							Operation op = GetOperation (op_p);
+							ServersManager *servers_manager_p = GetServersManager ();
+
+							switch (op)
+								{
+									case OP_LIST_ALL_SERVICES:
+										res_p = GetAllServices (req_p, credentials_p);
+										break;
+
+									case OP_IRODS_MODIFIED_DATA:
+										res_p = GetAllModifiedData (req_p, credentials_p);
+										break;
+
+									case OP_LIST_INTERESTED_SERVICES:
+										res_p = GetInterestedServices (req_p, credentials_p);
+										break;
+
+									case OP_RUN_KEYWORD_SERVICES:
+										{
+											json_t *keyword_json_group_p = json_object_get (req_p, KEYWORDS_QUERY_S);
+
+											if (keyword_json_group_p)
+												{
+													json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEYWORDS_QUERY_S);
+
+													if (keyword_json_value_p)
+														{
+															if (json_is_string (keyword_json_value_p))
+																{
+																	const char *keyword_s = json_string_value (keyword_json_value_p);
+
+																	res_p = RunKeywordServices (req_p, credentials_p, keyword_s);
+																}
+														}
+												}
+										}
+										break;
+
+									case OP_GET_NAMED_SERVICES:
+										res_p = GetNamedServices (req_p, credentials_p);
+										break;
+
+									case OP_CHECK_SERVICE_STATUS:
+										res_p = GetServiceStatus (req_p, credentials_p);
+										break;
+
+									case OP_GET_SERVICE_RESULTS:
+										res_p = GetServiceResultsAsJSON (req_p, credentials_p);
+										break;
+
+									case OP_CLEAN_UP_JOBS:
+										res_p = CleanUpJobs (req_p, credentials_p);
+										break;
+
+									case OP_GET_RESOURCE:
+										res_p = GetRequestedResource (req_p, credentials_p);
+										break;
+
+									default:
+										break;
+								}		/* switch (op) */
+
+
+							//res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op);
+
+						}
+					else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL)
+						{
+							uuid_t user_uuid;
+							const char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
+
+							if (user_uuid_s)
+								{
+									uuid_parse (user_uuid_s, user_uuid);
+								}
+							else
+								{
+									uuid_clear (user_uuid);
+								}
+
+
+							res_p = json_array ();
+
+							if (res_p)
+								{
+									if (json_is_array (op_p))
+										{
+											size_t i;
+											json_t *value_p;
+
+											json_array_foreach (op_p, i, value_p)
+												{
+													int8 res = RunServiceFromJSON (value_p, credentials_p, res_p, user_uuid);
+
+													if (res < 0)
+														{
+															char *value_s = json_dumps (value_p, JSON_INDENT (2));
+
+															if (value_s)
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
+																	free (value_s);
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
+																}
+														}
+												}		/* json_array_foreach (op_p, i, value_p) */
+										}
+									else
+										{
+											int8 res = RunServiceFromJSON (op_p, credentials_p, res_p, user_uuid);
+
+											if (res < 0)
+												{
+													char *value_s = json_dumps (op_p, JSON_INDENT (2));
+
+													if (value_s)
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
+															free (value_s);
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
+														}
+												}
+										}
+
+								}		/* if (res_p) */
+
+						}		/* 	else if ((op_p = json_object_get (req_p, SERVICES_NAME_S)) != NULL) */
+
+
+					#if SERVER_DEBUG >= STM_LEVEL_FINER
+					PrintJSONToLog (res_p, "ProcessMessage - response: \n", STM_LEVEL_FINE);
+					FlushLog ();
+					#endif
+
+				}		/* if (json_is_object (req_p)) */
+			else
+				{
+					*error_ss = "Request is not an explicit json object";
+				}
+
+		}		/* if (req_p) */
+	else
+		{
+			*error_ss = "Request is NULL";
+		}
 	
 	return res_p;
 }

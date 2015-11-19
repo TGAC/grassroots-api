@@ -100,9 +100,6 @@ ServicesArray *GetServices (const json_t *config_p)
 								true,
 								data_p);
 							
-							* (services_p -> sa_services_pp) = service_p;
-
-
 							if (GetSamToolsServiceConfig (sam_data_p))
 								{
 									* (services_p -> sa_services_pp) = service_p;
@@ -384,7 +381,7 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 							if (break_index > 0)
 								{
 									int i = 0;
-									int block_size;
+									int block_size = break_index;
 									char *current_p = sequence_s;
 									bool loop_flag = true;
 

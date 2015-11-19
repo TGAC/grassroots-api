@@ -246,7 +246,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 						}
 					else
 						{
-							char *key_s = CopyToNewString (key_p, key_len, false);
+							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
 
 							if (key_s)
 								{
@@ -272,7 +272,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 						}
 					else
 						{
-							char *key_s = CopyToNewString (key_p, key_len, false);
+							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
 
 							if (key_s)
 								{
@@ -351,7 +351,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 						}
 					else
 						{
-							char *key_s = CopyToNewString (key_p, key_len, false);
+							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
 
 							if (key_s)
 								{
@@ -376,7 +376,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 						}
 					else
 						{
-							char *key_s = CopyToNewString (key_p, key_len, false);
+							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
 
 							if (key_s)
 								{

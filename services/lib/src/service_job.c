@@ -416,7 +416,8 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 													PrintErrors (STM_LEVEL_SEVERE, "Failed to json response for json %s", job_p -> sj_name_s);
 												}
 										}
-								}
+
+								}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p) */
 
 						}		/* if (json_object_set_new (res_p, SERVICE_JOBS_S, jobs_array_p) == 0) */
 					else
@@ -444,8 +445,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 {
-	OperationStatus status;
-
 	if (job_p -> sj_service_p -> se_get_status_fn)
 		{
 			job_p -> sj_status = job_p -> sj_service_p -> se_get_status_fn (job_p -> sj_service_p, job_p -> sj_id);

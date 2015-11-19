@@ -40,7 +40,7 @@ ThreadedBlastTool :: ~ThreadedBlastTool ()
 {
 	if (tbt_mutex_p)
 		{
-			int res  = pthread_mutex_destroy (tbt_mutex_p);
+			int res = pthread_mutex_destroy (tbt_mutex_p);
 		}
 
 	if (tbt_thread_id != -1)

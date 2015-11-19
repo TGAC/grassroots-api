@@ -211,7 +211,7 @@ bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_s
 	const char *c_p = strrchr (data_p -> wsd_base_uri_s, '/');
 	if (!c_p)
 		{
-			data_p -> wsd_base_uri_s;
+			c_p = data_p -> wsd_base_uri_s;
 		}
 
 	if (strchr (c_p, '?'))
