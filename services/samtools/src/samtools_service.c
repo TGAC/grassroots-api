@@ -342,8 +342,15 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 																}
 															else
 																{
+																	json_error_t error;
+																	job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "Create sequence error", sequence_s);
 																	PrintErrors (STM_LEVEL_SEVERE, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
 																}
+														}
+													else
+														{
+															json_error_t error;
+															job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "General error", "Failed to get scaffold data");
 														}
 
 													FreeByteBuffer (buffer_p);
