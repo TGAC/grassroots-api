@@ -29,6 +29,7 @@ static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_s
 
 static bool BuildNativeSpecification (const DrmaaTool *tool_p);
 
+static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char *value_s);
 
 
 DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
@@ -57,21 +58,30 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 									tool_p -> dt_num_cores = 0;
 									tool_p -> dt_host_name_s = NULL;
 									tool_p -> dt_user_name_s = NULL;
+									tool_p -> dt_email_addresses_ss = NULL;
 									tool_p -> dt_mb_mem_usage = 0;
 
 									/* join output/error file */
-									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_JOIN_FILES, "y", NULL, 0);
+									if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
+										{
+											/* run jobs in user's home directory */
+											if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
+												{
+													/* the job to be run */
+													if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
+														{
+															/* path for output */
+															if (SetDrmaaAttribute (tool_p, DRMAA_OUTPUT_PATH, ":/tgac/services/wheatis/out"))
+																{
+																	return tool_p;
+																}
 
-									/* run jobs in user's home directory */
-									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD, NULL, 0);
+														}
 
-									/* the job to be run */
-									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_REMOTE_COMMAND, program_name_s, NULL, 0);
+												}
 
-									/* path for output */
-									drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_OUTPUT_PATH, ":/tgac/services/wheatis/out", NULL, 0);
+										}
 
-									return tool_p;
 								}		/* if (tool_p -> dt_args_p) */
 
 						}		/* if (tool_p -> dt_program_name_s) */
@@ -101,20 +111,111 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 			FreeCopiedString (tool_p -> dt_queue_name_s);
 		}
 
+	if (tool_p -> dt_email_addresses_ss)
+		{
+			char **address_ss = tool_p -> dt_email_addresses_ss;
+
+			while (*address_ss)
+				{
+					FreeCopiedString (address_ss);
+					++ address_ss;
+				}
+
+			FreeMemoryArray (tool_p -> dt_email_addresses_ss);
+		}
+
 	FreeMemory (tool_p);
 }
 
+
+bool SetDrmaaToolEmailNotifictaions (DrmaaTool *tool_p, const char **email_addresses_ss)
+{
+	bool success_flag = false;
+
+	if (email_addresses_ss)
+		{
+			char **copied_email_addresses_ss = NULL;
+			size_t num_addresses = 0;
+			const char **address_ss = email_addresses_ss;
+
+			/* count the number of addresses */
+			while (*address_ss)
+				{
+					++ address_ss;
+					++ num_addresses;
+				}
+
+			copied_email_addresses_ss = (char **) AllocMemoryArray (num_addresses + 1, sizeof (char *));
+			if (copied_email_addresses_ss)
+				{
+					size_t i = 0;
+					bool loop_flag = i < num_addresses;
+					char **copied_address_ss = copied_email_addresses_ss;
+
+					address_ss = email_addresses_ss;
+
+					success_flag = true;
+					while (loop_flag)
+						{
+							char *copied_address_s = CopyToNewString (*address_ss, 0, false);
+
+							if (copied_address_s)
+								{
+									*copied_address_ss = copied_address_s;
+
+									++ i;
+									++ copied_address_ss;
+								}
+							else
+								{
+									loop_flag = false;
+									success_flag = false;
+								}
+						}
+
+					if (!success_flag)
+						{
+							size_t j;
+							char **copied_address_ss = copied_email_addresses_ss;
+
+							for (j = 0; j < i; ++ j, ++ copied_email_addresses_ss)
+								{
+									FreeCopiedString (copied_email_addresses_ss);
+								}
+
+							FreeMemoryArray (copied_email_addresses_ss);
+						}
+
+				}		/* if (copied_email_addresses_ss) */
+
+		}
+	else
+		{
+			if (tool_p -> dt_email_addresses_ss)
+				{
+					char *addresses_s = NULL;
+
+					FreeStringArray (tool_p -> dt_email_addresses_ss);
+					tool_p -> dt_email_addresses_ss = NULL;
+					success_flag = SetDrmaaAttribute (tool_p, DRMAA_ATTR_EMAIL, &addresses_s);
+				}
+			else
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
 
 
 bool SetDrmaaToolOutputFilename (DrmaaTool *tool_p, const char *output_name_s)
 {
 	bool success_flag = false;
 
-	if (ReplaceStringValue (& (tool_p -> dt_working_directory_s), output_name_s))
+	if (ReplaceStringValue (& (tool_p -> dt_output_filename_s), output_name_s))
 		{
-			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_OUTPUT_PATH, tool_p -> dt_working_directory_s, NULL, 0);
-
-			success_flag = true;
+			success_flag = SetDrmaaAttribute (tool_p, DRMAA_OUTPUT_PATH, tool_p -> dt_output_filename_s);
 		}
 
 	return success_flag;
@@ -127,9 +228,7 @@ bool SetDrmaaToolCurrentWorkingDirectory (DrmaaTool *tool_p, const char *path_s)
 
 	if (ReplaceStringValue (& (tool_p -> dt_working_directory_s), path_s))
 		{
-			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_WD, tool_p -> dt_working_directory_s, NULL, 0);
-
-			success_flag = true;
+			success_flag = SetDrmaaAttribute (tool_p, DRMAA_WD, tool_p -> dt_working_directory_s);
 		}
 
 	return success_flag;
@@ -142,9 +241,7 @@ bool SetDrmaaToolQueueName (DrmaaTool *tool_p, const char *queue_name_s)
 
 	if (ReplaceStringValue (& (tool_p -> dt_queue_name_s), queue_name_s))
 		{
-			drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_NATIVE_SPECIFICATION, tool_p -> dt_queue_name_s, NULL, 0);
-
-			success_flag = true;
+			success_flag = SetDrmaaAttribute (tool_p, DRMAA_NATIVE_SPECIFICATION, tool_p -> dt_queue_name_s);
 		}
 
 	return success_flag;
@@ -324,7 +421,7 @@ bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s)
 
 bool SetDrmaaToolJobName (DrmaaTool *tool_p, const char *job_name_s)
 {
-	bool success_flag = (drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_JOB_NAME, job_name_s, NULL, 0) == DRMAA_ERRNO_SUCCESS);
+	bool success_flag = SetDrmaaAttribute (tool_p, DRMAA_JOB_NAME, job_name_s);
 
 	return success_flag;
 }
@@ -430,7 +527,7 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 
 					if (spec_s)
 						{
-							success_flag = (drmaa_set_attribute (tool_p -> dt_job_p, DRMAA_NATIVE_SPECIFICATION, spec_s, NULL, 0) == DRMAA_ERRNO_SUCCESS);
+							success_flag = SetDrmaaAttribute (tool_p, DRMAA_NATIVE_SPECIFICATION, spec_s);
 							FreeCopiedString (spec_s);
 						}
 					else
@@ -449,4 +546,23 @@ static bool BuildNativeSpecification (const DrmaaTool *tool_p)
 
 	return success_flag;
 }
+
+
+static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char *value_s)
+{
+	#define ERROR_LENGTH (1023)
+	char error_s [ERROR_LENGTH + 1];
+	bool success_flag = true;
+
+	int res = drmaa_set_attribute (tool_p -> dt_job_p, name_s, value_s, error_s, ERROR_LENGTH);
+
+	if (res != DRMAA_ERRNO_SUCCESS)
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to set %s for %s for %s, error %s", name_s, value_s, tool_p -> dt_id_s, error_s);
+			success_flag = false;
+		}
+
+	return success_flag;
+}
+
 

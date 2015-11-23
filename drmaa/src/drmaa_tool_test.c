@@ -33,6 +33,7 @@ int main (int argc, char *argv [])
 
 	switch (argc)
 		{
+
 			case 6:
 				db_name_s = argv [5];
 
@@ -149,7 +150,7 @@ int main (int argc, char *argv [])
 
 
 
-DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_s, const char *query_filename_s, const char *output_filename_s)
+DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_s, const char *query_filename_s, const char *output_filename_s, const char **email_addresses_ss)
 {
 	DrmaaTool *tool_p = AllocateDrmaaTool (program_name_s);
 

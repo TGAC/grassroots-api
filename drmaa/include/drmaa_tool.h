@@ -60,6 +60,7 @@ typedef struct DrmaaTool
 	uint32 dt_mb_mem_usage;
 	char *dt_host_name_s;
 	char *dt_user_name_s;
+	char **dt_email_addresses_ss;
 } DrmaaTool;
 
 
