@@ -20,7 +20,7 @@
 
 
 #include "string_utils.h"
-#include "grassroots_config.h"
+#include "wheatis_config.h"
 #include "temp_file.hpp"
 #include "json_tools.h"
 
@@ -61,7 +61,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id
 
 static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
 
-static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s);
+static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id);
 
 
 static uint32 GetNumberOfDatabases (const BlastServiceData *data_p);
@@ -76,7 +76,6 @@ static bool CleanUpBlastJob (ServiceJob *job_p);
 ServicesArray *GetServices (const json_t *config_p)
 {
 	Service *blast_service_p = (Service *) AllocMemory (sizeof (Service));
-	memset (blast_service_p, 0, sizeof (Service));
 
 	if (blast_service_p)
 		{
@@ -88,8 +87,6 @@ ServicesArray *GetServices (const json_t *config_p)
 					
 					if (data_p)
 						{
-							BlastServiceData *blast_data_p = (BlastServiceData *) data_p;
-
 							InitialiseService (blast_service_p,
 								GetBlastServiceName,
 								GetBlastServiceDesciption,
@@ -102,10 +99,9 @@ ServicesArray *GetServices (const json_t *config_p)
 								GetBlastResultAsJSON,
 								GetBlastServiceStatus,
 								true,
-								blast_data_p -> bsd_blast_tools_p -> AreBlastToolsSynchronous (),
 								data_p);
 
-							if (GetBlastServiceConfig (blast_data_p))
+							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
 								{
 									* (services_p -> sa_services_pp) = blast_service_p;
 
@@ -181,19 +177,8 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 															if (description_p && (json_is_string (description_p)))
 																{
-																	json_t *active_p = json_object_get (db_json_p, "active");
-
 																	db_p -> di_name_s = json_string_value (name_p);
 																	db_p -> di_description_s = json_string_value (description_p);
-
-																	if (active_p && (json_is_false (active_p)))
-																		{
-																			db_p -> di_active_flag = false;
-																		}
-																	else
-																		{
-																			db_p -> di_active_flag = true;
-																		}
 
 																	success_flag = true;
 																	++ db_p;
@@ -330,6 +315,7 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 					uint8 a = 0;
 					uint8 b = 0;
 
+					def.st_boolean_value = true;
 					success_flag = true;
 
 					while ((db_p -> di_name_s) && success_flag)
@@ -342,8 +328,6 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 								{
 									++ local_name_s;
 								}
-
-							def.st_boolean_value = db_p -> di_active_flag;
 
 							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 								{
@@ -682,7 +666,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 			else
 				{
 					json_error_t error;
-					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_VALUE_S, status);
+					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, status);
 
 					if (blast_result_json_p)
 						{
@@ -711,7 +695,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 }
 
 
-static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s)
+static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id)
 {
 	TempFile *tf_p = NULL;
 	SharedType value;
@@ -725,7 +709,15 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					char *buffer_p = GetTempFilenameBuffer ("blast", working_directory_s);
+					char *uuid_s = GetUUIDAsString (job_id);
+					char *buffer_p = NULL;
+
+					if (!uuid_s)
+						{
+							uuid_s = (char *) "blast";
+						}
+
+					buffer_p = GetTempFilenameBuffer (uuid_s, working_directory_s);
 
 					if (buffer_p)
 						{
@@ -733,12 +725,15 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 							if (tf_p)
 								{
-									if (!tf_p -> Print (sequence_s))
-										{
-											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"", tf_p -> GetFilename (), sequence_s);
-										}
+									bool success_flag = tf_p -> Print (sequence_s);
 
 									tf_p -> Close ();
+
+									if (!success_flag)
+										{
+											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"", tf_p -> GetFilename (), sequence_s);
+											tf_p = NULL;
+										}
 								}
 							else
 								{
@@ -749,12 +744,17 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 						{
 							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
 						}
+
+					if (uuid_s && (strcmp (uuid_s, "blast") != 0))
+						{
+							FreeCopiedString (uuid_s);
+						}
 				}
 			else
 				{
+					PrintErrors (STM_LEVEL_WARNING, "Blast input query is empty");
 				}
 		}
-
 
 	return tf_p;
 }
@@ -802,7 +802,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			if (service_p -> se_jobs_p)
 				{
 					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-					TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s);
+					TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
 					const char *filename_s = NULL;
 
 					if (tf_p)

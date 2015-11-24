@@ -22,15 +22,24 @@
 #include "string_linked_list.h"
 #include "byte_buffer.h"
 
+#ifdef _DEBUG
+	#define DRMAA_TOOL_DEBUG (STM_LEVEL_FINE)
+#else
+	#define DRMAA_TOOL_DEBUG (STM_LEVEL_NONE)
+#endif
+
 
 static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
 static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss);
 
-static bool BuildNativeSpecification (const DrmaaTool *tool_p);
+static bool BuildNativeSpecification (DrmaaTool *tool_p);
 
 static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char *value_s);
 
+static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, const char **values_ss);
+
+void FreeStringArray (char **values_ss);
 
 DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 {
@@ -113,22 +122,14 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 
 	if (tool_p -> dt_email_addresses_ss)
 		{
-			char **address_ss = tool_p -> dt_email_addresses_ss;
-
-			while (*address_ss)
-				{
-					FreeCopiedString (address_ss);
-					++ address_ss;
-				}
-
-			FreeMemoryArray (tool_p -> dt_email_addresses_ss);
+			FreeStringArray (tool_p -> dt_email_addresses_ss);
 		}
 
 	FreeMemory (tool_p);
 }
 
 
-bool SetDrmaaToolEmailNotifictaions (DrmaaTool *tool_p, const char **email_addresses_ss)
+bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addresses_ss)
 {
 	bool success_flag = false;
 
@@ -165,6 +166,9 @@ bool SetDrmaaToolEmailNotifictaions (DrmaaTool *tool_p, const char **email_addre
 
 									++ i;
 									++ copied_address_ss;
+									++ address_ss;
+
+									loop_flag = (*address_ss != NULL);
 								}
 							else
 								{
@@ -173,17 +177,42 @@ bool SetDrmaaToolEmailNotifictaions (DrmaaTool *tool_p, const char **email_addre
 								}
 						}
 
-					if (!success_flag)
+					if (success_flag)
+						{
+							if (tool_p -> dt_email_addresses_ss)
+								{
+									FreeStringArray (tool_p -> dt_email_addresses_ss);
+								}
+
+							tool_p -> dt_email_addresses_ss = copied_email_addresses_ss;
+
+							#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINE
+								{
+									const char **address_ss = tool_p -> dt_email_addresses_ss;
+									size_t i = 0;
+
+									while (*address_ss)
+										{
+											PrintLog (STM_LEVEL_FINE, "adding email [%ld] = %s\n", i, *address_ss);
+											++ address_ss;
+											++ i;
+										}
+								}
+							#endif
+
+							success_flag = SetDrmaaVectorAttribute (tool_p, DRMAA_V_EMAIL, (const char **) (tool_p -> dt_email_addresses_ss));
+						}
+					else
 						{
 							size_t j;
 							char **copied_address_ss = copied_email_addresses_ss;
 
-							for (j = 0; j < i; ++ j, ++ copied_email_addresses_ss)
+							for (j = 0; j < i; ++ j, ++ copied_address_ss)
 								{
-									FreeCopiedString (copied_email_addresses_ss);
+									FreeCopiedString (*copied_address_ss);
 								}
 
-							FreeMemoryArray (copied_email_addresses_ss);
+							FreeMemory (copied_email_addresses_ss);
 						}
 
 				}		/* if (copied_email_addresses_ss) */
@@ -193,11 +222,11 @@ bool SetDrmaaToolEmailNotifictaions (DrmaaTool *tool_p, const char **email_addre
 		{
 			if (tool_p -> dt_email_addresses_ss)
 				{
-					char *addresses_s = NULL;
+					const char *addresses_s = NULL;
 
 					FreeStringArray (tool_p -> dt_email_addresses_ss);
 					tool_p -> dt_email_addresses_ss = NULL;
-					success_flag = SetDrmaaAttribute (tool_p, DRMAA_ATTR_EMAIL, &addresses_s);
+					success_flag = SetDrmaaVectorAttribute (tool_p, DRMAA_V_EMAIL, &addresses_s);
 				}
 			else
 				{
@@ -206,6 +235,20 @@ bool SetDrmaaToolEmailNotifictaions (DrmaaTool *tool_p, const char **email_addre
 		}
 
 	return success_flag;
+}
+
+
+void FreeStringArray (char **values_ss)
+{
+	char **value_ss = values_ss;
+
+	while (*value_ss)
+		{
+			FreeCopiedString (*value_ss);
+			++ value_ss;
+		}
+
+	FreeMemory (values_ss);
 }
 
 
@@ -464,10 +507,9 @@ static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_s
 
 
 
-static bool BuildNativeSpecification (const DrmaaTool *tool_p)
+static bool BuildNativeSpecification (DrmaaTool *tool_p)
 {
 	bool success_flag = true;
-	char *value_s = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
 	if (buffer_p)
@@ -565,4 +607,22 @@ static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char
 	return success_flag;
 }
 
+
+
+static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, const char **values_ss)
+{
+	#define ERROR_LENGTH (1023)
+	char error_s [ERROR_LENGTH + 1];
+	bool success_flag = true;
+
+	int res = drmaa_set_vector_attribute (tool_p -> dt_job_p, name_s, values_ss, error_s, ERROR_LENGTH);
+
+	if (res != DRMAA_ERRNO_SUCCESS)
+		{
+			PrintErrors (STM_LEVEL_WARNING, "Failed to set %s beginning with %s for %s, error %s", name_s, *values_ss, tool_p -> dt_id_s, error_s);
+			success_flag = false;
+		}
+
+	return success_flag;
+}
 

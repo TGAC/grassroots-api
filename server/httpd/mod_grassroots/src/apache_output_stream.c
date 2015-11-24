@@ -73,10 +73,10 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 				break;
 
 			case STM_LEVEL_INFO:
-				ap_level = APLOG_NOERRNO |APLOG_INFO;
+			case STM_LEVEL_FINE:
+				ap_level = APLOG_NOERRNO | APLOG_INFO;
 				break;
 
-			case STM_LEVEL_FINE:
 			case STM_LEVEL_FINER:
 			case STM_LEVEL_FINEST:
 			case STM_LEVEL_ALL:
@@ -88,7 +88,7 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 				break;
 		}
 
-	ap_log_error (APLOG_MARK, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "mod_grassroots: %s", value_s);
+	ap_log_error (APLOG_MARK, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "mod_wheatis: %s", value_s);
 
 	return 0;
 }
@@ -98,4 +98,3 @@ static bool FlushApacheStream (OutputStream *stream_p)
 {
 	return true;
 }
-

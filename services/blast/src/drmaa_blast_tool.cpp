@@ -14,124 +14,66 @@
 ** limitations under the License.
 */
 /*
- * drmaa_blast_tool.cpp
+ * drmaa_blast_tool.hpp
  *
  *  Created on: 22 Apr 2015
  *      Author: tyrrells
  */
 
-#include <new>
+#ifndef DRMAA_BLAST_TOOL_HPP_
+#define DRMAA_BLAST_TOOL_HPP_
 
-#include "drmaa_blast_tool.hpp"
-#include "streams.h"
-#include "string_utils.h"
+#include "external_blast_tool.hpp"
+#include "drmaa_tool.h"
 
-#ifdef _DEBUG
-	#define DRMAA_BLAST_TOOL_DEBUG	(STM_LEVEL_FINE)
-#else
-	#define DRMAA_BLAST_TOOL_DEBUG (STM_LEVEL_NONE)
+/**
+ * A class that will run Blast as a drmaa process.
+ */
+class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
+{
+public:
+
+	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s, bool async_flag);
+	virtual ~DrmaaBlastTool ();
+
+	virtual OperationStatus Run ();
+
+	virtual const char *GetResults ();
+
+	virtual OperationStatus GetStatus ();
+
+	void SetCoresPerSearch (uint32 cores);
+
+	bool SetEmailNotifications (const char **email_addresses_ss);
+
+	virtual bool SetOutputFilename (const char *filename_s);
+
+private:
+	DrmaaTool *dbt_drmaa_tool_p;
+	bool dbt_async_flag;
+
+	virtual bool AddArg (const char * const arg_s);
+
+};
+
+
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
-void DrmaaBlastTool :: SetCoresPerSearch (uint32 cores)
-{
-	dbt_drmaa_tool_p -> dt_num_cores = cores;
+
+/**
+ * Get a newly created BlastTool
+ *
+ * @return The BlastTool or <code>NULL</code> upon error.
+ */
+BLAST_SERVICE_API BlastTool *CreateDrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
+
+
+#ifdef __cplusplus
 }
+#endif
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s, bool async_flag)
-: ExternalBlastTool (job_p, name_s, working_directory_s, blast_program_name_s)
-{
-	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
-
-	if (!dbt_drmaa_tool_p)
-		{
-			throw std :: bad_alloc ();
-		}
-
-	dbt_async_flag = async_flag;
-	SetDrmaaToolQueueName (dbt_drmaa_tool_p, "webservices");
-	SetDrmaaToolJobName (dbt_drmaa_tool_p, name_s);
-}
-
-
-DrmaaBlastTool :: ~DrmaaBlastTool ()
-{
-	FreeDrmaaTool (dbt_drmaa_tool_p);
-}
-
-
-const char *DrmaaBlastTool :: GetResults ()
-{
-	return GetOutputData ();
-}
-
-
-OperationStatus DrmaaBlastTool :: Run ()
-{
-	if (RunDrmaaTool (dbt_drmaa_tool_p, dbt_async_flag))
-		{
-			#if DRMAA_BLAST_TOOL_DEBUG >= STM_LEVEL_FINE
-				{
-					char *uuid_s = GetUUIDAsString (bt_job_p -> sj_id);
-
-					if (uuid_s)
-						{
-							PrintLog (STM_LEVEL_FINE, "Added drmma blast tool %s with job id %s", uuid_s, dbt_drmaa_tool_p -> dt_id_s);
-							FreeCopiedString (uuid_s);
-						}
-					else
-						{
-							PrintLog (STM_LEVEL_FINE, "Added drmma blast tool with job id %s", dbt_drmaa_tool_p -> dt_id_s);
-						}
-				}
-			#endif
-
-			bt_job_p -> sj_status = GetStatus ();
-		}
-	else
-		{
-			bt_job_p -> sj_status = OS_FAILED;
-		}
-
-	return bt_job_p -> sj_status;
-}
-
-
-bool DrmaaBlastTool :: AddArg (const char *arg_s)
-{
-	bool success_flag = AddDrmaaToolArgument (dbt_drmaa_tool_p, arg_s);
-
-	return success_flag;
-}
-
-
-OperationStatus DrmaaBlastTool :: GetStatus ()
-{
-	bt_status = GetDrmaaToolStatus (dbt_drmaa_tool_p);
-
-	return bt_status;
-}
-
-
-
-bool DrmaaBlastTool :: SetOutputFilename (const char *filename_s)
-{
-	bool success_flag = false;
-
-	if (ExternalBlastTool :: SetOutputFilename (filename_s))
-		{
-			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-
-			if (buffer_p)
-				{
-					if (AppendStringsToByteBuffer (buffer_p, ":", filename_s, ".out", NULL))
-						{
-							success_flag = SetDrmaaToolOutputFilename (dbt_drmaa_tool_p, GetByteBufferData (buffer_p));
-						}
-
-					FreeByteBuffer (buffer_p);
-				}
-		}
-
-	return success_flag;
-}
+#endif /* DRMAA_BLAST_TOOL_HPP_ */

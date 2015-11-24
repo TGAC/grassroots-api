@@ -208,6 +208,17 @@ GRASSROOTS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 
 
 
+/**
+ * Set the email recepients for any job notifications for a DrmaaTool
+ *
+ * @param tool_p The DrmaaTool to get the job status for.
+ * @param An array of email addresses with the final element being NULL.
+ * @return <code>true</code> if the email addresses were set successfully, <code>false</code> otherwise.
+ * @memberof DrmaaTool
+ */
+GRASSROOTS_DRMAA_API bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addresses_ss);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -33,7 +33,6 @@ int main (int argc, char *argv [])
 
 	switch (argc)
 		{
-
 			case 6:
 				db_name_s = argv [5];
 
@@ -158,30 +157,36 @@ DrmaaTool *CreateBlastDrmaaJob (const char *program_name_s, const char *db_name_
 		{
 			if (SetDrmaaToolQueueName (tool_p, "webservices"))
 				{
-					if (AddDrmaaToolArgument (tool_p, "-db"))
+					const char **email_addresses_ss = { "simon.tyrrell@tgac.ac.uk", NULL };
+
+					if (SetDrmaaToolEmailNotifictaions (tool_p, email_addresses_ss))
 						{
-							if (AddDrmaaToolArgument (tool_p, db_name_s))
+							if (AddDrmaaToolArgument (tool_p, "-db"))
 								{
-									if (AddDrmaaToolArgument (tool_p, "-query"))
+									if (AddDrmaaToolArgument (tool_p, db_name_s))
 										{
-											if (AddDrmaaToolArgument (tool_p, query_filename_s))
+											if (AddDrmaaToolArgument (tool_p, "-query"))
 												{
-													if (AddDrmaaToolArgument (tool_p, "-out"))
+													if (AddDrmaaToolArgument (tool_p, query_filename_s))
 														{
-															if (AddDrmaaToolArgument (tool_p, output_filename_s))
+															if (AddDrmaaToolArgument (tool_p, "-out"))
 																{
-																	return tool_p;
-																}		/* if (AddDrmaaToolArgument (tool_p, output_filename_s)) */
+																	if (AddDrmaaToolArgument (tool_p, output_filename_s))
+																		{
+																			return tool_p;
+																		}		/* if (AddDrmaaToolArgument (tool_p, output_filename_s)) */
 
-														}		/* if (AddDrmaaToolArgument (tool_p, "-out")) */
+																}		/* if (AddDrmaaToolArgument (tool_p, "-out")) */
 
-												}		/* if (AddDrmaaToolArgument (tool_p, query_filename_s)) */
+														}		/* if (AddDrmaaToolArgument (tool_p, query_filename_s)) */
 
-										}		/* if (AddDrmaaToolArgument (tool_p, "-query")) */
+												}		/* if (AddDrmaaToolArgument (tool_p, "-query")) */
 
-								}		/* if (AddDrmaaToolArgument (tool_p, db_name_s)) */
+										}		/* if (AddDrmaaToolArgument (tool_p, db_name_s)) */
 
-						}		/* if (AddDrmaaToolArgument (tool_p, "-db")) */
+								}		/* if (AddDrmaaToolArgument (tool_p, "-db")) */
+
+						}		/* if (SetDrmaaToolEmailNotifictaions (tool_p, email_addresses_ss)) */
 
 				}		/* if (SetDrmaaToolQueueName ("webservices")) */
 
