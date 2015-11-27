@@ -44,6 +44,11 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, c
 					success_flag = true;
 				}
 		}
+
+	if (!success_flag)
+		{
+			throw std :: bad_alloc ();
+		}
 }
 
 
@@ -76,16 +81,25 @@ bool ExternalBlastTool :: AddArg (const char *arg_s)
 }
 
 
-const char *ExternalBlastTool :: GetOutputData ()
+const char *ExternalBlastTool :: GetResults ()
 {
 	const char *results_s = NULL;
 
-	if (ebt_output_p -> Open ("r"))
+	if (ebt_output_p && (ebt_output_p -> Open ("r")))
 		{
 			results_s = ebt_output_p -> GetData ();
 		}
 
 	return results_s;
+}
+
+
+void ExternalBlastTool :: ClearResults ()
+{
+	if (ebt_output_p)
+		{
+			ebt_output_p -> ClearData ();
+		}
 }
 
 
@@ -147,6 +161,21 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 		}
 
 
+	if (success_flag)
+		{
+			success_flag =  (AddArg ("-task")) && (AddArg ("blastn"));
+		}
+
+	if (success_flag)
+		{
+			success_flag =  (AddArg ("-num_alignments")) && (AddArg ("5"));
+		}
+
+	if (success_flag)
+		{
+			success_flag =  (AddArg ("-num_descriptions")) && (AddArg ("5"));
+		}
+
 	/* Db */
 	if (success_flag)
 		{
@@ -163,6 +192,8 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 						}
 				}
 		}
+
+
 
 	//return success_flag;
 
@@ -254,6 +285,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 		}
 
 	/* Max target sequences */
+	/*
 	if (success_flag)
 		{
 			success_flag = false;
@@ -273,9 +305,10 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 								}
 
 							FreeCopiedString (value_s);
-						}		/* if (value_s) */
+						}		/* if (value_s)
 				}
-		}
+		} */
+
 
 	/* Expect threshold */
 	if (success_flag)
@@ -353,6 +386,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 						}		/* if (value_s) */
 				}
 		}
+
 
 	return success_flag;
 }

@@ -38,15 +38,13 @@ public:
 
 	virtual OperationStatus Run ();
 
-	virtual const char *GetResults ();
-
 	virtual OperationStatus GetStatus ();
 
 	void SetCoresPerSearch (uint32 cores);
 
-	virtual bool SetOutputFilename (const char *filename_s);
+	bool SetEmailNotifications (const char **email_addresses_ss);
 
-	bool SetQueue (const char *queue_s);
+	virtual bool SetOutputFilename (const char *filename_s);
 
 private:
 	DrmaaTool *dbt_drmaa_tool_p;

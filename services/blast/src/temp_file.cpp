@@ -24,7 +24,11 @@
 #include <unistd.h>
 #include "temp_file.hpp"
 
-
+#ifdef _DEBUG
+	#define SERVICE_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
+#endif
 
 TempFile *TempFile :: GetTempFile (char *template_s, const char *mode_s)
 {
@@ -96,11 +100,7 @@ bool TempFile :: Print (const char *arg_s)
 
 const char *TempFile :: GetData ()
 {
-	if (tf_data_s)
-		{
-			FreeMemory (tf_data_s);
-			tf_data_s = 0;
-		}
+	ClearData ();
 
 	if (tf_handle_f)
 		{
@@ -122,6 +122,18 @@ const char *TempFile :: GetData ()
 		}
 
 	return tf_data_s;
+}
+
+
+void TempFile :: ClearData ()
+{
+	if (tf_data_s)
+		{
+			FreeMemory (tf_data_s);
+			PrintLog (STM_LEVEL_FINE, "Clearing data from %s", tf_name_s);
+
+			tf_data_s = 0;
+		}
 }
 
 

@@ -38,7 +38,6 @@ public:
 
 	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s);
 
-	virtual const char *GetResults ();
 };
 
 

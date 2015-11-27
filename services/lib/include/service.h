@@ -243,7 +243,7 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
 	bool specific_flag,
-	bool synchronouse_flag,
+	bool synchronous_flag,
 	ServiceData *data_p);
 
 

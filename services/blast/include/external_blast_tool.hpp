@@ -41,16 +41,22 @@ public:
 
 	virtual bool SetOutputFilename (const char *filename_s);
 
+	virtual const char *GetResults ();
+
+	virtual void ClearResults ();
+
 protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_output_p;
 	const char *ebt_working_directory_s;
 	const char *ebt_blast_s;
 
-	const char *GetOutputData ();
+	//const char *GetOutputData ();
 
 	virtual bool AddArg (const char * const arg_s);
 };
 
+
+#endif /* EXTERNAL_BLAST_TOOL_HPP_ */
 
 #endif /* EXTERNAL_BLAST_TOOL_HPP_ */

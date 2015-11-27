@@ -655,7 +655,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 											 * Has a tabular dataset been uploaded...
 											 */
 											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_FILE);
-											if (param_p && (param_p -> pa_current_value.st_string_value_s))
+											if (param_p && (!IsStringEmpty (param_p -> pa_current_value.st_string_value_s)))
 												{
 													json_param_p = ConvertTabularDataToJSON (param_p -> pa_current_value.st_string_value_s, delimiter, '\n', GetPathogenomicsJSONFieldType, data_p);
 

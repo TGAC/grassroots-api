@@ -58,6 +58,8 @@ protected:
 	void LoadText (const char *filename_s);
 	char *GetEntry (const char *start_s, const char *end_s);
 
+	bool IsTableEmpty () const;
+
 	virtual bool dropMimeData (int row, int column, const QMimeData * data, Qt::DropAction action);
 
 private:
