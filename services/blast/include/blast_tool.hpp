@@ -47,6 +47,8 @@ public:
 
 	virtual const char *GetResults () = 0;
 
+	virtual void ClearResults () = 0;
+
 	const uuid_t &GetUUID () const;
 
 	const char *GetName () const;

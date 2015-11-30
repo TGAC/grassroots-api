@@ -59,4 +59,3 @@ protected:
 
 #endif /* EXTERNAL_BLAST_TOOL_HPP_ */
 
-#endif /* EXTERNAL_BLAST_TOOL_HPP_ */
