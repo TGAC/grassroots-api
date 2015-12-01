@@ -50,6 +50,8 @@ public:
 
 	const char *GetData ();
 
+	void ClearData ();
+
 	bool IsOpen () const;
 
 private:

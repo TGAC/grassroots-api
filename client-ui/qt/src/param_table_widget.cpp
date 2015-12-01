@@ -273,65 +273,98 @@ void DroppableTableWidget :: SetRow (const int row, const char *data_s)
 }
 
 
+bool DroppableTableWidget :: IsTableEmpty () const
+{
+	const int num_rows = rowCount ();
+	const int num_cols = columnCount ();
+
+	for (int i = 0; i < num_rows; ++ i)
+		{
+			for (int j = 0; j < num_cols; ++ j)
+				{
+					QTableWidgetItem *item_p = item (i, j);
+
+					if (item_p)
+						{
+							QString s = item_p -> text ().trimmed ();
+
+							if (s.length () > 0)
+								{
+									return false;
+								}
+						}
+				}
+		}
+
+	return true;
+}
+
+
 char *DroppableTableWidget :: GetValueAsText ()
 {
 	char *value_s = NULL;
-	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
-	if (buffer_p)
+	if (!IsTableEmpty ())
 		{
-			const int num_rows = rowCount ();
-			const int num_cols = columnCount ();
-			bool success_flag = true;
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
-			for (int i = 0; i < num_rows; ++ i)
+			if (buffer_p)
 				{
-					for (int j = 0; j < num_cols; ++ j)
+					const int num_rows = rowCount ();
+					const int num_cols = columnCount ();
+					bool success_flag = true;
+
+					for (int i = 0; i < num_rows; ++ i)
 						{
-							QTableWidgetItem *item_p = item (i, j);
-
-							if (item_p)
+							for (int j = 0; j < num_cols; ++ j)
 								{
-									QString s = item_p -> text ().trimmed ();
-									QByteArray ba = s.toLocal8Bit ();
-									const char *item_value_s = ba.constData ();
+									QTableWidgetItem *item_p = item (i, j);
 
-									success_flag = AppendStringToByteBuffer (buffer_p, item_value_s);
+									if (item_p)
+										{
+											QString s = item_p -> text ().trimmed ();
+											QByteArray ba = s.toLocal8Bit ();
+											const char *item_value_s = ba.constData ();
+
+											success_flag = AppendStringToByteBuffer (buffer_p, item_value_s);
+										}
+
+									if (success_flag)
+										{
+											success_flag = AppendToByteBuffer (buffer_p, &dtw_column_delimiter, 1);
+										}
+
+									if (!success_flag)
+										{
+											i = num_rows;
+											j = num_cols;
+										}
 								}
 
 							if (success_flag)
 								{
-									success_flag = AppendToByteBuffer (buffer_p, &dtw_column_delimiter, 1);
-								}
-
-							if (!success_flag)
-								{
-									i = num_rows;
-									j = num_cols;
+									if (!AppendToByteBuffer (buffer_p, &dtw_row_delimiter, 1))
+										{
+											success_flag = false;
+											i = num_rows;
+										}
 								}
 						}
 
 					if (success_flag)
 						{
-							if (!AppendToByteBuffer (buffer_p, &dtw_row_delimiter, 1))
-								{
-									success_flag = false;
-									i = num_rows;
-								}
+							const char *data_s = GetByteBufferData (buffer_p);
+
+							value_s = CopyToNewString (data_s, 0, false);
+							qDebug () << value_s  << endl;
 						}
+
+					FreeByteBuffer (buffer_p);
 				}
 
-			if (success_flag)
-				{
-					const char *data_s = GetByteBufferData (buffer_p);
 
-					value_s = CopyToNewString (data_s, 0, false);
-				}
+		}		/* if (!IsTableEmpty ()) */
 
-			FreeByteBuffer (buffer_p);
-		}
-
-	qDebug () << value_s << endl;
 	return value_s;
 }
 

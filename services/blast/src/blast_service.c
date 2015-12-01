@@ -68,6 +68,7 @@ static uint32 GetNumberOfDatabases (const BlastServiceData *data_p);
 
 static bool CleanUpBlastJob (ServiceJob *job_p);
 
+static BlastTool *GetBlastToolForId (Service *service_p, const uuid_t service_id);
 
 
 /*
@@ -470,7 +471,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 	Parameter **grouped_param_pp = grouped_params_pp;
 	uint8 level = PL_INTERMEDIATE | PL_ALL;
 
-	def.st_ulong_value = 100;
+	def.st_ulong_value = 5;
 
 	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "max_target_sequences", "Max target sequences", "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this)." , TAG_BLAST_MAX_SEQUENCES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 		{
@@ -662,6 +663,8 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 											WipeJSON (result_json_p);
 										}
 								}
+
+							tool_p -> ClearResults ();
 						}
 				}
 			else
@@ -966,11 +969,28 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 }
 
 
+
+static BlastTool *GetBlastToolForId (Service *service_p, const uuid_t service_id)
+{
+	BlastTool *tool_p = NULL;
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+
+	if (blast_data_p)
+		{
+			if (blast_data_p -> bsd_blast_tools_p)
+				{
+					tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (service_id);
+				}
+		}
+
+	return tool_p;
+}
+
+
 static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id)
 {
 	OperationStatus status = OS_ERROR;
-	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
-	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (service_id);
+	BlastTool *tool_p = GetBlastToolForId (service_p, service_id);
 
 	if (tool_p)
 		{
@@ -985,6 +1005,7 @@ static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t s
 static bool CleanUpBlastJob (ServiceJob *job_p)
 {
 	bool cleaned_up_flag = true;
+	BlastTool *tool_p = GetBlastToolForId (job_p -> sj_service_p, job_p -> sj_id);
 
 
 	return cleaned_up_flag;

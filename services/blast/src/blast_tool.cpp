@@ -40,26 +40,6 @@ void BlastTool :: SetBlastToolType (const char *type_s)
 }
 
 
-/**
- * TODO: Don't like that this is not dealt with by the subclassed
- * BlastTool itself. Need to rework to be like this
- *
- * @return <code>true</code> if the BlastTool runs synchronous, <code>
- * false</code> if it runs asynchronously.
- */
-bool IsBlastToolSynchronous ()
-{
-	bool sync_flag = true;
-
-	if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
-		{
-			sync_flag = false;
-		}
-
-	return sync_flag;
-}
-
-
 BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
 	BlastTool *tool_p = 0;
@@ -95,29 +75,55 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 							PrintErrors (STM_LEVEL_WARNING, "Failed to create drmaa blast tool");
 						}
 
-					if (json_p)
+					if (drmaa_tool_p)
 						{
-							if (json_is_integer (json_p))
+							/* Set the number of cores per job */
+							if (json_p)
 								{
-									drmaa_tool_p -> SetCoresPerSearch (json_integer_value (json_p));
+									if (json_is_integer (json_p))
+										{
+											drmaa_tool_p -> SetCoresPerSearch (json_integer_value (json_p));
+										}
 								}
-						}
 
+							/* Set up any email notifications */
+							json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "email_notifications");
 
-					json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "queue");
-					if (json_p)
-						{
-							if (json_is_string (json_p))
+							if (json_p)
 								{
-									const char *queue_s = json_string_value (json_p);
-									drmaa_tool_p -> SetQueue (queue_s);
-								}
-						}
+									if (json_is_string (json_p))
+										{
+											const char **addresses_ss = (const char **) AllocMemoryArray (2, sizeof (const char *));
 
-					tool_p = drmaa_tool_p;
+											if (addresses_ss)
+												{
+													*addresses_ss = json_string_value (json_p);
+												}
+
+											if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
+												{
+													PrintErrors (STM_LEVEL_WARNING, "Failed to set email notifications for drmaa tool");
+												}
+
+											FreeMemory (addresses_ss);
+										}
+
+								}		/* if (json_p) */
+
+							tool_p = drmaa_tool_p;
+						}		/* if (drmaa_tool_p) */
+
 				}
 		}
 	#endif
+
+	if (!tool_p)
+		{
+			if (strcmp (BlastTool :: bt_tool_type_s, "queued") == 0)
+				{
+	//				tool_p = new QueuedBlastTool (job_p, name_s, working_directory_s);
+				}
+		}
 
 	if (!tool_p)
 		{
@@ -127,9 +133,6 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 	return tool_p;
 }
-
-
-
 
 
 void FreeBlastTool (BlastTool *tool_p)
@@ -145,10 +148,7 @@ BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s)
 	bt_job_p = service_job_p;
 	bt_name_s = name_s;
 
-	if (service_job_p)
-		{
-			SetServiceJobName (service_job_p, name_s);
-		}
+	SetServiceJobName (service_job_p, name_s);
 }
 
 
@@ -223,5 +223,4 @@ void BlastTool :: PostRun ()
 {
 	bt_job_p -> sj_status = OS_SUCCEEDED;
 }
-
 

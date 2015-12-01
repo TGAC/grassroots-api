@@ -49,12 +49,6 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p, const char *fil
 }
 
 
-const char *SystemBlastTool :: GetResults ()
-{
-	return GetOutputData ();
-}
-
-
 OperationStatus SystemBlastTool :: Run ()
 {
 	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
@@ -67,6 +61,7 @@ OperationStatus SystemBlastTool :: Run ()
 
 	return bt_job_p -> sj_status;
 }
+
 
 
 
