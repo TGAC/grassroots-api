@@ -348,6 +348,12 @@ install_mongodb_c:
 	make; \
 	make install		
 	
+
+install_samlib:
+	cd $(DIR_ROOT)/extras/htslib; \
+	./configure --prefix=$(DIR_MONGODB) \
+	make; \
+	make install	
 	
 install_pooltest:
 	$(MAKE) -C server/httpd/mod_pooltest install
