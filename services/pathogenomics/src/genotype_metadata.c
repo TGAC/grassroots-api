@@ -20,6 +20,7 @@
  *      Author: tyrrells
  */
 #include "genotype_metadata.h"
+#include "pathogenomics_utils.h"
 #include "json_tools.h"
 
 
@@ -52,7 +53,14 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenomi
 
 							if (json_object_set (doc_p, PG_GENOTYPE_S, values_p) == 0)
 								{
-									error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_ID_S, NULL, NULL);
+									if (AddPublishDateToJSON (doc_p, "genotype_import_date"))
+										{
+											error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_ID_S, NULL, NULL);
+										}
+									else
+										{
+											error_s = "Failed to add current date to genotyope data";
+										}
 								}
 							else
 								{

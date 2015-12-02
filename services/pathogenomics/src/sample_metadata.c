@@ -27,6 +27,9 @@
 #include "json_util.h"
 #include "json_tools.h"
 #include "math_utils.h"
+#include "pathogenomics_utils.h"
+
+
 
 #ifdef _DEBUG
 	#define SAMPLE_METADATA_DEBUG	(STM_LEVEL_FINE)
@@ -287,19 +290,27 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, Pathogenomics
 
 													if (success_flag)
 														{
-															error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
-
-															if ((!error_s) && selector_p)
+															if (AddPublishDateToJSON (values_p, "sample_live_date"))
 																{
-																	if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																	error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
+
+																	if ((!error_s) && selector_p)
 																		{
-																			error_s = "Failed to remove existing phenotype doc";
+																			if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																				{
+																					error_s = "Failed to remove existing phenotype doc";
+																				}
 																		}
 																}
+															else
+																{
+																	error_s = "Failed to add current date to sample data";
+																}
+
 														}
 													else
 														{
-
+															error_s = "Failed to merge previous data";
 														}
 
 													if (selector_p)

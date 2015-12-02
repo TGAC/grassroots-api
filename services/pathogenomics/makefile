@@ -50,7 +50,8 @@ SRCS 	= \
 	country_codes.c \
 	sample_metadata.c	\
 	phenotype_metadata.c \
-	genotype_metadata.c
+	genotype_metadata.c \
+	pathogenomics_utils.c
 
 CPPFLAGS += -DPATHOGENOMICS_SERVICE_EXPORTS 
 

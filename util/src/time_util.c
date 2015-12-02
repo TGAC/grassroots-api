@@ -155,6 +155,21 @@ bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p)
 }
 
 
+bool GetCurrentTime (struct tm *tm_p)
+{
+	bool success_flag = false;
+	time_t current_time = time (NULL);
+
+	if (current_time != (time_t) -1)
+		{
+			success_flag =  (localtime_r (current_time, tm_p) != NULL);
+		}
+
+	return success_flag;
+}
+
+
+
 /****************************************/
 
 static bool ConvertNumber (const char * const buffer_s, size_t from, size_t to, int *result_p)
