@@ -27,7 +27,7 @@
 
 
 #ifdef _DEBUG
-	#define PARAMETER_SET_DEBUG	(STM_LEVEL_FINE)
+	#define PARAMETER_SET_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define PARAMETER_SET_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -188,7 +188,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 							if (param_json_p)
 								{
-									#ifdef _DEBUG
+									#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
 									PrintJSON (stderr, param_json_p, "GetParameterSetAsJSON - param_json_p :: ");
 									#endif
 

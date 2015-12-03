@@ -25,6 +25,13 @@
 #include "htslib/faidx.h"
 
 
+
+#ifdef _DEBUG
+	#define SAMTOOLS_SERVICE_DEBUG	(STM_LEVEL_FINEST)
+#else
+	#define SAMTOOLS_SERVICE_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 typedef struct SamToolsServiceData
 {
 	ServiceData stsd_base_data;
@@ -33,6 +40,9 @@ typedef struct SamToolsServiceData
 } SamToolsServiceData;
 
 const static int ST_DEFAULT_LINE_BREAK_INDEX = 60;
+
+
+
 
 /*
  * STATIC PROTOTYPES
@@ -374,7 +384,18 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, int break_index, ByteBuffer *buffer_p)
 {
 	bool success_flag = false;
-	faidx_t *fai_p = fai_load (filename_s);
+	faidx_t *fai_p = NULL;
+
+	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - about to load %s", filename_s);
+	#endif
+
+	fai_p = fai_load (filename_s);
+
+	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - loaded %s to " SIZET_FMT, filename_s, fai_p);
+	#endif
+
 
 	if (fai_p)
 		{
@@ -383,8 +404,16 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 					int seq_len;
 					char *sequence_s = fai_fetch (fai_p, scaffold_name_s, &seq_len);
 
+					#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+					PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - fetched %s with length %d", scaffold_name_s, seq_len);
+					#endif
+
 					if (sequence_s)
 						{
+							#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+							PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - breaking at %d", break_index);
+							#endif
+
 							if (break_index > 0)
 								{
 									int i = 0;
@@ -480,6 +509,12 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 		{
 			PrintErrors (STM_LEVEL_SEVERE, "Failed to load fasta index %s", filename_s);
 		}
+
+
+	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINE
+	PrintLog (STM_LEVEL_FINE, "SamToolsService :: GetScaffoldData - returning:\n%s\n", GetByteBufferData (buffer_p));
+	#endif
+
 
 	return success_flag;
 }
