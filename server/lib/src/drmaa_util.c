@@ -41,7 +41,7 @@ bool InitDrmaa (void)
 	int res;
 
 	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINEST, "About to Init Drmaa");
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "About to Init Drmaa");
 	#endif
 
 	res = drmaa_init (NULL, s_drmaa_diagnosis_s, sizeof (s_drmaa_diagnosis_s) - 1);
@@ -52,7 +52,7 @@ bool InitDrmaa (void)
 		}
 
 	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINEST, "Init Drmaa %d res %d %s", success_flag, res, s_drmaa_diagnosis_s);
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Init Drmaa %d res %d %s", success_flag, res, s_drmaa_diagnosis_s);
 	#endif
 
 	return success_flag;
@@ -65,7 +65,7 @@ bool ExitDrmaa (void)
 	int res;
 
 	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINEST, "About to Exit Drmaa");
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "About to Exit Drmaa");
 	#endif
 
 	res = drmaa_exit (s_drmaa_diagnosis_s, sizeof (s_drmaa_diagnosis_s) - 1);
@@ -80,7 +80,7 @@ bool ExitDrmaa (void)
 		}
 
 	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINEST, "Exit Drmaa %d res %d %s", res_flag, res, s_drmaa_diagnosis_s);
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Exit Drmaa %d res %d %s", res_flag, res, s_drmaa_diagnosis_s);
 	#endif
 
 	return res_flag;
