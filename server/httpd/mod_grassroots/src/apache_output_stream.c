@@ -88,7 +88,7 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 				break;
 		}
 
-	ap_log_error (APLOG_MARK, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "mod_wheatis: %s", value_s);
+	ap_log_error (filename_s, line_number, APLOG_MODULE_INDEX, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "mod_grassroots: %s", value_s);
 
 	return 0;
 }
