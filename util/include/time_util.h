@@ -32,9 +32,9 @@ extern "C"
  * Convert a string that is of the form YYYYMMDD or YYYYMMDDhhmmss 
  * into a struct tm.
  * 
- * @time_s The string to convert.
- * @time_p The struct tm to store the converted time in.
- * @offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm. 
+ * @param time_s The string to convert.
+ * @param time_p The struct tm to store the converted time in.
+ * @param offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm.
  * @return true if the value was converted successfully, false otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
@@ -44,8 +44,8 @@ GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, 
  * Convert a string that is of the form YYYYMMDD or YYYYMMDDhhmmss 
  * into a time_t.
  * 
- * @time_s The string to convert.
- * @time_p The time_t to store the converted time in.
+ * @param time_s The string to convert.
+ * @param time_p The time_t to store the converted time in.
  * @return true if the value was converted successfully, false otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s, time_t *time_p);
@@ -56,9 +56,9 @@ GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const tim
  * Convert a string that is of the form "Sat, 21 Aug 2010 22:31:20 +0000" ("%a, %d %b %Y %H:%M:%S %z")
  * into a struct tm.
  * 
- * @time_s The string to convert.
- * @time_p The struct tm to store the converted time in.
- * @offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm. 
+ * @param time_s The string to convert.
+ * @param time_p The struct tm to store the converted time in.
+ * @param offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm.
  * @return true if the value was converted successfully, false otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
@@ -68,11 +68,22 @@ GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, 
  * Convert a string that is of the form "Sat, 21 Aug 2010 22:31:20 +0000" ("%a, %d %b %Y %H:%M:%S %z")
  * into a time_t.
  * 
- * @time_s The string to convert.
- * @time_p The time_t to store the converted time in.
+ * @param time_s The string to convert.
+ * @param time_p The time_t to store the converted time in.
  * @return true if the value was converted successfully, false otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p);
+
+
+
+/**
+ * Get the current time
+ *
+ * @param tm_p Where the current time will be stored.
+ * @return true if the time was set successfully, false otherwise.
+ */
+GRASSROOTS_UTIL_API bool GetCurrentTime (struct tm *tm_p);
+
 
 
 #ifdef __cplusplus
