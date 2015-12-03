@@ -225,7 +225,7 @@ const char *MakeRemoteJsonCallViaConnection (Connection *connection_p, json_t *r
 
 	#if CONNECTION_DEBUG >= STM_LEVEL_FINE
 	char *req_s = json_dumps (req_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-	PrintLog (STM_LEVEL_FINE, "MakeRemoteJsonCallViaConnection req:\n%s\n", req_s);
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "MakeRemoteJsonCallViaConnection req:\n%s\n", req_s);
 	#endif
 
 	if (connection_p -> co_type == CT_RAW)

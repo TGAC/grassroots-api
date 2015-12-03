@@ -511,13 +511,13 @@ void PrintHashTable (const HashTable * const hash_table_p, OutputStream * const 
 	const uint32 capacity = hash_table_p -> ht_capacity;
 	HashBucket *bucket_p = hash_table_p -> ht_buckets_p;
 	void (*print_bucket_fn) (const HashBucket * const bucket_p, OutputStream * const stream_p) = hash_table_p -> ht_print_bucket_fn;
-	PrintToOutputStream (stream_p, "size/capacity/load limit: %lu/%lu/%u/%lu\n", hash_table_p -> ht_size, capacity, hash_table_p -> ht_load, hash_table_p -> ht_load_limit);
+	PrintToOutputStream (stream_p, __FILE__, __LINE__, "size/capacity/load limit: %lu/%lu/%u/%lu\n", hash_table_p -> ht_size, capacity, hash_table_p -> ht_load, hash_table_p -> ht_load_limit);
 
 	if (hash_table_p -> ht_size > 0)
 		{
 			while (i < capacity)
 				{
-					PrintToOutputStream (stream_p, "[%lu]: ", i);
+					PrintToOutputStream (stream_p, __FILE__, __LINE__, "[%lu]: ", i);
 					print_bucket_fn (bucket_p, stream_p);
 					++ bucket_p;
 					++ i;

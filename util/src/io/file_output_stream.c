@@ -25,7 +25,7 @@
 /************ STATIC PROTOTYTPES *************/
 /*********************************************/
 
-static int PrintToFileStream (OutputStream *stream_p, const uint32 level, const char *message_s, va_list args);
+static int PrintToFileStream (OutputStream *stream_p, const uint32 level, const char * const filename_s, const int line_number, const char *message_s, va_list args);
 
 static bool FlushFileStream (OutputStream *stream_p);
 
@@ -93,7 +93,7 @@ void DeallocateFileOutputStream (OutputStream *stm_p)
 }
 
 
-static int PrintToFileStream (OutputStream *stream_p, const uint32 level, const char *message_s, va_list args)
+static int PrintToFileStream (OutputStream *stream_p, const uint32 level, const char * const filename_s, const int line_number, const char *message_s, va_list args)
 {
 	return vfprintf (((FileOutputStream *) stream_p) -> fos_out_f, message_s, args);
 }

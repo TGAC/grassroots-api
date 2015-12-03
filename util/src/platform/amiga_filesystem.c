@@ -430,7 +430,7 @@ static STRPTR CompilePattern (CONST_STRPTR pattern_s)
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to compile \"%s\"\n", pattern_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to compile \"%s\"\n", pattern_s);
 				}
 
 			FreeMemory (buffer_s);

@@ -65,7 +65,7 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 			json_error_t err;
 
 			#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
-			PrintLog (STM_LEVEL_FINER, "MakeRemoteJsonCall >\n%s\n", data_s);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "MakeRemoteJsonCall >\n%s\n", data_s);
 			FlushLog ();
 			#endif
 
@@ -73,7 +73,7 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 
 			if (!response_p)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n%s\n", err.text, err.source, err.line, err.column, err.position, data_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "error decoding response: \"%s\"\n\"%s\"\n%d %d %d\n%s\n", err.text, err.source, err.line, err.column, err.position, data_s);
 				}
 		}
 
@@ -125,7 +125,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add loaded credentials  to credentials json");
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add loaded credentials  to credentials json");
 								}
 						}
 						
@@ -137,7 +137,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 				{
 					if (json_object_set_new (credentials_p, CREDENTIALS_USERNAME_S, json_string (username_s)) != 0)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to add username %s to credentials json", username_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add username %s to credentials json", username_s);
 						}
 				}
 
@@ -149,7 +149,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 				{
 					if (json_object_set_new (credentials_p, CREDENTIALS_PASSWORD_S, json_string (password_s)) != 0)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to add password %s to credentials json", password_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add password %s to credentials json", password_s);
 						}
 				}
 
@@ -428,7 +428,7 @@ json_t *GetOperationAsJSON (Operation op)
 
 	if (!json_p)
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to get Operation %d as JSON, %s\n", op, error.text);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get Operation %d as JSON, %s\n", op, error.text);
 		}
 	
 	return json_p;

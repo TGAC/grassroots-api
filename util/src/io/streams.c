@@ -89,7 +89,7 @@ void FreeOutputStream (struct OutputStream *stream_p)
 }
 
 
-int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...)
+int PrintToOutputStream (OutputStream *stream_p, const char * const filename_s, const int line_number, const char *message_s, ...)
 {
 	int result = -1;
 
@@ -99,7 +99,7 @@ int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...)
 
 	if (stream_p)
 		{
-			result = stream_p -> st_print_fn (stream_p, STM_LEVEL_ALL, message_s, args);
+			result = stream_p -> st_print_fn (stream_p, STM_LEVEL_ALL, filename_s, line_number, message_s, args);
 		}
 	else
 		{
@@ -122,7 +122,7 @@ int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...)
  * On failure, a negative number is returned. If the error FILE is NULL, then
  * this will return 0.
  */
-int PrintErrors (const uint32 level, const char *message_s, ...)
+int PrintErrors (const uint32 level, const char * const filename_s, const int line_number, const char *message_s, ...)
 {
 	int result = -1;
 	va_list args;
@@ -131,7 +131,7 @@ int PrintErrors (const uint32 level, const char *message_s, ...)
 
 	if (s_error_stream_p)
 		{
-			result = s_error_stream_p -> st_print_fn (s_error_stream_p, level, message_s, args);
+			result = s_error_stream_p -> st_print_fn (s_error_stream_p, level, filename_s, line_number, message_s, args);
 		}
 	else
 		{
@@ -152,7 +152,7 @@ int PrintErrors (const uint32 level, const char *message_s, ...)
  * On failure, a negative number is returned. If the log FILE is NULL, then
  * this will return 0.
  */
-int PrintLog (const uint32 level, const char *message_s, ...)
+int PrintLog (const uint32 level, const char * const filename_s, const int line_number, const char *message_s, ...)
 {
 	int result = -1;
 	va_list args;
@@ -161,7 +161,7 @@ int PrintLog (const uint32 level, const char *message_s, ...)
 
 	if (s_log_stream_p)
 		{
-			result = s_log_stream_p -> st_print_fn (s_log_stream_p, level, message_s, args);
+			result = s_log_stream_p -> st_print_fn (s_log_stream_p, level, filename_s, line_number, message_s, args);
 		}
 	else
 		{

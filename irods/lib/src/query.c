@@ -562,7 +562,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 							#if QUERY_DEBUG >= STM_LEVEL_FINE
 							{
 								char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-								PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+								PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "%s\n", dump_s);
 								free (dump_s);
 							}
 							#endif
@@ -595,7 +595,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 							#if QUERY_DEBUG >= STM_LEVEL_FINE
 							{
 								char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-								PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+								PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "%s\n", dump_s);
 								free (dump_s);
 							}
 							#endif
@@ -623,7 +623,7 @@ json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p)
 	#if QUERY_DEBUG >= STM_LEVEL_FINE
 	{
 		char *dump_s = json_dumps (root_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-		PrintLog (STM_LEVEL_FINE, "%s\n", dump_s);
+		PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "%s\n", dump_s);
 		free (dump_s);
 	}
 	#endif
@@ -694,7 +694,7 @@ static bool AddQueryResultsAsResourcesJSON (const char *full_path_s, const char 
 			#if QUERY_DEBUG >= STM_LEVEL_FINE
 			{
 				char *dump_s = json_dumps (resource_p, JSON_INDENT (2));
-				PrintLog (STM_LEVEL_FINE, "resource:\n%s\n", dump_s);
+				PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "resource:\n%s\n", dump_s);
 				free (dump_s);
 			}
 			#endif

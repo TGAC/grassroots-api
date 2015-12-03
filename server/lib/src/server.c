@@ -105,14 +105,14 @@ json_t *ProcessServerRawMessage (const char * const request_s, const int socket_
 
 			if (error_s)
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Error \"%s\" from ProcessServerJSONMessage for :\n%s\n", error_s, request_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Error \"%s\" from ProcessServerJSONMessage for :\n%s\n", error_s, request_s);
 				}
 
 		}
 	else
 		{
 			/* error decoding the request */
-			PrintErrors (STM_LEVEL_WARNING, "Could not get load json from:\n%s\n", request_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Could not get load json from:\n%s\n", request_s);
 		}	
 
 	return res_p;
@@ -139,12 +139,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 								{
 									if (json_object_set_new (req_p, CREDENTIALS_S, credentials_p) != 0)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to add credentials json");
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add credentials json");
 										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to create credentials json");
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create credentials json");
 								}
 						}
 
@@ -167,14 +167,14 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 										{
 											if (json_object_set_new (credentials_p, CREDENTIALS_UUID_S, json_string (uuid_s)) != 0)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to add uuid string to credentials");
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid string to credentials");
 												}
 
 											FreeUUIDString (uuid_s);
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to get uuid string");
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid string");
 										}
 								}
 						}
@@ -365,12 +365,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 
 															if (value_s)
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service from %s", value_s);
 																	free (value_s);
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service from");
 																}
 														}
 												}		/* json_array_foreach (op_p, i, value_p) */
@@ -385,12 +385,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 
 													if (value_s)
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from %s", value_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service from %s", value_s);
 															free (value_s);
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to run service from");
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service from");
 														}
 												}
 										}
@@ -664,14 +664,14 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 
 							if (json_object_set_new (status_p, SERVICE_NAME_S, json_string (service_name_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service name %s to status json", service_name_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service name %s to status json", service_name_s);
 									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service name to status json"));
 									success_flag = false;
 								}
 
 							if (json_object_set_new (status_p, SERVICE_STATUS_VALUE_S, json_integer (status)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service status for name %s to status json", service_name_s);
 									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
 									success_flag = false;
 								}
@@ -679,13 +679,13 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 						}		/* if (service_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to find %s in services table", uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
 							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
 						}
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to add service uuid_s %s to status json", uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service uuid_s %s to status json", uuid_s);
 					json_object_set_new (status_p, ERROR_S, json_string ("Failed to add uuid to status json"));
 				}
 
@@ -732,7 +732,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const cha
 										{
 											json_object_clear (result_item_p);
 											json_decref (result_item_p);
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to add service result for %s %s", service_name_s, uuid_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service result for %s %s", service_name_s, uuid_s);
 										}
 
 
@@ -745,14 +745,14 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const cha
 								{
 									json_object_clear (service_result_p);
 									json_decref (service_result_p);
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service result for %s %s", service_name_s, uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service result for %s %s", service_name_s, uuid_s);
 								}
 						}
 				}
 		}		/* if (service_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to find %s in services table", uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
 
 			service_result_p = json_pack ("{s:s,s:s}", SERVICE_UUID_S, uuid_s, ERROR_S, "Failed to fine uuid in services table");
 		}
@@ -821,7 +821,7 @@ static json_t *GetServiceData (const json_t * const req_p, const json_t *credent
 						{
 							const char error_s [] = "Failed to add services array to services status json";
 
-							PrintErrors (STM_LEVEL_SEVERE, error_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, error_s);
 							json_object_set_new (res_p, ERROR_S, json_string (error_s));
 						}
 
@@ -830,7 +830,7 @@ static json_t *GetServiceData (const json_t * const req_p, const json_t *credent
 				{
 					const char error_s [] = "Failed to get services array to services status json";
 
-					PrintErrors (STM_LEVEL_SEVERE, error_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, error_s);
 					json_object_set_new (res_p, ERROR_S, json_string (error_s));
 				}
 
@@ -895,14 +895,14 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 
 							if (json_object_set_new (status_p, SERVICE_NAME_S, json_string (service_name_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service name %s to status json", service_name_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service name %s to status json", service_name_s);
 									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service name to status json"));
 									success_flag = false;
 								}
 
 							if (json_object_set_new (status_p, SERVICE_STATUS_VALUE_S, json_integer (status)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service status for name %s to status json", service_name_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service status for name %s to status json", service_name_s);
 									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
 									success_flag = false;
 								}
@@ -910,13 +910,13 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 						}		/* if (service_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to find %s in services table", uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
 							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
 						}
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to add service uuid_s %s to status json", uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service uuid_s %s to status json", uuid_s);
 					json_object_set_new (status_p, ERROR_S, json_string ("Failed to add uuid to status json"));
 				}
 
@@ -1117,7 +1117,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to set service param \"%s\" - \"%s\" to \"%s\"", GetServiceName (service_p), param_p -> pa_name_s, keyword_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set service param \"%s\" - \"%s\" to \"%s\"", GetServiceName (service_p), param_p -> pa_name_s, keyword_s);
 																	param_flag = false;
 																}
 														}
@@ -1136,7 +1136,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
 														}
 												}
 

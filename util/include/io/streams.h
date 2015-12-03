@@ -77,7 +77,7 @@ typedef struct OutputStream
 	 * @memberof OutputStream
 	 * @see PrintToOutputStream
 	 */
-	int (*st_print_fn) (struct OutputStream *stream_p, const uint32 level, const char *message_s, va_list args);
+	int (*st_print_fn) (struct OutputStream *stream_p, const uint32 level, const char * const filename_s, const int line_number, const char *message_s, va_list args);
 
 	/**
 	 * Flush aany pending writes to an OutputStream.
@@ -164,7 +164,7 @@ GRASSROOTS_UTIL_API void FreeOutputStream (struct OutputStream *stream_p);
  * @memberof OutputStream
  * @see st_print_fn
  */
-GRASSROOTS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char *message_s, ...);
+GRASSROOTS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char * const filename_s, const int line_number, const char *message_s, ...);
 
 
 /**
@@ -177,7 +177,7 @@ GRASSROOTS_UTIL_API int PrintToOutputStream (OutputStream *stream_p, const char 
  * this will return 0.
  * @memberof OutputStream
  */
-GRASSROOTS_UTIL_API int PrintErrors (const uint32 level, const char *message, ...);
+GRASSROOTS_UTIL_API int PrintErrors (const uint32 level, const char * const filename_s, const int line_number, const char *message, ...);
 
 
 /**
@@ -190,7 +190,7 @@ GRASSROOTS_UTIL_API int PrintErrors (const uint32 level, const char *message, ..
  * this will return 0.
  * @memberof OutputStream
  */
-GRASSROOTS_UTIL_API int PrintLog (const uint32 level, const char *message, ...);
+GRASSROOTS_UTIL_API int PrintLog (const uint32 level, const char * const filename_s, const int line_number, const char *message, ...);
 
 
 /**

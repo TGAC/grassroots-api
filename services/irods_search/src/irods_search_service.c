@@ -401,7 +401,7 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to get metadata values for \"%s\"\n", *value_ss);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get metadata values for \"%s\"\n", *value_ss);
 								}
 						}
 
@@ -416,7 +416,7 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 
 							if (!AddParameterGroupToParameterSet (param_set_p, heading_s, params_pp, result_p -> qr_num_values))
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to add parameter group for \"%s\"\n", name_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add parameter group for \"%s\"\n", name_s);
 								}
 						}
 

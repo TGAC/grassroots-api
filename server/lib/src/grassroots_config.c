@@ -204,7 +204,7 @@ static const json_t *GetConfig (void)
 
 							if (!s_config_p)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to load config from %s", full_config_path_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load config from %s", full_config_path_s);
 								}
 
 							s_load_config_tried_flag = true;

@@ -268,43 +268,43 @@ bool AddExternalServerFromJSON (const json_t *json_p)
 
 											if (uuid_s)
 												{
-													PrintErrors (STM_LEVEL_INFO, "Added external server %s on %s to manager with id %s", name_s, uri_s, uuid_s);
+													PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", name_s, uri_s, uuid_s);
 													FreeUUIDString (uuid_s);
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_INFO, "Added external server %s on %s to manager with id %s", name_s, uri_s);
+													PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", name_s, uri_s);
 												}
 											success_flag = true;
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_WARNING, "Failed to add external server %s on %s to manager", name_s, uri_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add external server %s on %s to manager", name_s, uri_s);
 											FreeExternalServer (server_p);
 										}
 
 								}		/* if (server_p) */
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to allocate external server %s on %s", name_s, uri_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate external server %s on %s", name_s, uri_s);
 								}
 
 						}		/* if (uri_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to find uri for external server on %s", name_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find uri for external server on %s", name_s);
 						}
 
 				}		/* if (name_s) */
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to find name for external server");
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find name for external server");
 				}
 
 		}		/* if (manager_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to get external servers manager");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get external servers manager");
 		}
 
 	return success_flag;
@@ -438,7 +438,7 @@ json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *re
 
 			if (!response_p)
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to make call to external server %s, error at %d, %d %s\n", server_p -> es_uri_s, error.line, error.column, error.source);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to make call to external server %s, error at %d, %d %s\n", server_p -> es_uri_s, error.line, error.column, error.source);
 				}
 		}
 

@@ -402,7 +402,7 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 												{
 													drmaa_wexitstatus (&exit_status, stat, NULL, 0);
 
-													PrintLog (STM_LEVEL_INFO, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
+													PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
 												}
 											else
 												{
@@ -414,11 +414,11 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 														{
 															char termsig [DRMAA_SIGNAL_BUFFER+1];
 															drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, stat, NULL, 0);
-															PrintLog (STM_LEVEL_SEVERE, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
+															PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
 														}
 													else
 														{
-															PrintLog (STM_LEVEL_SEVERE, "job <%s> is aborted\n", tool_p -> dt_id_s);
+															PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "job <%s> is aborted\n", tool_p -> dt_id_s);
 														}
 												}
 										}
@@ -600,7 +600,7 @@ static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char
 
 	if (res != DRMAA_ERRNO_SUCCESS)
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to set %s for %s for %s, error %s", name_s, value_s, tool_p -> dt_id_s, error_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s for %s for %s, error %s", name_s, value_s, tool_p -> dt_id_s, error_s);
 			success_flag = false;
 		}
 
@@ -619,7 +619,7 @@ static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, cons
 
 	if (res != DRMAA_ERRNO_SUCCESS)
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to set %s beginning with %s for %s, error %s", name_s, *values_ss, tool_p -> dt_id_s, error_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s beginning with %s for %s, error %s", name_s, *values_ss, tool_p -> dt_id_s, error_s);
 			success_flag = false;
 		}
 

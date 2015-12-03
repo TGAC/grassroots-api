@@ -496,7 +496,7 @@ bool ConvertDate (json_t *row_p)
 						{
 							if (json_object_set_new (row_p, PG_RAW_DATE_S, json_string (raw_date_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to set raw date to " INT32_FMT, raw_date_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set raw date to " INT32_FMT, raw_date_s);
 									success_flag = false;
 								}
 						}
@@ -510,7 +510,7 @@ bool ConvertDate (json_t *row_p)
 				{
 					char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
-					PrintErrors (STM_LEVEL_WARNING, "Failed to convert date from %s for %s", date_s, dump_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to convert date from %s for %s", date_s, dump_s);
 
 					free (dump_s);
 				}
@@ -519,7 +519,7 @@ bool ConvertDate (json_t *row_p)
 		{
 			char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
-			PrintErrors (STM_LEVEL_WARNING, "No date for %s", date_s, dump_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "No date for %s", date_s, dump_s);
 
 			free (dump_s);
 		}
@@ -604,7 +604,7 @@ bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, c
 
 					if (json_object_del (row_p, PG_GPS_S) != 0)
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to remove raw gps coords from %s", id_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to remove raw gps coords from %s", id_s);
 						}
 				}
 		}
@@ -729,7 +729,7 @@ bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, c
 
 											ReplaceCharsInByteBuffer (buffer_p, ' ', '+');
 											uri_s = GetByteBufferData (buffer_p);
-											PrintLog (STM_LEVEL_INFO, "uri for %s is \"%s\"\n", id_s, uri_s);
+											PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "uri for %s is \"%s\"\n", id_s, uri_s);
 
 											if (SetUriForCurlTool (curl_tool_p, uri_s))
 												{
@@ -744,7 +744,7 @@ bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, c
 																	json_error_t error;
 																	json_t *raw_res_p = NULL;
 
-																	PrintLog (STM_LEVEL_INFO, "geo response for %s\n%s\n", uri_s, response_s);
+																	PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "geo response for %s\n%s\n", uri_s, response_s);
 
 																	raw_res_p = json_loads (response_s, 0, &error);
 
@@ -894,7 +894,7 @@ bool GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, json_t *row_p,
 																	json_error_t error;
 																	json_t *raw_res_p = NULL;
 
-																	PrintLog (STM_LEVEL_INFO, "geo response for %s\n%s\n", uri_s, response_s);
+																	PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "geo response for %s\n%s\n", uri_s, response_s);
 
 																	raw_res_p = json_loads (response_s, 0, &error);
 
@@ -902,7 +902,7 @@ bool GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, json_t *row_p,
 																		{
 																			char *dump_s = json_dumps (res_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
-																			PrintLog (STM_LEVEL_INFO, "json:\n%s\n", dump_s);
+																			PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "json:\n%s\n", dump_s);
 																			free (dump_s);
 
 																			/*
@@ -1190,7 +1190,7 @@ static bool FillInPathogenomicsFromGoogleData (const json_t *google_result_p, js
 														{
 															if (!GetGeoLocationObjectForSchemaOrg (location_values_p, PG_NORTH_EAST_LOCATION_S, latitude, longitude))
 																{
-																	PrintErrors (STM_LEVEL_WARNING, "Failed to set north east location from %lf %lf ", latitude, longitude);
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set north east location from %lf %lf ", latitude, longitude);
 																}
 														}
 												}
@@ -1206,7 +1206,7 @@ static bool FillInPathogenomicsFromGoogleData (const json_t *google_result_p, js
 														{
 															if (!GetGeoLocationObjectForSchemaOrg (location_values_p, PG_SOUTH_WEST_LOCATION_S, latitude, longitude))
 																{
-																	PrintErrors (STM_LEVEL_WARNING, "Failed to set south west location from %lf %lf ", latitude, longitude);
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set south west location from %lf %lf ", latitude, longitude);
 																}
 														}
 												}
@@ -1606,7 +1606,7 @@ static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, c
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to update %s in %s", key_s, fields_collection_s);
 															error_s = "Failed to insert data into fields collection";
 														}
 												}
@@ -1614,7 +1614,7 @@ static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, c
 												{
 													if (!UpdateMongoDocument (tool_p, (bson_oid_t *) &doc_id, update_p))
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to update %s in %s", key_s, fields_collection_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to update %s in %s", key_s, fields_collection_s);
 															error_s = "Failed to update data in fields collection";
 														}
 												}
@@ -1622,7 +1622,7 @@ static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, c
 									else
 										{
 
-											PrintErrors (STM_LEVEL_WARNING, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create json for updating fields collection %s,  %s", fields_collection_s, error.text);
 											error_s = "Failed to create JSON data to update fields collection";
 										}
 

@@ -247,9 +247,15 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 	
 	if (param_set_p)
 		{
+			SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
 			Parameter *param_p = NULL;
 			SharedType def;
-			char *filename_s = CopyToNewString ("/tgac/references/internal/assembly/triticum_aestivum/TGAC/v1/Triticum_aestivum_CS42_TGACv1_all.fa", 0, false);
+			char *filename_s = NULL;
+
+			if (data_p -> stsd_index_files_ss)
+				{
+					filename_s = (char *) (* (data_p -> stsd_index_files_ss));
+				}
 
 			if (filename_s)
 				{
@@ -354,7 +360,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 																{
 																	json_error_t error;
 																	job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "Create sequence error", sequence_s);
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
 																}
 														}
 													else
@@ -387,13 +393,13 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 	faidx_t *fai_p = NULL;
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-	PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - about to load %s", filename_s);
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: GetScaffoldData - about to load %s", filename_s);
 	#endif
 
 	fai_p = fai_load (filename_s);
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-	PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - loaded %s to " SIZET_FMT, filename_s, fai_p);
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: GetScaffoldData - loaded %s to " SIZET_FMT, filename_s, fai_p);
 	#endif
 
 
@@ -405,13 +411,13 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 					char *sequence_s = fai_fetch (fai_p, scaffold_name_s, &seq_len);
 
 					#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-					PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - fetched %s with length %d", scaffold_name_s, seq_len);
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: GetScaffoldData - fetched %s with length %d", scaffold_name_s, seq_len);
 					#endif
 
 					if (sequence_s)
 						{
 							#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-							PrintLog (STM_LEVEL_FINER, "SamToolsService :: GetScaffoldData - breaking at %d", break_index);
+							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: GetScaffoldData - breaking at %d", break_index);
 							#endif
 
 							if (break_index > 0)
@@ -441,13 +447,13 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to add new line to scaffold data %s", sequence_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add new line to scaffold data %s", sequence_s);
 															success_flag = false;
 														}
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to split scaffold data %s with new lines", sequence_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to split scaffold data %s with new lines", sequence_s);
 													success_flag = false;
 												}
 										}
@@ -466,13 +472,13 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, "Failed to add new line to scaffold data %s", sequence_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add new line to scaffold data %s", sequence_s);
 																	success_flag = false;
 																}
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to split scaffold data %s with new lines", sequence_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to split scaffold data %s with new lines", sequence_s);
 															success_flag = false;
 														}
 												}
@@ -487,7 +493,7 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to add sequence data for scaffold name %s from %s", scaffold_name_s, filename_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add sequence data for scaffold name %s from %s", scaffold_name_s, filename_s);
 										}
 								}
 
@@ -495,24 +501,24 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to fetch scaffold name %s from %s", scaffold_name_s, filename_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to fetch scaffold name %s from %s", scaffold_name_s, filename_s);
 						}
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to add scaffold name %s to scaffold data", scaffold_name_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add scaffold name %s to scaffold data", scaffold_name_s);
 				}
 
 			fai_destroy (fai_p);
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to load fasta index %s", filename_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load fasta index %s", filename_s);
 		}
 
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintLog (STM_LEVEL_FINE, "SamToolsService :: GetScaffoldData - returning:\n%s\n", GetByteBufferData (buffer_p));
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "SamToolsService :: GetScaffoldData - returning %d:\n%s\n", success_flag, GetByteBufferData (buffer_p));
 	#endif
 
 

@@ -242,7 +242,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 				{
 					if (* (key_p + key_len) == '\0')
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to add %s", status, key_p);
+							PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"Failed to lock mutex, status %s to add %s", status, key_p);
 						}
 					else
 						{
@@ -250,12 +250,12 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 							if (key_s)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to add %s", status, key_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to add %s", status, key_s);
 									FreeCopiedString (key_s);
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to add", status);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to add", status);
 								}
 						}
 				}
@@ -268,7 +268,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 				{
 					if (* (key_p + key_len) == '\0')
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after adding %s", status, key_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding %s", status, key_p);
 						}
 					else
 						{
@@ -276,12 +276,12 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 							if (key_s)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after adding %s", status, key_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding %s", status, key_s);
 									FreeCopiedString (key_s);
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after adding", status);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding", status);
 								}
 						}
 
@@ -347,7 +347,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 				{
 					if (* (key_p + key_len) == '\0')
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to find %s", status, key_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to find %s", status, key_p);
 						}
 					else
 						{
@@ -355,12 +355,12 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 							if (key_s)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to find %s", status, key_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to find %s", status, key_s);
 									FreeCopiedString (key_s);
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to lock mutex, status %s to find", status);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to find", status);
 								}
 						}
 				}
@@ -372,7 +372,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 				{
 					if (* (key_p + key_len) == '\0')
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after finding %s", status, key_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after finding %s", status, key_p);
 						}
 					else
 						{
@@ -380,12 +380,12 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 							if (key_s)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after finding %s", status, key_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after finding %s", status, key_s);
 									FreeCopiedString (key_s);
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to unlock mutex, status %s after finding", status);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after finding", status);
 								}
 						}
 				} /* if (status != APR_SUCCESS) */
@@ -432,7 +432,7 @@ bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "failed to register %s mutex", storage_p -> ags_cache_id_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "failed to register %s mutex", storage_p -> ags_cache_id_s);
 		}
 
 	return success_flag;
@@ -458,7 +458,7 @@ bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *serve
 
 					if (err_msg_s)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "failed to create mod_socache_shmcb socache instance: %s", err_msg_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "failed to create mod_socache_shmcb socache instance: %s", err_msg_s);
 							success_flag = false;
 						}
 				}
@@ -473,20 +473,20 @@ bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *serve
 
 							if (res != APR_SUCCESS)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to initialise %s cache", storage_p -> ags_cache_id_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to initialise %s cache", storage_p -> ags_cache_id_s);
 									success_flag = false;
 								}
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "failed to create %s mutex", storage_p -> ags_cache_id_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "failed to create %s mutex", storage_p -> ags_cache_id_s);
 							success_flag = false;
 						}
 				}
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Please select a socache provider with AuthnCacheSOCache (no default found on this platform). Maybe you need to load mod_socache_shmcb or another socache module first");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Please select a socache provider with AuthnCacheSOCache (no default found on this platform). Maybe you need to load mod_socache_shmcb or another socache module first");
 			success_flag = false;
 		}
 
@@ -507,7 +507,7 @@ bool InitAPRGlobalStorageForChild (APRGlobalStorage *storage_p, apr_pool_t *pool
 
 	if (res != APR_SUCCESS)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to attach grassroots child to global mutex file '%s', res %d", storage_p -> ags_mutex_lock_filename_s, res);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to attach grassroots child to global mutex file '%s', res %d", storage_p -> ags_mutex_lock_filename_s, res);
 		}
 	else
 		{

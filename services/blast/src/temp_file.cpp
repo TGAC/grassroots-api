@@ -130,7 +130,7 @@ void TempFile :: ClearData ()
 	if (tf_data_s)
 		{
 			FreeMemory (tf_data_s);
-			PrintLog (STM_LEVEL_FINE, "Clearing data from %s", tf_name_s);
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Clearing data from %s", tf_name_s);
 
 			tf_data_s = 0;
 		}

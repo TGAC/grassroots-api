@@ -147,7 +147,7 @@ CURL *GetCurl (ByteBuffer *buffer_p)
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to add buffer callback for curl object\n");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add buffer callback for curl object\n");
 							FreeCurl (curl_p);
 							curl_p = NULL;
 						}
@@ -155,7 +155,7 @@ CURL *GetCurl (ByteBuffer *buffer_p)
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to create curl object\n");			
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create curl object\n");
 		}
 
 	return curl_p;
@@ -258,12 +258,12 @@ bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
 				}
 			else
 				{ 
-					PrintErrors (STM_LEVEL_SEVERE, "can't set crypto engine as default\n");
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "can't set crypto engine as default\n");
 				}
 		}
 	else
 		{	                     
-			PrintErrors (STM_LEVEL_SEVERE, "can't set crypto engine %s\n", cryptograph_engine_name_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "can't set crypto engine %s\n", cryptograph_engine_name_s);
 		}
 
 	return success_flag;
@@ -320,7 +320,7 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 							else
 								{
 									success_flag = false;
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
 								}
 								
 						}		/* while (continue_flag && param_p) */
@@ -335,7 +335,7 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 							/* Check for errors */
 							if (res != CURLE_OK)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to access %s with curl error: %s\n", url_s, curl_easy_strerror (res));
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to access %s with curl error: %s\n", url_s, curl_easy_strerror (res));
 									success_flag = false;
 								}																							
 																					
@@ -393,7 +393,7 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 			else
 				{
 					success_flag = false;
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
 				}
 
 		}		/* while (continue_flag && param_p) */
@@ -450,7 +450,7 @@ bool SetCurlToolForJSONPost (CurlTool *tool_p)
 			else
 				{
 					success_flag = false;
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
 				}
 				
 		}		/* while (continue_flag && param_p) */

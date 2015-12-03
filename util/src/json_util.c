@@ -18,6 +18,7 @@
 #define ALLOCATE_JSON_TAGS
 
 #include "json_util.h"
+#include "math_utils.h"
 #include "memory_allocations.h"
 #include "streams.h"
 #include "string_linked_list.h"
@@ -132,17 +133,17 @@ json_t *LoadJSONConfig (const char * const filename_s)
 
 			if (!config_p)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
 				}
 
 			if (fclose (config_f) != 0)
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to close service config file \"%s\"", filename_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to close service config file \"%s\"", filename_s);
 				}
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to open service config file \"%s\"", filename_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to open service config file \"%s\"", filename_s);
 		}
 
 
@@ -215,8 +216,16 @@ bool GetJSONBoolean (const json_t *json_p, const char * const key_s, bool *value
 		{
 			if (json_is_boolean (json_value_p))
 				{
-					*value_p = json_boolean (json_value_p);
-					success_flag = true;
+					if (json_value_p == json_true ())
+						{
+							*value_p = true;
+							success_flag = true;
+						}
+					else if (json_value_p == json_false ())
+						{
+							*value_p = false;
+							success_flag = true;
+						}
 				}
 		}
 
@@ -289,7 +298,7 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to allocate header node for %s", value_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate header node for %s", value_s);
 													success_flag = false;
 													FreeCopiedString (value_s);
 												}
@@ -307,7 +316,7 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_WARNING, "Failed to allocate header node for %s", current_token_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate header node for %s", current_token_s);
 											success_flag = false;
 										}
 
@@ -347,11 +356,11 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 												{
 													if (json_array_append_new (json_values_p, row_p) != 0)
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to json rows", current_row_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s to json rows", current_row_s);
 														}
 
 													#if JSON_UTIL_DEBUG >= STM_LEVEL_FINE
-													PrintLog (STM_LEVEL_FINE, "row: %s", current_row_s);
+													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "row: %s", current_row_s);
 													PrintJSONToLog (row_p, "row_p ", STM_LEVEL_FINE);
 													PrintJSONToLog (json_values_p, "json_values_p ", STM_LEVEL_FINE);
 													#endif
@@ -370,7 +379,7 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 												{
 													if (json_array_append_new (json_values_p, row_p) != 0)
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s to json rows", current_row_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s to json rows", current_row_s);
 														}
 												}
 
@@ -404,7 +413,7 @@ json_t *GetJSONFromString (const char * const value_s, json_type field_type)
 				{
 					int i;
 
-					if (GetValidInteger (&value_s, &i))
+					if (GetValidInteger (&value_s, &i, NULL))
 						{
 							value_p = json_integer (i);
 						}
@@ -415,7 +424,7 @@ json_t *GetJSONFromString (const char * const value_s, json_type field_type)
 				{
 					double d;
 
-					if (GetValidRealNumber (&value_s, &d))
+					if (GetValidRealNumber (&value_s, &d, NULL))
 						{
 							value_p = json_real (d);
 						}
@@ -493,7 +502,7 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 								}
 						}
 
-					header_p = (StringListNode *) (header_p -> fn_base_node.sln_node.ln_next_p);
+					header_p = (FieldNode *) (header_p -> fn_base_node.sln_node.ln_next_p);
 				}		/* while (header_p) */
 
 		}		/* if (row_json_p) */
@@ -512,11 +521,11 @@ void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const ui
 				{
 					if (prefix_s)
 						{
-							PrintLog (level, "%s %s", prefix_s, json_s);
+							PrintLog (level, __FILE__, __LINE__, "%s %s", prefix_s, json_s);
 						}
 					else
 						{
-							PrintLog (level, "%s", json_s);
+							PrintLog (level, __FILE__, __LINE__, "%s", json_s);
 						}
 
 					free (json_s);

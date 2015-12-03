@@ -132,18 +132,18 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to execute irods meta search \"%s\"\n", sql_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to execute irods meta search \"%s\"\n", sql_s);
 								}
 
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "Failed to terminate search buffer\n");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to terminate search buffer\n");
 						}
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to fill in search buffer \"%s\"\n", GetByteBufferData (buffer_p));
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to fill in search buffer \"%s\"\n", GetByteBufferData (buffer_p));
 				}
 
 			FreeByteBuffer (buffer_p);
@@ -287,7 +287,7 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
 
 							if (dump_s)
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to get search term node from %s\n", dump_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term node from %s\n", dump_s);
 									free (dump_s);
 								}
 						}
@@ -305,7 +305,7 @@ int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p)
 
 					if (dump_s)
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to get search term node from %s\n", dump_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term node from %s\n", dump_s);
 							free (dump_s);
 						}
 				}
@@ -384,34 +384,34 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to allocate search term node\n");
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate search term node\n");
 												}
 
 										}		/* if (child_json_p && json_is_integer (child_json_p)) */
 									else
 										{
-											PrintErrors (STM_LEVEL_WARNING, "Failed to get search term value column id from json\n");
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term value column id from json\n");
 										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to get search term value from json\n");
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term value from json\n");
 								}
 
 						}		/* if (child_json_p && json_is_integer (child_json_p)) */
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to get search term key column id from json\n");
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term key column id from json\n");
 						}
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to get search term key from json\n");
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term key from json\n");
 				}
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to get search term operation from json\n");
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get search term operation from json\n");
 		}
 
 	return success_flag;
@@ -535,7 +535,7 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 													break;
 
 												case CAT_NO_ROWS_FOUND:
-													PrintLog (STM_LEVEL_INFO, "No results for meta search\n");
+													PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "No results for meta search\n");
 													break;
 
 												default:

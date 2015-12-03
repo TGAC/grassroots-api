@@ -162,7 +162,7 @@ bool GetCurrentTime (struct tm *tm_p)
 
 	if (current_time != (time_t) -1)
 		{
-			success_flag =  (localtime_r (current_time, tm_p) != NULL);
+			success_flag =  (localtime_r (&current_time, tm_p) != NULL);
 		}
 
 	return success_flag;

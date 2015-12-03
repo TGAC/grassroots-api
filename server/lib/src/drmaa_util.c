@@ -76,7 +76,7 @@ bool ExitDrmaa (void)
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "drmaa_exit() failed: %s\n", s_drmaa_diagnosis_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_exit() failed: %s\n", s_drmaa_diagnosis_s);
 		}
 
 	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST

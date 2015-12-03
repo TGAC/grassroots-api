@@ -189,7 +189,7 @@ bool CallCurlWebservice (WebServiceData *data_p)
 			else
 				{
 					const char *service_name_s = GetServiceName (data_p -> wsd_base_data.sd_service_p);
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to call webservice for %s, error %s\n", service_name_s, curl_easy_strerror (res));
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to call webservice for %s, error %s\n", service_name_s, curl_easy_strerror (res));
 				}
 		}
 
@@ -353,7 +353,7 @@ static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_da
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to add post parameter %s=%s to web service\n", param_p -> pa_name_s, value_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add post parameter %s=%s to web service\n", param_p -> pa_name_s, value_s);
 				}
 
 			if (alloc_flag)
@@ -364,7 +364,7 @@ static bool AddPostParameter (const Parameter * const param_p, CurlTool *curl_da
 		}		/* if (value_s) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Failed to get post parameter value for %s\n", param_p -> pa_name_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get post parameter value for %s\n", param_p -> pa_name_s);
 		}
 
 	return success_flag;
@@ -479,18 +479,18 @@ bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to set postfield size for json call by %s, error %s\n", GetServiceName (data_p -> wsd_base_data.sd_service_p), curl_easy_strerror (res));
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set postfield size for json call by %s, error %s\n", GetServiceName (data_p -> wsd_base_data.sd_service_p), curl_easy_strerror (res));
 												}
 
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to set postfield for json call by %s, error %s\n", GetServiceName (data_p -> wsd_base_data.sd_service_p), curl_easy_strerror (res));
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set postfield for json call by %s, error %s\n", GetServiceName (data_p -> wsd_base_data.sd_service_p), curl_easy_strerror (res));
 										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to set content type header for json call by %s\n", GetServiceName (data_p -> wsd_base_data.sd_service_p));
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set content type header for json call by %s\n", GetServiceName (data_p -> wsd_base_data.sd_service_p));
 								}
 
 						}

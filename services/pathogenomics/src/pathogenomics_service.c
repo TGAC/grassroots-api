@@ -487,7 +487,7 @@ static bool AddUploadParams (ParameterSet *param_set_p)
 
 					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 							FreeMemory (grouped_params_pp);
 						}
 
@@ -813,7 +813,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "no collection specified");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "no collection specified");
 						}
 
 				}		/* if (param_set_p) */
@@ -867,7 +867,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 												{
 													char *dump_s = json_dumps (field_p, JSON_INDENT (2));
 
-													PrintErrors (STM_LEVEL_WARNING, "Failed to get field from %s", dump_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get field from %s", dump_s);
 													free (dump_s);
 												}
 										}
@@ -1043,7 +1043,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 										{
 
 										}
-									PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s", error_s);
 								}
 							else
 								{
@@ -1061,7 +1061,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 								{
 
 								}
-							PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s", error_s);
 						}
 					else
 						{

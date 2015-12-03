@@ -451,7 +451,7 @@ json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
 
 			if (! (widget_p -> StoreParameterValue ()))
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to set parameter value for %s", widget_p -> GetParameterName ());
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set parameter value for %s", widget_p -> GetParameterName ());
 				}
 		}
 
