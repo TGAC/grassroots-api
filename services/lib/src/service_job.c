@@ -304,7 +304,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 
 		}		/* if (job_json_p) */
 
-	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER);
+	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
 	return job_json_p;
 }
@@ -432,7 +432,7 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 				}
 
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (service_json_p, "\nservice json:\n", STM_LEVEL_FINE);
+			PrintJSONToLog (service_json_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 		}		/* if (service_json_p) */
 

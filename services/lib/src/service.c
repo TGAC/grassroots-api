@@ -925,11 +925,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
 
 									#if SERVICE_DEBUG >= STM_LEVEL_FINE
-										{
-											char *response_s = json_dumps (service_json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-											printf ("service:\n%s\n\n", response_s);
-											free (response_s);
-										}
+									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINE);
 									#endif
 									
 									if (service_json_p)
@@ -951,13 +947,9 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 															
 				}		/* if (operations_p) */
 
-		#if SERVICE_DEBUG >= STM_LEVEL_FINE
-			{
-				char *response_s = json_dumps (services_list_json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-				printf ("services list:\n%s\n\n", response_s);
-				free (response_s);
-			}
-		#endif
+			#if SERVICE_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (services_list_json_p, "services list:\n", STM_LEVEL_FINE);
+			#endif
 
 		}		/* if (services_list_json_p) */
 

@@ -150,7 +150,7 @@ json_t *ConvertBSONToJSON (const bson_t *bson_p)
 				{
 					#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
 					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "raw bson data:\n", value_s);
-					PrintJSONToLog (json_p, "bson to json data:", STM_LEVEL_FINE);
+					PrintJSONToLog (json_p, "bson to json data:", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 				}
 			else
@@ -624,7 +624,7 @@ bson_t *GenerateQuery (const json_t *json_p)
 			query_p = bson_new ();
 
 			#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (json_p, "json search query", STM_LEVEL_FINE);
+			PrintJSONToLog (json_p, "json search query", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 
 

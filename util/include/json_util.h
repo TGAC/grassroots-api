@@ -298,7 +298,7 @@ GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, jso
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
 
-GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level);
+GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number);
 
 
 #ifdef __cplusplus

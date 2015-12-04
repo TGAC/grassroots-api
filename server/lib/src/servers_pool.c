@@ -96,8 +96,8 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 											json_t *default_external_provider_p = json_object_get (server_response_p, SERVER_PROVIDER_S);
 
 											#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
-											PrintJSONToLog (ops_array_p, "local server json:\n", STM_LEVEL_FINE);
-											PrintJSONToLog (default_external_provider_p, "default_external_provider_p:\n", STM_LEVEL_FINE);
+											PrintJSONToLog (ops_array_p, "local server json:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
+											PrintJSONToLog (default_external_provider_p, "default_external_provider_p:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 											#endif
 
 											/*
@@ -118,7 +118,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 																	if (src_ops_p)
 																		{
 																			#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
-																			PrintJSONToLog (src_ops_p, "src_ops:\n", STM_LEVEL_FINE);
+																			PrintJSONToLog (src_ops_p, "src_ops:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 																			#endif
 
 																			if (json_is_array (src_ops_p))
@@ -224,7 +224,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 
 
 	#if SERVERS_POOL_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (ops_array_p, "final ops p:\n", STM_LEVEL_FINE);
+	PrintJSONToLog (ops_array_p, "final ops p:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 	#endif
 
 	return ops_array_p;

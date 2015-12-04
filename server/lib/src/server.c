@@ -179,20 +179,12 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 								}
 						}
 
-					#if SERVER_DEBUG >= STM_LEVEL_FINEST
+				#if SERVER_DEBUG >= STM_LEVEL_FINEST
+					if (req_p)
 						{
-							if (req_p)
-								{
-									char *dump_s = json_dumps (req_p, JSON_INDENT (2));
-
-									if (dump_s)
-										{
-											printf ("ProcessMessage - request: \n%s\n\n", dump_s);
-											free (dump_s);
-										}
-								}
+							PrintJSONToLog (req_p,"ProcessMessage - request: \n", STM_LEVEL_FINEST);
 						}
-					#endif
+				#endif
 
 
 					/*
@@ -452,7 +444,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 						{
 							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, credentials_p);
 
-							#if SERVER_DEBUG >= STM_LEVEL_FINE
+							#if SERVER_DEBUG >= STM_LEVEL_FINEST
 								{
 									ServiceNode * node_p = (ServiceNode *) (services_p -> ll_head_p);
 
@@ -461,7 +453,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 											Service *service_p = node_p -> sn_service_p;
 											const char *name_s = GetServiceName (service_p);
 
-											printf ("matched service \"%s\"\n", name_s);
+											PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "matched service \"%s\"\n", name_s);
 
 											node_p = (ServiceNode *) (node_p -> sn_node.ln_next_p);
 										}

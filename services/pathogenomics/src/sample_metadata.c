@@ -750,7 +750,7 @@ bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, c
 
 																	if (raw_res_p)
 																		{
-																			PrintJSONToLog (raw_res_p, "raw: ", STM_LEVEL_FINE);
+																			PrintJSONToLog (raw_res_p, "raw: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 																			got_location_flag = RefineLocationDataForGoogle (data_p, row_p, raw_res_p, town_s, county_s, country_code_s);
 
 																			WipeJSON (raw_res_p);
@@ -1161,7 +1161,7 @@ static bool FillInPathogenomicsFromGoogleData (const json_t *google_result_p, js
 					const char * const LONGITUDE_KEY_S = "lng";
 
 					#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
-					PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE);
+					PrintJSONToLog (geometry_p, "geometry_p: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 
 					if (location_p)
@@ -1436,7 +1436,7 @@ bool RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, js
 									bool match_flag = false;
 
 									#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
-									PrintJSONToLog (address_p, "Address: ", STM_LEVEL_FINE);
+									PrintJSONToLog (address_p, "Address: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 									#endif
 
 									if (county_s)

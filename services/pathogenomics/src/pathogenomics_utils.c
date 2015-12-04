@@ -32,6 +32,9 @@ bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
 
 	if (GetCurrentTime (&current_time))
 		{
+			#define BUFFER_SIZE (11)
+			char buffer_s [BUFFER_SIZE];
+
 			/* Set the "go live" date to be 1 month from now */
 			if (current_time.tm_mon == 11)
 				{
@@ -43,8 +46,7 @@ bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
 					++ current_time.tm_mon;
 				}
 
-			#define BUFFER_SIZE (11)
-			char buffer_s [BUFFER_SIZE];
+
 
 			if (sprintf (buffer_s, "%4d-%2d-%2d", 1900 + current_time.tm_year, 1 + current_time.tm_mon, current_time.tm_mday) > 0)
 				{

@@ -193,7 +193,7 @@ bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addre
 
 									while (*address_ss)
 										{
-											PrintLog (STM_LEVEL_FINE, "adding email [%ld] = %s\n", i, *address_ss);
+											PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "adding email [%ld] = %s\n", i, *address_ss);
 											++ address_ss;
 											++ i;
 										}

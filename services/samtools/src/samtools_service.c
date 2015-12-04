@@ -306,6 +306,10 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
 	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpSamToolsJob);
 
+	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: RunSamToolsService - enter");
+	#endif
+
 	if (service_p -> se_jobs_p)
 		{
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;

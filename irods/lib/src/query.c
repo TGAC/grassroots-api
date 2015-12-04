@@ -657,7 +657,7 @@ json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p)
 	#if QUERY_DEBUG >= STM_LEVEL_FINE
 		{
 			size_t size = json_array_size (root_p);
-			PrintJSONToLog (root_p, "GetQueryResultAsResourcesJSON exit:\n", QUERY_DEBUG);
+			PrintJSONToLog (root_p, "GetQueryResultAsResourcesJSON exit:\n", QUERY_DEBUG, __FILE__, __LINE__);
 		}
 	#endif
 

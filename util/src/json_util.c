@@ -361,8 +361,8 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 
 													#if JSON_UTIL_DEBUG >= STM_LEVEL_FINE
 													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "row: %s", current_row_s);
-													PrintJSONToLog (row_p, "row_p ", STM_LEVEL_FINE);
-													PrintJSONToLog (json_values_p, "json_values_p ", STM_LEVEL_FINE);
+													PrintJSONToLog (row_p, "row_p ", STM_LEVEL_FINE, __FILE__, __LINE__);
+													PrintJSONToLog (json_values_p, "json_values_p ", STM_LEVEL_FINE, __FILE__, __LINE__);
 													#endif
 												}
 
@@ -412,8 +412,9 @@ json_t *GetJSONFromString (const char * const value_s, json_type field_type)
 			case JSON_INTEGER:
 				{
 					int i;
+					const char **value_ss = &value_s;
 
-					if (GetValidInteger (&value_s, &i, NULL))
+					if (GetValidInteger (value_ss, &i, NULL))
 						{
 							value_p = json_integer (i);
 						}
@@ -511,7 +512,7 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 }
 
 
-void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level)
+void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
 {
 	if (json_p)
 		{
@@ -521,11 +522,11 @@ void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const ui
 				{
 					if (prefix_s)
 						{
-							PrintLog (level, __FILE__, __LINE__, "%s %s", prefix_s, json_s);
+							PrintLog (level, filename_s, line_number, "%s %s", prefix_s, json_s);
 						}
 					else
 						{
-							PrintLog (level, __FILE__, __LINE__, "%s", json_s);
+							PrintLog (level, filename_s, line_number, "%s", json_s);
 						}
 
 					free (json_s);

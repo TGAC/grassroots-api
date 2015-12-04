@@ -114,13 +114,13 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 							if (json_object_set (credentials_p, CREDENTIALS_S, loaded_credentials_p) == 0)
 								{
 									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
 									#endif
 
 									json_object_del (config_p, CREDENTIALS_S);
 
 									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
 									#endif
 								}
 							else
@@ -142,7 +142,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 				}
 
 			#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+			PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
 			#endif
 
 			if (password_s)
@@ -154,7 +154,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 				}
 
 				#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-				PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG);
+				PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
 				#endif
 
 			if (json_object_set_new (root_p, CREDENTIALS_S, credentials_p) == 0)
@@ -169,7 +169,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 
 
 	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (root_p, "root_p: ", JSON_TOOLS_DEBUG);
+	PrintJSONToLog (root_p, "root_p: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
 	#endif
 
 	return success_flag;
