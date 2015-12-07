@@ -48,7 +48,7 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenomi
 						{
 							if (json_object_del (values_p, key_s) != 0)
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to remove %s from genotype", key_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to remove %s from genotype", key_s);
 								}
 
 							if (json_object_set (doc_p, PG_GENOTYPE_S, values_p) == 0)

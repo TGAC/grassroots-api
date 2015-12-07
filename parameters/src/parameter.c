@@ -1416,14 +1416,14 @@ static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p
 
 							if (!PutInHashTable (store_p, key_s, value_s))
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add \"%s\"=\"%s\" to parameter store\n", key_s, value_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"=\"%s\" to parameter store\n", key_s, value_s);
 									success_flag = false;
 								}
 						}
 					else
 						{
 							char *dump_s = json_dumps (value_p, JSON_INDENT (2));
-							PrintErrors (STM_LEVEL_SEVERE, "json value is not a string \"%s\"\n", dump_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json value is not a string \"%s\"\n", dump_s);
 							free (dump_s);
 							success_flag = false;
 						}

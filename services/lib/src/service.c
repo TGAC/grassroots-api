@@ -34,7 +34,7 @@
 
 
 #ifdef _DEBUG
-	#define SERVICE_DEBUG	(STM_LEVEL_FINE)
+	#define SERVICE_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -233,7 +233,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_WARNING, "Failed to get service name from", reference_file_node_p -> sln_string_s);
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get service name from", reference_file_node_p -> sln_string_s);
 																}
 															
 														}		/* if (services_json_p) */
@@ -252,7 +252,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to allocate memory for references service matcher\n");
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for references service matcher\n");
 								}
 							
 							FreeLinkedList (matching_filenames_p);
@@ -305,19 +305,19 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 					else
 						{
 							/* failed to get service from plugin */
-							PrintErrors (STM_LEVEL_WARNING, "Failed to get service from plugin with name \"%s\"", plugin_name_s);	
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get service from plugin with name \"%s\"", plugin_name_s);
 						}
 						
 				}		/* if (OpenPlugin (plugin_p)) */
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Failed to open plugin with name \"%s\"", plugin_name_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to open plugin with name \"%s\"", plugin_name_s);
 				}
 				
 		}		/* if (plugin_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_WARNING, "Failed to allocate plugin with name \"%s\"", plugin_name_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate plugin with name \"%s\"", plugin_name_s);
 		}
 
 		
@@ -925,23 +925,19 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
 
 									#if SERVICE_DEBUG >= STM_LEVEL_FINE
-										{
-											char *response_s = json_dumps (service_json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-											printf ("service:\n%s\n\n", response_s);
-											free (response_s);
-										}
+									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINE);
 									#endif
 									
 									if (service_json_p)
 										{
 											if (json_array_append_new (services_list_json_p, service_json_p) != 0)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to add service json description for %s to list\n", GetServiceName (service_node_p -> sn_service_p));
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service json description for %s to list\n", GetServiceName (service_node_p -> sn_service_p));
 												}
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to get service json description for %s\n", GetServiceName (service_node_p -> sn_service_p));
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get service json description for %s\n", GetServiceName (service_node_p -> sn_service_p));
 										}
 
 									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
@@ -951,13 +947,9 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 															
 				}		/* if (operations_p) */
 
-		#if SERVICE_DEBUG >= STM_LEVEL_FINE
-			{
-				char *response_s = json_dumps (services_list_json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-				printf ("services list:\n%s\n\n", response_s);
-				free (response_s);
-			}
-		#endif
+			#if SERVICE_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (services_list_json_p, "services list:\n", STM_LEVEL_FINE);
+			#endif
 
 		}		/* if (services_list_json_p) */
 
@@ -1073,7 +1065,7 @@ bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 										{
 											if (json_object_set_new (response_p, OPERATION_INFORMATION_URI_S, json_string (info_uri_s)) != 0)
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add operation info uri \"%s\" to service response for \"%s\"", info_uri_s, service_name_s);
 												}
 										}
 
@@ -1138,12 +1130,12 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 
 																	if (dump_s)
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create service %lu from:\n%s\n", i, dump_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu from:\n%s\n", i, dump_s);
 																			free (dump_s);
 																		}
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to create service %lu\n", i);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu\n", i);
 																		}
 
 																}

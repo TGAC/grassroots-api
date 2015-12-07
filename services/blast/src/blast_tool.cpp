@@ -72,7 +72,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 						}
 					catch (std :: bad_alloc ex)
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to create drmaa blast tool");
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create drmaa blast tool");
 						}
 
 					if (drmaa_tool_p)
@@ -102,7 +102,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 											if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to set email notifications for drmaa tool");
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set email notifications for drmaa tool");
 												}
 
 											FreeMemory (addresses_ss);

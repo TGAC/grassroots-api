@@ -368,7 +368,7 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 
 					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 							FreeMemory (grouped_params_pp);
 						}
 				}
@@ -446,7 +446,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 
 											if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 												{
-													PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 													FreeMemory (grouped_params_pp);
 												}
 
@@ -537,7 +537,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 															FreeMemory (grouped_params_pp);
 														}
 
@@ -587,7 +587,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 
 					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 							FreeMemory (grouped_params_pp);
 						}
 
@@ -680,14 +680,14 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 								{
 									if (json_object_set_new (blast_result_json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to add service id %s to blast result json", uuid_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service id %s to blast result json", uuid_s);
 										}
 
 									FreeUUIDString (uuid_s);
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to create idsdtring for blast result json", uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create idsdtring for blast result json", uuid_s);
 								}
 						}
 				}
@@ -735,18 +735,18 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 									if (!success_flag)
 										{
-											PrintErrors (STM_LEVEL_WARNING, "Blast service failed to write to temp file \"%s\" for query \"%s\"", tf_p -> GetFilename (), sequence_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to write to temp file \"%s\" for query \"%s\"", tf_p -> GetFilename (), sequence_s);
 											tf_p = NULL;
 										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Blast service failed to open temp file for query \"%s\"", sequence_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to open temp file for query \"%s\"", sequence_s);
 								}
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
 						}
 
 					if (uuid_s && (strcmp (uuid_s, "blast") != 0))
@@ -756,7 +756,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "Blast input query is empty");
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast input query is empty");
 				}
 		}
 

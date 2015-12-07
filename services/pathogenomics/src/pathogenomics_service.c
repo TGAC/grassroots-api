@@ -487,7 +487,7 @@ static bool AddUploadParams (ParameterSet *param_set_p)
 
 					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
 						{
-							PrintErrors (STM_LEVEL_WARNING, "Failed to add %s grouping", group_name_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 							FreeMemory (grouped_params_pp);
 						}
 
@@ -623,7 +623,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 											if (response_p)
 												{
-													PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER);
+													PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
 													job_p -> sj_status = OS_SUCCEEDED;
 													job_p -> sj_result_p = response_p;
@@ -662,7 +662,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 													if (json_param_p)
 														{
 															#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-															PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE);
+															PrintJSONToLog (json_param_p, "table", STM_LEVEL_FINE, __FILE__, __LINE__);
 															#endif
 
 															param_name_s = param_p -> pa_name_s;
@@ -733,8 +733,8 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
 														{
-															PrintJSONToLog (errors_p, "errors: ", STM_LEVEL_FINE);
-															PrintJSONToLog (metadata_p, "metadata 1: ", STM_LEVEL_FINE);
+															PrintJSONToLog (errors_p, "errors: ", STM_LEVEL_FINE, __FILE__, __LINE__);
+															PrintJSONToLog (metadata_p, "metadata 1: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 														}
 													#endif
 
@@ -780,8 +780,8 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
 														{
-															PrintJSONToLog (job_p -> sj_errors_p, "job errors: ", STM_LEVEL_FINE);
-															PrintJSONToLog (job_p -> sj_metadata_p, "job metadata: ", STM_LEVEL_FINE);
+															PrintJSONToLog (job_p -> sj_errors_p, "job errors: ", STM_LEVEL_FINE, __FILE__, __LINE__);
+															PrintJSONToLog (job_p -> sj_metadata_p, "job metadata: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 														}
 													#endif
 
@@ -813,7 +813,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "no collection specified");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "no collection specified");
 						}
 
 				}		/* if (param_set_p) */
@@ -823,7 +823,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
 		{
-			PrintJSONToLog (service_p -> se_jobs_p -> sjs_jobs_p -> sj_metadata_p, "metadata 3: ", STM_LEVEL_FINE);
+			PrintJSONToLog (service_p -> se_jobs_p -> sjs_jobs_p -> sj_metadata_p, "metadata 3: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 		}
 	#endif
 
@@ -867,7 +867,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 												{
 													char *dump_s = json_dumps (field_p, JSON_INDENT (2));
 
-													PrintErrors (STM_LEVEL_WARNING, "Failed to get field from %s", dump_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get field from %s", dump_s);
 													free (dump_s);
 												}
 										}
@@ -988,7 +988,7 @@ bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const size_t row
 		}
 
 	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (errors_p, "errors data: ", STM_LEVEL_FINE);
+	PrintJSONToLog (errors_p, "errors data: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 	#endif
 
 	return success_flag;
@@ -1000,10 +1000,9 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 {
 	uint32 num_imports = 0;
 	const char *(*insert_fn) (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p) = NULL;
-	const char *collection_name_s = NULL;
 
 	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (values_p, "values_p: ", PATHOGENOMICS_SERVICE_DEBUG);
+	PrintJSONToLog (values_p, "values_p: ", PATHOGENOMICS_SERVICE_DEBUG, __FILE__, __LINE__);
 	#endif
 
 	switch (collection_type)
@@ -1043,7 +1042,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 										{
 
 										}
-									PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s", error_s);
 								}
 							else
 								{
@@ -1061,7 +1060,7 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 								{
 
 								}
-							PrintErrors (STM_LEVEL_WARNING, "%s", error_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s", error_s);
 						}
 					else
 						{

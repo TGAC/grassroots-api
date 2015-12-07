@@ -125,7 +125,7 @@ bson_t *ConvertJSONToBSON (const json_t *json_p)
 
 			if (!bson_p)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to convert %s to BSON, error %s\n", value_s, error.message);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert %s to BSON, error %s\n", value_s, error.message);
 				}
 
 			free (value_s);
@@ -149,13 +149,13 @@ json_t *ConvertBSONToJSON (const bson_t *bson_p)
 			if (json_p)
 				{
 					#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, "raw bson data:\n", value_s);
-					PrintJSONToLog (json_p, "bson to json data:", STM_LEVEL_FINE);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "raw bson data:\n", value_s);
+					PrintJSONToLog (json_p, "bson to json data:", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to convert %s to JSON, error %s\n", value_s, error.text);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert %s to JSON, error %s\n", value_s, error.text);
 				}
 
 			bson_free (value_s);
@@ -193,12 +193,12 @@ bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 
 											if (value_s)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to insert %s, error %s\n", value_s, error.message);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to insert %s, error %s\n", value_s, error.message);
 													free (value_s);
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to insert json doc, error %s\n", error.message);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to insert json doc, error %s\n", error.message);
 												}
 
 										}		/* if (!success_flag) */
@@ -624,7 +624,7 @@ bson_t *GenerateQuery (const json_t *json_p)
 			query_p = bson_new ();
 
 			#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (json_p, "json search query", STM_LEVEL_FINE);
+			PrintJSONToLog (json_p, "json search query", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 
 
@@ -695,11 +695,11 @@ void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s
 		{
 			if (prefix_s)
 				{
-					PrintLog (level, "%s %s", prefix_s, dump_s);
+					PrintLog (level, __FILE__, __LINE__, "%s %s", prefix_s, dump_s);
 				}
 			else
 				{
-					PrintLog (level, "%s", dump_s);
+					PrintLog (level, __FILE__, __LINE__, "%s", dump_s);
 
 				}
 			bson_free (dump_s);
@@ -715,11 +715,11 @@ void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const p
 
 	if (prefix_s)
 		{
-			PrintLog (level, "%s %s", prefix_s, buffer_s);
+			PrintLog (level, __FILE__, __LINE__, "%s %s", prefix_s, buffer_s);
 		}
 	else
 		{
-			PrintLog (level, "%s", buffer_s);
+			PrintLog (level, __FILE__, __LINE__, "%s", buffer_s);
 
 		}
 }
@@ -816,7 +816,7 @@ bool HasMongoQueryResults (MongoTool *tool_p)
 					if (mongoc_cursor_error (temp_p, &error))
 						{
 							results_flag = false;
-							PrintErrors (STM_LEVEL_WARNING, " mongo cursor error : %d.%d: %s\n", error.domain, error.code, error.message);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, " mongo cursor error : %d.%d: %s\n", error.domain, error.code, error.message);
 						}
 
 					mongoc_cursor_destroy (temp_p);

@@ -350,7 +350,7 @@ int main (int argc, char *argv [])
 
 																if (dump_s)
 																	{
-																		PrintLog (STM_LEVEL_INFO, "%s", dump_s);
+																		PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "%s", dump_s);
 																		free (dump_s);
 																	}
 

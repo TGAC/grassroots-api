@@ -118,7 +118,7 @@ static void PrintStringHashBucket (const HashBucket * const bucket_p, OutputStre
 	const char * const key_p = (const char * const) (bucket_p -> hb_key_p);
 	const char * const value_p = (const char * const) (bucket_p -> hb_value_p);
 
-	PrintToOutputStream (stream_p, "key: \"%s\" (%sowned) value: \"%s\" (%sowned)\n", (key_p != NULL) ? key_p : "NULL", bucket_p -> hb_owns_key ? "" : "not ", (value_p != NULL) ? value_p : "NULL", bucket_p -> hb_owns_value ? "" : "not ");
+	PrintToOutputStream (stream_p, __FILE__, __LINE__, "key: \"%s\" (%sowned) value: \"%s\" (%sowned)\n", (key_p != NULL) ? key_p : "NULL", bucket_p -> hb_owns_key ? "" : "not ", (value_p != NULL) ? value_p : "NULL", bucket_p -> hb_owns_value ? "" : "not ");
 }
 
 
@@ -193,7 +193,7 @@ static void PrintStringIntHashBucket (const HashBucket * const bucket_p, OutputS
 	const char * const key_p = (const char * const) (bucket_p -> hb_key_p);
 	const int value = * ((const int * const) (bucket_p -> hb_value_p));
 
-	PrintToOutputStream (stream_p, "key: \"%s\" (%sowned) value: " UINT32_FMT " (%sowned)\n", (key_p != NULL) ? key_p : "NULL", bucket_p -> hb_owns_key ? "" : "not ", value, bucket_p -> hb_owns_value ? "" : "not ");
+	PrintToOutputStream (stream_p, __FILE__, __LINE__, "key: \"%s\" (%sowned) value: " UINT32_FMT " (%sowned)\n", (key_p != NULL) ? key_p : "NULL", bucket_p -> hb_owns_key ? "" : "not ", value, bucket_p -> hb_owns_value ? "" : "not ");
 }
 
 

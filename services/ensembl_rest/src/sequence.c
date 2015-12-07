@@ -169,7 +169,7 @@ static json_t *GetSequencesById (const char * const id_s, const char * const con
 
 											if (!res_p)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to create sequence json_result object for:\n%s\n", sequence_data_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create sequence json_result object for:\n%s\n", sequence_data_s);
 												}
 										}
 
@@ -180,7 +180,7 @@ static json_t *GetSequencesById (const char * const id_s, const char * const con
 
 									if (!res_p)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, "Failed to create sequence json_result string for:\n%s\n", sequence_data_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create sequence json_result string for:\n%s\n", sequence_data_s);
 										}
 
 								}		/* if (res == CURLE_OK) */
@@ -264,7 +264,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 
 													if (!AddParameterGroupToParameterSet (param_set_p, "Sequence", grouped_params_pp, num_params))
 														{
-															PrintErrors (STM_LEVEL_WARNING, "Failed to add sequence grouping");
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add sequence grouping");
 															FreeMemory (grouped_params_pp);
 														}
 												}

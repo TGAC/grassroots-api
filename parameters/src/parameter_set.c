@@ -27,7 +27,7 @@
 
 
 #ifdef _DEBUG
-	#define PARAMETER_SET_DEBUG	(STM_LEVEL_FINE)
+	#define PARAMETER_SET_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define PARAMETER_SET_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -188,7 +188,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 							if (param_json_p)
 								{
-									#ifdef _DEBUG
+									#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
 									PrintJSON (stderr, param_json_p, "GetParameterSetAsJSON - param_json_p :: ");
 									#endif
 
@@ -492,12 +492,12 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 
 													if (dump_s)
 														{
-															PrintErrors (STM_LEVEL_WARNING, "failed to create param from:\n%s\n", dump_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to create param from:\n%s\n", dump_s);
 															free (dump_s);
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_WARNING, "failed to create param\n");
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to create param\n");
 														}
 
 													success_flag = false;
@@ -569,7 +569,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 
 																					if (!AddParameterGroupToParameterSet (params_p, group_name_s, params_pp, num_group_params))
 																						{
-																							PrintErrors (STM_LEVEL_WARNING, "Failed to create parameter group \"%s\"", group_name_s);
+																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create parameter group \"%s\"", group_name_s);
 																							FreeMemory (params_pp);
 																						}
 

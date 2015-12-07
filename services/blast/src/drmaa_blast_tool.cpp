@@ -78,12 +78,12 @@ OperationStatus DrmaaBlastTool :: Run ()
 
 					if (uuid_s)
 						{
-							PrintLog (STM_LEVEL_FINE, "Added drmma blast tool %s with job id %s", uuid_s, dbt_drmaa_tool_p -> dt_id_s);
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added drmma blast tool %s with job id %s", uuid_s, dbt_drmaa_tool_p -> dt_id_s);
 							FreeCopiedString (uuid_s);
 						}
 					else
 						{
-							PrintLog (STM_LEVEL_FINE, "Added drmma blast tool with job id %s", dbt_drmaa_tool_p -> dt_id_s);
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added drmma blast tool with job id %s", dbt_drmaa_tool_p -> dt_id_s);
 						}
 				}
 			#endif

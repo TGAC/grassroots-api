@@ -120,11 +120,11 @@ HtmlLinkArray *GetMatchingLinks (const char * const data_s, const char * const l
 		}
 	catch (hcxselect::ParseException &ex)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Parse error on '%s' - %s\n", link_selector_s, ex.what ());
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Parse error on '%s' - %s\n", link_selector_s, ex.what ());
 		}
 	catch (...)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, "Error parsing '%s'\n", link_selector_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Error parsing '%s'\n", link_selector_s);
 		}
 
 	if (success_flag)

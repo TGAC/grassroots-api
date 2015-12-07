@@ -33,6 +33,13 @@
 #include "streams.h"
 
 
+#ifdef _DEBUG
+	#define KEY_VALUE_PAIR_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define KEY_VALUE_PAIR_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
 typedef struct JsonRequest
 {
 	json_t *jr_json_p;
@@ -124,15 +131,28 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 					const char *data_s = GetByteBufferData (buffer_p);
 					params_p = json_loads (data_s, 0, &err);
 					
+					#if KEY_VALUE_PAIR_DEBUG >= STM_LEVEL_FINE
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Request Body:\n%s\n", data_s);
+					#endif
+
 					if (!params_p)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, "error decoding response: \"%s\"\n\"%s\"\n\"%s\"\n%d %d %d\n", data_s, err.text, err.source, err.line, err.column, err.position);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "error decoding response: \"%s\"\n\"%s\"\n\"%s\"\n%d %d %d\n", data_s, err.text, err.source, err.line, err.column, err.position);
 							ap_rprintf (req_p, "error decoding response: \"%s\"\n\"%s\"\n\"%s\"\n%d %d %d\n", data_s, err.text, err.source, err.line, err.column, err.position);
 						}
+				}
+			else
+				{
+					PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to read http request body: %d", res);
 				}
 
 			FreeByteBuffer (buffer_p);
 		}
+	else
+		{
+			PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate byte buffer to read http request body");
+		}
+
 
 	return params_p;
 }

@@ -64,7 +64,7 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 			if (uuid_s)
 				{
-					PrintLog (STM_LEVEL_FINE, "Job: %s\n", uuid_s);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
 					free (uuid_s);
 				}
 		}
@@ -304,7 +304,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 
 		}		/* if (job_json_p) */
 
-	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER);
+	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
 	return job_json_p;
 }
@@ -330,7 +330,7 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 						{
 							if (!AddServiceResponseHeader (jobs_p -> sjs_service_p, service_json_p))
 								{
-									PrintErrors (STM_LEVEL_WARNING, "Failed to add service response header from %s", GetServiceName (jobs_p -> sjs_service_p));
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add service response header from %s", GetServiceName (jobs_p -> sjs_service_p));
 								}
 
 							success_flag = true;
@@ -369,12 +369,12 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 																	if (uuid_s)
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to add job %s to jobs manager", uuid_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
 																			FreeCopiedString (uuid_s);
 																		}
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
 																		}
 																}
 														}
@@ -393,12 +393,12 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 													if (uuid_s)
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to add job results %s to json response", uuid_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job results %s to json response", uuid_s);
 															FreeCopiedString (uuid_s);
 														}
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, "Failed to add job results %s to json response", job_p -> sj_name_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job results %s to json response", job_p -> sj_name_s);
 														}
 												}
 										}
@@ -408,12 +408,12 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 											if (uuid_s)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to json response for json %s", uuid_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to json response for json %s", uuid_s);
 													FreeCopiedString (uuid_s);
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, "Failed to json response for json %s", job_p -> sj_name_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to json response for json %s", job_p -> sj_name_s);
 												}
 										}
 
@@ -428,11 +428,11 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 				}		/* if (jobs_array_p) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, "Failed to create json response array for service %s", GetServiceName (jobs_p -> sjs_service_p));
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json response array for service %s", GetServiceName (jobs_p -> sjs_service_p));
 				}
 
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (service_json_p, "\nservice json:\n", STM_LEVEL_FINE);
+			PrintJSONToLog (service_json_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 		}		/* if (service_json_p) */
 
@@ -477,7 +477,7 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 						{
 							if (json_object_set_new (json_p, JOB_NAME_S, json_string (job_p -> sj_name_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add job name %s to job status json", job_p -> sj_name_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job name %s to job status json", job_p -> sj_name_s);
 								}
 						}
 
@@ -485,7 +485,7 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 						{
 							if (json_object_set_new (json_p, JOB_DESCRIPTION_S, json_string (job_p -> sj_description_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add job description %s to job status json", job_p -> sj_description_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job description %s to job status json", job_p -> sj_description_s);
 								}
 						}
 
@@ -493,7 +493,7 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 						{
 							if (json_object_set_new (json_p, JOB_SERVICE_S, json_string (service_name_s)) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, "Failed to add service %s to job status json", service_name_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service %s to job status json", service_name_s);
 								}
 						}
 				}
@@ -508,7 +508,7 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 
 			if (uuid_s)
 				{
-					PrintLog (STM_LEVEL_FINE, "Job: %s\n", uuid_s);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
 					free (uuid_s);
 				}
 		}

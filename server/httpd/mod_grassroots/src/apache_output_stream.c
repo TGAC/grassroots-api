@@ -22,7 +22,7 @@
 #include "memory_allocations.h"
 
 
-static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, const char *message_s, va_list args);
+static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, const char * const filename_s, const int line_number, const char *message_s, va_list args);
 
 static bool FlushApacheStream (OutputStream *stream_p);
 
@@ -56,7 +56,7 @@ void DeallocateApacheOutputStream (OutputStream *stream_p)
 
 
 
-static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, const char *message_s, va_list args)
+static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, const char * const filename_s, const int line_number, const char *message_s, va_list args)
 {
 	ApacheOutputStream *apache_stream_p = (ApacheOutputStream *) stream_p;
 	char *value_s = apr_pvsprintf (apache_stream_p -> aos_server_p -> process -> pool, message_s, args);
@@ -88,7 +88,7 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 				break;
 		}
 
-	ap_log_error (APLOG_MARK, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "mod_wheatis: %s", value_s);
+	ap_log_error (filename_s, line_number, APLOG_MODULE_INDEX, ap_level, APR_SUCCESS, apache_stream_p -> aos_server_p, "mod_grassroots: %s", value_s);
 
 	return 0;
 }
