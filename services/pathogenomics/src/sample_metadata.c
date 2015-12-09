@@ -1501,7 +1501,7 @@ static bool ReplacePathogen (json_t *data_p)
 	const char *value_s = NULL;
 	const char *pathogen_s = GetJSONString (data_p, key_s);
 
-	if (key_s)
+	if (pathogen_s)
 		{
 			if ((strcmp ("YR", pathogen_s) == 0) || (strcmp ("Yellow Rust", pathogen_s) == 0))
 				{
@@ -1524,6 +1524,16 @@ static bool ReplacePathogen (json_t *data_p)
 						{
 							json_object_del (data_p, key_s);
 						}
+				}
+		}
+	else
+		{
+			char *data_s = json_dumps (data_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Could not find %s in %s", key_s, data_s ? data_s : "input data");
+
+			if (data_s)
+				{
+					free (data_s);
 				}
 		}
 
