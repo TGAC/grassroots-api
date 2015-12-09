@@ -1503,15 +1503,15 @@ static bool ReplacePathogen (json_t *data_p)
 
 	if (key_s)
 		{
-			if (strcmp ("YR", pathogen_s) == 0)
+			if ((strcmp ("YR", pathogen_s) == 0) || (strcmp ("Yellow Rust", pathogen_s) == 0))
 				{
 					value_s = "Yellow Rust";
 				}
-			else if (strcmp ("SR", pathogen_s) == 0)
+			else if ((strcmp ("SR", pathogen_s) == 0) || (strcmp ("Stem Rust", pathogen_s) == 0))
 				{
 					value_s = "Stem Rust";
 				}
-			else if (strcmp ("LR", pathogen_s) == 0)
+			else if ((strcmp ("LR", pathogen_s) == 0) || (strcmp ("Leaf Rust", pathogen_s) == 0))
 				{
 					value_s = "Leaf Rust";
 				}
