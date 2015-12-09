@@ -265,11 +265,11 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 						{
 							def.st_string_value_s = NULL;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "Scaffold NAME", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "The name of the scaffold to find", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 								{
 									def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "Line break index", "Scaffold name", "Scaffold NAME", TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "Line break index", "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 										{
 											return param_set_p;
 										}
@@ -375,14 +375,33 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 													FreeByteBuffer (buffer_p);
 
+												}		/* if (buffer_p) */
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate byte buffer to store scaffold data");
 												}
 
 										}		/* if (scaffold_s) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get scaffold");
+										}
 
+								}		/* if (param_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s parameter", TAG_SAMTOOLS_SCAFFOLD);
 								}
 
 						}		/* if (filename_s) */
-
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s parameter", TAG_SAMTOOLS_FILENAME);
 				}
 
 		}		/* if (service_p -> se_jobs_p) */

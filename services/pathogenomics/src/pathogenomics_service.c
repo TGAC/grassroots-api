@@ -1038,11 +1038,23 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 
 							if (error_s)
 								{
+									char *dump_s = json_dumps (value_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
 									if (!AddErrorMessage (errors_p, value_p, i + 1, error_s))
 										{
-
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add %s to client feedback messsage", error_s);
 										}
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s", error_s);
+
+
+									if (dump_s)
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to import \"%s\": error=%s", dump_s, error_s);
+											free (dump_s);
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to import error=%s", dump_s, error_s);
+										}
 								}
 							else
 								{

@@ -306,7 +306,7 @@ bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s)
 }
 
 
-OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
+OperaqtionStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 {
 	OperationStatus status = OS_ERROR;
 	char error_s [DRMAA_ERROR_STRING_BUFFER];
@@ -315,6 +315,7 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 
 	if (res == DRMAA_ERRNO_SUCCESS)
 		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get drmaa ps for %s: %d", tool_p -> dt_id_s, res);
 			switch (drmaa_status)
 				{
 					case DRMAA_PS_QUEUED_ACTIVE:
@@ -343,7 +344,7 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 					case DRMAA_PS_SYSTEM_SUSPENDED:
 					case DRMAA_PS_USER_SUSPENDED:
 					case DRMAA_PS_USER_SYSTEM_SUSPENDED:
-						status = OS_STARTED;
+						status = OS_PENDING;
 						break;
 
 					default:
@@ -352,7 +353,7 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 		}
 	else
 		{
-
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get drmaa ps for %s: %d", tool_p -> dt_id_s, res);
 		}
 
 	return status;
