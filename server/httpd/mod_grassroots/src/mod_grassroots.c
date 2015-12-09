@@ -85,7 +85,7 @@ static int PoolDebug (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_poo
 
 
 #ifdef _DEBUG
-	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_FINE)
+	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -438,6 +438,9 @@ static int GrassrootsHandler (request_rec *req_p)
 												res = HTTP_INTERNAL_SERVER_ERROR;
 											}
 
+										#if MOD_GRASSROOTS_DEBUG >= STM_LEVEL_FINER
+										PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "res_p -> refcount %ld", res_p -> refcount);
+										#endif
 										json_decref (res_p);
 									}		/* if (res_p) */
 								else
@@ -446,6 +449,9 @@ static int GrassrootsHandler (request_rec *req_p)
 										res = HTTP_BAD_REQUEST;
 									}
 
+								#if MOD_GRASSROOTS_DEBUG >= STM_LEVEL_FINER
+								PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "json_req_p -> refcount %ld", json_req_p -> refcount);
+								#endif
 								json_decref (json_req_p);
 							}		/* if (json_req_p) */
 						else
