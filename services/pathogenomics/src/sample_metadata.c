@@ -44,11 +44,13 @@ static bool ReplacePathogen (json_t *data_p);
 
 static bool ParseCollector (json_t *values_p);
 
-static bool SetDateForSchemaOrg (json_t *values_p, const char * const iso_date_s);
+static bool ParseCompany (json_t *values_p);
 
 static bool ParseAddressForSchemaOrg (json_t *values_p, const char * const town_s, const char * const county_s, const char * const country_s, const char * const postcode_s);
 
 static bool AddValidJSONField (json_t *json_p, const char *key_s, const char *value_s);
+
+static bool ConvertToSchemaOrgRepresentation (json_t *values_p, const char * const input_key_s, const char * const type_s, const char * const output_subkey_s);
 
 
 
@@ -119,12 +121,14 @@ static bool ParseAddressForSchemaOrg (json_t *values_p, const char * const town_
 
 
 
-static bool ParseCollector (json_t *values_p)
+
+static bool ConvertToSchemaOrgRepresentation (json_t *values_p, const char * const input_key_s, const char * const type_s, const char * const output_subkey_s)
 {
 	bool success_flag = true;
-	const char *collector_s = GetJSONString (values_p, PG_COLLECTOR_S);
+	char *values_s = json_dumps (values_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+	const char *input_value_s = GetJSONString (values_p, input_key_s);
 
-	if (collector_s)
+	if (input_value_s)
 		{
 			json_t *child_p = json_object ();
 
@@ -132,13 +136,21 @@ static bool ParseCollector (json_t *values_p)
 
 			if (child_p)
 				{
-					if ((json_object_set_new (child_p, "@type", json_string ("Person")) == 0) &&
-							(json_object_set_new (child_p, "name", json_string (collector_s)) == 0))
+					if ((json_object_set_new (child_p, "@type", json_string (type_s)) == 0) &&
+							(json_object_set_new (child_p, output_subkey_s, json_string (input_value_s)) == 0))
 						{
-							if (json_object_set_new (values_p, PG_COLLECTOR_S, child_p) == 0)
+							if (json_object_set_new (values_p, input_key_s, child_p) == 0)
 								{
 									success_flag = true;
 								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to write child object %s for ", input_key_s, values_s ? values_s : "input data");
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create set @type to %s and %s to %s for child json object", type_s, output_subkey_s, input_key_s);
 						}
 
 					if (!success_flag)
@@ -146,37 +158,38 @@ static bool ParseCollector (json_t *values_p)
 							WipeJSON (child_p);
 						}
 				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create child json object for converting %s in %s", input_key_s, values_s ? values_s : "input data");
+				}
 		}
-
-	return success_flag;
-}
-
-
-static bool SetDateForSchemaOrg (json_t *values_p, const char * const iso_date_s)
-{
-	bool success_flag = false;
-	json_t *child_p = json_object ();
-
-	if (child_p)
+	else
 		{
-			if ((json_object_set_new (child_p, "@type", json_string ("Date")) == 0) &&
-					(json_object_set_new (child_p, "date", json_string (iso_date_s)) == 0))
-				{
-					if (json_object_set_new (values_p, PG_DATE_S, child_p) == 0)
-						{
-							success_flag = true;
-						}
-				}
-
-			if (!success_flag)
-				{
-					WipeJSON (child_p);
-				}
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find %s in %s", input_key_s, values_s ? values_s : "input data");
 		}
 
+	if (values_s)
+		{
+			free (values_s);
+		}
 
 	return success_flag;
 }
+
+
+
+static bool ParseCollector (json_t *values_p)
+{
+	return ConvertToSchemaOrgRepresentation (values_p, PG_COLLECTOR_S, "Person", "name");
+}
+
+
+
+static bool ParseCompany (json_t *values_p)
+{
+	return ConvertToSchemaOrgRepresentation (values_p, PG_COMPANY_S, "Organization", "name");
+}
+
 
 
 static bool AddSchemaOrgContext (json_t *values_p)
@@ -215,110 +228,122 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, Pathogenomics
 										{
 											if (ParseCollector (values_p))
 												{
-													/*
-													 * The genotype data is keyed by PG_ID_S and the phenotype data is
-													 * keyed by PG_UKCPVS_ID_S. So we need to check for both of these.
-													 *
-													 * If none exist in the db, we can insert as normal.
-													 * If only one of them is set, then we can update as normal.
-													 * If both exist as separate entries, we need to merge them together
-													 * and update with our sample data.
-													 * If both exist on the same entry, then we update as normal.
-													 */
-													bool success_flag = true;
-													json_t *selector_p = NULL;
-													const char *ukcpvs_id_s = GetJSONString (values_p, PG_UKCPVS_ID_S);
-
-													if (ukcpvs_id_s)
+													if (ParseCompany (values_p))
 														{
-															json_t *ukcpvs_docs_p = NULL;
-															int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, PG_UKCPVS_ID_S, ukcpvs_id_s, NULL);
+															/*
+															 * The genotype data is keyed by PG_ID_S and the phenotype data is
+															 * keyed by PG_UKCPVS_ID_S. So we need to check for both of these.
+															 *
+															 * If none exist in the db, we can insert as normal.
+															 * If only one of them is set, then we can update as normal.
+															 * If both exist as separate entries, we need to merge them together
+															 * and update with our sample data.
+															 * If both exist on the same entry, then we update as normal.
+															 */
+															bool success_flag = true;
+															json_t *selector_p = NULL;
+															const char *ukcpvs_id_s = GetJSONString (values_p, PG_UKCPVS_ID_S);
 
-															if (num_ukcpvs_matches == 1)
+															if (ukcpvs_id_s)
 																{
-																	json_t *id_docs_p = NULL;
-																	int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, PG_ID_S, pathogenomics_id_s, NULL);
+																	json_t *ukcpvs_docs_p = NULL;
+																	int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, PG_UKCPVS_ID_S, ukcpvs_id_s, NULL);
 
-																	success_flag = false;
-
-																	if (num_id_matches == 1)
+																	if (num_ukcpvs_matches == 1)
 																		{
-																			/* We need to merge the existing documents together and then update the values with the sample data */
+																			json_t *id_docs_p = NULL;
+																			int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, PG_ID_S, pathogenomics_id_s, NULL);
 
-																			json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
+																			success_flag = false;
 
-																			if (ukcpvs_doc_p)
+																			if (num_id_matches == 1)
 																				{
-																					json_t *id_doc_p = json_array_get (id_docs_p, 0);
+																					/* We need to merge the existing documents together and then update the values with the sample data */
 
-																					if (id_doc_p)
+																					json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
+
+																					if (ukcpvs_doc_p)
 																						{
-																							json_error_t err;
+																							json_t *id_doc_p = json_array_get (id_docs_p, 0);
 
-																							/* remove the mongodb _id attribute */
-																							json_object_del (ukcpvs_doc_p, MONGO_ID_S);
-
-																							/* after the update call, ukcpvs_id_s will go out of scope so store its value */
-																							selector_p = json_pack_ex (&err, 0, "{s:s}", PG_UKCPVS_ID_S, ukcpvs_id_s);
-
-																							if (selector_p)
+																							if (id_doc_p)
 																								{
-																									/* Update our sample data with the values from ukcpvs_id_p */
-																									if (json_object_update (values_p, ukcpvs_doc_p) == 0)
+																									json_error_t err;
+
+																									/* remove the mongodb _id attribute */
+																									json_object_del (ukcpvs_doc_p, MONGO_ID_S);
+
+																									/* after the update call, ukcpvs_id_s will go out of scope so store its value */
+																									selector_p = json_pack_ex (&err, 0, "{s:s}", PG_UKCPVS_ID_S, ukcpvs_id_s);
+
+																									if (selector_p)
 																										{
-																											success_flag = true;
+																											/* Update our sample data with the values from ukcpvs_id_p */
+																											if (json_object_update (values_p, ukcpvs_doc_p) == 0)
+																												{
+																													success_flag = true;
+																												}
+																											else
+																												{
+																													error_s = "Failed to merge ukcpvs_id-based data with our sample data";
+																												}
 																										}
 																									else
 																										{
-																											error_s = "Failed to merge ukcpvs_id-based data with our sample data";
+																											error_s = "Failed to store ukcpvs_id-based data for merging";
 																										}
-																								}
-																							else
-																								{
-																									error_s = "Failed to store ukcpvs_id-based data for merging";
-																								}
 
 
-																						}		/* if (id_doc_p) */
-																				}
+																								}		/* if (id_doc_p) */
+																						}
 
-																		}		/* if (num_id_matches == 1) */
+																				}		/* if (num_id_matches == 1) */
 
-																}		/* if (num_ukcpvs_matches == 1) */
+																		}		/* if (num_ukcpvs_matches == 1) */
 
-														}		/* if (ukcpvs_id_s) */
+																}		/* if (ukcpvs_id_s) */
 
-													if (success_flag)
-														{
-															if (AddPublishDateToJSON (values_p, "sample_live_date"))
+															if (success_flag)
 																{
-																	error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
-
-																	if ((!error_s) && selector_p)
+																	if (AddPublishDateToJSON (values_p, "sample_live_date"))
 																		{
-																			if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																			error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
+
+																			if ((!error_s) && selector_p)
 																				{
-																					error_s = "Failed to remove existing phenotype doc";
+																					if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																						{
+																							error_s = "Failed to remove existing phenotype doc";
+																						}
 																				}
 																		}
+																	else
+																		{
+																			error_s = "Failed to add current date to sample data";
+																		}
+
 																}
 															else
 																{
-																	error_s = "Failed to add current date to sample data";
+																	error_s = "Failed to merge previous data";
 																}
 
-														}
+															if (selector_p)
+																{
+																	WipeJSON (selector_p);
+																}
+
+														}		/* if (ParseCompany (values_p)) */
 													else
 														{
-															error_s = "Failed to merge previous data";
-														}
-
-													if (selector_p)
-														{
-															WipeJSON (selector_p);
+															error_s = "Failed to parse company value";
 														}
 
 												}		/* if (ParseCollector (values_p)) */
+											else
+												{
+													error_s = "Failed to parse collector value";
+												}
 
 										}		/* if (ReplacePathogen (values_p) */
 									else
@@ -492,7 +517,7 @@ bool ConvertDate (json_t *row_p)
 
 			if (success_flag)
 				{
-					if (SetDateForSchemaOrg (row_p, iso_date_s))
+					if (SetDateForSchemaOrg (row_p, PG_DATE_S, iso_date_s))
 						{
 							if (json_object_set_new (row_p, PG_RAW_DATE_S, json_string (raw_date_s)) != 0)
 								{
@@ -502,18 +527,20 @@ bool ConvertDate (json_t *row_p)
 						}
 					else
 						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to SetDateForSchemaOrge for %s", iso_date_s);
 							success_flag = false;
 						}
 				}
-
-			if (!success_flag)
+			else
 				{
 					char *dump_s = json_dumps (row_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to convert date from %s for %s", date_s, dump_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get date from %s", dump_s);
 
 					free (dump_s);
 				}
+
+
 		}		/* if (date_s) */
 	else
 		{
@@ -1474,17 +1501,17 @@ static bool ReplacePathogen (json_t *data_p)
 	const char *value_s = NULL;
 	const char *pathogen_s = GetJSONString (data_p, key_s);
 
-	if (key_s)
+	if (pathogen_s)
 		{
-			if (strcmp ("YR", pathogen_s) == 0)
+			if ((strcmp ("YR", pathogen_s) == 0) || (strcmp ("Yellow Rust", pathogen_s) == 0))
 				{
 					value_s = "Yellow Rust";
 				}
-			else if (strcmp ("SR", pathogen_s) == 0)
+			else if ((strcmp ("SR", pathogen_s) == 0) || (strcmp ("Stem Rust", pathogen_s) == 0))
 				{
 					value_s = "Stem Rust";
 				}
-			else if (strcmp ("LR", pathogen_s) == 0)
+			else if ((strcmp ("LR", pathogen_s) == 0) || (strcmp ("Leaf Rust", pathogen_s) == 0))
 				{
 					value_s = "Leaf Rust";
 				}
@@ -1492,6 +1519,21 @@ static bool ReplacePathogen (json_t *data_p)
 			if (value_s)
 				{
 					success_flag = (json_object_set_new (data_p, PG_DISEASE_S, json_string (value_s)) == 0);
+
+					if (success_flag)
+						{
+							json_object_del (data_p, key_s);
+						}
+				}
+		}
+	else
+		{
+			char *data_s = json_dumps (data_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Could not find %s in %s", key_s, data_s ? data_s : "input data");
+
+			if (data_s)
+				{
+					free (data_s);
 				}
 		}
 

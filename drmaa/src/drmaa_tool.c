@@ -188,7 +188,7 @@ bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addre
 
 							#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINE
 								{
-									const char **address_ss = tool_p -> dt_email_addresses_ss;
+									const char **address_ss = (const char **) (tool_p -> dt_email_addresses_ss);
 									size_t i = 0;
 
 									while (*address_ss)
@@ -314,7 +314,7 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 	int res = drmaa_job_ps (tool_p -> dt_id_s, &drmaa_status, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 	if (res == DRMAA_ERRNO_SUCCESS)
-		{
+		{			
 			switch (drmaa_status)
 				{
 					case DRMAA_PS_QUEUED_ACTIVE:
@@ -343,16 +343,19 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 					case DRMAA_PS_SYSTEM_SUSPENDED:
 					case DRMAA_PS_USER_SUSPENDED:
 					case DRMAA_PS_USER_SYSTEM_SUSPENDED:
-						status = OS_STARTED;
+						status = OS_PENDING;
 						break;
 
 					default:
 						break;
 				}
+		
+			PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa ps for %s: (%d = %d)", tool_p -> dt_id_s, drmaa_status, status);
+
 		}
 	else
 		{
-
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get drmaa ps for %s: %d, error: %s", tool_p -> dt_id_s, res, error_s);
 		}
 
 	return status;

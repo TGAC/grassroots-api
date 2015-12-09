@@ -435,7 +435,10 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 			PrintJSONToLog (service_json_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 		}		/* if (service_json_p) */
-
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service_json_p");
+		}
 
 	return success_flag;
 }

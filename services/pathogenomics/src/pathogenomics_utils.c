@@ -22,7 +22,8 @@
 
 #include "pathogenomics_utils.h"
 #include "time_util.h"
-
+#include "streams.h"
+#include "json_tools.h"
 
 
 bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
@@ -46,17 +47,63 @@ bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
 					++ current_time.tm_mon;
 				}
 
-
-
-			if (sprintf (buffer_s, "%4d-%2d-%2d", 1900 + current_time.tm_year, 1 + current_time.tm_mon, current_time.tm_mday) > 0)
+			if (sprintf (buffer_s, "%4d-%02d-%02d", 1900 + current_time.tm_year, 1 + current_time.tm_mon, current_time.tm_mday) > 0)
 				{
 					* (buffer_s + (BUFFER_SIZE - 1)) = '\0';
 
-					if (json_object_set_new (json_p, key_s, json_string (buffer_s)) == 0)
+
+					if (SetDateForSchemaOrg (json_p, key_s, buffer_s))
 						{
 							success_flag = true;
 						}
 				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create publish date for %s");
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get current time");
+		}
+
+	return success_flag;
+}
+
+
+bool SetDateForSchemaOrg (json_t *values_p, const char * const key_s, const char * const iso_date_s)
+{
+	bool success_flag = false;
+	json_t *child_p = json_object ();
+
+	if (child_p)
+		{
+			if ((json_object_set_new (child_p, "@type", json_string ("Date")) == 0) &&
+					(json_object_set_new (child_p, "date", json_string (iso_date_s)) == 0))
+				{
+					if (json_object_set_new (values_p, key_s, child_p) == 0)
+						{
+							success_flag = true;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set schema org date context for %s = %s", key_s, iso_date_s);
+						}
+
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add schema org date context for %s = %s", key_s, iso_date_s);
+				}
+
+			if (!success_flag)
+				{
+					WipeJSON (child_p);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create json child for schema org date context for %s = %s", key_s, iso_date_s);
 		}
 
 	return success_flag;

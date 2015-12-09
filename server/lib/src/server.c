@@ -41,7 +41,7 @@
 
 
 #ifdef _DEBUG
-	#define SERVER_DEBUG	(STM_LEVEL_FINE)
+	#define SERVER_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define SERVER_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -393,7 +393,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 
 
 					#if SERVER_DEBUG >= STM_LEVEL_FINER
-					PrintJSONToLog (res_p, "ProcessMessage - response: \n", STM_LEVEL_FINE);
+					PrintJSONToLog (res_p, "ProcessMessage - response: \n", STM_LEVEL_FINER, __FILE__, __LINE__);
 					FlushLog ();
 					#endif
 
@@ -426,99 +426,124 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 	/* Get the requested operation */
 	json_t *op_p = json_object_get (req_p, SERVICE_RUN_S);
 	int res = 0;
-	
-	#if SERVER_DEBUG >= STM_LEVEL_INFO
 	char *req_s = json_dumps (req_p, JSON_PRESERVE_ORDER | JSON_INDENT (2));
-	printf ("RunServiceFromJSON:\n%s\n", req_s);
-	#endif
-	
-	if (op_p && json_is_true (op_p))
+
+	if (op_p)
 		{
-			const char *service_name_s = GetServiceNameFromJSON (req_p);
-			
-			if (service_name_s)
+			if (json_is_true (op_p))
 				{
-					LinkedList *services_p = AllocateLinkedList  (FreeServiceNode);
+					const char *service_name_s = GetServiceNameFromJSON (req_p);
 					
-					if (services_p)
+					if (service_name_s)
 						{
-							LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, credentials_p);
+							LinkedList *services_p = AllocateLinkedList  (FreeServiceNode);
 
-							#if SERVER_DEBUG >= STM_LEVEL_FINEST
+							if (services_p)
 								{
-									ServiceNode * node_p = (ServiceNode *) (services_p -> ll_head_p);
+									LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, credentials_p);
 
-									while (node_p)
+									#if SERVER_DEBUG >= STM_LEVEL_FINEST
 										{
-											Service *service_p = node_p -> sn_service_p;
-											const char *name_s = GetServiceName (service_p);
+											ServiceNode * node_p = (ServiceNode *) (services_p -> ll_head_p);
 
-											PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "matched service \"%s\"\n", name_s);
-
-											node_p = (ServiceNode *) (node_p -> sn_node.ln_next_p);
-										}
-								}
-							#endif
-
-							if (services_p -> ll_size == 1)
-								{	
-									ServiceNode *node_p = (ServiceNode *) (services_p -> ll_head_p);
-									Service *service_p =  node_p -> sn_service_p;
-							
-									if (service_p)
-										{
-											/* 
-											 * Convert the json parameter set into a ParameterSet
-											 * to run the Service with.
-											 */
-											ParameterSet *params_p = CreateParameterSetFromJSON (req_p);
-
-											if (params_p)
+											while (node_p)
 												{
-													ServiceJobSet *jobs_p = RunService (service_p, params_p, credentials_p);
-													bool keep_service_flag = false;
+													Service *service_p = node_p -> sn_service_p;
+													const char *name_s = GetServiceName (service_p);
 
-													if (jobs_p)
+													PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "matched service \"%s\"\n", name_s);
+
+													node_p = (ServiceNode *) (node_p -> sn_node.ln_next_p);
+												}
+										}
+									#endif
+
+									if (services_p -> ll_size == 1)
+										{
+											ServiceNode *node_p = (ServiceNode *) (services_p -> ll_head_p);
+											Service *service_p =  node_p -> sn_service_p;
+
+											if (service_p)
+												{
+													/*
+													 * Convert the json parameter set into a ParameterSet
+													 * to run the Service with.
+													 */
+													ParameterSet *params_p = CreateParameterSetFromJSON (req_p);
+
+													if (params_p)
 														{
-															if (ProcessServiceJobSet (jobs_p, res_p, &keep_service_flag))
+															ServiceJobSet *jobs_p = NULL;
+
+															#if SERVER_DEBUG >= STM_LEVEL_FINER
+															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "about to run service \"%s\"\n", service_name_s);
+															#endif
+
+															jobs_p = RunService (service_p, params_p, credentials_p);
+															bool keep_service_flag = false;
+
+															if (jobs_p)
 																{
-																	++ res;
-																}
-														
-															
-															if (keep_service_flag)
+																	if (ProcessServiceJobSet (jobs_p, res_p, &keep_service_flag))
+																		{
+																			++ res;
+																		}
+
+																	if (keep_service_flag)
+																		{
+																			/* since we've checked for a single node */
+																			LinkedListRemHead (services_p);
+																			node_p -> sn_service_p = NULL;
+																			FreeServiceNode ((ListItem * const) node_p);
+																		}
+
+																}		/* if (jobs_p) */
+															else
 																{
-																	/* since we've checked for a single node */
-																	LinkedListRemHead (services_p);
-																	node_p -> sn_service_p = NULL;
-																	FreeServiceNode ((ListItem * const) node_p);
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "No jobs from running %s with params from %s", service_name_s, req_s);
 																}
 
-														}		/* if (jobs_p) */
+														}		/* if (params_p) */
 													else
 														{
-
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to get params from %s", req_s);
 														}
+												}		/* if (service_p) */
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "NULL service on list");
+												}
+										}		/* if (services_p -> ll_size == 1)) */
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to find matching service %s, found " UINT32_FMT, service_name_s, services_p -> ll_size);
+										}
 
-												}		/* if (params_p) */
+									FreeLinkedList (services_p);
+								}		/* if (services_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to get allocate services list");
+								}
 
-										}		/* if (service_p) */
+						}		/* if (service_name_s) */
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to get service name from json %s", req_s);
+						}
+				}		/* if (json_is_true (op_p)) */
 
-								}		/* if (services_p -> ll_size == 1)) */
-				
-							FreeLinkedList (services_p);
-						}		/* if (services_p) */
-				
-				}		/* if (service_name_s) */
-		
-		}		/* if (op_p && json_is_true (op_p)) */
+		}		/* if (op_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to get run value from json %s", req_s);
+		}
 
-	#if SERVER_DEBUG >= STM_LEVEL_INFO
+
 	if (req_s)
 		{
 			free (req_s);
 		}
-	#endif
 		
 	return res;
 }
