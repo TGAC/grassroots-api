@@ -149,7 +149,7 @@ ServicesArray *GetServices (json_t *config_p)
 
 void ReleaseService (Service *service_p)
 {
-	FreePathogenomicsServiceData ((PathogenomicsServiceData *) (service_p -> se_data_p));
+	ClosePathogenomicsService (service_p);
 	FreeMemory (service_p);
 }
 
@@ -510,6 +510,8 @@ static void ReleasePathogenomicsServiceParameters (Service *service_p, Parameter
 static bool ClosePathogenomicsService (Service *service_p)
 {
 	bool success_flag = true;
+
+	FreePathogenomicsServiceData ((PathogenomicsServiceData *) (service_p -> se_data_p));;
 
 	return success_flag;
 }

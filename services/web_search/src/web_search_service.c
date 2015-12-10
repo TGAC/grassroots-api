@@ -223,6 +223,9 @@ static void ReleaseWebSearchServiceParameters (Service *service_p, ParameterSet 
 static bool CloseWebSearchService (Service *service_p)
 {
 	bool success_flag = true;
+	WebSearchServiceData *data_p = (WebSearchServiceData *) (service_p -> se_data_p);
+
+	FreeWebSearchServiceData (data_p);
 	
 	return success_flag;
 }

@@ -63,6 +63,10 @@ MongoTool *AllocateMongoTool (void)
 
 					return tool_p;
 				}		/* if (client_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get mongoc_client");
+				}
 
 			FreeMemory (tool_p);
 		}		/* if (tool_p) */

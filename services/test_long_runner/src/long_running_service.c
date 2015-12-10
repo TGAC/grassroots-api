@@ -196,7 +196,6 @@ static bool CloseLongRunningService (Service *service_p)
 	if (close_flag)
 		{
 			FreeLongRunningServiceData (data_p);
-			FreeService (service_p);
 		}
 
 	return close_flag;

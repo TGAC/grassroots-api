@@ -44,9 +44,14 @@ BlastToolSet :: BlastToolSet (Service *service_p)
 
 BlastToolSet :: ~BlastToolSet ()
 {
-	for (size_t i = bts_tools.size () - 1; i >= 0; -- i)
+	size_t i = bts_tools.size ();
+
+	if (i > 0)
 		{
-			bts_tools.pop_back ();
+			for ( -- i; i >= 0; -- i)
+				{
+					bts_tools.pop_back ();
+				}
 		}
 }
 
