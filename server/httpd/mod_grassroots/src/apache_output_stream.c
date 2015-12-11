@@ -62,19 +62,20 @@ static int PrintToApacheStream (OutputStream *stream_p, const uint32 level, cons
 	char *value_s = apr_pvsprintf (apache_stream_p -> aos_server_p -> process -> pool, message_s, args);
 	int ap_level;
 
+	/* filenames and line numbers are only printed if APLOG_DEBUG is set, so use this all of the time */
 	switch (level)
 		{
 			case STM_LEVEL_SEVERE:
-				ap_level = APLOG_CRIT;
+				ap_level = APLOG_DEBUG;
 				break;
 
 			case STM_LEVEL_WARNING:
-				ap_level = APLOG_WARNING;
+				ap_level = APLOG_DEBUG;
 				break;
 
 			case STM_LEVEL_INFO:
 			case STM_LEVEL_FINE:
-				ap_level = APLOG_NOERRNO | APLOG_INFO;
+				ap_level = APLOG_NOERRNO | APLOG_DEBUG;
 				break;
 
 			case STM_LEVEL_FINER:

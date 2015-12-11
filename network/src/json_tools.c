@@ -41,13 +41,16 @@ void WipeJSON (json_t *json_p)
 {
 	if (json_p)
 		{
-			if (json_is_array (json_p))
+			if (json_p -> refcount == 1)
 				{
-					json_array_clear (json_p);
-				}
-			else if (json_is_object (json_p))
-				{
-					json_object_clear (json_p);
+					if (json_is_array (json_p))
+						{
+							json_array_clear (json_p);
+						}
+					else if (json_is_object (json_p))
+						{
+							json_object_clear (json_p);
+						}
 				}
 
 			json_decref (json_p);

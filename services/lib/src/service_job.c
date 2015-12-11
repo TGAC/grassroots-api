@@ -387,7 +387,7 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 									if (job_json_p)
 										{
-											if (json_array_append_new (res_p, job_json_p) != 0)
+											if (json_array_append (res_p, job_json_p) != 0)
 												{
 													char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 
