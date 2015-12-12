@@ -489,6 +489,10 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																			++ res;
 																		}
 
+																	#if SERVER_DEBUG >= STM_LEVEL_FINER
+																	PrintJSONToLog (res_p, "result = ", STM_LEVEL_FINER, __FILE__, __LINE__);
+																	#endif
+
 																	if (keep_service_flag)
 																		{
 																			/* since we've checked for a single node */
@@ -544,7 +548,11 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 		{
 			free (req_s);
 		}
-		
+
+	#if SERVER_DEBUG >= STM_LEVEL_FINE
+	PrintJSONToLog (res_p, "final result = ", STM_LEVEL_FINE, __FILE__, __LINE__);
+	#endif
+
 	return res;
 }
 

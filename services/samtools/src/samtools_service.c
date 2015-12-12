@@ -216,6 +216,10 @@ static SamToolsServiceData *AllocateSamToolsServiceData (Service *service_p)
 
 static void FreeSamToolsServiceData (SamToolsServiceData *data_p)
 {
+	if (data_p -> stsd_index_files_ss)
+		{
+			FreeMemory (data_p -> stsd_index_files_ss);
+		}
 	FreeMemory (data_p);
 }
 
@@ -223,7 +227,6 @@ static void FreeSamToolsServiceData (SamToolsServiceData *data_p)
 static bool CloseSamToolsService (Service *service_p)
 {
 	FreeSamToolsServiceData ((SamToolsServiceData *) (service_p -> se_data_p));
-	FreeService (service_p);
 
 	return true;
 }

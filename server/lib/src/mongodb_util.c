@@ -74,7 +74,7 @@ mongoc_client_t *GetMongoClient (void)
 
 	if (s_clients_p)
 		{
-			client_p = mongoc_client_pool_pop (s_clients_p);
+			client_p = mongoc_client_pool_try_pop (s_clients_p);
 		}
 
 	return client_p;

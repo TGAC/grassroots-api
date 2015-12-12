@@ -117,6 +117,8 @@ void FreeService (Service *service_p)
 			FreeServiceJobSet (service_p -> se_jobs_p);
 		}
 
+	CloseService (service_p);
+
 	FreeMemory (service_p);
 }
 
@@ -171,6 +173,12 @@ ServiceNode *AllocateServiceNode (Service *service_p)
 void FreeServiceNode (ListItem * const node_p)
 {
 	ServiceNode *service_node_p = (ServiceNode *) node_p;
+	Service *service_p = service_node_p -> sn_service_p;
+
+	if (service_p)
+		{
+			FreeService (service_p);
+		}
 
 	FreeMemory (service_node_p);
 }
