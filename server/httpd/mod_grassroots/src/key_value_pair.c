@@ -132,7 +132,7 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p)
 					params_p = json_loads (data_s, 0, &err);
 					
 					#if KEY_VALUE_PAIR_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Request Body:\n%s\n", data_s);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Request Body:\\n%s\\n", data_s);
 					#endif
 
 					if (!params_p)
@@ -400,12 +400,13 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 							
 							if (child_p)
 								{
-									if (json_object_set (parent_p, this_token_p, child_p) == 0)
+									if (json_object_set_new (parent_p, this_token_p, child_p) == 0)
 										{
 											success_flag = true;
 										}
 									else
 										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't add json value for %s to json parameters", this_token_p);
 											ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Couldn't add json value for %s to json parameters", this_token_p);
 											
 											json_decref (child_p);
@@ -414,6 +415,7 @@ static bool AddJsonChild (json_t *parent_p, const char *key_s, const char *value
 								}
 							else
 								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Not enough memory to allocate json child  for %s", this_token_p);
 									ap_log_rerror (APLOG_MARK, APLOG_ERR, 0, req_p, "Not enough memory to allocate json child  for %s", this_token_p);
 								}
 						}		/* if (!child_p) */

@@ -153,7 +153,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 
 																									if (json_object_set (dest_p, SERVER_OPERATIONS_S, src_ops_p) == 0)
 																										{
-																											if (json_array_append (ops_array_p, dest_p) == 0)
+																											if (json_array_append_new (ops_array_p, dest_p) == 0)
 																												{
 																													success_flag = true;
 																												}

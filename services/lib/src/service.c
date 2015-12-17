@@ -668,7 +668,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 
 							if (copied_provider_p)
 								{
-									if (json_object_set (root_p, SERVER_PROVIDER_S, copied_provider_p) != 0)
+									if (json_object_set_new (root_p, SERVER_PROVIDER_S, copied_provider_p) != 0)
 										{
 											WipeJSON (copied_provider_p);
 											success_flag = false;
@@ -745,8 +745,14 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 										
 									if (success_flag)
 										{
-											success_flag = (json_object_set (root_p, SERVER_OPERATIONS_S, operation_p) == 0);
-											json_decref (operation_p);
+											if (json_object_set_new (root_p, SERVER_OPERATIONS_S, operation_p) == 0)
+												{
+													success_flag = true;
+												}
+											else
+												{
+													json_decref (operation_p);
+												}
 										}
 									else
 										{
@@ -900,8 +906,14 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 			
 			if (param_set_json_p)
 				{
-					success_flag = (json_object_set (root_p, PARAM_SET_KEY_S, param_set_json_p) == 0);
-					json_decref (param_set_json_p);
+					if (json_object_set_new (root_p, PARAM_SET_KEY_S, param_set_json_p) == 0)
+						{
+							success_flag = true;
+						}
+					else
+						{
+							json_decref (param_set_json_p);
+						}
 				}
 				
 			/* could set this to be cached ... */
@@ -1094,6 +1106,8 @@ bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 
 ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i))
 {
+	ServicesArray *services_p = NULL;
+
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
 	PrintJSONToLog (config_p, "GetReferenceServicesFromJSON: config", SERVICE_DEBUG);
 	#endif
@@ -1115,18 +1129,58 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 
 									if (ops_p)
 										{
-											size_t num_ops = json_is_array (ops_p) ? json_array_size (ops_p) : 1;
-											ServicesArray *services_p = AllocateServicesArray (num_ops);
 
-											if (services_p)
+											if (json_is_array (ops_p))
 												{
-													size_t i = 0;
-													Service **service_pp = services_p -> sa_services_pp;
+													size_t num_ops = json_array_size (ops_p);
 
-													while (i < num_ops)
+													services_p = AllocateServicesArray (num_ops);
+
+													if (services_p)
 														{
-															json_t *op_p =  json_array_get (ops_p, i);
-															Service *service_p = get_service_fn (op_p, i);
+															size_t i = 0;
+															Service **service_pp = services_p -> sa_services_pp;
+
+															while (i < num_ops)
+																{
+																	json_t *op_p =  json_array_get (ops_p, i);
+																	Service *service_p = get_service_fn (op_p, i);
+
+																	if (service_p)
+																		{
+																			*service_pp = service_p;
+																		}
+																	else
+																		{
+																			char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																			if (dump_s)
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu from:\n%s\n", i, dump_s);
+																					free (dump_s);
+																				}
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu\n", i);
+																				}
+
+																		}
+
+																	++ i;
+																	++ service_pp;
+																}		/* while (i < num_ops) */
+
+														}		/* if (services_p) */
+
+												}		/* if (json_is_array (ops_p)) */
+											else
+												{
+													services_p = AllocateServicesArray (1);
+
+													if (services_p)
+														{
+															Service **service_pp = services_p -> sa_services_pp;
+															Service *service_p = get_service_fn (ops_p, 0);
 
 															if (service_p)
 																{
@@ -1134,25 +1188,23 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 																}
 															else
 																{
-																	char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+																	char *dump_s = json_dumps (ops_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
 																	if (dump_s)
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu from:\n%s\n", i, dump_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service 0 from:\n%s\n", dump_s);
 																			free (dump_s);
 																		}
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu\n", i);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service 0\n");
 																		}
 
+																	FreeServicesArray (services_p);
+																	services_p = NULL;
 																}
 
-															++ i;
-															++ service_pp;
-														}
-
-														return services_p;
+														}		/* if (services_p)  */
 												}
 
 										}
@@ -1165,7 +1217,7 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 
 		}		/* if (config_p) */
 
-	return NULL;
+	return services_p;
 }
 
 

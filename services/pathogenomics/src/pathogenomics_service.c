@@ -785,7 +785,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 																if (error_obj_p)
 																	{
-																		if (json_array_append (errors_array_p, error_obj_p) == 0)
+																		if (json_array_append_new (errors_array_p, error_obj_p) == 0)
 																			{
 																				job_p -> sj_errors_p = errors_array_p;
 																				added_errors_flag = true;

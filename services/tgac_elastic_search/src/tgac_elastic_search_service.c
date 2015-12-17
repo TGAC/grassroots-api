@@ -125,9 +125,9 @@ static void FreeElasticSearchServiceData (ElasticSearchServiceData *data_p)
 
 ServicesArray *GetServices (const json_t *config_p)
 {
-	Service *compress_service_p = (Service *) AllocMemory (sizeof (Service));
+	Service *service_p = (Service *) AllocMemory (sizeof (Service));
 
-	if (compress_service_p)
+	if (service_p)
 		{
 			ServicesArray *services_p = AllocateServicesArray (1);
 			
@@ -137,7 +137,7 @@ ServicesArray *GetServices (const json_t *config_p)
 					
 					if (data_p)
 						{
-							InitialiseService (compress_service_p,
+							InitialiseService (service_p,
 								GetElasticSearchRestServiceName,
 								GetElasticSearchRestServiceDesciption,
 								GetElasticSearchRestServiceURI,
@@ -152,7 +152,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								true,
 								data_p);
 							
-							* (services_p -> sa_services_pp) = compress_service_p;
+							* (services_p -> sa_services_pp) = service_p;
 
 							return services_p;
 						}
@@ -160,7 +160,7 @@ ServicesArray *GetServices (const json_t *config_p)
 					FreeServicesArray (services_p);
 				}
 				
-			FreeService (compress_service_p);
+			FreeService (service_p);
 		}
 
 	return NULL;
@@ -183,6 +183,9 @@ static const char * const GetRootRestURI (void)
 static bool CloseElasticSearchRestService (Service *service_p)
 {
 	bool success_flag = true;
+	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) (service_p -> se_data_p);
+
+	FreeElasticSearchServiceData (data_p);
 	
 	return success_flag;
 }
@@ -331,7 +334,7 @@ static bool IsFileForElasticSearchRestService (Service *service_p, Resource *res
 }
 
 
-static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id)
+static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t job_id)
 {
 	return NULL;
 }

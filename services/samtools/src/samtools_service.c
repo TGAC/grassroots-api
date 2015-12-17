@@ -39,9 +39,11 @@ typedef struct SamToolsServiceData
 	size_t stsd_num_index_files;
 } SamToolsServiceData;
 
-const static int ST_DEFAULT_LINE_BREAK_INDEX = 60;
 
+static const int ST_DEFAULT_LINE_BREAK_INDEX = 60;
 
+static const char * const BLASTDB_S = "Blast";
+static const char * const FASTA_FILENAME_S = "Fasta";
 
 
 /*
@@ -75,6 +77,7 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 
 static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p);
 
+static const char *GetIndexFilenameFromBlastDBName (const json_t * const data_p, const char * const blast_s);
 
 /*
  * API FUNCTIONS
@@ -268,13 +271,18 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 						{
 							def.st_string_value_s = NULL;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "The name of the scaffold to find", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Blast database", "Blast database", "The path to the Blast database", TAG_SAMTOOLS_BLASTDB_FILENAME, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 								{
-									def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
+									def.st_string_value_s = NULL;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "Line break index", "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Scaffold", "Scaffold name", "The name of the scaffold to find", TAG_SAMTOOLS_SCAFFOLD, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 										{
-											return param_set_p;
+											def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
+
+											if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "Line break index", "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+												{
+													return param_set_p;
+												}
 										}
 								}
 						}
@@ -304,6 +312,45 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t job_id
 }
 
 
+static const char *GetIndexFilenameFromBlastDBName (const json_t * const data_p, const char * const blast_s)
+{
+	const char *index_s = NULL;
+	const json_t *value_p = json_object_get (data_p, BLASTDB_S);
+
+	if (value_p)
+		{
+			if (json_is_string (value_p))
+				{
+					const char * value_s = json_string_value (value_p);
+
+					if (strcmp (value_s, blast_s) == 0)
+						{
+							const json_t *fai_p = json_object_get (data_p, FASTA_FILENAME_S);
+
+							if (fai_p)
+								{
+									if (json_is_string (fai_p))
+										{
+											index_s = json_string_value (fai_p);
+
+											#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Matched index file \"%s\" from blast db \"%s\"", index_s, blast_s);
+											#endif
+										}
+								}
+						}
+				}
+		}
+
+	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Index file \"%s\" for blast db \"%s\"", index_s ? index_s : "NULL", blast_s);
+	#endif
+
+	return index_s;
+}
+
+
+
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
@@ -317,94 +364,137 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 		{
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 			Parameter *param_p = NULL;
+			const char *filename_s = NULL;
 
 			job_p -> sj_status = OS_FAILED_TO_START;
 
+			/* Try to get the fasta filename */
 			param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_FILENAME);
-
 			if (param_p)
 				{
-					const char *filename_s = param_p -> pa_current_value.st_string_value_s;
-
-					if (filename_s)
+					if (!IsStringEmpty (param_p -> pa_current_value.st_string_value_s))
 						{
-							param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_SCAFFOLD);
+							filename_s = param_p -> pa_current_value.st_string_value_s;
+						}
+				}
 
-							if (param_p)
+			/* If the fasta filename is empty, try and get the blastdb name */
+			if (!filename_s)
+				{
+					param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_BLASTDB_FILENAME);
+					if (param_p)
+						{
+							if (!IsStringEmpty (param_p -> pa_current_value.st_string_value_s))
 								{
-									const char *scaffold_s = param_p -> pa_current_value.st_string_value_s;
+									const char *blast_db_s = param_p -> pa_current_value.st_string_value_s;
 
-									if (scaffold_s)
+									if (blast_db_s)
 										{
-											ByteBuffer *buffer_p = AllocateByteBuffer (16384);
+											const json_t *indexes_p = json_object_get (data_p -> stsd_base_data.sd_config_p, "index_files");
 
-											if (buffer_p)
+											if (indexes_p)
 												{
-													int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
-													param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK);
-
-													if (param_p)
+													if (json_is_array (indexes_p))
 														{
-															break_index = param_p -> pa_current_value.st_long_value;
-														}
+															size_t i;
+															const size_t num_indexes = json_array_size (indexes_p);
 
-													job_p -> sj_status = OS_FAILED;
-
-													// temporarily don't pass break index
-													break_index = 0;
-													if (GetScaffoldData (data_p, filename_s, scaffold_s, break_index, buffer_p))
-														{
-															const char *sequence_s = GetByteBufferData (buffer_p);
-															json_error_t error;
-															json_t *res_p = json_pack_ex (&error, 0, "{s:s}", "scaffold", sequence_s);
-
-															if (res_p)
+															for (i = 0; i < num_indexes; ++ i)
 																{
-																	job_p -> sj_status = OS_SUCCEEDED;
-																	job_p -> sj_result_p = res_p;
-																}
-															else
-																{
-																	json_error_t error;
-																	job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "Create sequence error", sequence_s);
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
+																	json_t *value_p = json_array_get (indexes_p, i);
+
+																	filename_s = GetIndexFilenameFromBlastDBName (value_p, blast_db_s);
+
+																	if (filename_s)
+																		{
+																			i = num_indexes;
+																		}
 																}
 														}
 													else
 														{
-															json_error_t error;
-															job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "General error", "Failed to get scaffold data");
+															filename_s = GetIndexFilenameFromBlastDBName (indexes_p, blast_db_s);
 														}
+												}
+										}
+								}
+						}
+				}		/* if (!filename_s) */
 
-													FreeByteBuffer (buffer_p);
+			if (filename_s)
+				{
+					param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_SCAFFOLD);
 
-												}		/* if (buffer_p) */
-											else
+					if (param_p)
+						{
+							const char *scaffold_s = param_p -> pa_current_value.st_string_value_s;
+
+							if (scaffold_s)
+								{
+									ByteBuffer *buffer_p = AllocateByteBuffer (16384);
+
+									if (buffer_p)
+										{
+											int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
+											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK);
+
+											if (param_p)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate byte buffer to store scaffold data");
+													break_index = param_p -> pa_current_value.st_long_value;
 												}
 
-										}		/* if (scaffold_s) */
+											job_p -> sj_status = OS_FAILED;
+
+											// temporarily don't pass break index
+											break_index = 0;
+											if (GetScaffoldData (data_p, filename_s, scaffold_s, break_index, buffer_p))
+												{
+													const char *sequence_s = GetByteBufferData (buffer_p);
+													json_error_t error;
+													json_t *res_p = json_pack_ex (&error, 0, "{s:s}", "scaffold", sequence_s);
+
+													if (res_p)
+														{
+															job_p -> sj_status = OS_SUCCEEDED;
+															job_p -> sj_result_p = res_p;
+														}
+													else
+														{
+															json_error_t error;
+															job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "Create sequence error", sequence_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
+														}
+												}
+											else
+												{
+													json_error_t error;
+													job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "General error", "Failed to get scaffold data");
+												}
+
+											FreeByteBuffer (buffer_p);
+
+										}		/* if (buffer_p) */
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get scaffold");
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate byte buffer to store scaffold data");
 										}
 
-								}		/* if (param_p) */
+								}		/* if (scaffold_s) */
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s parameter", TAG_SAMTOOLS_SCAFFOLD);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get scaffold");
 								}
 
-						}		/* if (filename_s) */
+						}		/* if (param_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s parameter", TAG_SAMTOOLS_SCAFFOLD);
 						}
-				}
+
+				}		/* if (filename_s) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s parameter", TAG_SAMTOOLS_FILENAME);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
 				}
 
 		}		/* if (service_p -> se_jobs_p) */

@@ -796,7 +796,7 @@ static json_t *GetServiceData (const json_t * const req_p, const json_t *credent
 
 			if (res_services_p)
 				{
-					if (json_object_set (res_p, SERVICES_NAME_S, res_services_p) == 0)
+					if (json_object_set_new (res_p, SERVICES_NAME_S, res_services_p) == 0)
 						{
 							json_t *service_uuids_json_p = json_object_get (req_p, SERVICES_NAME_S);
 

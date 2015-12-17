@@ -168,7 +168,7 @@ json_t *GetStringIntPairsAsResourceJSON (const StringIntPairArray *pairs_p)
 
 					if (resource_p)
 						{
-							if (json_array_append (root_p, resource_p) != 0)
+							if (json_array_append_new (root_p, resource_p) != 0)
 								{
 
 								}

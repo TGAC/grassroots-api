@@ -177,6 +177,11 @@ void FreeParameter (Parameter *param_p)
 			FreeCopiedString (param_p -> pa_name_s);
 		}
 
+	if (param_p -> pa_display_name_s)
+		{
+			FreeCopiedString (param_p -> pa_display_name_s);
+		}
+
 	if (param_p -> pa_options_p)
 		{
 			FreeParameterMultiOptionArray (param_p -> pa_options_p);
@@ -351,6 +356,7 @@ void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
 
 		}		/* for ( ; i > 0; -- i, ++ option_p) */
 
+	FreeMemory (options_p -> pmoa_options_p);
 	FreeMemory (options_p);
 }
 
@@ -359,7 +365,6 @@ bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32
 {
 	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + index;
 	bool success_flag = true;
-
 
 	if (description_s)
 		{
@@ -1258,8 +1263,14 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 					if (success_flag)
 						{
-							success_flag = (json_object_set (json_p, PARAM_OPTIONS_S, json_options_p) == 0);
-							json_decref (json_options_p);
+							if (json_object_set_new (json_p, PARAM_OPTIONS_S, json_options_p) == 0)
+								{
+									success_flag = true;
+								}
+							else
+								{
+									json_decref (json_options_p);
+								}
 						}
 
 				}		/* if (json_options_p) */

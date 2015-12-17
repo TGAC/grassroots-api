@@ -44,6 +44,7 @@
 
 
 #define TAG_SAMTOOLS_FILENAME MAKE_TAG ('S', 'T', 'F', 'L')
+#define TAG_SAMTOOLS_BLASTDB_FILENAME MAKE_TAG ('S', 'T', 'B', 'F')
 #define TAG_SAMTOOLS_SCAFFOLD MAKE_TAG ('S', 'T', 'S', 'C')
 #define TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK MAKE_TAG ('S', 'T', 'L', 'B')
 

@@ -204,7 +204,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 					if (success_flag)
 						{
-							if (json_object_set (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0)
+							if (json_object_set_new (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0)
 								{
 									ParameterGroupNode *group_node_p = (ParameterGroupNode *) (param_set_p -> ps_grouped_params_p -> ll_head_p);
 
@@ -246,7 +246,7 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 										}		/* if (group_node_p) */
 
-								}		/* if (json_object_set (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0) */
+								}		/* if (json_object_set_new (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0) */
 							else
 								{
 

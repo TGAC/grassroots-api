@@ -273,7 +273,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 										}
 									else
 										{
-											success_flag = (json_object_set (job_json_p, SERVICE_STATUS_VALUE_S, json_integer (current_status)) == 0);
+											success_flag = (json_object_set_new (job_json_p, SERVICE_STATUS_VALUE_S, json_integer (current_status)) == 0);
 										}
 
 									if (success_flag)

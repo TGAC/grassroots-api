@@ -153,7 +153,7 @@ static WebSearchJSONServiceData *AllocateWebSearchJSONServiceData (json_t *op_js
 				{
 					service_data_p -> wssjd_results_selector_s = GetJSONString (op_json_p, "results_selector");
 
-					if (service_data_p -> wssjd_title_selector_s)
+					if (service_data_p -> wssjd_results_selector_s)
 						{
 							service_data_p -> wssjd_title_selector_s = GetJSONString (op_json_p, "title_selector");
 
@@ -226,6 +226,9 @@ static void ReleaseWebSearchJSONServiceParameters (Service *service_p, Parameter
 static bool CloseWebSearchJSONService (Service *service_p)
 {
 	bool success_flag = true;
+	WebSearchJSONServiceData *service_data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
+
+	FreeWebSearchJSONServiceData (service_data_p);
 	
 	return success_flag;
 }

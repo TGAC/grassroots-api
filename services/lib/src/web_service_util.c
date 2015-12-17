@@ -153,7 +153,7 @@ void ClearWebServiceData (WebServiceData * const data_p)
 
 	FreeCurlTool (data_p -> wsd_curl_data_p);
 
-	json_decref (data_p -> wsd_config_p);
+	//json_decref (data_p -> wsd_config_p);
 }
 
 
