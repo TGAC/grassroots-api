@@ -112,12 +112,19 @@ void InitialiseService (Service * const service_p,
 
 void FreeService (Service *service_p)
 {
+	Plugin *plugin_p = service_p -> se_plugin_p;
+
 	if (service_p -> se_jobs_p)
 		{
 			FreeServiceJobSet (service_p -> se_jobs_p);
 		}
 
 	CloseService (service_p);
+
+	if (plugin_p)
+		{
+			DecrementPluginOpenCount (plugin_p);
+		}
 
 	FreeMemory (service_p);
 }
@@ -457,7 +464,7 @@ uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *
 
 													if (!using_plugin_flag)
 														{
-															ClosePlugin (plugin_p);
+															FreePlugin (plugin_p);
 														}
 														
 												}		/* if (plugin_p) */
@@ -505,7 +512,7 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 	
 	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), json_config_p, services_p, true);
 		
-	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
+	//AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
 }
 
 
@@ -1045,6 +1052,7 @@ void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p)
 			if (*service_pp)
 				{
 					(*service_pp) -> se_plugin_p = plugin_p;
+					IncrementPluginOpenCount (plugin_p);
 				}
 		}
 }

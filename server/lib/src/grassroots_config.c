@@ -88,6 +88,11 @@ const json_t *GetGlobalServiceConfig (const char * const service_name_s)
 }
 
 
+void DisconnectFromExternalServers (void)
+{
+
+}
+
 void ConnectToExternalServers (void)
 {
 	const json_t *config_p = GetConfig ();

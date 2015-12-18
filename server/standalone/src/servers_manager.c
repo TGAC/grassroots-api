@@ -43,6 +43,7 @@ static bool AddExternalServerToExternalServersManager (ServersManager *manager_p
 
 static LinkedList *GetAllExternalServersFromExternalServersManager (ServersManager *manager_p);
 
+static bool FreeExternalServersManager (ServersManager *manager_p);
 
 
 ServersManager *GetServersManager (void)
@@ -51,7 +52,7 @@ ServersManager *GetServersManager (void)
 		{
 			s_manager_p = (ExternalServersManager *) AllocMemory (sizeof (ExternalServersManager));
 
-			InitServersManager (& (s_manager_p -> esm_base_manager), AddExternalServerToExternalServersManager, GetExternalServerFromExternalServersManager, RemoveExternalServerFromExternalServersManager, GetAllExternalServersFromExternalServersManager);
+			InitServersManager (& (s_manager_p -> esm_base_manager), AddExternalServerToExternalServersManager, GetExternalServerFromExternalServersManager, RemoveExternalServerFromExternalServersManager, GetAllExternalServersFromExternalServersManager, FreeExternalServersManager);
 			InitLinkedList (& (s_manager_p -> esm_servers));
 		}
 
@@ -150,4 +151,14 @@ static LinkedList *GetAllExternalServersFromExternalServersManager (ServersManag
 	return & (external_servers_manager_p -> esm_servers);
 }
 
+
+static bool FreeExternalServersManager (ServersManager *manager_p)
+{
+	ExternalServersManager *external_servers_manager_p = (ExternalServersManager *) manager_p;
+
+	FreeLinkedList (& (external_servers_manager_p -> esm_servers));
+	FreeMemory (external_servers_manager_p);
+
+	return true;
+}
 

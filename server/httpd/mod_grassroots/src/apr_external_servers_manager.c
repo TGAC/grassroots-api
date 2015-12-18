@@ -92,7 +92,8 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 					                    AddExternalServerToAprServersManager,
 					                    GetExternalServerFromAprServersManager,
 					                    RemoveExternalServerFromAprServersManager,
-					                    GetAllExternalServersFromAprServersManager);
+					                    GetAllExternalServersFromAprServersManager,
+					                    DestroyAPRServersManager);
 
 					apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
 
@@ -193,6 +194,11 @@ static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *s
 
 			IterateOverAPRGlobalStorage (manager_p -> asm_store_p, iterator_p, servers_p);
 
+			if (servers_p -> ll_size == 0)
+				{
+					FreeLinkedList (servers_p);
+					servers_p = NULL;
+				}
 		}		/* if (servers_p) */
 
 	return servers_p;

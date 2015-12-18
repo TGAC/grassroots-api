@@ -136,6 +136,8 @@ typedef struct ServersManager
 	LinkedList *(*sm_get_all_servers_fn) (struct ServersManager *manager_p);
 
 
+	bool (*sm_free_servers_manager_fn) (struct ServersManager *manager_p);
+
 } ServersManager;
 
 
@@ -157,12 +159,14 @@ GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
  * @param get_server_fn The callback function to set for sm_get_server_fn for the given ServersManager.
  * @param remove_server_fn The callback function to set for sm_remove_server_fn for the given ServersManager.
  * @param get_all_servers_fn The callback function to set for sm_get_all_servers_fn for the given ServersManager.
+ * @param free_servers_manager_fn The callback function to set for sm_free_servers_manager_fn for the given ServersManager.
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
 											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
 											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key),
-											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p));
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p),
+											bool (*free_servers_manager_fn) (struct ServersManager *manager_p));
 
 
 /**
@@ -215,7 +219,7 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersMa
 
 
 /**
-	 * @brief Get all ExternalServers.
+ * @brief Get all ExternalServers.
  *
  * Get a LinkedList of ExternalServerNodes for all active ExternalServers.
  *
@@ -226,6 +230,21 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersMa
  * @see sm_get_all_servers_fn
  */
 GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p);
+
+
+
+/**
+ * @brief Free a ServersManager
+ *
+ * Free a ServersManager and all of its associated ExternalServers.
+ *
+ * @param manager_p The ServersManager to free.
+ * @return <code>true</code> if the ServersManager and its associated ExternalServers were freed
+ * successfully, <code>false</code>otherwise.
+ * @memberof ServersManager
+ * @see sm_free_servers_manager_fn
+ */
+GRASSROOTS_SERVICE_MANAGER_API bool FreeServersManager (ServersManager *manager_p);
 
 
 GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);

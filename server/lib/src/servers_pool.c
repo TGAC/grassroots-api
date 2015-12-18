@@ -35,12 +35,14 @@ void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
 											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
 											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key),
-											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p))
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p),
+											bool (*free_servers_manager_fn) (struct ServersManager *manager_p))
 {
 	manager_p -> sm_add_server_fn = add_server_fn;
 	manager_p -> sm_get_server_fn = get_server_fn;
 	manager_p -> sm_remove_server_fn = remove_server_fn;
 	manager_p -> sm_get_all_servers_fn = get_all_servers_fn;
+	manager_p -> sm_free_servers_manager_fn = free_servers_manager_fn;
 }
 
 
@@ -65,6 +67,12 @@ ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_
 LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p)
 {
 	return manager_p -> sm_get_all_servers_fn (manager_p);
+}
+
+
+bool FreeServersManager (ServersManager *manager_p)
+{
+	return manager_p -> sm_free_servers_manager_fn (manager_p);
 }
 
 

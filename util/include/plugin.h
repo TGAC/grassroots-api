@@ -133,6 +133,8 @@ typedef struct Plugin
 	 * this will be NULL.
 	 */
 	struct Handler *pl_handler_p;
+
+	int32 pl_open_count;
 } Plugin;
 
 
@@ -295,6 +297,26 @@ GRASSROOTS_UTIL_API char *DeterminePluginName (const char * const full_plugin_pa
  * @see FreeCopiedString
  */
 GRASSROOTS_UTIL_API char *MakePluginName (const char * const name_s);
+
+
+
+/**
+ * @brief Increment the number of objects that this Plugin has open.
+ *
+ * @param plugin_p The Plugin to alter.
+ * @memberof Plugin
+ */
+GRASSROOTS_UTIL_API void IncrementPluginOpenCount (Plugin *plugin_p);
+
+
+/**
+ * @brief Decrement the number of objects that this Plugin has open.
+ * If the open count falls to zero then the Plugin will be freed.
+ *
+ * @param plugin_p The Plugin to alter.
+ * @memberof Plugin
+ */
+GRASSROOTS_UTIL_API void DecrementPluginOpenCount (Plugin *plugin_p);
 
 
 /***********************************/

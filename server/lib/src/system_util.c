@@ -78,10 +78,14 @@ bool DestroyInformationSystem ()
 	//FreeExternalServers ();
 	ExitMongoDB ();
 	DestroyConfig ();
+
+	DisconnectFromExternalServers ();
+
 	curl_global_cleanup ();
 	
 //	FreeDefaultOutputStream ();
 	DestroyHandlerUtil ();
+
 
 	return res_flag;
 }

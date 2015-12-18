@@ -75,6 +75,8 @@ static apr_status_t CloseInformationSystem (void *data_p);
 
 static apr_status_t CleanUpOutputStream (void *value_p);
 
+static apr_status_t ClearServerResources (void *value_p);
+
 
 /*
  * Based on code taken from http://marc.info/?l=apache-modules&m=107669698011831
@@ -266,8 +268,17 @@ static void GrassrootsChildInit (apr_pool_t *pool_p, server_rec *server_p)
 				}		/* if (APRServersManagerChildInit (pool_p, server_p)) */
 
 		}		/* if (APRJobsManagerChildInit (pool_p, server_p)) */
+
+
 }
 
+
+static apr_status_t ClearServerResources (void *value_p)
+{
+	FreeServerResources ();
+
+	return APR_SUCCESS;
+}
 
 static int GrassrootsPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, apr_pool_t *temp_p, server_rec *server_p)
 {
@@ -338,6 +349,9 @@ static int GrassrootsPostConfig (apr_pool_t *config_pool_p, apr_pool_t *log_p, a
   				ap_log_error (APLOG_MARK, APLOG_CRIT, ret, server_p, "You need to specify an socache module to load for Grassroots to work");
   			}
   	}
+
+
+	apr_pool_cleanup_register (config_pool_p, NULL, ClearServerResources, apr_pool_cleanup_null);
 
 
   return ret;

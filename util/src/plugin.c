@@ -30,6 +30,7 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 	plugin_p -> pl_handler_p = NULL;
 	plugin_p -> pl_status = PS_UNSET;
 	plugin_p -> pl_type = PN_UNKNOWN;
+	plugin_p -> pl_open_count = 0;
 
 	if (path_s)
 		{
@@ -49,6 +50,25 @@ bool InitBasePlugin (Plugin * const plugin_p, const char * const path_s)
 		}
 
 	return success_flag;
+}
+
+
+void IncrementPluginOpenCount (Plugin *plugin_p)
+{
+	++ (plugin_p -> pl_open_count);
+}
+
+
+void DecrementPluginOpenCount (Plugin *plugin_p)
+{
+	if (plugin_p -> pl_open_count == 1)
+		{
+			FreePlugin (plugin_p);
+		}
+	else
+		{
+			-- (plugin_p -> pl_open_count);
+		}
 }
 
 
