@@ -50,7 +50,7 @@ static bool AddOperationInformationURIToJSON (Service * const service_p, json_t 
 
 static bool AddServiceUUIDToJSON (Service * const service_p, json_t *root_p);
 
-static void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
+static uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
 
 static const char *GetPluginNameFromJSON (const json_t * const root_p);
 
@@ -219,12 +219,14 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 								
 							if (matcher_p)
 								{
+
 									while (reference_file_node_p)
 										{
 											json_t *config_p = LoadJSONConfig (reference_file_node_p -> sln_string_s);
 
 											if (config_p)
 												{
+													uint32 num_added_services = 0;
 													char *json_s = json_dumps (config_p, JSON_INDENT (2));
 
 													json_t *services_json_p = json_object_get (config_p, SERVICES_NAME_S);
@@ -237,7 +239,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 																{
 																	SetPluginNameForServiceMatcher (matcher_p, plugin_name_s);		
 																	
-																	GetMatchingServices (services_path_s, (ServiceMatcher *) matcher_p, services_json_p, services_p, true);
+																	num_added_services = GetMatchingServices (services_path_s, (ServiceMatcher *) matcher_p, services_json_p, services_p, true);
 																}
 															else
 																{
@@ -250,7 +252,11 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 														{
 															free (json_s);
 														}
-																									
+
+													if (num_added_services == 0)
+														{
+															json_decref (config_p);
+														}
 												}		/* if (config_p) */
 																						
 											reference_file_node_p = (StringListNode *) (reference_file_node_p -> sln_node.ln_next_p);
@@ -395,8 +401,10 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 	return num_matched_services;
 }
 
-void GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag)
+
+uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag)
 {
+	uint32 num_matched_services = 0;
 	const char *plugin_pattern_s = GetPluginPattern ();
 	
 	if (plugin_pattern_s)
@@ -430,7 +438,13 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 															
 															if (services_p)
 																{
-																	using_plugin_flag = (AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag) > 0);
+																	uint32 i = AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag);
+
+																	if (i > 0)
+																		{
+																			using_plugin_flag = true;
+																			num_matched_services += i;
+																		}
 
 																	FreeServicesArray (services_p);
 																}
@@ -464,6 +478,8 @@ void GetMatchingServices (const char * const services_path_s, ServiceMatcher *ma
 				}		/* if (full_services_path_s) */
 			
 		}		/* if (plugin_pattern_s) */
+
+	return num_matched_services;
 }
 
 

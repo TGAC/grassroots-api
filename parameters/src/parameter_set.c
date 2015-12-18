@@ -27,7 +27,7 @@
 
 
 #ifdef _DEBUG
-	#define PARAMETER_SET_DEBUG	(STM_LEVEL_INFO)
+	#define PARAMETER_SET_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define PARAMETER_SET_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -441,7 +441,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 			const char *description_s = NULL;
 
 			#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
-			PrintJSONToLog (op_p, "CreateParameterSetFromJSON op:\n", PARAMETER_SET_DEBUG);
+			PrintJSONToLog (op_p, "CreateParameterSetFromJSON op:\n", PARAMETER_SET_DEBUG, __FILE__, __LINE__);
 			#endif
 			
 			/* Get the name */
@@ -480,7 +480,13 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 									while ((i < num_params) && success_flag)
 										{
 											json_t *param_json_p = json_array_get (params_json_p, i);
-											Parameter *param_p = CreateParameterFromJSON (param_json_p);
+											Parameter *param_p = NULL;
+
+											#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
+											PrintJSONToLog (param_json_p, "param_json_p: ", PARAMETER_SET_DEBUG, __FILE__, __LINE__);
+											#endif
+
+											param_p = CreateParameterFromJSON (param_json_p);
 											
 											if (param_p)
 												{

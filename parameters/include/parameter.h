@@ -463,11 +463,24 @@ GRASSROOTS_PARAMS_API const char *CheckForNotNull (const Parameter * const param
  * Set the current value of a Parameter.
  *
  * @param parameter_p The Parameter to update.
- * @param value_p The value to update the Parameter to.
+ * @param value_p The value to update the Parameter to. It will be cast to the appropriate type based upon
+ * the Parameter's type.
  * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
  * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
+
+
+
+
+/**
+ * Set the current value of a Parameter from a SharedType.
+ *
+ * @param parameter_p The Parameter to update.
+ * @param src_p The SharedType to update the Parameter from.
+ * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */GRASSROOTS_PARAMS_API bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedType * src_p);
 
 
 /**

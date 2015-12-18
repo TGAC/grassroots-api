@@ -120,7 +120,6 @@ bool InitWebServiceData (WebServiceData * const data_p, json_t *op_json_p)
 																		{
 																			data_p -> wsd_info_uri_s = GetOperationInformationURIFromJSON (op_json_p);
 
-
 																			return true;
 																		}
 																}
@@ -153,7 +152,10 @@ void ClearWebServiceData (WebServiceData * const data_p)
 
 	FreeCurlTool (data_p -> wsd_curl_data_p);
 
-	//json_decref (data_p -> wsd_config_p);
+	if (data_p -> wsd_config_p)
+		{
+			json_decref (data_p -> wsd_config_p);
+		}
 }
 
 
