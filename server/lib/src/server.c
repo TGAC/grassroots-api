@@ -1136,7 +1136,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 													/* set the keyword parameter */
 													if (param_p -> pa_type == PT_KEYWORD)
 														{
-															if (SetParameterValue (param_p, keyword_s))
+															if (SetParameterValue (param_p, keyword_s, true))
 																{
 																	param_flag = true;
 																}

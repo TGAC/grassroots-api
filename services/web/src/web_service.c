@@ -215,10 +215,12 @@ static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *param
 
 
 
-
 static bool CloseWebService (Service *service_p)
 {
 	bool success_flag = true;
+	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
+
+	FreeWebServiceData (data_p);
 	
 	return success_flag;
 }

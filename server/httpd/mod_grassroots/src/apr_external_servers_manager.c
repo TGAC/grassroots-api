@@ -67,6 +67,10 @@ static apr_status_t AddExternalServerFromSOCache (ap_socache_instance_t *instanc
 static void FreeAPRExternalServer (unsigned char *key_p, void *value_p);
 
 
+static bool DestroyAPRServersManager (ServersManager *manager_p);
+
+
+
 /**************************/
 
 APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool_p, const char *provider_name_s)
@@ -107,12 +111,14 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 }
 
 
-bool DestroyAPRServersManager (APRServersManager *manager_p)
+static bool DestroyAPRServersManager (ServersManager *manager_p)
 {
-	if (manager_p)
+	APRServersManager *servers_manager_p = (APRServersManager *) manager_p;
+
+	if (servers_manager_p)
 		{
 			//FreeAPRGlobalStorage (manager_p -> asm_store_p);
-			FreeMemory (manager_p);
+			FreeMemory (servers_manager_p);
 		}
 
 	return true;

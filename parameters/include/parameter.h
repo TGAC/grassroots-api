@@ -465,10 +465,12 @@ GRASSROOTS_PARAMS_API const char *CheckForNotNull (const Parameter * const param
  * @param parameter_p The Parameter to update.
  * @param value_p The value to update the Parameter to. It will be cast to the appropriate type based upon
  * the Parameter's type.
+ * @param current_value_flag If this is <code>true</code> then the current parameter value is the one that will be set.
+ * If this is <code>false</code>, then the Parameter's default value will be altered.
  * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
  * @memberof Parameter
  */
-GRASSROOTS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p);
+GRASSROOTS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, const void *value_p, const bool current_value_flag);
 
 
 
@@ -478,9 +480,11 @@ GRASSROOTS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, con
  *
  * @param parameter_p The Parameter to update.
  * @param src_p The SharedType to update the Parameter from.
+ * @param current_value_flag If this is <code>true</code> then the current parameter value is the one that will be set.
+ * If this is <code>false</code>, then the Parameter's default value will be altered.
  * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
  * @memberof Parameter
- */GRASSROOTS_PARAMS_API bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedType * src_p);
+ */GRASSROOTS_PARAMS_API bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedType * src_p, const bool current_value_flag);
 
 
 /**
@@ -563,9 +567,10 @@ GRASSROOTS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
  * Clear the value of a SharedType.
  *
  * @param st_p The SharedType to clear.
+ * @param pt The ParameterType for this SharedType
  * @memberof SharedType
  */
-GRASSROOTS_PARAMS_API void ClearSharedType (SharedType *st_p);
+GRASSROOTS_PARAMS_API void ClearSharedType (SharedType *st_p, const ParameterType pt);
 
 
 /**

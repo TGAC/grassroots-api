@@ -75,7 +75,33 @@ static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p
 
 static LinkedList *CreateSharedTypesList (const SharedType *values_p);
 
+
 static LinkedList *CopySharedTypesList (const LinkedList *source_p);
+
+
+static bool SetParameterValueFromBoolean (Parameter * const param_p, const bool b, const bool current_flag);
+
+
+static bool SetParameterValueFromChar (Parameter * const param_p, const char c, const bool current_flag);
+
+
+static bool SetParameterValueFromSignedInt (Parameter * const param_p, const int32 i, const bool current_flag);
+
+
+static bool SetParameterValueFromUnsignedInt (Parameter * const param_p, const uint32 i, const bool current_flag);
+
+
+static bool SetParameterValueFromReal (Parameter * const param_p, const double64 d, const bool current_flag);
+
+
+static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s, const bool current_flag);
+
+
+static bool SetParameterValueFromResource (Parameter * const param_p, const Resource * const src_p, const bool current_flag);
+
+
+static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t * const src_p, const bool current_flag);
+
 
 
 Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
@@ -126,20 +152,30 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 											param_p -> pa_store_p = store_p;
 											param_p -> pa_group_p = NULL;
 
-
-											memcpy (& (param_p -> pa_default), &default_value, sizeof (SharedType));
 											memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
+											memset (& (param_p -> pa_default), 0, sizeof (SharedType));
 
 											if (multi_valued_flag)
 												{
-
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Multi-valued parameters not yet implemented");
 												}
 											else
 												{
-													if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value))
+													if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true))
 														{
-															return param_p;
-														}		/* if (SetParameterValue (param_p, current_value_p ? current_value_p : &default_value)) */
+															if (SetParameterValueFromSharedType (param_p, &default_value, false))
+																{
+																	return param_p;
+																}		/* if (SetParameterValueFromSharedType (param_p, &default_value, false)) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set param current value for %s", param_p -> pa_name_s);
+																}
+														}		/* if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true)) */
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set param default value for %s", param_p -> pa_name_s);
+														}
 												}
 
 											FreeMemory (param_p);
@@ -197,39 +233,8 @@ void FreeParameter (Parameter *param_p)
 			FreeParameterBounds (param_p -> pa_bounds_p, param_p -> pa_type);
 		}
 
-	switch (param_p -> pa_type)
-		{
-			case PT_DIRECTORY:
-			case PT_FILE_TO_READ:
-			case PT_FILE_TO_WRITE:
-				if (param_p -> pa_current_value.st_resource_value_p)
-					{
-						FreeResource (param_p -> pa_current_value.st_resource_value_p);
-						param_p -> pa_current_value.st_resource_value_p = NULL;
-					}
-				break;
-
-			case PT_TABLE:
-			case PT_STRING:
-			case PT_LARGE_STRING:
-			case PT_PASSWORD:
-			case PT_KEYWORD:
-				if (param_p -> pa_current_value.st_string_value_s)
-					{
-						FreeCopiedString (param_p -> pa_current_value.st_string_value_s);
-						param_p -> pa_current_value.st_string_value_s = NULL;
-					}
-				break;
-
-			case PT_JSON:
-				if (param_p -> pa_current_value.st_json_p)
-					{
-						json_decref (param_p -> pa_current_value.st_json_p);
-						param_p -> pa_current_value.st_json_p = NULL;
-					}
-			break;
-		}
-
+	ClearSharedType (& (param_p -> pa_current_value), param_p -> pa_type);
+	ClearSharedType (& (param_p -> pa_default), param_p -> pa_type);
 
 	FreeHashTable (param_p -> pa_store_p);
 
@@ -509,227 +514,32 @@ const char *GetParameterKeyValue (const Parameter * const parameter_p, const cha
 
 
 
-static bool SetParameterValueFromBoolean (Parameter * const param_p, const bool b)
-{
-	param_p -> pa_current_value.st_boolean_value = b;
 
-	return true;
-}
-
-
-static bool SetParameterValueFromChar (Parameter * const param_p, const char c)
-{
-	param_p -> pa_current_value.st_char_value = c;
-
-	return true;
-}
-
-
-static bool SetParameterValueFromSignedInt (Parameter * const param_p, const int32 i)
-{
-	bool success_flag = false;
-
-	if (param_p -> pa_bounds_p)
-		{
-			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
-
-			if ((i >= bounds_p -> pb_lower.st_long_value) &&
-					(i <= bounds_p -> pb_upper.st_long_value))
-				{
-					param_p -> pa_current_value.st_long_value = i;
-					success_flag = true;
-				}
-		}
-	else
-		{
-			param_p -> pa_current_value.st_long_value = i;
-			success_flag = true;
-		}
-
-	return success_flag;
-}
-
-
-static bool SetParameterValueFromUnsignedInt (Parameter * const param_p, const uint32 i)
-{
-	bool success_flag = false;
-
-	if (param_p -> pa_bounds_p)
-		{
-			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
-
-			if ((i >= bounds_p -> pb_lower.st_ulong_value) &&
-					(i <= bounds_p -> pb_upper.st_ulong_value))
-				{
-					param_p -> pa_current_value.st_ulong_value = i;
-					success_flag = true;
-				}
-		}
-	else
-		{
-			param_p -> pa_current_value.st_ulong_value = i;
-			success_flag = true;
-		}
-
-	return success_flag;
-}
-
-
-static bool SetParameterValueFromReal (Parameter * const param_p, const double64 d)
-{
-	bool success_flag = false;
-
-	if (param_p -> pa_bounds_p)
-		{
-			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
-
-			if ((d >= bounds_p -> pb_lower.st_data_value) &&
-					(d <= bounds_p -> pb_upper.st_data_value))
-				{
-					param_p -> pa_current_value.st_data_value = d;
-					success_flag = true;
-				}
-		}
-	else
-		{
-			param_p -> pa_current_value.st_data_value = d;
-			success_flag = true;
-		}
-
-	return success_flag;
-}
-
-
-
-static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s)
-{
-	bool success_flag = false;
-
-	if (src_s)
-		{
-			char *copied_value_s = CopyToNewString (src_s, 0, false);
-
-			if (copied_value_s)
-				{
-					/* If we have a previous value, delete it */
-					if (param_p -> pa_current_value.st_string_value_s)
-						{
-							free (param_p -> pa_current_value.st_string_value_s);
-						}
-
-					param_p -> pa_current_value.st_string_value_s = copied_value_s;
-					success_flag = true;
-				}
-		}
-	else
-		{
-			/* If we have a previous value, delete it */
-			if (param_p -> pa_current_value.st_string_value_s)
-				{
-					free (param_p -> pa_current_value.st_string_value_s);
-					param_p -> pa_current_value.st_string_value_s = NULL;
-				}
-
-			success_flag = true;
-		}
-
-	return success_flag;
-}
-
-
-static bool SetParameterValueFromResource (Parameter * const param_p, const Resource * const src_p)
-{
-	bool success_flag = false;
-
-	if (src_p)
-		{
-			if (param_p -> pa_current_value.st_resource_value_p)
-				{
-					success_flag = CopyResource (src_p, param_p -> pa_current_value.st_resource_value_p);
-				}
-			else
-				{
-					param_p -> pa_current_value.st_resource_value_p = AllocateResource (src_p -> re_protocol_s, src_p -> re_value_s, src_p -> re_title_s);
-
-					success_flag = (param_p -> pa_current_value.st_resource_value_p != NULL);
-				}
-		}
-	else
-		{
-			if (param_p -> pa_current_value.st_resource_value_p)
-				{
-					FreeResource (param_p -> pa_current_value.st_resource_value_p);
-					param_p -> pa_current_value.st_resource_value_p = NULL;
-				}
-
-			success_flag = true;
-		}
-
-	return success_flag;
-}
-
-
-static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t * const src_p)
-{
-	bool success_flag = false;
-
-	if (src_p)
-		{
-			json_error_t err;
-			json_t *json_value_p = json_deep_copy (src_p);
-
-			if (json_value_p)
-				{
-					/* If we have a previous value, delete it */
-					if (param_p -> pa_current_value.st_json_p)
-						{
-							WipeJSON (param_p -> pa_current_value.st_json_p);
-						}
-
-					param_p -> pa_current_value.st_json_p = json_value_p;
-					success_flag = true;
-				}
-		}
-	else
-		{
-			/* If we have a previous value, delete it */
-			if (param_p -> pa_current_value.st_json_p)
-				{
-					WipeJSON (param_p -> pa_current_value.st_json_p);
-				}
-
-			success_flag = true;
-		}
-
-	return success_flag;
-}
-
-
-bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedType * src_p)
+bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedType * src_p, const bool current_value_flag)
 {
 	bool success_flag = false;
 
 	switch (param_p -> pa_type)
 		{
 			case PT_BOOLEAN:
-				success_flag = SetParameterValueFromBoolean (param_p, src_p -> st_boolean_value);
+				success_flag = SetParameterValueFromBoolean (param_p, src_p -> st_boolean_value, current_value_flag);
 				break;
 
 			case PT_CHAR:
-				success_flag = SetParameterValueFromChar (param_p, src_p -> st_char_value);
+				success_flag = SetParameterValueFromChar (param_p, src_p -> st_char_value, current_value_flag);
 				break;
 
 			case PT_SIGNED_INT:
-				success_flag = SetParameterValueFromSignedInt (param_p, src_p -> st_long_value);
+				success_flag = SetParameterValueFromSignedInt (param_p, src_p -> st_long_value, current_value_flag);
 				break;
 
 			case PT_UNSIGNED_INT:
-				success_flag = SetParameterValueFromUnsignedInt (param_p, src_p -> st_ulong_value);
+				success_flag = SetParameterValueFromUnsignedInt (param_p, src_p -> st_ulong_value, current_value_flag);
 				break;
 
 			case PT_SIGNED_REAL:
 			case PT_UNSIGNED_REAL:
-				success_flag = SetParameterValueFromReal (param_p, src_p -> st_data_value);
+				success_flag = SetParameterValueFromReal (param_p, src_p -> st_data_value, current_value_flag);
 				break;
 
 			case PT_LARGE_STRING:
@@ -737,17 +547,17 @@ bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedTyp
 			case PT_TABLE:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
-				success_flag = SetParameterValueFromString (param_p, src_p -> st_string_value_s);
+				success_flag = SetParameterValueFromString (param_p, src_p -> st_string_value_s, current_value_flag);
 				break;
 
 			case PT_FILE_TO_WRITE:
 			case PT_FILE_TO_READ:
 			case PT_DIRECTORY:
-				success_flag = SetParameterValueFromResource (param_p, src_p -> st_resource_value_p);
+				success_flag = SetParameterValueFromResource (param_p, src_p -> st_resource_value_p, current_value_flag);
 			break;
 
 			case PT_JSON:
-				success_flag = SetParameterValueFromJSON (param_p, src_p -> st_json_p);
+				success_flag = SetParameterValueFromJSON (param_p, src_p -> st_json_p, current_value_flag);
 				break;
 
 			default:
@@ -759,7 +569,7 @@ bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedTyp
 }
 
 
-bool SetParameterValue (Parameter * const param_p, const void *value_p)
+bool SetParameterValue (Parameter * const param_p, const void *value_p, const bool current_value_flag)
 {
 	bool success_flag = false;
 
@@ -768,14 +578,14 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 			case PT_BOOLEAN:
 				{
 					const bool b = * ((bool *) value_p);
-					success_flag = SetParameterValueFromBoolean (param_p, b);
+					success_flag = SetParameterValueFromBoolean (param_p, b, current_value_flag);
 				}
 				break;
 
 			case PT_CHAR:
 				{
 					const char c = * ((char *) value_p);
-					success_flag = SetParameterValueFromChar (param_p, c);
+					success_flag = SetParameterValueFromChar (param_p, c, current_value_flag);
 				}
 				break;
 
@@ -783,14 +593,14 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 			case PT_SIGNED_INT:
 				{
 					const int32 i = * ((int32 *) value_p);
-					success_flag = SetParameterValueFromSignedInt (param_p, i);
+					success_flag = SetParameterValueFromSignedInt (param_p, i, current_value_flag);
 				}
 				break;
 
 			case PT_UNSIGNED_INT:
 				{
 					const uint32 i = * ((uint32 *) value_p);
-					success_flag = SetParameterValueFromUnsignedInt (param_p, i);
+					success_flag = SetParameterValueFromUnsignedInt (param_p, i, current_value_flag);
 				}
 				break;
 
@@ -798,7 +608,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 			case PT_UNSIGNED_REAL:
 				{
 					const double d = * ((double *) value_p);
-					success_flag = SetParameterValueFromReal (param_p, d);
+					success_flag = SetParameterValueFromReal (param_p, d, current_value_flag);
 				}
 				break;
 
@@ -809,7 +619,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 			case PT_KEYWORD:
 				{
 					const char * const value_s = (const char *) value_p;
-					success_flag = SetParameterValueFromString (param_p, value_s);
+					success_flag = SetParameterValueFromString (param_p, value_s, current_value_flag);
 				}
 				break;
 
@@ -818,14 +628,14 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p)
 			case PT_DIRECTORY:
 				{
 					const Resource * const res_p = (const Resource *) value_p;
-					success_flag = SetParameterValueFromResource (param_p, res_p);
+					success_flag = SetParameterValueFromResource (param_p, res_p, current_value_flag);
 				}
 			break;
 
 			case PT_JSON:
 				{
 					const json_t * const src_p = (const json_t *) value_p;
-					success_flag = SetParameterValueFromJSON (param_p, src_p);
+					success_flag = SetParameterValueFromJSON (param_p, src_p, current_value_flag);
 				}
 				break;
 
@@ -1808,9 +1618,43 @@ static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
 }
 
 
-void ClearSharedType (SharedType *st_p)
+void ClearSharedType (SharedType *st_p, const ParameterType pt)
 {
-	
+	switch (pt)
+		{
+			case PT_DIRECTORY:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+				if (st_p -> st_resource_value_p)
+					{
+						FreeResource (st_p -> st_resource_value_p);
+						st_p -> st_resource_value_p = NULL;
+					}
+				break;
+
+			case PT_TABLE:
+			case PT_STRING:
+			case PT_LARGE_STRING:
+			case PT_PASSWORD:
+			case PT_KEYWORD:
+				if (st_p -> st_string_value_s)
+					{
+						FreeCopiedString (st_p -> st_string_value_s);
+						st_p -> st_string_value_s = NULL;
+					}
+				break;
+
+			case PT_JSON:
+				if (st_p -> st_json_p)
+					{
+						json_decref (st_p -> st_json_p);
+						st_p -> st_json_p = NULL;
+					}
+			break;
+
+			default:
+				break;
+		}
 }
 
 
@@ -2032,6 +1876,7 @@ void FreeSharedTypeNode (ListItem *node_p)
 }
 
 
+
 static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p)
 {
 	bool success_flag = true;
@@ -2123,5 +1968,200 @@ static LinkedList *CopySharedTypesList (const LinkedList *source_p)
 	return NULL;
 }
 
+
+static bool SetParameterValueFromBoolean (Parameter * const param_p, const bool b, const bool current_flag)
+{
+	param_p -> pa_current_value.st_boolean_value = b;
+
+	return true;
+}
+
+
+static bool SetParameterValueFromChar (Parameter * const param_p, const char c, const bool current_flag)
+{
+	param_p -> pa_current_value.st_char_value = c;
+
+	return true;
+}
+
+
+static bool SetParameterValueFromSignedInt (Parameter * const param_p, const int32 i, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (param_p -> pa_bounds_p)
+		{
+			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+
+			if ((i >= bounds_p -> pb_lower.st_long_value) &&
+					(i <= bounds_p -> pb_upper.st_long_value))
+				{
+					param_p -> pa_current_value.st_long_value = i;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			param_p -> pa_current_value.st_long_value = i;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetParameterValueFromUnsignedInt (Parameter * const param_p, const uint32 i, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (param_p -> pa_bounds_p)
+		{
+			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+
+			if ((i >= bounds_p -> pb_lower.st_ulong_value) &&
+					(i <= bounds_p -> pb_upper.st_ulong_value))
+				{
+					param_p -> pa_current_value.st_ulong_value = i;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			param_p -> pa_current_value.st_ulong_value = i;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetParameterValueFromReal (Parameter * const param_p, const double64 d, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (param_p -> pa_bounds_p)
+		{
+			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
+
+			if ((d >= bounds_p -> pb_lower.st_data_value) &&
+					(d <= bounds_p -> pb_upper.st_data_value))
+				{
+					param_p -> pa_current_value.st_data_value = d;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			param_p -> pa_current_value.st_data_value = d;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+
+static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (src_s)
+		{
+			char *copied_value_s = CopyToNewString (src_s, 0, false);
+
+			if (copied_value_s)
+				{
+					/* If we have a previous value, delete it */
+					if (param_p -> pa_current_value.st_string_value_s)
+						{
+							free (param_p -> pa_current_value.st_string_value_s);
+						}
+
+					param_p -> pa_current_value.st_string_value_s = copied_value_s;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			/* If we have a previous value, delete it */
+			if (param_p -> pa_current_value.st_string_value_s)
+				{
+					free (param_p -> pa_current_value.st_string_value_s);
+					param_p -> pa_current_value.st_string_value_s = NULL;
+				}
+
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetParameterValueFromResource (Parameter * const param_p, const Resource * const src_p, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (src_p)
+		{
+			if (param_p -> pa_current_value.st_resource_value_p)
+				{
+					success_flag = CopyResource (src_p, param_p -> pa_current_value.st_resource_value_p);
+				}
+			else
+				{
+					param_p -> pa_current_value.st_resource_value_p = AllocateResource (src_p -> re_protocol_s, src_p -> re_value_s, src_p -> re_title_s);
+
+					success_flag = (param_p -> pa_current_value.st_resource_value_p != NULL);
+				}
+		}
+	else
+		{
+			if (param_p -> pa_current_value.st_resource_value_p)
+				{
+					FreeResource (param_p -> pa_current_value.st_resource_value_p);
+					param_p -> pa_current_value.st_resource_value_p = NULL;
+				}
+
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t * const src_p, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (src_p)
+		{
+			json_error_t err;
+			json_t *json_value_p = json_deep_copy (src_p);
+
+			if (json_value_p)
+				{
+					/* If we have a previous value, delete it */
+					if (param_p -> pa_current_value.st_json_p)
+						{
+							WipeJSON (param_p -> pa_current_value.st_json_p);
+						}
+
+					param_p -> pa_current_value.st_json_p = json_value_p;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			/* If we have a previous value, delete it */
+			if (param_p -> pa_current_value.st_json_p)
+				{
+					WipeJSON (param_p -> pa_current_value.st_json_p);
+				}
+
+			success_flag = true;
+		}
+
+	return success_flag;
+}
 
 

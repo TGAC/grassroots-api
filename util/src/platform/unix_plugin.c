@@ -22,7 +22,7 @@
 #include "memory_allocations.h"
 #include "plugin.h"
 #include "string_utils.h"
-
+#include "streams.h"
 
 
 typedef struct UnixPlugin
@@ -83,7 +83,7 @@ bool OpenPlugin (Plugin * const plugin_p)
 	else
 		{
 			char *error_s = dlerror ();
-			fprintf (stderr, "Error opening \"%s\": \"%s\"\n", plugin_p -> pl_path_s, error_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Error opening \"%s\": \"%s\"\n", plugin_p -> pl_path_s, error_s);
 		}
 
 	return success_flag;
