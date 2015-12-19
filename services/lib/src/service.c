@@ -255,7 +255,6 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 															
 														}		/* if (services_json_p) */
 
-
 													#if SERVICE_DEBUG >= STM_LEVEL_FINE
 													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added " UINT32_FMT " reference services for %s and refcount is %d", num_added_services, reference_file_node_p -> sln_string_s, config_p -> refcount);
 													#endif
@@ -265,12 +264,13 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 															free (json_s);
 														}
 
-													if (num_added_services == 0)
-														{
-															json_decref (config_p);
-														}
+													json_decref (config_p);
 												}		/* if (config_p) */
-																						
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load reference file %s", reference_file_node_p -> sln_string_s);
+												}
+
 											reference_file_node_p = (StringListNode *) (reference_file_node_p -> sln_node.ln_next_p);
 										}		/* while (reference_file_node_p) */
 									
@@ -1171,7 +1171,6 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 
 									if (ops_p)
 										{
-
 											if (json_is_array (ops_p))
 												{
 													size_t num_ops = json_array_size (ops_p);
@@ -1186,27 +1185,39 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 															while (i < num_ops)
 																{
 																	json_t *op_p =  json_array_get (ops_p, i);
-																	Service *service_p = get_service_fn (op_p, i);
+																	json_t *copied_op_p = json_deep_copy (op_p);
 
-																	if (service_p)
+																	if (copied_op_p)
 																		{
-																			*service_pp = service_p;
-																		}
-																	else
-																		{
-																			char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+																			Service *service_p = get_service_fn (copied_op_p, i);
 
-																			if (dump_s)
+																			if (service_p)
 																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu from:\n%s\n", i, dump_s);
-																					free (dump_s);
+																					*service_pp = service_p;
 																				}
 																			else
 																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu\n", i);
+																					char *dump_s = json_dumps (op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																					if (dump_s)
+																						{
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu from:\n%s\n", i, dump_s);
+																							free (dump_s);
+																						}
+																					else
+																						{
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service %lu\n", i);
+																						}
+
+																					json_decref (copied_op_p);
 																				}
 
+																		}		/* if (copied_op_p) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy refererence service %lu\n", i);
 																		}
+
 
 																	++ i;
 																	++ service_pp;
@@ -1222,29 +1233,41 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 													if (services_p)
 														{
 															Service **service_pp = services_p -> sa_services_pp;
-															Service *service_p = get_service_fn (ops_p, 0);
+															json_t *copied_op_p = json_deep_copy (ops_p);
 
-															if (service_p)
+															if (copied_op_p)
 																{
-																	*service_pp = service_p;
-																}
-															else
-																{
-																	char *dump_s = json_dumps (ops_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+																	Service *service_p = get_service_fn (copied_op_p, 0);
 
-																	if (dump_s)
+																	if (service_p)
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service 0 from:\n%s\n", dump_s);
-																			free (dump_s);
+																			*service_pp = service_p;
 																		}
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service 0\n");
+																			char *dump_s = json_dumps (copied_op_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																			if (dump_s)
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service 0 from:\n%s\n", dump_s);
+																					free (dump_s);
+																				}
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service 0\n");
+																				}
+
+																			FreeServicesArray (services_p);
+																			services_p = NULL;
+																			json_decref (copied_op_p);
 																		}
 
-																	FreeServicesArray (services_p);
-																	services_p = NULL;
 																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy single refererence service\n");
+																}
+
 
 														}		/* if (services_p)  */
 												}
