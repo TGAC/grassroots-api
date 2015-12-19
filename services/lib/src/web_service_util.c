@@ -26,6 +26,12 @@
 #include "string_utils.h"
 #include "math_utils.h"
 
+#ifdef _DEBUG
+	#define WEB_SERVICE_UTIL_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define WEB_SERVICE_UTIL_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 static const char *S_METHOD_S = "method";
 static const char *S_URI_S = "uri";
 
@@ -154,6 +160,10 @@ void ClearWebServiceData (WebServiceData * const data_p)
 
 	if (data_p -> wsd_config_p)
 		{
+			#if WEB_SERVICE_UTIL_DEBUG >= STM_LEVEL_FINE
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "config refcount %d", data_p -> wsd_config_p -> refcount);
+			#endif
+
 			json_decref (data_p -> wsd_config_p);
 		}
 }

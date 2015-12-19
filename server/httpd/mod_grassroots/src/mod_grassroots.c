@@ -457,10 +457,6 @@ static int GrassrootsHandler (request_rec *req_p)
 										#endif
 
 										json_decref (res_p);
-
-										#if MOD_GRASSROOTS_DEBUG >= STM_LEVEL_FINER
-										PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Post decref: res_p -> refcount %ld", res_p -> refcount);
-										#endif
 									}		/* if (res_p) */
 								else
 									{

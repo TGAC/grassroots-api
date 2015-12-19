@@ -34,7 +34,7 @@
 
 
 #ifdef _DEBUG
-	#define SERVICE_DEBUG	(STM_LEVEL_INFO)
+	#define SERVICE_DEBUG	(STM_LEVEL_FINE)
 #else
 	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -254,7 +254,12 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 																}
 															
 														}		/* if (services_json_p) */
-																																		
+
+
+													#if SERVICE_DEBUG >= STM_LEVEL_FINE
+													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added " UINT32_FMT " reference services for %s and refcount is %d", num_added_services, reference_file_node_p -> sln_string_s, config_p -> refcount);
+													#endif
+
 													if (json_s)
 														{
 															free (json_s);
@@ -447,10 +452,23 @@ uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *
 																{
 																	uint32 i = AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag);
 
+																	#if SERVICE_DEBUG >= STM_LEVEL_FINE
+																	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Got " UINT32_FMT " services from %s with open count of " INT32_FMT, i, node_p -> sln_string_s, plugin_p -> pl_open_count);
+																	#endif
+
 																	if (i > 0)
 																		{
 																			using_plugin_flag = true;
 																			num_matched_services += i;
+																		}
+
+																	/*
+																	 * If the open count is 0, then the plugin
+																	 * should get freed by the call to FreeServicesArray
+																	 */
+																	if (i == 0)
+																		{
+																			plugin_p = NULL;
 																		}
 
 																	FreeServicesArray (services_p);
@@ -462,11 +480,13 @@ uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *
 																
 														}		/* if (OpenPlugin (plugin_p)) */
 
-													if (!using_plugin_flag)
+
+													if (plugin_p && (!using_plugin_flag))
 														{
 															FreePlugin (plugin_p);
 														}
-														
+
+
 												}		/* if (plugin_p) */
 											
 											if (node_p)
@@ -498,7 +518,6 @@ void LoadMatchingServicesByName (LinkedList *services_p, const char * const serv
 	
 	GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), json_config_p, services_p, true);
 	
-	/* @TODO Add an AddReferenceServicesByName function to be called here */
 	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, service_name_s, json_config_p);
 }
 
@@ -512,7 +531,7 @@ void LoadMatchingServices (LinkedList *services_p, const char * const services_p
 	
 	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), json_config_p, services_p, true);
 		
-	//AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
 }
 
 
@@ -524,7 +543,6 @@ void LoadKeywordServices (LinkedList *services_p, const char * const services_pa
 
 	GetMatchingServices (services_path_s, & (matcher.ksm_base_matcher), json_config_p, services_p, true);
 
-	/* @TODO Add an AddReferenceServicesByName function to be called here */
 	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
 }
 
@@ -968,7 +986,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
 
 									#if SERVICE_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINE);
+									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 									#endif
 									
 									if (service_json_p)
@@ -991,7 +1009,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 				}		/* if (operations_p) */
 
 			#if SERVICE_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (services_list_json_p, "services list:\n", STM_LEVEL_FINE);
+			PrintJSONToLog (services_list_json_p, "services list:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 
 		}		/* if (services_list_json_p) */
@@ -1121,7 +1139,7 @@ bool AddServiceResponseHeader (Service *service_p, json_t *response_p)
 
 	
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (response_p, "service response header", SERVICE_DEBUG);
+	PrintJSONToLog (response_p, __FILE__, __LINE__, "service response header", SERVICE_DEBUG);
 	#endif
 
 	return success_flag;
@@ -1133,7 +1151,7 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 	ServicesArray *services_p = NULL;
 
 	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (config_p, "GetReferenceServicesFromJSON: config", SERVICE_DEBUG);
+	PrintJSONToLog (config_p, __FILE__, __LINE__, "GetReferenceServicesFromJSON: config", SERVICE_DEBUG);
 	#endif
 
 	if (config_p)
