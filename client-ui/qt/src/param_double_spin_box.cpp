@@ -51,7 +51,7 @@ void ParamDoubleSpinBox :: SetDefaultValue ()
 bool ParamDoubleSpinBox :: StoreParameterValue ()
 {
 	const double value = pdsb_spinner_p -> value ();
-	bool b = SetParameterValue (bpw_param_p, &value);
+	bool b = SetParameterValue (bpw_param_p, &value, true);
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value;
 

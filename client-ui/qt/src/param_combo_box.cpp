@@ -105,7 +105,7 @@ bool ParamComboBox :: StoreParameterValue ()
 
 					const char *value_s = ba.constData ();
 
-					success_flag = SetParameterValue (bpw_param_p, value_s);
+					success_flag = SetParameterValue (bpw_param_p, value_s, true);
 
 					qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
 				}
@@ -115,7 +115,7 @@ bool ParamComboBox :: StoreParameterValue ()
 				{
 					QChar qc = v.toChar ();
 					char c = qc.toLatin1 ();
-					success_flag = SetParameterValue (bpw_param_p, &c);
+					success_flag = SetParameterValue (bpw_param_p, &c, true);
 
 					qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << c;
 				}
@@ -124,7 +124,7 @@ bool ParamComboBox :: StoreParameterValue ()
 			case PT_BOOLEAN:
 				{
 					bool b = v.toBool ();
-					success_flag = SetParameterValue (bpw_param_p, &b);
+					success_flag = SetParameterValue (bpw_param_p, &b, true);
 
 					qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << b;
 				}
@@ -138,7 +138,7 @@ bool ParamComboBox :: StoreParameterValue ()
 
 					if (conv_flag)
 						{
-							success_flag = SetParameterValue (bpw_param_p, &i);
+							success_flag = SetParameterValue (bpw_param_p, &i, true);
 							qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << i;
 						}
 				}
@@ -152,7 +152,7 @@ bool ParamComboBox :: StoreParameterValue ()
 
 					if (conv_flag)
 						{
-							success_flag = SetParameterValue (bpw_param_p, &d);
+							success_flag = SetParameterValue (bpw_param_p, &d, true);
 
 							qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << d;
 						}

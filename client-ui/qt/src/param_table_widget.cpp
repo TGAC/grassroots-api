@@ -461,7 +461,7 @@ bool ParamTableWidget :: StoreParameterValue ()
 
 	if (value_s)
 		{
-			SetParameterValue (bpw_param_p, value_s);
+			SetParameterValue (bpw_param_p, value_s, true);
 
 			success_flag = true;
 			FreeCopiedString (value_s);

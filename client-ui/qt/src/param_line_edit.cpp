@@ -101,7 +101,7 @@ bool ParamLineEdit :: StoreParameterValue ()
 
 bool ParamLineEdit :: UpdateConfigValue (const char * const value_s)
 {
-	bool success_flag = SetParameterValue (bpw_param_p, value_s);
+	bool success_flag = SetParameterValue (bpw_param_p, value_s, true);
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s;
 

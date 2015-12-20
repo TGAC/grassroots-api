@@ -103,6 +103,32 @@ static bool SetParameterValueFromResource (Parameter * const param_p, const Reso
 static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t * const src_p, const bool current_flag);
 
 
+static bool SetSharedTypeBooleanValue (SharedType * value_p, const bool b);
+
+
+static bool SetSharedTypeCharValue (SharedType * value_p, const char c);
+
+
+static bool SetSharedTypeUnsignedIntValue (SharedType * value_p, const uint32 i, const ParameterBounds * const bounds_p);
+
+
+static bool SetSharedTypeSignedIntValue (SharedType * value_p, const int32 i, const ParameterBounds * const bounds_p);
+
+
+static bool SetSharedTypeRealValue (SharedType * value_p, const double64 d, const ParameterBounds * const bounds_p);
+
+
+static bool SetSharedTypeStringValue (SharedType *value_p, const char * const src_s);
+
+
+static bool SetSharedTypeResourceValue (SharedType *value_p, const Resource * const src_p);
+
+
+static bool SetSharedTypeJSONValue (SharedType *value_p, const json_t * const src_p);
+
+
+/******************************************************/
+
 
 Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
@@ -1971,17 +1997,35 @@ static LinkedList *CopySharedTypesList (const LinkedList *source_p)
 
 static bool SetParameterValueFromBoolean (Parameter * const param_p, const bool b, const bool current_flag)
 {
-	param_p -> pa_current_value.st_boolean_value = b;
+	bool success_flag = false;
 
-	return true;
+	if (current_flag)
+		{
+			success_flag = SetSharedTypeBooleanValue (& (param_p -> pa_current_value), b);
+		}
+	else
+		{
+			success_flag = SetSharedTypeBooleanValue (& (param_p -> pa_default), b);
+		}
+
+	return success_flag;
 }
 
 
 static bool SetParameterValueFromChar (Parameter * const param_p, const char c, const bool current_flag)
 {
-	param_p -> pa_current_value.st_char_value = c;
+	bool success_flag = false;
 
-	return true;
+	if (current_flag)
+		{
+			success_flag = SetSharedTypeCharValue (& (param_p -> pa_current_value), c);
+		}
+	else
+		{
+			success_flag = SetSharedTypeCharValue (& (param_p -> pa_default), c);
+		}
+
+	return success_flag;
 }
 
 
@@ -1989,21 +2033,13 @@ static bool SetParameterValueFromSignedInt (Parameter * const param_p, const int
 {
 	bool success_flag = false;
 
-	if (param_p -> pa_bounds_p)
+	if (current_flag)
 		{
-			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
-
-			if ((i >= bounds_p -> pb_lower.st_long_value) &&
-					(i <= bounds_p -> pb_upper.st_long_value))
-				{
-					param_p -> pa_current_value.st_long_value = i;
-					success_flag = true;
-				}
+			success_flag = SetSharedTypeSignedIntValue (& (param_p -> pa_current_value), i, param_p -> pa_bounds_p);
 		}
 	else
 		{
-			param_p -> pa_current_value.st_long_value = i;
-			success_flag = true;
+			success_flag = SetSharedTypeSignedIntValue (& (param_p -> pa_default), i, param_p -> pa_bounds_p);
 		}
 
 	return success_flag;
@@ -2014,21 +2050,13 @@ static bool SetParameterValueFromUnsignedInt (Parameter * const param_p, const u
 {
 	bool success_flag = false;
 
-	if (param_p -> pa_bounds_p)
+	if (current_flag)
 		{
-			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
-
-			if ((i >= bounds_p -> pb_lower.st_ulong_value) &&
-					(i <= bounds_p -> pb_upper.st_ulong_value))
-				{
-					param_p -> pa_current_value.st_ulong_value = i;
-					success_flag = true;
-				}
+			success_flag = SetSharedTypeUnsignedIntValue (& (param_p -> pa_current_value), i, param_p -> pa_bounds_p);
 		}
 	else
 		{
-			param_p -> pa_current_value.st_ulong_value = i;
-			success_flag = true;
+			success_flag = SetSharedTypeUnsignedIntValue (& (param_p -> pa_default), i, param_p -> pa_bounds_p);
 		}
 
 	return success_flag;
@@ -2039,21 +2067,13 @@ static bool SetParameterValueFromReal (Parameter * const param_p, const double64
 {
 	bool success_flag = false;
 
-	if (param_p -> pa_bounds_p)
+	if (current_flag)
 		{
-			const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
-
-			if ((d >= bounds_p -> pb_lower.st_data_value) &&
-					(d <= bounds_p -> pb_upper.st_data_value))
-				{
-					param_p -> pa_current_value.st_data_value = d;
-					success_flag = true;
-				}
+			success_flag = SetSharedTypeRealValue (& (param_p -> pa_current_value), d, param_p -> pa_bounds_p);
 		}
 	else
 		{
-			param_p -> pa_current_value.st_data_value = d;
-			success_flag = true;
+			success_flag = SetSharedTypeRealValue (& (param_p -> pa_default), d, param_p -> pa_bounds_p);
 		}
 
 	return success_flag;
@@ -2065,32 +2085,13 @@ static bool SetParameterValueFromString (Parameter * const param_p, const char *
 {
 	bool success_flag = false;
 
-	if (src_s)
+	if (current_flag)
 		{
-			char *copied_value_s = CopyToNewString (src_s, 0, false);
-
-			if (copied_value_s)
-				{
-					/* If we have a previous value, delete it */
-					if (param_p -> pa_current_value.st_string_value_s)
-						{
-							free (param_p -> pa_current_value.st_string_value_s);
-						}
-
-					param_p -> pa_current_value.st_string_value_s = copied_value_s;
-					success_flag = true;
-				}
+			success_flag = SetSharedTypeStringValue (& (param_p -> pa_current_value), src_s);
 		}
 	else
 		{
-			/* If we have a previous value, delete it */
-			if (param_p -> pa_current_value.st_string_value_s)
-				{
-					free (param_p -> pa_current_value.st_string_value_s);
-					param_p -> pa_current_value.st_string_value_s = NULL;
-				}
-
-			success_flag = true;
+			success_flag = SetSharedTypeStringValue (& (param_p -> pa_default), src_s);
 		}
 
 	return success_flag;
@@ -2101,25 +2102,152 @@ static bool SetParameterValueFromResource (Parameter * const param_p, const Reso
 {
 	bool success_flag = false;
 
-	if (src_p)
+	if (current_flag)
 		{
-			if (param_p -> pa_current_value.st_resource_value_p)
-				{
-					success_flag = CopyResource (src_p, param_p -> pa_current_value.st_resource_value_p);
-				}
-			else
-				{
-					param_p -> pa_current_value.st_resource_value_p = AllocateResource (src_p -> re_protocol_s, src_p -> re_value_s, src_p -> re_title_s);
+			success_flag = SetSharedTypeResourceValue (& (param_p -> pa_current_value), src_p);
+		}
+	else
+		{
+			success_flag = SetSharedTypeResourceValue (& (param_p -> pa_default), src_p);
+		}
 
-					success_flag = (param_p -> pa_current_value.st_resource_value_p != NULL);
+	return success_flag;
+}
+
+
+static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t * const src_p, const bool current_flag)
+{
+	bool success_flag = false;
+
+	if (current_flag)
+		{
+			success_flag = SetSharedTypeJSONValue (& (param_p -> pa_current_value), src_p);
+		}
+	else
+		{
+			success_flag = SetSharedTypeJSONValue (& (param_p -> pa_default), src_p);
+		}
+
+	return success_flag;
+}
+
+
+
+
+static bool SetSharedTypeBooleanValue (SharedType * value_p, const bool b)
+{
+	value_p -> st_boolean_value = b;
+
+	return true;
+}
+
+
+static bool SetSharedTypeCharValue (SharedType * value_p, const char c)
+{
+	value_p -> st_char_value = c;
+
+	return true;
+}
+
+
+
+static bool SetSharedTypeUnsignedIntValue (SharedType * value_p, const uint32 i, const ParameterBounds * const bounds_p)
+{
+	bool success_flag = false;
+
+	if (bounds_p)
+		{
+			if ((i >= bounds_p -> pb_lower.st_ulong_value) &&
+					(i <= bounds_p -> pb_upper.st_ulong_value))
+				{
+					value_p -> st_ulong_value = i;
+					success_flag = true;
 				}
 		}
 	else
 		{
-			if (param_p -> pa_current_value.st_resource_value_p)
+			value_p -> st_ulong_value = i;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetSharedTypeSignedIntValue (SharedType * value_p, const int32 i, const ParameterBounds * const bounds_p)
+{
+	bool success_flag = false;
+
+	if (bounds_p)
+		{
+			if ((i >= bounds_p -> pb_lower.st_data_value) &&
+					(i <= bounds_p -> pb_upper.st_data_value))
 				{
-					FreeResource (param_p -> pa_current_value.st_resource_value_p);
-					param_p -> pa_current_value.st_resource_value_p = NULL;
+					value_p -> st_long_value = i;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			value_p -> st_long_value = i;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+
+static bool SetSharedTypeRealValue (SharedType * value_p, const double64 d, const ParameterBounds * const bounds_p)
+{
+	bool success_flag = false;
+
+	if (bounds_p)
+		{
+			if ((d >= bounds_p -> pb_lower.st_data_value) &&
+					(d <= bounds_p -> pb_upper.st_data_value))
+				{
+					value_p -> st_data_value = d;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			value_p -> st_data_value = d;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetSharedTypeStringValue (SharedType *value_p, const char * const src_s)
+{
+	bool success_flag = false;
+
+	if (src_s)
+		{
+			char *copied_value_s = CopyToNewString (src_s, 0, false);
+
+			if (copied_value_s)
+				{
+					/* If we have a previous value, delete it */
+					if (value_p -> st_string_value_s)
+						{
+							FreeCopiedString (value_p -> st_string_value_s);
+						}
+
+					value_p -> st_string_value_s = copied_value_s;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			/* If we have a previous value, delete it */
+			if (value_p -> st_string_value_s)
+				{
+					FreeCopiedString (value_p -> st_string_value_s);
+					value_p -> st_string_value_s = NULL;
 				}
 
 			success_flag = true;
@@ -2129,7 +2257,39 @@ static bool SetParameterValueFromResource (Parameter * const param_p, const Reso
 }
 
 
-static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t * const src_p, const bool current_flag)
+static bool SetSharedTypeResourceValue (SharedType *value_p, const Resource * const src_p)
+{
+	bool success_flag = false;
+
+	if (src_p)
+		{
+			if (value_p -> st_resource_value_p)
+				{
+					success_flag = CopyResource (src_p, value_p -> st_resource_value_p);
+				}
+			else
+				{
+					value_p -> st_resource_value_p = AllocateResource (src_p -> re_protocol_s, src_p -> re_value_s, src_p -> re_title_s);
+
+					success_flag = (value_p -> st_resource_value_p != NULL);
+				}
+		}
+	else
+		{
+			if (value_p -> st_resource_value_p)
+				{
+					FreeResource (value_p -> st_resource_value_p);
+					value_p -> st_resource_value_p = NULL;
+				}
+
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool SetSharedTypeJSONValue (SharedType *value_p, const json_t * const src_p)
 {
 	bool success_flag = false;
 
@@ -2141,21 +2301,22 @@ static bool SetParameterValueFromJSON (Parameter * const param_p, const json_t *
 			if (json_value_p)
 				{
 					/* If we have a previous value, delete it */
-					if (param_p -> pa_current_value.st_json_p)
+					if (value_p -> st_json_p)
 						{
-							WipeJSON (param_p -> pa_current_value.st_json_p);
+							WipeJSON (value_p -> st_json_p);
 						}
 
-					param_p -> pa_current_value.st_json_p = json_value_p;
+					value_p -> st_json_p = json_value_p;
 					success_flag = true;
 				}
 		}
 	else
 		{
 			/* If we have a previous value, delete it */
-			if (param_p -> pa_current_value.st_json_p)
+			if (value_p -> st_json_p)
 				{
-					WipeJSON (param_p -> pa_current_value.st_json_p);
+					WipeJSON (value_p -> st_json_p);
+					value_p -> st_json_p = NULL;
 				}
 
 			success_flag = true;

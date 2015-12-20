@@ -107,7 +107,7 @@ void MainWindow :: RunServices (bool run_flag)
 			if (services_json_p)
 				{
 
-					PrintJSONToLog (services_json_p, "\n\nDATA:\n", STM_LEVEL_FINE);
+					PrintJSONToLog (services_json_p, "\n\nDATA:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 
 					if (json_is_array (services_json_p))
 						{
@@ -227,7 +227,7 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 		{
 			json_t *results_p = NULL;
 
-			PrintJSONToLog (query_p, "\n\nquery:\n", STM_LEVEL_FINE);
+			PrintJSONToLog (query_p, "\n\nquery:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 
 			results_p = MakeRemoteJsonCall (query_p, mw_client_data_p -> qcd_base_data.cd_connection_p);
 
@@ -235,7 +235,7 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 				{
 					bool show_results_flag = false;
 
-					PrintJSONToLog (results_p, "\n\nresults\n", STM_LEVEL_FINE);
+					PrintJSONToLog (results_p, "\n\nresults\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 
 					mw_client_data_p -> qcd_results_p -> ClearData ();
 
@@ -248,7 +248,7 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 							json_array_foreach (results_p, i, service_result_p)
 								{
 									#if MAIN_WINDOW_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (service_result_p, "service_result_p", MAIN_WINDOW_DEBUG);
+									PrintJSONToLog (service_result_p, "service_result_p", MAIN_WINDOW_DEBUG, __FILE__, __LINE__);
 									#endif
 
 									if (json_is_array (service_result_p))

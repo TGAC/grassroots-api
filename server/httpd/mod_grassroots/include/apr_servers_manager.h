@@ -104,7 +104,6 @@ apr_status_t CleanUpAPRServersManager (void *value_p);
 bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
 
 
-bool DestroyAPRServersManager (APRServersManager *manager_p);
 
 
 bool APRServersManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *config_pool_p);

@@ -195,7 +195,7 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, json_t *resp
 	json_t *res_p = NULL;
 
 	#if CLIENT_UI_API_DEBUG >= DL_FINE
-	PrintJSONToLog (response_p, "response:\n", STM_LEVEL_FINE);
+	PrintJSONToLog (response_p, "response:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 	#endif
 
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_data_p);
