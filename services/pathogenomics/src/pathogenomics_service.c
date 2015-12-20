@@ -643,6 +643,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 											const char *param_name_s = NULL;
 											json_t *errors_p = json_array ();
 											uint32 num_successes = 0;
+											bool free_json_param_flag = false;
 
 											/* Get the current delimiter */
 											param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DELIMITER);
@@ -668,6 +669,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 															#endif
 
 															param_name_s = param_p -> pa_name_s;
+															free_json_param_flag = true;
 														}
 												}
 											/* ... or do we have an insert statement? */
@@ -703,6 +705,10 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 															job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
 														}
 
+													if (free_json_param_flag)
+														{
+															WipeJSON (json_param_p);
+														}
 												}
 											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL) && (param_p -> pa_current_value.st_json_p))
 												{
