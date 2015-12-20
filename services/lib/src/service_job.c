@@ -318,127 +318,95 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 	ServiceJob *job_p = jobs_p -> sjs_jobs_p;
 	JobsManager *manager_p = GetJobsManager ();
 
-	json_t *service_json_p = json_object ();
-
-	if (service_json_p)
+	for (i = 0; i < num_jobs; ++ i, ++ job_p)
 		{
-			json_t *jobs_array_p = json_array ();
+			json_t *job_json_p = NULL;
+			const OperationStatus job_status = GetServiceJobStatus (job_p);
 
-			if (jobs_array_p)
+			if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
 				{
-					if (json_object_set_new (service_json_p, SERVICE_JOBS_S, jobs_array_p) == 0)
+					job_json_p = GetServiceJobAsJSON (job_p);
+				}
+			else
+				{
+					/*
+					 * If the job is running asynchronously and still going
+					 * then we need to store it in the jobs table.
+					 */
+					if (job_p -> sj_service_p -> se_synchronous_flag)
 						{
-							if (!AddServiceResponseHeader (jobs_p -> sjs_service_p, service_json_p))
+							job_json_p = GetServiceJobStatusAsJSON (job_p);
+						}
+					else
+						{
+							if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
 								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add service response header from %s", GetServiceName (jobs_p -> sjs_service_p));
-								}
-
-							success_flag = true;
-
-							for (i = 0; i < num_jobs; ++ i, ++ job_p)
-								{
-									json_t *job_json_p = NULL;
-									const OperationStatus job_status = GetServiceJobStatus (job_p);
-
-									if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
+									if (keep_service_p)
 										{
-											job_json_p = GetServiceJobAsJSON (job_p);
-										}
-									else
-										{
-											/*
-											 * If the job is running asynchronously and still going
-											 * then we need to store it in the jobs table.
-											 */
-											if (job_p -> sj_service_p -> se_synchronous_flag)
-												{
-													job_json_p = GetServiceJobStatusAsJSON (job_p);
-												}
-											else
-												{
-													if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
-														{
-															if (keep_service_p)
-																{
-																	*keep_service_p = true;
-																}
-
-															if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
-																{
-																	char *uuid_s = GetUUIDAsString (job_p -> sj_id);
-
-																	if (uuid_s)
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
-																			FreeCopiedString (uuid_s);
-																		}
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
-																		}
-																}
-														}
-													else
-														{
-															job_json_p = GetServiceJobStatusAsJSON (job_p);
-														}
-												}
+											*keep_service_p = true;
 										}
 
-									if (job_json_p)
-										{
-											if (json_array_append (res_p, job_json_p) != 0)
-												{
-													char *uuid_s = GetUUIDAsString (job_p -> sj_id);
-
-													if (uuid_s)
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job results %s to json response", uuid_s);
-															FreeCopiedString (uuid_s);
-														}
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job results %s to json response", job_p -> sj_name_s);
-														}
-												}
-										}
-									else
+									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
 										{
 											char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 
 											if (uuid_s)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to json response for json %s", uuid_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
 													FreeCopiedString (uuid_s);
 												}
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to json response for json %s", job_p -> sj_name_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
 												}
 										}
-
-								}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p) */
-
-						}		/* if (json_object_set_new (res_p, SERVICE_JOBS_S, jobs_array_p) == 0) */
-					else
-						{
-							WipeJSON (jobs_array_p);
+								}
+							else
+								{
+									job_json_p = GetServiceJobStatusAsJSON (job_p);
+								}
 						}
-
-				}		/* if (jobs_array_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json response array for service %s", GetServiceName (jobs_p -> sjs_service_p));
 				}
 
-			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (service_json_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
-			#endif
-		}		/* if (service_json_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service_json_p");
-		}
+			if (job_json_p)
+				{
+					if (json_array_append (res_p, job_json_p) != 0)
+						{
+							char *uuid_s = GetUUIDAsString (job_p -> sj_id);
+
+							if (uuid_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job results %s to json response", uuid_s);
+									FreeCopiedString (uuid_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job results %s to json response", job_p -> sj_name_s);
+								}
+
+							WipeJSON (job_json_p);
+						}
+				}
+			else
+				{
+					char *uuid_s = GetUUIDAsString (job_p -> sj_id);
+
+					if (uuid_s)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to json response for json %s", uuid_s);
+							FreeCopiedString (uuid_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to json response for json %s", job_p -> sj_name_s);
+						}
+				}
+
+		}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p) */
+
+	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+	PrintJSONToLog (res_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
+	#endif
 
 	return success_flag;
 }

@@ -1178,12 +1178,28 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 					case PT_JSON:
 						{
-							json_t *copied_value_p = json_deep_copy (json_value_p);
-
-							if (copied_value_p)
+							if (json_value_p)
 								{
-									value_p -> st_json_p = copied_value_p;
-									success_flag = true;
+									json_t *copied_value_p = json_deep_copy (json_value_p);
+
+									if (copied_value_p)
+										{
+											if (value_p -> st_json_p)
+												{
+													WipeJSON (value_p -> st_json_p);
+												}
+
+											value_p -> st_json_p = copied_value_p;
+											success_flag = true;
+										}
+								}
+							else
+								{
+									if (value_p -> st_json_p)
+										{
+											WipeJSON (value_p -> st_json_p);
+											value_p -> st_json_p = NULL;
+										}
 								}
 						}
 						break;

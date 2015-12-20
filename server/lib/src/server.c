@@ -507,6 +507,7 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "No jobs from running %s with params from %s", service_name_s, req_s);
 																}
 
+															FreeParameterSet  (params_p);
 														}		/* if (params_p) */
 													else
 														{
