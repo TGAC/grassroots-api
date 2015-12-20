@@ -102,7 +102,9 @@ void MainWindow :: RunServices (bool run_flag)
 			const char *username_s = NULL;
 			const char *password_s = NULL;
 
+			setCursor (Qt :: BusyCursor);
 			json_t *services_json_p = CallServices (client_params_p, username_s, password_s, mw_client_data_p -> qcd_base_data.cd_connection_p);
+			setCursor (Qt :: ArrowCursor);
 
 			if (services_json_p)
 				{

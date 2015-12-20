@@ -293,6 +293,19 @@ GRASSROOTS_SERVICE_API bool CloseServiceJob (ServiceJob *job_p);
 GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 
 
+/**
+ * @brief Clear the results associated with a ServiceJob.
+ *
+ * This will call the Services close callback function.
+ *
+ * @param job_p The ServiceJob to close.
+ * @param free_memory_flag If this is <code>true</code> then the ServiceJob's results will
+ * be freed. If <code>false</code> then the results will just be set to NULL. This allows the
+ * transfer of the results variable into another json_t object if needed for example.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag);
+
 #ifdef __cplusplus
 }
 #endif

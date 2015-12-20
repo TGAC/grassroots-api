@@ -217,6 +217,7 @@ bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p)
 
 						}		/* if (id_p) */
 
+					bson_destroy (bson_p);
 				}		/* if (bson_p) */
 
 		}		/* if (tool_p -> mt_collection_p) */

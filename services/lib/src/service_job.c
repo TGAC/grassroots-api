@@ -198,6 +198,20 @@ bool CloseServiceJob (ServiceJob *job_p)
 }
 
 
+void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag)
+{
+	if (job_p -> sj_result_p)
+		{
+			if (free_memory_flag)
+				{
+					WipeJSON (job_p -> sj_result_p);
+				}
+
+			job_p -> sj_result_p = NULL;
+		}
+}
+
+
 
 static bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s)
 {
@@ -322,10 +336,17 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 		{
 			json_t *job_json_p = NULL;
 			const OperationStatus job_status = GetServiceJobStatus (job_p);
+			bool clear_service_job_results_flag = false;
+
+			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job %d: status: %d", i, job_status);
+			#endif
+
 
 			if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
 				{
 					job_json_p = GetServiceJobAsJSON (job_p);
+					clear_service_job_results_flag = true;
 				}
 			else
 				{
@@ -370,7 +391,19 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 			if (job_json_p)
 				{
-					if (json_array_append (res_p, job_json_p) != 0)
+					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+					PrintLog (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
+					#endif
+
+
+					if (json_array_append (res_p, job_json_p) == 0)
+						{
+							if (clear_service_job_results_flag)
+								{
+									ClearServiceJobResults (job_p, false);
+								}
+						}
+					else
 						{
 							char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 
@@ -406,6 +439,7 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 	PrintJSONToLog (res_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "success_flag %s keep service %s", success_flag ? "true" : "false", *keep_service_p ? "true" : "false");
 	#endif
 
 	return success_flag;
@@ -475,13 +509,7 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 	if (json_p)
 		{
-			uuid_s = json_dumps (json_p, JSON_INDENT (2));
-
-			if (uuid_s)
-				{
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
-					free (uuid_s);
-				}
+			PrintJSONToLog (json_p, "Job:", STM_LEVEL_FINE, __FILE__, __LINE__);
 		}
 	#endif
 
