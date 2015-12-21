@@ -533,3 +533,45 @@ void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const ui
 				}
 		}
 }
+
+
+bool IsJSONEmpty (const json_t *json_p)
+{
+	bool empty_flag = false;
+
+	if (json_p)
+		{
+			switch (json_p -> type)
+				{
+					case JSON_ARRAY:
+						{
+							size_t i = json_array_size (json_p);
+							empty_flag = (i == 0);
+						}
+						break;
+
+					case JSON_OBJECT:
+						{
+							size_t i = json_object_size (json_p);
+							empty_flag = (i == 0);
+						}
+						break;
+
+					case JSON_STRING:
+						{
+							const char *value_s = json_string_value (json_p);
+							empty_flag = IsStringEmpty (value_s);
+						}
+
+					default:
+						break;
+				}		/* switch (json_p -> type) */
+
+		}		/* if (json_p) */
+	else
+		{
+			empty_flag = true;
+		}
+
+	return empty_flag;
+}

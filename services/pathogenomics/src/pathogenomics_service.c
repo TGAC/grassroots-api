@@ -673,7 +673,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 														}
 												}
 											/* ... or do we have an insert statement? */
-											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_UPDATE)) != NULL) && (param_p -> pa_current_value.st_json_p))
+											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_UPDATE)) != NULL) && (!IsJSONEmpty (param_p -> pa_current_value.st_json_p)))
 												{
 													json_param_p = param_p -> pa_current_value.st_json_p;
 													param_name_s = param_p -> pa_name_s;
@@ -710,7 +710,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 															WipeJSON (json_param_p);
 														}
 												}
-											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL) && (param_p -> pa_current_value.st_json_p))
+											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_QUERY)) != NULL) && (!IsJSONEmpty (param_p -> pa_current_value.st_json_p)))
 												{
 													json_t *results_p = NULL;
 
@@ -736,7 +736,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 													job_p -> sj_status = OS_SUCCEEDED;
 													param_name_s = param_p -> pa_name_s;
 												}
-											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL) && (param_p -> pa_current_value.st_json_p))
+											else if (((param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_REMOVE)) != NULL) && (!IsJSONEmpty (param_p -> pa_current_value.st_json_p)))
 												{
 													uint32 size = 1;
 

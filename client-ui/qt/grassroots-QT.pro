@@ -115,10 +115,10 @@ SOURCES += \
     src/param_group_box.cpp \
     src/progress_window.cpp \
     src/progress_widget.cpp \
-    src/param_table_widget.cpp
+    src/param_table_widget.cpp \
+    src/param_json_editor.cpp
 
 HEADERS  += \
-    include/grassroots_ui.h \
     include/base_param_widget.h \
     include/file_chooser_widget.h \
     include/param_check_box.h \
@@ -151,7 +151,8 @@ HEADERS  += \
     include/progress_window.h \
     include/progress_widget.h \
     include/droppable_target_widget.h \
-    include/param_table_widget.h
+    include/param_table_widget.h \
+    include/param_json_editor.h
 
 LIBS += -L$$DIR_GRASSROOTS_UTIL_LIB  -l$$GRASSROOTS_UTIL_LIB_NAME \
  -L$$DIR_GRASSROOTS_SERVICE_LIB  -l$$GRASSROOTS_SERVICE_LIB_NAME \

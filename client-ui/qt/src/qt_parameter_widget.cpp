@@ -30,7 +30,7 @@
 #include "param_text_box.h"
 #include "prefs_widget.h"
 #include "param_table_widget.h"
-
+#include "param_json_editor.h"
 
 // WHEATIS INCLUDES
 #include "parameter.h"
@@ -413,16 +413,19 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						break;
 
 					case PT_LARGE_STRING:
-					case PT_JSON:
 						widget_p = new ParamTextBox (param_p, qpw_prefs_widget_p);
 						break;
 
-					case PT_TABLE:
-						widget_p = new ParamTableWidget (param_p, qpw_prefs_widget_p);
+					case PT_JSON:
+						widget_p = new ParamJSONEditor (param_p, qpw_prefs_widget_p);
 						break;
 
-				default:
-						break;
+					case PT_TABLE:
+							widget_p = new ParamTableWidget (param_p, qpw_prefs_widget_p);
+							break;
+
+					default:
+							break;
 
 				}		/* switch (param_p -> pa_type) */
 		}

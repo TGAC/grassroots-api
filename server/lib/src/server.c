@@ -480,10 +480,11 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 															#endif
 
 															jobs_p = RunService (service_p, params_p, credentials_p);
-															bool keep_service_flag = false;
 
 															if (jobs_p)
 																{
+																	bool keep_service_flag = false;
+
 																	if (ProcessServiceJobSet (jobs_p, res_p, &keep_service_flag))
 																		{
 																			++ res;

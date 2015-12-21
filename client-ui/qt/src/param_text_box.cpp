@@ -98,18 +98,29 @@ void DroppableTextBox :: LoadText (const char *filename_s)
 						}
 
 					if (success_flag)
-					{
-						const char *data_s = GetByteBufferData (buffer_p);
+						{
+							const char *data_s = GetByteBufferData (buffer_p);
 
-						clear();
-						insertPlainText (data_s);
-					}
+							if (!SetFromText (data_s))
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set text to %s", data_s);
+								}
+						}
 
 					fclose (in_f);
 				}
 
 			FreeByteBuffer (buffer_p);
 		}
+}
+
+
+bool DroppableTextBox :: SetFromText (const char * const data_s)
+{
+	clear ();
+	insertPlainText (data_s);
+
+	return true;
 }
 
 

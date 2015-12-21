@@ -301,6 +301,17 @@ GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p
 GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number);
 
 
+/**
+ * Is a json_t NULL or empty?
+ *
+ * @param json_p The json_t object to test.
+ * @return <code>true</code> if the json_t is NULL, an empty array, an empty object or
+ * an empty string, <code>false</code> otherwise.
+ * @see IsStringEmpty
+ */
+GRASSROOTS_UTIL_API bool IsJSONEmpty (const json_t *json_p);
+
+
 #ifdef __cplusplus
 }
 #endif

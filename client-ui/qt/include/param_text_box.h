@@ -31,12 +31,14 @@ class DroppableTextBox : public QPlainTextEdit
 public:
 	DroppableTextBox (QWidget *parent_p);
 
+	void LoadText (const char *filename_s);
+
+	virtual bool SetFromText (const char * const data_s);
+
 protected:
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);
 
 	virtual void dropEvent (QDropEvent *event_p);
-
-	void LoadText (const char *filename_s);
 };
 
 

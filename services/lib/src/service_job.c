@@ -81,19 +81,19 @@ void ClearServiceJob (ServiceJob *job_p)
 
 	if (job_p -> sj_result_p)
 		{
-			WipeJSON (job_p -> sj_result_p);
+			json_decref (job_p -> sj_result_p);
 			job_p -> sj_result_p = NULL;
 		}
 
 	if (job_p -> sj_metadata_p)
 		{
-			WipeJSON (job_p -> sj_metadata_p);
+			json_decref (job_p -> sj_metadata_p);
 			job_p -> sj_metadata_p = NULL;
 		}
 
 	if (job_p -> sj_errors_p)
 		{
-			WipeJSON (job_p -> sj_errors_p);
+			json_decref (job_p -> sj_errors_p);
 			job_p -> sj_errors_p = NULL;
 		}
 
@@ -303,9 +303,27 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 									if (success_flag)
 										{
 											char buffer_s [UUID_STRING_BUFFER_SIZE];
+											json_t *uuid_p = NULL;
 
 											ConvertUUIDToString (job_p -> sj_id, buffer_s);
-											success_flag = (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0);
+
+											uuid_p = json_string (buffer_s);
+
+											if (uuid_p)
+												{
+													if (json_object_set_new (job_json_p, JOB_UUID_S, uuid_p) != 0)
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid %s to json, uuid refcount: %d", buffer_s, uuid_p -> refcount);
+
+															success_flag = false;
+															json_decref (uuid_p);
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid %s as json", buffer_s);
+													success_flag = false;
+												}
 										}
 
 									if (success_flag)

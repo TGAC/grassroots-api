@@ -120,73 +120,61 @@ void MainWindow :: RunServices (bool run_flag)
 							bool show_results_flag = false;
 
 							size_t i;
-							json_t *service_json_p;
+							json_t *job_p;
 
-							json_array_foreach (services_json_p, i, service_json_p)
+							json_array_foreach (services_json_p, i, job_p)
 								{
-									const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
-									const char *service_description_s = GetJSONString (service_json_p, OPERATION_DESCRIPTION_S);
-									const char *service_uri_s =  GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
-									json_t *jobs_array_p = json_object_get (service_json_p, SERVICE_JOBS_S);
+									const char *service_name_s = GetJSONString (job_p, SERVICE_NAME_S);
+									const char *service_description_s = GetJSONString (job_p, OPERATION_DESCRIPTION_S);
+									const char *service_uri_s =  GetJSONString (job_p, OPERATION_INFORMATION_URI_S);
 
-									if (jobs_array_p && json_is_array (jobs_array_p))
+									/* Get the job status */
+									OperationStatus status = OS_ERROR;
+									const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
+
+									if (value_s)
 										{
-											size_t j;
-											json_t *job_p;
+											status = GetOperationStatusFromString (value_s);
+										}
+									else
+										{
+											int i;
+											/* Get the job status */
 
-											json_array_foreach (jobs_array_p, j, job_p)
+											if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
 												{
-													/* Get the job status */
-													OperationStatus status = OS_ERROR;
-													const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
-
-													if (value_s)
+													if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
 														{
-															status = GetOperationStatusFromString (value_s);
+															status = (OperationStatus) i;
 														}
-													else
+												}
+										}
+
+									if (status != OS_ERROR)
+										{
+											json_t *errors_p = NULL;
+
+											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
+												{
+													results_p -> AddAllResultsPagesFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+													show_results_flag = true;
+												}
+											else
+												{
+													progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+													show_progress_flag = true;
+												}
+
+											errors_p = json_object_get (job_p, "errors");
+
+											if (errors_p)
+												{
+													if (service_name_s)
 														{
-															int i;
-
-															if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
-																{
-																	if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
-																		{
-																			status = (OperationStatus) i;
-																		}
-																}
+															mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
 														}
-
-													if (status != OS_ERROR)
-														{
-															json_t *errors_p = NULL;
-
-															if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
-																{
-																	results_p -> AddAllResultsPagesFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
-																	show_results_flag = true;
-																}
-															else
-																{
-																	progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
-																	show_progress_flag = true;
-																}
-
-															errors_p = json_object_get (job_p, "errors");
-
-															if (errors_p)
-																{
-																	if (service_name_s)
-																		{
-																			mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
-																		}
-																}
-														}
-
-
-                        }   /* json_array_foreach (jobs_array_p, j, job_p) */
-
-										}		/* if (jobs_array_p) */
+												}
+										}
 								}
 
 							if (show_progress_flag)
