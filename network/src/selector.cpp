@@ -59,13 +59,13 @@ json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const li
 
 	if (links_p)
 		{
-			size_t i = links_p -> hla_num_entries;
-			HtmlLink *link_p = links_p -> hla_data_p;
-
-			 res_p = json_array ();
+			res_p = json_array ();
 
 			if (res_p)
 				{
+					size_t i = links_p -> hla_num_entries;
+					HtmlLink *link_p = links_p -> hla_data_p;
+
 					for ( ; i > 0; -- i, ++ link_p)
 						{
 							json_t *link_json_p = GetHtmlLinkAsJSON (link_p);
@@ -74,14 +74,28 @@ json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const li
 								{
 									if (json_array_append_new (res_p, link_json_p) != 0)
 										{
-
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add link for %s to json array", link_p -> hl_uri_s);
+											json_decref (link_json_p);
 										}
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get json for %s", link_p -> hl_uri_s);
 								}
 						}
 
 				}		/* if (res_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json array for links json");
+				}
 
+			FreeHtmlLinkArray (links_p);
 		}		/* if (links_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get html links");
+		}
 
 	return res_p;
 }
@@ -98,6 +112,9 @@ static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p)
 	if (GetResourceProtocolAndPath (link_p -> hl_uri_s, &protocol_s, &path_s))
 		{
 			json_p = GetResourceAsJSONByParts (protocol_s, path_s, link_p -> hl_data_s, NULL);
+
+			FreeCopiedString (protocol_s);
+			FreeCopiedString (path_s);
 		}
 
 	return json_p;
@@ -185,7 +202,9 @@ static HtmlLinkArray *AllocateHtmlLinksArrayFromSet (const hcxselect :: Selector
 
 							num_attrs = attrs_r.size();
 
-							cout << "node: " << *node_p << endl;
+							#if SELECTOR_DEBUG >= STM_LEVEL_FINEST
+							PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "node %s", node_p -> string ().c_data ());
+							#endif
 
 							if ((tag_name_r.compare ("a") == 0) || ((tag_name_r.compare ("A") == 0)))
 								{
@@ -335,6 +354,7 @@ void FreeHtmlLinkArray (HtmlLinkArray *links_p)
 			ClearHtmlLink (link_p);
 		}
 
+	FreeMemory (links_p -> hla_data_p);
 	FreeMemory (links_p);
 }
 

@@ -30,7 +30,7 @@
 
 static bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s);
 
-static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p);
+static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p, bool set_as_new_flag);
 
 
 void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
@@ -229,15 +229,25 @@ static bool AddValidJSONString (json_t *parent_p, const char * const key_s, cons
 }
 
 
-static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p)
+static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p, bool set_as_new_flag)
 {
 	bool success_flag = true;
 
 	if (child_p)
 		{
-			if (json_object_set_new (parent_p, key_s, child_p) != 0)
+			if (set_as_new_flag)
 				{
-					success_flag = false;
+					if (json_object_set_new (parent_p, key_s, child_p) != 0)
+						{
+							success_flag = false;
+						}
+				}
+			else
+				{
+					if (json_object_set (parent_p, key_s, child_p) != 0)
+						{
+							success_flag = false;
+						}
 				}
 		}
 
@@ -267,15 +277,15 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 					job_p -> sj_result_p = results_json_p;
 				}
 
-			success_flag = AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p);
+			success_flag = AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p, false);
 
 			if (success_flag)
 				{
-					success_flag = AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p);
+					success_flag = AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false);
 
 					if (success_flag)
 						{
-							success_flag = AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p);
+							success_flag = AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false);
 
 							if (success_flag)
 								{
@@ -392,16 +402,18 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 			if (job_json_p)
 				{
 					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
-					PrintLog (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
+					PrintJSONToLog (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 
 
 					if (json_array_append (res_p, job_json_p) == 0)
 						{
+/*
 							if (clear_service_job_results_flag)
 								{
 									ClearServiceJobResults (job_p, false);
 								}
+*/
 						}
 					else
 						{

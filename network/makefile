@@ -1,7 +1,7 @@
 NAME 		= grassroots_network
 DIR_SRC = src
 DIR_INCLUDE = include
-COMP		= gcc
+COMP		= g++
 MAKEDEPEND 	= gcc -MM -MF
 
 
