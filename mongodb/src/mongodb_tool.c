@@ -281,8 +281,8 @@ bool UpdateMongoDocumentByBSON (MongoTool *tool_p, const bson_t *query_p, const 
 									bson_error_t error;
 
 									#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-									LogBSON (query_p, STM_LEVEL_FINE, "UpdateMongoDocument query_p");
-									LogBSON (update_statement_p, STM_LEVEL_FINE, "UpdateMongoDocument update_statement_p");
+									PrintBSONToLog (query_p, "UpdateMongoDocument query_p", STM_LEVEL_FINE, __FILE__, __LINE__);
+									PrintBSONToLog (update_statement_p, "UpdateMongoDocument update_statement_p", STM_LEVEL_FINE, __FILE__, __LINE__);
 									#endif
 
 
@@ -601,7 +601,7 @@ bool AddToQuery (bson_t *query_p, const char *key_s, const json_t *json_clause_p
 
 
 	#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINER
-	LogBSON (query_p, STM_LEVEL_FINE, "bson search query");
+	PrintBSONToLog (query_p, "bson search query", STM_LEVEL_FINE, __FILE__, __LINE__);
 	#endif
 
 	return success_flag;
@@ -644,7 +644,7 @@ bson_t *GenerateQuery (const json_t *json_p)
 						}		/* json_object_foreach (json_p, key_p, value_p) */
 
 					#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-					LogBSON (query_p, STM_LEVEL_FINE, "final bson search query");
+					PrintBSONToLog (query_p, "final bson search query", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 
 				}		/* if (query_p) */
@@ -664,7 +664,9 @@ bool FindMatchingMongoDocumentsByJSON (MongoTool *tool_p, const json_t *query_js
 
 	if (query_p)
 		{
-			char *value_s = bson_as_json (query_p, NULL);
+			#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINER
+			PrintBSONToLog (query_p, "query: ", STM_LEVEL_FINER, __FILE__, __LINE__);
+			#endif
 
 			success_flag = FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss);
 			bson_destroy (query_p);
@@ -691,7 +693,7 @@ void LogAllBSON (const bson_t *bson_p, const int level, const char * const prefi
 }
 
 
-void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s)
+void PrintBSONToLog (const bson_t *bson_p, const char * const prefix_s, const int level, const char * const filename_s, const int line_number)
 {
 	size_t len;
 	char *dump_s = bson_as_json (bson_p, &len);
@@ -700,11 +702,11 @@ void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s
 		{
 			if (prefix_s)
 				{
-					PrintLog (level, __FILE__, __LINE__, "%s %s", prefix_s, dump_s);
+					PrintLog (level, filename_s, line_number, "%s %s", prefix_s, dump_s);
 				}
 			else
 				{
-					PrintLog (level, __FILE__, __LINE__, "%s", dump_s);
+					PrintLog (level, filename_s, line_number, "%s", dump_s);
 
 				}
 			bson_free (dump_s);
@@ -771,7 +773,7 @@ bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p,
 
 
 			#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-			LogBSON (query_p, STM_LEVEL_FINE, "mongo query");
+			PrintBSONToLog (query_p, "mongo query", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 
 
@@ -842,7 +844,7 @@ int32 GetAllMongoResultsForKeyValuePair (MongoTool *tool_p, json_t **docs_pp, co
 			if (BSON_APPEND_UTF8 (query_p, key_s, value_s))
 				{
 					#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-					LogBSON (query_p, MONGODB_TOOL_DEBUG, "InsertOrUpdateMongoData query: ");
+					PrintBSONToLog (query_p, "InsertOrUpdateMongoData query: ", MONGODB_TOOL_DEBUG, __FILE__, __LINE__);
 					#endif
 
 					num_results = 0;
@@ -1195,7 +1197,7 @@ const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const 
 							if (BSON_APPEND_UTF8 (query_p, insert_key_s, primary_key_value_s))
 								{
 									#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-									LogBSON (query_p, MONGODB_TOOL_DEBUG, "InsertOrUpdateMongoData query: ");
+									PrintBSONToLog (query_p, MONGODB_TOOL_DEBUG, __FILE__, __LINE__, "InsertOrUpdateMongoData query: ");
 									#endif
 
 									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))

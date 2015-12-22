@@ -227,6 +227,13 @@ static bool CloseWebSearchService (Service *service_p)
 
 	FreeWebSearchServiceData (data_p);
 	
+	/*
+	if (service_p -> se_jobs_p)
+		{
+			FreeServiceJobSet (service_p -> se_jobs_p);
+			service_p -> se_jobs_p = 0;
+		}
+	 */
 	return success_flag;
 }
 
@@ -275,7 +282,6 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 							if (CallCurlWebservice (data_p))
 								{
 									job_p -> sj_status = OS_SUCCEEDED;
-
 									job_p -> sj_result_p = CreateWebSearchServiceResults (service_data_p);
 								}		/* if (CallCurlWebservice (data_p)) */
 

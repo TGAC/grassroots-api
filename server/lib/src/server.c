@@ -491,7 +491,11 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 																		}
 
 																	#if SERVER_DEBUG >= STM_LEVEL_FINER
-																	PrintJSONToLog (res_p, "result = ", STM_LEVEL_FINER, __FILE__, __LINE__);
+																		{
+																			PrintJSONToLog (res_p, "initial results", STM_LEVEL_FINER, __FILE__, __LINE__);
+																			FlushLog ();
+																			PrintJSONRefCounts (res_p, "initial results: ",  STM_LEVEL_FINER, __FILE__, __LINE__);
+																		}
 																	#endif
 
 																	if (keep_service_flag)
@@ -553,6 +557,11 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINE
 	PrintJSONToLog (res_p, "final result = ", STM_LEVEL_FINE, __FILE__, __LINE__);
+	FlushLog ();
+	#endif
+
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
+	PrintJSONRefCounts (res_p, "final result: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 	#endif
 
 	return res;

@@ -182,6 +182,17 @@ GRASSROOTS_NETWORK_API char *DetachByteBufferData (ByteBuffer * const buffer_p);
 
 
 
+/**
+ * Remove data from the end of a byte buffer
+ *
+ * @param buffer_p The ByteBuffer to remove the data from
+ * @param size The number of bytes to remove. If this is greater than the size of the
+ * ByteBuffer, then the ByteBUffer will be reset.
+ * @memberof ByteBuffer
+ */
+GRASSROOTS_NETWORK_API void RemoveFromByteBuffer (ByteBuffer *buffer_p, size_t size);
+
+
 
 GRASSROOTS_NETWORK_API void ReplaceCharsInByteBuffer (ByteBuffer *buffer_p, char old_data, char new_data);
 

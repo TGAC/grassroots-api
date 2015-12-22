@@ -87,6 +87,20 @@ bool ResizeByteBuffer (ByteBuffer *buffer_p, size_t new_size)
 }
 
 
+void RemoveFromByteBuffer (ByteBuffer *buffer_p, size_t size)
+{
+	if (buffer_p -> bb_current_index > size)
+		{
+			buffer_p -> bb_current_index -= size;
+			* ((buffer_p -> bb_data_p) + (buffer_p -> bb_current_index)) = '\0';
+		}
+	else
+		{
+			ResetByteBuffer (buffer_p);
+		}
+}
+
+
 bool AppendStringToByteBuffer (ByteBuffer *buffer_p, const char * const value_s)
 {
 	return AppendToByteBuffer (buffer_p, value_s, strlen (value_s));

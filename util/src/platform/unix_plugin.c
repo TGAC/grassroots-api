@@ -56,7 +56,7 @@ void ClosePlugin (Plugin * const plugin_p)
 
 	if (unix_plugin_p -> up_handle_p)
 		{
-			dlclose (unix_plugin_p -> up_handle_p);
+			//dlclose (unix_plugin_p -> up_handle_p);
 			unix_plugin_p -> up_handle_p = NULL;
 		}
 }

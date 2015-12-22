@@ -234,6 +234,11 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 
 void FreeParameter (Parameter *param_p)
 {
+	#ifdef PARAMETER_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Freeing parameter %s", param_p -> pa_name_s);
+	#endif
+
+
 	if (param_p -> pa_description_s)
 		{
 			FreeCopiedString (param_p -> pa_description_s);
@@ -1689,6 +1694,10 @@ void ClearSharedType (SharedType *st_p, const ParameterType pt)
 			case PT_JSON:
 				if (st_p -> st_json_p)
 					{
+						#ifdef PARAMETER_DEBUG >= STM_LEVEL_FINER
+						PrintJSONRefCounts (st_p -> st_json_p, "freeing param json", STM_LEVEL_FINER, __FILE__, __LINE__);
+						#endif
+
 						json_decref (st_p -> st_json_p);
 						st_p -> st_json_p = NULL;
 					}

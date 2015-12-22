@@ -34,7 +34,7 @@
 #include "math_utils.h"
 
 #ifdef _DEBUG
-	#define PATHOGENOMICS_SERVICE_DEBUG	(STM_LEVEL_FINE)
+	#define PATHOGENOMICS_SERVICE_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define PATHOGENOMICS_SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -722,8 +722,29 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 														{
 															if (json_is_array (results_p))
 																{
+																	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINER
+																	PrintJSONToLog (results_p, "initial results", STM_LEVEL_FINER, __FILE__, __LINE__);
+																	PrintJSONRefCounts (results_p, "initial results", STM_LEVEL_FINER, __FILE__, __LINE__);
+																	#endif
+
 																	num_successes = json_array_size (results_p);
 																	job_p -> sj_result_p = results_p;
+																}
+															else
+																{
+																	char *json_s = json_dumps (results_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+																	if (json_s)
+																		{
+																			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "SearchData results \"%s\" is not an array", json_s);
+																			free (json_s);
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "SearchData results is not an array");
+																		}
+
+																	json_decref (results_p);
 																}
 														}
 
@@ -923,7 +944,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 											for (i = 0; i < size; ++ i)
 												{
 													raw_result_p = json_array_get (raw_results_p, i);
-													char *title_s = ConvertNumberToString ((double) i, -1);
+													char *title_s = ConvertNumberToString ((double) i + 1, -1);
 
 													if (title_s)
 														{
@@ -931,20 +952,52 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 
 															if (resource_p)
 																{
-																	if (json_array_append_new (results_p, resource_p) != 0)
+																	if (json_array_append_new (results_p, resource_p) == 0)
 																		{
 
 																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json resource for " SIZET_FMT " to results array", i);
+																			json_decref (resource_p);
+																		}
+																}		/* if (resource_p) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json resource for " SIZET_FMT, i);
 																}
 
 															FreeCopiedString (title_s);
+														}		/* if (title_s) */
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert " SIZET_FMT " to string", i + 1);
 														}
-												}
+												}		/* for (i = 0; i < size; ++ i) */
+
+										}		/* if (results_p) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create results object");
 										}
+								}		/* if (json_is_array (raw_results_p)) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Search results is not an array");
 								}
 
 							json_decref (raw_results_p);
+						}		/* if (raw_results_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get raw results from search");
 						}
+				}		/* if (FindMatchingMongoDocumentsByJSON (tool_p, values_p, fields_ss)) */
+			else
+				{
+					#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+					PrintJSONToLog (values_p, "No resluts found for ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+					#endif
 				}
 
 			if (fields_ss)
@@ -992,13 +1045,8 @@ static char *CheckDataIsValid (const json_t *row_p, PathogenomicsServiceData *da
 				}
 		}		/* if (buffer_p) */
 
-
 	return errors_s;
 }
-
-
-
-
 
 
 bool AddErrorMessage (json_t *errors_p, const json_t *values_p, const size_t row, const char * const error_s)

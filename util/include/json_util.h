@@ -298,6 +298,17 @@ GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, jso
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
 
+/**
+ * Print a json_t object to the logging stream
+ *
+ * @param json_p The json_t object to print.
+ * @param prefix_s An optional message to print to the log prior to parsing the value's reference counts.
+ * If this is <code>NULL</code>, then no message will be printed.
+ * @param level The logging level to use.
+ * @param filename_s The filename of the source file calling this method.
+ * @param line_number The line number in the source file which called this method.
+ * @see PrintLog
+ */
 GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number);
 
 
@@ -310,6 +321,21 @@ GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * cons
  * @see IsStringEmpty
  */
 GRASSROOTS_UTIL_API bool IsJSONEmpty (const json_t *json_p);
+
+
+
+/**
+ * Print the reference counts for all of the entries in a json_t object to the logging stream
+ *
+ * @param value_p The json_t object to print.
+ * @param initial_s An optional message to print to the log prior to parsing the value's reference counts.
+ * If this is <code>NULL</code>, then no message will be printed.
+ * @param log_level The logging level to use.
+ * @param filename_s The filename of the source file calling this method.
+ * @param line_number The line number in the source file which called this method.
+ * @see PrintLog
+ */
+GRASSROOTS_UTIL_API void PrintJSONRefCounts (const json_t * const value_p, const char *initial_s, const uint32 log_level, const char * const filename_s, const int line_number);
 
 
 #ifdef __cplusplus

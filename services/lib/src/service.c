@@ -132,6 +132,10 @@ void FreeService (Service *service_p)
 
 bool CloseService (Service *service_p)
 {
+	#if SERVICE_DEBUG >= STM_LEVEL_FINE
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Closing %s at %.16X", GetServiceName (service_p), service_p);
+	#endif
+
 	return service_p -> se_close_fn (service_p);
 }
 
@@ -807,7 +811,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 						}
 				}
 
-			#if SERVICE_DEBUG >= STM_LEVEL_FINE
+			#if SERVICE_DEBUG >= STM_LEVEL_FINER
 			PrintJSON (stderr, root_p, "GetServiceAsJSON - service :: ");
 			#endif
 
@@ -985,8 +989,8 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 								{
 									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
 
-									#if SERVICE_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
+									#if SERVICE_DEBUG >= STM_LEVEL_FINER
+									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINER, __FILE__, __LINE__);
 									#endif
 									
 									if (service_json_p)
@@ -1150,8 +1154,8 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 {
 	ServicesArray *services_p = NULL;
 
-	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (config_p, __FILE__, __LINE__, "GetReferenceServicesFromJSON: config", SERVICE_DEBUG);
+	#if SERVICE_DEBUG >= STM_LEVEL_FINER
+	PrintJSONToLog (config_p, "GetReferenceServicesFromJSON: config", STM_LEVEL_FINER, __FILE__, __LINE__);
 	#endif
 
 	if (config_p)

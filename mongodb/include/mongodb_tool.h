@@ -148,7 +148,7 @@ GRASSROOTS_MONGODB_API json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool
 GRASSROOTS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
 
 
-GRASSROOTS_MONGODB_API void LogBSON (const bson_t *bson_p, const int level, const char * const prefix_s);
+GRASSROOTS_MONGODB_API void PrintBSONToLog (const bson_t *bson_p, const char * const prefix_s, const int level, const char * const filename_s, const int line_number);
 
 
 GRASSROOTS_MONGODB_API void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s);

@@ -22,7 +22,7 @@
 #include "jobs_manager.h"
 
 #ifdef _DEBUG
-	#define SERVICE_JOB_DEBUG	(STM_LEVEL_FINE)
+	#define SERVICE_JOB_DEBUG	(STM_LEVEL_FINER)
 #else
 	#define SERVICE_JOB_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -35,6 +35,10 @@ static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *ch
 
 void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
 {
+	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Initialising Job: %.16x\n", job_p);
+	#endif
+
 	job_p -> sj_service_p = service_p;
 	uuid_generate (job_p -> sj_id);
 	job_p -> sj_status = OS_IDLE;
@@ -74,6 +78,10 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 void ClearServiceJob (ServiceJob *job_p)
 {
+	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Clearing Job: %.16x\n", job_p);
+	#endif
+
 	if (job_p -> sj_name_s)
 		{
 			FreeCopiedString (job_p -> sj_name_s);
@@ -81,7 +89,12 @@ void ClearServiceJob (ServiceJob *job_p)
 
 	if (job_p -> sj_result_p)
 		{
+			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+			PrintJSONRefCounts (job_p -> sj_result_p, "pre decref res_p", STM_LEVEL_FINER, __FILE__, __LINE__);
+			#endif
+
 			json_decref (job_p -> sj_result_p);
+
 			job_p -> sj_result_p = NULL;
 		}
 
@@ -188,9 +201,22 @@ bool CloseServiceJob (ServiceJob *job_p)
 {
 	const bool success_flag = (job_p -> sj_close_fn (job_p));
 
+	#ifdef SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Closing ServiceJob %.8X for %s", job_p, job_p -> sj_service_p);
+	#endif
+
 	if (job_p -> sj_result_p)
 		{
+			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+			PrintJSONRefCounts (job_p -> sj_result_p, "pre wipe results", STM_LEVEL_FINER, __FILE__, __LINE__);
+			#endif
+
 			WipeJSON (job_p -> sj_result_p);
+
+			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+			PrintJSONRefCounts (job_p -> sj_result_p, "post wipe results", STM_LEVEL_FINER, __FILE__, __LINE__);
+			#endif
+
 			job_p -> sj_result_p = NULL;
 		}
 
@@ -421,17 +447,21 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 				{
 					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 					PrintJSONToLog (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
+					PrintJSONRefCounts (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 
-
-					if (json_array_append (res_p, job_json_p) == 0)
+					if (json_array_append_new (res_p, job_json_p) == 0)
 						{
-/*
+							#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+							PrintJSONRefCounts (job_json_p, "after array adding, job json ", STM_LEVEL_FINE, __FILE__, __LINE__);
+							#endif
+
+							/*
 							if (clear_service_job_results_flag)
 								{
 									ClearServiceJobResults (job_p, false);
 								}
-*/
+							 */
 						}
 					else
 						{

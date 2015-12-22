@@ -23,6 +23,7 @@
 #include "streams.h"
 #include "string_linked_list.h"
 #include "string_utils.h"
+#include "byte_buffer.h"
 
 
 #ifdef _DEBUG
@@ -30,6 +31,10 @@
 #else
 	#define JSON_UTIL_DEBUG	(STM_LEVEL_NONE)
 #endif
+
+
+static void PrintJSONRefCountsWithIndent (const json_t * const value_p, const uint32 log_level, const char * key_s, ByteBuffer *buffer_p, const char * const filename_s, const int line_number);
+
 
 JsonNode *AllocateJsonNode (json_t *json_p)
 {
@@ -512,6 +517,26 @@ json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimit
 }
 
 
+
+void PrintJSONRefCounts (const json_t * const value_p, const char *initial_s, const uint32 log_level, const char * const filename_s, const int line_number)
+{
+	ByteBuffer *buffer_p = AllocateByteBuffer (128);
+
+	if (buffer_p)
+		{
+			if (initial_s)
+				{
+					PrintLog (log_level, filename_s, line_number, "%s", initial_s);
+				}
+			PrintJSONRefCountsWithIndent (value_p, log_level, NULL, buffer_p, filename_s, line_number);
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
+}
+
+
+
+
+
 void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
 {
 	if (json_p)
@@ -562,6 +587,7 @@ bool IsJSONEmpty (const json_t *json_p)
 							const char *value_s = json_string_value (json_p);
 							empty_flag = IsStringEmpty (value_s);
 						}
+						break;
 
 					default:
 						break;
@@ -575,3 +601,75 @@ bool IsJSONEmpty (const json_t *json_p)
 
 	return empty_flag;
 }
+
+
+
+static void PrintJSONRefCountsWithIndent (const json_t * const value_p, const uint32 log_level, const char * key_s, ByteBuffer *buffer_p, const char * const filename_s, const int line_number)
+{
+	if (value_p)
+		{
+			const char * const indent_s = "\t";
+			const char *buffer_data_s = GetByteBufferData (buffer_p);
+
+			if (!key_s)
+				{
+					key_s = "";
+				}
+
+			if (json_is_object (value_p))
+				{
+					const char *element_key_s;
+					json_t *element_value_p;
+					size_t size = json_object_size (value_p);
+
+					PrintLog (log_level, filename_s, line_number, "%s%s obj refcount " SIZET_FMT, buffer_data_s, key_s, value_p -> refcount);
+
+					if (size > 0)
+						{
+							PrintLog (log_level, filename_s, line_number, "%s{", buffer_data_s);
+
+							if (AppendStringToByteBuffer (buffer_p, "\t"))
+								{
+									json_object_foreach (value_p, element_key_s, element_value_p)
+										{
+											PrintJSONRefCountsWithIndent (element_value_p, log_level, element_key_s, buffer_p, filename_s, line_number);
+										}
+
+									RemoveFromByteBuffer (buffer_p, strlen (indent_s));
+								}
+
+							PrintLog (log_level, filename_s, line_number, "%s}", buffer_data_s);
+						}		/* if (json_object_size (value_p) > 0) */
+				}
+			else if (json_is_array (value_p))
+				{
+					size_t i;
+					json_t *element_p;
+					size_t size = json_array_size (value_p);
+
+					PrintLog (log_level, filename_s, line_number, "%s%s array refcount " SIZET_FMT, buffer_data_s, key_s, value_p -> refcount);
+
+					if (size > 0)
+						{
+							PrintLog (log_level, filename_s, line_number, "%s[", buffer_data_s);
+
+							if (AppendStringToByteBuffer (buffer_p, indent_s))
+								{
+									json_array_foreach (value_p, i, element_p)
+										{
+											PrintJSONRefCountsWithIndent (element_p, log_level, NULL,  buffer_p, filename_s, line_number);
+										}
+
+									RemoveFromByteBuffer (buffer_p, strlen (indent_s));
+								}
+
+							PrintLog (log_level, filename_s, line_number, "%s]", buffer_data_s);
+						}		/* if (json_object_size (value_p) > 0) */
+				}
+			else
+				{
+
+				}
+		}
+}
+

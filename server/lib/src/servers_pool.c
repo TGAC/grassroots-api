@@ -23,7 +23,7 @@
 #include "json_tools.h"
 
 #ifdef _DEBUG
-	#define SERVERS_POOL_DEBUG	(STM_LEVEL_FINE)
+	#define SERVERS_POOL_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define SERVERS_POOL_DEBUG	(STM_LEVEL_NONE)
 #endif
