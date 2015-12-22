@@ -942,6 +942,8 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 												}
 										}
 								}
+
+							json_decref (raw_results_p);
 						}
 				}
 

@@ -144,13 +144,13 @@ char *ConvertNumberToString (double d, int8 num_dps)
 		{
 			char *value_p = value_s;
 			char *format_s = NULL;   
-			size_t num_digits = 5;		/* "%%xlf\0" */
+			size_t num_digits = 7;		/* "%.%xlf\0" */
 			int i = 0;
 			
 			if (num_dps > 0)
 				{
 					i = log10 (num_dps);
-					num_digits += (i + 2);					
+					num_digits += (i + 3);
 				}
 				
 			format_s = (char *) AllocMemory (num_digits);
@@ -168,7 +168,7 @@ char *ConvertNumberToString (double d, int8 num_dps)
 						}
 					else
 						{
-							sprintf (temp_p, "lf");
+							sprintf (temp_p, "d");
 						}
 					
 					if (minus_flag)
@@ -177,7 +177,14 @@ char *ConvertNumberToString (double d, int8 num_dps)
 							++ value_p;
 						}
 
-					sprintf (value_p, format_s, d);					
+					if (i > 0)
+						{
+							sprintf (value_p, format_s, d);
+						}
+					else
+						{
+							sprintf (value_p, format_s, (int) d);
+						}
 				}
 			else
 				{
