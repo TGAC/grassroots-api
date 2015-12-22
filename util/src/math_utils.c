@@ -185,6 +185,8 @@ char *ConvertNumberToString (double d, int8 num_dps)
 						{
 							sprintf (value_p, format_s, (int) d);
 						}
+
+					FreeMemory (format_s);
 				}
 			else
 				{

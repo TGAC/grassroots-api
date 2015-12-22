@@ -56,7 +56,17 @@ void ClosePlugin (Plugin * const plugin_p)
 
 	if (unix_plugin_p -> up_handle_p)
 		{
-			//dlclose (unix_plugin_p -> up_handle_p);
+			/*
+			 * When using valgrind with dynamically loaded shared objects, if they are closed before
+			 * the program exits then the function names get lost from the relevant stack traces and
+			 * are printed as "???" instead. So compiling with USING_VALGRIND defined keeps them in memory
+			 * so that the stack trace can be generated correctly. Do not use in production servers as
+			 * it is a resource leak.
+			 */
+			#ifndef USING_VALGRIND
+			dlclose (unix_plugin_p -> up_handle_p);
+			#endif
+
 			unix_plugin_p -> up_handle_p = NULL;
 		}
 }

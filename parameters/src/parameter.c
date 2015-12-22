@@ -190,7 +190,7 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 													if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true))
 														{
 															if (SetParameterValueFromSharedType (param_p, &default_value, false))
-																{
+															{
 																	return param_p;
 																}		/* if (SetParameterValueFromSharedType (param_p, &default_value, false)) */
 															else
@@ -1709,7 +1709,7 @@ void ClearSharedType (SharedType *st_p, const ParameterType pt)
 			case PT_JSON:
 				if (st_p -> st_json_p)
 					{
-						#ifdef PARAMETER_DEBUG >= STM_LEVEL_FINER
+						#if PARAMETER_DEBUG >= STM_LEVEL_FINER
 						PrintJSONRefCounts (st_p -> st_json_p, "freeing param json", STM_LEVEL_FINER, __FILE__, __LINE__);
 						#endif
 
@@ -1721,6 +1721,8 @@ void ClearSharedType (SharedType *st_p, const ParameterType pt)
 			default:
 				break;
 		}
+
+	memset (st_p, 0, sizeof (SharedType));
 }
 
 
@@ -1817,6 +1819,9 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 											if (param_p)
 												{
+													/* AllocateParameter made a deep copy of the current value, so we can deallocate our cached copy */
+													ClearSharedType (&current_value, pt);
+
 
 													if (!InitParameterStoreFromJSON (root_p, param_p -> pa_store_p))
 														{
