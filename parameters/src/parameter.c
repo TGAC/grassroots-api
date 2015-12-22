@@ -1166,16 +1166,31 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 					case PT_KEYWORD:
 						if (json_is_string (json_value_p))
 							{
-								char *value_s = CopyToNewString (json_string_value (json_value_p), 0, false);
+								const char * const src_s = json_string_value (json_value_p);
 
-								if (value_s)
+								if (strlen (src_s) > 0)
+									{
+										char *value_s = CopyToNewString (src_s, 0, false);
+
+										if (value_s)
+											{
+												if (value_p -> st_string_value_s)
+													{
+														FreeCopiedString (value_p -> st_string_value_s);
+													}
+
+												value_p -> st_string_value_s = value_s;
+												success_flag = true;
+											}
+									}
+								else
 									{
 										if (value_p -> st_string_value_s)
 											{
 												FreeCopiedString (value_p -> st_string_value_s);
+												value_p -> st_string_value_s = NULL;
 											}
 
-										value_p -> st_string_value_s = value_s;
 										success_flag = true;
 									}
 							}
