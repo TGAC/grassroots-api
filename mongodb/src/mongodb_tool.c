@@ -1197,7 +1197,7 @@ const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const 
 							if (BSON_APPEND_UTF8 (query_p, insert_key_s, primary_key_value_s))
 								{
 									#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-									PrintBSONToLog (query_p, MONGODB_TOOL_DEBUG, __FILE__, __LINE__, "InsertOrUpdateMongoData query: ");
+									PrintBSONToLog (query_p, "InsertOrUpdateMongoData query: ", MONGODB_TOOL_DEBUG, __FILE__, __LINE__);
 									#endif
 
 									if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
