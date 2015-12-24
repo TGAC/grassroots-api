@@ -50,7 +50,7 @@ would search for all entries with a *crop* field set to wheat, oats, barley or m
 So far the comparisons have been for equality, however you can also do other comparisons. This can be done by setting the value to a JSON object. This object contains at least two sub-keys: *operator* and *value*. 
 
 * **operator**:
-The value for this key can be one of "=", "<", "<=", ">", ">=", "in", "range" and "not". 
+The value for this key can be one of "=", "!=", "<", "<=", ">", ">=", "in", "range", "!=" and "like"
 
 * **value**: 
 This is the value that the *operator* will act upon. This will be generally be a single value except for when *operator* is set to "in" or "range". For "in" it acts as described above. For "range", this value will be  an array of two values that are the lower and upper inclusive bounds to match against. For example to get a *longtitude* value greater than or equal to 14 degrees, the corresponding json would be
@@ -79,6 +79,38 @@ Whereas to get a *longtitude* value between 14 and 16 degrees, the corresponding
 }
 ~~~
 
+
+##### Like operator
+
+The *like* operator is for performing regular expression-style searches. Custom options can be specified for altering the matching behaviour. The current options are:
+
+* **insensitive**: If this is true then the matches will be case-insensitive. This defaults to false.
+
+~~~.json
+{
+	"data": {
+		"name": {
+			"operator": "like",
+			"value": "^foo"
+		 }
+	}
+}
+~~~
+
+would match *"name"*: *"food"* but not *"name"*: *"Food"*, whereas 
+
+~~~.json
+{
+	"data": {
+		"name": {
+			"operator": "like",
+			"value": "^foo",
+			"insensitive": true
+		 }
+	}
+}
+~~~
+would match both.
 
 So a complete example to search for entries where the *crop* is wheat, the *longtitude* is between 10 and 11 degrees, the *latitude* is between 6 and 7 degrees, the *country* is either China, UK or France and getting the *ID*, *date* and *disease* fields would be
 
