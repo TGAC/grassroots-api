@@ -404,15 +404,13 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 				}
 			else
 				{
+					job_json_p = GetServiceJobStatusAsJSON (job_p);
+
 					/*
 					 * If the job is running asynchronously and still going
 					 * then we need to store it in the jobs table.
 					 */
-					if (job_p -> sj_service_p -> se_synchronous_flag)
-						{
-							job_json_p = GetServiceJobStatusAsJSON (job_p);
-						}
-					else
+					if (! (job_p -> sj_service_p -> se_synchronous_flag))
 						{
 							if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
 								{
@@ -436,10 +434,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 												}
 										}
 								}
-							else
-								{
-									job_json_p = GetServiceJobStatusAsJSON (job_p);
-								}
 						}
 				}
 
@@ -447,6 +441,9 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 				{
 					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 					PrintJSONToLog (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
+					#endif
+
+					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
 					PrintJSONRefCounts (job_json_p, "Job JSON", STM_LEVEL_FINE, __FILE__, __LINE__);
 					#endif
 

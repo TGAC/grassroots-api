@@ -49,6 +49,14 @@
 #include "apr_jobs_manager.h"
 #include "apr_servers_manager.h"
 
+#ifdef _DEBUG
+	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_FINE)
+#else
+	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_NONE)
+#endif
+
+
+
 /* Define prototypes of our functions in this module */
 static void RegisterHooks (apr_pool_t *pool_p);
 static int GrassrootsHandler (request_rec *req_p);
@@ -84,13 +92,6 @@ static apr_status_t ClearServerResources (void *value_p);
  */
 static apr_status_t CleanUpPool (void *data_p);
 static int PoolDebug (apr_pool_t *config_pool_p, apr_pool_t *log_pool_p, apr_pool_t *temp_pool_p, server_rec *server_p);
-
-
-#ifdef _DEBUG
-	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_FINER)
-#else
-	#define MOD_GRASSROOTS_DEBUG	(STM_LEVEL_NONE)
-#endif
 
 
 static const command_rec s_grassroots_directives [] =

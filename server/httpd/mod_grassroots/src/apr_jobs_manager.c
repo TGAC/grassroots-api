@@ -143,7 +143,28 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
 	unsigned int object_size = sizeof (ServiceJob);
-	bool success_flag = AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, (unsigned char *) job_p, object_size);
+	bool success_flag = false;
+
+	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
+		}
+	#endif
+
+	success_flag = AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, (unsigned char *) job_p, object_size);
+
+	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added job %s with id %s, success = %d", job_p -> sj_name_s, uuid_s, success_flag);
+		}
+	#endif
 
 	return success_flag;
 }
@@ -152,16 +173,78 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key)
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
+	ServiceJob *job_p = NULL;
 
-	return ((ServiceJob *) GetObjectFromAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob)));
+	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
+		}
+	#endif
+
+
+	job_p = (ServiceJob *) GetObjectFromAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob));
+
+
+	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+
+			if (job_p)
+				{
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got %s at 0x.16X", job_key, job_p -> sj_name_s, job_p);
+				}
+			else
+				{
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, failed to find job", job_key);
+				}
+		}
+	#endif
+
+	return job_p;
 }
 
 
 static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key)
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
+	ServiceJob *job_p = NULL;
 
-	return ((ServiceJob *) RemoveObjectFromAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob)));
+	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
+		}
+	#endif
+
+	job_p = (ServiceJob *) RemoveObjectFromAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob));
+
+	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+
+			if (job_p)
+				{
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got %s at 0x.16X", job_key, job_p -> sj_name_s, job_p);
+				}
+			else
+				{
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, failed to find job", job_key);
+				}
+		}
+	#endif
+
+	return job_p;
 }
 
 

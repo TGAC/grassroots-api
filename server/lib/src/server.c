@@ -41,7 +41,7 @@
 
 
 #ifdef _DEBUG
-	#define SERVER_DEBUG	(STM_LEVEL_FINER)
+	#define SERVER_DEBUG	(STM_LEVEL_FINE)
 #else
 	#define SERVER_DEBUG	(STM_LEVEL_NONE)
 #endif

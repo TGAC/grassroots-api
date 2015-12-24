@@ -43,7 +43,7 @@ void JSONViewer :: SetJSONData (const json_t *data_p)
 
 	jv_data_p = data_p;
 
-	jv_viewer_p -> clear ();
+	jv_tree_p -> clear ();
 	jv_viewer_p -> clear ();
 
 	if (json_is_array (data_p))

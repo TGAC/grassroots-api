@@ -29,7 +29,15 @@
 #include "util_mutex.h"
 
 
+#ifdef _DEBUG
+#define APR_GLOBAL_STORAGE_DEBUG	(STM_LEVEL_FINEST)
+#else
+#define APR_GLOBAL_STORAGE_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
+
+static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool *alloc_key_flag);
 
 
 
@@ -208,7 +216,9 @@ static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
 	return OK;
 }
 
-
+/* TODO
+ * Add logging using GetKeyAsValidString
+ */
 bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length)
 {
 	bool success_flag = false;
@@ -217,6 +227,8 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 	if (key_p)
 		{
+			bool alloc_key_flag = false;
+			char *key_s = GetKeyAsValidString (key_p, key_len, &alloc_key_flag);
 			apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
 
 			if (status == APR_SUCCESS)
@@ -234,58 +246,29 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 					                              storage_p -> ags_pool_p);
 
 
-					#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, "Added %s to global store", key_p);
+					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINE
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\" to global store", key_s);
 					#endif
+
+					status = apr_global_mutex_unlock (storage_p -> ags_mutex_p);
+					success_flag = true;
+
+					if (status != APR_SUCCESS)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding %s", status, key_s);
+						} /* if (status != APR_SUCCESS) */
+
+
 				}		/* if (status == APR_SUCCESS) */
 			else
 				{
-					if (* (key_p + key_len) == '\0')
-						{
-							PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"Failed to lock mutex, status %s to add %s", status, key_p);
-						}
-					else
-						{
-							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
-
-							if (key_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to add %s", status, key_s);
-									FreeCopiedString (key_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to add", status);
-								}
-						}
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to add %s", status, key_s);
 				}
 
-
-			status = apr_global_mutex_unlock (storage_p -> ags_mutex_p);
-			success_flag = true;
-
-			if (status != APR_SUCCESS)
+			if (alloc_key_flag)
 				{
-					if (* (key_p + key_len) == '\0')
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding %s", status, key_p);
-						}
-					else
-						{
-							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
-
-							if (key_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding %s", status, key_s);
-									FreeCopiedString (key_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after adding", status);
-								}
-						}
-
-				} /* if (status != APR_SUCCESS) */
+					FreeCopiedString (key_s);
+				}
 
 			FreeMemory (key_p);
 		} /* if (key_p) */
@@ -308,6 +291,33 @@ void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void 
 
 
 
+static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool *alloc_key_flag_p)
+{
+	char *key_s = NULL;
+
+	if (* (raw_key_p + key_length) == '\0')
+		{
+			key_s = (char *) raw_key_p;
+		}
+	else
+		{
+			char *key_s = CopyToNewString ((const char * const) raw_key_p, key_length, false);
+
+			if (key_s)
+				{
+					alloc_key_flag_p = true;
+				}
+			else
+				{
+					key_s = "DUMMY KEY";
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to make key");
+				}
+		}
+
+	return key_s;
+}
+
+
 static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag)
 {
 	void *result_p = NULL;
@@ -316,10 +326,22 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 	if (key_p)
 		{
-			apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
+			apr_status_t status;
+			bool alloc_key_flag = false;
+			char *key_s = GetKeyAsValidString (key_p, key_len, &alloc_key_flag);
+
+			#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+			PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Made key: %s", key_s);
+			#endif
+
+
+			status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
 
 			if (status == APR_SUCCESS)
 				{
+					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+					PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Locked mutex");
+					#endif
 
 					/* get the value */
 					status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
@@ -330,6 +352,12 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 					                              &value_length,
 					                              storage_p -> ags_pool_p);
 
+
+					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+					PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s result_p %.16X remove_flag %d", status, key_s, result_p, remove_flag);
+					#endif
+
+
 					if ((status == APR_SUCCESS) && (result_p != NULL) && (remove_flag == true))
 						{
 							status = storage_p -> ags_socache_provider_p -> remove (storage_p -> ags_socache_instance_p,
@@ -337,32 +365,18 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 							                                                        key_p,
 							                                                        key_len,
 							                                                        storage_p -> ags_pool_p);
+
+
+							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status after removal %d", status);
+							#endif
+
 						}
 
-					#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, "Got %s from global store %X\n", key_p, result_p);
-					#endif
 				}		/* if (status == APR_SUCCESS) */
 			else
 				{
-					if (* (key_p + key_len) == '\0')
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to find %s", status, key_p);
-						}
-					else
-						{
-							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
-
-							if (key_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to find %s", status, key_s);
-									FreeCopiedString (key_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex, status %s to find", status);
-								}
-						}
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to lock mutex for %s, status %s", key_s, status);
 				}
 
 
@@ -370,27 +384,15 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 			if (status != APR_SUCCESS)
 				{
-					if (* (key_p + key_len) == '\0')
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after finding %s", status, key_p);
-						}
-					else
-						{
-							char *key_s = CopyToNewString ((const char * const) key_p, key_len, false);
-
-							if (key_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after finding %s", status, key_s);
-									FreeCopiedString (key_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex, status %s after finding", status);
-								}
-						}
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex for %s, status %s after finding %s", key_s, status);
 				} /* if (status != APR_SUCCESS) */
 
 			FreeMemory (key_p);
+
+			if (alloc_key_flag)
+				{
+					FreeCopiedString (key_s);
+				}
 		} /* if (key_p) */
 
 	return result_p;
