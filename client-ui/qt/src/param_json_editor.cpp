@@ -98,6 +98,10 @@ bool ParamJSONEditor :: StoreParameterValue ()
 					json_decref (data_p);
 				}
 		}
+	else
+		{
+			SetParameterValue (bpw_param_p, NULL, true);
+		}
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s << " " << success_flag;
 

@@ -24,6 +24,7 @@
 #include "string_utils.h"
 #include "streams.h"
 
+#define USING_VALGRIND (1)
 
 typedef struct UnixPlugin
 {

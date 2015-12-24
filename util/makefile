@@ -53,6 +53,7 @@ SRCS 	= \
 	operation.c \
 	plugin.c \
 	resource.c \
+	search_options.c \
 	streams.c \
 	string_hash_table.c \
 	string_int_pair.c \

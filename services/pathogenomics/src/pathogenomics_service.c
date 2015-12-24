@@ -996,7 +996,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 			else
 				{
 					#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-					PrintJSONToLog (values_p, "No resluts found for ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+					PrintJSONToLog (values_p, "No results found for ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 					#endif
 				}
 

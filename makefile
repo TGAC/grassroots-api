@@ -159,6 +159,10 @@ info:
 	@echo "APXS=$(APXS)"	
 	@echo "GRASSROOTS_VERSION=$(GRASSROOTS_VERSION)"
 
+
+valgrind: 
+	$(MAKE) all CFLAGS=-DUSING_VALGRIND
+
 all: lib_util lib_network
 	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)

@@ -29,12 +29,16 @@
 #include "grassroots_config.h"
 #include "mongodb_util.h"
 #include "json_util.h"
+#include "search_options.h"
 
 
 static bool AddSimpleTypeToQuery (bson_t *query_p, const char *key_s, const json_t *value_p);
 
 
-static bson_t *AddChild (const char * const key_s, const char * const sub_key_s, const json_t * const value_p);
+static bool AddChild (bson_t *parent_p, const char * const key_s, const char * const sub_key_s, const json_t * const value_p, const json_t *options_p);
+
+static bool AddSearchOptions (bson_t *query_p, const json_t *options_p);
+
 
 static int CompareStrings (const void *v0_p, const void *v1_p);
 
@@ -378,44 +382,74 @@ static bool AddSimpleTypeToQuery (bson_t *query_p, const char *key_s, const json
 }
 
 
-static bson_t *AddChild (const char * const key_s, const char * const sub_key_s, const json_t * const value_p)
+static bool AddChild (bson_t *parent_p, const char * const key_s, const char * const sub_key_s, const json_t * const value_p, const json_t *options_p)
 {
-	bson_t *parent_p = bson_new ();
+	bool success_flag = false;
+	bson_t child;
 
-	if (parent_p)
+	if (BSON_APPEND_DOCUMENT_BEGIN (parent_p, key_s, &child))
 		{
-			bool success_flag = false;
-			bson_t *child_p = bson_new ();
+			PrintBSONToLog (parent_p, "parent 1: ", STM_LEVEL_FINEST, __FILE__, __LINE__);
+			PrintBSONToLog (&child, "child 1: ", STM_LEVEL_FINEST, __FILE__, __LINE__);
 
-			if (child_p)
+			if (AddSimpleTypeToQuery (&child, sub_key_s, value_p))
 				{
-					if (BSON_APPEND_DOCUMENT_BEGIN (parent_p, key_s, child_p))
-						{
-							if (AddSimpleTypeToQuery (child_p, sub_key_s, value_p))
-								{
-									if (bson_append_document_end (parent_p, child_p))
-										{
-											success_flag = true;
-										}
-								}
+					PrintBSONToLog (parent_p, "parent 2: ", STM_LEVEL_FINEST, __FILE__, __LINE__);
+					PrintBSONToLog (&child, "child 2: ", STM_LEVEL_FINEST, __FILE__, __LINE__);
 
-						}		/* if (BSON_APPEND_DOCUMENT_BEGIN (parent_p, key_s, child_p)) */
-					else
+					success_flag = true;
+
+					if (options_p)
 						{
-							bson_destroy (child_p);
+							success_flag = AddSearchOptions (&child, options_p);
 						}
 
-				}		/* if (child_p) */
+					if (success_flag)
+						{
+							success_flag = bson_append_document_end (parent_p, &child);
 
-			if (!success_flag)
+							PrintBSONToLog (parent_p, "parent 3: ", STM_LEVEL_FINEST, __FILE__, __LINE__);
+							PrintBSONToLog (&child, "child 3: ", STM_LEVEL_FINEST, __FILE__, __LINE__);
+						}
+				}
+		}		/* if (BSON_APPEND_DOCUMENT_BEGIN (parent_p, key_s, &child)) */
+
+
+	return success_flag;
+}
+
+
+static bool AddSearchOptions (bson_t *query_p, const json_t *options_p)
+{
+	bool success_flag = true;
+	ByteBuffer *buffer_p = AllocateByteBuffer (32);
+
+	if (buffer_p)
+		{
+			if (json_is_object (options_p))
 				{
-					bson_destroy (parent_p);
-					parent_p = NULL;
+					json_t *option_value_p = json_object_get (options_p, SO_CASE_INSENSITIVE_S);
+
+					if (option_value_p)
+						{
+							if (((json_is_boolean (option_value_p)) && (json_is_true (option_value_p))) ||
+									((json_is_string (option_value_p)) && (strcmp (json_string_value (option_value_p), "true") == 0)))
+								{
+									success_flag = AppendStringToByteBuffer (buffer_p, "i");
+								}
+						}
+				}		/* if (json_is_object (options_p)) */
+
+			if (success_flag && (GetByteBufferSize (buffer_p) > 0))
+				{
+					const char *value_s = GetByteBufferData (buffer_p);
+					success_flag = BSON_APPEND_UTF8 (query_p, "$options", value_s);
 				}
 
-		}		/* if (parent_p) */
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
 
-	return parent_p;
+	return success_flag;
 }
 
 
@@ -505,86 +539,82 @@ bool AddToQuery (bson_t *query_p, const char *key_s, const json_t *json_clause_p
 			case JSON_OBJECT:
 				{
 					/*
-					 * key:  one of "=", "<", "<=", ">", ">=", "in", "range", "not"
+					 * key:  one of "=", "<", "<=", ">", ">=", "in", "range", "not", "like"
 					 * value: can be single value or array. For a "range" key, it will be an array
 					 * of 2 elements that are the inclusive lower and upper bounds.
 					 */
-					json_t *op_p = json_object_get (json_clause_p, "operator");
-					json_t *op_value_p = json_object_get (json_clause_p, "value");
+					json_t *operator_p = json_object_get (json_clause_p, "operator");
+					json_t *value_p = json_object_get (json_clause_p, "value");
 
-					if (op_p && op_value_p)
+					if (operator_p && value_p)
 						{
-							if (json_is_string (op_p))
+							if (json_is_string (operator_p))
 								{
-									bson_t *op_bson_p = bson_new ();
+									const char *op_s = json_string_value (operator_p);
 
-
-									if (op_bson_p)
+									if (strcmp (op_s, SO_RANGE_S) == 0)
 										{
-											const char *op_s = json_string_value (op_p);
-
-											if (strcmp (op_s, "range") == 0)
+											if (json_is_array (value_p))
 												{
-													if (json_is_array (op_value_p))
+													if (json_array_size (value_p) == 2)
 														{
-															if (json_array_size (op_value_p) == 2)
+															json_t *range_value_p = json_array_get (value_p, 0);
+
+															if (AddChild (query_p, key_s, "$gte", range_value_p, json_clause_p))
 																{
-																	json_t *range_value_p = json_array_get (op_value_p, 0);
+																	range_value_p = json_array_get (value_p, 1);
 
-																	if (AddChild (key_s, "$gte", op_value_p))
+																	if (AddChild (query_p, key_s, "$lte", range_value_p, json_clause_p))
 																		{
-																			range_value_p = json_array_get (op_value_p, 1);
-
-																			if (AddChild (key_s, "$lte", op_value_p))
-																				{
-																					success_flag = true;
-																				}
-
+																			success_flag = true;
 																		}
+
 																}
 														}
 												}
+										}
+									else
+										{
+											const char *token_s = NULL;
+
+											if (strcmp (op_s, SO_EQUALS_S) == 0)
+												{
+													token_s = "$eq";
+												}
+											else if (strcmp (op_s, SO_LESS_THAN_S) == 0)
+												{
+													token_s = "$lt";
+												}
+											else if (strcmp (op_s, SO_LESS_THAN_OR_EQUALS_S) == 0)
+												{
+													token_s = "$lte";
+												}
+											else if (strcmp (op_s, SO_GREATER_THAN_S) == 0)
+												{
+													token_s = "$gt";
+												}
+											else if (strcmp (op_s, SO_GREATER_THAN_OR_EQUALS_S) == 0)
+												{
+													token_s = "$gte";
+												}
+											else if (strcmp (op_s, SO_NOT_EQUALS_S) == 0)
+												{
+													token_s = "$ne";
+												}
+											else if (strcmp (op_s, SO_LIKE_S) == 0)
+												{
+													token_s = "$regex";
+												}
 											else
 												{
-													const char *token_s = NULL;
-
-													if (strcmp (op_s, "=") == 0)
-														{
-															token_s = "$eq";
-														}
-													else if (strcmp (op_s, "<") == 0)
-														{
-															token_s = "$lt";
-														}
-													else if (strcmp (op_s, "<=") == 0)
-														{
-															token_s = "$lte";
-														}
-													else if (strcmp (op_s, ">") == 0)
-														{
-															token_s = "$gt";
-														}
-													else if (strcmp (op_s, ">=") == 0)
-														{
-															token_s = "$gte";
-														}
-													else if (strcmp (op_s, "!=") == 0)
-														{
-															token_s = "$ne";
-														}
-													else
-														{
-
-														}
-
-													if (token_s)
-														{
-															success_flag = AddChild (key_s, token_s, op_value_p);
-														}
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown operation %s", op_s);
 												}
 
+											if (token_s)
+												{
+													success_flag = AddChild (query_p, key_s, token_s, value_p, json_clause_p);
+												}
 										}
-
 								}
 						}
 
@@ -710,6 +740,10 @@ void PrintBSONToLog (const bson_t *bson_p, const char * const prefix_s, const in
 
 				}
 			bson_free (dump_s);
+		}
+	else
+		{
+			PrintLog (STM_LEVEL_WARNING, filename_s, line_number, "Failed to convert bson to text");
 		}
 }
 
