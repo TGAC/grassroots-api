@@ -257,9 +257,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 	if (key_p)
 		{
 			bool alloc_key_flag = false;
-			bool alloc_value_flag = false;
-			char *key_s = GetKeyAsValidString (key_p, key_len, &alloc_key_flag);
-			char *value_s = GetKeyAsValidString (value_p, value_length, &alloc_value_flag);
+			char *key_s = GetKeyAsValidString ((const char *) key_p, key_len, &alloc_key_flag);
 			apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
 
 			if (status == APR_SUCCESS)
@@ -278,7 +276,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 
 					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\"=\"%s\" (%.16X) to global store", key_s, value_s, value_p);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\" length %u, value %.16X length %u to global store", key_s, key_len, value_p, value_length);
 					#endif
 
 					status = apr_global_mutex_unlock (storage_p -> ags_mutex_p);
@@ -301,14 +299,12 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 					FreeCopiedString (key_s);
 				}
 
-			if (alloc_value_flag)
-				{
-					FreeCopiedString (value_s);
-				}
-
-
 			FreeMemory (key_p);
 		} /* if (key_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to make key");
+		}
 
 	#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
 	PrintAPRGlobalStorage (storage_p);
@@ -384,39 +380,55 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 			if (status == APR_SUCCESS)
 				{
+					unsigned char *temp_p = NULL;
+
 					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
 					PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Locked mutex");
 					#endif
 
-					/* get the value */
-					status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
-																			 storage_p -> ags_server_p,
-					                              key_p,
-					                              key_len,
-					                              result_p,
-					                              &value_length,
-					                              storage_p -> ags_pool_p);
+					temp_p = (unsigned char *) AllocMemoryArray (value_length, sizeof (unsigned char));
 
-
-					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
-					PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s result_p %.16X remove_flag %d", status, key_s, result_p, remove_flag);
-					#endif
-
-
-					if ((status == APR_SUCCESS) && (result_p != NULL) && (remove_flag == true))
+					if (temp_p)
 						{
-							status = storage_p -> ags_socache_provider_p -> remove (storage_p -> ags_socache_instance_p,
-							                                                        storage_p -> ags_server_p,
-							                                                        key_p,
-							                                                        key_len,
-							                                                        storage_p -> ags_pool_p);
+							/* get the value */
+							status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
+																					 storage_p -> ags_server_p,
+							                              key_p,
+							                              key_len,
+							                              temp_p,
+							                              &value_length,
+							                              storage_p -> ags_pool_p);
 
 
 							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
-							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status after removal %d", status);
+							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s result_p %.16X remove_flag %d", status, key_s, result_p, remove_flag);
 							#endif
 
-						}
+							if (status == APR_SUCCESS)
+								{
+									result_p = temp_p;
+
+									if (remove_flag == true)
+										{
+											status = storage_p -> ags_socache_provider_p -> remove (storage_p -> ags_socache_instance_p,
+											                                                        storage_p -> ags_server_p,
+											                                                        key_p,
+											                                                        key_len,
+											                                                        storage_p -> ags_pool_p);
+
+
+											#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+											PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status after removal %d", status);
+											#endif
+										}
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"status %d key %s result_p %.16X remove_flag %d", status, key_s, result_p, remove_flag);
+									FreeMemory (temp_p);
+								}
+
+						}		/* if (temp_p) */
 
 				}		/* if (status == APR_SUCCESS) */
 			else

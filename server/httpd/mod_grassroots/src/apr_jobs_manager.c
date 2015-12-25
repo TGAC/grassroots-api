@@ -151,7 +151,7 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 
 			ConvertUUIDToString (job_key, uuid_s);
 
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding %s", uuid_s);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding %s at %.16X", uuid_s, job_p);
 		}
 	#endif
 
@@ -162,7 +162,7 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 			char uuid_s [UUID_STRING_BUFFER_SIZE];
 
 			ConvertUUIDToString (job_key, uuid_s);
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added job %s with id %s, success = %d", job_p -> sj_name_s, uuid_s, success_flag);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added job %s (%.16X) with id %s, success = %d", job_p -> sj_name_s, job_p, uuid_s, success_flag);
 		}
 	#endif
 
