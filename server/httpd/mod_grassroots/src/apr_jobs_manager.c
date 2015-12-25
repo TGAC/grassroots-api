@@ -151,7 +151,7 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 
 			ConvertUUIDToString (job_key, uuid_s);
 
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding %s", uuid_s);
 		}
 	#endif
 

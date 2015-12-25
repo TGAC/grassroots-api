@@ -29,6 +29,7 @@
 #include "util_mutex.h"
 
 
+
 #ifdef _DEBUG
 #define APR_GLOBAL_STORAGE_DEBUG	(STM_LEVEL_FINEST)
 #else
@@ -38,6 +39,16 @@
 static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
 
 static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool *alloc_key_flag);
+
+static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
+    server_rec *s,
+    void *userctx,
+    const unsigned char *id,
+    unsigned int idlen,
+    const unsigned char *data,
+    unsigned int datalen,
+    apr_pool_t *pool);
+
 
 
 
@@ -161,6 +172,10 @@ unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p)
 			apr_ssize_t len = APR_HASH_KEY_STRING;
 			res = apr_hashfunc_default (uuid_s, &len);
 
+			#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "uuid \"%s\" res %u len %u", uuid_s, res, len);
+			#endif
+
 			FreeCopiedString (uuid_s);
 		}
 
@@ -179,26 +194,26 @@ unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint3
 			*key_len_p = UUID_STRING_BUFFER_SIZE;
 		}
 
+	#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "uuid \"%s\" len %u res \"%s\"", uuid_s, *key_len_p, res_p);
+	#endif
+
+
 	return res_p;
 }
 
 
 void PrintAPRGlobalStorage (APRGlobalStorage *storage_p)
 {
-  /**
-   * Dump all cached objects through an iterator callback.
-   * @param instance The cache instance
-   * @param s Associated server context (for processing and logging)
-   * @param userctx User defined pointer passed through to the iterator
-   * @param iterator The user provided callback function which will receive
-   * individual calls for each unexpired id/data pair
-   * @param pool Pool for temporary allocations.
-   * @return APR status value; APR_NOTFOUND if the object was not
-   * found
-   */
-  apr_status_t (*iterate)(ap_socache_instance_t *instance, server_rec *s,
-                          void *userctx, ap_socache_iterator_t *iterator,
-                          apr_pool_t *pool);
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Begin iterating storage");
+
+	storage_p -> ags_socache_provider_p -> iterate (storage_p -> ags_socache_instance_p,
+                                                  storage_p -> ags_server_p,
+                                                  NULL,
+                                                  IterateOverSOCache,
+                                                  storage_p -> ags_pool_p);
+
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "End iterating storage");
 }
 
 
@@ -213,12 +228,26 @@ static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
 {
 	apr_status_t ret = OK;
 
-	return OK;
+	char *copied_id_s = CopyToNewString ((const char *) id, idlen, false);
+
+	if (copied_id_s)
+		{
+			char *copied_data_s = CopyToNewString ((const char *) data, datalen, false);
+
+			if (copied_data_s)
+				{
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "id \"%s\" data \"%s\" %X", copied_id_s, copied_data_s, data);
+
+					FreeCopiedString (copied_data_s);
+				}
+
+			FreeCopiedString (copied_id_s);
+		}
+
+	return ret;
 }
 
-/* TODO
- * Add logging using GetKeyAsValidString
- */
+
 bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length)
 {
 	bool success_flag = false;
@@ -228,7 +257,9 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 	if (key_p)
 		{
 			bool alloc_key_flag = false;
+			bool alloc_value_flag = false;
 			char *key_s = GetKeyAsValidString (key_p, key_len, &alloc_key_flag);
+			char *value_s = GetKeyAsValidString (value_p, value_length, &alloc_value_flag);
 			apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
 
 			if (status == APR_SUCCESS)
@@ -247,7 +278,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 
 					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\" to global store", key_s);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\"=\"%s\" (%.16X) to global store", key_s, value_s, value_p);
 					#endif
 
 					status = apr_global_mutex_unlock (storage_p -> ags_mutex_p);
@@ -270,8 +301,18 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 					FreeCopiedString (key_s);
 				}
 
+			if (alloc_value_flag)
+				{
+					FreeCopiedString (value_s);
+				}
+
+
 			FreeMemory (key_p);
 		} /* if (key_p) */
+
+	#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+	PrintAPRGlobalStorage (storage_p);
+	#endif
 
 	return success_flag;
 }
@@ -301,11 +342,11 @@ static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool
 		}
 	else
 		{
-			char *key_s = CopyToNewString ((const char * const) raw_key_p, key_length, false);
+			key_s = CopyToNewString ((const char * const) raw_key_p, key_length, false);
 
 			if (key_s)
 				{
-					alloc_key_flag_p = true;
+					*alloc_key_flag_p = true;
 				}
 			else
 				{
@@ -313,6 +354,10 @@ static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to make key");
 				}
 		}
+
+	#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINER
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\" from raw key of length %u", key_s, key_length);
+	#endif
 
 	return key_s;
 }
@@ -394,6 +439,11 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 					FreeCopiedString (key_s);
 				}
 		} /* if (key_p) */
+
+	#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+	PrintAPRGlobalStorage (storage_p);
+	#endif
+
 
 	return result_p;
 }
