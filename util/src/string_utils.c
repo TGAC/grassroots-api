@@ -817,6 +817,7 @@ bool IsUUIDSet (uuid_t id)
 void ConvertUUIDToString (const uuid_t id, char *uuid_s)
 {
 	uuid_unparse_lower (id, uuid_s);
+	* (uuid_s + (UUID_STRING_BUFFER_SIZE - 1)) = '\0';
 }
 
 
@@ -833,6 +834,7 @@ char *GetUUIDAsString (const uuid_t id)
 	if (uuid_s)
 		{
 			ConvertUUIDToString (id, uuid_s);
+			* (uuid_s + (UUID_STRING_BUFFER_SIZE - 1)) = '\0';
 		}
 
 	return uuid_s;
