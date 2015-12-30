@@ -51,6 +51,8 @@ typedef struct DrmaaTool
 	LinkedList *dt_args_p;
 	char *dt_queue_name_s;
 	char *dt_working_directory_s;
+
+	/** Filename for where to store the stdout/stderr for the drmaa job */
 	char *dt_output_filename_s;
 	drmaa_job_template_t *dt_job_p;
 	char dt_id_s [MAX_LEN_JOBID];

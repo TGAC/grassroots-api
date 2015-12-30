@@ -701,7 +701,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 
 static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id)
 {
-	TempFile *tf_p = NULL;
+	TempFile *input_file_p = NULL;
 	SharedType value;
 
 	memset (&value, 0, sizeof (SharedType));
@@ -714,44 +714,42 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 			if (!IsStringEmpty (sequence_s))
 				{
 					char *uuid_s = GetUUIDAsString (job_id);
-					char *buffer_p = NULL;
 
-					if (!uuid_s)
+					if (uuid_s)
 						{
-							uuid_s = (char *) "blast";
-						}
+							char *buffer_s = GetTempFilenameBuffer (working_directory_s, uuid_s, ".input");
 
-					buffer_p = GetTempFilenameBuffer (uuid_s, working_directory_s);
-
-					if (buffer_p)
-						{
-							tf_p = TempFile :: GetTempFile (buffer_p, "w");
-
-							if (tf_p)
+							if (buffer_s)
 								{
-									bool success_flag = tf_p -> Print (sequence_s);
+									input_file_p = TempFile :: GetTempFile (buffer_s, false);
 
-									tf_p -> Close ();
-
-									if (!success_flag)
+									if (input_file_p)
 										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to write to temp file \"%s\" for query \"%s\"", tf_p -> GetFilename (), sequence_s);
-											tf_p = NULL;
+											bool success_flag = input_file_p -> Print (sequence_s);
+
+											input_file_p -> Close ();
+
+											if (!success_flag)
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to write to temp file \"%s\" for query \"%s\"", input_file_p -> GetFilename (), sequence_s);
+													input_file_p = NULL;
+												}
 										}
-								}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to open temp file for query \"%s\"", sequence_s);
+										}
+								}		/* if (buffer_p) */
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to open temp file for query \"%s\"", sequence_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
 								}
-						}
+
+							FreeCopiedString (uuid_s);
+						}		/* if (uuid_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
-						}
-
-					if (uuid_s && (strcmp (uuid_s, "blast") != 0))
-						{
-							FreeCopiedString (uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid as string");
 						}
 				}
 			else
@@ -760,7 +758,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 				}
 		}
 
-	return tf_p;
+	return input_file_p;
 }
 
 

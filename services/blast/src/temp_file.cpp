@@ -30,27 +30,40 @@
 	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-TempFile *TempFile :: GetTempFile (char *template_s, const char *mode_s)
+TempFile *TempFile :: GetTempFile (char *template_s, const bool temp_flag)
 {
+	FILE *file_p = NULL;
 	TempFile *tf_p = new TempFile;
 
-	int fd = mkstemp (template_s);
-
-	if (fd >= 1)
+	if (temp_flag)
 		{
-			tf_p -> tf_name_s = template_s;
+			int fd = mkstemp (template_s);
 
-			close (fd);
-
-			if ((strcmp (mode_s, "r") == 0) || (tf_p -> Open (mode_s)))
+			if (fd >= 1)
 				{
-					return tf_p;
+					close (fd);
+
+					file_p = fopen (template_s, "w");
 				}
+
+		}
+	else
+		{
+			file_p = fopen (template_s, "w");
 		}
 
-	delete tf_p;
+	if (file_p)
+		{
+			tf_p -> tf_handle_f = file_p;
+			tf_p -> tf_name_s = template_s;
+		}
+	else
+		{
+			delete tf_p;
+			tf_p = 0;
+		}
 
-	return 0;
+	return tf_p;
 }
 
 
@@ -176,12 +189,12 @@ TempFile :: ~TempFile ()
 
 
 /* need a buffer where the final 6 chars are XXXXXX, see mkstemp */
-char *GetTempFilenameBuffer (const char * const prefix_s, const char * const working_directory_s)
+char *GetTempFilenameBuffer (const char * const working_directory_s, const char * const prefix_s, const char * const temp_suffix_s)
 {
 	char *buffer_s = 0;
-	const char SUFFIX_S [] = "-XXXXXX";
+	const char * const suffix_s = temp_suffix_s ? temp_suffix_s : "XXXXXX";
 	const size_t working_dir_length = working_directory_s ? strlen (working_directory_s) : 0;
-	const size_t suffix_length = strlen (SUFFIX_S);
+	const size_t suffix_length = suffix_s ? strlen (suffix_s) : 0;
 	const size_t prefix_length = strlen (prefix_s);
 
 	size_t size = 1 + working_dir_length + prefix_length + suffix_length;
@@ -218,8 +231,12 @@ char *GetTempFilenameBuffer (const char * const prefix_s, const char * const wor
 			memcpy (buffer_p, prefix_s, prefix_length * sizeof (char));
 			buffer_p +=  prefix_length * sizeof (char);
 
-			memcpy (buffer_p, SUFFIX_S, suffix_length * sizeof (char));
-			buffer_p += suffix_length * sizeof (char);
+			if (suffix_s)
+				{
+					memcpy (buffer_p, suffix_s, suffix_length * sizeof (char));
+					buffer_p += suffix_length * sizeof (char);
+				}
+
 			*buffer_p = '\0';
 		}
 

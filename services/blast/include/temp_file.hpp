@@ -33,7 +33,7 @@ using namespace std;
 class BLAST_SERVICE_LOCAL TempFile
 {
 public:
-	static TempFile *GetTempFile (char *template_s, const char *mode_s);
+	static TempFile *GetTempFile (char *template_s, const bool temp_flag);
 
 
 	static void DeleteTempFile (TempFile *tf_p);
@@ -70,7 +70,7 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_LOCAL char *GetTempFilenameBuffer (const char * const prefix_s, const char * const working_directory_s);
+BLAST_SERVICE_LOCAL char *GetTempFilenameBuffer (const char * const working_directory_s, const char * const prefix_s, const char * const temp_suffix_s);
 
 #ifdef __cplusplus
 }

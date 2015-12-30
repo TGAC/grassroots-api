@@ -126,7 +126,7 @@ bool DrmaaBlastTool :: SetOutputFilename (const char *filename_s)
 
 			if (buffer_p)
 				{
-					if (AppendStringsToByteBuffer (buffer_p, ":", filename_s, ".out", NULL))
+					if (AppendStringsToByteBuffer (buffer_p, ":", filename_s, ".log", NULL))
 						{
 							success_flag = SetDrmaaToolOutputFilename (dbt_drmaa_tool_p, GetByteBufferData (buffer_p));
 						}

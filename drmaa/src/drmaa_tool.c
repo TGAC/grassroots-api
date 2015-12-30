@@ -107,6 +107,8 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 
 void FreeDrmaaTool (DrmaaTool *tool_p)
 {
+	FileInformation fi;
+
 	if (tool_p -> dt_job_p)
 		{
 			drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
@@ -123,6 +125,27 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 	if (tool_p -> dt_email_addresses_ss)
 		{
 			FreeStringArray (tool_p -> dt_email_addresses_ss);
+		}
+
+	if (tool_p -> dt_output_filename_s)
+		{
+			if (CalculateFileInformation (tool_p -> dt_output_filename_s, &fi))
+				{
+					/* If the stdout/stderr file is empty, then delete it */
+					if (fi.fi_size == 0)
+						{
+							if (!RemoveFile (tool_p -> dt_output_filename_s))
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to delete file \"%s\"", tool_p -> dt_output_filename_s);
+								}
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get file size for \"%s\"", tool_p -> dt_output_filename_s);
+				}
+
+			FreeCopiedString (tool_p -> dt_output_filename_s);
 		}
 
 	FreeMemory (tool_p);
