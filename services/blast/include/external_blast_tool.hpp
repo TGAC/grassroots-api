@@ -34,6 +34,9 @@
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {
 public:
+	static const char * const EBT_INPUT_SUFFIX_S;
+	static const char * const EBT_LOG_SUFFIX_S;
+
 	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s);
 	virtual ~ExternalBlastTool ();
 

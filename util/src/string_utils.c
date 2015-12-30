@@ -900,3 +900,26 @@ uint32 HashString (const void * const key_p)
 
 	return res;
 }
+
+
+char *GetFileContentsAsString (FILE *input_f)
+{
+	char *data_s = NULL;
+	size_t current_pos = ftell (input_f);
+
+	// Determine file size
+	fseek (input_f, 0, SEEK_END);
+	size_t size = ftell (input_f);
+
+	data_s = (char *) AllocMemory ((size + 1) * sizeof (char));
+	if (data_s)
+		{
+			rewind (input_f);
+
+			fread (data_s, sizeof (char), size, input_f);
+			* (data_s + size) = '\0';
+			fseek (input_f, current_pos, SEEK_SET);
+		}
+
+	return data_s;
+}

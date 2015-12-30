@@ -260,6 +260,9 @@ GRASSROOTS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_da
 GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 
 
+GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
+
+
 
 #ifdef __cplusplus
 }

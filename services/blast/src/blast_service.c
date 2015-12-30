@@ -70,6 +70,7 @@ static bool CleanUpBlastJob (ServiceJob *job_p);
 
 static BlastTool *GetBlastToolForId (Service *service_p, const uuid_t service_id);
 
+static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id);
 
 /*
  * API FUNCTIONS
@@ -804,12 +805,12 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			if (service_p -> se_jobs_p)
 				{
 					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-					TempFile *tf_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
-					const char *filename_s = NULL;
+					TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
+					const char *input_filename_s = NULL;
 
-					if (tf_p)
+					if (input_p)
 						{
-							filename_s = tf_p -> GetFilename ();
+							input_filename_s = input_p -> GetFilename ();
 						}
 					else
 						{
@@ -820,11 +821,11 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 							/* try to get the input file */
 							if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_INPUT_FILE, &value, true))
 								{
-									filename_s = value.st_string_value_s;
+									input_filename_s = value.st_string_value_s;
 								}
 						}
 
-					if (filename_s)
+					if (input_filename_s)
 						{
 							size_t num_jobs_ran = 0;
 							db_p = blast_data_p -> bsd_databases_p;
@@ -892,7 +893,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 																	SetServiceJobDescription (job_p, description_s);
 																}
 
-															if (tool_p -> ParseParameters (param_set_p, filename_s))
+															if (tool_p -> ParseParameters (param_set_p, input_filename_s))
 																{
 																	if (RunBlast (tool_p))
 																		{
@@ -911,9 +912,9 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 						}		/* if (filename_s) */
 
-					if (tf_p)
+					if (input_p)
 						{
-							TempFile :: DeleteTempFile (tf_p);
+							TempFile :: DeleteTempFile (input_p);
 						}
 
 				}		/* if (service_p -> se_jobs_p) */
@@ -1008,3 +1009,81 @@ static bool CleanUpBlastJob (ServiceJob *job_p)
 
 	return cleaned_up_flag;
 }
+
+
+static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id)
+{
+	char *result_s = NULL;
+	char *job_id_s = GetUUIDAsString (job_id);
+
+	if (job_id_s)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					const char *job_output_filename_s = NULL;
+
+					if (data_p -> bsd_working_dir_s)
+						{
+							char sep [2];
+
+							*sep = GetFileSeparatorChar ();
+							* (sep + 1) = '\0';
+
+							if (AppendStringsToByteBuffer (buffer_p, data_p -> bsd_working_dir_s, sep, job_id_s, ExternalBlastTool :: EBT_OUTPUT_SUFFIX_S, NULL))
+								{
+									job_output_filename_s = GetByteBufferData (buffer_p);
+								}		/* if (AppendStringsToByteBuffer (buffer_p, data_p -> bsd_working_dir_s, sep, job_id_s, NULL)) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't create full path to job file \"%s\"", job_id_s);
+								}
+						}		/* if (data_p -> bsd_working_dir_s) */
+					else
+						{
+							job_output_filename_s = job_id_s;
+						}
+
+					if (job_output_filename_s)
+						{
+							FILE *job_f = fopen (job_output_filename_s, "r");
+
+							if (job_f)
+								{
+									result_s = GetFileContentsAsString (job_f);
+
+									if (!result_s)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
+										}
+
+									if (fclose (job_f) != 0)
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
+										}
+								}		/* if (job_f) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't open job file \"%s\"", job_output_filename_s);
+								}
+						}		/* if (job_output_filename_s) */
+
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't allocate ByteBuffer");
+				}
+
+			FreeCopiedString (job_id_s);
+		}		/* if (job_id_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get job id as string");
+		}
+
+	return result_s;
+}
+
+

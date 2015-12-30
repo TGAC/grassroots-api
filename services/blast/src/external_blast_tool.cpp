@@ -27,6 +27,12 @@
 #include "temp_file.hpp"
 
 
+const char * const ExternalBlastTool :: EBT_OUTPUT_SUFFIX_S = ".output";
+const char * const ExternalBlastTool :: EBT_INPUT_SUFFIX_S = ".input";
+const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
+
+
+
 ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s)
 {
@@ -139,13 +145,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 	/* Output File */
 	if (success_flag)
 		{
-			char *buffer_p = GetTempFilenameBuffer (NULL, filename_s, NULL);
+			char *buffer_p = GetTempFilenameBuffer (NULL, filename_s, EBT_OUTPUT_SUFFIX_S);
 
 			success_flag = false;
 
 			if (buffer_p)
 				{
-					ebt_output_p = TempFile :: GetTempFile (buffer_p, "w");
+					ebt_output_p = TempFile :: GetTempFile (buffer_p, false);
 
 					if (ebt_output_p)
 						{

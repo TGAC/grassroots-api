@@ -62,6 +62,7 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 } BlastServiceData;
 
 
+
 #ifdef __cplusplus
 extern "C"
 {

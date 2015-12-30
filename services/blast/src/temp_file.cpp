@@ -22,13 +22,18 @@
 
 #include <cstring>
 #include <unistd.h>
+
 #include "temp_file.hpp"
+#include "string_utils.h"
+
 
 #ifdef _DEBUG
-	#define SERVICE_DEBUG	(STM_LEVEL_FINE)
+	#define TEMP_FILE_DEBUG	(STM_LEVEL_FINE)
 #else
-	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
+	#define TEMP_FILE_DEBUG	(STM_LEVEL_NONE)
 #endif
+
+
 
 TempFile *TempFile :: GetTempFile (char *template_s, const bool temp_flag)
 {
@@ -117,21 +122,7 @@ const char *TempFile :: GetData ()
 
 	if (tf_handle_f)
 		{
-			size_t current_pos = ftell (tf_handle_f);
-
-			// Determine file size
-			fseek (tf_handle_f, 0, SEEK_END);
-			size_t size = ftell (tf_handle_f);
-
-			tf_data_s = (char *) AllocMemory ((size + 1) * sizeof (char));
-			if (tf_data_s)
-				{
-					rewind (tf_handle_f);
-
-					fread (tf_data_s, sizeof (char), size, tf_handle_f);
-					* (tf_data_s + size) = '\0';
-					fseek (tf_handle_f, current_pos, SEEK_SET);
-				}
+			tf_data_s = GetFileContentsAsString (tf_handle_f);
 		}
 
 	return tf_data_s;
@@ -143,7 +134,10 @@ void TempFile :: ClearData ()
 	if (tf_data_s)
 		{
 			FreeMemory (tf_data_s);
-			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Clearing data from %s", tf_name_s);
+
+			#if TEMP_FILE_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Clearing data from %s", tf_name_s);
+			#endif
 
 			tf_data_s = 0;
 		}
@@ -228,8 +222,11 @@ char *GetTempFilenameBuffer (const char * const working_directory_s, const char 
 						}
 				}
 
-			memcpy (buffer_p, prefix_s, prefix_length * sizeof (char));
-			buffer_p +=  prefix_length * sizeof (char);
+			if (prefix_s)
+				{
+					memcpy (buffer_p, prefix_s, prefix_length * sizeof (char));
+					buffer_p +=  prefix_length * sizeof (char);
+				}
 
 			if (suffix_s)
 				{
