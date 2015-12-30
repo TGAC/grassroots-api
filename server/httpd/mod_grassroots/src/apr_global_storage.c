@@ -257,7 +257,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 	if (key_p)
 		{
 			bool alloc_key_flag = false;
-			char *key_s = GetKeyAsValidString ((const char *) key_p, key_len - 1, &alloc_key_flag);
+			char *key_s = GetKeyAsValidString ((char *) key_p, key_len - 1, &alloc_key_flag);
 			apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
 
 			if (status == APR_SUCCESS)
@@ -369,7 +369,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 		{
 			apr_status_t status;
 			bool alloc_key_flag = false;
-			char *key_s = GetKeyAsValidString (key_p, key_len - 1, &alloc_key_flag);
+			char *key_s = GetKeyAsValidString ((char *) key_p, key_len - 1, &alloc_key_flag);
 
 			#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
 			PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Made key: %s", key_s);

@@ -230,7 +230,7 @@ static void FreeAPRExternalServer (unsigned char *key_p, void *value_p)
 
 apr_status_t CleanUpAPRServersManager (void *value_p)
 {
-	APRServersManager *manager_p = (APRServersManager *) value_p;
+	ServersManager *manager_p = (ServersManager *) value_p;
 
 	return (DestroyAPRServersManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
 }

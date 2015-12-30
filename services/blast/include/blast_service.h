@@ -27,6 +27,7 @@
 
 #define TAG_BLAST_INPUT_QUERY MAKE_TAG ('B', 'Q', 'U', 'Y')
 #define TAG_BLAST_INPUT_FILE MAKE_TAG ('B', 'I', 'N', 'F')
+#define TAG_BLAST_JOB_ID MAKE_TAG ('B', 'I', 'J', 'I')
 #define TAG_BLAST_OUTPUT_FILE MAKE_TAG ('B', 'O', 'U', 'F')
 #define TAG_BLAST_DATABASE_NAME MAKE_TAG ('B', 'D', 'B', 'N')
 #define TAG_BLAST_MAX_SEQUENCES MAKE_TAG ('B', 'M', 'S', 'Q')
@@ -62,6 +63,16 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 } BlastServiceData;
 
 
+#ifdef ALLOCATE_BLAST_SERVICE_CONSTANTS
+	#define BLAST_SERVICE_PREFIX BLAST_SERVICE_LOCAL
+	#define BLAST_SERVICE_VAL(x)	= x
+#else
+	#define BLAST_SERVICE_PREFIX extern
+	#define BLAST_SERVICE_VAL(x)
+#endif
+
+
+BLAST_SERVICE_PREFIX const char *BS_OUTPUT_SUFFIX_S BLAST_SERVICE_VAL (".output");
 
 #ifdef __cplusplus
 extern "C"
