@@ -263,6 +263,9 @@ GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
 
 
+GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
+
+
 
 #ifdef __cplusplus
 }

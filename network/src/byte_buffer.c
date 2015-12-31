@@ -132,10 +132,23 @@ bool AppendToByteBuffer (ByteBuffer *buffer_p, const void *data_p, const size_t 
 
 bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...)
 {
+	bool success_flag;
+	va_list args;
+
+	va_start (args, value_s);
+
+	success_flag = AppendVarArgsToByteBuffer (buffer_p, value_s, args);
+
+	va_end (args);
+
+	return success_flag;
+}
+
+
+bool AppendVarArgsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, va_list args)
+{
 	bool success_flag = true;
 	bool loop_flag = true;
-	va_list args;
-	va_start (args, value_s);
 	const char *arg_s = value_s;
 
 	while (success_flag && loop_flag)
@@ -151,10 +164,9 @@ bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...)
 				}
 		}
 
-	va_end (args);
-
 	return success_flag;
 }
+
 
 
 void ResetByteBuffer (ByteBuffer *buffer_p)

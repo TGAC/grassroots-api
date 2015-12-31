@@ -21,6 +21,7 @@
 #ifndef BYTE_BUFFER_H
 #define BYTE_BUFFER_H
 
+#include <stdarg.h>
 #include <stddef.h>
 
 #include "network_library.h"
@@ -125,9 +126,24 @@ GRASSROOTS_NETWORK_API bool AppendStringToByteBuffer (ByteBuffer *buffer_p, cons
  * in this varags-array must be a <code>NULL</code>.
  * @return <code>true</code> if the append was successful <code>false</code>
  * upon failure. If the call failed, the contents of the data buffer are preserved.
+ * @see AppendVarArgsToByteBuffer
  * @memberof ByteBuffer
  */
 GRASSROOTS_NETWORK_API bool AppendStringsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, ...);
+
+
+/**
+ * Append a va_list of strings to a ByteBuffer's data buffer.
+ *
+ * @param buffer_p The ByteBuffer whose data buffer the string will be appended to.
+ * @param value_s The varags-style array of <code>NULL</code> terminated strings to append. The final entry
+ * in this varags-array must be a <code>NULL</code>.
+ * @param args The varags list of arguments used by value_s.
+ * @return <code>true</code> if the append was successful <code>false</code>
+ * upon failure. If the call failed, the contents of the data buffer are preserved.
+ * @memberof ByteBuffer
+ */
+GRASSROOTS_NETWORK_API bool AppendVarArgsToByteBuffer (ByteBuffer *buffer_p, const char *value_s, va_list args);
 
 
 /**

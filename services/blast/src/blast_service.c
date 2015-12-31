@@ -391,7 +391,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 5;
+	size_t num_group_params = 6;
 	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 	Parameter **grouped_param_pp = grouped_params_pp;
 
@@ -407,7 +407,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 					++ grouped_param_pp;
 				}
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, false, "output", "Output", "The output file to write", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "job_id", "Job ID", "The UUID for a Blast job that has been run previously", TAG_BLAST_JOB_ID, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					def.st_string_value_s = NULL;
 
@@ -417,11 +417,9 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 							++ grouped_param_pp;
 						}
 
-					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "query_sequence", "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
-					  "It accepts a number of different types of input and automatically determines the format or the input."
-					  " To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_FILE_TO_WRITE, false, "output", "Output", "The output file to write", TAG_BLAST_OUTPUT_FILE, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
-							const char *subrange_s = "Coordinates for a subrange of the query sequence. The BLAST search will apply only to the residues in the range. Valid sequence coordinates are from 1 to the sequence length. Set either From or To to 0 to ignore the range. The range includes the residue at the To coordinate.";
+							def.st_string_value_s = NULL;
 
 							if (grouped_param_pp)
 								{
@@ -429,11 +427,11 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 									++ grouped_param_pp;
 								}
 
-							def.st_ulong_value = 0;
-
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "from", "From", subrange_s, TAG_BLAST_SUBRANGE_FROM, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "query_sequence", "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
+								"It accepts a number of different types of input and automatically determines the format or the input."
+								" To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
 								{
-									def.st_ulong_value = 0;
+									const char *subrange_s = "Coordinates for a subrange of the query sequence. The BLAST search will apply only to the residues in the range. Valid sequence coordinates are from 1 to the sequence length. Set either From or To to 0 to ignore the range. The range includes the residue at the To coordinate.";
 
 									if (grouped_param_pp)
 										{
@@ -441,9 +439,11 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 											++ grouped_param_pp;
 										}
 
-									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "to", "To", subrange_s, TAG_BLAST_SUBRANGE_TO, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+									def.st_ulong_value = 0;
+
+									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "from", "From", subrange_s, TAG_BLAST_SUBRANGE_FROM, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
-											const char * const group_name_s = "Query Sequence Parameters";
+											def.st_ulong_value = 0;
 
 											if (grouped_param_pp)
 												{
@@ -451,13 +451,24 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 													++ grouped_param_pp;
 												}
 
-											if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+											if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "to", "To", subrange_s, TAG_BLAST_SUBRANGE_TO, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-													FreeMemory (grouped_params_pp);
-												}
+													const char * const group_name_s = "Query Sequence Parameters";
 
-											success_flag = true;
+													if (grouped_param_pp)
+														{
+															*grouped_param_pp = param_p;
+															++ grouped_param_pp;
+														}
+
+													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
+															FreeMemory (grouped_params_pp);
+														}
+
+													success_flag = true;
+												}
 										}
 								}
 						}
@@ -771,11 +782,12 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceData *blast_data_p)
 {
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, 1, NULL);
 
 	if (jobs_p)
 		{
 			uuid_t job_id;
+			char *error_s = NULL;
 
 			if (uuid_parse (job_id_s, job_id) == 0)
 				{
@@ -783,18 +795,57 @@ static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceD
 
 					if (result_s)
 						{
+							json_t *result_json_p = json_string (result_s);
+
+							if (result_json_p)
+								{
+									json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_id_s, result_json_p);
+
+									if (blast_result_json_p)
+										{
+											jobs_p -> sjs_jobs_p -> sj_result_p = blast_result_json_p;
+										}
+									else
+										{
+											error_s = ConcatenateVarargsStrings ("Failed to get full blast result as json \"%s\"", job_id_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get full blast result as json \"%s\"", job_id_s);
+
+											WipeJSON (result_json_p);
+										}
+								}
+							else
+								{
+									error_s = ConcatenateVarargsStrings ("Failed to get blast result as json \"%s\"", job_id_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result as json \"%s\"", job_id_s);
+								}
+
 							FreeCopiedString (result_s);
 						}		/* if (result_s) */
 					else
 						{
+							error_s = ConcatenateVarargsStrings ("Failed to get blast result for \"%s\"", job_id_s);
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result for \"%s\"", job_id_s);
 						}
 				}		/* if (uuid_parse (param_value.st_string_value_s, job_id) == 0) */
 			else
 				{
+					error_s = ConcatenateVarargsStrings ("Failed to convert \"%s\" to a valid uuid", job_id_s);
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to a valid uuid", job_id_s);
 				}
 
+
+			if (error_s)
+				{
+					json_error_t err;
+					jobs_p -> sjs_jobs_p -> sj_errors_p = json_pack_ex (&err, 0, "{s:s}", JOB_ERRORS_S, error_s);
+
+					if (! (jobs_p -> sjs_jobs_p -> sj_errors_p))
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json error string for \"%s\"", job_id_s);
+						}
+
+					FreeCopiedString (error_s);
+				}
 		}
 
 	return jobs_p;

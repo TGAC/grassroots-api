@@ -17,12 +17,14 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 #include <stddef.h>
 
 #include "memory_allocations.h"
 #include "string_linked_list.h"
 #include "string_utils.h"
 #include "typedefs.h"
+#include "byte_buffer.h"
 
 
 static LinkedList *ParseStringToLinkedList (const char * const format_p, const char * const delimiters_p, LinkedList *(*allocate_list_fn) (void), ListItem *(*allocate_node_fn) (const char *value_s), const bool treat_whitespace_as_delimiter_flag);
@@ -899,6 +901,31 @@ uint32 HashString (const void * const key_p)
 		}
 
 	return res;
+}
+
+
+char *ConcatenateVarargsStrings (const char *value_s, ...)
+{
+	char *result_s = NULL;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+	if (buffer_p)
+		{
+			va_list args;
+
+			va_start (args, value_s);
+
+			if (AppendVarArgsToByteBuffer (buffer_p, value_s, args))
+				{
+					result_s = DetachByteBufferData (buffer_p);
+				}		/* if (AppendVarArgsToByteBuffer (buffer_p, value_s, args)) */
+
+			va_end (args);
+
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
+
+	return result_s;
 }
 
 
