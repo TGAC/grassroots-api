@@ -182,6 +182,9 @@ TempFile :: ~TempFile ()
 }
 
 
+
+
+
 /* need a buffer where the final 6 chars are XXXXXX, see mkstemp */
 char *GetTempFilenameBuffer (const char * const working_directory_s, const char * const prefix_s, const char * const temp_suffix_s)
 {

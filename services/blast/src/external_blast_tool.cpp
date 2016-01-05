@@ -123,7 +123,7 @@ void ExternalBlastTool :: ClearResults ()
 #define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
 */
 
-bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *filename_s)
+bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *filename_s, const char *job_id_s)
 {
 	bool success_flag = false;
 	SharedType value;

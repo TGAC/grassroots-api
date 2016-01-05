@@ -37,7 +37,7 @@ public:
 
 	virtual OperationStatus Run () = 0;
 
-	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s) = 0;
+	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s, const char *job_id_s) = 0;
 
 	void PreRun ();
 	

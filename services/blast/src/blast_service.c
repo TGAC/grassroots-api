@@ -1,18 +1,18 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
-** 
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-** 
-**     http://www.apache.org/licenses/LICENSE-2.0
-** 
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
+ ** Copyright 2014-2015 The Genome Analysis Centre
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at
+ **
+ **     http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ** See the License for the specific language governing permissions and
+ ** limitations under the License.
+ */
 #include <string.h>
 
 #define ALLOCATE_BLAST_SERVICE_CONSTANTS (1)
@@ -64,6 +64,7 @@ static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t s
 
 static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id);
 
+static char *GetFilenameStemForJob (const char * const working_dir_s, const uuid_t job_id);
 
 static uint32 GetNumberOfDatabases (const BlastServiceData *data_p);
 
@@ -88,27 +89,27 @@ ServicesArray *GetServices (const json_t *config_p)
 	if (blast_service_p)
 		{
 			ServicesArray *services_p = AllocateServicesArray (1);
-			
+
 			if (services_p)
 				{		
 					ServiceData *data_p = (ServiceData *) AllocateBlastServiceData (blast_service_p);
-					
+
 					if (data_p)
 						{
 							InitialiseService (blast_service_p,
-								GetBlastServiceName,
-								GetBlastServiceDesciption,
-								NULL,
-								RunBlastService,
-								IsFileForBlastService,
-								GetBlastServiceParameters,
-								ReleaseBlastServiceParameters,
-								CloseBlastService,
-								GetBlastResultAsJSON,
-								GetBlastServiceStatus,
-								true,
-								false,
-								data_p);
+							                   GetBlastServiceName,
+							                   GetBlastServiceDesciption,
+							                   NULL,
+							                   RunBlastService,
+							                   IsFileForBlastService,
+							                   GetBlastServiceParameters,
+							                   ReleaseBlastServiceParameters,
+							                   CloseBlastService,
+							                   GetBlastResultAsJSON,
+							                   GetBlastServiceStatus,
+							                   true,
+							                   false,
+							                   data_p);
 
 							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
 								{
@@ -177,25 +178,25 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 											DatabaseInfo *db_p = databases_p;
 
 											json_array_foreach (value_p, i, db_json_p)
-												{
-													json_t *name_p = json_object_get (db_json_p, "name");
+											{
+												json_t *name_p = json_object_get (db_json_p, "name");
 
-													if (name_p && (json_is_string (name_p)))
-														{
-															json_t *description_p = json_object_get (db_json_p, "description");
+												if (name_p && (json_is_string (name_p)))
+													{
+														json_t *description_p = json_object_get (db_json_p, "description");
 
-															if (description_p && (json_is_string (description_p)))
-																{
-																	db_p -> di_name_s = json_string_value (name_p);
-																	db_p -> di_description_s = json_string_value (description_p);
+														if (description_p && (json_is_string (description_p)))
+															{
+																db_p -> di_name_s = json_string_value (name_p);
+																db_p -> di_description_s = json_string_value (description_p);
 
-																	success_flag = true;
-																	++ db_p;
-																}		/* if (description_p) */
+																success_flag = true;
+																++ db_p;
+															}		/* if (description_p) */
 
-														}		/* if (name_p) */
+													}		/* if (name_p) */
 
-												}		/* json_array_foreach (value_p, i, db_json_p) */
+											}		/* json_array_foreach (value_p, i, db_json_p) */
 
 											if (success_flag)
 												{
@@ -208,18 +209,18 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 										}		/* if (databases_p) */
 
-								if (success_flag)
-									{
-										value_p = json_object_get (blast_config_p, "blast_tool");
+									if (success_flag)
+										{
+											value_p = json_object_get (blast_config_p, "blast_tool");
 
-										if (value_p)
-											{
-												if (json_is_string (value_p))
-													{
-														BlastTool :: SetBlastToolType (json_string_value (value_p));
-													}
-											}
-									}
+											if (value_p)
+												{
+													if (json_is_string (value_p))
+														{
+															BlastTool :: SetBlastToolType (json_string_value (value_p));
+														}
+												}
+										}
 
 								}		/* if (json_is_array (value_p)) */
 
@@ -262,7 +263,7 @@ static void FreeBlastServiceData (BlastServiceData *data_p)
 	FreeMemory (data_p);
 }
 
- 
+
 static bool CloseBlastService (Service *service_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
@@ -271,8 +272,8 @@ static bool CloseBlastService (Service *service_p)
 
 	return true;
 }
- 
- 
+
+
 static const char *GetBlastServiceName (Service *service_p)
 {
 	return "Blast service";
@@ -428,8 +429,8 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 								}
 
 							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "query_sequence", "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
-								"It accepts a number of different types of input and automatically determines the format or the input."
-								" To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
+							                                                    "It accepts a number of different types of input and automatically determines the format or the input."
+							                                                    " To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
 								{
 									const char *subrange_s = "Coordinates for a subrange of the query sequence. The BLAST search will apply only to the residues in the range. Valid sequence coordinates are from 1 to the sequence length. Set either From or To to 0 to ignore the range. The range includes the residue at the To coordinate.";
 
@@ -621,7 +622,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, const json_t *config_p)
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
-	
+
 	if (param_set_p)
 		{
 			BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
@@ -642,7 +643,7 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 
 			FreeParameterSet (param_set_p);
 		}		/* if (param_set_p) */
-		
+
 	return NULL;
 }
 
@@ -717,7 +718,8 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 }
 
 
-static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id)
+
+static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const char *uuid_s)
 {
 	TempFile *input_file_p = NULL;
 	SharedType value;
@@ -731,52 +733,50 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 			if (!IsStringEmpty (sequence_s))
 				{
-					char *uuid_s = GetUUIDAsString (job_id);
 
-					if (uuid_s)
+					char *buffer_s = GetTempFilenameBuffer (working_directory_s, uuid_s, ".input");
+
+					if (buffer_s)
 						{
-							char *buffer_s = GetTempFilenameBuffer (working_directory_s, uuid_s, ".input");
+							input_file_p = TempFile :: GetTempFile (buffer_s, false);
 
-							if (buffer_s)
+							if (input_file_p)
 								{
-									input_file_p = TempFile :: GetTempFile (buffer_s, false);
+									bool success_flag = input_file_p -> Print (sequence_s);
 
-									if (input_file_p)
+									input_file_p -> Close ();
+
+									if (!success_flag)
 										{
-											bool success_flag = input_file_p -> Print (sequence_s);
-
-											input_file_p -> Close ();
-
-											if (!success_flag)
-												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to write to temp file \"%s\" for query \"%s\"", input_file_p -> GetFilename (), sequence_s);
-													input_file_p = NULL;
-												}
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to write to temp file \"%s\" for query \"%s\"", input_file_p -> GetFilename (), sequence_s);
+											input_file_p = NULL;
 										}
-									else
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to open temp file for query \"%s\"", sequence_s);
-										}
-								}		/* if (buffer_p) */
+								}
 							else
 								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to open temp file for query \"%s\"", sequence_s);
 								}
 
-							FreeCopiedString (uuid_s);
-						}		/* if (uuid_s) */
+							FreeMemory (buffer_s);
+						}		/* if (buffer_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid as string");
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to allocate temp file buffer for query \"%s\"", sequence_s);
 						}
-				}
+
+				}		/* if (uuid_s) */
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast input query is empty");
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid as string");
 				}
 		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast input query is empty");
+		}
+}
 
-	return input_file_p;
+return input_file_p;
 }
 
 
@@ -909,60 +909,129 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 					if (service_p -> se_jobs_p)
 						{
-							ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-							TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
-							const char *input_filename_s = NULL;
+							char *file_stem_s = GetFilenameStemForJob (blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
 
-							if (input_p)
+							if (file_stem_s)
 								{
-									input_filename_s = input_p -> GetFilename ();
-								}
-							else
-								{
-									memset (&param_value, 0, sizeof (SharedType));
+									char *input_filename_s = MakeFilename (file_stem_s, BS_INPUT_SUFFIX_S);
 
-									/* try to get the input file */
-									if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_INPUT_FILE, &param_value, true))
+									if (input_filename_s)
 										{
-											input_filename_s = param_value.st_string_value_s;
-										}
-								}
+											TempFile *input_p = TempFile :: GetTempFile (input_filename_s, false);
 
-							if (input_filename_s)
-								{
-									size_t num_jobs_ran = 0;
-									db_p = blast_data_p -> bsd_databases_p;
-
-									while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
-										{
-											bool run_flag = false;
-
-											if (all_flag)
+											if (!input_p)
 												{
-													run_flag = true;
-												}
-											else
-												{
-													Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+													memset (&param_value, 0, sizeof (SharedType));
 
-													if (param_p)
+													/* try to get the input file */
+													if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_INPUT_FILE, &param_value, true))
 														{
-															if (param_p -> pa_current_value.st_boolean_value)
-																{
-																	run_flag = true;
-																}
+															input_filename_s = param_value.st_string_value_s;
 														}
 												}
 
-											if (run_flag)
+											if (input_filename_s)
 												{
-													const char *db_name_s = NULL;
-													const char *description_s = NULL;
+													size_t num_jobs_ran = 0;
+													db_p = blast_data_p -> bsd_databases_p;
+
+													while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
+														{
+															bool run_flag = false;
+
+															if (all_flag)
+																{
+																	run_flag = true;
+																}
+															else
+																{
+																	Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+																	if (param_p)
+																		{
+																			if (param_p -> pa_current_value.st_boolean_value)
+																				{
+																					run_flag = true;
+																				}
+																		}
+																}
+
+															if (run_flag)
+																{
+																	const char *db_name_s = NULL;
+																	const char *description_s = NULL;
+
+																	if (all_flag)
+																		{
+																			db_name_s = db_p -> di_name_s;
+																			description_s = db_p -> di_description_s;
+																		}
+																	else
+																		{
+																			Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+																			if (param_p)
+																				{
+																					db_name_s = param_p -> pa_name_s;
+
+																					if (param_p -> pa_description_s)
+																						{
+																							description_s = param_p -> pa_description_s;
+																						}
+																					else
+																						{
+																							description_s = db_p -> di_description_s;
+																						}
+																				}
+																		}
+
+																	if (db_name_s)
+																		{
+																			BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+
+																			job_p -> sj_status = OS_FAILED_TO_START;
+
+																			if (tool_p)
+																				{
+																					if (description_s)
+																						{
+																							SetServiceJobDescription (job_p, description_s);
+																						}
+
+																					if (tool_p -> ParseParameters (param_set_p, input_filename_s, job_id_s))
+																						{
+																							if (RunBlast (tool_p))
+																								{
+																									job_p -> sj_status = tool_p -> GetStatus ();
+																									++ num_jobs_ran;
+																									++ job_p;
+																								}
+																						}
+																				}
+																		}
+																}		/* if (run_flag) */
+
+															++ db_p;
+														}		/* while (db_p && (num_jobs_ran < num_jobs)) */
+
+												}		/* if (input_filename_s) */
+
+										}		/* if (input_filename_s) */
+									ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+
+
+									if (input_filename_s)
+										{
+											size_t num_jobs_ran = 0;
+											db_p = blast_data_p -> bsd_databases_p;
+
+											while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
+												{
+													bool run_flag = false;
 
 													if (all_flag)
 														{
-															db_name_s = db_p -> di_name_s;
-															description_s = db_p -> di_description_s;
+															run_flag = true;
 														}
 													else
 														{
@@ -970,55 +1039,82 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 															if (param_p)
 																{
-																	db_name_s = param_p -> pa_name_s;
-
-																	if (param_p -> pa_description_s)
+																	if (param_p -> pa_current_value.st_boolean_value)
 																		{
-																			description_s = param_p -> pa_description_s;
-																		}
-																	else
-																		{
-																			description_s = db_p -> di_description_s;
+																			run_flag = true;
 																		}
 																}
 														}
 
-													if (db_name_s)
+													if (run_flag)
 														{
-															BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+															const char *db_name_s = NULL;
+															const char *description_s = NULL;
 
-															job_p -> sj_status = OS_FAILED_TO_START;
-
-															if (tool_p)
+															if (all_flag)
 																{
-																	if (description_s)
-																		{
-																			SetServiceJobDescription (job_p, description_s);
-																		}
+																	db_name_s = db_p -> di_name_s;
+																	description_s = db_p -> di_description_s;
+																}
+															else
+																{
+																	Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
 
-																	if (tool_p -> ParseParameters (param_set_p, input_filename_s))
+																	if (param_p)
 																		{
-																			if (RunBlast (tool_p))
+																			db_name_s = param_p -> pa_name_s;
+
+																			if (param_p -> pa_description_s)
 																				{
-																					job_p -> sj_status = tool_p -> GetStatus ();
-																					++ num_jobs_ran;
-																					++ job_p;
+																					description_s = param_p -> pa_description_s;
+																				}
+																			else
+																				{
+																					description_s = db_p -> di_description_s;
 																				}
 																		}
 																}
-														}
-												}		/* if (run_flag) */
 
-											++ db_p;
-										}		/* while (db_p && (num_jobs_ran < num_jobs)) */
+															if (db_name_s)
+																{
+																	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
+
+																	job_p -> sj_status = OS_FAILED_TO_START;
+
+																	if (tool_p)
+																		{
+																			if (description_s)
+																				{
+																					SetServiceJobDescription (job_p, description_s);
+																				}
+
+																			if (tool_p -> ParseParameters (param_set_p, input_filename_s, job_id_s))
+																				{
+																					if (RunBlast (tool_p))
+																						{
+																							job_p -> sj_status = tool_p -> GetStatus ();
+																							++ num_jobs_ran;
+																							++ job_p;
+																						}
+																				}
+																		}
+																}
+														}		/* if (run_flag) */
+
+													++ db_p;
+												}		/* while (db_p && (num_jobs_ran < num_jobs)) */
 
 
-								}		/* if (filename_s) */
+										}		/* if (filename_s) */
 
-							if (input_p)
-								{
-									TempFile :: DeleteTempFile (input_p);
-								}
+									if (input_p)
+										{
+											TempFile :: DeleteTempFile (input_p);
+										}
+
+								}		/* if (file_stem_s) */
+
+
 
 						}		/* if (service_p -> se_jobs_p) */
 
@@ -1031,18 +1127,34 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 }
 
 
+static char *GetFilenameStemForJob (const char * const working_dir_s, const uuid_t job_id)
+{
+	char *file_stem_s = NULL;
+	char *job_id_s = GetUUIDAsString ();
+
+	if (job_id_s)
+		{
+			file_stem_s = MakeFilename (working_dir_s, job_id_s);
+
+			FreeCopiedString (job_id_s);
+		}
+
+	return file_stem_s;
+}
+
+
 static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = false;
 	const char *filename_s = resource_p -> re_value_s;
-	
-	
+
+
 	/*
 	 * @TODO
 	 * We could check if the file is on a remote filesystem and if so
 	 * make a full or partial local copy for analysis.
 	 */
-	
+
 	/* 
 	 * We can check on file extension and also the content of the file
 	 * to determine if we want to blast this file.
@@ -1050,12 +1162,12 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 	if (filename_s)
 		{
 			const char *extension_s = strstr (filename_s, ".");
-			
+
 			if (extension_s)
 				{
 					/* move past the . */
 					++ extension_s;
-					
+
 					/* check that the file doesn't end with the . */
 					if (*extension_s != '\0')
 						{
@@ -1063,14 +1175,14 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 								{
 									interested_flag = true;
 								}
-								
+
 						}		/* if (*extension_s != '\0') */
-					
+
 				}		/* if (extension_s) */
-				
+
 		}		/* if (filename_s) */
-	
-	
+
+
 	return interested_flag;	
 }
 

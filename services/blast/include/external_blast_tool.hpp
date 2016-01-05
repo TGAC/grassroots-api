@@ -40,7 +40,7 @@ public:
 	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s);
 	virtual ~ExternalBlastTool ();
 
-	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s);
+	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s, const char *job_id_s);
 
 	virtual bool SetOutputFilename (const char *filename_s);
 
