@@ -234,7 +234,7 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 
 void FreeParameter (Parameter *param_p)
 {
-	#ifdef PARAMETER_DEBUG >= STM_LEVEL_FINER
+	#if PARAMETER_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Freeing parameter %s", param_p -> pa_name_s);
 	#endif
 

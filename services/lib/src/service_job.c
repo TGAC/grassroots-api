@@ -201,7 +201,7 @@ bool CloseServiceJob (ServiceJob *job_p)
 {
 	const bool success_flag = (job_p -> sj_close_fn (job_p));
 
-	#ifdef SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Closing ServiceJob %.8X for %s", job_p, job_p -> sj_service_p);
 	#endif
 

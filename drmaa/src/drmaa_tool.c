@@ -21,6 +21,7 @@
 #include "memory_allocations.h"
 #include "string_linked_list.h"
 #include "byte_buffer.h"
+#include "filesystem_utils.h"
 
 #ifdef _DEBUG
 	#define DRMAA_TOOL_DEBUG (STM_LEVEL_FINE)
