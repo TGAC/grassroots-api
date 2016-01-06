@@ -25,6 +25,7 @@
 
 #include "temp_file.hpp"
 #include "string_utils.h"
+#include "streams.h"
 
 
 #ifdef _DEBUG
@@ -35,32 +36,127 @@
 
 
 
-TempFile *TempFile :: GetTempFile (char *template_s, const bool temp_flag)
+TempFile *TempFile :: GetTempFile (const char *working_dir_s, const uuid_t id, const char * const suffix_s)
+{
+	TempFile *file_p = NULL;
+	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+	bool success_flag = false;
+
+	if (buffer_p)
+		{
+			if (working_dir_s)
+				{
+					if (AppendStringToByteBuffer (buffer_p, working_dir_s))
+						{
+							size_t l = strlen (working_dir_s);
+							char c = GetFileSeparatorChar ();
+
+							if (* (working_dir_s + (l - 1)) != c)
+								{
+									if (AppendToByteBuffer (buffer_p, &c, 1))
+										{
+											success_flag = true;
+										}
+								}
+							else
+								{
+									success_flag = true;
+								}
+						}		/* if (AppendStringToByteBuffer (buffer_p, ebt_working_directory_s)) */
+
+				}		/* if (ebt_working_directory_s) */
+			else
+				{
+					success_flag = true;
+				}
+
+			if (success_flag)
+				{
+					char *uuid_s = GetUUIDAsString (id);
+
+					success_flag = false;
+
+					if (uuid_s)
+						{
+							if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL))
+								{
+									const char *full_filename_s = GetByteBufferData (buffer_p);
+									file_p = TempFile :: GetTempFile (full_filename_s, false);
+
+									if (file_p)
+										{
+											file_p -> Close ();
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get temp file \"%s\"", full_filename_s);
+										}
+
+								}		/* if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL)) */
+
+							FreeUUIDString (uuid_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid as string");
+						}
+
+				}		/* if (success_flag) */
+
+			FreeByteBuffer (buffer_p);
+		}		/* if (buffer_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get buffer for temp filename");
+		}
+
+	return file_p;
+
+}
+
+
+
+TempFile *TempFile :: GetTempFile (const char *template_s, const bool temp_flag)
 {
 	FILE *file_p = NULL;
 	TempFile *tf_p = new TempFile;
 
 	if (temp_flag)
 		{
-			int fd = mkstemp (template_s);
+			char *copied_template_s = CopyToNewString (template_s, 0, false);
 
-			if (fd >= 1)
+			if (copied_template_s)
 				{
-					close (fd);
+					int fd = mkstemp (copied_template_s);
 
-					file_p = fopen (template_s, "w");
+					if (fd >= 1)
+						{
+							close (fd);
+
+							file_p = fopen (copied_template_s, "w");
+							tf_p -> tf_name_mem = MF_SHALLOW_COPY;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Faiiled to create temp file for \"%s\"", copied_template_s);
+							FreeCopiedString (copied_template_s);
+						}
 				}
-
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Faiiled to copy temp filename for \"%s\"", template_s);
+				}
 		}
 	else
 		{
 			file_p = fopen (template_s, "w");
+			tf_p -> tf_name_s = (char *) template_s;
+			tf_p -> tf_name_mem = MF_SHADOW_USE;
 		}
 
 	if (file_p)
 		{
 			tf_p -> tf_handle_f = file_p;
-			tf_p -> tf_name_s = template_s;
 		}
 	else
 		{
@@ -69,12 +165,6 @@ TempFile *TempFile :: GetTempFile (char *template_s, const bool temp_flag)
 		}
 
 	return tf_p;
-}
-
-
-void TempFile :: DeleteTempFile (TempFile *tf_p)
-{
-	delete tf_p;
 }
 
 
@@ -177,7 +267,16 @@ TempFile :: ~TempFile ()
 
 	if (tf_name_s)
 		{
-			FreeMemory (tf_name_s);
+			switch (tf_name_mem)
+				{
+					case MF_DEEP_COPY:
+					case MF_SHALLOW_COPY:
+						FreeCopiedString (tf_name_s);
+						break;
+
+					default:
+						break;
+				}
 		}
 }
 

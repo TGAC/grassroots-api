@@ -35,25 +35,18 @@ const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
 ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s)
 {
-	bool success_flag = false;
+	bool success_flag = AddArgsPair ("-db", name_s);
+
+	if (!success_flag)
+		{
+			throw std :: bad_alloc ();
+		}
 
 	ebt_buffer_p = AllocateByteBuffer (1024);
 	ebt_output_p = 0;
 	ebt_working_directory_s = working_directory_s;
 	ebt_blast_s = blast_program_name_s;
 
-	if (AddArg ("-db"))
-		{
-			if (AddArg (name_s))
-				{
-					success_flag = true;
-				}
-		}
-
-	if (!success_flag)
-		{
-			throw std :: bad_alloc ();
-		}
 }
 
 
@@ -66,6 +59,23 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 
 	FreeByteBuffer (ebt_buffer_p);
 }
+
+
+bool ExternalBlastTool :: AddArgsPair (const char *key_s, const char *value_s)
+{
+	bool success_flag = false;
+
+	if (AddArg (key_s))
+		{
+			if (AddArg (value_s))
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
 
 
 bool ExternalBlastTool :: AddArg (const char *arg_s)
@@ -123,62 +133,25 @@ void ExternalBlastTool :: ClearResults ()
 #define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
 */
 
-bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *filename_s, const char *job_id_s)
+bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 {
 	bool success_flag = false;
 	SharedType value;
 
 	memset (&value, 0, sizeof (SharedType));
-
-	if (filename_s)
-		{
-			if (AddArg ("-query"))
-				{
-					if (AddArg (filename_s))
-						{
-							success_flag = true;
-						}
-				}
-		}
-
-	/* Output File */
 	if (success_flag)
 		{
-			char *buffer_p = GetTempFilenameBuffer (NULL, filename_s, BS_OUTPUT_SUFFIX_S);
-
-			success_flag = false;
-
-			if (buffer_p)
-				{
-					ebt_output_p = TempFile :: GetTempFile (buffer_p, false);
-
-					if (ebt_output_p)
-						{
-							success_flag = SetOutputFilename (ebt_output_p -> GetFilename ());
-
-							ebt_output_p -> Close ();
-						}
-					else
-						{
-							success_flag = false;
-						}
-				}
-		}
-
-
-	if (success_flag)
-		{
-			success_flag =  (AddArg ("-task")) && (AddArg ("blastn"));
+			success_flag = AddArgsPair ("-task", "blastn");
 		}
 
 	if (success_flag)
 		{
-			success_flag =  (AddArg ("-num_alignments")) && (AddArg ("5"));
+			success_flag = AddArgsPair ("-num_alignments", "5");
 		}
 
 	if (success_flag)
 		{
-			success_flag =  (AddArg ("-num_descriptions")) && (AddArg ("5"));
+			success_flag = AddArgsPair ("-num_descriptions", "5");
 		}
 
 	/* Db */
@@ -188,19 +161,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 
 			if (bt_job_p -> sj_name_s)
 				{
-					if (AddArg ("-db"))
-						{
-							if (AddArg (bt_job_p -> sj_name_s))
-								{
-									success_flag = true;
-								}
-						}
+					success_flag = AddArgsPair ("-db", bt_job_p -> sj_name_s);
 				}
 		}
-
-
-
-	//return success_flag;
 
 	/* Query Location */
 	if (success_flag)
@@ -242,154 +205,40 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 	/* Reward */
 	if (success_flag)
 		{
-			success_flag = false;
-
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MATCH_SCORE, &value, true))
-				{
-					char *value_s = ConvertIntegerToString (value.st_long_value);
-
-					if (value_s)
-						{
-							if (AddArg ("-reward"))
-								{
-									if (AddArg (value_s))
-										{
-											success_flag = true;
-										}
-								}
-
-							FreeCopiedString (value_s);
-						}		/* if (value_s) */
-				}
+			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MATCH_SCORE, "-reward", false);
 		}
 
 
 	/* Penalty */
 	if (success_flag)
 		{
-			success_flag = false;
-
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MISMATCH_SCORE, &value, true))
-				{
-					char *value_s = ConvertIntegerToString (value.st_long_value);
-
-					if (value_s)
-						{
-							if (AddArg ("-penalty"))
-								{
-									if (AddArg (value_s))
-										{
-											success_flag = true;
-										}
-								}
-
-
-							FreeCopiedString (value_s);
-						}		/* if (value_s) */
-				}
+			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MISMATCH_SCORE, "-penalty", false);
 		}
 
 	/* Max target sequences */
 	/*
 	if (success_flag)
 		{
-			success_flag = false;
-
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_MAX_SEQUENCES, &value, true))
-				{
-					char *value_s = ConvertIntegerToString (value.st_ulong_value);
-
-					if (value_s)
-						{
-							if (AddArg ("-max_target_seqs"))
-								{
-									if (AddArg (value_s))
-										{
-											success_flag = true;
-										}
-								}
-
-							FreeCopiedString (value_s);
-						}		/* if (value_s)
-				}
+			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MAX_SEQUENCES, "-max_target_seqs", true);
 		} */
 
 
 	/* Expect threshold */
 	if (success_flag)
 		{
-			success_flag = false;
-
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_EXPECT_THRESHOLD, &value, true))
-				{
-					if (value.st_ulong_value > 0)
-						{
-							char *value_s = ConvertIntegerToString (value.st_ulong_value);
-
-							if (value_s)
-								{
-									if (AddArg ("-evalue"))
-										{
-											if (AddArg (value_s))
-												{
-													success_flag = true;
-												}
-										}
-
-									FreeCopiedString (value_s);
-								}		/* if (value_s) */
-						}
-				}
+			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_EXPECT_THRESHOLD, "-evalue", true);
 		}
-
 
 	/* Word Size */
 	if (success_flag)
 		{
-			success_flag = false;
-
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_WORD_SIZE, &value, true))
-				{
-					char *value_s = ConvertIntegerToString (value.st_ulong_value);
-
-					if (value_s)
-						{
-							if (AddArg ("-word_size"))
-								{
-									if (AddArg (value_s))
-										{
-											success_flag = true;
-										}
-								}
-
-							FreeCopiedString (value_s);
-						}		/* if (value_s) */
-				}
+			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true);
 		}
-
 
 	/* Output Format */
 	if (success_flag)
 		{
-			success_flag = false;
-
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true))
-				{
-					char *value_s = ConvertIntegerToString (value.st_ulong_value);
-
-					if (value_s)
-						{
-							if (AddArg ("-outfmt"))
-								{
-									if (AddArg (value_s))
-										{
-											success_flag = true;
-										}
-								}
-
-							FreeCopiedString (value_s);
-						}		/* if (value_s) */
-				}
+			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_OUTPUT_FORMAT, "-outfmt", true);
 		}
 
 
@@ -397,16 +246,64 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, const char *f
 }
 
 
-bool ExternalBlastTool :: SetOutputFilename (const char *filename_s)
+bool ExternalBlastTool :: AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const Tag tag, const char *key_s, const bool unsigned_flag)
+{
+	bool success_flag = false;
+	SharedType value;
+
+	memset (&value, 0, sizeof (SharedType));
+
+	if (GetParameterValueFromParameterSet (params_p, tag, &value, true))
+		{
+			int32 param_value = unsigned_flag ? ((int32) value.st_ulong_value) : (value.st_long_value);
+			char *value_s = ConvertIntegerToString (param_value);
+
+			if (value_s)
+				{
+					success_flag = AddArgsPair (key_s, value_s);
+					FreeCopiedString (value_s);
+				}		/* if (value_s) */
+		}
+
+	return success_flag;
+}
+
+
+bool ExternalBlastTool :: SetUpOutputFile ()
+{
+	bool success_flag = false;
+	TempFile *output_p = TempFile :: GetTempFile (ebt_working_directory_s, bt_job_p -> sj_id, BS_OUTPUT_SUFFIX_S);
+
+	if (output_p)
+		{
+			const char *output_filename_s = ebt_output_p -> GetFilename ();
+
+			if (output_filename_s)
+				{
+					success_flag = AddArgsPair ("-out", output_filename_s);
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output filename for \"%s\"", bt_job_p -> sj_name_s);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get temp output file for \"%s\"", bt_job_p -> sj_name_s);
+		}
+
+
+	return success_flag;
+}
+
+
+bool ExternalBlastTool :: SetInputFilename (const char * const filename_s)
 {
 	bool success_flag = false;
 
-	if (AddArg ("-out"))
+	if (filename_s)
 		{
-			if (AddArg (filename_s))
-				{
-					success_flag = true;
-				}
+			success_flag = AddArgsPair ("-query", filename_s);
 		}
 
 	return success_flag;

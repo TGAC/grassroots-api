@@ -33,13 +33,10 @@ using namespace std;
 class BLAST_SERVICE_LOCAL TempFile
 {
 public:
-	static TempFile *GetTempFile (char *template_s, const bool temp_flag);
-
-
-	static void DeleteTempFile (TempFile *tf_p);
+	static TempFile *GetTempFile (const char *template_s, const bool temp_flag);
+	static TempFile *GetTempFile (const char *working_dir_s, const uuid_t id, const char * const suffix_s);
 
 	~TempFile ();
-
 
 	const char *GetFilename () const;
 
@@ -56,11 +53,11 @@ public:
 
 private:
 	char *tf_name_s;
+	MEM_FLAG tf_name_mem;
 	FILE *tf_handle_f;
 	char *tf_data_s;
 
 	TempFile ();
-
 };
 
 

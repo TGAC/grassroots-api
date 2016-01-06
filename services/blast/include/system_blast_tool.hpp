@@ -36,7 +36,7 @@ public:
 
 	virtual OperationStatus Run ();
 
-	virtual bool ParseParameters (ParameterSet *params_p, const char *filename_s, const char *job_id_s);
+	virtual bool ParseParameters (ParameterSet *params_p);
 
 };
 
