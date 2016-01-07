@@ -745,6 +745,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 							if (!success_flag)
 								{
 									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Blast service failed to write to temp file \"%s\" for query \"%s\"", input_file_p -> GetFilename (), sequence_s);
+									delete input_file_p;
 									input_file_p = NULL;
 								}
 						}
@@ -768,6 +769,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 	return input_file_p;
 }
+
 
 
 static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceData *blast_data_p)
@@ -842,6 +844,50 @@ static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceD
 }
 
 
+static LinkedList *GetUUIDSList (const char *ids_s)
+{
+	LinkedList *ids_p = AllocateLinkedList (FreeStringListNode);
+	bool loop_flag = true;
+	const char *start_p = ids_s;
+	const char *end_p = NULL;
+
+	while (loop_flag)
+		{
+			/* scroll to the start of the text */
+			while (isspace (*start_p))
+				{
+					++ start_p;
+				}
+
+			if (*start_p != '\0')
+				{
+
+				}
+
+			if (sscanf (ids_s, "%36s", buffer_s) > 0))
+				{
+					const size_t UUID_LENGTH = UUID_STRING_BUFFER_SIZE - 1;
+					const size_t l = strlen (buffer_s);
+
+					if (l == UUID_LENGTH)
+						{
+							ids_s += UUID_LENGTH;
+						}
+					else
+						{
+
+						}
+				}
+			else
+				{
+					loop_flag = false;
+				}
+		}
+
+	return ids_p;
+}
+
+
 static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
@@ -849,9 +895,11 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 	memset (&param_value, 0, sizeof (SharedType));
 
-	/* Are we retrieving a previously run job? */
+	/* Are we retrieving previously run jobs? */
 	if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s)))
 		{
+			LinkedList *ids_p = GetUUIDSList (param_value.st_string_value_s);
+
 			service_p -> se_jobs_p = GetPreviousJobResults (param_value.st_string_value_s, blast_data_p);
 
 			if (!service_p -> se_jobs_p)
