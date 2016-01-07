@@ -263,6 +263,16 @@ GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
 
 
+/**
+ * Create a new c-style string from a va_list of strings.
+ *
+ * @param value_s The varargs-style array of <code>NULL</code> terminated strings to append. The final entry
+ * in this varargs-array must be a <code>NULL</code>.
+ * @param args The varargs list of arguments used by value_s.
+ * @return <code>true</code> if the append was successful <code>false</code>
+ * upon failure. If the call failed, the contents of the data buffer are preserved.
+ * @memberof see AppendVarArgsToByteBuffer
+ */
 GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
 
 

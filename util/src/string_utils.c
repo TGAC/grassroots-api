@@ -921,8 +921,6 @@ char *ConcatenateVarargsStrings (const char *value_s, ...)
 				}		/* if (AppendVarArgsToByteBuffer (buffer_p, value_s, args)) */
 
 			va_end (args);
-
-			FreeByteBuffer (buffer_p);
 		}		/* if (buffer_p) */
 
 	return result_s;

@@ -76,8 +76,7 @@ static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t 
 
 static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s);
 
-static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceData *blast_data_p);
-
+static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p);
 
 /*
  * API FUNCTIONS
@@ -260,6 +259,12 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 static void FreeBlastServiceData (BlastServiceData *data_p)
 {
 	FreeBlastToolSet (data_p -> bsd_blast_tools_p);
+
+	if (data_p -> bsd_databases_p)
+		{
+			FreeMemory (data_p -> bsd_databases_p);
+		}
+
 	FreeMemory (data_p);
 }
 
@@ -408,7 +413,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 					++ grouped_param_pp;
 				}
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "job_id", "Job ID", "The UUID for a Blast job that has been run previously", TAG_BLAST_JOB_ID, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "job_ids", "Job IDs", "The UUIDs for Blast jobs that have previously been run", TAG_BLAST_JOB_ID, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					def.st_string_value_s = NULL;
 
@@ -772,73 +777,87 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 
 
-static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceData *blast_data_p)
+static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p)
 {
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, 1, NULL);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, ids_p -> ll_size, NULL);
 
 	if (jobs_p)
 		{
 			uuid_t job_id;
 			char *error_s = NULL;
+			StringListNode *node_p = (StringListNode *) (ids_p -> ll_head_p);
+			ServiceJob *job_p = jobs_p -> sjs_jobs_p;
 
-			if (uuid_parse (job_id_s, job_id) == 0)
+			while (node_p)
 				{
-					char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s);
+					const char * const job_id_s = node_p -> sln_string_s;
 
-					if (result_s)
+					if (uuid_parse (job_id_s, job_id) == 0)
 						{
-							json_t *result_json_p = json_string (result_s);
+							char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s);
 
-							if (result_json_p)
+							if (result_s)
 								{
-									json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_id_s, result_json_p);
+									json_t *result_json_p = json_string (result_s);
 
-									if (blast_result_json_p)
+									if (result_json_p)
 										{
-											jobs_p -> sjs_jobs_p -> sj_result_p = blast_result_json_p;
+											json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_id_s, result_json_p);
+
+											if (blast_result_json_p)
+												{
+													job_p -> sj_result_p = blast_result_json_p;
+												}
+											else
+												{
+													error_s = ConcatenateVarargsStrings ("Failed to get full blast result as json \"", job_id_s, "\"", NULL);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get full blast result as json \"%s\"", job_id_s);
+
+													WipeJSON (result_json_p);
+												}
 										}
 									else
 										{
-											error_s = ConcatenateVarargsStrings ("Failed to get full blast result as json \"%s\"", job_id_s);
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get full blast result as json \"%s\"", job_id_s);
-
-											WipeJSON (result_json_p);
+											error_s = ConcatenateVarargsStrings ("Failed to get blast result as json \"", job_id_s, "\"", NULL);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result as json \"%s\"", job_id_s);
 										}
-								}
+
+									FreeCopiedString (result_s);
+								}		/* if (result_s) */
 							else
 								{
-									error_s = ConcatenateVarargsStrings ("Failed to get blast result as json \"%s\"", job_id_s);
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result as json \"%s\"", job_id_s);
+									error_s = ConcatenateVarargsStrings ("Failed to get blast result for \"", job_id_s, "\"", NULL);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result for \"%s\"", job_id_s);
 								}
-
-							FreeCopiedString (result_s);
-						}		/* if (result_s) */
+						}		/* if (uuid_parse (param_value.st_string_value_s, job_id) == 0) */
 					else
 						{
-							error_s = ConcatenateVarargsStrings ("Failed to get blast result for \"%s\"", job_id_s);
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result for \"%s\"", job_id_s);
+							error_s = ConcatenateVarargsStrings ("Failed to convert \"", job_id_s, "\" to a valid uuid", NULL);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to a valid uuid", job_id_s);
 						}
-				}		/* if (uuid_parse (param_value.st_string_value_s, job_id) == 0) */
-			else
-				{
-					error_s = ConcatenateVarargsStrings ("Failed to convert \"%s\" to a valid uuid", job_id_s);
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to a valid uuid", job_id_s);
-				}
 
-
-			if (error_s)
-				{
-					json_error_t err;
-					jobs_p -> sjs_jobs_p -> sj_errors_p = json_pack_ex (&err, 0, "{s:s}", JOB_ERRORS_S, error_s);
-
-					if (! (jobs_p -> sjs_jobs_p -> sj_errors_p))
+					if (error_s)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json error string for \"%s\"", job_id_s);
-						}
+							json_error_t err;
+							job_p -> sj_errors_p = json_pack_ex (&err, 0, "{s:s}", JOB_ERRORS_S, error_s);
 
-					FreeCopiedString (error_s);
-				}
-		}
+							if (! (job_p -> sj_errors_p))
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json error string for \"%s\"", job_id_s);
+								}
+
+							FreeCopiedString (error_s);
+						}		/* if (error_s) */
+
+
+					node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+					++ job_p;
+				}		/* while (node_p) */
+
+
+
+
+		}		/* if (jobs_p) */
 
 	return jobs_p;
 }
@@ -847,62 +866,77 @@ static ServiceJobSet *GetPreviousJobResults (const char *job_id_s, BlastServiceD
 static LinkedList *GetUUIDSList (const char *ids_s)
 {
 	LinkedList *ids_p = AllocateLinkedList (FreeStringListNode);
-	bool loop_flag = true;
-	const char *start_p = ids_s;
-	const char *end_p = NULL;
 
-	while (loop_flag)
+	if (ids_p)
 		{
-			/* scroll to the start of the token */
-			while (isspace (*start_p))
-				{
-					++ start_p;
-				}
+			bool loop_flag = true;
+			const char *start_p = ids_s;
+			const char *end_p = NULL;
 
-			if (*start_p != '\0')
+			while (loop_flag)
 				{
-					end_p = start_p;
-
-					/* scroll to the end of the token */
-					while ((isalnum (*end_p)) || (*end_p == '-'))
+					/* scroll to the start of the token */
+					while (isspace (*start_p))
 						{
-							++ end_p;
+							++ start_p;
 						}
 
-					if (end_p - start_p == UUID_STRING_BUFFER_SIZE)
+					if (*start_p != '\0')
 						{
-							StringListNode *node_p = NULL;
-							char buffer_s [UUID_STRING_BUFFER_SIZE];
+							end_p = start_p;
 
-							memcpy (buffer_s, start_p, UUID_STRING_BUFFER_SIZE - 1);
-							* (buffer_s + (UUID_STRING_BUFFER_SIZE - 1)) = '\0';
-
-							node_p = AllocateStringListNode (buffer_s, MF_DEEP_COPY);
-
-							if (node_p)
+							/* scroll to the end of the token */
+							while ((isalnum (*end_p)) || (*end_p == '-'))
 								{
-									LinkedListAddTail (ids_p, (ListNode *) node_p);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add uuid \"%s\" to list", buffer_s);
+									++ end_p;
 								}
 
-							if (*end_p != '\0')
+							/* Is the region the corrrect size for a uuid? */
+							if (end_p - start_p == UUID_STRING_BUFFER_SIZE - 1)
 								{
-									start_p = end_p + 1;
-								}
-							else
-								{
-									loop_flag = false;
-								}
+									StringListNode *node_p = NULL;
+									char buffer_s [UUID_STRING_BUFFER_SIZE];
+
+									memcpy (buffer_s, start_p, UUID_STRING_BUFFER_SIZE - 1);
+									* (buffer_s + (UUID_STRING_BUFFER_SIZE - 1)) = '\0';
+
+									node_p = AllocateStringListNode (buffer_s, MF_DEEP_COPY);
+
+									if (node_p)
+										{
+											LinkedListAddTail (ids_p, (ListItem *) node_p);
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add uuid \"%s\" to list", buffer_s);
+										}
+
+									if (*end_p != '\0')
+										{
+											start_p = end_p + 1;
+										}
+									else
+										{
+											loop_flag = false;
+										}
+
+								}		/* if (end_p - start_p == UUID_STRING_BUFFER_SIZE - 1) */
+
+						}		/* if (*start_p != '\0') */
+					else
+						{
+							loop_flag = false;
 						}
-				}
-			else
+
+				}		/* while (loop_flag) */
+
+			if (ids_p -> ll_size == 0)
 				{
-					loop_flag = false;
-				}
-		}
+					FreeLinkedList (ids_p);
+					ids_p = NULL;
+				}		/* if (ids_p -> ll_size == 0) */
+
+		}		/* if (ids_p) */
 
 	return ids_p;
 }
@@ -920,13 +954,45 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 		{
 			LinkedList *ids_p = GetUUIDSList (param_value.st_string_value_s);
 
-			service_p -> se_jobs_p = GetPreviousJobResults (param_value.st_string_value_s, blast_data_p);
-
-			if (!service_p -> se_jobs_p)
+			if (ids_p)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ServiceJobSet for previously run blast job \"%s\"", param_value.st_string_value_s);
-				}
+					service_p -> se_jobs_p = GetPreviousJobResults (ids_p, blast_data_p);
 
+					if (!service_p -> se_jobs_p)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ServiceJobSet for previously run blast job \"%s\"", param_value.st_string_value_s);
+						}
+
+					FreeLinkedList (ids_p);
+				}
+			else
+				{
+					service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse \"%s\" to get uuids", param_value.st_string_value_s);
+
+					if (service_p -> se_jobs_p)
+						{
+							ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+							json_error_t json_err;
+
+							char *errors_s = ConcatenateVarargsStrings ("Failed to parse \"", param_value.st_string_value_s, "\" to get uuids", NULL);
+
+							if (errors_s)
+								{
+									job_p -> sj_errors_p = json_pack_ex (&json_err, 0, "{s:s}", ERROR_S, errors_s);
+									FreeCopiedString (errors_s);
+								}
+							else
+								{
+									job_p -> sj_errors_p = json_pack_ex (&json_err, 0, "{s:s}", ERROR_S, "Failed to parse uuids");
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate job set");
+						}
+				}
 		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) */
 	else
 		{

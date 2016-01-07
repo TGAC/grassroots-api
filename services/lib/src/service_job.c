@@ -558,6 +558,12 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service %s to job status json", service_name_s);
 								}
 						}
+
+					if (!AddValidJSON (json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false))
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job errors to job %s, %s", job_p -> sj_name_s, uuid_s);
+						}
+
 				}
 
 			FreeUUIDString (uuid_s);
