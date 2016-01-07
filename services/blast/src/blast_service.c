@@ -853,7 +853,7 @@ static LinkedList *GetUUIDSList (const char *ids_s)
 
 	while (loop_flag)
 		{
-			/* scroll to the start of the text */
+			/* scroll to the start of the token */
 			while (isspace (*start_p))
 				{
 					++ start_p;
@@ -861,21 +861,41 @@ static LinkedList *GetUUIDSList (const char *ids_s)
 
 			if (*start_p != '\0')
 				{
+					end_p = start_p;
 
-				}
-
-			if (sscanf (ids_s, "%36s", buffer_s) > 0))
-				{
-					const size_t UUID_LENGTH = UUID_STRING_BUFFER_SIZE - 1;
-					const size_t l = strlen (buffer_s);
-
-					if (l == UUID_LENGTH)
+					/* scroll to the end of the token */
+					while ((isalnum (*end_p)) || (*end_p == '-'))
 						{
-							ids_s += UUID_LENGTH;
+							++ end_p;
 						}
-					else
-						{
 
+					if (end_p - start_p == UUID_STRING_BUFFER_SIZE)
+						{
+							StringListNode *node_p = NULL;
+							char buffer_s [UUID_STRING_BUFFER_SIZE];
+
+							memcpy (buffer_s, start_p, UUID_STRING_BUFFER_SIZE - 1);
+							* (buffer_s + (UUID_STRING_BUFFER_SIZE - 1)) = '\0';
+
+							node_p = AllocateStringListNode (buffer_s, MF_DEEP_COPY);
+
+							if (node_p)
+								{
+									LinkedListAddTail (ids_p, (ListNode *) node_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add uuid \"%s\" to list", buffer_s);
+								}
+
+							if (*end_p != '\0')
+								{
+									start_p = end_p + 1;
+								}
+							else
+								{
+									loop_flag = false;
+								}
 						}
 				}
 			else
