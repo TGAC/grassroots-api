@@ -35,18 +35,17 @@ const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
 ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s)
 {
+	ebt_buffer_p = AllocateByteBuffer (1024);
+	ebt_output_p = 0;
+	ebt_working_directory_s = working_directory_s;
+	ebt_blast_s = blast_program_name_s;
+
 	bool success_flag = AddArgsPair ("-db", name_s);
 
 	if (!success_flag)
 		{
 			throw std :: bad_alloc ();
 		}
-
-	ebt_buffer_p = AllocateByteBuffer (1024);
-	ebt_output_p = 0;
-	ebt_working_directory_s = working_directory_s;
-	ebt_blast_s = blast_program_name_s;
-
 }
 
 
@@ -272,9 +271,10 @@ bool ExternalBlastTool :: AddArgsPairFromIntegerParameter (const ParameterSet *p
 bool ExternalBlastTool :: SetUpOutputFile ()
 {
 	bool success_flag = false;
-	TempFile *output_p = TempFile :: GetTempFile (ebt_working_directory_s, bt_job_p -> sj_id, BS_OUTPUT_SUFFIX_S);
 
-	if (output_p)
+	ebt_output_p = TempFile :: GetTempFile (ebt_working_directory_s, bt_job_p -> sj_id, BS_OUTPUT_SUFFIX_S);
+
+	if (ebt_output_p)
 		{
 			const char *output_filename_s = ebt_output_p -> GetFilename ();
 

@@ -433,7 +433,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 									++ grouped_param_pp;
 								}
 
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "query_sequence", "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_LARGE_STRING, false, "query_sequence", "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
 							                                                    "It accepts a number of different types of input and automatically determines the format or the input."
 							                                                    " To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", TAG_BLAST_INPUT_QUERY, NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
 								{
@@ -743,9 +743,18 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 					if (input_file_p)
 						{
-							bool success_flag = input_file_p -> Print (sequence_s);
+							bool success_flag = true;
 
-							input_file_p -> Close ();
+							if (!input_file_p -> IsOpen ())
+								{
+									success_flag = input_file_p -> Open ("w");
+								}
+
+							if (success_flag)
+								{
+									success_flag = input_file_p -> Print (sequence_s);
+									input_file_p -> Close ();
+								}
 
 							if (!success_flag)
 								{
