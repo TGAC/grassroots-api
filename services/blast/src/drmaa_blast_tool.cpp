@@ -116,24 +116,70 @@ OperationStatus DrmaaBlastTool :: GetStatus ()
 
 
 
-bool DrmaaBlastTool :: SetOutputFilename (const char *filename_s)
+bool DrmaaBlastTool :: SetOutputFile ()
 {
 	bool success_flag = false;
 
-	if (ExternalBlastTool :: SetOutputFilename (filename_s))
+	if (ExternalBlastTool :: SetOutputFile ())
 		{
-			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+			char *job_id_s = GetUUIDAsString (bt_job_p -> sj_id);
 
-			if (buffer_p)
+			if (job_id_s)
 				{
-					if (AppendStringsToByteBuffer (buffer_p, ":", filename_s, ".log", NULL))
+					char *logfile_stem_s = NULL;
+					bool alloc_logfile_stm_flag = false;
+
+					if (ebt_working_directory_s)
 						{
-							success_flag = SetDrmaaToolOutputFilename (dbt_drmaa_tool_p, GetByteBufferData (buffer_p));
+							logfile_stem_s = MakeFilename (ebt_working_directory_s, job_id_s);
+							alloc_logfile_stm_flag = true;
+						}
+					else
+						{
+							logfile_stem_s = job_id_s;
 						}
 
-					FreeByteBuffer (buffer_p);
+					if (logfile_stem_s)
+						{
+							char *logfile_s = ConcatenateVarargsStrings (":", logfile_stem_s, ".log", NULL);
+
+							if (logfile_s)
+								{
+									if (SetDrmaaToolOutputFilename (dbt_drmaa_tool_p, logfile_s))
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set drmaa logfile name to \"%s\"", logfile_stem_s);
+										}
+
+									FreeCopiedString (logfile_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get logfile name for \"%s\" with stem \"%s\"", job_id_s, logfile_stem_s);
+								}
+
+							if (alloc_logfile_stm_flag)
+								{
+									FreeCopiedString (logfile_stem_s);
+								}
+
+						}		/* if (logfile_stem_s) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get logile stem for \"%s\"", job_id_s);
+						}
+
+					FreeUUIDString (job_id_s);
+				}		/* if (job_id_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid string for %s", bt_job_p -> sj_name_s);
 				}
-		}
+
+		}		/* if (ExternalBlastTool :: SetOutputFile ()) */
 
 	return success_flag;
 }

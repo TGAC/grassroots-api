@@ -44,7 +44,7 @@ public:
 
 	bool SetEmailNotifications (const char **email_addresses_ss);
 
-	virtual bool SetOutputFilename (const char *filename_s);
+	virtual bool SetUpOutputFile ();
 
 private:
 	DrmaaTool *dbt_drmaa_tool_p;
