@@ -36,16 +36,14 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, c
 : BlastTool (job_p, name_s)
 {
 	ebt_buffer_p = AllocateByteBuffer (1024);
-	ebt_output_p = 0;
-	ebt_working_directory_s = working_directory_s;
-	ebt_blast_s = blast_program_name_s;
 
-	bool success_flag = AddArgsPair ("-db", name_s);
-
-	if (!success_flag)
+	if (!ebt_buffer_p)
 		{
 			throw std :: bad_alloc ();
 		}
+	ebt_output_p = 0;
+	ebt_working_directory_s = working_directory_s;
+	ebt_blast_s = blast_program_name_s;
 }
 
 
@@ -134,14 +132,10 @@ void ExternalBlastTool :: ClearResults ()
 
 bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 {
-	bool success_flag = false;
+	bool success_flag = AddArgsPair ("-task", "blastn");
 	SharedType value;
 
 	memset (&value, 0, sizeof (SharedType));
-	if (success_flag)
-		{
-			success_flag = AddArgsPair ("-task", "blastn");
-		}
 
 	if (success_flag)
 		{

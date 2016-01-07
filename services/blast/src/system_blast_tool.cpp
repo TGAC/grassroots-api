@@ -27,27 +27,16 @@
 SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s)
 : ExternalBlastTool (job_p, name_s, working_directory_s, blast_program_name_s)
 {
-
+	if (!AddArg (blast_program_name_s))
+		{
+			throw std::bad_alloc ();
+		}
 }
 
 SystemBlastTool :: ~SystemBlastTool ()
 {
 
 }
-
-
-bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
-{
-	bool success_flag = false;
-
-	if (AddArg ("blastn "))
-		{
-			success_flag = ExternalBlastTool :: ParseParameters (params_p);
-		}
-
-	return success_flag;
-}
-
 
 OperationStatus SystemBlastTool :: Run ()
 {
