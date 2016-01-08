@@ -593,7 +593,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 			bounds_p -> pb_upper.st_long_value = INT_MAX;
 			def.st_long_value = 2;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, bounds_p, level, NULL)) != NULL)
 				{
 					if (grouped_param_pp)
 						{
@@ -611,7 +611,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 							bounds_p -> pb_lower.st_long_value = INT_MIN;
 							bounds_p -> pb_upper.st_long_value = -1;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, bounds_p, level, NULL)) != NULL)
 								{
 									const char * const group_name_s = "Scoring Parameters";
 

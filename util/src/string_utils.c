@@ -649,24 +649,24 @@ char *ConvertIntegerToString (const int32 value)
 {
 	char *value_s = NULL;
 	size_t num_digits = 1;
+	size_t temp;
+	double d = (double) value;
 
 	if (value < 0)
 		{
-			size_t temp = (size_t) log10 ((double) -value);
+			d = -d;
 			++ num_digits;
+		}
 
-			num_digits += temp;
-		}
-	else if (value > 0)
-		{
-			num_digits += (size_t) log10 ((double) value);
-		}
+	d = log10 (d);
+	temp = (size_t) (floor (d));
+	num_digits += temp;
 
 	value_s = (char *) AllocMemory (num_digits + 1);
 
 	if (value_s)
 		{
-			sprintf (value_s, "%d", value);
+			sprintf (value_s, INT32_FMT, value);
 			* (value_s + num_digits) = '\0';
 		}
 

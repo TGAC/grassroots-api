@@ -64,7 +64,8 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s);
 
-static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp);
+
+static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp, const ParameterType pt);
 
 static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
 
@@ -1384,65 +1385,28 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 		{
 			json_t *min_p = NULL;
 			json_t *max_p = NULL;
-			char *value_s = NULL;
 
 			switch (param_p -> pa_type)
 				{
 					case PT_BOOLEAN:
 						min_p = (bounds_p -> pb_lower.st_boolean_value == true) ? json_true () : json_false ();
-						min_p = (bounds_p -> pb_upper.st_boolean_value == true) ? json_true () : json_false ();
+						max_p = (bounds_p -> pb_upper.st_boolean_value == true) ? json_true () : json_false ();
 						break;
 
 					case PT_SIGNED_INT:
-						value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_long_value);
-
-						if (value_s)
-							{
-								min_p = json_string (value_s);
-								FreeCopiedString (value_s);
-							}
-
-						value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_long_value);
-						if (value_s)
-							{
-								max_p = json_string (value_s);
-								FreeCopiedString (value_s);
-							}
+						min_p = json_integer (bounds_p -> pb_lower.st_long_value);
+						max_p = json_integer (bounds_p -> pb_upper.st_long_value);
 						break;
 
 					case PT_UNSIGNED_INT:
-						value_s = ConvertIntegerToString (bounds_p -> pb_lower.st_ulong_value);
-
-						if (value_s)
-							{
-								min_p = json_string (value_s);
-								FreeCopiedString (value_s);
-							}
-
-						value_s = ConvertIntegerToString (bounds_p -> pb_upper.st_ulong_value);
-						if (value_s)
-							{
-								max_p = json_string (value_s);
-								FreeCopiedString (value_s);
-							}
+						min_p = json_integer (bounds_p -> pb_lower.st_ulong_value);
+						max_p = json_integer (bounds_p -> pb_upper.st_ulong_value);
 						break;
 
 					case PT_SIGNED_REAL:
 					case PT_UNSIGNED_REAL:
-						value_s = ConvertDoubleToString (bounds_p -> pb_lower.st_data_value);
-
-						if (value_s)
-							{
-								min_p = json_string (value_s);
-								FreeCopiedString (value_s);
-							}
-
-						value_s = ConvertDoubleToString (bounds_p -> pb_upper.st_data_value);
-						if (value_s)
-							{
-								max_p = json_string (value_s);
-								FreeCopiedString (value_s);
-							}
+						min_p = json_real (bounds_p -> pb_lower.st_data_value);
+						max_p = json_real (bounds_p -> pb_upper.st_data_value);
 						break;
 
 					default:
@@ -1654,9 +1618,144 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterM
 }
 
 
-static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp)
+static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp, const ParameterType pt)
 {
 	bool success_flag = true;
+	const json_t *min_p = json_object_get (json_p, PARAM_MIN_S);
+
+	if (min_p)
+		{
+			const json_t *max_p = json_object_get (json_p, PARAM_MAX_S);
+
+			if (max_p)
+				{
+					ParameterBounds *bounds_p = AllocateParameterBounds ();
+
+					if (bounds_p)
+						{
+							success_flag = false;
+
+							switch (pt)
+								{
+									case PT_BOOLEAN:
+										{
+											if (json_is_boolean (min_p))
+												{
+													bounds_p -> pb_lower.st_boolean_value = (min_p == json_true ());
+
+													if (json_is_boolean (max_p))
+														{
+															bounds_p -> pb_upper.st_boolean_value = (max_p == json_true ());
+															success_flag = true;
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "max_p is %d not boolean", json_typeof (max_p));
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "min_p is %d not boolean", json_typeof (min_p));
+												}
+										}
+										break;
+
+									case PT_SIGNED_INT:
+										{
+											if (json_is_integer (min_p))
+												{
+													bounds_p -> pb_lower.st_long_value = json_integer_value (min_p);
+
+													if (json_is_integer (max_p))
+														{
+															bounds_p -> pb_upper.st_long_value = json_integer_value (max_p);
+															success_flag = true;
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "max_p is %d not integer", json_typeof (max_p));
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "min_p is %d not integer", json_typeof (min_p));
+												}
+										}
+										break;
+
+									case PT_UNSIGNED_INT:
+										{
+											if (json_is_integer (min_p))
+												{
+													bounds_p -> pb_lower.st_ulong_value = json_integer_value (min_p);
+
+													if (json_is_integer (max_p))
+														{
+															bounds_p -> pb_upper.st_ulong_value = json_integer_value (max_p);
+															success_flag = true;
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "max_p is %d not integer", json_typeof (max_p));
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "min_p is %d not integer", json_typeof (min_p));
+												}
+										}
+										break;
+
+									case PT_SIGNED_REAL:
+									case PT_UNSIGNED_REAL:
+										{
+											if (json_is_real (min_p))
+												{
+													bounds_p -> pb_lower.st_data_value = json_integer_value (min_p);
+
+													if (json_is_real (max_p))
+														{
+															bounds_p -> pb_upper.st_data_value = json_integer_value (max_p);
+															success_flag = true;
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "max_p is %d not real", json_typeof (max_p));
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "min_p is %d not real", json_typeof (min_p));
+												}
+										}
+										break;
+
+									default:
+										break;
+								}
+
+							if (success_flag)
+								{
+									*bounds_pp = bounds_p;
+								}
+							else
+								{
+									FreeParameterBounds (bounds_p, pt);
+								}
+
+						}		/* if (bounds_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate bounds");
+							success_flag = false;
+						}
+				}		/* if (max_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get matching max value");
+				}
+
+		}		/* if (min_p) */
 
 	return success_flag;
 }
@@ -1799,7 +1898,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 												{
 													if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
 														{
-															if (GetParameterBoundsFromJSON (root_p, &bounds_p))
+															if (GetParameterBoundsFromJSON (root_p, &bounds_p, pt))
 																{
 																	success_flag = true;
 																}
@@ -2225,8 +2324,8 @@ static bool SetSharedTypeSignedIntValue (SharedType * value_p, const int32 i, co
 
 	if (bounds_p)
 		{
-			if ((i >= bounds_p -> pb_lower.st_data_value) &&
-					(i <= bounds_p -> pb_upper.st_data_value))
+			if ((i >= bounds_p -> pb_lower.st_long_value) &&
+					(i <= bounds_p -> pb_upper.st_long_value))
 				{
 					value_p -> st_long_value = i;
 					success_flag = true;
