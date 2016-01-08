@@ -74,6 +74,9 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 
 BLAST_SERVICE_PREFIX const char *BS_INPUT_SUFFIX_S BLAST_SERVICE_VAL (".input");
 BLAST_SERVICE_PREFIX const char *BS_OUTPUT_SUFFIX_S BLAST_SERVICE_VAL (".output");
+BLAST_SERVICE_PREFIX const char *BS_LOG_SUFFIX_S BLAST_SERVICE_VAL (".log");
+
+
 
 #ifdef __cplusplus
 extern "C"

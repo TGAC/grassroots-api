@@ -34,6 +34,8 @@ public:
 	SystemBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s);
 	virtual ~SystemBlastTool ();
 
+	virtual bool ParseParameters (ParameterSet *params_p);
+
 	virtual OperationStatus Run ();
 
 };

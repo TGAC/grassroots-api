@@ -64,8 +64,6 @@ static OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t s
 
 static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id);
 
-static char *GetFilenameStemForJob (const char * const working_dir_s, const uuid_t job_id);
-
 static uint32 GetNumberOfDatabases (const BlastServiceData *data_p);
 
 static bool CleanUpBlastJob (ServiceJob *job_p);
@@ -586,36 +584,60 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 	Parameter **grouped_param_pp = grouped_params_pp;
 	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
+	ParameterBounds *bounds_p = bounds_p = AllocateParameterBounds ();
 
-	def.st_long_value = 2;
-
-	if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+	/* Match must be positive */
+	if (bounds_p)
 		{
-			if (grouped_param_pp)
+			bounds_p -> pb_lower.st_long_value = 1;
+			bounds_p -> pb_upper.st_long_value = INT_MAX;
+			def.st_long_value = 2;
+
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", TAG_BLAST_MATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
 				{
-					*grouped_param_pp = param_p;
-					++ grouped_param_pp;
-				}
-
-			def.st_long_value = -3;
-
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
-				{
-					const char * const group_name_s = "Scoring Parameters";
-
 					if (grouped_param_pp)
 						{
 							*grouped_param_pp = param_p;
 							++ grouped_param_pp;
 						}
 
-					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-							FreeMemory (grouped_params_pp);
-						}
 
-					success_flag = true;
+					/* Mismatch must be positive */
+					bounds_p = AllocateParameterBounds ();
+
+					if (bounds_p)
+						{
+							def.st_long_value = -3;
+							bounds_p -> pb_lower.st_long_value = INT_MIN;
+							bounds_p -> pb_upper.st_long_value = -1;
+
+							if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", TAG_BLAST_MISMATCH_SCORE, NULL, def, NULL, NULL, level, NULL)) != NULL)
+								{
+									const char * const group_name_s = "Scoring Parameters";
+
+									if (grouped_param_pp)
+										{
+											*grouped_param_pp = param_p;
+											++ grouped_param_pp;
+										}
+
+									if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
+											FreeMemory (grouped_params_pp);
+										}
+
+									success_flag = true;
+								}
+							else
+								{
+									FreeParameterBounds (bounds_p, PT_SIGNED_INT);
+								}
+						}		/* if (bounds_p) */
+				}
+			else
+				{
+					FreeParameterBounds (bounds_p, PT_SIGNED_INT);
 				}
 		}
 
@@ -1192,22 +1214,6 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 
 	return service_p -> se_jobs_p;
-}
-
-
-static char *GetFilenameStemForJob (const char * const working_dir_s, const uuid_t job_id)
-{
-	char *file_stem_s = NULL;
-	char *job_id_s = GetUUIDAsString (job_id);
-
-	if (job_id_s)
-		{
-			file_stem_s = MakeFilename (working_dir_s, job_id_s);
-
-			FreeCopiedString (job_id_s);
-		}
-
-	return file_stem_s;
 }
 
 

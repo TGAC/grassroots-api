@@ -31,6 +31,75 @@ const char * const ExternalBlastTool :: EBT_INPUT_SUFFIX_S = ".input";
 const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
 
 
+char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const char * const suffix_s)
+{
+	char *job_filename_s = NULL;
+	char *job_id_s = GetUUIDAsString (bt_job_p -> sj_id);
+
+	if (job_id_s)
+		{
+			char *file_stem_s = NULL;
+			bool alloc_file_stm_flag = false;
+
+			if (ebt_working_directory_s)
+				{
+					file_stem_s = MakeFilename (ebt_working_directory_s, job_id_s);
+					alloc_file_stm_flag = true;
+				}
+			else
+				{
+					file_stem_s = job_id_s;
+				}
+
+			if (file_stem_s)
+				{
+					ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+					if (buffer_p)
+						{
+							bool success_flag = false;
+
+							if (prefix_s)
+								{
+									success_flag = AppendStringsToByteBuffer (buffer_p, prefix_s, file_stem_s, NULL);
+								}
+							else
+								{
+									success_flag = AppendStringToByteBuffer (buffer_p, file_stem_s);
+								}
+
+							if (success_flag && suffix_s)
+								{
+									success_flag = AppendStringToByteBuffer (buffer_p, suffix_s);
+								}
+
+							if (success_flag)
+								{
+									job_filename_s = DetachByteBufferData (buffer_p);
+								}
+							else
+								{
+									FreeByteBuffer (buffer_p);
+								}
+
+						}		/* if (buffer_p) */
+
+					FreeCopiedString (file_stem_s);
+				}		/* if (file_stem_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get file stem for \"%s\"", job_id_s);
+				}
+
+			FreeUUIDString (job_id_s);
+		}		/* if (job_id_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid string for %s", bt_job_p -> sj_name_s);
+		}
+
+	return job_filename_s;
+}
 
 ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s)
@@ -141,12 +210,12 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 		{
 			success_flag = AddArgsPair ("-num_alignments", "5");
 		}
-
+/*
 	if (success_flag)
 		{
 			success_flag = AddArgsPair ("-num_descriptions", "5");
 		}
-
+*/
 	/* Db */
 	if (success_flag)
 		{

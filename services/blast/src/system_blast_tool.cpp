@@ -22,6 +22,7 @@
 
 #include "system_blast_tool.hpp"
 #include "streams.h"
+#include "string_utils.h"
 
 
 SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s)
@@ -38,6 +39,27 @@ SystemBlastTool :: ~SystemBlastTool ()
 
 }
 
+bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
+{
+	bool success_flag = false;
+
+	if (ExternalBlastTool :: ParseParameters (params_p))
+		{
+			char *logfile_s = GetJobFilename (NULL, BS_LOG_SUFFIX_S);
+
+			if (logfile_s)
+				{
+					success_flag = AddArgsPair (">", logfile_s);
+
+					FreeCopiedString (logfile_s);
+				}
+
+		}		/* if (ExternalBlastTool :: ParseParameters (params_p)) */
+
+	return success_flag;
+}
+
+
 OperationStatus SystemBlastTool :: Run ()
 {
 	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
@@ -50,7 +72,4 @@ OperationStatus SystemBlastTool :: Run ()
 
 	return bt_job_p -> sj_status;
 }
-
-
-
 
