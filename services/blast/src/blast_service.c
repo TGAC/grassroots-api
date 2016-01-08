@@ -826,6 +826,7 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 					if (uuid_parse (job_id_s, job_id) == 0)
 						{
 							char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s);
+							job_p -> sj_status = OS_FAILED;
 
 							if (result_s)
 								{
@@ -838,6 +839,7 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 											if (blast_result_json_p)
 												{
 													job_p -> sj_result_p = blast_result_json_p;
+													job_p -> sj_status = OS_SUCCEEDED;
 												}
 											else
 												{
@@ -942,16 +944,25 @@ static LinkedList *GetUUIDSList (const char *ids_s)
 											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add uuid \"%s\" to list", buffer_s);
 										}
 
-									if (*end_p != '\0')
-										{
-											start_p = end_p + 1;
-										}
-									else
-										{
-											loop_flag = false;
-										}
-
 								}		/* if (end_p - start_p == UUID_STRING_BUFFER_SIZE - 1) */
+							else
+								{
+									char *c_p =  (char *) end_p;
+									char c = *c_p;
+
+									*c_p = '\0';
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "token \"%s\" is " SIZET_FMT " bytes long, not %d", start_p, end_p - start_p, UUID_STRING_BUFFER_SIZE - 1);
+									*c_p = c;
+								}
+
+							if (*end_p != '\0')
+								{
+									start_p = end_p + 1;
+								}
+							else
+								{
+									loop_flag = false;
+								}
 
 						}		/* if (*start_p != '\0') */
 					else

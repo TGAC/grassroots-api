@@ -507,9 +507,35 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 {
-	if (job_p -> sj_service_p -> se_get_status_fn)
+	/* If job has been started or is waiting to run, check its status */
+	/*
+	OS_LOWER_LIMIT = -4,
+	OS_FAILED = -3,
+	OS_FAILED_TO_START = -2,
+	OS_ERROR = -1,
+	OS_IDLE = 0,
+	OS_PENDING,
+	OS_STARTED,
+	OS_FINISHED,
+	OS_PARTIALLY_SUCCEEDED,
+	OS_SUCCEEDED,
+	OS_CLEANED_UP,
+	OS_UPPER_LIMIT,
+	OS_NUM_STATUSES = OS_UPPER_LIMIT - OS_LOWER_LIMIT + 1
+	 */
+	switch (job_p -> sj_status)
 		{
-			job_p -> sj_status = job_p -> sj_service_p -> se_get_status_fn (job_p -> sj_service_p, job_p -> sj_id);
+			case OS_IDLE:
+			case OS_PENDING:
+			case OS_STARTED:
+				if (job_p -> sj_service_p -> se_get_status_fn)
+					{
+						job_p -> sj_status = job_p -> sj_service_p -> se_get_status_fn (job_p -> sj_service_p, job_p -> sj_id);
+					}
+				break;
+
+			default:
+				break;
 		}
 
 	return job_p -> sj_status;
