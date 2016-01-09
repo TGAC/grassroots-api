@@ -46,7 +46,7 @@ public:
 
 	virtual bool SetUpOutputFile ();
 
-	virtual const char *GetResults ();
+	virtual const char *GetResults (BlastFormatter *formatter_p);
 
 	virtual void ClearResults ();
 
@@ -55,6 +55,7 @@ protected:
 	TempFile *ebt_output_p;
 	const char *ebt_working_directory_s;
 	const char *ebt_blast_s;
+	uint32 ebt_output_format;
 
 	//const char *GetOutputData ();
 

@@ -24,7 +24,7 @@
 #include "grassroots_config.h"
 #include "temp_file.hpp"
 #include "json_tools.h"
-
+#include "blast_formatter.h"
 
 /*
  * STATIC PROTOTYPES
@@ -225,6 +225,25 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 				}		/* if (success_flag) */
 
+			if (success_flag)
+				{
+					const char *formatter_type_s = GetJSONString (blast_config_p, "blast_formatter");
+
+					if (formatter_type_s)
+						{
+							if (strcmp (formatter_type_s, "system") == 0)
+								{
+									const json_t *formatter_config_p = json_object_get (blast_config_p, "system_formatter_config");
+
+									data_p -> bsd_formatter_p = SystemBlastFormatter :: Create (formatter_config_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown BlastFormatter type \"%s\"", formatter_type_s);
+								}
+						}
+				}
+
 		}		/* if (blast_config_p) */
 
 	return success_flag;
@@ -243,6 +262,7 @@ static BlastServiceData *AllocateBlastServiceData (Service *blast_service_p)
 				{
 					data_p -> bsd_working_dir_s = NULL;
 					data_p -> bsd_databases_p = NULL;
+					data_p -> bsd_formatter_p = NULL;
 
 					return data_p;
 				}
@@ -261,6 +281,11 @@ static void FreeBlastServiceData (BlastServiceData *data_p)
 	if (data_p -> bsd_databases_p)
 		{
 			FreeMemory (data_p -> bsd_databases_p);
+		}
+
+	if (data_p -> bsd_formatter_p)
+		{
+			delete (data_p -> bsd_formatter_p);
 		}
 
 	FreeMemory (data_p);
@@ -584,7 +609,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 	Parameter **grouped_param_pp = grouped_params_pp;
 	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
-	ParameterBounds *bounds_p = bounds_p = AllocateParameterBounds ();
+	ParameterBounds *bounds_p = AllocateParameterBounds ();
 
 	/* Match must be positive */
 	if (bounds_p)
@@ -694,7 +719,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 
 			if (status == OS_SUCCEEDED)
 				{
-					const char *result_s = tool_p -> GetResults ();
+					const char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
 
 					if (result_s)
 						{

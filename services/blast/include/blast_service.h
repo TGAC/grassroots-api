@@ -22,7 +22,7 @@
 
 #include "blast_service_api.h"
 #include "blast_tool_set.hpp"
-
+#include "blast_formatter.h"
 
 
 #define TAG_BLAST_INPUT_QUERY MAKE_TAG ('B', 'Q', 'U', 'Y')
@@ -57,6 +57,8 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 
 	const char *bsd_working_dir_s;
 
+	BlastFormatter *bsd_formatter_p;
+
 	/* A NULL-terminated array of the databases available to search */
 	DatabaseInfo *bsd_databases_p;
 
@@ -75,8 +77,8 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 BLAST_SERVICE_PREFIX const char *BS_INPUT_SUFFIX_S BLAST_SERVICE_VAL (".input");
 BLAST_SERVICE_PREFIX const char *BS_OUTPUT_SUFFIX_S BLAST_SERVICE_VAL (".output");
 BLAST_SERVICE_PREFIX const char *BS_LOG_SUFFIX_S BLAST_SERVICE_VAL (".log");
-
-
+BLAST_SERVICE_PREFIX const uint32 BS_DEFAULT_OUTPUT_FORMAT BLAST_SERVICE_VAL (11);
+BLAST_SERVICE_PREFIX const char *BS_DEFAULT_OUTPUT_FORMAT_S BLAST_SERVICE_VAL ("11");
 
 #ifdef __cplusplus
 extern "C"

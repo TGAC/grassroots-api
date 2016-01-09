@@ -162,14 +162,42 @@ bool ExternalBlastTool :: AddArg (const char *arg_s)
 }
 
 
-const char *ExternalBlastTool :: GetResults ()
+const char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 {
 	const char *results_s = NULL;
 
-	if (ebt_output_p && (ebt_output_p -> Open ("r")))
+	if (ebt_output_p)
 		{
-			results_s = ebt_output_p -> GetData ();
+			if (formatter_p && (ebt_output_format != BS_DEFAULT_OUTPUT_FORMAT))
+				{
+					const char *filename_s = ebt_output_p -> GetFilename ();
+
+					if (filename_s)
+						{
+							results_s = formatter_p -> GetConvertedOutput (filename_s, ebt_output_format);
+						}
+					else
+						{
+
+						}
+				}
+			else
+				{
+					if (ebt_output_p -> Open ("r"))
+						{
+							results_s = ebt_output_p -> GetData ();
+						}
+					else
+						{
+
+						}
+				}
 		}
+	else
+		{
+
+		}
+
 
 	return results_s;
 }
@@ -297,12 +325,34 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true);
 		}
 
-	/* Output Format */
+	/* Output Format
+	 * The output is always set to 11 which is ASN and from that we can convert into
+	 * any other format using a BlastFormatter tool
+	 */
 	if (success_flag)
 		{
-			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_OUTPUT_FORMAT, "-outfmt", true);
-		}
+			if (AddArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S))
+				{
+					SharedType value;
 
+					memset (&value, 0, sizeof (SharedType));
+
+					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true))
+						{
+							ebt_output_format = value.st_ulong_value;
+							success_flag = true;
+						}
+					else
+						{
+
+						}
+				}		/* if (out_fmt_s) */
+			else
+				{
+
+				}
+
+		}		/* if success_flag) */
 
 	return success_flag;
 }
