@@ -65,7 +65,6 @@ void BlastToolSet :: AddTool (BlastTool *tool_p)
 BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 {
 	const size_t size = bts_tools.size ();
-	size_t i = bts_tools.size ();
 
 	if (size > 0)
 		{

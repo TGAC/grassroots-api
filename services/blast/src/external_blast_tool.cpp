@@ -39,12 +39,10 @@ char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const ch
 	if (job_id_s)
 		{
 			char *file_stem_s = NULL;
-			bool alloc_file_stm_flag = false;
 
 			if (ebt_working_directory_s)
 				{
 					file_stem_s = MakeFilename (ebt_working_directory_s, job_id_s);
-					alloc_file_stm_flag = true;
 				}
 			else
 				{
