@@ -621,17 +621,17 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 											for (i = 0; i < BOF_NUM_TYPES; ++ i)
 												{
-													values [i].st_string_value_s = (char *) s_output_formats_ss [i];
+													values [i].st_ulong_value = i;
 												}
 
-											options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_STRING);
+											options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_UNSIGNED_INT);
 
 											if (options_p)
 												{
 													/* default to  blast asn */
 													def.st_ulong_value = BOF_BLAST_ASN1;
 
-													if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, NULL, def, NULL, NULL, level, NULL)) != NULL)
+													if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, options_p, def, NULL, NULL, level, NULL)) != NULL)
 														{
 															const char * const group_name_s = "General Algorithm Parameters";
 

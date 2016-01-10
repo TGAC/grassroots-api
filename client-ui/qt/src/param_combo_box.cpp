@@ -25,58 +25,121 @@
 #include "math_utils.h"
 
 
+ParamComboBox *ParamComboBox :: Create (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
+{
+	ParamComboBox *combo_box_p = new ParamComboBox (param_p, options_widget_p, parent_p);
+
+	ParameterMultiOption *option_p = combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_options_p;
+	const int num_options = static_cast <const int> (combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_num_options);
+	int i = 0;
+	bool loop_flag = (i < num_options);
+	bool success_flag = true;
+
+	while (loop_flag && success_flag)
+		{
+			if (combo_box_p -> AddOption (& (option_p -> pmo_value), option_p -> pmo_description_s))
+				{
+					++ i;
+
+					if (i < num_options)
+						{
+							++ option_p;
+						}
+					else
+						{
+							loop_flag = false;
+						}
+				}
+			else
+				{
+					success_flag = false;
+				}
+		}
+
+	if (!success_flag)
+		{
+			delete combo_box_p;
+			combo_box_p = 0;
+		}
+
+	return combo_box_p;
+}
+
+
+bool ParamComboBox :: AddOption (const SharedType *value_p, char *option_s)
+{
+	QVariant *v_p = 0;
+	bool alloc_display_flag = false;
+	bool success_flag = false;
+
+	switch (bpw_param_p -> pa_type)
+		{
+			case PT_STRING:
+			case PT_KEYWORD:
+			case PT_LARGE_STRING:
+				v_p = new QVariant (value_p -> st_string_value_s);
+				if (!option_s)
+					{
+						option_s = value_p -> st_string_value_s;
+					}
+				break;
+
+			case PT_UNSIGNED_INT:
+				v_p = new QVariant (value_p -> st_ulong_value);
+				if (!option_s)
+					{
+						option_s =	ConvertIntegerToString (value_p -> st_ulong_value);
+						alloc_display_flag = (option_s != 0);
+					}
+				break;
+
+		case PT_SIGNED_INT:
+			v_p = new QVariant (value_p -> st_long_value);
+			if (!option_s)
+				{
+					option_s =	ConvertIntegerToString (value_p -> st_long_value);
+					alloc_display_flag = (option_s != 0);
+				}
+			break;
+
+		case PT_SIGNED_REAL:
+		case PT_UNSIGNED_REAL:
+			v_p = new QVariant (value_p -> st_data_value);
+			if (!option_s)
+				{
+					option_s =	ConvertDoubleToString (value_p -> st_data_value);
+					alloc_display_flag = (option_s != 0);
+				}
+			break;
+
+		default:
+				break;
+		}
+
+	if (v_p && option_s)
+		{
+			QString display_str = QString (option_s);
+			pcb_combo_box_p -> insertItem (pcb_combo_box_p -> count (), display_str, *v_p);
+			success_flag = true;
+		}
+
+	if (alloc_display_flag)
+		{
+			FreeCopiedString (option_s);
+		}
+
+	if (v_p)
+		{
+			delete v_p;
+		}
+
+	return success_flag;
+}
+
 ParamComboBox :: ParamComboBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 : BaseParamWidget (param_p, options_widget_p), pcb_group_p (0)
 {
 	pcb_combo_box_p = new QComboBox (parent_p);
-
-
-	ParameterMultiOption *option_p = bpw_param_p -> pa_options_p -> pmoa_options_p;
-	const int num_options = static_cast <int> (bpw_param_p -> pa_options_p -> pmoa_num_options);
-
-	for (int i = 0; i < num_options; ++ i, ++ option_p)
-		{
-			char *option_s = option_p -> pmo_description_s;
-			QString display_str;
-			QVariant *v_p = 0;
-
-			switch (bpw_param_p -> pa_type)
-				{
-					case PT_STRING:
-					case PT_KEYWORD:
-						v_p = new QVariant (option_p -> pmo_value.st_string_value_s);
-						if (!option_s)
-							{
-								option_s =	option_p -> pmo_value.st_string_value_s;
-							}
-						display_str = QString (option_s);
-						break;
-
-					default:
-						break;
-				}
-
-			if (v_p)
-				{
-					pcb_combo_box_p -> insertItem (i, display_str, *v_p);
-					delete v_p;
-				}
-		}
-
-/*
-	const char *title_s = param_p -> pa_display_name_s ;
-
-	if (!title_s)
-		{
-			title_s = param_p -> pa_name_s;
-		}
-
-	pcb_group_p = new QGroupBox (title_s);
-	QVBoxLayout *layout_p = new QVBoxLayout;
-
-	layout_p -> addWidget (pcb_combo_box_p);
-	pcb_group_p -> setLayout (layout_p);
-*/
 }
 
 

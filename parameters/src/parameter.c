@@ -1258,44 +1258,36 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 					for ( ; i > 0; -- i, ++ option_p)
 						{
-							char *value_s = NULL;
-							bool alloc_flag = false;
-							/*
-							 * Swagger's schema requires that these values must be strings
-							 * and one of them must be the default value for this parameter.
-							 */
+							json_t *value_p = NULL;
+
 							switch (param_p -> pa_type)
 								{
 									case PT_BOOLEAN:
-										value_s = (option_p -> pmo_value.st_boolean_value) ? "true" : "false";
+										value_p = (option_p -> pmo_value.st_boolean_value) ? json_true () : json_false ();
 										break;
 
 									case PT_CHAR:
-										value_s = (char *) AllocMemory (2 * sizeof (char));
+										{
+											char buffer_s [2];
 
-										if (value_s)
-											{
-												*value_s = option_p -> pmo_value.st_char_value;
-												* (value_s + 1) = '\0';
+											*buffer_s = option_p -> pmo_value.st_char_value;
+											* (buffer_s + 1) = '\0';
 
-												alloc_flag = true;
-											}
+											value_p = json_string (buffer_s);
+										}
 										break;
 
 									case PT_SIGNED_INT:
-										value_s = ConvertIntegerToString (option_p -> pmo_value.st_long_value);
-										alloc_flag = (value_s != NULL);
+										value_p = json_integer (option_p -> pmo_value.st_long_value);
 										break;
 
 									case PT_UNSIGNED_INT:
-										value_s = ConvertIntegerToString (option_p -> pmo_value.st_ulong_value);
-										alloc_flag = (value_s != NULL);
+										value_p = json_integer (option_p -> pmo_value.st_ulong_value);
 										break;
 
 									case PT_SIGNED_REAL:
 									case PT_UNSIGNED_REAL:
-										value_s = ConvertDoubleToString (option_p -> pmo_value.st_data_value);
-										alloc_flag = (value_s != NULL);
+										value_p = json_real (option_p -> pmo_value.st_data_value);
 										break;
 
 									case PT_TABLE:
@@ -1303,14 +1295,14 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 									case PT_LARGE_STRING:
 									case PT_PASSWORD:
 									case PT_KEYWORD:
-										value_s = option_p -> pmo_value.st_string_value_s;
+										value_p = json_string (option_p -> pmo_value.st_string_value_s);
 										break;
 
 									default:
 										break;
 								}		/* switch (param_p -> pa_type) */
 
-							if (value_s)
+							if (value_p)
 								{
 									json_t *item_p = json_object ();
 									
@@ -1327,7 +1319,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 											if (res_flag)
 												{
-													if (json_object_set_new (item_p, SHARED_TYPE_VALUE_S, json_string (value_s)) == 0)
+													if (json_object_set_new (item_p, SHARED_TYPE_VALUE_S, value_p) == 0)
 														{
 															success_flag = (json_array_append_new (json_options_p, item_p) == 0);
 														}												
@@ -1338,11 +1330,6 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 													json_object_clear (item_p);
 													json_decref (item_p);
 												}													
-										}
-
-									if (alloc_flag)
-										{
-											FreeCopiedString (value_s);
 										}
 								}
 						}
