@@ -76,6 +76,51 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p);
 
+/***************************************/
+
+typedef enum
+{
+	BOF_PAIRWISE,
+	BOF_QUERY_ANCHORED_WITH_IDENTITIES,
+	BOF_QUERY_ANCHORED_NO_IDENTITIES,
+	BOF_FLAT_QUERY_ANCHORED_WITH_IDENTITIES,
+	BOF_FLAT_QUERY_ANCHORED_NO_IDENTITIES,
+	BOF_XML_BLAST,
+	BOF_TABULAR,
+	BOF_TABULAR_WITH_COMMENTS,
+	BOF_TEXT_ASN1,
+	BOF_BINARY_ASN1,
+	BOF_CSV,
+	BOF_BLAST_ASN1,
+	BOF_JSON_SEQALIGN,
+	BOF_JSON_BLAST,
+	BOF_XML2_BLAST,
+	BOF_NUM_TYPES
+} BlastOutputFormat;
+
+
+static const char *s_output_formats_ss [BOF_NUM_TYPES] =
+{
+	"pairwise",
+	"query-anchored showing identities",
+	"query-anchored no identities",
+	"flat query-anchored, show identities",
+	"flat query-anchored, no identities",
+	"XML Blast output",
+	"tabular",
+	"tabular with comment lines",
+	"Text ASN.1",
+	"Binary ASN.1",
+	"Comma-separated values",
+	"BLAST archive format (ASN.1)",
+	"JSON Seqalign output",
+	"JSON Blast output",
+	"XML2 Blast output"
+};
+
+
+
+
 /*
  * API FUNCTIONS
  */
@@ -563,8 +608,9 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", TAG_BLAST_MAX_RANGE_MATCHES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 										{
-											/* default to xml */
-											def.st_ulong_value = 5;
+											ParameterMultiOptionArray *options_p = NULL;
+											SharedType values [BOF_NUM_TYPES];
+											uint32 i;
 
 											if (grouped_param_pp)
 												{
@@ -572,24 +618,43 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 													++ grouped_param_pp;
 												}
 
-											if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, NULL, def, NULL, NULL, level, NULL)) != NULL)
+
+											for (i = 0; i < BOF_NUM_TYPES; ++ i)
 												{
-													const char * const group_name_s = "General Algorithm Parameters";
-
-													if (grouped_param_pp)
-														{
-															*grouped_param_pp = param_p;
-															++ grouped_param_pp;
-														}
-
-													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-															FreeMemory (grouped_params_pp);
-														}
-
-													success_flag = true;
+													values [i].st_string_value_s = (char *) s_output_formats_ss [i];
 												}
+
+											options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_STRING);
+
+											if (options_p)
+												{
+													/* default to  blast asn */
+													def.st_ulong_value = BOF_BLAST_ASN1;
+
+													if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, NULL, def, NULL, NULL, level, NULL)) != NULL)
+														{
+															const char * const group_name_s = "General Algorithm Parameters";
+
+															if (grouped_param_pp)
+																{
+																	*grouped_param_pp = param_p;
+																	++ grouped_param_pp;
+																}
+
+															if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
+																	FreeMemory (grouped_params_pp);
+																}
+
+															success_flag = true;
+														}
+
+													if (!success_flag)
+														{
+															FreeParameterMultiOptionArray (options_p);
+														}
+												}		/* if (options_p) */
 										}
 								}
 						}
