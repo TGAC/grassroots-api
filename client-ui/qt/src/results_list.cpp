@@ -72,7 +72,7 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 					TextViewer *text_viewer_p = new TextViewer;
 					ViewerWidget *viewer_widget_p = new ViewerWidget (text_viewer_p, this);
 
-					text_viewer_p -> setText (data_s);
+					text_viewer_p -> SetText (data_s);
 
 /*
 					viewer_widget_p -> adjustSize ();

@@ -15,20 +15,37 @@
 */
 #include <QFontDatabase>
 #include <QActionGroup>
-
+#include <QVBoxLayout>
 
 #include "text_viewer.h"
 
 TextViewer :: TextViewer (QWidget *parent_p)
-:	QTextEdit (parent_p)
+: QWidget (parent_p)
 {
+	QVBoxLayout *layout_p = new QVBoxLayout;
+
+	tv_menubar_p = new QMenuBar (this);
+	QMenu *menu_p = new QMenu ("View");
+	AddActions (menu_p);
+	tv_menubar_p -> addMenu (menu_p);
+	layout_p -> addWidget (tv_menubar_p);
+
+	tv_editor_p = new QTextEdit;
+	layout_p -> addWidget (tv_editor_p);
+
+	setLayout (layout_p);
 }
 
+
+void TextViewer :: SetText (const char *value_s)
+{
+	tv_editor_p -> setText (value_s);
+}
 
 
 const char *TextViewer :: GetText () const
 {
-	QString s = toPlainText ();
+	QString s = tv_editor_p -> toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();
 	const char *data_s = ba.constData ();
 
@@ -38,22 +55,11 @@ const char *TextViewer :: GetText () const
 
 QWidget *TextViewer :: GetWidget ()
 {
-	return this;
+	return tv_editor_p;
 }
 
-
-void TextViewer :: mouseReleaseEvent (QMouseEvent *event_p)
+void TextViewer :: AddActions (QMenu *menu_p)
 {
-  QMenu menu;
-  AddActions (menu);
-  menu.exec (event_p -> globalPos ());
-}
-
-void TextViewer :: AddActions (QMenu &menu_r)
-{
-	// View Menu
-	QMenu *menu_p = menu_r.addMenu (tr ("&View"));
-
 	QMenu *sub_menu_p = new QMenu (tr ("Font"));
 	QActionGroup *font_types_p = new QActionGroup (this);
 
@@ -73,7 +79,6 @@ void TextViewer :: AddActions (QMenu &menu_r)
 	connect (action_p, &QAction :: triggered, this, &TextViewer :: SetFixedFont);
 	sub_menu_p -> addAction (action_p);
 	font_types_p -> addAction (action_p);
-
 
 	menu_p -> addMenu (sub_menu_p);
 }

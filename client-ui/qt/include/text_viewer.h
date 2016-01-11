@@ -16,25 +16,30 @@
 #ifndef TEXT_VIEWER_H
 #define TEXT_VIEWER_H
 
+#include <QWidget>
 #include <QTextEdit>
 #include <QMouseEvent>
 #include <QMenu>
+#include <QMenuBar>
 
 #include "viewable_widget.h"
 
-class TextViewer : public QTextEdit, public ViewableWidget
+class TextViewer : public QWidget, public ViewableWidget
 {
 public:
 	TextViewer (QWidget *parent_p = 0);
+
+	void SetText (const char *value_s);
 
 	virtual const char *GetText () const;
 	virtual QWidget *GetWidget ();
 
 protected:
-	virtual void mouseReleaseEvent (QMouseEvent *event_p);
+	QTextEdit *tv_editor_p;
+	QMenuBar *tv_menubar_p;
 
 private:
-	void AddActions (QMenu &menu_r);
+	void AddActions (QMenu *menu_p);
 
 	void SetSystemFont ();
 	void SetFixedFont ();
