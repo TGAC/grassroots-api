@@ -945,7 +945,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code)
 {
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, ids_p -> ll_size, NULL);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, 1 /* ids_p -> ll_size */, NULL);
 
 	if (jobs_p)
 		{
@@ -953,7 +953,7 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 			char *error_s = NULL;
 			StringListNode *node_p = (StringListNode *) (ids_p -> ll_head_p);
 			ServiceJob *job_p = jobs_p -> sjs_jobs_p;
-			size_t num_successful_jobs = 0;
+			uint32 num_successful_jobs = 0;
 			json_t *results_p = json_array ();
 
 			if (results_p)
@@ -979,8 +979,6 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 														{
 															if (json_array_append_new (results_p, blast_result_json_p) == 0)
 																{
-																	job_p -> sj_status = OS_SUCCEEDED;
-																	job_p -> sj_result_p = results_p;
 																	++ num_successful_jobs;
 																}
 															else
@@ -1032,12 +1030,23 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 
 
 							node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-							++ job_p;
 						}		/* while (node_p) */
 
 					#if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Num input jobs " UINT32_FMT " num successful json results " SIZET_FMT, ids_p -> ll_size, num_successful_jobs);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Num input jobs " UINT32_FMT " num successful json results " UINT32_FMT, ids_p -> ll_size, num_successful_jobs);
 					#endif
+
+					if (num_successful_jobs == ids_p -> ll_size)
+						{
+							job_p -> sj_status = OS_SUCCEEDED;
+						}
+					else
+						{
+							job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
+						}
+
+					job_p -> sj_result_p = results_p;
+
 
 				}		/* if (results_p) */
 			else
