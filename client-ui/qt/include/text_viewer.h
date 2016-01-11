@@ -17,6 +17,8 @@
 #define TEXT_VIEWER_H
 
 #include <QTextEdit>
+#include <QMouseEvent>
+#include <QMenu>
 
 #include "viewable_widget.h"
 
@@ -28,7 +30,16 @@ public:
 	virtual const char *GetText () const;
 	virtual QWidget *GetWidget ();
 
+protected:
+	virtual void mouseReleaseEvent (QMouseEvent *event_p);
+
 private:
+	void AddActions (QMenu &menu_r);
+
+	void SetSystemFont ();
+	void SetFixedFont ();
+
+
 };
 
 #endif // TEXT_VIEWER_H

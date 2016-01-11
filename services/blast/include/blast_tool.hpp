@@ -22,6 +22,8 @@
 #include "byte_buffer.h"
 
 #include "service_job.h"
+#include "blast_formatter.h"
+
 
 
 /**
@@ -49,7 +51,7 @@ public:
 
 	virtual OperationStatus GetStatus ();
 
-	virtual const char *GetResults () = 0;
+	virtual const char *GetResults (BlastFormatter *formatter_p) = 0;
 
 	virtual void ClearResults () = 0;
 

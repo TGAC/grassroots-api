@@ -32,6 +32,7 @@ class ParamComboBox : public BaseParamWidget
 
 
 public:
+	static ParamComboBox *Create (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
 	ParamComboBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p = 0);
 	virtual ~ParamComboBox ();
 
@@ -45,6 +46,7 @@ public:
 protected:
 	virtual QWidget *GetQWidget ();
 
+	bool AddOption (const SharedType *value_p, char *option_s);
 
 
 private:

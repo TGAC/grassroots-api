@@ -80,7 +80,9 @@ TempFile *TempFile :: GetTempFile (const char *working_dir_s, const uuid_t id, c
 						{
 							if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL))
 								{
-									const char *full_filename_s = GetByteBufferData (buffer_p);
+									const char *full_filename_s = DetachByteBufferData(buffer_p);
+
+									buffer_p  = 0;
 									file_p = TempFile :: GetTempFile (full_filename_s, false);
 
 									if (file_p)
@@ -103,7 +105,10 @@ TempFile *TempFile :: GetTempFile (const char *working_dir_s, const uuid_t id, c
 
 				}		/* if (success_flag) */
 
-			FreeByteBuffer (buffer_p);
+			if (buffer_p)
+				{
+					FreeByteBuffer (buffer_p);
+				}
 		}		/* if (buffer_p) */
 	else
 		{

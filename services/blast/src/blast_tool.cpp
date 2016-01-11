@@ -187,32 +187,6 @@ OperationStatus RunBlast (BlastTool *tool_p)
 }
 
 
-/*
-OperationStatus InlineBlastTool :: Run ()
-{
-	OperationStatus status = OS_SUCCEEDED;
-
-	PreRun ();
-	WriteToLog (NULL, LOG_INFO, "%s %d: InlineBlastTool :: Run", __FILE__, __LINE__);		
-	PostRun ();
-
-	return status;
-}
-
-
-OperationStatus ThreadedBlastTool :: Run ()
-{
-	OperationStatus status = OS_SUCCEEDED;
-	
-	PreRun ();
-	WriteToLog (NULL, LOG_INFO, "%s %d: ThreadedBlastTool :: Run", __FILE__, __LINE__);	
-	PostRun ();
-
-	return status;
-}
-*/
-
-
 void BlastTool :: PreRun ()
 {
 	bt_job_p -> sj_status = OS_STARTED;

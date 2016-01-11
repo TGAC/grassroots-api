@@ -46,7 +46,7 @@ public:
 
 	virtual bool SetUpOutputFile ();
 
-	virtual const char *GetResults ();
+	virtual const char *GetResults (BlastFormatter *formatter_p);
 
 	virtual void ClearResults ();
 
@@ -55,12 +55,16 @@ protected:
 	TempFile *ebt_output_p;
 	const char *ebt_working_directory_s;
 	const char *ebt_blast_s;
+	uint32 ebt_output_format;
 
 	//const char *GetOutputData ();
 
 	virtual bool AddArg (const char * const arg_s);
 	virtual bool AddArgsPair (const char *key_s, const char *value_s);
 	virtual bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const Tag tag, const char *key_s, const bool unsigned_flag);
+
+	char *GetJobFilename (const char * const prefix_s, const char * const suffix_s);
+
 
 };
 

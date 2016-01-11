@@ -44,11 +44,11 @@ BlastToolSet :: BlastToolSet (Service *service_p)
 
 BlastToolSet :: ~BlastToolSet ()
 {
-	size_t i = bts_tools.size ();
+	const size_t size = bts_tools.size ();
 
-	if (i > 0)
+	if (size > 0)
 		{
-			for ( -- i; i >= 0; -- i)
+			for (size_t i = 0; i < size; ++ i)
 				{
 					bts_tools.pop_back ();
 				}
@@ -64,11 +64,11 @@ void BlastToolSet :: AddTool (BlastTool *tool_p)
 
 BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 {
-	size_t i = bts_tools.size ();
+	const size_t size = bts_tools.size ();
 
-	if (i > 0)
+	if (size > 0)
 		{
-			for (-- i; i >= 0; -- i)
+			for (size_t i = 0; i < size; ++ i)
 				{
 					BlastTool *tool_p = bts_tools [i];
 					const uuid_t &tool_id = tool_p -> GetUUID ();
