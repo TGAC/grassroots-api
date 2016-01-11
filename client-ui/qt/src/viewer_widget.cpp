@@ -24,8 +24,7 @@
 
 
 ViewerWidget :: ViewerWidget (ViewableWidget *child_p, QWidget *parent_p)
-:
-	vw_viewable_widget_p (child_p)
+: vw_viewable_widget_p (child_p)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 

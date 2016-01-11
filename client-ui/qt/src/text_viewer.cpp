@@ -34,6 +34,9 @@ TextViewer :: TextViewer (QWidget *parent_p)
 	layout_p -> addWidget (tv_editor_p);
 
 	setLayout (layout_p);
+
+	setWindowTitle ("Text Viewer");
+
 }
 
 
@@ -55,7 +58,7 @@ const char *TextViewer :: GetText () const
 
 QWidget *TextViewer :: GetWidget ()
 {
-	return tv_editor_p;
+	return this;
 }
 
 void TextViewer :: AddActions (QMenu *menu_p)
@@ -63,22 +66,23 @@ void TextViewer :: AddActions (QMenu *menu_p)
 	QMenu *sub_menu_p = new QMenu (tr ("Font"));
 	QActionGroup *font_types_p = new QActionGroup (this);
 
-	// System Font
-	QAction *action_p = new QAction (tr ("System"), this);
-	action_p -> setStatusTip (tr ("Use System Font"));
-	action_p -> setChecked (true);
-	action_p -> setCheckable (true);
-	connect (action_p, &QAction :: triggered, this, &TextViewer :: SetSystemFont);
-	sub_menu_p -> addAction (action_p);
-	font_types_p -> addAction (action_p);
-
 	// Fixed Font
-	action_p = new QAction (tr ("Fixed"), this);
+	QAction *action_p = new QAction (tr ("Fixed"), this);
 	action_p -> setStatusTip (tr ("Use Fixed Font"));
 	action_p -> setCheckable (true);
 	connect (action_p, &QAction :: triggered, this, &TextViewer :: SetFixedFont);
 	sub_menu_p -> addAction (action_p);
 	font_types_p -> addAction (action_p);
+
+	// System Font
+	action_p = new QAction (tr ("System"), this);
+	action_p -> setStatusTip (tr ("Use System Font"));
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &TextViewer :: SetSystemFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+	action_p -> setChecked (true);
+
 
 	menu_p -> addMenu (sub_menu_p);
 }
@@ -86,11 +90,11 @@ void TextViewer :: AddActions (QMenu *menu_p)
 
 void TextViewer :: SetSystemFont ()
 {
-	setFont (QFontDatabase :: systemFont (QFontDatabase :: GeneralFont));
+	tv_editor_p -> setFont (QFontDatabase :: systemFont (QFontDatabase :: GeneralFont));
 }
 
 
 void TextViewer :: SetFixedFont ()
 {
-	setFont (QFontDatabase :: systemFont (QFontDatabase :: FixedFont));
+	tv_editor_p -> setFont (QFontDatabase :: systemFont (QFontDatabase :: FixedFont));
 }

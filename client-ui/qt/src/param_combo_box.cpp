@@ -35,9 +35,12 @@ ParamComboBox *ParamComboBox :: Create (Parameter * const param_p, const PrefsWi
 	bool loop_flag = (i < num_options);
 	bool success_flag = true;
 
+	SharedType *current_value_p = & (param_p -> pa_current_value);
+
+
 	while (loop_flag && success_flag)
 		{
-			if (combo_box_p -> AddOption (& (option_p -> pmo_value), option_p -> pmo_description_s))
+			if (combo_box_p -> AddOption (& (option_p -> pmo_value), option_p -> pmo_description_s, current_value_p))
 				{
 					++ i;
 
@@ -66,26 +69,47 @@ ParamComboBox *ParamComboBox :: Create (Parameter * const param_p, const PrefsWi
 }
 
 
-bool ParamComboBox :: AddOption (const SharedType *value_p, char *option_s)
+bool ParamComboBox :: AddOption (const SharedType *value_p, char *option_s, const SharedType *current_param_value_p)
 {
 	QVariant *v_p = 0;
 	bool alloc_display_flag = false;
 	bool success_flag = false;
+	bool current_value_flag = false;
 
 	switch (bpw_param_p -> pa_type)
 		{
 			case PT_STRING:
 			case PT_KEYWORD:
 			case PT_LARGE_STRING:
-				v_p = new QVariant (value_p -> st_string_value_s);
-				if (!option_s)
-					{
-						option_s = value_p -> st_string_value_s;
-					}
+				{
+					v_p = new QVariant (value_p -> st_string_value_s);
+
+					if (current_param_value_p)
+						{
+							if (strcmp (value_p -> st_string_value_s, current_param_value_p -> st_string_value_s) == 0)
+								{
+									current_value_flag = true;
+								}
+						}
+
+					if (!option_s)
+						{
+							option_s = value_p -> st_string_value_s;
+						}
+				}
 				break;
 
 			case PT_UNSIGNED_INT:
 				v_p = new QVariant (value_p -> st_ulong_value);
+
+				if (current_param_value_p)
+					{
+						if (value_p -> st_ulong_value == current_param_value_p -> st_ulong_value)
+							{
+								current_value_flag = true;
+							}
+					}
+
 				if (!option_s)
 					{
 						option_s =	ConvertIntegerToString (value_p -> st_ulong_value);
@@ -95,6 +119,15 @@ bool ParamComboBox :: AddOption (const SharedType *value_p, char *option_s)
 
 		case PT_SIGNED_INT:
 			v_p = new QVariant (value_p -> st_long_value);
+
+			if (current_param_value_p)
+				{
+					if (value_p -> st_long_value == current_param_value_p -> st_long_value)
+						{
+							current_value_flag = true;
+						}
+				}
+
 			if (!option_s)
 				{
 					option_s =	ConvertIntegerToString (value_p -> st_long_value);
@@ -105,6 +138,15 @@ bool ParamComboBox :: AddOption (const SharedType *value_p, char *option_s)
 		case PT_SIGNED_REAL:
 		case PT_UNSIGNED_REAL:
 			v_p = new QVariant (value_p -> st_data_value);
+
+			if (current_param_value_p)
+				{
+					if (value_p -> st_data_value == current_param_value_p -> st_data_value)
+						{
+							current_value_flag = true;
+						}
+				}
+
 			if (!option_s)
 				{
 					option_s =	ConvertDoubleToString (value_p -> st_data_value);
@@ -119,7 +161,14 @@ bool ParamComboBox :: AddOption (const SharedType *value_p, char *option_s)
 	if (v_p && option_s)
 		{
 			QString display_str = QString (option_s);
-			pcb_combo_box_p -> insertItem (pcb_combo_box_p -> count (), display_str, *v_p);
+			const int index = pcb_combo_box_p -> count ();
+			pcb_combo_box_p -> insertItem (index, display_str, *v_p);
+
+			if (current_value_flag)
+				{
+					pcb_combo_box_p -> setCurrentIndex (index);
+				}
+
 			success_flag = true;
 		}
 
