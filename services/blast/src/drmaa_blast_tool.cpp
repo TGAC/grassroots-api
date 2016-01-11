@@ -132,14 +132,24 @@ bool DrmaaBlastTool :: SetUpOutputFile ()
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set drmaa logfile name to \"%s\"", logfile_stem_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set drmaa logfile name to \"%s\"", logfile_s);
 						}
 
 					FreeCopiedString (logfile_s);
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get logfile name for \"%s\" with stem \"%s\"", job_id_s, logfile_stem_s);
+					char *uuid_s = GetUUIDAsString (bt_job_p -> sj_id);
+
+					if (uuid_s)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get logfile name for \"%s\"", uuid_s);
+							FreeUUIDString (uuid_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get logfile name");
+						}
 				}
 		}		/* if (ExternalBlastTool :: SetOutputFile ()) */
 
