@@ -116,11 +116,11 @@ OperationStatus DrmaaBlastTool :: GetStatus ()
 
 
 
-bool DrmaaBlastTool :: SetOutputFile ()
+bool DrmaaBlastTool :: SetUpOutputFile ()
 {
 	bool success_flag = false;
 
-	if (ExternalBlastTool :: SetOutputFile ())
+	if (ExternalBlastTool :: SetUpOutputFile ())
 		{
 			char *job_id_s = GetUUIDAsString (bt_job_p -> sj_id);
 
