@@ -363,41 +363,44 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 
 											if (uuid_p)
 												{
-													if (json_object_set_new (job_json_p, JOB_UUID_S, uuid_p) != 0)
+													if (json_object_set_new (job_json_p, JOB_UUID_S, uuid_p) == 0)
+														{
+															if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s))
+																{
+																	if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
+																		{
+																			success_flag = AddValidJSONString (job_json_p, JOB_SERVICE_S, GetServiceName (job_p -> sj_service_p));
+																		}
+																}
+														}
+													else
 														{
 															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid %s to json, uuid refcount: %d", buffer_s, uuid_p -> refcount);
-
-															success_flag = false;
 															json_decref (uuid_p);
 														}
 												}
 											else
 												{
 													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid %s as json", buffer_s);
-													success_flag = false;
 												}
-
-											if (success_flag)
-												{
-													success_flag = false;
-
-													if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s))
-														{
-															if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
-																{
-																	success_flag = AddValidJSONString (job_json_p, JOB_SERVICE_S, GetServiceName (job_p -> sj_service_p));
-																}
-														}
-												}		/* if (success_flag) */
-
 										}		/* if (AddStatusToServiceJobJSON (job_p, job_json_p)) */
 								}
 						}
 				}
 
+			PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER, __FILE__, __LINE__);
+			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "success_flag %d", success_flag);
+			#endif
+
+			if (!success_flag)
+				{
+					json_decref (job_json_p);
+					job_json_p = NULL;
+
+				}
 		}		/* if (job_json_p) */
 
-	PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
 	return job_json_p;
 }
@@ -666,14 +669,33 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 						{
 							if (json_array_append_new (jobs_json_p, job_json_p) != 0)
 								{
+									char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to append job %s to results", uuid_s ? uuid_s : "");
+
+									if (uuid_s)
+										{
+											FreeUUIDString (uuid_s);
+										}
 								}
 						}
 					else
 						{
+							char *uuid_s = GetUUIDAsString (job_p -> sj_id);
+
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job %s as json", uuid_s ? uuid_s : "");
+
+							if (uuid_s)
+								{
+									FreeUUIDString (uuid_s);
+								}
 
 						}
 				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate json jobset array");
 		}
 
 	return jobs_json_p;

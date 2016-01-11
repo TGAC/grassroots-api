@@ -650,17 +650,21 @@ char *ConvertIntegerToString (const int32 value)
 	char *value_s = NULL;
 	size_t num_digits = 1;
 	size_t temp;
-	double d = (double) value;
 
-	if (value < 0)
+	if (value != 0)
 		{
-			d = -d;
-			++ num_digits;
-		}
+			double d = (double) value;
 
-	d = log10 (d);
-	temp = (size_t) (floor (d));
-	num_digits += temp;
+			if (value < 0)
+				{
+					d = -d;
+					++ num_digits;
+				}
+
+			d = log10 (d);
+			temp = (size_t) (floor (d));
+			num_digits += temp;
+		}
 
 	value_s = (char *) AllocMemory (num_digits + 1);
 

@@ -1298,6 +1298,18 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										value_p = json_string (option_p -> pmo_value.st_string_value_s);
 										break;
 
+									case PT_FILE_TO_WRITE:
+										break;
+
+									case PT_FILE_TO_READ:
+										break;
+
+									case PT_DIRECTORY:
+										break;
+
+									case PT_JSON:
+										break;
+
 									default:
 										break;
 								}		/* switch (param_p -> pa_type) */

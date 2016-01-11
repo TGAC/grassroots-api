@@ -70,11 +70,11 @@ static bool CleanUpBlastJob (ServiceJob *job_p);
 
 static BlastTool *GetBlastToolForId (Service *service_p, const uuid_t service_id);
 
-static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id);
+static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id, const uint32 output_format_code);
 
-static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s);
+static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s, const uint32 output_format_code);
 
-static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p);
+static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code);
 
 /***************************************/
 
@@ -773,65 +773,110 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 
 static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 {
-	json_t *blast_result_json_p = NULL;
-	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
-	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (job_id);
+	json_t *results_p = json_array ();
 
-	if (tool_p)
+	if (results_p)
 		{
-			OperationStatus status = tool_p -> GetStatus ();
-			const char * const name_s = tool_p -> GetName ();
+			json_t *blast_result_json_p = NULL;
+			BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+			BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (job_id);
 
-			if (status == OS_SUCCEEDED)
+			if (tool_p)
 				{
-					const char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
+					OperationStatus status = tool_p -> GetStatus ();
+					const char * const name_s = tool_p -> GetName ();
 
-					if (result_s)
+					if (status == OS_SUCCEEDED)
 						{
-							json_t *result_json_p = json_string (result_s);
+							const char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
 
-							if (result_json_p)
+							if (result_s)
 								{
-									blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, name_s, result_json_p);
+									json_t *result_json_p = json_string (result_s);
 
-									if (!blast_result_json_p)
+									if (result_json_p)
 										{
-											WipeJSON (result_json_p);
+											blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, name_s, result_json_p);
+
+											if (!blast_result_json_p)
+												{
+													WipeJSON (result_json_p);
+												}
 										}
+
+									tool_p -> ClearResults ();
 								}
-
-							tool_p -> ClearResults ();
 						}
-				}
-			else
-				{
-					json_error_t error;
-					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, status);
-
-					if (blast_result_json_p)
+					else
 						{
+							json_error_t error;
+							blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, status);
 							char *uuid_s = GetUUIDAsString (job_id);
 
-							if (uuid_s)
+							if (blast_result_json_p)
 								{
-									if (json_object_set_new (blast_result_json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
+									if (uuid_s)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service id %s to blast result json", uuid_s);
+											if (json_object_set_new (blast_result_json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service id %s to blast result json", uuid_s);
+												}
 										}
-
-									FreeUUIDString (uuid_s);
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create id sdtring for blast result json");
+										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create idsdtring for blast result json", uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result json for \"%s\"", uuid_s ? uuid_s : "");
 								}
+
+							if (uuid_s)
+								{
+									FreeUUIDString (uuid_s);
+								}
+						}
+
+				}		/* if (tool_p) */
+
+
+			if (blast_result_json_p)
+				{
+					if (json_array_append (results_p, blast_result_json_p) != 0)
+						{
+							char *uuid_s = GetUUIDAsString (job_id);
+
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add blast result %s to json results array", uuid_s ? uuid_s : "");
+
+							if (uuid_s)
+								{
+									FreeUUIDString (uuid_s);
+								}
+
+							json_decref (blast_result_json_p);
+						}		/* if (json_array_append (results_p, blast_result_json_p) != 0) */
+
+				}		/* if (blast_result_json_p) */
+			else
+				{
+					char *uuid_s = GetUUIDAsString (job_id);
+
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result json for \"%s\"", uuid_s ? uuid_s : "");
+
+					if (uuid_s)
+						{
+							FreeUUIDString (uuid_s);
 						}
 				}
 
-		}		/* if (tool_p) */
+		}		/* if (results_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate json array to get blast results");
+		}
 
-
-	return blast_result_json_p;
+	return results_p;
 }
 
 
@@ -898,7 +943,7 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 
 
-static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p)
+static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code)
 {
 	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, ids_p -> ll_size, NULL);
 
@@ -909,13 +954,14 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 			StringListNode *node_p = (StringListNode *) (ids_p -> ll_head_p);
 			ServiceJob *job_p = jobs_p -> sjs_jobs_p;
 
+
 			while (node_p)
 				{
 					const char * const job_id_s = node_p -> sln_string_s;
 
 					if (uuid_parse (job_id_s, job_id) == 0)
 						{
-							char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s);
+							char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s, output_format_code);
 							job_p -> sj_status = OS_FAILED;
 
 							if (result_s)
@@ -928,16 +974,37 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 
 											if (blast_result_json_p)
 												{
-													job_p -> sj_result_p = blast_result_json_p;
-													job_p -> sj_status = OS_SUCCEEDED;
+													json_t *results_p = json_array ();
+
+													if (results_p)
+														{
+															if (json_array_append_new (results_p, blast_result_json_p) == 0)
+																{
+																	job_p -> sj_result_p = results_p;
+																	job_p -> sj_status = OS_SUCCEEDED;
+																}
+															else
+																{
+																	error_s = ConcatenateVarargsStrings ("Failed to add blast result \"", job_id_s, "\" to json results array", NULL);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add blast result \"%s\" to json results array", job_id_s);
+
+																	json_decref (results_p);
+																}
+														}
+													else
+														{
+															error_s = CopyToNewString ("Failed to allocate json results array", 0, false);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate json results arrays");
+														}
+
 												}
 											else
 												{
 													error_s = ConcatenateVarargsStrings ("Failed to get full blast result as json \"", job_id_s, "\"", NULL);
 													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get full blast result as json \"%s\"", job_id_s);
-
-													WipeJSON (result_json_p);
 												}
+
+											json_decref (result_json_p);
 										}
 									else
 										{
@@ -1088,7 +1155,18 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 			if (ids_p)
 				{
-					service_p -> se_jobs_p = GetPreviousJobResults (ids_p, blast_data_p);
+					uint32 output_format_code = BS_DEFAULT_OUTPUT_FORMAT;
+
+					if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_OUTPUT_FORMAT, &param_value, true))
+						{
+							output_format_code = param_value.st_ulong_value;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't get requested output format code, using " UINT32_FMT " instead", output_format_code);
+						}
+
+					service_p -> se_jobs_p = GetPreviousJobResults (ids_p, blast_data_p, output_format_code);
 
 					if (!service_p -> se_jobs_p)
 						{
@@ -1405,14 +1483,14 @@ static bool CleanUpBlastJob (ServiceJob *job_p)
 }
 
 
-static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id)
+static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id, const uint32 output_format_code)
 {
 	char *result_s = NULL;
 	char *job_id_s = GetUUIDAsString (job_id);
 
 	if (job_id_s)
 		{
-			result_s = GetBlastResultByUUIDString (data_p, job_id_s);
+			result_s = GetBlastResultByUUIDString (data_p, job_id_s, output_format_code);
 			FreeCopiedString (job_id_s);
 		}
 	else
@@ -1424,7 +1502,7 @@ static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t 
 }
 
 
-static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s)
+static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s, const uint32 output_format_code)
 {
 	char *result_s = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
@@ -1456,26 +1534,35 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 			if (job_output_filename_s)
 				{
-					FILE *job_f = fopen (job_output_filename_s, "r");
-
-					if (job_f)
+					if (data_p -> bsd_formatter_p)
 						{
-							result_s = GetFileContentsAsString (job_f);
-
-							if (!result_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
-								}
-
-							if (fclose (job_f) != 0)
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
-								}
-						}		/* if (job_f) */
+							result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
+						}		/* if (data_p -> bsd_formatter_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't open job file \"%s\"", job_output_filename_s);
-						}
+							FILE *job_f = fopen (job_output_filename_s, "r");
+
+							if (job_f)
+								{
+									result_s = GetFileContentsAsString (job_f);
+
+									if (!result_s)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
+										}
+
+									if (fclose (job_f) != 0)
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
+										}
+								}		/* if (job_f) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't open job file \"%s\"", job_output_filename_s);
+								}
+
+						}		/* if (data_p -> bsd_formatter_p) else */
+
 				}		/* if (job_output_filename_s) */
 
 			FreeByteBuffer (buffer_p);

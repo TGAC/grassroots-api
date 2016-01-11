@@ -13,12 +13,15 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+#include <QFontDatabase>
+#include <QActionGroup>
+
+
 #include "text_viewer.h"
 
 TextViewer :: TextViewer (QWidget *parent_p)
 :	QTextEdit (parent_p)
 {
-
 }
 
 
@@ -36,4 +39,53 @@ const char *TextViewer :: GetText () const
 QWidget *TextViewer :: GetWidget ()
 {
 	return this;
+}
+
+
+void TextViewer :: mouseReleaseEvent (QMouseEvent *event_p)
+{
+  QMenu menu;
+  AddActions (menu);
+  menu.exec (event_p -> globalPos ());
+}
+
+void TextViewer :: AddActions (QMenu &menu_r)
+{
+	// View Menu
+	QMenu *menu_p = menu_r.addMenu (tr ("&View"));
+
+	QMenu *sub_menu_p = new QMenu (tr ("Font"));
+	QActionGroup *font_types_p = new QActionGroup (this);
+
+	// System Font
+	QAction *action_p = new QAction (tr ("System"), this);
+	action_p -> setStatusTip (tr ("Use System Font"));
+	action_p -> setChecked (true);
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &TextViewer :: SetSystemFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+
+	// Fixed Font
+	action_p = new QAction (tr ("Fixed"), this);
+	action_p -> setStatusTip (tr ("Use Fixed Font"));
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &TextViewer :: SetFixedFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+
+
+	menu_p -> addMenu (sub_menu_p);
+}
+
+
+void TextViewer :: SetSystemFont ()
+{
+	setFont (QFontDatabase :: systemFont (QFontDatabase :: GeneralFont));
+}
+
+
+void TextViewer :: SetFixedFont ()
+{
+	setFont (QFontDatabase :: systemFont (QFontDatabase :: FixedFont));
 }
