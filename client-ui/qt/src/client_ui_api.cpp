@@ -36,7 +36,7 @@
 #include "qt_client_data.h"
 #include "progress_window.h"
 #include "json_util.h"
-
+#include "viewer_widget.h"
 
 #ifdef _DEBUG
 	#define CLIENT_UI_API_DEBUG (DEBUG_FINE)
@@ -126,6 +126,8 @@ static QTClientData *AllocateQTClientData (void)
 
 					data_p -> qcd_progress_p = new ProgressWindow (data_p -> qcd_window_p, data_p);
 
+					data_p -> qcd_viewer_widgets_p = new QLinkedList <ViewewWidget *>;
+
 					data_p -> qcd_init_flag = false;
 				}
 			else
@@ -144,6 +146,15 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 	delete (qt_data_p -> qcd_window_p);
 	delete (qt_data_p -> qcd_app_p);
 	FreeCopiedString (qt_data_p -> qcd_dummy_arg_s);
+
+	while (! (qt_data_p -> qcd_viewer_widgets_p -> isEmpty ()))
+		{
+			ViewerWidget *widget_p = qt_data_p -> qcd_viewer_widgets_p -> first ();
+			qt_data_p -> qcd_viewer_widgets_p -> removeFirst ();
+
+			widget_p -> close ();
+			delete widget_p;
+		}
 
 	FreeMemory (qt_data_p);
 }

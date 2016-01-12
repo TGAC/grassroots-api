@@ -61,7 +61,7 @@ protected:
 
 	virtual bool AddArg (const char * const arg_s);
 	virtual bool AddArgsPair (const char *key_s, const char *value_s);
-	virtual bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const Tag tag, const char *key_s, const bool unsigned_flag);
+	virtual bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const Tag tag, const char *key_s, const bool unsigned_flag, const bool required_flag);
 
 	char *GetJobFilename (const char * const prefix_s, const char * const suffix_s);
 

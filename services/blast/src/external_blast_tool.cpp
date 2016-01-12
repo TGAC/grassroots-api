@@ -111,6 +111,7 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, c
 	ebt_output_p = 0;
 	ebt_working_directory_s = working_directory_s;
 	ebt_blast_s = blast_program_name_s;
+	ebt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
 }
 
 
@@ -135,6 +136,14 @@ bool ExternalBlastTool :: AddArgsPair (const char *key_s, const char *value_s)
 				{
 					success_flag = true;
 				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add value arg for \"%s\"=\"%s\"", key_s, value_s);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add key arg for \"%s\"=\"%s\"", key_s, value_s);
 		}
 
 	return success_flag;
@@ -148,10 +157,9 @@ bool ExternalBlastTool :: AddArg (const char *arg_s)
 
 	if (ebt_buffer_p -> bb_current_index > 0)
 		{
-			success_flag = AppendStringToByteBuffer (ebt_buffer_p, " ");
+			success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " ", arg_s, NULL);
 		}
-
-	if (success_flag)
+	else
 		{
 			success_flag =  AppendStringToByteBuffer (ebt_buffer_p, arg_s);
 		}
@@ -176,7 +184,10 @@ const char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 						}
 					else
 						{
+							char uuid_s [UUID_STRING_BUFFER_SIZE];
 
+							ConvertUUIDToString (bt_job_p -> sj_id, uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "failed to get results filename for \"%s\"", uuid_s);
 						}
 				}
 			else
@@ -187,15 +198,17 @@ const char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 						}
 					else
 						{
-
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "failed to open results file \"%s\"", ebt_output_p -> GetFilename ());
 						}
 				}
-		}
+		}		/* if (ebt_output_p) */
 	else
 		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
 
+			ConvertUUIDToString (bt_job_p -> sj_id, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Results output object is NULL for \"%s\"", uuid_s);
 		}
-
 
 	return results_s;
 }
@@ -227,138 +240,131 @@ void ExternalBlastTool :: ClearResults ()
 
 bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 {
-	bool success_flag = AddArgsPair ("-task", "blastn");
+	bool success_flag = false;
 	SharedType value;
 
 	memset (&value, 0, sizeof (SharedType));
 
-	if (success_flag)
-		{
-			success_flag = AddArgsPair ("-num_alignments", "5");
-		}
-/*
-	if (success_flag)
-		{
-			success_flag = AddArgsPair ("-num_descriptions", "5");
-		}
-*/
-	/* Db */
-	if (success_flag)
-		{
-			success_flag = false;
 
-			if (bt_job_p -> sj_name_s)
-				{
-					success_flag = AddArgsPair ("-db", bt_job_p -> sj_name_s);
-				}
-		}
-
-	/* Query Location */
-	if (success_flag)
+	if (AddArgsPair ("-task", "blastn"))
 		{
-			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true))
+			if (AddArgsPair ("-num_alignments", "5"))
 				{
-					if (value.st_string_value_s)
+					if (bt_job_p -> sj_name_s)
 						{
-							SharedType to;
-
-							memset (&to, 0, sizeof (SharedType));
-
-							if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &to, true))
+							if (AddArgsPair ("-db", bt_job_p -> sj_name_s))
 								{
-									if (to.st_string_value_s)
+									/* Reward */
+									if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MATCH_SCORE, "-reward", false, false))
 										{
-											ByteBuffer *buffer_p = AllocateByteBuffer (1024);
-											success_flag = false;
-
-											if (buffer_p)
+											/* Penalty */
+											if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MISMATCH_SCORE, "-penalty", false, false))
 												{
-													if (AppendStringsToByteBuffer (buffer_p, value.st_string_value_s, "-", to.st_string_value_s, NULL))
+													/* Expect threshold */
+													if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_EXPECT_THRESHOLD, "-evalue", true, false))
 														{
-															if (AddArg (GetByteBufferData (buffer_p)))
+															/* Word Size */
+															if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true, false))
 																{
-																	success_flag = true;
-																}
-														}
+																	/* Output Format
+																	 * The output is always set to 11 which is ASN and from that we can convert into
+																	 * any other format using a BlastFormatter tool
+																	 */
+																	if (AddArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S))
+																		{
+																			SharedType value;
 
-													FreeByteBuffer (buffer_p);
-												}
-										}
-								}
-						}
-				}
-		}
+																			memset (&value, 0, sizeof (SharedType));
 
+																			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true))
+																				{
+																					ebt_output_format = value.st_ulong_value;
 
-	/* Reward */
-	if (success_flag)
-		{
-			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MATCH_SCORE, "-reward", false);
-		}
+																					success_flag = true;
 
+																					/* Query Location */
+																					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true))
+																						{
+																							uint32 from = value.st_ulong_value;
 
-	/* Penalty */
-	if (success_flag)
-		{
-			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MISMATCH_SCORE, "-penalty", false);
-		}
+																							if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &value, true))
+																								{
+																									uint32 to = value.st_ulong_value;
 
-	/* Max target sequences */
-	/*
-	if (success_flag)
-		{
-			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MAX_SEQUENCES, "-max_target_seqs", true);
-		} */
+																									if ((from != 0) && (to != 0))
+																										{
+																											ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
+																											if (buffer_p)
+																												{
+																													char *from_s = ConvertIntegerToString (from);
 
-	/* Expect threshold */
-	if (success_flag)
-		{
-			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_EXPECT_THRESHOLD, "-evalue", true);
-		}
+																													if (from_s)
+																														{
+																															char *to_s = ConvertIntegerToString (to);
 
-	/* Word Size */
-	if (success_flag)
-		{
-			success_flag = AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true);
-		}
+																															if (to_s)
+																																{
+																																	if (AppendStringsToByteBuffer (buffer_p, from_s, "-", to_s, NULL))
+																																		{
+																																			const char *query_loc_s = GetByteBufferData (buffer_p);
 
-	/* Output Format
-	 * The output is always set to 11 which is ASN and from that we can convert into
-	 * any other format using a BlastFormatter tool
-	 */
-	if (success_flag)
-		{
-			if (AddArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S))
-				{
-					SharedType value;
+																																			if (!AddArgsPair ("-query_loc", query_loc_s))
+																																				{
+																																					success_flag = false;
+																																				}
+																																		}
 
-					memset (&value, 0, sizeof (SharedType));
+																																	FreeCopiedString (to_s);
+																																}		/* if (to_s) */
 
-					if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true))
-						{
-							ebt_output_format = value.st_ulong_value;
-							success_flag = true;
-						}
+																															FreeCopiedString (from_s);
+																														}		/* if (from_s) */
+
+																													FreeByteBuffer (buffer_p);
+																												}		/* if (buffer_p) */
+
+																										}		/* if ((from != 0) && (to != 0)) */
+
+																								}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &to, true)) */
+
+																						}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true)) */
+
+																				}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true)) */
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output format");
+																				}
+
+																		}		/*  if (AddArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S)) */
+
+																}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true)) */
+
+														}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_EXPECT_THRESHOLD, "-evalue", true)) */
+
+												}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MISMATCH_SCORE, "-penalty", false)) */
+
+										}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MATCH_SCORE, "-reward", false)) */
+
+								}		/* if (AddArgsPair ("-db", bt_job_p -> sj_name_s))*/
+
+						}		/* if (bt_job_p -> sj_name_s) */
 					else
 						{
-
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job name");
 						}
-				}		/* if (out_fmt_s) */
-			else
-				{
 
-				}
+				}		/* if (AddArgsPair ("-num_alignments", "5")) */
 
-		}		/* if success_flag) */
+		}		/* if (AddArgsPair ("-task", "blastn")) */
 
 	return success_flag;
 }
 
 
-bool ExternalBlastTool :: AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const Tag tag, const char *key_s, const bool unsigned_flag)
+bool ExternalBlastTool :: AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const Tag tag, const char *key_s, const bool unsigned_flag, const bool required_flag)
 {
-	bool success_flag = false;
+	bool success_flag = !required_flag;
 	SharedType value;
 
 	memset (&value, 0, sizeof (SharedType));

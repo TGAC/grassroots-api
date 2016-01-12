@@ -49,7 +49,13 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 
 			if (logfile_s)
 				{
-					success_flag = AddArgsPair (">", logfile_s);
+					if (AddArgsPair (">>", logfile_s))
+						{
+							if (AddArg ("2>&1"))
+								{
+									success_flag = true;
+								}
+						}
 
 					FreeCopiedString (logfile_s);
 				}

@@ -17,6 +17,7 @@
 #define QT_CLIENT_DATA_H
 
 #include <QApplication>
+#include <QLinkedList>
 
 #include "client.h"
 
@@ -32,6 +33,7 @@ typedef struct QTClientData
 	MainWindow *qcd_window_p;
 	ResultsWindow *qcd_results_p;
 	ProgressWindow *qcd_progress_p;
+	QLinkedList <ViewewWidget *> *qcd_viewer_widgets_p;
 	char *qcd_dummy_arg_s;
 	bool qcd_init_flag;
 } QTClientData;
