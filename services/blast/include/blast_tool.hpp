@@ -19,12 +19,15 @@
 #include <vector>
 
 #include "blast_service_api.h"
+
 #include "byte_buffer.h"
 
 #include "service_job.h"
 #include "blast_formatter.h"
 
 
+/* forward declaration */
+struct BlastServiceData;
 
 /**
  * The base class for running Blast.
@@ -33,7 +36,7 @@ class BLAST_SERVICE_LOCAL BlastTool
 {
 public:
 
-	BlastTool (ServiceJob *job_p, const char *name_s);
+	BlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
 	virtual ~BlastTool ();
 
@@ -67,7 +70,7 @@ protected:
 	OperationStatus bt_status;
 	const char *bt_name_s;
 	ServiceJob *bt_job_p;
-
+	const BlastServiceData *bt_service_data_p;
 };
 
 

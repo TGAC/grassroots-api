@@ -57,7 +57,7 @@
 class BLAST_SERVICE_LOCAL ThreadedBlastTool : public SystemBlastTool
 {
 public:
-	ThreadedBlastTool (ServiceJob *service_job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s);
+	ThreadedBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s);
 	virtual ~ThreadedBlastTool ();
 
 	virtual OperationStatus Run ();

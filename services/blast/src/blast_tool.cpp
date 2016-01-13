@@ -18,6 +18,7 @@
 #include <syslog.h>
 
 #include "blast_tool.hpp"
+#include "blast_service.h"
 
 #include "io_utils.h"
 
@@ -68,7 +69,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 					try
 						{
-							drmaa_tool_p = new DrmaaBlastTool (job_p, name_s, working_directory_s, program_name_s, async_flag);
+							drmaa_tool_p = new DrmaaBlastTool (job_p, name_s, data_p, working_directory_s, program_name_s, async_flag);
 						}
 					catch (std :: bad_alloc ex)
 						{
@@ -119,15 +120,7 @@ BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *w
 
 	if (!tool_p)
 		{
-			if (strcmp (BlastTool :: bt_tool_type_s, "queued") == 0)
-				{
-	//				tool_p = new QueuedBlastTool (job_p, name_s, working_directory_s);
-				}
-		}
-
-	if (!tool_p)
-		{
-			tool_p = new SystemBlastTool (job_p, name_s, working_directory_s, program_name_s);
+			tool_p = new SystemBlastTool (job_p, name_s, data_p, working_directory_s, program_name_s);
 		}
 
 
@@ -142,11 +135,12 @@ void FreeBlastTool (BlastTool *tool_p)
 
 
 
-BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s)
+BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p)
 {
 	bt_status = OS_IDLE;
 	bt_job_p = service_job_p;
 	bt_name_s = name_s;
+	bt_service_data_p = data_p;
 
 	SetServiceJobName (service_job_p, name_s);
 }

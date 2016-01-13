@@ -37,7 +37,7 @@ public:
 	static const char * const EBT_INPUT_SUFFIX_S;
 	static const char * const EBT_LOG_SUFFIX_S;
 
-	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s);
+	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s);
 	virtual ~ExternalBlastTool ();
 
 	virtual bool ParseParameters (ParameterSet *params_p);

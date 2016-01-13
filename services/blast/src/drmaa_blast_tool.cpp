@@ -34,8 +34,8 @@
 
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s, bool async_flag)
-: ExternalBlastTool (job_p, name_s, working_directory_s, blast_program_name_s)
+DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s, bool async_flag)
+: ExternalBlastTool (job_p, name_s, data_p, working_directory_s, blast_program_name_s)
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
 
