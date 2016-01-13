@@ -24,7 +24,7 @@
 #include "filesystem_utils.h"
 
 #ifdef _DEBUG
-	#define DRMAA_TOOL_DEBUG (STM_LEVEL_FINE)
+	#define DRMAA_TOOL_DEBUG (STM_LEVEL_FINEST)
 #else
 	#define DRMAA_TOOL_DEBUG (STM_LEVEL_NONE)
 #endif
@@ -502,6 +502,10 @@ static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p)
 {
 	const char **args_ss = (const char **) AllocMemory (((tool_p -> dt_args_p -> ll_size) + 1) * sizeof (const char *));
 
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Entering CreateAndAddArgsArray %16X args size " UINT32_FMT, args_ss, tool_p -> dt_args_p -> ll_size);
+	#endif
+
 	if (args_ss)
 		{
 			const char **arg_ss = args_ss;
@@ -510,18 +514,45 @@ static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p)
 			while (node_p)
 				{
 					*arg_ss = node_p -> sln_string_s;
-					node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+		
+					#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "set arg to \"%s\"", *arg_ss);
+					#endif
+		
+					node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);			
 					++ arg_ss;
 				}
 
 			/* Add the terminating NULL */
 			*arg_ss = NULL;
+
+			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINER
+				{
+					uint32 i;
+					
+					arg_ss = args_ss;
+
+					for (i = 0; i < tool_p -> dt_args_p -> ll_size; ++ i, ++ arg_ss)
+						{
+							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "arg [" UINT32_FMT "] = \"%s\"", i, *arg_ss);
+						}				
+				}
+			#endif
+		
+			if (drmaa_set_vector_attribute (tool_p -> dt_job_p, DRMAA_V_ARGV, args_ss, NULL, 0) != DRMAA_ERRNO_SUCCESS)
+				{
+					PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set args");
+				}
+		}
+	else
+		{
+			PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create args array");
 		}
 
-	if (args_ss)
-		{
-			drmaa_set_vector_attribute (tool_p -> dt_job_p, DRMAA_V_ARGV, args_ss, NULL, 0);
-		}
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Exiting CreateAndAddArgsArray");
+	#endif
+
 
 	return args_ss;
 }
