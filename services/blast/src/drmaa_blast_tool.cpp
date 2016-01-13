@@ -98,14 +98,14 @@ OperationStatus DrmaaBlastTool :: Run ()
 	return bt_job_p -> sj_status;
 }
 
-/*
-bool DrmaaBlastTool :: AddArg (const char *arg_s)
+
+bool DrmaaBlastTool :: AddArg (const char * const arg_s)
 {
 	bool success_flag = AddDrmaaToolArgument (dbt_drmaa_tool_p, arg_s);
 
 	return success_flag;
 }
-*/
+
 
 OperationStatus DrmaaBlastTool :: GetStatus ()
 {

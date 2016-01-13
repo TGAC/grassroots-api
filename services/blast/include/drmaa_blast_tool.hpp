@@ -46,6 +46,9 @@ public:
 
 	virtual bool SetUpOutputFile ();
 
+protected:
+	virtual bool AddArg (const char * const arg_s);
+
 private:
 	DrmaaTool *dbt_drmaa_tool_p;
 	bool dbt_async_flag;
