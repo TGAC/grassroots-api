@@ -25,7 +25,7 @@
 ProgressWidget *ProgressWidget :: CreateProgressWidgetFromJSON (const json_t *json_p, ProgressWindow *parent_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	ProgressWidget *widget_p = NULL;
-	const char *uuid_s = GetJSONString (json_p, SERVICE_UUID_S);
+	const char *uuid_s = GetJSONString (json_p, JOB_UUID_S);
 
 	if (uuid_s)
 		{

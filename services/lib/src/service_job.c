@@ -250,6 +250,7 @@ static bool AddValidJSONString (json_t *parent_p, const char * const key_s, cons
 		{
 			if (json_object_set_new (parent_p, key_s, json_string (value_s)) != 0)
 				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\": \"%s\" for json", key_s, value_s);
 					success_flag = false;
 				}
 		}
@@ -278,6 +279,11 @@ static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *ch
 							success_flag = false;
 						}
 				}
+		}
+
+	if (!success_flag)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add child json for \"%s\" set_as_new_flag: %d", key_s, set_as_new_flag);
 		}
 
 	return success_flag;
@@ -573,9 +579,9 @@ OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 
 json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 {
-	json_t *json_p = json_object ();
+	json_t *job_json_p = json_object ();
 
-	if (json_p)
+	if (job_json_p)
 		{
 			char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 
@@ -584,56 +590,102 @@ json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p)
 
 			if (uuid_s)
 				{
-					if (AddStatusToServiceJobJSON (job_p, json_p))
+					if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (uuid_s)) == 0)
 						{
-							const char *service_name_s = GetServiceName (job_p -> sj_service_p);
-
-							if (job_p -> sj_name_s)
+							#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+							if (job_json_p)
 								{
-									if (json_object_set_new (json_p, JOB_NAME_S, json_string (job_p -> sj_name_s)) != 0)
+									PrintJSONToLog (job_json_p, "Job after adding uuid:", STM_LEVEL_FINER, __FILE__, __LINE__);
+								}
+							#endif
+
+							if (AddStatusToServiceJobJSON (job_p, job_json_p))
+								{
+									const char *service_name_s = GetServiceName (job_p -> sj_service_p);
+
+									#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+									if (job_json_p)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job name %s to job status json", job_p -> sj_name_s);
+											PrintJSONToLog (job_json_p, "Job after adding status:", STM_LEVEL_FINER, __FILE__, __LINE__);
 										}
-								}
+									#endif
 
-							if (job_p -> sj_description_s)
-								{
-									if (json_object_set_new (json_p, JOB_DESCRIPTION_S, json_string (job_p -> sj_description_s)) != 0)
+									if (!AddValidJSONString (job_json_p, JOB_SERVICE_S, service_name_s))
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job description %s to job status json", job_p -> sj_description_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add service %s to job status json", service_name_s);
 										}
-								}
 
-							if (service_name_s)
-								{
-									if (json_object_set_new (json_p, JOB_SERVICE_S, json_string (service_name_s)) != 0)
+#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+if (job_json_p)
+	{
+		PrintJSONToLog (job_json_p, "Job after adding service_name_s:", STM_LEVEL_FINER, __FILE__, __LINE__);
+	}
+#endif
+
+									if (!AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s))
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service %s to job status json", service_name_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add job name %s to job status json", job_p -> sj_name_s);
 										}
-								}
 
-							if (!AddValidJSON (json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false))
+#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+if (job_json_p)
+	{
+		PrintJSONToLog (job_json_p, "Job after adding job_p -> sj_name_s:", STM_LEVEL_FINER, __FILE__, __LINE__);
+	}
+#endif
+									if (!AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add job description %s to job status json", job_p -> sj_description_s);
+										}
+
+#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+if (job_json_p)
+	{
+		PrintJSONToLog (job_json_p, "Job after adding job_p -> sj_description_s:", STM_LEVEL_FINER, __FILE__, __LINE__);
+	}
+#endif
+									if (!AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false))
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job errors to job %s, %s", job_p -> sj_name_s, uuid_s);
+										}
+
+#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+if (job_json_p)
+	{
+		PrintJSONToLog (job_json_p, "Job after adding JOB_ERRORS_S:", STM_LEVEL_FINER, __FILE__, __LINE__);
+	}
+#endif
+								}		/* if (AddStatusToServiceJobJSON (job_p, job_json_p)) */
+							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job errors to job %s, %s", job_p -> sj_name_s, uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to  add status for job uuid \"%s\" to json", uuid_s);
 								}
 
-						}		/* if (AddStatusToServiceJobJSON (job_p, json_p)) */
-
+						}		/* if (json_object_set_new (job_json_p, JOB_UUID_S, uuid_s) == 0) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job uuid \"%s\" as json  for job %s", uuid_s, job_p -> sj_name_s ? job_p -> sj_name_s : "");
+						}
 
 					FreeUUIDString (uuid_s);
+				}		/* if (uuid_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job uuid as string for job %s", job_p -> sj_name_s ? job_p -> sj_name_s : "");
 				}
 
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
-			if (json_p)
+			if (job_json_p)
 				{
-					PrintJSONToLog (json_p, "Job:", STM_LEVEL_FINE, __FILE__, __LINE__);
+					PrintJSONToLog (job_json_p, "Job:", STM_LEVEL_FINE, __FILE__, __LINE__);
 				}
 			#endif
 
 		}		/* if (json_p) */
 
-	return json_p;
+	return job_json_p;
 }
+
 
 
 ServiceJob *CreateServiceJobFromJSON (const json_t *json_p)
