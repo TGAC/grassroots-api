@@ -49,9 +49,6 @@ public:
 private:
 	DrmaaTool *dbt_drmaa_tool_p;
 	bool dbt_async_flag;
-
-	virtual bool AddArg (const char * const arg_s);
-
 };
 
 
