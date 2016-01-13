@@ -305,7 +305,6 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 																	if (success_flag)
 																		{
-
 																			/* Query Location */
 																			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true))
 																				{
@@ -354,7 +353,11 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 
 																				}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true)) */
 
-																		}		/*  if (AddArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S)) */
+																		}		/*  if (success_flag) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output format");
+																		}
 
 																}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true)) */
 
@@ -365,7 +368,10 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 										}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MATCH_SCORE, "-reward", false)) */
 
 								}		/* if (AddArgsPair ("-db", bt_job_p -> sj_name_s))*/
-
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set database name");
+								}
 						}		/* if (bt_job_p -> sj_name_s) */
 					else
 						{
@@ -373,8 +379,16 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 						}
 
 				}		/* if (AddArgsPair ("-num_alignments", "5")) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add num_alignments parameter");
+				}
 
 		}		/* if (AddArgsPair ("-task", "blastn")) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add task parameter");
+		}
 
 	return success_flag;
 }
