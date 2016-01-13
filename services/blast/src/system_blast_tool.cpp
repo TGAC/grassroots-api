@@ -25,8 +25,8 @@
 #include "string_utils.h"
 
 
-SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s, const char *blast_program_name_s)
-: ExternalBlastTool (job_p, name_s, working_directory_s, blast_program_name_s)
+SystemBlastTool :: SystemBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s)
+: ExternalBlastTool (job_p, name_s, data_p, working_directory_s, blast_program_name_s)
 {
 	if (!AddArg (blast_program_name_s))
 		{
