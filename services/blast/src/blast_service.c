@@ -1542,34 +1542,34 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 			if (job_output_filename_s)
 				{
-					if (data_p -> bsd_formatter_p)
+					/* Does the file already exist? */
+					FILE *job_f = fopen (job_output_filename_s, "r");
+
+					if (job_f)
 						{
-							result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
-						}		/* if (data_p -> bsd_formatter_p) */
-					else
-						{
-							FILE *job_f = fopen (job_output_filename_s, "r");
+							result_s = GetFileContentsAsString (job_f);
 
-							if (job_f)
+							if (!result_s)
 								{
-									result_s = GetFileContentsAsString (job_f);
-
-									if (!result_s)
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
-										}
-
-									if (fclose (job_f) != 0)
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
-										}
-								}		/* if (job_f) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't open job file \"%s\"", job_output_filename_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
 								}
 
-						}		/* if (data_p -> bsd_formatter_p) else */
+							if (fclose (job_f) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
+								}
+						}		/* if (job_f) */
+					else
+						{
+							if (data_p -> bsd_formatter_p)
+								{
+									result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
+								}		/* if (data_p -> bsd_formatter_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No formatter specified");
+								}
+						}
 
 				}		/* if (job_output_filename_s) */
 

@@ -158,7 +158,7 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 
 			ConvertUUIDToString (job_key, uuid_s);
 
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding %s at %.16X", uuid_s, job_p);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding %s at 0x.%16X", uuid_s, job_p);
 		}
 	#endif
 
@@ -212,7 +212,8 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 	#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
 	if (job_p)
 		{
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got %s at 0x.16X", uuid_s, job_p -> sj_name_s, job_p);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, Got Job 0x.%16X", uuid_s, job_p);
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Job name %s", job_p -> sj_name_s);
 		}
 	else
 		{

@@ -412,8 +412,8 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						break;
 
 					case PT_TABLE:
-							widget_p = new ParamTableWidget (param_p, qpw_prefs_widget_p);
-							break;
+						widget_p = new ParamTableWidget (param_p, qpw_prefs_widget_p);
+						break;
 
 					default:
 							break;
