@@ -716,7 +716,7 @@ static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const
 					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
-							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
+							json_object_set_new (status_p, ERROR_S, json_string ("Failed to find uuid in services table"));
 						}
 				}
 			else
@@ -790,7 +790,7 @@ static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const cha
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
 
-			service_result_p = json_pack ("{s:s,s:s}", SERVICE_UUID_S, uuid_s, ERROR_S, "Failed to fine uuid in services table");
+			service_result_p = json_pack ("{s:s,s:s}", SERVICE_UUID_S, uuid_s, ERROR_S, "Failed to find uuid in services table");
 		}
 
 	return success_flag;
@@ -947,7 +947,7 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
-							json_object_set_new (status_p, ERROR_S, json_string ("Failed to fine uuid in services table"));
+							json_object_set_new (status_p, ERROR_S, json_string ("Failed to find uuid in services table"));
 						}
 				}
 			else

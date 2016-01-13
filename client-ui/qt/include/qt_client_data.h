@@ -24,7 +24,7 @@
 #include "main_window.h"
 #include "results_window.h"
 #include "progress_window.h"
-
+#include "viewer_widget.h"
 
 typedef struct QTClientData
 {
@@ -33,7 +33,7 @@ typedef struct QTClientData
 	MainWindow *qcd_window_p;
 	ResultsWindow *qcd_results_p;
 	ProgressWindow *qcd_progress_p;
-	QLinkedList <ViewewWidget *> *qcd_viewer_widgets_p;
+	QLinkedList <ViewerWidget *> *qcd_viewer_widgets_p;
 	char *qcd_dummy_arg_s;
 	bool qcd_init_flag;
 } QTClientData;

@@ -126,7 +126,7 @@ static QTClientData *AllocateQTClientData (void)
 
 					data_p -> qcd_progress_p = new ProgressWindow (data_p -> qcd_window_p, data_p);
 
-					data_p -> qcd_viewer_widgets_p = new QLinkedList <ViewewWidget *>;
+					data_p -> qcd_viewer_widgets_p = new QLinkedList <ViewerWidget *>;
 
 					data_p -> qcd_init_flag = false;
 				}

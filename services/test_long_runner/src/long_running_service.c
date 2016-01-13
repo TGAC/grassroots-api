@@ -284,8 +284,8 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 
 			for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ job_p, ++ task_p)
 				{
-					/* get a randomish duration between 0 and 60 seconds */
-					size_t duration = rand () % 60;
+					/* get a randomish duration between 1 and 60 seconds */
+					size_t duration = 1 + (rand () % 60);
 					char buffer_s [256];
 
 					task_p -> tt_job_p = job_p;
