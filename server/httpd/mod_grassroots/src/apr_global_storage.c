@@ -401,7 +401,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 
 							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
-							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s result_p %.16X remove_flag %d", status, key_s, result_p, remove_flag);
+							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s result_p %0.16X remove_flag %d", status, key_s, temp_p, remove_flag);
 							#endif
 
 							if (status == APR_SUCCESS)
@@ -424,7 +424,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"status %d key %s result_p %.16X remove_flag %d", status, key_s, result_p, remove_flag);
+									PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"status %d key %s result_p %0.16X remove_flag %d", status, key_s, temp_p, remove_flag);
 									FreeMemory (temp_p);
 								}
 

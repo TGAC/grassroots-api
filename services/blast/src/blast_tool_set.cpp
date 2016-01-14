@@ -50,9 +50,39 @@ BlastToolSet :: ~BlastToolSet ()
 		{
 			for (size_t i = 0; i < size; ++ i)
 				{
+					BlastTool *tool_p = bts_tools.back ();
+
 					bts_tools.pop_back ();
+
+					if (tool_p)
+						{
+							delete tool_p;
+						}
 				}
 		}
+}
+
+
+bool BlastToolSet :: ClearEntry (BlastTool *tool_to_clear_p)
+{
+	bool removed_flag = false;
+	const size_t size = bts_tools.size ();
+
+	if (size > 0)
+		{
+			for (size_t i = 0; i < size; ++ i)
+				{
+					BlastTool *tool_p = bts_tools [i];
+
+					if (tool_p == tool_to_clear_p)
+						{
+							bts_tools [i] = 0;
+							removed_flag = true;
+						}
+				}
+		}
+
+	return removed_flag;
 }
 
 

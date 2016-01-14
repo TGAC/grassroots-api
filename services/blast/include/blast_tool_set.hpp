@@ -44,6 +44,8 @@ public:
 
 	size_t GetSize () const;
 
+	bool ClearEntry (BlastTool *tool_p);
+
 private:
 	vector <BlastTool *> bts_tools;
 	Service *bts_service_p;

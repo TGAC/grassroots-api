@@ -781,6 +781,7 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 			BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 			BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetBlastTool (job_id);
 
+
 			if (tool_p)
 				{
 					OperationStatus status = tool_p -> GetStatus ();
@@ -804,8 +805,10 @@ static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t job_id)
 												}
 										}
 
-									tool_p -> ClearResults ();
-								}
+									/* remove the tool from our set and delete it */
+									blast_data_p -> bsd_blast_tools_p -> ClearEntry (tool_p);
+									delete tool_p;
+								}		/* if (result_s) */
 						}
 					else
 						{
