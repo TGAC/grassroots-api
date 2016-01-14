@@ -101,12 +101,16 @@ BlastTool *BlastToolSet :: GetBlastTool (const uuid_t id)
 			for (size_t i = 0; i < size; ++ i)
 				{
 					BlastTool *tool_p = bts_tools [i];
-					const uuid_t &tool_id = tool_p -> GetUUID ();
 
-					if (uuid_compare (id, tool_id) == 0)
+					if (tool_p)
 						{
-							return tool_p;
-						}
+							const uuid_t &tool_id = tool_p -> GetUUID ();
+
+							if (uuid_compare (id, tool_id) == 0)
+								{
+									return tool_p;
+								}
+						}		/* if (tool_p) */
 				}
 		}
 
