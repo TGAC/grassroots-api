@@ -53,7 +53,7 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const B
 DrmaaBlastTool :: ~DrmaaBlastTool ()
 {
 	#if DRMAA_BLAST_TOOL_DEBUG >= STM_LEVEL_FINEST
-	char buffer_s [UUID_STRING_BUFFER_SIZE];
+	char uuid_s [UUID_STRING_BUFFER_SIZE];
 
 	ConvertUUIDToString (bt_job_p -> sj_id, dbt_drmaa_tool_p -> dt_id_s);
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Entering ~DrmaaBlastTool for %s with job id %s", buffer_s, dbt_drmaa_tool_p -> dt_id_s);
