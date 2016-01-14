@@ -1567,6 +1567,10 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 										}
 								}		/* if (job_f) */
 						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't create job filename for \"%s\" and code " UINT32_FMT, job_output_filename_s, output_format_code);
+						}
 
 					if (!result_s)
 						{
