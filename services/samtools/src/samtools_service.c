@@ -32,11 +32,18 @@
 	#define SAMTOOLS_SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
 
+
+typedef struct IndexData
+{
+	const char *id_blast_db_name_s;
+	const char *id_fasta_filename_s;
+} IndexData;
+
 typedef struct SamToolsServiceData
 {
 	ServiceData stsd_base_data;
-	const char **stsd_index_files_ss;
-	size_t stsd_num_index_files;
+	IndexData *stsd_index_data_p;
+	size_t stsd_index_data_size;
 } SamToolsServiceData;
 
 
@@ -72,12 +79,11 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t servic
 
 static bool CleanUpSamToolsJob (ServiceJob *job_p);
 
-
 static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, int break_index, ByteBuffer *buffer_p);
 
 static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p);
 
-static const char *GetIndexFilenameFromBlastDBName (const json_t * const data_p, const char * const blast_s);
+
 
 /*
  * API FUNCTIONS
@@ -158,19 +164,20 @@ static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p)
 						{
 							size_t size = json_array_size (index_files_p);
 
-							data_p -> stsd_index_files_ss = (const char **) AllocMemoryArray (sizeof (const char *), size);
+							data_p -> stsd_index_data_p = (IndexData *) AllocMemoryArray (sizeof (IndexData), size);
 
-							if (data_p -> stsd_index_files_ss)
+							if (data_p -> stsd_index_data_p)
 								{
 									size_t i;
 									json_t *index_file_p;
 
 									json_array_foreach (index_files_p, i, index_file_p)
 										{
-											* ((data_p -> stsd_index_files_ss) + i) = json_string_value (index_file_p);
+											((data_p -> stsd_index_data_p) + i) -> id_blast_db_name_s = GetJSONString (index_file_p, BLASTDB_S);
+											((data_p -> stsd_index_data_p) + i) -> id_fasta_filename_s = GetJSONString (index_file_p, FASTA_FILENAME_S);
 										}
 
-									data_p -> stsd_num_index_files = size;
+									data_p -> stsd_index_data_size = size;
 
 									success_flag = true;
 								}
@@ -178,14 +185,16 @@ static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p)
 						}
 					else
 						{
-							if (json_is_string (index_files_p))
+							if (json_is_object (index_files_p))
 								{
-									data_p -> stsd_index_files_ss = (const char **) AllocMemoryArray (sizeof (const char *), 1);
+									data_p -> stsd_index_data_p = (IndexData *) AllocMemoryArray (sizeof (IndexData), 1);
 
-									if (data_p -> stsd_index_files_ss)
+									if (data_p -> stsd_index_data_p)
 										{
-											* (data_p -> stsd_index_files_ss) = json_string_value (index_files_p);
-											data_p -> stsd_num_index_files = 1;
+											data_p -> stsd_index_data_p -> id_blast_db_name_s = GetJSONString (index_files_p, BLASTDB_S);
+											data_p -> stsd_index_data_p -> id_fasta_filename_s = GetJSONString (index_files_p, FASTA_FILENAME_S);
+
+											data_p -> stsd_index_data_size = 1;
 
 											success_flag = true;
 										}
@@ -207,8 +216,8 @@ static SamToolsServiceData *AllocateSamToolsServiceData (Service *service_p)
 
 	if (data_p)
 		{
-			data_p -> stsd_index_files_ss = NULL;
-			data_p -> stsd_num_index_files = 0;
+			data_p -> stsd_index_data_p = NULL;
+			data_p -> stsd_index_data_size = 0;
 
 			return data_p;
 		}
@@ -219,9 +228,9 @@ static SamToolsServiceData *AllocateSamToolsServiceData (Service *service_p)
 
 static void FreeSamToolsServiceData (SamToolsServiceData *data_p)
 {
-	if (data_p -> stsd_index_files_ss)
+	if (data_p -> stsd_index_data_p)
 		{
-			FreeMemory (data_p -> stsd_index_files_ss);
+			FreeMemory (data_p -> stsd_index_data_p);
 		}
 	FreeMemory (data_p);
 }
@@ -256,16 +265,23 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 			SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
 			Parameter *param_p = NULL;
 			SharedType def;
-			char *filename_s = NULL;
+			const char *filename_s = NULL;
 
-			if (data_p -> stsd_index_files_ss)
+			if (data_p -> stsd_index_data_p)
 				{
-					filename_s = (char *) (* (data_p -> stsd_index_files_ss));
+					if (data_p -> stsd_index_data_p -> id_fasta_filename_s)
+						{
+							filename_s = data_p -> stsd_index_data_p -> id_fasta_filename_s;
+						}
+					else
+						{
+							filename_s = data_p -> stsd_index_data_p -> id_blast_db_name_s;
+						}
 				}
 
 			if (filename_s)
 				{
-					def.st_string_value_s = filename_s;
+					def.st_string_value_s = (char *) filename_s;
 
 					if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_STRING, false, "Index", "Fasta Index filename", "Fasta Index filename", TAG_SAMTOOLS_FILENAME, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
@@ -286,8 +302,6 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 										}
 								}
 						}
-
-					FreeCopiedString (filename_s);
 				}		/* if (filename_s) */
 
 			FreeParameterSet (param_set_p);
@@ -310,45 +324,6 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t job_id
 
 	return resource_json_p;
 }
-
-
-static const char *GetIndexFilenameFromBlastDBName (const json_t * const data_p, const char * const blast_s)
-{
-	const char *index_s = NULL;
-	const json_t *value_p = json_object_get (data_p, BLASTDB_S);
-
-	if (value_p)
-		{
-			if (json_is_string (value_p))
-				{
-					const char * value_s = json_string_value (value_p);
-
-					if (strcmp (value_s, blast_s) == 0)
-						{
-							const json_t *fai_p = json_object_get (data_p, FASTA_FILENAME_S);
-
-							if (fai_p)
-								{
-									if (json_is_string (fai_p))
-										{
-											index_s = json_string_value (fai_p);
-
-											#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Matched index file \"%s\" from blast db \"%s\"", index_s, blast_s);
-											#endif
-										}
-								}
-						}
-				}
-		}
-
-	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Index file \"%s\" for blast db \"%s\"", index_s ? index_s : "NULL", blast_s);
-	#endif
-
-	return index_s;
-}
-
 
 
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
@@ -382,43 +357,44 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 			if (!filename_s)
 				{
 					param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_SAMTOOLS_BLASTDB_FILENAME);
+
 					if (param_p)
 						{
-							if (!IsStringEmpty (param_p -> pa_current_value.st_string_value_s))
+							const char *blast_db_s = param_p -> pa_current_value.st_string_value_s;
+
+							if (!IsStringEmpty (blast_db_s))
 								{
-									const char *blast_db_s = param_p -> pa_current_value.st_string_value_s;
-
-									if (blast_db_s)
+									if (data_p -> stsd_index_data_p)
 										{
-											const json_t *indexes_p = json_object_get (data_p -> stsd_base_data.sd_config_p, "index_files");
+											IndexData *index_data_p = data_p -> stsd_index_data_p;
+											size_t i = data_p ->  stsd_index_data_size;
 
-											if (indexes_p)
+											while (i > 0)
 												{
-													if (json_is_array (indexes_p))
+													if (index_data_p -> id_blast_db_name_s)
 														{
-															size_t i;
-															const size_t num_indexes = json_array_size (indexes_p);
-
-															for (i = 0; i < num_indexes; ++ i)
+															if (strcmp (index_data_p -> id_blast_db_name_s, blast_db_s) == 0)
 																{
-																	json_t *value_p = json_array_get (indexes_p, i);
-
-																	filename_s = GetIndexFilenameFromBlastDBName (value_p, blast_db_s);
-
-																	if (filename_s)
-																		{
-																			i = num_indexes;
-																		}
+																	filename_s = index_data_p -> id_fasta_filename_s;
+																	i = 0;
+																}
+															else
+																{
+																	-- i;
 																}
 														}
 													else
 														{
-															filename_s = GetIndexFilenameFromBlastDBName (indexes_p, blast_db_s);
+															-- i;
 														}
 												}
-										}
-								}
-						}
+
+										}		/* if (data_p -> stsd_index_data_p) */
+
+								}		/* if (!IsStringEmpty (blast_db_s)) */
+
+						}		/* if (param_p) */
+
 				}		/* if (!filename_s) */
 
 			if (filename_s)
@@ -449,9 +425,55 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 											break_index = 0;
 											if (GetScaffoldData (data_p, filename_s, scaffold_s, break_index, buffer_p))
 												{
-													const char *sequence_s = GetByteBufferData (buffer_p);
-													json_error_t error;
-													json_t *res_p = json_pack_ex (&error, 0, "{s:s}", "scaffold", sequence_s);
+													json_t *res_p = json_array ();
+
+													if (res_p)
+														{
+															const char *sequence_s = GetByteBufferData (buffer_p);
+
+															if (sequence_s)
+																{
+																	json_t *sequence_p = json_string (sequence_s);
+
+																	if (sequence_p)
+																		{
+																			json_t *result_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, scaffold_s, sequence_p);
+
+																			if (result_p)
+																				{
+																					if (json_array_append_new (res_p, result_p) != 0)
+																						{
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to append json result for %s", sequence_s);
+																							json_decref (result_p);
+																						}
+																				}
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get json result for %s", sequence_s);
+																				}
+
+																			json_decref (sequence_p);
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json sequence from %s", sequence_s);
+																		}
+																}		/* if (sequence_s) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get sequence from buffer for %s from %s", scaffold_s, filename_s);
+																}
+
+															if (json_array_size (res_p) == 0)
+																{
+																	json_decref (res_p);
+																	res_p = NULL;
+																}
+														}		/* if (res_p) */
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json results array for %s", scaffold_s);
+														}
 
 													if (res_p)
 														{
@@ -461,7 +483,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 													else
 														{
 															json_error_t error;
-															job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "Create sequence error", sequence_s);
+															job_p -> sj_errors_p = json_pack_ex (&error, 0, "[{s:s}]", "Create sequence error", scaffold_s);
 															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
 														}
 												}

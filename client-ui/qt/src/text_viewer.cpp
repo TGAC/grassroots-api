@@ -30,7 +30,7 @@ TextViewer :: TextViewer (QWidget *parent_p)
 	tv_menubar_p -> addMenu (menu_p);
 	layout_p -> addWidget (tv_menubar_p);
 
-	tv_editor_p = new QTextEdit;
+	tv_editor_p = new QPlainTextEdit;
 	layout_p -> addWidget (tv_editor_p);
 
 	setLayout (layout_p);

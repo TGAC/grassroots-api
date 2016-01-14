@@ -17,6 +17,7 @@
 #define TEXT_VIEWER_H
 
 #include <QWidget>
+#include <QPlainTextEdit>
 #include <QTextEdit>
 #include <QMouseEvent>
 #include <QMenu>
@@ -35,7 +36,7 @@ public:
 	virtual QWidget *GetWidget ();
 
 protected:
-	QTextEdit *tv_editor_p;
+	QPlainTextEdit *tv_editor_p;
 	QMenuBar *tv_menubar_p;
 
 private:

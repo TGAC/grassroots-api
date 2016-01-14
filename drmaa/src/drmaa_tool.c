@@ -130,7 +130,7 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 
 
 	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_args_p");
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_program_name_s");
 	#endif
 	FreeCopiedString (tool_p -> dt_program_name_s);
 
@@ -438,8 +438,10 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 							success_flag = true;
 						}
 
+					/*
 					drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
 					tool_p -> dt_job_p = NULL;
+					*/
 
 					if (success_flag)
 						{
