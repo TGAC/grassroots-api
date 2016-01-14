@@ -1546,23 +1546,29 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 			if (job_output_filename_s)
 				{
 					/* Does the file already exist? */
-					FILE *job_f = fopen (job_output_filename_s, "r");
+					char *converted_filename_s = BlastFormatter :: GetConvertedOutputFilename (job_output_filename_s, output_format_code, NULL);
 
-					if (job_f)
+					if (converted_filename_s)
 						{
-							result_s = GetFileContentsAsString (job_f);
+							FILE *job_f = fopen (converted_filename_s, "r");
 
-							if (!result_s)
+							if (job_f)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
-								}
+									result_s = GetFileContentsAsString (job_f);
 
-							if (fclose (job_f) != 0)
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
-								}
-						}		/* if (job_f) */
-					else
+									if (!result_s)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
+										}
+
+									if (fclose (job_f) != 0)
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
+										}
+								}		/* if (job_f) */
+						}
+
+					if (!result_s)
 						{
 							if (data_p -> bsd_formatter_p)
 								{
@@ -1585,5 +1591,6 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 	return result_s;
 }
+
 
 

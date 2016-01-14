@@ -34,7 +34,9 @@ public:
 	BlastFormatter ();
 	virtual ~BlastFormatter ();
 
-	virtual char *GetConvertedOutput (const char * const input_filename_s, const int output_format_code) = 0;
+	static char *GetConvertedOutputFilename (const char * const filename_s, const int output_format_code, char **output_format_code_ss);
+
+	virtual char *GetConvertedOutput (const char * const input_filename_s, const uint32 output_format_code) = 0;
 };
 
 
@@ -44,7 +46,7 @@ public:
 	static SystemBlastFormatter *Create (const json_t *config_p);
 	virtual ~SystemBlastFormatter ();
 
-	virtual char *GetConvertedOutput (const char * const input_filename_s, const int output_format_code);
+	virtual char *GetConvertedOutput (const char * const input_filename_s, const uint32 output_format_code);
 
 protected:
 	const char *sbf_blast_formatter_command_s;
