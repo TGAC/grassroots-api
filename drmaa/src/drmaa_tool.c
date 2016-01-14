@@ -110,21 +110,45 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 {
 	FileInformation fi;
 
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "entering FreeDrmaaTool");
+	#endif
+
 	if (tool_p -> dt_job_p)
 		{
+			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_job_p");
+			#endif
+
 			drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
 		}
 
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_args_p");
+	#endif
 	FreeLinkedList (tool_p -> dt_args_p);
+
+
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_args_p");
+	#endif
 	FreeCopiedString (tool_p -> dt_program_name_s);
 
 	if (tool_p -> dt_queue_name_s)
 		{
+			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_args_p");
+			#endif
+
 			FreeCopiedString (tool_p -> dt_queue_name_s);
 		}
 
 	if (tool_p -> dt_email_addresses_ss)
 		{
+			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_email_addresses_ss");
+			#endif
+
 			FreeStringArray (tool_p -> dt_email_addresses_ss);
 		}
 
@@ -135,6 +159,10 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 					/* If the stdout/stderr file is empty, then delete it */
 					if (fi.fi_size == 0)
 						{
+							#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "removing file \"%s\"", tool_p -> dt_output_filename_s);
+							#endif
+
 							if (!RemoveFile (tool_p -> dt_output_filename_s))
 								{
 									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to delete file \"%s\"", tool_p -> dt_output_filename_s);
@@ -146,9 +174,15 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get file size for \"%s\"", tool_p -> dt_output_filename_s);
 				}
 
+			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_output_filename_s");
+			#endif
 			FreeCopiedString (tool_p -> dt_output_filename_s);
 		}
 
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting tool_p");
+	#endif
 	FreeMemory (tool_p);
 }
 
