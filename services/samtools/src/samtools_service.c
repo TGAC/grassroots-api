@@ -49,7 +49,7 @@ typedef struct SamToolsServiceData
 
 static const int ST_DEFAULT_LINE_BREAK_INDEX = 60;
 
-static const char * const BLASTDB_S = "Blast";
+static const char * const BLASTDB_S = "Blast database";
 static const char * const FASTA_FILENAME_S = "Fasta";
 
 
