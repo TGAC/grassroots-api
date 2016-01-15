@@ -76,6 +76,8 @@ static json_t *GetServiceResultsAsJSON (const json_t * const req_p, const json_t
 
 static json_t *GetServiceData (const json_t * const req_p, const json_t *credentials_p, bool (*callback_fn) (json_t *services_p, uuid_t service_id, const char *uuid_s));
 
+static bool AddServiceDataToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s, const char * const identifier_s, json_t *(*get_job_json_fn) (ServiceJob *job_p));
+
 static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
 
 static bool AddServiceResultsToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s);
@@ -679,201 +681,124 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 }
 
 
-static bool AddServiceStatusToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s)
-{
-	bool success_flag = false;
-	json_t *status_p = json_object ();
-
-	if (status_p)
-		{
-			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
-				{
-					JobsManager *manager_p = GetJobsManager ();
-					ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, service_id);
-
-					if (job_p)
-						{
-							OperationStatus status = GetServiceJobStatus (job_p);
-							const char *service_name_s = GetServiceName (job_p -> sj_service_p);
-
-							success_flag = true;
-
-							if (json_object_set_new (status_p, SERVICE_NAME_S, json_string (service_name_s)) != 0)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service name %s to status json", service_name_s);
-									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service name to status json"));
-									success_flag = false;
-								}
-
-							if (json_object_set_new (status_p, SERVICE_STATUS_VALUE_S, json_integer (status)) != 0)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service status for name %s to status json", service_name_s);
-									json_object_set_new (status_p, ERROR_S, json_string ("Failed to add service status to status json"));
-									success_flag = false;
-								}
-
-						}		/* if (service_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
-							json_object_set_new (status_p, ERROR_S, json_string ("Failed to find uuid in services table"));
-						}
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service uuid_s %s to status json", uuid_s);
-					json_object_set_new (status_p, ERROR_S, json_string ("Failed to add uuid to status json"));
-				}
-
-			success_flag = (json_array_append_new (services_p, status_p ) == 0);
-		}		/* if (status_p) */
-
-	return success_flag;
-}
-
-
-static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
+static bool AddServiceDataToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s, const char * const identifier_s, json_t *(*get_job_json_fn) (ServiceJob *job_p))
 {
 	bool success_flag = false;
 	JobsManager *manager_p = GetJobsManager ();
 	ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, job_id);
-	json_t *service_result_p = NULL;
+	json_t *job_json_p = NULL;
 
 	if (job_p)
 		{
-			const OperationStatus status = GetServiceJobStatus (job_p);
-			const char *service_name_s = GetServiceName (job_p -> sj_service_p);
+			job_json_p = get_job_json_fn (job_p);
 
-			/* Check that the service has finished */
-			if (status == OS_SUCCEEDED || status == OS_FINISHED)
+			if (!job_json_p)
 				{
-					service_result_p = GetServiceResults (job_p -> sj_service_p, job_id);
-					success_flag = true;
-				}		/* if (status == OS_SUCCEEDED || status == OS_FINISHED) */
-			else
-				{
-					service_result_p = json_pack ("{s:s,s:s,s:i}", SERVICE_NAME_S, service_name_s, SERVICE_UUID_S, uuid_s, SERVICE_STATUS_VALUE_S, status);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job %s for \"%s\" %s", identifier_s, job_p -> sj_name_s ? job_p -> sj_name_s : "", uuid_s);
 				}
-
-			if (service_result_p)
-				{
-					if (json_is_array (service_result_p))
-						{
-							size_t i;
-							json_t *result_item_p;
-
-							json_array_foreach (service_result_p, i, result_item_p)
-								{
-									if (json_array_append_new (results_p, result_item_p) != 0)
-										{
-											json_object_clear (result_item_p);
-											json_decref (result_item_p);
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service result for %s %s", service_name_s, uuid_s);
-										}
-
-
-								}		/* json_array_foreach (service_result_p, i, result_item_p) */
-
-						}
-					else if (json_is_object (service_result_p))
-						{
-							if (json_array_append_new (results_p, service_result_p) != 0)
-								{
-									json_object_clear (service_result_p);
-									json_decref (service_result_p);
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service result for %s %s", service_name_s, uuid_s);
-								}
-						}
-				}
-		}		/* if (service_p) */
+		}		/* if (job_p) */
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find %s in services table", uuid_s);
 
-			service_result_p = json_pack ("{s:s,s:s}", SERVICE_UUID_S, uuid_s, ERROR_S, "Failed to find uuid in services table");
+			job_json_p = json_pack ("{s:s,s:s}", JOB_UUID_S, uuid_s, ERROR_S, "Failed to find uuid in services table");
+
+			if (!job_json_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get create error json for %s", uuid_s);
+				}
+		}
+
+	if (job_json_p)
+		{
+			if (json_array_append_new (results_p, job_json_p) != 0)
+				{
+					json_decref (job_json_p);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s for \"%s\" %s", identifier_s, job_p -> sj_name_s ? job_p -> sj_name_s : "", uuid_s);
+				}
 		}
 
 	return success_flag;
 }
 
+static bool AddServiceStatusToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
+{
+	return AddServiceDataToJSON (results_p, job_id, uuid_s, "status", GetServiceJobStatusAsJSON);
+}
+
+
+static bool AddServiceResultsToJSON (json_t *results_p, uuid_t job_id, const char *uuid_s)
+{
+	return AddServiceDataToJSON (results_p, job_id, uuid_s, "results", GetServiceJobAsJSON);
+}
+
 
 static json_t *GetServiceData (const json_t * const req_p, const json_t *credentials_p, bool (*callback_fn) (json_t *services_p, uuid_t service_id, const char *uuid_s))
 {
-	json_t *res_p = json_object ();
+	json_t *results_array_p = json_array ();
 
-	if (res_p)
+	if (results_array_p)
 		{
-			json_t *res_services_p = json_array ();
+			json_t *service_uuids_json_p = json_object_get (req_p, SERVICES_NAME_S);
 
-			if (res_services_p)
+			if (service_uuids_json_p)
 				{
-					if (json_object_set_new (res_p, SERVICES_NAME_S, res_services_p) == 0)
+					if (json_is_array (service_uuids_json_p))
 						{
-							json_t *service_uuids_json_p = json_object_get (req_p, SERVICES_NAME_S);
+							size_t i;
+							json_t *service_uuid_json_p;
+							size_t num_successes = 0;
+							size_t num_uuids = json_array_size (service_uuids_json_p);
 
-							if (service_uuids_json_p)
+							json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
 								{
-									if (json_is_array (service_uuids_json_p))
+									if (json_is_string (service_uuid_json_p))
 										{
-											size_t i;
-											json_t *service_uuid_json_p;
-											size_t num_successes = 0;
-											size_t num_uuids = json_array_size (service_uuids_json_p);
+											const char *uuid_s = json_string_value (service_uuid_json_p);
+											uuid_t service_id;
 
-											json_array_foreach (service_uuids_json_p, i, service_uuid_json_p)
+											if (ConvertStringToUUID (uuid_s, service_id))
 												{
-													if (json_is_string (service_uuid_json_p))
+													if (callback_fn (results_array_p, service_id, uuid_s))
 														{
-															const char *uuid_s = json_string_value (service_uuid_json_p);
-															uuid_t service_id;
+															++ num_successes;
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add callback json results for \"%s\"", uuid_s);
+														}
 
-															if (ConvertStringToUUID (uuid_s, service_id))
-																{
-																	if (callback_fn (res_services_p, service_id, uuid_s))
-																		{
-																			++ num_successes;
-																		}
-																}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
-
-														}		/* if (json_is_string (service_uuid_json_p)) */
-
-												}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
-
-
-											if (num_uuids == num_successes)
+												}		/* if (ConvertStringToUUID (uuid_s, service_id)) */
+											else
 												{
-													//CloseService (job_p -> sj_service_p);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to convert \"%s\" to uuid", uuid_s);
 												}
 
-										}
+										}		/* if (json_is_string (service_uuid_json_p)) */
 									else
 										{
-
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "service_uuid_json_p is %d not a string", json_typeof (service_uuid_json_p));
 										}
 
-								}		/* if (service_uuids_json_p) */
-						}
+								}		/* json_array_foreach (service_uuids_json_p, i, service_uuid_json_p) */
+
+
+							if (num_uuids == num_successes)
+								{
+									//CloseService (job_p -> sj_service_p);
+								}
+
+						}		/* if (json_is_array (service_uuids_json_p)) */
 					else
 						{
-							const char error_s [] = "Failed to add services array to services status json";
-
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, error_s);
-							json_object_set_new (res_p, ERROR_S, json_string (error_s));
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "service_uuids_json_p is %d not an array", json_typeof (service_uuids_json_p));
 						}
 
-				}		/* if (res_services_p) */
-			else
-				{
-					const char error_s [] = "Failed to get services array to services status json";
+				}		/* if (service_uuids_json_p) */
 
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, error_s);
-					json_object_set_new (res_p, ERROR_S, json_string (error_s));
-				}
+		}		/* if (results_array_p) */
 
-		}		/* if (res_p) */
-
-	return res_p;
-
+	return results_array_p;
 }
 
 

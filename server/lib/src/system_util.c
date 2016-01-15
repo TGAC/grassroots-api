@@ -30,6 +30,8 @@
 #endif
 
 
+static bool s_is_multi_process_system_flag = false;
+
 bool InitInformationSystem ()
 {
 	bool res_flag = false;
@@ -88,5 +90,17 @@ bool DestroyInformationSystem ()
 
 
 	return res_flag;
+}
+
+
+void SetMultiProcessSystem (bool b)
+{
+	s_is_multi_process_system_flag = b;
+}
+
+
+bool IsMultiProcessSystem (void)
+{
+	return s_is_multi_process_system_flag;
 }
 

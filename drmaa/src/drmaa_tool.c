@@ -48,7 +48,10 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 
 	if (tool_p)
 		{
-			if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS)
+			char error_s [DRMAA_ERROR_STRING_BUFFER];
+			int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
+
+			if (err_code == DRMAA_ERRNO_SUCCESS)
 				{
 					tool_p -> dt_program_name_s = CopyToNewString (program_name_s, 0, false);
 
@@ -96,8 +99,18 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 
 						}		/* if (tool_p -> dt_program_name_s) */
 
-					drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
+					err_code = drmaa_delete_job_template (tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+					if (err_code != DRMAA_ERRNO_SUCCESS)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_delete_job_template failed with error code %d \"%s\"", err_code, error_s);
+						}
+
 				}		/* if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_allocate_job_template failed with error code %d \"%s\"", err_code, error_s);
+				}
 
 			FreeMemory (tool_p);
 		}
@@ -116,11 +129,19 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 
 	if (tool_p -> dt_job_p)
 		{
+			int err_code;
+			char error_s [DRMAA_ERROR_STRING_BUFFER];
+
 			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
 			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_job_p");
 			#endif
 
-			drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
+			err_code = drmaa_delete_job_template (tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+			if (err_code != DRMAA_ERRNO_SUCCESS)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_delete_job_template failed with error code %d \"%s\"", err_code, error_s);
+				}
 		}
 
 	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
@@ -430,40 +451,35 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 
 			if (args_ss)
 				{
+					char error_s [DRMAA_ERROR_STRING_BUFFER];
+
 					/*run a job*/
-					int result = drmaa_run_job (tool_p -> dt_id_s, sizeof (tool_p -> dt_id_s) - 1, tool_p -> dt_job_p, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
+					int result = drmaa_run_job (tool_p -> dt_id_s, sizeof (tool_p -> dt_id_s) - 1, tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 					if (result == DRMAA_ERRNO_SUCCESS)
-						{
-							success_flag = true;
-						}
-
-					/*
-					drmaa_delete_job_template (tool_p -> dt_job_p, NULL, 0);
-					tool_p -> dt_job_p = NULL;
-					*/
-
-					if (success_flag)
 						{
 							if (!async_flag)
 								{
 									int stat;
 
 									result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, &stat,
-										DRMAA_TIMEOUT_WAIT_FOREVER, NULL, tool_p -> dt_diagnosis_s, sizeof (tool_p -> dt_diagnosis_s) - 1);
+										DRMAA_TIMEOUT_WAIT_FOREVER, NULL, error_s, DRMAA_ERROR_STRING_BUFFER);
 
-									success_flag = (result == DRMAA_ERRNO_SUCCESS) ? true : false;
-
-									if (success_flag)
+									if (result == DRMAA_ERRNO_SUCCESS)
 										{
 											int exited;
 											int exit_status;
 
-											drmaa_wifexited (&exited, stat, NULL, 0);
+											success_flag = true;
+
+											if (drmaa_wifexited (&exited, stat, error_s, DRMAA_ERROR_STRING_BUFFER) == 0)
+												{
+													PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "job <%s> may not have finished correctly", tool_p -> dt_id_s, exit_status);
+												}
 
 											if (exited)
 												{
-													drmaa_wexitstatus (&exit_status, stat, NULL, 0);
+													drmaa_wexitstatus (&exit_status, stat, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 													PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
 												}
@@ -471,12 +487,13 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 												{
 													int signal_status;
 
-													drmaa_wifsignaled (&signal_status, stat, NULL, 0);
+													drmaa_wifsignaled (&signal_status, stat, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 													if (signal_status)
 														{
 															char termsig [DRMAA_SIGNAL_BUFFER+1];
-															drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, stat, NULL, 0);
+															drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, stat, error_s, DRMAA_ERROR_STRING_BUFFER);
+
 															PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
 														}
 													else
@@ -484,14 +501,33 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 															PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "job <%s> is aborted\n", tool_p -> dt_id_s);
 														}
 												}
+
+										}		/* if (result == DRMAA_ERRNO_SUCCESS) */
+									else
+										{
+											PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_wait failed with code %d, \"%s", result, error_s);
 										}
+
 								}		/* if (!async_flag) */
+
+						}		/* if (result == DRMAA_ERRNO_SUCCESS) */
+					else
+						{
+							PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_run_job failed with code %d, \"%s", result, error_s);
 						}
 
 					FreeAndRemoveArgsArray (tool_p, args_ss);
 				}		/* if (args_ss) */
+			else
+				{
+					PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build args array");
+				}
 
 		}		/* if (BuildNativeSpecification (tool_p)) */
+	else
+		{
+			PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build native specification");
+		}
 
 	return success_flag;
 }
@@ -686,15 +722,14 @@ static bool BuildNativeSpecification (DrmaaTool *tool_p)
 
 static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char *value_s)
 {
-	#define ERROR_LENGTH (1023)
-	char error_s [ERROR_LENGTH + 1];
+	char error_s [DRMAA_ERROR_STRING_BUFFER];
 	bool success_flag = true;
 
-	int res = drmaa_set_attribute (tool_p -> dt_job_p, name_s, value_s, error_s, ERROR_LENGTH);
+	int res = drmaa_set_attribute (tool_p -> dt_job_p, name_s, value_s, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 	if (res != DRMAA_ERRNO_SUCCESS)
 		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s for %s for %s, error %s", name_s, value_s, tool_p -> dt_id_s, error_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s for %s for %s, error %d, %s", name_s, value_s, tool_p -> dt_id_s, res, error_s);
 			success_flag = false;
 		}
 
@@ -705,15 +740,14 @@ static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char
 
 static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, const char **values_ss)
 {
-	#define ERROR_LENGTH (1023)
-	char error_s [ERROR_LENGTH + 1];
+	char error_s [DRMAA_ERROR_STRING_BUFFER];
 	bool success_flag = true;
 
-	int res = drmaa_set_vector_attribute (tool_p -> dt_job_p, name_s, values_ss, error_s, ERROR_LENGTH);
+	int res = drmaa_set_vector_attribute (tool_p -> dt_job_p, name_s, values_ss, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 	if (res != DRMAA_ERRNO_SUCCESS)
 		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s beginning with %s for %s, error %s", name_s, *values_ss, tool_p -> dt_id_s, error_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s beginning with %s for %s, error %d, %s", name_s, *values_ss, tool_p -> dt_id_s, res, error_s);
 			success_flag = false;
 		}
 

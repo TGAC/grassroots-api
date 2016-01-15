@@ -57,7 +57,6 @@ typedef struct DrmaaTool
 	drmaa_job_template_t *dt_job_p;
 	char dt_id_s [MAX_LEN_JOBID];
 	char dt_id_out_s [MAX_LEN_JOBID];
-	char dt_diagnosis_s [DRMAA_ERROR_STRING_BUFFER];
 	uint32 dt_num_cores;
 	uint32 dt_mb_mem_usage;
 	char *dt_host_name_s;
