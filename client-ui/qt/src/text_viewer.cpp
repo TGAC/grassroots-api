@@ -42,7 +42,7 @@ TextViewer :: TextViewer (QWidget *parent_p)
 
 void TextViewer :: SetText (const char *value_s)
 {
-	tv_editor_p -> setText (value_s);
+	tv_editor_p -> setPlainText (value_s);
 }
 
 

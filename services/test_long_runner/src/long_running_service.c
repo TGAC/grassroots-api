@@ -246,7 +246,7 @@ static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSe
 static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job_id)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	json_t *resource_json_p = NULL;
+	json_t *results_array_p = NULL;
 	TimedTask *task_p = NULL;
 	TimedTask *t_p = data_p -> lsd_tasks_p;
 	uint32 i;
@@ -263,11 +263,33 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job
 	if (task_p)
 		{
 			json_error_t error;
-			json_t *result_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_VALUE_S, task_p -> tt_job_p -> sj_status);
-			resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_p);
+			json_t *result_p = json_pack_ex (&error, 0, "{s:i,s:i}", "start", task_p -> tt_start, "end", task_p -> tt_end);
+
+			if (result_p)
+				{
+					json_t *resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_p);
+
+					if (resource_json_p)
+						{
+							json_decref (result_p);
+
+							results_array_p = json_array ();
+
+							if (results_array_p)
+								{
+									if (json_array_append_new (results_array_p, result_p) != 0)
+										{
+											json_decref (result_p);
+											json_decref (results_array_p);
+											results_array_p = NULL;
+										}
+								}
+
+						}
+				}
 		}
 
-	return resource_json_p;
+	return results_array_p;
 }
 
 

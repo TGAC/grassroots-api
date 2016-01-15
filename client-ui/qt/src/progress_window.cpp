@@ -230,106 +230,65 @@ void ProgressWindow :: ViewResults ()
 
 					if (results_json_p)
 						{
-							json_t *services_json_p = json_object_get (results_json_p, SERVICES_NAME_S);
-
-							if (services_json_p)
+							if (json_is_array (results_json_p))
 								{
-									if (json_is_array (services_json_p))
+									ResultsWindow *results_p = pw_data_p -> qcd_results_p;
+									bool show_results_flag = false;
+
+									size_t i;
+									json_t *job_p;
+
+									json_array_foreach (results_json_p, i, job_p)
 										{
-											const size_t num_services = json_array_size (services_json_p);
-											size_t i;
-											json_t *service_json_p;
+											const char *service_name_s = GetJSONString (job_p, SERVICE_NAME_S);
+											const char *service_description_s = GetJSONString (job_p, OPERATION_DESCRIPTION_S);
+											const char *service_uri_s =  GetJSONString (job_p, OPERATION_INFORMATION_URI_S);
 
-											json_array_foreach (services_json_p, i, service_json_p)
+											/* Get the job status */
+											OperationStatus status = OS_ERROR;
+											const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
+
+											if (value_s)
 												{
-													OperationStatus status;
+													status = GetOperationStatusFromString (value_s);
+												}
+											else
+												{
+													int i;
+													/* Get the job status */
 
-													if (GetStatusFromJSON (service_json_p, &status))
+													if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
 														{
-															if ((status == OS_FINISHED) || (status == OS_SUCCEEDED))
+															if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
 																{
+																	status = (OperationStatus) i;
+																}
+														}
+												}
 
-																}		/* if ((status == OS_FINISHED) || (status == OS_SUCCEEDED)) */
+											if (status != OS_ERROR)
+												{
+													json_t *errors_p = NULL;
 
-														}		/* if (GetStatusFromJSON (service_json_p, &status)) */
-
-
-													json_t *uuid_json_p = json_object_get (service_json_p, SERVICE_UUID_S);
-
-													if (uuid_json_p)
+													if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
 														{
-															if (json_is_string (uuid_json_p))
-																{
-																	const char *uuid_s = json_string_value (uuid_json_p);
-																	uuid_t uuid;
+															results_p -> AddAllResultsPagesFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+															show_results_flag = true;
+														}
+												}
+										}
 
-																	if (uuid_parse (uuid_s, uuid) == 0)
-																		{
-																			size_t j = i;
-																			ProgressWidget *progress_widget_p = 0;
+									if (show_results_flag)
+										{
+											results_p -> show ();
+										}
 
-																			while ((progress_widget_p == 0) && (j < num_services))
-																				{
-																					ProgressWidget *widget_p = pw_widgets.at (j);
-																					const uuid_t *id_p = widget_p -> GetUUID ();
+								}
 
-																					if (uuid_compare (*id_p, uuid) == 0)
-																						{
-																							progress_widget_p = widget_p;
-																						}
-																					else
-																						{
-																							++ j;
-																						}
-																				}
-
-																			if (!progress_widget_p)
-																				{
-																					j = 0;
-
-																					while ((progress_widget_p == 0) && (j < i))
-																						{
-																							ProgressWidget *widget_p = pw_widgets.at (j);
-																							const uuid_t *id_p = widget_p -> GetUUID ();
-
-																							if (uuid_compare (*id_p, uuid) == 0)
-																								{
-																									progress_widget_p = widget_p;
-																								}
-																							else
-																								{
-																									++ j;
-																								}
-																						}
-																				}		/* if (!progress_widget_p) */
-
-																			if (progress_widget_p)
-																				{
-																					OperationStatus status;
-
-																					if (GetStatusFromJSON (service_json_p, &status))
-																						{
-																							progress_widget_p -> SetStatus (status);
-																						}
-
-																				}		/* if (progress_widget_p) */
-
-																		}		/* if (uuid_parse (uuid_s, uuid) == 0) */
-
-																}		/* if (json_is_string (uuid_json_p)) */
-
-														}		/* if (uuid_json_p) */
-
-												}		/* if (json_array_foreach (services_json_p, i, service_json_p)) */
-
-
-										}		/* if (json_is_array (services_json_p)) */
-
-
-								}		/* if (services_json_p) */
-
+							json_decref (results_json_p);
 						}		/* if (statuses_json_p) */
 
+					json_decref (req_p);
 				}		/* if (req_p) */
 
 			FreeMemory (ids_pp);
