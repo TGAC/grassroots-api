@@ -505,7 +505,7 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 										}		/* if (result == DRMAA_ERRNO_SUCCESS) */
 									else
 										{
-											PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_wait failed with code %d, \"%s", result, error_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_wait failed with code %d, \"%s", result, error_s);
 										}
 
 								}		/* if (!async_flag) */
@@ -513,20 +513,20 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 						}		/* if (result == DRMAA_ERRNO_SUCCESS) */
 					else
 						{
-							PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_run_job failed with code %d, \"%s", result, error_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_run_job failed with code %d, \"%s", result, error_s);
 						}
 
 					FreeAndRemoveArgsArray (tool_p, args_ss);
 				}		/* if (args_ss) */
 			else
 				{
-					PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build args array");
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build args array");
 				}
 
 		}		/* if (BuildNativeSpecification (tool_p)) */
 	else
 		{
-			PrintErrorrs (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build native specification");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build native specification");
 		}
 
 	return success_flag;
