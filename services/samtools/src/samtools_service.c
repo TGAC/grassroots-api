@@ -77,8 +77,6 @@ static bool CloseSamToolsService (Service *service_p);
 
 static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t service_id);
 
-static bool CleanUpSamToolsJob (ServiceJob *job_p);
-
 static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const filename_s, const char * const scaffold_name_s, int break_index, ByteBuffer *buffer_p);
 
 static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p);
@@ -329,7 +327,7 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t job_id
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpSamToolsJob);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: RunSamToolsService - enter");
@@ -669,13 +667,3 @@ static bool IsFileForSamToolsService (Service *service_p, Resource *resource_p, 
 	return true;
 }
 
-
-
-
-static bool CleanUpSamToolsJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-
-	return cleaned_up_flag;
-}

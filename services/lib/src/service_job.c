@@ -336,66 +336,96 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 
 	if (job_json_p)
 		{
-			json_t *results_json_p = NULL;
-			OperationStatus old_status = job_p -> sj_status;
-			OperationStatus current_status = GetServiceJobStatus (job_p);
 			bool success_flag = false;
+			const char *service_name_s = GetServiceName (job_p -> sj_service_p);
 
-			if (old_status == current_status)
+			if (json_object_set_new (JOB_SERVICE_S, json_string (service_name_s)) == 0)
 				{
-					results_json_p = job_p -> sj_result_p;
-				}
+					json_t *results_json_p = NULL;
+					OperationStatus old_status = job_p -> sj_status;
+					OperationStatus current_status = GetServiceJobStatus (job_p);
 
-			if (!results_json_p)
-				{
-					results_json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
-					job_p -> sj_result_p = results_json_p;
-				}
-
-			if (AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p, false))
-				{
-					if (AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false))
+					if (old_status == current_status)
 						{
-							if (AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false))
+							results_json_p = job_p -> sj_result_p;
+						}
+
+					if (!results_json_p)
+						{
+							results_json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
+							job_p -> sj_result_p = results_json_p;
+						}
+
+					if (AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p, false))
+						{
+							if (AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false))
 								{
-									if (AddStatusToServiceJobJSON (job_p, job_json_p))
+									if (AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false))
 										{
-											char buffer_s [UUID_STRING_BUFFER_SIZE];
-											json_t *uuid_p = NULL;
-
-											ConvertUUIDToString (job_p -> sj_id, buffer_s);
-
-											uuid_p = json_string (buffer_s);
-
-											if (uuid_p)
+											if (AddStatusToServiceJobJSON (job_p, job_json_p))
 												{
-													if (json_object_set_new (job_json_p, JOB_UUID_S, uuid_p) == 0)
+													char buffer_s [UUID_STRING_BUFFER_SIZE];
+
+													ConvertUUIDToString (job_p -> sj_id, buffer_s);
+
+													if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0)
 														{
 															if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s))
 																{
 																	if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
 																		{
-																			success_flag = AddValidJSONString (job_json_p, JOB_SERVICE_S, GetServiceName (job_p -> sj_service_p));
+																			success_flag = true;
 																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add description \"%s\" %s to json", job_p -> sj_description_s ? job_p -> sj_description_s : "");
+																		}
+
+																}		/* if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s)) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add name \"%s\" to json", job_p -> sj_name_s ? job_p -> sj_name_s : "");
 																}
-														}
+
+														}		/* if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0) */
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid %s to json, uuid refcount: %d", buffer_s, uuid_p -> refcount);
-															json_decref (uuid_p);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid %s to json", buffer_s);
 														}
-												}
+
+												}		/* if (AddStatusToServiceJobJSON (job_p, job_json_p)) */
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid %s as json", buffer_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add status to service job json");
 												}
-										}		/* if (AddStatusToServiceJobJSON (job_p, job_json_p)) */
+
+										}		/* if (AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false)) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add metadata to service job json");
+										}
+
+								}		/* if (AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false)) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add errors to service job json");
 								}
+
+						}		/* if (AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p, false)) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add results to service job json");
 						}
+
+				}		/* if (json_object_set_new (SERVICE_NAME_S, json_string (service_name_s)) == 0) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service name \"%s\" to json", service_name_s);
 				}
 
-			PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER, __FILE__, __LINE__);
+
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+			PrintJSONToLog (job_json_p, "service job: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "success_flag %d", success_flag);
 			#endif
 
@@ -403,7 +433,6 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 				{
 					json_decref (job_json_p);
 					job_json_p = NULL;
-
 				}
 		}		/* if (job_json_p) */
 
@@ -780,3 +809,60 @@ bool AreAnyJobsLive (const ServiceJobSet *jobs_p)
 }
 
 
+
+//typedef struct ServiceJob
+//{
+//  Service *sj_service_p;
+//
+//	/** The unique identifier for this job. */
+//	uuid_t sj_id;
+//
+//	/** Is the service currently in an open state? */
+//	enum OperationStatus sj_status;
+//
+//	/** The name of the ServiceJob */
+//	char *sj_name_s;
+//
+//	/** The description of the ServiceJob */
+//	char *sj_description_s;
+//
+//	/**
+//	 * @brief Callback function for closing the ServiceJob
+//	 *
+//	 * If a ServiceJob needs a custom routine to release resources,
+//	 * this callback function can be set.
+//	 */
+//	bool (*sj_close_fn) (struct ServiceJob *job_p);
+//
+//	/**
+//	 * @private
+//	 */
+//	json_t *sj_result_p;
+//
+//	json_t *sj_metadata_p;
+//
+//	json_t *sj_errors_p;
+//
+//} ServiceJob;
+//
+
+unsigned char *SerialiseServiceJobToJSON (const ServiceJob * const job_p)
+{
+	unsigned char *serialised_data_p = NULL;
+	json_t *job_json_p = GetServiceJobAsJSON (job_p);
+
+	if (job_json_p)
+		{
+			serialised_data_p = (unsigned_char *) json_dumps (job_p, JSON_INDENT (2));
+		}		/* if (job_json_p) */
+
+	return serialised_data_p;
+}
+
+
+ServiceJob *DeserialiseServiceJobFromJSON (unsigned char *raw_json_data_s)
+{
+	ServiceJob *job_p = NULL;
+
+	return job_p;
+}

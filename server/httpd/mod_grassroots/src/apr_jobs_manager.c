@@ -145,6 +145,10 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 }
 
 
+/**
+ * @TODO
+ * Try serialising the ServiceJob and storing that to test whether that works in a multi-process environment
+ */
 static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, ServiceJob *job_p)
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;

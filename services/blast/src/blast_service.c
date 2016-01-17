@@ -1250,6 +1250,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 			if (num_jobs > 0)
 				{
+					//@SERVICE_JOB
 					service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs, CleanUpBlastJob);
 
 					if (service_p -> se_jobs_p)

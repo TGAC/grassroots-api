@@ -306,6 +306,12 @@ GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
  */
 GRASSROOTS_SERVICE_API void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag);
 
+
+GRASSROOTS_SERVICE_API unsigned char *SerialiseServiceJobToJSON (const ServiceJob * const job_p);
+
+
+GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (unsigned char *raw_json_data_s);
+
 #ifdef __cplusplus
 }
 #endif

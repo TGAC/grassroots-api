@@ -63,7 +63,6 @@ static void FreeWebServiceData (WebServiceData *data_p);
 
 static bool CloseWebService (Service *service_p);
 
-static bool CleanUpWebServiceJob (ServiceJob *job_p);
 
 
 /*
@@ -230,7 +229,7 @@ static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpWebServiceJob);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
 	if (service_p -> se_jobs_p)
 		{
@@ -287,13 +286,4 @@ static bool IsResourceForWebService (Service *service_p, Resource *resource_p, H
 
 	return interested_flag;
 }
-
-
-static bool CleanUpWebServiceJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-	return cleaned_up_flag;
-}
-
 

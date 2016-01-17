@@ -67,7 +67,6 @@ static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_
 
 static bool CloseEnsemblRestService (Service *service_p);
 
-static bool CleanUpEnsemblRestJob (ServiceJob *job_p);
 
 /*
  * API FUNCTIONS
@@ -223,7 +222,7 @@ static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *p
 	EnsemblRestServiceData *data_p = (EnsemblRestServiceData *) service_p -> se_data_p;
 
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpEnsemblRestJob);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
 	if (service_p -> se_jobs_p)
 		{
@@ -273,14 +272,5 @@ static bool IsFileForEnsemblRestService (Service *service_p, Resource *resource_
 	bool interested_flag = true;
 
 	return interested_flag;
-}
-
-
-static bool CleanUpEnsemblRestJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-
-	return cleaned_up_flag;
 }
 

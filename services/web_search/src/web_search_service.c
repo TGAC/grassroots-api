@@ -75,8 +75,6 @@ static void FreeWebSearchServiceData (WebSearchServiceData *data_p);
 
 static bool CloseWebSearchService (Service *service_p);
 
-static bool CleanUpWebSearchServiceJob (ServiceJob *job_p);
-
 static json_t *CreateWebSearchServiceResults (WebSearchServiceData *data_p);
 
 /*
@@ -244,12 +242,11 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 	WebServiceData *data_p = & (service_data_p -> wssd_base_data);
 	
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpWebSearchServiceJob);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
 	if (service_p -> se_jobs_p)
 		{
 			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-
 
 			job_p -> sj_status = OS_FAILED_TO_START;
 
@@ -345,9 +342,3 @@ static bool IsResourceForWebSearchService (Service *service_p, Resource *resourc
 }
 
 
-static bool CleanUpWebSearchServiceJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-	return cleaned_up_flag;
-}

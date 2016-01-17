@@ -76,7 +76,6 @@ static void FreeWebSearchJSONServiceData (WebSearchJSONServiceData *data_p);
 
 static bool CloseWebSearchJSONService (Service *service_p);
 
-static bool CleanUpWebSearchJSONServiceJob (ServiceJob *job_p);
 
 static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data_p);
 
@@ -460,10 +459,3 @@ static bool IsResourceForWebSearchJSONService (Service *service_p, Resource *res
 	return interested_flag;
 }
 
-
-static bool CleanUpWebSearchJSONServiceJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-	return cleaned_up_flag;
-}

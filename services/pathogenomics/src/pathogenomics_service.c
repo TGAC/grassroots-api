@@ -104,8 +104,6 @@ static void FreePathogenomicsServiceData (PathogenomicsServiceData *data_p);
 
 static bool ClosePathogenomicsService (Service *service_p);
 
-static bool CleanUpPathogenomicsServiceJob (ServiceJob *job_p);
-
 
 static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p);
 
@@ -593,7 +591,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 {
 	PathogenomicsServiceData *data_p = (PathogenomicsServiceData *) (service_p -> se_data_p);
 
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpPathogenomicsServiceJob);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
 	if (service_p -> se_jobs_p)
 		{
@@ -1193,13 +1191,4 @@ static bool IsResourceForPathogenomicsService (Service *service_p, Resource *res
 
 	return interested_flag;
 }
-
-
-static bool CleanUpPathogenomicsServiceJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-	return cleaned_up_flag;
-}
-
 
