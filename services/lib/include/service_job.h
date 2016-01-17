@@ -27,6 +27,8 @@
 #include "grassroots_service_library.h"
 #include "operation.h"
 #include "jansson.h"
+#include "linked_list.h"
+#include "memory_allocations.h"
 
 #include "uuid/uuid.h"
 
@@ -77,6 +79,22 @@ typedef struct ServiceJob
 } ServiceJob;
 
 
+/**
+ * A datatype used to store a ServiceJob within
+ * a ServceJobSet using a LinkedList.
+ */
+typedef struct ServiceJobNode
+{
+	/** The node used to hold this in a LinkedList. */
+	ListItem sjn_node;
+
+	/** The ServiceJob. */
+	ServiceJob *sjn_job_p;
+
+	/** The details of the ServiceJob ownsership */
+	MEM_FLAG sjn_nob_mem;
+} ServiceJobNode;
+
 
 /**
  * A datatype to represent a collection of ServiceJobs.
@@ -87,10 +105,7 @@ typedef struct ServiceJobSet
 	struct Service *sjs_service_p;
 
 	/** The ServiceJobs that are in use for the Service. */
-	ServiceJob *sjs_jobs_p;
-
-	/** The number of ServiceJobs in this set. */
-	size_t sjs_num_jobs;
+	LinkedList *sjs_jobs_p;
 } ServiceJobSet;
 
 
@@ -99,6 +114,25 @@ typedef struct ServiceJobSet
 extern "C"
 {
 #endif
+
+
+
+/**
+ * Allocate an empty ServiceJob.
+ *
+ * @return  The empty ServiceJob or <code>NULL</code> upon error.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API ServiceJob *AllocateEmptyServiceJob (void);
+
+
+/**
+ * Free a ServiceJob.
+ *
+ * @param job_p The ServiceJob to free.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API void FreeServiceJob (ServiceJob *job_p);
 
 
 /**
@@ -170,6 +204,51 @@ GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *ser
  * @memberof ServiceJobSet
  */
 GRASSROOTS_SERVICE_API void FreeServiceJobSet (ServiceJobSet *job_set_p);
+
+
+/**
+ * Add a ServiceJob to a ServiceJobSet.
+ *
+ * @param job_set_p The ServiceJobSet to add to.
+ * @param job_p The ServiceJob to add.
+ * @return <code>true</code> if the ServiceJob was added to the ServiceJobSet successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJobSet
+ */
+GRASSROOTS_SERVICE_API bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p);
+
+
+/**
+ * Remove a ServiceJob from a ServiceJobSet.
+ *
+ * @param job_set_p The ServiceJobSet to remove the ServiceJob from.
+ * @param job_p The ServiceJob to remove.
+ * @return <code>true</code> if the ServiceJob was removed to the ServiceJobSet successfully,
+ * <code>false</code> if could not as the ServiceJob is not a member of the ServiceJobSet
+ * @memberof ServiceJobSet
+ */
+GRASSROOTS_SERVICE_API bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p);
+
+
+
+/**
+ * @brief Allocate a ServiceJobNode.
+ *
+ * @param job_p The ServiceJob to allocate a ServiceJobNode for.
+ * @param mf The number of ServiceJobs that this ServiceJobSet has space for.
+ * @return A newly-allocated ServiceJobNode or <code>NULL</code> upon error.
+ * @memberof ServiceJobNode.
+ */
+GRASSROOTS_SERVICE_API ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p, MEM_FLAG mf);
+
+
+/**
+ * Free a ServiceJobNode.
+ *
+ * @param service_job_node_p The ServiceJobNode to free.
+ * @memberof ServiceJobNode
+ */
+GRASSROOTS_SERVICE_API void FreeServiceJobNode (ListItem *service_job_node_p);
 
 
 /**
@@ -307,10 +386,10 @@ GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 GRASSROOTS_SERVICE_API void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag);
 
 
-GRASSROOTS_SERVICE_API unsigned char *SerialiseServiceJobToJSON (const ServiceJob * const job_p);
+GRASSROOTS_SERVICE_API char *SerialiseServiceJobToJSON (ServiceJob * const job_p);
 
 
-GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (unsigned char *raw_json_data_s);
+GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s);
 
 #ifdef __cplusplus
 }

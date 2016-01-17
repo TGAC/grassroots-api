@@ -13,6 +13,8 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+#include <string.h>
+
 #include "service_job.h"
 #include "service.h"
 
@@ -33,6 +35,8 @@ static bool AddValidJSONString (json_t *parent_p, const char * const key_s, cons
 static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p, bool set_as_new_flag);
 
 static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
+
+static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p);
 
 
 
@@ -134,50 +138,190 @@ bool SetServiceJobDescription (ServiceJob *job_p, const char * const description
 }
 
 
-ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p))
+ServiceJob *AllocateEmptyServiceJob (void)
 {
-	ServiceJob *jobs_p  = (ServiceJob *) AllocMemory (sizeof (ServiceJob) * num_jobs);
+	ServiceJob *job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
 
-	if (jobs_p)
+	if (job_p)
 		{
-			ServiceJobSet *job_set_p = (ServiceJobSet *) AllocMemory (sizeof (ServiceJobSet));
-
-			if (job_set_p)
-				{
-					size_t i;
-
-					job_set_p -> sjs_jobs_p = jobs_p;
-					job_set_p -> sjs_num_jobs = num_jobs;
-					job_set_p -> sjs_service_p = service_p;
-
-					for (i = 0; i < num_jobs; ++ i)
-						{
-							InitServiceJob (jobs_p + i, service_p, NULL, close_job_fn);
-						}
-
-					return job_set_p;
-				}
-
-			FreeMemory (jobs_p);
+			memset (job_p, 0, sizeof (*job_p));
 		}
 
-	return NULL;
+	return job_p;
+}
+
+
+void FreeServiceJob (ServiceJob *job_p)
+{
+	ClearServiceJob (job_p);
+	FreeMemory (job_p);
+}
+
+
+ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p))
+{
+	ServiceJobSet *job_set_p = NULL;
+	LinkedList *jobs_list_p = AllocateLinkedList (FreeServiceJobNode);
+
+	if (jobs_list_p)
+		{
+			size_t i;
+
+			for (i = 0; i < num_jobs; ++ i)
+				{
+					ServiceJob *job_p = AllocateEmptyServiceJob ();
+
+					if (job_p)
+						{
+							ServiceJobNode *node_p = AllocateServiceJobNode (job_p, MF_SHALLOW_COPY);
+
+							if (node_p)
+								{
+									InitServiceJob (job_p, service_p, NULL, close_job_fn);
+
+									LinkedListAddTail (jobs_list_p, (ListItem *) node_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate service job node " SIZET_FMT, i);
+									FreeServiceJob (job_p);
+									i = num_jobs;
+								}
+						}		/* if (job_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate empty service job " SIZET_FMT, i);
+							i = num_jobs;
+						}
+
+				}		/* for (i = 0; i < num_jobs; ++ i) */
+
+			/* Have we successfully allocated all of the required jobs? */
+			if (jobs_list_p -> ll_size == num_jobs)
+				{
+					job_set_p = (ServiceJobSet *) AllocMemory (sizeof (ServiceJobSet));
+
+					if (job_set_p)
+						{
+							job_set_p -> sjs_service_p = service_p;
+							job_set_p -> sjs_jobs_p = jobs_list_p;
+						}
+				}		/* if (jobs_list_p -> ll_size == num_jobs) */
+
+			if (!job_set_p)
+				{
+					FreeLinkedList (jobs_list_p);
+				}
+
+		}		/* if (jobs_list_p) */
+
+	return job_set_p;
 }
 
 
 void FreeServiceJobSet (ServiceJobSet *jobs_p)
 {
-	ServiceJob *job_p = jobs_p -> sjs_jobs_p;
-	size_t i = jobs_p -> sjs_num_jobs;
-
-	for ( ; i > 0; -- i, ++ job_p)
-		{
-			ClearServiceJob (job_p);
-		}
-
-	FreeMemory (jobs_p -> sjs_jobs_p);
+	FreeLinkedList (jobs_p -> sjs_jobs_p);
 	FreeMemory (jobs_p);
 }
+
+
+ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p, MEM_FLAG mf)
+{
+	ServiceJobNode *node_p = (ServiceJobNode *) AllocMemory (sizeof (ServiceJobNode));
+
+	if (node_p)
+		{
+			switch (mf)
+				{
+					case MF_SHADOW_USE:
+					case MF_SHALLOW_COPY:
+						node_p -> sjn_job_p = job_p;
+						break;
+
+					case MF_DEEP_COPY:
+						break;
+
+					case MF_ALREADY_FREED:
+						break;
+				}
+
+			if (node_p -> sjn_job_p)
+				{
+					node_p -> sjn_nob_mem = mf;
+				}
+			else
+				{
+					FreeMemory (node_p);
+					node_p = NULL;
+				}
+		}
+
+	return node_p;
+}
+
+
+void FreeServiceJobNode (ListItem *node_p)
+{
+	ServiceJobNode *service_job_node_p = (ServiceJobNode *) node_p;
+
+	switch (service_job_node_p -> sjn_nob_mem)
+		{
+			case MF_SHALLOW_COPY:
+			case MF_DEEP_COPY:
+				FreeServiceJob (service_job_node_p -> sjn_job_p);
+				break;
+
+			default:
+				break;
+		}
+
+	FreeMemory (service_job_node_p);
+}
+
+
+bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
+{
+	bool added_flag = false;
+	ServiceJobNode *node_p = AllocateServiceJobNode (job_p, MF_SHALLOW_COPY);
+
+	if (node_p)
+		{
+			LinkedListAddTail (job_set_p -> sjs_jobs_p, (ListItem *) node_p);
+			added_flag = true;
+		}
+
+	return added_flag;
+}
+
+
+bool RemoveServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
+{
+	bool removed_flag = false;
+
+	if (job_set_p && job_p)
+		{
+			ServiceJobNode *node_p = (ServiceJobNode *) (job_set_p -> sjs_jobs_p -> ll_head_p);
+
+			while (node_p)
+				{
+					if (node_p -> sjn_job_p == job_p)
+						{
+							LinkedListRemove (job_set_p -> sjs_jobs_p, (ListItem *) node_p);
+							removed_flag = true;
+							node_p = NULL;
+						}
+					else
+						{
+							node_p = (ServiceJobNode *) (node_p -> sjn_node.ln_next_p);
+						}
+				}
+
+		}
+
+	return removed_flag;
+}
+
 
 
 ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
@@ -323,10 +467,152 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Job status JSON can only be added to a object, value is of type %d", json_typeof (value_p));
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Job status JSON can only be added to an object, value is of type %d", json_typeof (value_p));
 		}
 
 	return success_flag;
+}
+
+
+static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p)
+{
+	bool success_flag = false;
+
+	if (json_is_object (value_p))
+		{
+			int i;
+
+			if (GetJSONInteger (value_p, SERVICE_STATUS_VALUE_S, &i))
+				{
+					OperationStatus s = (OperationStatus) i;
+
+					if ((s > OS_LOWER_LIMIT) && (s < OS_UPPER_LIMIT))
+						{
+							*status_p = s;
+							success_flag = true;
+						}
+				}
+			else
+				{
+					const char *status_s = GetJSONString (value_p, SERVICE_STATUS_S);
+
+					if (status_s)
+						{
+							OperationStatus s = GetOperationStatusFromString (status_s);
+
+							if (s != OS_NUM_STATUSES)
+								{
+									*status_p = s;
+									success_flag = true;
+								}
+						}
+				}		/* if (!GetJSONInteger (value_p, SERVICE_STATUS_VALUE_S, &i)) */
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Job status JSON can only be got from an object, value is of type %d", json_typeof (value_p));
+		}
+
+	return success_flag;
+}
+
+
+ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)
+{
+	ServiceJob *job_p = NULL;
+
+	if (job_json_p)
+		{
+			char *job_json_s = json_dumps (job_json_p, JSON_INDENT (2));
+			const char *service_name_s = GetJSONString (job_json_p, JOB_SERVICE_S);
+
+			if (service_name_s)
+				{
+					const char *uuid_s = GetJSONString (job_json_p, JOB_UUID_S);
+
+					if (uuid_s)
+						{
+							const char *job_name_s = GetJSONString (job_json_p, JOB_NAME_S);
+							const char *job_description_s  = GetJSONString (job_json_p, JOB_DESCRIPTION_S);
+							json_t *job_results_p = json_object_get (job_json_p, JOB_RESULTS_S);
+							json_t *job_metadata_p = json_object_get (job_json_p, JOB_METADATA_S);
+							json_t *job_errors_p = json_object_get (job_json_p, JOB_ERRORS_S);
+							OperationStatus status;
+
+							if (GetOperationStatusFromServiceJobJSON (job_json_p, &status))
+								{
+									Service *service_p = GetServiceByName (service_name_s);
+
+									if (service_p)
+										{
+											job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
+
+											if (job_p)
+												{
+													if (uuid_parse (uuid_s, job_p -> sj_id) == 0)
+														{
+															job_p -> sj_name_s = job_name_s;
+															job_p -> sj_description_s	= job_description_s;
+															job_p -> sj_errors_p = job_errors_p;
+															job_p -> sj_metadata_p = job_metadata_p;
+															job_p -> sj_result_p = job_results_p;
+															job_p -> sj_service_p= service_p;
+															job_p -> sj_status = status;
+															job_p -> sj_close_fn = NULL;
+														}		/* if (uuid_parse (uuid_s, job_p -> sj_id) == 0) */
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't parse uuid \"%s\" as valid uuid", uuid_s);
+															FreeMemory (job_p);
+															job_p = NULL;
+														}
+
+												}		/* if (job_p) */
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't allocate new ServiceJob for \"%s\"", job_json_s ? job_json_s : "");
+												}
+
+											if (!job_p)
+												{
+													FreeService (service_p);
+												}
+
+										}		/* if (service_p) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get service \"%s\"", service_name_s);
+										}
+
+								}		/* if (GetOperationStatusFromServiceJobJSON (job_json_p, &status)) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get status from JSON \"%s\"", job_json_s ? job_json_s : "");
+								}
+
+						}		/* if (uuid_s) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get uuid from JSON \"%s\"", job_json_s ? job_json_s : "");
+						}
+
+				}		/* if (service_name_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get service name from JSON \"%s\"", job_json_s ? job_json_s : "");
+				}
+
+			if (job_json_s)
+				{
+					FreeCopiedString (job_json_s);
+				}
+		}		/* if (job_json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Job JSON is NULL");
+		}
+
+	return job_p;
 }
 
 
@@ -339,7 +625,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 			bool success_flag = false;
 			const char *service_name_s = GetServiceName (job_p -> sj_service_p);
 
-			if (json_object_set_new (JOB_SERVICE_S, json_string (service_name_s)) == 0)
+			if (json_object_set_new (job_json_p, JOB_SERVICE_S, json_string (service_name_s)) == 0)
 				{
 					json_t *results_json_p = NULL;
 					OperationStatus old_status = job_p -> sj_status;
@@ -717,14 +1003,6 @@ if (job_json_p)
 
 
 
-ServiceJob *CreateServiceJobFromJSON (const json_t *json_p)
-{
-	ServiceJob *job_p = NULL;
-
-	return job_p;
-}
-
-
 bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p)
 {
 	bool success_flag = false;
@@ -846,23 +1124,34 @@ bool AreAnyJobsLive (const ServiceJobSet *jobs_p)
 //} ServiceJob;
 //
 
-unsigned char *SerialiseServiceJobToJSON (const ServiceJob * const job_p)
+char *SerialiseServiceJobToJSON (ServiceJob * const job_p)
 {
-	unsigned char *serialised_data_p = NULL;
+	char *serialised_data_p = NULL;
 	json_t *job_json_p = GetServiceJobAsJSON (job_p);
 
 	if (job_json_p)
 		{
-			serialised_data_p = (unsigned_char *) json_dumps (job_p, JSON_INDENT (2));
+			serialised_data_p = json_dumps (job_json_p, JSON_INDENT (2));
 		}		/* if (job_json_p) */
 
 	return serialised_data_p;
 }
 
 
-ServiceJob *DeserialiseServiceJobFromJSON (unsigned char *raw_json_data_s)
+ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s)
 {
 	ServiceJob *job_p = NULL;
+	json_error_t err;
+	json_t *job_json_p = json_loads (raw_json_data_s, 0, &err);
+
+	if (job_json_p)
+		{
+
+		}		/* if (job_json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load service json from \"%s\"", raw_json_data_s);
+		}
 
 	return job_p;
 }
