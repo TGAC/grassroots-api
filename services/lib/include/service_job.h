@@ -160,8 +160,11 @@ GRASSROOTS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *s
 GRASSROOTS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
 
 
+GRASSROOTS_SERVICE_API ServiceJobNode *FindServiceJobNodeInServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p);
+
+
 /**
- * @brief Set the descrition of ServiceJob.
+ * @brief Set the description of ServiceJob.
  *
  * @param job_p The ServiceJob to alter.
  * @param description_s The description to set. A deep copy will be made of this string so

@@ -295,10 +295,42 @@ bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
 }
 
 
-bool RemoveServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
+ServiceJobNode *FindServiceJobNodeByUUIDInServiceJobSet (const ServiceJobSet *job_set_p, const uuid_t job_id)
 {
-	bool removed_flag = false;
+	if (job_set_p)
+		{
+			ServiceJobNode *node_p = (ServiceJobNode *) (job_set_p -> sjs_jobs_p -> ll_head_p);
 
+			while (node_p)
+				{
+					if (uuid_compare (node_p -> sjn_job_p -> sj_id, job_id) == 0);
+						{
+							return node_p;
+						}
+				}
+		}
+
+	return NULL;
+}
+
+
+ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
+{
+	ServiceJobNode *node_p = FindServiceJobNodeByUUIDInServiceJobSet (jobs_p, job_id);
+	ServiceJob *job_p = NULL;
+
+	if (node_p)
+		{
+			job_p = node_p -> sjn_job_p;
+		}
+
+	return job_p;
+}
+
+
+
+ServiceJobNode *FindServiceJobNodeInServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
+{
 	if (job_set_p && job_p)
 		{
 			ServiceJobNode *node_p = (ServiceJobNode *) (job_set_p -> sjs_jobs_p -> ll_head_p);
@@ -307,40 +339,27 @@ bool RemoveServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_
 				{
 					if (node_p -> sjn_job_p == job_p)
 						{
-							LinkedListRemove (job_set_p -> sjs_jobs_p, (ListItem *) node_p);
-							removed_flag = true;
-							node_p = NULL;
-						}
-					else
-						{
-							node_p = (ServiceJobNode *) (node_p -> sjn_node.ln_next_p);
-						}
-				}
-
-		}
-
-	return removed_flag;
-}
-
-
-
-ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
-{
-	if (jobs_p)
-		{
-			ServiceJob *job_p = jobs_p -> sjs_jobs_p;
-			size_t i = jobs_p -> sjs_num_jobs;
-
-			for ( ; i > 0; -- i, ++ job_p)
-				{
-					if (uuid_compare (job_p -> sj_id, job_id) == 0)
-						{
-							return job_p;
+							return node_p;
 						}
 				}
 		}
 
 	return NULL;
+}
+
+
+bool RemoveServiceJobFromServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
+{
+	bool removed_flag = false;
+	ServiceJobNode *node_p = FindServiceJobNodeInServiceJobSet (job_set_p, job_p);
+
+	if (node_p)
+		{
+			LinkedListRemove (job_set_p -> sjs_jobs_p, (ListItem *) node_p);
+			removed_flag = true;
+		}
+
+	return removed_flag;
 }
 
 
@@ -551,8 +570,26 @@ ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)
 												{
 													if (uuid_parse (uuid_s, job_p -> sj_id) == 0)
 														{
-															job_p -> sj_name_s = job_name_s;
-															job_p -> sj_description_s	= job_description_s;
+															if (job_name_s)
+																{
+																	job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
+
+																	if (! (job_p -> sj_name_s))
+																		{
+
+																		}
+																}
+
+															if (job_description_s)
+																{
+																	job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
+
+																	if (! (job_p -> sj_description_s))
+																		{
+
+																		}
+																}
+
 															job_p -> sj_errors_p = job_errors_p;
 															job_p -> sj_metadata_p = job_metadata_p;
 															job_p -> sj_result_p = job_results_p;
@@ -730,21 +767,21 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_service_p)
 {
 	bool success_flag = true;
-	const size_t num_jobs = jobs_p -> sjs_num_jobs;
-	size_t i;
-	ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+	uint32 i;
 	JobsManager *manager_p = GetJobsManager ();
+	ServiceJobNode *node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
 
-	for (i = 0; i < num_jobs; ++ i, ++ job_p)
+	while (node_p)
 		{
+			ServiceJob *job_p = node_p -> sjn_job_p;
+
 			json_t *job_json_p = NULL;
 			const OperationStatus job_status = GetServiceJobStatus (job_p);
 			bool clear_service_job_results_flag = false;
 
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
-			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job %d: status: %d", i, job_status);
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job " UINT32_FMT ": status: %d", i, job_status);
 			#endif
-
 
 			if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
 				{
@@ -841,7 +878,10 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 						}
 				}
 
-		}		/* for (i = 0; i < num_jobs; ++ i, ++ job_p) */
+			node_p = (ServiceJobNode *) (node_p -> sjn_node.ln_next_p);
+			++ i;
+		}		/* while (node_p) */
+
 
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 	PrintJSONToLog (res_p, "service json: ", STM_LEVEL_FINE, __FILE__, __LINE__);
@@ -1017,11 +1057,11 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 
 	if (jobs_json_p)
 		{
-			size_t i = jobs_p -> sjs_num_jobs;
-			ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+			ServiceJobNode *node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
 
-			for ( ; i > 0; -- i, ++ job_p)
+			while (node_p)
 				{
+					ServiceJob *job_p = node_p -> sjn_job_p;
 					json_t *job_json_p = GetServiceJobAsJSON (job_p);
 
 					if (job_json_p)
@@ -1048,9 +1088,10 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 								{
 									FreeUUIDString (uuid_s);
 								}
-
 						}
-				}
+
+					node_p = (ServiceJobNode *) (node_p -> sjn_node.ln_next_p);
+				}		/* while (node_p) */
 		}
 	else
 		{
@@ -1064,11 +1105,12 @@ json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs_p)
 
 bool AreAnyJobsLive (const ServiceJobSet *jobs_p)
 {
-	size_t i = jobs_p -> sjs_num_jobs;
-	const ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+	ServiceJobNode *node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
 
-	for ( ; i > 0; -- i, ++ job_p)
+	while (node_p)
 		{
+			ServiceJob *job_p = node_p -> sjn_job_p;
+
 			switch (job_p -> sj_status)
 				{
 					case OS_IDLE:
@@ -1081,48 +1123,13 @@ bool AreAnyJobsLive (const ServiceJobSet *jobs_p)
 					default:
 						break;
 				}
-		}
+
+			node_p = (ServiceJobNode *) (node_p -> sjn_node.ln_next_p);
+		}		/* while (node_p) */
 
 	return false;
 }
 
-
-
-//typedef struct ServiceJob
-//{
-//  Service *sj_service_p;
-//
-//	/** The unique identifier for this job. */
-//	uuid_t sj_id;
-//
-//	/** Is the service currently in an open state? */
-//	enum OperationStatus sj_status;
-//
-//	/** The name of the ServiceJob */
-//	char *sj_name_s;
-//
-//	/** The description of the ServiceJob */
-//	char *sj_description_s;
-//
-//	/**
-//	 * @brief Callback function for closing the ServiceJob
-//	 *
-//	 * If a ServiceJob needs a custom routine to release resources,
-//	 * this callback function can be set.
-//	 */
-//	bool (*sj_close_fn) (struct ServiceJob *job_p);
-//
-//	/**
-//	 * @private
-//	 */
-//	json_t *sj_result_p;
-//
-//	json_t *sj_metadata_p;
-//
-//	json_t *sj_errors_p;
-//
-//} ServiceJob;
-//
 
 char *SerialiseServiceJobToJSON (ServiceJob * const job_p)
 {
