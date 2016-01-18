@@ -220,6 +220,12 @@ GRASSROOTS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 GRASSROOTS_DRMAA_API bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addresses_ss);
 
 
+GRASSROOTS_SERVICE_API json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p);
+
+
+GRASSROOTS_SERVICE_API DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p);
+
+
 GRASSROOTS_SERVICE_API unsigned char *SerialiseDrmaaTool (const DrmaaTool * const job_p, const size_t *size_p);
 
 

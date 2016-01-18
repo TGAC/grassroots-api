@@ -771,3 +771,42 @@ static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, cons
 	return success_flag;
 }
 
+
+
+//typedef struct DrmaaTool
+//{
+//	/** @privatesection */
+//	char *dt_program_name_s;
+//	LinkedList *dt_args_p;
+//	char *dt_queue_name_s;
+//	char *dt_working_directory_s;
+//
+//	/** Filename for where to store the stdout/stderr for the drmaa job */
+//	char *dt_output_filename_s;
+//	drmaa_job_template_t *dt_job_p;
+//	char dt_id_s [MAX_LEN_JOBID];
+//	char dt_id_out_s [MAX_LEN_JOBID];
+//	uint32 dt_num_cores;
+//	uint32 dt_mb_mem_usage;
+//	char *dt_host_name_s;
+//	char *dt_user_name_s;
+//	char **dt_email_addresses_ss;
+//} DrmaaTool;
+
+json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p)
+{
+	json_t *drmaa_json_p = NULL;
+
+	return drmaa_json_p;
+}
+
+
+DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p)
+{
+	DrmaaTool *drmaa_p = NULL;
+
+
+	return drmaa_p;
+}
+
+
