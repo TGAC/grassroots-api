@@ -405,23 +405,6 @@ void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag)
 
 
 
-static bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s)
-{
-	bool success_flag = true;
-
-	if (value_s)
-		{
-			if (json_object_set_new (parent_p, key_s, json_string (value_s)) != 0)
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\": \"%s\" for json", key_s, value_s);
-					success_flag = false;
-				}
-		}
-
-	return success_flag;
-}
-
-
 static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p, bool set_as_new_flag)
 {
 	bool success_flag = true;

@@ -150,6 +150,24 @@ PREFIX const char *CREDENTIALS_ENCRYPTION_METHOD_S VAL("encrypt_method");
 PREFIX const char *CREDENTIALS_ENCRYPTION_KEY_S VAL("encrypt_key");
 
 
+
+PREFIX const char *DRMAA_S VAL("drmaa");
+PREFIX const char *DRMAA_PROGRAM_NAME_S VAL("program_name");
+PREFIX const char *DRMAA_JOB_NAME_S VAL("job_name");
+PREFIX const char *DRMAA_QUEUE_S VAL("queue");
+PREFIX const char *DRMAA_WORKING_DIR_S VAL("working_dir");
+PREFIX const char *DRMAA_OUTPUT_FILE_S VAL("output_file");
+PREFIX const char *DRMAA_ID_S VAL("drmma_job_id");
+PREFIX const char *DRMAA_OUT_ID_S VAL("drmma_job_out_id");
+PREFIX const char *DRMAA_HOSTNAME_S VAL("host");
+PREFIX const char *DRMAA_USERNAME_S VAL("user");
+PREFIX const char *DRMAA_EMAILS_S VAL("emails");
+PREFIX const char *DRMAA_ARGS_S VAL("args");
+PREFIX const char *DRMAA_NUM_CORES_S VAL("num_cores");
+PREFIX const char *DRMAA_MEM_USAGE_S VAL("mem");
+
+
+
 PREFIX const char *KEYWORDS_QUERY_S VAL("query");
 
 
@@ -210,6 +228,19 @@ GRASSROOTS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, con
 GRASSROOTS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 
 
+
+/**
+ * Get the newly-allocated value for a given key in a json_t object.
+ *
+ * @param json_p The json object to query.
+ * @param key_s The key to search for.
+ * @return A newly-allocated copy of the corresponding value or <code>NULL</code> if the key does not exist in the
+ * given json_t object or failed to be copied. This value, if valid, should be freed with FreeCopiedString.
+ * @see FreeCopiedString.
+ */
+GRASSROOTS_UTIL_API char *GetCopiedJSONString (const json_t *json_p, const char * const key_s);
+
+
 /**
  * Get the integer value for a given key in a json_t object.
  *
@@ -219,7 +250,6 @@ GRASSROOTS_UTIL_API const char *GetJSONString (const json_t *json_p, const char 
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p);
-
 
 
 /**
@@ -245,6 +275,48 @@ GRASSROOTS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * cons
 
 
 /**
+ * Create and add an array of c-style strings to a json object.
+ *
+ * @param parent_p The json_t object to add the array to.
+ * @param values_ss The array of c-style strings with a final element set to NULL.
+ * @param child_key_s The key to use to add the json array to parent_p.
+ * @return <code>true</code> if the json_array was created and added successfully, <code>false</code> otherwise.
+ */
+GRASSROOTS_UTIL_API bool AddStringArrayToJSON (json_t *parent_p, const char **values_ss, const char * const child_key_s);
+
+
+/**
+ * Created an array of c-style string of StringListNodes from a json array.
+ *
+ * @param array_p The json_t array to create the c-style strings arrayt from.
+ * @return The array of c-style strings or <code>NULL</code> if array_p is
+ * an empty array or if there was an error.
+ */
+GRASSROOTS_UTIL_API char **GetStringArrayFromJSON (const json_t * const array_p);
+
+
+/**
+ * Create and add a LinkedList of StringListNodes to a json object.
+ *
+ * @param parent_p The json_t object to add the array to.
+ * @param values_ss The LinkedList of StringListNodes.
+ * @param child_key_s The key to use to add the json array to parent_p.
+ * @return <code>true</code> if the json_array was created and added successfully, <code>false</code> otherwise.
+ */
+GRASSROOTS_UTIL_API bool AddStringListToJSON (json_t *parent_p, LinkedList *values_p, const char * const child_key_s);
+
+
+/**
+ * Created a LinkedList of StringListNodes from a json array.
+ *
+ * @param array_p The json_t object to generate the list from.
+ * @return The LinkedList of StringListNodes or <code>NULL</code> if array_p is
+ * an empty array or if there was an error.
+ */
+GRASSROOTS_UTIL_API LinkedList *GetStringListFromJSON (const json_t * const array_p);
+
+
+/**
  * Allocate a JsonNode that points to the given json object.
  *
  * @param json_p The json object for the JsonNode to point to.
@@ -263,8 +335,6 @@ GRASSROOTS_UTIL_API JsonNode *AllocateJsonNode (json_t *json_p);
  * @memberof JsonNode
  */
 GRASSROOTS_UTIL_API void FreeJsonNode (ListItem *node_p);
-
-
 
 
 /**
@@ -296,6 +366,11 @@ GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, jso
 
 
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
+
+
+
+GRASSROOTS_UTIL_API bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s);
+
 
 
 /**

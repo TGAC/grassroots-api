@@ -174,6 +174,23 @@ const char *GetJSONString (const json_t *json_p, const char * const key_s)
 }
 
 
+char *GetCopiedJSONString (const json_t *json_p, const char * const key_s)
+{
+	char *dest_s = NULL;
+	const char *src_s = GetJSONString (json_p, key_s);
+
+	if (src_s)
+		{
+			dest_s = CopyToNewString (src_s, 0, false);
+
+			if (!dest_s)
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy \"%s\" for key \"%s\"", src_s, key_s);
+				}
+		}
+
+	return dest_s;
+}
 
 
 bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p)
@@ -243,6 +260,294 @@ bool SetJSONHTML (json_t *json_p, const char *key_s, const char *html_s)
 {
 	bool success_flag = false;
 
+
+	return success_flag;
+}
+
+
+bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s)
+{
+	bool success_flag = true;
+
+	if (value_s)
+		{
+			if (json_object_set_new (parent_p, key_s, json_string (value_s)) != 0)
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\": \"%s\" for json", key_s, value_s);
+					success_flag = false;
+				}
+		}
+
+	return success_flag;
+}
+
+
+
+bool AddStringArrayToJSON (json_t *parent_p, const char **values_ss, const char * const child_key_s)
+{
+	bool success_flag = false;
+	json_t *child_p = json_array ();
+
+	if (child_p)
+		{
+			const char *value_ss = values_ss;
+			bool loop_flag = (*value_ss != NULL);
+			bool add_flag = true;
+
+			/* Populate the child array */
+			while (loop_flag && add_flag)
+				{
+					if (json_array_append_new (child_p, json_string (*value_ss)) == 0)
+						{
+							++ value_ss;
+							loop_flag = (*value_ss != NULL);
+						}		/* if (json_array_append_new (child_p, json_string (*email_ss)) == 0) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add value \"%s\" to array", *value_ss);
+							add_flag = false;
+						}
+
+				}		/* while (loop_flag && add_flag) */
+
+			if (add_flag)
+				{
+					/* Is there anything to add? */
+					if (json_array_size (child_p) > 0)
+						{
+							if (json_object_set_new (parent_p, child_key_s, child_p) == 0)
+								{
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add array for \"%s\" to drmaa tool json", child_key_s);
+									json_decref (child_p);
+									add_flag = false;
+								}
+						}		/* if (json_array_size (child_p) > 0) */
+					else
+						{
+							json_decref (child_p);
+						}
+				}		/* if (add_flag) */
+
+		}		/* if (child_p) */
+
+	return success_flag;
+}
+
+
+char **GetStringArrayFromJSON (const json_t * const array_p)
+{
+	char **array_ss = NULL;
+
+	if (json_is_array (array_p))
+		{
+			size_t num_values = json_array_size (array_p);
+
+			if (num_values > 0)
+				{
+					array_ss = (char **) AllocMemoryArray (num_values + 1, sizeof (char *));
+
+					if (array_ss)
+						{
+							size_t i = 0;
+							bool loop_flag = true;
+							bool success_flag = true;
+							char **dest_ss = array_ss;
+
+							while (loop_flag && success_flag)
+								{
+									json_t *value_p = json_array_get (array_p, i);
+
+									if (json_is_string (value_p))
+										{
+											const char *src_s = json_string_value (value_p);
+
+											*dest_ss = CopyToNewString (src_s, 0, false);
+
+											if (*dest_ss)
+												{
+													++ i;
+
+													if (i < num_values)
+														{
+															++ dest_ss;
+														}
+													else
+														{
+															loop_flag = false;
+														}
+
+												}		/* if (*dest_ss) */
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", src_s);
+													success_flag = false;
+												}
+
+										}		/* if (json_is_string (value_p)) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "value is %d not a string", json_typeof (value_p));
+											success_flag = false;
+										}
+
+								}		/* while (loop_flag && success_flag) */
+
+							if (!success_flag)
+								{
+									char **dest_ss = array_ss;
+
+									while (*dest_ss)
+										{
+											FreeCopiedString (*dest_ss);
+											++ dest_ss;
+										}
+
+									FreeMemory (array_ss);
+									array_ss = NULL;
+								}
+						}		/* if (array_ss) */
+
+				}		/* if (num_values > 0) */
+
+		}		/* if (json_is_array (array_p)) */
+
+	return array_ss;
+}
+
+
+
+LinkedList *GetStringListFromJSON (const json_t * const array_p)
+{
+	LinkedList *values_list_p = NULL;
+
+	if (json_is_array (array_p))
+		{
+			size_t num_values = json_array_size (array_p);
+
+			if (num_values > 0)
+				{
+					values_list_p = AllocateLinkedList (FreeStringListNode);
+
+					if (values_list_p)
+						{
+							size_t i = 0;
+							bool loop_flag = true;
+							bool success_flag = true;
+
+							while (loop_flag && success_flag)
+								{
+									json_t *value_p = json_array_get (array_p, i);
+
+									if (json_is_string (value_p))
+										{
+											const char *src_s = json_string_value (value_p);
+											StringListNode *node_p = AllocateStringListNode (src_s, MF_DEEP_COPY);
+
+											if (node_p)
+												{
+													LinkedListAddTail (values_list_p, (ListItem *) node_p);
+													++ i;
+
+													if (i == num_values)
+														{
+															loop_flag = false;
+														}
+
+												}		/* if (node_p) */
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", src_s);
+													success_flag = false;
+												}
+
+										}		/* if (json_is_string (value_p)) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "value is %d not a string", json_typeof (value_p));
+											success_flag = false;
+										}
+
+								}		/* while (loop_flag && success_flag) */
+
+							if (!success_flag)
+								{
+									FreeLinkedList (values_list_p);
+								}
+
+						}		/* if (values_list_p) */
+
+				}		/* if (num_values > 0) */
+
+		}		/* if (json_is_array (array_p)) */
+
+	return values_list_p;
+}
+
+
+
+bool AddStringListToJSON (json_t *parent_p, LinkedList *values_p, const char * const child_key_s)
+{
+	bool success_flag = false;
+
+	if (values_p && (values_p -> ll_size > 0))
+		{
+			json_array *child_p = json_array ();
+
+			if (child_p)
+				{
+					StringListNode *node_p = (StringListNode *) (values_p -> ll_head_p);
+					bool loop_flag = (node_p != NULL);
+					bool add_flag = true;
+
+					/* Populate the child array */
+					while (loop_flag && add_flag)
+						{
+							if (json_array_append_new (child_p, json_string (node_p -> sln_string_s)) == 0)
+								{
+									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+									loop_flag = (node_p != NULL);
+								}		/* if (json_array_append_new (child_p, json_string (node_p -> sln_string_s)) == 0) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add value \"%s\" to array", node_p -> sln_string_s);
+									add_flag = false;
+								}
+
+						}		/* while (loop_flag && add_flag) */
+
+					if (add_flag)
+						{
+							/* Is there anything to add? */
+							if (json_array_size (child_p) > 0)
+								{
+									if (json_object_set_new (parent_p, child_key_s, child_p) == 0)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add array for \"%s\" to drmaa tool json", child_key_s);
+											json_decref (child_p);
+											add_flag = false;
+										}
+								}		/* if (json_array_size (child_p) > 0) */
+							else
+								{
+									json_decref (child_p);
+								}
+						}		/* if (add_flag) */
+
+				}		/* if (child_p) */
+
+		}		/* if (values_p && (values_p -> ll_size > 0)) */
+	else
+		{
+			success_flag = true;
+		}
 
 	return success_flag;
 }

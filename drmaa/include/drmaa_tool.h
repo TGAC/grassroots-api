@@ -32,9 +32,8 @@
 #include "typedefs.h"
 #include "linked_list.h"
 #include "operation.h"
+#include "json_util.h"
 
-
-#define MAX_LEN_JOBID 100
 
 /**
  * @struct DrmaaTool
@@ -55,8 +54,8 @@ typedef struct DrmaaTool
 	/** Filename for where to store the stdout/stderr for the drmaa job */
 	char *dt_output_filename_s;
 	drmaa_job_template_t *dt_job_p;
-	char dt_id_s [MAX_LEN_JOBID];
-	char dt_id_out_s [MAX_LEN_JOBID];
+	char *dt_id_s;
+	char *dt_id_out_s;
 	uint32 dt_num_cores;
 	uint32 dt_mb_mem_usage;
 	char *dt_host_name_s;
@@ -146,6 +145,11 @@ GRASSROOTS_DRMAA_API bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem);
  * @memberof DrmaaTool
  */
 GRASSROOTS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s);
+
+
+GRASSROOTS_DRMAA_API bool SetDrmaaToolJobId (DrmaaTool *tool_p, const char *id_s);
+
+GRASSROOTS_DRMAA_API bool SetDrmaaToolJobOutId (DrmaaTool *tool_p, const char *id_s);
 
 
 /**
