@@ -20,6 +20,7 @@
 #include "grassroots_service_manager_library.h"
 #include "jansson.h"
 #include "operation.h"
+#include "service.h"
 
 #define DEFAULT_SERVER_PORT	("9991")
 
@@ -55,6 +56,18 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * con
 
 
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_s);
+
+
+/**
+ * Get a Service by its name.
+ *
+ * This will match a Service with its reponse from getting GetServiceName.
+ *
+ * @param service_name_s The name of the Service to find.
+ * @return The matching Service or <code>NULL</code> if it could not be found.
+ * @memberof Service
+ */
+GRASSROOTS_SERVICE_MANAGER_API Service *GetServiceByName (const char * const service_name_s);
 
 
 
