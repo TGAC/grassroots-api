@@ -263,6 +263,18 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 
+/**
+ * Get a Service by its name.
+ *
+ * This will match a Service with its reponse from getting GetServiceName.
+ *
+ * @param service_name_s The name of the Service to find.
+ * @return The matching Service or <code>NULL</code> if it could not be found.
+ * @memberof Service
+ */
+GRASSROOTS_SERVICE_API Service *GetServiceByName (const char * const service_name_s);
+
+
 GRASSROOTS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 

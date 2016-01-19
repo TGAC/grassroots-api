@@ -290,7 +290,7 @@ bool AddStringArrayToJSON (json_t *parent_p, const char **values_ss, const char 
 
 	if (child_p)
 		{
-			const char *value_ss = values_ss;
+			const char **value_ss = values_ss;
 			bool loop_flag = (*value_ss != NULL);
 			bool add_flag = true;
 
@@ -495,7 +495,7 @@ bool AddStringListToJSON (json_t *parent_p, LinkedList *values_p, const char * c
 
 	if (values_p && (values_p -> ll_size > 0))
 		{
-			json_array *child_p = json_array ();
+			json_t *child_p = json_array ();
 
 			if (child_p)
 				{

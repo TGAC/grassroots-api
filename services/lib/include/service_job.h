@@ -109,7 +109,6 @@ typedef struct ServiceJobSet
 } ServiceJobSet;
 
 
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -375,6 +374,11 @@ GRASSROOTS_SERVICE_API bool CloseServiceJob (ServiceJob *job_p);
 GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 
 
+
+
+GRASSROOTS_SERVICE_API ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const uint32 index);
+
+
 /**
  * @brief Clear the results associated with a ServiceJob.
  *
@@ -393,6 +397,7 @@ GRASSROOTS_SERVICE_API char *SerialiseServiceJobToJSON (ServiceJob * const job_p
 
 
 GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s);
+
 
 #ifdef __cplusplus
 }

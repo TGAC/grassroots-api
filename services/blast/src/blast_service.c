@@ -19,7 +19,7 @@
 #include "blast_service.h"
 #include "memory_allocations.h"
 
-
+#include "service_job_set_iterator.h"
 #include "string_utils.h"
 #include "grassroots_config.h"
 #include "temp_file.hpp"
@@ -948,14 +948,14 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 
 static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code)
 {
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, 1 /* ids_p -> ll_size */, NULL);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, 1, NULL);
 
 	if (jobs_p)
 		{
 			uuid_t job_id;
 			char *error_s = NULL;
 			StringListNode *node_p = (StringListNode *) (ids_p -> ll_head_p);
-			ServiceJob *job_p = jobs_p -> sjs_jobs_p;
+			ServiceJob *job_p = GetServiceJobFromServiceJobSet (jobs_p, 0);
 			uint32 num_successful_jobs = 0;
 			json_t *results_p = json_array ();
 
@@ -1194,7 +1194,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 					if (service_p -> se_jobs_p)
 						{
-							ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+							ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 							json_error_t json_err;
 
 							char *errors_s = ConcatenateVarargsStrings ("Failed to parse \"", param_value.st_string_value_s, "\" to get uuids", NULL);
@@ -1268,6 +1268,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 							 *  As each job will have the same input file name it using the first job's id
 							 *
 							 */
+							ServiceJobIterator iterator;
 							ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
 							TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
 
