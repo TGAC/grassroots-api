@@ -30,7 +30,6 @@
 #endif
 
 
-static bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s);
 
 static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p, bool set_as_new_flag);
 
@@ -1145,3 +1144,27 @@ ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s)
 
 	return job_p;
 }
+
+
+ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const uint32 index)
+{
+	ServiceJob *job_p = NULL;
+
+	if (index < (jobs_p -> sjs_jobs_p -> ll_size))
+		{
+			ListItem *node_p = jobs_p -> sjs_jobs_p -> ll_head_p;
+			uint32 i;
+
+			for (i = index; i > 0; -- i)
+				{
+					node_p = node_p -> ln_next_p;
+				}
+
+			job_p = ((ServiceJobNode *) node_p) -> sjn_job_p;
+		}
+
+	return job_p;
+}
+
+
+

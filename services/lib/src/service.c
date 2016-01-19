@@ -355,6 +355,34 @@ bool GetService (const char * const plugin_name_s, Service **service_pp, Service
 }
 
 
+
+Service *GetServiceByName (const char * const service_name_s)
+{
+	Service *service_p = NULL;
+	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
+
+	if (services_p)
+		{
+			LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, NULL);
+
+			if (services_p -> ll_size == 1)
+				{
+					ServiceNode *service_node_p = (ServiceNode *) LinkedListRemHead (services_p);
+
+					/* Detach service from node and free the node */
+					service_p = service_node_p -> sn_service_p;
+					service_node_p -> sn_service_p = NULL;
+
+					FreeServiceNode ((ListItem *) service_node_p);
+				}		/* if (services_p -> ll_size == 1) */
+
+			FreeLinkedList (services_p);
+		}		/* if (services_p) */
+
+	return service_p;
+}
+
+
 static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, LinkedList *matching_services_p, ServiceMatcher *matcher_p, bool multiple_match_flag)
 {
 	Service **service_pp = services_p -> sa_services_pp;

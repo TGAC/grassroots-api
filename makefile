@@ -138,11 +138,22 @@ lib_util:
 lib_network:
 	$(MAKE) -C network
 
+lib_parameters:
+	$(MAKE) -C parameters
+
+lib_irods:
+	$(MAKE) -C irods/lib
+	
+lib_handlers:
+	$(MAKE) -C handlers/lib
+	
+lib_services:
+	$(MAKE) -C services/lib
 
 ifeq ($(DRMAA_ENABLED),1)
 all: drmaa
 
-drmaa: lib_util lib_network
+drmaa: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 	$(MAKE) -C drmaa
 
 install_drmaa:
@@ -163,13 +174,9 @@ info:
 valgrind: 
 	$(MAKE) all CFLAGS=-DUSING_VALGRIND
 
-all: lib_util lib_network
+all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
-	$(MAKE) -C parameters
-	$(MAKE) -C irods/lib
-	$(MAKE) -C handlers/lib
-	$(MAKE) -C services/lib
 	$(MAKE) -C handlers/file
 	$(MAKE) -C handlers/irods
 	$(MAKE) -C handlers/dropbox

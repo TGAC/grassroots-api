@@ -944,34 +944,6 @@ static json_t *GetNamedServices (const json_t * const req_p, const json_t *crede
 }
 
 
-Service *GetServiceByName (const char * const service_name_s)
-{
-	Service *service_p = NULL;
-	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
-
-	if (services_p)
-		{
-			LoadMatchingServicesByName (services_p, SERVICES_PATH_S, service_name_s, NULL);
-
-			if (services_p -> ll_size == 1)
-				{
-					ServiceNode *service_node_p = (ServiceNode *) LinkedListRemHead (services_p);
-
-					/* Detach service from node and free the node */
-					service_p = service_node_p -> sn_service_p;
-					service_node_p -> sn_service_p = NULL;
-
-					FreeServiceNode ((ListItem *) service_node_p);
-				}		/* if (services_p -> ll_size == 1) */
-
-			FreeLinkedList (services_p);
-		}		/* if (services_p) */
-
-	return service_p;
-}
-
-
-
 static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *credentials_p)
 {
 	json_t *res_p = NULL;
