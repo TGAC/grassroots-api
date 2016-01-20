@@ -239,12 +239,11 @@ ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_
 	WebServiceData *data_p = & (service_data_p -> wssjd_base_data);
 	
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, CleanUpWebSearchJSONServiceJob);
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-
+			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
 			job_p -> sj_status = OS_FAILED_TO_START;
 

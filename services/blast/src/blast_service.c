@@ -1268,128 +1268,135 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 							 *  As each job will have the same input file name it using the first job's id
 							 *
 							 */
-							ServiceJobIterator iterator;
-							ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
-							TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
+							ServiceJobSetIterator iterator;
+							ServiceJob *job_p = NULL;
 
-							if (input_p)
+							InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
+							job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+
+							if (job_p)
 								{
-									const char *input_filename_s = input_p -> GetFilename ();
+									TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
 
-									if (input_filename_s)
+									if (input_p)
 										{
-											size_t num_jobs_ran = 0;
-											ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+											const char *input_filename_s = input_p -> GetFilename ();
 
-											db_p = blast_data_p -> bsd_databases_p;
-
-											while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
+											if (input_filename_s)
 												{
-													/* Are we running a job against the current database? */
-													const char *db_name_s = NULL;
-													const char *description_s = NULL;
+													size_t num_jobs_ran = 0;
 
-													if (all_flag)
-														{
-															db_name_s = db_p -> di_name_s;
-															description_s = db_p -> di_description_s;
-														}
-													else
-														{
-															Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+													db_p = blast_data_p -> bsd_databases_p;
 
-															if (param_p)
+													while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
+														{
+															/* Are we running a job against the current database? */
+															const char *db_name_s = NULL;
+															const char *description_s = NULL;
+
+															if (all_flag)
 																{
-																	if (param_p -> pa_current_value.st_boolean_value)
-																		{
-																			db_name_s = param_p -> pa_name_s;
-
-																			if (param_p -> pa_description_s)
-																				{
-																					description_s = param_p -> pa_description_s;
-																				}
-																			else
-																				{
-																					description_s = db_p -> di_description_s;
-																				}
-																		}
+																	db_name_s = db_p -> di_name_s;
+																	description_s = db_p -> di_description_s;
 																}
-														}
-
-													/* If db_name_s is set, then run a job against it */
-													if (db_name_s)
-														{
-															BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
-
-															job_p -> sj_status = OS_FAILED_TO_START;
-
-															if (description_s)
-																{
-																	SetServiceJobDescription (job_p, description_s);
-																}
-
-															if (tool_p)
-																{
-																	if (tool_p -> SetInputFilename (input_filename_s))
-																		{
-																			char *output_filename_s = NULL;
-
-																			if (tool_p -> SetUpOutputFile ())
-																				{
-																					if (tool_p -> ParseParameters (param_set_p))
-																						{
-
-																							if (RunBlast (tool_p))
-																								{
-																									job_p -> sj_status = tool_p -> GetStatus ();
-																									++ num_jobs_ran;
-																									++ job_p;
-																								}
-																							else
-																								{
-																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run blast tool \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
-																								}
-
-																						}		/* if (tool_p -> ParseParameters (param_set_p, input_filename_s)) */
-																					else
-																						{
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse parameters for blast tool \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
-																						}
-
-																				}		/* if (tool_p -> SetOutputFilename (output_filename_s)) */
-																			else
-																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output filename for blast tool \"%s\" on database \"%s\" to \"%s\"", job_p -> sj_name_s, db_name_s, output_filename_s);
-																				}
-
-																		}		/* if (tool_p -> SetInputFilename (input_filename_s)) */
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set input filename for blast tool \"%s\" on database \"%s\" to \"%s\"", job_p -> sj_name_s, db_name_s, input_filename_s);
-																		}
-
-																}		/* if (tool_p) */
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast tool for \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
+																	Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+																	if (param_p)
+																		{
+																			if (param_p -> pa_current_value.st_boolean_value)
+																				{
+																					db_name_s = param_p -> pa_name_s;
+
+																					if (param_p -> pa_description_s)
+																						{
+																							description_s = param_p -> pa_description_s;
+																						}
+																					else
+																						{
+																							description_s = db_p -> di_description_s;
+																						}
+																				}
+																		}
 																}
-														}		/* if (db_name_s) */
 
-													++ db_p;
-												}		/* while (db_p && (num_jobs_ran < num_jobs)) */
+															/* If db_name_s is set, then run a job against it */
+															if (db_name_s)
+																{
+																	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
 
-										}		/* if (input_filename_s) */
+																	job_p -> sj_status = OS_FAILED_TO_START;
+
+																	if (description_s)
+																		{
+																			SetServiceJobDescription (job_p, description_s);
+																		}
+
+																	if (tool_p)
+																		{
+																			if (tool_p -> SetInputFilename (input_filename_s))
+																				{
+																					char *output_filename_s = NULL;
+
+																					if (tool_p -> SetUpOutputFile ())
+																						{
+																							if (tool_p -> ParseParameters (param_set_p))
+																								{
+
+																									if (RunBlast (tool_p))
+																										{
+																											job_p -> sj_status = tool_p -> GetStatus ();
+																											++ num_jobs_ran;
+																											job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+																										}
+																									else
+																										{
+																											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run blast tool \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
+																										}
+
+																								}		/* if (tool_p -> ParseParameters (param_set_p, input_filename_s)) */
+																							else
+																								{
+																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse parameters for blast tool \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
+																								}
+
+																						}		/* if (tool_p -> SetOutputFilename (output_filename_s)) */
+																					else
+																						{
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output filename for blast tool \"%s\" on database \"%s\" to \"%s\"", job_p -> sj_name_s, db_name_s, output_filename_s);
+																						}
+
+																				}		/* if (tool_p -> SetInputFilename (input_filename_s)) */
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set input filename for blast tool \"%s\" on database \"%s\" to \"%s\"", job_p -> sj_name_s, db_name_s, input_filename_s);
+																				}
+
+																		}		/* if (tool_p) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast tool for \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
+																		}
+																}		/* if (db_name_s) */
+
+															++ db_p;
+														}		/* while (db_p && (num_jobs_ran < num_jobs)) */
+
+												}		/* if (input_filename_s) */
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename for blast tool \"%s\"", job_p -> sj_name_s);
+												}
+
+											delete input_p;
+										}		/* if (input_p) */
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename for blast tool \"%s\"", job_p -> sj_name_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create input temp file for blast tool \"%s\" in \"%s\"", job_p -> sj_name_s, blast_data_p -> bsd_working_dir_s);
 										}
 
-									delete input_p;
-								}		/* if (input_p) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create input temp file for blast tool \"%s\" in \"%s\"", job_p -> sj_name_s, blast_data_p -> bsd_working_dir_s);
-								}
+								}		/* if (job_p) */
 
 						}		/* if (service_p -> se_jobs_p) */
 					else

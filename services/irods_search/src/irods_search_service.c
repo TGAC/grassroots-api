@@ -631,7 +631,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 			if (service_p -> se_jobs_p)
 				{
 					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
-					ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+					ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 					SharedType def;
 					json_t *json_res_p = NULL;
 

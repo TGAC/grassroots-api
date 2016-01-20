@@ -46,8 +46,9 @@ INCLUDES = \
 SRCS 	= \
 	provider.c \
 	service.c \
-	service_job.c \
 	service_config.c \
+	service_job.c \
+	service_job_set_iterator.c \
 	service_matcher.c \
 	web_service_util.c
 

@@ -595,7 +595,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
 			job_p -> sj_status = OS_FAILED_TO_START;
 
@@ -865,12 +865,11 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 				}		/* if (param_set_p) */
 
+			#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (job_p -> sj_metadata_p, "metadata 3: ", STM_LEVEL_FINE, __FILE__, __LINE__);
+			#endif
+
 		}		/* if (service_p -> se_jobs_p) */
-
-
-	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (service_p -> se_jobs_p -> sjs_jobs_p -> sj_metadata_p, "metadata 3: ", STM_LEVEL_FINE, __FILE__, __LINE__);
-	#endif
 
 	return service_p -> se_jobs_p;
 }

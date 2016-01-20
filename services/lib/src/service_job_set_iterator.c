@@ -21,7 +21,7 @@
  */
 
 #include "memory_allocations.h"
-
+#include "service_job.h"
 
 
 typedef struct ServiceJobSetIterator
