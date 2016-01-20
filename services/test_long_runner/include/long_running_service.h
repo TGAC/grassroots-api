@@ -43,7 +43,7 @@
 
 
 
-#define TAG_LONG_RUNNING_DURATION MAKE_TAG ('L', 'R', 'T', 'M')
+#define TAG_LONG_RUNNING_NUM_JOBS MAKE_TAG ('L', 'R', 'N', 'J')
 
 #ifdef __cplusplus
 extern "C"

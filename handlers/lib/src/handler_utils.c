@@ -19,6 +19,7 @@
 #include "string_utils.h"
 #include "filesystem_utils.h"
 #include "service_config.h"
+#include "json_util.h"
 
 #ifdef _DEBUG
 	#define HANDLER_UTILS_DEBUG	(STM_LEVEL_FINE)
@@ -286,7 +287,10 @@ static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, con
 							if (matching_filenames_p)
 								{
 									StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
-									const char *tags_s = (tags_p != NULL) ? json_dumps (tags_p, 0) : NULL;
+
+									#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
+									PrintJSONToLog (tags_p, NULL, STM_LEVEL_FINE, __FILE__, __LINE__);
+									#endif
 
 									while (node_p)
 										{

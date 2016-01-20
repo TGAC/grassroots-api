@@ -45,7 +45,7 @@ extern "C" {
 GRASSROOTS_DRMAA_API DrmaaServiceJob *AllocateDrmaaServiceJob (const char *drmaa_program_name_s, Service *service_p, const char *job_name_s);
 
 
-GRASSROOTS_DRMAA_API void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p));
+GRASSROOTS_DRMAA_API void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s);
 
 
 GRASSROOTS_DRMAA_API ServiceJobSet *AllocateDrmaaServiceJobSet (void);

@@ -103,16 +103,11 @@ Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, Paramete
 	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
-	bool success_flag = false;
 	Parameter *param_p = AllocateParameter (type, multi_valued_flag, name_s, display_name_s, description_s, tag, options_p, default_value, current_value_p, bounds_p, level, check_value_fn);
 	
 	if (param_p)
 		{
-			if (AddParameterToParameterSet (params_p, param_p))
-				{				
-					success_flag = true;
-				}		/* if (AddParameterToParameterSet) */
-			else
+			if (!AddParameterToParameterSet (params_p, param_p))
 				{
 					FreeParameter (param_p);
 					param_p = NULL;

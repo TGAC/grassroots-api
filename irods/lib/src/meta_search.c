@@ -510,7 +510,13 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 											if (zone_s)
 												{
 													/** @REPLACE IRODS CALL */
-													addKeyVal (&input_query.condInput, ZONE_KW, zone_s);
+													char *zone_key_s = CopyToNewString (ZONE_KW, 0, false);
+
+													if (zone_key_s)
+														{
+															addKeyVal (&input_query.condInput, zone_key_s, zone_s);
+															FreeCopiedString (zone_key_s);
+														}
 												}
 
 											input_query.maxRows = 10;

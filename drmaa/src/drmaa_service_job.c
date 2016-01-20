@@ -53,22 +53,13 @@ DrmaaServiceJob *AllocateDrmaaServiceJob (const char *drmaa_program_name_s, Serv
 }
 
 
-void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
+void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s)
 {
-	InitServiceJob (& (job_p -> dsj_job), service_p, job_name_s, close_fn);
+	InitServiceJob (& (job_p -> dsj_job), service_p, job_name_s);
 }
 
 
-ServiceJobSet *AllocateDrmaaServiceJobSet ()
-{
 
-}
-
-
-void FreeDrmaaServiceJobSet (ServiceJobSet *jobs_p)
-{
-
-}
 
 
 json_t *GetDrmmaaServiceJobAsJSON (const DrmaaServiceJob * const job_p)

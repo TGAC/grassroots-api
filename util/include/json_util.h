@@ -253,6 +253,17 @@ GRASSROOTS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * cons
 
 
 /**
+ * Get the long value for a given key in a json_t object.
+ *
+ * @param json_p The json object to query.
+ * @param key_s The key to search for.
+ * @param value_p Where the corresponding value will be stored if the key exists and relates to an int.
+ * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ */
+GRASSROOTS_UTIL_API bool GetJSONLong (const json_t *json_p, const char * const key_s, long *value_p);
+
+
+/**
  * Get the double value for a given key in a json_t object.
  *
  * @param json_p The json object to query.

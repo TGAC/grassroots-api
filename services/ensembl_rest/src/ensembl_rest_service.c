@@ -226,11 +226,10 @@ static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *p
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+			CurlTool *curl_tool_p = AllocateCurlTool ();
+			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
 			job_p -> sj_status = OS_FAILED_TO_START;
-
-			CurlTool *curl_tool_p = AllocateCurlTool ();
 
 			if (curl_tool_p)
 				{

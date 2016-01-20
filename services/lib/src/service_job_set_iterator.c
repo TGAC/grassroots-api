@@ -21,14 +21,8 @@
  */
 
 #include "memory_allocations.h"
-#include "service_job.h"
+#include "service_job_set_iterator.h"
 
-
-typedef struct ServiceJobSetIterator
-{
-	ServiceJobSet *sjsi_job_set_p;
-	ServiceJobNode *sjs_current_node_p;
-} ServiceJobSetIterator;
 
 
 ServiceJobSetIterator *AllocateServiceJobSetIterator (ServiceJobSet *set_p)
@@ -54,7 +48,7 @@ ServiceJobSetIterator *AllocateServiceJobSetIterator (ServiceJobSet *set_p)
 
 void InitServiceJobSetIterator (ServiceJobSetIterator *iterator_p, ServiceJobSet *set_p)
 {
-	iterator_p -> sjs_current_node_p = set_p -> sjs_jobs_p -> ll_head_p;
+	iterator_p -> sjs_current_node_p = (ServiceJobNode *) (set_p -> sjs_jobs_p -> ll_head_p);
 	iterator_p -> sjsi_job_set_p = set_p;
 }
 

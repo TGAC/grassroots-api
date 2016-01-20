@@ -23,16 +23,20 @@
 #include "service_job_set_iterator.h"
 
 
-static uint32 S_DEFAULT_DURATION = 30;
-
-
-
-typedef struct
+typedef struct TimeInterval
 {
-	time_t tt_start;
-	time_t tt_end;
-	ServiceJob *tt_job_p;
-} TimedTask;
+	time_t ti_start;
+	time_t ti_end;
+} TimeInterval;
+
+
+typedef struct TimedServiceJob
+{
+	ServiceJob tsj_job;
+	TimeInterval *tsj_interval_p;
+} TimedServiceJob;
+
+
 
 /*
  * STATIC DATATYPES
@@ -40,9 +44,11 @@ typedef struct
 typedef struct 
 {
 	ServiceData lsd_base_data;
-	TimedTask *lsd_tasks_p;
-	uint32 lsd_num_tasks;
 } LongRunningServiceData;
+
+
+static const char * const LRS_START_S = "start";
+static const char * const LRS_END_S = "end";
 
 
 /*
@@ -71,16 +77,32 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t ser
 
 static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uuid_t service_id);
 
-static void InitTimedTask (TimedTask *task_p);
 
-static void StartTimedTask (TimedTask *task_p, size_t duration);
+static void StartTimedServiceJob (TimedServiceJob *job_p, size_t duration);
 
-static OperationStatus GetCurrentTimedTaskStatus (TimedTask *task_p);
 
-static json_t *GetTimedTaskResult (TimedTask *task_p);
+static OperationStatus GetTimedServiceJobStatus (TimedServiceJob *job_p);
 
+
+static void InitTimedServiceJob (TimedServiceJob *job_p);
+
+static json_t *GetTimedTaskResult (TimedServiceJob *task_p);
 
 static bool CleanUpLongRunningJob (ServiceJob *job_p);
+
+
+static TimedServiceJob *AllocateTimedServiceJob (const time_t start, const time_t end);
+
+
+static void FreeTimedServiceJob (TimedServiceJob *job_p);
+
+
+static json_t *GetTimedServiceJobAsJSON (const TimedServiceJob *job_p);
+
+
+static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p);
+
+
 
 
 /*
@@ -149,21 +171,7 @@ static LongRunningServiceData *AllocateLongRunningServiceData (Service *service_
 
 	if (data_p)
 		{
-			data_p -> lsd_num_tasks = 3;
-
-			if ((data_p -> lsd_tasks_p = (TimedTask *) AllocMemory (sizeof (TimedTask) * (data_p -> lsd_num_tasks))) != NULL)
-				{
-					uint32 i;
-
-					for (i = 0; i < data_p -> lsd_num_tasks; ++ i)
-						{
-							InitTimedTask ((data_p -> lsd_tasks_p) + i);
-						}
-
-					return data_p;
-				}
-
-			FreeMemory (data_p);
+			return data_p;
 		}
 
 	return NULL;
@@ -172,7 +180,6 @@ static LongRunningServiceData *AllocateLongRunningServiceData (Service *service_
 
 static void FreeLongRunningServiceData (LongRunningServiceData *data_p)
 {
-	FreeMemory (data_p -> lsd_tasks_p);
 	FreeMemory (data_p);
 }
 
@@ -181,17 +188,31 @@ static bool CloseLongRunningService (Service *service_p)
 {
 	bool close_flag = true;
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	TimedTask *t_p = data_p -> lsd_tasks_p;
-	uint32 i;
+	ServiceJobSetIterator iterator;
+	TimedServiceJob *job_p = NULL;
+	bool loop_flag = true;
+	InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
 
-	for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ t_p)
+	job_p = (TimedServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
+	loop_flag = (job_p != NULL);
+
+	while (loop_flag)
 		{
-			OperationStatus status = GetCurrentTimedTaskStatus (t_p);
+			OperationStatus status = GetTimedServiceJobStatus (job_p);
 
 			if (status == OS_PENDING || status == OS_STARTED)
 				{
 					close_flag = false;
-					i = data_p -> lsd_num_tasks; 		/* force exit from loop */
+					loop_flag = false;
+				}
+			else
+				{
+					job_p = (TimedServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
+
+					if (!job_p)
+						{
+							loop_flag = false;
+						}
 				}
 		}
 
@@ -225,9 +246,9 @@ static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resour
 			Parameter *param_p = NULL;
 			SharedType def;
 
-			def.st_ulong_value = S_DEFAULT_DURATION;
+			def.st_ulong_value = 3;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "duration", "Duration in seconds", "Duration in seconds", TAG_LONG_RUNNING_DURATION, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "jobs", "Number of jobs", "Number of jobs to run", TAG_LONG_RUNNING_NUM_JOBS, NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					return param_set_p;
 				}
@@ -248,47 +269,56 @@ static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSe
 static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job_id)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
+	JobsManager *jobs_mananger_p = GetJobsManager ();
+	json_t *job_json_p = GetServiceJobFromJobsManager (jobs_mananger_p, job_id);
 	json_t *results_array_p = NULL;
-	TimedTask *task_p = NULL;
-	TimedTask *t_p = data_p -> lsd_tasks_p;
-	uint32 i;
 
-	for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ t_p)
+	if (job_json_p)
 		{
-			if (uuid_compare (t_p -> tt_job_p -> sj_id, job_id) == 0)
+			TimedServiceJob *job_p = GetTimedServiceJobFromJSON (job_json_p);
+
+			if (job_p)
 				{
-					task_p = t_p;
-					i = data_p -> lsd_num_tasks; 		/* force exit from loop */
-				}
-		}
+					json_error_t error;
+					json_t *result_p = json_pack_ex (&error, 0, "{s:i,s:i}", "start", job_p -> tsj_interval_p -> ti_start, "end", job_p -> tsj_interval_p -> ti_end);
 
-	if (task_p)
-		{
-			json_error_t error;
-			json_t *result_p = json_pack_ex (&error, 0, "{s:i,s:i}", "start", task_p -> tt_start, "end", task_p -> tt_end);
-
-			if (result_p)
-				{
-					json_t *resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_p);
-
-					if (resource_json_p)
+					if (result_p)
 						{
-							json_decref (result_p);
+							json_t *resource_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, "Long Runner", result_p);
 
-							results_array_p = json_array ();
-
-							if (results_array_p)
+							if (resource_json_p)
 								{
-									if (json_array_append_new (results_array_p, result_p) != 0)
-										{
-											json_decref (result_p);
-											json_decref (results_array_p);
-											results_array_p = NULL;
-										}
-								}
+									json_decref (result_p);
 
+									results_array_p = json_array ();
+
+									if (results_array_p)
+										{
+											if (json_array_append_new (results_array_p, result_p) != 0)
+												{
+													json_decref (result_p);
+													json_decref (results_array_p);
+													results_array_p = NULL;
+												}
+										}
+
+								}
 						}
+
+				}		/* if (job_p) */
+			else
+				{
+
 				}
+
+			json_decref (job_json_p);
+		}		/* if (job_json_p) */
+	else
+		{
+			char job_id_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_id, job_id_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job data for \"%s\"", job_id_s);
 		}
 
 	return results_array_p;
@@ -298,40 +328,50 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job
 static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, data_p -> lsd_num_tasks, CleanUpLongRunningJob);
+	SharedType param_value;
 
-	if (service_p -> se_jobs_p)
+	memset (&param_value, 0, sizeof (SharedType));
+
+	if (GetParameterValueFromParameterSet (param_set_p, TAG_LONG_RUNNING_NUM_JOBS, &param_value, true))
 		{
-			ServiceJobSetIterator iterator;
-			ServiceJob *job_p = NULL;
-			TimedTask *task_p = data_p -> lsd_tasks_p;
-			uint32 i;
+			const uint32 num_tasks = param_value.st_ulong_value;
 
-			InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
-			job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_tasks, NULL);
 
-
-			for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
+			if (service_p -> se_jobs_p)
 				{
-					/* get a randomish duration between 1 and 60 seconds */
-					size_t duration = 1 + (rand () % 60);
-					char buffer_s [256];
+					ServiceJobSetIterator iterator;
+					ServiceJob *job_p = NULL;
+					uint32 i;
 
-					task_p -> tt_job_p = job_p;
-					StartTimedTask (task_p, duration);
-					job_p -> sj_status = GetCurrentTimedTaskStatus (task_p);
-
-					sprintf (buffer_s, "job " INT32_FMT, i);
-					SetServiceJobName (job_p, buffer_s);
-
-					sprintf (buffer_s, "start " SIZET_FMT " end " SIZET_FMT, task_p -> tt_start, task_p -> tt_end);
-					SetServiceJobDescription (job_p, buffer_s);
-
+					InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
 					job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
 
-				}
 
-		}		/* if (service_p -> se_jobs_p) */
+					for (i = 0; i < num_tasks; ++ i, ++ task_p)
+						{
+							/* get a randomish duration between 1 and 60 seconds */
+							size_t duration = 1 + (rand () % 60);
+							char buffer_s [256];
+
+							task_p -> tt_job_p = job_p;
+							StartTimedTask (task_p, duration);
+							job_p -> sj_status = GetCurrentTimedTaskStatus (task_p);
+
+							sprintf (buffer_s, "job " INT32_FMT, i);
+							SetServiceJobName (job_p, buffer_s);
+
+							sprintf (buffer_s, "start " SIZET_FMT " end " SIZET_FMT, task_p -> tt_start, task_p -> tt_end);
+							SetServiceJobDescription (job_p, buffer_s);
+
+							job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+
+						}
+
+				}		/* if (service_p -> se_jobs_p) */
+
+		}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_LONG_RUNNING_NUM_JOBS, &param_value, true)) */
+
 
 	return service_p -> se_jobs_p;
 }
@@ -348,58 +388,67 @@ static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uu
 	OperationStatus status = OS_ERROR;
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
 
-	if (service_p -> se_jobs_p)
+	JobsManager *jobs_mananger_p = GetJobsManager ();
+	json_t *job_json_p = GetServiceJobFromJobsManager (jobs_mananger_p, job_id);
+
+	if (job_json_p)
 		{
-			ServiceJob *job_p = GetJobById (service_p -> se_jobs_p, job_id);
+			TimedServiceJob *job_p = GetTimedServiceJobFromJSON (job_json_p);
 
 			if (job_p)
 				{
-					TimedTask *task_p = data_p -> lsd_tasks_p;
-					uint32 i;
+					status = GetTimedServiceJobStatus (job_p);
+				}		/* if (job_p) */
+			else
+				{
 
-					for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
-						{
-							if (task_p -> tt_job_p == job_p)
-								{
-									status = GetCurrentTimedTaskStatus (task_p);
-									i = data_p -> lsd_num_tasks; 		/* force exit from loop */
-								}
-						}
-
-					job_p -> sj_status = status;
 				}
+
+			json_decref (job_json_p);
+		}		/* if (job_json_p) */
+	else
+		{
+			char job_id_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_id, job_id_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job data for \"%s\"", job_id_s);
 		}
 
 	return status;
 }
 
 
-static void InitTimedTask (TimedTask *task_p)
+static void InitTimedServiceJob (TimedServiceJob *job_p)
 {
-	task_p -> tt_start = 0;
-	task_p -> tt_end = 0;
-	task_p -> tt_job_p = NULL;
+	TimeInterval *ti_p = job_p -> tsj_interval_p;
+
+	ti_p -> ti_start = 0;
+	ti_p -> ti_end = 0;
 }
 
 
-static void StartTimedTask (TimedTask *task_p, size_t duration)
+static void StartTimedServiceJob (TimedServiceJob *job_p, size_t duration)
 {
-	time (& (task_p -> tt_start));
-	task_p -> tt_end = task_p -> tt_start + duration;
+	TimeInterval *ti_p = job_p -> tsj_interval_p;
+
+	time (& (ti_p -> ti_start));
+	ti_p -> ti_end = (ti_p -> ti_start) + duration;
 }
 
 
-static OperationStatus GetCurrentTimedTaskStatus (TimedTask *task_p)
+
+static OperationStatus GetTimedServiceJobStatus (TimedServiceJob *job_p)
 {
 	OperationStatus status = OS_IDLE;
+	TimeInterval * const ti_p = job_p -> tsj_interval_p;
 
-	if (task_p -> tt_start != task_p -> tt_end)
+	if (ti_p -> ti_start != ti_p -> ti_end)
 		{
 			time_t t = time (NULL);
 
-			if (t >= task_p -> tt_start)
+			if (t >= ti_p -> ti_start)
 				{
-					if (t <= task_p -> tt_end)
+					if (t <= ti_p -> ti_end)
 						{
 							status = OS_STARTED;
 						}
@@ -414,13 +463,15 @@ static OperationStatus GetCurrentTimedTaskStatus (TimedTask *task_p)
 				}
 		}
 
+	job_p -> tsj_job.sj_status = status;
+
 	return status;
 }
 
 
-static json_t *GetTimedTaskResult (TimedTask *task_p)
+static json_t *GetTimedTaskResult (TimedServiceJob *task_p)
 {
-	json_t *result_p = json_pack ("{s:i,s:i}", "Started", task_p -> tt_start, "Ended", task_p -> tt_end);
+	json_t *result_p = json_pack ("{s:i,s:i}", "Started", task_p -> tsj_interval_p -> ti_start, "Ended", task_p -> tsj_interval_p -> ti_end);
 
 	return result_p;
 }
@@ -463,3 +514,113 @@ static bool CleanUpLongRunningJob (ServiceJob *job_p)
 
 	return cleaned_up_flag;
 }
+
+
+static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char * const job_name_s, const time_t start, const time_t end)
+{
+	TimedServiceJob *job_p = NULL;
+	TimeInterval *interval_p = (TimeInterval *) AllocMemory (sizeof (TimeInterval));
+
+	if (interval_p)
+		{
+			job_p = (TimedServiceJob *) AllocMemory (sizeof (TimedServiceJob));
+
+			if (job_p)
+				{
+					interval_p -> ti_start = start;
+					interval_p -> ti_end = end;
+
+					job_p -> tsj_interval_p = interval_p;
+
+					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s);
+
+				}		/* if (job_p) */
+			else
+				{
+					FreeMemory (interval_p);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate TimedServiceJob");
+				}
+
+		}		/* if (interval_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate TimeInterval");
+		}
+
+	return job_p;
+}
+
+
+static void FreeTimedServiceJob (TimedServiceJob *job_p)
+{
+	FreeMemory (job_p -> tsj_interval_p);
+
+	ClearServiceJob (& (job_p -> tsj_job));
+	FreeMemory (job_p);
+}
+
+
+static json_t *GetTimedServiceJobAsJSON (const TimedServiceJob *job_p)
+{
+	bool success_flag = false;
+	json_t *json_p = GetServiceJobAsJSON (& (job_p -> tsj_job));
+
+	if (json_p)
+		{
+			if (json_object_set_new (json_p, LRS_START_S, json_integer (job_p -> tsj_interval_p -> ti_start)) == 0)
+				{
+					if (json_object_set_new (json_p, LRS_END_S, json_integer (job_p -> tsj_interval_p -> ti_end)) == 0)
+						{
+							return json_p;
+						}
+				}
+
+			json_decref (json_p);
+		}
+
+	return NULL;
+}
+
+
+static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
+{
+	TimedServiceJob *job_p = (TimedServiceJob *) AllocMemory (sizeof (TimedServiceJob));
+
+	if (job_p)
+		{
+			if (InitServiceJobFromJSON (& (job_p -> tsj_job), json_p))
+				{
+					if (GetJSONLong (json_p,  LRS_START_S, & (job_p -> tsj_interval_p -> ti_start)))
+						{
+							if (GetJSONLong (json_p,  LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))
+								{
+									return job_p;
+								}		/* if (GetJSONInteger (json_p,  LRS_END_S, & (job_p -> tsj_interval_p -> ti_start))) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s from JSON", LRS_END_S);
+								}
+
+						}		/* if (GetJSONInteger (json_p,  LRS_START_S, & (job_p -> tsj_interval_p -> ti_start))) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s from JSON", LRS_START_S);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init ServiceJob from JSON");
+					PrintJSONToLog (json_p, "Init ServiceJob failure: ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+				}
+
+			FreeTimedServiceJob (job_p);
+		}		/* if (job_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate TimedServiceJob");
+		}
+
+	return NULL;
+}
+
+

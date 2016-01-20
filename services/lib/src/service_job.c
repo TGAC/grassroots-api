@@ -39,7 +39,7 @@ static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, Operati
 
 
 
-void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
+void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s)
 {
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Initialising Job: %.16x\n", job_p);
@@ -59,8 +59,6 @@ void InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 		}
 
 	job_p -> sj_description_s = NULL;
-
-	job_p -> sj_close_fn = close_fn;
 
 	job_p -> sj_result_p = NULL;
 
@@ -314,7 +312,7 @@ ServiceJobNode *FindServiceJobNodeByUUIDInServiceJobSet (const ServiceJobSet *jo
 
 			while (node_p)
 				{
-					if (uuid_compare (node_p -> sjn_job_p -> sj_id, job_id) == 0);
+					if (uuid_compare (node_p -> sjn_job_p -> sj_id, job_id) == 0)
 						{
 							return node_p;
 						}
@@ -376,7 +374,7 @@ bool RemoveServiceJobFromServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *jo
 
 bool CloseServiceJob (ServiceJob *job_p)
 {
-	const bool success_flag = (job_p -> sj_close_fn (job_p));
+	bool success_flag = true;
 
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Closing ServiceJob %.8X for %s", job_p, job_p -> sj_service_p);
@@ -530,9 +528,10 @@ static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, Operati
 }
 
 
-ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)
+
+bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 {
-	ServiceJob *job_p = NULL;
+	bool success_flag = false;
 
 	if (job_json_p)
 		{
@@ -558,56 +557,42 @@ ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)
 
 									if (service_p)
 										{
-											job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
-
-											if (job_p)
+											if (uuid_parse (uuid_s, job_p -> sj_id) == 0)
 												{
-													if (uuid_parse (uuid_s, job_p -> sj_id) == 0)
+													if (job_name_s)
 														{
-															if (job_name_s)
+															job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
+
+															if (! (job_p -> sj_name_s))
 																{
-																	job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
 
-																	if (! (job_p -> sj_name_s))
-																		{
-
-																		}
 																}
-
-															if (job_description_s)
-																{
-																	job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
-
-																	if (! (job_p -> sj_description_s))
-																		{
-
-																		}
-																}
-
-															job_p -> sj_errors_p = job_errors_p;
-															job_p -> sj_metadata_p = job_metadata_p;
-															job_p -> sj_result_p = job_results_p;
-															job_p -> sj_service_p= service_p;
-															job_p -> sj_status = status;
-															job_p -> sj_close_fn = NULL;
-														}		/* if (uuid_parse (uuid_s, job_p -> sj_id) == 0) */
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't parse uuid \"%s\" as valid uuid", uuid_s);
-															FreeMemory (job_p);
-															job_p = NULL;
 														}
 
-												}		/* if (job_p) */
+													if (job_description_s)
+														{
+															job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
+
+															if (! (job_p -> sj_description_s))
+																{
+
+																}
+														}
+
+													job_p -> sj_errors_p = job_errors_p;
+													job_p -> sj_metadata_p = job_metadata_p;
+													job_p -> sj_result_p = job_results_p;
+													job_p -> sj_service_p= service_p;
+													job_p -> sj_status = status;
+
+													success_flag = true;
+
+												}		/* if (uuid_parse (uuid_s, job_p -> sj_id) == 0) */
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't allocate new ServiceJob for \"%s\"", job_json_s ? job_json_s : "");
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't parse uuid \"%s\" as valid uuid", uuid_s);
 												}
 
-											if (!job_p)
-												{
-													FreeService (service_p);
-												}
 
 										}		/* if (service_p) */
 									else
@@ -643,7 +628,25 @@ ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Job JSON is NULL");
 		}
 
-	return job_p;
+	return success_flag;
+}
+
+
+ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)
+{
+	ServiceJob *job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
+
+	if (job_p)
+		{
+			if (InitServiceJobFromJSON (job_p, job_json_p))
+				{
+					return job_p;
+				}
+
+			FreeMemory (job_p);
+		}
+
+	return NULL;
 }
 
 

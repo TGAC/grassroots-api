@@ -101,7 +101,6 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s)
 {
 	bool success_flag = false;
-	json_error_t error;
 	json_t *credentials_p = json_object ();
 
 	if (credentials_p)

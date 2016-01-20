@@ -91,6 +91,7 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 							storage_p -> ags_make_key_fn = make_key_fn;
 							storage_p -> ags_free_key_and_value_fn = free_key_and_value_fn;
 
+							storage_p -> ags_largest_entry_size = 0;
 							storage_p -> ags_cache_id_s = cache_id_s;
 							storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
 
@@ -264,6 +265,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 				{
 					apr_time_t end_of_time = APR_INT64_MAX;
 
+
 					/* store it */
 					status = storage_p -> ags_socache_provider_p -> store (storage_p -> ags_socache_instance_p,
 																			 storage_p -> ags_server_p,
@@ -274,13 +276,26 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 					                              value_length,
 					                              storage_p -> ags_pool_p);
 
+					if (status == APR_SUCCESS)
+						{
+							success_flag = true;
 
-					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\" length %u, value %.16X length %u to global store", key_s, key_len, value_p, value_length);
-					#endif
+							if (storage_p -> ags_largest_entry_size < value_length)
+								{
+									storage_p -> ags_largest_entry_size = value_length;
+								}
+
+							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINE
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added \"%s\" length %u, value %.16X length %u to global store", key_s, key_len, value_p, value_length);
+							#endif
+
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_FINE, __FILE__, __LINE__, "Failed to add \"%s\" length %u, value %.16X length %u to global store", key_s, key_len, value_p, value_length);
+						}
 
 					status = apr_global_mutex_unlock (storage_p -> ags_mutex_p);
-					success_flag = true;
 
 					if (status != APR_SUCCESS)
 						{
@@ -386,7 +401,8 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 					PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Locked mutex");
 					#endif
 
-					temp_p = (unsigned char *) AllocMemoryArray (value_length, sizeof (unsigned char));
+					/* We don't know how big the value might be so allocate the largest value that we've seen so far */
+					temp_p = (unsigned char *) AllocMemoryArray (storage_p -> ags_largest_entry_size, sizeof (unsigned char));
 
 					if (temp_p)
 						{

@@ -98,7 +98,6 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 
 static bool CloseCompressService (Service *service_p);
 
-static bool CleanUpCompressJob (ServiceJob *job_p);
 
 /*
  * API FUNCTIONS
@@ -511,15 +510,6 @@ static bool IsFileForCompressService (Service *service_p, Resource *resource_p, 
 
 
 	return interested_flag;
-}
-
-
-static bool CleanUpCompressJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-
-	return cleaned_up_flag;
 }
 
 

@@ -89,7 +89,6 @@ static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServic
 
 static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val);
 
-static bool CleanUpIrodsSearchJob (ServiceJob *job_p);
 
 static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p);
 
@@ -769,11 +768,3 @@ static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_
 	return interested_flag;
 }
 
-
-
-static bool CleanUpIrodsSearchJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-
-	return cleaned_up_flag;
-}

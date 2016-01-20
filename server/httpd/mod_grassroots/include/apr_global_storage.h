@@ -51,6 +51,8 @@ typedef struct APRGlobalStorage
 
 	const char *ags_cache_id_s;
 
+	size_t ags_largest_entry_size;
+
 	server_rec *ags_server_p;
 
 	ap_socache_provider_t *ags_socache_provider_p;

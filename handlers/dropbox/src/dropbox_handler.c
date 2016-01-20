@@ -136,12 +136,14 @@ Handler *GetHandler (const json_t *credentials_p)
 
 	if (handler_p)
 		{
-			const char *tags_s = json_dumps (credentials_p, 0);
 			const char *token_key_s = NULL;
 			const char *token_secret_s = NULL;
-			
 			json_t *dropbox_p = json_object_get (credentials_p, GetDropboxHandlerName (NULL));
-			
+
+			#if DROPBOX_HANDLER_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (credentials_p, NULL, STM_LEVEL_FINE, __FILE__, __LINE__);
+			#endif
+
 			if (dropbox_p)
 				{
 					token_key_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_KEY_S);

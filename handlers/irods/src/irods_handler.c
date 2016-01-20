@@ -93,9 +93,12 @@ Handler *GetHandler (const json_t *credentials_p)
 
 	if (handler_p)
 		{
-			const char *tags_s = json_dumps (credentials_p, 0);
 			const char *username_s = NULL;
 			const char *password_s = NULL; 
+
+			#if IRODS_HANDLER_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (credentials_p, NULL, STM_LEVEL_FINE, __FILE__, __LINE__);
+			#endif
 			
 			if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
 				{

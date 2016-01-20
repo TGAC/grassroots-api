@@ -211,6 +211,25 @@ bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_
 }
 
 
+bool GetJSONLong (const json_t *json_p, const char * const key_s, long *value_p)
+{
+	bool success_flag = false;
+	json_t *json_value_p = json_object_get (json_p, key_s);
+
+	if (json_value_p)
+		{
+			if (json_is_integer (json_value_p))
+				{
+					*value_p = json_integer_value (json_value_p);
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+
 bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p)
 {
 	bool success_flag = false;
@@ -582,7 +601,6 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 					while (loop_flag && success_flag)
 						{
 							char *value_s = NULL;
-							bool alloc_flag = false;
 
 							next_token_s = strchr (current_token_s, column_delimiter);
 

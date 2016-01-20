@@ -63,7 +63,7 @@ GRASSROOTS_SERVICE_API void FreeServiceJobSetIterator (ServiceJobSetIterator *it
 GRASSROOTS_SERVICE_API ServiceJob *GetNextServiceJobFromServiceJobSetIterator (ServiceJobSetIterator *iterator_p);
 
 
-GRASSROOTS_SERVICE_API bool HasServiceJobSetIteratorFinished (const ServiceJobSetIterator *iterator_p);
+GRASSROOTS_SERVICE_API bool HasServiceJobSetIteratorFinished (const ServiceJobSetIterator *job_p);
 
 
 #ifdef __cplusplus

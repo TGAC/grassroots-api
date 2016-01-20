@@ -425,7 +425,6 @@ static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p)
 bool SetCurlToolForJSONPost (CurlTool *tool_p)
 {
 	bool success_flag = true;
-	CURLcode ret;
 
 	const CURLParam params [] =
 		{

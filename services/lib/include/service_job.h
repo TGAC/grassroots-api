@@ -60,14 +60,6 @@ typedef struct ServiceJob
 	char *sj_description_s;
 
 	/**
-	 * @brief Callback function for closing the ServiceJob
-	 *
-	 * If a ServiceJob needs a custom routine to release resources,
-	 * this callback function can be set.
-	 */
-	bool (*sj_close_fn) (struct ServiceJob *job_p);
-
-	/**
 	 * @private
 	 */
 	json_t *sj_result_p;
@@ -143,11 +135,9 @@ GRASSROOTS_SERVICE_API void FreeServiceJob (ServiceJob *job_p);
  * @param job_p The ServiceJob to initialise.
  * @param name_s The name to give to the ServiceJob.
  * @param service_p The Service that is running the ServiceJob.
- * @fn close_fn An optional callback function that the ServiceJob will call when it is
- * freed. This is used if you need any custom routines to clean up a ServiceJob.
  * @memberof ServiceJob.
  */
-GRASSROOTS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s, bool (*close_fn) (ServiceJob *job_p));
+GRASSROOTS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s);
 
 
 /**
@@ -198,7 +188,7 @@ GRASSROOTS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * c
  * @memberof ServiceJobSet.
  * @see InitServiceJob
  */
-GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*init_job_fn) (ServiceJob *job_p, Service *service_p, const char * const job_name_s))
+GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, const size_t num_jobs, bool (*init_job_fn) (ServiceJob *job_p, struct Service *service_p, const char * const job_name_s));
 
 
 /**
@@ -316,6 +306,7 @@ GRASSROOTS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t 
  * <code>false</code> otherwise.
  * @memberof ServiceJob
  * @see SetServiceJobFromJSON
+ * @see
  */
 GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
 
@@ -329,7 +320,7 @@ GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_
  * <code>false</code> otherwise.
  * @memberof ServiceJob
  */
-GRASSROOTS_SERVICE_API bool SetServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p);
+GRASSROOTS_SERVICE_API bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *json_p);
 
 
 /**
