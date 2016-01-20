@@ -886,8 +886,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 }
 
 
-
-
 OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 {
 	/* If job has been started or is waiting to run, check its status */

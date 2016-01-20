@@ -335,7 +335,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 			Parameter *param_p = NULL;
 			const char *filename_s = NULL;
 

@@ -258,9 +258,14 @@ static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_
 	EnsemblRestServiceData *data_p = (EnsemblRestServiceData *) service_p -> se_data_p;
 
 	/* Check that we have the correct job */
-	if (uuid_compare (service_p -> se_jobs_p -> sjs_jobs_p -> sj_id, job_id) == 0)
+	ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
+
+	if (job_p)
 		{
-			return (data_p -> ersd_results_p);
+			if (uuid_compare (job_p -> sj_id, job_id) == 0)
+				{
+					return (data_p -> ersd_results_p);
+				}
 		}
 
 	return NULL;

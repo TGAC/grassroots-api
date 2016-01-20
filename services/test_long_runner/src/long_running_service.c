@@ -20,6 +20,8 @@
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "jobs_manager.h"
+#include "service_job_set_iterator.h"
+
 
 static uint32 S_DEFAULT_DURATION = 30;
 
@@ -300,11 +302,16 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+			ServiceJobSetIterator iterator;
+			ServiceJob *job_p = NULL;
 			TimedTask *task_p = data_p -> lsd_tasks_p;
 			uint32 i;
 
-			for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ job_p, ++ task_p)
+			InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
+			job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+
+
+			for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
 				{
 					/* get a randomish duration between 1 and 60 seconds */
 					size_t duration = 1 + (rand () % 60);
@@ -319,6 +326,9 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 
 					sprintf (buffer_s, "start " SIZET_FMT " end " SIZET_FMT, task_p -> tt_start, task_p -> tt_end);
 					SetServiceJobDescription (job_p, buffer_s);
+
+					job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+
 				}
 
 		}		/* if (service_p -> se_jobs_p) */
