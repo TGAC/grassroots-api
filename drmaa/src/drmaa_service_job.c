@@ -35,7 +35,7 @@ DrmaaServiceJob *AllocateDrmaaServiceJob (const char *drmaa_program_name_s, Serv
 
 			if (job_p)
 				{
-					InitServiceJob (& (job_p -> dsj_job), service_p, job_name_s, NULL);
+					InitDrmaaServiceJob (job_p, service_p, job_name_s, NULL);
 					job_p -> dsj_drmaa_p = drmaa_tool_p;
 				}
 			else
@@ -53,9 +53,9 @@ DrmaaServiceJob *AllocateDrmaaServiceJob (const char *drmaa_program_name_s, Serv
 }
 
 
-void InitDrmaaServiceJob (DrmaaServiceJob *job_p)
+void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s, bool (*close_fn) (ServiceJob *job_p))
 {
-
+	InitServiceJob (& (job_p -> dsj_job), service_p, job_name_s, close_fn);
 }
 
 
@@ -78,7 +78,7 @@ json_t *GetDrmmaaServiceJobAsJSON (const DrmaaServiceJob * const job_p)
 	if (json_p)
 		{
 
-		}
+		}		/* if (json_p) */
 
 	return json_p;
 }

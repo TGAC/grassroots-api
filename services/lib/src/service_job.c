@@ -157,7 +157,7 @@ void FreeServiceJob (ServiceJob *job_p)
 }
 
 
-ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p))
+ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*init_job_fn) (ServiceJob *job_p, Service *service_p, const char * const job_name_s))
 {
 	ServiceJobSet *job_set_p = NULL;
 	LinkedList *jobs_list_p = AllocateLinkedList (FreeServiceJobNode);
@@ -165,6 +165,11 @@ ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs,
 	if (jobs_list_p)
 		{
 			size_t i;
+
+			if (!init_job_fn)
+				{
+					init_job_fn = InitServiceJob;
+				}
 
 			for (i = 0; i < num_jobs; ++ i)
 				{
@@ -176,9 +181,16 @@ ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs,
 
 							if (node_p)
 								{
-									InitServiceJob (job_p, service_p, NULL, close_job_fn);
-
-									LinkedListAddTail (jobs_list_p, (ListItem *) node_p);
+									if (init_job_fn (job_p, service_p, NULL))
+										{
+											LinkedListAddTail (jobs_list_p, (ListItem *) node_p);
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init service job " SIZET_FMT, i);
+											FreeServiceJobNode ((ListItem *) node_p);
+											i = num_jobs;
+										}
 								}
 							else
 								{

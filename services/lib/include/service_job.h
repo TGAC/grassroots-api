@@ -192,11 +192,13 @@ GRASSROOTS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * c
  * @param service_p The Service to allocate the ServiceJobSet for.
  * @param num_jobs The number of ServiceJobs that this ServiceJobSet has space for.
  * @fn close_job_fn If a custom callback function is needed when the ServiceJobs
- * within this ServiceJobSet are freed, it can be set here.
+ * within this ServiceJobSet are allocated, it can be set here. If this is NULL, then
+ * InitServiceJob will be used.
  * @return A newly-allocated ServiceJobSet or <code>NULL</code> upon error.
  * @memberof ServiceJobSet.
+ * @see InitServiceJob
  */
-GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, size_t num_jobs, bool (*close_job_fn) (ServiceJob *job_p));
+GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (Service *service_p, const size_t num_jobs, bool (*init_job_fn) (ServiceJob *job_p, Service *service_p, const char * const job_name_s))
 
 
 /**
