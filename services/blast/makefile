@@ -48,6 +48,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	blast_service.c \
+	blast_service_job.c \
 	blast_formatter.cpp \
 	blast_tool.cpp \
 	blast_tool_set.cpp \

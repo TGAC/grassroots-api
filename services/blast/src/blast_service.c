@@ -25,6 +25,7 @@
 #include "temp_file.hpp"
 #include "json_tools.h"
 #include "blast_formatter.h"
+#include "blast_service_job.h"
 
 /*
  * STATIC PROTOTYPES
@@ -75,6 +76,11 @@ static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t 
 static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s, const uint32 output_format_code);
 
 static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code);
+
+static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char *ids_s, BlastServiceData *blast_data_p);
+
+static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s);
+
 
 /***************************************/
 
@@ -945,10 +951,9 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 }
 
 
-
 static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code)
 {
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, 1, NULL);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, FreeBlastServiceJob);
 
 	if (jobs_p)
 		{
@@ -1152,52 +1157,106 @@ static LinkedList *GetUUIDSList (const char *ids_s)
 }
 
 
-static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s)
 {
-	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
-	SharedType param_value;
-
-	memset (&param_value, 0, sizeof (SharedType));
-
-	/* Are we retrieving previously run jobs? */
-	if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s)))
+	/* count the number of databases to search */
+	if (db_p)
 		{
-			LinkedList *ids_p = GetUUIDSList (param_value.st_string_value_s);
-
-			if (ids_p)
+			while (db_p -> di_name_s)
 				{
-					uint32 output_format_code = BS_DEFAULT_OUTPUT_FORMAT;
+					const char *job_name_s = NULL;
+					const char *job_description_s = NULL;
 
-					if (GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_OUTPUT_FORMAT, &param_value, true))
+					if (all_flag)
 						{
-							output_format_code = param_value.st_ulong_value;
+							job_name_s = db_p -> di_name_s;
+							job_description_s = db_p -> di_description_s;
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't get requested output format code, using " UINT32_FMT " instead", output_format_code);
+							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+							if (param_p)
+								{
+									if (param_p -> pa_current_value.st_boolean_value)
+										{
+											job_name_s = db_p -> di_name_s;
+											job_description_s = db_p -> di_description_s;
+										}
+								}
 						}
 
-					service_p -> se_jobs_p = GetPreviousJobResults (ids_p, blast_data_p, output_format_code);
-
-					if (!service_p -> se_jobs_p)
+					if (job_name_s)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ServiceJobSet for previously run blast job \"%s\"", param_value.st_string_value_s);
-						}
+							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s);
 
-					FreeLinkedList (ids_p);
+							if (job_p)
+								{
+									if (!AddServiceJobToServiceJobSet (jobs_p, (ServiceJob *) job_p))
+										{
+
+										}
+								}
+							else
+								{
+
+								}
+
+						}		/* if (job_name_s) */
+
+					++ db_p;
+				}		/* while (db_p) */
+
+		}		/* if (db_p) */
+
+}
+
+
+static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char *ids_s, BlastServiceData *blast_data_p)
+{
+	LinkedList *ids_p = GetUUIDSList (ids_s);
+	ServiceJobSet *jobs_p = NULL;
+
+	if (ids_p)
+		{
+			SharedType param_value;
+			uint32 output_format_code = BS_DEFAULT_OUTPUT_FORMAT;
+
+			memset (&param_value, 0, sizeof (SharedType));
+
+			if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &param_value, true))
+				{
+					output_format_code = param_value.st_ulong_value;
 				}
 			else
 				{
-					service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't get requested output format code, using " UINT32_FMT " instead", output_format_code);
+				}
 
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse \"%s\" to get uuids", param_value.st_string_value_s);
+			jobs_p = GetPreviousJobResults (ids_p, blast_data_p, output_format_code);
 
-					if (service_p -> se_jobs_p)
+			if (!jobs_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ServiceJobSet for previously run blast job \"%s\"", param_value.st_string_value_s);
+				}
+
+			FreeLinkedList (ids_p);
+		}		/* if (ids_p) */
+	else
+		{
+			jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, NULL);
+
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse \"%s\" to get uuids", ids_s);
+
+			if (jobs_p)
+				{
+					ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, ids_s, "Failed UUID lookup");
+
+					if (job_p)
 						{
-							ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 							json_error_t json_err;
 
-							char *errors_s = ConcatenateVarargsStrings ("Failed to parse \"", param_value.st_string_value_s, "\" to get uuids", NULL);
+							char *errors_s = ConcatenateVarargsStrings ("Failed to parse \"", ids_s, "\" to get uuids", NULL);
 
 							if (errors_s)
 								{
@@ -1208,52 +1267,48 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 								{
 									job_p -> sj_errors_p = json_pack_ex (&json_err, 0, "{s:s}", ERROR_S, "Failed to parse uuids");
 								}
-						}
+
+						}		/* if (job_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate job set");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add failed job for \"%s\" uuids", ids_s);
+							FreeServiceJobSet (jobs_p);
+							jobs_p = NULL;
 						}
+
+				}		/* if (service_p -> se_jobs_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate job set");
 				}
+		}
+
+	return jobs_p;
+}
+
+
+static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+{
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+	SharedType param_value;
+
+	memset (&param_value, 0, sizeof (SharedType));
+
+	/* Are we retrieving previously run jobs? */
+	if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s)))
+		{
+			service_p -> se_jobs_p  = CreateJobsForPreviousResults (param_set_p, param_value.st_string_value_s, blast_data_p);
 		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) */
 	else
 		{
-			/* count how many jobs we a running */
-			size_t num_jobs = 0;
-			const DatabaseInfo *db_p = blast_data_p -> bsd_databases_p;
-			bool all_flag = false;
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, FreeBlastServiceJob);
 
-			/* count the number of databases to search */
-			if (db_p)
+			if (service_p -> se_jobs_p)
 				{
-					while (db_p -> di_name_s)
-						{
-							if (all_flag)
-								{
-									++ num_jobs;
-								}
-							else
-								{
-									Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+					/* Get all of the selected databases and create a BlastServiceJob for each one */
+					PrepareBlastServiceJobs (blast_data_p -> bsd_databases_p, false, param_set_p, service_p -> se_jobs_p, blast_data_p -> bsd_working_dir_s);
 
-									if (param_p)
-										{
-											if (param_p -> pa_current_value.st_boolean_value)
-												{
-													++ num_jobs;
-												}
-										}
-								}
-
-							++ db_p;
-						}		/* while (db_p) */
-				}
-
-			if (num_jobs > 0)
-				{
-					//@SERVICE_JOB
-					service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_jobs, NULL);
-
-					if (service_p -> se_jobs_p)
+					if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0)
 						{
 							/*
 							 * Get the absolute path and filename stem e.g.
@@ -1269,14 +1324,14 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 							 *
 							 */
 							ServiceJobSetIterator iterator;
-							ServiceJob *job_p = NULL;
+							BlastServiceJob *job_p = NULL;
 
 							InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
-							job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+							job_p = (BlastServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
 
 							if (job_p)
 								{
-									TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> sj_id);
+									TempFile *input_p = GetInputTempFile (param_set_p, blast_data_p -> bsd_working_dir_s, job_p -> bsj_job.sj_id);
 
 									if (input_p)
 										{
@@ -1285,132 +1340,86 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 											if (input_filename_s)
 												{
 													size_t num_jobs_ran = 0;
+													bool loop_flag = true;
 
-													db_p = blast_data_p -> bsd_databases_p;
-
-													while ((db_p -> di_name_s) && (num_jobs_ran < num_jobs))
+													while (loop_flag)
 														{
-															/* Are we running a job against the current database? */
-															const char *db_name_s = NULL;
-															const char *description_s = NULL;
+															BlastTool *tool_p = job_p -> bsj_tool_p;
 
-															if (all_flag)
-																{
-																	db_name_s = db_p -> di_name_s;
-																	description_s = db_p -> di_description_s;
-																}
-															else
-																{
-																	Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+															job_p -> bsj_job.sj_status = OS_FAILED_TO_START;
 
-																	if (param_p)
+															if (tool_p)
+																{
+																	if (tool_p -> SetInputFilename (input_filename_s))
 																		{
-																			if (param_p -> pa_current_value.st_boolean_value)
+																			char *output_filename_s = NULL;
+
+																			if (tool_p -> SetUpOutputFile ())
 																				{
-																					db_name_s = param_p -> pa_name_s;
-
-																					if (param_p -> pa_description_s)
+																					if (tool_p -> ParseParameters (param_set_p))
 																						{
-																							description_s = param_p -> pa_description_s;
-																						}
-																					else
-																						{
-																							description_s = db_p -> di_description_s;
-																						}
-																				}
-																		}
-																}
-
-															/* If db_name_s is set, then run a job against it */
-															if (db_name_s)
-																{
-																	BlastTool *tool_p = blast_data_p -> bsd_blast_tools_p -> GetNewBlastTool (job_p, db_name_s, blast_data_p -> bsd_working_dir_s);
-
-																	job_p -> sj_status = OS_FAILED_TO_START;
-
-																	if (description_s)
-																		{
-																			SetServiceJobDescription (job_p, description_s);
-																		}
-
-																	if (tool_p)
-																		{
-																			if (tool_p -> SetInputFilename (input_filename_s))
-																				{
-																					char *output_filename_s = NULL;
-
-																					if (tool_p -> SetUpOutputFile ())
-																						{
-																							if (tool_p -> ParseParameters (param_set_p))
+																							if (RunBlast (tool_p))
 																								{
-
-																									if (RunBlast (tool_p))
-																										{
-																											job_p -> sj_status = tool_p -> GetStatus ();
-																											++ num_jobs_ran;
-																											job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
-																										}
-																									else
-																										{
-																											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run blast tool \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
-																										}
-
-																								}		/* if (tool_p -> ParseParameters (param_set_p, input_filename_s)) */
+																									job_p -> bsj_job.sj_status = tool_p -> GetStatus ();
+																								}
 																							else
 																								{
-																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse parameters for blast tool \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
+																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run blast tool \"%s\"", job_p -> bsj_job.sj_name_s);
 																								}
 
-																						}		/* if (tool_p -> SetOutputFilename (output_filename_s)) */
+																						}		/* if (tool_p -> ParseParameters (param_set_p, input_filename_s)) */
 																					else
 																						{
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output filename for blast tool \"%s\" on database \"%s\" to \"%s\"", job_p -> sj_name_s, db_name_s, output_filename_s);
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse parameters for blast tool \"%s\"", job_p -> bsj_job.sj_name_s);
 																						}
 
-																				}		/* if (tool_p -> SetInputFilename (input_filename_s)) */
+																				}		/* if (tool_p -> SetOutputFilename (output_filename_s)) */
 																			else
 																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set input filename for blast tool \"%s\" on database \"%s\" to \"%s\"", job_p -> sj_name_s, db_name_s, input_filename_s);
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output filename for blast tool \"%s\" to \"%s\"", job_p -> bsj_job.sj_name_s, output_filename_s);
 																				}
 
-																		}		/* if (tool_p) */
+																		}		/* if (tool_p -> SetInputFilename (input_filename_s)) */
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast tool for \"%s\" on database \"%s\"", job_p -> sj_name_s, db_name_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set input filename for blast tool \"%s\" to \"%s\"", job_p -> bsj_job.sj_name_s, input_filename_s);
 																		}
-																}		/* if (db_name_s) */
 
-															++ db_p;
-														}		/* while (db_p && (num_jobs_ran < num_jobs)) */
+																}		/* if (tool_p) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast tool for \"%s\"", job_p -> bsj_job.sj_name_s);
+																}
+
+															job_p = (BlastServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
+															loop_flag = (job_p != NULL);
+
+														}		/* while (loop_flag) */
 
 												}		/* if (input_filename_s) */
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename for blast tool \"%s\"", job_p -> sj_name_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename for blast tool \"%s\"", job_p -> bsj_job.sj_name_s);
 												}
 
 											delete input_p;
 										}		/* if (input_p) */
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create input temp file for blast tool \"%s\" in \"%s\"", job_p -> sj_name_s, blast_data_p -> bsd_working_dir_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create input temp file for blast tool \"%s\" in \"%s\"", job_p -> bsj_job.sj_name_s, blast_data_p -> bsd_working_dir_s);
 										}
 
 								}		/* if (job_p) */
 
-						}		/* if (service_p -> se_jobs_p) */
+						}		/* if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service job set");
+							PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "No jobs specified");
 						}
-				}		/* if (num_jobs > 0) */
-			else
-				{
-					PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "No jobs specified");
-				}
+
+				}		/* if (service_p -> se_jobs_p) */
 
 		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) else */
-
 
 	return service_p -> se_jobs_p;
 }
@@ -1604,6 +1613,4 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 	return result_s;
 }
-
-
 

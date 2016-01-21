@@ -270,11 +270,11 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 {
 	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) (service_p -> se_data_p);
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "TGAC Elastic Search", NULL);
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = service_p -> se_jobs_p -> sjs_jobs_p;
+			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
 			job_p -> sj_status = OS_FAILED_TO_START;
 

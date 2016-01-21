@@ -591,7 +591,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 {
 	PathogenomicsServiceData *data_p = (PathogenomicsServiceData *) (service_p -> se_data_p);
 
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Pathogenomics", NULL);
 
 	if (service_p -> se_jobs_p)
 		{

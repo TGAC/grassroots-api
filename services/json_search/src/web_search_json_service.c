@@ -239,7 +239,7 @@ ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_
 	WebServiceData *data_p = & (service_data_p -> wssjd_base_data);
 	
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Web json-search", NULL);
 
 	if (service_p -> se_jobs_p)
 		{

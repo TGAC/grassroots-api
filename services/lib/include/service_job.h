@@ -83,6 +83,8 @@ typedef struct ServiceJobNode
 	/** The ServiceJob. */
 	ServiceJob *sjn_job_p;
 
+	void (*sjn_free_job_fn) (ServiceJob *job_p);
+
 	/** The details of the ServiceJob ownsership */
 	MEM_FLAG sjn_nob_mem;
 } ServiceJobNode;
@@ -98,6 +100,9 @@ typedef struct ServiceJobSet
 
 	/** The ServiceJobs that are in use for the Service. */
 	LinkedList *sjs_jobs_p;
+
+
+	void (*sjs_free_job_fn) (ServiceJob *job_p);
 } ServiceJobSet;
 
 
@@ -105,16 +110,6 @@ typedef struct ServiceJobSet
 extern "C"
 {
 #endif
-
-
-
-/**
- * Allocate an empty ServiceJob.
- *
- * @return  The empty ServiceJob or <code>NULL</code> upon error.
- * @memberof ServiceJob
- */
-GRASSROOTS_SERVICE_API ServiceJob *AllocateEmptyServiceJob (void);
 
 
 /**
@@ -127,18 +122,47 @@ GRASSROOTS_SERVICE_API void FreeServiceJob (ServiceJob *job_p);
 
 
 /**
+ * @brief Allocate a ServiceJob.
+ * *
+ * @param job_p The ServiceJob to initialise.
+ * @param job_name_s The name to give to the ServiceJob.
+ * @param job_description_s The description to give to the ServiceJob.
+ * @param service_p The Service that is running the ServiceJob.
+ * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
+ * @memberof ServiceJob.
+ */
+ServiceJob *AllocateServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s);
+
+
+
+/**
+ * @brief Allocate a ServiceJob and add it to a ServiceJobSet.
+ * *
+ * @param job_set_p The ServiceJobSet to add the new ServiceJob to.
+ * @param job_name_s The name to give to the ServiceJob.
+ * @param job_description_s The description to give to the ServiceJob.
+ * @param service_p The Service that is running the ServiceJob.
+ * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
+ * @memberof ServiceJob.
+ */
+ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s);
+
+
+
+/**
  * @brief Initialise a ServiceJob.
  *
  * This will initialise a ServiceJob ready for use and will automatically get called for all
  * ServiceJobs in a ServiceJobSet when it is first created.
  *
  * @param job_p The ServiceJob to initialise.
- * @param name_s The name to give to the ServiceJob.
+ * @param job_name_s The name to give to the ServiceJob.
+ * @param job_description_s The description to give to the ServiceJob.
  * @param service_p The Service that is running the ServiceJob.
+ * @return <code>true</code> if the ServiceJob was initialised successfully, <code>false</code> otherwise
  * @memberof ServiceJob.
  */
-GRASSROOTS_SERVICE_API void InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *name_s);
-
+GRASSROOTS_SERVICE_API bool InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *job_name_s, const char *job_description_s);
 
 /**
  * @brief Clear a Service Job ready for reuse.
@@ -188,7 +212,23 @@ GRASSROOTS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * c
  * @memberof ServiceJobSet.
  * @see InitServiceJob
  */
-GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, const size_t num_jobs, bool (*init_job_fn) (ServiceJob *job_p, struct Service *service_p, const char * const job_name_s));
+GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p, void (*free_job_fn) (ServiceJob *job_p));
+
+
+
+/**
+ * @brief Allocate a ServiceJobSet and populate it with a single ServiceJob
+ *
+ * @param service_p The Service to allocate the ServiceJobSet for.
+ * @param num_jobs The number of ServiceJobs that this ServiceJobSet has space for.
+ * @fn close_job_fn If a custom callback function is needed when the ServiceJobs
+ * within this ServiceJobSet are allocated, it can be set here. If this is NULL, then
+ * InitServiceJob will be used.
+ * @return A newly-allocated ServiceJobSet or <code>NULL</code> upon error.
+ * @memberof ServiceJobSet.
+ * @see InitServiceJob
+ */
+GRASSROOTS_SERVICE_API ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, void (*free_job_fn) (ServiceJob *job_p), const char *job_name_s, const char *job_description_s);
 
 
 /**
@@ -221,7 +261,7 @@ GRASSROOTS_SERVICE_API bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set
  * <code>false</code> if could not as the ServiceJob is not a member of the ServiceJobSet
  * @memberof ServiceJobSet
  */
-GRASSROOTS_SERVICE_API bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p);
+GRASSROOTS_SERVICE_API bool RemoveServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p);
 
 
 
@@ -233,7 +273,7 @@ GRASSROOTS_SERVICE_API bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set
  * @return A newly-allocated ServiceJobNode or <code>NULL</code> upon error.
  * @memberof ServiceJobNode.
  */
-GRASSROOTS_SERVICE_API ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p, MEM_FLAG mf);
+GRASSROOTS_SERVICE_API ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p, MEM_FLAG mf, void (*free_job_fn) (ServiceJob *job_p));
 
 
 /**
@@ -370,6 +410,9 @@ GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 
 
 GRASSROOTS_SERVICE_API ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const uint32 index);
+
+
+GRASSROOTS_SERVICE_API uint32 GetServiceJobSetSize (const ServiceJobSet * const jobs_p);
 
 
 /**

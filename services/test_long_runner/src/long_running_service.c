@@ -99,7 +99,7 @@ static bool CleanUpLongRunningJob (ServiceJob *job_p);
 static TimedServiceJob *AllocateTimedServiceJob (const time_t start, const time_t end);
 
 
-static void FreeTimedServiceJob (TimedServiceJob *job_p);
+static void FreeTimedServiceJob (ServiceJob *job_p);
 
 
 static json_t *GetTimedServiceJobAsJSON (TimedServiceJob *job_p);
@@ -328,7 +328,7 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 		{
 			const uint32 num_tasks = param_value.st_ulong_value;
 
-			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, num_tasks, NULL);
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, FreeTimedServiceJob);
 
 			if (service_p -> se_jobs_p)
 				{
@@ -359,11 +359,11 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 							sprintf (buffer_s, "start " SIZET_FMT " end " SIZET_FMT, job_p -> tsj_interval_p -> ti_start, job_p -> tsj_interval_p -> ti_end);
 							SetServiceJobDescription (& (job_p -> tsj_job), buffer_s);
 
-							if (! (AddServiceJobToJobsManager (jobs_manager_p, job_p -> tsj_job.sj_id, (ServiceJob *) job_p, SerialiseTimedServiceJob)))
+							if (!AddServiceJobToJobsManager (jobs_manager_p, job_p -> tsj_job.sj_id, (ServiceJob *) job_p, SerialiseTimedServiceJob))
 								{
 									char job_id_s [UUID_STRING_BUFFER_SIZE];
 
-									ConvertUUIDToString (job_id, job_id_s);
+									ConvertUUIDToString (job_p -> tsj_job.sj_id, job_id_s);
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job \"%s\" to JobsManager", job_id_s);
 								}
 
@@ -377,7 +377,8 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 								{
 									loop_flag = false;
 								}
-						}
+
+						}		/* while (loop_flag) */
 
 				}		/* if (service_p -> se_jobs_p) */
 
@@ -474,44 +475,44 @@ static json_t *GetTimedTaskResult (TimedServiceJob *task_p)
 	return result_p;
 }
 
-
-static bool CleanUpLongRunningJob (ServiceJob *job_p)
-{
-	bool cleaned_up_flag = true;
-	Service *service_p = job_p -> sj_service_p;
-
-	if (service_p -> se_jobs_p)
-		{
-			if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id))
-				{
-					LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-					TimedTask *task_p = data_p -> lsd_tasks_p;
-					uint32 i;
-
-					for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
-						{
-							if (task_p -> tt_job_p == job_p)
-								{
-									OperationStatus status = GetCurrentTimedTaskStatus (task_p);
-
-									if (status != OS_STARTED)
-										{
-											InitTimedTask (task_p);
-											cleaned_up_flag = true;
-
-											job_p -> sj_status = OS_CLEANED_UP;
-
-											i = data_p -> lsd_num_tasks; 		/* force exit from loop */
-										}
-								}
-						}		/* for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p) */
-
-				}		/* if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id)) */
-
-		}		/* if (service_p -> se_jobs_p) */
-
-	return cleaned_up_flag;
-}
+//
+//static bool CleanUpLongRunningJob (ServiceJob *job_p)
+//{
+//	bool cleaned_up_flag = true;
+//	Service *service_p = job_p -> sj_service_p;
+//
+//	if (service_p -> se_jobs_p)
+//		{
+//			if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id))
+//				{
+//					LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
+//					TimedTask *task_p = data_p -> lsd_tasks_p;
+//					uint32 i;
+//
+//					for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
+//						{
+//							if (task_p -> tt_job_p == job_p)
+//								{
+//									OperationStatus status = GetCurrentTimedTaskStatus (task_p);
+//
+//									if (status != OS_STARTED)
+//										{
+//											InitTimedTask (task_p);
+//											cleaned_up_flag = true;
+//
+//											job_p -> sj_status = OS_CLEANED_UP;
+//
+//											i = data_p -> lsd_num_tasks; 		/* force exit from loop */
+//										}
+//								}
+//						}		/* for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p) */
+//
+//				}		/* if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id)) */
+//
+//		}		/* if (service_p -> se_jobs_p) */
+//
+//	return cleaned_up_flag;
+//}
 
 
 static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char * const job_name_s, const time_t start, const time_t end)
@@ -530,7 +531,7 @@ static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char 
 
 					job_p -> tsj_interval_p = interval_p;
 
-					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s);
+					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, NULL);
 
 				}		/* if (job_p) */
 			else
@@ -549,12 +550,14 @@ static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char 
 }
 
 
-static void FreeTimedServiceJob (TimedServiceJob *job_p)
+static void FreeTimedServiceJob (ServiceJob *job_p)
 {
-	FreeMemory (job_p -> tsj_interval_p);
+	TimedServiceJob *timed_job_p = (TimedServiceJob *) job_p;
 
-	ClearServiceJob (& (job_p -> tsj_job));
-	FreeMemory (job_p);
+	FreeMemory (timed_job_p -> tsj_interval_p);
+
+	ClearServiceJob (job_p);
+	FreeMemory (timed_job_p);
 }
 
 
@@ -682,7 +685,7 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 					PrintJSONToLog (json_p, "Init ServiceJob failure: ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 				}
 
-			FreeTimedServiceJob (job_p);
+			FreeTimedServiceJob ((ServiceJob *) job_p);
 		}		/* if (job_p) */
 	else
 		{

@@ -327,7 +327,7 @@ static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t job_id
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Samtools service job", NULL);
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: RunSamToolsService - enter");

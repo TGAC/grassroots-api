@@ -65,6 +65,7 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 } BlastServiceData;
 
 
+
 #ifdef ALLOCATE_BLAST_SERVICE_CONSTANTS
 	#define BLAST_SERVICE_PREFIX BLAST_SERVICE_LOCAL
 	#define BLAST_SERVICE_VAL(x)	= x

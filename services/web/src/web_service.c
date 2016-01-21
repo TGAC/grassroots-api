@@ -229,7 +229,7 @@ static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 
-	service_p -> se_jobs_p = AllocateServiceJobSet (service_p, 1, NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Web Service Job", NULL);
 
 	if (service_p -> se_jobs_p)
 		{
