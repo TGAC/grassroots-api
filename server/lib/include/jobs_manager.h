@@ -51,7 +51,7 @@ typedef struct JobsManager
 	 * @memberof JobsManager
 	 * @see AddServiceJobToJobsManager
 	 */
-	bool (*jm_add_job_fn) (struct JobsManager *manager_p, uuid_t job_key, json_t *job_json_p);
+	bool (*jm_add_job_fn) (struct JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p));
 
 	/**
 	 * @brief Find a ServiceJob.
@@ -65,7 +65,7 @@ typedef struct JobsManager
 	 * @memberof JobsManager
 	 * @see GetServiceJobFromJobsManager
 	 */
-	json_t *(*jm_get_job_fn) (struct JobsManager *manager_p, const uuid_t key);
+	ServiceJob *(*jm_get_job_fn) (struct JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
 
 	/**
@@ -80,7 +80,7 @@ typedef struct JobsManager
 	 * @memberof JobsManager
 	 * @see RemoveServiceJobFromJobsManager
 	 */
-	json_t *(*jm_remove_job_fn) (struct JobsManager *manager_p, const uuid_t key);
+	ServiceJob *(*jm_remove_job_fn) (struct JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
 } JobsManager;
 
@@ -108,9 +108,9 @@ GRASSROOTS_SERVICE_MANAGER_API JobsManager *GetJobsManager (void);
  * @param remove_job_fn The callback function to set for jm_remove_job_fn for the given JobsManager.
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitJobsManager (JobsManager *manager_p,
-                      bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, json_t *job_p),
-                      json_t *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key),
-                      json_t *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key));
+                      bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p)),
+                      ServiceJob *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p)),
+                      ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p)));
 
 
 /**
@@ -127,7 +127,7 @@ GRASSROOTS_SERVICE_MANAGER_API void InitJobsManager (JobsManager *manager_p,
  * @memberof JobsManager
  * @see jm_add_job_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API bool AddServiceJobToJobsManager (JobsManager *manager_p, uuid_t job_key, json_t *job_p);
+GRASSROOTS_SERVICE_MANAGER_API bool AddServiceJobToJobsManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p));
 
 
 /**
@@ -138,12 +138,12 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddServiceJobToJobsManager (JobsManager *man
  *
  * @param manager_p The JobsManager to search on.
  * @param key The uuid_t for the ServiceJob to search for.
- * @return A json_t for the matching ServiceJob or <code>NULL</code>
+ * @return A ServiceJob for the matching ServiceJob or <code>NULL</code>
  * if it could not be found.
  * @memberof JobsManager
  * @see jm_get_job_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API json_t *GetServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
+GRASSROOTS_SERVICE_MANAGER_API ServiceJob *GetServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
 
 /**
@@ -155,12 +155,12 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *GetServiceJobFromJobsManager (JobsManager
  *
  * @param manager_p The JobsManager to search on.
  * @param key The uuid_t for the ServiceJob to search for.
- * @return A json_t for the matching ServiceJob or <code>NULL</code>
+ * @return A ServiceJob for the matching ServiceJob or <code>NULL</code>
  * if it could not be found.
  * @memberof JobsManager
  * @see jm_remove_job_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API json_t *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key);
+GRASSROOTS_SERVICE_MANAGER_API ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
 
 #ifdef __cplusplus

@@ -54,16 +54,21 @@ static const char s_mutex_filename_s [] = "logs/grassroots_jobs_manager_lock";
 /**************************/
 
 
-static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, json_t *job_p);
+static bool AddServiceJobToAPRJobsManager (JobsManager *manager_p, uuid_t job_key, ServiceJob  *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p));
 
-static json_t *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key);
+static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
-static json_t *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key);
+
+static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
+
 
 
 static void FreeAPRServerJob (unsigned char *key_p, void *value_p);
 
-static json_t *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key, void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length));
+static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p,
+																									const uuid_t job_key,
+																									ServiceJob *(*deserialise_fn) (unsigned char *data_p),
+																									void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length));
 
 
 /**************************/
@@ -146,72 +151,111 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p)
 }
 
 
-/**
- * @TODO
- * Try serialising the ServiceJob and storing that to test whether that works in a multi-process environment
- */
-static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, json_t *job_json_p)
+static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t job_key, ServiceJob  *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p))
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
 	bool success_flag = false;
+	unsigned char *value_p = NULL;
+	unsigned int value_length = 0;
+	void (*free_value_fn) (void *data_p)  = NULL;
 
-	/* We store the c-style string for the ServiceJob's json */
-	char *job_s = json_dumps (job_json_p, JSON_INDENT (2));
-
-	if (job_s)
+	if (serialise_fn)
 		{
-			/* Get the string length inclduing the terminating \0 */
-			unsigned int object_size = strlen (job_s) + 1;
+			value_p = serialise_fn (job_p, &value_length);
+			free_value_fn = free;
+		}
+	else
+		{
+			/* We store the c-style string for the ServiceJob's json */
+			json_t *job_json_p = GetServiceJobAsJSON (job_p);
 
+			if (job_json_p)
+				{
+					char *job_s = json_dumps (job_json_p, JSON_INDENT (2));
+
+					if (job_s)
+						{
+							/*
+							 * include the terminating \0 to make sure
+							 * the value as a valid c-style string
+							 */
+							value_length = strlen (job_s) + 1;
+							value_p = (unsigned char *) job_s;
+							free_value_fn = free;
+						}		/* if (job_s) */
+					else
+						{
+							char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+							ConvertUUIDToString (job_key, uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_dumps failed for \"%s\"", uuid_s);
+						}
+
+				}		/* if (job_json_p) */
+			else
+				{
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_key, uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetServiceJobAsJSON failed for \"%s\"", uuid_s);
+				}
+		}
+
+	if (value_p)
+		{
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
 				{
 					char uuid_s [UUID_STRING_BUFFER_SIZE];
 
 					ConvertUUIDToString (job_key, uuid_s);
 
-					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding \"%s\"=\"%s\"", uuid_s, job_s);
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding \"%s\"=\"%s\"", uuid_s, value_p);
 				}
 			#endif
 
-			success_flag = AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, (unsigned char *) job_s, object_size);
+			success_flag = AddObjectToAPRGlobalStorage (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, value_p, value_length);
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
 				{
 					char uuid_s [UUID_STRING_BUFFER_SIZE];
 
 					ConvertUUIDToString (job_key, uuid_s);
-					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\"=\"%s\", success=%d", uuid_s, job_s, success_flag);
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\"=\"%s\", success=%d", uuid_s, value_p, success_flag);
 				}
 			#endif
 
-			free (job_s);
-		}		/* if (job_s) */
+			if (free_value_fn)
+				{
+					free_value_fn (value_p);
+				}
+
+		}		/* if (value_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't deserialise json");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't serialise ServiceJob");
 		}
 
 	return success_flag;
 }
 
 
-static json_t *GetServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key)
+static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p))
 {
-	return QueryServiceJobFromAprJobsManager (jobs_manager_p, job_key, GetObjectFromAPRGlobalStorage);
+	return QueryServiceJobFromAprJobsManager (manager_p, job_key, deserialise_fn, GetObjectFromAPRGlobalStorage);
 }
 
 
-static json_t *RemoveServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key)
+static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p))
 {
-	return QueryServiceJobFromAprJobsManager (jobs_manager_p, job_key, RemoveObjectFromAPRGlobalStorage);
+	return QueryServiceJobFromAprJobsManager (manager_p, job_key, deserialise_fn, RemoveObjectFromAPRGlobalStorage);
 }
 
 
-static json_t *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key, void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length))
+static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length))
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
-	json_t *job_json_p = NULL;
-	char *job_s = NULL;
+	ServiceJob *job_p = NULL;
+	unsigned char *value_p = NULL;
 
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
 	ConvertUUIDToString (job_key, uuid_s);
@@ -220,31 +264,64 @@ static json_t *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, c
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
 	#endif
 
-	job_s = (char *) storage_callback_fn (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob *));
 
-	if (job_s)
+	value_p = storage_callback_fn (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob *));
+
+	if (value_p)
 		{
-			json_error_t err;
-
-			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got: \"%s\"", uuid_s, job_s);
-			#endif
-
-			job_json_p = json_loads (job_s, 0, &err);
-
-			if (!job_json_p)
+			if (deserialise_fn)
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to json, err \"%s\" at line %d, column %d", uuid_s, job_s, err.text, err.line, err.column);
+					job_p = deserialise_fn (value_p);
+
+					if (!job_p)
+						{
+							char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+							ConvertUUIDToString (job_key, uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "deserialise_fn failed for \"%s\"", uuid_s);
+						}
+				}
+			else
+				{
+					json_error_t err;
+					json_t *job_json_p = NULL;
+
+					#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got: \"%s\"", uuid_s, value_p);
+					#endif
+
+					job_json_p = json_loads ((char *) value_p, 0, &err);
+
+					if (job_json_p)
+						{
+							job_p = CreateServiceJobFromJSON (job_json_p);
+
+							if (!job_p)
+								{
+									char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+									ConvertUUIDToString (job_key, uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateServiceJobFromJSON failed for \"%s\"", uuid_s);
+								}
+
+						}		/* if (job_json_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to json for uuid \"%s\", err \"%s\" at line %d, column %d", value_p, uuid_s, err.text, err.line, err.column);
+						}
 				}
 
-			FreeMemory (job_s);
-		}		/*	if (job_s) */
+			FreeMemory (value_p);
+		}		/* if (value_p) */
 	else
 		{
-			PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "For job %s, failed to find job", uuid_s);
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_key, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get stored value for \"%s\"", uuid_s);
 		}
 
-	return job_json_p;
+	return job_p;
 }
 
 
@@ -267,7 +344,7 @@ static void FreeAPRServerJob (unsigned char *key_p, void *value_p)
 
 void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key)
 {
-	ServiceJob *job_p = RemoveServiceJobFromJobsManager (jobs_manager_p, job_key);
+	ServiceJob *job_p = RemoveServiceJobFromJobsManager (jobs_manager_p, job_key, NULL);
 
 	if (job_p)
 		{

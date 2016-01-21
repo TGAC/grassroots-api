@@ -802,7 +802,7 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 											*keep_service_p = true;
 										}
 
-									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p))
+									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p, NULL))
 										{
 											char *uuid_s = GetUUIDAsString (job_p -> sj_id);
 

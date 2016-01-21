@@ -685,7 +685,7 @@ static bool AddServiceDataToJSON (json_t *results_p, uuid_t job_id, const char *
 {
 	bool success_flag = false;
 	JobsManager *manager_p = GetJobsManager ();
-	ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, job_id);
+	ServiceJob *job_p = GetServiceJobFromJobsManager (manager_p, job_id, NULL);
 	json_t *job_json_p = NULL;
 
 	if (job_p)
@@ -839,7 +839,7 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 			if (json_object_set_new (status_p, SERVICE_UUID_S, json_string (uuid_s)) == 0)
 				{
 					JobsManager *manager_p = GetJobsManager ();
-					ServiceJob *job_p = RemoveServiceJobFromJobsManager (manager_p, service_id);
+					ServiceJob *job_p = RemoveServiceJobFromJobsManager (manager_p, service_id, NULL);
 
 					if (job_p)
 						{
