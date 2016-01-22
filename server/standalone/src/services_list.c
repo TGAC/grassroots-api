@@ -46,11 +46,11 @@ static void FreeUUIDJobNode (ListItem * const node_p);
 static UUIDJobNode *GetServiceJobNode (const uuid_t job_key);
 
 
-static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key);
+static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
-static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key);
+static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p));
 
-static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p);
+static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p));
 
 
 static UUIDJobNode *AllocateUUIDJobNode (uuid_t id, ServiceJob *job_p)
@@ -99,7 +99,7 @@ bool DestroyJobsManager ()
 }
 
 
-static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p)
+static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p))
 {
 	bool success_flag = false;
 	UUIDJobNode *node_p = GetServiceJobNode (job_key);
@@ -141,7 +141,7 @@ static UUIDJobNode *GetServiceJobNode (const uuid_t job_key)
 }
 
 
-static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key)
+static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p))
 {
 	UUIDJobNode *node_p = GetServiceJobNode (job_key);
 
@@ -149,7 +149,7 @@ static ServiceJob *GetServiceJobFromServicesListManager (JobsManager *manager_p,
 }
 
 
-static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key)
+static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p))
 {
 	ServiceJob *job_p = NULL;
 	UUIDJobNode *node_p = (UUIDJobNode *) s_manager_p -> slm_running_services.ll_head_p;
@@ -181,7 +181,7 @@ static ServiceJob *RemoveServiceJobFromServicesListManager (JobsManager *manager
 
 void ServiceJobFinished (JobsManager *manager_p, uuid_t job_key)
 {
-	ServiceJob *job_p = RemoveServiceJobFromServicesListManager (& (s_manager_p -> slm_base_manager), job_key);
+	ServiceJob *job_p = RemoveServiceJobFromServicesListManager (& (s_manager_p -> slm_base_manager), job_key, NULL);
 
 	if (job_p)
 		{
