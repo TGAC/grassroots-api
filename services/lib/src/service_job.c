@@ -47,7 +47,7 @@ ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, void (*fr
 
 	if (job_set_p)
 		{
-			ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (job_set_p, job_name_s, job_description_s);
+			ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (job_set_p, job_name_s, job_description_s, NULL);
 
 			if (job_p)
 				{
@@ -62,13 +62,13 @@ ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, void (*fr
 
 
 
-ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s)
+ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p))
 {
 	ServiceJob *job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
 
 	if (job_p)
 		{
-			if (InitServiceJob (job_p, service_p, job_name_s, job_description_s))
+			if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, update_status_fn))
 				{
 					return job_p;
 				}
@@ -80,9 +80,9 @@ ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, cons
 }
 
 
-ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s)
+ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p))
 {
-	ServiceJob *job_p = AllocateServiceJob (job_set_p -> sjs_service_p, job_name_s, job_description_s);
+	ServiceJob *job_p = AllocateServiceJob (job_set_p -> sjs_service_p, job_name_s, job_description_s, update_status_fn);
 
 	if (job_p)
 		{
@@ -98,7 +98,7 @@ ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, con
 }
 
 
-bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, const char *job_description_s)
+bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p))
 {
 	bool success_flag = true;
 
@@ -145,10 +145,10 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 			if (success_flag)
 				{
 					job_p -> sj_result_p = NULL;
-
 					job_p -> sj_metadata_p = NULL;
-
 					job_p -> sj_errors_p = NULL;
+
+					job_p -> sj_update_status_fn = update_status_fn;
 
 					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 						{
@@ -714,22 +714,10 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 
 			if (json_object_set_new (job_json_p, JOB_SERVICE_S, json_string (service_name_s)) == 0)
 				{
-					json_t *results_json_p = NULL;
-					OperationStatus old_status = job_p -> sj_status;
+					json_t *results_p = job_p -> sj_result_p;
 					OperationStatus current_status = GetServiceJobStatus (job_p);
 
-					if (old_status == current_status)
-						{
-							results_json_p = job_p -> sj_result_p;
-						}
-
-					if (!results_json_p)
-						{
-							results_json_p = GetServiceResults (job_p -> sj_service_p, job_p -> sj_id);
-							job_p -> sj_result_p = results_json_p;
-						}
-
-					if (AddValidJSON (job_json_p, JOB_RESULTS_S, results_json_p, false))
+					if (AddValidJSON (job_json_p, JOB_RESULTS_S, job_p -> sj_result_p, false))
 						{
 							if (AddValidJSON (job_json_p, JOB_ERRORS_S, job_p -> sj_errors_p, false))
 								{
@@ -965,7 +953,11 @@ OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 			case OS_IDLE:
 			case OS_PENDING:
 			case OS_STARTED:
-				if (job_p -> sj_service_p -> se_get_status_fn)
+				if (job_p -> sj_update_status_fn)
+					{
+						job_p -> sj_status = job_p -> sj_update_status_fn (job_p);
+					}
+				else if (job_p -> sj_service_p -> se_get_status_fn)
 					{
 						job_p -> sj_status = job_p -> sj_service_p -> se_get_status_fn (job_p -> sj_service_p, job_p -> sj_id);
 					}

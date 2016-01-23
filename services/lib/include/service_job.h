@@ -68,6 +68,8 @@ typedef struct ServiceJob
 
 	json_t *sj_errors_p;
 
+	OperationStatus (*sj_update_status_fn) (struct ServiceJob *job_p);
+
 } ServiceJob;
 
 
@@ -131,7 +133,7 @@ GRASSROOTS_SERVICE_API void FreeServiceJob (ServiceJob *job_p);
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
  * @memberof ServiceJob.
  */
-ServiceJob *AllocateServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s);
+ServiceJob *AllocateServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p));
 
 
 
@@ -145,7 +147,7 @@ ServiceJob *AllocateServiceJob (struct Service *service_p, const char *job_name_
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
  * @memberof ServiceJob.
  */
-ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s);
+ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p));
 
 
 
@@ -162,7 +164,7 @@ ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, con
  * @return <code>true</code> if the ServiceJob was initialised successfully, <code>false</code> otherwise
  * @memberof ServiceJob.
  */
-GRASSROOTS_SERVICE_API bool InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *job_name_s, const char *job_description_s);
+GRASSROOTS_SERVICE_API bool InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p));
 
 /**
  * @brief Clear a Service Job ready for reuse.
@@ -316,7 +318,7 @@ GRASSROOTS_SERVICE_API json_t *GetServiceJobSetAsJSON (const ServiceJobSet *jobs
  * or <code>NULL</code> upon error.
  * @memberof ServiceJob
  */
-GRASSROOTS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob *job_p);
+GRASSROOTS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob * const job_p);
 
 
 /**

@@ -35,6 +35,9 @@ typedef struct TimedServiceJob
 {
 	ServiceJob tsj_job;
 	TimeInterval *tsj_interval_p;
+
+	/** Has the TimedServiceJob been added to the JobsManager yet? */
+	bool tsj_added_flag;
 } TimedServiceJob;
 
 
@@ -87,10 +90,8 @@ static ServiceJob *DeserialiseTimedServiceJob (unsigned char *data_p);
 static void StartTimedServiceJob (TimedServiceJob *job_p);
 
 
-static OperationStatus GetTimedServiceJobStatus (TimedServiceJob *job_p);
+static OperationStatus GetTimedServiceJobStatus (ServiceJob *job_p);
 
-
-static void InitTimedServiceJob (TimedServiceJob *job_p);
 
 static json_t *GetTimedTaskResult (TimedServiceJob *task_p);
 
@@ -197,29 +198,33 @@ static bool CloseLongRunningService (Service *service_p)
 	bool close_flag = true;
 	LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
 	ServiceJobSetIterator iterator;
-	TimedServiceJob *job_p = NULL;
+	ServiceJob *job_p = NULL;
 	bool loop_flag = true;
-	InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
 
-	job_p = (TimedServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
-	loop_flag = (job_p != NULL);
-
-	while (loop_flag)
+	if (service_p -> se_jobs_p)
 		{
-			OperationStatus status = GetTimedServiceJobStatus (job_p);
+			InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
 
-			if (status == OS_PENDING || status == OS_STARTED)
-				{
-					close_flag = false;
-					loop_flag = false;
-				}
-			else
-				{
-					job_p = (TimedServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
+			job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+			loop_flag = (job_p != NULL);
 
-					if (!job_p)
+			while (loop_flag)
+				{
+					OperationStatus status = GetTimedServiceJobStatus (job_p);
+
+					if (status == OS_PENDING || status == OS_STARTED)
 						{
+							close_flag = false;
 							loop_flag = false;
+						}
+					else
+						{
+							job_p = GetNextServiceJobFromServiceJobSetIterator (&iterator);
+
+							if (!job_p)
+								{
+									loop_flag = false;
+								}
 						}
 				}
 		}
@@ -408,7 +413,7 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 						{
 							StartTimedServiceJob (job_p);
 
-							job_p -> tsj_job.sj_status = GetTimedServiceJobStatus (job_p);
+							job_p -> tsj_job.sj_status = GetTimedServiceJobStatus ((ServiceJob *) job_p);
 
 							if (!AddServiceJobToJobsManager (jobs_manager_p, job_p -> tsj_job.sj_id, (ServiceJob *) job_p, SerialiseTimedServiceJob))
 								{
@@ -450,7 +455,7 @@ static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uu
 {
 	OperationStatus status = OS_ERROR;
 	JobsManager *jobs_mananger_p = GetJobsManager ();
-	TimedServiceJob *job_p = (TimedServiceJob *) GetServiceJobFromJobsManager (jobs_mananger_p, job_id, DeserialiseTimedServiceJob);
+	ServiceJob *job_p = GetServiceJobFromJobsManager (jobs_mananger_p, job_id, DeserialiseTimedServiceJob);
 
 	if (job_p)
 		{
@@ -468,30 +473,22 @@ static OperationStatus GetLongRunningServiceStatus (Service *service_p, const uu
 }
 
 
-static void InitTimedServiceJob (TimedServiceJob *job_p)
-{
-	TimeInterval *ti_p = job_p -> tsj_interval_p;
-
-	ti_p -> ti_start = 0;
-	ti_p -> ti_end = 0;
-	ti_p -> ti_duration = 0;
-}
-
-
 static void StartTimedServiceJob (TimedServiceJob *job_p)
 {
 	TimeInterval *ti_p = job_p -> tsj_interval_p;
 
 	time (& (ti_p -> ti_start));
 	ti_p -> ti_end = (ti_p -> ti_start) + (ti_p -> ti_duration);
+	job_p -> tsj_job.sj_status = OS_STARTED;
 }
 
 
 
-static OperationStatus GetTimedServiceJobStatus (TimedServiceJob *job_p)
+static OperationStatus GetTimedServiceJobStatus (ServiceJob *job_p)
 {
+	TimedServiceJob *timed_job_p = (TimedServiceJob *) job_p;
 	OperationStatus status = OS_IDLE;
-	TimeInterval * const ti_p = job_p -> tsj_interval_p;
+	TimeInterval * const ti_p = timed_job_p -> tsj_interval_p;
 
 	if (ti_p -> ti_start != ti_p -> ti_end)
 		{
@@ -514,7 +511,7 @@ static OperationStatus GetTimedServiceJobStatus (TimedServiceJob *job_p)
 				}
 		}
 
-	job_p -> tsj_job.sj_status = status;
+	job_p -> sj_status = status;
 
 	return status;
 }
@@ -583,8 +580,9 @@ static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char 
 					interval_p -> ti_duration = duration;
 
 					job_p -> tsj_interval_p = interval_p;
+					job_p -> tsj_added_flag = false;
 
-					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, NULL);
+					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, NULL, GetTimedServiceJobStatus);
 
 				}		/* if (job_p) */
 			else

@@ -1250,7 +1250,7 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 
 			if (jobs_p)
 				{
-					ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, ids_s, "Failed UUID lookup");
+					ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, ids_s, "Failed UUID lookup", NULL);
 
 					if (job_p)
 						{

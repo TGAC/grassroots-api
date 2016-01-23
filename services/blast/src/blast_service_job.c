@@ -35,7 +35,7 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_na
 
 			if (tool_p)
 				{
-					InitServiceJob (& (job_p -> bsj_job), service_p, job_name_s, job_description_s);
+					InitServiceJob (& (job_p -> bsj_job), service_p, job_name_s, job_description_s, NULL);
 					job_p -> bsj_tool_p = tool_p;
 
 					return job_p;

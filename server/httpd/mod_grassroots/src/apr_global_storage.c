@@ -192,7 +192,7 @@ unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint3
 	if (uuid_s)
 		{
 			res_p = (unsigned char *) uuid_s;
-			*key_len_p = UUID_STRING_BUFFER_SIZE;
+			*key_len_p = UUID_STRING_BUFFER_SIZE - 1;
 		}
 
 	#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINER
@@ -237,7 +237,7 @@ static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
 
 			if (copied_data_s)
 				{
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "id \"%s\" data \"%s\" %X", copied_id_s, copied_data_s, data);
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "id \"%s\" idlen %u data \"%s\" datalen %u  %X", copied_id_s, idlen, copied_data_s, datalen, data);
 
 					FreeCopiedString (copied_data_s);
 				}
@@ -258,7 +258,7 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 	if (key_p)
 		{
 			bool alloc_key_flag = false;
-			char *key_s = GetKeyAsValidString ((char *) key_p, key_len - 1, &alloc_key_flag);
+			char *key_s = GetKeyAsValidString ((char *) key_p, key_len, &alloc_key_flag);
 			apr_status_t status = apr_global_mutex_lock (storage_p -> ags_mutex_p);
 
 			if (status == APR_SUCCESS)
@@ -384,7 +384,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 		{
 			apr_status_t status;
 			bool alloc_key_flag = false;
-			char *key_s = GetKeyAsValidString ((char *) key_p, key_len - 1, &alloc_key_flag);
+			char *key_s = GetKeyAsValidString ((char *) key_p, key_len, &alloc_key_flag);
 
 			#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
 			PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Made key: %s", key_s);
@@ -406,6 +406,8 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 					if (temp_p)
 						{
+							value_length = storage_p -> ags_largest_entry_size;
+
 							/* get the value */
 							status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
 																					 storage_p -> ags_server_p,
@@ -417,7 +419,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 
 							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
-							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s result_p %0.16X remove_flag %d", status, key_s, temp_p, remove_flag);
+							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s length %u result_p %0.16X remove_flag %d", status, key_s, key_len, temp_p, remove_flag);
 							#endif
 
 							if (status == APR_SUCCESS)

@@ -876,6 +876,29 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 
 
+static bool AddDateFilterToSearchQuery (json_t *query_p, const PathogenomicsData collection_type)
+{
+	bool success_flag = false;
+
+	switch (collection_type)
+		{
+			case PD_GENOTYPE:
+				break;
+
+			case PD_PHENOTYPE:
+				break;
+
+			case PD_SAMPLE:
+				break;
+
+			default:
+				break;
+		}		/* switch (collection_type) */
+
+	return success_flag;
+}
+
+
 static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p)
 {
 	json_t *results_p = NULL;

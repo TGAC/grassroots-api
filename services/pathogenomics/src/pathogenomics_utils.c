@@ -24,6 +24,7 @@
 #include "time_util.h"
 #include "streams.h"
 #include "json_tools.h"
+#include "string_utils.h"
 
 
 bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
@@ -51,9 +52,31 @@ bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
 				{
 					* (buffer_s + (BUFFER_SIZE - 1)) = '\0';
 
-
 					if (SetDateForSchemaOrg (json_p, key_s, buffer_s))
 						{
+							/* create a numeric date of the form YYYYMMDD */
+							uint32 raw_date = ((1900 + current_time.tm_year) * 10000) + ((1 + current_time.tm_mon) * 100) + current_time.tm_mday;
+
+							char *raw_key_s = ConcatenateStrings ("raw_", key_s);
+
+							if (raw_key_s)
+								{
+									if (json_object_set_new (json_p, raw_key_s, json_integer (raw_date)) == 0)
+										{
+
+										}		/* if (json_object_set_new (json_p, raw_key_s, json_integer (raw_date)) == 0) */
+									else
+										{
+
+										}
+
+									FreeCopiedString (raw_key_s);
+								}		/* if (raw_key_s) */
+							else
+								{
+
+								}
+
 							success_flag = true;
 						}
 				}
