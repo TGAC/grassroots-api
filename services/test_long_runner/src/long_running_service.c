@@ -53,6 +53,7 @@ typedef struct
 
 static const char * const LRS_START_S = "start";
 static const char * const LRS_END_S = "end";
+static const char * const LRS_ADDED_FLAG_S = "added_to_job_manager";
 
 
 /*
@@ -705,35 +706,57 @@ static unsigned char *SerialiseTimedServiceJob (ServiceJob *base_job_p, unsigned
 	return value_p;
 }
 
+
 static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 {
 	TimedServiceJob *job_p = (TimedServiceJob *) AllocMemory (sizeof (TimedServiceJob));
 
 	if (job_p)
 		{
-			if (InitServiceJobFromJSON (& (job_p -> tsj_job), json_p))
+			job_p -> tsj_interval_p = (TimeInterval *) AllocMemory (sizeof (TimeInterval));
+
+			if (job_p -> tsj_interval_p)
 				{
-					if (GetJSONLong (json_p,  LRS_START_S, & (job_p -> tsj_interval_p -> ti_start)))
+					if (InitServiceJobFromJSON (& (job_p -> tsj_job), json_p))
 						{
-							if (GetJSONLong (json_p,  LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))
+							if (GetJSONLong (json_p, LRS_START_S, & (job_p -> tsj_interval_p -> ti_start)))
 								{
-									return job_p;
-								}		/* if (GetJSONLong (json_p,  LRS_END_S, & (job_p -> tsj_interval_p -> ti_start))) */
+									if (GetJSONLong (json_p, LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))
+										{
+											bool b;
+
+											if (GetJSONBoolean (json_p, LRS_ADDED_FLAG_S, &b))
+												{
+													job_p -> tsj_added_flag = b;
+												}
+											else
+												{
+													job_p -> tsj_added_flag = false;
+												}
+
+											return job_p;
+										}		/* if (GetJSONLong (json_p,  LRS_END_S, & (job_p -> tsj_interval_p -> ti_start))) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s from JSON", LRS_END_S);
+										}
+
+								}		/* if (GetJSONLong (json_p,  LRS_START_S, & (job_p -> tsj_interval_p -> ti_start))) */
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s from JSON", LRS_END_S);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s from JSON", LRS_START_S);
 								}
-
-						}		/* if (GetJSONLong (json_p,  LRS_START_S, & (job_p -> tsj_interval_p -> ti_start))) */
+						}		/* if (InitServiceJobFromJSON (& (job_p -> tsj_job), json_p)) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s from JSON", LRS_START_S);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init ServiceJob from JSON");
+							PrintJSONToLog (json_p, "Init ServiceJob failure: ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 						}
-				}		/* if (InitServiceJobFromJSON (& (job_p -> tsj_job), json_p)) */
+
+				}		/* if (job_p -> tsj_interval_p) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init ServiceJob from JSON");
-					PrintJSONToLog (json_p, "Init ServiceJob failure: ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate TimeInterval");
 				}
 
 			FreeTimedServiceJob ((ServiceJob *) job_p);
