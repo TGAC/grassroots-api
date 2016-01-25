@@ -27,7 +27,7 @@
 #include "streams.h"
 #include "string_utils.h"
 #include "util_mutex.h"
-
+#include "filesystem_utils.h"
 
 
 #ifdef _DEBUG
@@ -50,6 +50,12 @@ static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
     apr_pool_t *pool);
 
 
+static bool SetLargestEntrySize (APRGlobalStorage *storage_p, const unsigned int size);
+
+static bool GetLargestEntrySize (APRGlobalStorage *storage_p, unsigned int *size_p);
+
+
+/***************************************************/
 
 
 APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), void (*free_key_and_value_fn) (unsigned char *key_p, void *value_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s)
@@ -82,31 +88,53 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 
 			if (status == APR_SUCCESS)
 				{
-					storage_p -> ags_entries_p = apr_hash_make_custom (pool_p, hash_fn);
+					char *current_dir_s = GetCurrentWorkingDirectory ();
 
-					if (storage_p -> ags_entries_p)
+
+					if (current_dir_s)
 						{
-							storage_p -> ags_pool_p = pool_p;
-							storage_p -> ags_server_p = server_p;
-							storage_p -> ags_make_key_fn = make_key_fn;
-							storage_p -> ags_free_key_and_value_fn = free_key_and_value_fn;
+							storage_p -> ags_largest_entry_memory_id = AllocateSharedMemory (current_dir_s, sizeof (unsigned int), 0644);
 
-							storage_p -> ags_largest_entry_size = 0;
-							storage_p -> ags_cache_id_s = cache_id_s;
-							storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
+							FreeCopiedString (current_dir_s);
 
-							storage_p -> ags_socache_instance_p = NULL;
-							storage_p -> ags_socache_provider_p = provider_p;
+							if (storage_p -> ags_largest_entry_memory_id != -1)
+								{
+									storage_p -> ags_entries_p = apr_hash_make_custom (pool_p, hash_fn);
 
-							apr_pool_cleanup_register (pool_p, storage_p, (const void *) FreeAPRGlobalStorage, apr_pool_cleanup_null);
+										if (storage_p -> ags_entries_p)
+											{
+												storage_p -> ags_pool_p = pool_p;
+												storage_p -> ags_server_p = server_p;
+												storage_p -> ags_make_key_fn = make_key_fn;
+												storage_p -> ags_free_key_and_value_fn = free_key_and_value_fn;
 
-							return true;
+												storage_p -> ags_cache_id_s = cache_id_s;
+												storage_p -> ags_mutex_lock_filename_s = mutex_filename_s;
+
+												storage_p -> ags_socache_instance_p = NULL;
+												storage_p -> ags_socache_provider_p = provider_p;
+
+												apr_pool_cleanup_register (pool_p, storage_p, (const void *) FreeAPRGlobalStorage, apr_pool_cleanup_null);
+
+												return true;
+											}		/* if (storage_p -> ags_entries_p) */
+
+									FreeSharedMemory (storage_p -> ags_largest_entry_memory_id);
+								}		/* if (storage_p -> ags_largest_entry_memory_id != -1) */
+							else
+								{
+									PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate shared memory for largest chunk size");
+								}
+
+						}		/* if (mem_key_s) */
+					else
+						{
+							PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create memory key from \"%s\" and \".memory\"", cache_id_s);
 						}
 
 					apr_global_mutex_destroy (storage_p -> ags_mutex_p);
 					storage_p -> ags_mutex_p = NULL;
 				}		/* if (status == APR_SUCCESS) */
-
 
 		}		/* if (provider_p) */
 
@@ -158,6 +186,11 @@ void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p)
 			if (storage_p -> ags_socache_instance_p)
 				{
 					storage_p -> ags_socache_provider_p -> destroy (storage_p -> ags_socache_instance_p, storage_p -> ags_server_p);
+				}
+
+			if (storage_p -> ags_largest_entry_memory_id)
+				{
+					FreeSharedMemory (storage_p -> ags_largest_entry_memory_id);
 				}
 		}
 }
@@ -249,6 +282,52 @@ static apr_status_t IterateOverSOCache (ap_socache_instance_t *instance,
 }
 
 
+static bool SetLargestEntrySize (APRGlobalStorage *storage_p, const unsigned int size)
+{
+	bool success_flag = false;
+	unsigned int *largest_size_p = (unsigned int *) OpenSharedMemory (storage_p -> ags_largest_entry_memory_id, 0);
+
+	if (largest_size_p)
+		{
+			if (*largest_size_p < size)
+				{
+					*largest_size_p = size;
+				}
+
+			CloseSharedMemory (largest_size_p);
+			success_flag = true;
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to open shared memory %d for largest size entry", storage_p -> ags_largest_entry_memory_id);
+		}
+
+	return success_flag;
+}
+
+
+
+static bool GetLargestEntrySize (APRGlobalStorage *storage_p, unsigned int *size_p)
+{
+	bool success_flag = false;
+	unsigned int *largest_size_p = (unsigned int *) OpenSharedMemory (storage_p -> ags_largest_entry_memory_id, 0);
+
+	if (largest_size_p)
+		{
+			*size_p =	*largest_size_p;
+
+			CloseSharedMemory (largest_size_p);
+			success_flag = true;
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to open shared memory %d for largest size entry", storage_p -> ags_largest_entry_memory_id);
+		}
+
+	return success_flag;
+}
+
+
 bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned char *value_p, unsigned int value_length)
 {
 	bool success_flag = false;
@@ -279,10 +358,11 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 					if (status == APR_SUCCESS)
 						{
 							success_flag = true;
+							size_t array_size = 0;
 
-							if (storage_p -> ags_largest_entry_size < value_length)
+							if (!SetLargestEntrySize (storage_p, value_length))
 								{
-									storage_p -> ags_largest_entry_size = value_length;
+									PrintErrors (STM_LEVEL_FINE, __FILE__, __LINE__, "Failed to possibly set largest entry size to %u", value_length);
 								}
 
 							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINE
@@ -396,57 +476,64 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 			if (status == APR_SUCCESS)
 				{
 					unsigned char *temp_p = NULL;
+					unsigned int array_size = 0;
 
 					#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
 					PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"Locked mutex");
 					#endif
 
-					/* We don't know how big the value might be so allocate the largest value that we've seen so far */
-					temp_p = (unsigned char *) AllocMemoryArray (storage_p -> ags_largest_entry_size, sizeof (unsigned char));
-
-					if (temp_p)
+					if (GetLargestEntrySize (storage_p, &array_size))
 						{
-							value_length = storage_p -> ags_largest_entry_size;
+							/* We don't know how big the value might be so allocate the largest value that we've seen so far */
+							temp_p = (unsigned char *) AllocMemoryArray (array_size, sizeof (unsigned char));
 
-							/* get the value */
-							status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
-																					 storage_p -> ags_server_p,
-							                              key_p,
-							                              key_len,
-							                              temp_p,
-							                              &value_length,
-							                              storage_p -> ags_pool_p);
-
-
-							#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
-							PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s length %u result_p %0.16X remove_flag %d", status, key_s, key_len, temp_p, remove_flag);
-							#endif
-
-							if (status == APR_SUCCESS)
+							if (temp_p)
 								{
-									result_p = temp_p;
+									/* get the value */
+									status = storage_p -> ags_socache_provider_p -> retrieve (storage_p -> ags_socache_instance_p,
+																							 storage_p -> ags_server_p,
+									                              key_p,
+									                              key_len,
+									                              temp_p,
+									                              &array_size,
+									                              storage_p -> ags_pool_p);
 
-									if (remove_flag == true)
+
+									#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+									PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status %d key %s length %u result_p %0.16X remove_flag %d", status, key_s, key_len, temp_p, remove_flag);
+									#endif
+
+									if (status == APR_SUCCESS)
 										{
-											status = storage_p -> ags_socache_provider_p -> remove (storage_p -> ags_socache_instance_p,
-											                                                        storage_p -> ags_server_p,
-											                                                        key_p,
-											                                                        key_len,
-											                                                        storage_p -> ags_pool_p);
+											result_p = temp_p;
+
+											if (remove_flag == true)
+												{
+													status = storage_p -> ags_socache_provider_p -> remove (storage_p -> ags_socache_instance_p,
+													                                                        storage_p -> ags_server_p,
+													                                                        key_p,
+													                                                        key_len,
+													                                                        storage_p -> ags_pool_p);
 
 
-											#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
-											PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status after removal %d", status);
-											#endif
+													#if APR_GLOBAL_STORAGE_DEBUG >= STM_LEVEL_FINEST
+													PrintLog (STM_LEVEL_FINEST,  __FILE__, __LINE__,"status after removal %d", status);
+													#endif
+												}
 										}
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"status %d key %s result_p %0.16X remove_flag %d", status, key_s, temp_p, remove_flag);
-									FreeMemory (temp_p);
-								}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"status %d key %s result_p %0.16X remove_flag %d", status, key_s, temp_p, remove_flag);
+											FreeMemory (temp_p);
+										}
 
-						}		/* if (temp_p) */
+								}		/* if (temp_p) */
+
+						}		/* if (GetLargestEntrySize (storage_p, &array_size)) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE,  __FILE__, __LINE__,"Failed to get largest entry size when adding \"%s\"", key_s);
+						}
 
 				}		/* if (status == APR_SUCCESS) */
 			else

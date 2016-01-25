@@ -832,33 +832,35 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_serv
 
 					/*
 					 * If the job is running asynchronously and still going
-					 * then we need to store it in the jobs table.
+					 * then we need to make sure that it is in the jobs table.
+					 * If the ServiceJob needs custom serialisation,
 					 */
-					if (! (job_p -> sj_service_p -> se_synchronous_flag))
-						{
-							if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
-								{
-									if (keep_service_p)
-										{
-											*keep_service_p = true;
-										}
 
-									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p, NULL))
-										{
-											char *uuid_s = GetUUIDAsString (job_p -> sj_id);
-
-											if (uuid_s)
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
-													FreeCopiedString (uuid_s);
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
-												}
-										}
-								}
-						}
+//					if (! (job_p -> sj_service_p -> se_synchronous_flag))
+//						{
+//							if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
+//								{
+//									if (keep_service_p)
+//										{
+//											*keep_service_p = true;
+//										}
+//
+//									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p, NULL))
+//										{
+//											char *uuid_s = GetUUIDAsString (job_p -> sj_id);
+//
+//											if (uuid_s)
+//												{
+//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
+//													FreeCopiedString (uuid_s);
+//												}
+//											else
+//												{
+//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
+//												}
+//										}
+//								}
+//						}
 				}
 
 			if (job_json_p)

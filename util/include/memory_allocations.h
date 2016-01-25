@@ -19,57 +19,7 @@
 #ifndef MEMORY_ALLOCATIONS_H
 #define MEMORY_ALLOCATIONS_H
 
-#ifdef __cplusplus
-	extern "C" {
-#endif
-
-
-#ifdef AMIGA
-	#include "amiga_platform.h"
-	#define InitAllocator()	InitAmigaAllocator()
-	#define ExitAllocator()	ExitAmigaAllocator()
-	#define AllocMemory(x)	AllocateAmigaMemory(x)
-	#define AllocMemoryArray(x,y)	AllocateAmigaZeroedArray(x,y)
-	#define ReallocMemory(x,y,z)	ReallocateAmigaMemory(x,y,z)
-	#define FreeMemory(x)	FreeAmigaMemory(x)
-	#define IsAllocatorThreadSafe() IsAmigaAllocatorThreadSafe()
-#else
-
-#ifdef WIN32
-//	#define USE_NEDMALLOC_ALLOCATOR
-#elif defined UNIX
-
-#endif
-
-#ifdef USE_TLSF_ALLOCATOR
-#elif defined USE_NEDMALLOC_ALLOCATOR
-	#include "nedmalloc_allocator.h"
-	#define InitAllocator()	InitNedmallocAllocator()
-	#define ExitAllocator()	ExitNedmallocAllocator()
-	#define AllocMemory(x)	AllocateNedmallocMemory(x)
-	#define AllocMemoryArray(x,y)	AllocateNedmallocZeroedArray(x,y)
-	#define ReallocMemory(x,y,z)	ReallocateNedmallocMemory(x,y,z)
-	#define FreeMemory(x)	FreeNedmallocMemory(x)
-	#define IsAllocatorThreadSafe() IsNedmallocAllocatorThreadSafe()
-#else
-	#if defined _DEBUG && defined _MSC_VER
-			#define _CRTDBG_MAP_ALLOC
-			#include <stdlib.h>
-			#include <crtdbg.h>
-	#else
-		#include <stdlib.h>
-	#endif
-
-	#define InitAllocator()	do {} while (0);
-	#define ExitAllocator()	do {} while (0);
-	#define AllocMemory(x)	malloc(x)
-	#define AllocMemoryArray(x,y)	calloc(x,y)
-	#define ReallocMemory(x,y,z)	realloc(x,y)
-	#define FreeMemory(x)	free(x)
-	#define IsAllocatorThreadSafe() (1)
-#endif
-
-#endif
+#include "typedefs.h"
 
 /**
  * An enum specifying the particular status of a piece of dynamically allocated memory for
@@ -90,6 +40,72 @@ typedef enum MEM_FLAG
 	/** Use the pointer value. We will not call free on this used value, another module must free the memory. */
 	MF_SHADOW_USE
 } MEM_FLAG;
+
+
+#ifdef __cplusplus
+	extern "C" {
+#endif
+
+
+#ifdef AMIGA
+	#include "amiga_platform.h"
+	#define InitAllocator()	InitAmigaAllocator()
+	#define ExitAllocator()	ExitAmigaAllocator()
+	#define AllocMemory(x)	AllocateAmigaMemory(x)
+	#define AllocMemoryArray(x,y)	AllocateAmigaZeroedArray(x,y)
+	#define ReallocMemory(x,y,z)	ReallocateAmigaMemory(x,y,z)
+	#define FreeMemory(x)	FreeAmigaMemory(x)
+	#define IsAllocatorThreadSafe() IsAmigaAllocatorThreadSafe()
+#else
+
+	#ifdef WIN32
+	//	#define USE_NEDMALLOC_ALLOCATOR
+	#elif defined UNIX
+
+	#endif
+
+	#ifdef USE_TLSF_ALLOCATOR
+	#elif defined USE_NEDMALLOC_ALLOCATOR
+		#include "nedmalloc_allocator.h"
+		#define InitAllocator()	InitNedmallocAllocator()
+		#define ExitAllocator()	ExitNedmallocAllocator()
+		#define AllocMemory(x)	AllocateNedmallocMemory(x)
+		#define AllocMemoryArray(x,y)	AllocateNedmallocZeroedArray(x,y)
+		#define ReallocMemory(x,y,z)	ReallocateNedmallocMemory(x,y,z)
+		#define FreeMemory(x)	FreeNedmallocMemory(x)
+		#define IsAllocatorThreadSafe() IsNedmallocAllocatorThreadSafe()
+	#else
+		#if defined _DEBUG && defined _MSC_VER
+				#define _CRTDBG_MAP_ALLOC
+				#include <stdlib.h>
+				#include <crtdbg.h>
+		#else
+			#include <stdlib.h>
+		#endif
+
+		#define InitAllocator()	do {} while (0);
+		#define ExitAllocator()	do {} while (0);
+		#define AllocMemory(x)	malloc(x)
+		#define AllocMemoryArray(x,y)	calloc(x,y)
+		#define ReallocMemory(x,y,z)	realloc(x,y)
+		#define FreeMemory(x)	free(x)
+		#define IsAllocatorThreadSafe() (1)
+	#endif
+
+#endif
+
+
+
+int AllocateSharedMemory (const char *id_s, size_t size, int flags);
+
+
+bool FreeSharedMemory (int id);
+
+
+void *OpenSharedMemory (int id, int flags);
+
+
+bool CloseSharedMemory (void *value_p);
 
 
 #ifdef __cplusplus

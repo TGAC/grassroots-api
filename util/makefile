@@ -61,7 +61,8 @@ SRCS 	= \
 	string_utils.c \
 	time_util.c \
 	unix_filesystem.c \
-	unix_plugin.c
+	unix_plugin.c \
+	unix_shared_memory.c
 	
 
 ifeq ($(BUILD),release)

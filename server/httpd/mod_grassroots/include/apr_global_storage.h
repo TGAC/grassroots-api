@@ -51,7 +51,13 @@ typedef struct APRGlobalStorage
 
 	const char *ags_cache_id_s;
 
-	size_t ags_largest_entry_size;
+	/**
+	 * This points to the size of the largest entry that
+	 * has been added to the storage. Since we are in a
+	 * multi-process environment, this will be in shared
+	 * memory
+	 */
+	int ags_largest_entry_memory_id;
 
 	server_rec *ags_server_p;
 

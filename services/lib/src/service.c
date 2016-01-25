@@ -117,6 +117,7 @@ void FreeService (Service *service_p)
 	if (service_p -> se_jobs_p)
 		{
 			FreeServiceJobSet (service_p -> se_jobs_p);
+			service_p -> se_jobs_p = NULL;
 		}
 
 	CloseService (service_p);
