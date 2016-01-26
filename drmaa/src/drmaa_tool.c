@@ -119,34 +119,6 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 }
 
 
-static bool DeleteJobTemplate (DrmaaTool *tool_p)
-{
-	int err_code = DRMAA_ERRNO_SUCCESS;
-	char error_s [DRMAA_ERROR_STRING_BUFFER];
-
-	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Entering DeleteJobTemplate job %0.16X", tool_p -> dt_job_p);
-	#endif
-
-	if (tool_p -> dt_job_p)
-		{
-			err_code = drmaa_delete_job_template (tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
-
-			if (err_code != DRMAA_ERRNO_SUCCESS)
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_delete_job_template failed with error code %d \"%s\"", err_code, error_s);
-				}
-
-			tool_p -> dt_job_p = NULL;
-		}
-
-	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Exiting DeleteJobTemplate");
-	#endif
-
-	return (err_code == DRMAA_ERRNO_SUCCESS);
-}
-
 
 void FreeDrmaaTool (DrmaaTool *tool_p)
 {

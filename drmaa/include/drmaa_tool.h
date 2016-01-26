@@ -28,7 +28,6 @@
 #define DRMAA_TOOL_H_
 
 #include "drmaa_library.h"
-#include "drmaa.h"
 #include "typedefs.h"
 #include "linked_list.h"
 #include "operation.h"
@@ -53,15 +52,19 @@ typedef struct DrmaaTool
 
 	/** Filename for where to store the stdout/stderr for the drmaa job */
 	char *dt_output_filename_s;
-	drmaa_job_template_t *dt_job_p;
-	char *dt_id_s;
-	char *dt_id_out_s;
 	uint32 dt_num_cores;
 	uint32 dt_mb_mem_usage;
 	char *dt_host_name_s;
 	char *dt_user_name_s;
 	char **dt_email_addresses_ss;
+
+
+	bool (*dt_run_fn) (struct DrmaaTool *tool_p, const bool async_flag);
+
+	OperationStatus (*dt_get_status_fn) (struct DrmaaTool *tool_p);
+
 } DrmaaTool;
+
 
 
 #ifdef __cplusplus
@@ -224,16 +227,16 @@ GRASSROOTS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 GRASSROOTS_DRMAA_API bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addresses_ss);
 
 
-GRASSROOTS_SERVICE_API json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p);
+GRASSROOTS_DRMAA_API json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p);
 
 
-GRASSROOTS_SERVICE_API DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p);
+GRASSROOTS_DRMAA_API DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p);
 
 
-GRASSROOTS_SERVICE_API unsigned char *SerialiseDrmaaTool (const DrmaaTool * const job_p, const size_t *size_p);
+GRASSROOTS_DRMAA_API unsigned char *SerialiseDrmaaTool (const DrmaaTool * const job_p, const size_t *size_p);
 
 
-GRASSROOTS_SERVICE_API DrmaaTool *DeserialiseDrmaaTool (const unsigned char * const data_s);
+GRASSROOTS_DRMAA_API DrmaaTool *DeserialiseDrmaaTool (const unsigned char * const data_s);
 
 #ifdef __cplusplus
 }

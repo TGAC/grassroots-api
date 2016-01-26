@@ -618,8 +618,12 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 
 															if (! (job_p -> sj_name_s))
 																{
-
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy name \"%s\" to job", job_name_s);
 																}
+														}
+													else
+														{
+															job_p -> sj_name_s = NULL;
 														}
 
 													if (job_description_s)
@@ -628,15 +632,20 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 
 															if (! (job_p -> sj_description_s))
 																{
-
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy description \"%s\" to job", job_description_s);
 																}
+														}
+													else
+														{
+															job_p -> sj_description_s = NULL;
 														}
 
 													job_p -> sj_errors_p = job_errors_p;
 													job_p -> sj_metadata_p = job_metadata_p;
 													job_p -> sj_result_p = job_results_p;
-													job_p -> sj_service_p= service_p;
+													job_p -> sj_service_p = service_p;
 													job_p -> sj_status = status;
+													job_p -> sj_update_status_fn = NULL;
 
 													success_flag = true;
 
