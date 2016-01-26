@@ -15,6 +15,7 @@
 */
 #include <string.h>
 
+#include "drmaa.h"
 #include "drmaa_tool.h"
 #include "streams.h"
 #include "string_utils.h"
@@ -30,6 +31,10 @@
 #endif
 
 
+/*
+ * STATIC PROTOTYPES
+ */
+
 static const char **CreateAndAddArgsArray (const DrmaaTool *tool_p);
 
 static void FreeAndRemoveArgsArray (const DrmaaTool *tool_p, const char **args_ss);
@@ -42,74 +47,79 @@ static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, cons
 
 void FreeStringArray (char **values_ss);
 
+static bool DeleteJobTemplate (DrmaaTool *tool_p);
+
+
+
+/*
+ * API FUNCTIONS
+ */
+
+
+bool InitDrmaa (void)
+{
+	bool success_flag = false;
+	char error_diagnosis_s [DRMAA_ERROR_STRING_BUFFER];
+	int res;
+
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "About to Init Drmaa");
+	#endif
+
+	res = drmaa_init (NULL, error_diagnosis_s, DRMAA_ERROR_STRING_BUFFER - 1);
+
+	if (res == DRMAA_ERRNO_SUCCESS)
+		{
+			success_flag = true;
+		}
+
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Init Drmaa %d res %d %s", success_flag, res, drmaa_diagnosis_s);
+	#endif
+
+	return success_flag;
+}
+
+
+bool ExitDrmaa (void)
+{
+	bool res_flag = true;
+	char error_diagnosis_s [DRMAA_ERROR_STRING_BUFFER];
+	int res;
+
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "About to Exit Drmaa");
+	#endif
+
+	res = drmaa_exit (error_diagnosis_s, DRMAA_ERROR_STRING_BUFFER - 1);
+
+	if (res == DRMAA_ERRNO_SUCCESS)
+		{
+			res_flag = true;
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_exit() failed: %s\n", error_diagnosis_s);
+		}
+
+	#if DRMAA_UTIL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Exit Drmaa %d res %d %s", res_flag, res, s_drmaa_diagnosis_s);
+	#endif
+
+	return res_flag;
+}
+
+
+
 DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 {
 	DrmaaTool *tool_p = (DrmaaTool *) AllocMemory (sizeof (DrmaaTool));
 
 	if (tool_p)
 		{
-			char error_s [DRMAA_ERROR_STRING_BUFFER];
-			int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
-
-			if (err_code == DRMAA_ERRNO_SUCCESS)
+			if (InitDrmaaTool (tool_p, program_name_s))
 				{
-					tool_p -> dt_program_name_s = CopyToNewString (program_name_s, 0, false);
-
-					if (tool_p -> dt_program_name_s)
-						{
-							tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode);
-
-							if (tool_p -> dt_args_p)
-								{
-									tool_p -> dt_id_s = NULL;
-									tool_p -> dt_id_out_s = NULL;
-
-									tool_p -> dt_queue_name_s = NULL;
-									tool_p -> dt_working_directory_s = NULL;
-									tool_p -> dt_output_filename_s = NULL;
-
-									tool_p -> dt_num_cores = 0;
-									tool_p -> dt_host_name_s = NULL;
-									tool_p -> dt_user_name_s = NULL;
-									tool_p -> dt_email_addresses_ss = NULL;
-									tool_p -> dt_mb_mem_usage = 0;
-
-									/* join output/error file */
-									if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
-										{
-											/* run jobs in user's home directory */
-											if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
-												{
-													/* the job to be run */
-													if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
-														{
-															/* path for output */
-															if (SetDrmaaAttribute (tool_p, DRMAA_OUTPUT_PATH, ":/tgac/services/wheatis/out"))
-																{
-																	return tool_p;
-																}
-
-														}
-
-												}
-
-										}
-
-								}		/* if (tool_p -> dt_args_p) */
-
-						}		/* if (tool_p -> dt_program_name_s) */
-
-					err_code = drmaa_delete_job_template (tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
-
-					if (err_code != DRMAA_ERRNO_SUCCESS)
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_delete_job_template failed with error code %d \"%s\"", err_code, error_s);
-						}
-
-				}		/* if (drmaa_allocate_job_template (& (tool_p -> dt_job_p), NULL, 0) == DRMAA_ERRNO_SUCCESS) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_allocate_job_template failed with error code %d \"%s\"", err_code, error_s);
+					return tool_p;
 				}
 
 			FreeMemory (tool_p);
@@ -119,16 +129,83 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 }
 
 
+bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s)
+{
+	tool_p -> dt_queue_name_s = NULL;
+	tool_p -> dt_working_directory_s = NULL;
+	tool_p -> dt_output_filename_s = NULL;
 
-void FreeDrmaaTool (DrmaaTool *tool_p)
+	tool_p -> dt_num_cores = 0;
+	tool_p -> dt_host_name_s = NULL;
+	tool_p -> dt_user_name_s = NULL;
+	tool_p -> dt_email_addresses_ss = NULL;
+	tool_p -> dt_mb_mem_usage = 0;
+	tool_p -> dt_id_s = NULL;
+	tool_p -> dt_id_out_s = NULL;
+	tool_p -> dt_job_p = NULL;
+	tool_p -> dt_args_p = NULL;
+
+
+	tool_p -> dt_program_name_s = CopyToNewString (program_name_s, 0, false);
+
+	if (tool_p -> dt_program_name_s)
+		{
+			tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode);
+
+			if (tool_p -> dt_args_p)
+				{
+					/* join output/error file */
+					if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
+						{
+							/* run jobs in user's home directory */
+							if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
+								{
+									/* the job to be run */
+									if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
+										{
+											/* path for output */
+											if (SetDrmaaAttribute (tool_p, DRMAA_OUTPUT_PATH, ":/tgac/services/wheatis/out"))
+												{
+													char error_s [DRMAA_ERROR_STRING_BUFFER];
+													int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
+
+													if (err_code == DRMAA_ERRNO_SUCCESS)
+														{
+															return true;
+														}
+												}
+										}
+								}
+						}
+
+					FreeLinkedList (tool_p -> dt_args_p);
+					tool_p -> dt_args_p = NULL;
+				}		/* if (tool_p -> dt_args_p) */
+
+			FreeCopiedString (tool_p -> dt_program_name_s);
+			tool_p -> dt_program_name_s = NULL;
+		}		/* if (tool_p -> dt_program_name_s) */
+
+	return false;
+}
+
+
+void ClearDrmaaTool (DrmaaTool *tool_p)
 {
 	FileInformation fi;
 
 	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "entering FreeDrmaaTool");
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "entering ClearDrmaaTool");
 	#endif
 
-	DeleteJobTemplate (tool_p -> dt_job_p);
+	if (tool_p -> dt_job_p)
+		{
+			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting Job Template");
+			#endif
+
+			DeleteJobTemplate (tool_p);
+		}
 
 	if (tool_p -> dt_id_s)
 		{
@@ -147,21 +224,6 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 
 			FreeCopiedString (tool_p -> dt_id_out_s);
 		}
-
-	if (tool_p -> dt_email_addresses_ss)
-		{
-			#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
-			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_email_addresses_ss");
-			#endif
-
-			FreeStringArray (tool_p -> dt_email_addresses_ss);
-		}
-
-	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_args_p");
-	#endif
-	FreeLinkedList (tool_p -> dt_args_p);
-
 
 	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting dt_program_name_s");
@@ -213,6 +275,16 @@ void FreeDrmaaTool (DrmaaTool *tool_p)
 			#endif
 			FreeCopiedString (tool_p -> dt_output_filename_s);
 		}
+
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "exiting ClearDrmaaTool");
+	#endif
+}
+
+
+void FreeDrmaaTool (DrmaaTool *tool_p)
+{
+	ClearDrmaaTool (tool_p);
 
 	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "deleting tool_p");
@@ -398,6 +470,7 @@ bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s)
 }
 
 
+
 OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 {
 	OperationStatus status = OS_ERROR;
@@ -406,7 +479,7 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 	int res = drmaa_job_ps (tool_p -> dt_id_s, &drmaa_status, error_s, DRMAA_ERROR_STRING_BUFFER);
 
 	if (res == DRMAA_ERRNO_SUCCESS)
-		{			
+		{
 			switch (drmaa_status)
 				{
 					case DRMAA_PS_QUEUED_ACTIVE:
@@ -441,7 +514,7 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 					default:
 						break;
 				}
-		
+
 			PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa ps for %s: (%d = %d)", tool_p -> dt_id_s, drmaa_status, status);
 
 		}
@@ -454,6 +527,99 @@ OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 }
 
 
+bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
+{
+	bool success_flag = false;
+
+	if (BuildNativeSpecification (tool_p))
+		{
+			const char **args_ss = CreateAndAddArgsArray (tool_p);
+
+			if (args_ss)
+				{
+					char error_s [DRMAA_ERROR_STRING_BUFFER];
+
+					/*run a job*/
+					int result = drmaa_run_job (tool_p -> dt_id_s, sizeof (tool_p -> dt_id_s) - 1, tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+					/* Now the job has started we can delete its template */
+					DeleteJobTemplate (tool_p);
+
+					if (result == DRMAA_ERRNO_SUCCESS)
+						{
+							if (!async_flag)
+								{
+									int stat;
+
+									result = drmaa_wait (tool_p -> dt_id_s, tool_p -> dt_id_out_s, sizeof (tool_p -> dt_id_out_s) - 1, &stat,
+										DRMAA_TIMEOUT_WAIT_FOREVER, NULL, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+									if (result == DRMAA_ERRNO_SUCCESS)
+										{
+											int exited;
+											int exit_status;
+
+											success_flag = true;
+
+											if (drmaa_wifexited (&exited, stat, error_s, DRMAA_ERROR_STRING_BUFFER) == 0)
+												{
+													PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "job <%s> may not have finished correctly", tool_p -> dt_id_s, exit_status);
+												}
+
+											if (exited)
+												{
+													drmaa_wexitstatus (&exit_status, stat, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+													PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "job <%s> finished with exit code %d\n", tool_p -> dt_id_s, exit_status);
+												}
+											else
+												{
+													int signal_status;
+
+													drmaa_wifsignaled (&signal_status, stat, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+													if (signal_status)
+														{
+															char termsig [DRMAA_SIGNAL_BUFFER+1];
+															drmaa_wtermsig (termsig, DRMAA_SIGNAL_BUFFER, stat, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+															PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "job <%s> finished due to signal %s\n", tool_p -> dt_id_s, termsig);
+														}
+													else
+														{
+															PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "job <%s> is aborted\n", tool_p -> dt_id_s);
+														}
+												}
+
+										}		/* if (result == DRMAA_ERRNO_SUCCESS) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_wait failed with code %d, \"%s", result, error_s);
+										}
+
+								}		/* if (!async_flag) */
+
+						}		/* if (result == DRMAA_ERRNO_SUCCESS) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_run_job failed with code %d, \"%s", result, error_s);
+						}
+
+					FreeAndRemoveArgsArray (tool_p, args_ss);
+				}		/* if (args_ss) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build args array");
+				}
+
+		}		/* if (BuildNativeSpecification (tool_p)) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to build native specification");
+		}
+
+	return success_flag;
+}
 
 
 bool SetDrmaaToolCores (DrmaaTool *tool_p, uint32 num_cores)
@@ -669,40 +835,6 @@ static bool BuildNativeSpecification (DrmaaTool *tool_p)
 }
 
 
-static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char *value_s)
-{
-	char error_s [DRMAA_ERROR_STRING_BUFFER];
-	bool success_flag = true;
-
-	int res = drmaa_set_attribute (tool_p -> dt_job_p, name_s, value_s, error_s, DRMAA_ERROR_STRING_BUFFER);
-
-	if (res != DRMAA_ERRNO_SUCCESS)
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s for %s for %s, error %d, %s", name_s, value_s, tool_p -> dt_id_s, res, error_s);
-			success_flag = false;
-		}
-
-	return success_flag;
-}
-
-
-
-static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, const char **values_ss)
-{
-	char error_s [DRMAA_ERROR_STRING_BUFFER];
-	bool success_flag = true;
-
-	int res = drmaa_set_vector_attribute (tool_p -> dt_job_p, name_s, values_ss, error_s, DRMAA_ERROR_STRING_BUFFER);
-
-	if (res != DRMAA_ERRNO_SUCCESS)
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s beginning with %s for %s, error %d, %s", name_s, *values_ss, tool_p -> dt_id_s, res, error_s);
-			success_flag = false;
-		}
-
-	return success_flag;
-}
-
 
 json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p)
 {
@@ -767,7 +899,7 @@ json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p)
 																				{
 																					if (tool_p -> dt_email_addresses_ss)
 																						{
-																							continue_flag = AddStringArrayToJSON (drmaa_json_p, tool_p -> dt_email_addresses_ss, DRMAA_EMAILS_S);
+																							continue_flag = AddStringArrayToJSON (drmaa_json_p, (const char ** const ) tool_p -> dt_email_addresses_ss, DRMAA_EMAILS_S);
 																						}
 																				}
 
@@ -891,8 +1023,7 @@ static bool SetUpDrmaaToolValue (const json_t * const json_p, const char * const
 
 static char **GetEmailAddresses (const json_t * const json_p)
 {
-	bool success_flag = true;
-	char *emails_ss = NULL;
+	char **emails_ss = NULL;
 	json_t *array_p = json_object_get (json_p, DRMAA_EMAILS_S);
 
 	if (array_p)
@@ -905,7 +1036,6 @@ static char **GetEmailAddresses (const json_t * const json_p)
 
 							if (!emails_ss)
 								{
-									success_flag = false;
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to generate emails array from json");
 								}
 						}
@@ -913,7 +1043,6 @@ static char **GetEmailAddresses (const json_t * const json_p)
 				}		/* if (json_is_array (array_p)) */
 			else
 				{
-					success_flag = false;
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "emails value is not an array, %d", json_typeof (array_p));
 				}
 
@@ -985,13 +1114,13 @@ DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p)
 
 																			if (drmaa_p -> dt_args_p)
 																				{
-																					uint32 i = 0;
+																					int i = 0;
 
 																					if (GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &i))
 																						{
 																							if (!SetDrmaaToolCores (drmaa_p, i))
 																								{
-																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set num cores to " UINT32_FMT, i);
+																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set num cores to %d", i);
 																								}
 																						}
 
@@ -999,7 +1128,7 @@ DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p)
 																						{
 																							if (!SetDrmaaToolMemory (drmaa_p, i))
 																								{
-																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set memory usage to " UINT32_FMT, i);
+																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set memory usage to %d", i);
 																								}
 																						}
 
@@ -1027,246 +1156,316 @@ DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p)
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get program name from json");
 		}
-									const char *host_s = GetJSONString (json_p, DRMAA_HOSTNAME_S);
-
-									if (host_s)
-										{
-											if (SetDrmaaToolHostName (drmaa_p, host_s))
-												{
-													const char *job_name_s = GetJSONString (json_p, DRMAA_JOB_NAME_S);
-
-													if (job_name_s)
-														{
-															if (SetDrmaaToolJobName (drmaa_p, job_name_s))
-																{
-																	const char *working_dir_s = GetJSONString (json_p, DRMAA_WORKING_DIR_S);
-
-																	if (working_dir_s)
-																		{
-																			if (SetDrmaaToolCurrentWorkingDirectory (drmaa_p, working_dir_s))
-																				{
-																					const char *output_file_s = GetJSONString (json_p, DRMAA_OUTPUT_FILE_S);
-
-																					if (output_file_s)
-																						{
-																							if (SetDrmaaToolOutputFilename ())
-
-																						}		/* if (output_file_s) */
-																					else
-																						{
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output file from json");
-																						}
-
-																					uint32 i = 0;
-
-																					if (GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &i))
-																						{
-																							if (!SetDrmaaToolCores (drmaa_p, i))
-																								{
-																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set num cores to " UINT32_FMT, i);
-																								}
-																						}
-
-																					if (GetJSONInteger (json_p, DRMAA_MEM_USAGE_S, &i))
-																						{
-																							if (!SetDrmaaToolMemory (drmaa_p, i))
-																								{
-																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set memory usage to " UINT32_FMT, i);
-																								}
-																						}
-
-																				}		/* if (SetDrmaaToolCurrentWorkingDirectory (drmaa_p, working_dir_s)) */
-																			else
-																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set working dir to \"%s\"", working_dir_s);
-																				}
-
-																		}		/* if (working_dir_s)) */
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get working dir from json");
-																		}
-
-																}		/* if (SetDrmaaToolJobName (drmaa_p, job_name_s)) */
-															else
-																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job name to \"%s\"", job_name_s);
-																}
-
-														}		/* if (job_name_s) */
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job name from json");
-														}
-
-												}		/* if (SetDrmaaToolHostName (drmaa_p, host_s)) */
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set host name to \"%s\"", host_s);
-												}
-
-										}		/* if (host_s) */
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get host from json");
-										}
-
-								}		/* if (SetDrmaaToolQueueName (drmaa_p, queue_name_s)) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set queue name to \"%s\"", queue_name_s);
-								}
-
-						}		/* if (queue_name_s) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get queue name from json");
-						}
-
-				}		/* if (drmaa_p) */
-
-
-
-					const char *user_s = GetJSONString (json_p, DRMAA_USERNAME_S);
-
-					if (user_s)
-						{
-							const char *host_s = GetJSONString (json_p, DRMAA_HOSTNAME_S);
-
-							if (host_s)
-								{
-									const char *working_dir_s = GetJSONString (json_p, DRMAA_WORKING_DIR_S);
-
-									if (working_dir_s)
-										{
-											const char *output_file_s = GetJSONString (json_p, DRMAA_OUTPUT_FILE_S);
-
-											if (output_file_s)
-												{
-													bool success_flag = true;
-													char *emails_ss = NULL;
-													json_t *array_p = json_object_get (json_p, DRMAA_EMAILS_S);
-
-													if (array_p)
-														{
-															if (json_is_array (array_p))
-																{
-																	if (json_array_size (array_p) > 0)
-																		{
-																			emails_ss = GetStringArrayFromJSON (array_p);
-
-																			if (!emails_ss)
-																				{
-																					success_flag = false;
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to generate emails array from json");
-																				}
-																		}
-
-																}		/* if (json_is_array (array_p)) */
-															else
-																{
-																	success_flag = false;
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "emails value is not an array, %d", json_typeof (array_p));
-																}
-
-														}		/* if (array_p) */
-
-													if (success_flag)
-														{
-															array_p = json_object_get (json_p, DRMAA_ARGS_S);
-
-															if (array_p)
-																{
-																	if (json_is_array (array_p))
-																		{
-																			if (json_array_size (array_p) > 0)
-																				{
-																					LinkedList *args_p = GetStringListFromJSON (array_p);
-
-																					if (args_p)
-																						{
-																							const char *id_s = GetJSONString (json_p, DRMAA_ID_S);
-
-																							if (id_s)
-																								{
-																									const char *id_out_s = GetJSONString (json_p, DRMAA_OUT_ID_S);
-
-																									if (id_out_s)
-																										{
-																											uint32 num_cores = 0;
-																											uint32 mem_usage = 0;
-
-																											GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &num_cores);
-																											GetJSONInteger (json_p, DRMAA_MEM_USAGE_S, &mem_usage);
-
-																											drmaa_p = (DrmaaTool *) AllocMemory (sizeof (DrmaaTool));
-
-																											if (drmaa_p)
-																												{
-																													drmaa_p -> dt_args_p = args_p;
-
-																												}		/* if (drmaa_p) */
-
-																										}		/* if (id_out_s) */
-																									else
-																										{
-																											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get id out from json");
-																										}
-
-																								}		/* if (id_s) */
-																							else
-																								{
-																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get id from json");
-																								}
-
-																						}
-																					else
-																						{
-																							success_flag = false;
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to generate emails array from json");
-																						}
-																				}
-
-																		}		/* if (json_is_array (array_p)) */
-																	else
-																		{
-																			success_flag = false;
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "emails value is not an array, %d", json_typeof (array_p));
-																		}
-
-																}		/* if (array_p) */
-
-														}		/* if (success_flag) */
-
-												}		/* if (output_file_s) */
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output file from json");
-												}
-
-										}		/* if (working_dir_s) */
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get working dir from json");
-										}
-
-								}		/* if (host_s) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get host from json");
-								}
-
-						}		/* if (user_s) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get user from json");
-						}
-
+//									const char *host_s = GetJSONString (json_p, DRMAA_HOSTNAME_S);
+//
+//									if (host_s)
+//										{
+//											if (SetDrmaaToolHostName (drmaa_p, host_s))
+//												{
+//													const char *job_name_s = GetJSONString (json_p, DRMAA_JOB_NAME_S);
+//
+//													if (job_name_s)
+//														{
+//															if (SetDrmaaToolJobName (drmaa_p, job_name_s))
+//																{
+//																	const char *working_dir_s = GetJSONString (json_p, DRMAA_WORKING_DIR_S);
+//
+//																	if (working_dir_s)
+//																		{
+//																			if (SetDrmaaToolCurrentWorkingDirectory (drmaa_p, working_dir_s))
+//																				{
+//																					const char *output_file_s = GetJSONString (json_p, DRMAA_OUTPUT_FILE_S);
+//
+//																					if (output_file_s)
+//																						{
+//																							if (SetDrmaaToolOutputFilename ())
+//
+//																						}		/* if (output_file_s) */
+//																					else
+//																						{
+//																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output file from json");
+//																						}
+//
+//																					uint32 i = 0;
+//
+//																					if (GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &i))
+//																						{
+//																							if (!SetDrmaaToolCores (drmaa_p, i))
+//																								{
+//																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set num cores to " UINT32_FMT, i);
+//																								}
+//																						}
+//
+//																					if (GetJSONInteger (json_p, DRMAA_MEM_USAGE_S, &i))
+//																						{
+//																							if (!SetDrmaaToolMemory (drmaa_p, i))
+//																								{
+//																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set memory usage to " UINT32_FMT, i);
+//																								}
+//																						}
+//
+//																				}		/* if (SetDrmaaToolCurrentWorkingDirectory (drmaa_p, working_dir_s)) */
+//																			else
+//																				{
+//																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set working dir to \"%s\"", working_dir_s);
+//																				}
+//
+//																		}		/* if (working_dir_s)) */
+//																	else
+//																		{
+//																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get working dir from json");
+//																		}
+//
+//																}		/* if (SetDrmaaToolJobName (drmaa_p, job_name_s)) */
+//															else
+//																{
+//																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job name to \"%s\"", job_name_s);
+//																}
+//
+//														}		/* if (job_name_s) */
+//													else
+//														{
+//															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job name from json");
+//														}
+//
+//												}		/* if (SetDrmaaToolHostName (drmaa_p, host_s)) */
+//											else
+//												{
+//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set host name to \"%s\"", host_s);
+//												}
+//
+//										}		/* if (host_s) */
+//									else
+//										{
+//											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get host from json");
+//										}
+//
+//								}		/* if (SetDrmaaToolQueueName (drmaa_p, queue_name_s)) */
+//							else
+//								{
+//									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set queue name to \"%s\"", queue_name_s);
+//								}
+//
+//						}		/* if (queue_name_s) */
+//					else
+//						{
+//							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get queue name from json");
+//						}
+//
+//				}		/* if (drmaa_p) */
+//
+//
+//
+//					const char *user_s = GetJSONString (json_p, DRMAA_USERNAME_S);
+//
+//					if (user_s)
+//						{
+//							const char *host_s = GetJSONString (json_p, DRMAA_HOSTNAME_S);
+//
+//							if (host_s)
+//								{
+//									const char *working_dir_s = GetJSONString (json_p, DRMAA_WORKING_DIR_S);
+//
+//									if (working_dir_s)
+//										{
+//											const char *output_file_s = GetJSONString (json_p, DRMAA_OUTPUT_FILE_S);
+//
+//											if (output_file_s)
+//												{
+//													bool success_flag = true;
+//													char *emails_ss = NULL;
+//													json_t *array_p = json_object_get (json_p, DRMAA_EMAILS_S);
+//
+//													if (array_p)
+//														{
+//															if (json_is_array (array_p))
+//																{
+//																	if (json_array_size (array_p) > 0)
+//																		{
+//																			emails_ss = GetStringArrayFromJSON (array_p);
+//
+//																			if (!emails_ss)
+//																				{
+//																					success_flag = false;
+//																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to generate emails array from json");
+//																				}
+//																		}
+//
+//																}		/* if (json_is_array (array_p)) */
+//															else
+//																{
+//																	success_flag = false;
+//																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "emails value is not an array, %d", json_typeof (array_p));
+//																}
+//
+//														}		/* if (array_p) */
+//
+//													if (success_flag)
+//														{
+//															array_p = json_object_get (json_p, DRMAA_ARGS_S);
+//
+//															if (array_p)
+//																{
+//																	if (json_is_array (array_p))
+//																		{
+//																			if (json_array_size (array_p) > 0)
+//																				{
+//																					LinkedList *args_p = GetStringListFromJSON (array_p);
+//
+//																					if (args_p)
+//																						{
+//																							const char *id_s = GetJSONString (json_p, DRMAA_ID_S);
+//
+//																							if (id_s)
+//																								{
+//																									const char *id_out_s = GetJSONString (json_p, DRMAA_OUT_ID_S);
+//
+//																									if (id_out_s)
+//																										{
+//																											uint32 num_cores = 0;
+//																											uint32 mem_usage = 0;
+//
+//																											GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &num_cores);
+//																											GetJSONInteger (json_p, DRMAA_MEM_USAGE_S, &mem_usage);
+//
+//																											drmaa_p = (DrmaaTool *) AllocMemory (sizeof (DrmaaTool));
+//
+//																											if (drmaa_p)
+//																												{
+//																													drmaa_p -> dt_args_p = args_p;
+//
+//																												}		/* if (drmaa_p) */
+//
+//																										}		/* if (id_out_s) */
+//																									else
+//																										{
+//																											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get id out from json");
+//																										}
+//
+//																								}		/* if (id_s) */
+//																							else
+//																								{
+//																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get id from json");
+//																								}
+//
+//																						}
+//																					else
+//																						{
+//																							success_flag = false;
+//																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to generate emails array from json");
+//																						}
+//																				}
+//
+//																		}		/* if (json_is_array (array_p)) */
+//																	else
+//																		{
+//																			success_flag = false;
+//																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "emails value is not an array, %d", json_typeof (array_p));
+//																		}
+//
+//																}		/* if (array_p) */
+//
+//														}		/* if (success_flag) */
+//
+//												}		/* if (output_file_s) */
+//											else
+//												{
+//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output file from json");
+//												}
+//
+//										}		/* if (working_dir_s) */
+//									else
+//										{
+//											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get working dir from json");
+//										}
+//
+//								}		/* if (host_s) */
+//							else
+//								{
+//									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get host from json");
+//								}
+//
+//						}		/* if (user_s) */
+//					else
+//						{
+//							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get user from json");
+//						}
+//
 
 
 
 
 	return drmaa_p;
+}
+
+
+
+/***********************************/
+/********* STATIC FUNCTIONS ********/
+/***********************************/
+
+
+static bool DeleteJobTemplate (DrmaaTool *tool_p)
+{
+	int err_code = DRMAA_ERRNO_SUCCESS;
+	char error_s [DRMAA_ERROR_STRING_BUFFER];
+
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Entering DeleteJobTemplate job %0.16X", tool_p -> dt_job_p);
+	#endif
+
+	if (tool_p -> dt_job_p)
+		{
+			err_code = drmaa_delete_job_template (tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+			if (err_code != DRMAA_ERRNO_SUCCESS)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "drmaa_delete_job_template failed with error code %d \"%s\"", err_code, error_s);
+				}
+
+			tool_p -> dt_job_p = NULL;
+		}
+
+	#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Exiting DeleteJobTemplate");
+	#endif
+
+	return (err_code == DRMAA_ERRNO_SUCCESS);
+}
+
+
+static bool SetDrmaaAttribute (DrmaaTool *tool_p, const char *name_s, const char *value_s)
+{
+	char error_s [DRMAA_ERROR_STRING_BUFFER];
+	bool success_flag = true;
+
+	int res = drmaa_set_attribute (tool_p -> dt_job_p, name_s, value_s, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+	if (res != DRMAA_ERRNO_SUCCESS)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s for %s for %s, error %d, %s", name_s, value_s, tool_p -> dt_id_s, res, error_s);
+			success_flag = false;
+		}
+
+	return success_flag;
+}
+
+
+
+static bool SetDrmaaVectorAttribute (DrmaaTool *tool_p, const char *name_s, const char **values_ss)
+{
+	char error_s [DRMAA_ERROR_STRING_BUFFER];
+	bool success_flag = true;
+
+	int res = drmaa_set_vector_attribute (tool_p -> dt_job_p, name_s, values_ss, error_s, DRMAA_ERROR_STRING_BUFFER);
+
+	if (res != DRMAA_ERRNO_SUCCESS)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set %s beginning with %s for %s, error %d, %s", name_s, *values_ss, tool_p -> dt_id_s, res, error_s);
+			success_flag = false;
+		}
+
+	return success_flag;
 }
 
 

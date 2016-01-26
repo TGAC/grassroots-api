@@ -26,7 +26,7 @@
 #include "drmaa_library.h"
 #include "drmaa_tool.h"
 #include "service_job.h"
-
+#include "service.h"
 #include "jansson.h"
 
 

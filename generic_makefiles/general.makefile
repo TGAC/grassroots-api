@@ -65,6 +65,12 @@ clean:
 # 2. Generate dependency information, explicitly specifying the target name
 $(DIR_OBJS)/%.o : %.c
 	@echo ">>> c build for $@"
+	@echo "DRMAA_IMPLEMENTATION_LIB_NAME  $(DRMAA_IMPLEMENTATION_LIB_NAME)"	
+	@echo "DRMAA_IMPLEMENTATION_NAME  \"$(DRMAA_IMPLEMENTATION_NAME)\""	
+	@echo "DIR_DRMAA_IMPLEMENTATION_INC $(DIR_DRMAA_IMPLEMENTATION_INC)"
+	@echo "DIR_HTSLIB_INC $(DIR_HTSLIB_INC)"
+	@echo "SLURM_SET  $(SLURM_SET)"	
+	@echo "LSF_SET $(LSF_SET)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 	$(MAKEDEPEND) $(basename $@).d -MT $(basename $@).o $(CPPFLAGS) $(CFLAGS) $<  
 	@mv -f $(basename $@).d $(basename $@).d.tmp

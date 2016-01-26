@@ -302,7 +302,7 @@ bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char 
 
 
 
-bool AddStringArrayToJSON (json_t *parent_p, const char **values_ss, const char * const child_key_s)
+bool AddStringArrayToJSON (json_t *parent_p, const char ** const values_ss, const char * const child_key_s)
 {
 	bool success_flag = false;
 	json_t *child_p = json_array ();

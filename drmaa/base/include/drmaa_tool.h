@@ -32,7 +32,11 @@
 #include "linked_list.h"
 #include "operation.h"
 #include "json_util.h"
+//#include "drmaa.h"
 
+
+/* forward declaration */
+struct drmaa_job_template_s;
 
 /**
  * @struct DrmaaTool
@@ -49,6 +53,11 @@ typedef struct DrmaaTool
 	LinkedList *dt_args_p;
 	char *dt_queue_name_s;
 	char *dt_working_directory_s;
+
+	struct drmaa_job_template_s *dt_job_p;
+	char *dt_id_s;
+	char *dt_id_out_s;
+
 
 	/** Filename for where to store the stdout/stderr for the drmaa job */
 	char *dt_output_filename_s;
@@ -74,6 +83,14 @@ extern "C"
 
 /** @publicsection */
 
+
+GRASSROOTS_DRMAA_API bool InitDrmaa (void);
+
+
+GRASSROOTS_DRMAA_API bool ExitDrmaa (void);
+
+
+
 /**
  * Allocate a DrmaaTool to run the given program.
  *
@@ -85,12 +102,35 @@ GRASSROOTS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
 
 
 /**
+ * Initialise a DrmaaTool to run the given program.
+ *
+ * @param tool_p The DrmaaTool to initialise.
+ * @param program_name_s The program that this DrmaaTool will run.
+ * @return <code>true</code> if the DrmaaTool was initialised successfully, <code>false</code> upon error.
+ * @memberof DrmaaTool
+ */
+GRASSROOTS_DRMAA_API bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s);
+
+
+/**
  * Free a DrmaaTool.
+ *
+ * The DrmaaTool will be cleared and then the memory for the tool will be freed.
  *
  * @param tool_p The DrmaaTool to free.
  * @memberof DrmaaTool
+ * @see ClearDrmaaTool
  */
 GRASSROOTS_DRMAA_API void FreeDrmaaTool (DrmaaTool *tool_p);
+
+
+/**
+ * Clear a DrmaaTool.
+ *
+ * @param tool_p The DrmaaTool to clear.
+ * @memberof DrmaaTool
+ */
+GRASSROOTS_DRMAA_API void ClearDrmaaTool (DrmaaTool *tool_p);
 
 
 /**
@@ -217,7 +257,7 @@ GRASSROOTS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 
 
 /**
- * Set the email recepients for any job notifications for a DrmaaTool
+ * Set the email recipients for any job notifications for a DrmaaTool
  *
  * @param tool_p The DrmaaTool to get the job status for.
  * @param An array of email addresses with the final element being NULL.

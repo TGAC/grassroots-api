@@ -6,6 +6,7 @@ export DIR_ROOT = $(realpath .)
 include dependencies.properties
 
 
+
 # BEGIN JANSSON CONFIGURATION
 ifneq ($(JANSSON_HOME),)
 DIR_JANSSON=$(JANSSON_HOME)
@@ -98,6 +99,18 @@ export DIR_LSF_DRMAA_INC=$(DIR_LSF_DRMAA)/include
 export DIR_LSF_DRMAA_LIB=$(DIR_LSF_DRMAA)/lib
 # END LSF_DRMAA CONFIGURATION
 
+
+# BEGIN SLURM_DRMAA CONFIGURATION
+ifneq ($(SLURM_DRMAA_HOME),)
+DIR_SLURM_DRMAA=$(SLURM_DRMAA_HOME)
+else
+DIR_SLURM_DRMAA=/usr/local
+endif
+export DIR_SLURM_DRMAA_INC=$(DIR_SLURM_DRMAA)/include
+export DIR_SLURM_DRMAA_LIB=$(DIR_SLURM_DRMAA)/lib
+# END LSF_DRMAA CONFIGURATION
+
+
 # BEGIN MONGODB CONFIGURATION
 ifneq ($(MONGODB_HOME),)
 DIR_MONGODB=$(MONGODB_HOME)
@@ -130,7 +143,9 @@ export DIR_HTSLIB_INC=$(DIR_HTSLIB)/include
 export DIR_HTSLIB_LIB=$(DIR_HTSLIB)/lib
 # END HTSLIB CONFIGURATION
 
+
 include project.properties
+include drmaa.properties
 
 lib_util:
 	$(MAKE) -C util
@@ -150,19 +165,37 @@ lib_handlers:
 lib_services:
 	$(MAKE) -C services/lib
 
-ifeq ($(DRMAA_ENABLED),1)
-all: drmaa
 
+
+ifdef build_drmaa_flag
 drmaa: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
-	$(MAKE) -C drmaa
-
-install_drmaa:
-	$(MAKE) -C drmaa install
-else
-
-install_drmaa:
-
 endif
+
+
+ifeq ($(SLURM_DRMAA_ENABLED),1)	
+all: drmaa_slurm
+
+install: install_drmaa_slurm
+
+drmaa_slurm: drmaa
+	$(MAKE) -C drmaa/base
+	
+install_drmaa_slurm:
+	$(MAKE) -C drmaa/base install
+
+else ifeq ($(LSF_DRMAA_ENABLED),1)
+
+all: drmaa_lsf
+
+install: install_drmaa_lsf
+
+drmaa_lsf: drmaa
+	$(MAKE) -C drmaa/base
+
+install_drmaa_lsf: drmaa
+	$(MAKE) -C drmaa/base
+endif
+
 
 info:
 	@echo "installing grassroots to $(DIR_GRASSROOTS_INSTALL)"
@@ -242,7 +275,7 @@ clean:
 	$(MAKE) -C server/lib clean 
 	$(MAKE) -C server/standalone clean 
 	$(MAKE) -C mongodb clean
-	$(MAKE) -C drmaa clean
+	$(MAKE) -C drmaa/base clean
 	$(MAKE) -C server/httpd/mod_grassroots clean
 	$(MAKE) -C clients/lib clean
 #	$(MAKE) -C clients/standalone clean

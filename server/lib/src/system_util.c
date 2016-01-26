@@ -57,7 +57,7 @@ bool InitInformationSystem ()
 							#ifdef DRMAA_ENABLED
 							if (res_flag)
 								{
-									res_flag = InitDrmaa ();
+									res_flag = InitDrmaaEnvironment ();
 								}
 							#endif
 
@@ -74,7 +74,7 @@ bool DestroyInformationSystem ()
 	bool res_flag = true;
 
 	#ifdef DRMAA_ENABLED
-	ExitDrmaa ();
+	ExitDrmaaEnvironment ();
 	#endif
 
 	//FreeExternalServers ();

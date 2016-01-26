@@ -293,7 +293,7 @@ GRASSROOTS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * cons
  * @param child_key_s The key to use to add the json array to parent_p.
  * @return <code>true</code> if the json_array was created and added successfully, <code>false</code> otherwise.
  */
-GRASSROOTS_UTIL_API bool AddStringArrayToJSON (json_t *parent_p, const char **values_ss, const char * const child_key_s);
+GRASSROOTS_UTIL_API bool AddStringArrayToJSON (json_t *parent_p, const char ** const values_ss, const char * const child_key_s);
 
 
 /**
