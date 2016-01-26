@@ -37,8 +37,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	drmaa_service_job.c \
-	drmaa_tool.c
-	
+	drmaa_tool.c 
 
 BASE_LDFLAGS = -ldl \
 	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
