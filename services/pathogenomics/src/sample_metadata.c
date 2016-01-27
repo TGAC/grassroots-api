@@ -211,8 +211,6 @@ static bool AddSchemaOrgContext (json_t *values_p)
 const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
-	bool add_fields_flag = false;
-
 	const char *pathogenomics_id_s = GetJSONString (values_p, PG_ID_S);
 
 	if (pathogenomics_id_s)
@@ -246,91 +244,184 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, Pathogenomics
 
 															if (ukcpvs_id_s)
 																{
-																	json_t *ukcpvs_docs_p = NULL;
-																	int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, PG_UKCPVS_ID_S, ukcpvs_id_s, NULL);
+																	char *ukcpvs_key_s = ConcatenateVarargsStrings (PG_SAMPLE_S, ".", PG_UKCPVS_ID_S, NULL);
 
-																	if (num_ukcpvs_matches == 1)
+																	if (ukcpvs_key_s)
 																		{
-																			json_t *id_docs_p = NULL;
-																			int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, PG_ID_S, pathogenomics_id_s, NULL);
+																			char *id_key_s = ConcatenateVarargsStrings (PG_SAMPLE_S, ".", PG_ID_S, NULL);
 
-																			success_flag = false;
-
-																			if (num_id_matches == 1)
+																			if (id_key_s)
 																				{
-																					/* We need to merge the existing documents together and then update the values with the sample data */
+																					json_t *ukcpvs_docs_p = NULL;
+																					int32 num_ukcpvs_matches = GetAllMongoResultsForKeyValuePair (tool_p, &ukcpvs_docs_p, ukcpvs_key_s, ukcpvs_id_s, NULL);
 
-																					json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
-
-																					if (ukcpvs_doc_p)
+																					if (num_ukcpvs_matches == 1)
 																						{
-																							json_t *id_doc_p = json_array_get (id_docs_p, 0);
+																							json_t *id_docs_p = NULL;
+																							int32 num_id_matches = GetAllMongoResultsForKeyValuePair (tool_p, &id_docs_p, id_key_s, pathogenomics_id_s, NULL);
 
-																							if (id_doc_p)
+																							success_flag = false;
+
+																							if (num_id_matches == 1)
 																								{
-																									json_error_t err;
+																									/* We need to merge the existing documents together and then update the values with the sample data */
 
-																									/* remove the mongodb _id attribute */
-																									json_object_del (ukcpvs_doc_p, MONGO_ID_S);
+																									json_t *ukcpvs_doc_p = json_array_get (ukcpvs_docs_p, 0);
 
-																									/* after the update call, ukcpvs_id_s will go out of scope so store its value */
-																									selector_p = json_pack_ex (&err, 0, "{s:s}", PG_UKCPVS_ID_S, ukcpvs_id_s);
-
-																									if (selector_p)
+																									if (ukcpvs_doc_p)
 																										{
-																											/* Update our sample data with the values from ukcpvs_id_p */
-																											if (json_object_update (values_p, ukcpvs_doc_p) == 0)
+																											json_t *id_doc_p = json_array_get (id_docs_p, 0);
+
+																											if (id_doc_p)
 																												{
-																													success_flag = true;
-																												}
-																											else
-																												{
-																													error_s = "Failed to merge ukcpvs_id-based data with our sample data";
-																												}
+																													json_error_t err;
+
+																													/* remove the mongodb _id attribute */
+																													json_object_del (ukcpvs_doc_p, MONGO_ID_S);
+
+																													/* after the update call, ukcpvs_id_s will go out of scope so store its value */
+																													selector_p = json_pack_ex (&err, 0, "{s:s}", PG_UKCPVS_ID_S, ukcpvs_id_s);
+
+																													if (selector_p)
+																														{
+																															/* Update our sample data with the values from ukcpvs_id_p */
+																															if (json_object_update (values_p, ukcpvs_doc_p) == 0)
+																																{
+																																	success_flag = true;
+																																}
+																															else
+																																{
+																																	error_s = "Failed to merge ukcpvs_id-based data with our sample data";
+																																}
+																														}
+																													else
+																														{
+																															error_s = "Failed to store ukcpvs_id-based data for merging";
+																														}
+
+																												}		/* if (id_doc_p) */
 																										}
+
+																								}		/* if (num_id_matches == 1) */
+
+																						}		/* if (num_ukcpvs_matches == 1) */
+
+																				}		/* if (ukcpvs_id_s) */
+
+																			if (success_flag)
+																				{
+																					/*
+																					 * Now we insert it into the database as a json_object along with its
+																					 * live date
+																					 */
+																					json_t *sample_p = json_object ();
+
+																					if (sample_p)
+																						{
+																							if (json_object_set (sample_p, PG_SAMPLE_S, values_p) == 0)
+																								{
+																									/*
+																									 * jansson implementation doesn't appear to be able to have
+																									 * things like json_object_get/set where the key allows the
+																									 * use of a child key e.g.
+																									 *
+																									 * 	json_object_get (value_p, "sample.ID")
+																									 *
+																									 * where value_p has a "sample" child with an "ID entry
+																									 *
+																									 * So copy the PG_ID_S and PG_UKCPVS_ID_S to the top level
+																									 */
+
+																									if (json_object_set_new (sample_p, PG_ID_S, json_string (pathogenomics_id_s)) == 0)
+																										{
+																											if (json_object_del (values_p, PG_ID_S) != 0)
+																												{
+
+																												}
+
+																											if (ukcpvs_id_s)
+																												{
+																													success_flag = (json_object_set_new (sample_p, PG_UKCPVS_ID_S, json_string (ukcpvs_id_s)) == 0);
+
+																													if (success_flag)
+																														{
+																															if (json_object_del (values_p, PG_UKCPVS_ID_S) != 0)
+																																{
+
+																																}
+																														}
+
+																												}		/* if (ukcpvs_id_s) */
+
+
+																											if (success_flag)
+																												{
+																													if (AddPublishDateToJSON (sample_p, "sample_live_date"))
+																														{
+																															#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
+																															PrintJSONToLog (sample_p, "sample json:", STM_LEVEL_FINE, __FILE__, __LINE__);
+																															#endif
+
+																															error_s = InsertOrUpdateMongoData (tool_p, sample_p, NULL, NULL, PG_ID_S, NULL, NULL);
+
+																															if ((!error_s) && selector_p)
+																																{
+																																	if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																																		{
+																																			error_s = "Failed to remove existing phenotype doc";
+																																		}
+																																}
+																														}
+																													else
+																														{
+																															error_s = "Failed to add current date to sample data";
+																														}
+
+																												}		/* if (success_flag) */
+
+
+																										}		/* if (json_object_set_new (sample_p, PG_ID_S, json_string (pathogenomics_id_s)) == 0) */
 																									else
 																										{
-																											error_s = "Failed to store ukcpvs_id-based data for merging";
+
 																										}
 
+																								}		/* if (json_object_set (sample_p, PG_SAMPLE_S, values_p) == 0) */
+																							else
+																								{
+																									error_s = "Failed to add data to parent sample object";
+																								}
 
-																								}		/* if (id_doc_p) */
-																						}
-
-																				}		/* if (num_id_matches == 1) */
-
-																		}		/* if (num_ukcpvs_matches == 1) */
-
-																}		/* if (ukcpvs_id_s) */
-
-															if (success_flag)
-																{
-																	if (AddPublishDateToJSON (values_p, "sample_live_date"))
-																		{
-																			error_s = InsertOrUpdateMongoData (tool_p, values_p, NULL, NULL, PG_ID_S, NULL, NULL);
-
-																			if ((!error_s) && selector_p)
-																				{
-																					if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																							json_decref (sample_p);
+																						}		/* if (sample_p) */
+																					else
 																						{
-																							error_s = "Failed to remove existing phenotype doc";
+																							error_s = "Failed to allocate parent sample object";
 																						}
+
 																				}
-																		}
+																			else
+																				{
+																					error_s = "Failed to merge previous data";
+																				}
+
+																			if (selector_p)
+																				{
+																					WipeJSON (selector_p);
+																				}
+
+																			FreeCopiedString (id_key_s);
+																		}		/* if (id_key_s) */
 																	else
 																		{
-																			error_s = "Failed to add current date to sample data";
+																			error_s = "Failed to create id key";
 																		}
 
-																}
+																	FreeCopiedString (ukcpvs_key_s);
+																}		/* if (ukcpvs_key_s) */
 															else
 																{
-																	error_s = "Failed to merge previous data";
-																}
-
-															if (selector_p)
-																{
-																	WipeJSON (selector_p);
+																	error_s = "Failed to create ukcpvs key";
 																}
 
 														}		/* if (ParseCompany (values_p)) */
@@ -1444,7 +1535,6 @@ static bool FillInPathogenomicsFromGoogleData (const json_t *google_result_p, js
 
 bool RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, json_t *row_p, const json_t *raw_data_p, const char * const town_s, const char * const county_s, const char * const country_code_s)
 {
-	json_t *res_p = NULL;
 	json_t *results_array_p = json_object_get (raw_data_p, "results");
 
 	if (results_array_p)
@@ -1586,7 +1676,7 @@ static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, c
 													bson_iter_t iter;
 													json_t *json_value_p = NULL;
 
-													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+													#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
 													LogAllBSON (doc_p, STM_LEVEL_FINE, "matched doc: ");
 													#endif
 
@@ -1603,7 +1693,7 @@ static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, c
 
 																	bson_oid_copy (src_p, &doc_id);
 
-																	#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																	#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
 																	LogBSONOid (src_p, STM_LEVEL_FINE, "doc id");
 																	LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
 																	#endif

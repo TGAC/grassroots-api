@@ -32,6 +32,7 @@
 #include "genotype_metadata.h"
 #include "string_linked_list.h"
 #include "math_utils.h"
+#include "search_options.h"
 
 #ifdef _DEBUG
 	#define PATHOGENOMICS_SERVICE_DEBUG	(STM_LEVEL_FINER)
@@ -906,6 +907,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 
 	if (values_p)
 		{
+			bool private_view_flag = false;
 			const char **fields_ss = NULL;
 			json_t *fields_p = json_object_get (data_p, MONGO_OPERATION_FIELDS_S);
 
@@ -944,6 +946,101 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 						}		/* if (json_is_array (fields_p)) */
 
 				}		/* if (fields_p) */
+
+
+			/*
+			 *  If we are viewing the public data then we need to respect the
+			 *  live dates, if not then we just return everything
+			 */
+			GetJSONBoolean (values_p, PG_PRIVATE_VIEW_S, &private_view_flag);
+
+			if (!private_view_flag)
+				{
+					/*
+					 * We need to only get data that have live dates today or
+					 * earlier. We can use string comparisons e.g.
+					 *
+					 * 	db.getCollection('yellow_rust').find({"sample_live_date.date": {"$gte": "2016-08-02"}})
+					 *
+					 * 	which we have as
+					 *
+					 * 	{
+					 * 		"sample_live_date":
+					 * 			{
+					 * 				"date":
+					 * 					{
+					 *						">=": "2016-08-02"
+					 * 					}
+					 * 			}
+					 * 	}
+					 */
+					const char *key_s = NULL;
+
+					switch (collection_type)
+						{
+							case PD_SAMPLE:
+								key_s = PG_SAMPLE_S;
+								break;
+
+							case PD_GENOTYPE:
+								key_s = PG_GENOTYPE_S;
+								break;
+
+							case PD_PHENOTYPE:
+								key_s = PG_PHENOTYPE_S;
+								break;
+
+							default:
+								break;
+						}		/* switch (collection_type) */
+
+					if (key_s)
+						{
+							char *parent_name_s = ConcatenateStrings (key_s, "_live_date");
+
+							if (parent_name_s)
+								{
+									char *date_s = NULL;
+
+									if (date_s)
+										{
+											json_error_t err;
+											json_t *date_p = json_pack_ex (&err, 0, "{s:{s:s}}", "date", SO_GREATER_THAN_OR_EQUALS_S, date_s);
+
+											if (date_p)
+												{
+													if (json_object_set_new (values_p, parent_name_s, date_p) == 0)
+														{
+
+														}		/* if (json_object_set_new (values_p, parent_name_s, date_p) == 0) */
+
+												}		/* if (date_p) */
+											else
+												{
+
+												}
+
+										}		/* if (date_s) */
+									else
+										{
+
+										}
+
+									FreeCopiedString (parent_name_s);
+								}		/* if (parent_name_s) */
+							else
+								{
+
+								}
+
+						}		/* if (key_s) */
+					else
+						{
+
+						}
+
+				}		/* if (!private_view_flag) */
+
 
 			if (FindMatchingMongoDocumentsByJSON (tool_p, values_p, fields_ss))
 				{

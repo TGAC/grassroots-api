@@ -1331,6 +1331,10 @@ const char *InsertOrUpdateMongoData (MongoTool *tool_p, json_t *values_p, const 
 				}		/* if (SetMongoToolCollection (tool_p, database_s,collection_s)) */
 
 		}		/* if (primary_key_value_s) */
+	else
+		{
+			error_s = "Failed to get primary key from input json";
+		}
 
 	return error_s;
 }

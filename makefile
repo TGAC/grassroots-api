@@ -180,7 +180,7 @@ install: install_drmaa_slurm
 drmaa_slurm: drmaa
 	$(MAKE) -C drmaa/base
 	
-install_drmaa_slurm:
+install_drmaa_slurm: drmaa_slurm
 	$(MAKE) -C drmaa/base install
 
 else ifeq ($(LSF_DRMAA_ENABLED),1)
@@ -192,7 +192,7 @@ install: install_drmaa_lsf
 drmaa_lsf: drmaa
 	$(MAKE) -C drmaa/base
 
-install_drmaa_lsf: drmaa
+install_drmaa_lsf: drmaa_lsf
 	$(MAKE) -C drmaa/base
 endif
 
@@ -232,7 +232,7 @@ all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 	$(MAKE) -C services/pathogenomics 
 	$(MAKE) -C services/samtools
 							
-install: install_init install_references install_images all install_drmaa
+install: install_init install_references install_images all
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 	$(MAKE) -C parameters install
