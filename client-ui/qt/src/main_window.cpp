@@ -179,11 +179,13 @@ void MainWindow :: RunServices (bool run_flag)
 							if (show_progress_flag)
 								{
 									progress_p -> show ();
+									progress_p -> raise ();
 								}
 
 							if (show_results_flag)
 								{
 									results_p -> show ();
+									results_p -> raise ();
 								}
 						}
 

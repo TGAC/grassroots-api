@@ -34,8 +34,7 @@ bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
 
 	if (GetCurrentTime (&current_time))
 		{
-			#define BUFFER_SIZE (11)
-			char buffer_s [BUFFER_SIZE];
+			char *date_s = NULL;
 
 			/* Set the "go live" date to be 1 month from now */
 			if (current_time.tm_mon == 11)
@@ -48,14 +47,16 @@ bool AddPublishDateToJSON (json_t *json_p, const char * const key_s)
 					++ current_time.tm_mon;
 				}
 
-			if (sprintf (buffer_s, "%4d-%02d-%02d", 1900 + current_time.tm_year, 1 + current_time.tm_mon, current_time.tm_mday) > 0)
-				{
-					* (buffer_s + (BUFFER_SIZE - 1)) = '\0';
+			date_s = GetTimeAsString (&current_time);
 
-					if (SetDateForSchemaOrg (json_p, key_s, buffer_s))
+			if (date_s)
+				{
+					if (SetDateForSchemaOrg (json_p, key_s, date_s))
 						{
 							success_flag = true;
 						}
+
+					FreeCopiedString (date_s);
 				}
 			else
 				{

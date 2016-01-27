@@ -20,13 +20,33 @@
 #include <math.h>
 
 #include "time_util.h"
-
+#include "memory_allocations.h"
 
 static bool ConvertNumber (const char * const buffer_s, size_t from, size_t to, int *result_p);
 
 static bool ConvertStringToTime (const char * const time_s, time_t *time_p, bool (*conv_fn) (const char * const time_s, struct tm *time_p, int *offset_p));
 
 /***************************************/
+
+
+char *GetTimeAsString (const struct tm * const time_p)
+{
+	const size_t buffer_size = 11;
+	char *buffer_s = (char *) AllocMemory (buffer_size * sizeof (char));
+
+	if (buffer_s)
+		{
+			if (sprintf (buffer_s, "%4d-%02d-%02d", 1900 + (time_p -> tm_year), 1 + (time_p -> tm_mon), time_p -> tm_mday) > 0)
+				{
+					* (buffer_s + (buffer_size - 1)) = '\0';
+					return buffer_s;
+				}
+
+			FreeMemory (buffer_s);
+		}		/* if (buffer_s) */
+
+	return NULL;
+}
 
 
 /*

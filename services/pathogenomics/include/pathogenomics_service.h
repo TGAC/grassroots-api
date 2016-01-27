@@ -64,6 +64,8 @@ PATHOGENOMICS_PREFIX const char *PG_SOUTH_WEST_LOCATION_S PATHOGENOMICS_VAL ("so
 
 PATHOGENOMICS_PREFIX const char *PG_PRIVATE_VIEW_S PATHOGENOMICS_VAL ("ignore_live_dates");
 
+#define PG_LIVE_DATE_SUFFIX_S "_live_date"
+
 
 #ifdef __cplusplus
 extern "C"

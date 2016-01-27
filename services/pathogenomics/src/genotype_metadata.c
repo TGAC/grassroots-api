@@ -22,6 +22,7 @@
 #include "genotype_metadata.h"
 #include "pathogenomics_utils.h"
 #include "json_tools.h"
+#include "string_utils.h"
 
 
 #ifdef _DEBUG
@@ -53,13 +54,24 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenomi
 
 							if (json_object_set (doc_p, PG_GENOTYPE_S, values_p) == 0)
 								{
-									if (AddPublishDateToJSON (doc_p, "genotype_live_date"))
+									char *date_s = ConcatenateStrings (PG_GENOTYPE_S, PG_LIVE_DATE_SUFFIX_S);
+
+									if (date_s)
 										{
-											error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_ID_S, NULL, NULL);
+											if (AddPublishDateToJSON (doc_p, date_s))
+												{
+													error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_ID_S, NULL, NULL);
+												}
+											else
+												{
+													error_s = "Failed to add current date to genotyope data";
+												}
+
+											FreeCopiedString (date_s);
 										}
 									else
 										{
-											error_s = "Failed to add current date to genotyope data";
+											error_s = "Failed to make genotype date key";
 										}
 								}
 							else

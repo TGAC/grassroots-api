@@ -551,8 +551,8 @@ bool AddToQuery (bson_t *query_p, const char *key_s, const json_t *json_clause_p
 					 * value: can be single value or array. For a "range" key, it will be an array
 					 * of 2 elements that are the inclusive lower and upper bounds.
 					 */
-					json_t *operator_p = json_object_get (json_clause_p, "operator");
-					json_t *value_p = json_object_get (json_clause_p, "value");
+					json_t *operator_p = json_object_get (json_clause_p, MONGO_CLAUSE_OPERATOR_S);
+					json_t *value_p = json_object_get (json_clause_p, MONGO_CLAUSE_VALUE_S);
 
 					if (operator_p && value_p)
 						{

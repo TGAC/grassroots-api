@@ -356,29 +356,40 @@ const char *InsertSampleData (MongoTool *tool_p, json_t *values_p, Pathogenomics
 
 																											if (success_flag)
 																												{
-																													if (AddPublishDateToJSON (sample_p, "sample_live_date"))
+
+																													char *date_s = ConcatenateStrings (PG_SAMPLE_S, PG_LIVE_DATE_SUFFIX_S);
+
+																													if (date_s)
 																														{
-																															#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
-																															PrintJSONToLog (sample_p, "sample json:", STM_LEVEL_FINE, __FILE__, __LINE__);
-																															#endif
-
-																															error_s = InsertOrUpdateMongoData (tool_p, sample_p, NULL, NULL, PG_ID_S, NULL, NULL);
-
-																															if ((!error_s) && selector_p)
+																															if (AddPublishDateToJSON (sample_p, date_s))
 																																{
-																																	if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																																	#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
+																																	PrintJSONToLog (sample_p, "sample json:", STM_LEVEL_FINE, __FILE__, __LINE__);
+																																	#endif
+
+																																	error_s = InsertOrUpdateMongoData (tool_p, sample_p, NULL, NULL, PG_ID_S, NULL, NULL);
+
+																																	if ((!error_s) && selector_p)
 																																		{
-																																			error_s = "Failed to remove existing phenotype doc";
+																																			if (!RemoveMongoDocuments (tool_p, selector_p, true))
+																																				{
+																																					error_s = "Failed to remove existing phenotype doc";
+																																				}
 																																		}
 																																}
+																															else
+																																{
+																																	error_s = "Failed to add current date to sample data";
+																																}
+
+																															FreeCopiedString (date_s);
 																														}
 																													else
 																														{
-																															error_s = "Failed to add current date to sample data";
+																															error_s = "Failed to make sample date key";
 																														}
 
 																												}		/* if (success_flag) */
-
 
 																										}		/* if (json_object_set_new (sample_p, PG_ID_S, json_string (pathogenomics_id_s)) == 0) */
 																									else

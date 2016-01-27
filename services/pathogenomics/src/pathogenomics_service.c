@@ -33,6 +33,8 @@
 #include "string_linked_list.h"
 #include "math_utils.h"
 #include "search_options.h"
+#include "time_util.h"
+
 
 #ifdef _DEBUG
 	#define PATHOGENOMICS_SERVICE_DEBUG	(STM_LEVEL_FINER)
@@ -63,9 +65,9 @@ typedef enum
 
 static const char *s_data_names_pp [PD_NUM_TYPES] =
 {
-	"samples",
-	"phenotypes",
-	"genotypes"
+	PG_SAMPLE_S,
+	PG_PHENOTYPE_S,
+	PG_GENOTYPE_S
 };
 
 
@@ -117,6 +119,7 @@ static bool AddUploadParams (ParameterSet *param_set_p);
 
 static bool GetCollectionName (ParameterSet *param_set_p, PathogenomicsServiceData *data_p, const char **collection_name_ss, PathogenomicsData *collection_type_p);
 
+static bool AddLiveDateFiltering (json_t *record_p, const char * const date_s);
 
 
 /*
@@ -876,25 +879,63 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 }
 
 
-
-static bool AddDateFilterToSearchQuery (json_t *query_p, const PathogenomicsData collection_type)
+static bool AddLiveDateFiltering (json_t *record_p, const char * const date_s)
 {
 	bool success_flag = false;
+	uint32 i;
 
-	switch (collection_type)
+	for (i = 0; i < PD_NUM_TYPES; ++ i)
 		{
-			case PD_GENOTYPE:
-				break;
+			const char * const group_name_s = * (s_data_names_pp + i);
+			char *key_s = ConcatenateStrings (group_name_s, PG_LIVE_DATE_SUFFIX_S);
 
-			case PD_PHENOTYPE:
-				break;
+			if (key_s)
+				{
+					json_t *date_p = json_object_get (record_p, key_s);
 
-			case PD_SAMPLE:
-				break;
+					if (date_p)
+						{
+							const char *live_date_s = GetJSONString (date_p, "date");
 
-			default:
-				break;
-		}		/* switch (collection_type) */
+							if (live_date_s)
+								{
+									/*
+									 * Although both values are dates as strings, we don't need to convert
+									 * them as they are both in YYYY-MM-DD format. So strcmp is enough to
+									 * see if the "go live" date has been met.
+									 */
+									if (strcmp (live_date_s, date_s) > 0)
+										{
+											if (json_object_del (record_p, group_name_s) == 0)
+												{
+													success_flag = true;
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to remove %s from record", group_name_s);
+												}
+										}
+									else
+										{
+											success_flag = true;
+										}
+								}
+
+							/* Remove the "_live_date" object as any */
+							if (json_object_del (record_p, key_s) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to remove %s from record", key_s);
+								}
+						}		/* if (date_p) */
+
+					FreeCopiedString (key_s);
+				}		/* if (key_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create key from  \"%s\" and \"%s\"", group_name_s, PG_LIVE_DATE_SUFFIX_S);
+				}
+
+		}		/* for (i = 0; i < PD_NUM_TYPES; ++ i) */
 
 	return success_flag;
 }
@@ -953,93 +994,8 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 			 *  live dates, if not then we just return everything
 			 */
 			GetJSONBoolean (values_p, PG_PRIVATE_VIEW_S, &private_view_flag);
+			json_object_del (values_p, PG_PRIVATE_VIEW_S);
 
-			if (!private_view_flag)
-				{
-					/*
-					 * We need to only get data that have live dates today or
-					 * earlier. We can use string comparisons e.g.
-					 *
-					 * 	db.getCollection('yellow_rust').find({"sample_live_date.date": {"$gte": "2016-08-02"}})
-					 *
-					 * 	which we have as
-					 *
-					 * 	{
-					 * 		"sample_live_date":
-					 * 			{
-					 * 				"date":
-					 * 					{
-					 *						">=": "2016-08-02"
-					 * 					}
-					 * 			}
-					 * 	}
-					 */
-					const char *key_s = NULL;
-
-					switch (collection_type)
-						{
-							case PD_SAMPLE:
-								key_s = PG_SAMPLE_S;
-								break;
-
-							case PD_GENOTYPE:
-								key_s = PG_GENOTYPE_S;
-								break;
-
-							case PD_PHENOTYPE:
-								key_s = PG_PHENOTYPE_S;
-								break;
-
-							default:
-								break;
-						}		/* switch (collection_type) */
-
-					if (key_s)
-						{
-							char *parent_name_s = ConcatenateStrings (key_s, "_live_date");
-
-							if (parent_name_s)
-								{
-									char *date_s = NULL;
-
-									if (date_s)
-										{
-											json_error_t err;
-											json_t *date_p = json_pack_ex (&err, 0, "{s:{s:s}}", "date", SO_GREATER_THAN_OR_EQUALS_S, date_s);
-
-											if (date_p)
-												{
-													if (json_object_set_new (values_p, parent_name_s, date_p) == 0)
-														{
-
-														}		/* if (json_object_set_new (values_p, parent_name_s, date_p) == 0) */
-
-												}		/* if (date_p) */
-											else
-												{
-
-												}
-
-										}		/* if (date_s) */
-									else
-										{
-
-										}
-
-									FreeCopiedString (parent_name_s);
-								}		/* if (parent_name_s) */
-							else
-								{
-
-								}
-
-						}		/* if (key_s) */
-					else
-						{
-
-						}
-
-				}		/* if (!private_view_flag) */
 
 
 			if (FindMatchingMongoDocumentsByJSON (tool_p, values_p, fields_ss))
@@ -1057,39 +1013,93 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 											const size_t size = json_array_size (raw_results_p);
 											size_t i = 0;
 											json_t *raw_result_p = NULL;
+											char *date_s = NULL;
+											bool success_flag = true;
+
+											/*
+											 * If we are on the public view, we need to filter
+											 * out entries that don't meet the live dates.
+											 */
+											if (!private_view_flag)
+												{
+													struct tm current_time;
+
+													if (GetCurrentTime (&current_time))
+														{
+															date_s = GetTimeAsString (&current_time);
+
+															if (date_s)
+																{
+																	success_flag = true;
+																}
+														}
+												}
 
 											for (i = 0; i < size; ++ i)
 												{
 													raw_result_p = json_array_get (raw_results_p, i);
 													char *title_s = ConvertNumberToString ((double) i + 1, -1);
 
-													if (title_s)
+													if (!private_view_flag)
 														{
-															json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, raw_result_p);
-
-															if (resource_p)
+															if (AddLiveDateFiltering (raw_result_p, date_s))
 																{
-																	if (json_array_append_new (results_p, resource_p) == 0)
+																	/*
+																	 * If the result is non-trivial i.e. has at least one of the sample,
+																	 * genotype or phenotype, then keep it
+																	 */
+																	if ((json_object_get (raw_result_p, PG_SAMPLE_S) == NULL) &&
+																			(json_object_get (raw_result_p, PG_PHENOTYPE_S) == NULL) &&
+																			(json_object_get (raw_result_p, PG_GENOTYPE_S) == NULL))
 																		{
+																			#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																			const char *id_s = GetJSONString (raw_result_p, PG_ID_S);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Discarding %s after filtering", id_s ? id_s : "");
+																			#endif
 
+																			json_decref (raw_result_p);
+																			raw_result_p = NULL;
 																		}
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json resource for " SIZET_FMT " to results array", i);
-																			json_decref (resource_p);
-																		}
-																}		/* if (resource_p) */
+																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json resource for " SIZET_FMT, i);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add date filtering for %d", collection_type);
+																	raw_result_p = NULL;
+																}		/* if (!AddLiveDateFiltering (values_p, collection_type)) */
+														}		/* if (!private_view_flag) */
+
+													if (raw_result_p)
+														{
+															if (title_s)
+																{
+																	json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, raw_result_p);
+
+																	if (resource_p)
+																		{
+																			if (json_array_append_new (results_p, resource_p) == 0)
+																				{
+
+																				}
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json resource for " SIZET_FMT " to results array", i);
+																					json_decref (resource_p);
+																				}
+																		}		/* if (resource_p) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json resource for " SIZET_FMT, i);
+																		}
+
+																	FreeCopiedString (title_s);
+																}		/* if (title_s) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert " SIZET_FMT " to string", i + 1);
 																}
 
-															FreeCopiedString (title_s);
-														}		/* if (title_s) */
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert " SIZET_FMT " to string", i + 1);
-														}
+														}		/* if (raw_result_p) */
+
 												}		/* for (i = 0; i < size; ++ i) */
 
 										}		/* if (results_p) */

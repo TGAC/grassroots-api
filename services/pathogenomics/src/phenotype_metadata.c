@@ -23,6 +23,8 @@
 #include "phenotype_metadata.h"
 #include "pathogenomics_utils.h"
 #include "json_tools.h"
+#include "string_utils.h"
+
 
 #ifdef _DEBUG
 	#define PHENOTYPE_METADATA_DEBUG	(STM_LEVEL_FINE)
@@ -53,13 +55,24 @@ const char *InsertPhenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenom
 
 							if (json_object_set (doc_p, PG_PHENOTYPE_S, values_p) == 0)
 								{
-									if (AddPublishDateToJSON (doc_p, "phenotype_live_date"))
+									char *date_s = ConcatenateStrings (PG_PHENOTYPE_S, PG_LIVE_DATE_SUFFIX_S);
+
+									if (date_s)
 										{
-											error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_UKCPVS_ID_S, NULL, NULL);
+											if (AddPublishDateToJSON (doc_p, date_s))
+												{
+													error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_ID_S, NULL, NULL);
+												}
+											else
+												{
+													error_s = "Failed to add current date to phenotyope data";
+												}
+
+											FreeCopiedString (date_s);
 										}
 									else
 										{
-											error_s = "Failed to add current date to phenotyope data";
+											error_s = "Failed to make phenotype date key";
 										}
 								}
 							else
