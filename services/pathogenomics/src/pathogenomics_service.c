@@ -1028,49 +1028,63 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 														{
 															date_s = GetTimeAsString (&current_time);
 
-															if (date_s)
+															if (!date_s)
 																{
-																	success_flag = true;
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert time to a string");
+																	success_flag = false;
 																}
 														}
-												}
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get current time");
+															success_flag = false;
+														}
 
-											for (i = 0; i < size; ++ i)
+												}		/* if (!private_view_flag) */
+
+											if (success_flag)
 												{
-													raw_result_p = json_array_get (raw_results_p, i);
-													char *title_s = ConvertNumberToString ((double) i + 1, -1);
-
-													if (!private_view_flag)
+													for (i = 0; i < size; ++ i)
 														{
-															if (AddLiveDateFiltering (raw_result_p, date_s))
-																{
-																	/*
-																	 * If the result is non-trivial i.e. has at least one of the sample,
-																	 * genotype or phenotype, then keep it
-																	 */
-																	if ((json_object_get (raw_result_p, PG_SAMPLE_S) == NULL) &&
-																			(json_object_get (raw_result_p, PG_PHENOTYPE_S) == NULL) &&
-																			(json_object_get (raw_result_p, PG_GENOTYPE_S) == NULL))
-																		{
-																			#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
-																			const char *id_s = GetJSONString (raw_result_p, PG_ID_S);
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Discarding %s after filtering", id_s ? id_s : "");
-																			#endif
+															raw_result_p = json_array_get (raw_results_p, i);
+															char *title_s = ConvertNumberToString ((double) i + 1, -1);
 
-																			json_decref (raw_result_p);
-																			raw_result_p = NULL;
-																		}
+															if (!title_s)
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert " SIZET_FMT " to string for title", i + 1);
 																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add date filtering for %d", collection_type);
-																	raw_result_p = NULL;
-																}		/* if (!AddLiveDateFiltering (values_p, collection_type)) */
-														}		/* if (!private_view_flag) */
 
-													if (raw_result_p)
-														{
-															if (title_s)
+															/* We don't need to return the internal mongo id so remove it */
+															json_object_del (raw_result_p, MONGO_ID_S);
+
+															if (!private_view_flag)
+																{
+																	if (AddLiveDateFiltering (raw_result_p, date_s))
+																		{
+																			/*
+																			 * If the result is non-trivial i.e. has at least one of the sample,
+																			 * genotype or phenotype, then keep it
+																			 */
+																			if ((json_object_get (raw_result_p, PG_SAMPLE_S) == NULL) &&
+																					(json_object_get (raw_result_p, PG_PHENOTYPE_S) == NULL) &&
+																					(json_object_get (raw_result_p, PG_GENOTYPE_S) == NULL))
+																				{
+																					#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+																					const char *id_s = GetJSONString (raw_result_p, PG_ID_S);
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Discarding %s after filtering", id_s ? id_s : "");
+																					#endif
+
+																					raw_result_p = NULL;
+																				}
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add date filtering for %d", collection_type);
+																			raw_result_p = NULL;
+																		}		/* if (!AddLiveDateFiltering (values_p, collection_type)) */
+																}		/* if (!private_view_flag) */
+
+															if (raw_result_p)
 																{
 																	json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, raw_result_p);
 
@@ -1091,16 +1105,20 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json resource for " SIZET_FMT, i);
 																		}
 
-																	FreeCopiedString (title_s);
-																}		/* if (title_s) */
-															else
+																}		/* if (raw_result_p) */
+
+															if (title_s)
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert " SIZET_FMT " to string", i + 1);
+																	FreeCopiedString (title_s);
 																}
+														}		/* for (i = 0; i < size; ++ i) */
 
-														}		/* if (raw_result_p) */
+												}		/* if (success_flag) */
 
-												}		/* for (i = 0; i < size; ++ i) */
+											if (date_s)
+												{
+													FreeCopiedString (date_s);
+												}
 
 										}		/* if (results_p) */
 									else

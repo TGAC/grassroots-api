@@ -814,7 +814,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, bool *keep_service_p)
 {
 	bool success_flag = true;
-	uint32 i;
+	uint32 i = 0;
 	JobsManager *manager_p = GetJobsManager ();
 	ServiceJobNode *node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
 
