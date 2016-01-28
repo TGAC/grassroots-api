@@ -357,7 +357,6 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 					if (status == APR_SUCCESS)
 						{
-							size_t array_size = 0;
 							success_flag = true;
 
 							if (!SetLargestEntrySize (storage_p, value_length))

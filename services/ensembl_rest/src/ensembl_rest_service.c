@@ -97,6 +97,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								CloseEnsemblRestService,
 								GetEnsembleServiceResults,
 								NULL,
+								NULL,
 								true,
 								true,
 								data_p);

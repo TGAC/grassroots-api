@@ -50,6 +50,10 @@ typedef struct APRServersManager
 
 	APRGlobalStorage *asm_store_p;
 
+	/** The UUID for this Server */
+	uuid_t asm_server_id;
+
+
 } APRServersManager;
 
 
@@ -74,6 +78,7 @@ typedef struct
 
 	/** The ServersManager that the module is using. */
 	APRServersManager *wisc_servers_manager_p;
+
 } ModGrassrootsConfig;
 
 

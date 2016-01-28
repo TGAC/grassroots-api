@@ -33,7 +33,13 @@
 #endif
 
 
+/****************************************/
+/********** STATIC PROTOTYPES ***********/
+/****************************************/
+
+
 static ParameterNode *AllocateParameterNode (Parameter *param_p);
+
 static void FreeParameterNode (ListItem *node_p);
 
 static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, Parameter **params_pp, const uint32 num_params);
@@ -46,6 +52,10 @@ static void FreeParameterGroup (ParameterGroup *param_group_p);
 
 static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
 
+
+/****************************************/
+/********** PUBLIC FUNCTIONS ************/
+/****************************************/
 
 ParameterSet *AllocateParameterSet (const char *name_s, const char *description_s)
 {
@@ -665,13 +675,32 @@ Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag)
 }
 
 
-Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)
+Parameter **GetParametersFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)
 {
 	Parameter **params_pp = NULL;
 
 	return params_pp;
 }
 
+
+
+bool MergeParameterSets (const ParameterSet * const src_p, ParameterSet * const destination_p)
+{
+	bool success_flag = false;
+
+	/*
+	 * Iterate over all of Parameters in src_p and if
+	 * they don't exist in the destination then copy
+	s * them over. If they exist
+	 */
+
+	return success_flag;
+}
+
+
+/****************************************/
+/********** STATIC FUNCTIONS ************/
+/****************************************/
 
 
 static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag)

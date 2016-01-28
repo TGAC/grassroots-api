@@ -99,6 +99,9 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 					                    GetAllExternalServersFromAprServersManager,
 					                    DestroyAPRServersManager);
 
+					uuid_generate (manager_p -> asm_server_id);
+
+
 					apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRServersManager, apr_pool_cleanup_null);
 
 					return manager_p;

@@ -21,6 +21,8 @@
 #include "streams.h"
 #include "json_util.h"
 #include "json_tools.h"
+#include "key_value_pair.h"
+
 
 #ifdef _DEBUG
 	#define SERVERS_POOL_DEBUG	(STM_LEVEL_INFO)
@@ -28,6 +30,9 @@
 	#define SERVERS_POOL_DEBUG	(STM_LEVEL_NONE)
 #endif
 
+
+
+static bool AddPairedServiceFromJSON (ExternalServer *server_p, json_t *paired_service_json_p);
 
 
 
@@ -239,80 +244,217 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 }
 
 
+
+json_t *SerialiseExternalServerToJSON (ExternalServer *server_p)
+{
+	json_error_t err;
+	char uuid_s [UUID_STRING_BUFFER_SIZE];
+	json_t *server_json_p = NULL;
+
+	/* Start by adding the name, uri and uuid */
+	ConvertUUIDToString (server_p -> es_id, uuid_s);
+	json_pack_ex (&err, 0, "{s:s,s:s,s:s}", SERVER_NAME_S, server_p -> es_name_s, SERVER_URI_S, server_p -> es_uri_s, SERVER_UUID_S, uuid_s);
+
+	if (server_json_p)
+		{
+			bool success_flag = true;
+
+			/* Add all paired services */
+			if (server_p -> es_paired_services_p -> ll_size > 0)
+				{
+					json_t *pairs_p = json_array ();
+
+					if (pairs_p)
+						{
+							bool success_flag = true;
+							KeyValuePairNode *node_p = (KeyValuePairNode *) (server_p -> es_paired_services_p -> ll_head_p);
+
+							while (node_p && success_flag)
+								{
+									const KeyValuePair *pair_p = node_p -> kvpn_pair_p;
+									json_t *pair_json_p = json_pack_ex (&err, 0, "{s:s,s:s}", SERVER_LOCAL_PAIRED_SERVCE_S, pair_p -> kvp_key_s, SERVER_REMOTE_PAIRED_SERVCE_S, pair_p -> kvp_value_s);
+
+									if (pair_json_p)
+										{
+											if (json_array_append_new (pairs_p, pair_json_p) == 0)
+												{
+													node_p = (KeyValuePairNode *) (node_p -> kvpn_node.ln_next_p);
+												}
+											else
+												{
+													success_flag = false;
+												}
+										}
+									else
+										{
+											success_flag = false;
+										}
+
+								}		/* while (node_p && success_flag) */
+
+							if (success_flag)
+								{
+									if (json_object_set_new (server_json_p, SERVER_PAIRED_SERVCES_S, pairs_p) != 0)
+										{
+											success_flag = false;
+											json_decref (pairs_p);
+										}
+								}
+							else
+								{
+									json_decref (pairs_p);
+								}
+
+						}		/* if (pairs_p) */
+
+				}		/* if (server_p -> es_paired_services_p -> ll_size > 0) */
+
+			if (success_flag)
+				{
+					return server_json_p;
+				}		/* if (success_flag) */
+
+			json_decref (server_json_p);
+		}		/* if (server_json_p) */
+
+	return NULL;
+}
+
+
+ExternalServer *CreateExternalServerFromJSON (const json_t *json_p)
+{
+	ExternalServer *server_p = NULL;
+	const char *name_s = GetJSONString (json_p, SERVER_NAME_S);
+
+	if (name_s)
+		{
+			const char *uri_s = GetJSONString (json_p, SERVER_URI_S);
+
+			if (uri_s)
+				{
+					ConnectionType ct = CT_WEB;
+					const char *type_s = GetJSONString (json_p, SERVER_CONNECTION_TYPE_S);
+
+					if (type_s)
+						{
+							if (strcmp (type_s, CONNECTION_RAW_S) == 0)
+								{
+									ct = CT_RAW;
+								}
+						}		/* if (type_s) */
+
+
+					server_p = AllocateExternalServer (name_s, uri_s, ct);
+
+					if (server_p)
+						{
+							json_t *paired_services_json_p = json_object_get (json_p, SERVER_PAIRED_SERVCES_S);
+
+							if (paired_services_json_p)
+								{
+									if (json_is_array (paired_services_json_p))
+										{
+											size_t i;
+											json_t *paired_service_json_p;
+
+											json_array_foreach (paired_services_json_p, i, paired_service_json_p)
+												{
+													if (!AddPairedServiceFromJSON (server_p, paired_service_json_p))
+														{
+															char *dump_s = json_dumps (paired_service_json_p, JSON_INDENT (2));
+
+															if (dump_s)
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add paired service from \"%s\"", dump_s);
+																	free (dump_s);
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add paired service from json");
+																}
+														}
+												}
+
+										}
+									else if (json_is_object (paired_services_json_p))
+										{
+											if (!AddPairedServiceFromJSON (server_p, paired_services_json_p))
+												{
+													char *dump_s = json_dumps (paired_services_json_p, JSON_INDENT (2));
+
+													if (dump_s)
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add paired service from \"%s\"", dump_s);
+															free (dump_s);
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add paired service from json");
+														}
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s is of type %d", SERVER_PAIRED_SERVCES_S, json_typeof (paired_services_json_p));
+										}
+
+								}		/* if (paired_services_json_p) */
+
+						}		/* if (server_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate external server %s on %s", name_s, uri_s);
+						}
+
+				}		/* if (uri_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find uri for external server on %s", name_s);
+				}
+
+		}		/* if (name_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find name for external server");
+		}
+
+	return NULL;
+}
+
+
 bool AddExternalServerFromJSON (const json_t *json_p)
 {
 	bool success_flag = false;
 	ServersManager *manager_p = GetServersManager ();
+	ExternalServer *server_p = CreateExternalServerFromJSON (json_p);
 
-	if (manager_p)
+	if (server_p)
 		{
-			const char *name_s = GetJSONString (json_p, SERVER_NAME_S);
-
-			if (name_s)
+			if (AddExternalServerToServersManager (manager_p, server_p))
 				{
-					const char *uri_s = GetJSONString (json_p, SERVER_URI_S);
+					char *uuid_s = GetUUIDAsString (server_p -> es_id);
 
-					if (uri_s)
+					if (uuid_s)
 						{
-							ExternalServer *server_p = NULL;
-							ConnectionType ct = CT_WEB;
-							const char *type_s = GetJSONString (json_p, SERVER_CONNECTION_TYPE_S);
-
-							if (type_s)
-								{
-									if (strcmp (type_s, CONNECTION_RAW_S) == 0)
-										{
-											ct = CT_RAW;
-										}
-								}		/* if (type_s) */
-
-							server_p = AllocateExternalServer (name_s, uri_s, ct);
-
-							if (server_p)
-								{
-									if (AddExternalServerToServersManager (manager_p, server_p))
-										{
-											char *uuid_s = GetUUIDAsString (server_p -> es_id);
-
-											if (uuid_s)
-												{
-													PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", name_s, uri_s, uuid_s);
-													FreeUUIDString (uuid_s);
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", name_s, uri_s);
-												}
-											success_flag = true;
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add external server %s on %s to manager", name_s, uri_s);
-											FreeExternalServer (server_p);
-										}
-
-								}		/* if (server_p) */
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate external server %s on %s", name_s, uri_s);
-								}
-
-						}		/* if (uri_s) */
+							PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", server_p -> es_name_s, uuid_s);
+							FreeUUIDString (uuid_s);
+						}
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find uri for external server on %s", name_s);
+							PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", server_p -> es_name_s);
 						}
 
-				}		/* if (name_s) */
+					success_flag = true;
+				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find name for external server");
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add external server %s on %s to manager", server_p -> es_name_s);
+					FreeExternalServer (server_p);
 				}
-
-		}		/* if (manager_p) */
+		}		/* if (server_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get external servers manager");
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate external server from json");
 		}
 
 	return success_flag;
@@ -338,16 +480,24 @@ ExternalServer *AllocateExternalServer (const char *name_s, const char *uri_s, C
 
 					if (copied_uri_s)
 						{
-							ExternalServer *server_p = (ExternalServer *) AllocMemory (sizeof (ExternalServer));
+							LinkedList *paired_services_p = AllocateLinkedList (FreeKeyValuePairNode);
 
-							if (server_p)
+							if (paired_services_p)
 								{
-									server_p -> es_connection_p = connection_p;
-									server_p -> es_name_s = copied_name_s;
-									server_p -> es_uri_s = copied_uri_s;
-									uuid_generate (server_p -> es_id);
+									ExternalServer *server_p = (ExternalServer *) AllocMemory (sizeof (ExternalServer));
 
-									return server_p;
+									if (server_p)
+										{
+											server_p -> es_connection_p = connection_p;
+											server_p -> es_name_s = copied_name_s;
+											server_p -> es_uri_s = copied_uri_s;
+											uuid_generate (server_p -> es_id);
+											server_p -> es_paired_services_p = paired_services_p;
+
+											return server_p;
+										}
+
+									FreeLinkedList (paired_services_p);
 								}
 
 							FreeCopiedString (copied_uri_s);
@@ -368,6 +518,7 @@ void FreeExternalServer (ExternalServer *server_p)
 	FreeCopiedString (server_p -> es_uri_s);
 	FreeCopiedString (server_p -> es_name_s);
 	FreeConnection (server_p -> es_connection_p);
+	FreeLinkedList (server_p -> es_paired_services_p);
 
 	FreeMemory (server_p);
 }
@@ -460,3 +611,45 @@ ExternalServer *CopyExternalServer (const ExternalServer * const src_p)
 }
 
 
+const char *GetRemotePairedServiceName (const ExternalServer * const src_p, const char * const local_service_name_s)
+{
+	KeyValuePairNode *node_p = (KeyValuePairNode *) (src_p -> es_paired_services_p -> ll_head_p);
+
+	while (node_p)
+		{
+			if (strcmp (node_p -> kvpn_pair_p -> kvp_key_s, local_service_name_s) == 0)
+				{
+					return (node_p -> kvpn_pair_p -> kvp_value_s);
+				}
+
+			node_p = (KeyValuePairNode *) (node_p -> kvpn_node.ln_next_p);
+		}
+
+	return NULL;
+}
+
+
+
+static bool AddPairedServiceFromJSON (ExternalServer *server_p, json_t *paired_service_json_p)
+{
+	const char *local_s = GetJSONString (paired_service_json_p, SERVER_LOCAL_PAIRED_SERVCE_S);
+
+	if (local_s)
+		{
+			const char *remote_s = GetJSONString (paired_service_json_p, SERVER_REMOTE_PAIRED_SERVCE_S);
+
+			if (remote_s)
+				{
+					KeyValuePairNode *node_p = AllocateKeyValuePairNode (local_s, remote_s);
+
+					if (node_p)
+						{
+							LinkedListAddTail (server_p -> es_paired_services_p, (ListItem * const) node_p);
+							return true;
+						}
+				}
+
+		}		/* if (local_s) */
+
+	return false;
+}

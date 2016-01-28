@@ -31,9 +31,9 @@
 	extern "C" {
 #endif
 
-GRASSROOTS_SERVICE_MANAGER_API bool InitDrmaa (void);
+GRASSROOTS_SERVICE_MANAGER_API bool InitDrmaaEnvironment (void);
 
-GRASSROOTS_SERVICE_MANAGER_API bool ExitDrmaa (void);
+GRASSROOTS_SERVICE_MANAGER_API bool ExitDrmaaEnvironment (void);
 
 #ifdef __cplusplus
 }

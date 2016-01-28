@@ -65,6 +65,11 @@ PREFIX const char *SERVER_NAME_S VAL("server_name");
 PREFIX const char *SERVER_CONNECTION_TYPE_S VAL("server_connection");
 PREFIX const char *SERVER_URI_S VAL("server_url");
 
+
+PREFIX const char *SERVER_PAIRED_SERVCES_S VAL("paired_services");
+PREFIX const char *SERVER_LOCAL_PAIRED_SERVCE_S VAL("local");
+PREFIX const char *SERVER_REMOTE_PAIRED_SERVCE_S VAL("remote");
+
 PREFIX const char *CONNECTION_RAW_S VAL("connection_raw");
 PREFIX const char *CONNECTION_WEB_S VAL("connection_web");
 

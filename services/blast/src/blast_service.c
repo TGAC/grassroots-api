@@ -27,6 +27,8 @@
 #include "blast_formatter.h"
 #include "blast_service_job.h"
 
+
+
 /*
  * STATIC PROTOTYPES
  */
@@ -155,6 +157,7 @@ ServicesArray *GetServices (const json_t *config_p)
 							                   CloseBlastService,
 							                   GetBlastResultAsJSON,
 							                   GetBlastServiceStatus,
+							                   MergeBlastParameters,
 							                   true,
 							                   false,
 							                   data_p);
@@ -451,11 +454,9 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 
 			if (success_flag)
 				{
-					const char * const group_name_s = "Available Databases";
-
-					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+					if (!AddParameterGroupToParameterSet (param_set_p, BS_DATABASE_GROUP_NAME_S, grouped_params_pp, num_group_params))
 						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
 							FreeMemory (grouped_params_pp);
 						}
 				}

@@ -113,6 +113,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								CloseSamToolsService,
 								GetSamToolsResultsAsJSON,
 								NULL,
+								NULL,
 								true,
 								true,
 								data_p);
@@ -317,12 +318,8 @@ static void ReleaseSamToolsServiceParameters (Service *service_p, ParameterSet *
 
 static json_t *GetSamToolsResultsAsJSON (Service *service_p, const uuid_t job_id)
 {
-	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
-	json_t *resource_json_p = NULL;
-
-	return resource_json_p;
+	return NULL;
 }
-
 
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {

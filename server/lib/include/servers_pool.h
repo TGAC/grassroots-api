@@ -53,6 +53,17 @@ typedef struct ExternalServer
 	 * for given Services.
 	 */
 	uuid_t es_id;
+
+
+	/**
+	 * A List of KeyValuePairNodes where the key is
+	 * the name of the Service on the local Server
+	 * and the value is the name of the Service on
+	 * this ExternalServer
+	 */
+	LinkedList *es_paired_services_p;
+
+
 } ExternalServer;
 
 
@@ -137,6 +148,10 @@ typedef struct ServersManager
 
 
 	bool (*sm_free_servers_manager_fn) (struct ServersManager *manager_p);
+
+
+	LinkedList *(*sm_get_all_matching_servers_fn) (struct ServersManager *manager_p, const char * const local_service_name_s);
+
 
 } ServersManager;
 
@@ -351,6 +366,8 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (Server
 
 GRASSROOTS_SERVICE_MANAGER_API ExternalServer *CopyExternalServer (const ExternalServer * const src_p);
 
+
+GRASSROOTS_SERVICE_MANAGER_API const char *GetRemotePairedServiceName (const ExternalServer * const src_p, const char * const local_service_name_s);
 
 
 #endif /* SERVERS_POOL_H_ */

@@ -52,14 +52,14 @@ typedef struct MongoTool
  *
  * 		extern const char *SERVICE_NAME_S;
  *
- * however if ALLOCATE_JSON_TAGS is defined then it will
+ * however if ALLOCATE_MONGODB_TAGS is defined then it will
  * become
  *
  * 		const char *SERVICE_NAME_S = "path";
  *
- * ALLOCATE_RESOURCE_TAGS must be defined only once prior to
+ * ALLOCATE_MONGODB_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
- * resource.c.
+ * mongodb_tool.c.
  */
 #ifdef ALLOCATE_MONGODB_TAGS
 	#define MONGODB_PREFIX GRASSROOTS_MONGODB_API

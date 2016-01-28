@@ -24,6 +24,7 @@
 #define KEY_VALUE_PAIR_H
 
 #include "network_library.h"
+#include "linked_list.h"
 
 /**
  * A pair of strings.
@@ -38,16 +39,24 @@ typedef struct KeyValuePair
 } KeyValuePair;
 
 
+typedef struct KeyValuePairNode
+{
+	ListItem kvpn_node;
+	KeyValuePair *kvpn_pair_p;
+} KeyValuePairNode;
+
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+
 /**
  * Allocate a KeyValuePair.
  *
  * @param key_s This string will be deep copied and be the kvp_key_s in the KeyValuePair.
- * @param key_s This string will be deep copied and be the kvp_value_s in the KeyValuePair.
+ * @param value_s This string will be deep copied and be the kvp_value_s in the KeyValuePair.
  * @return A newly-allocated KeyValuePair or <code>NULL</code> upon error.
  * @memberof KeyValuePair
  */
@@ -61,6 +70,27 @@ GRASSROOTS_NETWORK_API KeyValuePair *AllocateKeyValuePair (const char *key_s, co
  * @memberof KeyValuePair
  */
 GRASSROOTS_NETWORK_API void FreeKeyValuePair (KeyValuePair *kvp_p);
+
+
+/**
+ * Allocate a KeyValuePairNode.
+ *
+ * @param key_s This string will be deep copied and be the kvp_key_s in the KeyValuePair.
+ * @param value_s This string will be deep copied and be the kvp_value_s in the KeyValuePair.
+ * @return A newly-allocated KeyValuePairNode containing the KeyValuePair or <code>NULL</code> upon error.
+ * @memberof KeyValuePair
+ */
+GRASSROOTS_NETWORK_API KeyValuePairNode *AllocateKeyValuePairNode (const char *key_s, const char *value_s);
+
+
+/**
+ * Free a KeyValuePairNode.
+ *
+ * @param node_p The KeyValuePairNode to free.
+ * @memberof KeyValuePair
+ */
+GRASSROOTS_NETWORK_API void FreeKeyValuePairNode (ListItem *node_p);
+
 
 
 #ifdef __cplusplus

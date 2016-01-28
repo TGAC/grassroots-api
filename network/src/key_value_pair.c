@@ -17,6 +17,7 @@
 #include "key_value_pair.h"
 #include "string_utils.h"
 
+
 KeyValuePair *AllocateKeyValuePair (const char *key_s, const char *value_s)
 {
 	char *copied_key_s = CopyToNewString (key_s, 0, false);
@@ -53,3 +54,38 @@ void FreeKeyValuePair (KeyValuePair *kvp_p)
 	FreeCopiedString (kvp_p -> kvp_value_s);
 	FreeMemory (kvp_p);
 }
+
+
+
+KeyValuePairNode *AllocateKeyValuePairNode (const char *key_s, const char *value_s)
+{
+	KeyValuePairNode *node_p = (KeyValuePairNode *) AllocMemory (sizeof (KeyValuePairNode));
+
+	if (node_p)
+		{
+			node_p -> kvpn_pair_p = AllocateKeyValuePair (key_s, value_s);
+
+			if (node_p -> kvpn_pair_p)
+				{
+					node_p -> kvpn_node.ln_prev_p = NULL;
+					node_p -> kvpn_node.ln_next_p = NULL;
+
+					return node_p;
+				}
+
+			FreeMemory (node_p);
+		}		/* if (node_p) */
+
+	return NULL;
+}
+
+
+void FreeKeyValuePairNode (ListItem *node_p)
+{
+	KeyValuePairNode *kvp_node_p = (KeyValuePairNode *) node_p;
+
+	FreeKeyValuePair (kvp_node_p -> kvpn_pair_p);
+	FreeMemory (kvp_node_p);
+}
+
+

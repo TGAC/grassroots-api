@@ -143,6 +143,7 @@ ServicesArray *GetServices (const json_t *config_p)
 								CloseLongRunningService,
 								GetLongRunningResultsAsJSON,
 								GetLongRunningServiceStatus,
+								NULL,
 								true,
 								false,
 								data_p);

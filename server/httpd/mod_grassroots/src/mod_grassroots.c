@@ -434,7 +434,7 @@ static int GrassrootsHandler (request_rec *req_p)
 								int socket_fd = -1;
 						    ModGrassrootsConfig *config_p = ap_get_module_config (req_p -> per_dir_config, &grassroots_module);
 						    const char *error_s = NULL;
-								json_t *res_p = ProcessServerJSONMessage (json_req_p,  socket_fd, &error_s);
+								json_t *res_p = ProcessServerJSONMessage (json_req_p, socket_fd, &error_s);
 
 								if (res_p)
 									{

@@ -740,9 +740,8 @@ json_t *GetJSONFromString (const char * const value_s, json_type field_type)
 			case JSON_INTEGER:
 				{
 					int i;
-					const char **value_ss = &value_s;
 
-					if (GetValidInteger (value_ss, &i, NULL))
+					if (GetValidInteger (&value_s, &i, NULL))
 						{
 							value_p = json_integer (i);
 						}
@@ -752,8 +751,9 @@ json_t *GetJSONFromString (const char * const value_s, json_type field_type)
 			case JSON_REAL:
 				{
 					double d;
+					const char **value_ss= &value_s;
 
-					if (GetValidRealNumber (&value_s, &d, NULL))
+					if (GetValidRealNumber (value_ss, &d, NULL))
 						{
 							value_p = json_real (d);
 						}

@@ -70,6 +70,7 @@ void InitialiseService (Service * const service_p,
 	bool (*close_fn) (struct Service *service_p),
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
+	bool (*merge_parameters_fn) (struct Service *service_p, struct Service *other_service_p),
 	bool specific_flag,
 	bool synchronous_flag,
 	ServiceData *data_p)
@@ -86,6 +87,8 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_get_results_fn = get_results_fn;
 	service_p -> se_data_p = data_p;
 	
+	service_p -> se_merge_parameters_fn = NULL;
+
 	service_p -> se_is_specific_service_flag = specific_flag;
 	service_p -> se_synchronous_flag = synchronous_flag;
 
@@ -1000,6 +1003,13 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 	
 	return success_flag;
 }
+
+
+bool IsServiceJoinable (const Service *service_p)
+{
+	return (service_p -> se_merge_parameters_fn != NULL);
+}
+
 
 
 json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag)

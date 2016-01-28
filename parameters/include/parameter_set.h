@@ -247,7 +247,11 @@ GRASSROOTS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, c
  * Upon failure a <code>NULL</code> is returned.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API Parameter **GetParameterFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
+GRASSROOTS_PARAMS_API Parameter **GetParametersFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
+
+
+
+GRASSROOTS_PARAMS_API bool MergeParameterSets (const ParameterSet * const src_p, ParameterSet * const destination_p);
 
 
 #ifdef __cplusplus
