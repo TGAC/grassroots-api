@@ -25,6 +25,8 @@
 #include "query.h"
 #include "connect.h"
 #include "user.h"
+#include "key_value_pair.h"
+
 
 #include "handler.h"
 #include "handler_utils.h"
@@ -888,9 +890,6 @@ static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, cons
 }
 
 
-
-
-
 static json_t *GetNamedServices (const json_t * const req_p, const json_t *credentials_p)
 {
 	json_t *res_p = NULL;
@@ -998,6 +997,130 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 
 
 //static json_t GetRemoteServices (const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
+
+static void AddPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
+{
+	ServersManager *servers_manager_p = GetServersManager ();
+	LinkedList *external_servers_p = GetAllExternalServersFromServersManager (servers_manager_p);
+
+	if (external_servers_p)
+		{
+			ExternalServerNode *external_server_node_p = (ExternalServerNode *) (external_servers_p -> ll_head_p);
+
+			while (external_server_node_p)
+				{
+					ExternalServer *external_server_p = external_server_node_p -> esn_server_p;
+					json_t *req_p = GetAvailableServicesRequest (username_s, password_s);
+
+					if (req_p)
+						{
+							json_t *response_p = MakeRemoteJSONCallToExternalServer (external_server_p, req_p);
+
+							/* We no longer need the request */
+							json_decref (req_p);
+
+							if (response_p)
+								{
+									/* If it has paired services try and match them up */
+									if (external_server_p -> es_paired_services_p)
+										{
+											KeyValuePairNode *pairs_node_p = (KeyValuePairNode *) (external_server_p -> es_paired_services_p -> ll_head_p);
+
+											while (pairs_node_p)
+												{
+													ServiceNode *internal_service_node_p = (ServiceNode *) (internal_services_p -> ll_head_p);
+													const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_key_s;
+													Service *matching_internal_service_p = NULL;
+
+													/*
+													 * Loop through our internal services trying to find a match
+													 */
+													while (internal_service_node_p)
+														{
+															Service *internal_service_p = internal_service_node_p -> sn_service_p;
+															const char *internal_service_name_s = GetServiceName (internal_service_p);
+
+															if (strcmp (service_name_s, internal_service_name_s) == 0)
+																{
+																	matching_internal_service_p = internal_service_p;
+																	internal_service_node_p = NULL;
+																}
+															else
+																{
+																	internal_service_node_p = (ServiceNode *) (internal_service_node_p -> sn_node.ln_next_p);
+																}
+
+														}		/* while (internal_service_node_p) */
+
+
+													if (matching_internal_service_p)
+														{
+															/*
+															 * Get the required Service from the ExternalServer
+															 */
+															json_t *external_services_json_p = json_object_get (response_p, SERVICES_NAME_S);
+
+															if (external_services_json_p)
+																{
+																	json_t *external_operations_p = json_object_get (external_services_json_p, SERVER_OPERATIONS_S);
+
+																	if (external_operations_p)
+																		{
+																			if (json_is_array (external_operations_p))
+																				{
+																					size_t i;
+																					json_t *matching_external_op_p = NULL;
+																					const size_t size = json_array_size (external_operations_p);
+
+																					const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
+
+																					for (i = 0; i < size; ++ i)
+																						{
+																							json_t *external_op_p = json_array_get (external_operations_p, i);
+																							const char *external_op_s = GetOperationNameFromJSON (external_op_p);
+
+																							if (strcmp (external_op_s, service_name_s) == 0)
+																								{
+																									matching_external_op_p = external_op_p;
+																									i = size;		/* force exit from loop */
+																								}
+
+																						}		/* for (i = 0; i < size; ++ i) */
+
+																					/* Do we have our remote service definition? */
+																					if (matching_external_op_p)
+																						{
+																							/*
+																							 * Merge the external service with our own and
+																							 * if successful, then remove the external one
+																							 * from the json array
+																							 */
+																						}		/* if (matching_external_op_p) */
+
+																				}		/* if (json_is_array (external_operations_json_p)) */
+
+																		}		/* if (external_operations_json_p) */
+
+																}		/* if (external_services_json_p) */
+
+														}		/* if (matching_internal_service_p) */
+
+													pairs_node_p = (KeyValuePairNode *) (pairs_node_p -> kvpn_node.ln_next_p);
+												}		/* while (pairs_node_p) */
+
+										}		/* if (external_server_p -> es_paired_services_p) */
+
+								}		/* if (response_p) */
+
+						}		/* if (req_p) */
+
+					external_server_node_p = (ExternalServerNode *) external_server_node_p -> esn_node.ln_next_p;
+				}		/* (while (external_server_node_p) */
+
+		}		/* if (external_servers_p) */
+
+
+}
 
 
 
@@ -1143,4 +1266,3 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 	return res_p;
 }
-
