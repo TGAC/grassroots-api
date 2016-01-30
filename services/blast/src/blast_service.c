@@ -84,6 +84,9 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s);
 
 
+static bool MergeBlastParameters (struct Service *service_p, json_t *other_service_json_p);
+
+
 /***************************************/
 
 typedef enum
@@ -1613,5 +1616,13 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 		}
 
 	return result_s;
+}
+
+
+static bool MergeBlastParameters (struct Service *service_p, json_t *other_service_json_p)
+{
+	bool success_flag = false;
+
+	return success_flag;
 }
 

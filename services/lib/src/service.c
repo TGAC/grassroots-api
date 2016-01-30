@@ -70,7 +70,7 @@ void InitialiseService (Service * const service_p,
 	bool (*close_fn) (struct Service *service_p),
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
-	bool (*merge_parameters_fn) (struct Service *service_p, struct Service *other_service_p),
+	bool (*merge_parameters_fn) (struct Service *service_p, json_t *other_service_json_p),
 	bool specific_flag,
 	bool synchronous_flag,
 	ServiceData *data_p)

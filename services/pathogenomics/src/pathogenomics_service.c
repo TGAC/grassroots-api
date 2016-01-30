@@ -47,6 +47,7 @@
 #define TAG_QUERY MAKE_TAG('P', 'G', 'Q', 'U')
 #define TAG_REMOVE MAKE_TAG('P', 'G', 'R', 'M')
 #define TAG_DUMP MAKE_TAG('P', 'G', 'D', 'P')
+#define TAG_PREVIEW MAKE_TAG('P', 'G', 'P', 'V')
 #define TAG_COLLECTION MAKE_TAG('P', 'G', 'C', 'O')
 #define TAG_DATABASE MAKE_TAG('P', 'G', 'D', 'B')
 #define TAG_DELIMITER MAKE_TAG('P', 'G', 'D', 'L')
@@ -111,7 +112,8 @@ static bool ClosePathogenomicsService (Service *service_p);
 static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p);
 
 
-static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p);
+static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p, const bool preview_flag);
+
 
 static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p);
 
@@ -120,6 +122,14 @@ static bool AddUploadParams (ParameterSet *param_set_p);
 static bool GetCollectionName (ParameterSet *param_set_p, PathogenomicsServiceData *data_p, const char **collection_name_ss, PathogenomicsData *collection_type_p);
 
 static bool AddLiveDateFiltering (json_t *record_p, const char * const date_s);
+
+
+static json_t *ConvertToResource (const size_t i, json_t *src_record_p);
+
+static json_t *CopyValidRecord (const size_t i, json_t *src_record_p);
+
+static json_t *FilterResultsByDate (json_t *src_results_p, const bool preview_flag, json_t *(convert_record_fn) (const size_t i, json_t *src_record_p));
+
 
 
 /*
@@ -421,32 +431,37 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 						{
 							if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_JSON, false, "delete", "Delete", "Delete data to the system", TAG_REMOVE, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 								{
+									def.st_boolean_value = false;
+
 									if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_BOOLEAN, false, "dump", "Dump", "Get all of the data in the system", TAG_DUMP, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
-											ParameterMultiOptionArray *options_p = NULL;
-											SharedType values [PD_NUM_TYPES];
-											uint32 i;
-
-											for (i = 0; i < PD_NUM_TYPES; ++ i)
+											if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_BOOLEAN, false, "preview", "Preview", "Ignore the live dates", TAG_PREVIEW, NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 												{
-													values [i].st_string_value_s = (char *) s_data_names_pp [i];
-												}
+													ParameterMultiOptionArray *options_p = NULL;
+													SharedType values [PD_NUM_TYPES];
+													uint32 i;
 
-											options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING);
-
-											if (options_p)
-												{
-													def.st_string_value_s = values [0].st_string_value_s;
-
-													if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_STRING, false, "collection", "Collection", "The collection to act upon", TAG_COLLECTION, options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+													for (i = 0; i < PD_NUM_TYPES; ++ i)
 														{
-															if (AddUploadParams (params_p))
-																{
-																	return params_p;
-																}
+															values [i].st_string_value_s = (char *) s_data_names_pp [i];
 														}
 
-													FreeParameterMultiOptionArray (options_p);
+													options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING);
+
+													if (options_p)
+														{
+															def.st_string_value_s = values [0].st_string_value_s;
+
+															if ((param_p = CreateAndAddParameterToParameterSet (params_p, PT_STRING, false, "collection", "Collection", "The collection to act upon", TAG_COLLECTION, options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+																{
+																	if (AddUploadParams (params_p))
+																		{
+																			return params_p;
+																		}
+																}
+
+															FreeParameterMultiOptionArray (options_p);
+														}
 												}
 										}
 								}
@@ -608,7 +623,14 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 				{
 					/* get the collection to work on */
 					const char *collection_name_s = NULL;
+					bool preview_flag = false;
 					PathogenomicsData collection_type = PD_NUM_TYPES;
+					Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_PREVIEW);
+
+					if (param_p && (param_p -> pa_type == PT_BOOLEAN))
+						{
+							preview_flag = param_p -> pa_current_value.st_boolean_value;
+						}
 
 					if (GetCollectionName (param_set_p, data_p, &collection_name_s, &collection_type))
 						{
@@ -616,8 +638,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 							if (tool_p)
 								{
-									Parameter *param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
-									bool run_flag = false;
+									param_p = GetParameterFromParameterSetByTag (param_set_p, TAG_DUMP);
 
 									SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
 
@@ -628,6 +649,12 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 											if (response_p)
 												{
+													if (preview_flag)
+														{
+															response_p = FilterResultsByDate (response_p, preview_flag, CopyValidRecord);
+														}
+
+
 													PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
 													job_p -> sj_status = OS_SUCCEEDED;
@@ -719,7 +746,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 													json_param_p = param_p -> pa_current_value.st_json_p;
 
-													results_p = SearchData (tool_p, json_param_p, collection_type, data_p, errors_p);
+													results_p = SearchData (tool_p, json_param_p, collection_type, data_p, errors_p, preview_flag);
 
 													if (results_p)
 														{
@@ -942,14 +969,147 @@ static bool AddLiveDateFiltering (json_t *record_p, const char * const date_s)
 }
 
 
-static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p)
+static char *GetCurrentDateAsString (void)
+{
+	char *date_s = NULL;
+	struct tm current_time;
+
+	if (GetCurrentTime (&current_time))
+		{
+			date_s = GetTimeAsString (&current_time);
+
+			if (!date_s)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert time to a string");
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get current time");
+		}
+
+	return date_s;
+}
+
+
+static json_t *ConvertToResource (const size_t i, json_t *src_record_p)
+{
+	json_t *resource_p = NULL;
+	char *title_s = ConvertNumberToString ((double) i, -1);
+
+	if (title_s)
+		{
+			resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, src_record_p);
+
+			FreeCopiedString (title_s);
+		}		/* if (raw_result_p) */
+
+	return resource_p;
+}
+
+
+static json_t *CopyValidRecord (const size_t i, json_t *src_record_p)
+{
+	return json_deep_copy (src_record_p);
+}
+
+
+static json_t *FilterResultsByDate (json_t *src_results_p, const bool preview_flag, json_t *(convert_record_fn) (const size_t i, json_t *src_record_p))
+{
+	json_t *results_p = json_array ();
+
+	if (results_p)
+		{
+			char *date_s = GetCurrentDateAsString ();
+
+			if (date_s)
+				{
+					const size_t size = json_array_size (src_results_p);
+					size_t i = 0;
+
+					for (i = 0; i < size; ++ i)
+						{
+							json_t *src_result_p = json_array_get (src_results_p, i);
+							json_t *dest_result_p = NULL;
+
+							/* We don't need to return the internal mongo id so remove it */
+							json_object_del (src_result_p, MONGO_ID_S);
+
+							if (!preview_flag)
+								{
+									if (AddLiveDateFiltering (src_result_p, date_s))
+										{
+											/*
+											 * If the result is non-trivial i.e. has at least one of the sample,
+											 * genotype or phenotype, then keep it
+											 */
+											if ((json_object_get (src_result_p, PG_SAMPLE_S) != NULL) ||
+													(json_object_get (src_result_p, PG_PHENOTYPE_S) != NULL) ||
+													(json_object_get (src_result_p, PG_GENOTYPE_S) != NULL))
+												{
+													dest_result_p = convert_record_fn (i, src_result_p);
+
+													if (!dest_result_p)
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert src json \"%s\" " SIZET_FMT " to results array", i);
+														}
+
+												}
+											else
+												{
+													#if PATHOGENOMICS_SERVICE_DEBUG >= STM_LEVEL_FINE
+													const char *id_s = GetJSONString (src_result_p, PG_ID_S);
+													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Discarding %s after filtering", id_s ? id_s : "");
+													#endif
+												}
+										}
+									else
+										{
+											const char *id_s = GetJSONString (src_result_p, PG_ID_S);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add date filtering for %s", id_s ? id_s : "");
+										}		/* if (!AddLiveDateFiltering (values_p, collection_type)) */
+
+								}		/* if (!private_view_flag) */
+							else
+								{
+									dest_result_p = convert_record_fn (i, src_result_p);
+
+									if (!dest_result_p)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert src json \"%s\" " SIZET_FMT " to results array", i);
+										}
+								}
+
+
+							if (dest_result_p)
+								{
+									if (json_array_append_new (results_p, dest_result_p) != 0)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json resource for " SIZET_FMT " to results array", i);
+											json_decref (dest_result_p);
+										}
+								}
+
+						}		/* for (i = 0; i < size; ++ i) */
+
+					FreeCopiedString (date_s);
+				}		/* if (date_s) */
+
+		}		/* if (results_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create results object");
+		}
+}
+
+
+static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const PathogenomicsData collection_type, PathogenomicsServiceData *service_data_p, json_t *errors_p, const bool preview_flag)
 {
 	json_t *results_p = NULL;
 	json_t *values_p = json_object_get (data_p, MONGO_OPERATION_DATA_S);
 
 	if (values_p)
 		{
-			bool private_view_flag = false;
 			const char **fields_ss = NULL;
 			json_t *fields_p = json_object_get (data_p, MONGO_OPERATION_FIELDS_S);
 
@@ -989,16 +1149,6 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 
 				}		/* if (fields_p) */
 
-
-			/*
-			 *  If we are viewing the public data then we need to respect the
-			 *  live dates, if not then we just return everything
-			 */
-			GetJSONBoolean (values_p, PG_PRIVATE_VIEW_S, &private_view_flag);
-			json_object_del (values_p, PG_PRIVATE_VIEW_S);
-
-
-
 			if (FindMatchingMongoDocumentsByJSON (tool_p, values_p, fields_ss))
 				{
 					json_t *raw_results_p = GetAllExistingMongoResultsAsJSON (tool_p);
@@ -1021,7 +1171,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 											 * If we are on the public view, we need to filter
 											 * out entries that don't meet the live dates.
 											 */
-											if (!private_view_flag)
+											if (!preview_flag)
 												{
 													struct tm current_time;
 
@@ -1058,7 +1208,7 @@ static json_t *SearchData (MongoTool *tool_p, json_t *data_p, const Pathogenomic
 															/* We don't need to return the internal mongo id so remove it */
 															json_object_del (raw_result_p, MONGO_ID_S);
 
-															if (!private_view_flag)
+															if (!preview_flag)
 																{
 																	if (AddLiveDateFiltering (raw_result_p, date_s))
 																		{

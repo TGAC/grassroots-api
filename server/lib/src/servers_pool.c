@@ -43,11 +43,28 @@ void InitServersManager (ServersManager *manager_p,
 											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p),
 											bool (*free_servers_manager_fn) (struct ServersManager *manager_p))
 {
+	uuid_generate (manager_p -> sm_server_id);
+	ConvertUUIDToString (manager_p -> sm_server_id, manager_p -> sm_server_id_s);
+
 	manager_p -> sm_add_server_fn = add_server_fn;
 	manager_p -> sm_get_server_fn = get_server_fn;
 	manager_p -> sm_remove_server_fn = remove_server_fn;
 	manager_p -> sm_get_all_servers_fn = get_all_servers_fn;
 	manager_p -> sm_free_servers_manager_fn = free_servers_manager_fn;
+}
+
+
+const char *GetLocalServerIdAsString (void)
+{
+	ServersManager *manager_p = GetServersManager ();
+	return manager_p -> sm_server_id_s;
+}
+
+
+const uuid_t *GetLocalServerId (void)
+{
+	ServersManager *manager_p = GetServersManager ();
+	return (& (manager_p -> sm_server_id));
 }
 
 
@@ -81,11 +98,18 @@ bool FreeServersManager (ServersManager *manager_p)
 }
 
 
-json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *ops_array_p, Operation op)
+json_t *PairServices (ExternalServer *external_server_p, LinkedList *services_p)
+{
+	return NULL;
+}
+
+
+json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op)
 {
 	/* build the request that we will send to each external server */
 	json_error_t error;
 	json_t *op_p = json_pack ("{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, op);
+	json_t *ops_array_p = NULL;
 
 	if (op_p)
 		{
@@ -97,12 +121,16 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 
 					while (node_p)
 						{
-							ExternalServer *server_p = node_p -> esn_server_p;
-							const char *response_s = MakeRemoteJsonCallViaConnection (server_p -> es_connection_p, op_p);
+							ExternalServer *external_server_p = node_p -> esn_server_p;
+							const char *response_s = MakeRemoteJsonCallViaConnection (external_server_p -> es_connection_p, op_p);
 
 							if (response_s)
 								{
 									json_t *server_response_p = json_loads (response_s, 0, &error);
+
+									/*
+									 * If the external server has paired services, try and pair them
+									 */
 
 									if (server_response_p)
 										{
@@ -112,6 +140,8 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *op
 											PrintJSONToLog (ops_array_p, "local server json:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 											PrintJSONToLog (default_external_provider_p, "default_external_provider_p:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 											#endif
+
+
 
 											/*
 											 * The elements to get are dependent on the api call

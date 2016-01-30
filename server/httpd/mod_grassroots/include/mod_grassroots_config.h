@@ -32,6 +32,7 @@
 #include "jobs_manager.h"
 #include "servers_pool.h"
 #include "apr_global_storage.h"
+#include "string_utils.h"
 
 
 typedef struct APRJobsManager
@@ -49,10 +50,6 @@ typedef struct APRServersManager
 	ServersManager asm_base_manager;
 
 	APRGlobalStorage *asm_store_p;
-
-	/** The UUID for this Server */
-	uuid_t asm_server_id;
-
 
 } APRServersManager;
 

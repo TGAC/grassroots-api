@@ -1013,14 +1013,39 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, config_p);
 
+
 			if (services_p -> ll_size > 0)
 				{
+//					json_t *external_services_p = AddExternalServerOperationsToJSON (servers_manager_p, services_p, OP_LIST_ALL_SERVICES);
+//
+//					/* Have we got any paired services? */
+//					if (external_services_p)
+//						{
+//							if (json_is_array (external_services_p))
+//								{
+//									size_t i;
+//									json_t *external_service_p;
+//
+//									json_array_foreach (external_services_p, i, external_service_p)
+//										{
+//											const char *external_service_name_s = GetJSONString (external_service_p, SERVICE_NAME_S);
+//
+//											if (external_service_name_s)
+//												{
+//
+//												}
+//
+//										}		/* json_array_foreach (external_services_p, i, external_service_p) */
+//
+//								} /* if (json_is_array (external_services_p)) */
+//
+//						}		/* if (external_services_p) */
+
 					json_p = GetServicesListAsJSON (services_p, resource_p, config_p, false);
 				}
-
-			if (servers_manager_p)
+			else
 				{
-					json_p = AddExternalServerOperationsToJSON (servers_manager_p, json_p, OP_LIST_ALL_SERVICES);
+					json_p = AddExternalServerOperationsToJSON (servers_manager_p, NULL, OP_LIST_ALL_SERVICES);
 				}
 
 				

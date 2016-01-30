@@ -30,7 +30,7 @@
 #include "linked_list.h"
 #include "operation.h"
 #include "memory_allocations.h"
-
+#include "string_utils.h"
 
 /**
  * @brief A datatype to allow access to an external Grassroots Server
@@ -89,6 +89,12 @@ struct ServersManager;
  */
 typedef struct ServersManager
 {
+	/** The UUID for this Server */
+	uuid_t sm_server_id;
+
+	char sm_server_id_s [UUID_STRING_BUFFER_SIZE];
+
+
 	/**
 	 * @brief Add an ExternalServer to the ServersManager.
 	 *
@@ -162,6 +168,22 @@ typedef struct ServersManager
  * @return The ServersManager.
  */
 GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
+
+
+/**
+ * Get the current Server uuid.
+ *
+ * @return The pointer to the uuid.
+ */
+GRASSROOTS_SERVICE_MANAGER_API const uuid_t *GetLocalServerId (void);
+
+
+/**
+ * Get the current Server uuid as a c-style string.
+ *
+ * @return The c-style string of the uuid.
+ */
+GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
 
 
 /**
@@ -262,7 +284,7 @@ GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManag
 GRASSROOTS_SERVICE_MANAGER_API bool FreeServersManager (ServersManager *manager_p);
 
 
-GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);
+GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
 
 
 /**
@@ -360,7 +382,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *jso
  * this will return <code>NULL</code>.
  * @memberof ServersManager
  */
-GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, json_t *res_p, Operation op);
+GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
 
 
 
