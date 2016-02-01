@@ -138,6 +138,14 @@ GRASSROOTS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*p
 GRASSROOTS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
 
 
+/**
+ *
+ * Get all results from a mongodb collection.
+ *
+ * @param tool_p The MongoTool to get the results with.
+ * @param query_p The query to run.
+ * @return A json_t arrary with all of the results from the search or <code>NULL</code> upon error.
+ */
 GRASSROOTS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
 

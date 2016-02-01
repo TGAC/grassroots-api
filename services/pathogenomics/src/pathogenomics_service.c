@@ -645,26 +645,99 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 									/* Do we want to get a dump of the entire collection? */
 									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 										{
-											json_t *response_p = GetAllMongoResultsAsJSON (tool_p, NULL);
+											json_t *response_p = NULL;
+											json_t *errors_p = json_array ();
+											json_t *raw_results_p = GetAllMongoResultsAsJSON (tool_p, NULL);
 
-											if (response_p)
+											if (raw_results_p)
 												{
-													if (preview_flag)
+													if (!preview_flag)
 														{
-															response_p = FilterResultsByDate (response_p, preview_flag, CopyValidRecord);
+															raw_results_p = FilterResultsByDate (raw_results_p, preview_flag, CopyValidRecord);
 														}
 
+													PrintJSONToLog (raw_results_p, "dump: ", STM_LEVEL_FINER, __FILE__, __LINE__);
+
+													if (raw_results_p)
+														{
+															json_t *record_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, collection_name_s, raw_results_p);
+
+															if (record_p)
+																{
+																	json_error_t err;
+																	response_p = json_pack_ex (&err, 0, "[O]", record_p);
+
+																	if (response_p)
+																		{
+																			job_p -> sj_status = OS_SUCCEEDED;
+																			job_p -> sj_result_p = response_p;
+																		}		/* if (response_p) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetAllMongoResultsAsJSON for \"%s\".\"%s\" failed", data_p -> psd_database_s, collection_name_s);
+
+																			if (errors_p)
+																				{
+																					if (json_array_append_new (errors_p, json_string ("Failed to export data collection")) != 0)
+																						{
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
+																						}
+																				}
+																		}
+
+																	json_decref (record_p);
+																}		/* if (raw_results_p) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetResourceAsJSONByParts failed");
+
+																	if (errors_p)
+																		{
+																			if (json_array_append_new (errors_p, json_string ("Failed to create result")) != 0)
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
+																				}
+																		}
+
+																}
+
+															json_decref (raw_results_p);
+														}		/* if (raw_results_p) */
+													else
+														{
+															/* The call succeeded but all results were filtered out */
+															job_p -> sj_status = OS_SUCCEEDED;
+														}
 
 													PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
-													job_p -> sj_status = OS_SUCCEEDED;
-													job_p -> sj_result_p = response_p;
-												}
+												}		/* if (dump_p) */
 											else
 												{
-													job_p -> sj_status = OS_FAILED;
-													job_p -> sj_result_p = NULL;
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetAllMongoResultsAsJSON for \"%s\".\"%s\" failed", data_p -> psd_database_s, collection_name_s);
+
+													if (errors_p)
+														{
+															if (json_array_append_new (errors_p, json_string ("Failed to export data collection")) != 0)
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
+																}
+														}
 												}
+
+											if (errors_p)
+												{
+													if (json_array_size (errors_p) > 0)
+														{
+															job_p -> sj_errors_p = errors_p;
+														}
+													else
+														{
+															json_decref (errors_p);
+														}
+
+												}		/* if (errors_p) */
+
 										}		/* if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true)) */
 									else
 										{
@@ -1100,6 +1173,8 @@ static json_t *FilterResultsByDate (json_t *src_results_p, const bool preview_fl
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create results object");
 		}
+
+	return results_p;
 }
 
 

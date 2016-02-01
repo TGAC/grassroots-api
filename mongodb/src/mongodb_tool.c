@@ -1138,55 +1138,45 @@ int32 IsKeyValuePairInCollection (MongoTool *tool_p, const char *database_s, con
 
 json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p)
 {
-	json_t *result_p = NULL;
+	json_t *results_array_p = NULL;
 
 	if (tool_p)
 		{
-			result_p = json_object ();
+			results_array_p = json_array ();
 
-			if (result_p)
+			if (results_array_p)
 				{
-					json_t *results_array_p = json_array ();
+					bool success_flag = false;
+					bool alloc_query_flag = false;
 
-					if (results_array_p)
+					if (!query_p)
 						{
-							if (json_object_set_new (result_p, "results", results_array_p) == 0)
-								{
-									bool success_flag = false;
-									bool alloc_query_flag = false;
+							query_p = bson_new ();
+							alloc_query_flag = (query_p != NULL);
+						}
 
-									if (!query_p)
+					if (query_p)
+						{
+							if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+								{
+									if (!IterateOverMongoResults (tool_p, AddBSONDocumentToJSONArray, results_array_p))
 										{
-											query_p = bson_new ();
-											alloc_query_flag = (query_p != NULL);
 										}
 
-									if (query_p)
-										{
-											if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
-												{
-													if (!IterateOverMongoResults (tool_p, AddBSONDocumentToJSONArray, results_array_p))
-														{
-														}
+								}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
 
-												}		/* if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL)) */
+							if (alloc_query_flag)
+								{
+									bson_destroy (query_p);
+								}
 
-											if (alloc_query_flag)
-												{
-													bson_destroy (query_p);
-												}
+						}		/* if (query_p) */
 
-										}		/* if (query_p) */
-
-								}		/* if (json_object_set_new (result_p, "results", results_array_p) == 0) */
-
-						}		/* if (results_array_p) */
-
-				}		/* if (result_p) */
+				}		/* if (results_array_p) */
 
 		}		/* if (tool_p) */
 
-	return result_p;
+	return results_array_p;
 }
 
 

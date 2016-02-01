@@ -58,32 +58,26 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 		{
 			/* Open the json object */
 			const json_t *data_p = json_item_p -> GetJSONData ();
-			char *dump_s = json_dumps (data_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-
-			if (dump_s)
-				{
-					qDebug () << dump_s;
-					free (dump_s);
-				}
+			TextViewer *text_viewer_p = new TextViewer;
+			ViewerWidget *viewer_widget_p = new ViewerWidget (text_viewer_p, this);
 
 			if (json_is_string (data_p))
 				{
 					const char *data_s = json_string_value (data_p);
-					TextViewer *text_viewer_p = new TextViewer;
-					ViewerWidget *viewer_widget_p = new ViewerWidget (text_viewer_p, this);
-
 					text_viewer_p -> SetText (data_s);
-
-/*
-					viewer_widget_p -> adjustSize ();
-					viewer_widget_p -> move (QApplication :: desktop () -> screen () -> rect ().center () - viewer_widget_p -> rect ().center ());
-*/
-					viewer_widget_p -> show ();
 				}
 			else
 				{
+					char *data_s = json_dumps (data_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
+					if (data_s)
+						{
+							text_viewer_p -> SetText (data_s);
+							free (data_s);
+						}
 				}
+
+			viewer_widget_p -> show ();
 		}
 	else
 		{
