@@ -172,7 +172,7 @@ typedef struct Service
 
 	struct ServiceJobSet *se_jobs_p;
 
-
+	LinkedList se_paired_services;
 
 	/**
 	 * Any custom data that the service needs to store.

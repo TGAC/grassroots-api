@@ -100,7 +100,7 @@ bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char *
 
 			if (page_p)
 				{
-					addTab (page_p, service_name_s);
+					insertTab (0, page_p, service_name_s);
 					success_flag = true;
 				}
 		}

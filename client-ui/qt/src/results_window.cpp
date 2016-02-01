@@ -27,6 +27,8 @@
 #include "json_util.h"
 #include "json_tools.h"
 
+#include "streams.h"
+
 
 ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 	: rw_data_p (0)
@@ -43,9 +45,18 @@ ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
 	buttons_layout_p -> addWidget (btn_p);
 	connect (btn_p, &QPushButton :: clicked, this, &ResultsWindow :: close);
 
+
 	btn_p = new QPushButton (QIcon ("images/save"), tr ("Save"), buttons_p);
 	buttons_layout_p -> addWidget (btn_p);
 	connect (btn_p, &QPushButton :: clicked, this, &ResultsWindow :: SaveResults);
+
+	btn_p = new QPushButton (QIcon ("images/save"), tr ("Save Compact"), buttons_p);
+	buttons_layout_p -> addWidget (btn_p);
+	connect (btn_p, &QPushButton :: clicked, this, &ResultsWindow :: SaveCompactResults);
+
+	btn_p = new QPushButton (QIcon ("images/saveall"), tr ("Save All Results"), buttons_p);
+	buttons_layout_p -> addWidget (btn_p);
+	connect (btn_p, &QPushButton :: clicked, this, &ResultsWindow :: SaveAllResults);
 
 
 	buttons_p -> setLayout (buttons_layout_p);
@@ -113,7 +124,9 @@ bool ResultsWindow :: AddResultsPageFromJSON (json_t *json_p, const char * const
 }
 
 
-void ResultsWindow :: SaveResults (bool clicked_flag)
+
+
+void ResultsWindow :: SaveJSONResults (const json_t * const results_p)
 {
 	QString filename = QFileDialog :: getSaveFileName (this, tr ("Save Results"), "wheatis_results.json", tr ("JSON (*.json)"));
 
@@ -121,17 +134,91 @@ void ResultsWindow :: SaveResults (bool clicked_flag)
 		{
 			QByteArray ba = filename.toLocal8Bit ();
 			const char * const filename_s = ba.constData ();
-
-			int res = json_dump_file (rw_data_p, filename_s, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+			int res = json_dump_file (results_p, filename_s, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
 
 			if (res != 0)
 				{
-
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to save results to %s", filename_s);
 				}
 
 		}		/* if (! (filename.isNull () || filename.isEmpty ())) */
 
 }
+
+
+void ResultsWindow :: SaveAllResults (bool clicked_flag)
+{
+	SaveJSONResults (rw_data_p);
+}
+
+
+void ResultsWindow :: SaveResults (bool clicked_flag)
+{
+	SaveJSONResults (rw_data_p);
+}
+
+
+bool ResultsWindow :: AddJSONDataToArray (json_t *results_p, const json_t *doc_p)
+{
+	json_t *data_p = json_object_get (doc_p, RESOURCE_DATA_S);
+
+	if (data_p)
+		{
+			if (json_array_append (results_p, data_p) == 0)
+				{
+					return true;
+				}
+		}
+
+	return false;
+}
+
+
+void ResultsWindow :: SaveCompactResults (bool clicked_flag)
+{
+	json_t *compact_results_p = json_array ();
+
+	if (compact_results_p)
+		{
+			bool success_flag = true;
+
+			char *dump_s = json_dumps (rw_data_p, JSON_INDENT (2));
+
+			if (json_is_array (rw_data_p))
+				{
+					size_t i;
+					const size_t size = json_array_size (rw_data_p);
+
+					for (i = 0; i < size; ++ i)
+						{
+							json_t *src_p = json_array_get (rw_data_p, i);
+
+							if (!AddJSONDataToArray (compact_results_p, src_p))
+								{
+									success_flag = false;
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add item to results for saving");
+									i = size;
+								}
+						}
+				}
+			else
+				{
+					if (!AddJSONDataToArray (compact_results_p, rw_data_p))
+						{
+							success_flag = false;
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add item to results for saving");
+						}
+				}
+
+			if (success_flag)
+				{
+					SaveJSONResults (compact_results_p);
+				}
+
+			json_decref (compact_results_p);
+		}
+}
+
 
 
 void ResultsWindow :: LoadResults (const char * const filename_s)

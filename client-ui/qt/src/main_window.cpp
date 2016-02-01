@@ -155,7 +155,7 @@ void MainWindow :: RunServices (bool run_flag)
 
 											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
 												{
-													results_p -> AddAllResultsPagesFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+													results_p -> AddResultsPageFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
 													show_results_flag = true;
 												}
 											else

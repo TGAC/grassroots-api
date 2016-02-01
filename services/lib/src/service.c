@@ -110,6 +110,9 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_has_permissions_fn = NULL;
 
 	service_p -> se_jobs_p = NULL;
+
+	InitLinkedList (& (service_p -> se_paired_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services));
 }
 
 

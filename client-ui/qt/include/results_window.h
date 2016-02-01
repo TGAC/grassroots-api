@@ -45,11 +45,15 @@ private:
 
 	void LoadResults (const char * const filename_s);
 	void LoadResults ();
+	bool AddJSONDataToArray (json_t *results_p, const json_t *doc_p);
+	void SaveJSONResults (const json_t * const results_p);
 
 
 
 private slots:
+  void SaveAllResults (bool clicked_flag);
   void SaveResults (bool clicked_flag);
+  void SaveCompactResults (bool clicked_flag);
 
 private:
   ResultsWidget *rw_results_p;

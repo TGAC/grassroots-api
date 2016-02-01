@@ -44,6 +44,7 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
+	paired_service.c \
 	provider.c \
 	service.c \
 	service_config.c \
