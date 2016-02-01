@@ -660,45 +660,88 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 													if (raw_results_p)
 														{
-															json_t *record_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, collection_name_s, raw_results_p);
+															json_t *dest_results_p = json_array ();
 
-															if (record_p)
+															if (dest_results_p)
 																{
-																	json_error_t err;
-																	response_p = json_pack_ex (&err, 0, "[O]", record_p);
+																	size_t i;
+																	json_t *src_record_p;
 
-																	if (response_p)
+																	json_array_foreach (raw_results_p, i, src_record_p)
 																		{
-																			job_p -> sj_status = OS_SUCCEEDED;
-																			job_p -> sj_result_p = response_p;
-																		}		/* if (response_p) */
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetAllMongoResultsAsJSON for \"%s\".\"%s\" failed", data_p -> psd_database_s, collection_name_s);
+																			char *title_s = ConvertNumberToString ((double) i, -1);
+																			json_t *dest_record_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s, src_record_p);
 
-																			if (errors_p)
+																			if (dest_record_p)
 																				{
-																					if (json_array_append_new (errors_p, json_string ("Failed to export data collection")) != 0)
+																					if (json_array_append_new (dest_results_p, dest_record_p) != 0)
 																						{
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_array_append_new failed");
+
+																							if (errors_p)
+																								{
+																									if (json_array_append_new (errors_p, json_string ("Failed to add document to result")) != 0)
+																										{
+																											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
+																										}
+																								}
+																							json_decref (dest_record_p);
+																						}
+
+																				}		/* if (dest_record_p) */
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetResourceAsJSONByParts failed");
+
+																					if (errors_p)
+																						{
+																							if (json_array_append_new (errors_p, json_string ("Failed to get document to add to result")) != 0)
+																								{
+																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
+																								}
 																						}
 																				}
+
+																			if (title_s)
+																				{
+																					FreeCopiedString (title_s);
+																				}
+
+																		}		/* json_array_foreach (raw_results_p, i, src_record_p) */
+
+
+																	i = json_array_size (dest_results_p);
+
+																	if (i == json_array_size (raw_results_p))
+																		{
+																			job_p -> sj_status = OS_SUCCEEDED;
+																			job_p -> sj_result_p = dest_results_p;
+																		}
+																	else if (i > 0)
+																		{
+																			job_p -> sj_status = OS_PARTIALLY_SUCCEEDED;
+																			job_p -> sj_result_p = dest_results_p;
+																		}
+																	else
+																		{
+																			job_p -> sj_status = OS_FAILED;
+																			json_decref (dest_results_p);
 																		}
 
-																	json_decref (record_p);
-																}		/* if (raw_results_p) */
+																	PrintJSONToLog (dest_results_p, "dest_results_p: ", STM_LEVEL_FINER, __FILE__, __LINE__);
+
+																}		/* if (dest_results_p) */
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetResourceAsJSONByParts failed");
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create results array");
 
 																	if (errors_p)
 																		{
-																			if (json_array_append_new (errors_p, json_string ("Failed to create result")) != 0)
+																			if (json_array_append_new (errors_p, json_string ("Failed to create results")) != 0)
 																				{
 																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set job error data");
 																				}
 																		}
-
 																}
 
 															json_decref (raw_results_p);
@@ -709,7 +752,6 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 															job_p -> sj_status = OS_SUCCEEDED;
 														}
 
-													PrintJSONToLog (response_p, "dump: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 
 												}		/* if (dump_p) */
 											else
