@@ -1095,6 +1095,24 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 																							 * if successful, then remove the external one
 																							 * from the json array
 																							 */
+																							json_error_t err;
+																							char uuid_s [UUID_STRING_BUFFER_SIZE];
+																							ConvertUUIDToString (external_server_p -> es_id, uuid_s);
+
+																							json_t *external_service_json_p = json_pack_ex (&err, 0, "{s:s,s:o,s:o}", SERVER_UUID_S, uuid_s, SERVER_URI_S, external_server_p -> es_uri_s, SERVER_OPERATIONS_S, matching_external_op_p)
+
+																							if (external_service_json_p)
+																								{
+																									if (MergeServices (matching_internal_service_p, external_service_json_p))
+																										{
+
+																										}
+																									else
+																										{
+																											json_decref (external_service_json_p);
+																										}
+																								}
+
 																						}		/* if (matching_external_op_p) */
 
 																				}		/* if (json_is_array (external_operations_json_p)) */

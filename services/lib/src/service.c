@@ -1012,6 +1012,13 @@ bool IsServiceJoinable (const Service *service_p)
 
 
 
+bool MergeServices (struct Service *service_p, json_t *other_service_json_p)
+{
+	return (service_p -> se_merge_parameters_fn (service_p, other_service_json_p));
+}
+
+
+
 json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag)
 {
 	json_t *services_list_json_p = json_array ();
