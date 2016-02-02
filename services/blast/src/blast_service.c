@@ -1628,6 +1628,25 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 
 			while (node_p)
 				{
+					/*
+					 * Try and add the external server's databases
+					 */
+					PairedService *paired_service_p = node_p -> psn_paired_service_p;
+					Parameter **database_params_pp = GetParametersFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
+
+					if (database_params_pp)
+						{
+							Parameter **db_param_pp = database_params_pp;
+
+							while (*db_param_pp)
+								{
+									/* Add the database to our list */
+
+									++ db_param_pp;
+								}		/* while (*db_param_pp) */
+
+							FreeMemory (database_params_pp);
+						}		/* if (database_params_pp) */
 
 					node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
 				}		/* while (node_p) */
