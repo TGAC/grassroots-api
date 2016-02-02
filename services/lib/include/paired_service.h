@@ -28,6 +28,8 @@
 
 #include "jansson.h"
 #include "uuid/uuid.h"
+#include "parameter_set.h"
+
 
 #include "linked_list.h"
 #include "grassroots_service_library.h"
@@ -37,7 +39,7 @@ typedef struct PairedService
 {
 	uuid_t ps_extenal_server_id;
 	char *ps_uri_s;
-	json_t *ps_op_json_p;
+	ParameterSet *ps_params_p;
 } PairedService;
 
 

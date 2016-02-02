@@ -31,6 +31,7 @@
 #include "streams.h"
 #include "service_job.h"
 #include "grassroots_config.h"
+#include "paired_service.h"
 
 
 #ifdef _DEBUG
@@ -70,7 +71,6 @@ void InitialiseService (Service * const service_p,
 	bool (*close_fn) (struct Service *service_p),
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
-	bool (*merge_parameters_fn) (struct Service *service_p, json_t *other_service_json_p),
 	bool specific_flag,
 	bool synchronous_flag,
 	ServiceData *data_p)
@@ -87,8 +87,6 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_get_results_fn = get_results_fn;
 	service_p -> se_data_p = data_p;
 	
-	service_p -> se_merge_parameters_fn = NULL;
-
 	service_p -> se_is_specific_service_flag = specific_flag;
 	service_p -> se_synchronous_flag = synchronous_flag;
 
@@ -112,7 +110,7 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_jobs_p = NULL;
 
 	InitLinkedList (& (service_p -> se_paired_services));
-	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
 }
 
 
@@ -1005,19 +1003,6 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 	#endif
 	
 	return success_flag;
-}
-
-
-bool IsServiceJoinable (const Service *service_p)
-{
-	return (service_p -> se_merge_parameters_fn != NULL);
-}
-
-
-
-bool MergeServices (struct Service *service_p, json_t *other_service_json_p)
-{
-	return (service_p -> se_merge_parameters_fn (service_p, other_service_json_p));
 }
 
 

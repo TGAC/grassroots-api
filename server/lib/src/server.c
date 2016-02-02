@@ -1099,7 +1099,7 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 																							char uuid_s [UUID_STRING_BUFFER_SIZE];
 																							ConvertUUIDToString (external_server_p -> es_id, uuid_s);
 
-																							json_t *external_service_json_p = json_pack_ex (&err, 0, "{s:s,s:o,s:o}", SERVER_UUID_S, uuid_s, SERVER_URI_S, external_server_p -> es_uri_s, SERVER_OPERATIONS_S, matching_external_op_p);
+																							CreateAndAddPairedService (matching_internal_service_p, external_server_p);
 
 																							if (external_service_json_p)
 																								{

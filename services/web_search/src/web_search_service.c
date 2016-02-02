@@ -124,7 +124,6 @@ static Service *GetWebSearchService (json_t *operation_json_p, size_t i)
 						CloseWebSearchService,
 						GetWebSearchServiceResults,
 						NULL,
-						NULL,
 						false,
 						true,
 						data_p);

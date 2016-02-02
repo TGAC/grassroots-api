@@ -216,7 +216,6 @@ static Service *GetPathogenomicsService (json_t *operation_json_p, size_t i)
 						ClosePathogenomicsService,
 						GetPathogenomicsServiceResults,
 						NULL,
-						NULL,
 						false,
 						true,
 						(ServiceData *) data_p);

@@ -160,7 +160,6 @@ ServicesArray *GetServices (const json_t *config_p)
 							                   CloseBlastService,
 							                   GetBlastResultAsJSON,
 							                   GetBlastServiceStatus,
-							                   MergeBlastParameters,
 							                   true,
 							                   false,
 							                   data_p);

@@ -145,7 +145,6 @@ ServicesArray *GetServices (const json_t *config_p)
 								CloseElasticSearchRestService,
 								GetElasticSearchRestServiceResults,
 								NULL,
-								NULL,
 								true,
 								true,
 								data_p);

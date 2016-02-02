@@ -33,13 +33,13 @@ PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const 
 		{
 			if (op_p)
 				{
-					char *copied_uri_s = CopyToNewString (uri_s, 0, false);
+					ParameterSet *param_set_p = CreateParameterSetFromJSON (op_p);
 
-					if (copied_uri_s)
+					if (param_set_p)
 						{
-							json_t *copied_op_p = json_deep_copy (op_p);
+							char *copied_uri_s = CopyToNewString (uri_s, 0, false);
 
-							if (copied_op_p)
+							if (copied_uri_s)
 								{
 									PairedService *paired_service_p = (PairedService *) AllocMemory (sizeof (PairedService));
 
@@ -47,26 +47,22 @@ PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const 
 										{
 											uuid_copy (paired_service_p -> ps_extenal_server_id, id);
 											paired_service_p -> ps_uri_s = copied_uri_s;
-											paired_service_p -> ps_op_json_p = copied_op_p;
+											paired_service_p -> ps_params_p = param_set_p;
 
 											return paired_service_p;
 										}
 
-									json_decref (copied_op_p);
-								}		/* if (copied_op_p) */
+									FreeCopiedString (copied_uri_s);
+								}		/* if (copied_uri_s) */
 							else
 								{
 
 								}
 
-						}		/* if (copied_uri_s) */
-					else
-						{
+							FreeParameterSet (param_set_p);
+						}		/* if (param_set_p) */
 
-						}
-
-					FreeCopiedString (copied_uri_s);
-				}
+				}		/* if (op_p) */
 		}
 
 	return NULL;
@@ -81,9 +77,9 @@ void FreePairedService (PairedService *paired_service_p)
 			FreeCopiedString (paired_service_p -> ps_uri_s);
 		}
 
-	if (paired_service_p -> ps_op_json_p)
+	if (paired_service_p -> ps_params_p)
 		{
-			json_decref (paired_service_p -> ps_op_json_p);
+			FreeParameterSet (paired_service_p -> ps_params_p);
 		}
 
 	FreeMemory (paired_service_p);

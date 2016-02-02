@@ -132,7 +132,6 @@ static Service *GetWebService (json_t *operation_json_p, size_t i)
 						CloseWebService,
 						GetWebServiceResults,
 						NULL,
-						NULL,
 						false,
 						true,
 						data_p);

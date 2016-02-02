@@ -157,9 +157,6 @@ typedef struct Service
 
 	bool (*se_close_fn) (struct Service *service_p);
 
-
-	bool (*se_merge_parameters_fn) (struct Service *service_p, json_t *other_service_json_p);
-
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return
 	 * until the job has completed. If <code>false</code>, then the Service will
@@ -247,7 +244,6 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	bool (*close_fn) (struct Service *service_p),
 	json_t *(*get_results_fn) (struct Service *service_p, const uuid_t service_id),
 	OperationStatus (*get_status_fn) (Service *service_p, const uuid_t service_id),
-	bool (*merge_parameters_fn) (struct Service *service_p, json_t *other_service_json_p),
  	bool specific_flag,
 	bool synchronous_flag,
 	ServiceData *data_p);
@@ -561,6 +557,8 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
 
 
 GRASSROOTS_SERVICE_API bool IsServiceJoinable (const Service *service_p);
+
+
 
 
 #ifdef __cplusplus

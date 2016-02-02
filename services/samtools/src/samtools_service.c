@@ -113,7 +113,6 @@ ServicesArray *GetServices (const json_t *config_p)
 								CloseSamToolsService,
 								GetSamToolsResultsAsJSON,
 								NULL,
-								NULL,
 								true,
 								true,
 								data_p);
