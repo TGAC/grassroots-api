@@ -59,7 +59,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p);
 
 static bool AddScoringParams (ParameterSet *param_set_p);
 
-static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p);
+static uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 static json_t *GetBlastResultAsJSON (Service *service_p, const uuid_t service_id);
 
@@ -83,7 +83,7 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 
 static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s);
 
-static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p);
+static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter);
 
 
 /***************************************/
@@ -390,9 +390,9 @@ static uint32 GetNumberOfDatabases (const BlastServiceData *data_p)
 /*
  * The list of databases that can be searched
  */
-static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+static uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 {
-	bool success_flag = false;
+	uint16 num_added_databases = 0;
 	Parameter *param_p = NULL;
 	SharedType def;
 	size_t num_group_params = GetNumberOfDatabases (data_p);
@@ -405,17 +405,13 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 
 			if (db_p)
 				{
-					uint8 a = 0;
-					uint8 b = 0;
-
 					def.st_boolean_value = true;
-					success_flag = true;
 
-					while ((db_p -> di_name_s) && success_flag)
+					while (db_p -> di_name_s)
 						{
 							/* try and get the local name of the database */
 							const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
-							uint32 tag = MAKE_TAG ('B', 'D', a, b);
+							uint32 tag = (('B') << 24 | ('D') << 16 | num_added_databases);
 
 							if (local_name_s)
 								{
@@ -430,21 +426,12 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 											++ grouped_param_pp;
 										}
 
-									if (b == 0xFF)
-										{
-											b = 0;
-											++ a;
-										}
-									else
-										{
-											++ b;
-										}
-
+									++ num_added_databases;
 									++ db_p;
 								}
 							else
 								{
-									success_flag = false;
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> di_name_s);
 								}
 
 						}		/* while (db_p && success_flag) */
@@ -452,19 +439,15 @@ static bool AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set
 				}		/* if (db_p) */
 
 
-
-			if (success_flag)
+			if (!AddParameterGroupToParameterSet (param_set_p, BS_DATABASE_GROUP_NAME_S, grouped_params_pp, num_group_params))
 				{
-					if (!AddParameterGroupToParameterSet (param_set_p, BS_DATABASE_GROUP_NAME_S, grouped_params_pp, num_group_params))
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
-							FreeMemory (grouped_params_pp);
-						}
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
+					FreeMemory (grouped_params_pp);
 				}
 
 		}		/* if (num_group_params) */
 
-	return success_flag;
+	return num_added_databases;
 }
 
 
@@ -758,7 +741,11 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 						{
 							if (AddScoringParams (param_set_p))
 								{
-									if (AddDatabaseParams (blast_data_p, param_set_p))
+									uint16 num_dbs = AddDatabaseParams (blast_data_p, param_set_p);
+
+									num_dbs = AddPairedServiceParameters (service_p, param_set_p, num_dbs);
+
+									if (num_dbs > 0)
 										{
 											return param_set_p;
 										}
@@ -1618,7 +1605,7 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 
 
-static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p)
+static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter)
 {
 	bool success_flag = true;
 
@@ -1637,13 +1624,64 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 					if (database_params_pp)
 						{
 							Parameter **db_param_pp = database_params_pp;
+							uint32 num_dbs = 0;
 
+							/* get the number of external databases */
 							while (*db_param_pp)
 								{
-									/* Add the database to our list */
+									++ num_dbs;
+								}
 
-									++ db_param_pp;
-								}		/* while (*db_param_pp) */
+							if (num_dbs > 0)
+								{
+									Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_dbs, sizeof (Parameter *));
+
+									if (grouped_params_pp)
+										{
+											SharedType def;
+											uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
+											Parameter **grouped_param_pp = grouped_params_pp;
+											char *group_name_s = NULL;
+											tag += db_counter;
+											memset (def, 0, sizeof (SharedType));
+
+											db_param_pp = database_params_pp;;
+
+											while (*db_param_pp)
+												{
+													/* Add the database to our list */
+													Parameter *external_param_p = *db_param_pp;
+													Parameter *param_p = NULL;
+
+													def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value
+
+													param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_description_s, external_param_p -> pa_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
+
+													if (param_p)
+														{
+															if (grouped_param_pp)
+																{
+																	*grouped_param_pp = param_p;
+																	++ grouped_param_pp;
+																}
+
+															++ db_counter;
+														}
+
+													++ db_param_pp;
+												}		/* while (*db_param_pp) */
+
+
+											if (!AddParameterGroupToParameterSet (internal_params_p, BS_DATABASE_GROUP_NAME_S, grouped_params_pp, num_dbs))
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
+													FreeMemory (grouped_params_pp);
+												}
+
+										}		/* if (grouped_params_pp) */
+
+								}		/* if (num_dbs > 0) */
+
 
 							FreeMemory (database_params_pp);
 						}		/* if (database_params_pp) */
