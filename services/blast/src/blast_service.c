@@ -83,8 +83,7 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 
 static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s);
 
-
-static bool MergeBlastParameters (struct Service *service_p, json_t *other_service_json_p);
+static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p);
 
 
 /***************************************/
@@ -1618,10 +1617,22 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 }
 
 
-static bool MergeBlastParameters (struct Service *service_p, json_t *other_service_json_p)
+
+static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p)
 {
-	bool success_flag = false;
+	bool success_flag = true;
+
+	if (service_p -> se_paired_services.ll_size > 0)
+		{
+			PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
+
+			while (node_p)
+				{
+
+					node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
+				}		/* while (node_p) */
+
+		}		/* if (service_p -> se_paired_services.ll_size > 0) */
 
 	return success_flag;
 }
-

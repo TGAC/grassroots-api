@@ -1013,7 +1013,7 @@ bool AddPairedService (Service *service_p, PairedService *paired_service_p)
 
 	if (node_p)
 		{
-			LinkedListAddTail (& (service_p -> se_paired_services), node_p);
+			LinkedListAddTail (& (service_p -> se_paired_services), (ListItem *) node_p);
 			success_flag = true;
 		}
 

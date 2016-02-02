@@ -126,11 +126,6 @@ static void FreeNode (ListItem  *node_p)
 
 void InitLinkedList (LinkedList * const list_p)
 {
-	if (list_p -> ll_size > 0)
-		{
-			ClearLinkedList (list_p);
-		}
-
 	list_p -> ll_head_p = NULL;
 	list_p -> ll_tail_p = NULL;
 	list_p -> ll_size = 0;
