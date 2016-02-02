@@ -1671,11 +1671,15 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 													++ db_param_pp;
 												}		/* while (*db_param_pp) */
 
+											group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", provider_name_s, " at ", provider_uri_s, NULL);
 
-											if (!AddParameterGroupToParameterSet (internal_params_p, BS_DATABASE_GROUP_NAME_S, grouped_params_pp, num_dbs))
+											if (group_name_s)
 												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
-													FreeMemory (grouped_params_pp);
+													if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, grouped_params_pp, num_dbs))
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
+															FreeMemory (grouped_params_pp);
+														}
 												}
 
 										}		/* if (grouped_params_pp) */
