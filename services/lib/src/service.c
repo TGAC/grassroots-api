@@ -1006,6 +1006,20 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 }
 
 
+bool AddPairedService (Service *service_p, PairedService *paired_service_p)
+{
+	bool success_flag = false;
+	PairedServiceNode *node_p = AllocatePairedServiceNode (paired_service_p);
+
+	if (node_p)
+		{
+			LinkedListAddTail (& (service_p -> se_paired_services), node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
 
 json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag)
 {

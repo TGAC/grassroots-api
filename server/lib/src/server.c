@@ -123,6 +123,26 @@ json_t *ProcessServerRawMessage (const char * const request_s, const int socket_
 }
 
 
+bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const json_t *op_p)
+{
+	bool success_flag = false;
+	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, external_server_p -> es_uri_s, op_p);
+
+	if (paired_service_p)
+		{
+			if (AddPairedService (service_p, paired_service_p))
+				{
+					return true;
+				}
+
+			FreePairedService (paired_service_p);
+		}
+
+	return false;
+}
+
+
+
 json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_ss)
 {
 	json_t *res_p = NULL;
@@ -1095,22 +1115,9 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 																							 * if successful, then remove the external one
 																							 * from the json array
 																							 */
-																							json_error_t err;
-																							char uuid_s [UUID_STRING_BUFFER_SIZE];
-																							ConvertUUIDToString (external_server_p -> es_id, uuid_s);
-
-																							CreateAndAddPairedService (matching_internal_service_p, external_server_p);
-
-																							if (external_service_json_p)
+																							if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p))
 																								{
-																									if (MergeServices (matching_internal_service_p, external_service_json_p))
-																										{
 
-																										}
-																									else
-																										{
-																											json_decref (external_service_json_p);
-																										}
 																								}
 
 																						}		/* if (matching_external_op_p) */

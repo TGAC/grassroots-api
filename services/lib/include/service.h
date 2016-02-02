@@ -25,13 +25,14 @@
 #include "handler.h"
 #include "user_details.h"
 #include "operation.h"
+#include "paired_service.h"
 
 #include "uuid/uuid.h"
 
 #include "jansson.h"
 #include "tag_item.h"
 
-
+struct ExternalServer;
 
 /*
  * The following preprocessor macros allow us to declare
@@ -556,9 +557,7 @@ GRASSROOTS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *servi
 GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
 
 
-GRASSROOTS_SERVICE_API bool IsServiceJoinable (const Service *service_p);
-
-
+GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
 
 
 #ifdef __cplusplus
