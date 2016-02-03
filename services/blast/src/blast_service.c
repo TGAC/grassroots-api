@@ -1639,13 +1639,17 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 									if (grouped_params_pp)
 										{
 											SharedType def;
-											uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
 											Parameter **grouped_param_pp = grouped_params_pp;
+											char *provider_uri_s = NULL;
+											char *provider_name_s = NULL;
 											char *group_name_s = NULL;
-											tag += db_counter;
-											memset (def, 0, sizeof (SharedType));
+											uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
 
-											db_param_pp = database_params_pp;;
+											tag += db_counter;
+											memset (&def, 0, sizeof (SharedType));
+
+
+											db_param_pp = database_params_pp;
 
 											while (*db_param_pp)
 												{
@@ -1653,7 +1657,7 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 													Parameter *external_param_p = *db_param_pp;
 													Parameter *param_p = NULL;
 
-													def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value
+													def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
 
 													param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_description_s, external_param_p -> pa_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
 
