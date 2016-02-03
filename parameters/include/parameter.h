@@ -20,6 +20,8 @@
 #define PARAMETER_H
 
 #include "jansson.h"
+#include "uuid/uuid.h"
+
 #include "linked_list.h"
 #include "grassroots_params_library.h"
 #include "tags.h"
@@ -280,6 +282,14 @@ typedef struct Parameter
 	 * <code>NULL</code>
 	 */
 	ParameterGroup *pa_group_p;
+
+	/**
+	 * If the Parameter belongs to a local Service, this will be
+	 * the uuid_t NULL. If it is for an external Service, then this
+	 * is the id for the ExternalServer running that Service.
+	 */
+	uuid_t pa_server_id;
+
 } Parameter;
 
 
@@ -616,6 +626,16 @@ GRASSROOTS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
  * @memberof SharedTypeNode
  */
 GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
+
+
+/*
+ * Copy the value from a server id to this Parameter.
+ *
+ * @param param_p The Parameter to set the id for.
+ * @param id The uuid_t to copy the value from.
+ */
+GRASSROOTS_PARAMS_API void SetParameterServerId (Parameter *param_p, const uuid_t id);
+
 
 
 #ifdef __cplusplus

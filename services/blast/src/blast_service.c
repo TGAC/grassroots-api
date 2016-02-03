@@ -27,6 +27,7 @@
 #include "blast_formatter.h"
 #include "blast_service_job.h"
 
+#include "servers_pool.h"
 
 
 /*
@@ -1611,6 +1612,7 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 
 	if (service_p -> se_paired_services.ll_size > 0)
 		{
+			ServersManager *servers_manager_p = GetServersManager ();
 			PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
 
 			while (node_p)
@@ -1619,80 +1621,86 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 					 * Try and add the external server's databases
 					 */
 					PairedService *paired_service_p = node_p -> psn_paired_service_p;
-					Parameter **database_params_pp = GetParametersFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
+					ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_extenal_server_id, NULL);
 
-					if (database_params_pp)
+					if (external_server_p)
 						{
-							Parameter **db_param_pp = database_params_pp;
-							uint32 num_dbs = 0;
+							Parameter **database_params_pp = GetParametersFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
 
-							/* get the number of external databases */
-							while (*db_param_pp)
+							if (database_params_pp)
 								{
-									++ num_dbs;
-								}
+									Parameter **db_param_pp = database_params_pp;
+									uint32 num_dbs = 0;
 
-							if (num_dbs > 0)
-								{
-									Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_dbs, sizeof (Parameter *));
-
-									if (grouped_params_pp)
+									/* get the number of external databases */
+									while (*db_param_pp)
 										{
-											SharedType def;
-											Parameter **grouped_param_pp = grouped_params_pp;
-											char *provider_uri_s = NULL;
-											char *provider_name_s = NULL;
-											char *group_name_s = NULL;
-											uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
+											++ num_dbs;
+										}
 
-											tag += db_counter;
-											memset (&def, 0, sizeof (SharedType));
+									if (num_dbs > 0)
+										{
+											Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_dbs, sizeof (Parameter *));
 
-
-											db_param_pp = database_params_pp;
-
-											while (*db_param_pp)
+											if (grouped_params_pp)
 												{
-													/* Add the database to our list */
-													Parameter *external_param_p = *db_param_pp;
-													Parameter *param_p = NULL;
+													SharedType def;
+													Parameter **grouped_param_pp = grouped_params_pp;
+													char *group_name_s = NULL;
+													uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
 
-													def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
+													tag += db_counter;
+													memset (&def, 0, sizeof (SharedType));
 
-													param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_description_s, external_param_p -> pa_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
+													db_param_pp = database_params_pp;
 
-													if (param_p)
+													while (*db_param_pp)
 														{
-															if (grouped_param_pp)
+															/* Add the database to our list */
+															Parameter *external_param_p = *db_param_pp;
+															Parameter *param_p = NULL;
+
+															def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
+
+															param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_description_s, external_param_p -> pa_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
+
+															if (param_p)
 																{
-																	*grouped_param_pp = param_p;
-																	++ grouped_param_pp;
+																	SetParameterServerId (param_p, paired_service_p -> ps_extenal_server_id);
+
+																	if (grouped_param_pp)
+																		{
+																			*grouped_param_pp = param_p;
+																			++ grouped_param_pp;
+																		}
+
+																	++ db_counter;
 																}
 
-															++ db_counter;
-														}
+															++ db_param_pp;
+														}		/* while (*db_param_pp) */
 
-													++ db_param_pp;
-												}		/* while (*db_param_pp) */
+													group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", external_server_p -> es_name_s, " at ", external_server_p -> es_name_s, NULL);
 
-											group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", provider_name_s, " at ", provider_uri_s, NULL);
-
-											if (group_name_s)
-												{
-													if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, grouped_params_pp, num_dbs))
+													if (group_name_s)
 														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
-															FreeMemory (grouped_params_pp);
+															if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, grouped_params_pp, num_dbs))
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
+																	FreeMemory (grouped_params_pp);
+																}
+
+															FreeCopiedString (group_name_s);
 														}
-												}
 
-										}		/* if (grouped_params_pp) */
+												}		/* if (grouped_params_pp) */
 
-								}		/* if (num_dbs > 0) */
+										}		/* if (num_dbs > 0) */
 
+									FreeMemory (database_params_pp);
+								}		/* if (database_params_pp) */
 
-							FreeMemory (database_params_pp);
-						}		/* if (database_params_pp) */
+						}		/* if (external_server_p) */
 
 					node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
 				}		/* while (node_p) */

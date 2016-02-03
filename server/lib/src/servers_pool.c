@@ -37,10 +37,10 @@ static bool AddPairedServiceFromJSON (ExternalServer *server_p, json_t *paired_s
 
 
 void InitServersManager (ServersManager *manager_p,
-                      bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
-											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key),
-											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p),
+                      bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p)),
+											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
 											bool (*free_servers_manager_fn) (struct ServersManager *manager_p))
 {
 	uuid_generate (manager_p -> sm_server_id);
@@ -68,27 +68,27 @@ const uuid_t *GetLocalServerId (void)
 }
 
 
-bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServer *server_p)
+bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p))
 {
-	return manager_p -> sm_add_server_fn (manager_p, server_p);
+	return manager_p -> sm_add_server_fn (manager_p, server_p, serialise_fn);
 }
 
 
-ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key)
+ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
 {
-	return manager_p -> sm_get_server_fn (manager_p, key);
+	return manager_p -> sm_get_server_fn (manager_p, key, deserialise_fn);
 }
 
 
-ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key)
+ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
 {
-	return manager_p -> sm_remove_server_fn (manager_p, key);
+	return manager_p -> sm_remove_server_fn (manager_p, key, deserialise_fn);
 }
 
 
-LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p)
+LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
 {
-	return manager_p -> sm_get_all_servers_fn (manager_p);
+	return manager_p -> sm_get_all_servers_fn (manager_p, deserialise_fn);
 }
 
 
@@ -113,7 +113,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList
 
 	if (op_p)
 		{
-			LinkedList *servers_p = GetAllExternalServersFromServersManager (manager_p);
+			LinkedList *servers_p = GetAllExternalServersFromServersManager (manager_p, DeserialiseExternalServerFromJSON);
 
 			if (servers_p && (servers_p -> ll_size > 0))
 				{
@@ -275,7 +275,7 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList
 
 
 
-json_t *SerialiseExternalServerToJSON (ExternalServer *server_p)
+json_t *GetExternalServerAsJSON (ExternalServer *server_p)
 {
 	json_error_t err;
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
@@ -324,7 +324,7 @@ json_t *SerialiseExternalServerToJSON (ExternalServer *server_p)
 
 							if (success_flag)
 								{
-									if (json_object_set_new (server_json_p, SERVER_PAIRED_SERVCES_S, pairs_p) != 0)
+									if (json_object_set_new (server_json_p, SERVER_PAIRED_SERVICES_S, pairs_p) != 0)
 										{
 											success_flag = false;
 											json_decref (pairs_p);
@@ -378,7 +378,7 @@ ExternalServer *CreateExternalServerFromJSON (const json_t *json_p)
 
 					if (server_p)
 						{
-							json_t *paired_services_json_p = json_object_get (json_p, SERVER_PAIRED_SERVCES_S);
+							json_t *paired_services_json_p = json_object_get (json_p, SERVER_PAIRED_SERVICES_S);
 
 							if (paired_services_json_p)
 								{
@@ -425,7 +425,7 @@ ExternalServer *CreateExternalServerFromJSON (const json_t *json_p)
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s is of type %d", SERVER_PAIRED_SERVCES_S, json_typeof (paired_services_json_p));
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s is of type %d", SERVER_PAIRED_SERVICES_S, json_typeof (paired_services_json_p));
 										}
 
 								}		/* if (paired_services_json_p) */
@@ -448,7 +448,7 @@ ExternalServer *CreateExternalServerFromJSON (const json_t *json_p)
 			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find name for external server");
 		}
 
-	return NULL;
+	return server_p;
 }
 
 
@@ -460,25 +460,25 @@ bool AddExternalServerFromJSON (const json_t *json_p)
 
 	if (server_p)
 		{
-			if (AddExternalServerToServersManager (manager_p, server_p))
+			if (AddExternalServerToServersManager (manager_p, server_p, NULL))
 				{
 					char *uuid_s = GetUUIDAsString (server_p -> es_id);
 
 					if (uuid_s)
 						{
-							PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", server_p -> es_name_s, uuid_s);
+							PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", server_p -> es_name_s, server_p -> es_uri_s, uuid_s);
 							FreeUUIDString (uuid_s);
 						}
 					else
 						{
-							PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", server_p -> es_name_s);
+							PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Added external server %s on %s to manager with id %s", server_p -> es_name_s, server_p -> es_uri_s);
 						}
 
 					success_flag = true;
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add external server %s on %s to manager", server_p -> es_name_s);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add external server %s on %s to manager", server_p -> es_name_s, server_p -> es_uri_s);
 					FreeExternalServer (server_p);
 				}
 		}		/* if (server_p) */
@@ -638,6 +638,41 @@ json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *re
 ExternalServer *CopyExternalServer (const ExternalServer * const src_p)
 {
 	return NULL;
+}
+
+
+unsigned char *SerialiseExternalServerToJSON (ExternalServer * const external_server_p, unsigned int *value_length_p)
+{
+	char *serialised_data_p = NULL;
+	json_t *server_json_p = GetExternalServerAsJSON (external_server_p);
+
+	if (server_json_p)
+		{
+			serialised_data_p = json_dumps (server_json_p, JSON_INDENT (2));
+			*value_length_p = strlen (serialised_data_p) + 1;
+		}		/* if (job_json_p) */
+
+	return ((unsigned char *) serialised_data_p);
+}
+
+
+ExternalServer *DeserialiseExternalServerFromJSON (unsigned char *raw_json_data_s)
+{
+	ExternalServer *external_server_p = NULL;
+	json_error_t err;
+	json_t *server_json_p = json_loads ((char *) raw_json_data_s, 0, &err);
+
+	if (server_json_p)
+		{
+
+		}		/* if (server_json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load external server json from \"%s\"", raw_json_data_s);
+		}
+
+	return external_server_p;
+
 }
 
 

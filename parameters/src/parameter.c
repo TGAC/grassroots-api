@@ -60,6 +60,9 @@ static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *ro
 
 static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p);
 
+static bool AddParameterServerIdToJSON (const Parameter * const param_p, json_t *root_p);
+
+
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
 static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s);
@@ -178,6 +181,8 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 											param_p -> pa_tag = tag;
 											param_p -> pa_store_p = store_p;
 											param_p -> pa_group_p = NULL;
+
+											uuid_clear (param_p -> pa_server_id);
 
 											memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
 											memset (& (param_p -> pa_default), 0, sizeof (SharedType));
@@ -699,34 +704,37 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 												{
 													if (AddParameterLevelToJSON (parameter_p, root_p))
 														{
-															if (full_definition_flag)
+															if (AddParameterServerIdToJSON (parameter_p, root_p))
 																{
-																	if (AddParameterDescriptionToJSON (parameter_p, root_p))
+																	if (full_definition_flag)
 																		{
-																			if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+																			if (AddParameterDescriptionToJSON (parameter_p, root_p))
 																				{
-																					if (AddDefaultValueToJSON (parameter_p, root_p))
+																					if (AddParameterDisplayNameToJSON (parameter_p, root_p))
 																						{
-																							if (AddParameterOptionsToJSON (parameter_p, root_p))
+																							if (AddDefaultValueToJSON (parameter_p, root_p))
 																								{
-																									if (AddParameterBoundsToJSON (parameter_p, root_p))
+																									if (AddParameterOptionsToJSON (parameter_p, root_p))
 																										{
-																											if (AddParameterGroupToJSON (parameter_p, root_p))
+																											if (AddParameterBoundsToJSON (parameter_p, root_p))
 																												{
-																													success_flag = true;
+																													if (AddParameterGroupToJSON (parameter_p, root_p))
+																														{
+																															success_flag = true;
+																														}
 																												}
 																										}
 																								}
 																						}
 																				}
 																		}
+																	else
+																		{
+																			success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
+																		}
 																}
-															else
-																{
-																	success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
-																}
-														}
-												}		/* if (full_definition_flag) */
+														}		/* if (full_definition_flag) */
+												}
 										}
 								}													
 						}
@@ -807,6 +815,27 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 	return success_flag;	
 }
 
+
+static bool AddParameterServerIdToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = true;
+
+	if (! (uuid_is_null (param_p -> pa_server_id)))
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (param_p -> pa_server_id, uuid_s);
+
+			success_flag = (json_object_set_new (root_p, PARAM_SERVER_ID_S, json_string (uuid_s)) == 0);
+		}
+
+
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
+	PrintJSON (stderr, root_p, "AddParameterServerIdToJSON - root_p :: ");
+	#endif
+
+	return success_flag;
+}
 
 static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p)
 {
@@ -1443,20 +1472,6 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 }
 
 
-static const char *GetStringValue (const json_t * const json_p, const char * const key_s)
-{
-	const char *name_s = NULL;
-	json_t *value_p = json_object_get (json_p, key_s);
-
-	if (value_p && (json_is_string (value_p)))
-		{
-			name_s = json_string_value (value_p);
-		}
-
-	return name_s;
-}
-
-
 static bool InitParameterStoreFromJSON (const json_t *root_p, HashTable *store_p)
 {
 	bool success_flag = true;
@@ -1847,7 +1862,7 @@ bool IsJSONParameterConcise (const json_t * const json_p)
 Parameter *CreateParameterFromJSON (const json_t * const root_p)
 {
 	Parameter *param_p = NULL;
-	const char *name_s = GetStringValue (root_p, PARAM_NAME_S);
+	const char *name_s = GetJSONString (root_p, PARAM_NAME_S);
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINE
 	char *root_s = json_dumps (root_p, JSON_INDENT (2));
@@ -1880,7 +1895,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									ParameterBounds *bounds_p = NULL;
 									ParameterLevel level = PL_ALL;
 									bool success_flag = false;
-
+									const char *uuid_s = GetJSONString (root_p, PARAM_SERVER_ID_S);
 									memset (&def, 0, sizeof (SharedType));
 
 									if (GetParameterLevelFromJSON (root_p, &level))
@@ -1890,8 +1905,8 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 									if (!IsJSONParameterConcise (root_p))
 										{
-											description_s = GetStringValue (root_p, PARAM_DESCRIPTION_S);
-											display_name_s = GetStringValue (root_p, PARAM_DISPLAY_NAME_S);
+											description_s = GetJSONString (root_p, PARAM_DESCRIPTION_S);
+											display_name_s = GetJSONString (root_p, PARAM_DISPLAY_NAME_S);
 
 											if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
 												{
@@ -1917,9 +1932,18 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 											if (param_p)
 												{
+
 													/* AllocateParameter made a deep copy of the current value, so we can deallocate our cached copy */
 													ClearSharedType (&current_value, pt);
 
+													if (uuid_s)
+														{
+															uuid_t id;
+
+															uuid_parse (uuid_s, id);
+
+															SetParameterServerId (param_p, id);
+														}
 
 													if (!InitParameterStoreFromJSON (root_p, param_p -> pa_store_p))
 														{
@@ -2044,6 +2068,17 @@ void FreeSharedTypeNode (ListItem *node_p)
 	FreeMemory (node_p);
 }
 
+
+
+void SetParameterServerId (Parameter *param_p, const uuid_t id)
+{
+	uuid_copy (param_p -> pa_server_id, id);
+}
+
+
+/*************************************************/
+/************** STATIC FUNCTIONS *****************/
+/*************************************************/
 
 
 static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p)

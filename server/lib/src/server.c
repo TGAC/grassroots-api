@@ -233,7 +233,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 
 											if (manager_p)
 												{
-													ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, key);
+													ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, key, NULL);
 
 													if (external_server_p)
 														{
@@ -1021,7 +1021,7 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 static void AddPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
 {
 	ServersManager *servers_manager_p = GetServersManager ();
-	LinkedList *external_servers_p = GetAllExternalServersFromServersManager (servers_manager_p);
+	LinkedList *external_servers_p = GetAllExternalServersFromServersManager (servers_manager_p, DeserialiseExternalServerFromJSON);
 
 	if (external_servers_p)
 		{
@@ -1164,14 +1164,8 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 			if (services_p -> ll_size > 0)
 				{
-//					json_t *external_services_p = AddExternalServerOperationsToJSON (servers_manager_p, services_p, OP_LIST_ALL_SERVICES);
-//
-//					/* Have we got any paired services? */
-//					if (external_services_p)
-//						{
-//							if (json_is_array (external_services_p))
-//								{
-//									size_t i;
+					AddPairedServices (services_p, username_s, password_s);
+
 //									json_t *external_service_p;
 //
 //									json_array_foreach (external_services_p, i, external_service_p)

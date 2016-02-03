@@ -36,7 +36,7 @@
 #define APR_GLOBAL_STORAGE_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag);
+static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, const bool remove_flag);
 
 static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool *alloc_key_flag);
 
@@ -409,15 +409,15 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 
 
 
-void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length)
+void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length)
 {
-	return FindObjectFromAPRGlobalStorage (storage_p, raw_key_p, raw_key_length, value_length, false);
+	return FindObjectFromAPRGlobalStorage (storage_p, raw_key_p, raw_key_length, false);
 }
 
 
-void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length)
+void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length)
 {
-	return FindObjectFromAPRGlobalStorage (storage_p, raw_key_p, raw_key_length, value_length, true);
+	return FindObjectFromAPRGlobalStorage (storage_p, raw_key_p, raw_key_length, true);
 }
 
 
@@ -453,7 +453,7 @@ static char *GetKeyAsValidString (char *raw_key_p, unsigned int key_length, bool
 }
 
 
-static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length, const bool remove_flag)
+static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, const bool remove_flag)
 {
 	void *result_p = NULL;
 	unsigned int key_len = 0;

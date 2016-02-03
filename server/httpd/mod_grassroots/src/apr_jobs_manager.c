@@ -68,7 +68,7 @@ static void FreeAPRServerJob (unsigned char *key_p, void *value_p);
 static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p,
 																									const uuid_t job_key,
 																									ServiceJob *(*deserialise_fn) (unsigned char *data_p),
-																									void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length));
+																									void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length));
 
 
 /**************************/
@@ -251,7 +251,7 @@ static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *manager_p, c
 }
 
 
-static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length, unsigned int value_length))
+static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_p, const uuid_t job_key, ServiceJob *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
 {
 	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
 	ServiceJob *job_p = NULL;
@@ -265,7 +265,7 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 	#endif
 
 
-	value_p = storage_callback_fn (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE, sizeof (ServiceJob *));
+	value_p = storage_callback_fn (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE);
 
 	if (value_p)
 		{

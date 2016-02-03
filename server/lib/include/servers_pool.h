@@ -105,7 +105,7 @@ typedef struct ServersManager
 	 * @memberof ServersManager
 	 * @see AddExternalServerToServersManager
 	 */
-	bool (*sm_add_server_fn) (struct ServersManager *manager_p, ExternalServer *server_p);
+	bool (*sm_add_server_fn) (struct ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p));
 
 	/**
 	 * @brief Find an ExternalServer.
@@ -119,7 +119,7 @@ typedef struct ServersManager
 	 * @memberof ServersManager
 	 * @see GetExternalServerFromServersManager
 	 */
-	ExternalServer *(*sm_get_server_fn)  (struct ServersManager *manager_p, const uuid_t key);
+	ExternalServer *(*sm_get_server_fn)  (struct ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 	/**
  	 * @brief Remove an ExternalServer.
@@ -134,7 +134,7 @@ typedef struct ServersManager
 	 * @memberof ServersManager
 	 * @see RemoveExternalServerFromServersManager
 	 */
-	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const uuid_t key);
+	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 
 
@@ -150,7 +150,7 @@ typedef struct ServersManager
 	 * @memberof ServersManager
 	 * @see GetAllExternalServersFromServersManager
 	 */
-	LinkedList *(*sm_get_all_servers_fn) (struct ServersManager *manager_p);
+	LinkedList *(*sm_get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 
 	bool (*sm_free_servers_manager_fn) (struct ServersManager *manager_p);
@@ -199,10 +199,10 @@ GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
  * @param free_servers_manager_fn The callback function to set for sm_free_servers_manager_fn for the given ServersManager.
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
-                      bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p),
-											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key),
-											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p),
+                      bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p)),
+											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
 											bool (*free_servers_manager_fn) (struct ServersManager *manager_p));
 
 
@@ -219,7 +219,7 @@ GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_
  * @memberof ServersManager
  * @see sm_add_server_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServer *server_p);
+GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p));
 
 
 /**
@@ -235,7 +235,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersMa
  * @memberof ServersManager
  * @see sm_get_server_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key);
+GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 
 /**
@@ -252,7 +252,7 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManag
  * @memberof ServersManager
  * @see sm_remove_server_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key);
+GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 
 /**
@@ -266,7 +266,7 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersMa
  * @memberof ServersManager
  * @see sm_get_all_servers_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p);
+GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 
 
@@ -390,6 +390,27 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *CopyExternalServer (const Externa
 
 
 GRASSROOTS_SERVICE_MANAGER_API const char *GetRemotePairedServiceName (const ExternalServer * const src_p, const char * const local_service_name_s);
+
+
+
+/**
+ * @brief Create a ExternalServer from a json_t object.
+ *
+ * This will create a ExternalServer from a json_t object.
+ *
+ * @param json_p The json object representing a ExternalServer.
+ * @return <code>true</code> if the v was created successfully,
+ * <code>false</code> otherwise.
+ * @memberof ExternalServer
+ */
+GRASSROOTS_SERVICE_MANAGER_API ExternalServer *CreateExternalServerFromJSON (const json_t *json_p);
+
+
+
+GRASSROOTS_SERVICE_MANAGER_API unsigned char *SerialiseExternalServerToJSON (ExternalServer * const external_server_p, unsigned int *value_length_p);
+
+
+GRASSROOTS_SERVICE_MANAGER_API ExternalServer *DeserialiseExternalServerFromJSON (unsigned char *raw_json_data_s);
 
 
 #endif /* SERVERS_POOL_H_ */
