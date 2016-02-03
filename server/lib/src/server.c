@@ -1078,55 +1078,72 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 															/*
 															 * Get the required Service from the ExternalServer
 															 */
-															json_t *external_services_json_p = json_object_get (response_p, SERVICES_NAME_S);
-
-															if (external_services_json_p)
+															if (json_is_array (response_p))
 																{
-																	json_t *external_operations_p = json_object_get (external_services_json_p, SERVER_OPERATIONS_S);
+																	const size_t size = json_array_size (response_p);
+																	size_t i;
 
-																	if (external_operations_p)
+																	for (i = 0; i < size; ++ i)
 																		{
-																			if (json_is_array (external_operations_p))
+																			json_t *service_response_p = json_array_get (response_p, i);
+
+																			if (service_response_p)
 																				{
-																					size_t i;
-																					json_t *matching_external_op_p = NULL;
-																					const size_t size = json_array_size (external_operations_p);
+																					json_t *external_services_json_p = json_object_get (service_response_p, SERVICES_NAME_S);
 
-																					const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
-
-																					for (i = 0; i < size; ++ i)
+																					if (external_services_json_p)
 																						{
-																							json_t *external_op_p = json_array_get (external_operations_p, i);
-																							const char *external_op_s = GetOperationNameFromJSON (external_op_p);
+																							json_t *external_operations_p = json_object_get (external_services_json_p, SERVER_OPERATIONS_S);
 
-																							if (strcmp (external_op_s, service_name_s) == 0)
+																							if (external_operations_p)
 																								{
-																									matching_external_op_p = external_op_p;
-																									i = size;		/* force exit from loop */
-																								}
+																									if (json_is_array (external_operations_p))
+																										{
+																											size_t i;
+																											json_t *matching_external_op_p = NULL;
+																											const size_t size = json_array_size (external_operations_p);
 
-																						}		/* for (i = 0; i < size; ++ i) */
+																											const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
 
-																					/* Do we have our remote service definition? */
-																					if (matching_external_op_p)
-																						{
-																							/*
-																							 * Merge the external service with our own and
-																							 * if successful, then remove the external one
-																							 * from the json array
-																							 */
-																							if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p))
-																								{
+																											for (i = 0; i < size; ++ i)
+																												{
+																													json_t *external_op_p = json_array_get (external_operations_p, i);
+																													const char *external_op_s = GetOperationNameFromJSON (external_op_p);
 
-																								}
+																													if (strcmp (external_op_s, service_name_s) == 0)
+																														{
+																															matching_external_op_p = external_op_p;
+																															i = size;		/* force exit from loop */
+																														}
 
-																						}		/* if (matching_external_op_p) */
+																												}		/* for (i = 0; i < size; ++ i) */
 
-																				}		/* if (json_is_array (external_operations_json_p)) */
+																											/* Do we have our remote service definition? */
+																											if (matching_external_op_p)
+																												{
+																													/*
+																													 * Merge the external service with our own and
+																													 * if successful, then remove the external one
+																													 * from the json array
+																													 */
+																													if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p))
+																														{
 
-																		}		/* if (external_operations_json_p) */
+																														}
 
-																}		/* if (external_services_json_p) */
+																												}		/* if (matching_external_op_p) */
+
+																										}		/* if (json_is_array (external_operations_json_p)) */
+
+																								}		/* if (external_operations_json_p) */
+
+																						}		/* if (external_services_json_p) */
+
+																				}		/* if (service_response_p) */
+
+																		}		/* for (i = 0; i < size; ++ i) */
+
+																}		/* if (json_is_array (response_p)) */
 
 														}		/* if (matching_internal_service_p) */
 
