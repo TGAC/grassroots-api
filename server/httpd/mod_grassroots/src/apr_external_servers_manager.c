@@ -258,9 +258,9 @@ static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager
 }
 
 
-static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *jobs_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
+static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *server_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
 {
-	APRJobsManager *manager_p = (APRJobsManager *) jobs_manager_p;
+	APRServersManager *manager_p = (APRServersManager *) APRServersManager;
 	ExternalServer *server_p = NULL;
 	unsigned char *value_p = NULL;
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
@@ -272,7 +272,7 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 	#endif
 
 
-	value_p = storage_callback_fn (manager_p -> ajm_store_p, key, UUID_RAW_SIZE);
+	value_p = storage_callback_fn (manager_p -> asm_store_p, key, UUID_RAW_SIZE);
 
 	if (value_p)
 		{
