@@ -23,6 +23,15 @@
 #include "jobs_manager.h"
 
 
+static JobsManager *s_jobs_manager_p = NULL;
+
+
+JobsManager *GetJobsManager (void)
+{
+	return s_jobs_manager_p;
+}
+
+
 void InitJobsManager (JobsManager *manager_p,
                       bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p, unsigned char *(*serialise_fn) (ServiceJob *job_p, uint32 *length_p)),
                       ServiceJob *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key, ServiceJob *(*deserialise_fn) (unsigned char *data_p)),
@@ -31,6 +40,8 @@ void InitJobsManager (JobsManager *manager_p,
 	manager_p -> jm_add_job_fn = add_job_fn;
 	manager_p -> jm_get_job_fn = get_job_fn;
 	manager_p -> jm_remove_job_fn = remove_job_fn;
+
+	s_jobs_manager_p = manager_p;
 }
 
 

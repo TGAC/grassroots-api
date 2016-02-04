@@ -1025,46 +1025,45 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 {
 	json_t *services_list_json_p = json_array ();
 			
+
 	if (services_list_json_p)
 		{
-			if (services_list_json_p)
+			if (services_list_p)
 				{
-					if (services_list_p)
+					ServiceNode *service_node_p = (ServiceNode *) (services_list_p -> ll_head_p);
+
+					while (service_node_p)
 						{
-							ServiceNode *service_node_p = (ServiceNode *) (services_list_p -> ll_head_p);
+							json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
 
-							while (service_node_p)
+							#if SERVICE_DEBUG >= STM_LEVEL_FINER
+							PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINER, __FILE__, __LINE__);
+							#endif
+
+							if (service_json_p)
 								{
-									json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
-
-									#if SERVICE_DEBUG >= STM_LEVEL_FINER
-									PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINER, __FILE__, __LINE__);
-									#endif
-									
-									if (service_json_p)
+									if (json_array_append_new (services_list_json_p, service_json_p) != 0)
 										{
-											if (json_array_append_new (services_list_json_p, service_json_p) != 0)
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service json description for %s to list\n", GetServiceName (service_node_p -> sn_service_p));
-												}
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service json description for %s to list\n", GetServiceName (service_node_p -> sn_service_p));
 										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get service json description for %s\n", GetServiceName (service_node_p -> sn_service_p));
-										}
-
-									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get service json description for %s\n", GetServiceName (service_node_p -> sn_service_p));
 								}
 
-						}		/* if (services_list_p) */
-															
-				}		/* if (operations_p) */
+							service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
+						}
+
+				}		/* if (services_list_p) */
 
 			#if SERVICE_DEBUG >= STM_LEVEL_FINE
 			PrintJSONToLog (services_list_json_p, "services list:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 
+
 		}		/* if (services_list_json_p) */
+
 
 	return services_list_json_p;
 }

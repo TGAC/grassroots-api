@@ -128,17 +128,6 @@ const module *GetGrassrootsModule (void)
 }
 
 
-JobsManager *GetJobsManager (void)
-{
-	return (& (s_jobs_manager_p -> ajm_base_manager));
-}
-
-
-
-ServersManager *GetServersManager (void)
-{
-	return (& (s_servers_manager_p -> asm_base_manager));
-}
 
 /* register_hooks: Adds a hook to the httpd process */
 static void RegisterHooks (apr_pool_t *pool_p)

@@ -282,7 +282,6 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 					if ((op_p = json_object_get (req_p, SERVER_OPERATIONS_S)) != NULL)
 						{
 							Operation op = GetOperation (op_p);
-							ServersManager *servers_manager_p = GetServersManager ();
 
 							switch (op)
 								{
@@ -1016,6 +1015,21 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 
 
 
+static bool IsRequiredExternalOperation (const json_t *external_op_p, const char *op_name_s)
+{
+	bool match_flag = false;
+	const char *external_op_s = GetOperationNameFromJSON (external_op_p);
+
+	if (external_op_p)
+		{
+			match_flag = (strcmp (external_op_s, op_name_s) == 0);
+		}
+
+	return match_flag;
+}
+
+
+
 //static json_t GetRemoteServices (const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 
 static void AddPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
@@ -1086,60 +1100,55 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 																	for (i = 0; i < size; ++ i)
 																		{
 																			json_t *service_response_p = json_array_get (response_p, i);
+																			json_t *external_operations_p = json_object_get (service_response_p, SERVER_OPERATIONS_S);
 
-																			if (service_response_p)
+																			if (external_operations_p)
 																				{
-																					json_t *external_services_json_p = json_object_get (service_response_p, SERVICES_NAME_S);
+																					json_t *matching_external_op_p = NULL;
+																					const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
 
-																					if (external_services_json_p)
+																					if (json_is_array (external_operations_p))
 																						{
-																							json_t *external_operations_p = json_object_get (external_services_json_p, SERVER_OPERATIONS_S);
+																							size_t j;
+																							const size_t num_ops = json_array_size (external_operations_p);
 
-																							if (external_operations_p)
+																							for (j = 0; j < num_ops; ++ j)
 																								{
-																									if (json_is_array (external_operations_p))
+																									json_t *external_op_p = json_array_get (external_operations_p, j);
+
+																									if (IsRequiredExternalOperation (external_op_p, op_name_s))
 																										{
-																											size_t i;
-																											json_t *matching_external_op_p = NULL;
-																											const size_t size = json_array_size (external_operations_p);
+																											matching_external_op_p = external_op_p;
+																											j = num_ops;		/* force exit from loop */
+																										}
 
-																											const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
+																								}		/* for (j = 0; j < num_ops; ++ j) */
 
-																											for (i = 0; i < size; ++ i)
-																												{
-																													json_t *external_op_p = json_array_get (external_operations_p, i);
-																													const char *external_op_s = GetOperationNameFromJSON (external_op_p);
+																						}		/* if (json_is_array (external_operations_json_p)) */
+																					else if (json_is_object (external_operations_p))
+																						{
+																							if (IsRequiredExternalOperation (external_operations_p, op_name_s))
+																								{
+																									matching_external_op_p = external_operations_p;
+																								}
+																						}
 
-																													if (strcmp (external_op_s, service_name_s) == 0)
-																														{
-																															matching_external_op_p = external_op_p;
-																															i = size;		/* force exit from loop */
-																														}
+																					/* Do we have our remote service definition? */
+																					if (matching_external_op_p)
+																						{
+																							/*
+																							 * Merge the external service with our own and
+																							 * if successful, then remove the external one
+																							 * from the json array
+																							 */
+																							if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p))
+																								{
 
-																												}		/* for (i = 0; i < size; ++ i) */
+																								}		/* if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p)) */
 
-																											/* Do we have our remote service definition? */
-																											if (matching_external_op_p)
-																												{
-																													/*
-																													 * Merge the external service with our own and
-																													 * if successful, then remove the external one
-																													 * from the json array
-																													 */
-																													if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p))
-																														{
+																						}		/* if (matching_external_op_p) */
 
-																														}
-
-																												}		/* if (matching_external_op_p) */
-
-																										}		/* if (json_is_array (external_operations_json_p)) */
-
-																								}		/* if (external_operations_json_p) */
-
-																						}		/* if (external_services_json_p) */
-
-																				}		/* if (service_response_p) */
+																				}		/* if (external_operations_json_p) */
 
 																		}		/* for (i = 0; i < size; ++ i) */
 

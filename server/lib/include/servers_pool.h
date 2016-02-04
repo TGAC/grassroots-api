@@ -162,6 +162,12 @@ typedef struct ServersManager
 } ServersManager;
 
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
 /**
  * Get the current Server-wide ServersManager.
  *
@@ -175,7 +181,7 @@ GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
  *
  * @return The pointer to the uuid.
  */
-GRASSROOTS_SERVICE_MANAGER_API const uuid_t *GetLocalServerId (void);
+GRASSROOTS_SERVICE_MANAGER_API uuid_t *GetLocalServerId (void);
 
 
 /**
@@ -411,6 +417,11 @@ GRASSROOTS_SERVICE_MANAGER_API unsigned char *SerialiseExternalServerToJSON (Ext
 
 
 GRASSROOTS_SERVICE_MANAGER_API ExternalServer *DeserialiseExternalServerFromJSON (unsigned char *raw_json_data_s);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* SERVERS_POOL_H_ */

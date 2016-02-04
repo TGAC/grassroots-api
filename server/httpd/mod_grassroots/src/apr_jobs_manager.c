@@ -158,6 +158,9 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 	unsigned char *value_p = NULL;
 	unsigned int value_length = 0;
 	void (*free_value_fn) (void *data_p)  = NULL;
+	char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+	ConvertUUIDToString (job_key, uuid_s);
 
 	if (serialise_fn)
 		{
@@ -185,18 +188,12 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 						}		/* if (job_s) */
 					else
 						{
-							char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-							ConvertUUIDToString (job_key, uuid_s);
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_dumps failed for \"%s\"", uuid_s);
 						}
 
 				}		/* if (job_json_p) */
 			else
 				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_key, uuid_s);
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetServiceJobAsJSON failed for \"%s\"", uuid_s);
 				}
 		}
@@ -205,10 +202,6 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 		{
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
 				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_key, uuid_s);
-
 					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding \"%s\"=\"%s\"", uuid_s, value_p);
 				}
 			#endif
@@ -217,9 +210,6 @@ static bool AddServiceJobToAPRJobsManager (JobsManager *jobs_manager_p, uuid_t j
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
 				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_key, uuid_s);
 					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\"=\"%s\", success=%d", uuid_s, value_p, success_flag);
 				}
 			#endif
@@ -264,7 +254,6 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
 	#endif
 
-
 	value_p = storage_callback_fn (manager_p -> ajm_store_p, job_key, UUID_RAW_SIZE);
 
 	if (value_p)
@@ -275,9 +264,6 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 
 					if (!job_p)
 						{
-							char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-							ConvertUUIDToString (job_key, uuid_s);
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "deserialise_fn failed for \"%s\"", uuid_s);
 						}
 				}
@@ -298,9 +284,6 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 
 							if (!job_p)
 								{
-									char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-									ConvertUUIDToString (job_key, uuid_s);
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateServiceJobFromJSON failed for \"%s\"", uuid_s);
 								}
 
@@ -315,9 +298,6 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 		}		/* if (value_p) */
 	else
 		{
-			char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-			ConvertUUIDToString (job_key, uuid_s);
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get stored value for \"%s\"", uuid_s);
 		}
 

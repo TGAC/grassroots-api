@@ -32,8 +32,16 @@
 
 
 
+static ServersManager *s_servers_manager_p = NULL;
+
+
 static bool AddPairedServiceFromJSON (ExternalServer *server_p, json_t *paired_service_json_p);
 
+
+ServersManager *GetServersManager (void)
+{
+	return s_servers_manager_p;
+}
 
 
 void InitServersManager (ServersManager *manager_p,
@@ -51,6 +59,8 @@ void InitServersManager (ServersManager *manager_p,
 	manager_p -> sm_remove_server_fn = remove_server_fn;
 	manager_p -> sm_get_all_servers_fn = get_all_servers_fn;
 	manager_p -> sm_free_servers_manager_fn = free_servers_manager_fn;
+
+	s_servers_manager_p = manager_p;
 }
 
 
@@ -61,10 +71,12 @@ const char *GetLocalServerIdAsString (void)
 }
 
 
-const uuid_t *GetLocalServerId (void)
+uuid_t *GetLocalServerId (void)
 {
 	ServersManager *manager_p = GetServersManager ();
-	return (& (manager_p -> sm_server_id));
+	uuid_t *id_p = & (manager_p -> sm_server_id);
+
+	return id_p;
 }
 
 
@@ -283,7 +295,7 @@ json_t *GetExternalServerAsJSON (ExternalServer *server_p)
 
 	/* Start by adding the name, uri and uuid */
 	ConvertUUIDToString (server_p -> es_id, uuid_s);
-	json_pack_ex (&err, 0, "{s:s,s:s,s:s}", SERVER_NAME_S, server_p -> es_name_s, SERVER_URI_S, server_p -> es_uri_s, SERVER_UUID_S, uuid_s);
+	server_json_p = json_pack_ex (&err, 0, "{s:s,s:s,s:s}", SERVER_NAME_S, server_p -> es_name_s, SERVER_URI_S, server_p -> es_uri_s, SERVER_UUID_S, uuid_s);
 
 	if (server_json_p)
 		{
@@ -664,6 +676,12 @@ ExternalServer *DeserialiseExternalServerFromJSON (unsigned char *raw_json_data_
 
 	if (server_json_p)
 		{
+			external_server_p = CreateExternalServerFromJSON (server_json_p);
+
+			if (!external_server_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create external server from \"%s\"", raw_json_data_s);
+				}
 
 		}		/* if (server_json_p) */
 	else
