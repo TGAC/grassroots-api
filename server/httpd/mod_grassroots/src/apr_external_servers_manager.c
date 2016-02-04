@@ -260,7 +260,7 @@ static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager
 
 static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *server_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
 {
-	APRServersManager *manager_p = (APRServersManager *) APRServersManager;
+	APRServersManager *manager_p = (APRServersManager *) server_manager_p;
 	ExternalServer *server_p = NULL;
 	unsigned char *value_p = NULL;
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
