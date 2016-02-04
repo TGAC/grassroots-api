@@ -290,6 +290,15 @@ typedef struct Parameter
 	 */
 	uuid_t pa_server_id;
 
+
+	/**
+	 * If the Parameter belongs to a local Service, this will be
+	 * 0. If it is for an external Service, then this
+	 * is the tag for the ExternalServer's Parameter running that Service.
+	 */
+	Tag pa_remote_tag;
+
+
 } Parameter;
 
 
@@ -628,7 +637,7 @@ GRASSROOTS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
 GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
 
 
-/*
+/**
  * Copy the value from a server id to this Parameter.
  *
  * @param param_p The Parameter to set the id for.
@@ -636,6 +645,14 @@ GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
  */
 GRASSROOTS_PARAMS_API void SetParameterServerId (Parameter *param_p, const uuid_t id);
 
+
+/**
+ * Set the value of the remote tag for this Parameter.
+ *
+ * @param param_p The Parameter to set the remote tag for.
+ * @param tag The tag value to set.
+ */
+GRASSROOTS_PARAMS_API void SetParameterRemoteTag (Parameter *param_p, Tag tag);
 
 
 #ifdef __cplusplus

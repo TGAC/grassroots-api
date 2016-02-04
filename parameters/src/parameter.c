@@ -183,6 +183,7 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 											param_p -> pa_group_p = NULL;
 
 											uuid_clear (param_p -> pa_server_id);
+											param_p -> pa_remote_tag = 0;
 
 											memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
 											memset (& (param_p -> pa_default), 0, sizeof (SharedType));
@@ -2074,6 +2075,13 @@ void SetParameterServerId (Parameter *param_p, const uuid_t id)
 {
 	uuid_copy (param_p -> pa_server_id, id);
 }
+
+
+void SetParameterRemoteTag (Parameter *param_p, Tag tag)
+{
+	param_p -> pa_tag = tag;
+}
+
 
 
 /*************************************************/

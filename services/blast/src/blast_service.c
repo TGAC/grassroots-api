@@ -1658,6 +1658,7 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 															if (param_p)
 																{
 																	SetParameterServerId (param_p, paired_service_p -> ps_extenal_server_id);
+																	SetParameterRemoteTag (param_p, (*src_param_pp)-> pa_tag);
 
 																	if (dest_param_pp)
 																		{
