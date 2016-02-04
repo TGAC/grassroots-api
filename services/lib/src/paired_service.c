@@ -27,6 +27,12 @@
 #include "string_utils.h"
 
 
+#ifdef _DEBUG
+	#define PAIRED_SERVICE_DEBUG	(STM_LEVEL_FINER)
+#else
+	#define PAIRED_SERVICE_DEBUG	(STM_LEVEL_NONE)
+#endif
+
 PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const json_t *op_p)
 {
 	if (uri_s)
@@ -48,6 +54,18 @@ PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const 
 											uuid_copy (paired_service_p -> ps_extenal_server_id, id);
 											paired_service_p -> ps_uri_s = copied_uri_s;
 											paired_service_p -> ps_params_p = param_set_p;
+
+											#if PAIRED_SERVICE_DEBUG >= STM_LEVEL_FINER
+												{
+													char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+													ConvertUUIDToString (paired_service_p -> ps_extenal_server_id, uuid_s);
+													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added paired service at \"%s\" for server \"%s\"", paired_service_p -> ps_uri_s, uuid_s);
+
+													ConvertUUIDToString (id, uuid_s);
+													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Original id \"%s\"", uuid_s);
+												}
+											#endif
 
 											return paired_service_p;
 										}

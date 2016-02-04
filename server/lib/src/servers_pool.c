@@ -46,9 +46,9 @@ ServersManager *GetServersManager (void)
 
 void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p)),
-											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
-											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p)),
+											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
+											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
 											bool (*free_servers_manager_fn) (struct ServersManager *manager_p))
 {
 	uuid_generate (manager_p -> sm_server_id);
@@ -86,19 +86,19 @@ bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServe
 }
 
 
-ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
+ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
 	return manager_p -> sm_get_server_fn (manager_p, key, deserialise_fn);
 }
 
 
-ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
+ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
 	return manager_p -> sm_remove_server_fn (manager_p, key, deserialise_fn);
 }
 
 
-LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
+LinkedList *GetAllExternalServersFromServersManager (ServersManager *manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
 	return manager_p -> sm_get_all_servers_fn (manager_p, deserialise_fn);
 }
@@ -374,6 +374,7 @@ ExternalServer *CreateExternalServerFromJSON (const json_t *json_p)
 
 			if (uri_s)
 				{
+					const char *uuid_s = GetJSONString (json_p, SERVER_UUID_S);
 					ConnectionType ct = CT_WEB;
 					const char *type_s = GetJSONString (json_p, SERVER_CONNECTION_TYPE_S);
 
@@ -386,7 +387,7 @@ ExternalServer *CreateExternalServerFromJSON (const json_t *json_p)
 						}		/* if (type_s) */
 
 
-					server_p = AllocateExternalServer (name_s, uri_s, ct);
+					server_p = AllocateExternalServer (name_s, uri_s, uuid_s, ct);
 
 					if (server_p)
 						{
@@ -503,7 +504,7 @@ bool AddExternalServerFromJSON (const json_t *json_p)
 }
 
 
-ExternalServer *AllocateExternalServer (const char *name_s, const char *uri_s, ConnectionType ct)
+ExternalServer *AllocateExternalServer (const char *name_s, const char *uri_s, const char *uuid_s, ConnectionType ct)
 {
 	Connection *connection_p = NULL;
 
@@ -530,14 +531,33 @@ ExternalServer *AllocateExternalServer (const char *name_s, const char *uri_s, C
 
 									if (server_p)
 										{
-											server_p -> es_connection_p = connection_p;
-											server_p -> es_name_s = copied_name_s;
-											server_p -> es_uri_s = copied_uri_s;
-											uuid_generate (server_p -> es_id);
-											server_p -> es_paired_services_p = paired_services_p;
+											bool success_flag = true;
 
-											return server_p;
-										}
+											if (uuid_s)
+												{
+													if (uuid_parse (uuid_s, server_p -> es_id) != 0)
+														{
+															success_flag = false;
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create id from \"%\"", uuid_s);
+														}
+												}
+											else
+												{
+													uuid_generate (server_p -> es_id);
+												}
+
+											if (success_flag)
+												{
+													server_p -> es_paired_services_p = paired_services_p;
+													server_p -> es_connection_p = connection_p;
+													server_p -> es_name_s = copied_name_s;
+													server_p -> es_uri_s = copied_uri_s;
+
+													return server_p;
+												}		/* if (success_flag) */
+
+											FreeMemory (server_p);
+										}		/* if (server_p) */
 
 									FreeLinkedList (paired_services_p);
 								}
@@ -668,7 +688,7 @@ unsigned char *SerialiseExternalServerToJSON (ExternalServer * const external_se
 }
 
 
-ExternalServer *DeserialiseExternalServerFromJSON (unsigned char *raw_json_data_s)
+ExternalServer *DeserialiseExternalServerFromJSON (const unsigned char *raw_json_data_s)
 {
 	ExternalServer *external_server_p = NULL;
 	json_error_t err;

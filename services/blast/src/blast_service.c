@@ -1625,39 +1625,30 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 
 					if (external_server_p)
 						{
-							Parameter **database_params_pp = GetParametersFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
+							ParameterGroup *db_group_p = GetParameterGroupFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
 
-							if (database_params_pp)
+							if (db_group_p)
 								{
-									Parameter **db_param_pp = database_params_pp;
-									uint32 num_dbs = 0;
-
-									/* get the number of external databases */
-									while (*db_param_pp)
+									if (db_group_p -> pg_num_params > 0)
 										{
-											++ num_dbs;
-										}
+											Parameter **src_param_pp = db_group_p -> pg_params_pp;
+											Parameter **dest_params_pp = (Parameter **) AllocMemoryArray (1 + (db_group_p -> pg_num_params), sizeof (Parameter *));
 
-									if (num_dbs > 0)
-										{
-											Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_dbs, sizeof (Parameter *));
-
-											if (grouped_params_pp)
+											if (dest_params_pp)
 												{
 													SharedType def;
-													Parameter **grouped_param_pp = grouped_params_pp;
+													Parameter **dest_param_pp = dest_params_pp;
 													char *group_name_s = NULL;
 													uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
+													uint32 num_added_dbs = 0;
 
 													tag += db_counter;
 													memset (&def, 0, sizeof (SharedType));
 
-													db_param_pp = database_params_pp;
-
-													while (*db_param_pp)
+													while (*src_param_pp)
 														{
 															/* Add the database to our list */
-															Parameter *external_param_p = *db_param_pp;
+															Parameter *external_param_p = *src_param_pp;
 															Parameter *param_p = NULL;
 
 															def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
@@ -1668,26 +1659,27 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 																{
 																	SetParameterServerId (param_p, paired_service_p -> ps_extenal_server_id);
 
-																	if (grouped_param_pp)
+																	if (dest_param_pp)
 																		{
-																			*grouped_param_pp = param_p;
-																			++ grouped_param_pp;
+																			*dest_param_pp = param_p;
+																			++ dest_param_pp;
 																		}
 
+																	++ num_added_dbs;
 																	++ db_counter;
 																}
 
-															++ db_param_pp;
-														}		/* while (*db_param_pp) */
+															++ src_param_pp;
+														}		/* while (*src_param_pp) */
 
 													group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", external_server_p -> es_name_s, " at ", external_server_p -> es_name_s, NULL);
 
 													if (group_name_s)
 														{
-															if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, grouped_params_pp, num_dbs))
+															if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, dest_params_pp, num_added_dbs))
 																{
 																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
-																	FreeMemory (grouped_params_pp);
+																	FreeMemory (dest_params_pp);
 																}
 
 															FreeCopiedString (group_name_s);
@@ -1697,8 +1689,7 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 
 										}		/* if (num_dbs > 0) */
 
-									FreeMemory (database_params_pp);
-								}		/* if (database_params_pp) */
+								}		/* if (db_group_p) */
 
 						}		/* if (external_server_p) */
 

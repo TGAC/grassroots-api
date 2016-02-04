@@ -52,16 +52,16 @@ static const char s_mutex_filename_s [] = "logs/grassroots_servers_manager_lock"
 static bool AddExternalServerToAprServersManager (ServersManager *servers_manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p));
 
 
-static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
+static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
-static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
+static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
-static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *jobs_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length));
+static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *jobs_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length));
 
 
-static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *servers_manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
+static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *servers_manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
 static apr_status_t AddExternalServerFromSOCache (ap_socache_instance_t *instance_p, server_rec *server_p, void *user_data_p, const unsigned char *id_s, unsigned int id_length, const unsigned char *data_p, unsigned int data_length, apr_pool_t *pool_p);
@@ -246,19 +246,19 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 
 
 
-static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
+static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
 	return QueryExternalServerFromAprServersManager (manager_p, key, deserialise_fn, GetObjectFromAPRGlobalStorage);
 }
 
 
-static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
+static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
 	return QueryExternalServerFromAprServersManager (manager_p, key, deserialise_fn, RemoveObjectFromAPRGlobalStorage);
 }
 
 
-static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *server_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
+static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *server_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
 {
 	APRServersManager *manager_p = (APRServersManager *) server_manager_p;
 	ExternalServer *server_p = NULL;
@@ -325,7 +325,7 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 
 
 
-static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *servers_manager_p, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
+static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *servers_manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
 	LinkedList *servers_p = AllocateLinkedList (FreeExternalServerNode);
 

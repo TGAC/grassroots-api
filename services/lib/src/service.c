@@ -35,7 +35,7 @@
 
 
 #ifdef _DEBUG
-	#define SERVICE_DEBUG	(STM_LEVEL_FINE)
+	#define SERVICE_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -137,8 +137,8 @@ void FreeService (Service *service_p)
 
 bool CloseService (Service *service_p)
 {
-	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Closing %s at %.16X", GetServiceName (service_p), service_p);
+	#if SERVICE_DEBUG >= STM_LEVEL_FINEST
+	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Closing %s at %.16X", GetServiceName (service_p), service_p);
 	#endif
 
 	return service_p -> se_close_fn (service_p);
@@ -264,8 +264,8 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 															
 														}		/* if (services_json_p) */
 
-													#if SERVICE_DEBUG >= STM_LEVEL_FINE
-													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added " UINT32_FMT " reference services for %s and refcount is %d", num_added_services, reference_file_node_p -> sln_string_s, config_p -> refcount);
+													#if SERVICE_DEBUG >= STM_LEVEL_FINEST
+													PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Added " UINT32_FMT " reference services for %s and refcount is %d", num_added_services, reference_file_node_p -> sln_string_s, config_p -> refcount);
 													#endif
 
 													if (json_s)
@@ -489,8 +489,8 @@ uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *
 																{
 																	uint32 i = AddMatchingServicesFromServicesArray (services_p, services_list_p, matcher_p, multiple_match_flag);
 
-																	#if SERVICE_DEBUG >= STM_LEVEL_FINE
-																	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Got " UINT32_FMT " services from %s with open count of " INT32_FMT, i, node_p -> sln_string_s, plugin_p -> pl_open_count);
+																	#if SERVICE_DEBUG >= STM_LEVEL_FINEST
+																	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Got " UINT32_FMT " services from %s with open count of " INT32_FMT, i, node_p -> sln_string_s, plugin_p -> pl_open_count);
 																	#endif
 
 																	if (i > 0)

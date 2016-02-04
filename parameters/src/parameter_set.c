@@ -675,11 +675,24 @@ Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag)
 }
 
 
-Parameter **GetParametersFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)
+ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)
 {
-	Parameter **params_pp = NULL;
+	if (params_p -> ps_grouped_params_p)
+		{
+			ParameterGroupNode *group_node_p = (ParameterGroupNode *) (params_p -> ps_grouped_params_p -> ll_head_p);
 
-	return params_pp;
+			while (group_node_p)
+				{
+					if (strcmp (group_node_p -> pgn_param_group_p -> pg_name_s, name_s) == 0)
+						{
+							return group_node_p -> pgn_param_group_p;
+						}
+
+					group_node_p = (ParameterGroupNode *) (group_node_p -> pgn_node.ln_next_p);
+				}
+		}
+
+	return NULL;
 }
 
 

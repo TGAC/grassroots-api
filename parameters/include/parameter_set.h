@@ -247,7 +247,7 @@ GRASSROOTS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, c
  * Upon failure a <code>NULL</code> is returned.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API Parameter **GetParametersFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
+GRASSROOTS_PARAMS_API ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 
 
 

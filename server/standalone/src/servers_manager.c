@@ -35,9 +35,9 @@ static ExternalServersManager *s_manager_p = NULL;
 static ExternalServerNode *GetExternalServerNode (ExternalServersManager *manager_p, const uuid_t key);
 
 
-static ExternalServer *GetExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key);
+static ExternalServer *GetExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
-static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key);
+static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p));
 
 static bool AddExternalServerToExternalServersManager (ServersManager *manager_p, ExternalServer *server_p);
 
@@ -115,7 +115,7 @@ static ExternalServerNode *GetExternalServerNode (ExternalServersManager *manage
 
 
 
-static ExternalServer *GetExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key)
+static ExternalServer *GetExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
 {
 	ExternalServersManager *external_servers_manager_p = (ExternalServersManager *) manager_p;
 	ExternalServerNode *node_p = GetExternalServerNode (external_servers_manager_p, key);
@@ -124,7 +124,7 @@ static ExternalServer *GetExternalServerFromExternalServersManager (ServersManag
 }
 
 
-static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key)
+static ExternalServer *RemoveExternalServerFromExternalServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (unsigned char *data_p))
 {
 	ExternalServersManager *external_servers_manager_p = (ExternalServersManager *) manager_p;
 	ExternalServer *server_p = NULL;
