@@ -46,8 +46,8 @@ ServersManager *GetServersManager (void)
 
 void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p)),
-											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
+											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
 											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
 											bool (*free_servers_manager_fn) (struct ServersManager *manager_p))
 {
@@ -86,15 +86,15 @@ bool AddExternalServerToServersManager (ServersManager *manager_p, ExternalServe
 }
 
 
-ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
+ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
-	return manager_p -> sm_get_server_fn (manager_p, key, deserialise_fn);
+	return manager_p -> sm_get_server_fn (manager_p, server_uri_s, deserialise_fn);
 }
 
 
-ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
+ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
-	return manager_p -> sm_remove_server_fn (manager_p, key, deserialise_fn);
+	return manager_p -> sm_remove_server_fn (manager_p, server_uri_s, deserialise_fn);
 }
 
 

@@ -332,7 +332,17 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 {
 	bool success_flag = false;
 	unsigned int key_len = 0;
-	unsigned char *key_p = storage_p -> ags_make_key_fn (raw_key_p, raw_key_length, &key_len);
+	unsigned char *key_p = NULL;
+
+	if (storage_p -> ags_make_key_fn)
+		{
+			storage_p -> ags_make_key_fn (raw_key_p, raw_key_length, &key_len);
+		}
+	else
+		{
+			key_p = (unsigned char *) raw_key_p;
+			key_len = raw_key_length;
+		}
 
 	if (key_p)
 		{
@@ -457,7 +467,17 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 {
 	void *result_p = NULL;
 	unsigned int key_len = 0;
-	unsigned char *key_p = storage_p -> ags_make_key_fn (raw_key_p, raw_key_length, &key_len);
+	unsigned char *key_p = NULL;
+
+	if (storage_p -> ags_make_key_fn)
+		{
+			storage_p -> ags_make_key_fn (raw_key_p, raw_key_length, &key_len);
+		}
+	else
+		{
+			key_p = (unsigned char *) raw_key_p;
+			key_len = raw_key_length;
+		}
 
 	if (key_p)
 		{

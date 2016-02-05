@@ -113,13 +113,13 @@ typedef struct ServersManager
 	 * Get a previously-added ExternalServer.
 	 *
 	 * @param manager_p The ServersManager to add the ExternalServer to.
-	 * @param key The uuid_t for the ExternalServer to search for.
+	 * @param server_uri_s The uri for the ExternalServer to search for.
 	 * @return A pointer to the matching ExternalServer or <code>NULL</code>
 	 * if it could not be found.
 	 * @memberof ServersManager
 	 * @see GetExternalServerFromServersManager
 	 */
-	ExternalServer *(*sm_get_server_fn)  (struct ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
+	ExternalServer *(*sm_get_server_fn)  (struct ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 	/**
  	 * @brief Remove an ExternalServer.
@@ -127,14 +127,14 @@ typedef struct ServersManager
 	 * Remove a previously-added ExternalServer.
 	 *
 	 * @param manager_p The ServersManager to remove the ExternalServer from.
-	 * @param key The uuid_t for the ExternalServer to search for.
+	 * @param server_uri_s The uri for the ExternalServer to search for.
 	 * @return A pointer to the matching ExternalServer which will have been
 	 * removed from the ServersManager or <code>NULL</code>
 	 * if it could not be found.
 	 * @memberof ServersManager
 	 * @see RemoveExternalServerFromServersManager
 	 */
-	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
+	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
 
@@ -206,8 +206,8 @@ GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p)),
-											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
-											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
+											ExternalServer *(*get_server_fn)  (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
+											ExternalServer *(*remove_server_fn) (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
 											LinkedList *(*get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p)),
 											bool (*free_servers_manager_fn) (struct ServersManager *manager_p));
 
@@ -235,13 +235,13 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersMa
  * wrapper around sm_get_server_fn for the given ServersManager.
  *
  * @param manager_p The ServersManager to search on.
- * @param key The uuid_t for the ExternalServer to search for.
+ * @param server_uri_s The uri for the ExternalServer to search for.
  * @return A pointer to the matching ExternalServers or <code>NULL</code>
  * if it could not be found.
  * @memberof ServersManager
  * @see sm_get_server_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
+GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
 /**
@@ -252,13 +252,13 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManag
  * for the given ServersManager.
  *
  * @param manager_p The ServersManager to search on.
- * @param key The uuid_t for the ExternalServer to search for.
+ * @param server_uri_s The uri for the ExternalServer to search for.
  * @return A pointer to the matching ExternalServers or <code>NULL</code>
  * if it could not be found.
  * @memberof ServersManager
  * @see sm_remove_server_fn
  */
-GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
+GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
 /**

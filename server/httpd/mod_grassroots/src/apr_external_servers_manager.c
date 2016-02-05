@@ -52,13 +52,13 @@ static const char s_mutex_filename_s [] = "logs/grassroots_servers_manager_lock"
 static bool AddExternalServerToAprServersManager (ServersManager *servers_manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p));
 
 
-static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
+static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
-static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
+static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
-static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *jobs_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length));
+static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *jobs_manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length));
 
 
 static LinkedList *GetAllExternalServersFromAprServersManager (ServersManager *servers_manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
@@ -82,10 +82,9 @@ APRServersManager *InitAPRServersManager (server_rec *server_p, apr_pool_t *pool
 
 	if (manager_p)
 		{
-			unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p) = MakeKeyFromUUID;
 			APRGlobalStorage *storage_p = AllocateAPRGlobalStorage (pool_p,
 			                                                        HashUUIDForAPR,
-			                                                        make_key_fn,
+			                                                        NULL,
 			                                                        FreeAPRExternalServer,
 			                                                        server_p,
 			                                                        s_mutex_filename_s,
@@ -174,9 +173,6 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 	unsigned char *value_p = NULL;
 	unsigned int value_length = 0;
 	void (*free_value_fn) (void *data_p)  = NULL;
-	char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-	ConvertUUIDToString (server_p -> es_id, uuid_s);
 
 	if (serialise_fn)
 		{
@@ -204,13 +200,13 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 						}		/* if (job_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_dumps failed for \"%s\"", uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_dumps failed for \"%s\"", server_p -> es_uri_s);
 						}
 
 				}		/* if (job_json_p) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetServiceJobAsJSON failed for \"%s\"", uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetServiceJobAsJSON failed for \"%s\"", server_p -> es_uri_s);
 				}
 		}
 
@@ -218,15 +214,15 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 		{
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
 				{
-					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding \"%s\"=\"%s\"", uuid_s, value_p);
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding \"%s\"=\"%s\"", server_p -> es_uri_s, value_p);
 				}
 			#endif
 
-			success_flag = AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_id, UUID_RAW_SIZE, value_p, value_length);
+			success_flag = AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_uri_s, strlen (server_p -> es_uri_s), value_p, value_length);
 
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
 				{
-					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\"=\"%s\", success=%d", uuid_s, value_p, success_flag);
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\"=\"%s\", success=%d", server_p -> es_uri_s, value_p, success_flag);
 				}
 			#endif
 
@@ -238,7 +234,7 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 		}		/* if (value_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't serialise ServiceJob");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't serialise ExternalService");
 		}
 
 	return success_flag;
@@ -246,33 +242,30 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 
 
 
-static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
+static ExternalServer *GetExternalServerFromAprServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
-	return QueryExternalServerFromAprServersManager (manager_p, key, deserialise_fn, GetObjectFromAPRGlobalStorage);
+	return QueryExternalServerFromAprServersManager (manager_p, server_uri_s, deserialise_fn, GetObjectFromAPRGlobalStorage);
 }
 
 
-static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
+static ExternalServer *RemoveExternalServerFromAprServersManager (ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p))
 {
-	return QueryExternalServerFromAprServersManager (manager_p, key, deserialise_fn, RemoveObjectFromAPRGlobalStorage);
+	return QueryExternalServerFromAprServersManager (manager_p, server_uri_s, deserialise_fn, RemoveObjectFromAPRGlobalStorage);
 }
 
 
-static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *server_manager_p, const uuid_t key, ExternalServer *(*deserialise_fn) (const unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
+static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager *server_manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p), void *(*storage_callback_fn) (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length))
 {
 	APRServersManager *manager_p = (APRServersManager *) server_manager_p;
 	ExternalServer *server_p = NULL;
 	unsigned char *value_p = NULL;
-	char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-	ConvertUUIDToString (key, uuid_s);
 
 	#if APR_SERVERS_MANAGER_DEBUG >= STM_LEVEL_FINEST
-	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", uuid_s);
+	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking for %s", server_uri_s);
 	#endif
 
 
-	value_p = storage_callback_fn (manager_p -> asm_store_p, key, UUID_RAW_SIZE);
+	value_p = storage_callback_fn (manager_p -> asm_store_p, server_uri_s, strlen (server_uri_s));
 
 	if (value_p)
 		{
@@ -282,7 +275,7 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 
 					if (!server_p)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "deserialise_fn failed for \"%s\"", uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "deserialise_fn failed for \"%s\"", server_uri_s);
 						}
 				}
 			else
@@ -291,7 +284,7 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 					json_t *server_json_p = NULL;
 
 					#if APR_SERVERS_MANAGER_DEBUG >= STM_LEVEL_FINER
-					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got: \"%s\"", uuid_s, value_p);
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For server at %s, got: \"%s\"", server_uri_s, value_p);
 					#endif
 
 					server_json_p = json_loads ((char *) value_p, 0, &err);
@@ -302,13 +295,13 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 
 							if (!server_p)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateExternalServerFromJSON failed for \"%s\"", uuid_s);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateExternalServerFromJSON failed for \"%s\"", server_uri_s);
 								}
 
 						}		/* if (server_json_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to json for uuid \"%s\", err \"%s\" at line %d, column %d", value_p, uuid_s, err.text, err.line, err.column);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to json for uri \"%s\", err \"%s\" at line %d, column %d", value_p, server_uri_s, err.text, err.line, err.column);
 						}
 				}
 
@@ -316,8 +309,7 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 		}		/* if (value_p) */
 	else
 		{
-
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get stored value for \"%s\"", uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get stored value for \"%s\"", server_uri_s);
 		}
 
 	return server_p;

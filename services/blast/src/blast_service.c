@@ -1621,7 +1621,7 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 					 * Try and add the external server's databases
 					 */
 					PairedService *paired_service_p = node_p -> psn_paired_service_p;
-					ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_extenal_server_id, NULL);
+					ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_uri_s, NULL);
 
 					if (external_server_p)
 						{

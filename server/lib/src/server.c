@@ -1089,6 +1089,8 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 
 													if (matching_internal_service_p)
 														{
+															const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
+
 															/*
 															 * Get the required Service from the ExternalServer
 															 */
@@ -1105,7 +1107,6 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 																			if (external_operations_p)
 																				{
 																					json_t *matching_external_op_p = NULL;
-																					const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
 
 																					if (json_is_array (external_operations_p))
 																						{
@@ -1146,6 +1147,7 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 
 																								}		/* if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p)) */
 
+																							i = size;		/* force exit from loop */
 																						}		/* if (matching_external_op_p) */
 
 																				}		/* if (external_operations_json_p) */
