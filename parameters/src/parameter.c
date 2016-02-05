@@ -62,6 +62,8 @@ static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *ro
 
 static bool AddParameterServerIdToJSON (const Parameter * const param_p, json_t *root_p);
 
+static bool AddParameterRemoteTagToJSON (const Parameter * const param_p, json_t *root_p);
+
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
@@ -70,7 +72,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp, const ParameterType pt);
 
-static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
+static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p, bool optional_flag);
 
 static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLevel *level_p);
 
@@ -707,33 +709,39 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 														{
 															if (AddParameterServerIdToJSON (parameter_p, root_p))
 																{
-																	if (full_definition_flag)
+																	if (AddParameterRemoteTagToJSON (parameter_p, root_p))
 																		{
-																			if (AddParameterDescriptionToJSON (parameter_p, root_p))
+																			if (full_definition_flag)
 																				{
-																					if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+																					if (AddParameterDescriptionToJSON (parameter_p, root_p))
 																						{
-																							if (AddDefaultValueToJSON (parameter_p, root_p))
+																							if (AddParameterDisplayNameToJSON (parameter_p, root_p))
 																								{
-																									if (AddParameterOptionsToJSON (parameter_p, root_p))
+																									if (AddDefaultValueToJSON (parameter_p, root_p))
 																										{
-																											if (AddParameterBoundsToJSON (parameter_p, root_p))
+																											if (AddParameterOptionsToJSON (parameter_p, root_p))
 																												{
-																													if (AddParameterGroupToJSON (parameter_p, root_p))
+																													if (AddParameterBoundsToJSON (parameter_p, root_p))
 																														{
-																															success_flag = true;
+																															if (AddParameterGroupToJSON (parameter_p, root_p))
+																																{
+																																	success_flag = true;
+																																}
 																														}
 																												}
 																										}
 																								}
 																						}
 																				}
-																		}
-																	else
-																		{
-																			success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
-																		}
-																}
+																			else
+																				{
+																					success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
+																				}
+
+																		}		/* if (AddParameterRemoteTagToJSON (parameter_p, root_p)) */
+
+																}		/* if (AddParameterServerIdToJSON (parameter_p, root_p)) */
+
 														}		/* if (full_definition_flag) */
 												}
 										}
@@ -837,6 +845,24 @@ static bool AddParameterServerIdToJSON (const Parameter * const param_p, json_t 
 
 	return success_flag;
 }
+
+
+static bool AddParameterRemoteTagToJSON (const Parameter * const param_p, json_t *root_p)
+{
+	bool success_flag = true;
+
+	if (param_p -> pa_remote_tag != 0)
+		{
+			bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_remote_tag)) == 0);
+		}
+
+	#if SERVER_DEBUG >= STM_LEVEL_FINER
+	PrintJSON (stderr, root_p, "AddParameterRemoteTagToJSON - root_p :: ");
+	#endif
+
+	return success_flag;
+}
+
 
 static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p)
 {
@@ -1776,9 +1802,9 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 }
 
 
-static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
+static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p, bool optional_flag)
 {
-	bool success_flag = false;
+	bool success_flag = optional_flag;
 	json_t *tag_json_p = json_object_get (json_p, PARAM_TAG_S);
 
 	if (tag_json_p)
@@ -1877,7 +1903,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 				{
 					Tag tag;
 					
-					if (GetParameterTagFromJSON (root_p, &tag))
+					if (GetParameterTagFromJSON (root_p, &tag, false))
 						{
 							SharedType current_value;
 
@@ -1897,6 +1923,8 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									ParameterLevel level = PL_ALL;
 									bool success_flag = false;
 									const char *uuid_s = GetJSONString (root_p, PARAM_SERVER_ID_S);
+									Tag remote_tag = 0;
+
 									memset (&def, 0, sizeof (SharedType));
 
 									if (GetParameterLevelFromJSON (root_p, &level))
@@ -1904,28 +1932,34 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 										}
 
-									if (!IsJSONParameterConcise (root_p))
-										{
-											description_s = GetJSONString (root_p, PARAM_DESCRIPTION_S);
-											display_name_s = GetJSONString (root_p, PARAM_DISPLAY_NAME_S);
 
-											if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+									if (GetParameterTagFromJSON (root_p, &remote_tag, true))
+										{
+											if (!IsJSONParameterConcise (root_p))
 												{
-													if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
-														{
-															if (GetParameterBoundsFromJSON (root_p, &bounds_p, pt))
-																{
-																	success_flag = true;
-																}
-																
-														}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */
+													description_s = GetJSONString (root_p, PARAM_DESCRIPTION_S);
+													display_name_s = GetJSONString (root_p, PARAM_DISPLAY_NAME_S);
 
-												}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
-										}
-									else
-										{
-											success_flag = true;
-										}
+													if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+														{
+															if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+																{
+																	if (GetParameterBoundsFromJSON (root_p, &bounds_p, pt))
+																		{
+																			success_flag = true;
+																		}
+
+																}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */
+
+														}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
+												}
+											else
+												{
+													success_flag = true;
+												}
+
+										}		/* if (GetParameterTagFromJSON (root_p, &remote_tag, true)) */
+
 										
 									if (success_flag)
 										{
@@ -1944,6 +1978,11 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 															uuid_parse (uuid_s, id);
 
 															SetParameterServerId (param_p, id);
+														}
+
+													if (remote_tag)
+														{
+															SetParameterRemoteTag (param_p, remote_tag);
 														}
 
 													if (!InitParameterStoreFromJSON (root_p, param_p -> pa_store_p))
