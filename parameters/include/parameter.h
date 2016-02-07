@@ -28,6 +28,8 @@
 #include "data_resource.h"
 #include "hash_table.h"
 
+#include "remote_parameter_details.h"
+
 
 /******* FORWARD DECLARATION *******/
 struct Parameter;
@@ -283,20 +285,8 @@ typedef struct Parameter
 	 */
 	ParameterGroup *pa_group_p;
 
-	/**
-	 * If the Parameter belongs to a local Service, this will be
-	 * the uuid_t NULL. If it is for an external Service, then this
-	 * is the id for the ExternalServer running that Service.
-	 */
-	uuid_t pa_server_id;
 
-
-	/**
-	 * If the Parameter belongs to a local Service, this will be
-	 * 0. If it is for an external Service, then this
-	 * is the tag for the ExternalServer's Parameter running that Service.
-	 */
-	Tag pa_remote_tag;
+	LinkedList *pa_remote_parameter_details_p;
 
 
 } Parameter;
@@ -637,22 +627,14 @@ GRASSROOTS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
 GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
 
 
-/**
- * Copy the value from a server id to this Parameter.
- *
- * @param param_p The Parameter to set the id for.
- * @param id The uuid_t to copy the value from.
- */
-GRASSROOTS_PARAMS_API void SetParameterServerId (Parameter *param_p, const uuid_t id);
+
+GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag);
 
 
-/**
- * Set the value of the remote tag for this Parameter.
- *
- * @param param_p The Parameter to set the remote tag for.
- * @param tag The tag value to set.
- */
-GRASSROOTS_PARAMS_API void SetParameterRemoteTag (Parameter *param_p, Tag tag);
+GRASSROOTS_PARAMS_API const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s);
+
+
+GRASSROOTS_PARAMS_API bool CopyRemoteParameterDetails (const Parameter * const src_param_p, Parameter *dest_p);
 
 
 #ifdef __cplusplus

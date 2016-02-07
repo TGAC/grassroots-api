@@ -60,9 +60,8 @@ static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *ro
 
 static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p);
 
-static bool AddParameterServerIdToJSON (const Parameter * const param_p, json_t *root_p);
 
-static bool AddParameterRemoteTagToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p);
 
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
@@ -72,7 +71,10 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp, const ParameterType pt);
 
-static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p, bool optional_flag);
+static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p);
+
+
+
 
 static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLevel *level_p);
 
@@ -83,6 +85,9 @@ static LinkedList *CreateSharedTypesList (const SharedType *values_p);
 
 
 static LinkedList *CopySharedTypesList (const LinkedList *source_p);
+
+
+static bool SetRemoteParameterDetailsFromJSON (Parameter *param_p, const json_t * json_p);
 
 
 static bool SetParameterValueFromBoolean (Parameter * const param_p, const bool b, const bool current_flag);
@@ -167,54 +172,60 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 
 							if (store_p)
 								{
-									Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
+									LinkedList *remote_params_p = AllocateLinkedList (FreeRemoteParameterDetailsNode);
 
-									if (param_p)
+									if (remote_params_p)
 										{
-											param_p -> pa_type = type;
-											param_p -> pa_multi_valued_flag = multi_valued_flag;
-											param_p -> pa_name_s = new_name_s;
-											param_p -> pa_display_name_s = new_display_name_s;
-											param_p -> pa_description_s = new_description_s;
-											param_p -> pa_options_p = options_p;
-											param_p -> pa_check_value_fn = check_value_fn;
-											param_p -> pa_bounds_p = bounds_p;
-											param_p -> pa_level = level;
-											param_p -> pa_tag = tag;
-											param_p -> pa_store_p = store_p;
-											param_p -> pa_group_p = NULL;
+											Parameter *param_p = (Parameter *) AllocMemory (sizeof (Parameter));
 
-											uuid_clear (param_p -> pa_server_id);
-											param_p -> pa_remote_tag = 0;
-
-											memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
-											memset (& (param_p -> pa_default), 0, sizeof (SharedType));
-
-											if (multi_valued_flag)
+											if (param_p)
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Multi-valued parameters not yet implemented");
-												}
-											else
-												{
-													if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true))
+													param_p -> pa_type = type;
+													param_p -> pa_multi_valued_flag = multi_valued_flag;
+													param_p -> pa_name_s = new_name_s;
+													param_p -> pa_display_name_s = new_display_name_s;
+													param_p -> pa_description_s = new_description_s;
+													param_p -> pa_options_p = options_p;
+													param_p -> pa_check_value_fn = check_value_fn;
+													param_p -> pa_bounds_p = bounds_p;
+													param_p -> pa_level = level;
+													param_p -> pa_tag = tag;
+													param_p -> pa_store_p = store_p;
+													param_p -> pa_group_p = NULL;
+
+													param_p -> pa_remote_parameter_details_p = remote_params_p;
+
+													memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
+													memset (& (param_p -> pa_default), 0, sizeof (SharedType));
+
+													if (multi_valued_flag)
 														{
-															if (SetParameterValueFromSharedType (param_p, &default_value, false))
-															{
-																	return param_p;
-																}		/* if (SetParameterValueFromSharedType (param_p, &default_value, false)) */
-															else
-																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set param current value for %s", param_p -> pa_name_s);
-																}
-														}		/* if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true)) */
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Multi-valued parameters not yet implemented");
+														}
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set param default value for %s", param_p -> pa_name_s);
+															if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true))
+																{
+																	if (SetParameterValueFromSharedType (param_p, &default_value, false))
+																	{
+																			return param_p;
+																		}		/* if (SetParameterValueFromSharedType (param_p, &default_value, false)) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set param current value for %s", param_p -> pa_name_s);
+																		}
+																}		/* if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true)) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set param default value for %s", param_p -> pa_name_s);
+																}
 														}
-												}
 
-											FreeMemory (param_p);
-										}		/* if (param_p) */
+													FreeMemory (param_p);
+												}		/* if (param_p) */
+
+											FreeLinkedList (remote_params_p);
+										}		/* if (remote_params_p) */
 
 									FreeHashTable (store_p);
 								}		/* if (store_p) */
@@ -277,6 +288,8 @@ void FreeParameter (Parameter *param_p)
 	ClearSharedType (& (param_p -> pa_default), param_p -> pa_type);
 
 	FreeHashTable (param_p -> pa_store_p);
+
+	FreeLinkedList (param_p -> pa_remote_parameter_details_p);
 
 	FreeMemory (param_p);
 }
@@ -441,6 +454,37 @@ void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
 
 	FreeMemory (options_p -> pmoa_options_p);
 	FreeMemory (options_p);
+}
+
+
+bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_p)
+{
+	bool success_flag = true;
+
+	if (src_p -> pa_remote_parameter_details_p -> ll_size)
+		{
+			const RemoteParameterDetailsNode *src_node_p = (const RemoteParameterDetailsNode *) (src_p -> pa_remote_parameter_details_p -> ll_head_p);
+
+			while (src_node_p && success_flag)
+				{
+					const RemoteParameterDetails *src_details_p = src_node_p -> rpdn_details_p;
+
+					if (AddRemoteDetailsToParameter (dest_p, src_details_p -> rpd_server_uri_s, src_details_p -> rpd_tag))
+						{
+							src_node_p = (const RemoteParameterDetailsNode *) (src_node_p -> rpdn_node.ln_next_p);
+						}
+					else
+						{
+							success_flag = false;
+						}
+				}
+		}
+	else
+		{
+			ClearLinkedList (dest_p -> pa_remote_parameter_details_p);
+		}
+
+	return success_flag;
 }
 
 
@@ -707,26 +751,23 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 												{
 													if (AddParameterLevelToJSON (parameter_p, root_p))
 														{
-															if (AddParameterServerIdToJSON (parameter_p, root_p))
+															if (AddRemoteParameterDetailsToJSON (parameter_p, root_p))
 																{
-																	if (AddParameterRemoteTagToJSON (parameter_p, root_p))
+																	if (full_definition_flag)
 																		{
-																			if (full_definition_flag)
+																			if (AddParameterDescriptionToJSON (parameter_p, root_p))
 																				{
-																					if (AddParameterDescriptionToJSON (parameter_p, root_p))
+																					if (AddParameterDisplayNameToJSON (parameter_p, root_p))
 																						{
-																							if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+																							if (AddDefaultValueToJSON (parameter_p, root_p))
 																								{
-																									if (AddDefaultValueToJSON (parameter_p, root_p))
+																									if (AddParameterOptionsToJSON (parameter_p, root_p))
 																										{
-																											if (AddParameterOptionsToJSON (parameter_p, root_p))
+																											if (AddParameterBoundsToJSON (parameter_p, root_p))
 																												{
-																													if (AddParameterBoundsToJSON (parameter_p, root_p))
+																													if (AddParameterGroupToJSON (parameter_p, root_p))
 																														{
-																															if (AddParameterGroupToJSON (parameter_p, root_p))
-																																{
-																																	success_flag = true;
-																																}
+																															success_flag = true;
 																														}
 																												}
 																										}
@@ -738,11 +779,11 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 																					success_flag = (json_object_set_new (root_p, PARAM_CONCISE_DEFINITION_S, json_true ()) == 0);
 																				}
 
-																		}		/* if (AddParameterRemoteTagToJSON (parameter_p, root_p)) */
+																		}		/* if (full_definition_flag) */
 
-																}		/* if (AddParameterServerIdToJSON (parameter_p, root_p)) */
+																}		/* if (AddParameterRemoteDetailsToJSON (parameter_p, root_p)) */
 
-														}		/* if (full_definition_flag) */
+														}
 												}
 										}
 								}													
@@ -825,39 +866,58 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 }
 
 
-static bool AddParameterServerIdToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p)
 {
 	bool success_flag = true;
 
-	if (! (uuid_is_null (param_p -> pa_server_id)))
+	if (param_p -> pa_remote_parameter_details_p -> ll_size > 0)
 		{
-			char uuid_s [UUID_STRING_BUFFER_SIZE];
+			json_t *remote_details_list_json_p = json_array ();
 
-			ConvertUUIDToString (param_p -> pa_server_id, uuid_s);
+			if (remote_details_list_json_p)
+				{
+					RemoteParameterDetailsNode *node_p = (RemoteParameterDetailsNode *) (param_p -> pa_remote_parameter_details_p -> ll_head_p);
 
-			success_flag = (json_object_set_new (root_p, PARAM_SERVER_ID_S, json_string (uuid_s)) == 0);
-		}
+					while (node_p && success_flag)
+						{
+							json_t *remote_details_json_p = GetRemoteParameterDetailsAsJSON (node_p -> rpdn_details_p);
+
+							if (remote_details_json_p)
+								{
+									if (json_array_append_new (remote_details_list_json_p, remote_details_json_p) == 0)
+										{
+											node_p = (RemoteParameterDetailsNode *) (node_p -> rpdn_node.ln_next_p);
+										}
+									else
+										{
+											json_decref (remote_details_json_p);
+											success_flag = false;
+										}
+
+								}		/* if (remote_details_json_p) */
+							else
+								{
+									success_flag = false;
+								}
+
+						}		/* while (node_p && success_flag) */
+
+					if (!success_flag)
+						{
+							json_decref (remote_details_list_json_p);
+						}
+
+				}		/* if (remote_details_list_json_p) */
+			else
+				{
+					success_flag = false;
+				}
+
+		}		/* if (param_p -> pa_remote_parameter_details_p -> ll_size > 0) */
 
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
-	PrintJSON (stderr, root_p, "AddParameterServerIdToJSON - root_p :: ");
-	#endif
-
-	return success_flag;
-}
-
-
-static bool AddParameterRemoteTagToJSON (const Parameter * const param_p, json_t *root_p)
-{
-	bool success_flag = true;
-
-	if (param_p -> pa_remote_tag != 0)
-		{
-			bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_remote_tag)) == 0);
-		}
-
-	#if SERVER_DEBUG >= STM_LEVEL_FINER
-	PrintJSON (stderr, root_p, "AddParameterRemoteTagToJSON - root_p :: ");
+	PrintJSON (stderr, root_p, "AddRemoteParameterDetailsToJSON - root_p :: ");
 	#endif
 
 	return success_flag;
@@ -1802,9 +1862,9 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 }
 
 
-static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p, bool optional_flag)
+static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
 {
-	bool success_flag = optional_flag;
+	bool success_flag = false;
 	json_t *tag_json_p = json_object_get (json_p, PARAM_TAG_S);
 
 	if (tag_json_p)
@@ -1903,7 +1963,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 				{
 					Tag tag;
 					
-					if (GetParameterTagFromJSON (root_p, &tag, false))
+					if (GetParameterTagFromJSON (root_p, &tag))
 						{
 							SharedType current_value;
 
@@ -1922,8 +1982,6 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 									ParameterBounds *bounds_p = NULL;
 									ParameterLevel level = PL_ALL;
 									bool success_flag = false;
-									const char *uuid_s = GetJSONString (root_p, PARAM_SERVER_ID_S);
-									Tag remote_tag = 0;
 
 									memset (&def, 0, sizeof (SharedType));
 
@@ -1933,33 +1991,28 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 										}
 
 
-									if (GetParameterTagFromJSON (root_p, &remote_tag, true))
+									if (!IsJSONParameterConcise (root_p))
 										{
-											if (!IsJSONParameterConcise (root_p))
-												{
-													description_s = GetJSONString (root_p, PARAM_DESCRIPTION_S);
-													display_name_s = GetJSONString (root_p, PARAM_DISPLAY_NAME_S);
+											description_s = GetJSONString (root_p, PARAM_DESCRIPTION_S);
+											display_name_s = GetJSONString (root_p, PARAM_DISPLAY_NAME_S);
 
-													if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+											if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def))
+												{
+													if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
 														{
-															if (GetParameterOptionsFromJSON (root_p, &options_p, pt))
+															if (GetParameterBoundsFromJSON (root_p, &bounds_p, pt))
 																{
-																	if (GetParameterBoundsFromJSON (root_p, &bounds_p, pt))
-																		{
-																			success_flag = true;
-																		}
+																	success_flag = true;
+																}
 
-																}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */
+														}		/* if (GetParameterOptionsFromJSON (root_p, &options_p, pt)) */
 
-														}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
-												}
-											else
-												{
-													success_flag = true;
-												}
-
-										}		/* if (GetParameterTagFromJSON (root_p, &remote_tag, true)) */
-
+												}		/* if (GetValueFromJSON (root_p, PARAM_DEFAULT_VALUE_S, pt, &def)) */
+										}
+									else
+										{
+											success_flag = true;
+										}
 										
 									if (success_flag)
 										{
@@ -1971,21 +2024,16 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 													/* AllocateParameter made a deep copy of the current value, so we can deallocate our cached copy */
 													ClearSharedType (&current_value, pt);
 
-													if (uuid_s)
+													if (SetRemoteParameterDetailsFromJSON (param_p, root_p))
 														{
-															uuid_t id;
-
-															uuid_parse (uuid_s, id);
-
-															SetParameterServerId (param_p, id);
+															success_flag = InitParameterStoreFromJSON (root_p, param_p -> pa_store_p);
+														}
+													else
+														{
+															success_flag = false;
 														}
 
-													if (remote_tag)
-														{
-															SetParameterRemoteTag (param_p, remote_tag);
-														}
-
-													if (!InitParameterStoreFromJSON (root_p, param_p -> pa_store_p))
+													if (!success_flag)
 														{
 															FreeParameter (param_p);
 															param_p = NULL;
@@ -2109,16 +2157,39 @@ void FreeSharedTypeNode (ListItem *node_p)
 }
 
 
-
-void SetParameterServerId (Parameter *param_p, const uuid_t id)
+bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag)
 {
-	uuid_copy (param_p -> pa_server_id, id);
+	bool success_flag = false;
+	RemoteParameterDetailsNode *node_p = AllocateRemoteParameterDetailsNodeByParts (uri_s, tag);
+
+	if (node_p)
+		{
+			LinkedListAddTail (param_p -> pa_remote_parameter_details_p, (ListItem *) node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 
 
-void SetParameterRemoteTag (Parameter *param_p, Tag tag)
+const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s)
 {
-	param_p -> pa_tag = tag;
+	RemoteParameterDetailsNode *node_p = (RemoteParameterDetailsNode *) (param_p -> pa_remote_parameter_details_p -> ll_head_p);
+
+	while (node_p)
+		{
+			if (strcmp (node_p -> rpdn_details_p -> rpd_server_uri_s, uri_s) == 0)
+				{
+					return & (node_p -> rpdn_details_p -> rpd_tag);
+				}
+			else
+				{
+					node_p = (RemoteParameterDetailsNode *) (node_p -> rpdn_node.ln_next_p);
+				}
+
+		}		/* while (node_p) */
+
+	return NULL;
 }
 
 
@@ -2520,7 +2591,6 @@ static bool SetSharedTypeJSONValue (SharedType *value_p, const json_t * const sr
 
 	if (src_p)
 		{
-			json_error_t err;
 			json_t *json_value_p = json_deep_copy (src_p);
 
 			if (json_value_p)
@@ -2551,3 +2621,19 @@ static bool SetSharedTypeJSONValue (SharedType *value_p, const json_t * const sr
 }
 
 
+
+static bool SetRemoteParameterDetailsFromJSON (Parameter *param_p, const json_t * json_p)
+{
+	bool success_flag = true;
+	const json_t *remote_p = json_object_get (json_p, PARAM_REMOTE_S);
+
+	if (remote_p)
+		{
+			if (json_is_array (remote_p))
+				{
+
+				}
+		}
+
+	return success_flag;
+}

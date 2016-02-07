@@ -130,6 +130,9 @@ PREFIX const char *PARAM_MAX_S  VAL("max");
 PREFIX const char *PARAM_LEVEL_S  VAL("level");
 PREFIX const char *PARAM_ERRORS_S  VAL("errors");
 PREFIX const char *PARAM_SERVER_ID_S  VAL("server_id");
+PREFIX const char *PARAM_REMOTE_TAG_S  VAL("remote_tag");
+PREFIX const char *PARAM_REMOTE_URI_S  VAL("remote_uri");
+PREFIX const char *PARAM_REMOTE_S  VAL("remote_details");
 
 PREFIX const char *SHARED_TYPE_DESCRIPTION_S  VAL("description");
 PREFIX const char *SHARED_TYPE_VALUE_S  VAL("value");

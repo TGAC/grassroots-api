@@ -44,6 +44,7 @@ INCLUDES = \
 SRCS 	= \
 	parameter.c \
 	parameter_set.c \
+	remote_parameter_details.c \
 	tag_item.c \
 	user_details.c
 
