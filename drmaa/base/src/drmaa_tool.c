@@ -352,12 +352,12 @@ bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addre
 
 							#if DRMAA_TOOL_DEBUG >= STM_LEVEL_FINE
 								{
-									const char **address_ss = (const char **) (tool_p -> dt_email_addresses_ss);
-									size_t i = 0;
+									address_ss = (const char **) (tool_p -> dt_email_addresses_ss);
+									size_t j = 0;
 
 									while (*address_ss)
 										{
-											PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "adding email [%ld] = %s\n", i, *address_ss);
+											PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "adding email [%ld] = %s\n", j, *address_ss);
 											++ address_ss;
 											++ i;
 										}
@@ -369,7 +369,8 @@ bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addre
 					else
 						{
 							size_t j;
-							char **copied_address_ss = copied_email_addresses_ss;
+
+							copied_address_ss = copied_email_addresses_ss;
 
 							for (j = 0; j < i; ++ j, ++ copied_address_ss)
 								{

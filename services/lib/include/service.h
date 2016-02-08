@@ -560,6 +560,21 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
 GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
 
 
+/**
+ * Get the JSON fragment for sending to a Grassroots Server detailing whether and how a user
+ * wants a Service to run. This object needs to be within a JSON array which is what the Server
+ * requires.
+ *
+ * @param service_p The Service to get the JSON fragment for.
+ * @param params_p The ParameterSet to use. If run_flag is false, then this can be NULL.
+ * @param run_flag Whether the Service should be run or not.
+ * @return The JSON fragment to be added to an array to send to the Server or <code>NULL
+ * </code> upon error.
+ */
+GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const Service *service_p, const ParameterSet *params_p, const bool run_flag);
+
+
+
 #ifdef __cplusplus
 }
 #endif

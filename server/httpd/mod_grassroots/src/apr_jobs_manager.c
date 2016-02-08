@@ -315,8 +315,9 @@ static void FreeAPRServerJob (unsigned char *key_p, void *value_p)
 
 	if (value_p)
 		{
-			 ServiceJob *job_p = (ServiceJob *) value_p;
-			 ClearServiceJob (job_p);
+			char *value_s = value_p;
+
+			free (value_s);
 		}
 }
 

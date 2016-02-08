@@ -203,7 +203,8 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_dumps failed for \"%s\"", server_p -> es_uri_s);
 						}
 
-				}		/* if (job_json_p) */
+					json_decref (server_json_p);
+				}		/* if (server_json_p) */
 			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetServiceJobAsJSON failed for \"%s\"", server_p -> es_uri_s);
@@ -349,8 +350,8 @@ static void FreeAPRExternalServer (unsigned char *key_p, void *value_p)
 
 	if (value_p)
 		{
-			ExternalServer *server_p = (ExternalServer *) value_p;
-			FreeExternalServer (server_p);
+			char *value_s = value_p;
+			free (value_s);
 		}
 }
 

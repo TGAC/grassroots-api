@@ -525,11 +525,11 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 										{
 											/* Get the groups */
 											json_t *groups_json_p = json_object_get (param_set_json_p, PARAM_SET_GROUPS_S);
+
 											if (groups_json_p && json_is_array (groups_json_p))
 												{
 													/* assign the params to their groups and vice versa */
 													size_t num_groups = json_array_size (groups_json_p);
-													size_t i;
 
 													for (i = 0; i < num_groups; ++ i)
 														{

@@ -308,7 +308,6 @@ json_t *GetExternalServerAsJSON (ExternalServer *server_p)
 
 					if (pairs_p)
 						{
-							bool success_flag = true;
 							KeyValuePairNode *node_p = (KeyValuePairNode *) (server_p -> es_paired_services_p -> ll_head_p);
 
 							while (node_p && success_flag)
@@ -492,8 +491,9 @@ bool AddExternalServerFromJSON (const json_t *json_p)
 			else
 				{
 					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add external server %s on %s to manager", server_p -> es_name_s, server_p -> es_uri_s);
-					FreeExternalServer (server_p);
 				}
+
+			FreeExternalServer (server_p);
 		}		/* if (server_p) */
 	else
 		{

@@ -721,6 +721,63 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
+
+json_t *GetServiceRunRequest (const Service *service_p, const ParameterSet *params_p, const bool run_flag)
+{
+	json_t *service_json_p = NULL;
+	const char *service_name_s = GetServiceName (service_p);
+
+	if (service_name_s)
+		{
+			json_error_t err;
+
+			service_json_p = json_pack_ex (&err, 0, "{s:s,s:b}", SERVICE_NAME_S, service_name_s, SERVICE_RUN_S, run_flag ? json_true () : json_false ());
+
+			if (service_json_p)
+				{
+					if (run_flag)
+						{
+							json_t *param_set_json_p = GetParameterSetAsJSON (params_p, false);
+
+							if (param_set_json_p)
+								{
+									if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ParameterSet JSON");
+											json_decref (param_set_json_p);
+
+											json_decref (service_json_p);
+											service_json_p = NULL;
+										}		/* if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0) */
+
+								}		/* if (param_set_json_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ParameterSet as JSON");
+									json_decref (service_json_p);
+									service_json_p = NULL;
+								}
+
+						}		/* if (run_flag) */
+
+				}		/* if (service_json_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service json, error at line %d, col %d, \"%s\"", err.line, err.column, err.text);
+				}
+
+		}		/* if (service_name_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get service name");
+		}
+
+	return service_json_p;
+}
+
+
+
+
 json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag)
 {
 	json_t *root_p = json_object ();

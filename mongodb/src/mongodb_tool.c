@@ -340,9 +340,9 @@ bool RemoveMongoDocuments (MongoTool *tool_p, const json_t *selector_json_p, con
 static bool AddSimpleTypeToQuery (bson_t *query_p, const char *key_s, const json_t *value_p)
 {
 	bool success_flag = false;
-	const int json_type = json_typeof (value_p);
+	const int json_datatype = json_typeof (value_p);
 	
-	switch (json_type)
+	switch (json_datatype)
 		{
 			/*
 				JSON_OBJECT
@@ -381,7 +381,7 @@ static bool AddSimpleTypeToQuery (bson_t *query_p, const char *key_s, const json
 			case JSON_OBJECT:
 			case JSON_ARRAY:
 			case JSON_NULL:
-				PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json object type %d is not yet supported", json_type);
+				PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json object type %d is not yet supported", json_datatype);
 				break;
 
 		}

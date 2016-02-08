@@ -1277,6 +1277,61 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 }
 
 
+static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p)
+{
+	int32 num_successful_runs = 0;
+
+
+
+	return num_successful_runs;
+}
+
+
+
+static int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p)
+{
+	int32 num_successful_runs = -1;
+	json_t *req_p = NULL;
+	Connection *connection_p = AllocateWebServerConnection (paired_service_p -> ps_uri_s);
+
+	if (connection_p)
+		{
+			/*
+			 * Only send the databases that the external paired service knows about
+			 */
+			json_t *req_p = GetServiceRunRequest (service_p, params_p, true);
+
+			if (req_p)
+				{
+					json_t *res_p = MakeRemoteJsonCall (req_p, connection_p);
+
+					if (res_p)
+						{
+							num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p);
+						}		/* if (res_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON fragment from MakeRemoteJsonCall");
+						}
+
+					json_decref (req_p);
+				}		/* if (req_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON fragment from GetServiceRunRequest");
+				}
+
+			FreeConnection (connection_p);
+		}		/* if (connection_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create connection to paired service at \"%s\"", paired_service_p -> ps_uri_s);
+		}
+
+	return num_successful_runs;
+}
+
+
 static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);

@@ -237,7 +237,6 @@ GRASSROOTS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, Ope
 GRASSROOTS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
 
 
-
 #ifdef __cplusplus
 }
 #endif

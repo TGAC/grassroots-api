@@ -234,49 +234,49 @@ bool ConvertDate (json_t *row_p)
 		{
 			const size_t date_length = strlen (date_s);
 
-			/* Is it DD/MM/YYYY */
-			if ((date_length == 10) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
+
+			if ((* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
 				{
-					/* year */
-					const char *part_s = date_s + 6;
-					memcpy (iso_date_s, part_s, 4 * sizeof (char));
-					memcpy (raw_date_s, part_s, 4 * sizeof (char));
-
-					/* month */
-					part_s = date_s + 3;
-					memcpy (iso_date_s + 5, part_s, 2 * sizeof (char));
-					memcpy (raw_date_s + 4, part_s, 2 * sizeof (char));
-
-					/* day */
-					memcpy (iso_date_s + 8, date_s, 2 * sizeof (char));
-					memcpy (raw_date_s + 6, date_s, 2 * sizeof (char));
-
-					success_flag = true;
-				}
-			/* Is it DD/MM/YY */
-			else if ((date_length == 8) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
-				{
-					/* year */
-					const char *year_prefix_s = "20";
+					bool year_flag = false;
 					const char *part_s = date_s + 6;
 
-					memcpy (iso_date_s, year_prefix_s, 2 * sizeof (char));
-					memcpy (iso_date_s, year_prefix_s, 2 * sizeof (char));
+					/* Is it DD/MM/YY */
+					if (date_length == 8)
+						{
+							/* year */
+							const char *year_prefix_s = "20";
 
-					memcpy (iso_date_s + 2, part_s, 2 * sizeof (char));
-					memcpy (raw_date_s + 2, part_s, 2 * sizeof (char));
+							memcpy (iso_date_s, year_prefix_s, 2 * sizeof (char));
+							memcpy (iso_date_s, year_prefix_s, 2 * sizeof (char));
 
-					/* month */
-					part_s = date_s + 3;
-					memcpy (iso_date_s + 5, part_s, 2 * sizeof (char));
-					memcpy (raw_date_s + 4, part_s, 2 * sizeof (char));
+							memcpy (iso_date_s + 2, part_s, 2 * sizeof (char));
+							memcpy (raw_date_s + 2, part_s, 2 * sizeof (char));
 
-					/* day */
-					memcpy (iso_date_s + 8, date_s, 2 * sizeof (char));
-					memcpy (raw_date_s + 6, date_s, 2 * sizeof (char));
+							year_flag = true;
+						}
+					/* Is it DD/MM/YYYY */
+					else if (date_length == 10)
+						{
+							/* year */
+							memcpy (iso_date_s, part_s, 4 * sizeof (char));
+							memcpy (raw_date_s, part_s, 4 * sizeof (char));
 
-					success_flag = true;
-				}
+							year_flag = true;
+						}
+
+					if (year_flag)
+						{
+							/* month */
+							part_s = date_s + 3;
+							memcpy (iso_date_s + 5, part_s, 2 * sizeof (char));
+							memcpy (raw_date_s + 4, part_s, 2 * sizeof (char));
+
+							/* day */
+							memcpy (iso_date_s + 8, date_s, 2 * sizeof (char));
+							memcpy (raw_date_s + 6, date_s, 2 * sizeof (char));
+						}
+
+				}		/* if ((* (date_s + 2) == '/') && (* (date_s + 5) == '/')) */
 			else
 				{
 #define NUM_MONTHS (12)

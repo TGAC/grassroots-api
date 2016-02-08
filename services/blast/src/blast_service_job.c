@@ -27,22 +27,27 @@
 
 BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s)
 {
-	BlastServiceJob *job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
+	BlastServiceJob *blast_job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
 
-	if (job_p)
+	if (blast_job_p)
 		{
-			BlastTool *tool_p = CreateBlastTool (& (job_p -> bsj_job), job_name_s, working_directory_s);
+			ServiceJob * const base_service_job_p = & (blast_job_p -> bsj_job);
+			BlastTool *tool_p = NULL;
+
+			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL);
+
+			tool_p = CreateBlastTool (base_service_job_p, job_name_s, working_directory_s);
 
 			if (tool_p)
 				{
-					InitServiceJob (& (job_p -> bsj_job), service_p, job_name_s, job_description_s, NULL);
-					job_p -> bsj_tool_p = tool_p;
+					blast_job_p -> bsj_tool_p = tool_p;
 
-					return job_p;
+					return blast_job_p;
 				}		/* if (tool_p) */
 
-			FreeMemory (job_p);
-		}		/* if (job_p) */
+			ClearServiceJob (base_service_job_p);
+			FreeMemory (blast_job_p);
+		}		/* if (blast_job_p) */
 
 	return NULL;
 }
@@ -50,5 +55,10 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_na
 
 void FreeBlastServiceJob (ServiceJob *job_p)
 {
+	BlastServiceJob *blast_job_p = (BlastServiceJob *) job_p;
 
+	FreeBlastTool (blast_job_p -> bsj_tool_p);
+	ClearServiceJob (job_p);
+
+	FreeMemory (blast_job_p);
 }

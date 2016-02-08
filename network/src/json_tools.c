@@ -1,18 +1,18 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
-** 
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-** 
-**     http://www.apache.org/licenses/LICENSE-2.0
-** 
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
+ ** Copyright 2014-2015 The Genome Analysis Centre
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at
+ **
+ **     http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ** See the License for the specific language governing permissions and
+ ** limitations under the License.
+ */
 
 #include "json_tools.h"
 #include "request_tools.h"
@@ -23,9 +23,9 @@
 
 
 #ifdef _DEBUG
-	#define JSON_TOOLS_DEBUG	(STM_LEVEL_FINER)
+#define JSON_TOOLS_DEBUG	(STM_LEVEL_FINER)
 #else
-	#define JSON_TOOLS_DEBUG	(STM_LEVEL_NONE)
+#define JSON_TOOLS_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -67,10 +67,10 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 		{
 			json_error_t err;
 
-			#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
 			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "MakeRemoteJsonCall >\n%s\n", data_s);
 			FlushLog ();
-			#endif
+#endif
 
 			response_p = json_loads (data_s, 0, &err);
 
@@ -96,7 +96,7 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 				}
 		}
 }
-* */
+ * */
 
 bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const char * const password_s)
 {
@@ -106,7 +106,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 	if (credentials_p)
 		{
 			json_t *config_p = LoadConfig (".grassroots");
-			
+
 			if (config_p)
 				{
 					json_t *loaded_credentials_p = json_object_get (config_p, CREDENTIALS_S);
@@ -115,26 +115,26 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 						{
 							if (json_object_set (credentials_p, CREDENTIALS_S, loaded_credentials_p) == 0)
 								{
-									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-									#endif
+#endif
 
 									json_object_del (config_p, CREDENTIALS_S);
 
-									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-									#endif
+#endif
 								}
 							else
 								{
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add loaded credentials  to credentials json");
 								}
 						}
-						
+
 
 				}		/* if (config_p) */
-			
-			
+
+
 			if (username_s)
 				{
 					if (json_object_set_new (credentials_p, CREDENTIALS_USERNAME_S, json_string (username_s)) != 0)
@@ -143,9 +143,9 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 						}
 				}
 
-			#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 			PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-			#endif
+#endif
 
 			if (password_s)
 				{
@@ -155,9 +155,9 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 						}
 				}
 
-				#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-				PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-				#endif
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+			PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
+#endif
 
 			if (json_object_set_new (root_p, CREDENTIALS_S, credentials_p) == 0)
 				{
@@ -170,9 +170,9 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 		}
 
 
-	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 	PrintJSONToLog (root_p, "root_p: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-	#endif
+#endif
 
 	return success_flag;
 }
@@ -184,9 +184,9 @@ json_t *LoadConfig (const char *path_s)
 	json_error_t error;
 	json_t *config_json_p = json_load_file (path_s, 0, &error);	
 
-	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 	char *value_s = json_dumps (config_json_p, JSON_INDENT (2));
-	#endif
+#endif
 
 
 	if (!config_json_p)
@@ -194,9 +194,9 @@ json_t *LoadConfig (const char *path_s)
 			success_flag = false;
 		}		/* if (config_json_p) */
 
-	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 	free (value_s);
-	#endif
+#endif
 
 
 	return config_json_p;
@@ -217,15 +217,15 @@ json_t *GetModifiedFilesRequest (const char * const username_s, const char * con
 			if (AddCredentialsToJson (root_p, username_s, password_s))
 				{
 					json_t *interval_p = json_object ();
-					
+
 					if (interval_p)
 						{
 							json_t *irods_p = json_object_get (root_p, KEY_IRODS);
-							
+
 							if (json_object_set_new (irods_p, "interval", interval_p) == 0)
 								{
 									success_flag = true;
-									
+
 									if (from_s)
 										{
 											success_flag = AddKeyAndStringValue (interval_p, "from", from_s);
@@ -243,7 +243,7 @@ json_t *GetModifiedFilesRequest (const char * const username_s, const char * con
 								}
 						}
 				}
-			
+
 			if (!success_flag)
 				{
 					json_object_clear (root_p);
@@ -251,7 +251,7 @@ json_t *GetModifiedFilesRequest (const char * const username_s, const char * con
 					root_p = NULL;
 				}
 		}		/* if (root_p) */
-		
+
 	return root_p;
 }
 
@@ -260,7 +260,7 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 {
 	bool success_flag = false;
 	json_t *value_p = json_string (value_s);
-	
+
 	if (value_p)
 		{
 			if (json_object_set_new (json_p, key_s, value_p) == 0)
@@ -285,7 +285,7 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 json_t *GetAvailableServicesRequest (const char * const username_s, const char * const password_s)
 {	
 	json_t *json_p = GetOperationAsJSON (OP_LIST_ALL_SERVICES);
-	
+
 	return json_p;
 }
 
@@ -308,6 +308,7 @@ json_t *GetInterestedServicesRequest (const char * const username_s, const char 
 
 	return res_p;
 }
+
 
 
 json_t *GetKeywordServicesRequest (const char * const username_s, const char * const password_s, const char * const keyword_s)
@@ -432,7 +433,7 @@ json_t *GetOperationAsJSON (Operation op)
 		{
 			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get Operation %d as JSON, %s\n", op, error.text);
 		}
-	
+
 	return json_p;
 }
 

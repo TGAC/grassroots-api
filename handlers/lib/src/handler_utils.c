@@ -308,11 +308,11 @@ static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, con
 																	/* If resource_p is NULL or it matches, then add it */
 																	if ((!resource_p) || IsHandlerForResource (handler_p, resource_p))
 																		{
-																			HandlerNode *node_p = AllocateHandlerNode (handler_p);
+																			HandlerNode *handler_node_p = AllocateHandlerNode (handler_p);
 
-																			if (node_p)
+																			if (handler_node_p)
 																				{
-																					LinkedListAddTail (handlers_list_p, (ListItem *) node_p);
+																					LinkedListAddTail (handlers_list_p, (ListItem *) handler_node_p);
 																					using_handler_flag = true;
 																				}
 																			else

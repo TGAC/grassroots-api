@@ -90,7 +90,6 @@ bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_
 				{
 					char *current_dir_s = GetCurrentWorkingDirectory ();
 
-
 					if (current_dir_s)
 						{
 							storage_p -> ags_largest_entry_memory_id = AllocateSharedMemory (current_dir_s, sizeof (unsigned int), 0644);
@@ -403,7 +402,14 @@ bool AddObjectToAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_k
 					FreeCopiedString (key_s);
 				}
 
-			FreeMemory (key_p);
+			/*
+			 * If the key_p isn't pointing to the same address
+			 * as raw_key_p it must be new, so delete it.
+			 */
+			if (key_p != raw_key_p)
+				{
+					FreeMemory (key_p);
+				}
 		} /* if (key_p) */
 	else
 		{
