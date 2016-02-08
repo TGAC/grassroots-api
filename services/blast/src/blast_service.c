@@ -1659,17 +1659,21 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 																{
 																	if (CopyRemoteParameterDetails (external_param_p, param_p))
 																		{
-																		}
+																			if (dest_param_pp)
+																				{
+																					*dest_param_pp = param_p;
+																					++ dest_param_pp;
+																				}		/* if (dest_param_pp) */
 
-																	if (dest_param_pp)
+																		}		/* if (CopyRemoteParameterDetails (external_param_p, param_p)) */
+																	else
 																		{
-																			*dest_param_pp = param_p;
-																			++ dest_param_pp;
+
 																		}
 
 																	++ num_added_dbs;
 																	++ db_counter;
-																}
+																}		/* if (param_p) */
 
 															++ src_param_pp;
 														}		/* while (*src_param_pp) */
@@ -1685,7 +1689,7 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 																}
 
 															FreeCopiedString (group_name_s);
-														}
+														}		/* if (group_name_s) */
 
 												}		/* if (grouped_params_pp) */
 
@@ -1702,3 +1706,13 @@ static bool AddPairedServiceParameters (Service *service_p, ParameterSet *intern
 
 	return success_flag;
 }
+
+
+
+static bool PrepareRemoteJobsForRunning (ParameterSet *params_p)
+{
+	bool success_flag = true;
+
+	return success_flag;
+}
+

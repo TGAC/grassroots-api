@@ -232,13 +232,39 @@ bool ConvertDate (json_t *row_p)
 
 	if (date_s)
 		{
+			const size_t date_length = strlen (date_s);
+
 			/* Is it DD/MM/YYYY */
-			if ((strlen (date_s) == 10) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
+			if ((date_length == 10) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
 				{
 					/* year */
 					const char *part_s = date_s + 6;
 					memcpy (iso_date_s, part_s, 4 * sizeof (char));
 					memcpy (raw_date_s, part_s, 4 * sizeof (char));
+
+					/* month */
+					part_s = date_s + 3;
+					memcpy (iso_date_s + 5, part_s, 2 * sizeof (char));
+					memcpy (raw_date_s + 4, part_s, 2 * sizeof (char));
+
+					/* day */
+					memcpy (iso_date_s + 8, date_s, 2 * sizeof (char));
+					memcpy (raw_date_s + 6, date_s, 2 * sizeof (char));
+
+					success_flag = true;
+				}
+			/* Is it DD/MM/YY */
+			else if ((date_length == 8) && (* (date_s + 2) == '/') && (* (date_s + 5) == '/'))
+				{
+					/* year */
+					const char *year_prefix_s = "20";
+					const char *part_s = date_s + 6;
+
+					memcpy (iso_date_s, year_prefix_s, 2 * sizeof (char));
+					memcpy (iso_date_s, year_prefix_s, 2 * sizeof (char));
+
+					memcpy (iso_date_s + 2, part_s, 2 * sizeof (char));
+					memcpy (raw_date_s + 2, part_s, 2 * sizeof (char));
 
 					/* month */
 					part_s = date_s + 3;

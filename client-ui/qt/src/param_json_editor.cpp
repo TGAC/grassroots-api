@@ -21,7 +21,7 @@
 #include "jansson.h"
 
 #include "json_util.h"
-
+#include "string_utils.h"
 
 
 DroppableJSONBox :: DroppableJSONBox (QWidget *parent_p)
@@ -86,21 +86,28 @@ bool ParamJSONEditor :: StoreParameterValue ()
 	QByteArray ba = s.toLocal8Bit ();
 	const char *value_s = ba.constData ();
 
-	json_error_t error;
-	json_t *data_p = json_loads (value_s, 0, &error);
-
-	if (data_p)
+	if (!IsStringEmpty (value_s))
 		{
-			success_flag = SetParameterValue (bpw_param_p, data_p, true);
+			json_error_t error;
+			json_t *data_p = json_loads (value_s, 0, &error);
 
-			if (!success_flag)
+			if (data_p)
 				{
-					json_decref (data_p);
+					success_flag = SetParameterValue (bpw_param_p, data_p, true);
+
+					if (!success_flag)
+						{
+							json_decref (data_p);
+						}
+				}
+			else
+				{
+					SetParameterValue (bpw_param_p, NULL, true);
 				}
 		}
 	else
 		{
-			SetParameterValue (bpw_param_p, NULL, true);
+			success_flag = SetParameterValue (bpw_param_p, NULL, true);
 		}
 
 	qDebug () << "Setting " << bpw_param_p -> pa_name_s << " to " << value_s << " " << success_flag;

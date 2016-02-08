@@ -1,2 +1,2 @@
-DIR_WHEATIS_INSTALL_ROOT = /opt/wheatis-live/wheatis
-DIR_WHEATIS = ../..
+DIR_GRASSROOTS_INSTALL_ROOT = /opt/grassroots-0/grassroots
+DIR_GRASSROOTS = ../..
