@@ -1170,6 +1170,7 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 					external_server_node_p = (ExternalServerNode *) external_server_node_p -> esn_node.ln_next_p;
 				}		/* (while (external_server_node_p) */
 
+			FreeLinkedList (external_servers_p);
 		}		/* if (external_servers_p) */
 
 

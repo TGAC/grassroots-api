@@ -376,7 +376,7 @@ ServiceJobNode *FindServiceJobNodeByUUIDInServiceJobSet (const ServiceJobSet *jo
 }
 
 
-ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id)
+ServiceJob *GetServiceJobFromServiceJobSetById (const ServiceJobSet *jobs_p, const uuid_t job_id)
 {
 	ServiceJobNode *node_p = FindServiceJobNodeByUUIDInServiceJobSet (jobs_p, job_id);
 	ServiceJob *job_p = NULL;
@@ -458,7 +458,7 @@ void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag)
 		{
 			if (free_memory_flag)
 				{
-					WipeJSON (job_p -> sj_result_p);
+					json_decref (job_p -> sj_result_p);
 				}
 
 			job_p -> sj_result_p = NULL;

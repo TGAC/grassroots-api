@@ -53,7 +53,6 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
  typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 {
 	ServiceData bsd_base_data;
-	BlastToolSet *bsd_blast_tools_p;
 
 	const char *bsd_working_dir_s;
 

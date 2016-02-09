@@ -296,7 +296,7 @@ GRASSROOTS_SERVICE_API void FreeServiceJobNode (ListItem *service_job_node_p);
  * </code> if it could not be found.
  * @memberof ServiceJobSet
  */
-GRASSROOTS_SERVICE_API ServiceJob *GetJobById (const ServiceJobSet *jobs_p, const uuid_t job_id);
+GRASSROOTS_SERVICE_API ServiceJob *GetServiceJobFromServiceJobSetById (const ServiceJobSet *jobs_p, const uuid_t job_id);
 
 
 /**

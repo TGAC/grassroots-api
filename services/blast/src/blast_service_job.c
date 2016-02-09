@@ -31,8 +31,8 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_na
 
 	if (blast_job_p)
 		{
-			ServiceJob * const base_service_job_p = & (blast_job_p -> bsj_job);
 			BlastTool *tool_p = NULL;
+			ServiceJob * const base_service_job_p = & (blast_job_p -> bsj_job);
 
 			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL);
 

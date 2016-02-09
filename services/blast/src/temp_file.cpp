@@ -72,35 +72,28 @@ TempFile *TempFile :: GetTempFile (const char *working_dir_s, const uuid_t id, c
 
 			if (success_flag)
 				{
-					char *uuid_s = GetUUIDAsString (id);
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (id, uuid_s);
 
 					success_flag = false;
 
-					if (uuid_s)
+					if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL))
 						{
-							if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL))
+							const char *full_filename_s = GetByteBufferData (buffer_p);
+
+							file_p = TempFile :: GetTempFile (full_filename_s, false);
+
+							if (file_p)
 								{
-									const char *full_filename_s = GetByteBufferData (buffer_p);
+									file_p -> Close ();
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get temp file \"%s\"", full_filename_s);
+								}
 
-									file_p = TempFile :: GetTempFile (full_filename_s, false);
-
-									if (file_p)
-										{
-											file_p -> Close ();
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get temp file \"%s\"", full_filename_s);
-										}
-
-								}		/* if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL)) */
-
-							FreeUUIDString (uuid_s);
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get uuid as string");
-						}
+						}		/* if (AppendStringsToByteBuffer (buffer_p, uuid_s, suffix_s, NULL)) */
 
 				}		/* if (success_flag) */
 
@@ -120,52 +113,58 @@ TempFile *TempFile :: GetTempFile (const char *working_dir_s, const uuid_t id, c
 TempFile *TempFile :: GetTempFile (const char *template_s, const bool temp_flag)
 {
 	FILE *file_p = NULL;
-	TempFile *tf_p = new TempFile;
 
-	if (temp_flag)
+	char *copied_template_s = CopyToNewString (template_s, 0, false);
+
+	if (copied_template_s)
 		{
-			char *copied_template_s = CopyToNewString (template_s, 0, false);
+			bool success_flag = false;
 
-			if (copied_template_s)
+			if (temp_flag)
 				{
 					int fd = mkstemp (copied_template_s);
 
 					if (fd >= 1)
 						{
 							close (fd);
-
-							file_p = fopen (copied_template_s, "w");
-							tf_p -> tf_name_mem = MF_SHALLOW_COPY;
+							success_flag = true;
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Faiiled to create temp file for \"%s\"", copied_template_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create temp file for \"%s\"", copied_template_s);
 							FreeCopiedString (copied_template_s);
 						}
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Faiiled to copy temp filename for \"%s\"", template_s);
+					success_flag = true;
 				}
+
+			if (success_flag)
+				{
+					TempFile *tf_p = new TempFile;
+
+					tf_p -> tf_handle_f = fopen (copied_template_s, "w");
+
+					if (tf_p -> tf_handle_f)
+						{
+							tf_p -> tf_name_s = copied_template_s;
+							tf_p -> tf_name_mem = MF_SHALLOW_COPY;
+
+							return tf_p;
+						}
+
+					delete tf_p;
+				}
+
+			FreeCopiedString (copied_template_s);
 		}
 	else
 		{
-			file_p = fopen (template_s, "w");
-			tf_p -> tf_name_s = (char *) template_s;
-			tf_p -> tf_name_mem = MF_SHADOW_USE;
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy temp filename for \"%s\"", template_s);
 		}
 
-	if (file_p)
-		{
-			tf_p -> tf_handle_f = file_p;
-		}
-	else
-		{
-			delete tf_p;
-			tf_p = 0;
-		}
-
-	return tf_p;
+	return NULL;
 }
 
 

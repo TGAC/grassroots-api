@@ -213,7 +213,7 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 
 	if (value_p)
 		{
-			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINEST
+			#if APR_SERVERS_MANAGER_DEBUG >= STM_LEVEL_FINEST
 				{
 					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Adding \"%s\"=\"%s\"", server_p -> es_uri_s, value_p);
 				}
@@ -221,7 +221,7 @@ static bool AddExternalServerToAprServersManager (ServersManager *servers_manage
 
 			success_flag = AddObjectToAPRGlobalStorage (manager_p -> asm_store_p, server_p -> es_uri_s, strlen (server_p -> es_uri_s), value_p, value_length);
 
-			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
+			#if APR_SERVERS_MANAGER_DEBUG >= STM_LEVEL_FINER
 				{
 					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added \"%s\"=\"%s\", success=%d", server_p -> es_uri_s, value_p, success_flag);
 				}
@@ -374,7 +374,7 @@ static apr_status_t AddExternalServerFromSOCache (ap_socache_instance_t *instanc
 
 	if (external_server_p)
 		{
-			ExternalServerNode *node_p = AllocateExternalServerNode (external_server_p, MF_SHADOW_USE);
+			ExternalServerNode *node_p = AllocateExternalServerNode (external_server_p, MF_SHALLOW_COPY);
 
 			if (node_p)
 				{

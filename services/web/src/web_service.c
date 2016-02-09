@@ -93,7 +93,7 @@ void ReleaseService (Service *service_p)
 static json_t *GetWebServiceResults (Service *service_p, const uuid_t job_id)
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
-	ServiceJob *job_p = GetJobById (service_p -> se_jobs_p, job_id);
+	ServiceJob *job_p = GetServiceJobFromServiceJobSetById (service_p -> se_jobs_p, job_id);
 	json_t *res_p = NULL;
 
 	if (job_p)

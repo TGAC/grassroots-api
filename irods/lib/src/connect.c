@@ -15,6 +15,8 @@
 */
 #include "connect.h"
 #include "json_util.h"
+#include "streams.h"
+
 
 #ifdef _DEBUG
 	#define CONNECT_DEBUG	(STM_LEVEL_FINE)
@@ -38,11 +40,9 @@ rcComm_t *CreateIRODSConnectionFromJSON (const json_t *config_p)
 			credentials_p = config_p;
 		}
 
-	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
 		{
-			char *value_s = json_dumps (credentials_p, JSON_INDENT (2));
-			printf ("connection credentials:\n%s\n", value_s);
-			free (value_s);
+			PrintJSONToLog (credentials_p, "connection credentials:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 		}
 	#endif
 

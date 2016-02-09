@@ -23,7 +23,7 @@ A Client is what is used to connect to a GIS Server and call Services. This can 
 
 ### Services
 
-[GIS Services](services_lib.md "Services guide") are the components that are accessed by the user to perform various tasks.
+[GrassrootsIS Services](services_lib.md "Services guide") are the components that are accessed by the user to perform various tasks.
 
 
 ### Support libraries

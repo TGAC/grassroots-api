@@ -426,7 +426,7 @@ static json_t *CreateWebSearchJSONServiceResults (WebSearchJSONServiceData *data
 static json_t *GetWebSearchJSONServiceResults (Service *service_p, const uuid_t job_id)
 {
 	WebSearchJSONServiceData *data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
-	ServiceJob *job_p = GetJobById (service_p -> se_jobs_p, job_id);
+	ServiceJob *job_p = GetServiceJobFromServiceJobSetById (service_p -> se_jobs_p, job_id);
 	json_t *res_p = NULL;
 
 	if (job_p)

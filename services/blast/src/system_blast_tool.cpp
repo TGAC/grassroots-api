@@ -74,7 +74,14 @@ OperationStatus SystemBlastTool :: Run ()
 	bt_job_p -> sj_status = OS_STARTED;
 	res = system (command_line_s);
 
-	bt_job_p -> sj_status = (res == 0) ? OS_SUCCEEDED : OS_FAILED;
+	if (res == 0)
+		{
+			bt_job_p -> sj_status = OS_SUCCEEDED;
+		}
+	else
+		{
+			bt_job_p -> sj_status = OS_FAILED;
+		}
 
 	return bt_job_p -> sj_status;
 }

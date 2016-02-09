@@ -703,6 +703,7 @@ ExternalServer *DeserialiseExternalServerFromJSON (const unsigned char *raw_json
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create external server from \"%s\"", raw_json_data_s);
 				}
 
+			json_decref (server_json_p);
 		}		/* if (server_json_p) */
 	else
 		{
