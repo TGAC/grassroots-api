@@ -762,7 +762,6 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 
 	if (results_p)
 		{
-			json_t *blast_result_json_p = NULL;
 			BlastTool *tool_p = job_p -> bsj_tool_p;
 			OperationStatus status = tool_p -> GetStatus ();
 			const char * const name_s = tool_p -> GetName ();
@@ -781,7 +780,7 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 
 							if (result_json_p)
 								{
-									blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, uuid_s, result_json_p);
+									json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, uuid_s, result_json_p);
 
 									if (blast_result_json_p)
 										{
@@ -801,16 +800,6 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 									json_decref (result_json_p);
 								}		/* if (result_json_p) */
 
-//							/* remove the tool from our set and delete it */
-//							if (RemoveServiceJobToServiceJobSet (service_p -> se_jobs_p, & (job_p -> bsj_job)))
-//								{
-//									FreeBlastServiceJob (& (job_p -> bsj_job));
-//								}
-//							else
-//								{
-//
-//								}
-
 							FreeCopiedString (result_s);
 						}		/* if (result_s) */
 					else
@@ -822,37 +811,20 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 			else
 				{
 					json_error_t error;
-					blast_result_json_p = json_pack_ex (&error, 0, "{s:i}", SERVICE_STATUS_S, status);
+					json_t *status_json_p = json_pack_ex (&error, 0, "{s:s,s:i}", SERVICE_UUID_S, uuid_s, SERVICE_STATUS_S, status);
 
-					if (blast_result_json_p)
+					if (status_json_p)
 						{
-							if (json_object_set_new (blast_result_json_p, SERVICE_UUID_S, json_string (uuid_s)) != 0)
+							if (json_array_append (results_p, status_json_p) != 0)
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service id %s to blast result json", uuid_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create id sdtring for blast result json");
-								}
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add status json result %s to json results array", uuid_s);
+									json_decref (status_json_p);
+								}		/* if (json_array_append (results_p, status_json_p) != 0) */
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result json for \"%s\"", uuid_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result json for \"%s\", error at line %d col %d, text \"%s\"", uuid_s, error.line, error.column, error.text);
 						}
-				}
-
-			if (blast_result_json_p)
-				{
-					if (json_array_append (results_p, blast_result_json_p) != 0)
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add blast result %s to json results array", uuid_s);
-							json_decref (blast_result_json_p);
-						}		/* if (json_array_append (results_p, blast_result_json_p) != 0) */
-
-				}		/* if (blast_result_json_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result json for \"%s\"", uuid_s);
 				}
 
 		}		/* if (results_p) */
