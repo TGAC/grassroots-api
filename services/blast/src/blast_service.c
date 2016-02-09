@@ -811,8 +811,6 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 //
 //								}
 
-
-							FreeCopiedString (result_s);
 						}		/* if (result_s) */
 					else
 						{

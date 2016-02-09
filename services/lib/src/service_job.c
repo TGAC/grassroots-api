@@ -331,7 +331,7 @@ void FreeServiceJobNode (ListItem *node_p)
 		{
 			case MF_SHALLOW_COPY:
 			case MF_DEEP_COPY:
-				FreeServiceJob (service_job_node_p -> sjn_job_p);
+				service_job_node_p -> sjn_free_job_fn (service_job_node_p -> sjn_job_p);
 				break;
 
 			default:
