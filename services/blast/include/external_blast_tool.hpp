@@ -46,9 +46,7 @@ public:
 
 	virtual bool SetUpOutputFile ();
 
-	virtual const char *GetResults (BlastFormatter *formatter_p);
-
-	virtual void ClearResults ();
+	virtual char *GetResults (BlastFormatter *formatter_p);
 
 protected:
 	ByteBuffer *ebt_buffer_p;

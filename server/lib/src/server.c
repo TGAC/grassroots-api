@@ -153,7 +153,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 				{
 					json_t *op_p = NULL;
 					json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
-					json_t *uuid_p = NULL;
+					json_t *uri_p = NULL;
 
 					if (!credentials_p)
 						{
@@ -176,7 +176,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 					/* add a unique id if not already there */
 					if (credentials_p)
 						{
-							uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
+							json_t *uuid_p = json_object_get (credentials_p, CREDENTIALS_UUID_S);
 
 							if (!uuid_p)
 								{
@@ -214,17 +214,17 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 					/*
 					 * Is this request for an external server?
 					 */
-					uuid_p = json_object_get (req_p, SERVER_UUID_S);
-					if (uuid_p)
+					uri_p = json_object_get (req_p, SERVER_URI_S);
+					if (uri_p)
 						{
 							/*
 							 * Find the matching external server,
 							 * Remove the server uuid and proxy
 							 * the request/response
 							 */
-							if (json_is_string (uuid_p))
+							if (json_is_string (uri_p))
 								{
-									const char *uuid_s = json_string_value (uuid_p);
+									const char *uuid_s = json_string_value (uri_p);
 									uuid_t key;
 
 									if (ConvertStringToUUID (uuid_s, key))
@@ -233,7 +233,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 
 											if (manager_p)
 												{
-													ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, key, NULL);
+													ExternalServer *external_server_p = GetExternalServerFromServersManager (manager_p, uuid_s, NULL);
 
 													if (external_server_p)
 														{
@@ -665,7 +665,6 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 
 	if (resource_p)
 		{
-			json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
 			Handler *handler_p = GetResourceHandler (resource_p, credentials_p);
 
 			if (handler_p)

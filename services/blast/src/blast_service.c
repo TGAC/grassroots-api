@@ -773,7 +773,7 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 
 			if (status == OS_SUCCEEDED)
 				{
-					const char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
+					char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
 
 					if (result_s)
 						{
@@ -811,6 +811,7 @@ static json_t *GetBlastResult (Service *service_p, BlastServiceJob *job_p)
 //
 //								}
 
+							FreeCopiedString (result_s);
 						}		/* if (result_s) */
 					else
 						{
@@ -957,7 +958,8 @@ static TempFile *GetInputTempFile (const ParameterSet *params_p, const char *wor
 static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code)
 {
 	char *error_s = NULL;
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, FreeBlastServiceJob);
+	Service *service_p = blast_data_p -> bsd_base_data.sd_service_p;
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p, NULL);
 
 	if (jobs_p)
 		{

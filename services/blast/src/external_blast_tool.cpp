@@ -168,9 +168,9 @@ bool ExternalBlastTool :: AddArg (const char *arg_s)
 }
 
 
-const char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
+char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 {
-	const char *results_s = NULL;
+	char *results_s = NULL;
 
 	if (ebt_output_p)
 		{
@@ -194,7 +194,17 @@ const char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 				{
 					if (ebt_output_p -> Open ("r"))
 						{
-							results_s = ebt_output_p -> GetData ();
+							const char *out_s = ebt_output_p -> GetData ();
+
+							if (out_s)
+								{
+									results_s = CopyToNewString (out_s, 0, false);
+
+									if (!results_s)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "failed to copy \"%s\"  to results string", out_s);
+										}
+								}
 						}
 					else
 						{
@@ -211,15 +221,6 @@ const char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 		}
 
 	return results_s;
-}
-
-
-void ExternalBlastTool :: ClearResults ()
-{
-	if (ebt_output_p)
-		{
-			ebt_output_p -> ClearData ();
-		}
 }
 
 
