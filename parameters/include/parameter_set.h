@@ -72,23 +72,6 @@ typedef struct ParameterSetNode
 } ParameterSetNode;
 
 
-
-/**
- * A datatype for storing a ParameterGroup on a LinkedList
- */
-typedef struct ParameterGroupNode
-{
-	/** The base list node */
-	ListItem pgn_node;
-
-	/** Pointer to the associated ParameterGroup */
-	ParameterGroup *pgn_param_group_p;
-} ParameterGroupNode;
-
-
-
-
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -146,6 +129,31 @@ GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (ParameterS
  * @memberof ParameterSet
  */
 GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
+
+
+
+
+/**
+ * Generate a json-based description of a selection of ParameterSet.
+ *
+ * @param param_set_p The ParameterSet to generate the description for.
+ * @param full_definition_flag If this is <code>true</code> then all of the details for each of
+ * the Parameters will get added. If this is <code>false</code> then just the name and
+ * current value of each Parameter will get added. This is useful is you just want to send
+ * the values to use when running a service.
+ * @param data_p If some custom data is needed by add_param_fn, then this can be used. It will be
+ * passed to each call of add_param_fn.
+ * @param add_param_fn A callback function that determines whether a Parameter should be added
+ * to the generated JSON. This will be called for each Parameter in the ParameterSet along with data_p
+ * and if returns <code>true</code> then the Parameter's JSON will get added. If it returns
+ * <code>false</code>, then the Parameter will be skipped.
+ * @return The json-based representation of the ParameterSet or <code>NULL</code> if there was
+ * an error.
+ * @memberof ParameterSet
+ */
+GRASSROOTS_PARAMS_API json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p));
+
+
 
 
 /**
@@ -212,10 +220,10 @@ GRASSROOTS_PARAMS_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *
 GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
 
 
-GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, Parameter **params_pp, const uint32 num_params);
+GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params);
 
 
-GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params);
+GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s,  const char ** const param_names_ss, const uint32 num_params);
 
 
 GRASSROOTS_PARAMS_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, const json_t * const json_p);
@@ -247,7 +255,7 @@ GRASSROOTS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, c
  * Upon failure a <code>NULL</code> is returned.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
+GRASSROOTS_PARAMS_API struct ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 
 
 

@@ -38,6 +38,7 @@
 typedef struct PairedService
 {
 	uuid_t ps_extenal_server_id;
+	char *ps_name_s;
 	char *ps_uri_s;
 	ParameterSet *ps_params_p;
 } PairedService;
@@ -56,7 +57,7 @@ extern "C"
 #endif
 
 
-GRASSROOTS_SERVICE_API PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const json_t *op_p);
+GRASSROOTS_SERVICE_API PairedService *AllocatePairedService (const uuid_t id, const char *name_s, const char *uri_s, const json_t *op_p);
 
 
 GRASSROOTS_SERVICE_API void FreePairedService (PairedService *paired_service_p);
@@ -65,7 +66,7 @@ GRASSROOTS_SERVICE_API void FreePairedService (PairedService *paired_service_p);
 GRASSROOTS_SERVICE_API PairedServiceNode *AllocatePairedServiceNode (PairedService *paired_service_p);
 
 
-GRASSROOTS_SERVICE_API PairedServiceNode *AllocatePairedServiceNodeByParts (const uuid_t id, const char *uri_s, const json_t *op_p);
+GRASSROOTS_SERVICE_API PairedServiceNode *AllocatePairedServiceNodeByParts (const uuid_t id, const char *name_s, const char *uri_s, const json_t *op_p);
 
 
 GRASSROOTS_SERVICE_API void FreePairedServiceNode (ListItem *node_p);

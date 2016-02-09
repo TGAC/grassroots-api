@@ -21,7 +21,6 @@
 
 
 #include "blast_service_api.h"
-#include "blast_tool_set.hpp"
 #include "blast_formatter.h"
 
 

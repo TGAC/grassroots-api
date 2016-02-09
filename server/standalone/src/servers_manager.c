@@ -83,7 +83,7 @@ static bool AddExternalServerToExternalServersManager (ServersManager *manager_p
 		}
 	else
 		{
-			ExternalServerNode *node_p = AllocateExternalServerNode (server_p, MF_SHADOW_USE);
+			node_p = AllocateExternalServerNode (server_p, MF_SHADOW_USE);
 
 			if (node_p)
 				{

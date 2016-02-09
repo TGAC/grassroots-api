@@ -181,26 +181,9 @@ typedef struct TagItem
 } TagItem;
 
 
-/**
- * A datatype to tell the system that certain
- * parameters should be grouped together in the
- * client's user interface if possible.
- */
-typedef struct ParameterGroup
-{
-	/** The name of the ParameterGroup */
-	char *pg_name_s;
 
-	/** The number of Parameters in this ParameterGroup */
-	uint32 pg_num_params;
-
-	/**
-	 * An array of pointers to the Parameters that make up
-	 * this ParameterGroup.
-	 */
-	struct Parameter **pg_params_pp;
-} ParameterGroup;
-
+/* forward declaration */
+struct ParamerterGroup;
 
 
 /**
@@ -283,7 +266,7 @@ typedef struct Parameter
 	 * Parameter is not in a ParameterGroup, then this will be
 	 * <code>NULL</code>
 	 */
-	ParameterGroup *pa_group_p;
+	struct ParameterGroup *pa_group_p;
 
 
 	LinkedList *pa_remote_parameter_details_p;

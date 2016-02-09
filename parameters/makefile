@@ -1,9 +1,9 @@
 NAME 		= grassroots_params
 DIR_SRC = src
 DIR_INCLUDE = include
-COMP		= g++
+COMP		= gcc
 LINK		= ld
-MAKEDEPEND 	= g++ -MM -MF
+MAKEDEPEND 	= gcc -MM -MF
 
 
 ifeq ($(DIR_ROOT),)
@@ -43,6 +43,7 @@ INCLUDES = \
 	
 SRCS 	= \
 	parameter.c \
+	parameter_group.c \
 	parameter_set.c \
 	remote_parameter_details.c \
 	tag_item.c \

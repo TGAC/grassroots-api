@@ -262,7 +262,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 												{
 													*grouped_param_pp = param_p;
 
-													if (!AddParameterGroupToParameterSet (param_set_p, "Sequence", grouped_params_pp, num_params))
+													if (!AddParameterGroupToParameterSet (param_set_p, "Sequence", NULL, grouped_params_pp, num_params))
 														{
 															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add sequence grouping");
 															FreeMemory (grouped_params_pp);

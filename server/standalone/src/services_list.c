@@ -110,7 +110,7 @@ static bool AddServiceJobToServicesListManager (JobsManager *manager_p, uuid_t j
 		}
 	else
 		{
-			UUIDJobNode *node_p = AllocateUUIDJobNode (job_key, job_p);
+			node_p = AllocateUUIDJobNode (job_key, job_p);
 
 			if (node_p)
 				{

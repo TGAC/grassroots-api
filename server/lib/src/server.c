@@ -126,7 +126,7 @@ json_t *ProcessServerRawMessage (const char * const request_s, const int socket_
 bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const json_t *op_p)
 {
 	bool success_flag = false;
-	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, external_server_p -> es_uri_s, op_p);
+	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, external_server_p -> es_name_s, external_server_p -> es_uri_s, op_p);
 
 	if (paired_service_p)
 		{

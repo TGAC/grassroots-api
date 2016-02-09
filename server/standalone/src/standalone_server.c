@@ -42,7 +42,7 @@
 #include "service_config.h"
 #include "system_util.h"
 #include "connection.h"
-
+#include "parameter_group.h"
 
 /**********************/
 /***** PROTOTYPES *****/ 

@@ -105,15 +105,12 @@ TempFile *TempFile :: GetTempFile (const char *working_dir_s, const uuid_t id, c
 		}
 
 	return file_p;
-
 }
 
 
 
 TempFile *TempFile :: GetTempFile (const char *template_s, const bool temp_flag)
 {
-	FILE *file_p = NULL;
-
 	char *copied_template_s = CopyToNewString (template_s, 0, false);
 
 	if (copied_template_s)

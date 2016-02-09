@@ -502,7 +502,7 @@ static bool AddUploadParams (ParameterSet *param_set_p)
 
 					*grouped_param_pp = param_p;
 
-					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params))
 						{
 							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 							FreeMemory (grouped_params_pp);

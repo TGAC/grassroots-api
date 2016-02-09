@@ -413,7 +413,7 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 									heading_s = name_s;
 								}
 
-							if (!AddParameterGroupToParameterSet (param_set_p, heading_s, params_pp, result_p -> qr_num_values))
+							if (!AddParameterGroupToParameterSet (param_set_p, heading_s, NULL, params_pp, result_p -> qr_num_values))
 								{
 									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add parameter group for \"%s\"\n", name_s);
 								}

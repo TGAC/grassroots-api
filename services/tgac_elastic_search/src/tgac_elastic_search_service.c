@@ -79,7 +79,7 @@ static bool IsFileForElasticSearchRestService (Service *service_p, Resource *res
 
 static bool CloseElasticSearchRestService (Service *service_p);
 
-static const char * const GetRootRestURI (void);
+
 
 
 static json_t *GetElasticSearchRestServiceResults (struct Service *service_p, const uuid_t joob_id);

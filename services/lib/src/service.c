@@ -238,9 +238,9 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 
 									while (reference_file_node_p)
 										{
-											json_t *config_p = LoadJSONConfig (reference_file_node_p -> sln_string_s);
+											json_t *reference_config_p = LoadJSONConfig (reference_file_node_p -> sln_string_s);
 
-											if (config_p)
+											if (reference_config_p)
 												{
 													uint32 num_added_services = 0;
 													char *json_s = json_dumps (config_p, JSON_INDENT (2));

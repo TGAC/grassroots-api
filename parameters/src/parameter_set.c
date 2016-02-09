@@ -18,6 +18,7 @@
 #include "memory_allocations.h"
 #include "parameter_set.h"
 #include "parameter.h"
+#include "parameter_group.h"
 #include "string_utils.h"
 
 #include "streams.h"
@@ -42,15 +43,9 @@ static ParameterNode *AllocateParameterNode (Parameter *param_p);
 
 static void FreeParameterNode (ListItem *node_p);
 
-static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, Parameter **params_pp, const uint32 num_params);
-
-static void FreeParameterGroupNode (ListItem *node_p);
-
-static ParameterGroup *AllocateParameterGroup (const char *name_s, Parameter **params_pp, const uint32 num_params);
-
-static void FreeParameterGroup (ParameterGroup *param_group_p);
-
 static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet * const params_p, const Tag tag);
+
+static bool AddAllParametersToParameterSetJSON (const Parameter *param_p, void *data_p);
 
 
 /****************************************/
@@ -174,7 +169,20 @@ void FreeParameterNode (ListItem *node_p)
 }
 
 
+static bool AddAllParametersToParameterSetJSON (const Parameter *param_p, void *data_p)
+{
+	return true;
+}
+
+
 json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag)
+{
+	return GetParameterSetSelectionAsJSON (param_set_p, full_definition_flag, NULL, AddAllParametersToParameterSetJSON);
+}
+
+
+
+json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p))
 {
 	json_t *param_set_json_p = json_object ();
 
@@ -189,21 +197,31 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 
 					while (success_flag && node_p)
 						{
-							json_t *param_json_p = GetParameterAsJSON (node_p -> pn_parameter_p, full_definition_flag);
+							Parameter *param_p = node_p -> pn_parameter_p;
 
-							if (param_json_p)
+							if (add_param_fn (param_p, data_p))
 								{
-									#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
-									PrintJSON (stderr, param_json_p, "GetParameterSetAsJSON - param_json_p :: ");
-									#endif
+									json_t *param_json_p = GetParameterAsJSON (param_p, full_definition_flag);
 
-									success_flag = (json_array_append_new (params_p, param_json_p) == 0);
+									if (param_json_p)
+										{
+											#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
+											PrintJSON (stderr, param_json_p, "GetParameterSetAsJSON - param_json_p :: ");
+											#endif
 
+											success_flag = (json_array_append_new (params_p, param_json_p) == 0);
+
+											node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+										}
+									else
+										{
+											success_flag = false;
+										}
+								}		/* if (add_param_fn (param_p)) */
+
+							if (success_flag)
+								{
 									node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-								}
-							else
-								{
-									success_flag = false;
 								}
 						}
 
@@ -268,13 +286,13 @@ json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const boo
 						}
 
 				}		/* if (param_set_json_p) */
-			
+
 		}		/* if (param_set_json_p) */
 
-
-
 	return param_set_json_p;
+
 }
+
 
 
 
@@ -347,10 +365,10 @@ bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, con
 }
 
 
-bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, Parameter **params_pp, const uint32 num_params)
+bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params)
 {
 	bool success_flag = false;
-	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, params_pp, num_params);
+	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, group_key_s, params_pp, num_params);
 
 	if (param_group_node_p)
 		{
@@ -372,7 +390,7 @@ bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *gro
 }
 
 
-bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char ** const param_names_ss, const uint32 num_params)
+bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params)
 {
 	bool success_flag = false;
 	Parameter **params_pp = AllocMemoryArray (num_params, sizeof (Parameter *));
@@ -420,7 +438,7 @@ bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const cha
 
 			if (success_flag)
 				{
-					success_flag = AddParameterGroupToParameterSet (param_set_p, group_name_s, params_pp, num_params);
+					success_flag = AddParameterGroupToParameterSet (param_set_p, group_name_s, group_key_s, params_pp, num_params);
 				}
 
 			if (!success_flag)
@@ -561,6 +579,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 																				{
 																					Parameter **param_pp = params_pp;
 																					ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+																					const char *group_key_s = NULL;;
 
 																					/* Get the number of Parameters needed */
 																					for (j = 0; j < num_params; ++ j)
@@ -578,7 +597,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p)
 
 																						}		/* for (j = 0; j < num_params; ++ j) */
 
-																					if (!AddParameterGroupToParameterSet (params_p, group_name_s, params_pp, num_group_params))
+																					if (!AddParameterGroupToParameterSet (params_p, group_name_s, group_key_s, params_pp, num_group_params))
 																						{
 																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create parameter group \"%s\"", group_name_s);
 																							FreeMemory (params_pp);
@@ -736,71 +755,5 @@ static ParameterNode *GetParameterNodeFromParameterSetByTag (const ParameterSet 
 
 	return NULL;
 }
-
-
-static ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, Parameter **params_pp, const uint32 num_params)
-{
-	ParameterGroup *group_p = AllocateParameterGroup (name_s, params_pp, num_params);
-
-	if (group_p)
-		{
-			ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
-
-			if (param_group_node_p)
-				{
-					param_group_node_p -> pgn_param_group_p = group_p;
-					param_group_node_p -> pgn_node.ln_prev_p = NULL;
-					param_group_node_p -> pgn_node.ln_next_p = NULL;
-
-					return param_group_node_p;
-				}		/* if (param_group_node_p) */
-
-			FreeParameterGroup (group_p);
-		}		/* if (group_p) */
-
-	return NULL;
-}
-
-
-static void FreeParameterGroupNode (ListItem *node_p)
-{
-	ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) node_p;
-
-	FreeParameterGroup (param_group_node_p -> pgn_param_group_p);
-	FreeMemory (param_group_node_p);
-}
-
-
-static ParameterGroup *AllocateParameterGroup (const char *name_s, Parameter **params_pp, const uint32 num_params)
-{
-	char *copied_name_s = CopyToNewString (name_s, 0, false);
-
-	if (copied_name_s)
-		{
-			ParameterGroup *param_group_p = (ParameterGroup *) AllocMemory (sizeof (ParameterGroup));
-
-			if (param_group_p)
-				{
-					param_group_p -> pg_name_s = copied_name_s;
-					param_group_p -> pg_params_pp = params_pp;
-					param_group_p -> pg_num_params = num_params;
-
-					return param_group_p;
-				}
-
-			FreeCopiedString (copied_name_s);
-		}		/* if (copied_name_s) */
-
-	return NULL;
-}
-
-
-static void FreeParameterGroup (ParameterGroup *param_group_p)
-{
-	FreeCopiedString (param_group_p -> pg_name_s);
-	FreeMemory (param_group_p -> pg_params_pp);
-	FreeMemory (param_group_p);
-}
-
 
 

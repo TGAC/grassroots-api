@@ -144,9 +144,10 @@ char *ConvertNumberToString (double d, int8 num_dps)
 		{
 			char *value_p = value_s;
 			char *format_s = NULL;   
-			size_t num_digits = 7;		/* "%.%xlf\0" */
 			int i = 0;
-			
+
+			num_digits = 7;		/* "%.%xlf\0" */
+
 			if (num_dps > 0)
 				{
 					i = log10 (num_dps);

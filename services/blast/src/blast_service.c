@@ -26,6 +26,7 @@
 #include "json_tools.h"
 #include "blast_formatter.h"
 #include "blast_service_job.h"
+#include "paired_blast_service.h"
 
 #include "servers_pool.h"
 #include "remote_parameter_details.h"
@@ -84,7 +85,6 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 
 static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s);
 
-static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter);
 
 
 /***************************************/
@@ -429,7 +429,7 @@ static uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_s
 				}		/* if (db_p) */
 
 
-			if (!AddParameterGroupToParameterSet (param_set_p, BS_DATABASE_GROUP_NAME_S, grouped_params_pp, num_group_params))
+			if (!AddParameterGroupToParameterSet (param_set_p, BS_DATABASE_GROUP_NAME_S, NULL, grouped_params_pp, num_group_params))
 				{
 					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
 					FreeMemory (grouped_params_pp);
@@ -516,7 +516,7 @@ static bool AddQuerySequenceParams (ParameterSet *param_set_p)
 															++ grouped_param_pp;
 														}
 
-													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params))
 														{
 															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 															FreeMemory (grouped_params_pp);
@@ -622,7 +622,7 @@ static bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 																	++ grouped_param_pp;
 																}
 
-															if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+															if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params))
 																{
 																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 																	FreeMemory (grouped_params_pp);
@@ -692,7 +692,7 @@ static bool AddScoringParams (ParameterSet *param_set_p)
 											++ grouped_param_pp;
 										}
 
-									if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, grouped_params_pp, num_group_params))
+									if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params))
 										{
 											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
 											FreeMemory (grouped_params_pp);
@@ -1273,61 +1273,6 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 }
 
 
-static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p)
-{
-	int32 num_successful_runs = 0;
-
-
-
-	return num_successful_runs;
-}
-
-
-
-static int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p)
-{
-	int32 num_successful_runs = -1;
-	json_t *req_p = NULL;
-	Connection *connection_p = AllocateWebServerConnection (paired_service_p -> ps_uri_s);
-
-	if (connection_p)
-		{
-			/*
-			 * Only send the databases that the external paired service knows about
-			 */
-			json_t *req_p = GetServiceRunRequest (service_p, params_p, true);
-
-			if (req_p)
-				{
-					json_t *res_p = MakeRemoteJsonCall (req_p, connection_p);
-
-					if (res_p)
-						{
-							num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p);
-						}		/* if (res_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON fragment from MakeRemoteJsonCall");
-						}
-
-					json_decref (req_p);
-				}		/* if (req_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON fragment from GetServiceRunRequest");
-				}
-
-			FreeConnection (connection_p);
-		}		/* if (connection_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create connection to paired service at \"%s\"", paired_service_p -> ps_uri_s);
-		}
-
-	return num_successful_runs;
-}
-
-
 static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
@@ -1459,7 +1404,11 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 								}		/* if (job_p) */
 
 						}		/* if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0) */
-					else
+
+
+					PrepareRemoteJobsForRunning (service_p, param_set_p);
+
+					if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0)
 						{
 							PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "No jobs specified");
 						}
@@ -1648,114 +1597,4 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 }
 
 
-
-static bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter)
-{
-	bool success_flag = true;
-
-	if (service_p -> se_paired_services.ll_size > 0)
-		{
-			ServersManager *servers_manager_p = GetServersManager ();
-			PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
-
-			while (node_p)
-				{
-					/*
-					 * Try and add the external server's databases
-					 */
-					PairedService *paired_service_p = node_p -> psn_paired_service_p;
-					ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_uri_s, NULL);
-
-					if (external_server_p)
-						{
-							ParameterGroup *db_group_p = GetParameterGroupFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
-
-							if (db_group_p)
-								{
-									if (db_group_p -> pg_num_params > 0)
-										{
-											Parameter **src_param_pp = db_group_p -> pg_params_pp;
-											Parameter **dest_params_pp = (Parameter **) AllocMemoryArray (1 + (db_group_p -> pg_num_params), sizeof (Parameter *));
-
-											if (dest_params_pp)
-												{
-													SharedType def;
-													Parameter **dest_param_pp = dest_params_pp;
-													char *group_name_s = NULL;
-													uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
-													uint32 num_added_dbs = 0;
-
-													tag += db_counter;
-													memset (&def, 0, sizeof (SharedType));
-
-													while (*src_param_pp)
-														{
-															/* Add the database to our list */
-															Parameter *external_param_p = *src_param_pp;
-															Parameter *param_p = NULL;
-
-															def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
-
-															param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_description_s, external_param_p -> pa_name_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
-
-															if (param_p)
-																{
-																	if (CopyRemoteParameterDetails (external_param_p, param_p))
-																		{
-																			if (dest_param_pp)
-																				{
-																					*dest_param_pp = param_p;
-																					++ dest_param_pp;
-																				}		/* if (dest_param_pp) */
-
-																		}		/* if (CopyRemoteParameterDetails (external_param_p, param_p)) */
-																	else
-																		{
-
-																		}
-
-																	++ num_added_dbs;
-																	++ db_counter;
-																}		/* if (param_p) */
-
-															++ src_param_pp;
-														}		/* while (*src_param_pp) */
-
-													group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", external_server_p -> es_name_s, " at ", external_server_p -> es_name_s, NULL);
-
-													if (group_name_s)
-														{
-															if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, dest_params_pp, num_added_dbs))
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
-																	FreeMemory (dest_params_pp);
-																}
-
-															FreeCopiedString (group_name_s);
-														}		/* if (group_name_s) */
-
-												}		/* if (grouped_params_pp) */
-
-										}		/* if (num_dbs > 0) */
-
-								}		/* if (db_group_p) */
-
-						}		/* if (external_server_p) */
-
-					node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
-				}		/* while (node_p) */
-
-		}		/* if (service_p -> se_paired_services.ll_size > 0) */
-
-	return success_flag;
-}
-
-
-
-static bool PrepareRemoteJobsForRunning (ParameterSet *params_p)
-{
-	bool success_flag = true;
-
-	return success_flag;
-}
 

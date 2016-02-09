@@ -417,7 +417,7 @@ char **GetStringArrayFromJSON (const json_t * const array_p)
 
 							if (!success_flag)
 								{
-									char **dest_ss = array_ss;
+									dest_ss = array_ss;
 
 									while (*dest_ss)
 										{

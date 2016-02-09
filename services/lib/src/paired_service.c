@@ -33,9 +33,10 @@
 	#define PAIRED_SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const json_t *op_p)
+
+PairedService *AllocatePairedService (const uuid_t id, const char *name_s, const char *uri_s, const json_t *op_p)
 {
-	if (uri_s)
+	if (name_s && uri_s)
 		{
 			if (op_p)
 				{
@@ -43,44 +44,64 @@ PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const 
 
 					if (param_set_p)
 						{
-							char *copied_uri_s = CopyToNewString (uri_s, 0, false);
+							char *copied_name_s = CopyToNewString (name_s, 0, false);
 
-							if (copied_uri_s)
+							if (copied_name_s)
 								{
-									PairedService *paired_service_p = (PairedService *) AllocMemory (sizeof (PairedService));
+									char *copied_uri_s = CopyToNewString (uri_s, 0, false);
 
-									if (paired_service_p)
+									if (copied_uri_s)
 										{
-											uuid_copy (paired_service_p -> ps_extenal_server_id, id);
-											paired_service_p -> ps_uri_s = copied_uri_s;
-											paired_service_p -> ps_params_p = param_set_p;
+											PairedService *paired_service_p = (PairedService *) AllocMemory (sizeof (PairedService));
 
-											#if PAIRED_SERVICE_DEBUG >= STM_LEVEL_FINER
+											if (paired_service_p)
 												{
-													char uuid_s [UUID_STRING_BUFFER_SIZE];
+													uuid_copy (paired_service_p -> ps_extenal_server_id, id);
+													paired_service_p -> ps_uri_s = copied_uri_s;
+													paired_service_p -> ps_params_p = param_set_p;
 
-													ConvertUUIDToString (paired_service_p -> ps_extenal_server_id, uuid_s);
-													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added paired service at \"%s\" for server \"%s\"", paired_service_p -> ps_uri_s, uuid_s);
+													#if PAIRED_SERVICE_DEBUG >= STM_LEVEL_FINER
+														{
+															char uuid_s [UUID_STRING_BUFFER_SIZE];
 
-													ConvertUUIDToString (id, uuid_s);
-													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Original id \"%s\"", uuid_s);
+															ConvertUUIDToString (paired_service_p -> ps_extenal_server_id, uuid_s);
+															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added paired service at \"%s\" for server \"%s\"", paired_service_p -> ps_uri_s, uuid_s);
+
+															ConvertUUIDToString (id, uuid_s);
+															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Original id \"%s\"", uuid_s);
+														}
+													#endif
+
+													return paired_service_p;
 												}
-											#endif
 
-											return paired_service_p;
+											FreeCopiedString (copied_uri_s);
+										}		/* if (copied_uri_s) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy uri \"%s\"", uri_s);
 										}
 
-									FreeCopiedString (copied_uri_s);
-								}		/* if (copied_uri_s) */
+									FreeCopiedString (copied_name_s);
+								}		/* if (copied_name_s) */
 							else
 								{
-
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy name \"%s\"", name_s);
 								}
 
 							FreeParameterSet (param_set_p);
 						}		/* if (param_set_p) */
+					else
+						{
+
+						}
 
 				}		/* if (op_p) */
+
+		}		/* if (name_s && uri_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Name \"%s\" and URI \"%s\" must exist", name_s ? name_s : "NULL", uri_s ? uri_s : "NULL");
 		}
 
 	return NULL;
@@ -90,6 +111,11 @@ PairedService *AllocatePairedService (const uuid_t id, const char *uri_s, const 
 
 void FreePairedService (PairedService *paired_service_p)
 {
+	if (paired_service_p -> ps_name_s)
+		{
+			FreeCopiedString (paired_service_p -> ps_name_s);
+		}
+
 	if (paired_service_p -> ps_uri_s)
 		{
 			FreeCopiedString (paired_service_p -> ps_uri_s);
@@ -121,9 +147,9 @@ PairedServiceNode *AllocatePairedServiceNode (PairedService *paired_service_p)
 
 
 
-PairedServiceNode *AllocatePairedServiceNodeByParts (const uuid_t id, const char *uri_s, const json_t *op_p)
+PairedServiceNode *AllocatePairedServiceNodeByParts (const uuid_t id, const char *name_s, const char *uri_s, const json_t *op_p)
 {
-	PairedService *paired_service_p = AllocatePairedService (id, uri_s, op_p);
+	PairedService *paired_service_p = AllocatePairedService (id, name_s, uri_s, op_p);
 
 	if (paired_service_p)
 		{

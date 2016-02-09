@@ -19,6 +19,7 @@
 
 #include "memory_allocations.h"
 #include "parameter.h"
+#include "parameter_group.h"
 #include "math_utils.h"
 #include "string_utils.h"
 #include "string_hash_table.h"
