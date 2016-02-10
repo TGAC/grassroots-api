@@ -858,6 +858,27 @@ void PrintJSONRefCounts (const json_t * const value_p, const char *initial_s, co
 
 
 
+void PrintJSONToErrors (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
+{
+	if (json_p)
+		{
+			char *json_s = json_dumps (json_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+			if (json_s)
+				{
+					if (prefix_s)
+						{
+							PrintErrors (level, filename_s, line_number, "%s %s", prefix_s, json_s);
+						}
+					else
+						{
+							PrintErrors (level, filename_s, line_number, "%s", json_s);
+						}
+
+					free (json_s);
+				}
+		}
+}
 
 
 void PrintJSONToLog (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)

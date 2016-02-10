@@ -161,9 +161,81 @@ json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p,
 }
 
 
-int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p)
+static PrintJSONToErrors (const json_t *json_p, const char *prefix_s)
+{
+	char *dump_s = json_dumps (service_results_p, 0);
+
+	if (dump_s)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get OperationStatus from \"%s\"", dump_s);
+			free (dump_s);
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get OperationStatus");
+		}
+
+	PrintJSONToLog ();
+
+}
+
+
+int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, PairedService *service_p)
 {
 	int32 num_successful_runs = 0;
+
+	if (server_response_p)
+		{
+			if (json_is_array (server_response_p))
+				{
+					size_t i;
+					json_t *service_results_p;
+
+					json_array_foreach (server_response_p, i, service_results_p)
+						{
+							const char *service_name_s = GetJSONString (service_results_p, SERVICE_NAME_S);
+	
+							if (service_name_s)
+								{
+									if (strcmp (service_name_s = service_p -> ps_name_s) == 0)
+										{
+											OperationStatus status;
+
+											if (GetStatusFromJSON (service_results_p, &status))
+												{
+													switch (status)
+														{
+															case OS_SUCCEEDED:
+																{
+
+																}		/* case OS_SUCCEEDED: */
+																break;
+
+															default:
+																break;
+														}		/* switch (status) */
+
+												}		/* if (GetStatusFromJSON (service_results_p, &status)) */
+											else
+												{
+													PrintJSONToError (service_results_p, "Failed to get OperationStatus", STM_LEVEL_WARNING, __FILE__, __LINE__);
+												}
+
+										}		/* if (strcmp (service_name_s = service_p -> ps_name_s) == 0) */
+								}		/* if (service_name_s) */
+							else
+								{
+									PrintJSONToError (service_results_p, "Failed to get service name", STM_LEVEL_WARNING, __FILE__, __LINE__);
+								}
+						}		/* json_array_foreach (server_response_p, i, service_results_p) */
+
+				}		/* if (json_is_array (server_response_p)) */
+			else
+				{
+					PrintJSONToError (server_response_p, "Service response is not an array", STM_LEVEL_WARNING, __FILE__, __LINE__);
+				}
+
+		}		/* if (server_response_p) */
 
 	return num_successful_runs;
 }

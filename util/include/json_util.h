@@ -408,6 +408,20 @@ GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * cons
 
 
 /**
+ * Print a json_t object to the error stream
+ *
+ * @param json_p The json_t object to print.
+ * @param prefix_s An optional message to print to the log prior to parsing the value's reference counts.
+ * If this is <code>NULL</code>, then no message will be printed.
+ * @param level The logging level to use.
+ * @param filename_s The filename of the source file calling this method.
+ * @param line_number The line number in the source file which called this method.
+ * @see PrintLog
+ */
+GRASSROOTS_UTIL_API void PrintJSONToError (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
+
+
+/**
  * Is a json_t NULL or empty?
  *
  * @param json_p The json_t object to test.
