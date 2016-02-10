@@ -418,7 +418,7 @@ GRASSROOTS_UTIL_API void PrintJSONToLog (const json_t *json_p, const char * cons
  * @param line_number The line number in the source file which called this method.
  * @see PrintLog
  */
-GRASSROOTS_UTIL_API void PrintJSONToError (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
+GRASSROOTS_UTIL_API void PrintJSONToError (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number);
 
 
 /**

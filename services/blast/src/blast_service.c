@@ -1405,8 +1405,30 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 
 						}		/* if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0) */
 
+					/* Are there any remote jobs to run? */
+					if (service_p -> se_paired_services.ll_size > 0)
+						{
+							PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
 
-					PrepareRemoteJobsForRunning (service_p, param_set_p);
+							while (node_p)
+								{
+									PairedService *paired_service_p = node_p -> psn_paired_service_p;
+									int32 res = RunRemoteBlastJobs (service_p, service_p -> se_jobs_p, param_set_p, paired_service_p);
+
+									if (res >= 0)
+										{
+											#if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINER
+											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Got " UINT32_FMT " results from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
+											#endif
+										}		/* if (res < 0) */
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Got " UINT32_FMT " error from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
+										}
+								}		/* while (node_p) */
+
+						}		/* if (service_p -> se_paired_services.ll_size > 0) */
+
 
 					if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0)
 						{

@@ -29,7 +29,7 @@
 #include "parameter.h"
 #include "parameter_group.h"
 #include "json_tools.h"
-
+#include "service_job.h"
 
 
 static char *CreateGroupName (PairedService *paired_service_p);
@@ -161,25 +161,6 @@ json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p,
 }
 
 
-static PrintJSONToErrors (const json_t *json_p, const char *prefix_s)
-{
-	char *dump_s = json_dumps (service_results_p, 0);
-
-	if (dump_s)
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get OperationStatus from \"%s\"", dump_s);
-			free (dump_s);
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get OperationStatus");
-		}
-
-	PrintJSONToLog ();
-
-}
-
-
 int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, PairedService *service_p)
 {
 	int32 num_successful_runs = 0;
@@ -197,7 +178,7 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 	
 							if (service_name_s)
 								{
-									if (strcmp (service_name_s = service_p -> ps_name_s) == 0)
+									if (strcmp (service_name_s, service_p -> ps_name_s) == 0)
 										{
 											OperationStatus status;
 
@@ -207,6 +188,47 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 														{
 															case OS_SUCCEEDED:
 																{
+																	/* Get the results and add them to our list of jobs */
+																	json_t *results_p = json_object_get (service_results_p, SERVICE_RESULTS_S);
+
+																	if (results_p)
+																		{
+																			if (json_is_array (results_p))
+																				{
+																					size_t j;
+																					json_t *job_json_p;
+
+																					json_array_foreach (results_p, j, job_json_p)
+																						{
+																							ServiceJob *job_p = CreateServiceJobFromJSON (job_json_p);
+
+																							if (job_p)
+																								{
+																									if (AddServiceJobToServiceJobSet (jobs_p, job_p))
+																										{
+																											++ num_successful_runs;
+																										}
+																									else
+																										{
+																											PrintJSONToError (service_results_p, "Failed to add ServiceJob to ServiceJobSet", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																											FreeServiceJob (job_p);
+																										}
+
+																								}		/* if (job_p) */
+																							else
+																								{
+																									PrintJSONToError (service_results_p, "Failed to create ServiceJob", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																								}
+
+																						}		/* json_array_foreach (results_p, j, job_json_p) */
+
+																				}		/* if (json_is_array (results_p)) */
+
+																		}		/* if (results_p) */
+																	else
+																		{
+																			PrintJSONToError (service_results_p, "Failed to get SERVICE_RESULTS_S", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																		}
 
 																}		/* case OS_SUCCEEDED: */
 																break;
@@ -259,7 +281,7 @@ int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSe
 
 					if (res_p)
 						{
-							num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p);
+							num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p);
 						}		/* if (res_p) */
 					else
 						{
