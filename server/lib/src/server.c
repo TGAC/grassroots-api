@@ -90,6 +90,10 @@ static json_t *CleanUpJobs (const json_t * const req_p, const json_t *credential
 
 static json_t *GetRequestedResource (const json_t * const req_p, const json_t *credentials_p);
 
+static int32 AddPairedServices (Service *internal_service_p, const char *username_s, const char *password_s);
+
+static int32 AddAllPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s);
+
 /***************************/
 /***** API DEFINITIONS *****/
 /***************************/
@@ -1031,13 +1035,16 @@ static bool IsRequiredExternalOperation (const json_t *external_op_p, const char
 
 //static json_t GetRemoteServices (const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 
-static void AddPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
+
+static int32 AddPairedServices (Service *internal_service_p, const char *username_s, const char *password_s)
 {
+	int32 num_added_services = 0;
 	ServersManager *servers_manager_p = GetServersManager ();
 	LinkedList *external_servers_p = GetAllExternalServersFromServersManager (servers_manager_p, DeserialiseExternalServerFromJSON);
 
 	if (external_servers_p)
 		{
+			const char *internal_service_name_s = GetServiceName (internal_service_p);
 			ExternalServerNode *external_server_node_p = (ExternalServerNode *) (external_servers_p -> ll_head_p);
 
 			while (external_server_node_p)
@@ -1061,34 +1068,14 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 
 											while (pairs_node_p)
 												{
-													ServiceNode *internal_service_node_p = (ServiceNode *) (internal_services_p -> ll_head_p);
 													const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_key_s;
-													Service *matching_internal_service_p = NULL;
 
-													/*
-													 * Loop through our internal services trying to find a match
-													 */
-													while (internal_service_node_p)
-														{
-															Service *internal_service_p = internal_service_node_p -> sn_service_p;
-															const char *internal_service_name_s = GetServiceName (internal_service_p);
-
-															if (strcmp (service_name_s, internal_service_name_s) == 0)
-																{
-																	matching_internal_service_p = internal_service_p;
-																	internal_service_node_p = NULL;
-																}
-															else
-																{
-																	internal_service_node_p = (ServiceNode *) (internal_service_node_p -> sn_node.ln_next_p);
-																}
-
-														}		/* while (internal_service_node_p) */
-
-
-													if (matching_internal_service_p)
+													if (strcmp (service_name_s, internal_service_name_s) == 0)
 														{
 															const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
+
+															/* We don't need to loop after this iteration */
+															pairs_node_p = NULL;
 
 															/*
 															 * Get the required Service from the ExternalServer
@@ -1141,9 +1128,9 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 																							 * if successful, then remove the external one
 																							 * from the json array
 																							 */
-																							if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p))
+																							if (CreateAndAddPairedService (internal_service_p, external_server_p, matching_external_op_p))
 																								{
-
+																									++ num_added_services;
 																								}		/* if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p)) */
 
 																							i = size;		/* force exit from loop */
@@ -1155,9 +1142,13 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 
 																}		/* if (json_is_array (response_p)) */
 
-														}		/* if (matching_internal_service_p) */
+														}		/* if (strcmp (service_name_s, internal_service_name_s) == 0) */
 
-													pairs_node_p = (KeyValuePairNode *) (pairs_node_p -> kvpn_node.ln_next_p);
+													if (pairs_node_p)
+														{
+															pairs_node_p = (KeyValuePairNode *) (pairs_node_p -> kvpn_node.ln_next_p);
+														}
+
 												}		/* while (pairs_node_p) */
 
 										}		/* if (external_server_p -> es_paired_services_p) */
@@ -1169,10 +1160,34 @@ static void AddPairedServices (LinkedList *internal_services_p, const char *user
 					external_server_node_p = (ExternalServerNode *) external_server_node_p -> esn_node.ln_next_p;
 				}		/* (while (external_server_node_p) */
 
-			FreeLinkedList (external_servers_p);
 		}		/* if (external_servers_p) */
 
+	return num_added_services;
+}
 
+
+static int32 AddAllPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
+{
+	int32 num_added_services = 0;
+
+	if (internal_services_p)
+		{
+			ServiceNode *internal_service_node_p = (ServiceNode *) (internal_services_p -> ll_head_p);
+
+			/*
+			 * Loop through our internal services trying to find a match
+			 */
+			while (internal_service_node_p)
+				{
+					int32 i = AddPairedServices (internal_service_node_p -> sn_service_p, username_s, password_s);
+
+					num_added_services += i;
+					internal_service_node_p = (ServiceNode *) (internal_service_node_p -> sn_node.ln_next_p);
+				}		/* while (internal_service_node_p) */
+
+		}		/* if (internal_services_p) */
+
+	return num_added_services;
 }
 
 
@@ -1192,7 +1207,7 @@ static json_t *GetServices (const char * const services_path_s, const char * con
 
 			if (services_p -> ll_size > 0)
 				{
-					AddPairedServices (services_p, username_s, password_s);
+					AddAllPairedServices (services_p, username_s, password_s);
 
 //									json_t *external_service_p;
 //

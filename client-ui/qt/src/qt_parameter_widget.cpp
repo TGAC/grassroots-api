@@ -35,6 +35,7 @@
 // WHEATIS INCLUDES
 #include "parameter.h"
 #include "parameter_set.h"
+#include "parameter_group.h"
 #include "string_utils.h"
 #include "provider.h"
 

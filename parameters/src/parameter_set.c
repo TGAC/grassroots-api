@@ -210,8 +210,6 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 											#endif
 
 											success_flag = (json_array_append_new (params_p, param_json_p) == 0);
-
-											node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 										}
 									else
 										{
@@ -223,7 +221,8 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 								{
 									node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
 								}
-						}
+
+						}		/* while (success_flag && node_p) */
 
 					if (success_flag)
 						{
