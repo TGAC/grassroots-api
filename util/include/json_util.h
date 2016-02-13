@@ -104,6 +104,8 @@ PREFIX const char *JOB_RESULTS_S VAL("results");
 PREFIX const char *JOB_ERRORS_S VAL("errors");
 PREFIX const char *JOB_METADATA_S VAL("metadata");
 PREFIX const char *JOB_UUID_S VAL("job_uuid");
+PREFIX const char *JOB_REMOTE_URI_S  VAL("remote_uri");
+PREFIX const char *JOB_REMOTE_UUID_S  VAL("remote_uuid");
 
 PREFIX const char *PLUGIN_NAME_S VAL("plugin");
 

@@ -203,27 +203,47 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 																							size_t j;
 																							json_t *job_json_p;
 																							Service *service_p = jobs_p -> sjs_service_p;
+																							const char *name_s = GetJSONString (service_results_p, JOB_NAME_S);
+																							const char *description_s = GetJSONString (service_results_p, JOB_DESCRIPTION_S);
+																							const char *remote_id_s = GetJSONString (service_results_p, JOB_UUID_S);
 
 																							json_array_foreach (results_p, j, job_json_p)
 																								{
-																									BlastServiceJob *job_p = CreateBlastServiceJobFromResultsJSON (job_json_p, service_p, status);
+																									BlastServiceJob *job_p = CreateBlastServiceJobFromResultsJSON (job_json_p, service_p, name_s, description_s, status, NULL);
 
 																									if (job_p)
 																										{
+																											job_p -> bsj_job.sj_remote_uri_s = CopyToNewString (paired_service_p -> ps_uri_s, 0, false);
+
+																											if (! (job_p -> bsj_job.sj_remote_uri_s))
+																												{
+																													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add remote uri \"%s\"", paired_service_p -> ps_uri_s);
+																												}		/* if (! (job_p -> bsj_job.sj_remote_uri_s)) */
+
+																											if (remote_id_s)
+																												{
+																													if (uuid_parse (remote_id_s, job_p -> bsj_job.sj_id) != 0)
+																														{
+																															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to generate uuid from \"%s\"", remote_id_s);
+																														}		/* if (uuid_parse (remote_id_s, job_p -> bsj_job.sj_id) != 0) */
+
+																												}		/* if (remote_id_s) */
+
+
 																											if (AddServiceJobToServiceJobSet (jobs_p, & (job_p -> bsj_job)))
 																												{
 																													++ num_successful_runs;
 																												}
 																											else
 																												{
-																													PrintJSONToErrors (service_results_p, "Failed to add ServiceJob to ServiceJobSet", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																													PrintJSONToErrors (service_results_p, "Failed to add ServiceJob to ServiceJobSet ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 																													FreeBlastServiceJob (& (job_p -> bsj_job));
 																												}
 
 																										}		/* if (job_p) */
 																									else
 																										{
-																											PrintJSONToErrors (service_results_p, "Failed to create ServiceJob", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																											PrintJSONToErrors (service_results_p, "Failed to create ServiceJob ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 																										}
 
 																								}		/* json_array_foreach (results_p, j, job_json_p) */
@@ -233,7 +253,7 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 																				}		/* if (results_p) */
 																			else
 																				{
-																					PrintJSONToErrors (service_results_p, "Failed to get SERVICE_RESULTS_S", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																					PrintJSONToErrors (service_results_p, "Failed to get SERVICE_RESULTS_S ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 																				}
 
 																		}		/* case OS_SUCCEEDED: */

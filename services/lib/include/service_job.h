@@ -70,6 +70,10 @@ typedef struct ServiceJob
 
 	OperationStatus (*sj_update_status_fn) (struct ServiceJob *job_p);
 
+	uuid_t sj_remote_id;
+
+	char *sj_remote_uri_s;
+
 } ServiceJob;
 
 
@@ -449,10 +453,10 @@ GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
  * @memberof ServiceJob
  */
-GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, OperationStatus status);
+GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p);
 
 
-GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, OperationStatus status);
+GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p);
 
 
 #ifdef __cplusplus

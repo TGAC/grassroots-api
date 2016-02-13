@@ -159,6 +159,9 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 						}
 					#endif
 
+					uuid_clear (job_p -> sj_remote_id);
+					job_p -> sj_remote_uri_s = NULL;
+
 				}		/* if (success_flag) */
 
 		}		/* if (success_flag) */
@@ -205,6 +208,11 @@ void ClearServiceJob (ServiceJob *job_p)
 		{
 			json_decref (job_p -> sj_errors_p);
 			job_p -> sj_errors_p = NULL;
+		}
+
+	if (job_p -> sj_remote_uri_s)
+		{
+			FreeCopiedString (job_p -> sj_remote_uri_s);
 		}
 
 	job_p -> sj_status = OS_CLEANED_UP;
@@ -1236,27 +1244,22 @@ ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const u
 }
 
 
-bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, Service *service_p, OperationStatus status)
+bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p)
 {
 	bool success_flag = true;
 	OperationStatus (*update_status_fn) (ServiceJob *job_p) = NULL;
-	const char *value_s = NULL;
 
 	memset (job_p, 0, sizeof (*job_p));
 
-	value_s =  GetJSONString (results_p, RESOURCE_TITLE_S);
-
-	if (value_s)
+	if (name_s)
 		{
-			job_p -> sj_name_s = CopyToNewString (value_s, 0, false);
+			job_p -> sj_name_s = CopyToNewString (name_s, 0, false);
 
 			if (job_p -> sj_name_s)
 				{
-					value_s =  GetJSONString (results_p, RESOURCE_DESCRIPTION_S);
-
-					if (value_s)
+					if (description_s)
 						{
-							job_p -> sj_description_s = CopyToNewString (value_s, 0, false);
+							job_p -> sj_description_s = CopyToNewString (description_s, 0, false);
 
 							if (! (job_p -> sj_description_s))
 								{
@@ -1266,11 +1269,21 @@ bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, 
 
 					if (success_flag)
 						{
+							const char *value_s = GetJSONString (results_p, RESOURCE_PROTOCOL_S);
+
 							job_p -> sj_status = status;
 							job_p -> sj_service_p = service_p;
 							job_p -> sj_status = status;
 
-							value_s = GetJSONString (results_p, RESOURCE_PROTOCOL_S);
+							if (id_p)
+								{
+									uuid_copy (job_p -> sj_id, *id_p);
+								}
+							else
+								{
+									uuid_generate (job_p -> sj_id);
+								}
+
 
 							if (value_s)
 								{
@@ -1284,7 +1297,11 @@ bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, 
 
 													if (results_array_p)
 														{
-															json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_p -> sj_name_s, data_p);
+															char uuid_s [UUID_STRING_BUFFER_SIZE];
+															json_t *resource_p = NULL;
+
+															ConvertUUIDToString (job_p -> sj_id, uuid_s);
+															resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, uuid_s, data_p);
 
 															if (resource_p)
 																{
@@ -1323,13 +1340,13 @@ bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, 
 }
 
 
-ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, OperationStatus status)
+ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p)
 {
 	ServiceJob *job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
 
 	if (job_p)
 		{
-			if (InitServiceJobFromResultsJSON (job_p, results_p, service_p, status))
+			if (InitServiceJobFromResultsJSON (job_p, results_p, service_p, name_s, description_s, status, id_p))
 				{
 					return job_p;
 				}

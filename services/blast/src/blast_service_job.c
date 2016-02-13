@@ -24,13 +24,13 @@
 
 
 
-BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, OperationStatus status)
+BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status)
 {
 	BlastServiceJob *job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
 
 	if (job_p)
 		{
-			if (InitServiceJobFromResultsJSON (& (job_p -> bsj_job), results_p, service_p, status))
+			if (InitServiceJobFromResultsJSON (& (job_p -> bsj_job), results_p, service_p, name_s, description_s, status, NULL))
 				{
 					job_p -> bsj_tool_p = NULL;
 					return job_p;
