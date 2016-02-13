@@ -1236,4 +1236,108 @@ ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const u
 }
 
 
+bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, Service *service_p, OperationStatus status)
+{
+	bool success_flag = true;
+	OperationStatus (*update_status_fn) (ServiceJob *job_p) = NULL;
+	const char *value_s = NULL;
+
+	memset (job_p, 0, sizeof (*job_p));
+
+	value_s =  GetJSONString (results_p, RESOURCE_TITLE_S);
+
+	if (value_s)
+		{
+			job_p -> sj_name_s = CopyToNewString (value_s, 0, false);
+
+			if (job_p -> sj_name_s)
+				{
+					value_s =  GetJSONString (results_p, RESOURCE_DESCRIPTION_S);
+
+					if (value_s)
+						{
+							job_p -> sj_description_s = CopyToNewString (value_s, 0, false);
+
+							if (! (job_p -> sj_description_s))
+								{
+									success_flag = false;
+								}		/* if (! (job_p -> sj_description_s)) */
+						}
+
+					if (success_flag)
+						{
+							job_p -> sj_status = status;
+							job_p -> sj_service_p = service_p;
+							job_p -> sj_status = status;
+
+							value_s = GetJSONString (results_p, RESOURCE_PROTOCOL_S);
+
+							if (value_s)
+								{
+									if (strcmp (value_s, PROTOCOL_INLINE_S) == 0)
+										{
+											json_t *data_p = json_object_get (results_p, RESOURCE_DATA_S);
+
+											if (data_p)
+												{
+													json_t *results_array_p = json_array ();
+
+													if (results_array_p)
+														{
+															json_t *resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_p -> sj_name_s, data_p);
+
+															if (resource_p)
+																{
+																	if (json_array_append_new (results_array_p, resource_p) == 0)
+																		{
+																			job_p -> sj_result_p = results_array_p;
+																		}		/* if (json_array_append_new (results_array_p, resource_p) == 0) */
+																	else
+																		{
+																			json_decref (resource_p);
+																		}
+																}
+
+															if (! (job_p -> sj_result_p))
+																{
+																	json_decref (results_array_p);
+																}
+														}
+
+												}		/* if (data_p) */
+
+										}
+								}
+
+						}
+
+				}		/* if (job_p -> sj_name_s) */
+			else
+				{
+					success_flag = false;
+				}
+		}
+
+
+	return success_flag;
+}
+
+
+ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, OperationStatus status)
+{
+	ServiceJob *job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
+
+	if (job_p)
+		{
+			if (InitServiceJobFromResultsJSON (job_p, results_p, service_p, status))
+				{
+					return job_p;
+				}
+
+			FreeMemory (job_p);
+		}		/* if (job_p) */
+
+	return NULL;
+}
+
 

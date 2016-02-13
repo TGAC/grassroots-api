@@ -728,7 +728,7 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 	json_t *service_json_p = NULL;
 	json_error_t err;
 
-	service_json_p = json_pack_ex (&err, 0, "{s:s,s:b}", SERVICE_NAME_S, service_name_s, SERVICE_RUN_S, run_flag ? json_true () : json_false ());
+	service_json_p = json_pack_ex (&err, 0, "{s:s,s:b}", SERVICE_NAME_S, service_name_s, SERVICE_RUN_S, run_flag);
 
 	if (service_json_p)
 		{

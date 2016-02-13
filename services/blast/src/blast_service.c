@@ -1173,7 +1173,7 @@ static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_fl
 
 					if (job_name_s)
 						{
-							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s);
+							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s, true);
 
 							if (job_p)
 								{
@@ -1432,7 +1432,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 						}		/* if (service_p -> se_paired_services.ll_size > 0) */
 
 
-					if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0)
+					if (GetServiceJobSetSize (service_p -> se_jobs_p) == 0)
 						{
 							PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "No jobs specified");
 						}

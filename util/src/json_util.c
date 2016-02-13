@@ -858,7 +858,7 @@ void PrintJSONRefCounts (const json_t * const value_p, const char *initial_s, co
 
 
 
-void PrintJSONToError (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
+void PrintJSONToErrors (const json_t *json_p, const char * const prefix_s, const uint32 level, const char *filename_s, const int line_number)
 {
 	if (json_p)
 		{

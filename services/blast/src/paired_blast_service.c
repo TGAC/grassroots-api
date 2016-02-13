@@ -30,6 +30,7 @@
 #include "parameter_group.h"
 #include "json_tools.h"
 #include "service_job.h"
+#include "blast_service_job.h"
 
 
 #ifdef _DEBUG
@@ -163,7 +164,7 @@ json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p,
 }
 
 
-int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, PairedService *service_p)
+int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, PairedService *paired_service_p)
 {
 	int32 num_successful_runs = 0;
 
@@ -174,7 +175,7 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 					size_t i;
 					json_t *service_results_p;
 
-					if (service_p -> ps_name_s)
+					if (paired_service_p -> ps_name_s)
 						{
 							json_array_foreach (server_response_p, i, service_results_p)
 								{
@@ -182,7 +183,7 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 
 									if (service_name_s)
 										{
-											if (strcmp (service_name_s, service_p -> ps_name_s) == 0)
+											if (strcmp (service_name_s, paired_service_p -> ps_name_s) == 0)
 												{
 													OperationStatus status;
 
@@ -201,27 +202,28 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 																						{
 																							size_t j;
 																							json_t *job_json_p;
+																							Service *service_p = jobs_p -> sjs_service_p;
 
 																							json_array_foreach (results_p, j, job_json_p)
 																								{
-																									ServiceJob *job_p = CreateServiceJobFromJSON (job_json_p);
+																									BlastServiceJob *job_p = CreateBlastServiceJobFromResultsJSON (job_json_p, service_p, status);
 
 																									if (job_p)
 																										{
-																											if (AddServiceJobToServiceJobSet (jobs_p, job_p))
+																											if (AddServiceJobToServiceJobSet (jobs_p, & (job_p -> bsj_job)))
 																												{
 																													++ num_successful_runs;
 																												}
 																											else
 																												{
-																													PrintJSONToError (service_results_p, "Failed to add ServiceJob to ServiceJobSet", STM_LEVEL_SEVERE, __FILE__, __LINE__);
-																													FreeServiceJob (job_p);
+																													PrintJSONToErrors (service_results_p, "Failed to add ServiceJob to ServiceJobSet", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																													FreeBlastServiceJob (& (job_p -> bsj_job));
 																												}
 
 																										}		/* if (job_p) */
 																									else
 																										{
-																											PrintJSONToError (service_results_p, "Failed to create ServiceJob", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																											PrintJSONToErrors (service_results_p, "Failed to create ServiceJob", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 																										}
 
 																								}		/* json_array_foreach (results_p, j, job_json_p) */
@@ -231,7 +233,7 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 																				}		/* if (results_p) */
 																			else
 																				{
-																					PrintJSONToError (service_results_p, "Failed to get SERVICE_RESULTS_S", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																					PrintJSONToErrors (service_results_p, "Failed to get SERVICE_RESULTS_S", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 																				}
 
 																		}		/* case OS_SUCCEEDED: */
@@ -244,27 +246,27 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 														}		/* if (GetStatusFromJSON (service_results_p, &status)) */
 													else
 														{
-															PrintJSONToError (service_results_p, "Failed to get OperationStatus", STM_LEVEL_WARNING, __FILE__, __LINE__);
+															PrintJSONToErrors (service_results_p, "Failed to get OperationStatus", STM_LEVEL_WARNING, __FILE__, __LINE__);
 														}
 
 												}		/* if (strcmp (service_name_s = service_p -> ps_name_s) == 0) */
 										}		/* if (service_name_s) */
 									else
 										{
-											PrintJSONToError (service_results_p, "Failed to get service name", STM_LEVEL_WARNING, __FILE__, __LINE__);
+											PrintJSONToErrors (service_results_p, "Failed to get service name", STM_LEVEL_WARNING, __FILE__, __LINE__);
 										}
 								}		/* json_array_foreach (server_response_p, i, service_results_p) */
 
 						}		/* if (service_p -> ps_name_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "PairedService for \"%s\" has no name set", service_p -> ps_uri_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "PairedService for \"%s\" has no name set", paired_service_p -> ps_uri_s);
 						}
 
 				}		/* if (json_is_array (server_response_p)) */
 			else
 				{
-					PrintJSONToError (server_response_p, "Service response is not an array", STM_LEVEL_WARNING, __FILE__, __LINE__);
+					PrintJSONToErrors (server_response_p, "Service response is not an array", STM_LEVEL_WARNING, __FILE__, __LINE__);
 				}
 
 		}		/* if (server_response_p) */

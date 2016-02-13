@@ -437,6 +437,24 @@ GRASSROOTS_SERVICE_API char *SerialiseServiceJobToJSON (ServiceJob * const job_p
 GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s);
 
 
+/**
+ * @brief Create a ServiceJob from a JSON Resource fragment.
+ *
+ * This is useful when combining results from a PairedService. The resultant
+ * ServiceJob will have its results field filled in using the JSON fragment
+ * passed in.
+ *
+ * @param results_p A Resource JSON fragment.
+ * @param service_p The Service that the newly-created ServiceJob will belong to.
+ * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, OperationStatus status);
+
+
+GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, OperationStatus status);
+
+
 #ifdef __cplusplus
 }
 #endif
