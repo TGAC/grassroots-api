@@ -477,7 +477,7 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 
 	if (storage_p -> ags_make_key_fn)
 		{
-			storage_p -> ags_make_key_fn (raw_key_p, raw_key_length, &key_len);
+			key_p = storage_p -> ags_make_key_fn (raw_key_p, raw_key_length, &key_len);
 		}
 	else
 		{
@@ -574,7 +574,10 @@ static void *FindObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const 
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to unlock mutex for %s, status %s after finding %s", key_s, status);
 				} /* if (status != APR_SUCCESS) */
 
-			FreeMemory (key_p);
+			if (key_p != raw_key_p)
+				{
+					FreeMemory (key_p);
+				}
 
 			if (alloc_key_flag)
 				{

@@ -101,6 +101,12 @@ ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, P
 void FreeParameterGroup (ParameterGroup *param_group_p)
 {
 	FreeCopiedString (param_group_p -> pg_name_s);
+
+	if (param_group_p -> pg_key_s)
+		{
+			FreeCopiedString (param_group_p -> pg_key_s);
+		}
+
 	FreeMemory (param_group_p -> pg_params_pp);
 	FreeMemory (param_group_p);
 }

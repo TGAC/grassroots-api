@@ -32,7 +32,7 @@
 #include "service_job.h"
 #include "grassroots_config.h"
 #include "paired_service.h"
-
+#include "servers_pool.h"
 
 #ifdef _DEBUG
 	#define SERVICE_DEBUG	(STM_LEVEL_INFO)
@@ -123,6 +123,8 @@ void FreeService (Service *service_p)
 			FreeServiceJobSet (service_p -> se_jobs_p);
 			service_p -> se_jobs_p = NULL;
 		}
+
+	ClearLinkedList (& (service_p -> se_paired_services));
 
 	CloseService (service_p);
 
@@ -243,9 +245,9 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 											if (reference_config_p)
 												{
 													uint32 num_added_services = 0;
-													char *json_s = json_dumps (config_p, JSON_INDENT (2));
+													char *json_s = json_dumps (reference_config_p, JSON_INDENT (2));
 
-													json_t *services_json_p = json_object_get (config_p, SERVICES_NAME_S);
+													json_t *services_json_p = json_object_get (reference_config_p, SERVICES_NAME_S);
 													
 													if (services_json_p)
 														{
@@ -273,7 +275,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 															free (json_s);
 														}
 
-													json_decref (config_p);
+													json_decref (reference_config_p);
 												}		/* if (config_p) */
 											else
 												{
@@ -721,55 +723,44 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
-
-json_t *GetServiceRunRequest (const Service *service_p, const ParameterSet *params_p, const bool run_flag)
+json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const bool run_flag)
 {
 	json_t *service_json_p = NULL;
-	const char *service_name_s = GetServiceName (service_p);
+	json_error_t err;
 
-	if (service_name_s)
+	service_json_p = json_pack_ex (&err, 0, "{s:s,s:b}", SERVICE_NAME_S, service_name_s, SERVICE_RUN_S, run_flag ? json_true () : json_false ());
+
+	if (service_json_p)
 		{
-			json_error_t err;
-
-			service_json_p = json_pack_ex (&err, 0, "{s:s,s:b}", SERVICE_NAME_S, service_name_s, SERVICE_RUN_S, run_flag ? json_true () : json_false ());
-
-			if (service_json_p)
+			if (run_flag)
 				{
-					if (run_flag)
+					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, false);
+
+					if (param_set_json_p)
 						{
-							json_t *param_set_json_p = GetParameterSetAsJSON (params_p, false);
-
-							if (param_set_json_p)
+							if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0)
 								{
-									if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0)
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ParameterSet JSON");
-											json_decref (param_set_json_p);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ParameterSet JSON");
+									json_decref (param_set_json_p);
 
-											json_decref (service_json_p);
-											service_json_p = NULL;
-										}		/* if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0) */
-
-								}		/* if (param_set_json_p) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ParameterSet as JSON");
 									json_decref (service_json_p);
 									service_json_p = NULL;
-								}
+								}		/* if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0) */
 
-						}		/* if (run_flag) */
+						}		/* if (param_set_json_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ParameterSet as JSON");
+							json_decref (service_json_p);
+							service_json_p = NULL;
+						}
 
-				}		/* if (service_json_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service json, error at line %d, col %d, \"%s\"", err.line, err.column, err.text);
-				}
+				}		/* if (run_flag) */
 
-		}		/* if (service_name_s) */
+		}		/* if (service_json_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get service name");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service json, error at line %d, col %d, \"%s\"", err.line, err.column, err.text);
 		}
 
 	return service_json_p;
@@ -803,10 +794,66 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 
 							if (copied_provider_p)
 								{
-									if (json_object_set_new (root_p, SERVER_PROVIDER_S, copied_provider_p) != 0)
+									/* Add any paired services details */
+									if (service_p -> se_paired_services.ll_size > 0)
 										{
-											WipeJSON (copied_provider_p);
-											success_flag = false;
+											json_t *providers_array_p = json_array ();
+
+											if (providers_array_p)
+												{
+													if (json_array_append_new (providers_array_p, copied_provider_p) == 0)
+														{
+															ServersManager *servers_manager_p = GetServersManager ();
+															PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
+
+															while (node_p)
+																{
+																	PairedService *paired_service_p = node_p -> psn_paired_service_p;
+																	ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_uri_s, NULL);
+
+																	if (external_server_p)
+																		{
+																			json_error_t error;
+																			json_t *external_provider_p = json_pack_ex (&error, 0, "{s:s,s:s,s:s}", PROVIDER_NAME_S, external_server_p -> es_name_s, PROVIDER_DESCRIPTION_S, external_server_p -> es_name_s, PROVIDER_URI_S, external_server_p ->  es_uri_s);
+
+																			if (external_provider_p)
+																				{
+																					if (json_array_append_new (providers_array_p, external_provider_p) != 0)
+																						{
+																							json_decref (external_provider_p);
+																						}
+																				}
+
+																			FreeExternalServer (external_server_p);
+																		}		/* if (external_server_p) */
+
+																	node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
+																}		/* while (node_p) */
+
+
+															if (json_object_set_new (root_p, SERVER_PROVIDER_S, providers_array_p) != 0)
+																{
+																	json_decref (providers_array_p);
+																}
+
+														}		/* if (json_array_append_new (providers_array_p, copied_provider_p) == 0) */
+													else
+														{
+															json_decref (copied_provider_p);
+															json_decref (providers_array_p);
+														}
+
+
+												}		/* if (providers_array_p) */
+
+										}		/* if (service_p -> se_paired_services -> ll_size > 0) */
+									else
+										{
+											if (json_object_set_new (root_p, SERVER_PROVIDER_S, copied_provider_p) != 0)
+												{
+													WipeJSON (copied_provider_p);
+													success_flag = false;
+												}
 										}
 								}
 							else
@@ -920,7 +967,7 @@ const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
 
 const char *GetServiceNameFromJSON (const json_t * const root_p)
 {
-	return GetJSONString (root_p, SERVICES_NAME_S);
+	return GetJSONString (root_p, SERVICE_NAME_S);
 }
 
 
@@ -1063,6 +1110,25 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 }
 
 
+
+bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p)
+{
+	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, remote_service_name_s, external_server_p -> es_uri_s, op_p);
+
+	if (paired_service_p)
+		{
+			if (AddPairedService (service_p, paired_service_p))
+				{
+					return true;
+				}
+
+			FreePairedService (paired_service_p);
+		}
+
+	return false;
+}
+
+
 bool AddPairedService (Service *service_p, PairedService *paired_service_p)
 {
 	bool success_flag = false;
@@ -1101,12 +1167,12 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 								{
 									if (json_array_append_new (services_list_json_p, service_json_p) != 0)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service json description for %s to list\n", GetServiceName (service_node_p -> sn_service_p));
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add JSON for service \"%s\" to list\n", GetServiceName (service_node_p -> sn_service_p));
 										}
 								}
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get service json description for %s\n", GetServiceName (service_node_p -> sn_service_p));
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON for service \"%s\"\n", GetServiceName (service_node_p -> sn_service_p));
 								}
 
 							service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);

@@ -299,6 +299,7 @@ static ExternalServer *QueryExternalServerFromAprServersManager (ServersManager 
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateExternalServerFromJSON failed for \"%s\"", server_uri_s);
 								}
 
+							json_decref (server_json_p);
 						}		/* if (server_json_p) */
 					else
 						{

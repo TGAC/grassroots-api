@@ -57,6 +57,7 @@ PairedService *AllocatePairedService (const uuid_t id, const char *name_s, const
 											if (paired_service_p)
 												{
 													uuid_copy (paired_service_p -> ps_extenal_server_id, id);
+													paired_service_p -> ps_name_s = copied_name_s;
 													paired_service_p -> ps_uri_s = copied_uri_s;
 													paired_service_p -> ps_params_p = param_set_p;
 
@@ -65,7 +66,7 @@ PairedService *AllocatePairedService (const uuid_t id, const char *name_s, const
 															char uuid_s [UUID_STRING_BUFFER_SIZE];
 
 															ConvertUUIDToString (paired_service_p -> ps_extenal_server_id, uuid_s);
-															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added paired service at \"%s\" for server \"%s\"", paired_service_p -> ps_uri_s, uuid_s);
+															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Added paired service at \"%s\" with name \"%s\" for server \"%s\"", paired_service_p -> ps_uri_s, paired_service_p -> ps_name_s, uuid_s);
 
 															ConvertUUIDToString (id, uuid_s);
 															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Original id \"%s\"", uuid_s);
@@ -175,3 +176,4 @@ void FreePairedServiceNode (ListItem *node_p)
 	FreePairedService (ps_node_p -> psn_paired_service_p);
 	FreeMemory (ps_node_p);
 }
+

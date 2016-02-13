@@ -167,9 +167,9 @@ bool IsServiceEnabled (const char *service_name_s)
 
 			if (service_statuses_p)
 				{
-					const json_t *service_p = json_object_get (services_config_p, service_name_s);
+					const json_t *service_p = json_object_get (service_statuses_p, service_name_s);
 
-					GetJSONBoolean (services_config_p, SERVICES_STATUS_DEFAULT_S, &enabled_flag);
+					GetJSONBoolean (service_statuses_p, SERVICES_STATUS_DEFAULT_S, &enabled_flag);
 
 					if (service_p)
 						{

@@ -661,7 +661,7 @@ json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *re
 				{
 					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to make call to external server %s, error at %d, %d %s\n", server_p -> es_uri_s, error.line, error.column, error.source);
 				}
-		}
+		}		/* if (result_s) */
 
 	return response_p;
 }

@@ -1425,6 +1425,8 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 										{
 											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Got " UINT32_FMT " error from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
 										}
+
+									node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
 								}		/* while (node_p) */
 
 						}		/* if (service_p -> se_paired_services.ll_size > 0) */

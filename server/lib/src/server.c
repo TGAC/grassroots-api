@@ -94,6 +94,8 @@ static int32 AddPairedServices (Service *internal_service_p, const char *usernam
 
 static int32 AddAllPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s);
 
+
+
 /***************************/
 /***** API DEFINITIONS *****/
 /***************************/
@@ -125,26 +127,6 @@ json_t *ProcessServerRawMessage (const char * const request_s, const int socket_
 
 	return res_p;
 }
-
-
-bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const json_t *op_p)
-{
-	bool success_flag = false;
-	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, external_server_p -> es_name_s, external_server_p -> es_uri_s, op_p);
-
-	if (paired_service_p)
-		{
-			if (AddPairedService (service_p, paired_service_p))
-				{
-					return true;
-				}
-
-			FreePairedService (paired_service_p);
-		}
-
-	return false;
-}
-
 
 
 json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_ss)
@@ -489,67 +471,66 @@ static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json
 										{
 											ServiceNode *node_p = (ServiceNode *) (services_p -> ll_head_p);
 											Service *service_p =  node_p -> sn_service_p;
+											ParameterSet *params_p = NULL;
+											char *username_s = NULL;
+											char *password_s = NULL;
 
-											if (service_p)
+											AddPairedServices (service_p, username_s, password_s);
+
+											/*
+											 * Convert the json parameter set into a ParameterSet
+											 * to run the Service with.
+											 */
+											params_p = CreateParameterSetFromJSON (req_p);
+
+											if (params_p)
 												{
-													/*
-													 * Convert the json parameter set into a ParameterSet
-													 * to run the Service with.
-													 */
-													ParameterSet *params_p = CreateParameterSetFromJSON (req_p);
+													ServiceJobSet *jobs_p = NULL;
 
-													if (params_p)
+													#if SERVER_DEBUG >= STM_LEVEL_FINER
+													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "about to run service \"%s\"\n", service_name_s);
+													#endif
+
+													jobs_p = RunService (service_p, params_p, credentials_p);
+
+													if (jobs_p)
 														{
-															ServiceJobSet *jobs_p = NULL;
+															bool keep_service_flag = false;
 
-															#if SERVER_DEBUG >= STM_LEVEL_FINER
-															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "about to run service \"%s\"\n", service_name_s);
-															#endif
-
-															jobs_p = RunService (service_p, params_p, credentials_p);
-
-															if (jobs_p)
+															if (ProcessServiceJobSet (jobs_p, res_p, &keep_service_flag))
 																{
-																	bool keep_service_flag = false;
-
-																	if (ProcessServiceJobSet (jobs_p, res_p, &keep_service_flag))
-																		{
-																			++ res;
-																		}
-
-																	#if SERVER_DEBUG >= STM_LEVEL_FINER
-																		{
-																			PrintJSONToLog (res_p, "initial results", STM_LEVEL_FINER, __FILE__, __LINE__);
-																			FlushLog ();
-																			PrintJSONRefCounts (res_p, "initial results: ",  STM_LEVEL_FINER, __FILE__, __LINE__);
-																		}
-																	#endif
-
-																	if (keep_service_flag)
-																		{
-																			/* since we've checked for a single node */
-																			LinkedListRemHead (services_p);
-																			node_p -> sn_service_p = NULL;
-																			FreeServiceNode ((ListItem * const) node_p);
-																		}
-
-																}		/* if (jobs_p) */
-															else
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "No jobs from running %s with params from %s", service_name_s, req_s);
+																	++ res;
 																}
 
-															FreeParameterSet  (params_p);
-														}		/* if (params_p) */
+															#if SERVER_DEBUG >= STM_LEVEL_FINER
+																{
+																	PrintJSONToLog (res_p, "initial results", STM_LEVEL_FINER, __FILE__, __LINE__);
+																	FlushLog ();
+																	PrintJSONRefCounts (res_p, "initial results: ",  STM_LEVEL_FINER, __FILE__, __LINE__);
+																}
+															#endif
+
+															if (keep_service_flag)
+																{
+																	/* since we've checked for a single node */
+																	LinkedListRemHead (services_p);
+																	node_p -> sn_service_p = NULL;
+																	FreeServiceNode ((ListItem * const) node_p);
+																}
+
+														}		/* if (jobs_p) */
 													else
 														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to get params from %s", req_s);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "No jobs from running %s with params from %s", service_name_s, req_s);
 														}
-												}		/* if (service_p) */
+
+													FreeParameterSet  (params_p);
+												}		/* if (params_p) */
 											else
 												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "NULL service on list");
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__,  "Failed to get params from %s", req_s);
 												}
+
 										}		/* if (services_p -> ll_size == 1)) */
 									else
 										{
@@ -1023,7 +1004,7 @@ static bool IsRequiredExternalOperation (const json_t *external_op_p, const char
 	bool match_flag = false;
 	const char *external_op_s = GetOperationNameFromJSON (external_op_p);
 
-	if (external_op_p)
+	if (external_op_s)
 		{
 			match_flag = (strcmp (external_op_s, op_name_s) == 0);
 		}
@@ -1034,161 +1015,6 @@ static bool IsRequiredExternalOperation (const json_t *external_op_p, const char
 
 
 //static json_t GetRemoteServices (const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
-
-
-static int32 AddPairedServices (Service *internal_service_p, const char *username_s, const char *password_s)
-{
-	int32 num_added_services = 0;
-	ServersManager *servers_manager_p = GetServersManager ();
-	LinkedList *external_servers_p = GetAllExternalServersFromServersManager (servers_manager_p, DeserialiseExternalServerFromJSON);
-
-	if (external_servers_p)
-		{
-			const char *internal_service_name_s = GetServiceName (internal_service_p);
-			ExternalServerNode *external_server_node_p = (ExternalServerNode *) (external_servers_p -> ll_head_p);
-
-			while (external_server_node_p)
-				{
-					ExternalServer *external_server_p = external_server_node_p -> esn_server_p;
-					json_t *req_p = GetAvailableServicesRequest (username_s, password_s);
-
-					if (req_p)
-						{
-							json_t *response_p = MakeRemoteJSONCallToExternalServer (external_server_p, req_p);
-
-							/* We no longer need the request */
-							json_decref (req_p);
-
-							if (response_p)
-								{
-									/* If it has paired services try and match them up */
-									if (external_server_p -> es_paired_services_p)
-										{
-											KeyValuePairNode *pairs_node_p = (KeyValuePairNode *) (external_server_p -> es_paired_services_p -> ll_head_p);
-
-											while (pairs_node_p)
-												{
-													const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_key_s;
-
-													if (strcmp (service_name_s, internal_service_name_s) == 0)
-														{
-															const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
-
-															/* We don't need to loop after this iteration */
-															pairs_node_p = NULL;
-
-															/*
-															 * Get the required Service from the ExternalServer
-															 */
-															if (json_is_array (response_p))
-																{
-																	const size_t size = json_array_size (response_p);
-																	size_t i;
-
-																	for (i = 0; i < size; ++ i)
-																		{
-																			json_t *service_response_p = json_array_get (response_p, i);
-																			json_t *external_operations_p = json_object_get (service_response_p, SERVER_OPERATIONS_S);
-
-																			if (external_operations_p)
-																				{
-																					json_t *matching_external_op_p = NULL;
-
-																					if (json_is_array (external_operations_p))
-																						{
-																							size_t j;
-																							const size_t num_ops = json_array_size (external_operations_p);
-
-																							for (j = 0; j < num_ops; ++ j)
-																								{
-																									json_t *external_op_p = json_array_get (external_operations_p, j);
-
-																									if (IsRequiredExternalOperation (external_op_p, op_name_s))
-																										{
-																											matching_external_op_p = external_op_p;
-																											j = num_ops;		/* force exit from loop */
-																										}
-
-																								}		/* for (j = 0; j < num_ops; ++ j) */
-
-																						}		/* if (json_is_array (external_operations_json_p)) */
-																					else if (json_is_object (external_operations_p))
-																						{
-																							if (IsRequiredExternalOperation (external_operations_p, op_name_s))
-																								{
-																									matching_external_op_p = external_operations_p;
-																								}
-																						}
-
-																					/* Do we have our remote service definition? */
-																					if (matching_external_op_p)
-																						{
-																							/*
-																							 * Merge the external service with our own and
-																							 * if successful, then remove the external one
-																							 * from the json array
-																							 */
-																							if (CreateAndAddPairedService (internal_service_p, external_server_p, matching_external_op_p))
-																								{
-																									++ num_added_services;
-																								}		/* if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p)) */
-
-																							i = size;		/* force exit from loop */
-																						}		/* if (matching_external_op_p) */
-
-																				}		/* if (external_operations_json_p) */
-
-																		}		/* for (i = 0; i < size; ++ i) */
-
-																}		/* if (json_is_array (response_p)) */
-
-														}		/* if (strcmp (service_name_s, internal_service_name_s) == 0) */
-
-													if (pairs_node_p)
-														{
-															pairs_node_p = (KeyValuePairNode *) (pairs_node_p -> kvpn_node.ln_next_p);
-														}
-
-												}		/* while (pairs_node_p) */
-
-										}		/* if (external_server_p -> es_paired_services_p) */
-
-								}		/* if (response_p) */
-
-						}		/* if (req_p) */
-
-					external_server_node_p = (ExternalServerNode *) external_server_node_p -> esn_node.ln_next_p;
-				}		/* (while (external_server_node_p) */
-
-		}		/* if (external_servers_p) */
-
-	return num_added_services;
-}
-
-
-static int32 AddAllPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
-{
-	int32 num_added_services = 0;
-
-	if (internal_services_p)
-		{
-			ServiceNode *internal_service_node_p = (ServiceNode *) (internal_services_p -> ll_head_p);
-
-			/*
-			 * Loop through our internal services trying to find a match
-			 */
-			while (internal_service_node_p)
-				{
-					int32 i = AddPairedServices (internal_service_node_p -> sn_service_p, username_s, password_s);
-
-					num_added_services += i;
-					internal_service_node_p = (ServiceNode *) (internal_service_node_p -> sn_node.ln_next_p);
-				}		/* while (internal_service_node_p) */
-
-		}		/* if (internal_services_p) */
-
-	return num_added_services;
-}
 
 
 
@@ -1328,3 +1154,162 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 	return res_p;
 }
+
+
+static int32 AddPairedServices (Service *internal_service_p, const char *username_s, const char *password_s)
+{
+	int32 num_added_services = 0;
+	ServersManager *servers_manager_p = GetServersManager ();
+	LinkedList *external_servers_p = GetAllExternalServersFromServersManager (servers_manager_p, DeserialiseExternalServerFromJSON);
+
+	if (external_servers_p)
+		{
+			const char *internal_service_name_s = GetServiceName (internal_service_p);
+			ExternalServerNode *external_server_node_p = (ExternalServerNode *) (external_servers_p -> ll_head_p);
+
+			while (external_server_node_p)
+				{
+					ExternalServer *external_server_p = external_server_node_p -> esn_server_p;
+					json_t *req_p = GetAvailableServicesRequest (username_s, password_s);
+
+					if (req_p)
+						{
+							json_t *response_p = MakeRemoteJSONCallToExternalServer (external_server_p, req_p);
+
+							/* We no longer need the request */
+							json_decref (req_p);
+
+							if (response_p)
+								{
+									/* If it has paired services try and match them up */
+									if (external_server_p -> es_paired_services_p)
+										{
+											KeyValuePairNode *pairs_node_p = (KeyValuePairNode *) (external_server_p -> es_paired_services_p -> ll_head_p);
+
+											while (pairs_node_p)
+												{
+													const char *service_name_s = pairs_node_p -> kvpn_pair_p -> kvp_key_s;
+
+													if (strcmp (service_name_s, internal_service_name_s) == 0)
+														{
+															const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
+
+															/* We don't need to loop after this iteration */
+															pairs_node_p = NULL;
+
+															/*
+															 * Get the required Service from the ExternalServer
+															 */
+															if (json_is_array (response_p))
+																{
+																	const size_t size = json_array_size (response_p);
+																	size_t i;
+
+																	for (i = 0; i < size; ++ i)
+																		{
+																			json_t *service_response_p = json_array_get (response_p, i);
+																			json_t *external_operations_p = json_object_get (service_response_p, SERVER_OPERATIONS_S);
+
+																			if (external_operations_p)
+																				{
+																					json_t *matching_external_op_p = NULL;
+
+																					if (json_is_array (external_operations_p))
+																						{
+																							size_t j;
+																							const size_t num_ops = json_array_size (external_operations_p);
+
+																							for (j = 0; j < num_ops; ++ j)
+																								{
+																									json_t *external_op_p = json_array_get (external_operations_p, j);
+
+																									if (IsRequiredExternalOperation (external_op_p, op_name_s))
+																										{
+																											matching_external_op_p = external_op_p;
+																											j = num_ops;		/* force exit from loop */
+																										}
+
+																								}		/* for (j = 0; j < num_ops; ++ j) */
+
+																						}		/* if (json_is_array (external_operations_json_p)) */
+																					else if (json_is_object (external_operations_p))
+																						{
+																							if (IsRequiredExternalOperation (external_operations_p, op_name_s))
+																								{
+																									matching_external_op_p = external_operations_p;
+																								}
+																						}
+
+																					/* Do we have our remote service definition? */
+																					if (matching_external_op_p)
+																						{
+																							/*
+																							 * Merge the external service with our own and
+																							 * if successful, then remove the external one
+																							 * from the json array
+																							 */
+																							if (CreateAndAddPairedService (internal_service_p, external_server_p, op_name_s, matching_external_op_p))
+																								{
+																									++ num_added_services;
+																								}		/* if (CreateAndAddPairedService (matching_internal_service_p, external_server_p, matching_external_op_p)) */
+
+																							i = size;		/* force exit from loop */
+																						}		/* if (matching_external_op_p) */
+
+																				}		/* if (external_operations_json_p) */
+
+																		}		/* for (i = 0; i < size; ++ i) */
+
+																}		/* if (json_is_array (response_p)) */
+
+														}		/* if (strcmp (service_name_s, internal_service_name_s) == 0) */
+
+													if (pairs_node_p)
+														{
+															pairs_node_p = (KeyValuePairNode *) (pairs_node_p -> kvpn_node.ln_next_p);
+														}
+
+												}		/* while (pairs_node_p) */
+
+										}		/* if (external_server_p -> es_paired_services_p) */
+
+									json_decref (response_p);
+								}		/* if (response_p) */
+
+						}		/* if (req_p) */
+
+					external_server_node_p = (ExternalServerNode *) external_server_node_p -> esn_node.ln_next_p;
+				}		/* (while (external_server_node_p) */
+
+			FreeLinkedList (external_servers_p);
+		}		/* if (external_servers_p) */
+
+	return num_added_services;
+}
+
+
+static int32 AddAllPairedServices (LinkedList *internal_services_p, const char *username_s, const char *password_s)
+{
+	int32 num_added_services = 0;
+
+	if (internal_services_p)
+		{
+			ServiceNode *internal_service_node_p = (ServiceNode *) (internal_services_p -> ll_head_p);
+
+			/*
+			 * Loop through our internal services trying to find a match
+			 */
+			while (internal_service_node_p)
+				{
+					int32 i = AddPairedServices (internal_service_node_p -> sn_service_p, username_s, password_s);
+
+					num_added_services += i;
+					internal_service_node_p = (ServiceNode *) (internal_service_node_p -> sn_node.ln_next_p);
+				}		/* while (internal_service_node_p) */
+
+		}		/* if (internal_services_p) */
+
+	return num_added_services;
+}
+
+

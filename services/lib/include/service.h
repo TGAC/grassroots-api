@@ -557,6 +557,10 @@ GRASSROOTS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *servi
 GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
 
 
+
+GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p);
+
+
 GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
 
 
@@ -571,7 +575,7 @@ GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService 
  * @return The JSON fragment to be added to an array to send to the Server or <code>NULL
  * </code> upon error.
  */
-GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const Service *service_p, const ParameterSet *params_p, const bool run_flag);
+GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const bool run_flag);
 
 
 

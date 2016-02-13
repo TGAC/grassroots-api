@@ -206,13 +206,14 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 									if (param_json_p)
 										{
 											#if PARAMETER_SET_DEBUG >= STM_LEVEL_FINER
-											PrintJSON (stderr, param_json_p, "GetParameterSetAsJSON - param_json_p :: ");
+											PrintJSONToLog (param_json_p, "GetParameterSetAsJSON - param_json_p :: ", STM_LEVEL_FINER, __FILE__, __LINE);
 											#endif
 
 											success_flag = (json_array_append_new (params_p, param_json_p) == 0);
 										}
 									else
 										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to JSON", param_p -> pa_name_s);
 											success_flag = false;
 										}
 								}		/* if (add_param_fn (param_p)) */
@@ -229,49 +230,50 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 							if (json_object_set_new (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0)
 								{
 									ParameterGroupNode *group_node_p = (ParameterGroupNode *) (param_set_p -> ps_grouped_params_p -> ll_head_p);
+									json_t *group_names_p = json_array ();
 
-									if (group_node_p)
+									if (group_names_p)
 										{
-											json_t *group_names_p = json_array ();
-
-											if (group_names_p)
+											while (success_flag && group_node_p)
 												{
-													while (success_flag && group_node_p)
+													if (json_array_append_new (group_names_p, json_string (group_node_p -> pgn_param_group_p -> pg_name_s)) == 0)
 														{
-															if (json_array_append_new (group_names_p, json_string (group_node_p -> pgn_param_group_p -> pg_name_s)) == 0)
-																{
-																	group_node_p = (ParameterGroupNode *) (group_node_p -> pgn_node.ln_next_p);
-																}
-															else
-																{
-																	success_flag = false;
-																}
-
-														}		/* while (success_flag && group_node_p) */
-
-													if (success_flag)
+															group_node_p = (ParameterGroupNode *) (group_node_p -> pgn_node.ln_next_p);
+														}
+													else
 														{
-															int res = json_object_set_new (param_set_json_p, PARAM_SET_GROUPS_S, group_names_p);
-
-															if (res != 0)
-																{
-																	success_flag = false;
-																}
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to append \"%s\" to JSON group names", group_node_p -> pgn_param_group_p -> pg_name_s);
+															success_flag = false;
 														}
 
-													if (!success_flag)
+												}		/* while (success_flag && group_node_p) */
+
+											if (success_flag)
+												{
+													int res = json_object_set_new (param_set_json_p, PARAM_SET_GROUPS_S, group_names_p);
+
+													if (res != 0)
 														{
-															WipeJSON (group_names_p);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\" for JSON group names", PARAM_SET_GROUPS_S);
+															success_flag = false;
 														}
+												}
 
-												}		/* if (group_names_p) */
+											if (!success_flag)
+												{
+													json_decref (group_names_p);
+												}
 
-										}		/* if (group_node_p) */
+										}		/* if (group_names_p) */
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate JSON array for group names");
+										}
 
 								}		/* if (json_object_set_new (param_set_json_p, PARAM_SET_PARAMS_S, params_p) == 0) */
 							else
 								{
-
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "json_object_set_new (param_set_json_p, PARAM_SET_PARAMS_S, params_p) failed");
 									success_flag = false;
 								}
 

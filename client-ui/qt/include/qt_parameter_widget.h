@@ -53,6 +53,8 @@ public:
 	json_t *GetParameterValuesAsJSON () const;
 
 
+	ParameterSet *GetParameterSet () const;
+
 	BaseParamWidget *GetWidgetForParameter (const char * const param_name_s) const;
 
 public slots:
@@ -90,6 +92,9 @@ private:
 
 	void AddRow (QWidget *first_p, QWidget *second_p, const int row_span);
 	void AddParameterWidget (Parameter *param_p, ParamGroupBox *group_p = 0);
+
+	void AddProvider (const json_t *provider_p, const size_t i, const size_t last_index, QLayout *info_layout_p);
+
 
 	static const int QPW_NUM_COLUMNS;
 };

@@ -100,46 +100,20 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 
 	if (provider_p)
 		{
-			const char *provider_name_s = GetProviderName (provider_p);
-
-			if (provider_name_s)
+			if (json_is_array (provider_p))
 				{
-					const char *provider_uri_s = GetProviderURI (provider_p);
+					size_t size = json_array_size (provider_p);
+					size_t i;
+					json_t *item_p;
 
-					str.clear ();
-					str.append ("Provided by ");
-
-					if (provider_uri_s)
+					json_array_foreach (provider_p, i, item_p)
 						{
-							str.append ("<a href=\"");
-							str.append (provider_uri_s);
-							str.append ("\">");
+							AddProvider (provider_p, i, size - 1, info_layout_p);
 						}
-
-					str.append (provider_name_s);
-
-					if (provider_uri_s)
-						{
-							str.append ("</a>");
-						}
-
-					const char *provider_description_s = GetProviderDescription (provider_p);
-
-					if (provider_description_s)
-						{
-							str.append (". ");
-							str.append (provider_description_s);
-
-							label_p = new QLabel (str, this);
-							//label_p -> setWordWrap (true);
-							connect (label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
-							label_p -> setSizePolicy (QSizePolicy :: Minimum, QSizePolicy :: Fixed);
-							label_p -> setAlignment (Qt :: AlignLeft);
-							//label_p -> setFrameShape (QFrame :: Box);
-
-							info_layout_p -> addWidget (label_p);
-
-						}
+				}		/* if (json_is_array (provider_p)) */
+			else if (json_is_object (provider_p))
+				{
+					AddProvider (provider_p, 0, 0, info_layout_p);
 				}
 
 		}		/* if (provider_p) */
@@ -163,6 +137,64 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 		}		/* if (parameters_p) */
 
 }
+
+
+void QTParameterWidget :: AddProvider (const json_t *provider_p, const size_t i, const size_t last_index, QLayout *info_layout_p)
+{
+	const char *provider_name_s = GetProviderName (provider_p);
+
+	if (provider_name_s)
+		{
+			const char *provider_uri_s = GetProviderURI (provider_p);
+			QString str;
+
+			if (i == 0)
+				{
+					str.append ("Provided by ");
+				}
+			else if (i < last_index)
+				{
+					str.append (", ");
+				}
+			else if (i == last_index)
+				{
+					str.append ("and ");
+				}
+
+			if (provider_uri_s)
+				{
+					str.append ("<a href=\"");
+					str.append (provider_uri_s);
+					str.append ("\">");
+				}
+
+			str.append (provider_name_s);
+
+			if (provider_uri_s)
+				{
+					str.append ("</a>");
+				}
+
+			const char *provider_description_s = GetProviderDescription (provider_p);
+
+			if (provider_description_s)
+				{
+					str.append (". ");
+					str.append (provider_description_s);
+
+					QLabel *label_p = new QLabel (str, this);
+					//label_p -> setWordWrap (true);
+					connect (label_p,  &QLabel :: linkActivated, this, &QTParameterWidget :: OpenLink);
+					label_p -> setSizePolicy (QSizePolicy :: Minimum, QSizePolicy :: Fixed);
+					label_p -> setAlignment (Qt :: AlignLeft);
+					//label_p -> setFrameShape (QFrame :: Box);
+
+					info_layout_p -> addWidget (label_p);
+				}
+		}
+}
+
+
 
 void QTParameterWidget :: OpenLink (const QString &link_r)
 {
@@ -435,7 +467,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 }
 
 
-json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
+ParameterSet *QTParameterWidget :: GetParameterSet () const
 {
 	/* make sure that all of the parameter values are up to date */
 	QList <BaseParamWidget *> widgets = qpw_widgets_map.values ();
@@ -450,5 +482,13 @@ json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
 				}
 		}
 
+	return qpw_params_p;
+}
+
+
+
+json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
+{
+	GetParameterSet ();
 	return GetParameterSetAsJSON (qpw_params_p, false);
 }
