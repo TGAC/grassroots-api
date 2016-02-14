@@ -27,24 +27,6 @@
 #include "string_utils.h"
 
 
-BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status)
-{
-	BlastServiceJob *job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
-
-	if (job_p)
-		{
-			if (InitServiceJobFromResultsJSON (& (job_p -> bsj_job), results_p, service_p, name_s, description_s, status))
-				{
-					job_p -> bsj_tool_p = NULL;
-					return job_p;
-				}
-
-			FreeMemory (job_p);
-		}		/* if (job_p) */
-
-	return NULL;
-}
-
 
 BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s, bool has_tool_flag)
 {
@@ -56,7 +38,7 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_na
 			BlastTool *tool_p = NULL;
 			ServiceJob * const base_service_job_p = & (blast_job_p -> bsj_job);
 
-			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL);
+			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL, FreeBlastServiceJob);
 
 			if (has_tool_flag)
 				{

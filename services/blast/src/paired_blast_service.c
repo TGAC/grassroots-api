@@ -32,7 +32,7 @@
 #include "service_job.h"
 #include "blast_service_job.h"
 #include "blast_service_params.h"
-
+#include "remote_service_job.h"
 
 #ifdef _DEBUG
 	#define PAIRED_BLAST_SERVICE_DEBUG	(STM_LEVEL_FINER)
@@ -57,13 +57,14 @@ static char *CreateGroupName (PairedService *paired_service_p);
 static bool AddRemoteServiceParametersToJSON (const Parameter *param_p, void *data_p);
 
 
-static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, PairedService *paired_service_p, const BlastServiceData *blast_data_p);
+
+static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, const char * const remote_service_s, const char * const remote_uri_s, const BlastServiceData *blast_data_p);
 
 
 static char *GetLocalJobFilename (const char *uuid_s, const BlastServiceData *blast_data_p);
 
 
-static bool SaveRemoteJobDetails (BlastServiceJob *job_p, const BlastServiceData *blast_data_p);
+static bool SaveRemoteJobDetails (RemoteServiceJob *job_p, const BlastServiceData *blast_data_p);
 
 
 /***********************************/
@@ -184,8 +185,9 @@ int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSe
 
 	if (res_p)
 		{
+
 			BlastServiceData *data_p = (BlastServiceData *) service_p -> se_data_p;
-			num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p, data_p);
+			num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s, data_p);
 
 			json_decref (res_p);
 		}		/* if (res_p) */
@@ -252,7 +254,7 @@ char *GetPreviousRemoteBlastServiceJob (const char *local_job_id_s, const uint32
 
 																							if (res_p)
 																								{
-																									int32 num_added = AddRemoteResultsToServiceJobs (res_p, service_p -> se_jobs_p, paired_service_p, blast_data_p);
+																									int32 num_added = AddRemoteResultsToServiceJobs (res_p, service_p -> se_jobs_p, service_name_s, uri_s, blast_data_p);
 
 																									#if PAIRED_BLAST_SERVICE_DEBUG >= STM_LEVEL_FINE
 																									PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Added " INT32_FMT " jobs from remote results");
@@ -421,13 +423,13 @@ static char *GetLocalJobFilename (const char *uuid_s, const BlastServiceData *bl
 }
 
 
-static bool SaveRemoteJobDetails (BlastServiceJob *job_p, const BlastServiceData *blast_data_p)
+static bool SaveRemoteJobDetails (RemoteServiceJob *job_p, const BlastServiceData *blast_data_p)
 {
 	bool success_flag = false;
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
 	char *output_filename_s = NULL;
 
-	ConvertUUIDToString (job_p -> bsj_job.sj_id, uuid_s);
+	ConvertUUIDToString (job_p -> rsj_job.sj_id, uuid_s);
 
 	output_filename_s = GetLocalJobFilename (uuid_s, blast_data_p);
 
@@ -436,9 +438,9 @@ static bool SaveRemoteJobDetails (BlastServiceJob *job_p, const BlastServiceData
 			json_error_t error;
 			json_t *remote_p = NULL;
 
-			ConvertUUIDToString (job_p -> bsj_job.sj_remote_id, uuid_s);
+			ConvertUUIDToString (job_p -> rsj_job_id, uuid_s);
 
-			remote_p = json_pack_ex (&error, 0, "{s:s,s:s,s:s}", JOB_REMOTE_URI_S, job_p -> bsj_job.sj_remote_uri_s, JOB_REMOTE_UUID_S, uuid_s, JOB_SERVICE_S, job_p -> bsj_job.sj_remote_service_s);
+			remote_p = json_pack_ex (&error, 0, "{s:s,s:s,s:s}", JOB_REMOTE_URI_S, job_p -> rsj_uri_s, JOB_REMOTE_UUID_S, uuid_s, JOB_SERVICE_S, job_p -> rsj_service_name_s);
 
 			if (remote_p)
 				{
@@ -499,6 +501,8 @@ static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, Ser
 																				{
 																					if (json_is_array (results_p))
 																						{
+																							bool id_flag = false;
+																							uuid_t remote_id;
 																							size_t j;
 																							json_t *job_json_p;
 																							Service *service_p = jobs_p -> sjs_service_p;
@@ -506,47 +510,63 @@ static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, Ser
 																							const char *description_s = GetJSONString (service_results_p, JOB_DESCRIPTION_S);
 																							const char *remote_id_s = GetJSONString (service_results_p, JOB_UUID_S);
 
+																							if (remote_id_s)
+																								{
+																									if (uuid_parse (remote_id_s, remote_id) == 0)
+																										{
+																											id_flag = true;
+																										}
+																								}
+
 																							json_array_foreach (results_p, j, job_json_p)
 																								{
-																									BlastServiceJob *job_p = CreateBlastServiceJobFromResultsJSON (job_json_p, service_p, name_s, description_s, status);
+																									RemoteServiceJob *job_p = CreateRemoteServiceJobFromResultsJSON (job_json_p, service_p, name_s, description_s, status);
 
 																									if (job_p)
 																										{
+																											bool added_flag = false;
 																											/*
 																											 * Save the details to access the remote service with a file named using
 																											 * the local uuid
 																											 */
-																											job_p -> bsj_job.sj_remote_uri_s = CopyToNewString (remote_uri_s, 0, false);
+																											if ((job_p -> rsj_uri_s = CopyToNewString (remote_uri_s, 0, false)) != NULL)
+																												{
+																													if ((job_p -> rsj_service_name_s = CopyToNewString (remote_service_s, 0, false)) != NULL)
+																														{
+																															if (id_flag)
+																																{
+																																	uuid_copy (job_p -> rsj_job_id, remote_id);
 
-																											if (! (job_p -> bsj_job.sj_remote_uri_s))
+																																	if (AddServiceJobToServiceJobSet (jobs_p, & (job_p -> rsj_job)))
+																																		{
+																																			if (!SaveRemoteJobDetails (job_p, blast_data_p))
+																																				{
+																																					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to save remote info file for \"%s\"", remote_id_s);
+																																				}
+
+																																			added_flag = true;
+																																			++ num_successful_runs;
+																																		}
+																																	else
+																																		{
+																																			PrintJSONToErrors (service_results_p, "Failed to add ServiceJob to ServiceJobSet ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
+																																		}
+
+																																}
+																														}
+																													else
+																														{
+																															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add remote service name \"%s\"", remote_service_s);
+																														}		/* if (! (job_p -> bsj_job.sj_remote_uri_s)) */
+																												}
+																											else
 																												{
 																													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add remote uri \"%s\"", remote_uri_s);
 																												}		/* if (! (job_p -> bsj_job.sj_remote_uri_s)) */
 
-																											if (remote_id_s)
+																											if (!added_flag)
 																												{
-																													if (uuid_parse (remote_id_s, job_p -> bsj_job.sj_remote_id) != 0)
-																														{
-																															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to generate uuid from \"%s\"", remote_id_s);
-																														}		/* if (uuid_parse (remote_id_s, job_p -> bsj_job.sj_id) != 0) */
-
-																												}		/* if (remote_id_s) */
-
-
-																											if (AddServiceJobToServiceJobSet (jobs_p, & (job_p -> bsj_job)))
-																												{
-
-																													if (!SaveRemoteJobDetails (job_p, blast_data_p))
-																														{
-																															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to save remote info file for \"%s\"", remote_id_s);
-																														}
-
-																													++ num_successful_runs;
-																												}
-																											else
-																												{
-																													PrintJSONToErrors (service_results_p, "Failed to add ServiceJob to ServiceJobSet ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
-																													FreeBlastServiceJob (& (job_p -> bsj_job));
+																													FreeServiceJob (& (job_p -> rsj_job));
 																												}
 
 																										}		/* if (job_p) */
@@ -589,7 +609,7 @@ static int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, Ser
 						}		/* if (service_p -> ps_name_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "PairedService for \"%s\" has no name set", paired_service_p -> ps_uri_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "PairedService for \"%s\" has no name set", remote_uri_s);
 						}
 
 				}		/* if (json_is_array (server_response_p)) */
@@ -612,6 +632,9 @@ static char *GetRemoteBlastResultByUUIDString (const BlastServiceData *data_p, c
 
 	if (job_output_filename_s)
 		{
+
+			FreeCopiedString (job_output_filename_s);
+		}
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get previous job filename for \"%s\"", job_output_filename_s);

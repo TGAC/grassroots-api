@@ -41,13 +41,13 @@ static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, Operati
 
 
 
-ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, void (*free_job_fn) (ServiceJob *job_p), const char *job_name_s, const char *job_description_s)
+ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, const char *job_name_s, const char *job_description_s)
 {
-	ServiceJobSet *job_set_p = AllocateServiceJobSet (service_p, free_job_fn);
+	ServiceJobSet *job_set_p = AllocateServiceJobSet (service_p);
 
 	if (job_set_p)
 		{
-			ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (job_set_p, job_name_s, job_description_s, NULL);
+			ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (job_set_p, job_name_s, job_description_s, NULL, NULL);
 
 			if (job_p)
 				{
@@ -62,13 +62,13 @@ ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, void (*fr
 
 
 
-ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p))
+ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p))
 {
 	ServiceJob *job_p = (ServiceJob *) AllocMemory (sizeof (ServiceJob));
 
 	if (job_p)
 		{
-			if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, update_status_fn))
+			if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, update_status_fn, free_job_fn))
 				{
 					return job_p;
 				}
@@ -80,9 +80,9 @@ ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, cons
 }
 
 
-ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p))
+ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p))
 {
-	ServiceJob *job_p = AllocateServiceJob (job_set_p -> sjs_service_p, job_name_s, job_description_s, update_status_fn);
+	ServiceJob *job_p = AllocateServiceJob (job_set_p -> sjs_service_p, job_name_s, job_description_s, update_status_fn, free_job_fn);
 
 	if (job_p)
 		{
@@ -98,7 +98,7 @@ ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, con
 }
 
 
-bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p))
+bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p))
 {
 	bool success_flag = true;
 
@@ -159,10 +159,6 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 						}
 					#endif
 
-					uuid_clear (job_p -> sj_remote_id);
-					job_p -> sj_remote_uri_s = NULL;
-					job_p -> sj_remote_service_s = NULL;
-
 				}		/* if (success_flag) */
 
 		}		/* if (success_flag) */
@@ -211,29 +207,9 @@ void ClearServiceJob (ServiceJob *job_p)
 			job_p -> sj_errors_p = NULL;
 		}
 
-	if (job_p -> sj_remote_uri_s)
-		{
-			FreeCopiedString (job_p -> sj_remote_uri_s);
-		}
-
 	job_p -> sj_status = OS_CLEANED_UP;
 }
 
-
-
-bool SetServiceJobRemoteDetails (ServiceJob *job_p, const char *remote_service_s, const char *remote_uri_s, const uuid_t id)
-{
-	if (ReplaceStringValue (& (job_p -> sj_remote_service_s, remote_service_s)))
-		{
-			if (ReplaceStringValue (& (job_p -> sj_remote_uri_s, remote_uri_s)))
-				{
-
-
-				}
-
-		}
-
-}
 
 bool SetServiceJobName (ServiceJob *job_p, const char * const name_s)
 {
@@ -254,26 +230,24 @@ bool SetServiceJobDescription (ServiceJob *job_p, const char * const description
 
 void FreeServiceJob (ServiceJob *job_p)
 {
-	ClearServiceJob (job_p);
-	FreeMemory (job_p);
+	if (job_p -> sj_free_fn)
+		{
+			job_p -> sj_free_fn (job_p);
+		}
+	else
+		{
+			ClearServiceJob (job_p);
+			FreeMemory (job_p);
+		}
 }
 
 
-ServiceJobSet *AllocateServiceJobSet (Service *service_p, void (*free_job_fn) (ServiceJob *job_p))
+ServiceJobSet *AllocateServiceJobSet (Service *service_p)
 {
 	ServiceJobSet *job_set_p = (ServiceJobSet *) AllocMemory (sizeof (ServiceJobSet));
 
 	if (job_set_p)
 		{
-			if (free_job_fn)
-				{
-					job_set_p -> sjs_free_job_fn = free_job_fn;
-				}
-			else
-				{
-					job_set_p -> sjs_free_job_fn = FreeServiceJob;
-				}
-
 			job_set_p -> sjs_service_p = service_p;
 			job_set_p -> sjs_jobs_p = AllocateLinkedList (FreeServiceJobNode);
 
@@ -303,43 +277,15 @@ uint32 GetServiceJobSetSize (const ServiceJobSet * const jobs_p)
 
 
 
-ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p, MEM_FLAG mf, void (*free_job_fn) (ServiceJob *job_p))
+ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p)
 {
 	ServiceJobNode *node_p = (ServiceJobNode *) AllocMemory (sizeof (ServiceJobNode));
 
 	if (node_p)
 		{
-			switch (mf)
-				{
-					case MF_SHADOW_USE:
-					case MF_SHALLOW_COPY:
-						node_p -> sjn_job_p = job_p;
-						break;
-
-					case MF_DEEP_COPY:
-						break;
-
-					case MF_ALREADY_FREED:
-						break;
-				}
-
-			if (node_p -> sjn_job_p)
-				{
-					node_p -> sjn_nob_mem = mf;
-
-					if (free_job_fn)
-						{
-							node_p -> sjn_free_job_fn = free_job_fn;
-						}
-					else
-						{
-							node_p -> sjn_free_job_fn = FreeServiceJob;
-						}
-
-					return node_p;
-				}
-
-			FreeMemory (node_p);
+			node_p -> sjn_job_p = job_p;
+			node_p -> sjn_node.ln_prev_p = NULL;
+			node_p -> sjn_node.ln_next_p = NULL;
 		}
 
 	return NULL;
@@ -350,17 +296,7 @@ void FreeServiceJobNode (ListItem *node_p)
 {
 	ServiceJobNode *service_job_node_p = (ServiceJobNode *) node_p;
 
-	switch (service_job_node_p -> sjn_nob_mem)
-		{
-			case MF_SHALLOW_COPY:
-			case MF_DEEP_COPY:
-				service_job_node_p -> sjn_free_job_fn (service_job_node_p -> sjn_job_p);
-				break;
-
-			default:
-				break;
-		}
-
+	FreeServiceJob (service_job_node_p -> sjn_job_p);
 	FreeMemory (service_job_node_p);
 }
 
@@ -368,7 +304,7 @@ void FreeServiceJobNode (ListItem *node_p)
 bool AddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p)
 {
 	bool added_flag = false;
-	ServiceJobNode *node_p = AllocateServiceJobNode (job_p, MF_SHALLOW_COPY, job_set_p -> sjs_free_job_fn);
+	ServiceJobNode *node_p = AllocateServiceJobNode (job_p);
 
 	if (node_p)
 		{
@@ -1289,6 +1225,9 @@ bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, 
 							job_p -> sj_status = status;
 							job_p -> sj_service_p = service_p;
 							job_p -> sj_status = status;
+
+							job_p -> sj_update_status_fn = NULL;
+							job_p -> sj_free_fn = NULL;
 
 							uuid_generate (job_p -> sj_id);
 

@@ -46,6 +46,7 @@ INCLUDES = \
 SRCS 	= \
 	paired_service.c \
 	provider.c \
+	remote_service_job.c \
 	service.c \
 	service_config.c \
 	service_job.c \

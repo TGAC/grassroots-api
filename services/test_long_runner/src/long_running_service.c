@@ -329,7 +329,7 @@ static json_t *GetLongRunningResultsAsJSON (Service *service_p, const uuid_t job
 
 static ServiceJobSet *GetServiceJobSet (Service *service_p, const uint32 num_jobs)
 {
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p, FreeTimedServiceJob);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p);
 
 	if (jobs_p)
 		{
@@ -583,7 +583,7 @@ static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char 
 					job_p -> tsj_interval_p = interval_p;
 					job_p -> tsj_added_flag = false;
 
-					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, NULL, GetTimedServiceJobStatus);
+					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, NULL, GetTimedServiceJobStatus, FreeTimedServiceJob);
 
 				}		/* if (job_p) */
 			else

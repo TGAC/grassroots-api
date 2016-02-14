@@ -526,11 +526,11 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 {
 	char *error_s = NULL;
 	Service *service_p = blast_data_p -> bsd_base_data.sd_service_p;
-	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p, NULL);
+	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p);
 
 	if (jobs_p)
 		{
-			ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, "Previous Blast Results", NULL, NULL);
+			ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, "Previous Blast Results", NULL, NULL, NULL);
 
 			if (job_p)
 				{
@@ -825,13 +825,13 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 		}		/* if (ids_p) */
 	else
 		{
-			jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p, NULL);
+			jobs_p = AllocateServiceJobSet (blast_data_p -> bsd_base_data.sd_service_p);
 
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse \"%s\" to get uuids", ids_s);
 
 			if (jobs_p)
 				{
-					ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, ids_s, "Failed UUID lookup", NULL);
+					ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (jobs_p, ids_s, "Failed UUID lookup", NULL, NULL);
 
 					if (job_p)
 						{
@@ -882,7 +882,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) */
 	else
 		{
-			service_p -> se_jobs_p = AllocateServiceJobSet (service_p, FreeBlastServiceJob);
+			service_p -> se_jobs_p = AllocateServiceJobSet (service_p);
 
 			if (service_p -> se_jobs_p)
 				{

@@ -242,7 +242,7 @@ ServiceJobSet *RunWebSearchService (Service *service_p, ParameterSet *param_set_
 	WebServiceData *data_p = & (service_data_p -> wssd_base_data);
 	
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Web Search Service Job", NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Web Search Service Job");
 
 	if (service_p -> se_jobs_p)
 		{

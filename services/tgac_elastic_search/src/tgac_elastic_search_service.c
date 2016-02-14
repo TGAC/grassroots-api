@@ -270,7 +270,7 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 {
 	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) (service_p -> se_data_p);
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "TGAC Elastic Search", NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "TGAC Elastic Search");
 
 	if (service_p -> se_jobs_p)
 		{

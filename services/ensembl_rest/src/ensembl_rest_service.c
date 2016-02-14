@@ -222,7 +222,7 @@ static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *p
 	EnsemblRestServiceData *data_p = (EnsemblRestServiceData *) service_p -> se_data_p;
 
 	/* We only have one task */
-	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Ensembl result", NULL);
+	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Ensembl result");
 
 	if (service_p -> se_jobs_p)
 		{

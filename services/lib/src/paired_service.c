@@ -26,6 +26,7 @@
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "connection.h"
+#include "json_tools.h"
 
 
 #ifdef _DEBUG
