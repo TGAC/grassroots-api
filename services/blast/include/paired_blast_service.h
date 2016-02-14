@@ -69,7 +69,6 @@ BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet 
 /**
  * Try to get the results of a previously run BlastServiceJob on a remote server.
  *
- *
  * @param local_job_id_s The uuid as a c-style string on the local Server.
  * @param output_format_code The output format to convert the result to.
  * @param blast_data_p The configuration data for the local BlastService.

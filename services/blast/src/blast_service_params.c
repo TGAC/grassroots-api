@@ -167,6 +167,41 @@ Parameter *SetUpPreviousJobUUIDParamater (ParameterSet *param_set_p)
 }
 
 
+Parameter *SetUpOutputFormatParamater (ParameterSet *param_set_p)
+{
+	Parameter *param_p = NULL;
+	ParameterMultiOptionArray *options_p = NULL;
+	SharedType values [BOF_NUM_TYPES];
+	uint32 i;
+	SharedType def;
+
+	memset (&def, 0, sizeof (def));
+
+
+	for (i = 0; i < BOF_NUM_TYPES; ++ i)
+		{
+			values [i].st_ulong_value = i;
+		}
+
+	options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_UNSIGNED_INT);
+
+	if (options_p)
+		{
+			/* default to  blast asn */
+			def.st_ulong_value = BOF_BLAST_ASN1;
+
+			param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, options_p, def, NULL, NULL, PL_ALL, NULL);
+
+			if (!param_p)
+				{
+					FreeParameterMultiOptionArray (options_p);
+				}
+		}		/* if (options_p) */
+
+	return param_p;
+}
+
+
 
 bool AddQuerySequenceParams (ParameterSet *param_set_p)
 {
@@ -327,42 +362,24 @@ bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 												}
 
 
-											for (i = 0; i < BOF_NUM_TYPES; ++ i)
+											if ((param_p = SetUpOutputFormatParamater (param_set_p)) != NULL)
 												{
-													values [i].st_ulong_value = i;
+													const char * const group_name_s = "General Algorithm Parameters";
+
+													if (grouped_param_pp)
+														{
+															*grouped_param_pp = param_p;
+															++ grouped_param_pp;
+														}
+
+													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params))
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
+															FreeMemory (grouped_params_pp);
+														}
+
+													success_flag = true;
 												}
-
-											options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_UNSIGNED_INT);
-
-											if (options_p)
-												{
-													/* default to  blast asn */
-													def.st_ulong_value = BOF_BLAST_ASN1;
-
-													if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "output_format", "Output format", "The output format for the results", TAG_BLAST_OUTPUT_FORMAT, options_p, def, NULL, NULL, level, NULL)) != NULL)
-														{
-															const char * const group_name_s = "General Algorithm Parameters";
-
-															if (grouped_param_pp)
-																{
-																	*grouped_param_pp = param_p;
-																	++ grouped_param_pp;
-																}
-
-															if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params))
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-																	FreeMemory (grouped_params_pp);
-																}
-
-															success_flag = true;
-														}
-
-													if (!success_flag)
-														{
-															FreeParameterMultiOptionArray (options_p);
-														}
-												}		/* if (options_p) */
 										}
 								}
 						}

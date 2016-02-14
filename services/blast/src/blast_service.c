@@ -615,9 +615,9 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
 								}		/* while (node_p) */
 
-#if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINE
+							#if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINE
 							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Num input jobs " UINT32_FMT " num successful json results " UINT32_FMT, ids_p -> ll_size, num_successful_jobs);
-#endif
+							#endif
 
 							if (num_successful_jobs == ids_p -> ll_size)
 								{
@@ -1130,94 +1130,61 @@ static char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t 
 }
 
 
+
+
 static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s, const uint32 output_format_code)
 {
 	char *result_s = NULL;
-	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+	char *job_output_filename_s = GetPreviousJobFilename (data_p, job_id_s, BS_OUTPUT_SUFFIX_S);
 
-	if (buffer_p)
+	if (job_output_filename_s)
 		{
-			const char *job_output_filename_s = NULL;
+			/* Does the file already exist? */
+			char *converted_filename_s = BlastFormatter :: GetConvertedOutputFilename (job_output_filename_s, output_format_code, NULL);
 
-			if (data_p -> bsd_working_dir_s)
+			if (converted_filename_s)
 				{
-					char sep [2];
+					FILE *job_f = fopen (converted_filename_s, "r");
 
-					*sep = GetFileSeparatorChar ();
-					* (sep + 1) = '\0';
-
-					if (AppendStringsToByteBuffer (buffer_p, data_p -> bsd_working_dir_s, sep, job_id_s, BS_OUTPUT_SUFFIX_S, NULL))
+					if (job_f)
 						{
-							job_output_filename_s = GetByteBufferData (buffer_p);
-						}		/* if (AppendStringsToByteBuffer (buffer_p, data_p -> bsd_working_dir_s, sep, job_id_s, NULL)) */
+							result_s = GetFileContentsAsString (job_f);
+
+							if (!result_s)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
+								}
+
+							if (fclose (job_f) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
+								}
+						}		/* if (job_f) */
+
+					FreeCopiedString (converted_filename_s);
+				}		/* if (converted_filename_s) */
+
+			if (!result_s)
+				{
+
+					if (data_p -> bsd_formatter_p)
+						{
+							result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
+						}		/* if (data_p -> bsd_formatter_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't create full path to job file \"%s\"", job_id_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No formatter specified");
 						}
-				}		/* if (data_p -> bsd_working_dir_s) */
-			else
-				{
-					job_output_filename_s = job_id_s;
 				}
 
-			if (job_output_filename_s)
-				{
-					/* Does the file already exist? */
-					char *converted_filename_s = BlastFormatter :: GetConvertedOutputFilename (job_output_filename_s, output_format_code, NULL);
-
-					if (converted_filename_s)
-						{
-							FILE *job_f = fopen (converted_filename_s, "r");
-
-							if (job_f)
-								{
-									result_s = GetFileContentsAsString (job_f);
-
-									if (!result_s)
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't get content of job file \"%s\"", job_output_filename_s);
-										}
-
-									if (fclose (job_f) != 0)
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't close job file \"%s\"", job_output_filename_s);
-										}
-								}		/* if (job_f) */
-							else
-								{
-									PairedService *paired_service_p = NULL;
-
-									/* Is it a remote job? */
-									result_s = GetPreviousRemoteBlastServiceJob (paired_service_p, job_id_s, output_format_code, data_p);
-								}
-
-							FreeCopiedString (converted_filename_s);
-						}		/* if (converted_filename_s) */
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't create job filename for \"%s\" and code " UINT32_FMT, job_output_filename_s, output_format_code);
-						}
-
-					if (!result_s)
-						{
-							if (data_p -> bsd_formatter_p)
-								{
-									result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
-								}		/* if (data_p -> bsd_formatter_p) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No formatter specified");
-								}
-						}
-
-				}		/* if (job_output_filename_s) */
-
-			FreeByteBuffer (buffer_p);
-		}		/* if (buffer_p) */
+			FreeCopiedString (job_output_filename_s);
+		}		/* if (job_output_filename_s) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't allocate ByteBuffer");
+			/* Is it a remote job? */
+
 		}
+
 
 	return result_s;
 }

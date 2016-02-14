@@ -21,6 +21,10 @@
  */
 
 #include "blast_service_job.h"
+#include "byte_buffer.h"
+#include "filesystem_utils.h"
+#include "blast_service.h"
+#include "string_utils.h"
 
 
 BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status)
@@ -98,4 +102,39 @@ void FreeBlastServiceJob (ServiceJob *job_p)
 	ClearServiceJob (job_p);
 
 	FreeMemory (blast_job_p);
+}
+
+
+char *GetPreviousJobFilename (const BlastServiceData *data_p, const char *job_id_s, const char *suffix_s)
+{
+	char *job_output_filename_s = NULL;
+
+	if (data_p -> bsd_working_dir_s)
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					char sep [2];
+
+					*sep = GetFileSeparatorChar ();
+					* (sep + 1) = '\0';
+
+					if (AppendStringsToByteBuffer (buffer_p, data_p -> bsd_working_dir_s, sep, job_id_s, suffix_s, NULL))
+						{
+							job_output_filename_s = DetachByteBufferData (buffer_p);
+						}		/* if (AppendStringsToByteBuffer (buffer_p, data_p -> bsd_working_dir_s, sep, job_id_s, NULL)) */
+					else
+						{
+							FreeByteBuffer (buffer_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't create full path to job file \"%s\"", job_id_s);
+						}
+				}
+		}		/* if (data_p -> bsd_working_dir_s) */
+	else
+		{
+			job_output_filename_s = CopyToNewString (job_id_s, 0, false);
+		}
+
+	return job_output_filename_s;
 }

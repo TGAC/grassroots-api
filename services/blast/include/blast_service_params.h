@@ -54,6 +54,9 @@ BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p)
 BLAST_SERVICE_LOCAL Parameter *SetUpPreviousJobUUIDParamater (ParameterSet *param_set_p);
 
 
+BLAST_SERVICE_LOCAL Parameter *SetUpOutputFormatParamater (ParameterSet *param_set_p);
+
+
 #ifdef __cplusplus
 }
 #endif

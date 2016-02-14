@@ -161,6 +161,7 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 					uuid_clear (job_p -> sj_remote_id);
 					job_p -> sj_remote_uri_s = NULL;
+					job_p -> sj_remote_service_s = NULL;
 
 				}		/* if (success_flag) */
 
@@ -219,6 +220,20 @@ void ClearServiceJob (ServiceJob *job_p)
 }
 
 
+
+bool SetServiceJobRemoteDetails (ServiceJob *job_p, const char *remote_service_s, const char *remote_uri_s, const uuid_t id)
+{
+	if (ReplaceStringValue (& (job_p -> sj_remote_service_s, remote_service_s)))
+		{
+			if (ReplaceStringValue (& (job_p -> sj_remote_uri_s, remote_uri_s)))
+				{
+
+
+				}
+
+		}
+
+}
 
 bool SetServiceJobName (ServiceJob *job_p, const char * const name_s)
 {

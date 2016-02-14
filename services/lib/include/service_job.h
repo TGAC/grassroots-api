@@ -72,6 +72,8 @@ typedef struct ServiceJob
 
 	uuid_t sj_remote_id;
 
+	char *sj_remote_service_s;
+
 	char *sj_remote_uri_s;
 
 } ServiceJob;

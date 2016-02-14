@@ -51,6 +51,9 @@ BLAST_SERVICE_LOCAL void FreeBlastServiceJob (ServiceJob *job_p);
 BLAST_SERVICE_LOCAL BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 
+BLAST_SERVICE_LOCAL char *GetPreviousJobFilename (const BlastServiceData *data_p, const char *job_id_s, const char *suffix_s);
+
+
 #ifdef __cplusplus
 }
 #endif
