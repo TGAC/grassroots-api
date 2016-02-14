@@ -48,7 +48,7 @@ BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p
 BLAST_SERVICE_LOCAL void FreeBlastServiceJob (ServiceJob *job_p);
 
 
-BLAST_SERVICE_LOCAL BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p);
+BLAST_SERVICE_LOCAL BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 
 #ifdef __cplusplus

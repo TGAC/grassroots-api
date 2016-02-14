@@ -72,6 +72,7 @@ GRASSROOTS_SERVICE_API PairedServiceNode *AllocatePairedServiceNodeByParts (cons
 GRASSROOTS_SERVICE_API void FreePairedServiceNode (ListItem *node_p);
 
 
+GRASSROOTS_SERVICE_API json_t *MakeRemotePairedServiceCall (const char * const service_name_s, ParameterSet *params_p, const char * const paired_service_uri_s);
 
 
 

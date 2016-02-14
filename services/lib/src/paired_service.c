@@ -25,6 +25,7 @@
 #include "paired_service.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
+#include "connection.h"
 
 
 #ifdef _DEBUG
@@ -175,5 +176,64 @@ void FreePairedServiceNode (ListItem *node_p)
 
 	FreePairedService (ps_node_p -> psn_paired_service_p);
 	FreeMemory (ps_node_p);
+}
+
+
+
+json_t *MakeRemotePairedServiceCall (const char * const service_name_s, ParameterSet *params_p, const char * const paired_service_uri_s)
+{
+	json_t *res_p = NULL;
+	Connection *connection_p = AllocateWebServerConnection (paired_service_uri_s);
+
+	if (connection_p)
+		{
+			json_t *req_p = json_object ();
+
+			if (req_p)
+				{
+					/*
+					 * Only send the databases that the external paired service knows about
+					 */
+					json_t *service_req_p = GetServiceRunRequest (service_name_s, params_p, true);
+
+					if (service_req_p)
+						{
+							if (json_object_set_new (req_p, SERVICES_NAME_S, service_req_p) == 0)
+								{
+									res_p = MakeRemoteJsonCall (req_p, connection_p);
+
+									if (!res_p)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON fragment from MakeRemoteJsonCall");
+										}
+
+								}		/* if (json_object_set_new (req_p, SERVICES_NAME_S, service_req_p) == 0) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add service request to josn request");
+									json_decref (service_req_p);
+								}
+
+						}		/* if (service_req_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get JSON fragment from GetServiceRunRequest");
+						}
+
+					json_decref (req_p);
+				}		/* if (req_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create JSON array for req_p");
+				}
+
+			FreeConnection (connection_p);
+		}		/* if (connection_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create connection to paired service at \"%s\"", paired_service_uri_s);
+		}
+
+	return res_p;
 }
 

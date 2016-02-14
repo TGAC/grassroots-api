@@ -453,10 +453,10 @@ GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
  * @memberof ServiceJob
  */
-GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p);
+GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 
-GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status, const uuid_t *id_p);
+GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 
 #ifdef __cplusplus

@@ -27,6 +27,8 @@
 #include "blast_service_api.h"
 #include "service.h"
 #include "paired_service.h"
+#include "blast_service.h"
+
 
 #ifdef __cplusplus
 extern "C"
@@ -62,6 +64,18 @@ BLAST_SERVICE_LOCAL json_t *PrepareRemoteJobsForRunning (Service *service_p, Par
  * @return
  */
 BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p);
+
+
+/**
+ * Try to get the results of a previously run BlastServiceJob on a remote server.
+ *
+ *
+ * @param local_job_id_s The uuid as a c-style string on the local Server.
+ * @param output_format_code The output format to convert the result to.
+ * @param blast_data_p The configuration data for the local BlastService.
+ * @return The previous result or <code>NULL</code> upon error.
+ */
+BLAST_SERVICE_LOCAL char *GetPreviousRemoteBlastServiceJob (const char *local_job_id_s, const uint32 output_format_code, const BlastServiceData *blast_data_p);
 
 
 #ifdef __cplusplus
