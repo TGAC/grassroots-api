@@ -27,6 +27,7 @@
 #include "string_utils.h"
 #include "connection.h"
 #include "json_tools.h"
+#include "service.h"
 
 
 #ifdef _DEBUG

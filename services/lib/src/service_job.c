@@ -149,6 +149,7 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 					job_p -> sj_errors_p = NULL;
 
 					job_p -> sj_update_status_fn = update_status_fn;
+					job_p -> sj_free_fn = free_job_fn;
 
 					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 						{
@@ -288,7 +289,7 @@ ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p)
 			node_p -> sjn_node.ln_next_p = NULL;
 		}
 
-	return NULL;
+	return node_p;
 }
 
 

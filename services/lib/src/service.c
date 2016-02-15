@@ -738,32 +738,36 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 
 					if (param_set_json_p)
 						{
-							if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0)
+							if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) == 0)
+								{
+									return service_json_p;
+								}
+							else
 								{
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ParameterSet JSON");
 									json_decref (param_set_json_p);
-
-									json_decref (service_json_p);
-									service_json_p = NULL;
 								}		/* if (json_object_set_new (service_json_p, PARAM_SET_KEY_S, param_set_json_p) != 0) */
 
 						}		/* if (param_set_json_p) */
 					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ParameterSet as JSON");
-							json_decref (service_json_p);
-							service_json_p = NULL;
 						}
 
 				}		/* if (run_flag) */
+			else
+				{
+					return service_json_p;
+				}
 
+			json_decref (service_json_p);
 		}		/* if (service_json_p) */
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create service json, error at line %d, col %d, \"%s\"", err.line, err.column, err.text);
 		}
 
-	return service_json_p;
+	return NULL;
 }
 
 

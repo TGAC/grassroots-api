@@ -768,7 +768,7 @@ static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_fl
 
 					if (job_name_s)
 						{
-							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s, true);
+							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s);
 
 							if (job_p)
 								{

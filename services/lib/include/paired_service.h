@@ -28,9 +28,8 @@
 
 #include "jansson.h"
 #include "uuid/uuid.h"
+
 #include "parameter_set.h"
-
-
 #include "linked_list.h"
 #include "grassroots_service_library.h"
 
