@@ -19,4 +19,6 @@ Alias /grassroots/docs /opt/grassroots/docs
 
 ## Connecting Multiple Servers
 
-TODO
+There are two ways that Servers can be connected:
+
+ 1. The Services from each Server are combined to generate a single list. For example, imagine we have two servers; the first being at https://server1.org/grassroots and https://server2.org/another/grassroots.  
