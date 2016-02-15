@@ -1182,7 +1182,7 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 	else
 		{
 			/* Is it a remote job? */
-
+			result_s = GetPreviousRemoteBlastServiceJob (job_id_s, output_format_code, data_p);
 		}
 
 
