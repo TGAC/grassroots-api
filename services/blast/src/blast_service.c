@@ -1166,25 +1166,35 @@ static char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const c
 
 			if (!result_s)
 				{
+					/*
+					 * We haven't got the output in the desired output format so we need to run the formatter.
+					 */
 
-					if (data_p -> bsd_formatter_p)
+					/* Is it a local job? */
+					if (IsPathValid (job_output_filename_s))
 						{
-							result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
-						}		/* if (data_p -> bsd_formatter_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No formatter specified");
-						}
-				}
+							if (data_p -> bsd_formatter_p)
+								{
+									result_s = data_p -> bsd_formatter_p -> GetConvertedOutput (job_output_filename_s, output_format_code);
+								}		/* if (data_p -> bsd_formatter_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No formatter specified");
+								}
+
+						}		/* if (IsPathValid (job_output_filename_s)) */
+
+				}		/* if (!result_s) */
 
 			FreeCopiedString (job_output_filename_s);
 		}		/* if (job_output_filename_s) */
-	else
+
+
+	if (!result_s)
 		{
 			/* Is it a remote job? */
 			result_s = GetPreviousRemoteBlastServiceJob (job_id_s, output_format_code, data_p);
 		}
-
 
 	return result_s;
 }

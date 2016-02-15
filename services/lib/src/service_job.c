@@ -249,11 +249,18 @@ ServiceJobSet *AllocateServiceJobSet (Service *service_p)
 
 	if (job_set_p)
 		{
-			job_set_p -> sjs_service_p = service_p;
 			job_set_p -> sjs_jobs_p = AllocateLinkedList (FreeServiceJobNode);
 
 			if (job_set_p -> sjs_jobs_p)
 				{
+					job_set_p -> sjs_service_p = service_p;
+
+					if (service_p -> se_jobs_p)
+						{
+							FreeServiceJobSet (service_p -> se_jobs_p);
+						}
+					service_p -> se_jobs_p = job_set_p;
+
 					return job_set_p;
 				}
 
