@@ -85,33 +85,6 @@ protected:
 */
 
 
-/**
- * A class that will run Blast within the main process
- * of the iRods server.
- */
-/*
-class BLAST_SERVICE_LOCAL InlineBlastTool : public BlastTool 
-{
-public:
-	
-	virtual OperationStatus Run ();
-};
-*/
-
-/**
- * A class that will run Blast in a separate thread on
- * the iRods server.
- */
-/*
-class BLAST_SERVICE_LOCAL ThreadedBlastTool : public BlastTool 
-{
-public:
-	
-	virtual OperationStatus Run ();
-};
-*/
-
-
 #ifdef __cplusplus
 extern "C" 
 {
@@ -129,7 +102,7 @@ BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *nam
 /**
  * Free a BlastTool
  * 
- * @param The BlastTool to deallocate.
+ * @param tool_p The BlastTool to deallocate.
  */
 BLAST_SERVICE_API void FreeBlastTool (BlastTool *tool_p);
 
@@ -148,7 +121,7 @@ BLAST_SERVICE_API OperationStatus RunBlast (BlastTool *tool_p);
 BLAST_SERVICE_API OperationStatus GetBlastStatus (BlastTool *tool_p);
 
 
-BLAST_SERVICE_API bool IsBlastToolSynchronous ();
+BLAST_SERVICE_API bool IsBlastToolSynchronous (BlastTool *tool_p);
 
 
 #ifdef __cplusplus

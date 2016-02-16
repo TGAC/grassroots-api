@@ -214,6 +214,9 @@ GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *ser
  * @brief Allocate a ServiceJobSet and populate it with a single ServiceJob
  *
  * @param service_p The Service to allocate the ServiceJobSet for.
+ * @param job_name_s The name that will be given to the ServiceJob that will be created.
+ * @param job_description_s The description that will be given to the ServiceJob that will be created.
+ * This can be <code>NULL</code>.
  * @return A newly-allocated ServiceJobSet or <code>NULL</code> upon error.
  * @memberof ServiceJobSet.
  * @see InitServiceJob
@@ -289,7 +292,7 @@ GRASSROOTS_SERVICE_API ServiceJob *GetServiceJobFromServiceJobSetById (const Ser
 /**
  * Get the json representation of a ServiceJobSet.
  *
- * @param job_set_p The ServiceJobSet to get the representation of.
+ * @param jobs_p The ServiceJobSet to get the representation of.
  * @return The json_t representing the ServiceJobSet or <code>NULL
  * </code> upon error.
  * @memberof ServiceJobSet
@@ -317,7 +320,6 @@ GRASSROOTS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob * const job_p);
  * @memberof ServiceJob
  */
 GRASSROOTS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p);
-
 
 
 

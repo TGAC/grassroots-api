@@ -108,7 +108,7 @@ QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const d
 
 					json_array_foreach (provider_p, i, item_p)
 						{
-							AddProvider (provider_p, i, size - 1, info_layout_p);
+							AddProvider (item_p, i, size - 1, info_layout_p);
 						}
 				}		/* if (json_is_array (provider_p)) */
 			else if (json_is_object (provider_p))
@@ -179,8 +179,17 @@ void QTParameterWidget :: AddProvider (const json_t *provider_p, const size_t i,
 
 			if (provider_description_s)
 				{
-					str.append (". ");
+					str.append (", ");
 					str.append (provider_description_s);
+
+					if (i < last_index)
+						{
+							str.append (", ");
+						}
+					else
+						{
+							str.append (".");
+						}
 
 					QLabel *label_p = new QLabel (str, this);
 					//label_p -> setWordWrap (true);

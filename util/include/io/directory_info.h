@@ -77,8 +77,8 @@ GRASSROOTS_UTIL bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_
 typedef DirectoryInfo
 {
 
-	LinkedList *
-}
+
+};
 
 
 #endif		/ #ifndef DIRECTORY_INFO_H */
