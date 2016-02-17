@@ -121,12 +121,22 @@ GRASSROOTS_SERVICE_API void FreeServiceJob (ServiceJob *job_p);
 
 /**
  * @brief Allocate a ServiceJob.
- * *
- * @param job_p The ServiceJob to initialise.
+ *
+ * @param service_p The Service that is running the ServiceJob.
  * @param job_name_s The name to give to the ServiceJob.
  * @param job_description_s The description to give to the ServiceJob.
- * @param service_p The Service that is running the ServiceJob.
+ * @param update_status_fn The callback function to use when checking the status of
+ * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+ * behaviour. If this is <code>NULL</code>, then GetServiceJobStatus will be used.
+ * @param free_job_fn The callback function to use when freeing
+ * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+ * behaviour. If this is <code>NULL</code>, then ClearServiceJob will be used before
+ * deallocating the memory ServiceJob structure.
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
+ * @see FreeServiceJob
+ * @see InitServiceJob
+ * @see GetServiceJobStatus
+ * @see ClearServiceJob
  * @memberof ServiceJob.
  */
 GRASSROOTS_SERVICE_API ServiceJob *AllocateServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p));

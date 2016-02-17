@@ -558,9 +558,30 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
 
 
 
+/**
+ * Create a new PairedService and add it to a Service.
+ *
+ * @param service_p The Service to add the PairedService to.
+ * @param external_server_p The ExternalServer that the PairedService runs on.
+ * @param remote_service_name_s The name of the PairedService on the ExternalServer.
+ * @param op_p The JSON fragment to create the PairedService's ParameterSet from.
+ * @return <code>true</code> if the PairedService was created and added successfully, <code>false</code> otherwise.
+ * @see AddPairedService.
+ * @see AllocatePairedService.
+ * @see CreateParameterSetFromJSON
+ * @memberof Service.
+ */
 GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p);
 
 
+/**
+ * Add a PairedService to a Service.
+ *
+ * @param service_p The Service to add the PairedService to.
+ * @param paired_service_p The PairedService to add.
+ * @return <code>true</code> if the PairedService was added successfully, <code>false</code> otherwise.
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
 
 
