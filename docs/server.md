@@ -10,7 +10,7 @@ All of the configuration details for this module are added to the appropriate co
 <LocationMatch "/grassroots">
 LoadModule grassroots_module modules/mod_grassroots.so
 SetHandler grassroots-handler
-grassrootsRoot /opt/grassroots
+GrassrootsRoot /opt/grassroots
 </LocationMatch>
 
 Alias /grassroots/docs /opt/grassroots/docs
@@ -41,7 +41,7 @@ Obviously this duplication doesn't make sense which is where the second method o
 
  * The Blast Service against both the foo and bar databases.
  * The text searching Service.
- * The Blast Service against the bar database.
+ * The SNP search Service.
   
 So the user doesn't need to repeat their chosen Blast Service parameters and the Grassroots architecture takes care of sending the required parameters to the separate Blast Services and collating the results together. 
 
@@ -62,5 +62,11 @@ Each item must have the following keys:
 
  * **server_name**: This is name used to denote the Server.
  * **server_url**: This is the web address to send the JSON Grassroots messages to access the Server.
+ * **paired_services**: If you wish to connect local and remote services together, this key points to an array of items consisting of two keys:
+    * **local**: The name of the Service on the local Grassroots Server.
+    * **remote**: The name of the Service on the remote Grassroots Server at *server_url*. 
+
+For a Service to be paired, it needs to be written with this in mind. An example is the [Blast](http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastHome/) Service for searching genetic sequences. See this example and the developer guide for more details.
+
 
 

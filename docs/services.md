@@ -1,4 +1,4 @@
-# Services {#services}
+﻿# Services {#services}
 
 A Service is the componnent that is used to add some sceintific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](services.md#standalone_services) or as [referred services](services.md#referred_services). 
 
@@ -35,11 +35,11 @@ of this is that the GrassrootsIS has a number of Referred Services that access v
 	"services": {
     "path": "Agris Search service",
     "summary": "A service to obtain articles",
-		"description": "A service to obtain articles using search terms",    
+	"description": "A service to obtain articles using search terms",    
     "plugin": "web_search_service",
     "operations": [
 			{
-				"operationId": "Agris Web Search service",
+				"operation_id": "Agris Web Search service",
 				"summary": "An operation to obtain matching articles",
 				"description": "An operation to obtain matching articles from Agris",
 				"about_uri": "http://agris.fao.org/agris-search/index.do",

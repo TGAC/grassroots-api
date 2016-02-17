@@ -1,0 +1,2 @@
+locate -r "^\(.*/\)*libcurl\.so$"
+

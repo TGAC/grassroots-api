@@ -177,6 +177,8 @@ A number to describe the type of the Parameter. The values, along with their C d
  12.	 *PT_KEYWORD*: The parameter is a keyword meaning it will be set of the user chooses to
  run a keyword search.
  13. *PT_LARGE_STRING*: The parameter is a string that can potentially get large in size. This is a hint to the Client to use a multi-line text box as opposed to a single one.
+ 14. *PT_JSON*: The parameter is a JSON fragment,
+ 15. *PT_TABLE*: The parameter holds tabular data with configurable row and column delimiters. These default to a newline and a comma respectively.
 
 * **enum**: 
 If the Parameter can take only take one of set of restricted values, these can be specified as an array here.
