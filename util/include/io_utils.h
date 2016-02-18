@@ -29,10 +29,6 @@
 
 #include <stdio.h>
 
-/* 
- * irods includes
- */
-#include "putUtil.h"
 
 
  /*
@@ -126,11 +122,6 @@ GRASSROOTS_UTIL_API char *GetIntAsString (int value);
 GRASSROOTS_UTIL_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
 
 
-
-GRASSROOTS_UTIL_API int PutAndCheckForServices (rcComm_t **connection_pp, rodsEnv *env_p, rodsArguments_t *args_p, rodsPathInp_t *path_inp_p);
-
-
-GRASSROOTS_UTIL_LOCAL int PrintRodsPath (FILE *out_f, const rodsPath_t * const rods_path_p, const char * const description_s);
 
 
 #ifdef __cplusplus

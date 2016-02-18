@@ -14,6 +14,8 @@
 ** limitations under the License.
 */
 
+#include <string.h>
+
 #include "server.h"
 #include "linked_list.h"
 #include "jansson.h"
@@ -55,8 +57,10 @@
 
 
 
-
+#if IRODS_ENABLED == 1
 static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *credentials_p);
+#endif
+
 
 static json_t *GetInterestedServices (const json_t * const req_p, const json_t *credentials_p);
 
@@ -276,7 +280,11 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char
 										break;
 
 									case OP_IRODS_MODIFIED_DATA:
-										res_p = GetAllModifiedData (req_p, credentials_p);
+										{
+											#if IRODS_ENABLED == 1
+											res_p = GetAllModifiedData (req_p, credentials_p);
+											#endif
+										}
 										break;
 
 									case OP_LIST_INTERESTED_SERVICES:
@@ -946,6 +954,7 @@ static json_t *GetNamedServices (const json_t * const req_p, const json_t *crede
 }
 
 
+#if IRODS_ENABLED == 1
 static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *credentials_p)
 {
 	json_t *res_p = NULL;
@@ -996,7 +1005,7 @@ static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *cre
 	
 	return res_p;
 }
-
+#endif
 
 
 static bool IsRequiredExternalOperation (const json_t *external_op_p, const char *op_name_s)

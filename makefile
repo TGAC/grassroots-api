@@ -156,8 +156,13 @@ lib_network:
 lib_parameters:
 	$(MAKE) -C parameters
 
+
+ifeq ($(IRODS_ENABLED),1)
 lib_irods:
 	$(MAKE) -C irods/lib
+else
+lib_irods:	
+endif
 	
 lib_handlers:
 	$(MAKE) -C handlers/lib
@@ -211,7 +216,7 @@ all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C handlers/file
-	$(MAKE) -C handlers/irods
+#	$(MAKE) -C handlers/irods
 	$(MAKE) -C handlers/dropbox
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
@@ -225,7 +230,7 @@ all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 	$(MAKE) -C services/web
 	$(MAKE) -C services/json_search
 	$(MAKE) -C services/web_search
-	$(MAKE) -C services/irods_search
+#	$(MAKE) -C services/irods_search
 	$(MAKE) -C services/ensembl_rest
 	$(MAKE) -C services/tgac_elastic_search
 	$(MAKE) -C services/test_long_runner
@@ -236,7 +241,7 @@ install: install_init install_references install_images all
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 	$(MAKE) -C parameters install
-	$(MAKE) -C irods/lib install
+#	$(MAKE) -C irods/lib install
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
 	$(MAKE) -C handlers/file install

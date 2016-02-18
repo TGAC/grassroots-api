@@ -16,12 +16,31 @@
 //#include "rodsGenQuery.h"
 
 #include "user.h"
+#include "user_util.h"
 #include "query.h"
+
 #include "connect.h"
 
 #include "string_utils.h"
 //#include "irods_handler.h"
 
+#include <time.h>
+
+#include <jansson.h>
+
+#include "irods_util_library.h"
+
+
+#include "linked_list.h"
+#include "typedefs.h"
+
+
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 const char *GetUsernameForId (const int64 user_id)
 {

@@ -13,9 +13,14 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+#include "rcConnect.h"
+
 #include "connect.h"
 #include "json_util.h"
 #include "streams.h"
+#include "irods_connection.h"
+
 
 
 #ifdef _DEBUG
@@ -25,7 +30,39 @@
 #endif
 
 
-rcComm_t *CreateIRODSConnectionFromJSON (const json_t *config_p)
+/***********************************************/
+
+static IRODSConnection *AllocateIRODSConnection (rcComm_t *irods_comm_p);
+
+
+/***********************************************/
+
+
+void FreeIRODSConnection (struct IRODSConnection *connection_p)
+{
+	ReleaseIRODSConnection (connection_p -> ic_connection_p);
+
+	FreeMemory (connection_p);
+}
+
+
+bool ReleaseIRODSConnection (rcComm_t *connection_p)
+{
+	int status = rcDisconnect (connection_p);
+
+	if (status == 0)
+		{
+			return true;
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to disconnect from iRODS: %d", status);
+			return false;
+		}
+}
+
+
+IRODSConnection *CreateIRODSConnectionFromJSON (const json_t *config_p)
 {
 	rcComm_t *connection_p = NULL;
 	const json_t *irods_credentials_p = NULL;
@@ -68,11 +105,11 @@ rcComm_t *CreateIRODSConnectionFromJSON (const json_t *config_p)
 }
 
 
-rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
+IRODSConnection *CreateIRODSConnection (const char *username_s, const char *password_s)
 {
 	rodsEnv env;
 	rErrMsg_t err;
-	rcComm_t *connection_p = NULL;
+	rcComm_t *comm_p = NULL;
 
 	/**@REPLACE IRODS CALL */
 	int status = getRodsEnv (&env);
@@ -85,14 +122,18 @@ rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
 				}
 			
 			/**@REPLACE IRODS CALL */
-			connection_p = rcConnect (env.rodsHost, env.rodsPort, (char *) username_s, env.rodsZone, 0, &err);
+			comm_p = rcConnect (env.rodsHost, env.rodsPort, (char *) username_s, env.rodsZone, 0, &err);
 			
-			if (connection_p)
+			if (comm_p)
 				{
 					/**@REPLACE IRODSCALL */
-					status = password_s ? clientLoginWithPassword (connection_p, (char *) password_s) : clientLogin (connection_p);
+					status = password_s ? clientLoginWithPassword (comm_p, (char *) password_s) : clientLogin (comm_p);
 					
-					if (status != 0)
+					if (status == 0)
+						{
+							IRODSConnection *connection_p = AllocateIRODSConnection (irods_comm_p);
+						}
+					else
 						{
 							CloseIRODSConnection (connection_p);
 							connection_p = NULL;
@@ -104,10 +145,18 @@ rcComm_t *CreateIRODSConnection (const char *username_s, const char *password_s)
 }
 
 
-void CloseIRODSConnection (rcComm_t *connection_p)
+/*******************************/
+
+static IRODSConnection *AllocateIRODSConnection (rcComm_t *irods_comm_p)
 {
-	/** @REPLACE IRODS CALL */
-	rcDisconnect (connection_p);
+	IRODSConnection *connection_p = (IRODSConnection *) AllocMemory (sizeof (IRODSConnection));
+
+	if (connection_p)
+		{
+			connection_p -> ic_connection_p = irods_comm_p;
+		}
+
+	return connection_p;
 }
 
                                                                                                       

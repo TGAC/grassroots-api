@@ -22,13 +22,17 @@
 
 #include "rodsGenQueryNames.h"
 #include "rcMisc.h"
-
+#include "rcConnect.h"
+#include "rodsGenQuery.h"
 
 #include "string_utils.h"
 #include "memory_allocations.h"
 #include "byte_buffer.h"
 #include "streams.h"
 #include "json_util.h"
+#include "irods_connection.h"
+#include "query_util.h"
+
 
 #ifdef _DEBUG
 	#define QUERY_DEBUG	(STM_LEVEL_FINE)
@@ -36,6 +40,90 @@
 	#define QUERY_DEBUG	(STM_LEVEL_NONE)
 #endif
 
+
+/**
+ * Prepare a genQueryInp_t ready for use
+ *
+ * @param query_p The genQueryInp_t to initialise.
+ */
+static void InitGenQuery (genQueryInp_t *query_p);
+
+
+/**
+ * Clear a genQueryInp_t.
+ *
+ * @param query_p The genQueryInp_t to clear.
+ */
+static void ClearGenQuery (genQueryInp_t *query_p);
+
+
+/**
+ * Run a given SQL query string on an iRODS server.
+ *
+ * @param connection_p The connection to the iRODS server.
+ * @param query_s The query string that will be used to fill in a genQueryInp_t.
+ * @return Pointer to a newly-allocated genQueryOut_t containing the results of
+ * the executed query.
+ * @see ExecuteGenQuery
+ */
+static genQueryOut_t *ExecuteQueryString (rcComm_t *connection_p, char *query_s);
+
+
+/**
+ * Run a given SQL query string on an iRODS server.
+ *
+ * @param connection_p The connection to the iRODS server.
+ * @param query_p The input query.
+ * @return Pointer to a newly-allocated genQueryOut_t containing the results of
+ * the executed query.
+ */
+static genQueryOut_t *ExecuteGenQuery (rcComm_t *connection_p, genQueryInp_t * const query_p);
+
+/**
+ * Set the SELECT clauses for a query.
+ *
+ * @param in_query_p The query to be set.
+ * @param num_columns The number of columns to set the SELECT for.
+ * @param columns_p Pointer to an array of column ids.
+ * @param values_p Pointer to an array of values.
+ * @return <code>true</code> if the clauses were set successfully, <code>false</code> otherwise.
+ */
+static bool SetQuerySelectClauses (genQueryInp_t *in_query_p, int num_columns, const int * const columns_p, const int * const values_p);
+
+
+/**
+ * Set the WHERE clauses for a query.
+ *
+ * @param in_query_p The query to be set.
+ * @param num_columns The number of columns to set the WHERE for.
+ * @param columns_p Pointer to an array of column ids.
+ * @param clauses_ss Pointer to an array of strings for the WHERE clause values.
+ * @param opss_ss Pointer to an array of strings specifying the WHERE clause operators.
+ * @return <code>true</code> if the clauses were set successfully, <code>false</code> otherwise.
+ */
+static bool SetQueryWhereClauses (genQueryInp_t *in_query_p, int num_columns, const int *columns_p, const char **clauses_ss, const char **ops_ss);
+
+
+/**
+ * Print a genQueryOut_t to an output FILE.
+ *
+ * @param out_f The FILE to write to.
+ * @param query_result_p The genQueryOut_t to print.
+ */
+static int PrintQueryOutput (FILE *out_f, const genQueryOut_t *query_result_p);
+
+
+
+/** @private */
+static QueryResults *GenerateQueryResults (const genQueryOut_t *results_p);
+
+
+
+
+/** @private */
+static bool FillInQueryResult (QueryResult *query_result_p, const sqlResult_t *sql_result_p, const int num_rows);
+
+/**********************************/
 
 static const columnName_t *GetColumnById (const int id);
 
@@ -45,6 +133,8 @@ static bool AddQueryResultsAsStrings (const char *full_path_s, const char *colle
 
 static void IterateOverQueryResultPaths (const QueryResults * const qrs_p, bool (*callback_fn) (const char *full_path_s, const char *collection_s, const char *data_s, void *callback_data_p), void *callback_data_p);
 
+
+/*********************************/
 
 
 genQueryOut_t *ExecuteGenQuery (rcComm_t *connection_p, genQueryInp_t * const in_query_p)

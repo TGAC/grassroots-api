@@ -39,10 +39,10 @@
 /*
  * irods includes
  */
-#include "dataObjGet.h"
-#include "msParam.h"
-#include "rodsClient.h"
-#include "rods.h"
+//#include "dataObjGet.h"
+//#include "msParam.h"
+//#include "rodsClient.h"
+//#include "rods.h"
 
 /*
  * our includes
@@ -144,203 +144,6 @@ char *CopyFileToLocalFilesystem (const char * const filename_s)
 }
 
 
-/*
-int DisposeConnection (rcComm_t *conn_p)
-{
-	return rcDisconnect (conn_p);
-}
-
-
-rcComm_t *GetConnection (rcComm_t **conn_pp, char *username_s, char *rods_zone_s)
-{
-	rcComm_t *conn_p = NULL;
-	rodsEnv myRodsEnv;
-
-	int status = getRodsEnv (&myRodsEnv);
-
-	if (status >= 0)
-		{
-			rErrMsg_t errMsg;
-			memset (&errMsg, 0, sizeof (rErrMsg_t));
-
-			conn_p = rcConnect (myRodsEnv.rodsHost, myRodsEnv.rodsPort, username_s, rods_zone_s, 0, &errMsg);
-			if (conn_p != NULL)
-				{
-					status = clientLogin (conn_p);
-
-					if (status == 0)
-						{
-
-						}
-					else
-						{
-							rcDisconnect(conn);
-							exit(1);
-						}
-
-				}
-			else
-				{
-					fprintf(stderr, "rcConnect error\n");
-					exit(1);
-				}
-		}
-	else
-		{
-			fprintf (stderr, "getRodsEnv error, status = %d\n", status);
-			exit(1);
-		}
-
-	return conn_p;
-}
-
-
-int ReadFile ()
-{
-	rcComm_t* conn;
-	rodsEnv myRodsEnv;
-	dataObjInp_t dataObjOpenInp;
-	ruleExecDelInp_t ruleExecDelInp;
-
-	rErrMsg_t errMsg;
-	memset(&errMsg, 0, sizeof(rErrMsg_t));
-
-	int status = getRodsEnv(&myRodsEnv);
-	if (status < 0)
-		{
-			fprintf(stderr, "getRodsEnv() error, status = %d\n", status);
-			exit(1);
-		}
-
-	conn = rcConnect(myRodsEnv.rodsHost, myRodsEnv.rodsPort, "rods", "tempZone", 0, &errMsg);
-
-	if (conn == NULL)
-		{
-			fprintf(stderr, "rcConnect() error\n");
-			exit(1);
-		}
-
-	status = clientLogin(conn);
-	if (status != 0)
-		{
-			rcDisconnect(conn);
-			exit(1);
-		}
-
-	dataObjInp_t dataObjInp;
-	bzero(&dataObjInp, sizeof (dataObjInp));
-	strncpy(dataObjInp.objPath, "/tempZone/home/rods/hello.txt", MAX_NAME_LEN);
-	char locFilePath[MAX_NAME_LEN];
-	strncpy(locFilePath, "./hello.txt", MAX_NAME_LEN);
-	dataObjInp.dataSize = 0;
-	status = rcDataObjGet(conn, &dataObjInp, locFilePath);
-	if (status < 0)
-		{
-			fprintf(stderr, "error status = %d\n", status);
-		}
-
-	return 0;
-
-}
-
-
-int WriteFile ()
-{
-	rcComm_t *conn_p;
-	rodsEnv myRodsEnv;
-	dataObjInp_t dataObjOpenInp;
-	ruleExecDelInp_t ruleExecDelInp;
-
-	rErrMsg_t errMsg;
-	memset(&errMsg, 0, sizeof(rErrMsg_t));
-
-
-
-	int status = getRodsEnv(&myRodsEnv);
-	if (status < 0)
-		{
-			fprintf (stderr, "getRodsEnv error, status = %d\n", status);
-			exit(1);
-		}
-
-	conn = rcConnect(myRodsEnv.rodsHost, myRodsEnv.rodsPort, "rods", "tempZone", 0, &errMsg);
-	if (conn == NULL)
-		{
-			fprintf(stderr, "rcConnect error\n");
-			exit(1);
-		}
-
-	status = clientLogin(conn);
-	if (status != 0)
-		{
-			rcDisconnect(conn);
-			exit(1);
-		}
-
-	dataObjInp_t dataObjInp;
-	bzero(&dataObjInp, sizeof (dataObjInp));
-	strncpy(dataObjInp.objPath, "/tempZone/home/rods/hello.txt", MAX_NAME_LEN);
-	char locFilePath[MAX_NAME_LEN];
-	strncpy(locFilePath, "./hello.txt", MAX_NAME_LEN);
-	dataObjInp.dataSize = 13;
-	status = rcDataObjPut(conn, &dataObjInp, locFilePath);
-
-	if (status < 0)
-		{
-			fprintf(stderr, "put error, status = %d\n", status);
-			}
-
-	return 0;
-}
-
-int ReadFile ()
-{
-	rcComm_t* conn;
-	rodsEnv myRodsEnv;
-	dataObjInp_t dataObjOpenInp;
-	ruleExecDelInp_t ruleExecDelInp;
-
-	rErrMsg_t errMsg;
-	memset(&errMsg, 0, sizeof(rErrMsg_t));
-
-	int status = getRodsEnv(&myRodsEnv);
-	if (status < 0)
-		{
-			fprintf(stderr, "getRodsEnv() error, status = %d\n", status);
-			exit(1);
-		}
-
-	conn = rcConnect(myRodsEnv.rodsHost, myRodsEnv.rodsPort, "rods", "tempZone", 0, &errMsg);
-
-	if (conn == NULL)
-		{
-			fprintf(stderr, "rcConnect() error\n");
-			exit(1);
-		}
-
-	status = clientLogin(conn);
-	if (status != 0)
-		{
-			rcDisconnect(conn);
-			exit(1);
-		}
-
-	dataObjInp_t dataObjInp;
-	bzero(&dataObjInp, sizeof (dataObjInp));
-	strncpy(dataObjInp.objPath, "/tempZone/home/rods/hello.txt", MAX_NAME_LEN);
-	char locFilePath[MAX_NAME_LEN];
-	strncpy(locFilePath, "./hello.txt", MAX_NAME_LEN);
-	dataObjInp.dataSize = 0;
-	status = rcDataObjGet(conn, &dataObjInp, locFilePath);
-	if (status < 0)
-		{
-			fprintf(stderr, "error status = %d\n", status);
-		}
-
-	return 0;
-}
-*/
-
 char *GetIntAsString (int value)
 {
 	char *buffer_s = NULL;
@@ -384,19 +187,6 @@ char *GetIntAsString (int value)
 }
 
 
-
-bool NotifyUser (userInfo_t *user_p, const char * const title_s, msParamArray_t *params_p)
-{
-	bool success_flag = true;
-	/*
-	 * depending on the user's preferences, notify them by e.g. email, logfile, etc.
-	 */
-
-	 return success_flag;
-}
-
-
-
 void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...)
 {
 	va_list args;
@@ -421,11 +211,3 @@ void WriteToLog (const char *log_ident_s, const int log_level, const char *messa
 	va_end (args);
 }
 
-
-
-
-
-int PrintRodsPath (FILE *out_f, const rodsPath_t * const rods_path_p, const char * const description_s)
-{
-	return fprintf (out_f, "%s: in \"%s\" out \"%s\"\n", description_s, rods_path_p -> inPath, rods_path_p -> outPath);
-}

@@ -33,14 +33,6 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_SERVICES_INC) \
 	-I$(DIR_GRASSROOTS_HANDLER_INC) \
 	-I$(DIR_GRASSROOTS_PARAMS_INC) \
-	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC)
 
@@ -56,12 +48,10 @@ CPPFLAGS += -DUNIX
 LDFLAGS = -lpthread -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_GRASSROOTS_NETWORK_LIB) -l$(GRASSROOTS_NETWORK_LIB_NAME) \
-	-L$(DIR_GRASSROOTS_IRODS_LIB) -l$(GRASSROOTS_IRODS_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_SERVICES_LIB) -l$(GRASSROOTS_SERVICES_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_SERVER_LIB) -l$(GRASSROOTS_SERVER_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_HANDLER_LIB) -l$(GRASSROOTS_HANDLER_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_PARAMS_LIB) -l$(GRASSROOTS_PARAMS_LIB_NAME) \
-	-L$(DIR_SHARED_IRODS_LIB) -lirods \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
 	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 	-L$(DIR_UUID_LIB) -luuid \
@@ -74,9 +64,17 @@ INCLUDES += -I$(DIR_LSF_DRMAA_INC) -I$(DIR_GRASSROOTS_DRMAA_INC)
 CPPFLAGS += -DDRMAA_ENABLED=1
 endif
 
-.PHONY:	all 
+
+include $(DIR_ROOT)/irods_lib.properties	
+
+ifeq ($(IRODS_ENABLED),1)
+$(LD_FLAGS) += 	-L$(DIR_SHARED_IRODS_LIB) -lirods 
+endif
 
 include $(DIR_ROOT)/generic_makefiles/executable.makefile
+
+
+.PHONY:	all 
 
 all: exe
 
