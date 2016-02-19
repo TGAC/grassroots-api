@@ -124,19 +124,19 @@ void ConnectToExternalServers (void)
 }
 
 
-const char *GetProviderName (void)
+const char *GetServerProviderName (void)
 {
 	return GetProviderElement (PROVIDER_NAME_S);
 }
 
 
-const char *GetProviderDescription (void)
+const char *GetServerProviderDescription (void)
 {
 	return GetProviderElement (PROVIDER_DESCRIPTION_S);
 }
 
 
-const char *GetProviderURI (void)
+const char *GetServerProviderURI (void)
 {
 	return GetProviderElement (PROVIDER_URI_S);
 }

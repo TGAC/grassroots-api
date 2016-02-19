@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "blast_service_params.h"
+#include "provider.h"
 #include "grassroots_config.h"
 #include "string_utils.h"
 #include "streams.h"
@@ -127,8 +128,8 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 			Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 			Parameter **grouped_param_pp = grouped_params_pp;
 			const DatabaseInfo *db_p = data_p -> bsd_databases_p;
-			const char *provider_s = NULL;
 			char *group_s = NULL;
+			const json_t *provider_p = NULL;
 
 			if (db_p)
 				{
@@ -165,10 +166,16 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 
 				}		/* if (db_p) */
 
-			provider_s = GetProviderName ();
-			if (provider_s)
+			provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
+
+			if (provider_p)
 				{
-					group_s = CreateGroupName (provider_s);
+					const char *provider_s = GetProviderName (provider_p);
+
+					if (provider_s)
+						{
+							group_s = CreateGroupName (provider_s);
+						}
 				}
 
 			if (!AddParameterGroupToParameterSet (param_set_p, group_s ? group_s : BS_DATABASE_GROUP_NAME_S, NULL, grouped_params_pp, num_group_params))

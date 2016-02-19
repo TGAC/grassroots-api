@@ -50,13 +50,13 @@ GRASSROOTS_SERVICE_MANAGER_API  void DisconnectFromExternalServers (void);
 GRASSROOTS_SERVICE_MANAGER_API const json_t *GetGlobalConfigValue (const char *key_s);
 
 
-GRASSROOTS_SERVICE_MANAGER_API const char *GetProviderName (void);
+GRASSROOTS_SERVICE_MANAGER_API const char *GetServerProviderName (void);
 
 
-GRASSROOTS_SERVICE_MANAGER_API const char *GetProviderDescription (void);
+GRASSROOTS_SERVICE_MANAGER_API const char *GetServerProviderDescription (void);
 
 
-GRASSROOTS_SERVICE_MANAGER_API const char *GetProviderURI (void);
+GRASSROOTS_SERVICE_MANAGER_API const char *GetServerProviderURI (void);
 
 
 GRASSROOTS_SERVICE_MANAGER_API const json_t *GetProviderAsJSON (void);
