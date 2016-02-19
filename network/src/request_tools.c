@@ -82,25 +82,30 @@ int AtomicSendViaRawConnection (const char *buffer_p, const uint32 num_to_send, 
 	memcpy (header_s, &i, header_size);	
 	num_sent = SendData (connection_p -> rc_sock_fd, (const void *) header_s, header_size);
 
-	if (num_sent == header_size)
+	if (num_sent >= 0)
 		{
-			
-			/* 
-			 * Send the id. Note that header_s
-			 * isn't a valid c string as it is not null-
-			 * terminated.
-			 */
-			i = htonl (connection_p -> rc_base.co_id);
-			memcpy (header_s, &i, header_size);	
-			num_sent = SendData (connection_p -> rc_sock_fd, (const void *) header_s, header_size);
-
-			if (num_sent == header_size)
+			if ((size_t) num_sent == header_size)
 				{
-					/* Send the message */
-					num_sent = SendData (connection_p -> rc_sock_fd, buffer_p, num_to_send);
+
+					/*
+					 * Send the id. Note that header_s
+					 * isn't a valid c string as it is not null-
+					 * terminated.
+					 */
+					i = htonl (connection_p -> rc_base.co_id);
+					memcpy (header_s, &i, header_size);
+					num_sent = SendData (connection_p -> rc_sock_fd, (const void *) header_s, header_size);
+
+					if (num_sent >= 0)
+						{
+							if ((size_t) num_sent == header_size)
+								{
+									/* Send the message */
+									num_sent = SendData (connection_p -> rc_sock_fd, buffer_p, num_to_send);
+								}
+						}
 				}
 		}
-
 
 	return num_sent;
 }
@@ -120,7 +125,8 @@ int AtomicSendViaRawConnection (const char *buffer_p, const uint32 num_to_send, 
  */
 static int SendData (int socket_fd, const void *buffer_p, const size_t num_to_send)
 {
-	int num_sent = 0;
+	size_t num_sent = 0;
+	int res = 0;
 	int i;	
 	bool loop_flag = true;
 	
@@ -138,11 +144,11 @@ static int SendData (int socket_fd, const void *buffer_p, const size_t num_to_se
 			else
 				{
 					loop_flag = false;
-					num_sent = -num_sent;
+					res = -num_sent;
 				}
 		}
 		
-	return num_sent;
+	return res;
 }
 
 

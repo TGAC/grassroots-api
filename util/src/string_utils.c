@@ -596,7 +596,7 @@ void NullifyTrailingZeroes (char *numeric_string_p)
 	size_t l = strlen (numeric_string_p);
 	char *c_p = numeric_string_p + (l - 1);
 
-	bool loop_flag = (l >= 0);
+	bool loop_flag = (l > 0);
 
 	while (loop_flag)
 		{

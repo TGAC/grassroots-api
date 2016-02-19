@@ -95,7 +95,15 @@ void DeallocateFileOutputStream (OutputStream *stm_p)
 
 static int PrintToFileStream (OutputStream *stream_p, const uint32 level, const char * const filename_s, const int line_number, const char *message_s, va_list args)
 {
-	return vfprintf (((FileOutputStream *) stream_p) -> fos_out_f, message_s, args);
+	FILE *out_f = ((FileOutputStream *) stream_p) -> fos_out_f;
+	int res = fprintf (out_f, "%s:%d " UINT32_FMT, filename_s, line_number, level);
+
+	if (res >= 0)
+		{
+			res = vfprintf (out_f, message_s, args);
+		}
+
+	return res;
 }
 
 

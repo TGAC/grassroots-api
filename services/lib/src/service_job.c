@@ -1182,16 +1182,16 @@ ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s)
 }
 
 
-ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const uint32 index)
+ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const uint32 job_index)
 {
 	ServiceJob *job_p = NULL;
 
-	if (index < (jobs_p -> sjs_jobs_p -> ll_size))
+	if (job_index < (jobs_p -> sjs_jobs_p -> ll_size))
 		{
 			ListItem *node_p = jobs_p -> sjs_jobs_p -> ll_head_p;
 			uint32 i;
 
-			for (i = index; i > 0; -- i)
+			for (i = job_index; i > 0; -- i)
 				{
 					node_p = node_p -> ln_next_p;
 				}

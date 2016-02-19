@@ -15,6 +15,8 @@
 */
 //#include "rodsGenQueryNames.h"
 #include "rcMisc.h"
+#include "genQuery.h"
+
 
 #include "typedefs.h"
 #include "byte_buffer.h"
@@ -22,6 +24,8 @@
 #include "streams.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
+#include "query_util.h"
+#include "irods_connection.h"
 
 
 #ifdef _DEBUG
@@ -84,7 +88,7 @@ void ClearIrodsSearch (IrodsSearch *search_p)
 }
 
 
-QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
+QueryResults *DoIrodsSearch (IrodsSearch *search_p, IRODSConnection *connection_p)
 {
 	QueryResults *results_p = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
@@ -124,7 +128,7 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p)
 					if (AppendToByteBuffer (buffer_p, terminator_s, strlen (terminator_s)))
 						{
 							const char *sql_s = GetByteBufferData (buffer_p);
-							genQueryOut_t *out_p = ExecuteQueryString (connection_p, (char *) sql_s);
+							genQueryOut_t *out_p = ExecuteQueryString (connection_p -> ic_connection_p, (char *) sql_s);
 
 							if (out_p)
 								{

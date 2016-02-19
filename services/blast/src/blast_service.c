@@ -1013,12 +1013,12 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 									if (res >= 0)
 										{
 #if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINER
-											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Got " UINT32_FMT " results from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
+											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Got " UINT32_FMT " results from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s);
 #endif
 										}		/* if (res < 0) */
 									else
 										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Got " UINT32_FMT " error from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Got " UINT32_FMT " error from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s);
 										}
 
 									node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);

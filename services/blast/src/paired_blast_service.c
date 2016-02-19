@@ -44,8 +44,6 @@
 static const char *s_remote_suffix_s = ".remote";
 
 
-static char *CreateGroupName (PairedService *paired_service_p);
-
 /**
  * Add a database if it is a non-database parameter or if
  * refers to a database at the paired service sent in as data_p.
@@ -141,11 +139,11 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 													-- i;
 												}		/* while (i > 0) */
 
-											group_name_s = CreateGroupName (paired_service_p);
+											group_name_s = CreateGroupName (paired_service_p -> ps_server_name_s);
 
 											if (group_name_s)
 												{
-													if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, paired_service_p -> ps_uri_s, dest_params_pp, num_added_dbs))
+													if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, paired_service_p -> ps_server_uri_s, dest_params_pp, num_added_dbs))
 														{
 															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
 															FreeMemory (dest_params_pp);
@@ -181,13 +179,13 @@ json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p,
 int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p)
 {
 	int32 num_successful_runs = -1;
-	json_t *res_p = MakeRemotePairedServiceCall (GetServiceName (service_p), params_p, paired_service_p -> ps_uri_s);
+	json_t *res_p = MakeRemotePairedServiceCall (GetServiceName (service_p), params_p, paired_service_p -> ps_server_uri_s);
 
 	if (res_p)
 		{
 
 			BlastServiceData *data_p = (BlastServiceData *) service_p -> se_data_p;
-			num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s, data_p);
+			num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s, data_p);
 
 			json_decref (res_p);
 		}		/* if (res_p) */
@@ -359,7 +357,7 @@ static bool AddRemoteServiceParametersToJSON (const Parameter *param_p, void *da
 
 	if (param_p -> pa_group_p)
 		{
-			char *paired_service_group_name_s = CreateGroupName (paired_service_p);
+			char *paired_service_group_name_s = CreateGroupName (paired_service_p -> ps_server_name_s);
 
 			if (paired_service_group_name_s)
 				{
@@ -379,23 +377,6 @@ static bool AddRemoteServiceParametersToJSON (const Parameter *param_p, void *da
 }
 
 
-static char *CreateGroupName (PairedService *paired_service_p)
-{
-	char *group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", paired_service_p -> ps_name_s, " at ", paired_service_p -> ps_uri_s, NULL);
-
-	if (group_name_s)
-		{
-			#if PAIRED_BLAST_SERVICE_DEBUG >= STM_LEVEL_FINER
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Created group name \"%s\" for \"%s\" and \"%s\"", group_name_s, paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
-			#endif
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create group name for \"%s\" and \"%s\"", paired_service_p -> ps_name_s, paired_service_p -> ps_uri_s);
-		}
-
-	return group_name_s;
-}
 
 
 static char *GetLocalJobFilename (const char *uuid_s, const BlastServiceData *blast_data_p)

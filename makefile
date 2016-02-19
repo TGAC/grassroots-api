@@ -49,12 +49,15 @@ export DIR_HTMLCXX_LIB=$(DIR_HTMLCXX)/lib
 
 # BEGIN IRODS CONFIGURATION
 ifneq ($(SHARED_IRODS_HOME),)
-DIR_SHARED_IRODS=$(SHARED_IRODS_HOME)
+export DIR_SHARED_IRODS_INC=$(SHARED_IRODS_HOME)/include
+export DIR_SHARED_IRODS_LIB=$(SHARED_IRODS_HOME)/lib
+export SHARED_IRODS_LIB_NAMES= -lirods
 else
-DIR_SHARED_IRODS=/usr/local
+export DIR_SHARED_IRODS_INC=/usr/include/irods
+export DIR_SHARED_IRODS_LIB=/usr/lib
+export SHARED_IRODS_LIB_NAMES= -lirods_client -lirods_client_plugins
 endif
-export DIR_SHARED_IRODS_INC=$(DIR_SHARED_IRODS)/include
-export DIR_SHARED_IRODS_LIB=$(DIR_SHARED_IRODS)/lib
+
 # END IRODS CONFIGURATION
 
 # BEGIN OAUTH CONFIGURATION
@@ -157,12 +160,49 @@ lib_parameters:
 	$(MAKE) -C parameters
 
 
+#############################
+######## BEGIN IRODS ########
+#############################
+
+install_irods_stuff: install_lib_irods install_handler_irods install_service_irods_search
+
 ifeq ($(IRODS_ENABLED),1)
+
 lib_irods:
 	$(MAKE) -C irods/lib
+
+install_lib_irods:	lib_irods
+	$(MAKE) -C irods/lib install
+
+handler_irods:
+	$(MAKE) -C handlers/irods
+
+install_handler_irods: handler_irods
+	$(MAKE) -C handlers/irods install
+
+service_irods_search: 
+	$(MAKE) -C services/irods_search
+
+install_service_irods_search: service_irods_search
+	$(MAKE) -C services/irods_search install
+
 else
+
 lib_irods:	
+install_lib_irods:	
+
+handler_irods:
+install_handler_irods:
+
+service_irods_search:
+install_service_irods_search:
+
 endif
+#############################
+######### END IRODS #########
+#############################
+
+
 	
 lib_handlers:
 	$(MAKE) -C handlers/lib
@@ -212,18 +252,17 @@ info:
 valgrind: 
 	$(MAKE) all CFLAGS=-DUSING_VALGRIND
 
-all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
+all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services handler_irods service_irods_search
 	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C handlers/file
-#	$(MAKE) -C handlers/irods
 	$(MAKE) -C handlers/dropbox
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
 	$(MAKE) -C server/httpd/mod_grassroots
 	$(MAKE) -C mongodb 
 	$(MAKE) -C clients/lib
-#	$(MAKE) -C clients/standalone
+	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
@@ -237,7 +276,7 @@ all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 	$(MAKE) -C services/pathogenomics 
 	$(MAKE) -C services/samtools
 							
-install: install_init install_references install_images all
+install: install_init install_references install_images all install_irods_stuff
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 	$(MAKE) -C parameters install
@@ -245,21 +284,21 @@ install: install_init install_references install_images all
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
 	$(MAKE) -C handlers/file install
-	$(MAKE) -C handlers/irods install
+#	$(MAKE) -C handlers/irods install
 	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
 	$(MAKE) -C server/httpd/mod_grassroots install
 	$(MAKE) -C mongodb install
 	$(MAKE) -C clients/lib install
-#	$(MAKE) -C clients/standalone install
+	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
 	$(MAKE) -C services/web install
 	$(MAKE) -C services/json_search install
 	$(MAKE) -C services/web_search install
-	$(MAKE) -C services/irods_search install
+#	$(MAKE) -C services/irods_search install
 	$(MAKE) -C services/ensembl_rest install
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install
@@ -283,14 +322,14 @@ clean:
 	$(MAKE) -C drmaa/base clean
 	$(MAKE) -C server/httpd/mod_grassroots clean
 	$(MAKE) -C clients/lib clean
-#	$(MAKE) -C clients/standalone clean
+	$(MAKE) -C clients/standalone clean
 #	$(MAKE) -C clients/web-server-client clean	
 	$(MAKE) -C services/blast clean
 	$(MAKE) -C services/compress clean
 	$(MAKE) -C services/web clean
 	$(MAKE) -C services/json_search clean
 	$(MAKE) -C services/web_search clean	
-	$(MAKE) -C services/irods_search clean
+#	$(MAKE) -C services/irods_search clean
 	$(MAKE) -C services/ensembl_rest clean
 	$(MAKE) -C services/tgac_elastic_search clean
 	$(MAKE) -C services/test_long_runner clean

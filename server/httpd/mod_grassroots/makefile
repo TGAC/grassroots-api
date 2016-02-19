@@ -91,7 +91,7 @@ LDFLAGS += -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 
 
 
-include $(DIR_ROOT)/irods_lib.properties	
+include $(DIR_ROOT)/irods.mk
  
 # Compile and generate dependency info
 # 1. Compile the .c file

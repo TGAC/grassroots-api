@@ -65,11 +65,14 @@ CPPFLAGS += -DDRMAA_ENABLED=1
 endif
 
 
-include $(DIR_ROOT)/irods_lib.properties	
 
-ifeq ($(IRODS_ENABLED),1)
-$(LD_FLAGS) += 	-L$(DIR_SHARED_IRODS_LIB) -lirods 
+ifeq ($(IRODS_ENABLED), 1)
+LDFLAGS += -L$(DIR_GRASSROOTS_IRODS_LIB) -l$(GRASSROOTS_IRODS_LIB_NAME)
 endif
+
+
+include $(DIR_ROOT)/irods.mk
+
 
 include $(DIR_ROOT)/generic_makefiles/executable.makefile
 

@@ -23,6 +23,7 @@
 
 #include "rcConnect.h"
 #include "dataObjInpOut.h"
+#include "objStat.h"
 
 #include "irods_handler_library.h"
 #include "irods_resource.h"
@@ -38,7 +39,7 @@
 typedef struct IRodsHandler
 {
 	Handler irh_base_handler;
-	rcComm_t *irh_connection_p;
+	struct IRODSConnection *irh_connection_p;
 	openedDataObjInp_t *irh_obj_p;
 	rodsObjStat_t *irh_stat_p;
 	HandlerStatus irh_status;

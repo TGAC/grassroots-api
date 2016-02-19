@@ -813,7 +813,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 															while (node_p)
 																{
 																	PairedService *paired_service_p = node_p -> psn_paired_service_p;
-																	ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_uri_s, NULL);
+																	ExternalServer *external_server_p = GetExternalServerFromServersManager (servers_manager_p, paired_service_p -> ps_server_uri_s, NULL);
 
 																	if (external_server_p)
 																		{
@@ -1117,7 +1117,7 @@ static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *roo
 
 bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p)
 {
-	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, remote_service_name_s, external_server_p -> es_uri_s, op_p);
+	PairedService *paired_service_p = AllocatePairedService (external_server_p -> es_id, remote_service_name_s, external_server_p -> es_uri_s, external_server_p -> es_name_s, op_p);
 
 	if (paired_service_p)
 		{

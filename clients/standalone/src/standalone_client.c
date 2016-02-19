@@ -468,7 +468,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 	json_t *services_json_p = NULL;
 
 	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
-	PrintJSONToLog (response_p, "res:\n", STANDALONE_CLIENT_DEBUG);
+	PrintJSONToLog (response_p, __FILE__, __LINE__, "res:\n", STANDALONE_CLIENT_DEBUG);
 	#endif
 	
 	if (json_is_array (response_p))
@@ -485,7 +485,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 
 
 					#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
-					PrintJSONToLog (service_json_p, "next service:\n", STANDALONE_CLIENT_DEBUG);
+					PrintJSONToLog (service_json_p, __FILE__, __LINE__, "next service:\n", STANDALONE_CLIENT_DEBUG);
 					#endif
 
 					if (ops_p)
@@ -522,7 +522,7 @@ static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, 
 	const char *op_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
 
 	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
-	PrintJSONToLog (service_json_p, "client received service:\n", STANDALONE_CLIENT_DEBUG);
+	PrintJSONToLog (service_json_p, __FILE__, __LINE__, "client received service:\n", STANDALONE_CLIENT_DEBUG);
 	#endif
 
 	if (op_name_s)

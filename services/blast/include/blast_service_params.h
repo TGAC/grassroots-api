@@ -57,6 +57,9 @@ BLAST_SERVICE_LOCAL Parameter *SetUpPreviousJobUUIDParamater (ParameterSet *para
 BLAST_SERVICE_LOCAL Parameter *SetUpOutputFormatParamater (ParameterSet *param_set_p);
 
 
+BLAST_SERVICE_LOCAL char *CreateGroupName (const char *server_s);
+
+
 #ifdef __cplusplus
 }
 #endif

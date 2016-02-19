@@ -29,7 +29,6 @@
 #include "math_utils.h"
 
 
-
 #ifdef _DEBUG
 	#define IRODS_HANDLER_DEBUG	(STM_LEVEL_INFO)
 #else
@@ -102,7 +101,7 @@ Handler *GetHandler (const json_t *credentials_p)
 			
 			if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
 				{
-					rcComm_t *connection_p = CreateIRODSConnection ((char *) username_s, (char *) password_s);
+					struct IRODSConnection *connection_p = CreateIRODSConnection ((char *) username_s, (char *) password_s);
 
 					if (connection_p)
 						{
@@ -273,7 +272,7 @@ static bool CloseIRodsHandler (struct Handler *handler_p)
 			irods_handler_p -> irh_stat_p = NULL;
 		}
 
-	CloseIRODSConnection (irods_handler_p -> irh_connection_p);
+	FreeIRODSConnection (irods_handler_p -> irh_connection_p);
 	irods_handler_p -> irh_connection_p = NULL;
 	
 	irods_handler_p -> irh_status = HS_NONE;

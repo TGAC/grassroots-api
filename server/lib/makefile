@@ -75,7 +75,7 @@ INCLUDES += -I$(DIR_GRASSROOTS_DRMAA_INC)
 CPPFLAGS += -DDRMAA_ENABLED=1
 endif
 
-include $(DIR_ROOT)/irods_lib.properties	
+include $(DIR_ROOT)/irods.mk
 	
 	
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile	

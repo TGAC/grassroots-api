@@ -15,10 +15,13 @@
 */
 //#include "rodsGenQuery.h"
 
+#include "rodsGenQuery.h"
+
 #include "user.h"
 #include "user_util.h"
 #include "query.h"
-
+#include "query_util.h"
+#include "irods_connection.h"
 #include "connect.h"
 
 #include "string_utils.h"
@@ -36,12 +39,6 @@
 
 
 
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 const char *GetUsernameForId (const int64 user_id)
 {
 	const char *username_s = NULL;
@@ -54,17 +51,17 @@ bool FindIdForUsername (rcComm_t *connection_p, const char * const username_s, i
 {
 	bool success_flag = false;
 	char *query_s = NULL;
-	
+
 	//const char "SELECT USER_ID WHERE USER_NAME = '";
-	
-	
+
+
 	genQueryOut_t *result_p = ExecuteQueryString (connection_p, query_s);
-	
+
 	if (result_p)
 		{
-			
+
 		}
-	
+
 	return success_flag;
 }
 
@@ -164,11 +161,11 @@ QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char 
 json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const password_s, const time_t from, const time_t to)
 {
 	json_t *json_p = NULL;
-	rcComm_t *connection_p = CreateIRODSConnection (username_s, password_s);
+	IRODSConnection *connection_p = CreateIRODSConnection (username_s, password_s);
 	
 	if (connection_p)
 		{
-			QueryResults *qr_p = GetAllModifiedDataForUsername (connection_p, username_s, from, to);
+			QueryResults *qr_p = GetAllModifiedDataForUsername (connection_p -> ic_connection_p, username_s, from, to);
 			
 			if (qr_p)
 				{
@@ -177,7 +174,7 @@ json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const
 					FreeQueryResults (qr_p);
 				}
 			
-			CloseIRODSConnection (connection_p);
+			FreeIRODSConnection (connection_p);
 		}
 	
 	return json_p;
@@ -187,7 +184,7 @@ json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const
 json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, char * const username_s, char * const password_s, const char *data_name_s)
 {
 	json_t *json_p = NULL;
-	rcComm_t *connection_p = CreateIRODSConnection (username_s, password_s);
+	IRODSConnection *connection_p = CreateIRODSConnection (username_s, password_s);
 	
 	if (connection_p)
 		{
@@ -200,7 +197,7 @@ json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, ch
 					FreeIRodsHandle (handle_p);
 				}
 			*/
-			CloseIRODSConnection (connection_p);
+			FreeIRODSConnection (connection_p);
 		}
 	
 	return json_p;

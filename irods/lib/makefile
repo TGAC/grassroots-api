@@ -35,14 +35,6 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_UTIL_INC)/io \
 	-I$(DIR_GRASSROOTS_NETWORK_INC) \
 	-I$(DIR_GRASSROOTS_SERVICES_INC) \
-	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC)
 	
@@ -58,10 +50,10 @@ CPPFLAGS += -DIRODS_UTIL_LIBRARY_EXPORTS
 
 LDFLAGS += -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_NETWORK_LIB) -l$(GRASSROOTS_NETWORK_LIB_NAME) \
-	-L$(DIR_SHARED_IRODS_LIB) -lirods
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
+include $(DIR_ROOT)/irods.mk
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	test

@@ -489,9 +489,9 @@ bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_
 }
 
 
-bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value)
+bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 i, const char * const description_s, SharedType value)
 {
-	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + index;
+	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + i;
 	bool success_flag = true;
 
 	if (description_s)

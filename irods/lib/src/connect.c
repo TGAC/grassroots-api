@@ -34,6 +34,8 @@
 
 static IRODSConnection *AllocateIRODSConnection (rcComm_t *irods_comm_p);
 
+static bool ReleaseIRODSConnection (rcComm_t *connection_p);
+
 
 /***********************************************/
 
@@ -46,7 +48,7 @@ void FreeIRODSConnection (struct IRODSConnection *connection_p)
 }
 
 
-bool ReleaseIRODSConnection (rcComm_t *connection_p)
+static bool ReleaseIRODSConnection (rcComm_t *connection_p)
 {
 	int status = rcDisconnect (connection_p);
 
@@ -64,7 +66,7 @@ bool ReleaseIRODSConnection (rcComm_t *connection_p)
 
 IRODSConnection *CreateIRODSConnectionFromJSON (const json_t *config_p)
 {
-	rcComm_t *connection_p = NULL;
+	IRODSConnection *connection_p = NULL;
 	const json_t *irods_credentials_p = NULL;
 	/*
 	 * The config might have the credentials child or it might be the
@@ -107,15 +109,17 @@ IRODSConnection *CreateIRODSConnectionFromJSON (const json_t *config_p)
 
 IRODSConnection *CreateIRODSConnection (const char *username_s, const char *password_s)
 {
+	IRODSConnection *connection_p = NULL;
 	rodsEnv env;
 	rErrMsg_t err;
-	rcComm_t *comm_p = NULL;
 
 	/**@REPLACE IRODS CALL */
 	int status = getRodsEnv (&env);
 
 	if (status == 0) 
 		{
+			rcComm_t *comm_p = NULL;
+
 			if (!username_s)
 				{
 					username_s = env.rodsUserName;
@@ -131,12 +135,11 @@ IRODSConnection *CreateIRODSConnection (const char *username_s, const char *pass
 					
 					if (status == 0)
 						{
-							IRODSConnection *connection_p = AllocateIRODSConnection (irods_comm_p);
+							connection_p = AllocateIRODSConnection (comm_p);
 						}
 					else
 						{
-							CloseIRODSConnection (connection_p);
-							connection_p = NULL;
+							ReleaseIRODSConnection (comm_p);
 						}
 				}
 		}

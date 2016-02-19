@@ -25,6 +25,9 @@
 #include <string.h>
 
 #include "blast_service_params.h"
+#include "grassroots_config.h"
+#include "string_utils.h"
+#include "streams.h"
 
 
 typedef enum
@@ -90,6 +93,25 @@ uint32 GetNumberOfDatabases (const BlastServiceData *data_p)
 }
 
 
+char *CreateGroupName (const char *server_s)
+{
+	char *group_name_s = ConcatenateVarargsStrings (BS_DATABASE_GROUP_NAME_S, " provided by ", server_s, NULL);
+
+	if (group_name_s)
+		{
+			#if PAIRED_BLAST_SERVICE_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Created group name \"%s\" for \"%s\" and \"%s\"", group_name_s, server_s);
+			#endif
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create group name for \"%s\"", group_name_s);
+		}
+
+	return group_name_s;
+}
+
+
 /*
  * The list of databases that can be searched
  */
@@ -105,6 +127,8 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 			Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 			Parameter **grouped_param_pp = grouped_params_pp;
 			const DatabaseInfo *db_p = data_p -> bsd_databases_p;
+			const char *provider_s = NULL;
+			char *group_s = NULL;
 
 			if (db_p)
 				{
@@ -141,11 +165,21 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 
 				}		/* if (db_p) */
 
+			provider_s = GetProviderName ();
+			if (provider_s)
+				{
+					group_s = CreateGroupName (provider_s);
+				}
 
-			if (!AddParameterGroupToParameterSet (param_set_p, BS_DATABASE_GROUP_NAME_S, NULL, grouped_params_pp, num_group_params))
+			if (!AddParameterGroupToParameterSet (param_set_p, group_s ? group_s : BS_DATABASE_GROUP_NAME_S, NULL, grouped_params_pp, num_group_params))
 				{
 					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
 					FreeMemory (grouped_params_pp);
+				}
+
+			if (group_s)
+				{
+					FreeCopiedString (group_s);
 				}
 
 		}		/* if (num_group_params) */

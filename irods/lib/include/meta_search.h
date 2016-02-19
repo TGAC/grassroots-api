@@ -126,7 +126,7 @@ IRODS_UTIL_API void ClearIrodsSearch (IrodsSearch *search_p);
  * @return The QueryResults from the search.
  * @memberof IrodsSearch
  */
-IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, rcComm_t *connection_p);
+IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, struct IRODSConnection *connection_p);
 
 
 /**
@@ -181,7 +181,7 @@ IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *js
  * it can be ignored.
  * @return The QueryResults from the search.
  */
-IRODS_UTIL_API QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s);
+IRODS_UTIL_API QueryResults *DoMetaSearch (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s);
 
 
 /** @} */
