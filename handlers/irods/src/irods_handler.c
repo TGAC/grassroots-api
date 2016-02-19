@@ -23,6 +23,7 @@
 #include "fileLseek.h"
 
 #include "irods_handler.h"
+#include "irods_connection.h"
 #include "connect.h"
 #include "memory_allocations.h"
 #include "json_tools.h"
@@ -229,7 +230,7 @@ static bool OpenIRodsHandler (struct Handler *handler_p, const char *filename_s,
 			data_obj.openFlags = flags;
 
 			/* Open the object */
-			handler = rcDataObjOpen (irods_handler_p -> irh_connection_p, &data_obj);
+			handler = rcDataObjOpen (irods_handler_p -> irh_connection_p -> ic_connection_p, &data_obj);
 
 			if (handler >= 0)
 				{
@@ -238,7 +239,7 @@ static bool OpenIRodsHandler (struct Handler *handler_p, const char *filename_s,
 					memset (opened_obj_p, 0, sizeof (openedDataObjInp_t));
 					opened_obj_p -> l1descInx = handler;
 
-					if (rcObjStat (irods_handler_p -> irh_connection_p, &data_obj, &stat_p) >= 0)
+					if (rcObjStat (irods_handler_p -> irh_connection_p -> ic_connection_p, &data_obj, &stat_p) >= 0)
 						{
 							irods_handler_p -> irh_stat_p = stat_p;
 						}
@@ -262,7 +263,7 @@ static bool CloseIRodsHandler (struct Handler *handler_p)
 
 	if (irods_handler_p -> irh_obj_p)
 		{
-			success_flag = (rcDataObjClose (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p) == 0);
+			success_flag = (rcDataObjClose (irods_handler_p -> irh_connection_p -> ic_connection_p, irods_handler_p -> irh_obj_p) == 0);
 			irods_handler_p -> irh_obj_p = NULL;
 		}
 
@@ -294,7 +295,7 @@ static size_t ReadFromIRodsHandler (struct Handler *handler_p, void *buffer_p, c
 	
 	irods_handler_p -> irh_obj_p -> len = length;
 	
-	i = rcDataObjRead (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p, &buffer);
+	i = rcDataObjRead (irods_handler_p -> irh_connection_p -> ic_connection_p, irods_handler_p -> irh_obj_p, &buffer);
 
 	if (i > 0)
 		{
@@ -343,7 +344,7 @@ static size_t WriteToIRodsHandler (struct Handler *handler_p, const void *buffer
 		}
 	#endif
 	
-	i = rcDataObjWrite (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p, &buffer);
+	i = rcDataObjWrite (irods_handler_p -> irh_connection_p -> ic_connection_p, irods_handler_p -> irh_obj_p, &buffer);
 	
 	if (i > 0)
 		{
@@ -368,7 +369,7 @@ static bool SeekIRodsHandler (struct Handler *handler_p, long offset, int whence
 	irods_handler_p -> irh_obj_p -> offset = offset;
 	irods_handler_p -> irh_obj_p -> whence = whence;
 
-	success_flag = (rcDataObjLseek (irods_handler_p -> irh_connection_p, irods_handler_p -> irh_obj_p, &seek_p) == 0);
+	success_flag = (rcDataObjLseek (irods_handler_p -> irh_connection_p -> ic_connection_p, irods_handler_p -> irh_obj_p, &seek_p) == 0);
 
 	return success_flag;
 }

@@ -73,6 +73,7 @@ endif
 
 include $(DIR_ROOT)/irods.mk
 
+LDFLAGS +=$(IRODS_EXTRA_LIBS)
 
 include $(DIR_ROOT)/generic_makefiles/executable.makefile
 

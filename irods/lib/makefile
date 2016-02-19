@@ -53,8 +53,13 @@ LDFLAGS += -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
+
 include $(DIR_ROOT)/irods.mk
+
+LDFLAGS += $(IRODS_DEP_LIBS)
+
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
+
 
 .PHONY:	test
 
