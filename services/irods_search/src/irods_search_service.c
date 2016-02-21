@@ -31,6 +31,7 @@
 #include "service_job.h"
 #include "string_int_pair.h"
 #include "string_hash_table.h"
+#include "irods_connection.h"
 
 
 /*
@@ -39,7 +40,7 @@
 typedef struct
 {
 	ServiceData issd_base_data;
-	rcComm_t *issd_connection_p;
+	IRODSConnection *issd_connection_p;
 	ParameterSet *issd_params_p;
 } IrodsSearchServiceData;
 
@@ -71,11 +72,9 @@ static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_
 static bool CloseIrodsSearchService (Service *service_p);
 
 
-static rcComm_t *GetIRODSConnection (const json_t *config_p);
+static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
-static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
-
-static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static size_t AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p);
 
@@ -90,7 +89,7 @@ static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServic
 static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val);
 
 
-static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p);
+static json_t *DoKeywordSearch (const char *keyword_s, IrodsSearchServiceData *data_p);
 
 
 
@@ -100,7 +99,7 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 
 	if (data_p)
 		{
-			rcComm_t *connection_p = GetIRODSConnection (config_p);
+			IRODSConnection *connection_p = CreateIRODSConnectionFromJSON (config_p);
 
 			if (connection_p)
 				{
@@ -108,7 +107,7 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 
 					if (params_p)
 						{
-							if (AddParams (connection_p, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
+							if (AddParams (connection_p, params_p, "Data objects metadata", NULL, "The metadata tags available for iRODS data objects") >= 0)
 								{
 									/*
 									 * Although we'd like to add the column metadata values separately, it seems that for irods 3.3.1 any keys added via imeta
@@ -133,7 +132,7 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 							FreeParameterSet (params_p);
 						}		/* if (params_p) */
 
-					CloseIRODSConnection (connection_p);
+					FreeIRODSConnection (connection_p);
 				}		/* if (connection_p) */
 
 			FreeMemory (data_p);
@@ -147,7 +146,7 @@ static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p)
 {
 	if (data_p -> issd_connection_p)
 		{
-			CloseIRODSConnection (data_p -> issd_connection_p);
+			FreeIRODSConnection (data_p -> issd_connection_p);
 			data_p -> issd_connection_p = NULL;
 		}
 
@@ -155,6 +154,8 @@ static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p)
 		{
 			FreeParameterSet (data_p -> issd_params_p);
 		}
+
+	FreeMemory (data_p);
 }
 
 
@@ -223,21 +224,10 @@ static bool CloseIrodsSearchService (Service *service_p)
 }
 
 
-static rcComm_t *GetIRODSConnection (const json_t *config_p)
-{
-	rcComm_t *connection_p = NULL;
-
-	if (config_p)
-		{
-			connection_p = CreateIRODSConnectionFromJSON (config_p);
-		}
-
-	return connection_p;
-}
 
 
 
-static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value_col_id, IrodsSearchServiceData *data_p)
+static json_t *DoKeywordSearch (const char *keyword_s, IrodsSearchServiceData *data_p)
 {
 	json_t *res_p = NULL;
 	HashTable *store_p = GetHashTableOfStringInts (100, 75);
@@ -251,7 +241,7 @@ static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value
 					/*
 					 * Get all attribute names
 					 */
-					QueryResults *attribute_names_p = GetAllMetadataAttributeNames (data_p -> issd_connection_p, key_col_id);
+					QueryResults *attribute_names_p = GetAllMetadataDataAttributeNames (data_p -> issd_connection_p);
 
 					if (attribute_names_p)
 						{
@@ -266,7 +256,7 @@ static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value
 									 */
 									for ( ; i > 0; --i, ++ attribute_name_ss)
 										{
-											if (AddIrodsSearchTerm (search_p, NULL, *attribute_name_ss, key_col_id, "=", keyword_s, value_col_id))
+											if (AddMetadataDataAttributeSearchTerm (search_p, NULL, *attribute_name_ss, "=", keyword_s))
 												{
 													QueryResults *attr_search_results_p = DoIrodsMetaSearch (search_p, data_p);
 
@@ -364,15 +354,14 @@ static json_t *DoKeywordSearch (const char *keyword_s, int key_col_id, int value
 
 
 
-
-static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static size_t AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	size_t res = 0;
 
 	/*
 	 * Get the attibute keys
 	 */
-	QueryResults *results_p = GetAllMetadataAttributeNames (connection_p, key_col_id);
+	QueryResults *results_p = GetAllMetadataDataAttributeNames (connection_p);
 
 	if (results_p)
 		{
@@ -386,7 +375,7 @@ static size_t AddParams (rcComm_t *connection_p, int key_col_id, int value_col_i
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
-							Parameter *param_p = AddParam (connection_p, key_col_id, value_col_id, param_set_p, *value_ss, NULL, display_name_s);
+							Parameter *param_p = AddParam (connection_p, param_set_p, *value_ss, NULL, display_name_s);
 
 							if (param_p)
 								{
@@ -447,7 +436,7 @@ static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s,
 }
 
 
-static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_col_id, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;
@@ -455,7 +444,7 @@ static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_co
 	/*
 	 * Get the attibute values
 	 */
-	QueryResults *results_p = GetAllMetadataAttributeValues (connection_p, key_col_id, name_s, value_col_id);
+	QueryResults *results_p = GetAllMetadataDataAttributeValues (connection_p, name_s);
 
 	if (results_p)
 		{
@@ -514,16 +503,16 @@ static Parameter *AddParam (rcComm_t *connection_p, int key_col_id, int value_co
 
 											if (param_p)
 												{
-													if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
-														{
-															if (AddIdToParameterStore (param_p, S_VALUE_ID_S, value_col_id))
-																{
+//													if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
+//														{
+//															if (AddIdToParameterStore (param_p, S_VALUE_ID_S, value_col_id))
+//																{
 																	if (AddParameterToParameterSet (param_set_p, param_p))
 																		{
 																			success_flag = true;
 																		}
-																}
-														}
+//																}
+//														}
 
 													if (!success_flag)
 														{
@@ -639,7 +628,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 					/* is it a keyword search? */
 					if ((GetParameterValueFromParameterSet (param_set_p, TAG_IRODS_KEYWORD, &def, true)) && (!IsStringEmpty (def.st_string_value_s)))
 						{
-							json_res_p = DoKeywordSearch (def.st_string_value_s, COL_META_DATA_ATTR_NAME, COL_META_DATA_ATTR_VALUE, data_p);
+							json_res_p = DoKeywordSearch (def.st_string_value_s, data_p);
 
 							if (json_res_p)
 								{
@@ -751,8 +740,7 @@ static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServic
 {
 	bool upper_case_flag = false;
 	char *zone_s = NULL;
-	int columns [] = { COL_COLL_NAME, COL_DATA_NAME };
-	QueryResults *results_p = DoMetaSearch (search_p, data_p -> issd_connection_p, columns, 2, upper_case_flag, zone_s);
+	QueryResults *results_p = DoMetaSearchForAllDataAndCollections (search_p, data_p -> issd_connection_p, upper_case_flag, zone_s);
 
 	return results_p;
 }

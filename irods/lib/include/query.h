@@ -161,9 +161,10 @@ IRODS_UTIL_API LinkedList *GetQueryResultsPaths (const QueryResults * const qrs_
  * @param connection_p The connection to an iRODS server.
  * @return A newly-allocated QueryResults listing all of the data attribute names
  * or <code>NULL</code> upon error.
- * @see GetAllMetadataAttributeNames
+ * @see GetAllAttributeNames
  */
 IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeNames (struct IRODSConnection *connection_p);
+
 
 
 /**
@@ -208,7 +209,7 @@ IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributeNames (struct IRODSConne
  * or <code>NULL</code> upon error.
  * @see GetAllMetadataDataAttributeNames
  */
-IRODS_UTIL_API QueryResults *GetAllMetadataAttributeNames (struct IRODSConnection *connection_p, const int col_id);
+IRODS_UTIL_LOCAL QueryResults *GetAllAttributeNames (struct IRODSConnection *connection_p, const int col_id);
 
 
 /**

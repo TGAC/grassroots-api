@@ -127,7 +127,7 @@ void ClearGenQuery (genQueryInp_t *query_p)
 
 QueryResults *GetAllMetadataDataAttributeNames (IRODSConnection *connection_p)
 {
-	return GetAllMetadataAttributeNames (connection_p, COL_META_DATA_ATTR_NAME);
+	return GetAllAttributeNames (connection_p, COL_META_DATA_ATTR_NAME);
 }
 
 
@@ -139,13 +139,13 @@ QueryResults *GetAllMetadataDataAttributeValues (IRODSConnection *connection_p, 
 
 QueryResults *GetAllMetadataCollectionAttributeNames (IRODSConnection *connection_p)
 {
-	return GetAllMetadataAttributeNames (connection_p, COL_META_COLL_ATTR_NAME);
+	return GetAllAttributeNames (connection_p, COL_META_COLL_ATTR_NAME);
 }
 
 
 QueryResults *GetAllMetadataUserAttributeNames (IRODSConnection *connection_p)
 {
-	return GetAllMetadataAttributeNames (connection_p, COL_META_USER_ATTR_NAME);
+	return GetAllAttributeNames (connection_p, COL_META_USER_ATTR_NAME);
 }
 
 
@@ -919,8 +919,13 @@ void ClearQueryResult (QueryResult *result_p)
 }
 
 
+QueryResults *GetAllMetadataAttributeNames (IRODSConnection *connection_p)
+{
+	return GetAllAttributeNames (connection_p, COL_META_DATA_ATTR_NAME);
+}
 
-QueryResults *GetAllMetadataAttributeNames (IRODSConnection *connection_p, const int col_id)
+
+QueryResults *GetAllAttributeNames (IRODSConnection *connection_p, const int col_id)
 {
 	QueryResults *results_p = NULL;
 	const char *col_s = GetColumnNameForId (col_id);

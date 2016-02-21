@@ -129,6 +129,10 @@ IRODS_UTIL_API void ClearIrodsSearch (IrodsSearch *search_p);
 IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, struct IRODSConnection *connection_p);
 
 
+IRODS_UTIL_API bool AddMetadataDataAttributeSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
+
+
+
 /**
  * Add a search term to an IrodsSearch.
  *
@@ -182,6 +186,21 @@ IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *js
  * @return The QueryResults from the search.
  */
 IRODS_UTIL_API QueryResults *DoMetaSearch (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s);
+
+
+
+
+/**
+ * Perform a meta-based search for all matching Data Objects and Collections.
+ *
+ * @param search_p The IrodsSearch to perform.
+ * @param connection_p The connection to the iRODS server to perform the search on.
+ * @param upper_case_flag whether all values should be transformed into upper case values.
+ * @param zone_s Add an extra clause where all matches must be in this zone. If this is <code>NULL</code>
+ * it can be ignored.
+ * @return The QueryResults from the search.
+ */
+IRODS_UTIL_API QueryResults *DoMetaSearchForAllDataAndCollections (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, const bool upper_case_flag, char *zone_s);
 
 
 /** @} */

@@ -944,6 +944,12 @@ static json_t *GetNamedServices (const json_t * const req_p, const json_t *crede
 
 			if (services_p -> ll_size > 0)
 				{
+					const char *username_s = NULL;
+					const char *password_s = NULL;
+
+					GetUsernameAndPassword (credentials_p, &username_s, &password_s);
+					AddAllPairedServices (services_p, username_s, password_s);
+
 					res_p = GetServicesListAsJSON (services_p, NULL, credentials_p, false);
 				}
 

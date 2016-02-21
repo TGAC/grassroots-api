@@ -55,7 +55,7 @@ LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASS
 	-L$(DIR_GRASSROOTS_IRODS_LIB) -l$(GRASSROOTS_IRODS_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_PARAMS_LIB) -l$(GRASSROOTS_PARAMS_LIB_NAME)	
 
-
+include $(DIR_ROOT)/irods.mk
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 

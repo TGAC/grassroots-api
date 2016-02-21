@@ -1,0 +1,178 @@
+{
+  "credentials": {
+    "credentials": {
+      "irods": {
+        "user": "rods",
+        "pass": "rods"
+      }
+    }
+  },
+  "services": [
+    {
+      "service": "Blast service",
+      "run": true,
+      "parameter_set": {
+        "parameters": [
+          {
+            "param": "input",
+            "current_value": {
+              "protocol": "",
+              "value": ""
+            },
+            "tag": 1112100422,
+            "type": "string",
+            "grassroots_type": 7,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "job_ids",
+            "current_value": "",
+            "tag": 1112099401,
+            "type": "string",
+            "grassroots_type": 12,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "output",
+            "current_value": {
+              "protocol": "",
+              "value": ""
+            },
+            "tag": 1112495430,
+            "type": "string",
+            "grassroots_type": 6,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "query_sequence",
+            "current_value": "CTGACTGCACATTTTTTC",
+            "tag": 1112626521,
+            "type": "string",
+            "grassroots_type": 12,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "from",
+            "current_value": 0,
+            "tag": 1112622674,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 6,
+            "concise": true
+          },
+          {
+            "param": "to",
+            "current_value": 0,
+            "tag": 1112626255,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 6,
+            "concise": true
+          },
+          {
+            "param": "max_target_sequences",
+            "current_value": 5,
+            "tag": 1112363857,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "short_queries",
+            "current_value": true,
+            "tag": 1112754257,
+            "type": "boolean",
+            "grassroots_type": 0,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "expect_threshold",
+            "current_value": 10,
+            "tag": 1111840852,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "word_size",
+            "current_value": 28,
+            "tag": 1113015379,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "max_matches_in_a_query_range",
+            "current_value": 0,
+            "tag": 1112363591,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "output_format",
+            "current_value": 11,
+            "tag": 1111903572,
+            "type": "integer",
+            "grassroots_type": 2,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "match",
+            "current_value": 2,
+            "tag": 1112364099,
+            "type": "integer",
+            "grassroots_type": 1,
+            "level": 6,
+            "concise": true
+          },
+          {
+            "param": "mismatch",
+            "current_value": -3,
+            "tag": 1112363853,
+            "type": "integer",
+            "grassroots_type": 1,
+            "level": 6,
+            "concise": true
+          },
+          {
+            "param": "/opt/grassroots-0/grassroots/extras/blast/databases/testdb",
+            "current_value": true,
+            "tag": 1111752704,
+            "type": "boolean",
+            "grassroots_type": 0,
+            "level": 7,
+            "concise": true
+          },
+          {
+            "param": "/opt/grassroots-0/grassroots/extras/blast/databases/TA009XXX",
+            "current_value": true,
+            "tag": 1145176066,
+            "type": "boolean",
+            "grassroots_type": 0,
+            "level": 7,
+            "concise": true
+          }
+        ],
+        "groups": [
+          "Query Sequence Parameters",
+          "General Algorithm Parameters",
+          "Scoring Parameters",
+          "Available Databases",
+          "Available Databases provided by "
+        ]
+      }
+    }
+  ]
+}
+

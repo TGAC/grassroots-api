@@ -157,6 +157,12 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, IRODSConnection *connection_
 }
 
 
+bool AddMetadataDataAttributeSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
+{
+	return AddIrodsSearchTerm (search_p, clause_s, key_s, COL_META_DATA_ATTR_NAME, op_s, value_s, COL_META_DATA_ATTR_VALUE);
+}
+
+
 bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id)
 {
 	bool success_flag = false;
@@ -432,7 +438,17 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
  1905  imeta qu -d crop =  barley
  *
  */
-QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s)
+
+
+QueryResults *DoMetaSearchForAllDataAndCollections (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, const bool upper_case_flag, char *zone_s)
+{
+	int columns [] = { COL_COLL_NAME, COL_DATA_NAME };
+
+	return DoMetaSearch (search_p, connection_p, columns, 2, upper_case_flag, zone_s);
+}
+
+
+QueryResults *DoMetaSearch (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s)
 {
 	QueryResults *results_p = NULL;
   genQueryInp_t input_query;
@@ -536,7 +552,7 @@ QueryResults *DoMetaSearch (const IrodsSearch * const search_p, rcComm_t *connec
 
 											/** @REPLACE IRODS CALL */
 											/* Do the search */
-											status = rcGenQuery (connection_p, &input_query, &query_output_p);
+											status = rcGenQuery (connection_p -> ic_connection_p, &input_query, &query_output_p);
 
 											switch (status)
 											{
