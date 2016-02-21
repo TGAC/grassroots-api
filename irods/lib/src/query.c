@@ -843,6 +843,9 @@ QueryResults *GenerateQueryResults (const genQueryOut_t *query_result_p)
 			const int num_rows = query_result_p -> rowCnt;
 			const int num_columns = query_result_p -> attriCnt;
 
+			results_p -> qr_num_results = 0;
+			results_p -> qr_values_p = NULL;
+
 			if (num_rows > 0)
 				{
 					QueryResult *value_p = (QueryResult *) AllocMemory (num_columns * sizeof (QueryResult));
@@ -899,7 +902,11 @@ void FreeQueryResults (QueryResults *results_p)
 			ClearQueryResult (qr_p);
 		}
 
- 	free (results_p -> qr_values_p);
+	if (results_p -> qr_values_p)
+		{
+			free (results_p -> qr_values_p);
+		}
+
  	free (results_p);
 }
 
