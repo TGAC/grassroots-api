@@ -85,78 +85,82 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 					 * Try and add the external server's databases
 					 */
 					PairedService *paired_service_p = node_p -> psn_paired_service_p;
-					ParameterGroup *db_group_p = GetParameterGroupFromParameterSetByGroupName (paired_service_p -> ps_params_p, BS_DATABASE_GROUP_NAME_S);
+					char *databases_group_s = CreateGroupName (paired_service_p -> ps_server_name_s);
 
-					if (db_group_p)
+					if (databases_group_s)
 						{
-							if (db_group_p -> pg_num_params > 0)
+							ParameterGroup *db_group_p = GetParameterGroupFromParameterSetByGroupName (paired_service_p -> ps_params_p, databases_group_s);
+
+							if (db_group_p)
 								{
-									Parameter **src_param_pp = db_group_p -> pg_params_pp;
-									Parameter **dest_params_pp = (Parameter **) AllocMemoryArray (1 + (db_group_p -> pg_num_params), sizeof (Parameter *));
-
-									if (dest_params_pp)
+									if (db_group_p -> pg_num_params > 0)
 										{
-											SharedType def;
-											Parameter **dest_param_pp = dest_params_pp;
-											char *group_name_s = NULL;
-											uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
-											uint32 num_added_dbs = 0;
-											uint32 i = db_group_p -> pg_num_params;
-											tag += db_counter;
-											memset (&def, 0, sizeof (SharedType));
+											Parameter **src_param_pp = db_group_p -> pg_params_pp;
+											Parameter **dest_params_pp = (Parameter **) AllocMemoryArray (1 + (db_group_p -> pg_num_params), sizeof (Parameter *));
 
-											while (i > 0)
+											if (dest_params_pp)
 												{
-													/* Add the database to our list */
-													Parameter *external_param_p = *src_param_pp;
-													Parameter *param_p = NULL;
+													SharedType def;
+													Parameter **dest_param_pp = dest_params_pp;
+													uint32 tag = MAKE_TAG ('D', 'B', 0, 1);
+													uint32 num_added_dbs = 0;
+													uint32 i = db_group_p -> pg_num_params;
+													tag += db_counter;
+													memset (&def, 0, sizeof (SharedType));
 
-													def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
-
-													param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_display_name_s, external_param_p -> pa_description_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
-
-													if (param_p)
+													while (i > 0)
 														{
-															if (CopyRemoteParameterDetails (external_param_p, param_p))
+															/* Add the database to our list */
+															Parameter *external_param_p = *src_param_pp;
+															Parameter *param_p = NULL;
+
+															def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
+
+															param_p = CreateAndAddParameterToParameterSet (internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_display_name_s, external_param_p -> pa_description_s, tag, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
+
+															if (param_p)
 																{
-																	if (dest_param_pp)
+																	if (CopyRemoteParameterDetails (external_param_p, param_p))
 																		{
-																			*dest_param_pp = param_p;
-																			++ dest_param_pp;
-																		}		/* if (dest_param_pp) */
+																			if (dest_param_pp)
+																				{
+																					*dest_param_pp = param_p;
+																					++ dest_param_pp;
+																				}		/* if (dest_param_pp) */
 
-																}		/* if (CopyRemoteParameterDetails (external_param_p, param_p)) */
-															else
-																{
+																		}		/* if (CopyRemoteParameterDetails (external_param_p, param_p)) */
+																	else
+																		{
 
-																}
+																		}
 
-															++ num_added_dbs;
-															++ db_counter;
-														}		/* if (param_p) */
+																	++ num_added_dbs;
+																	++ db_counter;
+																}		/* if (param_p) */
 
-													++ src_param_pp;
-													-- i;
-												}		/* while (i > 0) */
+															++ src_param_pp;
+															-- i;
+														}		/* while (i > 0) */
 
-											group_name_s = CreateGroupName (paired_service_p -> ps_server_name_s);
-
-											if (group_name_s)
-												{
-													if (!AddParameterGroupToParameterSet (internal_params_p, group_name_s, paired_service_p -> ps_server_uri_s, dest_params_pp, num_added_dbs))
+													if (!AddParameterGroupToParameterSet (internal_params_p, databases_group_s, paired_service_p -> ps_server_uri_s, dest_params_pp, num_added_dbs))
 														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", databases_group_s);
 															FreeMemory (dest_params_pp);
 														}
 
-													FreeCopiedString (group_name_s);
-												}		/* if (group_name_s) */
+												}		/* if (grouped_params_pp) */
 
-										}		/* if (grouped_params_pp) */
+										}		/* if (num_dbs > 0) */
 
-								}		/* if (num_dbs > 0) */
+								}		/* if (db_group_p) */
 
-						}		/* if (db_group_p) */
+							FreeCopiedString (databases_group_s);
+						}		/* if (databases_group_s) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for database group name \"%s\"", paired_service_p -> ps_server_name_s);
+						}
+
 
 					node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
 				}		/* while (node_p) */

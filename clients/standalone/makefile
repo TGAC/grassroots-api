@@ -37,9 +37,8 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
-	standalone_client.c \
-#	services_list.c
-
+	standalone_client.c 
+	
 LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME)  \
 	-L$(DIR_GRASSROOTS_NETWORK_LIB) -l$(GRASSROOTS_NETWORK_LIB_NAME) \
