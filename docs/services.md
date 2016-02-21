@@ -22,8 +22,8 @@ The first function gets an array detailing all of the operations that this Servi
 
 ## Referred Services {#referred_services}
 
-These are Services that use generic modules for their functionality and only differ in their configuration. Each configuration is a JSON file that details the parameters and information about the Service. An example
-of this is that the GrassrootsIS has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. The configuration files are stored in the *references* folder. For example, the GrassrootsIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
+These are Services that use generic modules for their functionality and only differ in their configuration. Each configuration is a JSON file that details the parameters and information about the Service. The GrassrootsIS has examples
+of these are that has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. The referred service accesses this functionality be setting the **plugin** key to *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. The configuration files are stored in the *references* folder. For example, the GrassrootsIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
   
 ~~~json
 	"schema_version": 0.1,
@@ -66,6 +66,19 @@ of this is that the GrassrootsIS has a number of Referred Services that access v
 ~~~
 
 This details how to call Agris' search engine by specifying the URI to call (http://agris.fao.org/agris-search/searchIndex.do), the parameters to send, how to call the search engine and the css selector to use to extract each of the hits from the subsequent results page. So all that needs to be done to add another web-based search  service to the system is to add another configuration file to the references directory. 
+
+
+## Web Search Service
+
+The **Web Search Service** wraps up the access to a web-based search page and retrieves the results and puts them into the standard results format. It uses a JSON file that has the standard format describing its operations, parameters, *etc.* along with the following additional keys:
+
+  * **plugin**: This is set to "web_search_service*.
+  * **uri**: The web address of the search page to use.
+  * **method**: This states the method used to send the query to the search page.
+  	* **POST**: To send the search query as an HTTP POST request.
+  	* **GET**: To send the search query as an HTTP GET request.
+  * **selector**: The CSS selector to get each of the resultant hits from the search 
+page's response. 
 
 
 
