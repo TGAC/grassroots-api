@@ -48,6 +48,7 @@ public:
 
 	virtual char *GetResults (BlastFormatter *formatter_p);
 
+
 protected:
 	ByteBuffer *ebt_buffer_p;
 	TempFile *ebt_output_p;

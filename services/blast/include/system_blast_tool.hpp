@@ -38,6 +38,7 @@ public:
 
 	virtual OperationStatus Run ();
 
+	virtual bool GetToolConfig (BlastToolConfig *config_p);
 };
 
 

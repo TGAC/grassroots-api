@@ -67,6 +67,13 @@ DrmaaBlastTool :: ~DrmaaBlastTool ()
 }
 
 
+bool DrmaaBlastTool :: GetToolConfig (BlastToolConfig *config_p)
+{
+	config_p -> btc_async_flag = true;
+	return true;
+}
+
+
 void DrmaaBlastTool :: SetCoresPerSearch (uint32 cores)
 {
 	dbt_drmaa_tool_p -> dt_num_cores = cores;

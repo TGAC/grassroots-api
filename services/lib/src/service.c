@@ -971,7 +971,14 @@ const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
 
 const char *GetServiceNameFromJSON (const json_t * const root_p)
 {
-	return GetJSONString (root_p, SERVICE_NAME_S);
+	const char *name_s = GetJSONString (root_p, SERVICES_NAME_S);
+
+	if (!name_s)
+		{
+			name_s = GetJSONString (root_p, SERVICE_NAME_S);
+		}
+
+	return name_s;
 }
 
 

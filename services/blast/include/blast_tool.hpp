@@ -26,8 +26,16 @@
 #include "blast_formatter.h"
 
 
+typedef struct BlastToolConfig
+{
+	bool btc_async_flag;
+} BlastToolConfig;
+
 /* forward declaration */
 struct BlastServiceData;
+
+
+
 
 /**
  * The base class for running Blast.
@@ -54,6 +62,8 @@ public:
 
 	virtual OperationStatus GetStatus ();
 
+	virtual bool GetToolConfig (BlastToolConfig *config_p) = 0;
+
 	virtual char *GetResults (BlastFormatter *formatter_p) = 0;
 
 	const uuid_t &GetUUID () const;
@@ -69,6 +79,8 @@ protected:
 	const char *bt_name_s;
 	ServiceJob *bt_job_p;
 	const BlastServiceData *bt_service_data_p;
+
+
 };
 
 

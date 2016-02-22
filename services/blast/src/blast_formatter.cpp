@@ -141,7 +141,7 @@ char *SystemBlastFormatter :: GetConvertedOutput (const char * const input_filen
 										}		/* if (res == 0) */
 									else
 										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to run \"%s\" with code %s", command_line_s, res);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to run \"%s\" with code %d", command_line_s, res);
 										}
 
 								}		/* if (AppendStringToByteBuffer (buffer_p, sbf_blast_formatter_command_s, " -archive ", input_filename_s, " -outfmt ", output_format_code_s, " -out ", output_filename_s, NULL)) */

@@ -46,6 +46,8 @@ public:
 
 	virtual bool SetUpOutputFile ();
 
+	virtual bool GetToolConfig (BlastToolConfig *config_p);
+
 protected:
 	virtual bool AddArg (const char * const arg_s);
 

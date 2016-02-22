@@ -36,10 +36,6 @@
 const char *BlastTool :: bt_tool_type_s = "system";
 
 
-void BlastTool :: SetBlastToolType (const char *type_s)
-{
-	BlastTool :: bt_tool_type_s = type_s;
-}
 
 
 BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
@@ -136,6 +132,28 @@ void FreeBlastTool (BlastTool *tool_p)
 
 
 
+OperationStatus RunBlast (BlastTool *tool_p)
+{
+	OperationStatus status = OS_IDLE;
+
+	tool_p -> PreRun  ();
+	status = tool_p -> Run ();
+	tool_p -> PostRun  ();
+
+	return status;
+}
+
+
+OperationStatus GetBlastStatus (BlastTool *tool_p)
+{
+	return (tool_p -> GetStatus ());
+}
+
+
+/******************************/
+
+
+
 BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p)
 {
 	bt_status = OS_IDLE;
@@ -143,7 +161,10 @@ BlastTool :: BlastTool (ServiceJob *service_job_p, const char *name_s, const Bla
 	bt_name_s = name_s;
 	bt_service_data_p = data_p;
 
-	SetServiceJobName (service_job_p, name_s);
+	if (service_job_p)
+		{
+			SetServiceJobName (service_job_p, name_s);
+		}
 }
 
 
@@ -170,18 +191,6 @@ BlastTool :: ~BlastTool ()
 }
 
 
-OperationStatus RunBlast (BlastTool *tool_p)
-{
-	OperationStatus status = OS_IDLE;
-
-	tool_p -> PreRun  ();
-	status = tool_p -> Run ();
-	tool_p -> PostRun  ();
-
-	return status;
-}
-
-
 void BlastTool :: PreRun ()
 {
 	bt_job_p -> sj_status = OS_STARTED;
@@ -192,4 +201,11 @@ void BlastTool :: PostRun ()
 {
 	bt_job_p -> sj_status = OS_SUCCEEDED;
 }
+
+
+void BlastTool :: SetBlastToolType (const char *type_s)
+{
+	BlastTool :: bt_tool_type_s = type_s;
+}
+
 

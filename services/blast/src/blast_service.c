@@ -114,11 +114,16 @@ ServicesArray *GetServices (const json_t *config_p)
 																 GetBlastResultAsJSON,
 																 GetBlastServiceStatus,
 																 true,
-																 false,
+																 true,
 																 data_p);
 
 							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
 								{
+									if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
+										{
+											blast_service_p -> se_synchronous_flag = false;
+										}
+
 									* (services_p -> sa_services_pp) = blast_service_p;
 
 									return services_p;

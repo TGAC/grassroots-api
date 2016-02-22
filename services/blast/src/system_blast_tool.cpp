@@ -39,6 +39,15 @@ SystemBlastTool :: ~SystemBlastTool ()
 
 }
 
+
+bool SystemBlastTool :: GetToolConfig (BlastToolConfig *config_p)
+{
+	config_p -> btc_async_flag = true;
+	return true;
+}
+
+
+
 bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 {
 	bool success_flag = false;
