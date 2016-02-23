@@ -727,7 +727,7 @@ json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, con
 }
 
 
-json_t *GetJSONFromString (const char * const value_s, json_type field_type)
+json_t *GetJSONFromString (const char *value_s, json_type field_type)
 {
 	json_t *value_p = NULL;
 
@@ -751,9 +751,8 @@ json_t *GetJSONFromString (const char * const value_s, json_type field_type)
 			case JSON_REAL:
 				{
 					double d;
-					const char **value_ss= &value_s;
 
-					if (GetValidRealNumber (value_ss, &d, NULL))
+					if (GetValidRealNumber (&value_s, &d, NULL))
 						{
 							value_p = json_real (d);
 						}

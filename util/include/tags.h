@@ -17,6 +17,7 @@
 #define TAGS_H
 
 #include "typedefs.h"
+#include "grassroots_util_library.h"
 
 typedef uint32 Tag;
 
@@ -24,6 +25,22 @@ typedef uint32 Tag;
 
 #ifndef MAKE_TAG
 #define MAKE_TAG(a,b,c,d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
+#endif
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
+GRASSROOTS_UTIL_API bool UnpackTag (const Tag tag, char *tag_s);
+
+
+GRASSROOTS_UTIL_API bool PackTag (const char *tag_s, Tag *tag_p);
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif		/* #ifndef TAGS_H */

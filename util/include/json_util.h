@@ -121,8 +121,10 @@ PREFIX const char *PARAM_CONCISE_DEFINITION_S VAL("concise");
 PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_STORE_S VAL("store");
 PREFIX const char *PARAM_TAG_S VAL("tag");
+PREFIX const char *PARAM_TAG_TEXT_S VAL("tag_text");
 PREFIX const char *PARAM_TYPE_S VAL("type");
 PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type");
+PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_TEXT_S VAL("grassroots_type_text");
 PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default");
 PREFIX const char *PARAM_CURRENT_VALUE_S  VAL("current_value");
 PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
@@ -384,7 +386,7 @@ GRASSROOTS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
 
-GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char * const value_s, json_type field_type);
+GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type field_type);
 
 
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);

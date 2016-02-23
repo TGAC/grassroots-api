@@ -64,6 +64,7 @@ typedef enum ParameterType
 } ParameterType;
 
 
+
 /**
  * The ParameterLevel defines the level that a user
  * should be to adjust the Parameter. The level of
@@ -618,6 +619,25 @@ GRASSROOTS_PARAMS_API const Tag *GetRemoteTagForURI (Parameter *param_p, const c
 
 
 GRASSROOTS_PARAMS_API bool CopyRemoteParameterDetails (const Parameter * const src_param_p, Parameter *dest_p);
+
+
+/**
+ * Get the human-readable name for a given ParameterType.
+ *
+ * @param param_type The ParameterType to get the name for.
+ * @return The human-readable name or <code>NULL</code> upon error.
+ */
+GRASSROOTS_PARAMS_API const char *GetGrassrootsTypeAsString (const ParameterType param_type);
+
+
+/**
+ * Get the ParameterType from its human-readable name.
+ *
+ * @param param_type_s The human-readable name of a ParameterType.
+ * @param param_type_p Pointer to where the ParameterType will be set.
+ * @return <code>true</code> if the ParameterType was set successfully, <code>false</code> otherwise.
+ */
+GRASSROOTS_PARAMS_API bool GetGrassrootsTypeFromString (const char *param_type_s, ParameterType *param_type_p);
 
 
 #ifdef __cplusplus
