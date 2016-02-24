@@ -256,13 +256,13 @@ all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services han
 	@echo "DIR_HTMLCXX= = " $(DIR_HTMLCXX)
 	@echo "HTMLCXX_HOME = " $(HTMLCXX_HOME)
 	$(MAKE) -C handlers/file
-	$(MAKE) -C handlers/dropbox
+#	$(MAKE) -C handlers/dropbox
 	$(MAKE) -C server/lib
 	$(MAKE) -C server/standalone
 	$(MAKE) -C server/httpd/mod_grassroots
 	$(MAKE) -C mongodb 
 	$(MAKE) -C clients/lib
-	$(MAKE) -C clients/standalone
+#	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
@@ -285,13 +285,13 @@ install: install_init install_references install_images all install_irods_stuff
 	$(MAKE) -C services/lib install
 	$(MAKE) -C handlers/file install
 #	$(MAKE) -C handlers/irods install
-	$(MAKE) -C handlers/dropbox install
+#	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
 	$(MAKE) -C server/httpd/mod_grassroots install
 	$(MAKE) -C mongodb install
 	$(MAKE) -C clients/lib install
-	$(MAKE) -C clients/standalone install
+#	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
