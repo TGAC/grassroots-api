@@ -35,6 +35,27 @@
 #endif
 
 
+static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
+{
+	"boolean",
+	"signed integer",
+	"unsigned integer",
+	"signed number",
+	"unsigned number",
+	"string",
+	"output filename",
+	"input filename",
+	"directory name",
+	"character",
+	"password",
+	"keyword",
+	"large string",
+	"json",
+	"tabular"
+};
+
+
+
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
 
 static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p);
@@ -923,7 +944,17 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 
 static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root_p)
 {
+	char buffer_s [5];
 	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_tag)) == 0);
+
+
+	if (UnpackTag (param_p -> pa_tag, buffer_s))
+		{
+			if (json_object_set_new (root_p, PARAM_TAG_TEXT_S, json_string (buffer_s)) != 0)
+				{
+
+				}
+		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (root_p, "AddParameterTagToJSON - root_p :: ", STM_LEVEL_FINER, __FILE__, __LINE__);
@@ -1001,6 +1032,9 @@ static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *ro
 
 	return success_flag;
 }
+
+
+
 
 
 static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p)
@@ -1109,7 +1143,27 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 
 	if (success_flag)
 		{
-			success_flag = (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0);
+			if (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0)
+				{
+					const char *type_s = GetGrassrootsTypeAsString (param_p -> pa_type);
+
+					if (type_s)
+						{
+							if (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (type_s)) != 0)
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %s to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, type_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", param_p -> pa_type);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %d to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_S, param_p -> pa_type);
+					success_flag = false;
+				}
 		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
@@ -1257,6 +1311,44 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 	return success_flag;
 
 }
+
+
+
+const char *GetGrassrootsTypeAsString (const ParameterType param_type)
+{
+	const char *res_s = NULL;
+
+	if ((param_type >= 0) && (param_type < PT_NUM_TYPES))
+		{
+			return * (S_PARAM_TYPE_NAMES_SS + param_type);
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "param type %d is out of range", param_type);
+		}
+
+	return res_s;
+}
+
+
+bool GetGrassrootsTypeFromString (const char *param_type_s, ParameterType *param_type_p)
+{
+	const char **type_ss = S_PARAM_TYPE_NAMES_SS;
+	ParameterType i;
+
+	for (i = 0; i < PT_NUM_TYPES; ++ i, ++ type_ss)
+		{
+			if (strcmp (*type_ss, param_type_s) == 0)
+				{
+					*param_type_p = i;
+					return true;
+				}
+		}
+
+	return false;
+}
+
+
 
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p)
@@ -1687,17 +1779,54 @@ static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType
 	bool success_flag = false;
 	json_t *value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_S);
 
-	if (value_p && json_is_integer (value_p))
+	if (value_p)
 		{
-			json_int_t subtype = json_integer_value (value_p);
-
-			if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+			if (json_is_integer (value_p))
 				{
-					*param_type_p = subtype;
-					success_flag = true;
+					json_int_t subtype = json_integer_value (value_p);
+
+					if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+						{
+							*param_type_p = subtype;
+							success_flag = true;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_GRASSROOTS_TYPE_INFO_S, json_typeof (value_p));
 				}
 		}
+	else if ((value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S)) != NULL)
+		{
+			if (json_is_string (value_p))
+				{
+					const char *value_s = json_string_value (value_p);
 
+					if (value_s)
+						{
+							if (GetGrassrootsTypeFromString (param_type_p, value_s))
+								{
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_typeof (value_p));
+				}
+		}
 
 	return success_flag;
 }
@@ -1940,6 +2069,18 @@ static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
 				{
 					*tag_p = json_integer_value (tag_json_p);
 					success_flag = true;
+				}
+		}
+	else
+		{
+			char *tag_s = GetJSONString (json_p, PARAM_TAG_TEXT_S);
+
+			if (tag_s)
+				{
+					if (PackTag (tag_s, tag_p))
+						{
+							success_flag = true;
+						}
 				}
 		}
 

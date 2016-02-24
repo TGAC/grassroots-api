@@ -123,7 +123,7 @@ void ReleaseServices (ServicesArray *services_p)
 
 
 
-const char * const GetRootRestURI (void)
+const char * GetRootRestURI (void)
 {
 	return "http://rest.ensemblgenomes.org/";
 }
