@@ -28,6 +28,8 @@
 #include "blast_service_job.h"
 #include "paired_blast_service.h"
 #include "blast_service_params.h"
+#include "blast_tool_factory.hpp"
+
 
 #include "servers_pool.h"
 #include "remote_parameter_details.h"
@@ -119,11 +121,6 @@ ServicesArray *GetServices (const json_t *config_p)
 
 							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
 								{
-									if (strcmp (BlastTool :: bt_tool_type_s, "drmaa") == 0)
-										{
-											blast_service_p -> se_synchronous_flag = false;
-										}
-
 									* (services_p -> sa_services_pp) = blast_service_p;
 
 									return services_p;
@@ -222,14 +219,12 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 									if (success_flag)
 										{
-											value_p = json_object_get (blast_config_p, "blast_tool");
+											data_p -> bsd_tool_factory_p = BlastToolFactory :: GetBlastToolFactory (blast_config_p);
 
-											if (value_p)
+											if (! (data_p -> bsd_tool_factory_p))
 												{
-													if (json_is_string (value_p))
-														{
-															BlastTool :: SetBlastToolType (json_string_value (value_p));
-														}
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetBlastToolFactory failed");
+													success_flag = false;
 												}
 										}
 
@@ -289,6 +284,11 @@ static void FreeBlastServiceData (BlastServiceData *data_p)
 	if (data_p -> bsd_formatter_p)
 		{
 			delete (data_p -> bsd_formatter_p);
+		}
+
+	if (data_p -> bsd_tool_factory_p)
+		{
+			delete (data_p -> bsd_tool_factory_p);
 		}
 
 	FreeMemory (data_p);

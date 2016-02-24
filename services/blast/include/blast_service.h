@@ -49,6 +49,9 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 } DatabaseInfo;
 
 
+/* forward class declaration */
+class BlastToolFactory;
+
  typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 {
 	ServiceData bsd_base_data;
@@ -59,6 +62,8 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 
 	/* A NULL-terminated array of the databases available to search */
 	DatabaseInfo *bsd_databases_p;
+
+	BlastToolFactory *bsd_tool_factory_p;
 
 } BlastServiceData;
 
@@ -82,6 +87,10 @@ BLAST_SERVICE_PREFIX const char *BS_LOG_SUFFIX_S BLAST_SERVICE_VAL (".log");
 BLAST_SERVICE_PREFIX const char *BS_DEFAULT_OUTPUT_FORMAT_S BLAST_SERVICE_VAL ("11");
 
 BLAST_SERVICE_PREFIX const char *BS_DATABASE_GROUP_NAME_S BLAST_SERVICE_VAL ("Available Databases");
+
+BLAST_SERVICE_PREFIX const char *BS_TOOL_TYPE_NAME_S BLAST_SERVICE_VAL ("blast_tool");
+BLAST_SERVICE_PREFIX const char *BS_COMMAND_NAME_S BLAST_SERVICE_VAL ("blast_command");
+
 
 
 #ifdef __cplusplus

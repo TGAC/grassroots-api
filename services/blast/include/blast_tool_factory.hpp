@@ -14,32 +14,34 @@
 ** limitations under the License.
 */
 /*
- * system_blast_tool.hpp
+ * blast_tool_factory.h
  *
- *  Created on: 22 Apr 2015
+ *  Created on: 24 Feb 2016
  *      Author: tyrrells
  */
 
-#ifndef SYSTEM_BLAST_TOOL_HPP_
-#define SYSTEM_BLAST_TOOL_HPP_
+#ifndef SERVICES_BLAST_INCLUDE_BLAST_TOOL_FACTORY_HPP_
+#define SERVICES_BLAST_INCLUDE_BLAST_TOOL_FACTORY_HPP_
 
-#include "external_blast_tool.hpp"
+#include "blast_service_api.h"
+
+#include "blast_tool.hpp"
+#include "jansson.h"
+
 
 /**
- * A class that will run Blast as a system process.
+ * The base class for generating blast tools
  */
-class BLAST_SERVICE_LOCAL SystemBlastTool : public ExternalBlastTool
+class BLAST_SERVICE_LOCAL BlastToolFactory
 {
 public:
-	SystemBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s);
-	virtual ~SystemBlastTool ();
+	static BlastToolFactory *GetBlastToolFactory (const json_t *service_config_p);
 
-	virtual bool ParseParameters (ParameterSet *params_p);
+	virtual ~BlastToolFactory ();
 
-	virtual OperationStatus Run ();
+	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s) = 0;
+
+	virtual bool AreToolsAsynchronous () const = 0;
 };
 
-
-
-
-#endif /* SYSTEM_BLAST_TOOL_HPP_ */
+#endif /* SERVICES_BLAST_INCLUDE_BLAST_TOOL_FACTORY_HPP_ */

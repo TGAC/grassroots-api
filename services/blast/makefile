@@ -53,9 +53,10 @@ SRCS 	= \
 	paired_blast_service.c \
 	blast_formatter.cpp \
 	blast_tool.cpp \
-	blast_tool_set.cpp \
+	blast_tool_factory.cpp \
 	external_blast_tool.cpp \
 	system_blast_tool.cpp \
+	system_blast_tool_factory.cpp \
 	threaded_blast_tool.cpp \
 	temp_file.cpp
 	
@@ -71,7 +72,10 @@ LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson \
 
 
 ifeq ($(DRMAA_ENABLED),1)
-SRCS += drmaa_blast_tool.cpp
+SRCS += \
+	drmaa_blast_tool.cpp \
+	drmaa_blast_tool_factory.cpp 
+	
 LDFLAGS += -L$(DIR_GRASSROOTS_DRMAA_LIB) -l$(GRASSROOTS_DRMAA_LIB_NAME)
 INCLUDES += -I$(DIR_LSF_DRMAA_INC) -I$(DIR_GRASSROOTS_DRMAA_INC)
 CPPFLAGS += -DDRMAA_ENABLED=1

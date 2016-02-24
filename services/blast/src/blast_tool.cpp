@@ -33,10 +33,6 @@
 #endif
 
 
-const char *BlastTool :: bt_tool_type_s = "system";
-
-
-
 
 BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
 {
@@ -203,9 +199,5 @@ void BlastTool :: PostRun ()
 }
 
 
-void BlastTool :: SetBlastToolType (const char *type_s)
-{
-	BlastTool :: bt_tool_type_s = type_s;
-}
 
 
