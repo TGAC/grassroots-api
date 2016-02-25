@@ -1,5 +1,0 @@
-{ global:
-szLogPrintf;
-szMessageBox;
-GetRCString;
-local: *; };

@@ -1,4 +1,0 @@
-/* Image module microservices */
-/* Service name			# args		Service function */
-{ "msiImageConvert",		4,		(funcPtr) msiImageConvert },
-{ "msiImageGetProperties",	3,		(funcPtr) msiImageGetProperties },

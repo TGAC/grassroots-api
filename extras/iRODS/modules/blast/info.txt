@@ -1,8 +1,0 @@
-Name:		blast
-Brief:		Microservices for interacting with blast databases
-Description:	MMicroservices for interacting with blast databases.
-Dependencies: 
-Enabled:	yes
-Creator:	Simon Tyrrell, The Genmoe Analysis Centre, Norwich
-Created:	July 2014
-License:	BSD
