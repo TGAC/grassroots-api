@@ -24,12 +24,12 @@
 #define SERVICES_BLAST_INCLUDE_SYSTEM_BLAST_TOOL_FACTORY_HPP_
 
 
-#include "blast_tool_factory.hpp"
+#include "external_blast_tool_factory.hpp"
 
 /**
  * The base class for generating system blast tools
  */
-class BLAST_SERVICE_LOCAL SystemBlastToolFactory : public BlastToolFactory
+class BLAST_SERVICE_LOCAL SystemBlastToolFactory : public ExternalBlastToolFactory
 {
 public:
 	static SystemBlastToolFactory	*CreateSystemBlastToolFactory (const json_t *service_config_p);
@@ -39,6 +39,9 @@ public:
 	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
 
 	virtual bool AreToolsAsynchronous () const;
+
+protected:
+	SystemBlastToolFactory (const json_t *service_config_p);
 };
 
 #endif /* SERVICES_BLAST_INCLUDE_SYSTEM_BLAST_TOOL_FACTORY_HPP_ */

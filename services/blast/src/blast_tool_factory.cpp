@@ -41,7 +41,7 @@ BlastToolFactory *BlastToolFactory :: GetBlastToolFactory (const json_t *service
 			if (strcmp (value_s, "drmaa") == 0)
 				{
 					#ifdef DRMAA_ENABLED
-					factory_p = new DrmaaBlastToolFactory;
+					factory_p = DrmaaBlastToolFactory :: CreateDrmaaBlastToolFactory (service_config_p);
 
 					if (!factory_p)
 						{
@@ -55,7 +55,7 @@ BlastToolFactory *BlastToolFactory :: GetBlastToolFactory (const json_t *service
 
 	if (!factory_p)
 		{
-			factory_p = new SystemBlastToolFactory;
+			factory_p = SystemBlastToolFactory :: CreateSystemBlastToolFactory (service_config_p);
 		}
 
 

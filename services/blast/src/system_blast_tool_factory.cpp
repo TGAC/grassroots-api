@@ -20,16 +20,36 @@
  *      Author: tyrrells
  */
 
+#include <stdexcept>
 
 #include "system_blast_tool_factory.hpp"
 #include "system_blast_tool.hpp"
+#include "streams.h"
+
+
+
+SystemBlastToolFactory :: SystemBlastToolFactory (const json_t *service_config_p)
+	: ExternalBlastToolFactory (service_config_p)
+{
+
+}
 
 
 
 SystemBlastToolFactory *SystemBlastToolFactory :: CreateSystemBlastToolFactory (const json_t *service_config_p)
 {
+	SystemBlastToolFactory *factory_p = 0;
 
-	return 0;
+	try
+		{
+			factory_p = new SystemBlastToolFactory (service_config_p);
+		}
+	catch (std :: exception e)
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create new SystemBlastToolFactory, error \"%s\"", e.what ());
+		}
+
+	return factory_p;
 }
 
 
