@@ -6,12 +6,6 @@ LookUp ()
 	FILENAMES=`locate -r "^\(.*/\)*\$1$"`
 	VAR_DIR=""
 	
-	echo "NUM_MATCHES $NUM_MATCHES"
-	echo "= ${#FILENAMES[@]}"
-
-
-
-
 	if [ $NUM_MATCHES -eq 0 ]; then
 		echo "No match for $1"
 	else 
@@ -57,27 +51,68 @@ LookUp ()
 	fi
 }
 
-echo ">>> CURL"
+
+echo ">>> CURL INC"
+FILENAME=curl\.h
+LookUp $FILENAME
+CURL_INC_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> CURL LIB"
 FILENAME=libcurl\.so
 LookUp $FILENAME
+CURL_LIB_DIR=$VAR_DIR
 echo "Using $VAR_DIR for $FILENAME"
+
 
 echo ">>> IRODS INC"
 FILENAME=irods_version\.h
 LookUp $FILENAME
+IRODS_INC_DIR=$VAR_DIR
 echo "Using $VAR_DIR for $FILENAME"
 
 
-#echo "irods include"
-#FILENAME=`locate -r "^\(.*/\)*irods_version\.h$"`
-#echo "FILE: $FILENAME"
-#DIR="$(dirname "$FILENAME")"
-#echo "DIR: $DIR"
+echo ">>> IRODS LIB"IR
+FILENAME=libirods_client\.so
+LookUp $FILENAME
+IRODS_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
 
 
+echo ">>> JANSSON INC"
+FILENAME=jansson\.h
+LookUp $FILENAME
+JANSSON_INC_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
 
-#echo "irods lib"
-#FILENAME=`locate -r "^\(.*/\)*libirods_client\.so$"`
-#echo "FILE: $FILENAME"
 
+echo ">>> JANSSON LIB"
+FILENAME=libjansson\.so
+LookUp $FILENAME
+JANSSON_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> UUID INC"
+FILENAME=uuid\/uuid\.h
+LookUp $FILENAME
+UUID_INC_DIR="$(dirname "$VAR_DIR" )"
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> UUID LIB"
+FILENAME=libuuid\.so
+LookUp $FILENAME
+UUID_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+echo "CURL_LIB_DIR: $CURL_LIB_DIR"
+echo "CURL_INC_DIR: $CURL_INC_DIR"
+echo "IRODS_LIB_DIR: $IRODS_LIB_DIR"
+echo "IRODS_INC_DIR: $IRODS_INC_DIR"
+echo "JANSSON_LIB_DIR: $JANSSON_LIB_DIR"
+echo "JANSSON_INC_DIR: $JANSSON_INC_DIR"
+echo "UUID_LIB_DIR: $UUID_LIB_DIR"
+echo "UUID_INC_DIR: $UUID_INC_DIR"
 
