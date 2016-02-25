@@ -107,6 +107,94 @@ LookUp $FILENAME
 UUID_LIB_DIR=$VAR_DIR
 echo "Using $VAR_DIR for $FILENAME"
 
+
+echo ">>> MONGODB INC"
+FILENAME=mongoc\.h
+LookUp $FILENAME
+MONGO_C_INC_DIR="$(dirname "$VAR_DIR" )"
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> MONGODB LIB"
+FILENAME=libmongoc-1\.0\.so
+LookUp $FILENAME
+MONGO_C_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> BSON INC"
+FILENAME=bson\.h
+LookUp $FILENAME
+BSON_INC_DIR="$(dirname "$VAR_DIR" )"
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> BSON LIB"
+FILENAME=libbson-1\.0\.so
+LookUp $FILENAME
+BSON_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> DROPBOX INC"
+FILENAME=dropbox\.h
+LookUp $FILENAME
+DROPBOX_INC_DIR="$(dirname "$VAR_DIR" )"
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> DROPBOX LIB"
+FILENAME=libdropbox\.so
+LookUp $FILENAME
+DROPBOX_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> SAMTOOLS INC"
+FILENAME=hts\.h
+LookUp $FILENAME
+SAMTOOLS_INC_DIR="$(dirname "$VAR_DIR" )"
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> SAMTOOLS LIB"
+FILENAME=libhts\.so
+LookUp $FILENAME
+SAMTOOLS_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> HTMLCXX INC"
+FILENAME=ParserDom\.h
+LookUp $FILENAME
+# need to go up 3 levels to get required include folder
+VAR_DIR="$(dirname "$VAR_DIR" )"
+VAR_DIR="$(dirname "$VAR_DIR" )"
+HTMLCXX_INC_DIR="$(dirname "$VAR_DIR" )"
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> HTMLCXX LIB"
+FILENAME=libhtmlcxx\.so
+LookUp $FILENAME
+HTMLCXX_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> HCXSELECTC INC"
+FILENAME=hcxselect\.h
+LookUp $FILENAME
+HCXSELECT_INC_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
+echo ">>> HCXSELECTC LIB"
+FILENAME=libhcxselect\.so
+LookUp $FILENAME
+HCXSELECTCXX_LIB_DIR=$VAR_DIR
+echo "Using $VAR_DIR for $FILENAME"
+
+
 echo "CURL_LIB_DIR: $CURL_LIB_DIR"
 echo "CURL_INC_DIR: $CURL_INC_DIR"
 echo "IRODS_LIB_DIR: $IRODS_LIB_DIR"
@@ -115,4 +203,16 @@ echo "JANSSON_LIB_DIR: $JANSSON_LIB_DIR"
 echo "JANSSON_INC_DIR: $JANSSON_INC_DIR"
 echo "UUID_LIB_DIR: $UUID_LIB_DIR"
 echo "UUID_INC_DIR: $UUID_INC_DIR"
+echo "MONGO_C_LIB_DIR: $MONGO_C_LIB_DIR"
+echo "MONGO_C_INC_DIR: $MONGO_C_INC_DIR"
+echo "BSON_LIB_DIR: $BSON_LIB_DIR"
+echo "BSON_INC_DIR: $BSON_INC_DIR"
+echo "DROPBOX_LIB_DIR: $DROPBOX_LIB_DIR"
+echo "DROPBOX_INC_DIR: $DROPBOX_INC_DIR"
+echo "SAMTOOLS_LIB_DIR: $SAMTOOLS_LIB_DIR"
+echo "SAMTOOLS_INC_DIR: $SAMTOOLS_INC_DIR"
+echo "HTMLCXX_LIB_DIR: $HTMLCXX_LIB_DIR"
+echo "HTMLCXX_INC_DIR: $HTMLCXX_INC_DIR"
+echo "HCXSELECTCXX_LIB_DIR: $HCXSELECTCXX_LIB_DIR"
+echo "HCXSELECTCXX_INC_DIR: $HCXSELECTCXX_INC_DIR"
 
