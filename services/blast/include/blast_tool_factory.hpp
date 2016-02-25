@@ -24,6 +24,7 @@
 #define SERVICES_BLAST_INCLUDE_BLAST_TOOL_FACTORY_HPP_
 
 #include "blast_service_api.h"
+#include "blast_service.h"
 
 #include "blast_tool.hpp"
 #include "jansson.h"
@@ -39,9 +40,44 @@ public:
 
 	virtual ~BlastToolFactory ();
 
-	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s) = 0;
+	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p) = 0;
 
 	virtual bool AreToolsAsynchronous () const = 0;
 };
+
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
+/**
+ * Get a newly created BlastTool
+ *
+ * @return The BlastTool or <code>NULL</code> upon error.
+ */
+BLAST_SERVICE_LOCAL BlastTool *CreateBlastToolFromFactory (BlastToolFactory *factory_p, ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
+
+
+/**
+ * Free a BlastTool
+ *
+ * @param tool_p The BlastTool to deallocate.
+ */
+BLAST_SERVICE_LOCAL void FreeBlastToolFactory (BlastToolFactory *factory_p);
+
+
+
+BLAST_SERVICE_LOCAL bool IsBlastToolFactorySynchronous (BlastToolFactory *tool_p);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+
+
+
 
 #endif /* SERVICES_BLAST_INCLUDE_BLAST_TOOL_FACTORY_HPP_ */

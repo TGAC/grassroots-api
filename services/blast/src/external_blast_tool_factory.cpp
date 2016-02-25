@@ -32,7 +32,7 @@ ExternalBlastToolFactory :: ExternalBlastToolFactory (const json_t *config_p)
 
 	if (!ebtf_program_name_s)
 		{
-			throw (std :: runtime_error ("No program specified"));
+			ebtf_program_name_s = "blastn";
 		}
 }
 

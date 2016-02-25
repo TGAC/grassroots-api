@@ -33,7 +33,7 @@ class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 {
 public:
 
-	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s, bool async_flag);
+	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, bool async_flag);
 	virtual ~DrmaaBlastTool ();
 
 	virtual OperationStatus Run ();
@@ -45,8 +45,6 @@ public:
 	bool SetEmailNotifications (const char **email_addresses_ss);
 
 	virtual bool SetUpOutputFile ();
-
-	virtual bool GetToolConfig (BlastToolConfig *config_p);
 
 protected:
 	virtual bool AddArg (const char * const arg_s);

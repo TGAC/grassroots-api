@@ -99,7 +99,7 @@ char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const ch
 	return job_filename_s;
 }
 
-ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char * const blast_program_name_s)
+ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s, data_p)
 {
 	ebt_buffer_p = AllocateByteBuffer (1024);
@@ -109,7 +109,7 @@ ExternalBlastTool :: ExternalBlastTool (ServiceJob *job_p, const char *name_s, c
 			throw std :: bad_alloc ();
 		}
 	ebt_output_p = 0;
-	ebt_working_directory_s = working_directory_s;
+	ebt_working_directory_s = data_p -> bsd_working_dir_s;
 	ebt_blast_s = blast_program_name_s;
 	ebt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
 }

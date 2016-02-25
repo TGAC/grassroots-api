@@ -392,10 +392,6 @@ bool AddGeneralAlgorithmParams (ParameterSet *param_set_p)
 
 									if ((param_p = CreateAndAddParameterToParameterSet (param_set_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", TAG_BLAST_MAX_RANGE_MATCHES, NULL, def, NULL, NULL, level, NULL)) != NULL)
 										{
-											ParameterMultiOptionArray *options_p = NULL;
-											SharedType values [BOF_NUM_TYPES];
-											uint32 i;
-
 											if (grouped_param_pp)
 												{
 													*grouped_param_pp = param_p;

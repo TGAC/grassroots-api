@@ -78,7 +78,7 @@ static ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData
 
 static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char *ids_s, BlastServiceData *blast_data_p);
 
-static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s);
+static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s, BlastServiceData *data_p);
 
 
 
@@ -100,7 +100,7 @@ ServicesArray *GetServices (const json_t *config_p)
 
 			if (services_p)
 				{		
-					ServiceData *data_p = (ServiceData *) AllocateBlastServiceData (blast_service_p);
+					BlastServiceData *data_p = AllocateBlastServiceData (blast_service_p);
 
 					if (data_p)
 						{
@@ -117,10 +117,11 @@ ServicesArray *GetServices (const json_t *config_p)
 																 GetBlastServiceStatus,
 																 true,
 																 true,
-																 data_p);
+																 (ServiceData *) data_p);
 
-							if (GetBlastServiceConfig ((BlastServiceData *) data_p))
+							if (GetBlastServiceConfig (data_p))
 								{
+									blast_service_p -> se_synchronous_flag = IsBlastToolFactorySynchronous (data_p -> bsd_tool_factory_p);
 									* (services_p -> sa_services_pp) = blast_service_p;
 
 									return services_p;
@@ -742,7 +743,7 @@ static LinkedList *GetUUIDSList (const char *ids_s)
 }
 
 
-static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s)
+static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, const char *working_directory_s, BlastServiceData *data_p)
 {
 	/* count the number of databases to search */
 	if (db_p)
@@ -773,7 +774,7 @@ static void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_fl
 
 					if (job_name_s)
 						{
-							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s);
+							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, working_directory_s, data_p);
 
 							if (job_p)
 								{
@@ -892,7 +893,7 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 			if (service_p -> se_jobs_p)
 				{
 					/* Get all of the selected databases and create a BlastServiceJob for each one */
-					PrepareBlastServiceJobs (blast_data_p -> bsd_databases_p, false, param_set_p, service_p -> se_jobs_p, blast_data_p -> bsd_working_dir_s);
+					PrepareBlastServiceJobs (blast_data_p -> bsd_databases_p, false, param_set_p, service_p -> se_jobs_p, blast_data_p -> bsd_working_dir_s, blast_data_p);
 
 					if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0)
 						{

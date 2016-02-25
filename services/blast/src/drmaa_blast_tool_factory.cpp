@@ -32,31 +32,25 @@ DrmaaBlastToolFactory	*DrmaaBlastToolFactory :: CreateDrmaaBlastToolFactory (con
 {
 	DrmaaBlastToolFactory *factory_p = 0;
 
-	const char *command_s = GetJSONString (service_config_p, BS_COMMAND_NAME_S);
-
-	if (command_s)
-		{
-
-		}
-
-	if (!success_flag)
-		{
-			throw std::bad_alloc ();
-		}
-
-
 	try
 		{
 			factory_p = new DrmaaBlastToolFactory (service_config_p);
 		}
 	catch (std :: bad_alloc &alloc_r)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate SystemBlastFormatter");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate DrmaaBlastToolFactory");
 		}
 
 	return factory_p;
 }
 
+
+
+DrmaaBlastToolFactory :: DrmaaBlastToolFactory (const json_t *service_config_p)
+	: ExternalBlastToolFactory (service_config_p)
+{
+
+}
 
 
 DrmaaBlastToolFactory :: ~DrmaaBlastToolFactory ()
@@ -65,16 +59,61 @@ DrmaaBlastToolFactory :: ~DrmaaBlastToolFactory ()
 }
 
 
-BlastTool *DrmaaBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
+BlastTool *DrmaaBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p)
 {
-	BlastTool *tool_p = 0;
-	const BlastServiceData *data_p = 0;
-	const char *program_s = 0;
+	DrmaaBlastTool *drmaa_tool_p = 0;
 	bool async_flag = true;
 
-	tool_p = new DrmmaBlastTool (job_p, name_s, data_p, working_directory_s, program_s, async_flag);
+	try
+		{
+			drmaa_tool_p = new DrmaaBlastTool (job_p, name_s, data_p, ebtf_program_name_s, async_flag);
+		}
+	catch (std :: exception &ex_r)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create drmaa blast tool, error \"%s\"", ex_r.what ());
+		}
 
-	return tool_p;
+	if (drmaa_tool_p)
+		{
+
+			const json_t *json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "drmaa_cores_per_search");
+
+			/* Set the number of cores per job */
+			if (json_p)
+				{
+					if (json_is_integer (json_p))
+						{
+							drmaa_tool_p -> SetCoresPerSearch (json_integer_value (json_p));
+						}
+				}
+
+			/* Set up any email notifications */
+			json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "email_notifications");
+
+			if (json_p)
+				{
+					if (json_is_string (json_p))
+						{
+							const char **addresses_ss = (const char **) AllocMemoryArray (2, sizeof (const char *));
+
+							if (addresses_ss)
+								{
+									*addresses_ss = json_string_value (json_p);
+								}
+
+							if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set email notifications for drmaa tool");
+								}
+
+							FreeMemory (addresses_ss);
+						}
+
+				}		/* if (json_p) */
+
+		}
+
+	return drmaa_tool_p;
 }
 
 

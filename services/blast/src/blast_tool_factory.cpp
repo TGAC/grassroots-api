@@ -35,7 +35,6 @@ BlastToolFactory *BlastToolFactory :: GetBlastToolFactory (const json_t *service
 	BlastToolFactory *factory_p = 0;
 	const char *value_s = GetJSONString (service_config_p, BS_TOOL_TYPE_NAME_S);
 
-
 	if (value_s)
 		{
 			if (strcmp (value_s, "drmaa") == 0)
@@ -43,19 +42,33 @@ BlastToolFactory *BlastToolFactory :: GetBlastToolFactory (const json_t *service
 					#ifdef DRMAA_ENABLED
 					factory_p = DrmaaBlastToolFactory :: CreateDrmaaBlastToolFactory (service_config_p);
 
-					if (!factory_p)
+					if (factory_p)
+						{
+							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Using DrmaaBlastToolFactory");
+						}
+					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create DrmaaBlastToolFactory");
 						}
+					#else
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Grassroots has been compiled without DRMAA support so cannot use DrmaaBlastToolFactory");
 					#endif
-				}
+				}		/* if (strcmp (value_s, "drmaa") == 0) */
 
-		}
-
+		}		/* if (value_s) */
 
 	if (!factory_p)
 		{
 			factory_p = SystemBlastToolFactory :: CreateSystemBlastToolFactory (service_config_p);
+
+			if (factory_p)
+				{
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Using SystemBlastToolFactory");
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create SystemBlastToolFactory");
+				}
 		}
 
 
@@ -67,5 +80,24 @@ BlastToolFactory *BlastToolFactory :: GetBlastToolFactory (const json_t *service
 BlastToolFactory :: ~BlastToolFactory ()
 {
 
+}
+
+
+
+BlastTool *CreateBlastToolFromFactory (BlastToolFactory *factory_p, ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p)
+{
+	return (factory_p -> CreateBlastTool (job_p, name_s, data_p));
+}
+
+
+void FreeBlastToolFactory (BlastToolFactory *factory_p)
+{
+	delete factory_p;
+}
+
+
+bool IsBlastToolFactorySynchronous (BlastToolFactory *factory_p)
+{
+	return factory_p -> AreToolsAsynchronous ();
 }
 

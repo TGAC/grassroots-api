@@ -44,9 +44,9 @@ SystemBlastToolFactory *SystemBlastToolFactory :: CreateSystemBlastToolFactory (
 		{
 			factory_p = new SystemBlastToolFactory (service_config_p);
 		}
-	catch (std :: exception e)
+	catch (std :: exception &e_r)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create new SystemBlastToolFactory, error \"%s\"", e.what ());
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create new SystemBlastToolFactory, error \"%s\"", e_r.what ());
 		}
 
 	return factory_p;
@@ -59,13 +59,18 @@ SystemBlastToolFactory :: ~SystemBlastToolFactory ()
 }
 
 
-BlastTool *SystemBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s)
+BlastTool *SystemBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p)
 {
 	BlastTool *tool_p = 0;
-	const BlastServiceData *data_p = 0;
-	const char *program_s = 0;
 
-	tool_p = new SystemBlastTool (job_p, name_s, data_p, working_directory_s, program_s);
+	try
+		{
+			tool_p = new SystemBlastTool (job_p, name_s, data_p, ebtf_program_name_s);
+		}
+	catch (std :: exception &e_r)
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create new SystemBlastTool, error \"%s\"", e_r.what ());
+		}
 
 	return tool_p;
 }

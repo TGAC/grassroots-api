@@ -27,8 +27,8 @@
 static void *RunThreadedBlast (void *data_p);
 
 
-ThreadedBlastTool :: ThreadedBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s)
-	: SystemBlastTool (service_job_p, name_s, data_p, working_directory_s, blast_program_name_s)
+ThreadedBlastTool :: ThreadedBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s)
+	: SystemBlastTool (service_job_p, name_s, data_p, blast_program_name_s)
 {
 	tbt_thread_p = 0;
 	tbt_mutex_p = 0;

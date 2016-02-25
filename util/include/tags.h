@@ -34,11 +34,6 @@ extern "C"
 #endif
 
 
-GRASSROOTS_UTIL_API bool UnpackTag (const Tag tag, char *tag_s);
-
-
-GRASSROOTS_UTIL_API bool PackTag (const char *tag_s, Tag *tag_p);
-
 #ifdef __cplusplus
 }
 #endif

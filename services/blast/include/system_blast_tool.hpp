@@ -31,7 +31,7 @@
 class BLAST_SERVICE_LOCAL SystemBlastTool : public ExternalBlastTool
 {
 public:
-	SystemBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s);
+	SystemBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s);
 	virtual ~SystemBlastTool ();
 
 	virtual bool ParseParameters (ParameterSet *params_p);

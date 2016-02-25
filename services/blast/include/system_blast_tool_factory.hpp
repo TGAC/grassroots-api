@@ -36,7 +36,7 @@ public:
 
 	virtual ~SystemBlastToolFactory ();
 
-	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
+	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
 	virtual bool AreToolsAsynchronous () const;
 

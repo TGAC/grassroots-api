@@ -948,14 +948,6 @@ static bool AddParameterTagToJSON (const Parameter * const param_p, json_t *root
 	bool success_flag = (json_object_set_new (root_p, PARAM_TAG_S, json_integer (param_p -> pa_tag)) == 0);
 
 
-	if (UnpackTag (param_p -> pa_tag, buffer_s))
-		{
-			if (json_object_set_new (root_p, PARAM_TAG_TEXT_S, json_string (buffer_s)) != 0)
-				{
-
-				}
-		}
-
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (root_p, "AddParameterTagToJSON - root_p :: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 	#endif
@@ -2069,18 +2061,6 @@ static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
 				{
 					*tag_p = json_integer_value (tag_json_p);
 					success_flag = true;
-				}
-		}
-	else
-		{
-			char *tag_s = GetJSONString (json_p, PARAM_TAG_TEXT_S);
-
-			if (tag_s)
-				{
-					if (PackTag (tag_s, tag_p))
-						{
-							success_flag = true;
-						}
 				}
 		}
 

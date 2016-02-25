@@ -25,10 +25,10 @@
 #include "filesystem_utils.h"
 #include "blast_service.h"
 #include "string_utils.h"
+#include "blast_tool_factory.hpp"
 
 
-
-BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s)
+BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s, BlastServiceData *data_p)
 {
 	BlastServiceJob *blast_job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
 
@@ -40,7 +40,7 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_na
 
 			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL, FreeBlastServiceJob);
 
-			tool_p = CreateBlastTool (base_service_job_p, job_name_s, working_directory_s);
+			tool_p = CreateBlastToolFromFactory (data_p -> bsd_tool_factory_p, base_service_job_p, job_name_s, data_p);
 
 
 			if (tool_p)

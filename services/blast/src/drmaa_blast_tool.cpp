@@ -34,8 +34,8 @@
 
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *working_directory_s, const char *blast_program_name_s, bool async_flag)
-: ExternalBlastTool (job_p, name_s, data_p, working_directory_s, blast_program_name_s)
+DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, bool async_flag)
+: ExternalBlastTool (job_p, name_s, data_p, blast_program_name_s)
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
 
@@ -64,13 +64,6 @@ DrmaaBlastTool :: ~DrmaaBlastTool ()
 	#if DRMAA_BLAST_TOOL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Exiting ~DrmaaBlastTool for %s", uuid_s);
 	#endif
-}
-
-
-bool DrmaaBlastTool :: GetToolConfig (BlastToolConfig *config_p)
-{
-	config_p -> btc_async_flag = true;
-	return true;
 }
 
 

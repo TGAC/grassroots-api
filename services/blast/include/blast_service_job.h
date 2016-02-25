@@ -42,7 +42,7 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s);
+BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s, BlastServiceData *data_p);
 
 
 BLAST_SERVICE_LOCAL void FreeBlastServiceJob (ServiceJob *job_p);
