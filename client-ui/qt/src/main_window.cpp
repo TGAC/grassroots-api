@@ -489,12 +489,10 @@ void MainWindow :: AddActions ()
 	toolbar_p -> addAction (action_p);
 	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: Accept);
 
-
-
 	// Tools Menu
 	menu_p = menu_bar_p -> addMenu (tr ("&Tools"));
 
-	QMenu *sub_menu_p = new QMenu (tr ("Level"));
+	QMenu *sub_menu_p = menu_p -> addMenu (tr ("Level"));
 	QActionGroup *interface_levels_p = new QActionGroup (this);
 
 	// Easy Level
@@ -522,8 +520,6 @@ void MainWindow :: AddActions ()
 	sub_menu_p -> addAction (action_p);
 	interface_levels_p -> addAction (action_p);
 
-
-	menu_p -> addMenu (sub_menu_p);
 
 	addToolBar (toolbar_p);
 }

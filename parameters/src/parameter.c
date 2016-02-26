@@ -467,11 +467,7 @@ void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
 					FreeCopiedString (option_p -> pmo_description_s);
 				}
 
-			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD) || (options_p -> pmoa_values_type == PT_LARGE_STRING) || (options_p -> pmoa_values_type == PT_TABLE))
-				{
-					FreeCopiedString (option_p -> pmo_value.st_string_value_s);
-				}
-
+			ClearSharedType (& (option_p -> pmo_value), options_p -> pmoa_values_type);
 		}		/* for ( ; i > 0; -- i, ++ option_p) */
 
 	FreeMemory (options_p -> pmoa_options_p);
@@ -1421,8 +1417,8 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 											value_p -> st_resource_value_p = AllocateResource (protocol_s, value_s, NULL);
 											
-											success_flag = (value_p -> st_resource_value_p != NULL);										
-										}					
+											success_flag = (value_p -> st_resource_value_p != NULL);
+										}
 								}					
 						}
 						break;
@@ -1800,7 +1796,7 @@ static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType
 
 					if (value_s)
 						{
-							if (GetGrassrootsTypeFromString (param_type_p, value_s))
+							if (GetGrassrootsTypeFromString (value_s, param_type_p))
 								{
 									success_flag = true;
 								}

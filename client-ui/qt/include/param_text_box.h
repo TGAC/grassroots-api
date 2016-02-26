@@ -39,6 +39,7 @@ protected:
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);
 
 	virtual void dropEvent (QDropEvent *event_p);
+
 };
 
 
@@ -63,6 +64,9 @@ protected:
 	DroppableTextBox *ptb_text_box_p;
 
 	virtual QWidget *GetQWidget ();
+
+	virtual bool CreateDroppableTextBox (QWidget *parent_p);
+
 };
 
 

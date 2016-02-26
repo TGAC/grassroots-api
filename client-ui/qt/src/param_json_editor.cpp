@@ -50,10 +50,19 @@ bool DroppableJSONBox :: SetFromText (const char * const data_s)
 
 
 ParamJSONEditor :: ParamJSONEditor (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
-:		ParamTextBox (param_p, options_widget_p, parent_p)
+:	ParamTextBox (param_p, options_widget_p, parent_p)
+{
+}
+
+
+
+bool ParamJSONEditor :: CreateDroppableTextBox (QWidget *parent_p)
 {
 	ptb_text_box_p = new DroppableJSONBox (parent_p);
+
+	return true;
 }
+
 
 
 ParamJSONEditor :: ~ParamJSONEditor ()

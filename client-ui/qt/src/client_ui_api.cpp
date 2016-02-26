@@ -67,7 +67,7 @@ Client *GetClient (Connection *connection_p)
 
 			if (client_p)
 				{
-					InitialiseClient (client_p, GetQTClientName, GetQTClientDescription, RunQTClient, DisplayResultsInQTClient, AddServiceToQTClient, reinterpret_cast <ClientData *> (data_p), connection_p);
+					InitialiseClient (client_p, GetQTClientName, GetQTClientDescription, RunQTClient, DisplayResultsInQTClient, AddServiceToQTClient, ReleaseClient, reinterpret_cast <ClientData *> (data_p), connection_p);
 				}
 			else
 				{
@@ -80,12 +80,14 @@ Client *GetClient (Connection *connection_p)
 }
 
 
-void ReleaseClient (Client *client_p)
+bool ReleaseClient (Client *client_p)
 {
 	QTClientData *qt_data_p = reinterpret_cast <QTClientData *> (client_p -> cl_data_p);
 
 	FreeQTClientData (qt_data_p);
 	FreeMemory (client_p);
+
+	return true;
 }
 
 
@@ -106,7 +108,6 @@ static QTClientData *AllocateQTClientData (void)
 
 			if (data_p -> qcd_dummy_arg_s)
 				{
-					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
 					/*
 					 * Ubuntu 12.04 has some theme bugs with various styles giving messages such as
 					 *
@@ -116,7 +117,9 @@ static QTClientData *AllocateQTClientData (void)
 					 * The solution is to use a theme that isn't broken on Ubuntu such as Plastique.
 					 */
 					QStyle *style_p = QStyleFactory :: create ("fusion");
-					data_p -> qcd_app_p -> setStyle (style_p);
+					QApplication :: setStyle (style_p);
+
+					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
 
 					data_p -> qcd_window_p = new MainWindow (data_p);
 					data_p -> qcd_window_p -> setWindowIcon (QIcon ("images/cog"));
@@ -144,7 +147,6 @@ static QTClientData *AllocateQTClientData (void)
 static void FreeQTClientData (QTClientData *qt_data_p)
 {
 	delete (qt_data_p -> qcd_window_p);
-	delete (qt_data_p -> qcd_app_p);
 	FreeCopiedString (qt_data_p -> qcd_dummy_arg_s);
 
 	while (! (qt_data_p -> qcd_viewer_widgets_p -> isEmpty ()))
@@ -155,6 +157,11 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 			widget_p -> close ();
 			delete widget_p;
 		}
+
+	delete (qt_data_p -> qcd_progress_p);
+	delete (qt_data_p -> qcd_results_p);
+
+	delete (qt_data_p -> qcd_app_p);
 
 	FreeMemory (qt_data_p);
 }

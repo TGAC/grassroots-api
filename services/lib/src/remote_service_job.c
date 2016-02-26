@@ -52,7 +52,7 @@ RemoteServiceJob *CreateRemoteServiceJobFromResultsJSON (const json_t *results_p
 }
 
 
-RemoteServiceJob *AllocateRemoteServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s, const char *remote_service_s, const char *remote_uri_s, uuid_t remote_job_id)
+RemoteServiceJob *AllocateRemoteServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char *remote_service_s, const char *remote_uri_s, uuid_t remote_job_id)
 {
 	RemoteServiceJob *remote_job_p = (RemoteServiceJob *) AllocMemory (sizeof (RemoteServiceJob));
 

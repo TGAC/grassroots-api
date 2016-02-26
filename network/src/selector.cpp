@@ -20,6 +20,8 @@
  *      Author: tyrrells
  */
 
+#include "selector.hpp"
+
 #include <string>
 #include <iostream>
 
@@ -27,7 +29,6 @@
 
 #include <hcxselect.h>
 
-#include "selector.hpp"
 #include "streams.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
@@ -50,6 +51,30 @@ static char *GetInnerText (const htmlcxx :: HTML :: Node *node_p, const char *da
 static bool InitHtmlLink (HtmlLink *link_p, const char *title_s, const char *uri_s, const char *data_s, const char *base_uri_s);
 
 static json_t *GetHtmlLinkAsJSON (const HtmlLink * const link_p);
+
+
+HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s)
+{
+	HtmlLinkArray *links_p = NULL;
+
+	if (uri_s)
+		{
+			if (!SetUriForCurlTool (tool_p, uri_s))
+				{
+					return NULL;
+				}
+		}
+
+	if (RunCurlTool (tool_p) == CURLE_OK)
+		{
+			const char *data_s = GetCurlToolData (tool_p);
+
+			links_p = GetMatchingLinks (data_s, link_selector_s, title_selector_s, uri_s);
+		}
+
+	return links_p;
+}
+
 
 
 json_t *GetMatchingLinksAsJSON (const char * const data_s, const char * const link_selector_s, const char * const title_selector_s, const char * const base_uri_s)

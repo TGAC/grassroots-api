@@ -203,6 +203,10 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 								{
 									icon_path_s = "images/list_filelink";
 								}
+							else if (strcmp (protocol_s, PROTOCOL_SERVICE_S) == 0)
+								{
+									icon_path_s = "images/list_tool";
+								}
 
 							item_p = new QListWidgetItem (title_s ? title_s : value_s, rl_list_p);
 

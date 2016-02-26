@@ -105,6 +105,10 @@ typedef struct Client
 	 */
 	json_t *(*cl_display_results_fn) (ClientData *client_data_p, json_t *response_p);
 
+
+	bool (*cl_free_client_fn) (struct Client *client_p);
+
+
 	/**
 	 * @brief Any custom data that the Client needs to store.
 	 *
@@ -158,6 +162,7 @@ GRASSROOTS_CLIENT_API void InitialiseClient (Client * const client_p,
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, json_t *response_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p),
+	bool (*free_client_fn) (Client *client_p),
 	ClientData *data_p,
 	Connection *connection_p);
 

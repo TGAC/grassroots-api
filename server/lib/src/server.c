@@ -1105,7 +1105,6 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 								{
 									ParameterSet *params_p = NULL;
 									Service *service_p = service_node_p -> sn_service_p;
-									json_t *service_res_p = NULL;
 									bool param_flag = true;
 
 									params_p = GetServiceParameters (service_p, NULL, config_p);
@@ -1326,5 +1325,4 @@ static int32 AddAllPairedServices (LinkedList *internal_services_p, const char *
 
 	return num_added_services;
 }
-
 

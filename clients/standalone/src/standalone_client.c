@@ -1,21 +1,21 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
-** 
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-** 
-**     http://www.apache.org/licenses/LICENSE-2.0
-** 
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
+ ** Copyright 2014-2015 The Genome Analysis Centre
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at
+ **
+ **     http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ** See the License for the specific language governing permissions and
+ ** limitations under the License.
+ */
 /*
-** client.c -- a stream socket client demo
-*/
+ ** client.c -- a stream socket client demo
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,9 +42,9 @@
 
 
 #ifdef _DEBUG
-	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_FINER)
+#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_FINER)
 #else
-	#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_NONE)
+#define STANDALONE_CLIENT_DEBUG	(STM_LEVEL_NONE)
 #endif
 
 
@@ -85,7 +85,7 @@ int main (int argc, char *argv [])
 	int api_id = -1;
 	int i;
 	Connection *connection_p = NULL;
-	
+
 	if (argc < 3)
 		{
 			printf ("USAGE: client <username> <password>\n");
@@ -94,234 +94,203 @@ int main (int argc, char *argv [])
 	else
 		{
 			i = 1;
-			
+
 			while (i < argc)
 				{
 					char error_arg = 0;
-					
+
 					if (*argv [i] == '-')
 						{
 							switch (* (argv [i] + 1))
-								{
-									case 'u':
-										if (++ i < argc)
-											{
-												username_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
-										
-									case 's':
-										if (++ i < argc)
-											{
-												port_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
+							{
+								case 'u':
+									if (++ i < argc)
+										{
+											username_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
 
-									case 'h':
-										if (++ i < argc)
-											{
-												hostname_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
-										
-									case 'p':
-										if (++ i < argc)
-											{
-												password_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
+								case 's':
+									if (++ i < argc)
+										{
+											port_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
 
-									case 'a':
-										if (++ i < argc)
-											{
-												api_id = atoi (argv [i]);
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
+								case 'h':
+									if (++ i < argc)
+										{
+											hostname_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
 
-									case 'f':
-										if (++ i < argc)
-											{
-												from_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
-										
-									case 't':
-										if (++ i < argc)
-											{
-												to_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;										
-									
-									case 'q':
-										if (++ i < argc)
-											{
-												query_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;										
+								case 'p':
+									if (++ i < argc)
+										{
+											password_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
 
-									case 'P':
-										if (++ i < argc)
-											{
-												protocol_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;			
-									
-									case 'U':
-										if (++ i < argc)
-											{
-												uri_s = argv [i];
-											}
-										else
-											{
-												error_arg = * (argv [i] - 1);
-											}
-										break;
+								case 'a':
+									if (++ i < argc)
+										{
+											api_id = atoi (argv [i]);
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
 
-									case 'W':
-										web_server_flag = true;
-										break;
+								case 'f':
+									if (++ i < argc)
+										{
+											from_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
 
-									default:
-										break;									
-								}
+								case 't':
+									if (++ i < argc)
+										{
+											to_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
+
+								case 'q':
+									if (++ i < argc)
+										{
+											query_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
+
+								case 'P':
+									if (++ i < argc)
+										{
+											protocol_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
+
+								case 'U':
+									if (++ i < argc)
+										{
+											uri_s = argv [i];
+										}
+									else
+										{
+											error_arg = * (argv [i] - 1);
+										}
+									break;
+
+								case 'W':
+									web_server_flag = true;
+									break;
+
+								default:
+									break;
+							}
 						}
-						
+
 					++ i;
 				}		/* while (i < argc) */
 
-				if (web_server_flag)
-					{
-						char *full_uri_s = GetFullServerURI (hostname_s, port_s, uri_s);
+			if (web_server_flag)
+				{
+					char *full_uri_s = GetFullServerURI (hostname_s, port_s, uri_s);
 
-						if (full_uri_s)
+					if (full_uri_s)
+						{
+							CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
+
+							if (c == 0)
+								{
+									connection_p = AllocateWebServerConnection (full_uri_s);
+									FreeCopiedString (full_uri_s);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init curl: %d", c);
+								}
+						}
+				}
+			else
+				{
+					connection_p = AllocateRawServerConnection (hostname_s, port_s);
+				}
+
+			if (connection_p)
+				{
+					Client *client_p = LoadClient ("clients", client_s, connection_p);
+
+					if (client_p)
+						{
+							json_t *req_p = NULL;
+							json_t *response_p = NULL;
+
+							switch (api_id)
 							{
-								connection_p = AllocateWebServerConnection (full_uri_s);
-								FreeCopiedString (full_uri_s);
-							}
-					}
-				else
-					{
-						connection_p = AllocateRawServerConnection (hostname_s, port_s);
-					}
+								case OP_LIST_ALL_SERVICES:
+									req_p = GetAvailableServicesRequest (username_s, password_s);
 
-				if (connection_p)
-					{
-						Client *client_p = LoadClient ("clients", client_s, connection_p);
-
-						if (client_p)
-							{
-								json_t *req_p = NULL;
-								json_t *response_p = NULL;
-
-								switch (api_id)
-									{
-										case OP_LIST_ALL_SERVICES:
-											req_p = GetAvailableServicesRequest (username_s, password_s);
-
-											if (req_p)
+									if (req_p)
+										{
+											if (!AddCredentialsToJson (req_p, username_s, password_s))
 												{
-													if (!AddCredentialsToJson (req_p, username_s, password_s))
-														{
-															printf ("Failed to add credentials\n");
-														}
+													printf ("Failed to add credentials\n");
+												}
 
-													response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-													if (response_p)
-														{
-															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
-														}		/* if (response_p) */
-
-												}		/* if (req_p) */
-											break;
-
-
-										case OP_IRODS_MODIFIED_DATA:
-											req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
 											response_p = MakeRemoteJsonCall (req_p, connection_p);
-											break;
 
-										case OP_LIST_INTERESTED_SERVICES:
+											if (response_p)
+												{
+													json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
+												}		/* if (response_p) */
+
+										}		/* if (req_p) */
+									break;
+
+
+								case OP_IRODS_MODIFIED_DATA:
+									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+									response_p = MakeRemoteJsonCall (req_p, connection_p);
+									break;
+
+								case OP_LIST_INTERESTED_SERVICES:
+									{
+										if (protocol_s && query_s)
 											{
-												if (protocol_s && query_s)
-													{
-														req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
-
-														if (req_p)
-															{
-																response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-																if (response_p)
-																	{
-																		ShowServices (response_p, client_p, username_s, password_s, connection_p);
-																	}		/* if (response_p) */
-
-															}		/* if (req_p) */
-
-													}
-											}
-											break;
-
-										case OP_RUN_KEYWORD_SERVICES:
-											{
-												if (query_s)
-													{
-														req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
-
-														if (req_p)
-															{
-																response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-																if (response_p)
-																	{
-																		ShowResults (response_p, client_p);
-																	}		/* if (response_p) */
-
-															}		/* if (req_p) */
-
-													}		/* if (query_s) */
-											}
-											break;
-
-										case OP_GET_NAMED_SERVICES:
-											{
-												req_p = GetNamedServicesRequest (username_s, password_s, query_s);
+												req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
 
 												if (req_p)
 													{
@@ -333,12 +302,16 @@ int main (int argc, char *argv [])
 															}		/* if (response_p) */
 
 													}		/* if (req_p) */
-											}
-											break;
 
-										case OP_CHECK_SERVICE_STATUS:
+											}
+									}
+									break;
+
+								case OP_RUN_KEYWORD_SERVICES:
+									{
+										if (query_s)
 											{
-												req_p = GetCheckServicesRequest (username_s, password_s, query_s);
+												req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
 
 												if (req_p)
 													{
@@ -346,42 +319,81 @@ int main (int argc, char *argv [])
 
 														if (response_p)
 															{
-																char *dump_s = json_dumps (response_p, JSON_INDENT (2));
-
-																if (dump_s)
-																	{
-																		PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "%s", dump_s);
-																		free (dump_s);
-																	}
-
-																//ShowServices (response_p, client_p, username_s, password_s, connection_p);
+																ShowResults (response_p, client_p);
 															}		/* if (response_p) */
 
 													}		/* if (req_p) */
-											}
-											break;
 
-										default:
-											break;
-									}		/* switch (api_id) */
+											}		/* if (query_s) */
+									}
+									break;
 
-								WipeJSON (req_p);
-								WipeJSON (response_p);
+								case OP_GET_NAMED_SERVICES:
+									{
+										req_p = GetNamedServicesRequest (username_s, password_s, query_s);
 
-							}		/* if (client_p) */
+										if (req_p)
+											{
+												response_p = MakeRemoteJsonCall (req_p, connection_p);
 
-						FreeConnection (connection_p);
-					}
-				else
-					{
-						printf ("failed to connect to server %s:%s\n", hostname_s, port_s);
-					}
+												if (response_p)
+													{
+														ShowServices (response_p, client_p, username_s, password_s, connection_p);
+													}		/* if (response_p) */
 
+											}		/* if (req_p) */
+									}
+									break;
 
+								case OP_CHECK_SERVICE_STATUS:
+									{
+										req_p = GetCheckServicesRequest (username_s, password_s, query_s);
+
+										if (req_p)
+											{
+												response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+												if (response_p)
+													{
+														char *dump_s = json_dumps (response_p, JSON_INDENT (2));
+
+														if (dump_s)
+															{
+																PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "%s", dump_s);
+																free (dump_s);
+															}
+
+														//ShowServices (response_p, client_p, username_s, password_s, connection_p);
+													}		/* if (response_p) */
+
+											}		/* if (req_p) */
+									}
+									break;
+
+								default:
+									break;
+							}		/* switch (api_id) */
+
+							WipeJSON (req_p);
+							WipeJSON (response_p);
+
+							FreeClient (client_p);
+						}		/* if (client_p) */
+
+					FreeConnection (connection_p);
+
+					if (web_server_flag)
+						{
+							curl_global_cleanup ();
+						}
+				}
+			else
+				{
+					printf ("failed to connect to server %s:%s\n", hostname_s, port_s);
+				}
 		}
-	
 
-					
+
 	return 0;
 }
 
@@ -403,15 +415,15 @@ static void RunServicesOnFile ()
 		{					
 			json_error_t error;										
 			json_t *irods_file_p = json_pack_ex (&error, 0, "{s: {s:s}}", KEY_IRODS, KEY_FILENAME, filename_s);
-			
+
 			if (irods_file_p)
 				{
 					json_p = GetInterestedServicesRequest (username_s, password_s, irods_file_p);																
 				}
 		}
-	
+
 }
-*/
+ */
 
 
 static char *GetFullServerURI (const char *hostname_s, const char *port_s, const char *uri_s)
@@ -460,23 +472,23 @@ static char *GetFullServerURI (const char *hostname_s, const char *port_s, const
 
 	return full_uri_s;
 }
-	
+
 
 
 static json_t *ShowServices (json_t *response_p, Client *client_p, const char *username_s, const char *password_s, Connection *connection_p)
 {
 	json_t *services_json_p = NULL;
 
-	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (response_p, __FILE__, __LINE__, "res:\n", STANDALONE_CLIENT_DEBUG);
-	#endif
-	
+#endif
+
 	if (json_is_array (response_p))
 		{
 			json_t *client_results_p = NULL;
 			const size_t num_services = json_array_size (response_p);
 			size_t i = 0;
-			
+
 			for (i = 0; i < num_services; ++ i)
 				{
 					json_t *service_json_p = json_array_get (response_p, i);
@@ -484,9 +496,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 					json_t *provider_p = json_object_get (service_json_p, SERVER_PROVIDER_S);
 
 
-					#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 					PrintJSONToLog (service_json_p, __FILE__, __LINE__, "next service:\n", STANDALONE_CLIENT_DEBUG);
-					#endif
+#endif
 
 					if (ops_p)
 						{
@@ -496,9 +508,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 									json_t *op_p;
 
 									json_array_foreach (ops_p, i, op_p)
-										{
-											AddServiceDetailsToClient (client_p, op_p, provider_p);
-										}
+									{
+										AddServiceDetailsToClient (client_p, op_p, provider_p);
+									}
 								}
 							else
 								{
@@ -521,9 +533,9 @@ static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, 
 	int res = -1;
 	const char *op_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
 
-	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (service_json_p, __FILE__, __LINE__, "client received service:\n", STANDALONE_CLIENT_DEBUG);
-	#endif
+#endif
 
 	if (op_name_s)
 		{
@@ -538,6 +550,8 @@ static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, 
 							const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
 
 							res = AddServiceToClient (client_p, op_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
+
+							FreeParameterSet (params_p);
 						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */

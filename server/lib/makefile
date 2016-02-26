@@ -33,14 +33,6 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_HANDLER_INC) \
 	-I$(DIR_GRASSROOTS_PARAMS_INC) \
 	-I$(DIR_GRASSROOTS_DRMAA_INC) \
-	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/drivers/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC) \
 	-I$(DIR_MONGODB_INC) \
@@ -77,8 +69,7 @@ endif
 include $(DIR_ROOT)/irods.mk
 
 ifeq ($(IRODS_ENABLED), 1)
-
-LDFLAGS += $(IRODS_EXTRA_LIBS)
+LDFLAGS += -L$(DIR_GRASSROOTS_IRODS_LIB) -l$(GRASSROOTS_IRODS_LIB_NAME) $(IRODS_EXTRA_LIBS)
 endif
 
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile	

@@ -49,7 +49,7 @@ extern "C"
 #endif
 
 
-GRASSROOTS_SERVICE_API RemoteServiceJob *AllocateRemoteServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s, const char *remote_service_s, const char *remote_uri_s, uuid_t remote_job_id);
+GRASSROOTS_SERVICE_API RemoteServiceJob *AllocateRemoteServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s, const char *remote_service_s, const char *remote_uri_s, uuid_t remote_job_id);
 
 
 GRASSROOTS_SERVICE_API void FreeRemoteServiceJob (ServiceJob *job_p);

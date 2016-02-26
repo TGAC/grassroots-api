@@ -1593,11 +1593,9 @@ bool RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, js
 
 						if (address_p)
 							{
-								bool match_flag = false;
-
-#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
+								#if SAMPLE_METADATA_DEBUG >=STM_LEVEL_FINE
 								PrintJSONToLog (address_p, "Address: ", STM_LEVEL_FINE, __FILE__, __LINE__);
-#endif
+								#endif
 
 								if (county_s)
 									{
@@ -1607,12 +1605,10 @@ bool RefineLocationDataForOpenCage (PathogenomicsServiceData *service_data_p, js
 											{
 												if (Stricmp (county_s, result_county_s) == 0)
 													{
-														match_flag = true;
+														return true;
 													}
 											}
 									}		/* if (county_s) */
-
-
 
 							}		/* if (address_p) */
 

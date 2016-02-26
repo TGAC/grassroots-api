@@ -71,7 +71,7 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 
 ServicePrefsWidget :: ~ServicePrefsWidget ()
 {
-
+	delete spw_params_widget_p;
 }
 
 

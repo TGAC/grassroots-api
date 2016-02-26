@@ -115,15 +115,15 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 						{
 							if (json_object_set (credentials_p, CREDENTIALS_S, loaded_credentials_p) == 0)
 								{
-#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-#endif
+									#endif
 
 									json_object_del (config_p, CREDENTIALS_S);
 
-#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
 									PrintJSONToLog (credentials_p, "credentials: ", JSON_TOOLS_DEBUG, __FILE__, __LINE__);
-#endif
+									#endif
 								}
 							else
 								{
@@ -131,7 +131,7 @@ bool AddCredentialsToJson (json_t *root_p, const char * const username_s, const 
 								}
 						}
 
-
+					json_decref (config_p);
 				}		/* if (config_p) */
 
 

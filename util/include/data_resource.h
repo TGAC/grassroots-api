@@ -40,6 +40,7 @@ typedef struct Resource
 	 * @see PROTOCOL_HTTP_S
 	 * @see PROTOCOL_HTTPS_S
 	 * @see PROTOCOL_INLINE_S
+	 * @see PROTOCOL_SERVICE_S
 	 * @see RESOURCE_DELIMITER_S
 	 */
 	char *re_protocol_s;
@@ -129,6 +130,14 @@ RESOURCE_PREFIX const char *PROTOCOL_HTTPS_S RESOURCE_VAL("https");
  * @memberof Resource
  */
 RESOURCE_PREFIX const char *PROTOCOL_INLINE_S RESOURCE_VAL("inline");
+
+
+/**
+ * @brief The protocol for a data object for a Grassroots Service.
+ * @memberof Resource
+ */
+RESOURCE_PREFIX const char *PROTOCOL_SERVICE_S RESOURCE_VAL("service");
+
 
 
 #ifdef __cplusplus

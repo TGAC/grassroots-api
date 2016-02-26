@@ -165,6 +165,7 @@ lib_parameters:
 #############################
 
 install_irods_stuff: install_lib_irods install_handler_irods install_service_irods_search
+build_irods_stuff: lib_irods handler_irods service_irods_search
 
 ifeq ($(IRODS_ENABLED),1)
 
@@ -189,13 +190,22 @@ install_service_irods_search: service_irods_search
 else
 
 lib_irods:	
+	echo "**** Not building lib_irods as IRODS_ENABLED != 1, $(IRODS_ENABLED)" 
+
 install_lib_irods:	
+	echo "**** Not running install_lib_irods as IRODS_ENABLED != 1, $(IRODS_ENABLED)" 
 
 handler_irods:
+	echo "**** Not building handler_irods as IRODS_ENABLED != 1, $(IRODS_ENABLED)" 
+
 install_handler_irods:
+	echo "**** Not running install_handler_irods as IRODS_ENABLED != 1, $(IRODS_ENABLED)" 
 
 service_irods_search:
+	echo "**** Not building service_irods_search as IRODS_ENABLED != 1, $(IRODS_ENABLED)" 
+
 install_service_irods_search:
+	echo "**** Not running install_service_irods_search as IRODS_ENABLED != 1, $(IRODS_ENABLED)" 
 
 endif
 #############################
@@ -262,14 +272,13 @@ all: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services han
 	$(MAKE) -C server/httpd/mod_grassroots
 	$(MAKE) -C mongodb 
 	$(MAKE) -C clients/lib
-#	$(MAKE) -C clients/standalone
+	$(MAKE) -C clients/standalone
 #	$(MAKE) -C clients/web-server-client	
 	$(MAKE) -C services/blast
 	$(MAKE) -C services/compress
 	$(MAKE) -C services/web
 	$(MAKE) -C services/json_search
 	$(MAKE) -C services/web_search
-#	$(MAKE) -C services/irods_search
 	$(MAKE) -C services/ensembl_rest
 	$(MAKE) -C services/tgac_elastic_search
 	$(MAKE) -C services/test_long_runner
@@ -280,25 +289,22 @@ install: install_init install_references install_images all install_irods_stuff
 	$(MAKE) -C util install
 	$(MAKE) -C network install
 	$(MAKE) -C parameters install
-#	$(MAKE) -C irods/lib install
 	$(MAKE) -C handlers/lib install
 	$(MAKE) -C services/lib install
 	$(MAKE) -C handlers/file install
-#	$(MAKE) -C handlers/irods install
 #	$(MAKE) -C handlers/dropbox install
 	$(MAKE) -C server/lib install 
 	$(MAKE) -C server/standalone install 
 	$(MAKE) -C server/httpd/mod_grassroots install
 	$(MAKE) -C mongodb install
 	$(MAKE) -C clients/lib install
-#	$(MAKE) -C clients/standalone install
+	$(MAKE) -C clients/standalone install
 #	$(MAKE) -C clients/web-server-client install	
 	$(MAKE) -C services/blast install
 	$(MAKE) -C services/compress install
 	$(MAKE) -C services/web install
 	$(MAKE) -C services/json_search install
 	$(MAKE) -C services/web_search install
-#	$(MAKE) -C services/irods_search install
 	$(MAKE) -C services/ensembl_rest install
 	$(MAKE) -C services/tgac_elastic_search install
 	$(MAKE) -C services/test_long_runner install

@@ -30,9 +30,9 @@
 #include "byte_buffer.h"
 #include "streams.h"
 #include "curl_tools.h"
-#include "selector.hpp"
 #include "web_service_util.h"
 #include "service_job.h"
+#include "selector.hpp"
 
 
 typedef struct WebSearchServiceData

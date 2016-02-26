@@ -27,7 +27,7 @@ extern "C"
 
 GRASSROOTS_CLIENT_API Client *GetClient (Connection *connection_p);
 
-GRASSROOTS_CLIENT_API void ReleaseClient (Client *client_p);
+GRASSROOTS_CLIENT_API bool ReleaseClient (Client *client_p);
 
 
 //json_t *GetUserParameters (json_t *service_p, const char * const filename_s);

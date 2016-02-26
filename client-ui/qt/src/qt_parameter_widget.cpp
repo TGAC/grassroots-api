@@ -341,6 +341,7 @@ QTParameterWidget :: ~QTParameterWidget ()
 			BaseParamWidget *widget_p = qpw_widgets_map.take (param_p);
 
 			widget_p -> RemoveConnection ();
+			delete widget_p;
 	}
 
 	for (int i = qpw_browsers.size(); i > 0;-- i)

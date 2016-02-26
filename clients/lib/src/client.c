@@ -43,6 +43,7 @@ void InitialiseClient (Client * const client_p,
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, json_t *response_p),
 	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p),
+	bool (*free_client_fn) (Client *client_p),
 	ClientData *data_p,
 	Connection *connection_p)
 {
@@ -51,6 +52,8 @@ void InitialiseClient (Client * const client_p,
 	client_p -> cl_run_fn = run_fn;
 	client_p -> cl_display_results_fn = display_results_fn;
 	client_p -> cl_add_service_fn = add_service_fn;
+	client_p -> cl_free_client_fn = free_client_fn;
+
 	client_p -> cl_data_p = data_p;
 
 	if (client_p -> cl_data_p)
@@ -86,7 +89,7 @@ json_t *DisplayResultsInClient (Client *client_p, json_t *response_p)
 
 void FreeClient (Client *client_p)
 {
-	FreeMemory (client_p);
+	bool res = client_p -> cl_free_client_fn (client_p);
 }
 
 
@@ -139,7 +142,7 @@ LinkedList *LoadClients (const char * const clients_path_s, const char * const p
 Client *LoadClient (const char * const clients_path_s, const char * const client_s, Connection *connection_p)
 {
 	Client *client_p = NULL;
-	const char *plugin_s = MakePluginName (client_s);
+	char *plugin_s = MakePluginName (client_s);
 
 	if (plugin_s)
 		{
@@ -159,8 +162,10 @@ Client *LoadClient (const char * const clients_path_s, const char * const client
 								}
 						}
 
+					FreeCopiedString (full_filename_s);
 				}		/* if (full_filename_s) */
 
+			FreeCopiedString (plugin_s);
 		}		/* if (plugin_s) */
 
 	return client_p;
@@ -204,9 +209,8 @@ bool DeallocatePluginClient (Plugin * const plugin_p)
 
 			if (symbol_p)
 				{
-					void (*fn_p) (Client *) = (void (*) (Client *)) symbol_p;
-
-					fn_p (plugin_p -> pl_client_p);
+					bool (*fn_p) (Client *) = (bool (*) (Client *)) symbol_p;
+					bool res = fn_p (plugin_p -> pl_client_p);
 
 					plugin_p -> pl_client_p = NULL;
 					success_flag = true;

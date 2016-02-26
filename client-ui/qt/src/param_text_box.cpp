@@ -127,8 +127,18 @@ bool DroppableTextBox :: SetFromText (const char * const data_s)
 ParamTextBox :: ParamTextBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 :		BaseParamWidget (param_p, options_widget_p)
 {
-	ptb_text_box_p = new DroppableTextBox (parent_p);
+	CreateDroppableTextBox (parent_p);
 }
+
+
+
+bool ParamTextBox :: CreateDroppableTextBox (QWidget *parent_p)
+{
+	ptb_text_box_p = new DroppableTextBox (parent_p);
+
+	return true;
+}
+
 
 
 ParamTextBox ::	~ParamTextBox ()
@@ -136,6 +146,9 @@ ParamTextBox ::	~ParamTextBox ()
 	delete ptb_text_box_p;
 	ptb_text_box_p = NULL;
 }
+
+
+
 
 
 void ParamTextBox :: RemoveConnection ()

@@ -39,6 +39,10 @@ public:
 	virtual bool SetValueFromText (const char *value_s);
 
 	virtual bool StoreParameterValue ();
+
+protected:
+	virtual bool CreateDroppableTextBox (QWidget *parent_p);
+
 };
 
 #endif // PARAM_JSON_EDITOR_H

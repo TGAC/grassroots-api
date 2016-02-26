@@ -25,6 +25,8 @@
 
 #include "network_library.h"
 #include "jansson.h"
+#include "curl_tools.h"
+
 
 /**
  * @brief A datatype representing an http link.
@@ -59,6 +61,23 @@ typedef struct HtmlLinkArray
 extern "C"
 {
 #endif
+
+
+/**
+ * @brief Run a CurlTool and select a subset of the data.
+ * This will set up a CurlTool to a given URI and download the data. If successful, it
+ * will then extract a set of HtmlLinks using the given selector.
+ * @param tool_p The CurlTool to use.
+ * @param uri_s The URI for the CurlTool to download from.
+ * @param selector_s The CSS selector to use to extract the HtmlLinkArray with.
+ * @return A newly-allocated HtmlLinkArray if successful or <code>NULL</code>
+ * upon error.
+ * @memberof CurlTool
+ * @see GetMatchingLinks
+ */
+GRASSROOTS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s);
+
+
 
 /**
  * Get an HtmlLinkArray in JSON format. This converts the output of <code>GetMatchingLinks</code>
