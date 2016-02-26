@@ -332,7 +332,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 					values [CA_ZIP].st_string_value_s = (char *) s_algorithm_names_pp [CA_ZIP];
 					values [CA_GZIP].st_string_value_s = (char *) s_algorithm_names_pp [CA_GZIP];
 
-					options_p = AllocateParameterMultiOptionArray (CA_NUM_ALGORITHMS, descriptions_pp, values, PT_STRING);
+					options_p = AllocateParameterMultiOptionArray (CA_NUM_ALGORITHMS, descriptions_pp, values, PT_STRING, true);
 
 					if (options_p)
 						{

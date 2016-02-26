@@ -303,10 +303,13 @@ typedef struct ParameterNode
  * @param descriptions_ss An array of strings of num_options size to use the ParameterMultiOption descriptions.
  * @param values_p An array of SharedTypes of num_options size to use the ParameterMultiOption values.
  * @param pt The ParameterType for the values in this ParameterMultiOptionArray.
+ * @param copy_value_flag If this is <code>true</code>, the entry will make a deep copy of value. If this
+ * is <code>false</code> then it will take ownership of the value and use it directly. Note that this
+ * means that the data stored by value will be freed when the ParameterMultiOptionArray is freed.
  * @return The newly-allocated ParameterMultiOptionArray or <code>NULL</code> upon error.
  * @memberof ParameterMultiOptionArray
  */
-GRASSROOTS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_ss, SharedType *values_p, ParameterType pt);
+GRASSROOTS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_pp, SharedType *values_p, ParameterType pt, bool copy_values_flag);
 
 
 /**
@@ -325,10 +328,13 @@ GRASSROOTS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionAr
  * @param index The index of ParameterMultiOption to adjust in this ParameterMultiOptionArray.
  * @param description_s The description to set for the given ParameterMultiOption.
  * @param value  The SharedType value to set for the given ParameterMultiOption.
- * @return <code>true</code> if the ParameterMultiOption was updated successfullly, <code>false</code> otherwise
+ * @param copy_value_flag If this is <code>true</code>, the entry will make a deep copy of value. If this
+ * is <code>false</code> then it will take ownership of the value and use it directly. Note that this
+ * means that the data stored by value will be freed when the ParameterMultiOptionArray is freed.
+ * @return <code>true</code> if the ParameterMultiOption was updated successfully, <code>false</code> otherwise
  * @memberof ParameterMultiOptionArray
  */
-GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value);
+GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value, bool copy_value_flag);
 
 
 /**
@@ -564,6 +570,18 @@ GRASSROOTS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
  * @memberof SharedType
  */
 GRASSROOTS_PARAMS_API void ClearSharedType (SharedType *st_p, const ParameterType pt);
+
+
+/**
+ * Make a deep copy of the value of one SharedType to another.
+ *
+ * @param src The SharedType to copy the value from.
+ * @param dest_p The SharedType to copy the value to.
+ * @param pt The ParameterType for this SharedType
+ * @return <code>true</code> if the value was copied successfully, <code>false</code> otherwise.
+ * @memberof SharedType
+ */
+GRASSROOTS_PARAMS_API bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterType pt);
 
 
 /**

@@ -89,7 +89,12 @@ json_t *DisplayResultsInClient (Client *client_p, json_t *response_p)
 
 void FreeClient (Client *client_p)
 {
+	Plugin *plugin_p = client_p -> cl_plugin_p;
+
 	bool res = client_p -> cl_free_client_fn (client_p);
+
+	plugin_p -> pl_client_p = NULL;
+	FreePlugin (plugin_p);
 }
 
 

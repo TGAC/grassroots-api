@@ -232,6 +232,19 @@ GRASSROOTS_UTIL_API bool CopyResource (const Resource * const src_p, Resource * 
 
 
 /**
+ * @brief Clone the data from one Resource to another.
+ *
+ * This will make new Resource and make a deep copy of each field in the source Resource into the
+ * equivalent field in the destination Resource.
+ * @param src_p The Resource to copy from.
+ * @return <code>true</code> if all of the fields were copied correctly, <code>false</code>
+ * otherwise. Upon failure, the destination Resource will remain unaltered.
+ * @memberof Resource
+ */
+GRASSROOTS_UTIL_API Resource *CloneResource (const Resource * const src_p);
+
+
+/**
  * @brief Create a Resource from a given string.
  *
  * This will take a string of the form <PROTOCOL>://<PATH> to generate

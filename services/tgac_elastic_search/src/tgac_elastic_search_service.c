@@ -234,7 +234,7 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 					values [i].st_string_value_s = (char *) (* (s_field_names_pp + i));
 				}
 
-			options_p = AllocateParameterMultiOptionArray (SF_NUM_FIELDS, descriptions_pp, values, PT_STRING);
+			options_p = AllocateParameterMultiOptionArray (SF_NUM_FIELDS, descriptions_pp, values, PT_STRING, true);
 
 			if (options_p)
 				{

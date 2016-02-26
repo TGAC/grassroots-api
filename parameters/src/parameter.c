@@ -229,7 +229,7 @@ Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const 
 															if (SetParameterValueFromSharedType (param_p, current_value_p ? current_value_p : &default_value, true))
 																{
 																	if (SetParameterValueFromSharedType (param_p, &default_value, false))
-																	{
+																		{
 																			return param_p;
 																		}		/* if (SetParameterValueFromSharedType (param_p, &default_value, false)) */
 																	else
@@ -416,7 +416,7 @@ static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const 
 }
 
 
-ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_pp, SharedType *values_p, ParameterType pt)
+ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_pp, SharedType *values_p, ParameterType pt, bool copy_values_flag)
 {
 	ParameterMultiOptionArray *array_p = AllocateEmptyParameterMultiOptionArray (num_options);
 
@@ -439,7 +439,7 @@ ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_o
 							++ description_pp;
 						}
 
-					if (!SetParameterMultiOption (array_p, i, description_s, *value_p))
+					if (!SetParameterMultiOption (array_p, i, description_s, *value_p, copy_values_flag))
 						{
 							FreeParameterMultiOptionArray (array_p);
 							array_p = NULL;
@@ -506,7 +506,7 @@ bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_
 }
 
 
-bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 i, const char * const description_s, SharedType value)
+bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 i, const char * const description_s, SharedType value, bool copy_value_flag)
 {
 	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + i;
 	bool success_flag = true;
@@ -532,15 +532,9 @@ bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32
 
 	if (success_flag)
 		{
-			if ((options_p -> pmoa_values_type == PT_STRING) || (options_p -> pmoa_values_type == PT_PASSWORD) || (options_p -> pmoa_values_type == PT_LARGE_STRING) || (options_p -> pmoa_values_type == PT_TABLE))
+			if (copy_value_flag)
 				{
-					char *value_s = CopyToNewString (value.st_string_value_s, 0, false);
-
-					if (value_s)
-						{
-							option_p -> pmo_value.st_string_value_s = value_s;
-						}
-					else
+					if (!CopySharedType (value, & (option_p -> pmo_value), options_p -> pmoa_values_type))
 						{
 							success_flag = false;
 						}
@@ -548,7 +542,6 @@ bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32
 			else
 				{
 					option_p -> pmo_value = value;
-					success_flag = true;
 				}
 		}
 
@@ -1879,7 +1872,7 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterM
 									
 									if (success_flag)
 										{
-											ParameterMultiOptionArray *options_array_p = AllocateParameterMultiOptionArray (num_options, descriptions_ss, values_p, pt);
+											ParameterMultiOptionArray *options_array_p = AllocateParameterMultiOptionArray (num_options, descriptions_ss, values_p, pt, false);
 											
 											if (options_array_p)
 												{
@@ -1890,7 +1883,7 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterM
 													success_flag = false;
 												}
 										}
-																		
+
 									FreeMemory (values_p);
 								}		/* if (values_p) */
 							
@@ -2064,6 +2057,108 @@ static bool GetParameterTagFromJSON (const json_t * const json_p, Tag *tag_p)
 }
 
 
+
+bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterType pt)
+{
+	bool success_flag = false;
+
+	switch (pt)
+		{
+			case PT_DIRECTORY:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+				{
+					Resource *dest_res_p = CloneResource (src.st_resource_value_p);
+
+					if (dest_res_p)
+						{
+							if (dest_p -> st_resource_value_p)
+								{
+									FreeResource (dest_p -> st_resource_value_p);
+								}
+
+							dest_p -> st_resource_value_p = dest_res_p;
+							success_flag = true;
+						}
+
+				}
+				break;
+
+			case PT_TABLE:
+			case PT_STRING:
+			case PT_LARGE_STRING:
+			case PT_PASSWORD:
+			case PT_KEYWORD:
+				{
+					if (src.st_string_value_s)
+						{
+							char *copied_value_s = CopyToNewString (src.st_string_value_s, 0, false);
+
+							if (copied_value_s)
+								{
+									if (dest_p -> st_string_value_s)
+										{
+											FreeCopiedString (dest_p -> st_string_value_s);
+										}
+
+									dest_p -> st_string_value_s = copied_value_s;
+									success_flag = true;
+								}
+							else
+								{
+
+								}
+						}
+				}
+				break;
+
+			case PT_JSON:
+				{
+					if (src.st_json_p)
+						{
+							json_t *copied_value_p = json_deep_copy (src.st_json_p);
+
+							if (copied_value_p)
+								{
+									if (dest_p -> st_json_p)
+										{
+											json_decref (dest_p -> st_json_p);
+										}
+
+									dest_p -> st_json_p = copied_value_p;
+									success_flag = true;
+								}
+						}
+				}
+			break;
+
+			case PT_SIGNED_INT:
+				dest_p -> st_long_value = src.st_long_value;
+				break;
+
+			case PT_UNSIGNED_INT:
+				dest_p -> st_ulong_value = src.st_ulong_value;
+				break;
+
+			case PT_UNSIGNED_REAL:
+			case PT_SIGNED_REAL:
+				dest_p -> st_data_value = src.st_data_value;
+				break;
+
+			case PT_CHAR:
+				dest_p -> st_char_value = src.st_char_value;
+				break;
+
+			case PT_BOOLEAN:
+				dest_p -> st_boolean_value = src.st_boolean_value;
+				break;
+		}
+
+
+	return success_flag;
+}
+
+
 void ClearSharedType (SharedType *st_p, const ParameterType pt)
 {
 	switch (pt)
@@ -2100,7 +2195,7 @@ void ClearSharedType (SharedType *st_p, const ParameterType pt)
 						json_decref (st_p -> st_json_p);
 						st_p -> st_json_p = NULL;
 					}
-			break;
+				break;
 
 			default:
 				break;
@@ -2204,9 +2299,9 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p)
 
 											if (param_p)
 												{
-
-													/* AllocateParameter made a deep copy of the current value, so we can deallocate our cached copy */
+													/* AllocateParameter made a deep copy of the current and default values, so we can deallocate our cached copies */
 													ClearSharedType (&current_value, pt);
+													ClearSharedType (&def, pt);
 
 													if (SetRemoteParameterDetailsFromJSON (param_p, root_p))
 														{

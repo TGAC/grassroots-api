@@ -224,7 +224,7 @@ Parameter *SetUpOutputFormatParamater (ParameterSet *param_set_p)
 			values [i].st_ulong_value = i;
 		}
 
-	options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_UNSIGNED_INT);
+	options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_UNSIGNED_INT, true);
 
 	if (options_p)
 		{

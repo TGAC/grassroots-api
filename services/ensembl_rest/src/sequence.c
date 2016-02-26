@@ -224,7 +224,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 					(* (output_types_p + i)).st_string_value_s = (char *) (* (S_SEQ_SEQUENCE_TYPES_PP + i));
 				}
 
-			output_type_options_p = AllocateParameterMultiOptionArray (ST_NUM_TYPES, NULL, output_types_p, PT_STRING);
+			output_type_options_p = AllocateParameterMultiOptionArray (ST_NUM_TYPES, NULL, output_types_p, PT_STRING, true);
 
 			if (output_type_options_p)
 				{
@@ -248,7 +248,7 @@ bool AddSequenceParameters (ParameterSet *param_set_p)
 									(* (output_formats_p + i)).st_string_value_s = (char *) (* (S_SEQ_FORMAT_NAMES_PP + i));
 								}
 
-							output_format_options_p = AllocateParameterMultiOptionArray (SO_NUM_FORMATS, NULL, output_formats_p, PT_STRING);
+							output_format_options_p = AllocateParameterMultiOptionArray (SO_NUM_FORMATS, NULL, output_formats_p, PT_STRING, true);
 
 							if (output_format_options_p)
 								{

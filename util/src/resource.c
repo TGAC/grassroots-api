@@ -201,10 +201,46 @@ bool SetResourceData (Resource *resource_p, json_t *data_p, const bool owns_data
 }
 
 
+Resource *CloneResource (const Resource * const src_p)
+{
+	Resource *resource_p = (Resource *) AllocMemory (sizeof (Resource));
+
+	if (resource_p)
+		{
+			if (CopyResource (src_p, resource_p))
+				{
+					return resource_p;
+				}
+
+			FreeResource (resource_p);
+		}		/* if (resource_p) */
+
+	return NULL;
+}
+
 
 bool CopyResource (const Resource * const src_p, Resource * const dest_p)
 {
 	bool success_flag = SetResourceValue (dest_p, src_p -> re_protocol_s, src_p -> re_value_s, src_p -> re_title_s);
+
+	if (src_p -> re_data_p)
+		{
+			json_t *copy_p = json_deep_copy (src_p -> re_data_p);
+
+			if (copy_p)
+				{
+					if (dest_p -> re_data_p)
+						{
+							json_decref (dest_p -> re_data_p);
+						}
+
+					dest_p -> re_data_p = copy_p;
+				}
+			else
+				{
+					success_flag = false;
+				}
+		}
 
 	return success_flag;
 }

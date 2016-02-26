@@ -358,6 +358,8 @@ json_t *GetNamedServicesRequest (const char * const username_s, const char * con
 	if (op_data_p)
 		{
 			res_p = GetServicesRequest (username_s, password_s, OP_GET_NAMED_SERVICES, SERVICES_NAME_S, op_data_p);
+
+			json_decref (op_data_p);
 		}
 	else
 		{

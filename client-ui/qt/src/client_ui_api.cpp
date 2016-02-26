@@ -157,6 +157,7 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 			widget_p -> close ();
 			delete widget_p;
 		}
+	delete (qt_data_p -> qcd_viewer_widgets_p);
 
 	delete (qt_data_p -> qcd_progress_p);
 	delete (qt_data_p -> qcd_results_p);

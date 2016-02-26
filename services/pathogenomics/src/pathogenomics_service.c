@@ -445,7 +445,7 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 															values [i].st_string_value_s = (char *) s_data_names_pp [i];
 														}
 
-													options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING);
+													options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING, true);
 
 													if (options_p)
 														{

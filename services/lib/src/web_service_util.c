@@ -283,7 +283,7 @@ bool AddMatchTypeParameter (ParameterSet *param_set_p)
 			(* (match_types_p + i)).st_string_value_s = (char *) (* (S_MATCH_TYPE_VALUES_SS + i));
 		}
 
-	match_type_options_p = AllocateParameterMultiOptionArray (MT_NUM_MATCH_TYPES, NULL, match_types_p, PT_STRING);
+	match_type_options_p = AllocateParameterMultiOptionArray (MT_NUM_MATCH_TYPES, NULL, match_types_p, PT_STRING, true);
 
 	if (match_type_options_p)
 		{

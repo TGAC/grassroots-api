@@ -220,6 +220,11 @@ int main (int argc, char *argv [])
 								default:
 									break;
 							}
+
+							if (error_arg)
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Error arg \"%c\"", error_arg);
+								}
 						}
 
 					++ i;
@@ -255,127 +260,172 @@ int main (int argc, char *argv [])
 
 					if (client_p)
 						{
-							json_t *req_p = NULL;
-							json_t *response_p = NULL;
-
 							switch (api_id)
-							{
-								case OP_LIST_ALL_SERVICES:
-									req_p = GetAvailableServicesRequest (username_s, password_s);
-
-									if (req_p)
+								{
+									case OP_LIST_ALL_SERVICES:
 										{
-											if (!AddCredentialsToJson (req_p, username_s, password_s))
+											json_t *req_p = GetAvailableServicesRequest (username_s, password_s);
+
+											if (req_p)
 												{
-													printf ("Failed to add credentials\n");
+													json_t *response_p = NULL;
+
+													if (!AddCredentialsToJson (req_p, username_s, password_s))
+														{
+															printf ("Failed to add credentials\n");
+														}
+
+													response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+													if (response_p)
+														{
+															json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
+
+															if (run_services_response_p)
+																{
+
+																	json_decref (run_services_response_p);
+																}
+
+															json_decref (response_p);
+														}		/* if (response_p) */
+
+													json_decref (req_p);
+												}		/* if (req_p) */
+										}
+										break;
+
+
+									case OP_IRODS_MODIFIED_DATA:
+										{
+											json_t *req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
+
+											if (req_p)
+												{
+													json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+													if (response_p)
+														{
+
+															json_decref (response_p);
+														}
+
+													json_decref (req_p);
+												}		/* if (req_p) */
+										}
+										break;
+
+									case OP_LIST_INTERESTED_SERVICES:
+										{
+											if (protocol_s && query_s)
+												{
+													json_t *req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
+
+													if (req_p)
+														{
+															json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+
+															if (response_p)
+																{
+																	json_t *service_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
+
+																	if (service_response_p)
+																		{
+
+																			json_decref (service_response_p);
+																		}
+
+																	json_decref (response_p);
+																}		/* if (response_p) */
+
+															json_decref (req_p);
+														}		/* if (req_p) */
+
 												}
+										}
+										break;
 
-											response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-											if (response_p)
+									case OP_RUN_KEYWORD_SERVICES:
+										{
+											if (query_s)
 												{
-													json_t *run_services_response_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
-												}		/* if (response_p) */
+													json_t *req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
 
-										}		/* if (req_p) */
-									break;
+													if (req_p)
+														{
+															json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
 
+															if (response_p)
+																{
+																	if (ShowResults (response_p, client_p))
+																		{
 
-								case OP_IRODS_MODIFIED_DATA:
-									req_p = GetModifiedFilesRequest (username_s, password_s, from_s, to_s);
-									response_p = MakeRemoteJsonCall (req_p, connection_p);
-									break;
+																		}
 
-								case OP_LIST_INTERESTED_SERVICES:
-									{
-										if (protocol_s && query_s)
-											{
-												req_p = GetInterestedServicesRequest (username_s, password_s, protocol_s, query_s);
+																	json_decref (response_p);
+																}		/* if (response_p) */
 
-												if (req_p)
-													{
-														response_p = MakeRemoteJsonCall (req_p, connection_p);
+															json_decref (req_p);
+														}		/* if (req_p) */
 
-														if (response_p)
-															{
-																ShowServices (response_p, client_p, username_s, password_s, connection_p);
-															}		/* if (response_p) */
+												}		/* if (query_s) */
+										}
+										break;
 
-													}		/* if (req_p) */
+									case OP_GET_NAMED_SERVICES:
+										{
+											json_t *req_p = GetNamedServicesRequest (username_s, password_s, query_s);
 
-											}
-									}
-									break;
+											if (req_p)
+												{
+													json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
 
-								case OP_RUN_KEYWORD_SERVICES:
-									{
-										if (query_s)
-											{
-												req_p = GetKeywordServicesRequest (username_s, password_s, query_s);
+													if (response_p)
+														{
+															json_t *shown_services_p = ShowServices (response_p, client_p, username_s, password_s, connection_p);
 
-												if (req_p)
-													{
-														response_p = MakeRemoteJsonCall (req_p, connection_p);
+															if (shown_services_p)
+																{
+																	json_decref (shown_services_p);
+																}		/* if (shown_services_p) */
 
-														if (response_p)
-															{
-																ShowResults (response_p, client_p);
-															}		/* if (response_p) */
+															json_decref (response_p);
+														}		/* if (response_p) */
 
-													}		/* if (req_p) */
+													json_decref (req_p);
+												}		/* if (req_p) */
+										}
+										break;
 
-											}		/* if (query_s) */
-									}
-									break;
+									case OP_CHECK_SERVICE_STATUS:
+										{
+											json_t *req_p = GetCheckServicesRequest (username_s, password_s, query_s);
 
-								case OP_GET_NAMED_SERVICES:
-									{
-										req_p = GetNamedServicesRequest (username_s, password_s, query_s);
+											if (req_p)
+												{
+													json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
 
-										if (req_p)
-											{
-												response_p = MakeRemoteJsonCall (req_p, connection_p);
+													if (response_p)
+														{
+															char *dump_s = json_dumps (response_p, JSON_INDENT (2));
 
-												if (response_p)
-													{
-														ShowServices (response_p, client_p, username_s, password_s, connection_p);
-													}		/* if (response_p) */
+															if (dump_s)
+																{
+																	PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "%s", dump_s);
+																	free (dump_s);
+																}
 
-											}		/* if (req_p) */
-									}
-									break;
+															json_decref (response_p);
+														}		/* if (response_p) */
 
-								case OP_CHECK_SERVICE_STATUS:
-									{
-										req_p = GetCheckServicesRequest (username_s, password_s, query_s);
+													json_decref (req_p);
+												}		/* if (req_p) */
+										}
+										break;
 
-										if (req_p)
-											{
-												response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-												if (response_p)
-													{
-														char *dump_s = json_dumps (response_p, JSON_INDENT (2));
-
-														if (dump_s)
-															{
-																PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "%s", dump_s);
-																free (dump_s);
-															}
-
-														//ShowServices (response_p, client_p, username_s, password_s, connection_p);
-													}		/* if (response_p) */
-
-											}		/* if (req_p) */
-									}
-									break;
-
-								default:
-									break;
-							}		/* switch (api_id) */
-
-							WipeJSON (req_p);
-							WipeJSON (response_p);
+									default:
+										break;
+								}		/* switch (api_id) */
 
 							FreeClient (client_p);
 						}		/* if (client_p) */
@@ -479,9 +529,9 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 {
 	json_t *services_json_p = NULL;
 
-#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (response_p, __FILE__, __LINE__, "res:\n", STANDALONE_CLIENT_DEBUG);
-#endif
+	#endif
 
 	if (json_is_array (response_p))
 		{
@@ -496,21 +546,21 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, const char *u
 					json_t *provider_p = json_object_get (service_json_p, SERVER_PROVIDER_S);
 
 
-#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+					#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
 					PrintJSONToLog (service_json_p, __FILE__, __LINE__, "next service:\n", STANDALONE_CLIENT_DEBUG);
-#endif
+					#endif
 
 					if (ops_p)
 						{
 							if (json_is_array (ops_p))
 								{
-									size_t i;
+									size_t j;
 									json_t *op_p;
 
-									json_array_foreach (ops_p, i, op_p)
-									{
-										AddServiceDetailsToClient (client_p, op_p, provider_p);
-									}
+									json_array_foreach (ops_p, j, op_p)
+										{
+											AddServiceDetailsToClient (client_p, op_p, provider_p);
+										}
 								}
 							else
 								{
