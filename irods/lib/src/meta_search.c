@@ -178,7 +178,6 @@ bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char
 }
 
 
-
 static SearchTermNode *AllocateSearchTermNode (const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id)
 {
 	SearchTermNode *node_p = (SearchTermNode *) AllocMemory (sizeof (SearchTermNode));

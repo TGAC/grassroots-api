@@ -74,7 +74,7 @@ static bool CloseIrodsSearchService (Service *service_p);
 
 static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
-static size_t AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static int AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p);
 
@@ -354,9 +354,9 @@ static json_t *DoKeywordSearch (const char *keyword_s, IrodsSearchServiceData *d
 
 
 
-static size_t AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static int AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
-	size_t res = 0;
+	int res = 0;
 
 	/*
 	 * Get the attibute keys
@@ -491,7 +491,7 @@ static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_s
 							if (success_flag)
 								{
 									success_flag = false;
-									options_array_p = AllocateParameterMultiOptionArray (num_opts, NULL, param_options_p, PT_STRING);
+									options_array_p = AllocateParameterMultiOptionArray (num_opts, NULL, param_options_p, PT_STRING, false);
 
 									if (options_array_p)
 										{
@@ -649,45 +649,23 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 
 									if (param_p -> pa_tag != TAG_IRODS_KEYWORD)
 										{
-											int key_id;
+											const char *value_s = param_p -> pa_current_value.st_string_value_s;
 
-											if (GetColumnId (param_p, S_KEY_ID_S, &key_id))
+											if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
 												{
-													int value_id;
-
-													if (GetColumnId (param_p, S_VALUE_ID_S, &value_id))
+													if (AddMetadataDataAttributeSearchTerm (search_p, clause_s, param_p -> pa_name_s, "=", value_s))
 														{
-															const char *value_s = param_p -> pa_current_value.st_string_value_s;
-
-															if (strcmp (S_UNSET_VALUE_S, value_s) != 0)
+															if (clause_s == NULL)
 																{
-																	if (AddIrodsSearchTerm (search_p, clause_s, param_p -> pa_name_s, key_id, "=", value_s, value_id))
-																		{
-																			if (clause_s == NULL)
-																				{
-																					clause_s = "AND";
-																				}
-																		}
-																	else
-																		{
-																			success_flag = false;
-																		}
+																	clause_s = "AND";
 																}
-															else
-																{
-																	success_flag = true;
-																}
-
-														}		/* if (GetColumnId (param_p, S_VALUE_ID_S, &value_id)) */
+														}
 													else
 														{
 															success_flag = false;
 														}
-												}		/* if (GetColumnId (param_p, S_KEY_ID_S, &key_id)) */
-											else
-												{
-													success_flag = false;
-												}
+
+												}		/* if (strcmp (S_UNSET_VALUE_S, value_s) != 0) */
 
 										}		/* if (param_p -> pa_tag != TAG_IRODS_KEYWORD) */
 
