@@ -622,3 +622,17 @@ bool GetUUIDFromJSON (const json_t *service_json_p, uuid_t uuid)
 	return success_flag;
 }
 
+
+json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s)
+{
+	json_t *res_p = NULL;
+	json_error_t json_err;
+
+	res_p = json_pack_ex (&json_err, 0, "{s:s,s:s}", JOB_SERVICE_S, service_name_s, JOB_NAME_S, "Run");
+
+
+	return res_p;
+}
+
+
+

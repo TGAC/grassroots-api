@@ -237,6 +237,22 @@ GRASSROOTS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, Ope
 GRASSROOTS_NETWORK_API json_t *CallServices (json_t *client_results_p, const char * const username_s, const char * const password_s, Connection *connection_p);
 
 
+/**
+ * Get the JSON fragment for a job result list registering that a Service
+ * could be run against the user's parameters.
+ *
+ * This is of use when running a keyword search and specifying that a Service
+ * knows of this keyword but cannot run on it directly. For example, a Blast
+ * Service might know that the keyword refers to some if its databases.
+ *
+ * @param service_name_s The name of the Service that has registered an interest in the given keyword.
+ * @param keyword_s The keyword.
+ * @return The JSON fragment to send to the Server or <code>NULL</code> upon error.
+ */
+GRASSROOTS_NETWORK_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s);
+
+
+
 #ifdef __cplusplus
 }
 #endif

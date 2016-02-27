@@ -2134,23 +2134,28 @@ bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterTy
 
 			case PT_SIGNED_INT:
 				dest_p -> st_long_value = src.st_long_value;
+				success_flag = true;
 				break;
 
 			case PT_UNSIGNED_INT:
 				dest_p -> st_ulong_value = src.st_ulong_value;
+				success_flag = true;
 				break;
 
 			case PT_UNSIGNED_REAL:
 			case PT_SIGNED_REAL:
 				dest_p -> st_data_value = src.st_data_value;
+				success_flag = true;
 				break;
 
 			case PT_CHAR:
 				dest_p -> st_char_value = src.st_char_value;
+				success_flag = true;
 				break;
 
 			case PT_BOOLEAN:
 				dest_p -> st_boolean_value = src.st_boolean_value;
+				success_flag = true;
 				break;
 		}
 

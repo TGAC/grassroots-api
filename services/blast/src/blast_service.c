@@ -1049,41 +1049,75 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	bool interested_flag = false;
-	const char *filename_s = resource_p -> re_value_s;
 
-
-	/*
-	 * @TODO
-	 * We could check if the file is on a remote filesystem and if so
-	 * make a full or partial local copy for analysis.
-	 */
-
-	/* 
-	 * We can check on file extension and also the content of the file
-	 * to determine if we want to blast this file.
-	 */
-	if (filename_s)
+	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S))
 		{
-			const char *extension_s = strstr (filename_s, ".");
+			/*
+			 * @TODO
+			 * We could check if the file is on a remote filesystem and if so
+			 * make a full or partial local copy for analysis.
+			 */
 
-			if (extension_s)
+			/*
+			 * We can check on file extension and also the content of the file
+			 * to determine if we want to blast this file.
+			 */
+			if (resource_p -> re_value_s)
 				{
-					/* move past the . */
-					++ extension_s;
+					const char *extension_s = strstr (resource_p -> re_value_s, ".");
 
-					/* check that the file doesn't end with the . */
-					if (*extension_s != '\0')
+					if (extension_s)
 						{
-							if (strcmp (extension_s, "fa") == 0)
+							/* move past the . */
+							++ extension_s;
+
+							/* check that the file doesn't end with the . */
+							if (*extension_s != '\0')
 								{
-									interested_flag = true;
-								}
+									if (strcmp (extension_s, "fa") == 0)
+										{
+											interested_flag = true;
+										}
 
-						}		/* if (*extension_s != '\0') */
+								}		/* if (*extension_s != '\0') */
 
-				}		/* if (extension_s) */
+						}		/* if (extension_s) */
 
-		}		/* if (filename_s) */
+				}		/* if (filename_s) */
+
+		}		/* if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S)) */
+	else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_INLINE_S))
+		{
+			if (resource_p -> re_value_s)
+				{
+					BlastServiceData *blast_data_p = (BlastServiceData *) service_p -> se_data_p;
+					DatabaseInfo *db_p = blast_data_p -> bsd_databases_p;
+
+					/*
+					 * Scroll through the databases and see if the phrase is in either the
+					 * database title or description
+					 */
+					if (db_p)
+						{
+							while ((db_p -> di_name_s) && (!interested_flag))
+								{
+									if ((strstr (db_p -> di_name_s, resource_p -> re_value_s)) ||
+											(strstr (db_p -> di_description_s, resource_p -> re_value_s)))
+										{
+											interested_flag = true;
+										}
+									else
+										{
+											++ db_p;
+										}
+								}		/* while (db_p) */
+
+						}		/* if (db_p) */
+
+				}		/* if (resource_p -> re_value_s) */
+
+
+		}		/* else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_INLINE_S)) */
 
 
 	return interested_flag;	

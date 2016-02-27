@@ -802,6 +802,53 @@ int Strnicmp (const char *c0_p, const char *c1_p, size_t length)
 }
 
 
+const char *Stristr (const char *value_s, const char *substring_s)
+{
+	const char *res_p = NULL;
+
+	if (value_s != substring_s)
+		{
+			const char *value_p = value_s;
+			const char *substring_p = substring_s;
+
+			while (*value_p && *substring_p)
+		    {
+					/* Do they match? */
+					if (tolower (*value_p) == tolower (*substring_p))
+		        {
+							if (!res_p)
+		            {
+		              res_p = value_p;
+		            }
+
+							++ substring_p;
+		        }
+					else
+		        {
+							substring_p = substring_s;
+
+							if (tolower (*value_p) == tolower (*substring_p))
+				        {
+									res_p = value_p;
+									++ substring_p;
+				        }
+							else
+								{
+									res_p = NULL;
+								}
+		        }
+
+					++ value_p;
+		    }		/* while (*value_p && *substring_p) */
+		}
+	else
+		{
+			res_p = value_s;
+		}
+
+	return res_p;
+}
+
 
 void ClearUUID (uuid_t *id_p)
 {
