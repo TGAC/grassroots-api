@@ -108,6 +108,7 @@ ProgressWidget :: ProgressWidget (uuid_t id, OperationStatus status, const char 
 
 ProgressWidget ::	~ProgressWidget ()
 {
+	delete pw_anim_p;
 }
 
 

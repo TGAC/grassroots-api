@@ -600,8 +600,6 @@ static int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, 
 							const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
 
 							res = AddServiceToClient (client_p, op_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
-
-							FreeParameterSet (params_p);
 						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */

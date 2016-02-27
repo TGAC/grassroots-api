@@ -99,105 +99,108 @@ void MainWindow :: RunServices (bool run_flag)
 	if (run_flag)
 		{
 			json_t *client_params_p = GetUserValuesAsJSON (false);
-			const char *username_s = NULL;
-			const char *password_s = NULL;
 
-			setCursor (Qt :: BusyCursor);
-			json_t *services_json_p = CallServices (client_params_p, username_s, password_s, mw_client_data_p -> qcd_base_data.cd_connection_p);
-			setCursor (Qt :: ArrowCursor);
-
-			if (services_json_p)
+			if (client_params_p)
 				{
-					PrintJSONToLog (services_json_p, "\n\nDATA:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 
-					if (json_is_array (services_json_p))
+					const char *username_s = NULL;
+					const char *password_s = NULL;
+
+					setCursor (Qt :: BusyCursor);
+					json_t *services_json_p = CallServices (client_params_p, username_s, password_s, mw_client_data_p -> qcd_base_data.cd_connection_p);
+					setCursor (Qt :: ArrowCursor);
+
+					if (services_json_p)
 						{
-							int status;
-							ProgressWindow *progress_p = mw_client_data_p -> qcd_progress_p;
-							bool show_progress_flag = false;
-							ResultsWindow *results_p = mw_client_data_p -> qcd_results_p;
-							bool show_results_flag = false;
+							PrintJSONToLog (services_json_p, "\n\nDATA:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
 
-							size_t i;
-							json_t *job_p;
-
-							json_array_foreach (services_json_p, i, job_p)
+							if (json_is_array (services_json_p))
 								{
-									const char *service_name_s = GetJSONString (job_p, SERVICE_NAME_S);
-									const char *service_description_s = GetJSONString (job_p, OPERATION_DESCRIPTION_S);
-									const char *service_uri_s =  GetJSONString (job_p, OPERATION_INFORMATION_URI_S);
+									int status;
+									ProgressWindow *progress_p = mw_client_data_p -> qcd_progress_p;
+									bool show_progress_flag = false;
+									ResultsWindow *results_p = mw_client_data_p -> qcd_results_p;
+									bool show_results_flag = false;
 
-									/* Get the job status */
-									OperationStatus status = OS_ERROR;
-									const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
+									size_t i;
+									json_t *job_p;
 
-									if (value_s)
+									json_array_foreach (services_json_p, i, job_p)
 										{
-											status = GetOperationStatusFromString (value_s);
-										}
-									else
-										{
-											int i;
+											const char *service_name_s = GetJSONString (job_p, SERVICE_NAME_S);
+											const char *service_description_s = GetJSONString (job_p, OPERATION_DESCRIPTION_S);
+											const char *service_uri_s =  GetJSONString (job_p, OPERATION_INFORMATION_URI_S);
+
 											/* Get the job status */
+											OperationStatus status = OS_ERROR;
+											const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
 
-											if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
+											if (value_s)
 												{
-													if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
-														{
-															status = (OperationStatus) i;
-														}
-												}
-										}
-
-									if (status != OS_ERROR)
-										{
-											json_t *errors_p = NULL;
-
-											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
-												{
-													results_p -> AddResultsPageFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
-													show_results_flag = true;
+													status = GetOperationStatusFromString (value_s);
 												}
 											else
 												{
-													progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
-													show_progress_flag = true;
-												}
+													int i;
+													/* Get the job status */
 
-											errors_p = json_object_get (job_p, "errors");
-
-											if (errors_p)
-												{
-													if (service_name_s)
+													if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
 														{
-															mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
+															if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
+																{
+																	status = (OperationStatus) i;
+																}
 														}
 												}
+
+											if (status != OS_ERROR)
+												{
+													json_t *errors_p = NULL;
+
+													if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
+														{
+															results_p -> AddResultsPageFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+															show_results_flag = true;
+														}
+													else
+														{
+															progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+															show_progress_flag = true;
+														}
+
+													errors_p = json_object_get (job_p, "errors");
+
+													if (errors_p)
+														{
+															if (service_name_s)
+																{
+																	mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
+																}
+														}
+
+												}		/* if (status != OS_ERROR) */
+
+										}		/* json_array_foreach (services_json_p, i, job_p) */
+
+									if (show_progress_flag)
+										{
+											progress_p -> show ();
+											progress_p -> raise ();
 										}
-								}
 
-							if (show_progress_flag)
-								{
-									progress_p -> show ();
-									progress_p -> raise ();
-								}
+									if (show_results_flag)
+										{
+											results_p -> show ();
+											results_p -> raise ();
+										}
 
-							if (show_results_flag)
-								{
-									results_p -> show ();
-									results_p -> raise ();
-								}
-						}
+								}		/* if (json_is_array (services_json_p)) */
 
+							json_decref (services_json_p);
+						}		/* if (services_json_p) */
 
-					/*
-					uint32 i = mw_client_data_p -> qcd_results_p ->  AddAllResultsPagesFromJSON (services_json_p);
-
-					UIUtils :: CentreWidget (this, mw_client_data_p -> qcd_results_p);
-
-					mw_client_data_p -> qcd_results_p -> show ();
-					*/
-				}
+					json_decref (client_params_p);
+				}		/* if (client_params_p) */
 		}
 	else
 		{
@@ -233,7 +236,6 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 					if (json_is_array (results_p))
 						{
 							size_t i;
-							const size_t size = json_array_size (results_p);
 							json_t *service_result_p;
 
 							json_array_foreach (results_p, i, service_result_p)
@@ -245,7 +247,6 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 									if (json_is_array (service_result_p))
 										{
 											size_t j;
-											const size_t size = json_array_size (results_p);
 											json_t *job_result_p;
 
 											json_array_foreach (service_result_p, j, job_result_p)
@@ -274,9 +275,10 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 							mw_client_data_p -> qcd_results_p -> show ();
 						}
 
+					json_decref (results_p);
 				}		/* if (results_p) */
 
-			WipeJSON (query_p);
+			json_decref (query_p);
 		}		/* if (query_p) */
 
 }

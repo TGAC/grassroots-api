@@ -350,6 +350,11 @@ QTParameterWidget :: ~QTParameterWidget ()
 			qpw_browsers.pop_back ();
 			delete browser_p;
 		}
+
+	 if (qpw_params_p)
+		 {
+			 FreeParameterSet (qpw_params_p);
+		 }
 }
 
 

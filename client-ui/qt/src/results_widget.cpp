@@ -20,6 +20,8 @@
 
 #include "results_list.h"
 #include "json_util.h"
+#include "streams.h"
+
 
 ResultsWidget :: ResultsWidget (QWidget *parent_p)
  : QTabWidget (parent_p)
@@ -91,8 +93,11 @@ uint32 ResultsWidget :: AddAllResultsPagesFromJSON (const json_t *json_p, const 
 bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	bool success_flag = false;
-	char *dump_s = json_dumps (json_p, JSON_INDENT (2));
 	json_t *results_json_p = json_object_get (json_p, SERVICE_RESULTS_S);
+
+	#if RESULTS_WIDGET_DEBUG >= STM_LEVEL_FINER
+	PrintJSONToLog (json_p, "result: ", STM_LEVEL_FINER, __FILE__, __LINE__);
+	#endif
 
 	if (results_json_p)
 		{
