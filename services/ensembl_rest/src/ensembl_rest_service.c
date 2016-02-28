@@ -273,7 +273,7 @@ static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_
 
 static bool IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = true;
+	bool interested_flag = false;
 
 	return interested_flag;
 }

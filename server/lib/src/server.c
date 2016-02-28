@@ -29,6 +29,7 @@
 #include "user.h"
 #include "key_value_pair.h"
 #include "service.h"
+#include "service_matcher.h"
 
 #include "handler.h"
 #include "handler_utils.h"
@@ -66,7 +67,7 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 
 static json_t *GetAllServices (const json_t * const req_p, const json_t *credentials_p);
 
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
+static json_t *GetServicesAsJSON (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p);
 
 static int8 RunServiceFromJSON (const json_t *req_p, json_t *credentials_p, json_t *res_p, uuid_t user_uuid);
 
@@ -668,7 +669,7 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 												
 					if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
 						{
-							res_p = GetServices (SERVICES_PATH_S, username_s, password_s, resource_p, handler_p, config_p);
+							res_p = GetServicesAsJSON (SERVICES_PATH_S, username_s, password_s, resource_p, handler_p, config_p);
 						}
 						
 					FreeHandler (handler_p);
@@ -688,7 +689,7 @@ static json_t *GetAllServices (const json_t * const req_p, const json_t *credent
 	const char *password_s = NULL;
 												
 	/* Get the local services */
-	res_p = GetServices (SERVICES_PATH_S, username_s, password_s, NULL, NULL, credentials_p);
+	res_p = GetServicesAsJSON (SERVICES_PATH_S, username_s, password_s, NULL, NULL, credentials_p);
 
 	return res_p;
 }
@@ -1028,155 +1029,139 @@ static bool IsRequiredExternalOperation (const json_t *external_op_p, const char
 }
 
 
-
-//static json_t GetRemoteServices (const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
-
-
-
-static json_t *GetServices (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
+static LinkedList *GetServicesList (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
 {
-	json_t *json_p = NULL;
-	
 	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
-	
+
 	if (services_p)
 		{
 			ServersManager *servers_manager_p = GetServersManager ();
 
 			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, config_p);
 
-
 			if (services_p -> ll_size > 0)
 				{
 					AddAllPairedServices (services_p, username_s, password_s);
 
-//									json_t *external_service_p;
-//
-//									json_array_foreach (external_services_p, i, external_service_p)
-//										{
-//											const char *external_service_name_s = GetJSONString (external_service_p, SERVICE_NAME_S);
-//
-//											if (external_service_name_s)
-//												{
-//
-//												}
-//
-//										}		/* json_array_foreach (external_services_p, i, external_service_p) */
-//
-//								} /* if (json_is_array (external_services_p)) */
-//
-//						}		/* if (external_services_p) */
-
-					json_p = GetServicesListAsJSON (services_p, resource_p, config_p, false);
-				}
-			else
-				{
-					json_p = AddExternalServerOperationsToJSON (servers_manager_p, NULL, OP_LIST_ALL_SERVICES);
+					return services_p;
 				}
 
-				
 			FreeLinkedList (services_p);
 		}		/* if (services_p) */
-		
+
+	return NULL;
+}
+
+
+
+static json_t *GetServicesAsJSON (const char * const services_path_s, const char * const username_s, const char * const password_s, Resource *resource_p, Handler *handler_p, const json_t *config_p)
+{
+	json_t *json_p = NULL;
+	LinkedList *services_p = GetServicesList (services_path_s, username_s, password_s, resource_p, handler_p, config_p);
+	
+	if (services_p)
+		{
+			json_p = GetServicesListAsJSON (services_p, resource_p, config_p, false);
+			FreeLinkedList (services_p);
+		}
+	else
+		{
+			ServersManager *servers_manager_p = GetServersManager ();
+			json_p = AddExternalServerOperationsToJSON (servers_manager_p, NULL, OP_LIST_ALL_SERVICES);
+		}
+
 	return json_p;
 }
 
 
 static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p, const char *keyword_s)
 {
-	json_t *res_p = NULL;
+	json_t *res_p = json_array ();
 
-	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
-
-	if (services_p)
+	if (res_p)
 		{
-			LoadKeywordServices (services_p, SERVICES_PATH_S, config_p);
+			Resource *resource_p = AllocateResource (PROTOCOL_TEXT_S, keyword_s, keyword_s);
 
-			if (services_p -> ll_size > 0)
+			if (resource_p)
 				{
-					res_p = json_array ();
+					const char *username_s = NULL;
+					const char *password_s = NULL;
+					LinkedList *services_p = GetServicesList (SERVICES_PATH_S, username_s, password_s, resource_p, NULL, config_p);
 
-					if (res_p)
+					if (services_p)
 						{
-							/* For each service, set its keyword parameter */
-							ServiceNode *service_node_p = (ServiceNode *) (services_p -> ll_head_p);
+							ServiceMatcher *matcher_p = AllocateKeywordServiceMatcher ();
 
-							while (service_node_p)
+							if (matcher_p)
 								{
-									ParameterSet *params_p = NULL;
-									Service *service_p = service_node_p -> sn_service_p;
-									bool param_flag = true;
+									/* For each service, set its keyword parameter */
+									ServiceNode *service_node_p = (ServiceNode *) (services_p -> ll_head_p);
 
-									params_p = GetServiceParameters (service_p, NULL, config_p);
-
-									if (params_p)
+									while (service_node_p)
 										{
-											ParameterNode *param_node_p = (ParameterNode *) params_p -> ps_params_p -> ll_head_p;
+											Service *service_p = service_node_p -> sn_service_p;
 
-											param_flag = false;
-
-											while (param_node_p)
+											if (RunServiceMatcher (matcher_p, service_p))
 												{
-													Parameter *param_p = param_node_p -> pn_parameter_p;
+													ParameterSet *params_p = NULL;
+													bool param_flag = true;
 
-													/* set the keyword parameter */
-													if (param_p -> pa_type == PT_KEYWORD)
+													params_p = GetServiceParameters (service_p, NULL, config_p);
+
+													if (params_p)
 														{
-															if (SetParameterValue (param_p, keyword_s, true))
+															ParameterNode *param_node_p = (ParameterNode *) params_p -> ps_params_p -> ll_head_p;
+
+															param_flag = false;
+
+															while (param_node_p)
 																{
-																	param_flag = true;
-																}
-															else
+																	Parameter *param_p = param_node_p -> pn_parameter_p;
+
+																	/* set the keyword parameter */
+																	if (param_p -> pa_type == PT_KEYWORD)
+																		{
+																			if (SetParameterValue (param_p, keyword_s, true))
+																				{
+																					param_flag = true;
+																				}
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set service param \"%s\" - \"%s\" to \"%s\"", GetServiceName (service_p), param_p -> pa_name_s, keyword_s);
+																					param_flag = false;
+																				}
+																		}
+
+																	param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
+																}		/* while (param_node_p) */
+
+															/* Now run the service */
+															if (param_flag)
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set service param \"%s\" - \"%s\" to \"%s\"", GetServiceName (service_p), param_p -> pa_name_s, keyword_s);
-																	param_flag = false;
+																	ServiceJobSet *jobs_set_p = RunService (service_p, params_p, config_p);
+
+																	if (jobs_set_p)
+																		{
+																			bool keep_service_flag;
+																			ProcessServiceJobSet (jobs_set_p, res_p, &keep_service_flag);
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
+																		}
 																}
-														}
 
-													param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
-												}		/* while (param_node_p) */
+															ReleaseServiceParameters (service_p, params_p);
 
-											/* Now run the service */
-											if (param_flag)
-												{
-													ServiceJobSet *jobs_set_p = RunService (service_p, params_p, config_p);
-
-													if (jobs_set_p)
-														{
-															bool keep_service_flag;
-															ProcessServiceJobSet (jobs_set_p, res_p, &keep_service_flag);
-														}
+														}		/* if (params_p) */
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to run service \"%s\" with keyword \"%s\"", GetServiceName (service_p), keyword_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get parameters for service \"%s\" to run with keyword \"%s\"", GetServiceName (service_p), keyword_s);
 														}
-												}
 
-											ReleaseServiceParameters (service_p, params_p);
-
-										}		/* if (params_p) */
-
-									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
-
-								}		/* while (service_node_p) */
-
-
-							ClearLinkedList (services_p);
-							LoadMatchingServices (services_p, SERVICES_PATH_S, NULL, NULL, config_p);
-
-							if (services_p && (services_p -> ll_size > 0))
-								{
-									Resource *resource_p = AllocateResource (PROTOCOL_INLINE_S, keyword_s, NULL);
-
-									if (resource_p)
-										{
-											/* For each service, set its keyword parameter */
-											service_node_p = (ServiceNode *) (services_p -> ll_head_p);
-
-											while (service_node_p)
+												}		/* if (RunServiceMatcher (matcher_p, service_p)) */
+											else
 												{
-													Service *service_p = service_node_p -> sn_service_p;
-
 													/*
 													 * Does the service match for running against this keyword?
 													 */
@@ -1205,22 +1190,30 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 														}		/* if (IsServiceMatch (service_p, resource_p, NULL)) */
 
-													service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
-												}		/* while (service_node_p) */
+												}		/* /* if (RunServiceMatcher (matcher_p, service_p)) else */
 
-											FreeResource (resource_p);
-										}		/* if (resource_p) */
+											service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
+										}		/* while (service_node_p) */
 
-								}		/* if (services_p && (services_p -> ll_size > 0)) */
+									FreeServiceMatcher (matcher_p);
+								}		/* if (matcher_p) */
 
-						}		/* if (res_p) */
+							FreeLinkedList (services_p);
+						}		/* if (services_p) */
 
-				}		/* if (services_p -> ll_size > 0) */
+					FreeResource (resource_p);
+				}		/* if (resource_p) */
 
-			FreeLinkedList (services_p);
-		}		/* if (services_p) */
 
-	return res_p;
+			if (json_array_size (res_p) > 0)
+				{
+					return res_p;
+				}
+
+			json_decref (res_p);
+		}		/* if (res_p) */
+
+	return NULL;
 }
 
 

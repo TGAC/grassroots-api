@@ -1597,9 +1597,9 @@ static bool IsResourceForPathogenomicsService (Service *service_p, Resource *res
 {
 	bool interested_flag = false;
 
-	if (resource_p -> re_protocol_s)
+	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_TEXT_S) == 0)
 		{
-			interested_flag = (strcmp (resource_p -> re_protocol_s, "string") == 0);
+
 		}
 
 	return interested_flag;

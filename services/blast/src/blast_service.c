@@ -1086,7 +1086,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 				}		/* if (filename_s) */
 
 		}		/* if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S)) */
-	else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_INLINE_S) == 0)
+	else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_TEXT_S) == 0)
 		{
 			if (resource_p -> re_value_s)
 				{

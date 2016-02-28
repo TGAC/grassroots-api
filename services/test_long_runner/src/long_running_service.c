@@ -448,7 +448,7 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 
 static bool IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	return true;
+	return false;
 }
 
 

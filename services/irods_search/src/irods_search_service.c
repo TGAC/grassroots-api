@@ -726,10 +726,7 @@ static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServic
 
 static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = true;
-	const char *filename_s = resource_p -> re_value_s;
-
-
+	bool interested_flag = false;
 
 	return interested_flag;
 }

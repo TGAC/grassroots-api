@@ -660,6 +660,6 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 
 static bool IsFileForSamToolsService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	return true;
+	return false;
 }
 
