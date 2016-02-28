@@ -140,6 +140,9 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 			if (l.count () == 1)
 				{
 					ResultsList *results_p = l.at (0);
+
+					results_p -> add
+
 				}		/* if (l.count () == 1) */
 
 		}		/* if (index != -1) */
