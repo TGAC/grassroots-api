@@ -133,6 +133,13 @@ RESOURCE_PREFIX const char *PROTOCOL_INLINE_S RESOURCE_VAL("inline");
 
 
 /**
+ * @brief The protocol for a data object stored within the Grassroots system inline.
+ * @memberof Resource
+ */
+RESOURCE_PREFIX const char *PROTOCOL_TEXT_S RESOURCE_VAL("text");
+
+
+/**
  * @brief The protocol for a data object for a Grassroots Service.
  * @memberof Resource
  */

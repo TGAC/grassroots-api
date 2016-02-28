@@ -1050,7 +1050,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 {
 	bool interested_flag = false;
 
-	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S))
+	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S) == 0)
 		{
 			/*
 			 * @TODO
@@ -1086,7 +1086,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 				}		/* if (filename_s) */
 
 		}		/* if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S)) */
-	else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_INLINE_S))
+	else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_INLINE_S) == 0)
 		{
 			if (resource_p -> re_value_s)
 				{

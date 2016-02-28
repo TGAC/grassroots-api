@@ -461,52 +461,64 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 
 static bool IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = true;
-	const char *filename_s = resource_p -> re_value_s;
+	bool interested_flag = false;
 
 	
-	/*
-	 * @TODO
-	 * We could check if the file is on a remote filesystem and if so
-	 * make a full or partial local copy for analysis.
-	 */
-
-	if (filename_s)
+	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S) == 0)
 		{
+			const char *filename_s = resource_p -> re_value_s;
+
 			/*
-				Rather than use the extension, let's check the file header
-			*/
-			uint32 header = 0;
-			uint32 i = 0;
-			
-			if (OpenHandler(handler_p, filename_s, "rb"))
+			 * @TODO
+			 * We could check if the file is on a remote filesystem and if so
+			 * make a full or partial local copy for analysis.
+			 */
+
+			if (filename_s)
 				{
-					size_t l = sizeof (i);
-					size_t r = ReadFromHandler (handler_p, &i, l);
-					
-					if (r == l) 
+					if (handler_p)
 						{
-							
+							/*
+								Rather than use the extension, let's check the file header
+							*/
+							uint32 header = 0;
+							uint32 i = 0;
+
+							if (OpenHandler(handler_p, filename_s, "rb"))
+								{
+									size_t l = sizeof (i);
+									size_t r = ReadFromHandler (handler_p, &i, l);
+
+									if (r == l)
+										{
+
+										}
+
+									CloseHandler (handler_p);
+								}
+
+							header = htonl (i);
+
+							if (header == 0x504B0304)
+								{
+									/* it's already a zip file */
+									interested_flag = false;
+								}
+							else if ((header | 0x1F8BFFFF) == 0x1F8BFFFF)
+								{
+									/* it's a gzip file */
+									interested_flag = false;
+								}
+						}		/* if (handler_p) */
+					else
+						{
+							/* check file extensions */
 						}
-						
-					CloseHandler (handler_p);
-				}
-				
-			header = htonl (i);
+
+				}		/* if (filename_s) */
 			
-			if (header == 0x504B0304)
-				{
-					/* it's already a zip file */
-					interested_flag = false;
-				}
-			else if ((header | 0x1F8BFFFF) == 0x1F8BFFFF)
-				{
-					/* it's a gzip file */
-					interested_flag = false;
-				}
+		}
 
-
-		}		/* if (filename_s) */
 
 
 	return interested_flag;

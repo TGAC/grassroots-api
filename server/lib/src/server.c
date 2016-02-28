@@ -1098,8 +1098,6 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 					if (res_p)
 						{
-							Resource *resource_p = AllocateResource (PROTOCOL_INLINE_S, keyword_s, NULL);
-
 							/* For each service, set its keyword parameter */
 							ServiceNode *service_node_p = (ServiceNode *) (services_p -> ll_head_p);
 
@@ -1158,46 +1156,62 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 										}		/* if (params_p) */
 
-
-									/*
-									 * Does the service match for running against this keyword?
-									 */
-									if (resource_p)
-										{
-											if (IsServiceMatch (service_p, resource_p, NULL))
-												{
-													/*
-													 * Add the information that the service is interested in this keyword
-													 * and can be ran.
-													 */
-													json_t *interested_app_p = GetInterestedServiceJSON (service_p, keyword_s);
-
-													if (interested_app_p)
-														{
-															if (json_array_append_new (res_p, interested_app_p) != 0)
-																{
-																	json_decref (interested_app_p);
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add interested service \"%s\" for keyword \"%s\" to results", GetServiceName (service_p), keyword_s);
-																}		/* if (json_array_append_new (res_p, interested_app_p) != 0) */
-
-														}		/* if (interested_app_p) */
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create JSON for interested service \"%s\" for keyword \"%s\" to results", GetServiceName (service_p), keyword_s);
-														}
-
-												}		/* if (IsServiceMatch (service_p, resource_p, NULL)) */
-
-										}		/* if (resource_p) */
-
 									service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 
 								}		/* while (service_node_p) */
 
-							if (resource_p)
+
+							ClearLinkedList (services_p);
+							LoadMatchingServices (services_p, SERVICES_PATH_S, NULL, NULL, config_p);
+
+							if (services_p && (services_p -> ll_size > 0))
 								{
-									FreeResource (resource_p);
-								}
+									Resource *resource_p = AllocateResource (PROTOCOL_INLINE_S, keyword_s, NULL);
+
+									if (resource_p)
+										{
+											/* For each service, set its keyword parameter */
+											service_node_p = (ServiceNode *) (services_p -> ll_head_p);
+
+											while (service_node_p)
+												{
+													Service *service_p = service_node_p -> sn_service_p;
+
+													/*
+													 * Does the service match for running against this keyword?
+													 */
+													if (IsServiceMatch (service_p, resource_p, NULL))
+														{
+															/*
+															 * Add the information that the service is interested in this keyword
+															 * and can be ran.
+															 */
+															const char *service_name_s = GetServiceName (service_p);
+															json_t *interested_app_p = GetInterestedServiceJSON (service_name_s, keyword_s);
+
+															if (interested_app_p)
+																{
+																	if (json_array_append_new (res_p, interested_app_p) != 0)
+																		{
+																			json_decref (interested_app_p);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add interested service \"%s\" for keyword \"%s\" to results", GetServiceName (service_p), keyword_s);
+																		}		/* if (json_array_append_new (res_p, interested_app_p) != 0) */
+
+																}		/* if (interested_app_p) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create JSON for interested service \"%s\" for keyword \"%s\" to results", GetServiceName (service_p), keyword_s);
+																}
+
+														}		/* if (IsServiceMatch (service_p, resource_p, NULL)) */
+
+													service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
+												}		/* while (service_node_p) */
+
+											FreeResource (resource_p);
+										}		/* if (resource_p) */
+
+								}		/* if (services_p && (services_p -> ll_size > 0)) */
 
 						}		/* if (res_p) */
 

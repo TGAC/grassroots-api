@@ -70,6 +70,7 @@ private:
 	void SetParams (json_t *config_p);
 
 	bool AddResults (const json_t *job_results_p);
+	void ProcessResults (json_t *services_json_p);
 
 private slots:
 	void Accept ();
