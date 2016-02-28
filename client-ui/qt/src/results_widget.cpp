@@ -23,6 +23,9 @@
 #include "streams.h"
 
 
+QString ResultsWidget :: RW_SERVICES_TAB_TITLE = QString ("Services");
+
+
 ResultsWidget :: ResultsWidget (QWidget *parent_p)
  : QTabWidget (parent_p)
 {
@@ -111,6 +114,36 @@ bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char *
 		}
 
 	return success_flag;
+}
+
+
+bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_name_s)
+{
+	int index = -1;
+
+	for (int i = count () -1; i >= 0; -- i)
+		{
+			QString tab_text = tabText (i);
+
+			if (tab_text.compare (RW_SERVICES_TAB_TITLE))
+				{
+					index = i;
+					i = 0;
+				}
+		}
+
+	if (index != -1)
+		{
+			QWidget *page_p = widget (index);
+			QList l = page_p -> findChildren <ResultsList *> ();
+
+			if (l.count () == 1)
+				{
+					ResultsList *results_p = l.at (0);
+				}		/* if (l.count () == 1) */
+
+		}		/* if (index != -1) */
+
 }
 
 

@@ -35,6 +35,8 @@ public:
 	bool AddResultsPageFromJSON (json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
 	void ClearData ();
 
+	bool AddInterestedService (json_t *job_p, const char *service_name_s);
+
 protected:
 	virtual void dropEvent (QDropEvent *event_p);
 	virtual void dragEnterEvent (QDragEnterEvent *event_p);

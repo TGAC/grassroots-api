@@ -325,7 +325,7 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 
 static bool IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = true;
+	bool interested_flag = false;
 
 	return interested_flag;
 }

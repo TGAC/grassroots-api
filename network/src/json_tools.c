@@ -628,7 +628,7 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 	json_t *res_p = NULL;
 	json_error_t json_err;
 
-	res_p = json_pack_ex (&json_err, 0, "{s:s,s:s}", JOB_SERVICE_S, service_name_s, JOB_NAME_S, "Run");
+	res_p = json_pack_ex (&json_err, 0, "{s:s,s:b}", JOB_SERVICE_S, service_name_s, "Run", true);
 
 
 	return res_p;

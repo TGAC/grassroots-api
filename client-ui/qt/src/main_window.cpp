@@ -112,57 +112,75 @@ void MainWindow :: ProcessResults (json_t *services_json_p)
 			json_array_foreach (services_json_p, i, job_p)
 				{
 					const char *service_name_s = GetJSONString (job_p, SERVICE_NAME_S);
-					const char *service_description_s = GetJSONString (job_p, OPERATION_DESCRIPTION_S);
-					const char *service_uri_s =  GetJSONString (job_p, OPERATION_INFORMATION_URI_S);
 
-					/* Get the job status */
-					OperationStatus status = OS_ERROR;
-					const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
-
-					if (value_s)
+					if (service_name_s)
 						{
-							status = GetOperationStatusFromString (value_s);
-						}
-					else
-						{
-							int i;
-							/* Get the job status */
+							bool run_service_flag = false;
 
-							if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
+							GetJSONBoolean (job_p, SERVICE_RUN_S, &run_service_flag);
+
+							if (run_service_flag)
 								{
-									if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
-										{
-											status = (OperationStatus) i;
-										}
-								}
-						}
+									results_p -> AddInterestedService (job_p, service_name_s);
 
-					if (status != OS_ERROR)
-						{
-							json_t *errors_p = NULL;
-
-							if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
-								{
-									results_p -> AddResultsPageFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
-									show_results_flag = true;
-								}
+								}		/* if (run_service_flag) */
 							else
 								{
-									progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
-									show_progress_flag = true;
-								}
+									const char *service_description_s = GetJSONString (job_p, OPERATION_DESCRIPTION_S);
+									const char *service_uri_s =  GetJSONString (job_p, OPERATION_INFORMATION_URI_S);
 
-							errors_p = json_object_get (job_p, "errors");
+									/* Get the job status */
+									OperationStatus status = OS_ERROR;
+									const char *value_s = GetJSONString (job_p, SERVICE_STATUS_S);
 
-							if (errors_p)
-								{
-									if (service_name_s)
+									if (value_s)
 										{
-											mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
+											status = GetOperationStatusFromString (value_s);
 										}
-								}
+									else
+										{
+											int i;
+											/* Get the job status */
 
-						}		/* if (status != OS_ERROR) */
+											if (GetJSONInteger(job_p, SERVICE_STATUS_VALUE_S, &i))
+												{
+													if ((i > OS_LOWER_LIMIT) && (i < OS_UPPER_LIMIT))
+														{
+															status = (OperationStatus) i;
+														}
+												}
+										}
+
+									if (status != OS_ERROR)
+										{
+											json_t *errors_p = NULL;
+
+											if ((status == OS_SUCCEEDED) || (status == OS_PARTIALLY_SUCCEEDED))
+												{
+													results_p -> AddResultsPageFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+													show_results_flag = true;
+												}
+											else
+												{
+													progress_p -> AddProgressItemFromJSON (job_p, service_name_s, service_description_s, service_uri_s);
+													show_progress_flag = true;
+												}
+
+											errors_p = json_object_get (job_p, "errors");
+
+											if (errors_p)
+												{
+													if (service_name_s)
+														{
+															mw_prefs_widget_p -> SetServiceErrors (service_name_s, errors_p);
+														}
+												}
+
+										}		/* if (status != OS_ERROR) */
+
+								}		/* /* if (run_service_flag) else */
+
+						}		/* if (service_name_s) */
 
 				}		/* json_array_foreach (services_json_p, i, job_p) */
 

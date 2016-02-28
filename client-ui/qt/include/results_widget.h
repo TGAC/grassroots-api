@@ -17,6 +17,7 @@
 #define RESULTS_WIDGET_H
 
 #include <QTabWidget>
+#include <QString>
 
 #include "jansson.h"
 #include "typedefs.h"
@@ -31,8 +32,13 @@ public:
   bool AddResultsPageFromJSON (const json_t *json_p, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s);
   void ClearData ();
 
+  bool AddInterestedService (json_t *job_p, const char *service_name_s);
+
+
 private:
   QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
+
+  static QString RW_SERVICES_TAB_TITLE;
 
 };
 

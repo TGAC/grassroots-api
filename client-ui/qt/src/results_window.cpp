@@ -124,6 +124,11 @@ bool ResultsWindow :: AddResultsPageFromJSON (json_t *json_p, const char * const
 }
 
 
+bool ResultsWindow :: AddInterestedService (json_t *job_p, const char *service_name_s)
+{
+	return rw_results_p -> AddInterestedService (job_p, service_name_s);
+}
+
 
 
 void ResultsWindow :: SaveJSONResults (const json_t * const results_p)

@@ -45,6 +45,7 @@ public:
 
 	~ResultsList ();
 
+	bool AddItemFromJSON (const json_t *json_p);
 
 private:
 
@@ -53,7 +54,6 @@ private:
 	/*********************/
 	QListWidget *rl_list_p;
 
-	bool AddItemFromJSON (const json_t *json_p);
 
 	QList <QWebView *> rl_browsers;
 
