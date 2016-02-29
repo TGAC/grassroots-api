@@ -65,7 +65,7 @@ void InitialiseService (Service * const service_p,
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*get_service_info_uri_fn) (struct Service *service_p),
 	ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
-	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
+	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
@@ -594,7 +594,7 @@ ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t
 }
 
 
-bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p)
+ParameterSet *IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	return service_p -> se_match_fn (service_p, resource_p, handler_p);	
 }

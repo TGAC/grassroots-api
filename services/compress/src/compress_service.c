@@ -91,7 +91,7 @@ static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *
 
 static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
@@ -459,10 +459,9 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 }
 
 
-static bool IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
+	ParameterSet *params_p = NULL;
 	
 	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S) == 0)
 		{
@@ -502,12 +501,14 @@ static bool IsFileForCompressService (Service *service_p, Resource *resource_p, 
 							if (header == 0x504B0304)
 								{
 									/* it's already a zip file */
-									interested_flag = false;
 								}
 							else if ((header | 0x1F8BFFFF) == 0x1F8BFFFF)
 								{
 									/* it's a gzip file */
-									interested_flag = false;
+								}
+							else
+								{
+
 								}
 						}		/* if (handler_p) */
 					else
@@ -521,7 +522,7 @@ static bool IsFileForCompressService (Service *service_p, Resource *resource_p, 
 
 
 
-	return interested_flag;
+	return params_p;
 }
 
 

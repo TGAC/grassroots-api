@@ -34,6 +34,7 @@ public:
 
   bool AddInterestedService (json_t *job_p, const char *service_name_s);
 
+	bool AddItemToResultsList (const json_t *results_json_p);
 
 private:
   QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);

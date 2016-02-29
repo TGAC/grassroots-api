@@ -75,7 +75,7 @@ static void ReleaseElasticSearchRestServiceParameters (Service *service_p, Param
 
 static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 static bool CloseElasticSearchRestService (Service *service_p);
 
@@ -323,11 +323,9 @@ static ServiceJobSet *RunElasticSearchRestService (Service *service_p, Parameter
 
 
 
-static bool IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
-	return interested_flag;
+	return NULL;
 }
 
 

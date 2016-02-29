@@ -74,7 +74,7 @@ static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSe
 
 static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 static bool CloseLongRunningService (Service *service_p);
 
@@ -446,9 +446,9 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 }
 
 
-static bool IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	return false;
+	return NULL;
 }
 
 

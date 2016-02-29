@@ -120,7 +120,7 @@ typedef struct Service
 	 */
 	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-	bool (*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
+	ParameterSet *(*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
 	bool (*se_has_permissions_fn) (struct Service *service_p, const UserDetails * const user_p);
 
@@ -239,7 +239,7 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
 	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p),
-	bool (*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
+	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
@@ -278,7 +278,7 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 GRASSROOTS_SERVICE_API Service *GetServiceByName (const char * const service_name_s);
 
 
-GRASSROOTS_SERVICE_API bool IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
+GRASSROOTS_SERVICE_API ParameterSet *IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 /**

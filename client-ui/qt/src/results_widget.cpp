@@ -120,8 +120,10 @@ bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char *
 bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_name_s)
 {
 	int index = -1;
+	ResultsList *services_list_p = NULL;
 
-	for (int i = count () -1; i >= 0; -- i)
+	/* Find the "interested servces page" */
+	for (int i = count () - 1; i >= 0; -- i)
 		{
 			QString tab_text = tabText (i);
 
@@ -132,23 +134,50 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 				}
 		}
 
-	if (index != -1)
+	/*
+	 * If we couldn't find  the "interested servces page",
+	 * then create it
+	 */
+	if (index == -1)
+		{
+			QWidget *page_p = new QWidget;
+			ResultsList *list_p = new ResultsList (page_p);
+
+			if (page_p)
+				{
+					insertTab (count (), page_p, service_name_s);
+					success_flag = true;
+				}
+			else
+				{
+
+				}
+
+		}
+	else
 		{
 			QWidget *page_p = widget (index);
-			QList l = page_p -> findChildren <ResultsList *> ();
+			QList <ResultsList *> l = page_p -> findChildren <ResultsList *> ();
 
 			if (l.count () == 1)
 				{
-					ResultsList *results_p = l.at (0);
-
-					results_p -> add
-
+					services_list_p = l.at (0);
 				}		/* if (l.count () == 1) */
 
-		}		/* if (index != -1) */
+		}		/* if (index == -1) else */
 
+
+	if (services_list_p)
+		{
+
+		}		/* if (services_list_p) */
 }
 
+
+bool ResultsWidget :: AddItemToResultsList (const json_t *results_json_p)
+{
+
+}
 
 
 QWidget *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const description_s, const char * const uri_s)

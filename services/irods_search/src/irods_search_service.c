@@ -66,7 +66,7 @@ static ParameterSet *GetIrodsSearchServiceParameters (Service *service_p, Resour
 
 static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static bool CloseIrodsSearchService (Service *service_p);
@@ -724,10 +724,8 @@ static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServic
 }
 
 
-static bool IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
-	return interested_flag;
+	return NULL;
 }
 

@@ -94,7 +94,7 @@ static void ReleasePathogenomicsServiceParameters (Service *service_p, Parameter
 
 static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsResourceForPathogenomicsService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static  ParameterSet *IsResourceForPathogenomicsService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *config_p);
@@ -1593,15 +1593,8 @@ static uint32 DeleteData (MongoTool *tool_p, json_t *data_p, const Pathogenomics
 }
 
 
-static bool IsResourceForPathogenomicsService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static  ParameterSet *IsResourceForPathogenomicsService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
-	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_TEXT_S) == 0)
-		{
-
-		}
-
-	return interested_flag;
+	return NULL;
 }
 

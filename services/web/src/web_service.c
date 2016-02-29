@@ -51,7 +51,7 @@ static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *param
 
 static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static  ParameterSet *IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static WebServiceData *AllocateWebServiceData (json_t *config_p);
@@ -275,15 +275,8 @@ static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set
 
 	
 
-static bool IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static  ParameterSet *IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
-	if (resource_p -> re_protocol_s)
-		{
-			interested_flag = (strcmp (resource_p -> re_protocol_s, "string") == 0);
-		}
-
-	return interested_flag;
+	return NULL;
 }
 

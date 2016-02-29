@@ -54,7 +54,7 @@ static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *par
 
 static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 static bool CloseBlastService (Service *service_p);
 
@@ -109,7 +109,7 @@ ServicesArray *GetServices (const json_t *config_p)
 																 GetBlastServiceDesciption,
 																 NULL,
 																 RunBlastService,
-																 IsFileForBlastService,
+																 IsResourceForBlastService,
 																 GetBlastServiceParameters,
 																 ReleaseBlastServiceParameters,
 																 CloseBlastService,
@@ -1046,9 +1046,9 @@ static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_s
 }
 
 
-static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
+	ParameterSet *params_p = NULL;
 
 	if (strcmp (resource_p -> re_protocol_s, PROTOCOL_FILE_S) == 0)
 		{
@@ -1076,7 +1076,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 								{
 									if (strcmp (extension_s, "fa") == 0)
 										{
-											interested_flag = true;
+											/* Get the parameters */
 										}
 
 								}		/* if (*extension_s != '\0') */
@@ -1092,6 +1092,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 				{
 					BlastServiceData *blast_data_p = (BlastServiceData *) service_p -> se_data_p;
 					DatabaseInfo *db_p = blast_data_p -> bsd_databases_p;
+					bool interested_flag = false;
 
 					/*
 					 * Scroll through the databases and see if the phrase is in either the
@@ -1110,7 +1111,58 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 										{
 											++ db_p;
 										}
-								}		/* while (db_p) */
+								}		/* while ((db_p -> di_name_s) && (!interested_flag)) */
+
+
+							if (interested_flag)
+								{
+									params_p = GetBlastServiceParameters (service_p, NULL, NULL);
+
+									if (params_p)
+										{
+											/* Set the matching databases to active */
+											db_p = blast_data_p -> bsd_databases_p;
+
+											while ((db_p -> di_name_s) && (!interested_flag))
+												{
+													if ((strstr (db_p -> di_name_s, resource_p -> re_value_s)) ||
+															(strstr (db_p -> di_description_s, resource_p -> re_value_s)))
+														{
+															Parameter *param_p = GetParameterFromParameterSetByName (params_p, db_p -> di_name_s);
+
+															if (param_p)
+																{
+																	if (param_p -> pa_type == PT_BOOLEAN)
+																		{
+																			bool b = true;
+
+																			if (!SetParameterValue (param_p, &b, true))
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set Parameter \"%s\" to true", param_p -> pa_name_s);
+																				}
+																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Parameter \"%s\" is of type \"%s\" not boolean", param_p -> pa_name_s, GetGrassrootsTypeAsString (param_p -> pa_type));
+																		}
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find parameter \"%s\"", db_p -> di_name_s);
+																}
+														}
+													else
+														{
+															++ db_p;
+														}
+												}		/* while ((db_p -> di_name_s) && (!interested_flag)) */
+
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetBlastServiceParameters failed");
+										}
+								}
 
 						}		/* if (db_p) */
 
@@ -1120,7 +1172,7 @@ static bool IsFileForBlastService (Service *service_p, Resource *resource_p, Han
 		}		/* else if (strcmp (resource_p -> re_protocol_s, PROTOCOL_INLINE_S)) */
 
 
-	return interested_flag;	
+	return params_p;
 }
 
 

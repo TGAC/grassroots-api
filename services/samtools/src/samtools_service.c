@@ -71,7 +71,7 @@ static void ReleaseSamToolsServiceParameters (Service *service_p, ParameterSet *
 
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForSamToolsService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static  ParameterSet *IsFileForSamToolsService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 static bool CloseSamToolsService (Service *service_p);
 
@@ -658,8 +658,8 @@ static bool GetScaffoldData (SamToolsServiceData *data_p, const char * const fil
 }
 
 
-static bool IsFileForSamToolsService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static  ParameterSet *IsFileForSamToolsService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	return false;
+	return NULL;
 }
 

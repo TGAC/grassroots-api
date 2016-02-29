@@ -59,7 +59,7 @@ static void ReleaseEnsemblRestServiceParameters (Service *service_p, ParameterSe
 
 static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
-static bool IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_t job_id);
@@ -271,10 +271,8 @@ static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_
 }
 
 
-static bool IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
-	return interested_flag;
+	return NULL;
 }
 

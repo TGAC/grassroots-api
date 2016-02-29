@@ -64,7 +64,7 @@ static void ReleaseWebSearchJSONServiceParameters (Service *service_p, Parameter
 ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
 
-static bool IsResourceForWebSearchJSONService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static  ParameterSet *IsResourceForWebSearchJSONService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
 static WebSearchJSONServiceData *AllocateWebSearchJSONServiceData (json_t *config_p);
@@ -445,15 +445,8 @@ static json_t *GetWebSearchJSONServiceResults (Service *service_p, const uuid_t 
 }
 	
 
-static bool IsResourceForWebSearchJSONService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static  ParameterSet *IsResourceForWebSearchJSONService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
-	bool interested_flag = false;
-
-	if (resource_p -> re_protocol_s)
-		{
-			interested_flag = (strcmp (resource_p -> re_protocol_s, "string") == 0);
-		}
-
-	return interested_flag;
+	return NULL;
 }
 
