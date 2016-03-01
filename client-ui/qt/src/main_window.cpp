@@ -94,6 +94,13 @@ void MainWindow :: Reject ()
 }
 
 
+void MainWindow :: SelectService (const char *service_name_s, const json_t *params_json_p)
+{
+	emit ServiceRequested (service_name_s, params_json_p);
+}
+
+
+
 void MainWindow :: ProcessResults (json_t *services_json_p)
 {
 	PrintJSONToLog (services_json_p, "\n\nDATA:\n", STM_LEVEL_FINE, __FILE__, __LINE__);

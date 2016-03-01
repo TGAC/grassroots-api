@@ -117,7 +117,8 @@ SOURCES += \
     src/progress_widget.cpp \
     src/param_table_widget.cpp \
     src/param_json_editor.cpp \
-    src/matched_service_list_widget_item.cpp
+    src/matched_service_list_widget_item.cpp \
+    src/servce_ui.cpp
 
 HEADERS  += \
     include/base_param_widget.h \

@@ -29,6 +29,10 @@ public:
   virtual void AddService (const char * const service_name_s, ServicePrefsWidget *service_widget_p);
   virtual QWidget *GetWidget ();
 
+public slots:
+  void SelectService (const char *service_name_s, const json_t *params_json_p);
+
+
 };
 
 #endif // SERVICES_TABS_H

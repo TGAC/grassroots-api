@@ -35,6 +35,11 @@ public:
 	virtual QSize sizeHint () const;
 
 
+public slots:
+  void SelectService (const char *service_name_s, const json_t *params_json_p);
+
+
+
 private slots:
   void ToggleServiceRunStatus (const QModelIndex &index_r);
   void CheckServiceRunStatus (const QListWidgetItem *item_p);

@@ -26,6 +26,12 @@ ServicesTabs :: ServicesTabs (QWidget *parent_p)
 }
 
 
+void ServicesTabs :: SelectService (const char *service_name_s, const json_t *params_json_p)
+{
+
+}
+
+
 void ServicesTabs :: AddService (const char * const service_name_s, ServicePrefsWidget *service_widget_p)
 {
 	char * const icon_path_s = MakeFilename ("images", service_name_s);

@@ -143,7 +143,7 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 		{
 			QWidget *page_p = new QWidget;
 
-			services_list_p = new ResultsList (page_p);
+			services_list_p = new ResultsList (page_p, this);
 
 			if (page_p)
 				{
@@ -187,6 +187,12 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 bool ResultsWidget :: AddItemToResultsList (const json_t *results_json_p)
 {
 
+}
+
+
+void ResultsWidget :: SelectService (const char *service_name_s, const json_t *params_json_p)
+{
+	emit ServiceRequested (service_name_s, params_json_p);
 }
 
 

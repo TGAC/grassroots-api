@@ -19,6 +19,8 @@
 #include <QListWidgetItem>
 
 #include "jansson.h"
+#include "results_list.h"
+
 
 class JSONListWidgetItem : public QListWidgetItem
 {

@@ -21,7 +21,7 @@
 #include <QWebView>
 
 #include "jansson.h"
-
+#include "results_widget.h"
 
 class ResultsList : public QWidget
 {
@@ -41,7 +41,7 @@ public:
 	/***** FUNCTIONS *****/
 	/*********************/
 
-	ResultsList (QWidget *parent_p);
+	ResultsList (QWidget *parent_p, ResultsWidget *results_widget_p = 0);
 
 	~ResultsList ();
 
@@ -56,7 +56,7 @@ private:
 
 
 	QList <QWebView *> rl_browsers;
-
+	ResultsWidget *rl_grandparent_p;
 };
 
 #endif		/* #ifndef RESULTS_LIST_HPP */

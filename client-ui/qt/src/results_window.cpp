@@ -30,12 +30,15 @@
 #include "streams.h"
 
 
-ResultsWindow :: ResultsWindow (QMainWindow *parent_p)
+ResultsWindow :: ResultsWindow (MainWindow *parent_p)
 	: rw_data_p (0)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 
 	rw_results_p = new ResultsWidget;
+
+	connect (rw_results_p, &ResultsWidget :: ServiceRequested, parent_p, &MainWindow :: SelectService);
+
 	layout_p -> addWidget (rw_results_p);
 
 	QGroupBox *buttons_p = new QGroupBox;

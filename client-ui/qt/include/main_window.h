@@ -32,6 +32,7 @@ class MainWindow : public QMainWindow
 
 signals:
 	void Closed ();
+	void ServiceRequested (const char *service_name_s, const json_t *params_json_p);
 
 public slots:
 	void SetBasicInterfaceLevel ();
@@ -41,6 +42,7 @@ public slots:
 	void SaveConfiguration ();
 	void RunServices (bool run_flag);
 	void RunKeywordSearch (QString keywords);
+	void SelectService (const char *service_name_s, const json_t *params_json_p);
 
 
 public:

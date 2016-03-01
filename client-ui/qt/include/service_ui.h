@@ -16,6 +16,10 @@
 #ifndef SERVICE_UI_H
 #define SERVICE_UI_H
 
+#include <QObject>
+
+#include "jansson.h"
+
 #include "service_prefs_widget.h"
 
 class ServiceUI
@@ -23,6 +27,7 @@ class ServiceUI
 public:
   virtual void AddService (const char * const service_name_s, ServicePrefsWidget *service_widget_p) = 0;
   virtual QWidget *GetWidget () = 0;
+  virtual void UpdateServicePrefs (const char *service_name_s, const json_t *params_json_p);
 };
 
 #endif // SERVICE_UI_H

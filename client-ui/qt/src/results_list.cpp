@@ -32,8 +32,9 @@
 #include "filesystem_utils.h"
 
 
-ResultsList :: ResultsList (QWidget *parent_p)
-	:	QWidget (parent_p)
+ResultsList :: ResultsList (QWidget *parent_p, ResultsWidget *results_widget_p)
+	:	QWidget (parent_p),
+		rl_grandparent_p (results_widget_p)
 {
 	QLayout *layout_p = new QVBoxLayout;
 
@@ -249,6 +250,11 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 										}
 
 									item_p -> setToolTip (description_s);
+
+									if (rl_grandparent_p)
+										{
+											connect (item_p, &ServiceListWidgetItem :: ServiceRequested, rl_grandparent_p, &ResultsWidget :: SelectService);
+										}
 
 									success_flag = true;
 								}

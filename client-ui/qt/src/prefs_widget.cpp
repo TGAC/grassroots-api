@@ -28,6 +28,7 @@
 #include <QTabWidget>
 
 #include "prefs_widget.h"
+#include "main_window.h"
 
 #include "file_chooser_widget.h"
 #include "qt_parameter_widget.h"
@@ -41,7 +42,7 @@ using namespace std;
 
 
 
-PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, const bool tabbed_display_flag, QTClientData *data_p)
+PrefsWidget :: PrefsWidget (MainWindow *parent_p,  ParameterLevel initial_level, const bool tabbed_display_flag, QTClientData *data_p)
 :	QWidget (parent_p),
 	pw_level (initial_level),
 	pw_data_p (data_p)
@@ -50,11 +51,15 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, co
 
 	if (tabbed_display_flag)
 		{
-			pw_services_ui_p = new ServicesTabs (this);
+			ServicesTabs *st_p = new ServicesTabs (this);
+			connect (parent_p, &MainWindow :: ServiceRequested, st_p, &ServicesTabs :: SelectService);
+			pw_services_ui_p = st_p;
 		}
 	else
 		{
-			pw_services_ui_p = new ServicesList (this);
+			ServicesList *sl_p = new ServicesList (this);
+			connect (parent_p, &MainWindow :: ServiceRequested, sl_p, &ServicesList :: SelectService);
+			pw_services_ui_p = sl_p;
 		}
 
 	layout_p -> addWidget (pw_services_ui_p -> GetWidget ());
@@ -66,8 +71,6 @@ PrefsWidget :: PrefsWidget (QWidget *parent_p,  ParameterLevel initial_level, co
 PrefsWidget :: ~PrefsWidget ()
 {
 }
-
-
 
 void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p)
 {

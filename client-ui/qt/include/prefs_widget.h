@@ -31,6 +31,7 @@
 #include "services_list.h"
 
 
+class MainWindow;
 class QTClientData;
 
 /**
@@ -53,7 +54,7 @@ public:
 	/***** FUNCTIONS *****/
 	/*********************/
 
-	explicit PrefsWidget (QWidget *parent_p, ParameterLevel initial_level, bool tabbed_display_flag, QTClientData *data_p);
+	explicit PrefsWidget (MainWindow *parent_p, ParameterLevel initial_level, bool tabbed_display_flag, QTClientData *data_p);
 
 	~PrefsWidget ();
 

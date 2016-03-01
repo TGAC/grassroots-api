@@ -62,6 +62,12 @@ ServicesList :: ServicesList (QWidget *parent_p)
 
 
 
+void ServicesList :: SelectService (const char *service_name_s, const json_t *params_json_p)
+{
+
+}
+
+
 
 void ServicesList :: SetCurrentService (const QModelIndex &index_r)
 {

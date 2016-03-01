@@ -125,6 +125,7 @@ static QTClientData *AllocateQTClientData (void)
 					data_p -> qcd_window_p -> setWindowIcon (QIcon ("images/cog"));
 
 					QObject :: connect (data_p -> qcd_window_p, &MainWindow :: Closed, data_p -> qcd_app_p, &QApplication :: quit);
+
 					data_p -> qcd_results_p = new ResultsWindow (data_p -> qcd_window_p);
 
 					data_p -> qcd_progress_p = new ProgressWindow (data_p -> qcd_window_p, data_p);
