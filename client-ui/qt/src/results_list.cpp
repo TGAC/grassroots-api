@@ -22,12 +22,14 @@
 
 #include "results_list.h"
 #include "json_list_widget_item.h"
+#include "matched_service_list_widget_item.h"
 #include "text_viewer.h"
 #include "viewer_widget.h"
 
 #include "json_util.h"
 #include "data_resource.h"
-
+#include "string_utils.h"
+#include "filesystem_utils.h"
 
 
 ResultsList :: ResultsList (QWidget *parent_p)
@@ -56,28 +58,7 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 
 	if (json_item_p)
 		{
-			/* Open the json object */
-			const json_t *data_p = json_item_p -> GetJSONData ();
-			TextViewer *text_viewer_p = new TextViewer;
-			ViewerWidget *viewer_widget_p = new ViewerWidget (text_viewer_p, this);
-
-			if (json_is_string (data_p))
-				{
-					const char *data_s = json_string_value (data_p);
-					text_viewer_p -> SetText (data_s);
-				}
-			else
-				{
-					char *data_s = json_dumps (data_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
-
-					if (data_s)
-						{
-							text_viewer_p -> SetText (data_s);
-							free (data_s);
-						}
-				}
-
-			viewer_widget_p -> show ();
+			json_item_p -> ShowData ();
 		}
 	else
 		{
@@ -203,10 +184,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 								{
 									icon_path_s = "images/list_filelink";
 								}
-							else if (strcmp (protocol_s, PROTOCOL_SERVICE_S) == 0)
-								{
-									icon_path_s = "images/list_tool";
-								}
+
 
 							item_p = new QListWidgetItem (title_s ? title_s : value_s, rl_list_p);
 
@@ -228,6 +206,56 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 				}
 
 		}		/* if (protocol_s) */
+	else
+		{
+			bool service_flag = false;
 
+			if (GetJSONBoolean (resource_json_p, SERVICE_RUN_S, &service_flag))
+				{
+					if (service_flag)
+						{
+							const char *title_s = GetJSONString (resource_json_p, SERVICE_NAME_S);
+							const char *description_s = GetJSONString (resource_json_p, OPERATION_DESCRIPTION_S);
+							json_t *data_p = json_object_get (resource_json_p, PARAM_SET_KEY_S);
+
+							if (data_p)
+								{
+									ServiceListWidgetItem *item_p = new ServiceListWidgetItem (title_s, rl_list_p);
+									const char *service_s = GetJSONString (resource_json_p, SERVICE_NAME_S);
+									bool icon_flag = false;
+
+									if (service_s)
+										{
+											char *icon_path_s = MakeFilename ("images", service_s);
+
+											if (icon_path_s)
+												{
+													item_p -> setIcon (QIcon (icon_path_s));
+													icon_flag = true;
+													FreeCopiedString (icon_path_s);
+												}
+										}
+
+									if (!icon_flag)
+										{
+											item_p -> setIcon (QIcon ("images/list_tool"));
+										}
+
+									item_p -> SetJSONData (data_p);
+
+									if (!description_s)
+										{
+											description_s = "Click to open service preferences";
+										}
+
+									item_p -> setToolTip (description_s);
+
+									success_flag = true;
+								}
+
+						}
+				}
+
+		}
 	return success_flag;
 }

@@ -24,9 +24,12 @@ class JSONListWidgetItem : public QListWidgetItem
 {
 public:
 	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = UserType);
+	virtual ~JSONListWidgetItem ();
 
 	void SetJSONData (const json_t *data_p);
 	const json_t *GetJSONData () const;
+
+	virtual void ShowData ();
 
 private:
 	const json_t *jlwi_json_data_p;

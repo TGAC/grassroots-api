@@ -46,6 +46,8 @@ private:
 	bool pw_timer_started_flag;
 	QList <ProgressWidget *> pw_widgets;
 	QTClientData *pw_data_p;
+	QPushButton *pw_check_button_p;
+	QPushButton *pw_results_button_p;
 };
 
 #endif // PROGRESS_WINDOW_H

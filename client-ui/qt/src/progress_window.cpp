@@ -38,15 +38,17 @@ ProgressWindow :: ProgressWindow (QMainWindow *parent_p, QTClientData *data_p)
 
   pw_timer_started_flag = false;
 
-	QPushButton *check_button_p = new QPushButton (QIcon ("images/check"), tr ("Check Statuses"));
-  connect (check_button_p, &QPushButton :: clicked, this, &ProgressWindow :: UpdateStatuses);
+	pw_check_button_p = new QPushButton (QIcon ("images/check"), tr ("Check Statuses"));
+	connect (pw_check_button_p, &QPushButton :: clicked, this, &ProgressWindow :: UpdateStatuses);
+	pw_check_button_p -> setEnabled (false);
 
-	QPushButton *results_button_p = new QPushButton (QIcon ("images/go"), tr ("View Results"));
-	connect (results_button_p, &QPushButton :: clicked, this, &ProgressWindow :: ViewResults);
+	pw_results_button_p = new QPushButton (QIcon ("images/go"), tr ("View Results"));
+	connect (pw_results_button_p, &QPushButton :: clicked, this, &ProgressWindow :: ViewResults);
+	pw_results_button_p -> setEnabled (false);
 
 	QHBoxLayout *buttons_layout_p = new QHBoxLayout;
-	buttons_layout_p -> addWidget (check_button_p);
-	buttons_layout_p -> addWidget (results_button_p);
+	buttons_layout_p -> addWidget (pw_check_button_p);
+	buttons_layout_p -> addWidget (pw_results_button_p);
 
 
   QVBoxLayout *layout_p = new QVBoxLayout;
@@ -77,6 +79,25 @@ bool ProgressWindow :: AddProgressItemFromJSON (const json_t *json_p, const char
 		{
 			pw_widgets.append (widget_p);
 			layout () -> addWidget (widget_p);
+
+
+			OperationStatus status;
+
+			if (GetStatusFromJSON (json_p, &status))
+				{
+					switch (status)
+						{
+							case OS_PENDING:
+							case OS_STARTED:
+							case OS_FINISHED:
+								pw_check_button_p -> setEnabled (true);
+								pw_results_button_p -> setEnabled (true);
+								break;
+
+							default:
+								break;
+						}
+				}
 
 			success_flag = true;
 		}

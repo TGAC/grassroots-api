@@ -14,6 +14,8 @@
 ** limitations under the License.
 */
 #include "json_list_widget_item.h"
+#include "text_viewer.h"
+#include "viewer_widget.h"
 
 
 JSONListWidgetItem :: JSONListWidgetItem (const QString &text_r, QListWidget *parent_p, int type)
@@ -21,6 +23,11 @@ JSONListWidgetItem :: JSONListWidgetItem (const QString &text_r, QListWidget *pa
 	jlwi_json_data_p (0)
 {
 
+}
+
+
+JSONListWidgetItem :: ~ JSONListWidgetItem ()
+{
 }
 
 
@@ -36,3 +43,29 @@ const json_t *JSONListWidgetItem :: GetJSONData () const
 	return jlwi_json_data_p;
 }
 
+
+
+void JSONListWidgetItem :: ShowData ()
+{
+	/* Open the json object */
+	TextViewer *text_viewer_p = new TextViewer;
+	ViewerWidget *viewer_widget_p = new ViewerWidget (text_viewer_p, listWidget ());
+
+	if (json_is_string (jlwi_json_data_p))
+		{
+			const char *data_s = json_string_value (jlwi_json_data_p);
+			text_viewer_p -> SetText (data_s);
+		}
+	else
+		{
+			char *data_s = json_dumps (jlwi_json_data_p, JSON_INDENT (2) | JSON_PRESERVE_ORDER);
+
+			if (data_s)
+				{
+					text_viewer_p -> SetText (data_s);
+					free (data_s);
+				}
+		}
+
+	viewer_widget_p -> show ();
+}

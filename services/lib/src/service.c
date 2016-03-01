@@ -1477,3 +1477,39 @@ const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
 }
 
 
+json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p)
+{
+	json_t *res_p = NULL;
+	json_error_t json_err;
+
+	res_p = json_pack_ex (&json_err, 0, "{s:s,s:b}", JOB_SERVICE_S, service_name_s, SERVICE_RUN_S, true);
+
+	if (res_p)
+		{
+			json_t *params_json_p = GetParameterSetAsJSON (params_p, true);
+
+			if (params_json_p)
+				{
+					if (json_object_set_new (res_p, PARAM_SET_KEY_S, params_json_p) == 0)
+						{
+
+						}
+					else
+						{
+							json_decref (params_json_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add parameters JSON to InterestedServiceJSON");
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetParameterSetAsJSON failed");
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetInterestedServiceJSON failed, %s", json_err.text);
+		}
+
+	return res_p;
+}
+

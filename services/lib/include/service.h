@@ -600,6 +600,23 @@ GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_
 
 
 
+/**
+ * Get the JSON fragment for a job result list registering that a Service
+ * could be run against the user's parameters.
+ *
+ * This is of use when running a keyword search and specifying that a Service
+ * knows of this keyword but cannot run on it directly. For example, a Blast
+ * Service might know that the keyword refers to some if its databases.
+ *
+ * @param service_name_s The name of the Service that has registered an interest in the given keyword.
+ * @param keyword_s The keyword.
+ * @param params_p The parameters to encode within the JSON fragment. This will be set up based upon the
+ * keyword used to check whether the Service was interested.
+ * @return The JSON fragment to send to the Server or <code>NULL</code> upon error.
+ * @see IsServiceMatch
+ */
+GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p);
+
 #ifdef __cplusplus
 }
 #endif

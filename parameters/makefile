@@ -32,13 +32,6 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_NETWORK_INC) \
 	-I$(DIR_GRASSROOTS_SERVER_INC) \
 	-I$(DIR_JANSSON_INC) \
-	-I$(DIR_SHARED_IRODS_INC)/server/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/icat/include \
-	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/api/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/core/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/md5/include \
-	-I$(DIR_SHARED_IRODS_INC)/lib/sha1/include \
 	-I$(DIR_UUID_INC)
 	
 SRCS 	= \

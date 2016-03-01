@@ -119,6 +119,7 @@ bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char *
 
 bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_name_s)
 {
+	bool success_flag = false;
 	int index = -1;
 	ResultsList *services_list_p = NULL;
 
@@ -141,12 +142,12 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 	if (index == -1)
 		{
 			QWidget *page_p = new QWidget;
-			ResultsList *list_p = new ResultsList (page_p);
+
+			services_list_p = new ResultsList (page_p);
 
 			if (page_p)
 				{
-					insertTab (count (), page_p, service_name_s);
-					success_flag = true;
+					insertTab (count (), page_p, RW_SERVICES_TAB_TITLE);
 				}
 			else
 				{
@@ -169,8 +170,17 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 
 	if (services_list_p)
 		{
-
+			if (services_list_p -> AddItemFromJSON (job_p))
+				{
+					success_flag = true;
+				}
 		}		/* if (services_list_p) */
+	else
+		{
+
+		}
+
+	return success_flag;
 }
 
 

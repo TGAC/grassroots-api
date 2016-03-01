@@ -21,7 +21,6 @@
 #include "streams.h"
 #include "string_utils.h"
 
-
 #ifdef _DEBUG
 #define JSON_TOOLS_DEBUG	(STM_LEVEL_FINER)
 #else
@@ -621,18 +620,4 @@ bool GetUUIDFromJSON (const json_t *service_json_p, uuid_t uuid)
 
 	return success_flag;
 }
-
-
-json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s)
-{
-	json_t *res_p = NULL;
-	json_error_t json_err;
-
-	res_p = json_pack_ex (&json_err, 0, "{s:s,s:b}", JOB_SERVICE_S, service_name_s, "Run", true);
-
-
-	return res_p;
-}
-
-
 

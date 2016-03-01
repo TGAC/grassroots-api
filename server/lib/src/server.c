@@ -1162,17 +1162,19 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 												}		/* if (RunServiceMatcher (matcher_p, service_p)) */
 											else
 												{
+													ParameterSet *params_p = IsServiceMatch (service_p, resource_p, NULL);
+
 													/*
 													 * Does the service match for running against this keyword?
 													 */
-													if (IsServiceMatch (service_p, resource_p, NULL))
+													if (params_p)
 														{
 															/*
 															 * Add the information that the service is interested in this keyword
 															 * and can be ran.
 															 */
 															const char *service_name_s = GetServiceName (service_p);
-															json_t *interested_app_p = GetInterestedServiceJSON (service_name_s, keyword_s);
+															json_t *interested_app_p = GetInterestedServiceJSON (service_name_s, keyword_s, params_p);
 
 															if (interested_app_p)
 																{
@@ -1188,7 +1190,8 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create JSON for interested service \"%s\" for keyword \"%s\" to results", GetServiceName (service_p), keyword_s);
 																}
 
-														}		/* if (IsServiceMatch (service_p, resource_p, NULL)) */
+															ReleaseServiceParameters (service_p, params_p);
+														}		/* if (params_p) */
 
 												}		/* /* if (RunServiceMatcher (matcher_p, service_p)) else */
 

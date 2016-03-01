@@ -116,7 +116,8 @@ SOURCES += \
     src/progress_window.cpp \
     src/progress_widget.cpp \
     src/param_table_widget.cpp \
-    src/param_json_editor.cpp
+    src/param_json_editor.cpp \
+    src/matched_service_list_widget_item.cpp
 
 HEADERS  += \
     include/base_param_widget.h \
@@ -139,7 +140,7 @@ HEADERS  += \
     include/viewer_widget.h \
     include/viewable_widget.h \
     include/main_window.h \
-    include/services_list.h \
+		include/services_list.h \
     include/services_tabs.h \
     include/service_ui.h \
     include/results_window.h \
@@ -152,7 +153,8 @@ HEADERS  += \
     include/progress_widget.h \
     include/droppable_target_widget.h \
     include/param_table_widget.h \
-    include/param_json_editor.h
+    include/param_json_editor.h \
+    include/matched_service_list_widget_item.h
 
 LIBS += -L$$DIR_GRASSROOTS_UTIL_LIB  -l$$GRASSROOTS_UTIL_LIB_NAME \
  -L$$DIR_GRASSROOTS_SERVICE_LIB  -l$$GRASSROOTS_SERVICE_LIB_NAME \
