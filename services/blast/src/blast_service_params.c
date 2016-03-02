@@ -133,13 +133,14 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 
 			if (db_p)
 				{
-					def.st_boolean_value = true;
 
 					while (db_p -> di_name_s)
 						{
 							/* try and get the local name of the database */
 							const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
 							uint32 tag = (('B') << 24 | ('D') << 16 | num_added_databases);
+
+							def.st_boolean_value = db_p -> di_active_flag;
 
 							if (local_name_s)
 								{

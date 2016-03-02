@@ -13,29 +13,29 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
-#include "matched_service_list_widget_item.h"
+#ifndef STANDARD_LIST_WIDGET_ITEM_H
+#define STANDARD_LIST_WIDGET_ITEM_H
 
 
-ServiceListWidgetItem :: ServiceListWidgetItem (const QString &text_r, QListWidget *parent_p, ResultsList *grandparent_p, int type)
-: JSONListWidgetItem (text_r, parent_p, grandparent_p, type)
+#include <QListWidgetItem>
+#include <QObject>
+
+#include "results_list.h"
+
+
+class StandardListWidgetItem : public QObject, public QListWidgetItem
 {
-}
+	Q_OBJECT
 
+public:
+	StandardListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, ResultsList *grandparent_p = 0, int type = UserType);
+	virtual ~StandardListWidgetItem ();
 
-ServiceListWidgetItem :: ~ServiceListWidgetItem ()
-{
-}
+	virtual void ShowData ();
 
+protected:
+	ResultsList *slwi_results_list_p;
+};
 
-void ServiceListWidgetItem :: ShowData ()
-{
-	/*
-	 * Load the parameters into the appropraite Service
-	 * in the prefs window and display it
-	 */
-	QString s = text ();
-	QByteArray ba = s.toLocal8Bit ();
-	const char *service_name_s = ba.constData ();
+#endif // STANDARD_LIST_WIDGET_ITEM_H
 
-	emit ServiceRequested (service_name_s, jlwi_json_data_p);
-}

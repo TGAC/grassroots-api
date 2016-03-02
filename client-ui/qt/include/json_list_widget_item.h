@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Genome Analysis Centre
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -16,16 +16,16 @@
 #ifndef JSON_LIST_WIDGET_ITEM_H
 #define JSON_LIST_WIDGET_ITEM_H
 
-#include <QListWidgetItem>
 
 #include "jansson.h"
 #include "results_list.h"
+#include "standard_list_widget_item.h"
 
 
-class JSONListWidgetItem : public QListWidgetItem
+class JSONListWidgetItem : public StandardListWidgetItem
 {
 public:
-	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = UserType);
+	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, ResultsList *grandparent_p = 0, int type = UserType);
 	virtual ~JSONListWidgetItem ();
 
 	void SetJSONData (const json_t *data_p);
@@ -33,7 +33,7 @@ public:
 
 	virtual void ShowData ();
 
-private:
+protected:
 	const json_t *jlwi_json_data_p;
 };
 

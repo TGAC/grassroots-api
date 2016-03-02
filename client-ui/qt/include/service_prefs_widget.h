@@ -38,7 +38,7 @@ public:
 
 	const char *GetServiceName () const;
 
-	bool SetServiceParams (json_t *service_config_p);
+	bool SetServiceParams (const json_t *service_config_p);
 
 	void CheckInterfaceLevel (ParameterLevel level);
 

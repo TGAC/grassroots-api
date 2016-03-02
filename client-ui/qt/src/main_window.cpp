@@ -56,16 +56,16 @@ MainWindow :: MainWindow (QTClientData *data_p)
 	setAcceptDrops (true);
 
 
-	QTabWidget *tabs_p = new QTabWidget;
-	setCentralWidget (tabs_p);
+	mw_tabs_p = new QTabWidget;
+	setCentralWidget (mw_tabs_p);
 
 	mw_prefs_widget_p = new PrefsWidget (this, PL_BASIC, false, data_p);
 	connect (mw_prefs_widget_p, &PrefsWidget :: RunServices, this, &MainWindow :: RunServices);
-	tabs_p -> addTab (mw_prefs_widget_p, QIcon ("images/list_wand"), "All Services");
+	mw_tabs_p -> addTab (mw_prefs_widget_p, QIcon ("images/list_wand"), "All Services");
 
 	mw_keyword_widget_p = new KeywordWidget (this, PL_BASIC);
 	connect (mw_keyword_widget_p, &KeywordWidget :: RunKeywordSearch, this, &MainWindow :: RunKeywordSearch);
-	tabs_p -> addTab (mw_keyword_widget_p, QIcon ("images/list_search"), "Run by search");
+	mw_tabs_p -> addTab (mw_keyword_widget_p, QIcon ("images/list_search"), "Run by search");
 
 	setWindowTitle ("WheatIS Tool");
 	setWindowIcon (QIcon ("images/cog"));
@@ -95,8 +95,9 @@ void MainWindow :: Reject ()
 
 
 void MainWindow :: SelectService (const char *service_name_s, const json_t *params_json_p)
-{
+{	
 	mw_prefs_widget_p -> SelectService (service_name_s, params_json_p);
+	mw_tabs_p -> setCurrentWidget (mw_prefs_widget_p);
 }
 
 

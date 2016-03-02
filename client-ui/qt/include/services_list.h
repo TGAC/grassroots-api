@@ -31,14 +31,13 @@ public:
 
   virtual void AddService (const char * const service_name_s, ServicePrefsWidget *services_widget_p);
   virtual QWidget *GetWidget ();
+	virtual void UpdateServicePrefs (const char *service_name_s, const json_t *params_json_p);
 
 	virtual QSize sizeHint () const;
 
 
 public slots:
   void SelectService (const char *service_name_s, const json_t *params_json_p);
-
-
 
 private slots:
   void ToggleServiceRunStatus (const QModelIndex &index_r);
@@ -49,6 +48,8 @@ private slots:
 private:
   QStackedWidget *sl_stacked_widgets_p;
   QListWidget *sl_services_p;
+
+	QListWidgetItem *FindListWidgetItem (const char *service_name_s);
 };
 
 

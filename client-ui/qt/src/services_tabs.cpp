@@ -57,3 +57,9 @@ QWidget *ServicesTabs :: GetWidget ()
 	return this;
 }
 
+
+void ServicesTabs :: UpdateServicePrefs (const char *service_name_s, const json_t *params_json_p)
+{
+
+}
+

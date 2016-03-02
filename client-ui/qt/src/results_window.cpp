@@ -36,7 +36,7 @@ ResultsWindow :: ResultsWindow (MainWindow *parent_p)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 
-	rw_results_p = new ResultsWidget;
+	rw_results_p = new ResultsWidget (this);
 
 	connect (rw_results_p, &ResultsWidget :: ServiceRequested, parent_p, &MainWindow :: SelectService);
 

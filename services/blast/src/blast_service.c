@@ -198,6 +198,9 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 															{
 																db_p -> di_name_s = json_string_value (name_p);
 																db_p -> di_description_s = json_string_value (description_p);
+																db_p -> di_active_flag = true;
+
+																GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
 
 																success_flag = true;
 																++ db_p;
@@ -1064,7 +1067,7 @@ static ParameterSet *IsResourceForBlastService (Service *service_p, Resource *re
 			 */
 			if (resource_p -> re_value_s)
 				{
-					const char *extension_s = strstr (resource_p -> re_value_s, ".");
+					const char *extension_s = Stristr (resource_p -> re_value_s, ".");
 
 					if (extension_s)
 						{
@@ -1100,68 +1103,60 @@ static ParameterSet *IsResourceForBlastService (Service *service_p, Resource *re
 					 */
 					if (db_p)
 						{
-							while ((db_p -> di_name_s) && (!interested_flag))
+							params_p = GetBlastServiceParameters (service_p, NULL, NULL);
+
+							if (params_p)
 								{
-									if ((strstr (db_p -> di_name_s, resource_p -> re_value_s)) ||
-											(strstr (db_p -> di_description_s, resource_p -> re_value_s)))
+									bool matched_db_flag = false;
+
+
+									db_p = blast_data_p -> bsd_databases_p;
+
+									while (db_p -> di_name_s)
 										{
-											interested_flag = true;
-										}
-									else
-										{
-											++ db_p;
-										}
-								}		/* while ((db_p -> di_name_s) && (!interested_flag)) */
+											Parameter *param_p = GetParameterFromParameterSetByName (params_p, db_p -> di_name_s);
 
-
-							if (interested_flag)
-								{
-									params_p = GetBlastServiceParameters (service_p, NULL, NULL);
-
-									if (params_p)
-										{
-											/* Set the matching databases to active */
-											db_p = blast_data_p -> bsd_databases_p;
-
-											while ((db_p -> di_name_s) && (!interested_flag))
+											if (param_p)
 												{
-													if ((strstr (db_p -> di_name_s, resource_p -> re_value_s)) ||
-															(strstr (db_p -> di_description_s, resource_p -> re_value_s)))
+													if (param_p -> pa_type == PT_BOOLEAN)
 														{
-															Parameter *param_p = GetParameterFromParameterSetByName (params_p, db_p -> di_name_s);
+															/* Set the matching databases to active */
+															bool active_flag = false;
 
-															if (param_p)
+															if ((Stristr (db_p -> di_name_s, resource_p -> re_value_s)) ||
+																	(Stristr (db_p -> di_description_s, resource_p -> re_value_s)))
 																{
-																	if (param_p -> pa_type == PT_BOOLEAN)
-																		{
-																			bool b = true;
-
-																			if (!SetParameterValue (param_p, &b, true))
-																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set Parameter \"%s\" to true", param_p -> pa_name_s);
-																				}
-																		}
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Parameter \"%s\" is of type \"%s\" not boolean", param_p -> pa_name_s, GetGrassrootsTypeAsString (param_p -> pa_type));
-																		}
+																	active_flag = true;
+																	matched_db_flag = true;
 																}
-															else
+
+															if (!SetParameterValue (param_p, &active_flag, true))
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find parameter \"%s\"", db_p -> di_name_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set Parameter \"%s\" to true", param_p -> pa_name_s);
 																}
 														}
 													else
 														{
-															++ db_p;
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Parameter \"%s\" is of type \"%s\" not boolean", param_p -> pa_name_s, GetGrassrootsTypeAsString (param_p -> pa_type));
 														}
-												}		/* while ((db_p -> di_name_s) && (!interested_flag)) */
+												}		/* if (param_p) */
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find parameter \"%s\"", db_p -> di_name_s);
+												}
 
-										}
-									else
+											++ db_p;
+										}		/* while (db_p -> di_name_s) */
+
+									if (!matched_db_flag)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetBlastServiceParameters failed");
+											ReleaseServiceParameters (service_p, params_p);
 										}
+
+								}		/* if (params_p) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetBlastServiceParameters failed");
 								}
 
 						}		/* if (db_p) */

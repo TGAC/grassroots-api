@@ -21,6 +21,7 @@
 #include <QApplication>
 
 #include "results_list.h"
+#include "standard_list_widget_item.h"
 #include "json_list_widget_item.h"
 #include "matched_service_list_widget_item.h"
 #include "text_viewer.h"
@@ -55,40 +56,15 @@ ResultsList :: ~ResultsList ()
 
 void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 {
-	JSONListWidgetItem *json_item_p = dynamic_cast <JSONListWidgetItem *> (item_p);
+	StandardListWidgetItem *our_item_p = dynamic_cast <StandardListWidgetItem *> (item_p);
 
-	if (json_item_p)
+	if (our_item_p)
 		{
-			json_item_p -> ShowData ();
+			our_item_p -> ShowData ();
 		}
 	else
 		{
-			QVariant v = item_p -> data (Qt :: UserRole);
-			QString s = v.toString ();
-			QByteArray ba = s.toLocal8Bit ();
-			const char *value_s = ba.constData ();
 
-			if ((s.startsWith (PROTOCOL_IRODS_S))  || (s.startsWith (PROTOCOL_FILE_S)))
-				{
-
-				}
-			else if ((s.startsWith (PROTOCOL_HTTP_S))  || (s.startsWith (PROTOCOL_HTTPS_S)))
-				{
-	/*
-					QWebView *browser_p = new QWebView;
-
-					browser_p -> load (QUrl (s));
-					browser_p -> show ();
-	*/
-					if (!QDesktopServices :: openUrl (QUrl (s)))
-						{
-							QWebView *browser_p = new QWebView;
-
-							rl_browsers.append (browser_p);
-							browser_p -> load (QUrl (s));
-							browser_p -> show ();
-						}
-				}
 		}
 }
 
@@ -124,6 +100,19 @@ bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 		}		/* if (json_is_array (results_list_json_p)) */
 
 	return success_flag;
+}
+
+
+void ResultsList :: ShowWebLink (const QString &link_r)
+{
+	if (!QDesktopServices :: openUrl (QUrl (link_r)))
+		{
+			QWebView *browser_p = new QWebView;
+
+			rl_browsers.append (browser_p);
+			browser_p -> load (QUrl (link_r));
+			browser_p -> show ();
+		}
 }
 
 
@@ -171,7 +160,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 					if (value_s)
 						{
-							QListWidgetItem *item_p = 0;
+							StandardListWidgetItem *item_p = 0;
 
 							if (strcmp (protocol_s, PROTOCOL_FILE_S) == 0)
 								{
@@ -187,7 +176,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 								}
 
 
-							item_p = new QListWidgetItem (title_s ? title_s : value_s, rl_list_p);
+							item_p = new StandardListWidgetItem (title_s ? title_s : value_s, rl_list_p);
 
 							QString s (protocol_s);
 							s.append ("://");
@@ -196,6 +185,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 							item_p -> setToolTip (description_s ? description_s : value_s);
 							item_p -> setData (Qt :: UserRole, v);
+
 
 							if (icon_path_s)
 								{
@@ -251,10 +241,9 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 									item_p -> setToolTip (description_s);
 
-									if (rl_grandparent_p)
-										{
-											connect (item_p, &ServiceListWidgetItem :: ServiceRequested, rl_grandparent_p, &ResultsWidget :: SelectService);
-										}
+
+
+									connect (item_p, &ServiceListWidgetItem :: ServiceRequested, rl_grandparent_p, &ResultsWidget :: SelectService);
 
 									success_flag = true;
 								}
@@ -264,4 +253,10 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 		}
 	return success_flag;
+}
+
+
+void ResultsList :: SelectService (const char *service_name_s, const json_t *params_json_p)
+{
+
 }

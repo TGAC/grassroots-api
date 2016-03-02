@@ -51,13 +51,11 @@ PrefsWidget :: PrefsWidget (MainWindow *parent_p,  ParameterLevel initial_level,
 
 	if (tabbed_display_flag)
 		{
-			ServicesTabs *st_p = new ServicesTabs (this);
-			pw_services_ui_p = st_p;
+			pw_services_ui_p = new ServicesTabs (this);
 		}
 	else
 		{
-			ServicesList *sl_p = new ServicesList (this);
-			pw_services_ui_p = sl_p;
+			pw_services_ui_p = new ServicesList (this);
 		}
 
 	layout_p -> addWidget (pw_services_ui_p -> GetWidget ());
@@ -74,6 +72,8 @@ PrefsWidget :: ~PrefsWidget ()
 bool PrefsWidget :: SelectService (const char *service_name_s, const json_t * const params_p)
 {
 	bool success_flag = true;
+
+	pw_services_ui_p -> UpdateServicePrefs (service_name_s, params_p);
 
 	return success_flag;
 }

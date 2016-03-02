@@ -195,6 +195,9 @@ GRASSROOTS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 GRASSROOTS_UTIL_API int Strnicmp (const char *c0_p, const char *c1_p, size_t length);
 
 
+GRASSROOTS_UTIL_API const char *Stristr (const char *value_s, const char *substring_s);
+
+
 GRASSROOTS_UTIL_API char *ConvertIntegerToString (const int value);
 
 

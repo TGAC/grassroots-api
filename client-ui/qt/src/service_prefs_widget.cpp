@@ -123,7 +123,7 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 
 
 
-bool ServicePrefsWidget :: SetServiceParams (json_t *service_config_p)
+bool ServicePrefsWidget :: SetServiceParams (const json_t *service_config_p)
 {
 	bool success_flag = true;
 	json_t *json_p = json_object_get (service_config_p, SERVICE_RUN_S);

@@ -16,6 +16,7 @@
 #ifndef RESULTS_LIST_HPP
 #define RESULTS_LIST_HPP
 
+#include <QWidget>
 #include <QListWidget>
 #include <QList>
 #include <QWebView>
@@ -27,10 +28,9 @@ class ResultsList : public QWidget
 {
 	Q_OBJECT
 
-signals:
-
 public slots:
 	bool SetListFromJSON (const json_t *results_list_json_p);
+	void SelectService (const char *service_name_s, const json_t *params_json_p);
 
 private slots:
 	void OpenItemLink (QListWidgetItem *item_p);
@@ -47,6 +47,8 @@ public:
 
 	bool AddItemFromJSON (const json_t *json_p);
 
+	void ShowWebLink (const QString &link_r);
+
 private:
 
 	/*********************/
@@ -58,5 +60,8 @@ private:
 	QList <QWebView *> rl_browsers;
 	ResultsWidget *rl_grandparent_p;
 };
+
+
+//Q_DECLARE_METATYPE(QList)
 
 #endif		/* #ifndef RESULTS_LIST_HPP */

@@ -62,13 +62,6 @@ ServicesList :: ServicesList (QWidget *parent_p)
 
 
 
-void ServicesList :: SelectService (const char *service_name_s, const json_t *params_json_p)
-{
-
-}
-
-
-
 void ServicesList :: SetCurrentService (const QModelIndex &index_r)
 {
   const int row = index_r.row ();
@@ -130,15 +123,56 @@ QWidget *ServicesList :: GetWidget ()
 }
 
 
-void ServicesList :: SetServiceRunStatus (const char * const service_name_s, bool state)
+void ServicesList :: UpdateServicePrefs (const char *service_name_s, const json_t *params_json_p)
 {
-	QString service_name (service_name_s);
+	QListWidgetItem *item_p = FindListWidgetItem (service_name_s);
 
-	QList <QListWidgetItem *> widgets = sl_services_p -> findItems (service_name, Qt :: MatchExactly);
+	if (item_p)
+		{
+			int row = sl_services_p -> row (item_p);
+
+			if (row >= 0)
+				{
+					if (row < sl_stacked_widgets_p -> count ())
+						{
+							ServicePrefsWidget *service_prefs_p = static_cast <ServicePrefsWidget *> (sl_stacked_widgets_p -> widget (row));
+							const char *widget_name_s = service_prefs_p -> GetServiceName ();
+
+							if (strcmp (widget_name_s, service_name_s) == 0)
+								{
+									item_p -> setSelected (true);
+									sl_stacked_widgets_p -> setCurrentIndex (row);
+
+									if (! (service_prefs_p -> SetServiceParams (params_json_p)))
+										{
+
+										}
+								}
+						}
+				}
+		}
+}
+
+
+QListWidgetItem *ServicesList :: FindListWidgetItem (const char *service_name_s)
+{
+	QList <QListWidgetItem *> widgets = sl_services_p -> findItems (service_name_s, Qt :: MatchExactly);
+
 	if (widgets.size () == 1)
 		{
-			QListWidgetItem *item_p = widgets.at (0);
+			return widgets.at (0);
+		}
 
+	return 0;
+}
+
+
+void ServicesList :: SetServiceRunStatus (const char * const service_name_s, bool state)
+{
+	QListWidgetItem *item_p = FindListWidgetItem (service_name_s);
+
+	if (item_p)
+		{
 			item_p -> setCheckState (state ? Qt :: Checked : Qt :: Unchecked);
 		}
 }

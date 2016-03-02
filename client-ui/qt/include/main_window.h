@@ -67,6 +67,7 @@ private:
 	PrefsWidget *mw_prefs_widget_p;
 	KeywordWidget *mw_keyword_widget_p;
 	struct QTClientData *mw_client_data_p;
+	QTabWidget *mw_tabs_p;
 
 	void AddActions ();
 	void SetParams (json_t *config_p);

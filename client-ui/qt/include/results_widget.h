@@ -24,6 +24,8 @@
 
 class ResultsWidget : public QTabWidget
 {
+	Q_OBJECT
+
 public:
   ResultsWidget (QWidget *parent_p = 0);
   ~ResultsWidget ();
@@ -43,10 +45,11 @@ signals:
 public slots:
   void SelectService (const char *service_name_s, const json_t *params_json_p);
 
+
 private:
   QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
 
-  static QString RW_SERVICES_TAB_TITLE;
+	static const char *RW_SERVICES_TAB_TITLE_S;
 
 };
 
