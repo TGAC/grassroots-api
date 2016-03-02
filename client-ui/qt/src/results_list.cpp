@@ -232,7 +232,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 											item_p -> setIcon (QIcon ("images/list_tool"));
 										}
 
-									item_p -> SetJSONData (data_p);
+									item_p -> SetJSONData (resource_json_p);
 
 									if (!description_s)
 										{
@@ -241,9 +241,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 									item_p -> setToolTip (description_s);
 
-
-
-									connect (item_p, &ServiceListWidgetItem :: ServiceRequested, rl_grandparent_p, &ResultsWidget :: SelectService);
+									connect (item_p,  &ServiceListWidgetItem :: ServiceRequested, rl_grandparent_p, &ResultsWidget :: SelectService);
 
 									success_flag = true;
 								}

@@ -28,12 +28,16 @@ JSONListWidgetItem :: JSONListWidgetItem (const QString &text_r, QListWidget *pa
 
 JSONListWidgetItem :: ~ JSONListWidgetItem ()
 {
+	if (jlwi_json_data_p)
+		{
+			json_decref (jlwi_json_data_p);
+		}
 }
 
 
-void JSONListWidgetItem :: SetJSONData (const json_t *data_p)
+bool JSONListWidgetItem :: SetJSONData (const json_t *data_p)
 {
-	jlwi_json_data_p = data_p;
+	jlwi_json_data_p = json_deep_copy (data_p);
 }
 
 

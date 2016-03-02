@@ -28,13 +28,13 @@ public:
 	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, ResultsList *grandparent_p = 0, int type = UserType);
 	virtual ~JSONListWidgetItem ();
 
-	void SetJSONData (const json_t *data_p);
+	bool SetJSONData (const json_t *data_p);
 	const json_t *GetJSONData () const;
 
 	virtual void ShowData ();
 
 protected:
-	const json_t *jlwi_json_data_p;
+	json_t *jlwi_json_data_p;
 };
 
 #endif // JSON_LIST_WIDGET_ITEM_H
