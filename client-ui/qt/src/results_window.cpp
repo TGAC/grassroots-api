@@ -23,6 +23,7 @@
 
 
 #include "results_window.h"
+#include "main_window.h"
 
 #include "json_util.h"
 #include "json_tools.h"

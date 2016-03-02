@@ -72,6 +72,8 @@ public:
 
 	ServicePrefsWidget *GetServicePrefsWidget (const char * const service_name_s);
 
+	bool SelectService (const char *service_name_s, const json_t * const params_p);
+
 private:
 
 	/*********************/

@@ -25,8 +25,9 @@
 
 #include "typedefs.h"
 #include "jansson.h"
-#include "main_window.h"
 
+
+class MainWindow;
 
 class ResultsWindow : public QWidget
 {

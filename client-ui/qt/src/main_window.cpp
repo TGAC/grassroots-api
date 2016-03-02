@@ -96,7 +96,7 @@ void MainWindow :: Reject ()
 
 void MainWindow :: SelectService (const char *service_name_s, const json_t *params_json_p)
 {
-	emit ServiceRequested (service_name_s, params_json_p);
+	mw_prefs_widget_p -> SelectService (service_name_s, params_json_p);
 }
 
 

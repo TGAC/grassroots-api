@@ -52,13 +52,11 @@ PrefsWidget :: PrefsWidget (MainWindow *parent_p,  ParameterLevel initial_level,
 	if (tabbed_display_flag)
 		{
 			ServicesTabs *st_p = new ServicesTabs (this);
-			connect (parent_p, &MainWindow :: ServiceRequested, st_p, &ServicesTabs :: SelectService);
 			pw_services_ui_p = st_p;
 		}
 	else
 		{
 			ServicesList *sl_p = new ServicesList (this);
-			connect (parent_p, &MainWindow :: ServiceRequested, sl_p, &ServicesList :: SelectService);
 			pw_services_ui_p = sl_p;
 		}
 
@@ -71,6 +69,15 @@ PrefsWidget :: PrefsWidget (MainWindow *parent_p,  ParameterLevel initial_level,
 PrefsWidget :: ~PrefsWidget ()
 {
 }
+
+
+bool PrefsWidget :: SelectService (const char *service_name_s, const json_t * const params_p)
+{
+	bool success_flag = true;
+
+	return success_flag;
+}
+
 
 void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p)
 {
