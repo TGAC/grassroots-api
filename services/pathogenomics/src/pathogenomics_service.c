@@ -30,6 +30,7 @@
 #include "sample_metadata.h"
 #include "phenotype_metadata.h"
 #include "genotype_metadata.h"
+#include "files_metadata.h"
 #include "string_linked_list.h"
 #include "math_utils.h"
 #include "search_options.h"
@@ -60,6 +61,7 @@ typedef enum
 	PD_SAMPLE,
 	PD_PHENOTYPE,
 	PD_GENOTYPE,
+	PD_FILES,
 	PD_NUM_TYPES
 } PathogenomicsData;
 
@@ -68,7 +70,8 @@ static const char *s_data_names_pp [PD_NUM_TYPES] =
 {
 	PG_SAMPLE_S,
 	PG_PHENOTYPE_S,
-	PG_GENOTYPE_S
+	PG_GENOTYPE_S,
+	PG_FILES_S
 };
 
 
@@ -326,7 +329,12 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, con
 
 											if (data_p -> psd_genotype_collection_s)
 												{
-													success_flag = true;
+													data_p -> psd_files_download_root_uri_s = GetJSONString (service_config_p, "files_host");
+
+													if (data_p -> psd_files_download_root_uri_s)
+														{
+															success_flag = true;
+														}
 												}
 										}
 								}
@@ -355,6 +363,7 @@ static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *op_js
 					data_p -> psd_locations_collection_s = NULL;
 					data_p -> psd_samples_collection_s = NULL;
 					data_p -> psd_phenotype_collection_s = NULL;
+					data_p -> psd_files_download_root_uri_s = NULL;
 
 					return data_p;
 				}
@@ -1509,6 +1518,10 @@ static uint32 InsertData (MongoTool *tool_p, json_t *values_p, const Pathogenomi
 
 			case PD_GENOTYPE:
 				insert_fn = InsertGenotypeData;
+				break;
+
+			case PD_FILES:
+				insert_fn = InsertFilesData;
 				break;
 
 			default:

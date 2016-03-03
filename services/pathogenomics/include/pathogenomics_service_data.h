@@ -52,6 +52,8 @@ struct PathogenomicsServiceData
 
 	const char *psd_geocoder_uri_s;
 
+
+	const char *psd_files_download_root_uri_s;
 };
 
 
