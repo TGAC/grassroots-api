@@ -25,7 +25,7 @@
 class JSONListWidgetItem : public StandardListWidgetItem
 {
 public:
-	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, ResultsList *grandparent_p = 0, int type = UserType);
+	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = UserType);
 	virtual ~JSONListWidgetItem ();
 
 	bool SetJSONData (const json_t *data_p);

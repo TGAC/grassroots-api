@@ -14,64 +14,106 @@
 ** limitations under the License.
 */
 
+#include <QDesktopServices>
 #include <QVBoxLayout>
 #include <QString>
 #include <QLabel>
 
 #include "results_page.h"
+#include "results_widget.h"
 
 
-ResultsPage :: ResultsPage (QWidget *parent_p)
+
+ResultsPage :: ResultsPage (ResultsWidget *parent_p)
 	: QWidget (parent_p)
 {
 	rp_results_list_p = new ResultsList (this);
+	SetUp (parent_p);
+}
 
+
+
+void ResultsPage :: SetUp (ResultsWidget *parent_p, const char * const description_s, const char * const uri_s)
+{
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	setLayout (layout_p);
 
 	rp_description_label_p = new QLabel ();
+
+	if (description_s)
+		{
+			rp_description_label_p -> setText (description_s);
+		}
+
 	layout_p -> addWidget (rp_description_label_p);
 
 	rp_uri_label_p = new QLabel ();
 	layout_p -> addWidget (rp_uri_label_p);
 
+
+	if (uri_s)
+		{
+			QString s ("For more information, go to <a href=\"");
+			s.append (uri_s);
+			s.append ("\">");
+			s.append (uri_s);
+			s.append ("</a>");
+
+			rp_uri_label_p -> setText (s);
+			rp_uri_label_p -> setOpenExternalLinks (true);
+		}
+
 	layout_p -> addWidget (rp_results_list_p);
+
+	connect (this, &ResultsPage :: ServiceRequested, parent_p, &ResultsWidget :: SelectService);
 }
 
 
-ResultsPage :: ResultsPage (const json_t *results_list_json_p, const char * const description_s, const char * const uri_s, QWidget *parent_p)
+ResultsPage :: ResultsPage (const json_t *results_list_json_p, const char * const description_s, const char * const uri_s, ResultsWidget *parent_p)
 	: QWidget (parent_p)
 {
 	rp_results_list_p = new ResultsList (this);
 
 	if (rp_results_list_p -> SetListFromJSON (results_list_json_p))
 		{
-			QVBoxLayout *layout_p = new QVBoxLayout;
-			setLayout (layout_p);
-
-			QLabel *label_p = new QLabel (QString (description_s), this);
-			layout_p -> addWidget (label_p);
-
-			if (uri_s)
-				{
-					QString s ("For more information, go to <a href=\"");
-					s.append (uri_s);
-					s.append ("\">");
-					s.append (uri_s);
-					s.append ("</a>");
-
-					label_p = new QLabel (s, this);
-					label_p -> setOpenExternalLinks (true);
-					layout_p -> addWidget (label_p);
-				}
-
-			layout_p -> addWidget (rp_results_list_p);
+			SetUp (parent_p, description_s, uri_s);
 		}
 	else
 		{
 			throw std::bad_alloc ();
 		}
 }
+
+
+
+ResultsPage :: ~ResultsPage ()
+{
+
+}
+
+
+void ResultsPage :: SelectService (const char *service_name_s, const json_t *params_json_p)
+{
+	emit ServiceRequested (service_name_s, params_json_p);
+}
+
+
+
+void ResultsPage :: OpenWebLink (const char * const uri_s)
+{
+	QUrl url (uri_s);
+
+	if (!QDesktopServices :: openUrl (url))
+		{
+			QWebView *browser_p = new QWebView;
+
+			rp_browsers.append (browser_p);
+			browser_p -> load (url);
+			browser_p -> show ();
+		}
+}
+
+
 
 
 ResultsList *ResultsPage :: GetResultsList () const

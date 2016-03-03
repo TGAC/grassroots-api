@@ -23,7 +23,7 @@
 
 #include "jansson.h"
 
-class ResultsWidget;
+class ResultsPage;
 
 class ResultsList : public QWidget
 {
@@ -31,7 +31,6 @@ class ResultsList : public QWidget
 
 public slots:
 	bool SetListFromJSON (const json_t *results_list_json_p);
-	void SelectService (const char *service_name_s, const json_t *params_json_p);
 
 private slots:
 	void OpenItemLink (QListWidgetItem *item_p);
@@ -42,27 +41,23 @@ public:
 	/***** FUNCTIONS *****/
 	/*********************/
 
-	ResultsList (QWidget *parent_p, ResultsWidget *results_widget_p = 0);
+	ResultsList (ResultsPage *parent_p);
 
 	~ResultsList ();
 
 	bool AddItemFromJSON (const json_t *json_p);
 
-	void ShowWebLink (const QString &link_r);
 
 private:
 
 	/*********************/
 	/***** VARIABLES *****/
 	/*********************/
+	ResultsPage *rl_parent_p;
 	QListWidget *rl_list_p;
 
-
-	QList <QWebView *> rl_browsers;
-	ResultsWidget *rl_grandparent_p;
 };
 
 
-//Q_DECLARE_METATYPE(QList)
 
 #endif		/* #ifndef RESULTS_LIST_HPP */

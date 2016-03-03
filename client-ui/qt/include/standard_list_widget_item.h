@@ -27,14 +27,15 @@ class StandardListWidgetItem : public QObject, public QListWidgetItem
 {
 	Q_OBJECT
 
+signals:
+	void WebLinkSelected (const char * const uri_s);
+
 public:
-	StandardListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, ResultsList *grandparent_p = 0, int type = UserType);
+	StandardListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = UserType);
 	virtual ~StandardListWidgetItem ();
 
 	virtual void ShowData ();
 
-protected:
-	ResultsList *slwi_results_list_p;
 };
 
 #endif // STANDARD_LIST_WIDGET_ITEM_H

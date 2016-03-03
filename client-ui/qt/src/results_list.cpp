@@ -21,7 +21,7 @@
 #include <QApplication>
 
 #include "results_list.h"
-#include "results_widget.h"
+#include "results_page.h"
 #include "standard_list_widget_item.h"
 #include "json_list_widget_item.h"
 #include "matched_service_list_widget_item.h"
@@ -34,9 +34,9 @@
 #include "filesystem_utils.h"
 
 
-ResultsList :: ResultsList (QWidget *parent_p, ResultsWidget *results_widget_p)
+ResultsList :: ResultsList (ResultsPage *parent_p)
 	:	QWidget (parent_p),
-		rl_grandparent_p (results_widget_p)
+		rl_parent_p (parent_p)
 {
 	QLayout *layout_p = new QVBoxLayout;
 
@@ -101,19 +101,6 @@ bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 		}		/* if (json_is_array (results_list_json_p)) */
 
 	return success_flag;
-}
-
-
-void ResultsList :: ShowWebLink (const QString &link_r)
-{
-	if (!QDesktopServices :: openUrl (QUrl (link_r)))
-		{
-			QWebView *browser_p = new QWebView;
-
-			rl_browsers.append (browser_p);
-			browser_p -> load (QUrl (link_r));
-			browser_p -> show ();
-		}
 }
 
 
@@ -188,6 +175,8 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 							item_p -> setData (Qt :: UserRole, v);
 
 
+							connect (item_p,  &StandardListWidgetItem :: WebLinkSelected, rl_parent_p, &ResultsPage :: OpenWebLink);
+
 							if (icon_path_s)
 								{
 									item_p -> setIcon (QIcon (icon_path_s));
@@ -242,7 +231,7 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 									item_p -> setToolTip (description_s);
 
-									connect (item_p,  &ServiceListWidgetItem :: ServiceRequested, rl_grandparent_p, &ResultsWidget :: SelectService);
+									connect (item_p, &ServiceListWidgetItem :: ServiceRequested, rl_parent_p, &ResultsPage :: SelectService);
 
 									success_flag = true;
 								}
@@ -254,8 +243,3 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 	return success_flag;
 }
 
-
-void ResultsList :: SelectService (const char *service_name_s, const json_t *params_json_p)
-{
-
-}

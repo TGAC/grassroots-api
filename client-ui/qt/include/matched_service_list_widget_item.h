@@ -29,7 +29,7 @@ class ServiceListWidgetItem : public JSONListWidgetItem
 	Q_OBJECT
 
 public:
-	ServiceListWidgetItem (const QString &text_r, QListWidget *parent_p, ResultsList *grandparent_p = 0, int type = UserType);
+	ServiceListWidgetItem (const QString &text_r, QListWidget *parent_p, int type = UserType);
 	virtual ~ServiceListWidgetItem ();
 
 	virtual void ShowData ();

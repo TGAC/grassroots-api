@@ -20,9 +20,8 @@
 #include "data_resource.h"
 
 
-StandardListWidgetItem :: StandardListWidgetItem (const QString &text_r, QListWidget *parent_p, ResultsList *grandparent_p, int type)
-: QListWidgetItem (text_r, parent_p, type),
-	slwi_results_list_p (grandparent_p)
+StandardListWidgetItem :: StandardListWidgetItem (const QString &text_r, QListWidget *parent_p, int type)
+: QListWidgetItem (text_r, parent_p, type)
 {
 
 }
@@ -47,6 +46,6 @@ void StandardListWidgetItem :: ShowData ()
 		}
 	else if ((s.startsWith (PROTOCOL_HTTP_S))  || (s.startsWith (PROTOCOL_HTTPS_S)))
 		{
-			slwi_results_list_p -> ShowWebLink (s);
+			emit WebLinkSelected (value_s);
 		}
 }

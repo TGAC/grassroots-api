@@ -14,25 +14,16 @@
 ** limitations under the License.
 */
 /*
- * genotype_metadata.c
+ * files_metadata.c
  *
- *  Created on: 19 Oct 2015
+ *  Created on: 3 Mar 2016
  *      Author: tyrrells
  */
-#include "genotype_metadata.h"
-#include "pathogenomics_utils.h"
-#include "json_tools.h"
-#include "string_utils.h"
+
+#include "files_metadata.h"
 
 
-#ifdef _DEBUG
-	#define GENOTYPE_METADATA_DEBUG	(STM_LEVEL_FINE)
-#else
-	#define GENOTYPE_METADATA_DEBUG	(STM_LEVEL_NONE)
-#endif
-
-
-const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p)
+const char *InsertFilesData (MongoTool *tool_p, json_t *values_p, PathogenomicsServiceData *data_p)
 {
 	const char *error_s = NULL;
 	const char * const key_s = PG_ID_S;
@@ -40,7 +31,7 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenomi
 
 	if (id_s)
 		{
-			/* Create a json doc with "genotype"=values_p and PG_ID_S=id_s */
+			/* Create a json doc with "files"=values_p and PG_ID_S=id_s */
 			json_t *doc_p = json_object ();
 
 			if (doc_p)
@@ -49,12 +40,12 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenomi
 						{
 							if (json_object_del (values_p, key_s) != 0)
 								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to remove %s from genotype", key_s);
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to remove %s from files", key_s);
 								}
 
-							if (json_object_set (doc_p, PG_GENOTYPE_S, values_p) == 0)
+							if (json_object_set (doc_p, PG_FILES_S, values_p) == 0)
 								{
-									char *date_s = ConcatenateStrings (PG_GENOTYPE_S, PG_LIVE_DATE_SUFFIX_S);
+									char *date_s = ConcatenateStrings (PG_FILES_S, PG_LIVE_DATE_SUFFIX_S);
 
 									if (date_s)
 										{
@@ -64,32 +55,32 @@ const char *InsertGenotypeData (MongoTool *tool_p, json_t *values_p, Pathogenomi
 												}
 											else
 												{
-													error_s = "Failed to add current date to genotype data";
+													error_s = "Failed to add current date to files data";
 												}
 
 											FreeCopiedString (date_s);
 										}
 									else
 										{
-											error_s = "Failed to make genotype date key";
+											error_s = "Failed to make files date key";
 										}
 								}
 							else
 								{
-									error_s = "Failed to add values to new genotype data";
+									error_s = "Failed to add values to new files data";
 								}
 
 						}		/* if (json_object_set_new (doc_p, PG_ID_S, json_string (id_s)) == 0) */
 					else
 						{
-							error_s = "Failed to add id to new genotype data";
+							error_s = "Failed to add id to new v data";
 						}
 
 					WipeJSON (doc_p);
 				}		/* if (doc_p) */
 			else
 				{
-					error_s = "Failed to create genotype data to add";
+					error_s = "Failed to create files data to add";
 				}
 
 		}		/* if (id_s) */
