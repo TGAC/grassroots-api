@@ -22,7 +22,8 @@
 #include <QWebView>
 
 #include "jansson.h"
-#include "results_widget.h"
+
+class ResultsWidget;
 
 class ResultsList : public QWidget
 {

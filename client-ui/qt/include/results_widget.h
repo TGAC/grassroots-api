@@ -19,6 +19,8 @@
 #include <QTabWidget>
 #include <QString>
 
+#include "results_page.h"
+
 #include "jansson.h"
 #include "typedefs.h"
 
@@ -47,7 +49,7 @@ public slots:
 
 
 private:
-  QWidget *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
+	ResultsPage *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
 
 	static const char *RW_SERVICES_TAB_TITLE_S;
 

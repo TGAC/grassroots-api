@@ -119,7 +119,8 @@ SOURCES += \
     src/param_json_editor.cpp \
     src/matched_service_list_widget_item.cpp \
     src/servce_ui.cpp \
-    src/standard_list_widget_item.cpp
+    src/standard_list_widget_item.cpp \
+    src/results_page.cpp
 
 HEADERS  += \
     include/base_param_widget.h \
@@ -157,7 +158,8 @@ HEADERS  += \
     include/param_table_widget.h \
     include/param_json_editor.h \
     include/matched_service_list_widget_item.h \
-		include/standard_list_widget_item.h
+		include/standard_list_widget_item.h \
+    include/results_page.h
 
 
 LIBS += -L$$DIR_GRASSROOTS_UTIL_LIB  -l$$GRASSROOTS_UTIL_LIB_NAME \

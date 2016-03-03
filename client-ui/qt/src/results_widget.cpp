@@ -135,35 +135,36 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 				}
 		}
 
-	/*	//
+	/*
 	 * If we couldn't find  the "interested servces page",
 	 * then create it
 	 */
 	if (index == -1)
 		{
-			QWidget *page_p = new QWidget;
-
-			services_list_p = new ResultsList (page_p, this);
+			ResultsPage *page_p = new ResultsPage (this);
 
 			if (page_p)
 				{
 					insertTab (count (), page_p, RW_SERVICES_TAB_TITLE_S);
+					services_list_p = page_p -> GetResultsList ();
 				}
 			else
 				{
-
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to insert %s page", RW_SERVICES_TAB_TITLE_S);
 				}
-
 		}
 	else
 		{
-			QWidget *page_p = widget (index);
-			QList <ResultsList *> l = page_p -> findChildren <ResultsList *> ();
+			ResultsPage *page_p = dynamic_cast <ResultsPage *> (widget (index));
 
-			if (l.count () == 1)
+			if (page_p)
 				{
-					services_list_p = l.at (0);
-				}		/* if (l.count () == 1) */
+					services_list_p = page_p -> GetResultsList ();
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "page is not a ResultsPage");
+				}
 
 		}		/* if (index == -1) else */
 
@@ -177,7 +178,7 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 		}		/* if (services_list_p) */
 	else
 		{
-
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s page", RW_SERVICES_TAB_TITLE_S);
 		}
 
 	return success_flag;
@@ -186,7 +187,7 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 
 bool ResultsWidget :: AddItemToResultsList (const json_t *results_json_p)
 {
-
+	return false;
 }
 
 
@@ -196,40 +197,18 @@ void ResultsWidget :: SelectService (const char *service_name_s, const json_t *p
 }
 
 
-QWidget *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const description_s, const char * const uri_s)
+ResultsPage *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const description_s, const char * const uri_s)
 {
-	QWidget *page_p = new QWidget;
-	ResultsList *list_p = new ResultsList (page_p);
+	ResultsPage *page_p = 0;
 
-	if (list_p -> SetListFromJSON (results_json_p))
+	try
 		{
-			QVBoxLayout *layout_p = new QVBoxLayout;
-			page_p -> setLayout (layout_p);
-
-			QLabel *label_p = new QLabel (QString (description_s), page_p);
-			layout_p -> addWidget (label_p);
-
-			if (uri_s)
-				{
-					QString s ("For more information, go to <a href=\"");
-					s.append (uri_s);
-					s.append ("\">");
-					s.append (uri_s);
-					s.append ("</a>");
-
-					label_p = new QLabel (s, page_p);
-					label_p -> setOpenExternalLinks (true);
-					layout_p -> addWidget (label_p);
-				}
-
-			layout_p -> addWidget (list_p);
+			page_p = new ResultsPage (results_json_p, description_s, uri_s, this);
 		}
-	else
+	catch (std :: exception &ex_r)
 		{
-			delete page_p;
-			page_p = 0;
+			PrintJSONToErrors (results_json_p, "Failed to create page for ", STM_LEVEL_SEVERE, __FILE__, __LINE__);
 		}
-
 
 	return page_p;
 }

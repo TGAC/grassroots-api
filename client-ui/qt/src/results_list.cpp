@@ -21,6 +21,7 @@
 #include <QApplication>
 
 #include "results_list.h"
+#include "results_widget.h"
 #include "standard_list_widget_item.h"
 #include "json_list_widget_item.h"
 #include "matched_service_list_widget_item.h"
