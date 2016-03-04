@@ -96,7 +96,7 @@ typedef struct Resource
 /**
  * @brief The string used to separate the protocol and values of a Resource.
  * This is used to build string representations of the form
- * <PROTOCOL><RESOURCE_DELIMITER_S><VALUE>
+ * \<PROTOCOL\>\<RESOURCE_DELIMITER_S\>\<VALUE\>
  * @memberof Resource
  */
 RESOURCE_PREFIX const char *RESOURCE_DELIMITER_S RESOURCE_VAL("://");

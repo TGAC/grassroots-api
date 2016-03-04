@@ -285,23 +285,23 @@ static const char *ScrollPastSpecificCharacters (const char **value_pp, const ch
 {
 	const char *value_s = *value_pp;
 	const size_t delimiters_length = (delimiters_s != NULL) ? strlen (delimiters_s) : 0;
-	bool is_delimter_flag;
+	bool is_delimiter_flag;
 	bool loop_flag = (*value_s != '\0');
 
 	while (loop_flag)
 		{
 			const char c = *value_s;
 
-			is_delimter_flag = false;
+			is_delimiter_flag = false;
 
 			/* Are we're checking for whitespace? */
 			if (check_for_whitespace_flag)
 				{
-					is_delimter_flag = (isspace (c) != 0);
+					is_delimiter_flag = (isspace (c) != 0);
 				}		/* if (check_for_whitespace_flag) */
 
 			/* if the whitespace check failed, test against our delimiters */
-			if (!is_delimter_flag)
+			if (!is_delimiter_flag)
 				{
 					/* If necessary, check for any delimiters */
 					if (delimiters_length > 0)
@@ -311,9 +311,9 @@ static const char *ScrollPastSpecificCharacters (const char **value_pp, const ch
 
 							while (i > 0)
 								{
-									is_delimter_flag = (*delim_p == c);
+									is_delimiter_flag = (*delim_p == c);
 
-									if (is_delimter_flag)
+									if (is_delimiter_flag)
 										{
 											i = 0;
 										}
@@ -331,7 +331,7 @@ static const char *ScrollPastSpecificCharacters (const char **value_pp, const ch
 
 
 			/* Are we continuing? */
-			if (is_delimter_flag == state_flag)
+			if (is_delimiter_flag == state_flag)
 				{
 					++ value_s;
 
@@ -519,12 +519,12 @@ bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char c
  * be where the orginal word  in the buffer ends.
  * @return A copied version of the string.
  */
-char *GetNextToken (const char **start_pp, const char *delimiters_s, const bool ignore_whitespace_flag, const bool update_position_flag)
+char *GetNextToken (const char **start_pp, const char *delimiters_s, const bool check_for_whitespace_flag, const bool update_position_flag)
 {
 	char *word_s = NULL;
 	const char *value_p = *start_pp;
 
-	const char *start_p = ScrollPastSpecificCharacters (&value_p, delimiters_s, ignore_whitespace_flag, true);
+	const char *start_p = ScrollPastSpecificCharacters (&value_p, delimiters_s, check_for_whitespace_flag, true);
 
 	if (start_p && *start_p)
 		{
@@ -544,7 +544,7 @@ char *GetNextToken (const char **start_pp, const char *delimiters_s, const bool 
 				}
 			else
 				{
-					end_p = ScrollPastSpecificCharacters (&value_p, delimiters_s, ignore_whitespace_flag, false);
+					end_p = ScrollPastSpecificCharacters (&value_p, delimiters_s, check_for_whitespace_flag, false);
 				}
 
 			if (end_p)

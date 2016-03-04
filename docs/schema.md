@@ -110,13 +110,13 @@ An array of [Operation](#Operation) objects that the Service can perform.
 
 ## Operation {#Operation}
 
-* **operationId** (required): The name for the Operation.
+* **operation\_id** (required): The name for the Operation.
 
 * **summary** (required):
  
 * **description** (required):
 
-* **parameter_set** (required): The [ParameterSet](#ParameterSet).
+* **parameter\_set** (required): The [ParameterSet](#ParameterSet).
 
 
 ## ParameterSet {#ParameterSet}
@@ -161,7 +161,7 @@ within an Operation to allow a Service to search for a Parameter by a tag value 
  MAKE_TAG(a,b,c,d) ((a) << 24 | (b) << 16 | (c) << 8 | (d))
  ~~~~~~
 
-* **grassroots_type** (required): 
+* **grassroots\_type** (required): 
 A number to describe the type of the Parameter. The values, along with their C definition, are shown below:
  1. *PT_BOOLEAN*: The variable can be true or false.
  2. *PT_SIGNED_INT*: The variable is a non-negative integer.

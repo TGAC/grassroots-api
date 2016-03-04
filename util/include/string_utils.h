@@ -29,7 +29,16 @@
 
 #include "uuid/uuid.h"
 
+/**
+ * The number of bytes required to store a c-style string
+ * representation of a UUID.
+ */
 #define UUID_STRING_BUFFER_SIZE (37)
+
+/**
+ * The number of bytes required to store the raw data
+ * of a UUID.
+ */
 #define UUID_RAW_SIZE (16)
 
 #ifdef __cplusplus
@@ -151,20 +160,23 @@ GRASSROOTS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **va
 /**
  * Get a copy of the next word from a buffer.
  *
- * @param buffer_p The buffer to read from.
- * @param end_pp If the word is successfully read, then this will
- * be where the orginal word  in the buffer ends.
- * @return A copied version of the string.
+ * @param start_pp Address of the buffer to read from.
+ * @param delimiters_p An array of characters that can be used as delimiters. If this is NULL
+ * then the behvaiour is determined by check_for_whitespace_flag.
+ * @param check_for_whitespace_flag
+ * @param update_position_flag If this is set to <code>true</code>, then the address pointed to by start_pp will be updated to after
+ * the token.
+ * @return A copied version of the string or <code>NULL</code> if there was an error or no more tokens were available.
+ * @see FreeToken
  */
-GRASSROOTS_UTIL_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
+GRASSROOTS_UTIL_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool check_for_whitespace_flag, const bool update_position_flag);
 
-
-GRASSROOTS_UTIL_API bool GetNextTokenAsRealNumber (const char **start_pp, double *data_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
-
-
-GRASSROOTS_UTIL_API bool GetNextTokenAsInteger (const char **start_pp, int *value_p, const char *delimiters_p, const bool ignore_whitespace_flag, const bool update_position_flag);
-
-
+/**
+ * Free a c-style string that has been returned by GetNextToken.
+ *
+ * @param token_s The token to free.
+ * @see GetNextToken
+ */
 GRASSROOTS_UTIL_API void FreeToken (char *token_s);
 
 
@@ -184,23 +196,73 @@ GRASSROOTS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
  * Test whether a string is NULL or contains just whitespace.
  *
  * @param value_s The string to test.
- * @return TRUE If the string is NULL or just whitespace, FALSE otherwise.
+ * @return <code>true</code> If the string is <code>NULL</code> or just whitespace, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool IsStringEmpty (const char *value_s);
 
 
+/**
+ * Do a case-insensitive comparison between two strings.
+ * This is a case-insensitive version of the standard ANSI function strcmp.
+ *
+ * @param c0_s The first string.
+ * @param c1_s The second string.
+ * @return Less than zero if the first string is less than the second,
+ * greater than zero if the first string is greater than the second and
+ * zero if the strings match.
+ */
 GRASSROOTS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 
 
-GRASSROOTS_UTIL_API int Strnicmp (const char *c0_p, const char *c1_p, size_t length);
+/**
+ * Do a case-insensitive comparison between the initial portions of two strings.
+ * This is a case-insensitive version of the standard ANSI function strncmp.
+ *
+ * @param c0_s The first string.
+ * @param c1_s The second string.
+ * @param length The maximum number of characters in each string to compare.
+ * @return Less than zero if the first string is less than the second,
+ * greater than zero if the first string is greater than the second and
+ * zero if the strings match.
+ */
+GRASSROOTS_UTIL_API int Strnicmp (const char *c0_s, const char *c1_s, size_t length);
 
 
+/**
+ * Find a substring within a string. The search is case-insensitive.
+ * This is a case-insensitive version of the standard ANSI function strstr.
+ *
+ * @param value_s The string to search within.
+ * @param substring_s The string to search for
+ * @return The substring within the larger string or <code>NULL</code> if it was
+ * not found.
+ */
 GRASSROOTS_UTIL_API const char *Stristr (const char *value_s, const char *substring_s);
 
 
+/**
+ * Get an integer as a string, e.g.
+ *
+ *  1 would be converted to "1"
+ *
+ * @param value The value to convert to a string.
+ * @return The c-style string or <code>NULL</code> upon error.
+ * This needs to be freed using FreeCopiedString.
+ * @see FreeCopiedString.
+ */
 GRASSROOTS_UTIL_API char *ConvertIntegerToString (const int value);
 
 
+/**
+ * Get an double as a string, e.g.
+ *
+ *  1.03 would be converted to "1.03"
+ *
+ * @param value The value to convert to a string.
+ * @return The c-style string or <code>NULL</code> upon error.
+ * This needs to be freed using FreeCopiedString.
+ * @see FreeCopiedString.
+ */
 GRASSROOTS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
 
@@ -218,7 +280,7 @@ GRASSROOTS_UTIL_API char *GetUUIDAsString (const uuid_t id);
  * Convert a uuid_t into a given string buffer.
  *
  * @param id The uuid_t to get the string representation of.
- * @param The buffer to write the representation to. This must be at least
+ * @param uuid_s The buffer to write the representation to. This must be at least
  * UUID_STRING_BUFFER_SIZE bytes long.
  * @see UUID_STRING_BUFFER_SIZE
  */

@@ -303,13 +303,13 @@ typedef struct ParameterNode
  * @param descriptions_ss An array of strings of num_options size to use the ParameterMultiOption descriptions.
  * @param values_p An array of SharedTypes of num_options size to use the ParameterMultiOption values.
  * @param pt The ParameterType for the values in this ParameterMultiOptionArray.
- * @param copy_value_flag If this is <code>true</code>, the entry will make a deep copy of value. If this
+ * @param copy_values_flag If this is <code>true</code>, the entry will make a deep copy of value. If this
  * is <code>false</code> then it will take ownership of the value and use it directly. Note that this
  * means that the data stored by value will be freed when the ParameterMultiOptionArray is freed.
  * @return The newly-allocated ParameterMultiOptionArray or <code>NULL</code> upon error.
  * @memberof ParameterMultiOptionArray
  */
-GRASSROOTS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_pp, SharedType *values_p, ParameterType pt, bool copy_values_flag);
+GRASSROOTS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_ss, SharedType *values_p, ParameterType pt, bool copy_values_flag);
 
 
 /**
@@ -404,7 +404,7 @@ GRASSROOTS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBound
  * Free a ParameterBounds.
  *
  * @param bounds_p The ParameterBounds to free.
- * @pt The ParameterTye that the given ParameterBounds refers to.
+ * @param pt The ParameterTye that the given ParameterBounds refers to.
  * @memberof ParameterBounds
  */
 GRASSROOTS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
@@ -433,7 +433,7 @@ GRASSROOTS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const
  * @memberof ParameterNode.
  * @see AllocateParameter
  */
-GRASSROOTS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const key_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType current_value, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+GRASSROOTS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 /**
@@ -483,7 +483,7 @@ GRASSROOTS_PARAMS_API bool SetParameterValue (Parameter * const parameter_p, con
  * If this is <code>false</code>, then the Parameter's default value will be altered.
  * @return <code>true</code> if the Parameter was updated successfully, <code>false</code> otherwise.
  * @memberof Parameter
- */GRASSROOTS_PARAMS_API bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedType * src_p, const bool current_value_flag);
+ */GRASSROOTS_PARAMS_API bool SetParameterValueFromSharedType (Parameter * const parameter_p, const SharedType * src_p, const bool current_value_flag);
 
 
 /**

@@ -48,7 +48,6 @@ extern "C"
  * This calls GetAllModifiedDataForUsername before constructing a json object
  * from these results.
  *
- * @param connection_p The connection to the iRODS server.
  * @param username_s The username to get the data objects for.
  * @param from The start of the time interval.
  * @param to The end of the time interval.

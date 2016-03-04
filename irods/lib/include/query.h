@@ -107,7 +107,7 @@ IRODS_UTIL_API void PrintQueryResults (FILE *out_f, const QueryResults * const r
  * Print a QueryResult to an output FILE.
  *
  * @param out_f The FILE to write to.
- * @param query_result_p The QueryResult to print.
+ * @param result_p The QueryResult to print.
  * @memberof QueryResults
  */
 IRODS_UTIL_API void PrintQueryResult (FILE *out_f, const QueryResult * const result_p);
@@ -133,12 +133,12 @@ IRODS_UTIL_LOCAL void ClearQueryResult (QueryResult *result_p);
 /**
  * @brief Get the json representation of a QueryResults.
 
- * @param result_p The QueryResults to get the json for.
+ * @param results_p The QueryResults to get the json for.
  * @return The json_t object representing the QueryResults
  * or <code>NULL</code> upon error.
  * @memberof QueryResults
  */
-IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const qrs_p);
+IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const results_p);
 
 
 /**

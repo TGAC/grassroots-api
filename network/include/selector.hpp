@@ -69,7 +69,7 @@ extern "C"
  * will then extract a set of HtmlLinks using the given selector.
  * @param tool_p The CurlTool to use.
  * @param uri_s The URI for the CurlTool to download from.
- * @param selector_s The CSS selector to use to extract the HtmlLinkArray with.
+ * @param link_selector_s The CSS selector to use to extract the HtmlLinkArray with.
  * @return A newly-allocated HtmlLinkArray if successful or <code>NULL</code>
  * upon error.
  * @memberof CurlTool
