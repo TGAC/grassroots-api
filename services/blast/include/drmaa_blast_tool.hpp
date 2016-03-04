@@ -63,10 +63,18 @@ public:
 	 * when it runs.
 	 *
 	 * @param cores The number of cores.
+	 * @see SetDrmaaToolCores
 	 */
 	void SetCoresPerSearch (uint32 cores);
 
-
+	/**
+	 * This sets up notification emails for each Blast job via DRMAA.
+	 *
+	 * @param email_addresses_ss A NULL-terminated array of email addresses to send
+	 * notification emails to
+	 * @return <code>true</code> if the notifications were set successfully, <code>false</code> otherwise.
+	 * @see SetDrmaaToolEmailNotifications
+	 */
 	bool SetEmailNotifications (const char **email_addresses_ss);
 
 	virtual bool SetUpOutputFile ();

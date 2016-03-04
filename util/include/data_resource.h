@@ -199,6 +199,7 @@ GRASSROOTS_UTIL_API void ClearResource (Resource *resource_p);
 /**
  * @brief Set the fields of a Resource.
  *
+ * @param resource_p The Resource to be updated.
  * @param protocol_s The new value for the protocol for the Resource. A deep copy will be made of this
  * so the value passed in dose not need to remain in scope. Any previous value will be freed.
  * @param value_s The new value for the value for the Resource. A deep copy will be made of this
@@ -254,7 +255,7 @@ GRASSROOTS_UTIL_API Resource *CloneResource (const Resource * const src_p);
 /**
  * @brief Create a Resource from a given string.
  *
- * This will take a string of the form <PROTOCOL>://<PATH> to generate
+ * This will take a string of the form \<PROTOCOL\>://\<PATH\> to generate
  * a Resource.
  *
  * @param resource_s The string representation of the Resource.

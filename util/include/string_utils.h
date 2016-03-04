@@ -319,6 +319,13 @@ GRASSROOTS_UTIL_API void GenerateUUID (uuid_t *id_p);
 GRASSROOTS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src_s);
 
 
+/**
+ * Replace each instance of a character within a string with another
+ *
+ * @param buffer_p The string to replace the character in.
+ * @param old_data The character to be replaced.
+ * @param new_data The replacement character.
+ */
 GRASSROOTS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
 
 
@@ -328,16 +335,7 @@ GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
 
 
-/**
- * Create a new c-style string from a va_list of strings.
- *
- * @param value_s The varargs-style array of <code>NULL</code> terminated strings to append. The final entry
- * in this varargs-array must be a <code>NULL</code>.
- * @param args The varargs list of arguments used by value_s.
- * @return <code>true</code> if the append was successful <code>false</code>
- * upon failure. If the call failed, the contents of the data buffer are preserved.
- * @memberof see AppendVarArgsToByteBuffer
- */
+
 GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
 
 

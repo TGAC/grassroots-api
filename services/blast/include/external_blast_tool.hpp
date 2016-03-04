@@ -66,10 +66,20 @@ public:
 	 */
 	virtual bool ParseParameters (ParameterSet *params_p);
 
+
 	virtual bool SetInputFilename (const char * const filename_s);
 
 	virtual bool SetUpOutputFile ();
 
+	/**
+	 * Get the results after the ExternalBlastTool has finished
+	 * running.
+	 *
+	 * @param formatter_p The BlastFormatter to convert the results
+	 * into a different format. If this is 0, then the results will be
+	 * returned without any conversion.
+	 * @return The results as a c-style string or 0 upon error.
+	 */
 	virtual char *GetResults (BlastFormatter *formatter_p);
 
 

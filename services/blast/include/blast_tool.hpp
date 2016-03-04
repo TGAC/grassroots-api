@@ -40,7 +40,7 @@ public:
 	BlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
 	/**
-	 * The BlastTool desstructor,
+	 * The BlastTool destructor,
 	 */
 	virtual ~BlastTool ();
 
@@ -65,6 +65,13 @@ public:
 	 */
 	virtual bool ParseParameters (ParameterSet *params_p) = 0;
 
+	/**
+	 * Set the input filename for the BlastTool to use.
+	 *
+	 * @param filename_s The filename.
+	 * @return <code>true</code> if the input filename was set
+	 * successfully, <code>false</code> otherwise.
+	 */
 	virtual bool SetInputFilename (const char * const filename_s) = 0;
 
 	virtual bool SetUpOutputFile () = 0;
@@ -90,10 +97,12 @@ public:
 	 */
 	const uuid_t &GetUUID () const;
 
+	/**
+	 * Get the name asssociated with this BlastTool
+	 *
+	 * @return The name.
+	 */
 	const char *GetName () const;
-
-	static void SetBlastToolType (const char *type_s);
-
 
 protected:
 	OperationStatus bt_status;

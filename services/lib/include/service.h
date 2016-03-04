@@ -85,7 +85,7 @@ typedef struct ServiceData
 
 	/**
 	 * If this service has an entry in global server config it will be stored here.
-	 * The value in the service config will be "services" -> <service_name>
+	 * The value in the service config will be "services" -> \<service_name\>
 	 */
 	const json_t *sd_config_p;
 } ServiceData;
@@ -108,7 +108,7 @@ typedef struct Service
 	 *
 	 * If a Service has a specific task that it can perform then this
 	 * is <code>true</code>. If it is a utility that is reused for different
-	 * Services, such as a generic web search service, then this is <code>false<code>
+	 * Services, such as a generic web search service, then this is <code>false</code>
 	 */
 	bool se_is_specific_service_flag;
 
@@ -236,23 +236,7 @@ extern "C"
 GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
 
 
-/**
- *
- * @param service_p
- * @param get_service_name_fn
- * @param get_service_description_fn
- * @param se_get_service_info_uri_fn
- * @param run_fn
- * @param match_fn
- * @param get_parameters_fn
- * @param release_parameters_fn
- * @param close_fn
- * @param get_results_fn
- * @param get_status_fn
- * @param specific_flag
- * @param data_p
- * @memberof Service
- */
+
 GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
@@ -334,6 +318,8 @@ GRASSROOTS_SERVICE_API const char *GetServiceInformationURI (Service *service_p)
  * Get a newly-created ParameterSet describing the parameters for a given Service.
  *
  * @param service_p The Service to get the ParameterSet for.
+ * @param resource_p This is the input to the Service and can be NULL.
+ * @param json_p Any configuration details that the Service might need. This can be NULL.
  * @return The newly-created ParameterSet or <code>NULL</code> upon error. This
  * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
  * @see FreeParameterSet.
@@ -380,11 +366,26 @@ GRASSROOTS_SERVICE_API ServiceNode *AllocateServiceNode (Service *service_p);
 GRASSROOTS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 
 
+/**
+ * Load the Service that matches a given service name
+ *
+ * @param services_p The List of Services that the named Services will get appended to if it is found succesfully.
+ * @param services_path_s The directory where the Service modules are stored.
+ * @param services_name_s The name of the Service to find.
+ * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
+ */
 GRASSROOTS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p);
 
 GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p);
 
 
+/**
+ * Load all Services that can be run upon a keyword parameter.
+ *
+ * @param services_p The List of Services that any keyword-aware Services will get appended to.
+ * @param services_path_s The directory where the Service modules are stored.
+ * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
+ */
 GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
 
 
@@ -396,6 +397,7 @@ GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const 
  * @brief Close a Service
  *
  * @param service_p The Service to close.
+ * @return <code>true</code> if the Service was closed successfully, <code>false</code> otherwise.
  * @memberof Service
  */
 GRASSROOTS_SERVICE_API bool CloseService (Service *service_p);
@@ -486,21 +488,11 @@ GRASSROOTS_SERVICE_API const char *GetOperationInformationURIFromJSON (const jso
 GRASSROOTS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
 
 
-/**
- *
- * @param plugin_p
- * @return
- */
+
 GRASSROOTS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
-/**
- *
- * @param services_list_p
- * @param resource_p
- * @param json_p
- * @param add_service_ids_flag
- * @return
- */
+
+
 GRASSROOTS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag);
 
 
@@ -538,23 +530,10 @@ GRASSROOTS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_se
 
 GRASSROOTS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
-/**
- *
- * @param service_p
- * @param status
- * @param result_json_p
- * @param service_id
- * @return
- */
+
 GRASSROOTS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *result_json_p);
 
-/**
- *
- * @param config_p
- * @param plugin_name_s
- * @param get_service_fn
- * @return
- */
+
 GRASSROOTS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 

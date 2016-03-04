@@ -84,9 +84,25 @@ extern "C"
 /** @publicsection */
 
 
+/**
+ * Initialise a DRMAA session
+ *
+ * This has to be done once globally for any process which
+ * will use DRMAA calls
+ *
+ * @return <code>true</code> if the DRMAA session was initialised successfully, <code>false</code> upon error.
+ */
 GRASSROOTS_DRMAA_API bool InitDrmaa (void);
 
 
+/**
+ * Close a DRMAA session
+ *
+ * This has to be done once globally for any process which
+ * will use DRMAA calls
+ *
+ * @return <code>true</code> if the DRMAA session was closed successfully, <code>false</code> upon error.
+ */
 GRASSROOTS_DRMAA_API bool ExitDrmaa (void);
 
 
@@ -190,8 +206,25 @@ GRASSROOTS_DRMAA_API bool SetDrmaaToolMemory (DrmaaTool *tool_p, uint32 mem);
 GRASSROOTS_DRMAA_API bool SetDrmaaToolHostName (DrmaaTool *tool_p, const char *host_name_s);
 
 
+/**
+ * Set the id that represents the job that a DrmaaTool will run.
+ *
+ * @param tool_p The DrmaaTool to set the id for.
+ * @param id_s The id of the job.
+ * @return <code>true</code> if the id was set successfully, <code>false</code> otherwise.
+ * @memberof DrmaaTool
+ */
 GRASSROOTS_DRMAA_API bool SetDrmaaToolJobId (DrmaaTool *tool_p, const char *id_s);
 
+
+/**
+ * Set the id that represents the job output that a DrmaaTool will run.
+ *
+ * @param tool_p The DrmaaTool to set the id for.
+ * @param id_s The id of the job.
+ * @return <code>true</code> if the id was set successfully, <code>false</code> otherwise.
+ * @memberof DrmaaTool
+ */
 GRASSROOTS_DRMAA_API bool SetDrmaaToolJobOutId (DrmaaTool *tool_p, const char *id_s);
 
 
