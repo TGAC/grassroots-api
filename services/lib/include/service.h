@@ -83,6 +83,10 @@ typedef struct ServiceData
 	/** The service that owns this data. */
 	struct Service *sd_service_p;
 
+	/**
+	 * If this service has an entry in global server config it will be stored here.
+	 * The value in the service config will be "services" -> <service_name>
+	 */
 	const json_t *sd_config_p;
 } ServiceData;
 
@@ -147,8 +151,23 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
+	/**
+	 * Get the JSON fragment for a given job that has been run by this Service.
+	 *
+	 * @param service_p A pointer to this Service.
+	 * @param job_id The uuid_t of the ServiceJob.
+	 * @return The JSON fragment or <code>NULL</code> upon error.
+	 */
 	json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t job_id);
 
+
+	/**
+	 * Get the OperationStatus for a given job that has been run by this Service.
+	 *
+	 * @param service_p A pointer to this Service.
+	 * @param job_id The uuid_t of the ServiceJob.
+	 * @return The OperationStatus for the given job.
+	 */
 	OperationStatus (*se_get_status_fn) (struct Service *service_p, const uuid_t job_id);
 
 	/**

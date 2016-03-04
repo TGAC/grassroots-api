@@ -270,10 +270,11 @@ GRASSROOTS_UTIL_API Resource *CloneResource (const Resource * const src_p);
  */
 GRASSROOTS_UTIL_API Resource *ParseStringToResource (const char * const resource_s);
 
+
 /**
  * @brief Get the protocol and path parts of a Resource.
  *
- * @param resource_p The Resource to get the values from.
+ * @param resource_s The Resource to get the values from.
  * @param path_ss A pointer to where the path part of the Resource will be copied to. This will
  * need to be freed with <code>FreeCopiedString</code> when it is finished with.
  * @param protocol_ss A pointer to where the protocol part of the Resource will be copied to. This will

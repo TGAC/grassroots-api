@@ -66,7 +66,7 @@ GRASSROOTS_NETWORK_API KeyValuePair *AllocateKeyValuePair (const char *key_s, co
 /**
  * Free a KeyValuePair.
  *
- * @param kvp_pThe KeyValuePair to free.
+ * @param kvp_p The KeyValuePair to free.
  * @memberof KeyValuePair
  */
 GRASSROOTS_NETWORK_API void FreeKeyValuePair (KeyValuePair *kvp_p);
