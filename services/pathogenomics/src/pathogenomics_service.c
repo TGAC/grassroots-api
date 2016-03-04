@@ -56,15 +56,6 @@
 
 
 
-typedef enum
-{
-	PD_SAMPLE,
-	PD_PHENOTYPE,
-	PD_GENOTYPE,
-	PD_FILES,
-	PD_NUM_TYPES
-} PathogenomicsData;
-
 
 static const char *s_data_names_pp [PD_NUM_TYPES] =
 {
@@ -313,28 +304,18 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, con
 
 			if (data_p -> psd_geocoder_fn)
 				{
-					data_p -> psd_samples_collection_s = GetJSONString (service_config_p, "samples_collection");
 
-					if (data_p -> psd_samples_collection_s)
+					if ((* (data_p -> psd_collection_ss + PD_SAMPLE) = GetJSONString (service_config_p, "samples_collection")) != NULL)
 						{
-							data_p -> psd_locations_collection_s = GetJSONString (service_config_p, "locations_collection");
-
-							if (data_p -> psd_locations_collection_s)
+							if ((* (data_p -> psd_collection_ss + PD_PHENOTYPE) = GetJSONString (service_config_p, "phenotypes_collection")) != NULL)
 								{
-									data_p -> psd_phenotype_collection_s = GetJSONString (service_config_p, "phenotypes_collection");
-
-									if (data_p -> psd_phenotype_collection_s)
+									if ((* (data_p -> psd_collection_ss + PD_GENOTYPE) = GetJSONString (service_config_p, "genotypes_collection")) != NULL)
 										{
-											data_p -> psd_genotype_collection_s = GetJSONString (service_config_p, "genotypes_collection");
-
-											if (data_p -> psd_genotype_collection_s)
+											if ((* (data_p -> psd_collection_ss + PD_FILES) = GetJSONString (service_config_p, "files_collection")) != NULL)
 												{
 													data_p -> psd_files_download_root_uri_s = GetJSONString (service_config_p, "files_host");
 
-													if (data_p -> psd_files_download_root_uri_s)
-														{
-															success_flag = true;
-														}
+													success_flag = true;
 												}
 										}
 								}
@@ -345,6 +326,7 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p, con
 
 	return success_flag;
 }
+
 
 static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *op_json_p)
 {
@@ -360,9 +342,9 @@ static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *op_js
 					data_p -> psd_geocoder_fn = NULL;
 					data_p -> psd_geocoder_uri_s = NULL;
 					data_p -> psd_database_s = NULL;
-					data_p -> psd_locations_collection_s = NULL;
-					data_p -> psd_samples_collection_s = NULL;
-					data_p -> psd_phenotype_collection_s = NULL;
+
+					memset (data_p -> psd_collection_ss, 0, PD_NUM_TYPES * sizeof (const char *));
+
 					data_p -> psd_files_download_root_uri_s = NULL;
 
 					return data_p;
@@ -581,7 +563,6 @@ static json_type GetPathogenomicsJSONFieldType (const char *name_s, const void *
 
 static bool GetCollectionName (ParameterSet *param_set_p, PathogenomicsServiceData *data_p, const char **collection_name_ss, PathogenomicsData *collection_type_p)
 {
-	bool success_flag = false;
 	SharedType value;
 
 	if (GetParameterValueFromParameterSet (param_set_p, TAG_COLLECTION, &value, true))
@@ -590,28 +571,22 @@ static bool GetCollectionName (ParameterSet *param_set_p, PathogenomicsServiceDa
 
 			if (collection_s)
 				{
-					if (strcmp (collection_s, s_data_names_pp [PD_SAMPLE]) == 0)
+					uint32 i;
+
+					for (i = 0; i < PD_NUM_TYPES; ++ i)
 						{
-							*collection_name_ss = data_p -> psd_samples_collection_s;
-							*collection_type_p = PD_SAMPLE;
-							success_flag = true;
-						}
-					else if (strcmp (collection_s, s_data_names_pp [PD_PHENOTYPE]) == 0)
-						{
-							*collection_name_ss = data_p -> psd_phenotype_collection_s;
-							*collection_type_p = PD_PHENOTYPE;
-							success_flag = true;
-						}
-					else if (strcmp (collection_s, s_data_names_pp [PD_GENOTYPE]) == 0)
-						{
-							*collection_name_ss = data_p -> psd_genotype_collection_s;
-							*collection_type_p = PD_GENOTYPE;
-							success_flag = true;
-						}
+							if (strcmp (collection_s, * (s_data_names_pp + i)) == 0)
+								{
+									*collection_name_ss = * ((data_p -> psd_collection_ss) + i);
+									*collection_type_p = (PathogenomicsData) i;
+
+									return true;
+								}
+						}		/* for (i = 0; i < PD_NUM_TYPES; ++ i) */
 				}
 		}
 
-	return success_flag;
+	return false;
 }
 
 

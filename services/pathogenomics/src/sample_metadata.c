@@ -274,6 +274,8 @@ bool ConvertDate (json_t *row_p)
 							/* day */
 							memcpy (iso_date_s + 8, date_s, 2 * sizeof (char));
 							memcpy (raw_date_s + 6, date_s, 2 * sizeof (char));
+
+							success_flag = true;
 						}
 
 				}		/* if ((* (date_s + 2) == '/') && (* (date_s + 5) == '/')) */

@@ -48,6 +48,9 @@ const char *InsertFilesData (MongoTool *tool_p, json_t *values_p, PathogenomicsS
 
 							if (json_object_set (doc_p, PG_FILES_S, values_p) == 0)
 								{
+									error_s = InsertOrUpdateMongoData (tool_p, doc_p, NULL, NULL, PG_ID_S, NULL, NULL);
+
+									/*
 									char *date_s = ConcatenateStrings (PG_FILES_S, PG_LIVE_DATE_SUFFIX_S);
 
 									if (date_s)
@@ -67,6 +70,7 @@ const char *InsertFilesData (MongoTool *tool_p, json_t *values_p, PathogenomicsS
 										{
 											error_s = "Failed to make files date key";
 										}
+									*/
 								}
 							else
 								{

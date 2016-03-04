@@ -29,6 +29,15 @@
 #include "mongodb_tool.h"
 
 
+typedef enum
+{
+	PD_SAMPLE,
+	PD_PHENOTYPE,
+	PD_GENOTYPE,
+	PD_FILES,
+	PD_NUM_TYPES
+} PathogenomicsData;
+
 typedef struct PathogenomicsServiceData PathogenomicsServiceData;
 
 
@@ -40,13 +49,9 @@ struct PathogenomicsServiceData
 
 	const char *psd_database_s;
 
-	const char *psd_samples_collection_s;
+	const char *psd_collection_ss [PD_NUM_TYPES];
 
-	const char *psd_locations_collection_s;
-
-	const char *psd_phenotype_collection_s;
-
-	const char *psd_genotype_collection_s;
+//	const char *psd_locations_collection_s;
 
 	bool (*psd_geocoder_fn) (struct PathogenomicsServiceData *data_p, json_t *row_p, const char * const id_s);
 
