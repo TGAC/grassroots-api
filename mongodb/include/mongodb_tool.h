@@ -28,6 +28,10 @@
 #include "jansson.h"
 #include "mongodb_library.h"
 
+/**
+ * A MongoTool is a datatype that allows access to the data stored within
+ * a MongoDB instance.
+ */
 typedef struct MongoTool
 {
 	/*
@@ -38,6 +42,7 @@ typedef struct MongoTool
 	 * a mongoc_client_t for your thread.
 	 */
 	mongoc_client_t *mt_client_p;
+
 
 	mongoc_collection_t *mt_collection_p;
 
@@ -90,18 +95,28 @@ extern "C"
 {
 #endif
 
-GRASSROOTS_MONGODB_API bool InitMongo (const char *connection_s);
-
-
-GRASSROOTS_MONGODB_API void ExitMongo (void);
 
 
 GRASSROOTS_MONGODB_API bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
 
 
+/**
+ * This allocates a MongoTool that connects to the MongoDB instance specified in the
+ * grassroots.config file
+ *
+ * @return A MongoTool or <code>NULL</code> upon error.
+ * @memberof MongoTool
+ * @see InitMongoDB
+ */
 GRASSROOTS_MONGODB_API MongoTool *AllocateMongoTool (void);
 
 
+/**
+ * Delete a MongoTool and release the connection that it held
+ *
+ * @param tool_p The MongoTool to free.
+ * @memberof MongoTool
+ */
 GRASSROOTS_MONGODB_API void FreeMongoTool (MongoTool *tool_p);
 
 

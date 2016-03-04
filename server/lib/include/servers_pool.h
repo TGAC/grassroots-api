@@ -34,6 +34,9 @@
 
 /**
  * @brief A datatype to allow access to an external Grassroots Server
+ *
+ * This stores the information needed to consolidate the Services
+ * available on other Grassroots Servers
  */
 typedef struct ExternalServer
 {
@@ -80,6 +83,7 @@ typedef struct ExternalServerNode
 
 /* forward declaration */
 struct ServersManager;
+
 
 /**
  * @brief A datatype for monitoring ExternalServers.

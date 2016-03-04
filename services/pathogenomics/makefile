@@ -48,6 +48,7 @@ INCLUDES = \
 SRCS 	= \
 	pathogenomics_service.c \
 	country_codes.c \
+	files_metadata.c \
 	sample_metadata.c	\
 	phenotype_metadata.c \
 	genotype_metadata.c \
