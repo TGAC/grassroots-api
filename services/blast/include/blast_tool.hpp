@@ -30,8 +30,6 @@
 struct BlastServiceData;
 
 
-
-
 /**
  * The base class for running Blast.
  */
@@ -41,10 +39,30 @@ public:
 
 	BlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
+	/**
+	 * The BlastTool desstructor,
+	 */
 	virtual ~BlastTool ();
 
+
+	/**
+	 * Run this BlastTool
+	 *
+	 * @return The OperationStatus of this BlastTool after
+	 * it has started running.
+	 */
 	virtual OperationStatus Run () = 0;
 
+
+	/**
+	 * Parse a ParameterSet to configure a BlastTool prior
+	 * to it being ran.
+	 *
+	 * @param params_p The ParameterSet to parse.
+	 * @return <code>true</code> if the BlastTool was configured
+	 * successfully and is ready to be ran, <code>false</code>
+	 * otherwise.
+	 */
 	virtual bool ParseParameters (ParameterSet *params_p) = 0;
 
 	virtual bool SetInputFilename (const char * const filename_s) = 0;
@@ -55,10 +73,21 @@ public:
 	
 	void PostRun ();
 
+	/**
+	 * Get the status of a BlastTool
+	 *
+	 * @return The OperationStatus of this BlastTool.
+	 */
 	virtual OperationStatus GetStatus ();
 
 	virtual char *GetResults (BlastFormatter *formatter_p) = 0;
 
+	/**
+	 * Get the uuid for the ServiceJob that this BlastTool
+	 * is linked with.
+	 * @return The uuid of the corresponding ServiceJob for this
+	 * BlastTool.
+	 */
 	const uuid_t &GetUUID () const;
 
 	const char *GetName () const;

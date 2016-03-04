@@ -29,17 +29,41 @@
 
 
 /**
- * A class that will run Blast as a forked process.
+ * A class that will run Blast using an external application such as blastn
+ * rather than calling Blast library routines directly.
  */
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {
 public:
+	/**
+	 * This is the string that will get appended to each
+	 * input file used by the ExternalBlastTool.
+	 */
 	static const char * const EBT_INPUT_SUFFIX_S;
+
+	/**
+	 * This is the string that will get appended to each
+	 * log file created when an ExternalBlastTool is ran.
+	 */
 	static const char * const EBT_LOG_SUFFIX_S;
 
 	ExternalBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s);
+
+	/**
+	 * The ExternalBlastTool destructor.
+	 */
 	virtual ~ExternalBlastTool ();
 
+	/**
+	 * Parse a ParameterSet to configure a BlastTool prior
+	 * to it being ran.
+	 *
+	 * @param params_p The ParameterSet to parse.
+	 * @return <code>true</code> if the BlastTool was configured
+	 * successfully and is ready to be ran, <code>false</code>
+	 * otherwise.
+	 * @see BlastTool::ParseParameters
+	 */
 	virtual bool ParseParameters (ParameterSet *params_p);
 
 	virtual bool SetInputFilename (const char * const filename_s);

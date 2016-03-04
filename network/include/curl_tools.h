@@ -53,7 +53,7 @@ typedef struct CurlTool
 
 
 /**
- * Allocate a CurlTool
+ * Allocate a CurlTool.
  *
  * @return A newly-allocated CurlTool or <code>NULL</code> upon error.
  * @memberof CurlTool.
@@ -142,7 +142,10 @@ GRASSROOTS_NETWORK_API bool SetUriForCurlTool (CurlTool *tool_p, const char * co
 /**
  * @brief Run a CurlTool.
  * This will get the CurlTool to get all of the data from its given URI.
+ *
+ * @param tool_p The CurlTool to run.
  * @return CURLE_OK if successful or an error code upon failure.
+ * @memberof CurlTool
  */
 GRASSROOTS_NETWORK_API CURLcode RunCurlTool (CurlTool *tool_p);
 
@@ -160,9 +163,11 @@ GRASSROOTS_NETWORK_API bool SetCurlToolForJSONPost (CurlTool *tool_p);
 
 /**
  * @brief Get the downloaded data from a CurlTool.
+ *
  * If the CurlTool has been run successfully, this will get a read-only
  * version of the downloaded data. <code>RunCurlTool</code> must have been
  * run prior to this.
+ * @param tool_p The CurlTool to get the data from.
  * @return The downloaded data or <code>NULL</code> upon error.
  * @see RunCurlTool
  * @memberof CurlTool

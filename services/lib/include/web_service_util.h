@@ -51,6 +51,7 @@ typedef enum SubmissionMethod
 } SubmissionMethod;
 
 
+
 typedef struct WebServiceData
 {
 	ServiceData wsd_base_data;
@@ -64,6 +65,7 @@ typedef struct WebServiceData
 	SubmissionMethod wsd_method;
 	CurlTool *wsd_curl_data_p;
 } WebServiceData;
+
 
 #ifdef __cplusplus
 extern "C"

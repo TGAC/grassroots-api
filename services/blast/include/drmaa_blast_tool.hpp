@@ -34,13 +34,38 @@ class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 public:
 
 	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, bool async_flag);
+
+	/**
+	 *  The DrmaaBlastTool destructor.
+	 */
 	virtual ~DrmaaBlastTool ();
 
+	/**
+	 * Run this DrmaaBlastTool.
+	 *
+	 * @return The OperationStatus of this DrmaaBlastTool after
+	 * it has started running.
+	 */
 	virtual OperationStatus Run ();
 
+
+	/**
+	 * Get the status of a DrmaaBlastTool.
+	 *
+	 * @return The OperationStatus of this DrmaaBlastTool.
+	 * @see BlastTool::GetStatus
+	 */
 	virtual OperationStatus GetStatus ();
 
+
+	/**
+	 * Set the number of cores that this DrmaaBlastTool that will try to use
+	 * when it runs.
+	 *
+	 * @param cores The number of cores.
+	 */
 	void SetCoresPerSearch (uint32 cores);
+
 
 	bool SetEmailNotifications (const char **email_addresses_ss);
 

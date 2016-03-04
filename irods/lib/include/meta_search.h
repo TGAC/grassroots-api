@@ -129,6 +129,21 @@ IRODS_UTIL_API void ClearIrodsSearch (IrodsSearch *search_p);
 IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, struct IRODSConnection *connection_p);
 
 
+/**
+ * Create and add a SearchTerm to an IrodsSearch.
+ *
+ * This adds a search term in the form of a key op value triplet as described in
+ * AddIrodsSearchTerm
+ *
+ * @param search_p The IrodsSearch to add the SearchTerm to.
+ * @param clause_s The search term's clause.
+ * @param key_s The search term's key.
+ * @param op_s The search term's operation such as "=", "<", <i>etc.</i>
+ * @param value_s The search term's value.
+ * @return <code>true</code> if the search term was added successfully, <code>false</code> otherwise.
+ * @memberof IrodsSearch
+ * @see AddIrodsSearchTerm
+ */
 IRODS_UTIL_API bool AddMetadataDataAttributeSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
 
 

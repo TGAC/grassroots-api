@@ -26,9 +26,18 @@
 
 #include "rcConnect.h"
 
-
+/**
+ * This is a wrapper which hides the internals
+ * of the code and objects needed to access an
+ * iRODS system. This means that you can interact
+ * with the iRODS server more easily.
+ */
 typedef struct IRODSConnection
 {
+	/**
+	 * The underlying connection to and
+	 * iRODS server.
+	 */
 	rcComm_t *ic_connection_p;
 } IRODSConnection;
 

@@ -34,8 +34,25 @@ public:
 	SystemBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s);
 	virtual ~SystemBlastTool ();
 
+	/**
+	 * Parse a ParameterSet to configure a BlastTool prior
+	 * to it being ran.
+	 *
+	 * @param params_p The ParameterSet to parse.
+	 * @return <code>true</code> if the BlastTool was configured
+	 * successfully and is ready to be ran, <code>false</code>
+	 * otherwise.
+	 * @see BlastTool::ParseParameters
+	 */
 	virtual bool ParseParameters (ParameterSet *params_p);
 
+
+	/**
+	 * Run this BlastTool
+	 *
+	 * @return The OperationStatus of this BlastTool after
+	 * it has started running.
+	 */
 	virtual OperationStatus Run ();
 };
 
