@@ -663,17 +663,7 @@ void FreeParameterSetNode (ListItem *node_p)
 }
 
 
-json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p)
-{
-	json_t *json_p = NULL;
 
-	if (param_groups_p -> ll_size > 0)
-		{
-
-		}
-
-	return json_p;
-}
 
 
 Parameter *DetachParameterByTag (ParameterSet *params_p, const Tag tag)
@@ -715,20 +705,6 @@ ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet
 	return NULL;
 }
 
-
-
-bool MergeParameterSets (const ParameterSet * const src_p, ParameterSet * const destination_p)
-{
-	bool success_flag = false;
-
-	/*
-	 * Iterate over all of Parameters in src_p and if
-	 * they don't exist in the destination then copy
-	s * them over. If they exist
-	 */
-
-	return success_flag;
-}
 
 
 /****************************************/

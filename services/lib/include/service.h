@@ -77,7 +77,10 @@ struct ServiceJob;
 struct ServiceJobSet;
 
 
-
+/**
+ * A datatype for holding the configuration data for a Service. This is normally
+ * used as a base class.
+ */
 typedef struct ServiceData
 {
 	/** The service that owns this data. */
@@ -124,9 +127,31 @@ typedef struct Service
 	 */
 	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
 
+	/**
+	 * Is the Service able to work upon the given Resource.
+	 *
+	 * @param service_p The Service to check.
+	 * @param resource_p The Resource to check.
+	 * @param handler_p A custom Handler for accessing the Resource. This can be NULL.
+	 * @return If the Service can run on the given Resource, it returns a ParameterSet that
+	 * is partially filled in using the value of the Resource. If the Service cannot run on
+	 * the given Resource, this will return <code>NULL</code>.
+	 * @memberof Service
+	 */
 	ParameterSet *(*se_match_fn) (struct Service *service_p, Resource *resource_p, Handler *handler_p);
 
-	bool (*se_has_permissions_fn) (struct Service *service_p, const UserDetails * const user_p);
+	/**
+	 * Check whether the user have permissions to run the Service.
+	 *
+	 * @param service_p This Service.
+	 * @param params_p The ParameterSet that the user wishes to use. If this is <code>NULL</code>
+	 * which will check whether the user can run the Service with any ParameterSet. If this is set,
+	 * it will also check whether the user can run the Service with the specific parameters e.g. access
+	 * to a given input file.
+	 * @param user_p The UserDetails for the user.
+	 * @return <code>true</code> if the user has permissions, <code>false</code> otherwise.
+	 */
+	bool (*se_has_permissions_fn) (struct Service *service_p, ParameterSet *params_p, const UserDetails * const user_p);
 
 
  	/**
@@ -175,6 +200,13 @@ typedef struct Service
 	 */
 	void (*se_release_params_fn) (struct Service *service_p, ParameterSet *params_p);
 
+	/**
+	 * Function to close this Service
+	 *
+	 * @param service_p This Service.
+	 * @return <code>true</code> if the Service was closed successfully,
+	 * <code>false</code> otherwise.
+	 */
 	bool (*se_close_fn) (struct Service *service_p);
 
 	/**
@@ -187,8 +219,10 @@ typedef struct Service
 	/** Unique Id for this service */
 	uuid_t se_id;
 
+	/** The ServiceJobSet for this Service. */
 	struct ServiceJobSet *se_jobs_p;
 
+	/** Any remote Services that are paired with this Service. */
 	LinkedList se_paired_services;
 
 	/**
@@ -207,7 +241,7 @@ typedef struct
 	/** The List Node */
 	ListItem sn_node;
 
-	/* The Service */
+	/** The Service */
 	Service *sn_service_p;
 } ServiceNode;
 
@@ -233,6 +267,13 @@ extern "C"
 {
 #endif
 
+/**
+ * Get the ServicesArray from a given Plugin.
+ *
+ * @param plugin_p The Plugin to get the ServicesArray from.
+ * @param service_config_p Any user configuration details.
+ * @return The ServicesArray or <code>NULL</code> upon error.
+ */
 GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
 
 
@@ -272,7 +313,7 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 /**
  * Get a Service by its name.
  *
- * This will match a Service with its reponse from getting GetServiceName.
+ * This will match a Service with its response from getting GetServiceName.
  *
  * @param service_name_s The name of the Service to find.
  * @return The matching Service or <code>NULL</code> if it could not be found.
@@ -281,6 +322,18 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 GRASSROOTS_SERVICE_API Service *GetServiceByName (const char * const service_name_s);
 
 
+/**
+ * Is the Service able to work upon the given Resource.
+ *
+ * @param service_p The Service to check.
+ * @param resource_p The Resource to check.
+ * @param handler_p A custom Handler for accessing the Resource. This can be NULL.
+ * @return If the Service can run on the given Resource, it returns a ParameterSet that
+ * is partially filled in using the value of the Resource. If the Service cannot run on
+ * the given Resource, this will return <code>NULL</code>.
+ * @memberof Service
+ * @see se_match_fn
+ */
 GRASSROOTS_SERVICE_API ParameterSet *IsServiceMatch (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
@@ -389,7 +442,16 @@ GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const 
 GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
 
 
-
+/**
+ * Add any reference Services to the list of available Services.
+ *
+ * @param services_p The LinkedList of ServiceNodes to add any referred Services to.
+ * @param references_path_s The directory containing the JSON definitions of reference services.
+ * @param services_path_s The directory containing the Service plugins.
+ * @param operation_name_s If this value is set, only referred Services that have an Operation with this name will be added
+ * to Services list. If this is <code>NULL</code> then all possible reference Services will be added.
+ * @param config_p Any user configuration details.
+ */
 GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
 
 
@@ -414,19 +476,24 @@ GRASSROOTS_SERVICE_API  bool IsServiceLive (Service *service_p);
 
 
 /**
- * Get the results from a long running service
+ * Get the results from a Service for a given ServiceJOb UUID.
  *
- * @param service_p The Service to get the results for
- * @return The results or NULL if they are not any.
+ * @param service_p The Service to get the results for.
+ * @param service_id The UUID of the ServiceJob to get the results for.
+ * @return The results or <code>NULL</code> if they are not any.
  * @memberof Service
  */
 GRASSROOTS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
 
 /**
- * Generate a json-based description of a Service. This uses the Swagger definitions
- * as much as possible.
+ * Generate a json-based description of a Service.
  *
  * @param service_p The Service to generate the description for.
+ * @param resource_p An optional Resource for the Service to run on. This can be <code>
+ * NULL</code>.
+ * @param json_p Optional user configuration details. This can be NULL.
+ * @param add_id_flag If this is <code>true</code> then the UUID of the Service will be added
+ * to the returned JSON. If this is <code>false</code> then it will not.
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
  * @memberof Service
@@ -548,10 +615,24 @@ GRASSROOTS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *conf
 GRASSROOTS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service_p, const uuid_t service_id);
 
 
+/**
+ * The default function for getting the status of a ServiceJob with the given service id.
+ *
+ * @param service_p The Service to query the status for.
+ * @param service_id The UUID of the ServiceJob that the status is wanted.
+ * @return The OperationStatus for the
+ */
 GRASSROOTS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);
 
 
-
+/**
+ * Get the JSON fragment specifying the Provider details
+ * from a JSON fragment representing a Service.
+ *
+ * @param service_json_p The JSON fragment representing a Service.
+ * @return The JSON fragment representing a Provider or <code>NULL</code>
+ * if it could not be found.
+ */
 GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
 
 
@@ -567,7 +648,7 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
  * @see AddPairedService.
  * @see AllocatePairedService.
  * @see CreateParameterSetFromJSON
- * @memberof Service.
+ * @memberof Service
  */
 GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p);
 

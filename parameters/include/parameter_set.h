@@ -108,6 +108,28 @@ GRASSROOTS_PARAMS_API void FreeParameterSet (ParameterSet *params_p);
 GRASSROOTS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p);
 
 
+/**
+ * Allocate a new Parameter and add it to a ParameterSet.
+ *
+ * @param params_p The ParameterSet to add the new Parameter to.
+ * @param type The ParameterType for this Parameter.
+ * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
+ * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * This can be <code>NULL</code>.
+ * @param description_s The description of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param tag The Tag for this Parameter.
+ * @param options_p This can be used to constrain the Parameter to a fixed set of values. If this is <code>NULL</code> then the Parameter can be set to any value.
+ * @param default_value The default value for this Parameter.
+ * @param current_value_p If this is not <code>NULL</code>, then copy this value as the current value of the Parameter. If this is <code>NULL</code>, then current value for this Parameter
+ * will be set to be a copy of its default value.
+ * @param bounds_p If this is not <code>NULL</code>, then this will be used to specify the minimum and maximum values that this Parameter can take. If this is <code>NULL</code>,
+ * then the Parameter can take any value.
+ * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
+ * @param check_value_fn If this is not <code>NULL</code>, then this will be used to check whether the Parameter has been set to a valid value.
+ * @return A newly-allocated Parameter or <code>NULL</code> upon error.
+ * @memberof ParameterSet
+ */
 GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, uint32 tag,
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p,
@@ -168,10 +190,6 @@ GRASSROOTS_PARAMS_API json_t *GetParameterSetSelectionAsJSON (const ParameterSet
 GRASSROOTS_PARAMS_API ParameterSet *CreateParameterSetFromJSON (const json_t * const json_p);
 
 
-
-GRASSROOTS_PARAMS_API uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p);
-
-
 /**
  * Get the Parameter with a given tag from a ParameterSet.
  *
@@ -196,6 +214,19 @@ GRASSROOTS_PARAMS_API Parameter *GetParameterFromParameterSetByTag (const Parame
 GRASSROOTS_PARAMS_API Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s);
 
 
+/**
+ * Get the value of a Parameter within a ParameterSet
+ *
+ * @param params_p The ParameterSet to get the Parameter from.
+ * @param tag The Tag for the requested Parameter.
+ * @param value_p Where the Parameter value will be stored upon success.
+ * @param current_value_flag If this is <code>true</code> then the current value
+ * of the Parameter will be retrieved. If this is <code>false</code> then the default
+ * value of the Parameter will be retrieved instead.
+ * @return <code>true</code> if the Parameter value was retrieved successfully, <code>false</code>
+ * otherwise.
+ * @memeberof ParameterSet
+ */
 GRASSROOTS_PARAMS_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
 
 
@@ -220,16 +251,36 @@ GRASSROOTS_PARAMS_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *
 GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
 
 
+/**
+ * Create and add a ParameterGroup to a ParameterSet.
+ *
+ * @param param_set_p The ParameterSet to add the ParameterGroup to.
+ * @param group_name_s The name of the ParameterGroup that will get displayed to the user.
+ * @param group_key_s An internal name for the ParameterGroup
+ * @param params_pp An array of pointers to Parameters that are within the given ParameterSet.
+ * @param num_params The number of Parameters in params_pp.
+ * @return <code>true</code> if the ParameterGroup was added successfully, <code>false</code>
+ * otherwise.
+ * @memberof ParameterSet
+ */
 GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params);
 
 
+/**
+ * Create and add a ParameterGroup to a ParameterSet by the Parameter names.
+ *
+ * @param param_set_p The ParameterSet to add the ParameterGroup to.
+ * @param group_name_s The name of the ParameterGroup that will get displayed to the user.
+ * @param group_key_s An internal name for the ParameterGroup
+ * @param param_names_ss An array of names of Parameters that are within the given ParameterSet.
+ * @param num_params The number of Parameters in params_pp.
+ * @return <code>true</code> if the ParameterGroup was added successfully, <code>false</code>
+ * otherwise.
+ * @memberof ParameterSet
+ * @see AddParameterGroupToParameterSet
+ */
 GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s,  const char ** const param_names_ss, const uint32 num_params);
 
-
-GRASSROOTS_PARAMS_API bool CreateParameterGroupsFromJSON (ParameterSet *params_p, const json_t * const json_p);
-
-
-GRASSROOTS_PARAMS_API json_t *GetParameterGroupsAsJSON (const LinkedList * const param_groups_p);
 
 
 /**
@@ -257,9 +308,6 @@ GRASSROOTS_PARAMS_API Parameter *DetachParameterByTag (ParameterSet *params_p, c
  */
 GRASSROOTS_PARAMS_API struct ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 
-
-
-GRASSROOTS_PARAMS_API bool MergeParameterSets (const ParameterSet * const src_p, ParameterSet * const destination_p);
 
 
 #ifdef __cplusplus

@@ -48,18 +48,59 @@ typedef enum ParameterType
 
 	/** A non-negative 32-bit integer */
 	PT_UNSIGNED_INT,
+
+	/** A real number */
 	PT_SIGNED_REAL,
+
+	/** An unsigned real number */
 	PT_UNSIGNED_REAL,
+
+	/** A c-style string */
 	PT_STRING,
+
+	/** An output filename string */
 	PT_FILE_TO_WRITE,
+
+	/** An input filename string*/
 	PT_FILE_TO_READ,
+
+	/** A directory string */
 	PT_DIRECTORY,
+
+	/** A single 1-byte character */
 	PT_CHAR,
+
+	/**
+	 * A sensitive c-style string that shouldn't
+	 * be displayed explicitly to the user.
+	 */
 	PT_PASSWORD,
+
+	/**
+	 * A value that a Service can use without any other parameters
+	 * being set to produce results.
+	 */
 	PT_KEYWORD,
+
+
+	/**
+	 * A potentially large c-style string. This is used by clients to determine
+	 * the appropriate editor to show to the user. E.g. a multi-line text bos
+	 * as opposed to a single-line text box for a PT_STRING.
+	 */
 	PT_LARGE_STRING,
+
+	/**
+	 * A JSON fragment.
+	 */
 	PT_JSON,
+
+	/**
+	 * A c-style string of tabular data.
+	 */
 	PT_TABLE,
+
+	/** The number of possible ParameterType values. */
 	PT_NUM_TYPES
 } ParameterType;
 
@@ -73,9 +114,30 @@ typedef enum ParameterType
  */
 typedef uint8 ParameterLevel;
 
+/**
+ * The value of a ParameterLevel for Parameters that
+ * are considered the most simple options.
+ */
 #define PL_BASIC (1)
+
+
+/**
+ * The value of a ParameterLevel for Parameters that
+ * are considered suitable for more knowledgeable users.
+ */
 #define PL_INTERMEDIATE (1 << 1)
+
+/**
+ * The value of a ParameterLevel for Parameters that
+ * are considered the options that require the most expertise.
+ */
 #define PL_ADVANCED (1 << 2)
+
+
+/**
+ * The value of a ParameterLevel for Parameters that
+ * are considered the options suitable for all leveles
+ */
 #define PL_ALL (PL_BASIC | PL_INTERMEDIATE | PL_ADVANCED)
 
 
@@ -86,22 +148,31 @@ typedef uint8 ParameterLevel;
  */
 typedef union SharedType
 {
+	/* A Boolean value */
 	bool st_boolean_value;
 
+	/* A signed integer */
 	int32 st_long_value;
 
+	/* An unsigned integer */
 	uint32 st_ulong_value;
 
+	/* A real number */
 	double64 st_data_value;
 
+	/* A c-style string */
 	char *st_string_value_s;
 
+	/* A single character */
 	char st_char_value;
 
+	/* A Resource */
 	Resource *st_resource_value_p;
 
+	/* A LinkedList of multiple values */
 	LinkedList *st_multiple_values_p;
 
+	/* A JSON fragment */
 	json_t *st_json_p;
 } SharedType;
 
@@ -356,7 +427,7 @@ GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *o
  * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
  * @param check_value_fn If this is not <code>NULL</code>, then this will be used to check whether the Parameter has been set to a valid value.
  * @return A newly-allocated Parameter or <code>NULL</code> upon error.
- * @memberof Parameter.
+ * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API Parameter *AllocateParameter (ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
@@ -430,7 +501,7 @@ GRASSROOTS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const
  * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
  * @param check_value_fn If this is not <code>NULL</code>, then this will be used to check whether the Parameter has been set to a valid value.
  * @return A newly-allocated ParameterNode with a Parameter set to the given values or <code>NULL</code> upon error.
- * @memberof ParameterNode.
+ * @memberof ParameterNode
  * @see AllocateParameter
  */
 GRASSROOTS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
@@ -443,6 +514,7 @@ GRASSROOTS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const
  * @param value_p The value to check.
  * @return An error message string on failure or <code>NULL</code> if the value
  * is a non-negative real number.
+ * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API const char *CheckForSignedReal (const Parameter * const parameter_p, const void *value_p);
 
@@ -454,6 +526,7 @@ GRASSROOTS_PARAMS_API const char *CheckForSignedReal (const Parameter * const pa
  * @param value_p The value to check.
  * @return An error message string on failure or <code>NULL</code> if the value
  * is a not <code>NULL</code>.
+ * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API const char *CheckForNotNull (const Parameter * const parameter_p, const void *value_p);
 

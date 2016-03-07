@@ -741,7 +741,7 @@ json_t *GetJSONFromString (const char *value_s, json_type field_type)
 				{
 					int i;
 
-					if (GetValidInteger (&value_s, &i, NULL))
+					if (GetValidInteger (&value_s, &i))
 						{
 							value_p = json_integer (i);
 						}

@@ -92,6 +92,9 @@ GRASSROOTS_UTIL_API void FreeLineBuffer (char *buffer_p);
  * list of tokens.
  *
  * @param format_p The format string to use.
+ * @param delimiters_p A custom array of characters to use to separate the tokens
+ * in format_p. If this <code>NULL</code> then whitespace will be used
+ * to delimit the tokens.
  * @param treat_whitespace_as_delimiter_flag If TRUE whitespace will be treated as a delimiter.
  * @return A pointer to a StringLinkedList where each node
  * refers to a token or NULL upon error.
@@ -105,6 +108,9 @@ GRASSROOTS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * cons
  * list of IntListNodes holding the tokens as numbers.
  *
  * @param format_p The format string to use.
+ * @param delimiters_p A custom array of characters to use to separate the tokens
+ * in format_p. If this <code>NULL</code> then whitespace will be used
+ * to delimit the tokens.
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
  */
@@ -116,6 +122,9 @@ GRASSROOTS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const f
  * list of IntListNodes holding the tokens as numbers.
  *
  * @param format_p The format string to use.
+ * @param delimiters_p A custom array of characters to use to separate the tokens
+ * in format_p. If this <code>NULL</code> then whitespace will be used
+ * to delimit the tokens.
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
  */
@@ -270,7 +279,7 @@ GRASSROOTS_UTIL_API char *ConvertDoubleToString (const double64 value);
  * Get the string representation of a uuid_t.
  *
  * @param id The uuid_t to get the string representation of.
- * @return A newly-allocated string of the id or <code>NULL<code> upon error.
+ * @return A newly-allocated string of the id or <code>NULL</code> upon error.
  * @see FreeUUIDString.
  */
 GRASSROOTS_UTIL_API char *GetUUIDAsString (const uuid_t id);
@@ -307,35 +316,60 @@ GRASSROOTS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
 GRASSROOTS_UTIL_API void FreeUUIDString (char *uuid_s);
 
 
-GRASSROOTS_UTIL_API void ClearUUID (uuid_t *id_p);
-
-
-GRASSROOTS_UTIL_API bool IsUUIDSet (uuid_t id);
-
-
-GRASSROOTS_UTIL_API void GenerateUUID (uuid_t *id_p);
-
-
+/**
+ * Make a copy of a string.
+ *
+ * @param dest_ss Pointer to the string where the source string
+ * will be copied to.  * @param src_s The string to copy.
+ * @return <code>true</code> if successful, <code>false</code> otherwise.
+ * If successful, any string that dest_ss currently points to will be freed
+ * prior to pointing at the copy. If the function is unsuccessful then the value
+ * pointed to by dest_ss will remain intact.
+ */
 GRASSROOTS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src_s);
 
 
 /**
  * Replace each instance of a character within a string with another
  *
- * @param buffer_p The string to replace the character in.
+ * @param value_s The string to replace the character in.
  * @param old_data The character to be replaced.
  * @param new_data The replacement character.
  */
 GRASSROOTS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
 
 
+/**
+ * Create a numeric value for suitable for hashing from a given string.
+ *
+ * @param key_p The string to create the hashed value for.
+ * @return The hashed value.
+ */
 GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 
 
+/**
+ * Get the contents of FILE as c-style string.
+ *
+ * @param input_f The FILE to get the contents of
+ * @return The newly-allocated c-style string containing the contents
+ * of the FILE or <code>NULL</code> upon error. If this value is not
+ * <code>NULL</code>, it should be freed by calling FreeCopiedString
+ * when it is no longer needed.
+ * @see FreeCopiedString
+ */
 GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
 
 
 
+/**
+ * Concatenate a va_list of strings.
+ *
+ * @param value_s The varargs-style array of <code>NULL</code> terminated strings to append. The final entry
+ * in this varargs-array must be a <code>NULL</code>.
+ * @return The newly-allocated string that should be freed with FreeCopiedString when
+ * no longer needed or <code>NULL</code> upon failure.
+ */
 GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
 
 

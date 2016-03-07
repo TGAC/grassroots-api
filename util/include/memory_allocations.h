@@ -83,11 +83,31 @@ typedef enum MEM_FLAG
 			#include <stdlib.h>
 		#endif
 
+		/** Initialise the platform memory allocator */
 		#define InitAllocator()	do {} while (0);
+
+		/** Close the platform memory allocator */
 		#define ExitAllocator()	do {} while (0);
+
+		/**
+		 * Allocate the memory for, x, the given number of bytes.
+		 */
 		#define AllocMemory(x)	malloc(x)
+
+
+		/**
+		 * Allocate an array of memory where s is the given number
+		 * of entries in the array with each entry being y bytes in size.
+		 * If successful, all entries will be set to zero.
+		 */
 		#define AllocMemoryArray(x,y)	calloc(x,y)
+
+		/**
+		 * Reallocate the memory for the given number of bytes.
+		 */
 		#define ReallocMemory(x,y,z)	realloc(x,y)
+
+		/** Free the memory pointed to by x */
 		#define FreeMemory(x)	free(x)
 		#define IsAllocatorThreadSafe() (1)
 	#endif

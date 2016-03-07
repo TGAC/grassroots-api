@@ -147,7 +147,8 @@ GRASSROOTS_NETWORK_API bool AppendVarArgsToByteBuffer (ByteBuffer *buffer_p, con
 
 
 /**
- * Clear any data stored in a ByteBuffer..
+ * Clear any data stored in a ByteBuffer.
+ *
  *
  * @param buffer_p The ByteBuffer who will have all of its data emptied.
  * @memberof ByteBuffer

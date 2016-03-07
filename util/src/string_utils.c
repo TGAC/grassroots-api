@@ -850,17 +850,6 @@ const char *Stristr (const char *value_s, const char *substring_s)
 }
 
 
-void ClearUUID (uuid_t *id_p)
-{
-	uuid_clear (*id_p);
-}
-
-void GenerateUUID (uuid_t *id_p)
-{
-	uuid_generate (*id_p);
-}
-
-
 bool IsUUIDSet (uuid_t id)
 {
 	return (!uuid_is_null (id));

@@ -35,20 +35,40 @@
 #include "string_utils.h"
 
 
+/**
+ * This datatype is used by the Apache HTTPD server
+ * to be the Grassroots JobsManager.
+ *
+ * @see JobsManager
+ */
 typedef struct APRJobsManager
 {
 	/** The base JobsManager */
 	JobsManager ajm_base_manager;
 
+	/**
+	 * The APRGlobalStorage implemntation where the
+	 * ServiceJobs will be stored.
+	 */
 	APRGlobalStorage *ajm_store_p;
 } APRJobsManager;
 
 
+/**
+ * This datatype is used by the Apache HTTPD server
+ * to be the Grassroots ServersManager.
+ *
+ * @see ServersManager
+ */
 typedef struct APRServersManager
 {
 	/** The base ServersManager */
 	ServersManager asm_base_manager;
 
+	/**
+	 * The APRGlobalStorage implemntation where the
+	 * Server definitions will be stored.
+	 */
 	APRGlobalStorage *asm_store_p;
 
 } APRServersManager;

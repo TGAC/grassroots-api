@@ -102,7 +102,7 @@ void InitialiseService (Service * const service_p,
 				}
 		}
 
-	ClearUUID (& (service_p -> se_id));
+	uuid_clear (& (service_p -> se_id));
 
 	service_p -> se_plugin_p = NULL;
 	service_p -> se_has_permissions_fn = NULL;
@@ -669,7 +669,7 @@ static const char *GetPluginNameFromJSON (const json_t * const root_p)
 
 static void GenerateServiceUUID (Service *service_p)
 {
-	GenerateUUID (& (service_p -> se_id));
+	uuid_generate (& (service_p -> se_id));
 }
 
 

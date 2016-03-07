@@ -56,7 +56,7 @@ typedef struct CurlTool
  * Allocate a CurlTool.
  *
  * @return A newly-allocated CurlTool or <code>NULL</code> upon error.
- * @memberof CurlTool.
+ * @memberof CurlTool
  * @see FreeCurlTool
  */
 GRASSROOTS_NETWORK_API CurlTool *AllocateCurlTool (void);
@@ -66,7 +66,7 @@ GRASSROOTS_NETWORK_API CurlTool *AllocateCurlTool (void);
  * Free a CurlTool
  *
  * @param curl_p The CurlTool to free.
- * @memberof CurlTool.
+ * @memberof CurlTool
  */
 GRASSROOTS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
 

@@ -207,11 +207,11 @@ bool GetValidRealNumber (const char **str_pp, double *answer_p, const char * con
 }
 
 
-bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alternative_decimal_points_s)
+bool GetValidInteger (const char **str_pp, int *answer_p)
 {
 	double d;
 
-	if (GetNumber (str_pp, &d, false, alternative_decimal_points_s))
+	if (GetNumber (str_pp, &d, false, NULL))
 		{
 			*answer_p = (int) d;
 			return true;
@@ -223,11 +223,11 @@ bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alt
 }
 
 
-bool GetValidLong (const char **str_pp, long *answer_p, const char * const alternative_decimal_points_s)
+bool GetValidLong (const char **str_pp, long *answer_p)
 {
 	double d;
 
-	if (GetNumber (str_pp, &d, false, alternative_decimal_points_s))
+	if (GetNumber (str_pp, &d, false, NULL))
 		{
 			*answer_p = (long) d;
 			return true;

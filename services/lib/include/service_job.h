@@ -60,16 +60,34 @@ typedef struct ServiceJob
 	char *sj_description_s;
 
 	/**
-	 * @private
+	 * The JSON fragment for the results of this ServiceJob.
 	 */
 	json_t *sj_result_p;
 
+	/**
+	 * The JSON fragment for any extra information for this ServiceJob.
+	 */
 	json_t *sj_metadata_p;
 
+	/**
+	 * The JSON fragment for any errors that have occurred whilst
+	 * running this ServiceJob.
+	 */
 	json_t *sj_errors_p;
 
+	/**
+	 * The callback function to use when checking the status of
+	 * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+	 * behaviour. If this is <code>NULL</code>, then GetServiceJobStatus will be used.
+	 */
 	OperationStatus (*sj_update_status_fn) (struct ServiceJob *job_p);
 
+	/**
+   * The callback function to use when freeing
+	 * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+	 * behaviour. If this is <code>NULL</code>, then ClearServiceJob will be used before
+	 * deallocating the memory ServiceJob structure.
+	 */
 	void (*sj_free_fn) (struct ServiceJob *job_p);
 
 } ServiceJob;
@@ -137,7 +155,7 @@ GRASSROOTS_SERVICE_API void FreeServiceJob (ServiceJob *job_p);
  * @see InitServiceJob
  * @see GetServiceJobStatus
  * @see ClearServiceJob
- * @memberof ServiceJob.
+ * @memberof ServiceJob
  */
 GRASSROOTS_SERVICE_API ServiceJob *AllocateServiceJob (struct Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p));
 
@@ -145,16 +163,25 @@ GRASSROOTS_SERVICE_API ServiceJob *AllocateServiceJob (struct Service *service_p
 
 /**
  * @brief Allocate a ServiceJob and add it to a ServiceJobSet.
- * *
+ *
+ * This will call AllocateServiceJob and if successful will then
+ * add the new ServiceJob to the given ServiceJobSet
+ *
  * @param job_set_p The ServiceJobSet to add the new ServiceJob to.
  * @param job_name_s The name to give to the ServiceJob.
  * @param job_description_s The description to give to the ServiceJob.
- * @param service_p The Service that is running the ServiceJob.
+ * @param update_status_fn The callback function to use when checking the status of
+ * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+ * behaviour. If this is <code>NULL</code>, then GetServiceJobStatus will be used.
+ * @param free_job_fn The callback function to use when freeing
+ * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+ * behaviour. If this is <code>NULL</code>, then ClearServiceJob will be used before
+ * deallocating the memory ServiceJob structure.
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
- * @memberof ServiceJob.
+ * @see AllocateServiceJob
+ * @memberof ServiceJob
  */
 GRASSROOTS_SERVICE_API ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p));
-
 
 
 /**
@@ -168,9 +195,10 @@ GRASSROOTS_SERVICE_API ServiceJob *CreateAndAddServiceJobToServiceJobSet (Servic
  * @param job_description_s The description to give to the ServiceJob.
  * @param service_p The Service that is running the ServiceJob.
  * @return <code>true</code> if the ServiceJob was initialised successfully, <code>false</code> otherwise
- * @memberof ServiceJob.
+ * @memberof ServiceJob
  */
 GRASSROOTS_SERVICE_API bool InitServiceJob (ServiceJob *job_p, struct Service *service_p, const char *job_name_s, const char *job_description_s, OperationStatus (*update_status_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p));
+
 
 /**
  * @brief Clear a Service Job ready for reuse.
@@ -181,6 +209,14 @@ GRASSROOTS_SERVICE_API bool InitServiceJob (ServiceJob *job_p, struct Service *s
 GRASSROOTS_SERVICE_API void ClearServiceJob (ServiceJob *job_p);
 
 
+/**
+ * Find the ServiceJobNode for a given ServiceJob within a ServiceJobSet.
+ *
+ * @param job_set_p The ServiceJobSet to search.
+ * @param job_p The ServiceJob to look for.
+ * @return The ServiceJobNode that points to the requested ServiceJob or <code>
+ * NULL</code> if it could not be found.
+ */
 GRASSROOTS_SERVICE_API ServiceJobNode *FindServiceJobNodeInServiceJobSet (ServiceJobSet *job_set_p, ServiceJob *job_p);
 
 
@@ -213,7 +249,7 @@ GRASSROOTS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * c
  *
  * @param service_p The Service to allocate the ServiceJobSet for.
  * @return A newly-allocated ServiceJobSet or <code>NULL</code> upon error.
- * @memberof ServiceJobSet.
+ * @memberof ServiceJobSet
  * @see InitServiceJob
  */
 GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *service_p);
@@ -228,7 +264,7 @@ GRASSROOTS_SERVICE_API ServiceJobSet *AllocateServiceJobSet (struct Service *ser
  * @param job_description_s The description that will be given to the ServiceJob that will be created.
  * This can be <code>NULL</code>.
  * @return A newly-allocated ServiceJobSet or <code>NULL</code> upon error.
- * @memberof ServiceJobSet.
+ * @memberof ServiceJobSet
  * @see InitServiceJob
  */
 GRASSROOTS_SERVICE_API ServiceJobSet *AllocateSimpleServiceJobSet (struct Service *service_p, const char *job_name_s, const char *job_description_s);
@@ -273,7 +309,7 @@ GRASSROOTS_SERVICE_API bool RemoveServiceJobToServiceJobSet (ServiceJobSet *job_
  *
  * @param job_p The ServiceJob to allocate a ServiceJobNode for.
  * @return A newly-allocated ServiceJobNode or <code>NULL</code> upon error.
- * @memberof ServiceJobNode.
+ * @memberof ServiceJobNode
  */
 GRASSROOTS_SERVICE_API ServiceJobNode *AllocateServiceJobNode (ServiceJob *job_p);
 
@@ -409,10 +445,24 @@ GRASSROOTS_SERVICE_API bool AreAnyJobsLive (const ServiceJobSet *jobs_p);
 
 
 
-
+/**
+ * Get the ServiceJob at a particular position in a ServiceJobSet.
+ *
+ * @param jobs_p The ServiceJobSet to get the ServiceJob from.
+ * @param index The index of the ServiceJob to get.
+ * @return The ServiceJob or <code>NULL</code> if there was an error
+ * such as if the index was out of range.
+ * @memberof ServiceJobSet
+ */
 GRASSROOTS_SERVICE_API ServiceJob *GetServiceJobFromServiceJobSet (const ServiceJobSet *jobs_p, const uint32 index);
 
-
+/**
+ * Get the number of ServiceJobs in a ServiceJobSet.
+ *
+ * @param jobs_p The ServiceJobSet to get size of.
+ * @return The number of ServiceJobs in this ServiceJobSet.
+ * @memberof ServiceJobSet
+ */
 GRASSROOTS_SERVICE_API uint32 GetServiceJobSetSize (const ServiceJobSet * const jobs_p);
 
 
@@ -430,9 +480,32 @@ GRASSROOTS_SERVICE_API uint32 GetServiceJobSetSize (const ServiceJobSet * const 
 GRASSROOTS_SERVICE_API void ClearServiceJobResults (ServiceJob *job_p, bool free_memory_flag);
 
 
+/**
+ * Save the ServiceJob to a persistent format that allows the ServiceJob
+ * to be recreated in a potentially different thread and/or process. This is used to
+ * save a ServiceJob in the JobsManager.
+ *
+ * @param job_p The ServiceJob.
+ * @return The persistent representation of this ServiceJob or <code>NULL</code>
+ * upon error.
+ * @see JobsManager
+ * @see DeserialiseServiceJobFromJSON
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API char *SerialiseServiceJobToJSON (ServiceJob * const job_p);
 
 
+/**
+ * Recreate a ServiceJob from a persistent format. This is used to
+ * access a ServiceJob stored in the JobsManager.
+ *
+ * @param raw_json_data_s The data representing the ServiceJob.
+ * @return The ServiceJob or <code>NULL</code>
+ * upon error.
+ * @see JobsManager
+ * @see SerialiseServiceJobToJSON
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json_data_s);
 
 
@@ -451,6 +524,20 @@ GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json
 GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 
+
+/**
+ * Fill in the data for a ServiceJob from a given JSON fragement.
+ *
+ * @param job_p The ServiceJob to fill in.
+ * @param results_p The JSON fragment used to populate the data of the ServiceJob.
+ * @param service_p The Service that refers to the ServiceJob
+ * @param name_s The name to give to the ServiceJob. This can be <code>NULL</code>.
+ * @param description_s The description to give to the ServiceJob. This can be <code>NULL</code>.
+ * @param status The OperationStatus to set for the ServiceJob.
+ * @return <code>true</code> if the ServiceJob was initialised successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 

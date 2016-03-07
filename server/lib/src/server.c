@@ -606,7 +606,7 @@ static Operation GetOperation (json_t *ops_p)
 					const char *value_s = json_string_value (op_p);
 					int i;
 					
-					if (GetValidInteger (&value_s, &i, NULL))
+					if (GetValidInteger (&value_s, &i))
 						{
 							op = i;
 						}

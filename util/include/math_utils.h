@@ -70,7 +70,7 @@ GRASSROOTS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
  */
-GRASSROOTS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, const char * const alternative_decimal_points_s);
+GRASSROOTS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
 
 
 /**
@@ -81,7 +81,7 @@ GRASSROOTS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p, co
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
  */
-GRASSROOTS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p, const char * const alternative_decimal_points_s);
+GRASSROOTS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p);
 
 
 /**
