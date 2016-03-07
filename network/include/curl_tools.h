@@ -37,10 +37,19 @@
  */
 typedef struct CurlTool
 {
+	/** @private */
 	CURL *ct_curl_p;
+
+	/** @private */
 	ByteBuffer *ct_buffer_p;
+
+	/** @private */
 	struct curl_httppost *ct_form_p;
+
+	/** @private */
 	struct curl_httppost *ct_last_field_p;
+
+	/** @private */
 	struct curl_slist *ct_headers_list_p;
 } CurlTool;
 
@@ -80,7 +89,7 @@ GRASSROOTS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
  * @see AddCurlCallback
  * @return The CURL object or <code>NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_LOCAL CURL *GetCurl (ByteBuffer *buffer_p);
 
 
 /**
@@ -88,7 +97,7 @@ GRASSROOTS_NETWORK_API CURL *GetCurl (ByteBuffer *buffer_p);
  *
  * @param curl_p The CURL object to free.
  */
-GRASSROOTS_NETWORK_API void FreeCurl (CURL *curl_p);
+GRASSROOTS_NETWORK_LOCAL void FreeCurl (CURL *curl_p);
 
 /**
  * @brief Set the cryptographic engine to use.
@@ -121,10 +130,10 @@ GRASSROOTS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header
  * Add a callback to write the HTTP response for this CURL object to
  * the given buffer.
  *
- * @return The CURL object to add the callback for.
+ * @return The CurlTool object to add the callback for.
  * @param buffer_p The ByteBuffer which will store the CURL object's response.
  */
-GRASSROOTS_NETWORK_API bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_API bool AddCurlCallback (CurlTool *curl_p, ByteBuffer *buffer_p);
 
 
 /**

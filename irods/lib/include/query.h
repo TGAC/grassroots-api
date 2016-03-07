@@ -123,7 +123,7 @@ IRODS_UTIL_API void PrintQueryResult (FILE *out_f, const QueryResult * const res
 IRODS_UTIL_API void FreeQueryResults (QueryResults *result_p);
 
 
-IRODS_UTIL_API const char *GetColumnNameForId (const int id);
+IRODS_UTIL_LOCAL const char *GetColumnNameForId (const int id);
 
 
 /** @private */

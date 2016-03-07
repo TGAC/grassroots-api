@@ -333,7 +333,7 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 
 
 
-bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
+bool AddCurlCallback (CurlTool *curl_tool_p, ByteBuffer *buffer_p)
 {
 	bool success_flag = true;
 	const CURLParam params [] = 
@@ -361,7 +361,7 @@ bool AddCurlCallback (CURL *curl_p, ByteBuffer *buffer_p)
 
 	while (success_flag && (param_p -> cp_value_s))
 		{
-			CURLcode ret = curl_easy_setopt (curl_p, param_p -> cp_opt, param_p -> cp_value_s);
+			CURLcode ret = curl_easy_setopt (curl_tool_p -> ct_curl_p, param_p -> cp_opt, param_p -> cp_value_s);
 
 			if (ret == CURLE_OK)
 				{
