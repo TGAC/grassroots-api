@@ -205,7 +205,13 @@ bool MatchServiceByResource (ServiceMatcher *matcher_p, Service *service_p)
 	
 	if ((resource_matcher_p -> rsm_resource_p) && (resource_matcher_p -> rsm_handler_p))
 		{
-			match_flag = IsServiceMatch (service_p, resource_matcher_p -> rsm_resource_p, resource_matcher_p -> rsm_handler_p);
+			ParameterSet *params_p =  IsServiceMatch (service_p, resource_matcher_p -> rsm_resource_p, resource_matcher_p -> rsm_handler_p);
+
+			if (params_p)
+				{
+					ReleaseServiceParameters (service_p, params_p);
+					match_flag = true;
+				}
 		}
 		
 	return match_flag;

@@ -41,28 +41,54 @@
 #define TAG_BLAST_OUTPUT_FORMAT MAKE_TAG ('B', 'F', 'M', 'T')
 
 
+/**
+ * A datatype describing the details of each database available
+ * to search against.
+ */
 typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 {
+	/** The name of the database to display to the user. */
 	const char *di_name_s;
+
+	/** The description of the database to display to the user. */
 	const char *di_description_s;
+
+	/**
+	 * Sets whether the database defaults to being searched against
+	 * or not.
+	 */
 	bool di_active_flag;
 } DatabaseInfo;
+
 
 
 /* forward class declaration */
 class BlastToolFactory;
 
- typedef struct BLAST_SERVICE_LOCAL BlastServiceData
+/**
+ * The configuration data for the Blast Service.
+ */
+typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 {
+	/** The base ServiceData. */
 	ServiceData bsd_base_data;
 
+	/**
+	 * The directory where the Blast input, output and log files
+	 * will be stored.
+	 */
 	const char *bsd_working_dir_s;
 
+	/**
+	 * The BlastFormatter used to convert the Blast output
+	 * between the different output formats.
+	 */
 	BlastFormatter *bsd_formatter_p;
 
-	/* A NULL-terminated array of the databases available to search */
+	/** A NULL-terminated array of the databases available to search */
 	DatabaseInfo *bsd_databases_p;
 
+	/** The BlastToolFactory used to generate each BlastTool that actually run the Blast jobs. */
 	BlastToolFactory *bsd_tool_factory_p;
 
 } BlastServiceData;

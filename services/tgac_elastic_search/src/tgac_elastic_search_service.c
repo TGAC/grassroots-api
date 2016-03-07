@@ -171,7 +171,7 @@ void ReleaseServices (ServicesArray *services_p)
 
 
 
-static const char * const GetRootRestURI (void)
+static const char *GetRootRestURI (void)
 {
 	return "http://v0214.nbi.ac.uk:8080/wis-web/wis-web/rest/searchelasticsearch/";
 }

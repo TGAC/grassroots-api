@@ -194,6 +194,13 @@ GRASSROOTS_SERVICE_API ServiceJob *CreateAndAddServiceJobToServiceJobSet (Servic
  * @param job_name_s The name to give to the ServiceJob.
  * @param job_description_s The description to give to the ServiceJob.
  * @param service_p The Service that is running the ServiceJob.
+ * @param update_status_fn The callback function to use when checking the status of
+ * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+ * behaviour. If this is <code>NULL</code>, then GetServiceJobStatus will be used.
+ * @param free_job_fn The callback function to use when freeing
+ * this ServiceJob. This is useful for subclasses of ServiceJob that need custom
+ * behaviour. If this is <code>NULL</code>, then ClearServiceJob will be used before
+ * deallocating the memory ServiceJob structure.
  * @return <code>true</code> if the ServiceJob was initialised successfully, <code>false</code> otherwise
  * @memberof ServiceJob
  */
@@ -518,8 +525,12 @@ GRASSROOTS_SERVICE_API ServiceJob *DeserialiseServiceJobFromJSON (char *raw_json
  *
  * @param results_p A Resource JSON fragment.
  * @param service_p The Service that the newly-created ServiceJob will belong to.
+ * @param name_s The name of the ServiceJob.
+ * @param description_s The description of the ServiceJob. This can be <code>NULL</code>.
+ * @param status The OperationStatus to set for the ServiceJob.
  * @return The newly-allocated ServiceJob or <code>NULL</code> upon error.
  * @memberof ServiceJob
+ * @see InitServiceJobFromResultsJSON
  */
 GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 

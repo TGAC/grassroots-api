@@ -1193,7 +1193,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 															ReleaseServiceParameters (service_p, params_p);
 														}		/* if (params_p) */
 
-												}		/* /* if (RunServiceMatcher (matcher_p, service_p)) else */
+												}		/* if (RunServiceMatcher (matcher_p, service_p)) else */
 
 											service_node_p = (ServiceNode *) (service_node_p -> sn_node.ln_next_p);
 										}		/* while (service_node_p) */

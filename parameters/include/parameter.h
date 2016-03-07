@@ -148,31 +148,31 @@ typedef uint8 ParameterLevel;
  */
 typedef union SharedType
 {
-	/* A Boolean value */
+	/** A Boolean value */
 	bool st_boolean_value;
 
-	/* A signed integer */
+	/** A signed integer */
 	int32 st_long_value;
 
-	/* An unsigned integer */
+	/** An unsigned integer */
 	uint32 st_ulong_value;
 
-	/* A real number */
+	/** A real number */
 	double64 st_data_value;
 
-	/* A c-style string */
+	/** A c-style string */
 	char *st_string_value_s;
 
-	/* A single character */
+	/** A single character */
 	char st_char_value;
 
-	/* A Resource */
+	/** A Resource */
 	Resource *st_resource_value_p;
 
-	/* A LinkedList of multiple values */
+	/** A LinkedList of multiple values */
 	LinkedList *st_multiple_values_p;
 
-	/* A JSON fragment */
+	/** A JSON fragment */
 	json_t *st_json_p;
 } SharedType;
 

@@ -102,13 +102,14 @@ GRASSROOTS_NETWORK_LOCAL void FreeCurl (CURL *curl_p);
 /**
  * @brief Set the cryptographic engine to use.
  *
- * @param curl_p The CURL instance to set the SSL engine for.
+ * @param curl_p The CurlTool instance to set the SSL engine for.
  * @param cryptograph_engine_name_s The name of the cryptographic engine
  * to use. For the valid names see the CURL documentation.
  * @return <code>true</code> if the SSL engine name was set successfully,
  * <code>false</code> otherwise.
+ * @memberof CurlTool
  */
-GRASSROOTS_NETWORK_API bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s);
+GRASSROOTS_NETWORK_API bool SetSSLEngine (CurlTool *curl_p, const char *cryptograph_engine_name_s);
 
 
 /**
@@ -130,8 +131,11 @@ GRASSROOTS_NETWORK_API bool CallSecureUrl (const char *url_s, const char *header
  * Add a callback to write the HTTP response for this CURL object to
  * the given buffer.
  *
- * @return The CurlTool object to add the callback for.
- * @param buffer_p The ByteBuffer which will store the CURL object's response.
+ * @param buffer_p The ByteBuffer which will store the CURL object's response. *
+ * @param curl_p The CurlTool object to add the callback for.
+ * @return <code>true</code> if the CurlTool was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof CurlTool
  */
 GRASSROOTS_NETWORK_API bool AddCurlCallback (CurlTool *curl_p, ByteBuffer *buffer_p);
 

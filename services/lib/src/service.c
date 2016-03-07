@@ -33,6 +33,8 @@
 #include "grassroots_config.h"
 #include "paired_service.h"
 #include "servers_pool.h"
+#include "string_utils.h"
+
 
 #ifdef _DEBUG
 	#define SERVICE_DEBUG	(STM_LEVEL_INFO)

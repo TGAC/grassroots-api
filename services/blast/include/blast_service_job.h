@@ -29,9 +29,15 @@
 #include "service_job.h"
 #include "blast_tool.hpp"
 
+/**
+ * This datatype stores the ServiceJob and its associated BlastTool.
+ */
 typedef struct BLAST_SERVICE_LOCAL BlastServiceJob
 {
+	/** The ServiceJob. */
 	ServiceJob bsj_job;
+
+	/** The BlastTool. */
 	BlastTool *bsj_tool_p;
 } BlastServiceJob;
 
@@ -42,9 +48,25 @@ extern "C"
 #endif
 
 
+/**
+ * Create a BlastServiceJob.
+ *
+ * @param service_p The Blast service.
+ * @param job_name_s The name of the BlastServiceJob.
+ * @param job_description_s The description of the BlastServiceJob. This can be <code>NULL</code>.
+ * @param working_directory_s The working directory to use.
+ * @param data_p The BlastServiceData.
+ * @return The newly-allocated BlastServiceJob or <code>NULL</code> upon error.
+ */
 BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char * const working_directory_s, BlastServiceData *data_p);
 
 
+/**
+ * Free the BlastServiceJob.
+ *
+ * @param job_p The BlastServiceJob to free.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL void FreeBlastServiceJob (ServiceJob *job_p);
 
 

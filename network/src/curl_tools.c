@@ -220,16 +220,16 @@ CURLcode RunCurlTool (CurlTool *tool_p)
 }
 
 
-bool SetSSLEngine (CURL *curl_p, const char *cryptograph_engine_name_s)
+bool SetSSLEngine (CurlTool *curl_p, const char *cryptograph_engine_name_s)
 {
 	bool success_flag = false;
 	
 	/* load the crypto engine */
-	if (curl_easy_setopt (curl_p, CURLOPT_SSLENGINE, cryptograph_engine_name_s) == CURLE_OK)
+	if (curl_easy_setopt (curl_p -> ct_curl_p, CURLOPT_SSLENGINE, cryptograph_engine_name_s) == CURLE_OK)
 		{
 			/* set the crypto engine as default */
 			/* only needed for the first time you load a engine in a curl object... */
-			if (curl_easy_setopt (curl_p, CURLOPT_SSLENGINE_DEFAULT, 1L) == CURLE_OK)
+			if (curl_easy_setopt (curl_p -> ct_curl_p, CURLOPT_SSLENGINE_DEFAULT, 1L) == CURLE_OK)
 				{
 					success_flag = true;
 				}
