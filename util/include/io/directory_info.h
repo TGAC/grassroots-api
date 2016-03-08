@@ -29,25 +29,51 @@ typedef enum DirEntryType
 }  DirEntryType;
 
 
+/**
+ * The datatype used for storing directory listings.
+ */
 typedef struct BaseDirEntry
 {
+	/** The name of this directory, file, link, etc. */
 	char *bde_filename_s;
+
+	/** The type of this entry. */
 	DirEntryType bde_type;
 } BaseDirEntry;
 
 
 typedef struct BaseDirEntryNode BaseDirEntryNode;
 
+/**
+ * A datatype for storing directory entries
+ * on a LinkedList.
+ *
+ * @extends ListItem
+ */
 struct BaseDirEntryNode
 {
+	/** The base node. */
 	ListItem bden_node;
+
+	/** The directory entry to store on this node. */
 	BaseDirEntry *bden_entry_p;
-	struct BaseDirEntryNode *bden_parent_p;
+
+	/**
+	 * The parent of this node or <code>NULL</code>
+	 * if it is the root node.
+	 */
+	BaseDirEntryNode *bden_parent_p;
 };
 
 
+/**
+ * A datatype for storing a directory.
+ *
+ * @extends BaseDirEntry
+ */
 typedef struct DirEntry
 {
+	/** The base BaseDirEntry */
 	BaseDirEntry de_base;
 
 	/** List of all of the child entries for this dir */
@@ -55,30 +81,22 @@ typedef struct DirEntry
 } DirEntry;
 
 
-GRASSROOTS_UTIL BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type);
+GRASSROOTS_UTIL_API BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type);
 
 
-GRASSROOTS_UTIL void FreeBaseDirEntry (BaseDirEntry *entry_p);
+GRASSROOTS_UTIL_API void FreeBaseDirEntry (BaseDirEntry *entry_p);
 
 
-GRASSROOTS_UTIL DirEntry *AllocateDirEntry (char *filename_s);
+GRASSROOTS_UTIL_API DirEntry *AllocateDirEntry (char *filename_s);
 
 
-GRASSROOTS_UTIL BaseDirEntryNode *AllocateBaseDirEntryNode (char *filename_s, DirEntryType entry_type);
+GRASSROOTS_UTIL_API BaseDirEntryNode *AllocateBaseDirEntryNode (char *filename_s, DirEntryType entry_type);
 
 
-GRASSROOTS_UTIL void FreeBaseDirEntry (ListItems *node_p);
+GRASSROOTS_UTIL_API void FreeBaseDirEntry (ListItem *node_p);
 
 
-GRASSROOTS_UTIL bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_entry_p);
+GRASSROOTS_UTIL_API bool AddDirEntry (DirEntry *parent_entry_p, BaseDirEntry *child_entry_p);
 
 
-
-typedef DirectoryInfo
-{
-
-
-};
-
-
-#endif		/ #ifndef DIRECTORY_INFO_H */
+#endif		/* #ifndef DIRECTORY_INFO_H */

@@ -108,6 +108,11 @@ typedef struct ServersManager
 	/** The UUID for this Server */
 	uuid_t sm_server_id;
 
+	/**
+	 * The UUID of this ExternalServer as a string.
+	 *
+	 * @see sm_server_id
+	 */
 	char sm_server_id_s [UUID_STRING_BUFFER_SIZE];
 
 
@@ -116,10 +121,13 @@ typedef struct ServersManager
 	 *
 	 * @param manager_p The ServersManager to add the ExternalServer to.
 	 * @param server_p The ExternalServer to add.
+	 * @param serialise_fn The function used to serialise the ExternalServer into the unsigned char array
+	 * which is the value stored in the ServersManager. If this is <code>NULL</code> then
+	 * SerialiseExternalServerToJSON is used by default.
 	 * @return <code>true</code> if the ExternalServer was added successfully,
 	 * <code>false</code> otherwise.
 	 * @memberof ServersManager
-	 * @see AddExternalServerToServersManager
+	 * @see SerialiseExternalServerToJSON
 	 */
 	bool (*sm_add_server_fn) (struct ServersManager *manager_p, ExternalServer *server_p, unsigned char *(*serialise_fn) (ExternalServer *server_p, uint32 *length_p));
 
@@ -130,6 +138,8 @@ typedef struct ServersManager
 	 *
 	 * @param manager_p The ServersManager to add the ExternalServer to.
 	 * @param server_uri_s The uri for the ExternalServer to search for.
+	 * @param deserialise_fn The function used to deserialise the data stored in this ServersManager to create ExternalServer.
+	 * If this is <code>NULL</code> then DeserialiseExternalServerFromJSON is used by default.
 	 * @return A pointer to the matching ExternalServer or <code>NULL</code>
 	 * if it could not be found.
 	 * @memberof ServersManager
@@ -144,10 +154,11 @@ typedef struct ServersManager
 	 *
 	 * @param manager_p The ServersManager to remove the ExternalServer from.
 	 * @param server_uri_s The uri for the ExternalServer to search for.
+	 * @param deserialise_fn The function used to deserialise the data stored in this ServersManager to create ExternalServer.
+	 * If this is <code>NULL</code> then DeserialiseExternalServerFromJSON is used by default.
 	 * @return A pointer to the matching ExternalServer which will have been
 	 * removed from the ServersManager or <code>NULL</code>
 	 * if it could not be found.
-	 * @memberof ServersManager
 	 * @see RemoveExternalServerFromServersManager
 	 */
 	ExternalServer *(*sm_remove_server_fn) (struct ServersManager *manager_p, const char * const server_uri_s, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
@@ -160,18 +171,30 @@ typedef struct ServersManager
 	 * Get a LinkedList of ExternalServerNodes for all active ExternalServers.
 	 *
 	 * @param manager_p The ServersManager to remove the ExternalServer from.
-	 * @return A pointer to the matching ExternalServer which will have been
-	 * removed from the ServersManager or <code>NULL</code>
-	 * if it could not be found.
-	 * @memberof ServersManager
+	 * @param deserialise_fn The function used to deserialise the data stored in this ServersManager to create ExternalServer.
+	 * If this is <code>NULL</code> then DeserialiseExternalServerFromJSON is used by default.
+	 * @return A LinkedList of ExternalServerNodes of all of the ExternalServers or <code>NULL</code> if there are not any.
 	 * @see GetAllExternalServersFromServersManager
 	 */
 	LinkedList *(*sm_get_all_servers_fn) (struct ServersManager *manager_p, ExternalServer *(*deserialise_fn) (const unsigned char *data_p));
 
 
+	/**
+	 * Free a given ServersManager.
+	 *
+	 * @param manager_p This ServersManager.
+	 * @return <code>true</code> if the ServersManager was freed successfully, <code>false</code> othewise.
+	 */
 	bool (*sm_free_servers_manager_fn) (struct ServersManager *manager_p);
 
 
+	/**
+	 * Get a LinkedList of ExternalServerNodes that have a given Service.
+	 *
+	 * @param manager_p This ServersManager.
+	 * @param local_service_name_s The name of the Service to match.
+	 * @return A LinkedList of ExternalServerNodes of all of the ExternalServers or <code>NULL</code> if there are not any.
+	 */
 	LinkedList *(*sm_get_all_matching_servers_fn) (struct ServersManager *manager_p, const char * const local_service_name_s);
 
 
@@ -229,15 +252,17 @@ GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_
 
 
 /**
- * @brief Add a ExternalServer to the ServersManager.
- *
- * This is simply a convenience wrapper around sm_add_server_fn
- * for the given ServersManager.
+ * @brief Add an ExternalServer to the ServersManager.
  *
  * @param manager_p The ServersManager to add the ExternalServer to.
  * @param server_p The ExternalServer to add.
+ * @param serialise_fn The function used to serialise the ExternalServer into the unsigned char array
+ * which is the value stored in the ServersManager. If this is <code>NULL</code> then
+ * SerialiseExternalServerToJSON is used by default.
  * @return <code>true</code> if the ExternalServer was added successfully,
  * <code>false</code> otherwise.
+ * @memberof ServersManager
+ * @see SerialiseExternalServerToJSON
  * @memberof ServersManager
  * @see sm_add_server_fn
  */
@@ -252,6 +277,8 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerToServersManager (ServersMa
  *
  * @param manager_p The ServersManager to search on.
  * @param server_uri_s The uri for the ExternalServer to search for.
+ * @param deserialise_fn The function used to deserialise the data stored in this ServersManager to create ExternalServer.
+ * If this is <code>NULL</code> then DeserialiseExternalServerFromJSON is used by default.
  * @return A pointer to the matching ExternalServers or <code>NULL</code>
  * if it could not be found.
  * @memberof ServersManager
@@ -269,6 +296,8 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *GetExternalServerFromServersManag
  *
  * @param manager_p The ServersManager to search on.
  * @param server_uri_s The uri for the ExternalServer to search for.
+ * @param deserialise_fn The function used to deserialise the data stored in this ServersManager to create ExternalServer.
+ * If this is <code>NULL</code> then DeserialiseExternalServerFromJSON is used by default.
  * @return A pointer to the matching ExternalServers or <code>NULL</code>
  * if it could not be found.
  * @memberof ServersManager
@@ -283,6 +312,8 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *RemoveExternalServerFromServersMa
  * Get a LinkedList of ExternalServerNodes for all active ExternalServers.
  *
  * @param manager_p The ServersManager to remove the ExternalServer from.
+ * @param deserialise_fn The function used to deserialise the data stored in this ServersManager to create ExternalServer.
+ * If this is <code>NULL</code> then DeserialiseExternalServerFromJSON is used by default.
  * @return A LinkedList of const ExternalServerNodes or <code>NULL</code>
  * if there are not any ExternalServers.
  * @memberof ServersManager
@@ -428,13 +459,38 @@ GRASSROOTS_SERVICE_MANAGER_API const char *GetRemotePairedServiceName (const Ext
 GRASSROOTS_SERVICE_MANAGER_API ExternalServer *CreateExternalServerFromJSON (const json_t *json_p);
 
 
-
+/**
+ * Get a raw unsigned char array that allows the ExternalServer to be stored in the ServersManager.
+ *
+ * The array is the result of GetExternalServerAsJSON converted to a string
+ *
+ * @param external_server_p The ExternalServer to serialise.
+ * @param value_length_p Upon success, the length in bytes of the resultant array will be stored here.
+ * @return The serialised representation of the ExternalServer or <code>NULL</code> upon error.
+ * @memberof ExternalServer
+ * @see DeserialiseExternalServerToJSON
+ */
 GRASSROOTS_SERVICE_MANAGER_API unsigned char *SerialiseExternalServerToJSON (ExternalServer * const external_server_p, unsigned int *value_length_p);
 
 
+/**
+ * Create an ExternalServer from a raw data memory block.
+ *
+ * @param raw_json_data_s The raw data from a previous call to SerialiseExternalServerToJSON.
+ * @return The newly-created ExternalServer or <code>NULL</code> upon error.
+ * @memberof ExternalServer
+ * @see SerialiseExternalServerToJSON
+ */
 GRASSROOTS_SERVICE_MANAGER_API ExternalServer *DeserialiseExternalServerFromJSON (const unsigned char *raw_json_data_s);
 
 
+/**
+ * Get the JSON fragment that describes the given ExternalServer.
+ *
+ * @param server_p The ExternalServer to get the JSON fragment for.
+ * @return The JSON fragment or <code>NULL</code> upon error.
+ * @memberof ExternalServer
+ */
 GRASSROOTS_SERVICE_MANAGER_API json_t *GetExternalServerAsJSON (ExternalServer *server_p);
 
 

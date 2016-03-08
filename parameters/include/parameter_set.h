@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+L** Copyright 2014-2015 The Genome Analysis Centre
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -227,7 +227,7 @@ GRASSROOTS_PARAMS_API Parameter *GetParameterFromParameterSetByName (const Param
  * value of the Parameter will be retrieved instead.
  * @return <code>true</code> if the Parameter value was retrieved successfully, <code>false</code>
  * otherwise.
- * @memeberof ParameterSet
+ * @memberof ParameterSet
  */
 GRASSROOTS_PARAMS_API bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, const Tag tag, SharedType *value_p, const bool current_value_flag);
 

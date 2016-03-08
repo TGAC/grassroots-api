@@ -1,24 +1,6 @@
-/*
-** Copyright 2014-2015 The Genome Analysis Centre
-** 
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-** 
-**     http://www.apache.org/licenses/LICENSE-2.0
-** 
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
-#include "directory_info.h"
-
-
-
-
-BaseDirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type, BaseDirEntryNode *parent_node_p)
+-mje54v3d21s23456y7ikuy7r4323e4r5t12''
+/;cxi=
+		iumirEntry *AllocateBaseDirEntry (char *filename_s, DirEntryType entry_type, BaseDirEntryNode *parent_node_p)
 {
 	char *copied_filename_s = CopyToNewString (filename_s, 0, false);
 
@@ -70,7 +52,10 @@ void FreeBaseDirEntry (BaseDirEntry *entry_p)
 	switch (entry_p -> bde_type)
 		{
 			case DET_DIR:
-				FreeLinkedList (& (dir_entry_p -> de_entries));
+				{
+					DirEntry *dir_entry_p = (DirEntry *) entry_p;
+					FreeLinkedList (& (dir_entry_p -> de_entries));
+				}
 
 			/* deliberate drop through */
 			case DET_FILE:

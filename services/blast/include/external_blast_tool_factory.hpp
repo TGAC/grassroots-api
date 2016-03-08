@@ -47,7 +47,7 @@ protected:
 	/**
 	 * The constructor for SystemBlastToolFactory.
 	 *
-	 * @param service_config_p The Blast Service configuration from the global
+	 * @param config_p The Blast Service configuration from the global
 	 * server configuration.
 	 */
 	ExternalBlastToolFactory (const json_t *config_p);
