@@ -53,13 +53,13 @@ static void FreeSearchTermNode (ListItem *node_p);
 
 
 
-IrodsSearch *AllocateIrodsSearch (void)
+IRodsSearch *AllocateIrodsSearch (void)
 {
 	LinkedList *list_p = AllocateLinkedList (FreeSearchTermNode);
 
 	if (list_p)
 		{
-			IrodsSearch *search_p = (IrodsSearch *) AllocMemory (sizeof (IrodsSearch));
+			IRodsSearch *search_p = (IRodsSearch *) AllocMemory (sizeof (IRodsSearch));
 
 			if (search_p)
 				{
@@ -75,20 +75,20 @@ IrodsSearch *AllocateIrodsSearch (void)
 }
 
 
-void FreeIrodsSearch (IrodsSearch *search_p)
+void FreeIrodsSearch (IRodsSearch *search_p)
 {
 	FreeLinkedList (search_p -> is_search_terms_p);
 	FreeMemory (search_p);
 }
 
 
-void ClearIrodsSearch (IrodsSearch *search_p)
+void ClearIrodsSearch (IRodsSearch *search_p)
 {
 	ClearLinkedList (search_p -> is_search_terms_p);
 }
 
 
-QueryResults *DoIrodsSearch (IrodsSearch *search_p, IRODSConnection *connection_p)
+QueryResults *DoIrodsSearch (IRodsSearch *search_p, IRodsConnection *connection_p)
 {
 	QueryResults *results_p = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
@@ -157,13 +157,13 @@ QueryResults *DoIrodsSearch (IrodsSearch *search_p, IRODSConnection *connection_
 }
 
 
-bool AddMetadataDataAttributeSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
+bool AddMetadataDataAttributeSearchTerm (IRodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s)
 {
-	return AddIrodsSearchTerm (search_p, clause_s, key_s, COL_META_DATA_ATTR_NAME, op_s, value_s, COL_META_DATA_ATTR_VALUE);
+	return AddIRodsSearchTerm (search_p, clause_s, key_s, COL_META_DATA_ATTR_NAME, op_s, value_s, COL_META_DATA_ATTR_VALUE);
 }
 
 
-bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id)
+bool AddIRodsSearchTerm (IRodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id)
 {
 	bool success_flag = false;
 	SearchTermNode *node_p = AllocateSearchTermNode (clause_s, key_s, key_id, op_s, value_s, value_id);
@@ -439,7 +439,7 @@ static bool AddSearchTermNodeFromJSON (LinkedList *terms_p, const json_t * const
  */
 
 
-QueryResults *DoMetaSearchForAllDataAndCollections (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, const bool upper_case_flag, char *zone_s)
+QueryResults *DoMetaSearchForAllDataAndCollections (const IRodsSearch * const search_p, struct IRodsConnection *connection_p, const bool upper_case_flag, char *zone_s)
 {
 	int columns [] = { COL_COLL_NAME, COL_DATA_NAME };
 
@@ -447,7 +447,7 @@ QueryResults *DoMetaSearchForAllDataAndCollections (const IrodsSearch * const se
 }
 
 
-QueryResults *DoMetaSearch (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s)
+QueryResults *DoMetaSearch (const IRodsSearch * const search_p, struct IRodsConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s)
 {
 	QueryResults *results_p = NULL;
   genQueryInp_t input_query;

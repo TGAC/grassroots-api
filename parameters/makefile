@@ -38,9 +38,9 @@ SRCS 	= \
 	parameter.c \
 	parameter_group.c \
 	parameter_set.c \
-	remote_parameter_details.c \
 	tag_item.c \
-	user_details.c
+	user_details.c \
+	remote_parameter_details.c \
 
 CPPFLAGS += -DUNIX -DGRASSROOTS_PARAMS_LIBRARY_EXPORTS
 

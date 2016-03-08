@@ -136,7 +136,7 @@ typedef uint8 ParameterLevel;
 
 /**
  * The value of a ParameterLevel for Parameters that
- * are considered the options suitable for all leveles
+ * are considered the options suitable for all levels
  */
 #define PL_ALL (PL_BASIC | PL_INTERMEDIATE | PL_ADVANCED)
 
@@ -343,6 +343,11 @@ typedef struct Parameter
 	struct ParameterGroup *pa_group_p;
 
 
+	/**
+	 * A LinkedList of RemoteParameterNodes that hold the information
+	 * for Parameters for PairedServices to the Service that owns
+	 * this Parameter.
+	 */
 	LinkedList *pa_remote_parameter_details_p;
 
 

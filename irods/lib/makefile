@@ -25,8 +25,6 @@ CFLAGS += -ansi
 
 VPATH	= \
 	$(DIR_SRC) \
-	$(DIR_IRODS)/lib/core/src \
-	$(DIR_IRODS)/lib/api/src \
 
 INCLUDES = \
 	-I$(DIR_INCLUDE) \
@@ -43,15 +41,11 @@ SRCS 	= \
 	user.c \
 	query.c \
 	meta_search.c
-#	procApiRequest.c \
-#	rcSpecificQuery.c
 
 CPPFLAGS += -DIRODS_UTIL_LIBRARY_EXPORTS
 
 LDFLAGS += -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_GRASSROOTS_NETWORK_LIB) -l$(GRASSROOTS_NETWORK_LIB_NAME) \
-
-#STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
 
 include $(DIR_ROOT)/irods.mk

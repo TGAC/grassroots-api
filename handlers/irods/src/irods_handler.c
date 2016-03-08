@@ -102,7 +102,7 @@ Handler *GetHandler (const json_t *credentials_p)
 			
 			if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
 				{
-					struct IRODSConnection *connection_p = CreateIRODSConnection ((char *) username_s, (char *) password_s);
+					struct IRodsConnection *connection_p = CreateIRodsConnection ((char *) username_s, (char *) password_s);
 
 					if (connection_p)
 						{
@@ -273,7 +273,7 @@ static bool CloseIRodsHandler (struct Handler *handler_p)
 			irods_handler_p -> irh_stat_p = NULL;
 		}
 
-	FreeIRODSConnection (irods_handler_p -> irh_connection_p);
+	FreeIRodsConnection (irods_handler_p -> irh_connection_p);
 	irods_handler_p -> irh_connection_p = NULL;
 	
 	irods_handler_p -> irh_status = HS_NONE;

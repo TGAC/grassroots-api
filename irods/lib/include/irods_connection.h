@@ -32,14 +32,14 @@
  * iRODS system. This means that you can interact
  * with the iRODS server more easily.
  */
-typedef struct IRODSConnection
+typedef struct IRodsConnection
 {
 	/**
 	 * The underlying connection to and
 	 * iRODS server.
 	 */
 	rcComm_t *ic_connection_p;
-} IRODSConnection;
+} IRodsConnection;
 
 
 #endif /* SERVER_LIB_INCLUDE_IRODS_CONNECTION_H_ */

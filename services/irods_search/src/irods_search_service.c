@@ -42,7 +42,7 @@ typedef struct
 	ServiceData issd_base_data;
 	IRODSConnection *issd_connection_p;
 	ParameterSet *issd_params_p;
-} IrodsSearchServiceData;
+} IRodsSearchServiceData;
 
 
 static const char S_UNSET_VALUE_S [] = "<NONE>";
@@ -57,45 +57,45 @@ static const char S_VALUE_ID_S [] = "value column id";
  * STATIC PROTOTYPES
  */
 
-static const char *GetIrodsSearchServiceName (Service *service_p);
+static const char *GetIRodsSearchServiceName (Service *service_p);
 
-static const char *GetIrodsSearchServiceDesciption (Service *service_p);
+static const char *GetIRodsSearchServiceDesciption (Service *service_p);
 
-static ParameterSet *GetIrodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
-
-
-static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
-
-static ParameterSet *IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
+static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
 
 
-static bool CloseIrodsSearchService (Service *service_p);
+static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p);
+
+static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
+
+
+static bool CloseIRodsSearchService (Service *service_p);
 
 
 static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static int AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
-static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p);
+static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p);
 
-static void ReleaseIrodsSearchServiceParameters (Service *service_p, ParameterSet *params_p);
+static void ReleaseIRodsSearchServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p);
+static void FreeIRodsSearchServiceData (IRodsSearchServiceData *data_p);
 
 static bool GetColumnId (const Parameter * const param_p, const char *key_s, int *id_p);
 
-static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServiceData *data_p);
+static QueryResults *DoIrodsMetaSearch (IRodsSearch *search_p, IRodsSearchServiceData *data_p);
 
 static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s, int val);
 
 
-static json_t *DoKeywordSearch (const char *keyword_s, IrodsSearchServiceData *data_p);
+static json_t *DoKeywordSearch (const char *keyword_s, IRodsSearchServiceData *data_p);
 
 
 
-static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p)
+static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p)
 {
-	IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) AllocMemory (sizeof (IrodsSearchServiceData));
+	IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) AllocMemory (sizeof (IRodsSearchServiceData));
 
 	if (data_p)
 		{
@@ -142,7 +142,7 @@ static IrodsSearchServiceData *GetIrodsSearchServiceData (const json_t *config_p
 }
 
 
-static void FreeIrodsSearchServiceData (IrodsSearchServiceData *data_p)
+static void FreeIRodsSearchServiceData (IRodsSearchServiceData *data_p)
 {
 	if (data_p -> issd_connection_p)
 		{
@@ -173,19 +173,19 @@ ServicesArray *GetServices (const json_t *config_p)
 
 			if (services_p)
 				{
-					ServiceData *data_p = (ServiceData *) GetIrodsSearchServiceData (config_p);
+					ServiceData *data_p = (ServiceData *) GetIRodsSearchServiceData (config_p);
 					
 					if (data_p)
 						{
 							InitialiseService (irods_service_p,
-								GetIrodsSearchServiceName,
-								GetIrodsSearchServiceDesciption,
+								GetIRodsSearchServiceName,
+								GetIRodsSearchServiceDesciption,
 								NULL,
-								RunIrodsSearchService,
-								IsFileForIrodsSearchService,
-								GetIrodsSearchServiceParameters,
-								ReleaseIrodsSearchServiceParameters,
-								CloseIrodsSearchService,
+								RunIRodsSearchService,
+								IsFileForIRodsSearchService,
+								GetIRodsSearchServiceParameters,
+								ReleaseIRodsSearchServiceParameters,
+								CloseIRodsSearchService,
 								NULL,
 								NULL,
 								true,
@@ -213,12 +213,12 @@ void ReleaseServices (ServicesArray *services_p)
 }
 
 
-static bool CloseIrodsSearchService (Service *service_p)
+static bool CloseIRodsSearchService (Service *service_p)
 {
 	bool success_flag = true;
-	IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
+	IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) (service_p -> se_data_p);
 
-	FreeIrodsSearchServiceData (data_p);
+	FreeIRodsSearchServiceData (data_p);
 	
 	return success_flag;
 }
@@ -227,14 +227,14 @@ static bool CloseIrodsSearchService (Service *service_p)
 
 
 
-static json_t *DoKeywordSearch (const char *keyword_s, IrodsSearchServiceData *data_p)
+static json_t *DoKeywordSearch (const char *keyword_s, IRodsSearchServiceData *data_p)
 {
 	json_t *res_p = NULL;
 	HashTable *store_p = GetHashTableOfStringInts (100, 75);
 
 	if (store_p)
 		{
-			IrodsSearch *search_p = AllocateIrodsSearch ();
+			IRodsSearch *search_p = AllocateIRodsSearch ();
 
 			if (search_p)
 				{
@@ -292,7 +292,7 @@ static json_t *DoKeywordSearch (const char *keyword_s, IrodsSearchServiceData *d
 														}		/* if (attr_search_results_p) */
 												}
 
-											ClearIrodsSearch (search_p);
+											ClearIRodsSearch (search_p);
 										}		/* for ( ; i > 0; --i, ++ attribute_name_ss) */
 
 								}		/* if (attribute_names_p -> qr_num_results == 1) */
@@ -557,27 +557,27 @@ static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_s
  */
 
 
-static const char *GetIrodsSearchServiceName (Service *service_p)
+static const char *GetIRodsSearchServiceName (Service *service_p)
 {
 	return "iRods search service";
 }
 
 
-static const char *GetIrodsSearchServiceDesciption (Service *service_p)
+static const char *GetIRodsSearchServiceDesciption (Service *service_p)
 {
 	return "A service to search the metadata within iRods";
 }
 
 
-static ParameterSet *GetIrodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
+static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
 {
-	IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
+	IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) (service_p -> se_data_p);
 
 	return data_p -> issd_params_p;
 }
 
 
-static void ReleaseIrodsSearchServiceParameters (Service *service_p, ParameterSet *params_p)
+static void ReleaseIRodsSearchServiceParameters (Service *service_p, ParameterSet *params_p)
 {
 	/*
 	 * As the parameters are cached, we release the parameters when the service is destroyed
@@ -595,7 +595,7 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 		{
 			int i;
 
-			if (GetValidInteger (&column_s, &i, NULL))
+			if (GetValidInteger (&column_s, &i))
 				{
 					*id_p = i;
 					success_flag = true;
@@ -607,9 +607,9 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 }
 
 
-static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
+static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p)
 {
-	IrodsSearch *search_p = AllocateIrodsSearch ();
+	IRodsSearch *search_p = AllocateIRodsSearch ();
 
 	if (search_p)
 		{
@@ -618,7 +618,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 
 			if (service_p -> se_jobs_p)
 				{
-					IrodsSearchServiceData *data_p = (IrodsSearchServiceData *) (service_p -> se_data_p);
+					IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) (service_p -> se_data_p);
 					ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 					SharedType def;
 					json_t *json_res_p = NULL;
@@ -679,7 +679,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 								{
 									QueryResults *results_p = NULL;
 
-									//results_p = DoIrodsSearch (search_p, data_p -> issd_connection_p);
+									//results_p = DoIRodsSearch (search_p, data_p -> issd_connection_p);
 									results_p = DoIrodsMetaSearch (search_p, data_p);
 
 									job_p -> sj_status = OS_FAILED;
@@ -705,7 +705,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 				}		/* if (service_p -> se_jobs_p) */
 
 
-			FreeIrodsSearch (search_p);
+			FreeIRodsSearch (search_p);
 
 			//res_json_p = CreateServiceResponseAsJSON (service_p, res, query_results_json_p, NULL);
 		}		/* if (search_p) */
@@ -714,7 +714,7 @@ static ServiceJobSet *RunIrodsSearchService (Service *service_p, ParameterSet *p
 }
 
 
-static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServiceData *data_p)
+static QueryResults *DoIrodsMetaSearch (IRodsSearch *search_p, IRodsSearchServiceData *data_p)
 {
 	bool upper_case_flag = false;
 	char *zone_s = NULL;
@@ -724,7 +724,7 @@ static QueryResults *DoIrodsMetaSearch (IrodsSearch *search_p, IrodsSearchServic
 }
 
 
-static ParameterSet *IsFileForIrodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p)
+static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p)
 {
 	return NULL;
 }

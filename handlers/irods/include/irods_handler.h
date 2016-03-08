@@ -51,7 +51,7 @@ typedef struct IRodsHandler
 	 * @private
 	 * The connection to the iRODS server.
 	 */
-	struct IRODSConnection *irh_connection_p;
+	struct IRodsConnection *irh_connection_p;
 
 	/**
 	 * @private

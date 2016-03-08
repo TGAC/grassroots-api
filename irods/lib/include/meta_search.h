@@ -40,14 +40,14 @@
  * A set of SearchTerms to use when running a search.
  *
  */
-typedef struct IrodsSearch
+typedef struct IRodsSearch
 {
 	/**
 	 * A LinkedList of SearchTermNodes
 	 * @see SearchTermNode
 	 */
 	LinkedList *is_search_terms_p;
-} IrodsSearch;
+} IRodsSearch;
 
 
 /**
@@ -142,30 +142,30 @@ extern "C"
 
 
 /**
- * Allocate an IrodsSearch.
+ * Allocate an IRodsSearch.
  *
- * @return A newly-allocated IrodsSearch or <code>NULL</code> upon error.
- * @memberof IrodsSearch
+ * @return A newly-allocated IRodsSearch or <code>NULL</code> upon error.
+ * @memberof IRodsSearch
  */
-IRODS_UTIL_API IrodsSearch *AllocateIrodsSearch (void);
+IRODS_UTIL_API IRodsSearch *AllocateIRodsSearch (void);
 
 
 /**
- * Free an IrodsSearch.
+ * Free an IRodsSearch.
  *
- * @param search_p The IrodsSearch to free.
- * @memberof IrodsSearch
+ * @param search_p The IRodsSearch to free.
+ * @memberof IRodsSearch
  */
-IRODS_UTIL_API void FreeIrodsSearch (IrodsSearch *search_p);
+IRODS_UTIL_API void FreeIRodsSearch (IRodsSearch *search_p);
 
 
 /**
- * Clear an IrodsSearch.
+ * Clear an IRodsSearch.
  *
- * @param search_p The IrodsSearch to clear.
- * @memberof IrodsSearch
+ * @param search_p The IRodsSearch to clear.
+ * @memberof IRodsSearch
  */
-IRODS_UTIL_API void ClearIrodsSearch (IrodsSearch *search_p);
+IRODS_UTIL_API void ClearIRodsSearch (IRodsSearch *search_p);
 
 
 
@@ -173,39 +173,39 @@ IRODS_UTIL_API void ClearIrodsSearch (IrodsSearch *search_p);
 /**
  * Perform an iRODS search.
  *
- * @param search_p The IrodsSearch to perform.
+ * @param search_p The IRodsSearch to perform.
  * @param connection_p The connection to the iRODS server to perform the search on.
  * @return The QueryResults from the search.
- * @memberof IrodsSearch
+ * @memberof IRodsSearch
  */
-IRODS_UTIL_API QueryResults *DoIrodsSearch (IrodsSearch *search_p, struct IRODSConnection *connection_p);
+IRODS_UTIL_API QueryResults *DoIRodsSearch (IRodsSearch *search_p, struct IRodsConnection *connection_p);
 
 
 /**
- * Create and add a SearchTerm to an IrodsSearch.
+ * Create and add a SearchTerm to an IRodsSearch.
  *
  * This adds a search term in the form of a key op value triplet as described in
- * AddIrodsSearchTerm
+ * AddIRodsSearchTerm
  *
- * @param search_p The IrodsSearch to add the SearchTerm to.
+ * @param search_p The IRodsSearch to add the SearchTerm to.
  * @param clause_s The search term's clause.
  * @param key_s The search term's key.
  * @param op_s The search term's operation such as "=", "<", <i>etc.</i>
  * @param value_s The search term's value.
  * @return <code>true</code> if the search term was added successfully, <code>false</code> otherwise.
- * @memberof IrodsSearch
- * @see AddIrodsSearchTerm
+ * @memberof IRodsSearch
+ * @see AddIRodsSearchTerm
  */
-IRODS_UTIL_API bool AddMetadataDataAttributeSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
+IRODS_UTIL_API bool AddMetadataDataAttributeSearchTerm (IRodsSearch *search_p, const char *clause_s, const char *key_s, const char *op_s, const char *value_s);
 
 
 
 /**
- * Add a search term to an IrodsSearch.
+ * Add a search term to an IRodsSearch.
  *
  * This adds a search term in the form of a key op value triplet. For example
  * key could be "foo", value = "bar" and op = "="
- * @param search_p The IrodsSearch to add the term to.
+ * @param search_p The IRodsSearch to add the term to.
  * @param clause_s The search term's clause.
  * @param key_s The search term's key.
  * @param key_id The id of the key's column.
@@ -213,9 +213,9 @@ IRODS_UTIL_API bool AddMetadataDataAttributeSearchTerm (IrodsSearch *search_p, c
  * @param value_s The search term's value.
  * @param value_id The id of the value's column.
  * @return <code>true</code> if the search term was added successfully, <code>false</code> otherwise.
- * @memberof IrodsSearch
+ * @memberof IRodsSearch
  */
-IRODS_UTIL_API bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id);
+IRODS_UTIL_API bool AddIRodsSearchTerm (IRodsSearch *search_p, const char *clause_s, const char *key_s, const int key_id, const char *op_s, const char *value_s, const int value_id);
 
 
 /**
@@ -235,7 +235,7 @@ IRODS_UTIL_API bool AddIrodsSearchTerm (IrodsSearch *search_p, const char *claus
  * ~~~~~~~~~~~
  *
  * @return The number of search terms added.
- * @memberof IrodsSearch
+ * @memberof IRodsSearch
  */
 IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *json_p);
 
@@ -243,7 +243,7 @@ IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *js
 /**
  * Perform a meta-based search
  *
- * @param search_p The IrodsSearch to perform.
+ * @param search_p The IRodsSearch to perform.
  * @param connection_p The connection to the iRODS server to perform the search on.
  * @param select_column_ids_p An array of the column ids to use for the select clause.
  * @param num_select_columns The number of ids pointed to by select_column_ids_p.
@@ -252,7 +252,7 @@ IRODS_UTIL_API int32 DetermineSearchTerms (LinkedList *terms_p, const json_t *js
  * it can be ignored.
  * @return The QueryResults from the search.
  */
-IRODS_UTIL_API QueryResults *DoMetaSearch (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s);
+IRODS_UTIL_API QueryResults *DoMetaSearch (const IRodsSearch * const search_p, struct IRodsConnection *connection_p, int *select_column_ids_p, const int num_select_columns, const bool upper_case_flag, char *zone_s);
 
 
 
@@ -260,14 +260,14 @@ IRODS_UTIL_API QueryResults *DoMetaSearch (const IrodsSearch * const search_p, s
 /**
  * Perform a meta-based search for all matching Data Objects and Collections.
  *
- * @param search_p The IrodsSearch to perform.
+ * @param search_p The IRodsSearch to perform.
  * @param connection_p The connection to the iRODS server to perform the search on.
  * @param upper_case_flag whether all values should be transformed into upper case values.
  * @param zone_s Add an extra clause where all matches must be in this zone. If this is <code>NULL</code>
  * it can be ignored.
  * @return The QueryResults from the search.
  */
-IRODS_UTIL_API QueryResults *DoMetaSearchForAllDataAndCollections (const IrodsSearch * const search_p, struct IRODSConnection *connection_p, const bool upper_case_flag, char *zone_s);
+IRODS_UTIL_API QueryResults *DoMetaSearchForAllDataAndCollections (const IRodsSearch * const search_p, struct IRodsConnection *connection_p, const bool upper_case_flag, char *zone_s);
 
 
 /** @} */

@@ -161,7 +161,7 @@ QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char 
 json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const password_s, const time_t from, const time_t to)
 {
 	json_t *json_p = NULL;
-	IRODSConnection *connection_p = CreateIRODSConnection (username_s, password_s);
+	IRodsConnection *connection_p = CreateIRodsConnection (username_s, password_s);
 	
 	if (connection_p)
 		{
@@ -174,7 +174,7 @@ json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const
 					FreeQueryResults (qr_p);
 				}
 			
-			FreeIRODSConnection (connection_p);
+			FreeIRodsConnection (connection_p);
 		}
 	
 	return json_p;
@@ -184,7 +184,7 @@ json_t *GetModifiedIRodsFiles (const char * const username_s, const char * const
 json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, char * const username_s, char * const password_s, const char *data_name_s)
 {
 	json_t *json_p = NULL;
-	IRODSConnection *connection_p = CreateIRODSConnection (username_s, password_s);
+	IRodsConnection *connection_p = CreateIRodsConnection (username_s, password_s);
 	
 	if (connection_p)
 		{
@@ -197,7 +197,7 @@ json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, ch
 					FreeIRodsHandle (handle_p);
 				}
 			*/
-			FreeIRODSConnection (connection_p);
+			FreeIRodsConnection (connection_p);
 		}
 	
 	return json_p;

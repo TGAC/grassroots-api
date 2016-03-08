@@ -32,23 +32,23 @@
 
 /***********************************************/
 
-static IRODSConnection *AllocateIRODSConnection (rcComm_t *irods_comm_p);
+static IRodsConnection *AllocateIRodsConnection (rcComm_t *irods_comm_p);
 
-static bool ReleaseIRODSConnection (rcComm_t *connection_p);
+static bool ReleaseIRodsConnection (rcComm_t *connection_p);
 
 
 /***********************************************/
 
 
-void FreeIRODSConnection (struct IRODSConnection *connection_p)
+void FreeIRodsConnection (struct IRodsConnection *connection_p)
 {
-	ReleaseIRODSConnection (connection_p -> ic_connection_p);
+	ReleaseIRodsConnection (connection_p -> ic_connection_p);
 
 	FreeMemory (connection_p);
 }
 
 
-static bool ReleaseIRODSConnection (rcComm_t *connection_p)
+static bool ReleaseIRodsConnection (rcComm_t *connection_p)
 {
 	int status = rcDisconnect (connection_p);
 
@@ -64,9 +64,9 @@ static bool ReleaseIRODSConnection (rcComm_t *connection_p)
 }
 
 
-IRODSConnection *CreateIRODSConnectionFromJSON (const json_t *config_p)
+IRodsConnection *CreateIRodsConnectionFromJSON (const json_t *config_p)
 {
-	IRODSConnection *connection_p = NULL;
+	IRodsConnection *connection_p = NULL;
 	const json_t *irods_credentials_p = NULL;
 	/*
 	 * The config might have the credentials child or it might be the
@@ -98,7 +98,7 @@ IRODSConnection *CreateIRODSConnectionFromJSON (const json_t *config_p)
 
 					if (password_s)
 						{
-							connection_p = CreateIRODSConnection (username_s, password_s);
+							connection_p = CreateIRodsConnection (username_s, password_s);
 						}
 				}
 		}
@@ -107,9 +107,9 @@ IRODSConnection *CreateIRODSConnectionFromJSON (const json_t *config_p)
 }
 
 
-IRODSConnection *CreateIRODSConnection (const char *username_s, const char *password_s)
+IRodsConnection *CreateIRodsConnection (const char *username_s, const char *password_s)
 {
-	IRODSConnection *connection_p = NULL;
+	IRodsConnection *connection_p = NULL;
 	rodsEnv env;
 	rErrMsg_t err;
 
@@ -135,11 +135,11 @@ IRODSConnection *CreateIRODSConnection (const char *username_s, const char *pass
 					
 					if (status == 0)
 						{
-							connection_p = AllocateIRODSConnection (comm_p);
+							connection_p = AllocateIRodsConnection (comm_p);
 						}
 					else
 						{
-							ReleaseIRODSConnection (comm_p);
+							ReleaseIRodsConnection (comm_p);
 						}
 				}
 		}
@@ -150,9 +150,9 @@ IRODSConnection *CreateIRODSConnection (const char *username_s, const char *pass
 
 /*******************************/
 
-static IRODSConnection *AllocateIRODSConnection (rcComm_t *irods_comm_p)
+static IRodsConnection *AllocateIRodsConnection (rcComm_t *irods_comm_p)
 {
-	IRODSConnection *connection_p = (IRODSConnection *) AllocMemory (sizeof (IRODSConnection));
+	IRodsConnection *connection_p = (IRodsConnection *) AllocMemory (sizeof (IRodsConnection));
 
 	if (connection_p)
 		{

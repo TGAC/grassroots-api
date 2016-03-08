@@ -31,7 +31,7 @@
 
 
 /* forward declaration */
-struct IRODSConnection;
+struct IRodsConnection;
 
 
 /**
@@ -171,7 +171,7 @@ IRODS_UTIL_API LinkedList *GetQueryResultsPaths (const QueryResults * const qrs_
  * or <code>NULL</code> upon error.
  * @see GetAllAttributeNames
  */
-IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeNames (struct IRODSConnection *connection_p);
+IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeNames (struct IRodsConnection *connection_p);
 
 
 
@@ -184,7 +184,7 @@ IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeNames (struct IRODSConne
  * @return A newly-allocated QueryResults listing all of the data attribute values
  * or <code>NULL</code> upon error.
  */
-IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeValues (struct IRODSConnection *connection_p, const char * const name_s);
+IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeValues (struct IRodsConnection *connection_p, const char * const name_s);
 
 
 /**
@@ -194,7 +194,7 @@ IRODS_UTIL_API QueryResults *GetAllMetadataDataAttributeValues (struct IRODSConn
  * @return A newly-allocated QueryResults listing all of the collection attribute names
  * or <code>NULL</code> upon error.
  */
-IRODS_UTIL_API QueryResults *GetAllMetadataCollectionAttributeNames (struct IRODSConnection *connection_p);
+IRODS_UTIL_API QueryResults *GetAllMetadataCollectionAttributeNames (struct IRodsConnection *connection_p);
 
 
 /**
@@ -204,7 +204,7 @@ IRODS_UTIL_API QueryResults *GetAllMetadataCollectionAttributeNames (struct IROD
  * @return A newly-allocated QueryResults listing all of the user attribute names
  * or <code>NULL</code> upon error.
  */
-IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributeNames (struct IRODSConnection *connection_p);
+IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributeNames (struct IRodsConnection *connection_p);
 
 
 /**
@@ -217,7 +217,7 @@ IRODS_UTIL_API QueryResults *GetAllMetadataUserAttributeNames (struct IRODSConne
  * or <code>NULL</code> upon error.
  * @see GetAllMetadataDataAttributeNames
  */
-IRODS_UTIL_LOCAL QueryResults *GetAllAttributeNames (struct IRODSConnection *connection_p, const int col_id);
+IRODS_UTIL_LOCAL QueryResults *GetAllAttributeNames (struct IRodsConnection *connection_p, const int col_id);
 
 
 /**
@@ -232,7 +232,7 @@ IRODS_UTIL_LOCAL QueryResults *GetAllAttributeNames (struct IRODSConnection *con
  * or <code>NULL</code> upon error.
  * @see GetAllMetadataDataAttributeValues
  */
-IRODS_UTIL_API QueryResults *GetAllMetadataAttributeValues (struct IRODSConnection *connection_p, const int key_id, const char * const key_s, const int value_id);
+IRODS_UTIL_API QueryResults *GetAllMetadataAttributeValues (struct IRodsConnection *connection_p, const int key_id, const char * const key_s, const int value_id);
 
 
 /** @} */

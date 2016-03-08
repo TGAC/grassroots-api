@@ -49,9 +49,18 @@ typedef struct RemoteParameterDetails
 } RemoteParameterDetails;
 
 
+/**
+ * A ListItem for storing RemoteParameterDetails
+ * on a LinkedList.
+ *
+ * @extends ListItem
+ */
 typedef struct RemoteParameterDetailsNode
 {
+	/** The base node. */
 	ListItem rpdn_node;
+
+	/** The RemoteParameterDetails. */
 	RemoteParameterDetails *rpdn_details_p;
 } RemoteParameterDetailsNode;
 

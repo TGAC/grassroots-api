@@ -125,25 +125,25 @@ void ClearGenQuery (genQueryInp_t *query_p)
 }
 
 
-QueryResults *GetAllMetadataDataAttributeNames (IRODSConnection *connection_p)
+QueryResults *GetAllMetadataDataAttributeNames (IRodsConnection *connection_p)
 {
 	return GetAllAttributeNames (connection_p, COL_META_DATA_ATTR_NAME);
 }
 
 
-QueryResults *GetAllMetadataDataAttributeValues (IRODSConnection *connection_p, const char * const name_s)
+QueryResults *GetAllMetadataDataAttributeValues (IRodsConnection *connection_p, const char * const name_s)
 {
 	return GetAllMetadataAttributeValues (connection_p, COL_META_DATA_ATTR_NAME, name_s, COL_META_DATA_ATTR_VALUE);
 }
 
 
-QueryResults *GetAllMetadataCollectionAttributeNames (IRODSConnection *connection_p)
+QueryResults *GetAllMetadataCollectionAttributeNames (IRodsConnection *connection_p)
 {
 	return GetAllAttributeNames (connection_p, COL_META_COLL_ATTR_NAME);
 }
 
 
-QueryResults *GetAllMetadataUserAttributeNames (IRODSConnection *connection_p)
+QueryResults *GetAllMetadataUserAttributeNames (IRodsConnection *connection_p)
 {
 	return GetAllAttributeNames (connection_p, COL_META_USER_ATTR_NAME);
 }
@@ -926,13 +926,13 @@ void ClearQueryResult (QueryResult *result_p)
 }
 
 
-QueryResults *GetAllMetadataAttributeNames (IRODSConnection *connection_p)
+QueryResults *GetAllMetadataAttributeNames (IRodsConnection *connection_p)
 {
 	return GetAllAttributeNames (connection_p, COL_META_DATA_ATTR_NAME);
 }
 
 
-QueryResults *GetAllAttributeNames (IRODSConnection *connection_p, const int col_id)
+QueryResults *GetAllAttributeNames (IRodsConnection *connection_p, const int col_id)
 {
 	QueryResults *results_p = NULL;
 	const char *col_s = GetColumnNameForId (col_id);
@@ -958,7 +958,7 @@ QueryResults *GetAllAttributeNames (IRODSConnection *connection_p, const int col
 }
 
 
-QueryResults *GetAllMetadataAttributeValues (IRODSConnection *connection_p, const int key_id, const char * const key_s, const int value_id)
+QueryResults *GetAllMetadataAttributeValues (IRodsConnection *connection_p, const int key_id, const char * const key_s, const int value_id)
 {
 	QueryResults *results_p = NULL;
 	const char *key_col_s = GetColumnNameForId (key_id);
