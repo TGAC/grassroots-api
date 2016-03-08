@@ -28,44 +28,7 @@
 #include "jansson.h"
 #include "mongodb_library.h"
 
-/**
- * A MongoTool is a datatype that allows access to the data stored within
- * a MongoDB instance.
- */
-typedef struct MongoTool
-{
-	/*
-	 * mongoc_client_t is NOT thread-safe and should
-	 * only be used from one thread at a time. When used in
-	 * multi-threaded scenarios, it is recommended that you
-	 * use the thread-safe mongoc_client_pool_t to retrieve
-	 * a mongoc_client_t for your thread.
-	 */
-	mongoc_client_t *mt_client_p;
 
-
-	mongoc_collection_t *mt_collection_p;
-
-	mongoc_cursor_t *mt_cursor_p;
-} MongoTool;
-
-
-/*
- * The following preprocessor macros allow us to declare
- * and define the variables in the same place. By default,
- * they will expand to
- *
- * 		extern const char *SERVICE_NAME_S;
- *
- * however if ALLOCATE_MONGODB_TAGS is defined then it will
- * become
- *
- * 		const char *SERVICE_NAME_S = "path";
- *
- * ALLOCATE_MONGODB_TAGS must be defined only once prior to
- * including this header file. Currently this happens in
- * mongodb_tool.c.
- */
 #ifdef ALLOCATE_MONGODB_TAGS
 	#define MONGODB_PREFIX GRASSROOTS_MONGODB_API
 	#define MONGODB_VAL(x)	= x
@@ -89,6 +52,53 @@ MONGODB_PREFIX const char *MONGO_OPERATION_GET_ALL_S MONGODB_VAL("dump");
 MONGODB_PREFIX const char *MONGO_CLAUSE_OPERATOR_S MONGODB_VAL("operator");
 MONGODB_PREFIX const char *MONGO_CLAUSE_VALUE_S MONGODB_VAL("value");
 
+
+/**
+ * A MongoTool is a datatype that allows access to the data stored within
+ * a MongoDB instance.
+ */
+typedef struct MongoTool
+{
+	/**
+	 * @private
+	 *
+	 * This is the current mongo client.
+	 */
+	mongoc_client_t *mt_client_p;
+
+
+	/**
+	 * @private
+	 *
+	 * This is the current mongo collection.
+	 */
+	mongoc_collection_t *mt_collection_p;
+
+	/**
+	 * @private
+	 *
+	 * This is the current mongo cursor.
+	 */
+	mongoc_cursor_t *mt_cursor_p;
+} MongoTool;
+
+
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_MONGODB_TAGS is defined then it will
+ * become
+ *
+ * 		const char *SERVICE_NAME_S = "path";
+ *
+ * ALLOCATE_MONGODB_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * mongodb_tool.c.
+ */
 
 #ifdef __cplusplus
 extern "C"

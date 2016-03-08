@@ -46,6 +46,9 @@ typedef struct JobsManager
 	 * @param manager_p The JobsManager to add the ServiceJob to.
 	 * @param job_key The uuid_t for the ServiceJob to search for.
 	 * @param job_p The json_t representing the ServiceJob to add.
+	 * @param serialise_fn The function used to serialise the ServiceJob into the unsigned char array
+	 * which is the value stored in this JobsManager. If this is <code>NULL</code> then
+	 * SerialiseServiceJobToJSON is used by default.
 	 * @return <code>true</code> if the ServiceJob was added successfully,
 	 * <code>false</code> otherwise.
 	 * @memberof JobsManager
@@ -60,6 +63,8 @@ typedef struct JobsManager
 	 *
 	 * @param manager_p The JobsManager to search on.
 	 * @param key The uuid_t for the ServiceJob to search for.
+	 * @param deserialise_fn The function used to deserialise the data stored in this JobsManager to create a ServiceJob.
+	 * If this is <code>NULL</code> then DeserialiseServiceJobFromJSON is used by default.
 	 * @return A json_t for the matching ServiceJob or <code>NULL</code>
 	 * if it could not be found.
 	 * @memberof JobsManager
@@ -75,6 +80,8 @@ typedef struct JobsManager
 	 *
 	 * @param manager_p The JobsManager to search on.
 	 * @param key The uuid_t for the ServiceJob to search for.
+	 * @param deserialise_fn The function used to deserialise the data stored in this JobsManager to create a ServiceJob.
+	 * If this is <code>NULL</code> then DeserialiseServiceJobFromJSON is used by default.
 	 * @return A json_t for the matching ServiceJob or <code>NULL</code>
 	 * if it could not be found.
 	 * @memberof JobsManager
@@ -122,6 +129,9 @@ GRASSROOTS_SERVICE_MANAGER_API void InitJobsManager (JobsManager *manager_p,
  * @param manager_p The JobsManager to add the ServiceJob to.
  * @param job_key The uuid_t for the ServiceJob to search for.
  * @param job_p The ServiceJob to add.
+ * @param serialise_fn The function used to serialise the ServiceJob into the unsigned char array
+ * which is the value stored in this JobsManager. If this is <code>NULL</code> then
+ * SerialiseServiceJobToJSON is used by default.
  * @return <code>true</code> if the ServiceJob was added successfully,
  * <code>false</code> otherwise.
  * @memberof JobsManager
@@ -138,6 +148,8 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddServiceJobToJobsManager (JobsManager *man
  *
  * @param manager_p The JobsManager to search on.
  * @param key The uuid_t for the ServiceJob to search for.
+ * @param deserialise_fn The function used to deserialise the data stored in this JobsManager to create a ServiceJob.
+ * If this is <code>NULL</code> then DeserialiseServiceJobFromJSON is used by default.
  * @return A ServiceJob for the matching ServiceJob or <code>NULL</code>
  * if it could not be found.
  * @memberof JobsManager
@@ -155,6 +167,8 @@ GRASSROOTS_SERVICE_MANAGER_API ServiceJob *GetServiceJobFromJobsManager (JobsMan
  *
  * @param manager_p The JobsManager to search on.
  * @param key The uuid_t for the ServiceJob to search for.
+ * @param deserialise_fn The function used to deserialise the data stored in this JobsManager to create a ServiceJob.
+ * If this is <code>NULL</code> then DeserialiseServiceJobFromJSON is used by default.
  * @return A ServiceJob for the matching ServiceJob or <code>NULL</code>
  * if it could not be found.
  * @memberof JobsManager

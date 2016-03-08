@@ -79,7 +79,7 @@ GRASSROOTS_SERVICE_API void FreeServiceJobSetIterator (ServiceJobSetIterator *it
  * @param iterator_p The ServiceJobSetIterator to get the ServiceJob from.
  * @return The next ServiceJob or <code>NULL</code> if all of the ServiceJobs
  * in the ServiceJobSet have been read.
- * @memberof ServiceJobSetIterator.
+ * @memberof ServiceJobSetIterator
  */
 GRASSROOTS_SERVICE_API ServiceJob *GetNextServiceJobFromServiceJobSetIterator (ServiceJobSetIterator *iterator_p);
 

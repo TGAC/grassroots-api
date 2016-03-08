@@ -64,6 +64,19 @@ typedef struct Client
 	 */
 	struct Plugin *cl_plugin_p;
 
+	/**
+	 * Add a Service to be displayed in a Client.
+	 *
+	 * @param client_data_p The Client-specific data.
+	 * @param service_name_s The name of the Service to add.
+	 * @param service_description_s An optional description of the Service.
+	 * This can be <code>NULL</code>.
+	 * @param service_info_uri_s An optional uri for the Service.
+	 * This can be <code>NULL</code>.
+	 * @param provider_p The JSON fragment with the details of the provider of the Service.
+	 * @param params_p The ParameterSet for the given Service.
+	 * @return 0 upon success, non-zero on error.
+	 */
 	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
 
 	/**
@@ -106,6 +119,13 @@ typedef struct Client
 	json_t *(*cl_display_results_fn) (ClientData *client_data_p, json_t *response_p);
 
 
+	/**
+	 * Callback function to free this Client.
+	 *
+	 * @param client_p This Client.
+	 * @return <code>true</code> if the Client was freed successfully,
+	 * <code>false</code> otherwise.
+	 */
 	bool (*cl_free_client_fn) (struct Client *client_p);
 
 
@@ -154,6 +174,8 @@ extern "C"
  * @see cl_display_results_fn
  * @param add_service_fn The function to get the name of the client.
  * @see cl_add_service_fn
+ * @param free_client_fn The function to free the Client.
+ * @see cl_free_client_fn
  * @param data_p The ClientData for this Client.
  * @param connection_p The Connection that this Client will use.
  * @memberof Client
@@ -198,10 +220,11 @@ GRASSROOTS_CLIENT_API json_t *DisplayResultsInClient (Client *client_p, json_t *
  * @param service_name_s The name of the Service.
  * @param service_description_s The description of the Service.
  * @param service_info_uri_s An optional URI for the Service. This can be <code>NULL</code>.
- * @param params_p The ParameterSet for the Servioce.
+ * @param provider_p The JSON fragment with the details of the provider of the Service.
+ * @param params_p The ParameterSet for the Service.
  * @return 0 upon success, non-zero on error.
  * @memberof Client
- *
+ * @see cl_add_service_fn
  */
 GRASSROOTS_CLIENT_API	int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
 

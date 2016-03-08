@@ -40,9 +40,8 @@ extern "C"
 /**
  * Get the username for an iRODS user id.
  *
- * @user_id The iRODS numeric user id.
+ * @param user_id The iRODS numeric user id.
  * @return The corresponding username or <code>NULL</code> upon error.
- * @memberof iRODS
  */
 IRODS_UTIL_API const char *GetUsernameForId (const int64 user_id);
 
