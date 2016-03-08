@@ -152,6 +152,14 @@ IRODS_UTIL_API json_t *GetQueryResultAsJSON (const QueryResults * const results_
 IRODS_UTIL_API json_t *GetQueryResultAsResourcesJSON (const QueryResults * const qrs_p);
 
 
+/**
+ * Get the full path to all collections and data objects in the given QueryResults.
+ *
+ * @param qrs_p The QueryResults to get the values from.
+ * @return A LinkedList of StringListNodes where each node contains the full path
+ * to each of the values in the given QueryResults.
+ * @memberof QueryResults
+ */
 IRODS_UTIL_API LinkedList *GetQueryResultsPaths (const QueryResults * const qrs_p);
 
 

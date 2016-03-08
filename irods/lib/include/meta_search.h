@@ -58,14 +58,64 @@ typedef struct IrodsSearch
  */
 typedef struct SearchTerm
 {
+	/**
+	 * @private
+	 *
+	 * The clause used to join this SearchTerm to others.
+	 * this can be "AND", "OR", etc.
+	 */
 	const char *st_clause_s;
+
+	/**
+	 * @private
+	 *
+	 * The id of the column used for the key.
+	 */
 	int st_key_column_id;
+
+	/**
+	 * @private
+	 *
+	 * The key in the key-value pair for this SearchTerm.
+	 */
 	const char *st_key_s;
+
+
+	/**
+	 * @private
+	 *
+	 * The comparison operator used to compare the key and value of this SearchTerm
+	 * such as "=", "<", <i>etc.</i>
+	 */
 	const char *st_op_s;
+
+
+	/**
+	 * @private
+	 *
+	 * The id of the column used for the value.
+	 */
 	int st_value_column_id;
+
+	/**
+	 * @private
+	 *
+	 * The value in the key-value pair for this SearchTerm.
+	 */
 	const char *st_value_s;
 
+	/**
+	 * @private
+	 * The internal storage for the storing the key in the
+	 * format that iRODS expects for the search.
+	 */
 	char *st_key_buffer_s;
+
+	/**
+	 * @private
+	 * The internal storage for the storing the value in the
+	 * format that iRODS expects for the search.
+	 */
 	char *st_value_buffer_s;
 } SearchTerm;
 

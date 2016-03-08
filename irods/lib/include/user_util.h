@@ -23,9 +23,14 @@
 #ifndef IRODS_LIB_INCLUDE_USER_UTIL_H_
 #define IRODS_LIB_INCLUDE_USER_UTIL_H_
 
+/**
+ * @file user.h
+ * @addtogroup iRODS
+ * @{
+ */
 
 #include "rcConnect.h"
-
+#include "irods_util_library.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -106,6 +111,10 @@ IRODS_UTIL_LOCAL QueryResults *RunQuery (rcComm_t *connection_p, const int *sele
 #ifdef __cplusplus
 }
 #endif
+
+/**
+ * @}
+ */
 
 
 #endif /* IRODS_LIB_INCLUDE_USER_UTIL_H_ */

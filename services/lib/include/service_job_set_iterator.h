@@ -27,9 +27,16 @@
 #include "service_job.h"
 
 
+/**
+ * A datatype allowing easy traversal over all of
+ * the ServiceJobs within a ServiceJobSet.
+ */
 typedef struct ServiceJobSetIterator
 {
+	/** The ServiceJobSet to traverse. */
 	ServiceJobSet *sjsi_job_set_p;
+
+	/** The current position in the entries of the ServiceJobSet. */
 	ServiceJobNode *sjs_current_node_p;
 } ServiceJobSetIterator;
 
@@ -48,22 +55,44 @@ extern "C" {
 GRASSROOTS_SERVICE_API ServiceJobSetIterator *AllocateServiceJobSetIterator (ServiceJobSet *set_p);
 
 
-
+/**
+ * Initialise a ServiceJobSetIterator to point to the first entry in a given ServiceJobSet.
+ *
+ * @param iterator_p The ServiceJobSetIterator to initialise.
+ * @param set_p The ServiceJobSet to iterate over.
+ * @memberof ServiceJobSetIterator
+ */
 GRASSROOTS_SERVICE_API void InitServiceJobSetIterator (ServiceJobSetIterator *iterator_p, ServiceJobSet *set_p);
 
 /**
  * Free a ServiceJobSetIterator
  *
- * @param job_p The ServiceJobSetIterator to free.
+ * @param iterator_p The ServiceJobSetIterator to free.
  * @memberof ServiceJobSetIterator
  */
 GRASSROOTS_SERVICE_API void FreeServiceJobSetIterator (ServiceJobSetIterator *iterator_p);
 
 
+/**
+ * Get the next ServiceJob from the Iterator.
+ *
+ * @param iterator_p The ServiceJobSetIterator to get the ServiceJob from.
+ * @return The next ServiceJob or <code>NULL</code> if all of the ServiceJobs
+ * in the ServiceJobSet have been read.
+ * @memberof ServiceJobSetIterator.
+ */
 GRASSROOTS_SERVICE_API ServiceJob *GetNextServiceJobFromServiceJobSetIterator (ServiceJobSetIterator *iterator_p);
 
 
-GRASSROOTS_SERVICE_API bool HasServiceJobSetIteratorFinished (const ServiceJobSetIterator *job_p);
+/**
+ * Has a ServiceJobSetIterator parsed all of the entries in a ServiceJobSet.
+ *
+ * @param iterator_p The ServiceJobSetIterator to check.
+ * @return <code>true</code> if the end of the ServiceJobSet has been reached, <code>false</code>
+ * otherwise.
+ * @memberof ServiceJobSetIterator
+ */
+GRASSROOTS_SERVICE_API bool HasServiceJobSetIteratorFinished (const ServiceJobSetIterator *iterator_p);
 
 
 #ifdef __cplusplus

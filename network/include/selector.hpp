@@ -116,7 +116,7 @@ GRASSROOTS_NETWORK_API HtmlLinkArray *GetMatchingLinks (const char * const data_
 /**
  * Free a HtmlLinkArray
  *
- * @param links_ The HtmlLinkArray to free.
+ * @param links_p The HtmlLinkArray to free.
  * @memberof HtmlLinkArray
  */
 GRASSROOTS_NETWORK_API void FreeHtmlLinkArray (HtmlLinkArray *links_p);

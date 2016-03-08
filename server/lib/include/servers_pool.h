@@ -345,6 +345,7 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (Server
  *
  * @param name_s The user-friendly name for the server
  * @param uri_s The URI to call for the ExternalServer's Services.
+ * @param uuid_s The string representation of the UUID to addign to the ExternalServer.
  * @param ct The ConnectionType of how to connect to the ExternalServer
  * @return A newly-allocated ExternalServer or <code>NULL</code> upon error.
  * @see FreeExternalServer
@@ -428,11 +429,9 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *jso
  * to be on this Server as far as the Client is concerned
  *
  * @param manager_p The ServersManager to add the ExternalServer to.
- * @param res_p The JSON object to add data to.
+ * @param internal_services_p The LinkedList of ServerNodes on the local Server.
  * @param op The Operation to check on each of the ExternalServers.
- * @return the resultant JSON object from the ExternalServers which will be res_p if it is not NULL.
- * If res_p is NULL, then this will be a newly-allocated object. If no services could be found,
- * this will return <code>NULL</code>.
+ * @return the resultant JSON object.
  * @memberof ServersManager
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);

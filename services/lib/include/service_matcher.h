@@ -128,6 +128,7 @@ typedef struct PluginOperationNameServiceMatcher
  */
 typedef struct KeywordServiceMatcher
 {
+	/** The base ServiceMatcher. */
 	ServiceMatcher ksm_base_matcher;
 } KeywordServiceMatcher;
 
@@ -149,6 +150,8 @@ GRASSROOTS_SERVICE_API ServiceMatcher *AllocateServiceMatcher (void);
 /**
  * Allocate a ResourceServiceMatcher.
  *
+ * @param resource_p The Resource to find matching Services for.
+ * @param handler_p An optional Handler to open the Resource with. This can be <code>NULL</code>.
  * @return A newly-allocated ServiceMatcher or <code>NULL</code> upon error.
  * @memberof ServiceMatcher
  */

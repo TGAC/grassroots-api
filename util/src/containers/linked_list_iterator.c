@@ -49,7 +49,7 @@ static void *GetNextItemFromLinkedListIterator (Iterator *iterator_p)
 	
 	if (list_iterator_p -> lli_current_node_p)
 		{
-			item_p = list_iterator_p -> lli_current_node_p + sizeof (list_iterator_p -> lli_current_node_p);
+			item_p = list_iterator_p -> lli_current_node_p + sizeof (* (list_iterator_p -> lli_current_node_p));
 			list_iterator_p -> lli_current_node_p = list_iterator_p -> lli_current_node_p -> ln_next_p;
 		}
 		
@@ -61,6 +61,7 @@ void *GetNextItemFromIterator (Iterator *iterator_p)
 {
 	return (iterator_p -> it_get_next_item_fn (iterator_p));
 }
+
 
 void FreeIterator (Iterator *iterator_p)
 {

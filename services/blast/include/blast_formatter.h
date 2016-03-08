@@ -79,6 +79,13 @@ public:
 class BLAST_SERVICE_LOCAL SystemBlastFormatter : public BlastFormatter
 {
 public:
+	/**
+	 * Create a SystemBlastFormatter using the given configuration.
+	 *
+	 * @param config_p The JSON fragment that is the value of "system_formatter_config"
+	 * from within the Blast service section of the global Server configuration file.
+	 * @return A new SystemBlastFormatter or 0 upon error.
+	 */
 	static SystemBlastFormatter *Create (const json_t *config_p);
 
 	/**
