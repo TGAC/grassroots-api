@@ -25,24 +25,54 @@
 #include "dropboxOAuth.h"
 
 /* 
- * This handler uses thte library available from 
+ * This handler uses the library available from
  * 
  * https://github.com/Dwii/Dropbox-C
  */
  
- 
+ /**
+ * A datatype for a Handler that can access data
+ * stored within a Dropbx account
+ */
 typedef struct DropboxHandler
 {
+	/**
+	 * The base Handler.
+	 */
 	Handler dh_base_handler;
 
+	/**
+	 * @private
+	 * The client to the Dropbox server.
+	 */
 	drbClient *dh_client_p;
 	
+
+	/**
+	 * @private
+	 * The status of this Handler.
+	 */
 	HandlerStatus dh_status;
 	
+	/**
+	 * @private
+	 * If the file has been downloaded to the local machine
+	 * to allow editing, this is the FILE it has been
+	 * downloaded to.
+	 */
 	FILE *dh_local_copy_f;
 	
+	/**
+	 * @private
+	 * The full path to the file on the Dropbox server.
+	 */
 	char *dh_dropbox_filename_s;
 	
+	/**
+	 * @private
+	 * Has the file been editing and thus require uploading
+	 * back to Dropbox to synchronise.
+	 */
 	bool dh_updated_flag;
 	
 } DropboxHandler;
@@ -54,14 +84,14 @@ typedef struct DropboxHandler
  * 
  * 		extern const char *SERVICE_NAME_S;
  * 
- * however if ALLOCATE_JSON_TAGS is defined then it will 
+ * however if ALLOCATE_DROPBOX_TAGS is defined then it will
  * become
  * 
  * 		const char *SERVICE_NAME_S = "path";
  * 
- * ALLOCATE_JSON_TAGS must be defined only once prior to 
+ * ALLOCATE_DROPBOX_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
- * json_util.c.
+ * dropbox_handler.c.
  */
 #ifdef ALLOCATE_DROPBOX_TAGS
 	#define DROPBOX_HANDLER_DECLARE DROPBOX_HANDLER_LOCAL

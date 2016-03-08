@@ -35,7 +35,7 @@ GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, 
 /**
  * This allocates the internal structures used by the Handler library.
  *
- * @return true upon success, false on failure.
+ * @return <code>true</code> upon success, <code>false</code>s on failure.
  */
 GRASSROOTS_HANDLER_API bool InitHandlerUtil (void);
 

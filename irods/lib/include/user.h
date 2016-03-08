@@ -49,6 +49,7 @@ extern "C"
  * from these results.
  *
  * @param username_s The username to get the data objects for.
+ * @param password_s The password for the user.
  * @param from The start of the time interval.
  * @param to The end of the time interval.
  * @return A json-based representation of the matching data objects.

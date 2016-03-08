@@ -22,9 +22,16 @@
 #include "handler.h"
 
 
+/**
+ * A datatype for a Handler that can access locally
+ * mounted files.
+ */
 typedef struct FileHandler
 {
+	/** The base Handler. */
 	Handler fh_base_handler;
+
+	/** The current file. */
 	FILE *fh_handler_f;
 } FileHandler;
 

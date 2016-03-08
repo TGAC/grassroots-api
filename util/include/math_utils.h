@@ -57,7 +57,9 @@ GRASSROOTS_UTIL_API int CompareFloats (const float f1, const float f2);
  *
  * @param str_pp Pointer to char * where we start getting the number from.
  * @param data_p Pointer where the number will be stored if the conversion was successful.
- * @return TRUE if the conversion was successful, FALSE otherwise.
+ * @param alternative_decimal_points_s An array of characters to consider as decimal points
+ * which may be the case in different locales. If this is <code>NULL</code> then a "." will be used.
+ * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p, const char * const alternative_decimal_points_s);
 

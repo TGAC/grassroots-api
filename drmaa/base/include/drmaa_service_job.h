@@ -30,9 +30,16 @@
 #include "jansson.h"
 
 
+/**
+ * A ServiceJob that also has the data for
+ * running as Drmaa-based task.
+ */
 typedef struct DrmaaServiceJob
 {
+	/** The base ServiceJob. */
 	ServiceJob dsj_job;
+
+	/** The associated DrmaaTool. */
 	DrmaaTool *dsj_drmaa_p;
 } DrmaaServiceJob;
 
@@ -42,21 +49,64 @@ extern "C" {
 #endif
 
 
+/**
+ * Allocate a DrmaaServiceJob.
+ *
+ * @param drmaa_program_name_s The command line tool that will be run using DRMAA.
+ * @param service_p The Service that will run the ServiceJob.
+ * @param job_name_s The name to give to the job.
+ * @return The DrmaaServiceJob or <code>DrmaaServiceJob</code>.
+ * @memberof DrmaaServiceJob
+ */
 GRASSROOTS_DRMAA_API DrmaaServiceJob *AllocateDrmaaServiceJob (const char *drmaa_program_name_s, Service *service_p, const char *job_name_s);
 
 
+/**
+ * Initialise a DrmaaServiceJob.
+ *
+ * @param job_p The DrmaaServiceJob to initialise.
+ * @param service_p The Service that will run the ServiceJob.
+ * @param job_name_s The name to give to the job.
+ * @memberof DrmaaServiceJob
+ */
 GRASSROOTS_DRMAA_API void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s);
 
 
+/**
+ * Allocate a ServiceJobSet to store DrmaaServiceJobs.
+ *
+ * @return The ServiceJobSet or <code>NULL</code> upon error.
+ */
 GRASSROOTS_DRMAA_API ServiceJobSet *AllocateDrmaaServiceJobSet (void);
 
 
+/**
+ * Free a DrmaaServiceJobSet.
+ *
+ * @param jobs_p The ServiceJobSet to free.
+ */
 GRASSROOTS_DRMAA_API void FreeDrmaaServiceJobSet (ServiceJobSet *jobs_p);
 
 
+/**
+ * Serialise the DrmaaServiceJob into a JSON fragment.
+ *
+ * @param job_p The DrmaaServiceJob.
+ * @return The JSON fragment or <code>NULL</code> upon error.
+ * @memberof DrmaaServiceJob
+ * @see GetDrmmaaServiceJobFromJSON
+ */
 GRASSROOTS_DRMAA_API json_t *GetDrmmaaServiceJobAsJSON (const DrmaaServiceJob * const job_p);
 
 
+/**
+ * Deserialise a DrmaaServiceJob from a JSON fragment.
+ *
+ * @param json_p The JSON fragment.
+ * @return The DrmaaServiceJob or <code>NULL</code> upon error.
+ * @memberof DrmaaServiceJob
+ * @see GetDrmmaaServiceJobAsJSON
+ */
 GRASSROOTS_DRMAA_API DrmaaServiceJob *GetDrmmaaServiceJobFromJSON (const json_t * const json_p);
 
 

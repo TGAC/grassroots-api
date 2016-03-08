@@ -43,6 +43,15 @@ public:
 	 */
 	virtual ~BlastFormatter ();
 
+	/**
+	 * Get the output filename for the converted output in a given format.
+	 *
+	 * @param filename_s The full path to the filename to convert.
+	 * @param output_format_code The required output format code.
+	 * @param output_format_code_ss The string for the format code gets stored here.
+	 * @return The full path to the output filename for the given output format code
+	 * or 0 upon error.
+	 */
 	static char *GetConvertedOutputFilename (const char * const filename_s, const int output_format_code, char **output_format_code_ss);
 
 	/**

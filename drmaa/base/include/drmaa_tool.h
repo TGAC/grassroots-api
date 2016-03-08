@@ -300,15 +300,48 @@ GRASSROOTS_DRMAA_API OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p);
 GRASSROOTS_DRMAA_API bool SetDrmaaToolEmailNotifications (DrmaaTool *tool_p, const char **email_addresses_ss);
 
 
+/**
+ * Serialise the DrmaaTool into a JSON fragment.
+ *
+ * @param tool_p The DrmaaTool.
+ * @return The JSON fragment or <code>NULL</code> upon error.
+ * @memberof DrmaaTool
+ * @see ConvertDrmaaToolFromJSON
+ */
 GRASSROOTS_DRMAA_API json_t *ConvertDrmaaToolToJSON (const DrmaaTool * const tool_p);
 
 
+/**
+ * Deserialise a DrmaaTool from a JSON fragment.
+ *
+ * @param json_p The JSON fragment.
+ * @return The DrmaaTool or <code>NULL</code> upon error.
+ * @memberof DrmaaTool
+ * @see ConvertDrmaaToolFromJSON
+ */
 GRASSROOTS_DRMAA_API DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p);
 
 
+/**
+ * Convert a DrmaaTool into a raw unsigned char array for use with the APRJobsManager.
+ *
+ * @param job_p The DrmaaTool to serialise.
+ * @param size_p Upon success, the size of the array will be stored here.
+ * @return The raw unsigned char array or <code>NULL</code> upon error.
+ * @memberof DrmaaTool
+ * @see DeserialiseDrmaaTool
+ */
 GRASSROOTS_DRMAA_API unsigned char *SerialiseDrmaaTool (const DrmaaTool * const job_p, const size_t *size_p);
 
 
+/**
+ * Create a DrmaaTool from an unsigned char array.
+ *
+ * @param data_s The raw serialised data representing a DrmaaTool.
+ * @return The DrmaaTool or <code>NULL</code> upon error.
+ * @memberof DrmaaTool
+ * @see SerialiseDrmaaTool
+ */
 GRASSROOTS_DRMAA_API DrmaaTool *DeserialiseDrmaaTool (const unsigned char * const data_s);
 
 #ifdef __cplusplus

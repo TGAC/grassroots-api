@@ -37,7 +37,7 @@
  * A ListNode for LinkedLists that also stores
  * a string value.
  * 
- * @see ListNode ()
+ * @see ListNode
  */
 typedef struct StringListNode
 {
@@ -56,13 +56,26 @@ typedef struct StringListNode
  * Create a new StringListNode.
  *
  * @param str_p The string to store in the newly-created StringListNode.
- * @param mem_flag How the StringListNode should store its string..
- * @return The new StringListNode or NULL upon error.
+ * @param mem_flag How the StringListNode should store its string.
+ * @return The new StringListNode or <code>NULL</code> upon error.
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API StringListNode *AllocateStringListNode (const char * const str_p, const MEM_FLAG mem_flag);
 
 
 
+/**
+ * Initialise a StringListNode.
+ *
+ * @param node_p The StringListNode to initialise.
+ * @param value_s The string to store in the StringListNode.
+ * @param mem_flag How the StringListNode should store its string.
+ * @return If successful, any previous value stored in the given StringListNode will be
+ * freed based upon the mem_flag and the new value will be set. The return code will be
+ * <code>true</code>. Upon failure, the StringListNode is unaltered and <code>false</code>
+ * is returned.
+ * @memberof StringListNode
+ */
 GRASSROOTS_UTIL_API bool InitStringListNode (StringListNode *node_p, const char * const value_s, const MEM_FLAG mem_flag);
 
 
@@ -72,17 +85,25 @@ GRASSROOTS_UTIL_API bool InitStringListNode (StringListNode *node_p, const char 
  * sln_string_flag value.
  *
  * @param node_p The ListNode to free.
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API void FreeStringListNode (ListItem * const node_p);
 
 
+/**
+ * Clear a StringListNode by deleting its sln_string_s value as appropriate.
+ *
+ * @param node_p The StringListNode to clear.
+ * @memberof StringListNodes
+ */
 GRASSROOTS_UTIL_API void ClearStringListNode (StringListNode *node_p);
 
 
 /**
  * Create a LinkedList designed to hold StringListNodes.
  *
- * @return The new LinkedList or NULL upon error.
+ * @return The new LinkedList or <code>NULL</code> upon error.
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API LinkedList *AllocateStringLinkedList (void);
 
@@ -94,7 +115,8 @@ GRASSROOTS_UTIL_API LinkedList *AllocateStringLinkedList (void);
  * will make deep copies of the strings.
  *
  * @param src_p The LinkedList of StringListNodes to copy.
- * @result The copied LinkedList or NULL upon error.
+ * @result The copied LinkedList or <code>NULL</code> upon error.
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const src_p);
 
@@ -104,7 +126,8 @@ GRASSROOTS_UTIL_API LinkedList *CopyStringLinkedList (const LinkedList * const s
  * StringLinkedList.
  * 
  * @param src_p The LinkedList of StringListNodes to generate the value from.
- * @return The newly-allocated string or NULL upon error.
+ * @return The newly-allocated string or <code>NULL</code> upon error.
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API char *GetStringLinkedListAsString (const LinkedList * const src_p);
 
@@ -116,7 +139,8 @@ GRASSROOTS_UTIL_API char *GetStringLinkedListAsString (const LinkedList * const 
  * @param list_p The List to add the node to the end of.
  * @param str_p The string to store in the newly-created StringListNode.
  * @param mem_flag How the StringListNode should store its string..
- * @return true upon success, false on error.
+ * @return <code>true</code> upon success, <code>false</code> on error.
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API bool AddStringToStringLinkedList (LinkedList *list_p, const char * const str_p, const MEM_FLAG mem_flag);
 

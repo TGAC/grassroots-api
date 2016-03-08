@@ -1972,7 +1972,8 @@ PREDEFINED             = GRASSROOTS_NETWORK_API \
                          "GRASSROOTS_PARAMS_LOCAL=/** @prviate */" \
                          "IRODS_UTIL_LOCAL=/** @private */" \
                          SAMTOOLS_SERVICE_LOCAL=/**@private*/ \
-                         "LONG_RUNNING_SERVICE_LOCAL=/** @private */"
+                         "LONG_RUNNING_SERVICE_LOCAL=/** @private */" \
+                         GRASSROOTS_HANDLER_API
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

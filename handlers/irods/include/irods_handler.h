@@ -36,12 +36,38 @@
 #include "tags.h"
 
 
+/**
+ * A datatype for a Handler that can access data objects
+ * and collections within an iRODS zone.
+ */
 typedef struct IRodsHandler
 {
+	/** The base handler */
 	Handler irh_base_handler;
+
+	/**
+	 * @private
+	 * The connection to the iRODS server.
+	 */
 	struct IRODSConnection *irh_connection_p;
+
+	/**
+	 * @private
+	 * The currently opened data object.
+	 */
 	openedDataObjInp_t *irh_obj_p;
+
+
+	/**
+	 * @private
+	 * Metadata about the currently opened data object.
+	 */
 	rodsObjStat_t *irh_stat_p;
+
+	/**
+	 * @private
+	 * The HandlerStatus for this Handler.
+	 */
 	HandlerStatus irh_status;
 } IRodsHandler;
 
