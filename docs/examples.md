@@ -1,4 +1,7 @@
-﻿# Requests and Responses {#Examples}
+﻿Schema Examples
+===============
+
+# Requests and Responses {#Examples}
 
 These are the Server-Server and Server-Client messages that are used to transmit data, job requests and results throughout the WheatIS. For more information on these messages, take a look at the [Schema](@ref schema.md).
 

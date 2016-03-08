@@ -33,11 +33,23 @@
 class BLAST_SERVICE_LOCAL ExternalBlastToolFactory : public BlastToolFactory
 {
 public:
+	/**
+	 * The ExternalBlastToolFactory destructor.
+	 */
 	virtual ~ExternalBlastToolFactory ();
 
 protected:
+	/**
+	 * The command line executable to use to run blast jobs.
+	 */
 	const char *ebtf_program_name_s;
 
+	/**
+	 * The constructor for SystemBlastToolFactory.
+	 *
+	 * @param service_config_p The Blast Service configuration from the global
+	 * server configuration.
+	 */
 	ExternalBlastToolFactory (const json_t *config_p);
 };
 

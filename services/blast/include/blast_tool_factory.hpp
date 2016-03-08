@@ -38,10 +38,30 @@ class BLAST_SERVICE_LOCAL BlastToolFactory
 public:
 	static BlastToolFactory *GetBlastToolFactory (const json_t *service_config_p);
 
+	/**
+	 * The BlastToolFactory destructor.
+	 */
 	virtual ~BlastToolFactory ();
 
+
+	/**
+	 * Create a BlastTool.
+	 *
+	 * @param job_p The ServiceJob to associate with the newly generated BlastTool.
+	 * @param name_s The name to give to the new BlastTool.
+	 * @param data_p The BlastServiceData for the Service that will use this BlastTool.
+	 * @return The new BlastTool or 0 upon error.
+	 */
 	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p) = 0;
 
+
+	/**
+	 * Are the BlastTools that this BlastToolFactory
+	 * create able to run asynchronously?
+	 *
+	 * @return <code>true</code> if the BlastTools are able
+	 * to run asynchronously, <code>false</code> otherwise.
+	 */
 	virtual bool AreToolsAsynchronous () const = 0;
 };
 

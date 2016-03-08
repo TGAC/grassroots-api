@@ -32,15 +32,50 @@
 class BLAST_SERVICE_LOCAL SystemBlastToolFactory : public ExternalBlastToolFactory
 {
 public:
+	/**
+	 * A thin wrapper around the constructor for SystemBlastToolFactory to catch any
+	 * exceptions and return 0 instead.
+	 *
+	 * @param service_config_p The Blast Service configuration from the global
+	 * server configuration.
+	 * @return The new SystemBlastToolFactory or 0 upon error.
+	 * @see  SystemBlastToolFactory::SystemBlastToolFactory
+	 */
+
 	static SystemBlastToolFactory	*CreateSystemBlastToolFactory (const json_t *service_config_p);
 
+	/**
+	 * The SystemBlastToolFactory destructor.
+	 */
 	virtual ~SystemBlastToolFactory ();
 
+	/**
+	 * Create a BlastTool.
+	 *
+	 * @param job_p The ServiceJob to associate with the newly generated BlastTool.
+	 * @param name_s The name to give to the new BlastTool.
+	 * @param data_p The BlastServiceData for the Service that will use this BlastTool.
+	 * @return The new BlastTool or 0 upon error.
+	 */
 	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
+
+	/**
+	 * Are the BlastTools that this BlastToolFactory
+	 * create able to run asynchronously?
+	 *
+	 * @return <code>true</code> if the BlastTools are able
+	 * to run asynchronously, <code>false</code> otherwise.
+	 */
 	virtual bool AreToolsAsynchronous () const;
 
 protected:
+	/**
+	 * The constructor for SystemBlastToolFactory.
+	 *
+	 * @param service_config_p The Blast Service configuration from the global
+	 * server configuration.
+	 */
 	SystemBlastToolFactory (const json_t *service_config_p);
 };
 

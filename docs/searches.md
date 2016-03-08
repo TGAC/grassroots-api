@@ -1,4 +1,7 @@
-﻿# Database Access {#database_access}
+﻿Services {#Services}
+=====================
+
+# Database Access {#database_access}
 
 Many services uses a database to host the given data for a service and this can be accessed in a generic way using JSON-based queries.
 

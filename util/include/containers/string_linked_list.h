@@ -94,7 +94,7 @@ GRASSROOTS_UTIL_API void FreeStringListNode (ListItem * const node_p);
  * Clear a StringListNode by deleting its sln_string_s value as appropriate.
  *
  * @param node_p The StringListNode to clear.
- * @memberof StringListNodes
+ * @memberof StringListNode
  */
 GRASSROOTS_UTIL_API void ClearStringListNode (StringListNode *node_p);
 

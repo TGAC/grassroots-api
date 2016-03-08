@@ -319,7 +319,7 @@ bool ParamComboBox :: SetValueFromText (const char *value_s)
 				{
 					int32 value;
 
-					if (GetValidInteger (&value_s, &value, NULL))
+					if (GetValidInteger (&value_s, &value))
 						{
 							QString s;
 

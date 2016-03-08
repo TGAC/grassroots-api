@@ -23,7 +23,7 @@
 static bool InitFileHandler (struct Handler *handler_p, json_t *credentials_p);
 
 
-static bool OpenFileHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
+static bool OpenFileHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s);
 
 static size_t ReadFromFileHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
@@ -93,8 +93,7 @@ static bool InitFileHandler (struct Handler *handler_p, json_t *credentials_p)
 }
 
 
-
-static bool OpenFileHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)
+static bool OpenFileHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s)
 {
 	FileHandler *file_handler_p = (FileHandler *) handler_p;
 
@@ -103,7 +102,7 @@ static bool OpenFileHandler (struct Handler *handler_p, const char * const filen
 			CloseFileHandler (handler_p);
 		}
 
-	file_handler_p -> fh_handler_f = fopen (filename_s, mode_s);
+	file_handler_p -> fh_handler_f = fopen (resource_p -> re_value_s, mode_s);
 
 	return (file_handler_p -> fh_handler_f != NULL);
 }
@@ -220,9 +219,12 @@ static bool CalculateFileInformationFromFileHandler (struct Handler *handler_p, 
 {
 	bool success_flag = false;
 
-	if (handler_p -> ha_filename_s)
+	if (handler_p -> ha_resource_p)
 		{
-			success_flag = CalculateFileInformation (handler_p -> ha_filename_s, info_p);
+			if (handler_p -> ha_resource_p -> re_value_s)
+				{
+					success_flag = CalculateFileInformation (handler_p -> ha_resource_p -> re_value_s, info_p);
+				}
 		}
 
 	return success_flag;

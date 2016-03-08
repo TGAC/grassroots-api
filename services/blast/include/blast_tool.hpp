@@ -37,6 +37,14 @@ class BLAST_SERVICE_LOCAL BlastTool
 {
 public:
 
+	/**
+	 * Create a BlastTool for a given ServiceJob.
+	 *
+	 * @param job_p The ServiceJob to associate with this BlastTool.
+	 * @param name_s The name to give to this BlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this BlastTool.
+	 * @see BlastServiceJob
+	 */
 	BlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
 	/**
@@ -74,11 +82,26 @@ public:
 	 */
 	virtual bool SetInputFilename (const char * const filename_s) = 0;
 
+
+	/**
+	 * Set the output file parameter.
+	 *
+	 * @return <code>true</code> if the input filename was set
+	 * successfully, <code>false</code> otherwise.
+	 */
 	virtual bool SetUpOutputFile () = 0;
 
-	void PreRun ();
+
+	/**
+	 * Any custom functionality required before running a BlastTool.
+	 */
+	virtual void PreRun ();
 	
-	void PostRun ();
+
+	/**
+	 * Any custom functionality required after running a BlastTool.
+	 */
+	virtual void PostRun ();
 
 	/**
 	 * Get the status of a BlastTool
@@ -87,6 +110,16 @@ public:
 	 */
 	virtual OperationStatus GetStatus ();
 
+
+	/**
+	 * Get the results after the ExternalBlastTool has finished
+	 * running.
+	 *
+	 * @param formatter_p The BlastFormatter to convert the results
+	 * into a different format. If this is 0, then the results will be
+	 * returned without any conversion.
+	 * @return The results as a c-style string or 0 upon error.
+	 */
 	virtual char *GetResults (BlastFormatter *formatter_p) = 0;
 
 	/**
@@ -105,12 +138,35 @@ public:
 	const char *GetName () const;
 
 protected:
+
+	/**
+	 * @private
+	 *
+	 * The current OperationStatus for this BlastTool.
+	 */
 	OperationStatus bt_status;
+
+	/**
+	 * @private
+	 *
+	 * The name of this BlastTool.
+	 */
 	const char *bt_name_s;
+
+	/**
+	 * @private
+	 *
+	 * The ServiceJob associated with this BlastTool.
+	 * @see BlastServiceJob
+	 */
 	ServiceJob *bt_job_p;
+
+	/**
+	 * @private
+	 *
+	 * The ServiceData for this BlastTool.
+	 */
 	const BlastServiceData *bt_service_data_p;
-
-
 };
 
 
@@ -136,7 +192,15 @@ extern "C"
 /**
  * Get a newly created BlastTool
  * 
+ * This is just a wrapper around the BlastTool constructor that returns <code>NULL</code>
+ * rather than throw an exception upon error.
+ *
+ * @param job_p The ServiceJob to associate with this BlastTool.
+ * @param name_s The name to give to this BlastTool.
+ * @param data_p The BlastServiceData for the Service that will run this BlastTool.
  * @return The BlastTool or <code>NULL</code> upon error.
+ * @memberof BlastTool
+ * @see BlastTool::BlastTool
  */
 BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
 
@@ -145,6 +209,7 @@ BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *nam
  * Free a BlastTool
  * 
  * @param tool_p The BlastTool to deallocate.
+ * @memberof BlastTool
  */
 BLAST_SERVICE_API void FreeBlastTool (BlastTool *tool_p);
 
@@ -156,13 +221,28 @@ BLAST_SERVICE_API void FreeBlastTool (BlastTool *tool_p);
  * @param tool_p The BlastTool to use.
  * @return <code>true</code> if the tool completed successfully, <code>false</code>
  * otherwise.
+ * @memberof BlastTool
  */
 BLAST_SERVICE_API OperationStatus RunBlast (BlastTool *tool_p);
 
-
+/**
+ * Get the current OperationStatus of a BlastTool.
+ *
+ * @param tool_p The BlastTool to check.
+ * @return The current OperationStatus.
+ * @memberof BlastTool
+ */
 BLAST_SERVICE_API OperationStatus GetBlastStatus (BlastTool *tool_p);
 
 
+/**
+ * Is the BlastTool going to run asynchronously?
+ *
+ * @param tool_p The BlastTool to check.
+ * @return <code>true</code> if the tool will run asynchronously, <code>false</code>
+ * otherwise.
+ * @memberof BlastTool
+ */
 BLAST_SERVICE_API bool IsBlastToolSynchronous (BlastTool *tool_p);
 
 

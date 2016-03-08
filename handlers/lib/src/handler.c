@@ -17,11 +17,14 @@
 
 #include "string_utils.h"
 
-static bool SetFilename (struct Handler *handler_p, const char * const filename_s);
 
-static void FreeFilename (struct Handler *handler_p);
+/*********************/
 
+static bool SetResourceForHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem);
 
+static void RemoveResourceFromHandler (struct Handler *handler_p);
+
+/*********************/
 
 void InitialiseHandler (Handler * const handler_p,
 	bool (*init_fn) (struct Handler *handler_p, json_t *credentials_p),
@@ -29,7 +32,7 @@ void InitialiseHandler (Handler * const handler_p,
 	const char *(*get_protocol_fn) (struct Handler *handler_p),
 	const char *(*get_name_fn) (struct Handler *handler_p),
 	const char *(*get_description_fn) (struct Handler *handler_p),
-	bool (*open_fn) (struct Handler *handler_p, const char * const filename_s, const char * const mode_s),
+	bool (*open_fn) (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s),
 	size_t (*read_fn) (struct Handler *handler_p, void *buffer_p, const size_t length),
 	size_t (*write_fn) (struct Handler *handler_p, const void *buffer_p, const size_t length),
 	bool (*seek_fn) (struct Handler *handler_p, long offset, int whence),
@@ -52,7 +55,8 @@ void InitialiseHandler (Handler * const handler_p,
 	handler_p -> ha_file_info_fn = file_info_fn;
 	handler_p -> ha_free_handler_fn = free_handler_fn;
 
-	handler_p -> ha_filename_s = NULL;
+	handler_p -> ha_resource_p = NULL;
+	handler_p -> ha_resource_mem  = MF_ALREADY_FREED;
 	handler_p -> ha_plugin_p = NULL;
 }
 
@@ -64,13 +68,16 @@ bool InitHandler (struct Handler *handler_p, json_t *credentials_p)
 }
 
 
-bool OpenHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)
+bool OpenHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s)
 {
 	bool success_flag = false;
 	
-	if (handler_p -> ha_open_fn (handler_p, filename_s, mode_s))
+	if (handler_p -> ha_open_fn (handler_p, resource_p, resource_mem, mode_s))
 		{
-			success_flag = SetFilename (handler_p, filename_s);
+			if (SetResourceForHandler (handler_p, resource_p, resource_mem))
+				{
+					success_flag = true;
+				}
 		}
 
 	return success_flag;
@@ -93,13 +100,13 @@ bool CloseHandler (struct Handler *handler_p)
 {
 	bool success_flag = (handler_p -> ha_close_fn (handler_p));
 	
-	FreeFilename (handler_p);
+	RemoveResourceFromHandler (handler_p);
 	
 	return success_flag;
 }
 
 
-size_t SeekHandler (struct Handler *handler_p, size_t offset, int whence)
+bool SeekHandler (struct Handler *handler_p, size_t offset, int whence)
 {
 	return (handler_p -> ha_seek_fn (handler_p, offset, whence));
 }
@@ -114,7 +121,7 @@ HandlerStatus GetHandlerStatus (struct Handler *handler_p)
 void FreeHandler (struct Handler *handler_p)
 {
 	handler_p -> ha_free_handler_fn (handler_p);
-	FreeFilename (handler_p);
+	RemoveResourceFromHandler (handler_p);
 }
 
 
@@ -227,24 +234,33 @@ bool DeallocatePluginHandler (Plugin * const plugin_p)
 }
 
 
-static bool SetFilename (struct Handler *handler_p, const char * const filename_s)
-{
-	if (handler_p -> ha_filename_s)
-		{
-			FreeCopiedString (handler_p -> ha_filename_s);
-		}
-		
-	handler_p -> ha_filename_s = CopyToNewString (filename_s, 0, false);
+/*********************************/
 
-	return (handler_p -> ha_filename_s != NULL);	
+
+static bool SetResourceForHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem)
+{
+	bool success_flag = false;
+
+	return success_flag;
 }
 
 
-static void FreeFilename (struct Handler *handler_p)
+static void RemoveResourceFromHandler (struct Handler *handler_p)
 {
-	if (handler_p -> ha_filename_s)
+	if (handler_p -> ha_resource_p)
 		{
-			FreeCopiedString (handler_p -> ha_filename_s);
-			handler_p -> ha_filename_s = NULL;
+			switch (handler_p -> ha_resource_mem)
+				{
+					case MF_SHALLOW_COPY:
+					case MF_DEEP_COPY:
+						FreeResource (handler_p -> ha_resource_p);
+						break;
+
+					default:
+						break;
+				}
+
+			handler_p -> ha_resource_p = NULL;
+			handler_p -> ha_resource_mem = MF_ALREADY_FREED;
 		}
 }

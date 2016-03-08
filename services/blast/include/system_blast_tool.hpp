@@ -31,7 +31,20 @@
 class BLAST_SERVICE_LOCAL SystemBlastTool : public ExternalBlastTool
 {
 public:
+	/**
+	 * Create a SystemBlastTool for a given ServiceJob.
+	 *
+	 * @param service_job_p The ServiceJob to associate with this SystemBlastTool.
+	 * @param name_s The name to give to this SystemBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this SystemBlastTool.
+	 * @param blast_program_name_s The name of blast command line executable that this SystemBlastTool
+	 * will call to run its blast job.
+	 */
 	SystemBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s);
+
+	/**
+	 * The SystemBlastTool destructor.
+	 */
 	virtual ~SystemBlastTool ();
 
 	/**

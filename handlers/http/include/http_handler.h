@@ -21,9 +21,14 @@
 #include "grassroots_http_handler_library.h"
 #include "handler.h"
 
-
+/**
+ * A Handler allowing access to http(s) resources.
+ */
 typedef struct HttpHandler
 {
+	/**
+	 * The base Handler.
+	 */
 	Handler hh_base_handler;
 	
 } FileHandler;

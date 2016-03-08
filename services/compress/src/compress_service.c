@@ -206,7 +206,7 @@ int CompressAsGZip (Handler *in_p, Handler *out_p, int level)
 			z_stream strm;
 			gz_header header;
 
-			if (InitGzipCompressor (&strm, level, &header, in_p -> ha_filename_s, file_info.fi_last_modified))
+			if (InitGzipCompressor (&strm, level, &header, in_p -> ha_resource_p -> re_value_s, file_info.fi_last_modified))
 				{
 					#define BUFFER_SIZE (4096)
 					size_t output_buffer_size = BUFFER_SIZE;
@@ -430,18 +430,24 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 
 							if (output_handler_p)
 								{
-									if (OpenHandler (input_handler_p, input_resource_p -> re_value_s, "rb"))
+									if (OpenHandler (input_handler_p, input_resource_p, MF_SHADOW_USE, "rb"))
 										{											
-											if (OpenHandler (output_handler_p, output_name_s, "wb"))
+											Resource *output_p = AllocateResource (PROTOCOL_FILE_S, output_name_s, output_name_s);
+
+											if (output_p)
 												{
-													int level = Z_DEFAULT_COMPRESSION;	/* gzip default */
-													res = s_compress_fns [algo_index] (input_handler_p, output_handler_p, level);
-													
-													success_flag = (res == Z_OK);
-													
-													CloseHandler (output_handler_p);											
-												}		/* if (OpenHandler (output_handler_p, output_name_s "wb")) */
-												
+													if (OpenHandler (output_handler_p, output_p, MF_SHADOW_USE, "wb"))
+														{
+															int level = Z_DEFAULT_COMPRESSION;	/* gzip default */
+															res = s_compress_fns [algo_index] (input_handler_p, output_handler_p, level);
+
+															success_flag = (res == Z_OK);
+
+															CloseHandler (output_handler_p);
+														}		/* if (OpenHandler (output_handler_p, output_name_s "wb")) */
+
+													FreeResource (output_p);
+												}
 										}		/* if (OpenHandler (input_handler_p, input_resource_p -> re_value_s, "rb")) */
 								
  								}		/* if (output_handler_p) */
@@ -483,7 +489,7 @@ static ParameterSet *IsFileForCompressService (Service *service_p, Resource *res
 							uint32 header = 0;
 							uint32 i = 0;
 
-							if (OpenHandler(handler_p, filename_s, "rb"))
+							if (OpenHandler(handler_p, resource_p, MF_SHADOW_USE, "rb"))
 								{
 									size_t l = sizeof (i);
 									size_t r = ReadFromHandler (handler_p, &i, l);

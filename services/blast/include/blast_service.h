@@ -13,8 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
-/**@file blast_service.h
-*/ 
+
 
 #ifndef BLAST_SERVICE_H
 #define BLAST_SERVICE_H

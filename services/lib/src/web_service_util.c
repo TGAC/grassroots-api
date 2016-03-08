@@ -306,7 +306,7 @@ bool AddMatchTypeParameter (ParameterSet *param_set_p)
 
 MatchType GetMatchTypeParameterValue (ParameterSet * const param_set_p)
 {
-	MatchType mt = MT_ALL;
+	MatchType mt = MT_AND;
 	Parameter *param_p = DetachParameterByTag (param_set_p, TAG_WEB_SERVICE_UTIL_MATCH_TYPE);
 
 	if (param_p)

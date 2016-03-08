@@ -78,7 +78,7 @@ bool ParamSpinBox :: SetValueFromText (const char *value_s)
 	bool success_flag  = true;
 	int value;
 
-	if (GetValidInteger (&value_s, &value, NULL))
+	if (GetValidInteger (&value_s, &value))
 		{
 			psb_spin_box_p -> setValue (value);
 			success_flag = true;

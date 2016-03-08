@@ -39,7 +39,7 @@
 
 static bool InitIRodsHandler (struct Handler *handler_p, json_t *credentials_p);
 
-static bool OpenIRodsHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
+static bool OpenIRodsHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char *mode_s);
 
 static size_t ReadFromIRodsHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
@@ -165,7 +165,7 @@ static bool InitIRodsHandler (struct Handler *handler_p, json_t *credentials_p)
 }
 
 
-static bool OpenIRodsHandler (struct Handler *handler_p, const char *filename_s, const char *mode_s)
+static bool OpenIRodsHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char *mode_s)
 {
 	IRodsHandler *irods_handler_p = (IRodsHandler *) handler_p;
 	openedDataObjInp_t *opened_obj_p = NULL;
@@ -185,7 +185,7 @@ static bool OpenIRodsHandler (struct Handler *handler_p, const char *filename_s,
 
 			/* Set up the input data */
 			memset (&data_obj, 0, sizeof (dataObjInp_t));
-			rstrcpy (data_obj.objPath, (char *) filename_s, MAX_NAME_LEN);
+			rstrcpy (data_obj.objPath, (char *) resource_p -> re_value_s, MAX_NAME_LEN);
 
 
 			if (mode_s)

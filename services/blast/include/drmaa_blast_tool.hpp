@@ -33,6 +33,16 @@ class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 {
 public:
 
+	/**
+	 * Create a DrmaaBlastTool for a given ServiceJob.
+	 *
+	 * @param service_job_p The ServiceJob to associate with this DrmaaBlastTool.
+	 * @param name_s The name to give to this DrmaaBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this DrmaaBlastTool.
+	 * @param blast_program_name_s The name of blast command line executable that this DrmaaBlastTool
+	 * will call to run its blast job.
+	 * @param async_flag Should the DrmaaBlastTool run in asyncronous mode.
+	 */
 	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, bool async_flag);
 
 	/**
@@ -77,13 +87,39 @@ public:
 	 */
 	bool SetEmailNotifications (const char **email_addresses_ss);
 
+	/**
+	 * Set the output file parameter.
+	 *
+	 * @return <code>true</code> if the input filename was set
+	 * successfully, <code>false</code> otherwise.
+	 */
 	virtual bool SetUpOutputFile ();
 
 protected:
+
+	/**
+	 * Add the argument to the command line arguments
+	 * that this BlastTool will run with.
+	 *
+	 * @param arg_s The argument to add.
+	 * @return <code>true</code> if the argument was added
+	 * successfully, <code>false</code> otherwise.
+	 */
 	virtual bool AddArg (const char * const arg_s);
 
 private:
+	/**
+	 * @private
+	 *
+	 * The DrmaaTool used to run the Blast job.
+	 */
 	DrmaaTool *dbt_drmaa_tool_p;
+
+	/**
+	 * @private
+	 *
+	 * Whether the DRMAA call should be asynchronous or not.
+	 */
 	bool dbt_async_flag;
 };
 

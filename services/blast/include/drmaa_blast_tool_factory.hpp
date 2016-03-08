@@ -27,22 +27,58 @@
 #include "external_blast_tool_factory.hpp"
 
 /**
- * The base class for generating system blast tools
+ * The base class for generating DrmaaBlastTools.
+ *
+ * @see DrmaaBlastTool
  */
 class BLAST_SERVICE_LOCAL DrmaaBlastToolFactory : public ExternalBlastToolFactory
 {
 public:
+	/**
+	 * A thin wrapper around the constructor for DrmaaBlastToolFactory to catch any
+	 * exceptions and return 0 instead.
+	 *
+	 * @param service_config_p The Blast Service configuration from the global
+	 * server configuration.
+	 * @return The new DrmaaBlastToolFactory or 0 upon error.
+	 * @see  DrmaaBlastToolFactory::DrmaaBlastToolFactory
+	 */
 	static DrmaaBlastToolFactory	*CreateDrmaaBlastToolFactory (const json_t *service_config_p);
 
+	/**
+	 * The DrmaaBlastToolFactory destructor.
+	 */
 	virtual ~DrmaaBlastToolFactory ();
 
+
+	/**
+	 * Create a BlastTool.
+	 *
+	 * @param job_p The ServiceJob to associate with the newly generated BlastTool.
+	 * @param name_s The name to give to the new BlastTool.
+	 * @param data_p The BlastServiceData for the Service that will use this BlastTool.
+	 * @return The new BlastTool or 0 upon error.
+	 */
 	virtual BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
+
+	/**
+	 * Are the BlastTools that this BlastToolFactory
+	 * create able to run asynchronously?
+	 *
+	 * @return <code>true</code> if the BlastTools are able
+	 * to run asynchronously, <code>false</code> otherwise.
+	 */
 	virtual bool AreToolsAsynchronous () const;
 
 protected:
+	/**
+	 * The constructor for DrmaaBlastToolFactory.
+	 *
+	 * @param service_config_p The Blast Service configuration from the global
+	 * server configuration.
+	 */
 	DrmaaBlastToolFactory (const json_t *service_config_p);
-
 };
 
 

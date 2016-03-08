@@ -1,4 +1,7 @@
-﻿# Schema
+﻿The Grassroots Schema
+=====================
+
+# Introduction {#Intro}
 
 All of the messages between Servers and Clients use a JSON-based schema. A full example of this is shown below and then each part will get described in turn. There are [Examples](examples.md)
 

@@ -36,33 +36,12 @@ extern "C"
 #endif
 
 
-/**
- *
- * @param service_p
- * @param internal_params_p
- * @param db_counter
- * @return
- */
 BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter);
 
 
-/**
- *
- * @param service_p
- * @param params_p
- * @return
- */
 BLAST_SERVICE_LOCAL json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p, PairedService *paired_service_p);
 
 
-/**
- *
- * @param service_p
- * @param jobs_p
- * @param params_p
- * @param paired_service_p
- * @return
- */
 BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p);
 
 
