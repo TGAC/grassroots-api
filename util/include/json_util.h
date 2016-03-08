@@ -189,6 +189,7 @@ PREFIX const char *KEYWORDS_QUERY_S VAL("query");
  * A datatype for storing a json_t on a LinkedList.
  *
  * @see LinkedList
+ * @extends ListItem
  */
 typedef struct JsonNode
 {

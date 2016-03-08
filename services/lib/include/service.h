@@ -234,7 +234,9 @@ typedef struct Service
 
 
 /**
- * A datatype for storing Services on a LinkedList
+ * A datatype for storing Services on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct
 {

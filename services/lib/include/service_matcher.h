@@ -54,6 +54,8 @@ typedef struct ServiceMatcher
 
 /**
  * @brief A ServiceMatcher that matches a Service if it can run on a given Resource.
+ *
+ * @extends ServiceMatcher
  */
 typedef struct ResourceServiceMatcher
 {
@@ -70,6 +72,8 @@ typedef struct ResourceServiceMatcher
 
 /**
  * @brief A ServiceMatcher that matches a Service by its name.
+ *
+ * @extends ServiceMatcher
  */
 typedef struct NameServiceMatcher
 {
@@ -86,6 +90,8 @@ typedef struct NameServiceMatcher
  *
  * Find a Service by matching the name of the Plugin that it was loaded from.
  * This is used when working with a ReferredService.
+ *
+ * @extends ServiceMatcher
  */
 typedef struct PluginNameServiceMatcher
 {
@@ -102,6 +108,8 @@ typedef struct PluginNameServiceMatcher
  *
  * Find a Service by matching the name of the Plugin that it was loaded from as well as having
  * a matching Service name too.
+ *
+ * @extends ServiceMatcher
  */
 typedef struct PluginOperationNameServiceMatcher
 {
@@ -115,6 +123,8 @@ typedef struct PluginOperationNameServiceMatcher
 
 /**
  * @brief A ServiceMatcher that will find any Service with a keyword parameter.
+ *
+ * @extends ServiceMatcher
  */
 typedef struct KeywordServiceMatcher
 {

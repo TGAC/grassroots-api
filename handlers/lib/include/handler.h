@@ -229,6 +229,8 @@ typedef struct Handler
 
 /**
  * A datatype for storing a Handler on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct HandlerNode
 {

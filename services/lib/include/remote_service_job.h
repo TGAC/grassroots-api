@@ -30,6 +30,10 @@
 #include "grassroots_service_library.h"
 
 
+/**
+
+ * @extends ServiceJob
+ */
 typedef struct RemoteServiceJob
 {
 	ServiceJob rsj_job;

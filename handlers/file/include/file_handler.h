@@ -25,6 +25,9 @@
 /**
  * A datatype for a Handler that can access locally
  * mounted files.
+ *
+ * @extends Handler
+ *
  */
 typedef struct FileHandler
 {

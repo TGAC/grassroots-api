@@ -122,6 +122,8 @@ typedef struct Client
 
 /**
  * @brief A datatype for storing a Client on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct
 {

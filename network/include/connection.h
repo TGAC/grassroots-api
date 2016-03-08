@@ -65,7 +65,9 @@ typedef struct Connection
 
 
 /**
- * @brief A Connection that uses raw socket-based commmunication.
+ * @brief A Connection that uses raw socket-based communication.
+ *
+ * @extends Connection
  */
 typedef struct RawConnection
 {
@@ -99,7 +101,9 @@ typedef struct RawConnection
 
 
 /**
- * @brief A Connection that uses https(s) commmunication.
+ * @brief A Connection that uses http(s) communication.
+ *
+ * @extends Connection
  */
 typedef struct WebConnection
 {

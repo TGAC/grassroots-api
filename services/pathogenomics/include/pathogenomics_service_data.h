@@ -40,7 +40,10 @@ typedef enum
 
 typedef struct PathogenomicsServiceData PathogenomicsServiceData;
 
-
+/**
+ *
+ * @extends ServiceData
+ */
 struct PathogenomicsServiceData
 {
 	ServiceData psd_base_data;

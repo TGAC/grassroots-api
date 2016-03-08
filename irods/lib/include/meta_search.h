@@ -72,6 +72,8 @@ typedef struct SearchTerm
 
 /**
  * A datatype for storing a SearchTerm on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct SearchTermNode
 {

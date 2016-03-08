@@ -36,6 +36,13 @@
 class BLAST_SERVICE_LOCAL BlastToolFactory
 {
 public:
+	/**
+	 * Get the BlastToolFactory to use.
+	 *
+	 * @param service_config_p The configuration for the Blast service
+	 * from the global server configuration.
+	 * @return The new BlastToolFactory or 0 upon error.
+	 */
 	static BlastToolFactory *GetBlastToolFactory (const json_t *service_config_p);
 
 	/**
@@ -88,7 +95,14 @@ BLAST_SERVICE_LOCAL BlastTool *CreateBlastToolFromFactory (BlastToolFactory *fac
 BLAST_SERVICE_LOCAL void FreeBlastToolFactory (BlastToolFactory *factory_p);
 
 
-
+/**
+ * Are the BlastTools that this BlastToolFactory
+ * create able to run asynchronously?
+ *
+ * @return <code>true</code> if the BlastTools are able
+ * to run asynchronously, <code>false</code> otherwise.
+ * @see BlastToolFactory::AreToolsAsynchronous
+ */
 BLAST_SERVICE_LOCAL bool IsBlastToolFactorySynchronous (BlastToolFactory *tool_p);
 
 

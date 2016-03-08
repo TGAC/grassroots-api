@@ -39,9 +39,18 @@ typedef struct KeyValuePair
 } KeyValuePair;
 
 
+/**
+ * A datatype used for storing a KeyValuePair
+ * on a LinkedList.
+ *
+ * @extends ListItem
+ */
 typedef struct KeyValuePairNode
 {
+	/** The base node. */
 	ListItem kvpn_node;
+
+	/** The KeyValuePair. */
 	KeyValuePair *kvpn_pair_p;
 } KeyValuePairNode;
 

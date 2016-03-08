@@ -63,7 +63,9 @@ typedef struct ReferredService
 
 
 /**
- * A datatype for storing a ReferredService on a LinkedList
+ * A datatype for storing a ReferredService on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct
 {

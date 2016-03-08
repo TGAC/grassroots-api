@@ -33,7 +33,7 @@
  * When running as a module on an Apache httpd, this OutputStream will redirect
  * all server messages into the standard logs.
  *
- * @see OutputStream
+ * @extends OutputStream
  */
 typedef struct ApacheOutputStream
 {

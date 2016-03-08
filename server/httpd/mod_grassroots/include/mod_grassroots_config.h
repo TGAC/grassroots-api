@@ -39,7 +39,7 @@
  * This datatype is used by the Apache HTTPD server
  * to be the Grassroots JobsManager.
  *
- * @see JobsManager
+ * @extends JobsManager
  */
 typedef struct APRJobsManager
 {
@@ -58,7 +58,8 @@ typedef struct APRJobsManager
  * This datatype is used by the Apache HTTPD server
  * to be the Grassroots ServersManager.
  *
- * @see ServersManager
+ * @extends ServersManager
+ *
  */
 typedef struct APRServersManager
 {

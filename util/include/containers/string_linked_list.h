@@ -37,7 +37,7 @@
  * A ListNode for LinkedLists that also stores
  * a string value.
  * 
- * @see ListNode
+ * @extends ListItem
  */
 typedef struct StringListNode
 {

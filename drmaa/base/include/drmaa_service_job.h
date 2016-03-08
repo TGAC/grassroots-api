@@ -33,6 +33,8 @@
 /**
  * A ServiceJob that also has the data for
  * running as Drmaa-based task.
+ *
+ * @extends ServiceJob
  */
 typedef struct DrmaaServiceJob
 {

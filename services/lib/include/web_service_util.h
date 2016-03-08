@@ -83,6 +83,8 @@ typedef enum SubmissionMethod
  *
  * This is used by reference services to call
  * web services.
+ *
+ * @extends ServiceData
  */
 typedef struct WebServiceData
 {

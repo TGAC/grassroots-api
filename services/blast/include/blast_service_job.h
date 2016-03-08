@@ -31,6 +31,8 @@
 
 /**
  * This datatype stores the ServiceJob and its associated BlastTool.
+ *
+ * @extends ServiceJob
  */
 typedef struct BLAST_SERVICE_LOCAL BlastServiceJob
 {

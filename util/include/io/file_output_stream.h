@@ -28,6 +28,8 @@
 
 /**
  * @brief An OutputStream that writes to user-specified files
+ *
+ * @extends OutputStream
  */
 typedef struct FileOutputStream
 {

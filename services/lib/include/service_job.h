@@ -95,7 +95,9 @@ typedef struct ServiceJob
 
 /**
  * A datatype used to store a ServiceJob within
- * a ServceJobSet using a LinkedList.`
+ * a ServceJobSet using a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct ServiceJobNode
 {

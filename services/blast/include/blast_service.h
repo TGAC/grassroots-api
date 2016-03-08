@@ -66,6 +66,8 @@ class BlastToolFactory;
 
 /**
  * The configuration data for the Blast Service.
+ *
+ * @extends ServiceData
  */
 typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 {

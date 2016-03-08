@@ -39,6 +39,8 @@
 /**
  * A datatype for a Handler that can access data objects
  * and collections within an iRODS zone.
+ *
+ * @extends Handler
  */
 typedef struct IRodsHandler
 {

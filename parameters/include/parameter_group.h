@@ -56,7 +56,9 @@ typedef struct ParameterGroup
 
 
 /**
- * A datatype for storing a ParameterGroup on a LinkedList
+ * A datatype for storing a ParameterGroup on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct ParameterGroupNode
 {

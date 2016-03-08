@@ -23,6 +23,9 @@
 
 /**
  * A Handler allowing access to http(s) resources.
+ *
+ * @extends Handler
+ *
  */
 typedef struct HttpHandler
 {

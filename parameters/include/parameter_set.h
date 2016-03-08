@@ -61,6 +61,8 @@ typedef struct ParameterSet
 
 /**
  * A datatype for storing a ParameterSet on a LinkedList
+ *
+ * @extends ListItem
  */
 typedef struct ParameterSetNode
 {

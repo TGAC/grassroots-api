@@ -142,6 +142,8 @@ typedef struct Plugin
 /**
  * A ListNode for LinkedLists that also stores
  * a plugin value.
+ *
+ * @extends ListItem
  */
 typedef struct PluginListNode
 {

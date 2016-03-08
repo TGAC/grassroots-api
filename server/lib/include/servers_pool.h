@@ -70,13 +70,25 @@ typedef struct ExternalServer
 } ExternalServer;
 
 
-
+/**
+ * A datatype for storing ExternalServers
+ * in a LinkedList.
+ *
+ * @extends ListItem
+ */
 typedef struct ExternalServerNode
 {
+	/** The base node. */
 	ListItem esn_node;
 
+	/** The ExternalServer */
 	ExternalServer *esn_server_p;
 
+	/**
+	 * The MEM_FLAG indicating the ownership of the ExternalServer
+	 * from this ExternalServerNode and whether the ExternalServer
+	 * will be freed when this ExternalServerNode is.
+	 */
 	MEM_FLAG esn_server_mem;
 } ExternalServerNode;
 

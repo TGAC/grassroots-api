@@ -190,22 +190,6 @@ extern "C"
 
 
 /**
- * Get a newly created BlastTool
- * 
- * This is just a wrapper around the BlastTool constructor that returns <code>NULL</code>
- * rather than throw an exception upon error.
- *
- * @param job_p The ServiceJob to associate with this BlastTool.
- * @param name_s The name to give to this BlastTool.
- * @param data_p The BlastServiceData for the Service that will run this BlastTool.
- * @return The BlastTool or <code>NULL</code> upon error.
- * @memberof BlastTool
- * @see BlastTool::BlastTool
- */
-BLAST_SERVICE_API BlastTool *CreateBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
-
-
-/**
  * Free a BlastTool
  * 
  * @param tool_p The BlastTool to deallocate.

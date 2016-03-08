@@ -61,6 +61,8 @@ typedef struct PairedService
 /**
  * A datatype for storing PairedServices on
  * a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct PairedServiceNode
 {

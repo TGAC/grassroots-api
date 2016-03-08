@@ -32,7 +32,9 @@
  
  /**
  * A datatype for a Handler that can access data
- * stored within a Dropbx account
+ * stored within a Dropbox account.
+ *
+ * @extends Handler
  */
 typedef struct DropboxHandler
 {

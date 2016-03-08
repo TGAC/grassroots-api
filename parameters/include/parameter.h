@@ -180,6 +180,8 @@ typedef union SharedType
 /**
  * A datatype allowing a SharedType to be stored
  * on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct SharedTypeNode
 {
@@ -350,6 +352,8 @@ typedef struct Parameter
 /**
  * A datatype for storing Parameters in a
  * LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct ParameterNode
 {
