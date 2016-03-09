@@ -30,7 +30,10 @@
 #include "linked_list.h"
 #include "jansson.h"
 
-
+/**
+ * This datatype is used to denote that a Parameter is
+ * for use on a PairedService.
+ */
 typedef struct RemoteParameterDetails
 {
 	/**
@@ -70,27 +73,76 @@ extern "C" {
 #endif
 
 
-
+/**
+ * Allocate a RemoteParameterDetails.
+ *
+ * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
+ * @param tag The tag for this Parameter on the PairedService.
+ * @memberof RemoteParameterDetails
+ * @return The new RemoteParameterDetails or <code>NULL</code> upon error.
+ */
 GRASSROOTS_PARAMS_API	RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, Tag tag);
 
 
+/**
+ * Free a RemoteParameterDetails.
+ *
+ * @param details_p The RemoteParameterDetails to free.
+ * @memberof RemoteParameterDetails
+ */
 GRASSROOTS_PARAMS_API	void FreeRemoteParameterDetails (RemoteParameterDetails *details_p);
 
 
+/**
+ * Allocate a RemoteParameterDetailsNode.
+ *
+ * @param details_p The RemoteParameterDetails to store in the new RemoteParameterDetailsNode.
+ * @memberof RemoteParameterDetailsNode
+ * @return The new RemoteParameterDetailsNode or <code>NULL</code> upon error.
+ */
 GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNode (RemoteParameterDetails *details_p);
 
 
+/**
+ * Allocate a new RemoteParameterDetailsNode and a new RemoteParameterDetails to store in it.
+ *
+ * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
+ * @param tag The tag for this Parameter on the PairedService.
+ * @memberof RemoteParameterDetailsNode
+ * @return The new RemoteParameterDetailsNode or <code>NULL</code> upon error.
+ */
 GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s, Tag tag);
 
 
+/**
+ * Free a RemoteParameterDetailsNode.
+ *
+ * @param node_p The RemoteParameterDetailsNode to free.
+ * @memberof RemoteParameterDetailsNode
+ */
 GRASSROOTS_PARAMS_API	void FreeRemoteParameterDetailsNode (ListItem *node_p);
 
 
+/**
+ * Get the JSON fragment representing a RemoteParameterDetails.
+ *
+ * @param details_p The RemoteParameterDetails to get the JSON fragment for.
+ * @return The JSON fragment or <code>NULL</code> upon error.
+ * @memberof RemoteParameterDetails
+ * @see CreateRemoteParameterDetailsFromJSON
+ */
 GRASSROOTS_PARAMS_API	json_t *GetRemoteParameterDetailsAsJSON (const RemoteParameterDetails *details_p);
 
 
+/**
+ * Create a RemoteParameterDetails from a JSON fragment representation.
+ *
+ * @param json_p The JSON fragment representing the RemoteParameterDetails to get.
+ * @return The RemoteParameterDetails or <code>NULL</code> upon error.
+ * @memberof RemoteParameterDetails
+ * @see GetRemoteParameterDetailsAsJSON
+ */
 GRASSROOTS_PARAMS_API	RemoteParameterDetails *CreateRemoteParameterDetailsFromJSON (const json_t *json_p);
-
 
 
 #ifdef __cplusplus
