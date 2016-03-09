@@ -203,13 +203,27 @@ typedef struct JsonNode
 } JsonNode;
 
 
-
+/**
+ * A datatype for storing a value as a string along with the datatype to
+ * convert it to.
+ *
+ * This is used when reading in data where all the values are stored as
+ * strings regardless of their actual datatype e.g.
+ *
+ * 	"score": "10"
+ *
+ * where score is actually an integer. This datatype is to allow the conversion
+ * back to the correct type.
+ *
+ * @extends StringListNode
+ */
 typedef struct FieldNode
 {
+	/** The base node. */
 	StringListNode fn_base_node;
 
+	/** This defines the type of the data. */
 	json_type fn_type;
-
 } FieldNode;
 
 

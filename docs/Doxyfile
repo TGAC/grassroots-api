@@ -2034,26 +2034,29 @@ INCLUDE_FILE_PATTERNS  =
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
 PREDEFINED             = GRASSROOTS_NETWORK_API \
+                         "GRASSROOTS_NETWORK_LOCAL=/** @private */" \
                          GRASSROOTS_UTIL_API \
+                         GRASSROOTS_UTIL_LOCAL=/**@private*/ \
                          GRASSROOTS_SERVICE_MANAGER_API \
                          GRASSROOTS_PARAMS_API \
-                         GRASSROOTS_DRMAA_API \
-                         GRASSROOTS_CLIENT_API \
-                         IRODS_UTIL_API \
-                         SAMTOOLS_SERVICE_API \
-                         LONG_RUNNING_SERVICE_API \
-                         RESOURCE_VAL(x)= \
-                         RESOURCE_PREFIX \
+                         "GRASSROOTS_PARAMS_LOCAL=/** @prviate */" \
                          GRASSROOTS_SERVICE_API \
                          "GRASSROOTS_SERVICE_LOCAL=/** @private */" \
-                         "GRASSROOTS_NETWORK_LOCAL=/** @private */" \
-                         "GRASSROOTS_PARAMS_LOCAL=/** @prviate */" \
-                         "IRODS_UTIL_LOCAL=/** @private */" \
-                         SAMTOOLS_SERVICE_LOCAL=/**@private*/ \
-                         "LONG_RUNNING_SERVICE_LOCAL=/** @private */" \
-                         GRASSROOTS_HANDLER_API \
                          GRASSROOTS_MONGODB_API \
-                         "GRASSROOTS_MONGODB_LOCAL=/** @private */"
+                         "GRASSROOTS_MONGODB_LOCAL=/** @private */" \
+                         GRASSROOTS_DRMAA_API \
+                         GRASSROOTS_HANDLER_API \
+                         GRASSROOTS_CLIENT_API \
+                         IRODS_UTIL_API \
+                         "IRODS_UTIL_LOCAL=/** @private */" \
+                         SAMTOOLS_SERVICE_API \
+                         LONG_RUNNING_SERVICE_API \
+                         "LONG_RUNNING_SERVICE_LOCAL=/** @private */" \
+                         RESOURCE_VAL(x)= \
+                         RESOURCE_PREFIX \
+                         SAMTOOLS_SERVICE_LOCAL=/**@private*/ \
+                         PATHOGENOMICS_SERVICE_LOCAL=/**@private*/ \
+                         PATHOGENOMICS_SERVICE_API
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

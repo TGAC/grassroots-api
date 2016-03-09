@@ -495,7 +495,6 @@ GRASSROOTS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const
  * Allocate a ParameterNode with an associated Parameter.
  *
  * @param type The ParameterType for this Parameter.
- * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
  * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
  * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
  * This can be <code>NULL</code>.
@@ -672,6 +671,7 @@ GRASSROOTS_PARAMS_API bool CopySharedType (const SharedType src, SharedType *des
  * @param parameter_p The Parameter to get the value for.
  * @return The Parameter's display name if it is not <code>NULL</code>, else
  * the Parameter's name.
+ * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p);
 
@@ -711,14 +711,40 @@ GRASSROOTS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
 GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
 
 
-
+/**
+ * Create a RemoteParameterDetails and add it to the given Parameter.
+ *
+ *
+ * @param param_p The Parameter to add the new RemoteParameterDetails to.
+ * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
+ * @param tag The tag for this Parameter on the PairedService.
+ * @return <code>true</code> if the RemoteParameterDetails was added successfully or <code>false</code> otherwise.
+ * @see AllocateRemoteParameterDetails
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag);
 
 
+/**
+ * Get the remote Tag from a RemoteParameterDetails stored on a given Parameter.
+ *
+ * @param param_p The Parameter whose set of RemoteParameterDetails will be checked.
+ * @param uri_s The uri to match.
+ * @return A pointer to the Tag or <code>NULL</code> upon error.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s);
 
 
-GRASSROOTS_PARAMS_API bool CopyRemoteParameterDetails (const Parameter * const src_param_p, Parameter *dest_p);
+/**
+ * Make a deep copy of all of the RemoteParameterDetails stored on one Parameter to another.
+ *
+ * @param src_param_p The Parameter to copy of all of the RemoteParameterDetails from.
+ * @param dest_param_p The Parameter to copy of all of the RemoteParameterDetails to.
+ * @return <code>true</code> if the RemoteParameterDetails was copied successfully or <code>false</code> otherwise.
+ * @memberof Parameter
+ */
+GRASSROOTS_PARAMS_API bool CopyRemoteParameterDetails (const Parameter * const src_param_p, Parameter *dest_param_p);
 
 
 /**

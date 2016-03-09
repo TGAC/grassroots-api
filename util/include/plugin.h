@@ -134,6 +134,9 @@ typedef struct Plugin
 	 */
 	struct Handler *pl_handler_p;
 
+	/**
+	 * The count of how many current tasks have this Plugin open.
+	 */
 	int32 pl_open_count;
 } Plugin;
 
@@ -327,6 +330,7 @@ GRASSROOTS_UTIL_API void DecrementPluginOpenCount (Plugin *plugin_p);
 
 
 GRASSROOTS_UTIL_LOCAL bool InitBasePlugin (Plugin * const plugin_p, const char * const path_p);
+
 GRASSROOTS_UTIL_LOCAL void ClearBasePlugin (Plugin * const plugin_p);
 
 

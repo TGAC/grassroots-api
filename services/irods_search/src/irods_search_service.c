@@ -40,7 +40,7 @@
 typedef struct
 {
 	ServiceData issd_base_data;
-	IRODSConnection *issd_connection_p;
+	IRodsConnection *issd_connection_p;
 	ParameterSet *issd_params_p;
 } IRodsSearchServiceData;
 
@@ -72,9 +72,9 @@ static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *
 static bool CloseIRodsSearchService (Service *service_p);
 
 
-static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static Parameter *AddParam (IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
-static int AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static int AddParams (IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p);
 
@@ -99,7 +99,7 @@ static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p
 
 	if (data_p)
 		{
-			IRODSConnection *connection_p = CreateIRODSConnectionFromJSON (config_p);
+			IRodsConnection *connection_p = CreateIRodsConnectionFromJSON (config_p);
 
 			if (connection_p)
 				{
@@ -132,7 +132,7 @@ static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p
 							FreeParameterSet (params_p);
 						}		/* if (params_p) */
 
-					FreeIRODSConnection (connection_p);
+					FreeIRodsConnection (connection_p);
 				}		/* if (connection_p) */
 
 			FreeMemory (data_p);
@@ -146,7 +146,7 @@ static void FreeIRodsSearchServiceData (IRodsSearchServiceData *data_p)
 {
 	if (data_p -> issd_connection_p)
 		{
-			FreeIRODSConnection (data_p -> issd_connection_p);
+			FreeIRodsConnection (data_p -> issd_connection_p);
 			data_p -> issd_connection_p = NULL;
 		}
 
@@ -354,7 +354,7 @@ static json_t *DoKeywordSearch (const char *keyword_s, IRodsSearchServiceData *d
 
 
 
-static int AddParams (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static int AddParams (IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	int res = 0;
 
@@ -436,7 +436,7 @@ static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s,
 }
 
 
-static Parameter *AddParam (IRODSConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static Parameter *AddParam (IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;

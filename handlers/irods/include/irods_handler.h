@@ -26,7 +26,6 @@
 #include "objStat.h"
 
 #include "irods_handler_library.h"
-#include "irods_resource.h"
 
 
 #include "linked_list.h"

@@ -20,11 +20,17 @@
 #include "pathogenomics_service_data.h"
 #include "mongodb_tool.h"
 
-typedef struct CountryCode
+typedef struct CountryCode CountryCode;
+
+/**
+ * @private
+ *
+ */
+struct PATHOGENOMICS_SERVICE_LOCAL CountryCode
 {
 	const char *cc_name_s;
 	const char *cc_code_s;
-} CountryCode;
+};
 
 
 #ifdef __cplusplus

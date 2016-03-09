@@ -29,6 +29,12 @@
 ** LIB_LOCAL is used for non-api symbols.
 */
 
+
+/**
+ * @privatesection
+ * @{
+ */
+
 #ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
   #ifdef SAMTOOLS_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
     #define SAMTOOLS_SERVICE_API LIB_HELPER_SYMBOL_EXPORT
@@ -42,11 +48,14 @@
 #endif /* #ifdef SHARED_LIBRARY */
 
 
-
 #define TAG_SAMTOOLS_FILENAME MAKE_TAG ('S', 'T', 'F', 'L')
 #define TAG_SAMTOOLS_BLASTDB_FILENAME MAKE_TAG ('S', 'T', 'B', 'F')
 #define TAG_SAMTOOLS_SCAFFOLD MAKE_TAG ('S', 'T', 'S', 'C')
 #define TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK MAKE_TAG ('S', 'T', 'L', 'B')
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 extern "C"

@@ -29,6 +29,12 @@
 ** LIB_LOCAL is used for non-api symbols.
 */
 
+/**
+ * @privatesection
+ * @{
+ */
+
+
 #ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
   #ifdef LONG_RUNNING_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
     #define LONG_RUNNING_SERVICE_API LIB_HELPER_SYMBOL_EXPORT
@@ -44,6 +50,11 @@
 
 
 #define TAG_LONG_RUNNING_NUM_JOBS MAKE_TAG ('L', 'R', 'N', 'J')
+
+/**
+ * @}
+ */
+
 
 #ifdef __cplusplus
 extern "C"

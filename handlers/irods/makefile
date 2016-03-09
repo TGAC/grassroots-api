@@ -38,8 +38,7 @@ INCLUDES = \
 	-I$(DIR_UUID_INC)
 	
 SRCS 	= \
-	irods_handler.c \
-	irods_resource.c
+	irods_handler.c 
 	
 CPPFLAGS = -DIRODS_HANDLER_EXPORTS
 

@@ -27,6 +27,7 @@
 
 #include "service.h"
 #include "mongodb_tool.h"
+#include "pathogenomics_service_library.h"
 
 
 typedef enum
@@ -41,26 +42,63 @@ typedef enum
 typedef struct PathogenomicsServiceData PathogenomicsServiceData;
 
 /**
+ * The configuration data used by the Pathogenomics Service.
  *
  * @extends ServiceData
  */
-struct PathogenomicsServiceData
+struct PATHOGENOMICS_SERVICE_LOCAL PathogenomicsServiceData
 {
+	/** The base ServiceData. */
 	ServiceData psd_base_data;
 
+	/**
+	 * @private
+	 *
+	 * The MongoTool to connect to the database where our data is stored.
+	 */
 	MongoTool *psd_tool_p;
 
+
+	/**
+	 * @private
+	 *
+	 * The name of the database to use.
+	 */
 	const char *psd_database_s;
 
+	/**
+	 * @private
+	 *
+	 * The collection name of use for each of the different types of data.
+	 */
 	const char *psd_collection_ss [PD_NUM_TYPES];
 
-//	const char *psd_locations_collection_s;
-
+	/**
+	 * @private
+	 *
+	 * The callback function that gets the geolocation for
+	 * a sample from the input data.
+	 *
+	 * @param data_p This PathogenomicsServiceData.
+	 * @param row_p The input values.
+	 * @param id_s The id of the sample
+	 * @return <code>true</code> if the geolocation was determined for the sample
+	 * data or <code>false</code>.
+	 */
 	bool (*psd_geocoder_fn) (struct PathogenomicsServiceData *data_p, json_t *row_p, const char * const id_s);
 
+	/**
+	 * @private
+	 *
+	 * The uri of the webservice to call to get the geolocation data.
+	 */
 	const char *psd_geocoder_uri_s;
 
-
+	/**
+	 * @private
+	 *
+	 * The URI of the root folder where any downloadable files is stored.
+	 */
 	const char *psd_files_download_root_uri_s;
 };
 

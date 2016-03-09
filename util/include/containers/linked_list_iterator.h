@@ -50,7 +50,7 @@ typedef struct Iterator
  *
  * @param list_p The LinkedList to get the Iterator for.
  * @return The new Iterator which will be positioned at the
- * beginning of the LinkedList or <code>NULL<c/code> upon
+ * beginning of the LinkedList or <code>NULL</code> upon
  * error.
  * @memberof Iterator
  */
