@@ -34,19 +34,45 @@
 
 
 
-DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, bool async_flag)
+DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, const char *queue_name_s, const char *const output_path_s, bool async_flag)
 : ExternalBlastTool (job_p, name_s, data_p, blast_program_name_s)
 {
 	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
 
-	if (!dbt_drmaa_tool_p)
+	if (dbt_drmaa_tool_p)
 		{
-			throw std :: bad_alloc ();
+			if (SetDrmaaToolQueueName (dbt_drmaa_tool_p, queue_name_s))
+				{
+					if (SetDrmaaToolJobName (dbt_drmaa_tool_p, name_s))
+						{
+							if (SetDrmaaToolOutputFilename (dbt_drmaa_tool_p, output_path_s))
+								{
+									dbt_async_flag = async_flag;
+									return;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "SetDrmaaToolOutputFilename failed for \"%s\"", output_path_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "SetDrmaaToolJobName failed for \"%s\"", name_s);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "SetDrmaaToolQueueName failed for \"%s\"", queue_name_s);
+				}
+
+			FreeDrmaaTool (dbt_drmaa_tool_p);
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate drmaa tool");
 		}
 
-	dbt_async_flag = async_flag;
-	SetDrmaaToolQueueName (dbt_drmaa_tool_p, "webservices");
-	SetDrmaaToolJobName (dbt_drmaa_tool_p, name_s);
+	throw (std :: bad_alloc);
 }
 
 

@@ -395,7 +395,14 @@ GRASSROOTS_UTIL_API FieldNode *AllocateFieldNode (const char *name_s, const MEM_
 GRASSROOTS_UTIL_API void FreeFieldNode (ListItem *node_p);
 
 
-GRASSROOTS_UTIL_API json_t *LoadJSONConfig (const char * const filename_s);
+/**
+ * Load a JSON file
+ *
+ * @param filename_s The filename to load.
+ * @return The resultant JSON fragment or <code>NULL</code> upon errors
+ * such as the file  being unable to be read or not a JSON fiile.
+ */
+GRASSROOTS_UTIL_API json_t *LoadJSONFile (const char * const filename_s);
 
 
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
@@ -404,6 +411,14 @@ GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char c
 GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type field_type);
 
 
+/**
+ * Create a JSON object from a delimited string of data.
+ *
+ * @param row_s The delimited data
+ * @param headers_p
+ * @param delimiter
+ * @return
+ */
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
 

@@ -39,11 +39,12 @@ public:
 	 * @param service_job_p The ServiceJob to associate with this DrmaaBlastTool.
 	 * @param name_s The name to give to this DrmaaBlastTool.
 	 * @param data_p The BlastServiceData for the Service that will run this DrmaaBlastTool.
-	 * @param blast_program_name_s The name of blast command line executable that this DrmaaBlastTool
+	 * @param blast_program_name_s The name of blast command line executable that this DrmaaBlastTool.
 	 * will call to run its blast job.
-	 * @param async_flag Should the DrmaaBlastTool run in asyncronous mode.
+	 * @param queue_name_s The name of the queue that this DrmaaBlastTool will use.
+	 * @param async_flag Should the DrmaaBlastTool run in asynchronous mode.
 	 */
-	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, bool async_flag);
+	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, const char *queue_name_s, bool async_flag);
 
 	/**
 	 *  The DrmaaBlastTool destructor.

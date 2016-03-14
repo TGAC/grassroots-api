@@ -242,7 +242,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 
 									while (reference_file_node_p)
 										{
-											json_t *reference_config_p = LoadJSONConfig (reference_file_node_p -> sln_string_s);
+											json_t *reference_config_p = LoadJSONFile (reference_file_node_p -> sln_string_s);
 
 											if (reference_config_p)
 												{

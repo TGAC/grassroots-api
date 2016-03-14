@@ -75,41 +75,46 @@ BlastTool *DrmaaBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const ch
 
 	if (drmaa_tool_p)
 		{
-
-			const json_t *json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "drmaa_cores_per_search");
+			int i = 0;
+			const char *value_s = NULL;
 
 			/* Set the number of cores per job */
-			if (json_p)
+			if (GetJSONInteger (data_p -> bsd_base_data.sd_config_p, "drmaa_cores_per_search", &i))
 				{
-					if (json_is_integer (json_p))
-						{
-							drmaa_tool_p -> SetCoresPerSearch (json_integer_value (json_p));
-						}
+					drmaa_tool_p -> SetCoresPerSearch (i);
 				}
 
 			/* Set up any email notifications */
-			json_p = json_object_get (data_p -> bsd_base_data.sd_config_p, "email_notifications");
+			value_s = GetJSONString (data_p -> bsd_base_data.sd_config_p, "email_notifications");
 
-			if (json_p)
+			if (value_s)
 				{
-					if (json_is_string (json_p))
+					const char **addresses_ss = (const char **) AllocMemoryArray (2, sizeof (const char *));
+
+					if (addresses_ss)
 						{
-							const char **addresses_ss = (const char **) AllocMemoryArray (2, sizeof (const char *));
-
-							if (addresses_ss)
-								{
-									*addresses_ss = json_string_value (json_p);
-								}
-
-							if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set email notifications for drmaa tool");
-								}
-
-							FreeMemory (addresses_ss);
+							*addresses_ss = value_s;
 						}
 
+					if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set email notifications for drmaa tool");
+						}
+
+					FreeMemory (addresses_ss);
 				}		/* if (json_p) */
+
+
+			/* Set the queue to use */
+			value_s = GetJSONString (data_p -> bsd_base_data.sd_config_p, "queue");
+			if (value_s)
+				{
+					if (!SetDrmaaToolQueueName (drmaa_tool_p, value_s))
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "SetDrmaaToolQueueName failed to set name to \"%s\"", value_s);
+						}
+				}
+
 
 		}
 
@@ -119,7 +124,7 @@ BlastTool *DrmaaBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const ch
 
 bool DrmaaBlastToolFactory :: AreToolsAsynchronous () const
 {
-	return false;
+	return true;
 }
 
 

@@ -227,28 +227,31 @@ drmaa: lib_util lib_network lib_parameters lib_irods lib_handlers lib_services
 endif
 
 
+# SLURM DRMAA
 ifeq ($(SLURM_DRMAA_ENABLED),1)	
 all: drmaa_slurm
 
 install: install_drmaa_slurm
 
 drmaa_slurm: drmaa
-	$(MAKE) -C drmaa/base
+	$(MAKE) -C drmaa/base -DDRMAA_IMPLEMENTATION_NAME=slurm
 	
 install_drmaa_slurm: drmaa_slurm
-	$(MAKE) -C drmaa/base install
+	$(MAKE) -C drmaa/base install -DDRMAA_IMPLEMENTATION_NAME=slurm
+endif
 
-else ifeq ($(LSF_DRMAA_ENABLED),1)
 
+# LSF DRMAA
+ifeq ($(LSF_DRMAA_ENABLED),1)
 all: drmaa_lsf
 
 install: install_drmaa_lsf
 
 drmaa_lsf: drmaa
-	$(MAKE) -C drmaa/base
+	$(MAKE) -C drmaa/base -DDRMAA_IMPLEMENTATION_NAME=lsf
 
 install_drmaa_lsf: drmaa_lsf
-	$(MAKE) -C drmaa/base
+	$(MAKE) -C drmaa/base install -DDRMAA_IMPLEMENTATION_NAME=lsf
 endif
 
 
@@ -451,4 +454,12 @@ install_samlib:
 	
 install_pooltest:
 	$(MAKE) -C server/httpd/mod_pooltest install
+
+
+install_slurm_drmaa:
+	cd $(DIR_ROOT)/extrasslurm-drmaa-1.0.7; \
+	./configure --prefix=$(DIR_MONGODB) \
+	make; \
+	make install		
+
 

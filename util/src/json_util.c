@@ -125,32 +125,15 @@ int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const pref
 }
 
 
-json_t *LoadJSONConfig (const char * const filename_s)
+json_t *LoadJSONFile (const char * const filename_s)
 {
-	json_t *config_p = NULL;
-	FILE *config_f = fopen (filename_s, "r");
+	json_error_t error;
+	json_t *config_p = json_load_file (filename_s, 0, &error);
 
-	if (config_f)
+	if (!config_p)
 		{
-			json_error_t error;
-
-			config_p = json_loadf (config_f, 0, &error);
-
-			if (!config_p)
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
-				}
-
-			if (fclose (config_f) != 0)
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to close service config file \"%s\"", filename_s);
-				}
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to parse %s, error at line %d column %d\n", filename_s, error.line, error.column);
 		}
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to open service config file \"%s\"", filename_s);
-		}
-
 
 	return config_p;
 }

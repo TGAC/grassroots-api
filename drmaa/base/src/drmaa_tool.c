@@ -163,16 +163,12 @@ bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s)
 									/* the job to be run */
 									if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
 										{
-											/* path for output */
-											if (SetDrmaaAttribute (tool_p, DRMAA_OUTPUT_PATH, ":/tgac/services/wheatis/out"))
-												{
-													char error_s [DRMAA_ERROR_STRING_BUFFER];
-													int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
+											char error_s [DRMAA_ERROR_STRING_BUFFER];
+											int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
 
-													if (err_code == DRMAA_ERRNO_SUCCESS)
-														{
-															return true;
-														}
+											if (err_code == DRMAA_ERRNO_SUCCESS)
+												{
+													return true;
 												}
 										}
 								}
