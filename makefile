@@ -448,7 +448,7 @@ install_mongodb_c:
 
 install_samlib:
 	cd $(DIR_ROOT)/extras/htslib; \
-	./configure --prefix=$(DIR_MONGODB) \
+	./configure --prefix=$(DIR_HTSLIB) \
 	make; \
 	make install	
 	
@@ -458,7 +458,7 @@ install_pooltest:
 
 install_slurm_drmaa:
 	cd $(DIR_ROOT)/extrasslurm-drmaa-1.0.7; \
-	./configure --prefix=$(DIR_MONGODB) \
+	./configure --prefix=$(DIR_SLURM_DRMAA) \
 	make; \
 	make install		
 
