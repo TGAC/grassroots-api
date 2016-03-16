@@ -59,64 +59,86 @@ DrmaaBlastToolFactory :: ~DrmaaBlastToolFactory ()
 }
 
 
+
 BlastTool *DrmaaBlastToolFactory :: CreateBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p)
 {
 	DrmaaBlastTool *drmaa_tool_p = 0;
 	bool async_flag = true;
+	const json_t *blast_config_p = data_p -> bsd_base_data.sd_config_p;
+	const json_t *drmaa_blast_tool_config_p = json_object_get (blast_config_p, "drmaa_blast_tool_config");
 
-	try
+	if (drmaa_blast_tool_config_p)
 		{
-			drmaa_tool_p = new DrmaaBlastTool (job_p, name_s, data_p, ebtf_program_name_s, async_flag);
-		}
-	catch (std :: exception &ex_r)
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create drmaa blast tool, error \"%s\"", ex_r.what ());
-		}
-
-	if (drmaa_tool_p)
-		{
-			int i = 0;
-			const char *value_s = NULL;
-
-			/* Set the number of cores per job */
-			if (GetJSONInteger (data_p -> bsd_base_data.sd_config_p, "drmaa_cores_per_search", &i))
-				{
-					drmaa_tool_p -> SetCoresPerSearch (i);
-				}
-
-			/* Set up any email notifications */
-			value_s = GetJSONString (data_p -> bsd_base_data.sd_config_p, "email_notifications");
-
-			if (value_s)
-				{
-					const char **addresses_ss = (const char **) AllocMemoryArray (2, sizeof (const char *));
-
-					if (addresses_ss)
-						{
-							*addresses_ss = value_s;
-						}
-
-					if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set email notifications for drmaa tool");
-						}
-
-					FreeMemory (addresses_ss);
-				}		/* if (json_p) */
-
-
 			/* Set the queue to use */
-			value_s = GetJSONString (data_p -> bsd_base_data.sd_config_p, "queue");
-			if (value_s)
+			const char *queue_s = GetJSONString (drmaa_blast_tool_config_p, "queue");
+
+			if (queue_s)
 				{
-					if (!SetDrmaaToolQueueName (drmaa_tool_p, value_s))
+					const char *output_path_s = GetJSONString (blast_config_p, "working_directory");
+
+					if (output_path_s)
 						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "SetDrmaaToolQueueName failed to set name to \"%s\"", value_s);
+							GetJSONBoolean (drmaa_blast_tool_config_p, "asynchronous", &async_flag);
+
+							try
+								{
+									drmaa_tool_p = new DrmaaBlastTool (job_p, name_s, data_p, ebtf_program_name_s, queue_s, output_path_s, async_flag);
+								}
+							catch (std :: exception &ex_r)
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create drmaa blast tool, error \"%s\"", ex_r.what ());
+								}
+
+							if (drmaa_tool_p)
+								{
+									int i = 0;
+									const char *value_s = NULL;
+
+									/* Set the number of cores per job */
+									if (GetJSONInteger (drmaa_blast_tool_config_p, "drmaa_cores_per_search", &i))
+										{
+											drmaa_tool_p -> SetCoresPerSearch ((uint32) i);
+										}
+
+									/* Set up any email notifications */
+									value_s = GetJSONString (drmaa_blast_tool_config_p, "email_notifications");
+
+									if (value_s)
+										{
+											const char **addresses_ss = (const char **) AllocMemoryArray (2, sizeof (const char *));
+
+											if (addresses_ss)
+												{
+													*addresses_ss = value_s;
+												}
+
+											if (! (drmaa_tool_p -> SetEmailNotifications (addresses_ss)))
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set email notifications for drmaa tool");
+												}
+
+											FreeMemory (addresses_ss);
+										}		/* if (json_p) */
+
+								}		/* if (drmaa_tool_p) */
+
+						}		/* if (output_path_s) */
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get working_directory from config");
 						}
+
+				}		/* if (queue_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get queue name from config");
 				}
-
-
+		}		/* if (drmaa_blast_tool_config_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get drmaa_blast_tool_config from config");
 		}
+
 
 	return drmaa_tool_p;
 }

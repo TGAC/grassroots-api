@@ -229,29 +229,29 @@ endif
 
 # SLURM DRMAA
 ifeq ($(SLURM_DRMAA_ENABLED),1)	
+
 all: drmaa_slurm
 
 install: install_drmaa_slurm
 
 drmaa_slurm: drmaa
-	$(MAKE) -C drmaa/base -DDRMAA_IMPLEMENTATION_NAME=slurm
+	$(MAKE) -C drmaa/base
 	
 install_drmaa_slurm: drmaa_slurm
-	$(MAKE) -C drmaa/base install -DDRMAA_IMPLEMENTATION_NAME=slurm
-endif
-
+	$(MAKE) -C drmaa/base install
 
 # LSF DRMAA
-ifeq ($(LSF_DRMAA_ENABLED),1)
+else ifeq ($(LSF_DRMAA_ENABLED),1)
+
 all: drmaa_lsf
 
 install: install_drmaa_lsf
 
 drmaa_lsf: drmaa
-	$(MAKE) -C drmaa/base -DDRMAA_IMPLEMENTATION_NAME=lsf
+	$(MAKE) -C drmaa/base
 
 install_drmaa_lsf: drmaa_lsf
-	$(MAKE) -C drmaa/base install -DDRMAA_IMPLEMENTATION_NAME=lsf
+	$(MAKE) -C drmaa/base install 
 endif
 
 
@@ -441,14 +441,14 @@ install_irods_dev:
 
 install_mongodb_c:
 	cd $(DIR_ROOT)/extras/mongo-c-driver-1.2.1; \
-	./configure --prefix=$(DIR_MONGODB) \
+	./configure --prefix=$(DIR_MONGODB); \
 	make; \
 	make install		
 	
 
 install_samlib:
 	cd $(DIR_ROOT)/extras/htslib; \
-	./configure --prefix=$(DIR_HTSLIB) \
+	./configure --prefix=$(DIR_HTSLIB); \
 	make; \
 	make install	
 	
@@ -457,9 +457,9 @@ install_pooltest:
 
 
 install_slurm_drmaa:
-	cd $(DIR_ROOT)/extrasslurm-drmaa-1.0.7; \
-	./configure --prefix=$(DIR_SLURM_DRMAA) \
+	cd $(DIR_ROOT)/extras/slurm-drmaa-1.0.7; \
+	./configure --prefix=$(DIR_SLURM_DRMAA); \
 	make; \
-	make install		
+	make install
 
 

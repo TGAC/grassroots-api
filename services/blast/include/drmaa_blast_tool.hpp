@@ -44,7 +44,7 @@ public:
 	 * @param queue_name_s The name of the queue that this DrmaaBlastTool will use.
 	 * @param async_flag Should the DrmaaBlastTool run in asynchronous mode.
 	 */
-	DrmaaBlastTool (ServiceJob *service_job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, const char *queue_name_s, bool async_flag);
+	DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, const char *queue_name_s, const char *const output_path_s, bool async_flag);
 
 	/**
 	 *  The DrmaaBlastTool destructor.

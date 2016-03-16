@@ -37,6 +37,7 @@
 DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const BlastServiceData *data_p, const char *blast_program_name_s, const char *queue_name_s, const char *const output_path_s, bool async_flag)
 : ExternalBlastTool (job_p, name_s, data_p, blast_program_name_s)
 {
+	const char *error_s = 0;
 	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
 
 	if (dbt_drmaa_tool_p)
@@ -53,16 +54,19 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const B
 							else
 								{
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "SetDrmaaToolOutputFilename failed for \"%s\"", output_path_s);
+									error_s = "SetDrmaaToolOutputFilename failed";
 								}
 						}
 					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "SetDrmaaToolJobName failed for \"%s\"", name_s);
+							error_s = "SetDrmaaToolJobName failed";
 						}
 				}
 			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "SetDrmaaToolQueueName failed for \"%s\"", queue_name_s);
+					error_s = "SetDrmaaToolQueueName failed";
 				}
 
 			FreeDrmaaTool (dbt_drmaa_tool_p);
@@ -70,9 +74,10 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const B
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate drmaa tool");
+			error_s = "Failed to allocate drmaa tool";
 		}
 
-	throw (std :: bad_alloc);
+	throw (std :: bad_alloc ());
 }
 
 
@@ -81,7 +86,7 @@ DrmaaBlastTool :: ~DrmaaBlastTool ()
 	#if DRMAA_BLAST_TOOL_DEBUG >= STM_LEVEL_FINEST
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
 
-	ConvertUUIDToString (bt_job_p -> sj_id, dbt_drmaa_tool_p -> dt_id_s);
+	ConvertUUIDToString (bt_job_p -> sj_id, uuid_s);
 	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Entering ~DrmaaBlastTool for %s with job id %s", uuid_s, dbt_drmaa_tool_p -> dt_id_s);
 	#endif
 

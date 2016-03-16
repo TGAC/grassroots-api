@@ -370,7 +370,7 @@ bool AddCurlCallback (CurlTool *curl_tool_p, ByteBuffer *buffer_p)
 			else
 				{
 					success_flag = false;
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to to set CURL option \"%s\" to \"%s\"\n", param_p -> cp_opt, param_p -> cp_value_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to to set CURL option \"%d\"\n", param_p -> cp_opt);
 				}
 
 		}		/* while (continue_flag && param_p) */

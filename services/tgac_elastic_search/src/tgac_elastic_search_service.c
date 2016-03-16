@@ -157,7 +157,7 @@ ServicesArray *GetServices (const json_t *config_p)
 					FreeServicesArray (services_p);
 				}
 				
-			FreeService (service_p);
+			FreeMemory (service_p);
 		}
 
 	return NULL;

@@ -154,25 +154,28 @@ bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s)
 
 			if (tool_p -> dt_args_p)
 				{
-					/* join output/error file */
-					if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
-						{
-							/* run jobs in user's home directory */
-							if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
-								{
-									/* the job to be run */
-									if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
-										{
-											char error_s [DRMAA_ERROR_STRING_BUFFER];
-											int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
+					char error_s [DRMAA_ERROR_STRING_BUFFER] = { 0 };
+					int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
 
-											if (err_code == DRMAA_ERRNO_SUCCESS)
+					if (err_code == DRMAA_ERRNO_SUCCESS)
+						{
+							/* join output/error file */
+							if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
+								{
+									/* run jobs in user's home directory */
+									if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
+										{
+											/* the job to be run */
+											if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
 												{
 													return true;
-												}
-										}
-								}
-						}
+												}		/* if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s)) */
+
+										}		/* if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD)) */
+
+								}		/* if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y")) */
+
+						}		/* if (err_code == DRMAA_ERRNO_SUCCESS) */
 
 					FreeLinkedList (tool_p -> dt_args_p);
 					tool_p -> dt_args_p = NULL;
