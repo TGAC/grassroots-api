@@ -32,6 +32,7 @@
 #include "linked_list.h"
 #include "operation.h"
 #include "json_util.h"
+#include "uuid/uuid.h"
 //#include "drmaa.h"
 
 
@@ -111,10 +112,11 @@ GRASSROOTS_DRMAA_API bool ExitDrmaa (void);
  * Allocate a DrmaaTool to run the given program.
  *
  * @param program_name_s The program that this DrmaaTool will run.
+ * @param id The id to give to this DrmaaTool.
  * @return A newly-allocated DrmaaTool or <code>NULL</code> upon error.
  * @memberof DrmaaTool
  */
-GRASSROOTS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
+GRASSROOTS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s, const uuid_t id);
 
 
 /**
@@ -122,10 +124,11 @@ GRASSROOTS_DRMAA_API DrmaaTool *AllocateDrmaaTool (const char *program_name_s);
  *
  * @param tool_p The DrmaaTool to initialise.
  * @param program_name_s The program that this DrmaaTool will run.
+ * @param id The id to give to this DrmaaTool.
  * @return <code>true</code> if the DrmaaTool was initialised successfully, <code>false</code> upon error.
  * @memberof DrmaaTool
  */
-GRASSROOTS_DRMAA_API bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s);
+GRASSROOTS_DRMAA_API bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s, const uuid_t id);
 
 
 /**

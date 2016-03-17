@@ -38,7 +38,7 @@ DrmaaBlastTool :: DrmaaBlastTool (ServiceJob *job_p, const char *name_s, const B
 : ExternalBlastTool (job_p, name_s, data_p, blast_program_name_s)
 {
 	const char *error_s = 0;
-	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s);
+	dbt_drmaa_tool_p = AllocateDrmaaTool (blast_program_name_s, job_p -> sj_id);
 
 	if (dbt_drmaa_tool_p)
 		{

@@ -229,7 +229,7 @@ endif
 
 # SLURM DRMAA
 ifeq ($(SLURM_DRMAA_ENABLED),1)	
-
+export SLURM_DRMAA_ENABLED=1
 all: drmaa_slurm
 
 install: install_drmaa_slurm
@@ -242,13 +242,14 @@ install_drmaa_slurm: drmaa_slurm
 
 # LSF DRMAA
 else ifeq ($(LSF_DRMAA_ENABLED),1)
+export LSF_DRMAA_ENABLED=1
 
 all: drmaa_lsf
 
 install: install_drmaa_lsf
 
 drmaa_lsf: drmaa
-	$(MAKE) -C drmaa/base
+	$(MAKE) -C drmaa/base 
 
 install_drmaa_lsf: drmaa_lsf
 	$(MAKE) -C drmaa/base install 

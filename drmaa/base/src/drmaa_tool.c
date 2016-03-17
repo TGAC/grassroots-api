@@ -31,6 +31,13 @@
 #endif
 
 
+#ifdef LSF_DRMAA_ENABLED
+	static const char S_QUEUE_KEY_S [] = "-q ";
+#elif SLURM_DRMAA_ENABLED
+	static const char S_QUEUE_KEY_S [] = "-p ";
+#endif
+
+
 /*
  * STATIC PROTOTYPES
  */
@@ -111,13 +118,13 @@ bool ExitDrmaa (void)
 
 
 
-DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
+DrmaaTool *AllocateDrmaaTool (const char *program_name_s, const uuid_t id)
 {
 	DrmaaTool *tool_p = (DrmaaTool *) AllocMemory (sizeof (DrmaaTool));
 
 	if (tool_p)
 		{
-			if (InitDrmaaTool (tool_p, program_name_s))
+			if (InitDrmaaTool (tool_p, program_name_s, id))
 				{
 					return tool_p;
 				}
@@ -129,7 +136,7 @@ DrmaaTool *AllocateDrmaaTool (const char *program_name_s)
 }
 
 
-bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s)
+bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s, const uuid_t id)
 {
 	tool_p -> dt_queue_name_s = NULL;
 	tool_p -> dt_working_directory_s = NULL;
@@ -150,36 +157,40 @@ bool InitDrmaaTool (DrmaaTool *tool_p, const char *program_name_s)
 
 	if (tool_p -> dt_program_name_s)
 		{
-			tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode);
-
-			if (tool_p -> dt_args_p)
+			if ((tool_p -> dt_id_s = GetUUIDAsString (id)) != NULL)
 				{
-					char error_s [DRMAA_ERROR_STRING_BUFFER] = { 0 };
-					int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
-
-					if (err_code == DRMAA_ERRNO_SUCCESS)
+					if ((tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode)) != NULL)
 						{
-							/* join output/error file */
-							if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
+							char error_s [DRMAA_ERROR_STRING_BUFFER] = { 0 };
+							int err_code = drmaa_allocate_job_template (& (tool_p -> dt_job_p), error_s, DRMAA_ERROR_STRING_BUFFER);
+
+							if (err_code == DRMAA_ERRNO_SUCCESS)
 								{
-									/* run jobs in user's home directory */
-									if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
+									/* join output/error file */
+									if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y"))
 										{
-											/* the job to be run */
-											if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
+											/* run jobs in user's home directory */
+											if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD))
 												{
-													return true;
-												}		/* if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s)) */
+													/* the job to be run */
+													if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s))
+														{
+															return true;
+														}		/* if (SetDrmaaAttribute (tool_p, DRMAA_REMOTE_COMMAND, program_name_s)) */
 
-										}		/* if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD)) */
+												}		/* if (SetDrmaaAttribute (tool_p, DRMAA_WD, DRMAA_PLACEHOLDER_HD)) */
 
-								}		/* if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y")) */
+										}		/* if (SetDrmaaAttribute (tool_p, DRMAA_JOIN_FILES, "y")) */
 
-						}		/* if (err_code == DRMAA_ERRNO_SUCCESS) */
+								}		/* if (err_code == DRMAA_ERRNO_SUCCESS) */
 
-					FreeLinkedList (tool_p -> dt_args_p);
-					tool_p -> dt_args_p = NULL;
-				}		/* if (tool_p -> dt_args_p) */
+							FreeLinkedList (tool_p -> dt_args_p);
+							tool_p -> dt_args_p = NULL;
+						}		/* if ((tool_p -> dt_args_p = AllocateLinkedList (FreeStringListNode)) != NULL) */
+
+					FreeCopiedString (tool_p -> dt_id_s);
+					tool_p -> dt_id_s = NULL;
+				}		/* if ((tool_p -> dt_id_s = GetUUIDAsString (id)) != NULL) */
 
 			FreeCopiedString (tool_p -> dt_program_name_s);
 			tool_p -> dt_program_name_s = NULL;
@@ -761,13 +772,15 @@ static bool BuildNativeSpecification (DrmaaTool *tool_p)
 		{
 			if (tool_p -> dt_queue_name_s)
 				{
-					success_flag = AppendStringsToByteBuffer (buffer_p, "-q ", tool_p -> dt_queue_name_s, NULL);
+					success_flag = AppendStringsToByteBuffer (buffer_p, S_QUEUE_KEY_S, tool_p -> dt_queue_name_s, NULL);
 				}
 
+			/*
 			if (tool_p -> dt_host_name_s)
 				{
 					success_flag = AppendStringsToByteBuffer (buffer_p, " -m ", tool_p -> dt_host_name_s, NULL);
 				}
+			*/
 
 			if (success_flag)
 				{
@@ -1089,10 +1102,11 @@ DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p)
 {
 	DrmaaTool *drmaa_p = NULL;
 	const char *program_name_s = GetJSONString (json_p, DRMAA_PROGRAM_NAME_S);
+	const char *id_s = GetJSONString (json_p, DRMAA_ID_S);
 
-	if (program_name_s)
+	if (program_name_s && id_s)
 		{
-			drmaa_p = AllocateDrmaaTool (program_name_s);
+			drmaa_p = AllocateDrmaaTool (program_name_s, id_s);
 
 			if (drmaa_p)
 				{
@@ -1106,38 +1120,37 @@ DrmaaTool *ConvertDrmaaToolFromJSON (const json_t * const json_p)
 												{
 													if (SetUpDrmaaToolValue (json_p, DRMAA_WORKING_DIR_S, drmaa_p, SetDrmaaToolCurrentWorkingDirectory))
 														{
-															if (SetUpDrmaaToolValue (json_p, DRMAA_ID_S, drmaa_p, SetDrmaaToolJobId))
+
+															if (SetUpDrmaaToolValue (json_p, DRMAA_OUT_ID_S, drmaa_p, SetDrmaaToolJobOutId))
 																{
-																	if (SetUpDrmaaToolValue (json_p, DRMAA_OUT_ID_S, drmaa_p, SetDrmaaToolJobOutId))
+																	drmaa_p -> dt_args_p = GetProgramArguments (json_p);
+
+																	if (drmaa_p -> dt_args_p)
 																		{
-																			drmaa_p -> dt_args_p = GetProgramArguments (json_p);
+																			int i = 0;
 
-																			if (drmaa_p -> dt_args_p)
+																			if (GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &i))
 																				{
-																					int i = 0;
-
-																					if (GetJSONInteger (json_p, DRMAA_NUM_CORES_S, &i))
+																					if (!SetDrmaaToolCores (drmaa_p, i))
 																						{
-																							if (!SetDrmaaToolCores (drmaa_p, i))
-																								{
-																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set num cores to %d", i);
-																								}
+																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set num cores to %d", i);
 																						}
+																				}
 
-																					if (GetJSONInteger (json_p, DRMAA_MEM_USAGE_S, &i))
+																			if (GetJSONInteger (json_p, DRMAA_MEM_USAGE_S, &i))
+																				{
+																					if (!SetDrmaaToolMemory (drmaa_p, i))
 																						{
-																							if (!SetDrmaaToolMemory (drmaa_p, i))
-																								{
-																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set memory usage to %d", i);
-																								}
+																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set memory usage to %d", i);
 																						}
+																				}
 
-																					drmaa_p -> dt_email_addresses_ss = GetEmailAddresses (json_p);
-																				}		/* if (drmaa_p -> dt_args_p) */
+																			drmaa_p -> dt_email_addresses_ss = GetEmailAddresses (json_p);
+																		}		/* if (drmaa_p -> dt_args_p) */
 
-																		}		/* if (SetUpDrmaaToolValue (json_p, DRMAA_OUT_ID_S, drmaa_p, SetDrmaaToolJobOutId)) */
+																}		/* if (SetUpDrmaaToolValue (json_p, DRMAA_OUT_ID_S, drmaa_p, SetDrmaaToolJobOutId)) */
 
-																}		/* if (SetUpDrmaaToolValue (json_p, DRMAA_ID_S, drmaa_p, SetDrmaaToolJobId)) */
+
 
 														}		/* if (SetUpDrmaaToolValue (json_p, DRMAA_WORKING_DIR_S, drmaa_p, SetDrmaaToolCurrentWorkingDirectory)) */
 

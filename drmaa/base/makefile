@@ -71,6 +71,16 @@ EXE_INCLUDES = \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_GRASSROOTS_HANDLER_INC)
 
+
+ifeq ($(SLURM_DRMAA_ENABLED),1)
+CPPFLAGS += -DSLURM_DRMAA_ENABLED
+else
+ifeq($(LSF_DRMAA_ENABLED),1)
+CPPFLAGS += -DLSF_DRMAA_ENABLED
+endif
+
+
+
 include $(DIR_ROOT)/generic_makefiles/shared_library.makefile
 
 .PHONY:	test test_install
