@@ -485,7 +485,7 @@ bool AddDrmaaToolArgument (DrmaaTool *tool_p, const char *arg_s)
 OperationStatus GetDrmaaToolStatus (DrmaaTool *tool_p)
 {
 	OperationStatus status = OS_ERROR;
-	char error_s [DRMAA_ERROR_STRING_BUFFER];
+	char error_s [DRMAA_ERROR_STRING_BUFFER] = { 0 };
 	int drmaa_status;
 	int res = drmaa_job_ps (tool_p -> dt_id_s, &drmaa_status, error_s, DRMAA_ERROR_STRING_BUFFER);
 
@@ -548,7 +548,7 @@ bool RunDrmaaTool (DrmaaTool *tool_p, const bool async_flag)
 
 			if (args_ss)
 				{
-					char error_s [DRMAA_ERROR_STRING_BUFFER];
+					char error_s [DRMAA_ERROR_STRING_BUFFER] = { 0 };
 
 					/*run a job*/
 					int result = drmaa_run_job (tool_p -> dt_id_s, sizeof (tool_p -> dt_id_s) - 1, tool_p -> dt_job_p, error_s, DRMAA_ERROR_STRING_BUFFER);
