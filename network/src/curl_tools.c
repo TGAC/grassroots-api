@@ -84,7 +84,7 @@ typedef struct CURLParam
 } CURLParam;
 
 
-static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
+static size_t WriteMemoryCallback (char *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
 
 static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p);
 
@@ -99,9 +99,7 @@ CurlTool *AllocateCurlTool (void)
 
 			if (curl_tool_p)
 				{
-					curl_tool_p -> ct_curl_p = GetCurl (buffer_p);
-
-					if (curl_tool_p -> ct_curl_p)
+					if (SetupCurl (curl_tool_p, buffer_p))
 						{
 							curl_tool_p -> ct_buffer_p = buffer_p;
 							curl_tool_p -> ct_form_p = NULL;
@@ -131,34 +129,37 @@ void FreeCurlTool (CurlTool *curl_tool_p)
 }
 
 
-CURL *GetCurl (ByteBuffer *buffer_p)
+bool SetupCurl (CurlTool *tool_p, ByteBuffer *buffer_p)
 {
-	CURL *curl_p = curl_easy_init ();
+	tool_p -> ct_curl_p = curl_easy_init ();
 	
-	if (curl_p)
+	if (tool_p -> ct_curl_p)
 		{
 			if (buffer_p)
 				{
-					if (AddCurlCallback (curl_p, buffer_p))
+					if (AddCurlCallback (tool_p, buffer_p))
 						{
 							#if CURL_TOOLS_DEBUG >= STM_LEVEL_FINER
 							curl_easy_setopt (curl_p, CURLOPT_VERBOSE, 1L);
 							#endif
+
+							return true;
 						}
 					else
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add buffer callback for curl object\n");
-							FreeCurl (curl_p);
-							curl_p = NULL;
 						}
 				}
+
+			FreeCurl (tool_p -> ct_curl_p);
+			tool_p -> ct_curl_p = NULL;
 		}
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create curl object\n");
 		}
 
-	return curl_p;
+	return false;
 }
 
 
@@ -336,9 +337,11 @@ bool CallSecureUrl (const char *url_s, const char *header_data_s, const char *ca
 bool AddCurlCallback (CurlTool *curl_tool_p, ByteBuffer *buffer_p)
 {
 	bool success_flag = true;
+
+	curl_write_callback callback_fn = WriteMemoryCallback;
 	const CURLParam params [] = 
 		{
-			{ CURLOPT_WRITEFUNCTION, (const char *)  WriteMemoryCallback },
+			{ CURLOPT_WRITEFUNCTION, (const char *)  callback_fn },
 			{ CURLOPT_WRITEDATA, (const char *) buffer_p },
 
 			/* set default user agent */
@@ -361,7 +364,7 @@ bool AddCurlCallback (CurlTool *curl_tool_p, ByteBuffer *buffer_p)
 
 	while (success_flag && (param_p -> cp_value_s))
 		{
-			CURLcode ret = curl_easy_setopt (curl_tool_p -> ct_curl_p, param_p -> cp_opt, param_p -> cp_value_s);
+			CURLcode ret = curl_easy_setopt (curl_tool_p -> ct_curl_p, param_p -> cp_opt, (void *) param_p -> cp_value_s);
 
 			if (ret == CURLE_OK)
 				{
@@ -443,7 +446,7 @@ const char *GetCurlToolData (const CurlTool * const tool_p)
 
 
 
-static size_t WriteMemoryCallback (void *response_data_p, size_t block_size, size_t num_blocks, void *store_p)
+static size_t WriteMemoryCallback (char *response_data_p, size_t block_size, size_t num_blocks, void *store_p)
 {
 	size_t total_size = block_size * num_blocks;
 	size_t result = CURLE_OK;

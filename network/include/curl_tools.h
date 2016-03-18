@@ -81,15 +81,16 @@ GRASSROOTS_NETWORK_API void FreeCurlTool (CurlTool *curl_p);
 
 
 /**
- * Allocate a new CURL object and add optionally add a
+ * Allocate a new CURL object to a give CurlTool and add optionally add a
  * write to buffer callback.
  *
+ * @param tool_p The CurlTool to set up the CURL connection for.
  * @param buffer_p If this is not NULL, then set the curl object
  * to write its response to this buffer. This can be NULL <code>NULL</code>.
  * @see AddCurlCallback
- * @return The CURL object or <code>NULL</code> upon error.
+ * @return <code>true</code> upon success or <code>false</code> upon error.
  */
-GRASSROOTS_NETWORK_LOCAL CURL *GetCurl (ByteBuffer *buffer_p);
+GRASSROOTS_NETWORK_LOCAL bool SetupCurl (CurlTool *tool_p, ByteBuffer *buffer_p);
 
 
 /**
