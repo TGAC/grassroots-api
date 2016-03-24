@@ -3,7 +3,7 @@
 DIR_OBJS = $(BUILD)
 
 
-CFLAGS 	+=  -Wall -Wshadow -Wextra
+CFLAGS 	+=  -Wall -Wshadow -Wextra -std=gnu99
 
 CPPFLAGS += $(INCLUDES) -DUNIX
 

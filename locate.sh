@@ -1,5 +1,17 @@
 #!/bin/bash
 
+
+MakeDependency()
+{
+ cd $1
+ ./configure --prefix=$2
+ make
+}
+
+
+# LookUp 
+# $1: a single argument which is the regexp for the file to search for
+# It sets a global variable called VAR_DIR to the location of the sought after file 
 LookUp ()
 {
 	NUM_MATCHES=`locate -c -r "^\(.*/\)*\$1$"`
@@ -231,4 +243,10 @@ echo "HTMLCXX_LIB_DIR: $HTMLCXX_LIB_DIR"
 echo "HTMLCXX_INC_DIR: $HTMLCXX_INC_DIR"
 echo "HCXSELECTCXX_LIB_DIR: $HCXSELECT_LIB_DIR"
 echo "HCXSELECTCXX_INC_DIR: $HCXSELECT_INC_DIR"
+
+
+
+
+
+
 

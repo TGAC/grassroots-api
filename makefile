@@ -148,7 +148,7 @@ export DIR_HTSLIB_LIB=$(DIR_HTSLIB)/lib
 
 
 include project.properties
-include drmaa.properties
+-include drmaa.properties
 
 lib_util:
 	$(MAKE) -C util
