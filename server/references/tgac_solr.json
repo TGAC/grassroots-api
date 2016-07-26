@@ -1,0 +1,36 @@
+{
+	"schema_version": 0.1,
+	"provider": {
+		"name": "TGAC articles",
+		"description": "A service to search for TGAC academic articles.",
+		"uri": "http://www.tgac.ac.uk"
+	},
+	"services": {
+		"path": "TGAC Document Search service",
+		"summary": "A service to obtain articles",
+		"description": "A service to obtain articles using search terms",    
+		"plugin": "web_search_json_service",
+		"operations": [{
+			"operationId": "TGAC Solr Web Search service",
+			"summary": "An operation to obtain matching articles",
+			"description": "An operation to obtain matching articles from TGAC",
+			"uri": "http://http://v0214.nbi.ac.uk:8983/solr/select?wt=json&",
+			"method": "GET",
+			"results_selector": "response.docs",
+			"title_selector": "title",
+			"parameter_set": {
+				"parameters": [{
+					"param": "q",
+					"name": "Query",
+					"default_value": "",
+					"current_value": "",
+					"type": "string",
+					"tag": 1,
+					"grassroots_type": 11,
+					"description": "The search term"
+				}]
+			}
+		}]
+	}
+}
+
