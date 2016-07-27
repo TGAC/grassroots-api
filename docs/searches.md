@@ -56,12 +56,12 @@ So far the comparisons have been for equality, however you can also do other com
 The value for this key can be one of "=", "!=", "<", "<=", ">", ">=", "in", "range", "!=" and "like"
 
 * **value**: 
-This is the value that the *operator* will act upon. This will be generally be a single value except for when *operator* is set to "in" or "range". For "in" it acts as described above. For "range", this value will be  an array of two values that are the lower and upper inclusive bounds to match against. For example to get a *longtitude* value greater than or equal to 14 degrees, the corresponding json would be
+This is the value that the *operator* will act upon. This will be generally be a single value except for when *operator* is set to "in" or "range". For "in" it acts as described above. For "range", this value will be  an array of two values that are the lower and upper inclusive bounds to match against. For example to get a *longitude* value greater than or equal to 14 degrees, the corresponding JSON would be
 
 ~~~.json
 {
 	"data": {
-		"longtitude": {
+		"longitude": {
 			"operator": ">=",
 			"value": 14.000
 		 }
@@ -69,12 +69,12 @@ This is the value that the *operator* will act upon. This will be generally be a
 }
 ~~~
 
-Whereas to get a *longtitude* value between 14 and 16 degrees, the corresponding json would be
+Whereas to get a *longitude* value between 14 and 16 degrees, the corresponding JSON would be
 
 ~~~.json
 {
 	"data": {
-		"longtitude": {
+		"longitude": {
 			"operator": "range",
 			"value": [ 14.000, 16.000 ]
 		 }
@@ -110,18 +110,18 @@ would match *"name"*: *"food"* but not *"name"*: *"Food"*, whereas
 			"value": "^foo",
 			"insensitive": true
 		 }
-	}
+	}s
 }
 ~~~
 would match both.
 
-So a complete example to search for entries where the *crop* is wheat, the *longtitude* is between 10 and 11 degrees, the *latitude* is between 6 and 7 degrees, the *country* is either China, UK or France and getting the *ID*, *date* and *disease* fields would be
+So a complete example to search for entries where the *crop* is wheat, the *longitude* is between 10 and 11 degrees, the *latitude* is between 6 and 7 degrees, the *country* is either China, UK or France and getting the *ID*, *date* and *disease* fields would be
 
 ~~~.json
 {
 	"data": {
 		"crop": "wheat",
-		"longtitude": {
+		"longitude": {
 			"operator": "range",
 			"value": [ 10.000, 11.000 ]
 		 },

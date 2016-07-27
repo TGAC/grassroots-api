@@ -47,7 +47,7 @@ So the user doesn't need to repeat their chosen Blast Service parameters and the
 
 ### Configuration
 
-To set up a connection between 2 Servers, the *grassroots.config* needs to be amended by adding an entry to the **servers** key. This is an array holding a list where each item relates to an external Grassrroots Server. An example for one of these items is shown below. 
+To set up a connection between 2 Servers, the *grassroots.config* needs to be amended by adding an entry to the **servers** key. This is an array holding a list where each item relates to an external Grassroots Server. An example for one of these items is shown below. 
 
 ~~~~.json
 	"server_name": "grassroots 1",

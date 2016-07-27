@@ -84,9 +84,9 @@ The Operations tag is used to call an API on the Server.
 2 | OP_LIST_INTERESTED_SERVICES | Get a list of the Services that are able to run on a given Resource. 
 3 | OP_RUN_KEYWORD_SERVICES | Run all of the Services that have Keyword Parameters. 
 4 | OP_GET_NAMED_SERVICES | Get the full description of a named Service. 
-5 | OP_CHECK_SERVICE_STATUS | For asynchornously-running jobs, check the status of these jobs.
-6 | OP_GET_SERVICE_RESULTS | For asynchornously-running jobs, get their results. 
-7 | OP_CLEAN_UP_JOBS | For asynchornously-running jobs, clean up any temporary resources that they used.
+5 | OP_CHECK_SERVICE_STATUS | For asynchronously-running jobs, check the status of these jobs.
+6 | OP_GET_SERVICE_RESULTS | For asynchronously-running jobs, get their results. 
+7 | OP_CLEAN_UP_JOBS | For asynchronously-running jobs, clean up any temporary resources that they used.
  
  So, for example, the JSON-based request to get a list of all available Services is:
 

@@ -1,6 +1,6 @@
 ﻿# MongoDB Interaction
 
-One of the facilities that WheatIS provides is an API to access a [MongoDB](https://www.mongodb.org/) instance through JSON-based messages. All of the MongoDB messages are accessed using a "**mongodb**" key. 
+One of the facilities that Grassroots system provides is an API to access a [MongoDB](https://www.mongodb.org/) instance through JSON-based messages. All of the MongoDB messages are accessed using a "**mongodb**" key. 
 
 
 ## Inserting data

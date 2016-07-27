@@ -401,6 +401,9 @@ static ServiceJobSet *GetServiceJobSet (Service *service_p, const uint32 num_job
 					char job_name_s [256];
 					char job_description_s [256];
 
+					/*
+					 * Get a duration for our task that is between 1 and 60 seconds.
+					 */
 					const int duration = 1 + (rand () % 60);
 
 					sprintf (job_name_s, "job " INT32_FMT, i);
@@ -784,16 +787,24 @@ static unsigned char *SerialiseTimedServiceJob (ServiceJob *base_job_p, unsigned
 
 static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 {
+	/* allocate the memory for the TimedServiceJob */
 	TimedServiceJob *job_p = (TimedServiceJob *) AllocMemory (sizeof (TimedServiceJob));
 
 	if (job_p)
 		{
+			/* allocate the memory for the TimeInterval */
 			job_p -> tsj_interval_p = (TimeInterval *) AllocMemory (sizeof (TimeInterval));
 
 			if (job_p -> tsj_interval_p)
 				{
+					/* initialise the base ServiceJob from the JSON fragment */
 					if (InitServiceJobFromJSON (& (job_p -> tsj_job), json_p))
 						{
+							/*
+							 * We now need to get the start and end times for the TimeInterval
+							 * from the JSON.
+							 */
+
 							if (GetJSONLong (json_p, LRS_START_S, & (job_p -> tsj_interval_p -> ti_start)))
 								{
 									if (GetJSONLong (json_p, LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))

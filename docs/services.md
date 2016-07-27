@@ -3,7 +3,7 @@
 
 # Services Introduction {#Intro}
 
-A Service is the componnent that is used to add some sceintific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](services.md#standalone_services) or as [referred services](services.md#referred_services). 
+A Service is the compsonent that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](services.md#standalone_services) or as [referred services](services.md#referred_services). 
 
 
 ## Standalone Services {#standalone_services}
@@ -273,7 +273,7 @@ So imagine that on the results page that http://foobar.com/search returns, our h
 </ol>
 ~~~
 
-then the CSS selector that the Grassroots Serrvice needs is for the links within the results which in this case would be:
+then the CSS selector that the Grassroots Service needs is for the links within the results which in this case would be:
 
 ~~~{.css}
 ol.results li a
@@ -308,7 +308,7 @@ The Grassroots Web Search Service would convert these into results as shown belo
 
 ## JSON
 
-The way that a Server is queried about its Services is via JSON-based messages. Dependent upon the Way that the Server is built these may be GET, POST or body-based requests and you will need to refer to the specific Grassroots Server implementation for more infromation on this. For example, the httpd-based Grassroots Server defaults to receiving the JSON-based messages within the bodies of http(s) requests. The list of available operations are available in the [schema](schema.md#ops).
+The way that a Server is queried about its Services is via JSON-based messages. Dependent upon the Way that the Server is built these may be GET, POST or body-based requests and you will need to refer to the specific Grassroots Server implementation for more information on this. For example, the httpd-based Grassroots Server defaults to receiving the JSON-based messages within the bodies of http(s) requests. The list of available operations are available in the [schema](schema.md#ops).
 
 
 ### List all Services

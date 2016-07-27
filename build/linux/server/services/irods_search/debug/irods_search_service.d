@@ -11,10 +11,10 @@ irods_search_service.o: \
  /home/billy/Projects/grassroots-api/shared/src/util/include/grassroots_util_library.h \
  /home/billy/Projects/grassroots-api/shared/src/util/include/library.h \
  /home/billy/Projects/grassroots-api/shared/src/parameters/include/parameter_set.h \
- /opt/grassroots-installer/grassroots/extras/jansson/include/jansson.h \
- /opt/grassroots-installer/grassroots/extras/jansson/include/jansson_config.h \
+ /opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
+ /opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
  /home/billy/Projects/grassroots-api/shared/src/parameters/include/parameter.h \
- /opt/grassroots-installer/grassroots/extras/libuuid/include/uuid/uuid.h \
+ /opt/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
  /home/billy/Projects/grassroots-api/shared/src/parameters/include/grassroots_params_library.h \
  /home/billy/Projects/grassroots-api/shared/src/util/include/tags.h \
  /home/billy/Projects/grassroots-api/shared/src/util/include/typedefs.h \
@@ -75,10 +75,10 @@ irods_search_service.o: \
 /home/billy/Projects/grassroots-api/shared/src/util/include/grassroots_util_library.h:
 /home/billy/Projects/grassroots-api/shared/src/util/include/library.h:
 /home/billy/Projects/grassroots-api/shared/src/parameters/include/parameter_set.h:
-/opt/grassroots-installer/grassroots/extras/jansson/include/jansson.h:
-/opt/grassroots-installer/grassroots/extras/jansson/include/jansson_config.h:
+/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h:
+/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h:
 /home/billy/Projects/grassroots-api/shared/src/parameters/include/parameter.h:
-/opt/grassroots-installer/grassroots/extras/libuuid/include/uuid/uuid.h:
+/opt/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h:
 /home/billy/Projects/grassroots-api/shared/src/parameters/include/grassroots_params_library.h:
 /home/billy/Projects/grassroots-api/shared/src/util/include/tags.h:
 /home/billy/Projects/grassroots-api/shared/src/util/include/typedefs.h:
