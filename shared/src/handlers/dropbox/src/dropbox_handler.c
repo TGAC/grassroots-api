@@ -27,7 +27,7 @@
 
 static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p);
 
-static bool OpenDropboxHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
+static bool OpenDropboxHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s);
 
 static size_t ReadFromDropboxHandler (struct Handler *handler_p, void *buffer_p, const size_t length);
 
@@ -205,11 +205,6 @@ void FreeDropboxHandler (Handler *handler_p)
 					dropbox_handler_p -> dh_local_copy_f = NULL;
 				}
 				
-			if (handler_p -> ha_filename_s)
-				{
-					RemoveFile (handler_p -> ha_filename_s);
-				}
-				
 			if (dropbox_handler_p -> dh_dropbox_filename_s)
 				{
 					FreeMemory (dropbox_handler_p -> dh_dropbox_filename_s);
@@ -272,7 +267,7 @@ static bool FlushCachedFile (DropboxHandler *dropbox_handler_p)
 }
 
 
-static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_s, const char *mode_s)
+static bool OpenDropboxHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s)
 {
 	bool success_flag = false;
 	DropboxHandler *dropbox_handler_p = (DropboxHandler *) handler_p;
@@ -287,13 +282,13 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 			if (*mode_s != 'w')
 				{
 					/* Get the timestamp of the file (if it exists) on the server */
-					if (!GetLastModifiedTime (dropbox_handler_p, filename_s, &last_modified))
+					if (!GetLastModifiedTime (dropbox_handler_p, resource_p -> re_value_s, &last_modified))
 						{
-							printf ("Couldn't get last modified time for %s\n", filename_s);
+							printf ("Couldn't get last modified time for %s\n", resource_p -> re_value_s);
 						}
 				}
 
-			cached_filename_s = GetMappedFilename (protocol_s, user_id_s, filename_s, &last_modified);
+			cached_filename_s = GetMappedFilename (protocol_s, user_id_s, resource_p -> re_value_s, &last_modified);
 			
 			if (cached_filename_s)
 				{
@@ -331,7 +326,7 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 										{
 											res = drbGetFile (dropbox_handler_p -> dh_client_p, 
 												&output_p,
-												DRBOPT_PATH, filename_s,
+												DRBOPT_PATH, resource_p -> re_value_s,
 												DRBOPT_IO_DATA, temp_f,
 												DRBOPT_IO_FUNC, fwrite,
 												DRBOPT_END);
@@ -368,7 +363,7 @@ static bool OpenDropboxHandler (struct Handler *handler_p, const char *filename_
 										
 									if (success_flag)
 										{
-											if (!SetMappedFilename (protocol_s, user_id_s, filename_s, buffer_s, last_modified))
+											if (!SetMappedFilename (protocol_s, user_id_s, resource_p -> re_value_s, buffer_s, last_modified))
 												{
 													printf ("failed to set filename for handler cache\n");
 													success_flag = false;
@@ -502,9 +497,9 @@ static bool CalculateFileInformationFromDropboxHandler (struct Handler *handler_
 {
 	bool success_flag = false;
 
-	if (handler_p -> ha_filename_s)
+	if (handler_p -> ha_resource_p)
 		{
-			success_flag = CalculateFileInformation (handler_p -> ha_filename_s, info_p);
+			success_flag = CalculateFileInformation (handler_p -> ha_resource_p -> re_value_s, info_p);
 		}
 
 	return success_flag;

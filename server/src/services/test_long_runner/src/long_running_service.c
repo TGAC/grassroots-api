@@ -23,17 +23,42 @@
 #include "service_job_set_iterator.h"
 
 
+/**
+ * This service is an example to show how job data can be persisted between separate
+ * requests. It mimics real world jobs by running a user-specified number of jobs that
+ * are have a start and end times, each one an equivalent to a stopwatch.
+ */
+
+/**
+ * This datatype stores the start and end times to mimic a real job.
+ */
 typedef struct TimeInterval
 {
+	/** The start time of the job. */
 	time_t ti_start;
+
+	/** The finish time of the job. */
 	time_t ti_end;
+
+	/**
+	 * The duration of the job, simply ti_end - ti_start.
+	 */
 	time_t ti_duration;
 } TimeInterval;
 
 
+/**
+ * This is the subclassed ServiceJob that is used to store the information
+ * for the mimicked jobs that this Service runs.
+ */
 typedef struct TimedServiceJob
 {
+	/** The base ServiceJob */
 	ServiceJob tsj_job;
+
+	/**
+	 * A pointer to the TimeInterval that is used to mimic the running of a real task.
+	 */
 	TimeInterval *tsj_interval_p;
 
 	/** Has the TimedServiceJob been added to the JobsManager yet? */
@@ -41,18 +66,32 @@ typedef struct TimedServiceJob
 } TimedServiceJob;
 
 
-
-/*
- * STATIC DATATYPES
- */
-typedef struct 
+typedef struct
 {
 	ServiceData lsd_base_data;
 } LongRunningServiceData;
 
 
+/*
+ * STATIC DATATYPES
+ */
+
+
+/*
+ * To store the persistent data for our tasks, we will use the
+ * keys shown below.
+ */
+
+/** This is the key used to specify the start time of the task. */
 static const char * const LRS_START_S = "start";
+
+/** This is the key used to specify the end time of the task. */
 static const char * const LRS_END_S = "end";
+
+/**
+ * This is the key used to specify whether the task has been added
+ * to the JobsManager yet.
+ */
 static const char * const LRS_ADDED_FLAG_S = "added_to_job_manager";
 
 
@@ -159,7 +198,12 @@ ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
 							
 							* (services_p -> sa_services_pp) = service_p;
 
-
+							/*
+							 * We are going to store the data representing the asynchronous tasks
+							 * in the JobsManager and so we need to specify the callback functions
+							 * that we will use to convert our ServiceJobs to and from their JSON
+							 * representations.
+							 */
 							service_p -> se_deserialise_job_json_fn = BuildTimedServiceJob;
 							service_p -> se_serialise_job_json_fn = BuildTimedServiceJobJSON;
 
@@ -429,6 +473,7 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 							StartTimedServiceJob (job_p);
 
 							job_p -> tsj_job.sj_status = GetTimedServiceJobStatus ((ServiceJob *) job_p);
+							job_p -> tsj_added_flag = true;
 
 							if (!AddServiceJobToJobsManager (jobs_manager_p, job_p -> tsj_job.sj_id, (ServiceJob *) job_p))
 								{
@@ -436,6 +481,8 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 
 									ConvertUUIDToString (job_p -> tsj_job.sj_id, job_id_s);
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job \"%s\" to JobsManager", job_id_s);
+
+									job_p -> tsj_added_flag = false;
 								}
 
 							job_p = (TimedServiceJob *) GetNextServiceJobFromServiceJobSetIterator (&iterator);
@@ -628,19 +675,39 @@ static void FreeTimedServiceJob (ServiceJob *job_p)
 
 static json_t *GetTimedServiceJobAsJSON (TimedServiceJob *job_p)
 {
+	/*
+	 * Get the JSON for the ServiceJob base class.
+	 */
 	json_t *json_p = GetServiceJobAsJSON (& (job_p -> tsj_job));
 
 	if (json_p)
 		{
+			/*
+			 * Now we add our extra data which is the start and end time of the TimeInterval
+			 * for the given TimedServiceJob.
+			 */
 			if (json_object_set_new (json_p, LRS_START_S, json_integer (job_p -> tsj_interval_p -> ti_start)) == 0)
 				{
 					if (json_object_set_new (json_p, LRS_END_S, json_integer (job_p -> tsj_interval_p -> ti_end)) == 0)
 						{
 							return json_p;
+						}		/* if (json_object_set_new (json_p, LRS_END_S, json_integer (job_p -> tsj_interval_p -> ti_end)) == 0) */
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, json_p, "Failed to add %s " SIZET_FMT " to json", LRS_END_S, job_p -> tsj_interval_p -> ti_end);
 						}
+
+				}		/* if (json_object_set_new (json_p, LRS_START_S, json_integer (job_p -> tsj_interval_p -> ti_start)) == 0) */
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, json_p, "Failed to add %s " SIZET_FMT " to json", LRS_END_S, job_p -> tsj_interval_p -> ti_end);
 				}
 
 			json_decref (json_p);
+		}		/* if (json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create JSON for TimedServiceJob");
 		}
 
 	return NULL;

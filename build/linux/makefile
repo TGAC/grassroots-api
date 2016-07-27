@@ -304,7 +304,7 @@ valgrind:
 all: lib_util lib_network lib_parameters lib_irods lib_handler lib_services handler_irods service_irods_search
 	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/file 
 	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/irods 
-#	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/dropbox 
+	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/dropbox 
 	$(MAKE) -C $(DIR_CLIENTS_BUILD_ROOT)/lib  
 	$(MAKE) -C $(DIR_CLIENTS_BUILD_ROOT)/standalone  
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/lib
