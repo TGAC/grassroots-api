@@ -25,7 +25,7 @@
 #include "filesystem_utils.h"
 
 
-static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p);
+static bool InitDropboxHandler (struct Handler *handler_p, const UserDetails *user_p);
 
 static bool OpenDropboxHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s);
 
@@ -130,7 +130,7 @@ static drbClient *CreateClient (char *token_key_s, char *token_secret_s)
 
 
 
-Handler *GetHandler (const json_t *credentials_p)
+Handler *GetHandler (const UserDetails *user_p)
 {
 	DropboxHandler *handler_p = (DropboxHandler *) AllocMemory (sizeof (DropboxHandler));
 
@@ -138,17 +138,17 @@ Handler *GetHandler (const json_t *credentials_p)
 		{
 			const char *token_key_s = NULL;
 			const char *token_secret_s = NULL;
-			json_t *dropbox_p = json_object_get (credentials_p, GetDropboxHandlerName (NULL));
-
-			#if DROPBOX_HANDLER_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (credentials_p, NULL, STM_LEVEL_FINE, __FILE__, __LINE__);
-			#endif
-
-			if (dropbox_p)
-				{
-					token_key_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_KEY_S);
-					token_secret_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_SECRET_S);
-				}			
+//			json_t *dropbox_p = json_object_get (credentials_p, GetDropboxHandlerName (NULL));
+//
+//			#if DROPBOX_HANDLER_DEBUG >= STM_LEVEL_FINE
+//			PrintJSONToLog (credentials_p, NULL, STM_LEVEL_FINE, __FILE__, __LINE__);
+//			#endif
+//
+//			if (dropbox_p)
+//				{
+//					token_key_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_KEY_S);
+//					token_secret_s = GetJSONString (dropbox_p, DROPBOX_TOKEN_SECRET_S);
+//				}
 		
 			handler_p -> dh_client_p = CreateClient ((char *) token_key_s, (char *) token_secret_s);
 			
@@ -223,7 +223,7 @@ void FreeDropboxHandler (Handler *handler_p)
 }
 
 
-static bool InitDropboxHandler (struct Handler *handler_p, json_t *credentials_p)
+static bool InitDropboxHandler (struct Handler *handler_p, const UserDetails *user_p)
 {
 	DropboxHandler *dropbox_handler_p = (DropboxHandler *) handler_p;	
 	bool success_flag = (dropbox_handler_p -> dh_client_p != NULL);

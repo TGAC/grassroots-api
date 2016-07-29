@@ -19,8 +19,7 @@
 #include "memory_allocations.h"
 #include "data_resource.h"
 
-
-static bool InitFileHandler (struct Handler *handler_p, json_t *credentials_p);
+static bool InitFileHandler (struct Handler *handler_p, const UserDetails *user_p);
 
 
 static bool OpenFileHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char * const mode_s);
@@ -50,7 +49,7 @@ static bool IsResourceForFileHandler (struct Handler *handler_p, const Resource 
 static bool CalculateFileInformationFromFileHandler (struct Handler *handler_p, FileInformation *info_p);
 
 
-Handler *GetHandler (const json_t * UNUSED_PARAM (tags_p))
+Handler *GetHandler (const UserDetails * UNUSED_PARAM (user_p))
 {
 	FileHandler *handler_p = (FileHandler *) AllocMemory (sizeof (FileHandler));
 
@@ -85,7 +84,7 @@ void ReleaseHandler (Handler *handler_p)
 
 
 
-static bool InitFileHandler (struct Handler * UNUSED_PARAM (handler_p), json_t * UNUSED_PARAM (credentials_p))
+static bool InitFileHandler (struct Handler * UNUSED_PARAM (handler_p), const UserDetails * UNUSED_PARAM (user_p))
 {
 	bool success_flag = true;
 	

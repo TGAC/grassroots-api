@@ -103,8 +103,6 @@ typedef struct DropboxHandler
 	#define DROPBOX_HANDLER_VAL(x)
 #endif
 
-DROPBOX_HANDLER_DECLARE const char *DROPBOX_APP_KEY_S DROPBOX_HANDLER_VAL("65viide1m1ye7pd");
-DROPBOX_HANDLER_DECLARE const char *DROPBOX_APP_SECRET_S DROPBOX_HANDLER_VAL("kwd6z8djlcd3g5k");
 
 DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_KEY_S DROPBOX_HANDLER_VAL("token_key");
 DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_SECRET_S DROPBOX_HANDLER_VAL("token_secret");
@@ -117,7 +115,7 @@ extern "C"
 {
 #endif
 
-DROPBOX_HANDLER_API Handler *GetHandler (const json_t *tags_p);
+DROPBOX_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
 DROPBOX_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

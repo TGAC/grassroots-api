@@ -702,8 +702,7 @@ static json_t *GetInterestedServices (const json_t * const req_p, const json_t *
 
 	if (resource_p)
 		{
-			const char *root_path_s = GetServerRootDirectory ();
-			Handler *handler_p = GetResourceHandler (resource_p, root_path_s, credentials_p);
+			Handler *handler_p = GetResourceHandler (resource_p, credentials_p);
 
 			if (handler_p)
 				{

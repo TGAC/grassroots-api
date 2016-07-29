@@ -45,7 +45,7 @@ extern "C"
 #endif
 
 
-FILE_HANDLER_API Handler *GetHandler (const json_t *tags_p);
+FILE_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
 FILE_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

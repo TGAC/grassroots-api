@@ -1,7 +1,7 @@
 ﻿Searches {#Searches}
 =====================
 
-# Database Access {#database_access}
+# [Database Access](#database-access)
 
 Many services uses a database to host the given data for a service and this can be accessed in a generic way using JSON-based queries.
 
@@ -11,7 +11,7 @@ Many services uses a database to host the given data for a service and this can 
 Searches are specified using various fields
 
 * **data**:
-This object contains all of the fields for your query. Each of the keys specify the name of the field that you want to add a search criterion for. These are described in more detail [below](#Comparisons) .
+This object contains all of the fields for your query. Each of the keys specify the name of the field that you want to add a search criterion for. These are described in more detail [below](#comparisons) .
 
 
 * **fields**:
@@ -22,7 +22,7 @@ This is an array of the fields to return for each item matching the query. If th
 ]
 ~~~
 
-### Comparsions {#Comparisons}
+### [Comparsions](#comparisons)
 
 #### Equality Comparisons 
 

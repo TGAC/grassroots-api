@@ -410,8 +410,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 			
 			if (output_name_s)
 				{
-					const char *root_path_s = GetServerRootDirectory ();
-					Handler *input_handler_p = GetResourceHandler (input_resource_p, root_path_s, credentials_p);
+					Handler *input_handler_p = GetResourceHandler (input_resource_p, credentials_p);
 
 					if (input_handler_p)
 						{
@@ -421,7 +420,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 							output_resource.re_protocol_s = input_resource_p -> re_protocol_s;
 							output_resource.re_value_s = output_name_s;
 							
-							output_handler_p = GetResourceHandler (&output_resource, root_path_s, credentials_p);
+							output_handler_p = GetResourceHandler (&output_resource, credentials_p);
 
 							if (output_handler_p)
 								{

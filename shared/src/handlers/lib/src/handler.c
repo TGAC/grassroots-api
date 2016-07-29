@@ -27,7 +27,7 @@ static void RemoveResourceFromHandler (struct Handler *handler_p);
 /*********************/
 
 void InitialiseHandler (Handler * const handler_p,
-	bool (*init_fn) (struct Handler *handler_p, json_t *credentials_p),
+	bool (*init_fn) (struct Handler *handler_p, const UserDetails *user_p),
 	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
 	const char *(*get_protocol_fn) (struct Handler *handler_p),
 	const char *(*get_name_fn) (struct Handler *handler_p),
@@ -188,7 +188,7 @@ void FreeHandlerNode (ListItem *node_p)
 //
 //	Get Symbol
 //
-Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p)
+Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const UserDetails *user_p)
 {
 	if (!plugin_p -> pl_handler_p)
 		{
@@ -196,9 +196,9 @@ Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const json_t *tags_p)
 
 			if (symbol_p)
 				{
-					Handler *(*fn_p) (const json_t *) = (Handler *(*) (const json_t *)) symbol_p;
+					Handler *(*fn_p) (const json_t *) = (Handler *(*) (const UserDetails *)) symbol_p;
 
-					plugin_p -> pl_handler_p = fn_p (tags_p);
+					plugin_p -> pl_handler_p = fn_p (user_p);
 
 					if (plugin_p -> pl_handler_p)
 						{

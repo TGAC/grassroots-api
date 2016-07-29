@@ -20,7 +20,7 @@
 #include "data_resource.h"
 
 
-static bool InitHttpHandler (struct Handler *handler_p, json_t *credentials_p);
+static bool InitHttpHandler (struct Handler *handler_p, const UserDetails *user_p);
 
 
 static bool OpenHttpHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s);
@@ -50,13 +50,13 @@ static bool IsResourceForHttpHandler (struct Handler *handler_p, const Resource 
 static bool CalculateHttpInformationFromHttpHandler (struct Handler *handler_p, HttpInformation *info_p);
 
 
-Handler *GetHandler (const json_t *tags_p)
+Handler *GetHandler (const UserDetails *user_p)
 {
 	HttpHandler *handler_p = (HttpHandler *) AllocMemory (sizeof (HttpHandler));
 
 	if (handler_p)
 		{
-			InitialiseHandler (& (handler_p -> fh_base_handler),
+			InitialiseHandler (& (handler_p -> hh_base_handler),
 				InitHttpHandler,
 				IsResourceForHttpHandler,
 				GetHttpHandlerProtocol,
@@ -71,7 +71,6 @@ Handler *GetHandler (const json_t *tags_p)
 				CalculateHttpInformationFromHttpHandler,
 				FreeHttpHandler);
 
-			handler_p -> fh_handler_f = NULL;
 		}
 
 	return ((Handler *) handler_p);
@@ -85,7 +84,7 @@ void ReleaseHandler (Handler *handler_p)
 
 
 
-static bool InitHttpHandler (struct Handler *handler_p, json_t *credentials_p)
+static bool InitHttpHandler (struct Handler *handler_p, const UserDetails * UNUSED_PARAM (user_p))
 {
 	bool success_flag = true;
 	
@@ -96,16 +95,33 @@ static bool InitHttpHandler (struct Handler *handler_p, json_t *credentials_p)
 
 static bool OpenHttpHandler (struct Handler *handler_p, const char * const filename_s, const char * const mode_s)
 {
+	bool success_flag = false;
 	HttpHandler *http_handler_p = (HttpHandler *) handler_p;
 
-	if (http_handler_p -> fh_handler_f)
+	if (http_handler_p -> hh_local_f)
 		{
 			CloseHttpHandler (handler_p);
 		}
 
+	if (SetUriForCurlTool (http_handler_p -> hh_curl_p, filename_s))
+		{
+			FILE *temp_f = tmpfile ();
+
+			if (temp_f)
+				{
+					if (RunCurlTool (http_handler_p -> hh_curl_p))
+						{
+
+						}
+
+				}
+		}
+
+
+
 	http_handler_p -> fh_handler_f = fopen (filename_s, mode_s);
 
-	return (http_handler_p -> fh_handler_f != NULL);
+	return success_flag;
 }
 
 
@@ -114,9 +130,9 @@ static size_t ReadFromHttpHandler (struct Handler *handler_p, void *buffer_p, co
 	size_t res = 0;
 	HttpHandler *http_handler_p = (HttpHandler *) handler_p;
 
-	if (http_handler_p -> fh_handler_f)
+	if (http_handler_p -> hh_local_f)
 		{
-			res = fread (buffer_p, 1, length, http_handler_p -> fh_handler_f);
+			res = fread (buffer_p, 1, length, http_handler_p -> hh_local_f);
 		}
 
 	return res;
@@ -143,9 +159,9 @@ static bool SeekHttpHandler (struct Handler *handler_p, long offset, int whence)
 	bool success_flag = false;
 	HttpHandler *http_handler_p = (HttpHandler *) handler_p;
 
-	if (http_handler_p -> fh_handler_f)
+	if (http_handler_p -> hh_local_f)
 		{
-			success_flag = (fseek (http_handler_p -> fh_handler_f, offset, whence) == 0);
+			success_flag = (fseek (http_handler_p -> hh_local_f, offset, whence) == 0);
 		}
 
 	return success_flag;
@@ -157,10 +173,10 @@ static bool CloseHttpHandler (struct Handler *handler_p)
 	bool success_flag = true;
 	HttpHandler *http_handler_p = (HttpHandler *) handler_p;
 
-	if (http_handler_p -> fh_handler_f)
+	if (http_handler_p -> hh_local_f)
 		{
-			success_flag = (fclose (http_handler_p -> fh_handler_f) == 0);
-			http_handler_p -> fh_handler_f = NULL;
+			success_flag = (fclose (http_handler_p -> hh_local_f) == 0);
+			http_handler_p -> hh_local_f = NULL;
 		}
 
 	return success_flag;
@@ -172,11 +188,11 @@ static HandlerStatus GetHttpHandlerStatus (struct Handler *handler_p)
 	HttpHandler *http_handler_p = (HttpHandler *) handler_p;
 	HandlerStatus status = HS_GOOD;
 
-	if (feof (http_handler_p -> fh_handler_f))
+	if (feof (http_handler_p -> hh_local_f))
 		{
 			status = HS_FINISHED;
 		}
-	else if (ferror (http_handler_p -> fh_handler_f))
+	else if (ferror (http_handler_p -> hh_local_f))
 		{
 			status = HS_BAD;
 		}

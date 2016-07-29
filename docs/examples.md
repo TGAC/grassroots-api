@@ -1,7 +1,7 @@
 ﻿Schema Examples
 ===============
 
-# Requests and Responses {#Examples}
+# [Requests and Responses](#requests-and-responses)
 
 These are the Server-Server and Server-Client messages that are used to transmit data, job requests and results throughout the Grassroots system. For more information on these messages, take a look at the [Schema](@ref schema.md).
 

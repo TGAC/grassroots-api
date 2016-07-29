@@ -37,7 +37,7 @@
 #endif
 
 
-static bool InitIRodsHandler (struct Handler *handler_p, json_t *credentials_p);
+static bool InitIRodsHandler (struct Handler *handler_p, const UserDetails *user_p);
 
 static bool OpenIRodsHandler (struct Handler *handler_p, Resource *resource_p, MEM_FLAG resource_mem, const char *mode_s);
 
@@ -87,7 +87,7 @@ Handler *GetIRodsHandler (const char * const username_s, const char * const pass
 }
 */
 
-Handler *GetHandler (const json_t *credentials_p)
+Handler *GetHandler (const UserDetails *user_p)
 {
 	IRodsHandler *handler_p = (IRodsHandler *) AllocMemory (sizeof (IRodsHandler));
 
@@ -157,7 +157,7 @@ void FreeIRodsHandler (Handler *handler_p)
 }
 
 
-static bool InitIRodsHandler (struct Handler * UNUSED_PARAM (handler_p), json_t * UNUSED_PARAM (credentials_p))
+static bool InitIRodsHandler (struct Handler * UNUSED_PARAM (handler_p), const UserDetails * UNUSED_PARAM (user_p));
 {
 	bool success_flag = true;
 	

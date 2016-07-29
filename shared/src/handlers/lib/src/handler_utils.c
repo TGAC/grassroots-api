@@ -71,7 +71,7 @@ static const char * const S_OPEN_COUNT_KEY_S = "open_count";
 static json_t *s_mapped_filenames_p = NULL;
 
 
-static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p);
+static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const UserDetails *user_p);
 
 static json_t *GetMappedObject (const char *protocol_s, const char *user_id_s, const char *filename_s, const bool create_flag);
 
@@ -223,23 +223,16 @@ bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const cha
 
 
 
-Handler *GetResourceHandler (const Resource *resource_p, const char *root_path_s, const json_t *tags_p)
+Handler *GetResourceHandler (const Resource *resource_p, const UserDetails *user_p)
 {
 	Handler *handler_p = NULL;
 	LinkedList *matching_handlers_p = NULL;
+	const char *root_path_s = GetServerRootDirectory ();
 	char *handlers_path_s = MakeFilename (root_path_s, "handlers");
-
-	#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
-		{
-			char *dump_s = json_dumps (tags_p, 0);
-
-			free (dump_s);
-		}
-	#endif
 
 	if (handlers_path_s)
 		{
-			matching_handlers_p = LoadMatchingHandlers (handlers_path_s, resource_p, tags_p);
+			matching_handlers_p = LoadMatchingHandlers (handlers_path_s, resource_p, user_p);
 
 			if (matching_handlers_p)
 				{
@@ -267,7 +260,7 @@ Handler *GetResourceHandler (const Resource *resource_p, const char *root_path_s
 }
 
 
-static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const json_t *tags_p)
+static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, const Resource * const resource_p, const UserDetails *user_p)
 {
 	LinkedList *handlers_list_p = AllocateLinkedList (FreeHandlerNode);
 
@@ -287,9 +280,6 @@ static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, con
 								{
 									StringListNode *node_p = (StringListNode *) (matching_filenames_p -> ll_head_p);
 
-									#if HANDLER_UTILS_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, tags_p, NULL);
-									#endif
 
 									while (node_p)
 										{
@@ -300,7 +290,7 @@ static LinkedList *LoadMatchingHandlers (const char * const handlers_path_s, con
 												{
 													if (OpenPlugin (plugin_p))
 														{
-															Handler *handler_p = GetHandlerFromPlugin (plugin_p, tags_p);
+															Handler *handler_p = GetHandlerFromPlugin (plugin_p, user_p);
 
 															if (handler_p)
 																{

@@ -29,7 +29,15 @@ extern "C"
 {
 #endif
 
-GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const char *root_path_s, const json_t *tags_p);
+
+/**
+ * Get the appropriate Handler for a given Resource.
+ *
+ * @param resource_p The Resource to get the Handler for.
+ * @param user_p An optional UserDetails for any user authentication if needed.
+ * @return The matching Handler or <code>NULL</code> if none could be found.
+ */
+GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const UserDetails *user_p);
 
 
 /**

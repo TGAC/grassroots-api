@@ -36,7 +36,7 @@ An array of ServiceJobs that have been requested to run by the Client.
  This is a unique identifier used to denote the given instance of this ServiceJob upon the Server.
   
 * **results**:
- This is an array of [Resources](schema#Resource) that theServiceJob has generated successfully
+ This is an array of [Resources](schema#resource) that theServiceJob has generated successfully
 * **errors**:
  This is an array of errors that the ServiceJob encountered whilst running.
 
@@ -104,6 +104,4 @@ An array of ServiceJobs that have been requested to run by the Client.
         }
     ]
 }
-
-
 ~~~~ 

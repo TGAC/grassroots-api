@@ -183,4 +183,146 @@ static void TestExecuteQueryString (rcComm_t *connection_p)
 
 
 
+char *ReadFileChunk (const char * const filename_s)
+{
+	FILE *in_f = fopen (filename_s, "rb");
+
+	if (in_f)
+		{
+			/* Scroll 20 bytes into the file */
+			if (fseek (in_f, 20, SEEK_SET) == 0)
+				{
+					/*
+					 * We are going to try and read in 16 bytes so allocate
+					 * the memory needed including the extra byte for the
+					 * terminating \0
+					 */
+					const size_t buffer_size = 16;
+					char *buffer_s = (char *) malloc ((buffer_size + 1) * sizeof (char));
+
+					if (buffer_s)
+						{
+							/* Read in the data */
+							if (fread (buffer_s, 1, buffer_size, in_f) == buffer_size)
+								{
+									/* Add the terminating \0 */
+									* (buffer_s + buffer_size) = '\0';
+
+									return buffer_s;
+								}		/* if (fread (buffer_s, 1, buffer_size, in_f) == buffer_size) */
+							else
+								{
+									fprintf (stderr, "Failed to read value from %s", filename_s);
+								}
+
+							free (buffer_s);
+						}		/* if (buffer_s) */
+					else
+						{
+							fprintf (stderr, "Failed to allocate memory for buffer when reading %s", filename_s);
+						}
+
+				}		/* if (fseek (in_f, 20, SEEK_SET) == 0) */
+			else
+				{
+					fprintf (stderr, "Failed to seek in file %s", filename_s);
+				}
+
+			if (fclose (in_f) != 0)
+				{
+					fprintf (stderr, "Failed to close  file %s", filename_s);
+				}		/* if (fclose (in_f) != 0) */
+
+		}		/* if (in_f) */
+	else
+		{
+			fprintf (stderr, "Failed to open %s", filename_s);
+		}
+
+	return NULL;
+}
+
+
+char *ReadFileChunk (const char * const filename_s)
+{
+	/* The value that we will return */
+	char *result_s = NULL;
+
+	/*
+	 * Allocate the Resource.
+	 * We know that it's a file so we use the protocol for a file,
+	 * PROTOCOL_FILE_S, and we do not need a title for the Resource
+	 * so we send it NULL.
+	 */
+	Resource res_p = AllocateResource (PROTOCOL_FILE_S, filename_s, NULL);
+
+	if (res_p)
+		{
+			/*
+			 * Now that we have the Resource, let the Grassroots system find
+			 * the appropriate Handler.
+			 */
+			Handler *handler_p = GetResourceHandler (res_p, NULL);
+
+			if (handler_p)
+				{
+					/* Scroll 20 bytes into the file */
+					if (SeekHandler (handler_p, 20, SEEK_SET))
+						{
+							/*
+							 * We are going to try and read in 16 bytes so allocate
+							 * the memory needed including the extra byte for the
+							 * terminating \0
+							 */
+							const size_t buffer_size = 16;
+							char *buffer_s = (char *) AllocMemory ((buffer_size + 1) * sizeof (char));
+
+							if (buffer_s)
+								{
+									/* Read in the data */
+									if (ReadFromHandler (handler_p, buffer_s, buffer_size) == buffer_size)
+										{
+											/* Add the terminating \0 */
+											* (buffer_s + buffer_size) = '\0';
+
+											/* Store the value for returning */
+											result_s = buffer_s;
+										}		/* if (fread (buffer_s, 1, buffer_size, in_f) == buffer_size) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to read value from %s", filename_s);
+
+											/* We failed to read in the value so we can release the buffer memory */
+											FreeMemory (buffer_s);
+										}
+
+								}		/* if (buffer_s) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for buffer when reading %s", filename_s);
+								}
+
+						}		/* if (SeekHandler (handler_p, 20, SEEK_SET)) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to seek in %s", filename_s);
+						}
+
+					CloseHandler (handler_p);
+				}		/* if (handler_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find a Handler for %s", filename_s);
+				}
+
+			FreeResource (res_p);
+		}		/* if (res_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate Resource for %s", filename_s);
+		}
+
+	return result_s;
+}
+
 

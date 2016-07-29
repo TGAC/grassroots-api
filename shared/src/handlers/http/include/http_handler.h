@@ -20,6 +20,8 @@
 
 #include "grassroots_http_handler_library.h"
 #include "handler.h"
+#include "curl_tool.h"
+
 
 /**
  * A Handler allowing access to http(s) resources.
@@ -34,7 +36,11 @@ typedef struct HttpHandler
 	 */
 	Handler hh_base_handler;
 	
-} FileHandler;
+	CurlTool *hh_curl_p;
+
+	FILE *hh_local_f;
+
+} HttpHandler;
 
 
 #ifdef __cplusplus
@@ -43,7 +49,7 @@ extern "C"
 #endif
 
 
-HTTP_HANDLER_API Handler *GetHandler (const json_t *tags_p);
+HTTP_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
 HTTP_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

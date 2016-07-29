@@ -87,7 +87,7 @@ extern "C"
 {
 #endif
 
-IRODS_HANDLER_API Handler *GetHandler (const json_t *tags_p);
+IRODS_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
 IRODS_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

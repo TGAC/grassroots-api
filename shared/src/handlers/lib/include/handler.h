@@ -26,7 +26,7 @@
 #include "parameter.h"
 #include "jansson.h"
 #include "filesystem_utils.h"
-
+#include "user_details.h"
 
 /**
  * An enumeration of the possible status values
@@ -75,11 +75,11 @@ typedef struct Handler
 	 * to be used.
 	 *
 	 * @param handler_p This Handler.
-	 * @param credentials_p Any custom credentials or configuration values. This can be <code>NULL</code>.
+	 * @param user_p Any custom credentials or configuration values. This can be <code>NULL</code>.
 	 * @return <code>true</code> upon success, <code>false</code> upon failure.
 	 * @memberof Handler
 	 */
-	bool (*ha_init_fn) (struct Handler *handler_p, json_t *credentials_p);
+	bool (*ha_init_fn) (struct Handler *handler_p, const UserDetails *user_p);
 
 	/**
 	 * Determine if the Handler is designed for a given Resource.
@@ -279,7 +279,7 @@ extern "C"
  * @param ha_free_handler_fn
  */
 GRASSROOTS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
-	bool (*init_fn) (struct Handler *handler_p, json_t *credentials_p),
+	bool (*init_fn) (struct Handler *handler_p, const UserDetails *user_p),
 	bool (*match_fn) (struct Handler *handler_p, const Resource * resource_p),
 	const char *(*get_protocol_fn) (struct Handler *handler_p),
 	const char *(*get_name_fn) (struct Handler *handler_p),

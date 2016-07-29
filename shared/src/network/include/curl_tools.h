@@ -21,6 +21,8 @@
 #ifndef GRASSROOTS_CURL_TOOLS_H
 #define GRASSROOTS_CURL_TOOLS_H
 
+#include <stdio.h>
+
 #include <curl/curl.h>
 
 #include "jansson.h"
@@ -28,6 +30,14 @@
 #include "typedefs.h"
 #include "network_library.h"
 #include "byte_buffer.h"
+
+
+typedef enum CurlMode
+{
+	CM_MEMORY,
+	CM_FILE,
+	CM_NUM_MODES
+} CurlMode;
 
 /**
  * @brief A tool for making http(s) requests and responses.
@@ -41,7 +51,13 @@ typedef struct CurlTool
 	CURL *ct_curl_p;
 
 	/** @private */
+	CurlMode ct_mode;
+
+	/** @private */
 	ByteBuffer *ct_buffer_p;
+
+	/** @private */
+	FILE *ct_temp_f;
 
 	/** @private */
 	struct curl_httppost *ct_form_p;
@@ -68,7 +84,7 @@ typedef struct CurlTool
  * @memberof CurlTool
  * @see FreeCurlTool
  */
-GRASSROOTS_NETWORK_API CurlTool *AllocateCurlTool (void);
+GRASSROOTS_NETWORK_API CurlTool *AllocateCurlTool (CurlMode mode);
 
 
 /**

@@ -116,7 +116,7 @@ When an Operation is run, if it is able to execute rapidly it will run to comple
 An array of [Operation](#Operation) objects that the Service can perform.
 
 
-## Operation {#Operation}
+## [Operation](#operation)
 
 * **operation\_id** (required): The name for the Operation.
 
@@ -127,7 +127,7 @@ An array of [Operation](#Operation) objects that the Service can perform.
 * **parameter\_set** (required): The [ParameterSet](#ParameterSet).
 
 
-## ParameterSet {#ParameterSet}
+## [ParameterSet](#parameterset)
 
 The list of [Parameters](#Parameter) is contained within a **ParameterSet** along with hints on how to group them together to display to the user.
 
@@ -137,7 +137,7 @@ This is an array of [Parameter](#Parameter) objects.
 * **groups**: 
 This is an array of strings listing all of the available groups for this set of Parameters.
 
-## Parameter {#Parameter}
+## [Parameter](#parameter)
 
 * **name**:
 The user-friendly name of the parameter for displaying to a user. If this is not set, then the value for the *param* key will be used.
@@ -211,7 +211,7 @@ This is a number used to determine whether to show a Parameter to a user. The sy
 If set, this specifies which of the groups listed in the [ParameterSet](#ParameterSet)'s groups that this Parameter belongs to and is detailed in the [ParameterGroup](#ParameterGroup) section below.
 
 
-## ParameterGroup {#ParameterGroup}
+## [ParameterGroup](#parametergroup)
 
 A ParameterGroup is a way of classing parameters together in a logical set. For example, a ParameterGroup called *Address* could contain Parameters for a house number, road name and town. It is used to give a hint to the user interface to display these parameters together to be more user-friendly.
 
@@ -262,7 +262,7 @@ How the webservice parameters will be set. This can be one of:
  * *post*: The webservice will be called using a POST request.
  * *json*: The webservice will be called using a POST request where the content of the request body is a json fragment.
 
-## Resource {#Resource}
+## [Resource](#resource)
 
 A Resource object describes a location and a piece of data such as a file, url, *etc.*
 

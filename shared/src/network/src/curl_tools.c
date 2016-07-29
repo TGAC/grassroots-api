@@ -87,10 +87,12 @@ typedef struct CURLParam
 
 static size_t WriteMemoryCallback (char *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
 
+static size_t WriteFileCallback (char *response_data_p, size_t block_size, size_t num_blocks, void *store_p);
+
 static bool SetCurlToolJSONRequestData (CurlTool *tool_p, json_t *json_p);
 
 
-CurlTool *AllocateCurlTool (void)
+CurlTool *AllocateCurlTool (CurlMode mode)
 {
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 	
@@ -106,6 +108,7 @@ CurlTool *AllocateCurlTool (void)
 							curl_tool_p -> ct_form_p = NULL;
 							curl_tool_p -> ct_last_field_p = NULL;
 							curl_tool_p -> ct_headers_list_p = NULL;
+							curl_tool_p -> ct_temp_f = NULL;
 
 							return curl_tool_p;
 						}
@@ -417,6 +420,25 @@ const char *GetCurlToolData (const CurlTool * const tool_p)
 	return (GetByteBufferData (tool_p -> ct_buffer_p));
 }
 
+
+
+static size_t WriteFileCallback (char *response_data_p, size_t block_size, size_t num_blocks, void *store_p)
+{
+	size_t result = CURLE_OK;
+	FILE *out_f = (FILE *) store_p;
+	size_t num_written = fwrite (response_data_p, block_size, num_blocks, out_f);
+
+	if (num_written != num_blocks)
+		{
+			const int err_no = ferror (out_f);
+
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Error writing Curl callback data to file, %s", strerror (err_no));
+			result= CURLE_WRITE_ERROR;
+		}
+
+
+	return result;
+}
 
 
 static size_t WriteMemoryCallback (char *response_data_p, size_t block_size, size_t num_blocks, void *store_p)

@@ -1,12 +1,12 @@
-﻿Services {#Services}
+﻿[Services](#services)
 =====================
 
-# Services Introduction {#Intro}
+# [Services Introduction](#services-introduction)
 
-A Service is the compsonent that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](services.md#standalone_services) or as [referred services](services.md#referred_services). 
+A Service is the compsonent that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](#standalone-services) or as [referred services](#referred-services). 
 
 
-## Standalone Services {#standalone_services}
+## [Standalone Services](#standalone-services)
 
 Standalone services are those which perform specific-tasks. They can be written in any language and just need to be loadable by the technology of whichever server application that they are running on. Many of the Services that come with the Grassroots system are written in C/C++ and are designed to be used by the Apache httpd server.
 
@@ -23,7 +23,7 @@ void ReleaseServices (ServicesArray *services_p);
 The first function gets an array detailing all of the operations that this Service can perform and the second function is used when these operations go out of scope. Effectively they a constructor/destructor pair for a given Service. 
 
 
-## Referred Services {#referred_services}
+## [Referred Services](#referred-services)
 
 These are Services that use generic modules for their functionality and only differ in their configuration. Each configuration is a JSON file that details the parameters and information about the Service. The GrassrootsIS has examples
 of these are that has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. The referred service accesses this functionality be setting the **plugin** key to *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. The configuration files are stored in the *references* folder. For example, the GrassrootsIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
@@ -169,16 +169,16 @@ So adding these to our Service description gives:
 		"uri": "http://foobar.com"
 	},
 	"services": {
-	    "path": "Foobar Search service",
-	    "summary": "A service to data mine wheat articles",
+	  "path": "Foobar Search service",
+	  "summary": "A service to data mine wheat articles",
 		"description": "A service to search for wheat research articles.",
 		"plugin": "web_search_service",
 		"operations": [{
-            "operation_id": "Foobar Search service",
-            "summary": "An operation to search for matching articles",
-            "description": "An operation to search for matching articles",
-            "parameter_set": {
-                "parameters": [{
+      "operation_id": "Foobar Search service",
+      "summary": "An operation to search for matching articles",
+      "description": "An operation to search for matching articles",
+      "parameter_set": {
+        "parameters": [{
 					"param": "query",
 					"name": "Query",
 					"default_value": "",
@@ -196,8 +196,8 @@ So adding these to our Service description gives:
 					"description": "The number of hits to return"
 				}]
 			}
-        }]		
-	 }
+    }]		
+  }
 }
 ~~~
 
@@ -212,22 +212,22 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
-		"description": "A comapny specializing in wheat research",
-		"uri": "http://foobar.com"
+ 		"description": "A comapny specializing in wheat research",
+ 		"uri": "http://foobar.com"
 	},
 	"services": {
-	    "path": "Foobar Search service",
-	    "summary": "A service to data mine wheat articles",
+		"path": "Foobar Search service",
+		"summary": "A service to data mine wheat articles",
 		"description": "A service to search for wheat research articles.",
 		"plugin": "web_search_service",
 		"operations": [{
-            "operation_id": "Foobar Search service",
-            "summary": "An operation to search for matching articles",
-            "description": "An operation to search for matching articles",
-            "uri": "http://foobar.com/search",
-            "method": "GET",
-            "parameter_set": {
-                "parameters": [{
+			"operation_id": "Foobar Search service",
+			"summary": "An operation to search for matching articles",
+			"description": "An operation to search for matching articles",
+			"uri": "http://foobar.com/search",
+			"method": "GET",
+			"parameter_set": {
+				"parameters": [{
 					"param": "query",
 					"name": "Query",
 					"default_value": "",
@@ -245,8 +245,8 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 					"description": "The number of hits to return"
 				}]
 			}
-        }]		
-	 }
+		}]		
+	}
 }
 ~~~
 
