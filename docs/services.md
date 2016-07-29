@@ -1,5 +1,4 @@
-﻿[Services](#services)
-=====================
+﻿﻿[Services](#services)
 
 # [Services Introduction](#services-introduction)
 
