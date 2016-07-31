@@ -6,16 +6,16 @@ Broadly speaking, the Grassroots information system (GIS) is an architecture to 
 
 ## Architecture
 
-Using a similar approach to that used by the [Apache httpd server] (http://httpd.apache.org), the GIS consists of a core [Server](#server) and a set of external modules, called [Services](services_lib.md), that provide the scientific functionality. The access to the system is via a [Client](#clients). The GIS server can also be linked to other GIS servers allowing the functionality of both to be shared to a user without having to perform any additional installation. Servers, Services and Clients are all interface specifications in that they declare an Application Programming Interface (API) that need to be implemented. 
+Using a similar approach to that used by the [Apache httpd server] (http://httpd.apache.org), the GIS consists of a core [Server](#server) and a set of external modules, called [Services](docs/services_lib.md), that provide the scientific functionality. The access to the system is via a [Client](#clients). The GIS server can also be linked to other GIS servers allowing the functionality of both to be shared to a user without having to perform any additional installation. Servers, Services and Clients are all interface specifications in that they declare an Application Programming Interface (API) that need to be implemented. 
 
 ![Grassroots system architecture] (architecture.svg)
 
 
-All of the Server-Server and Server-Client communication is by JSON-based messages as described in the [Schema guide](schema.md "Schema Guide")
+All of the Server-Server and Server-Client communication is by JSON-based messages as described in the [Schema guide](docs/schema.md "Schema Guide")
 
 ### Server
 
-For more information, see the [Server](server.md "Server guide") documentation.
+For more information, see the [Server](docs/server.md "Server guide") documentation.
 
 ### Client
 
@@ -23,7 +23,7 @@ A Client is what is used to connect to a GIS Server and call Services. This can 
 
 ### Services
 
-[GrassrootsIS Services](services_lib.md "Services guide") are the components that are accessed by the user to perform various tasks.
+[GrassrootsIS Services](docs/services.md "Services guide") are the components that are accessed by the user to perform various tasks.
 
 
 ### Support libraries
@@ -43,7 +43,7 @@ There are a number of support libraries that any component within the GIS system
 
 #### Handler
 
-Handlers are the family of components that allow data to be read or written to different storage systems. These are explained in the [Handlers] (handlers.md "Handlers guide")
+Handlers are the family of components that allow data to be read or written to different storage systems. These are explained in the [Handlers] (docs/handlers.md "Handlers guide")
 
 #### Utility
 

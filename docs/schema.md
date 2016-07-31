@@ -1,14 +1,14 @@
 ﻿The Grassroots Schema
 =====================
 
-# Schema Introduction {#Intro}
+# [Schema Introduction](#schema-introduction)
 
 All of the messages between Servers and Clients use a JSON-based schema. A full example of this is shown below and then each part will get described in turn. There are [Examples](examples.md)
 
 Any message can have a header, much like the \<head\> tag in a web page and although this is optional it is recommended that all messages have one of these. The information contained in it are items such as the version of the Grassroots schema and the incoming request.
 
 
-## Example {#Example}
+## [Example](#Example)
 
 ~~~.json
 {

@@ -123,5 +123,3 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 	}]
 }
 ~~~
-
-s
