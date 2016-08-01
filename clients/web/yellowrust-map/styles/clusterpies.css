@@ -1,0 +1,198 @@
+#legend {
+    position: absolute;
+    top: 240px;
+    /*left: 1130px;*/
+    /*right: 10px;*/
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 1000;
+    font-size: 1em;
+    font-family: sans-serif;
+    width: 165px;
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.legendheading {
+    position: relative;
+    height: 25px;
+    margin-bottom: 5px;
+    font-size: larger;
+    font-weight: bold;
+}
+
+.legenditem {
+    padding: 2px;
+    margin-bottom: 2px;
+}
+
+/*Marker clusters*/
+.marker-cluster-pie g.arc {
+    fill-opacity: 0.5;
+}
+
+.marker-cluster-pie-label {
+    font-size: 14px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+/*Markers*/
+.marker {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+    border-radius: 10px;
+    margin-top: -10px;
+    margin-left: -10px;
+    border-style: solid;
+    fill: #CCC;
+    stroke: #444;
+    background: #CCC;
+    border-color: #444;
+}
+
+.marker div {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: sans-serif;
+}
+
+/*marker categories*/
+
+.category-1 {
+    fill: pink;
+    stroke: #B60;
+    background: pink;
+    border-color: #B60;
+}
+
+.category-2 {
+    fill: #BFB;
+    stroke: #070;
+    background: #BFB;
+    border-color: #070;
+}
+
+.category-3 {
+    fill: #9DF;
+    stroke: #007;
+    background: #9DF;
+    border-color: #007;
+}
+.category-4 {
+    fill: #F88;
+    stroke: #f00;
+    background: #F88;
+    border-color: #f00;
+}
+
+.category-5 {
+    fill: purple;
+    stroke: #B60;
+    background: purple;
+    border-color: #B60;
+}
+
+.category-1-4 {
+    fill: -webkit-linear-gradient(pink,red);
+    fill: -o-linear-gradient(pink,red);
+    fill: -moz-linear-gradient(pink,red);
+    fill: linear-gradient(pink,red);
+    stroke: pink;
+    background: -webkit-linear-gradient(pink,red);
+    background: -o-linear-gradient(pink,red);
+    background: -moz-linear-gradient(pink,red);
+    background: linear-gradient(pink,red);
+    border-color: pink;
+}
+
+.category-1-5 {
+    fill: -webkit-linear-gradient(pink,purple);
+    fill: -o-linear-gradient(pink,purple);
+    fill: -moz-linear-gradient(pink,purple);
+    fill: linear-gradient(pink,purple);
+    stroke: pink;
+    background: -webkit-linear-gradient(pink,purple);
+    background: -o-linear-gradient(pink,purple);
+    background: -moz-linear-gradient(pink,purple);
+    background: linear-gradient(pink,purple);
+    border-color: pink;
+}
+.category-4-6 {
+    fill: -webkit-linear-gradient(red,gray);
+    fill: -o-linear-gradient(red,gray);
+    fill: -moz-linear-gradient(red,gray);
+    fill: linear-gradient(red,gray);
+    stroke: #ccc;
+    background: -webkit-linear-gradient(red,gray);
+    background: -o-linear-gradient(red,gray);
+    background: -moz-linear-gradient(red,gray);
+    background: linear-gradient(red,gray);
+    border-color: #ccc;
+}
+
+.category-6 {
+    fill: gray;
+    stroke: gray;
+    background: gray;
+    border-color: gray;
+}
+
+.category-7 {
+    fill: yellow;
+    stroke: yellow;
+    background: yellow;
+    border-color: yellow;
+}
+
+.category-8 {
+    fill: brown;
+    stroke: #B60;
+    background: brown;
+    border-color: #B60;
+}
+
+.category-4-1 {
+    fill: black;
+    stroke: #B60;
+    background: black;
+    border-color: #B60;
+}
+
+.category-5-1 {
+    fill: purple;
+    stroke: #B60;
+    background: purple;
+    border-color: #B60;
+}
+
+.category-Mixed {
+    fill: white;
+    stroke: white;
+    background: white;
+    border-color: white;
+}
+
+.category- {
+    fill: #ccc;
+    stroke: gray;
+    background: #ccc;
+    border-color: gray;
+}
+
+/*Popup*/
+.map-popup span.heading {
+    display: block;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.map-popup span.attribute {
+    display: block;
+}
+
+.map-popup span.label {
+    font-weight: bold;
+}
+
