@@ -17,7 +17,7 @@ old_library='mod_grassroots.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/home/billy/Projects/grassroots-api/build/linux/shared/util/debug -L/home/billy/Projects/grassroots-api/build/linux/server/services/lib/debug -L/home/billy/Projects/grassroots-api/build/linux/shared/handlers/lib/debug -L/home/billy/Projects/grassroots-api/build/linux/shared/network/debug -L/home/billy/Projects/grassroots-api/build/linux/server/lib/debug -lgrassroots_util -lgrassroots_service -lgrassroots_handler -lgrassroots_network -lgrassroots_server -lirods_client -lirods_client_plugins -lrt'
+dependency_libs=' -L/usr/users/ga002/tyrrells/grassroots-api/build/linux/shared/util/debug -L/usr/users/ga002/tyrrells/grassroots-api/build/linux/server/services/lib/debug -L/usr/users/ga002/tyrrells/grassroots-api/build/linux/shared/handlers/lib/debug -L/usr/users/ga002/tyrrells/grassroots-api/build/linux/shared/network/debug -L/usr/users/ga002/tyrrells/grassroots-api/build/linux/server/lib/debug -lgrassroots_util -lgrassroots_service -lgrassroots_handler -lgrassroots_network -lgrassroots_server'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''
@@ -38,4 +38,4 @@ dlopen=''
 dlpreopen=''
 
 # Directory that this library needs to be installed in:
-libdir='/opt/grassroots-0/apache/modules'
+libdir='/tgac/services/grassroots/home/grassroots-instances/0/apache/modules'
