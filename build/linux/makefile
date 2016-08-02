@@ -207,16 +207,16 @@ install_lib_irods:	lib_irods
 	$(MAKE) -C $(DIR_GRASSROOTS_IRODS_BUILD) install
 
 handler_irods:
-	$(MAKE) -C HANDLER/irods
+	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/irods
 
 install_handler_irods: handler_irods
-	$(MAKE) -C HANDLER/irods install
+	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/irods install
 
 service_irods_search: 
-	$(MAKE) -C services/irods_search
+	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/irods_search
 
 install_service_irods_search: service_irods_search
-	$(MAKE) -C services/irods_search install
+	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/irods_search install
 
 else
 

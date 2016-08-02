@@ -23,6 +23,7 @@
 #include "json_util.h"
 #include "time_util.h"
 #include "filesystem_utils.h"
+#include "grassroots_config.h"
 
 
 static bool InitDropboxHandler (struct Handler *handler_p, const UserDetails *user_p);
@@ -68,62 +69,74 @@ static drbClient *CreateClient (char *token_key_s, char *token_secret_s)
 {
 	drbClient *client_p = NULL;
 	
-	/* Global initialisation */
-	drbInit ();
-    
-	client_p = drbCreateClient ((char *) DROPBOX_APP_KEY_S, (char *) DROPBOX_APP_SECRET_S, token_key_s, token_secret_s);
-	
-	if (client_p)
+	const json_t *dropbox_json_p = GetGlobalConfigValue ("dropbox");
+
+	if (dropbox_json_p)
 		{
-			// Request a AccessToken if undefined (NULL)
-			if (! (token_key_s && token_secret_s))
+			const char *key_s = GetJSONString (dropbox_json_p, "key");
+			const char *secret_s = GetJSONString (dropbox_json_p, "secret");
+
+			if (key_s && secret_s)
 				{
-					bool success_flag = false;
-					drbOAuthToken *req_token_p = drbObtainRequestToken (client_p);
-					
-					if (req_token_p) 
+					/* Global initialisation */
+					drbInit ();
+
+					client_p = drbCreateClient ((char *) key_s, (char *) secret_s, token_key_s, token_secret_s);
+
+					if (client_p)
 						{
-							drbOAuthToken *acc_token_p = NULL;
-							char *url_s = drbBuildAuthorizeUrl (req_token_p);
-							printf("Please visit %s\nThen press Enter...\n", url_s);
-							free (url_s);
-							fgetc (stdin);
-							
-							acc_token_p = drbObtainAccessToken (client_p);
-							
-							if (acc_token_p) 
+							// Request a AccessToken if undefined (NULL)
+							if (! (token_key_s && token_secret_s))
 								{
-									// This key and secret can replace the NULL value in t_key and
-									// t_secret for the next time.
-									printf("key:    %s\nsecret: %s\n", acc_token_p -> key, acc_token_p -> secret);
-									success_flag = true;
-								} 
-							else
-								{
-									fprintf(stderr, "Failed to obtain an AccessToken...\n");
-								}
-						} 
-					else 
-						{
-							fprintf(stderr, "Failed to obtain a RequestToken...\n");
-						}
+									bool success_flag = false;
+									drbOAuthToken *req_token_p = drbObtainRequestToken (client_p);
 
-					if (!success_flag)
-						{
-							drbDestroyClient (client_p);
-							client_p = NULL;
-						}		
+									if (req_token_p)
+										{
+											drbOAuthToken *acc_token_p = NULL;
+											char *url_s = drbBuildAuthorizeUrl (req_token_p);
+											printf("Please visit %s\nThen press Enter...\n", url_s);
+											free (url_s);
+											fgetc (stdin);
 
-				}		/* if (! (token_key_s && token_secret_s) */
+											acc_token_p = drbObtainAccessToken (client_p);
 
-    
-			/* Set default arguments to not repeat them on each API call */
-			if (client_p)
-				{
-					drbSetDefault (client_p, DRBOPT_ROOT, DRBVAL_ROOT_AUTO, DRBOPT_END);
-				}
-				
-		}		/* if (client_p) */
+											if (acc_token_p)
+												{
+													// This key and secret can replace the NULL value in t_key and
+													// t_secret for the next time.
+													printf("key:    %s\nsecret: %s\n", acc_token_p -> key, acc_token_p -> secret);
+													success_flag = true;
+												}
+											else
+												{
+													fprintf(stderr, "Failed to obtain an AccessToken...\n");
+												}
+										}
+									else
+										{
+											fprintf(stderr, "Failed to obtain a RequestToken...\n");
+										}
+
+									if (success_flag)
+										{
+											/* Set default arguments to not repeat them on each API call */
+											drbSetDefault (client_p, DRBOPT_ROOT, DRBVAL_ROOT_AUTO, DRBOPT_END);
+										}
+									else
+										{
+											drbDestroyClient (client_p);
+											client_p = NULL;
+										}
+
+								}		/* if (! (token_key_s && token_secret_s) */
+
+						}		/* if (client_p) */
+
+				}		/* if (key_s && secret_s) */
+
+		}		/* if (dropbox_json_p) */
+
 	
 	return client_p;
 }

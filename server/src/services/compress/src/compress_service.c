@@ -84,12 +84,13 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 
 static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+
+static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsFileForCompressService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
-static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p);
+static int Compress (Resource *input_resource_p, const char * const algorithm_s, UserDetails *user_p);
 
 static bool CloseCompressService (Service *service_p);
 
@@ -355,7 +356,7 @@ static void ReleaseCompressServiceParameters (Service * UNUSED_PARAM (service_p)
 }
 
 
-static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable * UNUSED_PARAM (providers_p))
+static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	SharedType input_resource;
 	
@@ -370,7 +371,7 @@ static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *para
 					
 					if (algorithm_s)
 						{
-							Compress (input_resource_p, algorithm_s, credentials_p);
+							Compress (input_resource_p, algorithm_s, user_p);
 						}		/* if (algorithm_s) */
 										
 				}		/* if (GetParameterValueFromParameterSet (param_set_p, TAG_INPUT_FILE, &value)) */			
@@ -381,7 +382,7 @@ static ServiceJobSet *RunCompressService (Service *service_p, ParameterSet *para
 }
 
 
-static int Compress (Resource *input_resource_p, const char * const algorithm_s, json_t *credentials_p)
+static int Compress (Resource *input_resource_p, const char * const algorithm_s, UserDetails *user_p)
 {
 	bool success_flag = false;
 	int i;
@@ -410,7 +411,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 			
 			if (output_name_s)
 				{
-					Handler *input_handler_p = GetResourceHandler (input_resource_p, credentials_p);
+					Handler *input_handler_p = GetResourceHandler (input_resource_p, user_p);
 
 					if (input_handler_p)
 						{
@@ -420,7 +421,7 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 							output_resource.re_protocol_s = input_resource_p -> re_protocol_s;
 							output_resource.re_value_s = output_name_s;
 							
-							output_handler_p = GetResourceHandler (&output_resource, credentials_p);
+							output_handler_p = GetResourceHandler (&output_resource, user_p);
 
 							if (output_handler_p)
 								{

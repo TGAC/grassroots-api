@@ -132,7 +132,7 @@ typedef struct Service
 	 * by this call or <code>NULL</code> if there was an error.
 	 * @see RunService
 	 */
-	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+	struct ServiceJobSet *(*se_run_fn) (struct Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 	/**
 	 * Is the Service able to work upon the given Resource.
@@ -301,7 +301,7 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
-	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p),
+	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p),
 	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
@@ -325,7 +325,7 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
  * @memberof Service
  * @see se_run_fn
  */
-GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 
 /**
@@ -464,9 +464,9 @@ GRASSROOTS_SERVICE_API void FreeServiceNode (ListItem *node_p);
  * @param services_name_s The name of the Service to find.
  * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
  */
-GRASSROOTS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p);
+GRASSROOTS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, UserDetails *user_p);
 
-GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p);
+GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, UserDetails *user_p);
 
 
 /**
@@ -476,7 +476,7 @@ GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const 
  * @param services_path_s The directory where the Service modules are stored.
  * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
  */
-GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p);
+GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, UserDetails *user_p);
 
 
 /**
@@ -489,7 +489,7 @@ GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const c
  * to Services list. If this is <code>NULL</code> then all possible reference Services will be added.
  * @param config_p Any user configuration details.
  */
-GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t *config_p);
+GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, UserDetails *user_p);
 
 
 /**

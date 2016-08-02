@@ -58,6 +58,8 @@
  
 /***************************************************************************/
 
+#include <string.h>
+
 #include <curl/curl.h>
 #include <curl/easy.h>
 
@@ -109,6 +111,7 @@ CurlTool *AllocateCurlTool (CurlMode mode)
 							curl_tool_p -> ct_last_field_p = NULL;
 							curl_tool_p -> ct_headers_list_p = NULL;
 							curl_tool_p -> ct_temp_f = NULL;
+							curl_tool_p -> ct_mode = mode;
 
 							return curl_tool_p;
 						}

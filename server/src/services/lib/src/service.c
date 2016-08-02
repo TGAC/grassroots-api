@@ -66,7 +66,7 @@ void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*get_service_info_uri_fn) (struct Service *service_p),
-	ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p),
+	ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p),
 	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
@@ -227,7 +227,7 @@ void FreeServiceNode (ListItem * const node_p)
  * Load any json stubs for external services that are used to configure generic services, 
  * e.g. web services
  */
-void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, const json_t * UNUSED_PARAM (config_p))
+void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, UserDetails * UNUSED_PARAM (user_p))
 {
 	const char *root_path_s = GetServerRootDirectory ();
 	char *full_references_path_s = MakeFilename (root_path_s, references_path_s);
@@ -581,48 +581,48 @@ uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *
 }
 
 
-void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, const json_t *json_config_p)
+void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, UserDetails *user_p)
 {
 	NameServiceMatcher matcher;
 	
 	InitOperationNameServiceMatcher (&matcher, service_name_s);
 	
-	GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), json_config_p, services_p, true);
+	GetMatchingServices (services_path_s, & (matcher.nsm_base_matcher), user_p, services_p, true);
 	
-	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, service_name_s, json_config_p);
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, service_name_s, user_p);
 }
 
 
 
-void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, const json_t *json_config_p)
+void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, UserDetails *user_p)
 {
 	ResourceServiceMatcher matcher;
 	
 	InitResourceServiceMatcher (&matcher, resource_p, handler_p);
 	
-	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), json_config_p, services_p, true);
+	GetMatchingServices (services_path_s, & (matcher.rsm_base_matcher), user_p, services_p, true);
 		
-	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, user_p);
 }
 
 
-void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, const json_t *json_config_p)
+void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, UserDetails *user_p)
 {
 	KeywordServiceMatcher matcher;
 
 	InitKeywordServiceMatcher (&matcher);
 
-	GetMatchingServices (services_path_s, & (matcher.ksm_base_matcher), json_config_p, services_p, true);
+	GetMatchingServices (services_path_s, & (matcher.ksm_base_matcher), user_p, services_p, true);
 
-	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, json_config_p);
+	AddReferenceServices (services_p, REFERENCES_PATH_S, services_path_s, NULL, user_p);
 }
 
 
-ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p)
+ServiceJobSet *RunService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
 	GenerateServiceUUID (service_p);
 
-	return service_p -> se_run_fn (service_p, param_set_p, credentials_p, providers_p);
+	return service_p -> se_run_fn (service_p, param_set_p, user_p, providers_p);
 }
 
 

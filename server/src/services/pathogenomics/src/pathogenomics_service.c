@@ -96,7 +96,7 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 
 static void ReleasePathogenomicsServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static  ParameterSet *IsResourceForPathogenomicsService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -597,7 +597,7 @@ static bool GetCollectionName (ParameterSet *param_set_p, PathogenomicsServiceDa
 }
 
 
-static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, json_t * UNUSED_PARAM (credentials_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
+static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	PathogenomicsServiceData *data_p = (PathogenomicsServiceData *) (service_p -> se_data_p);
 

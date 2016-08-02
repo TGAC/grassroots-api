@@ -61,7 +61,7 @@ static ParameterSet *GetWebSearchJSONServiceParameters (Service *service_p, Reso
 
 static void ReleaseWebSearchJSONServiceParameters (Service *service_p, ParameterSet *params_p);
 
-ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 
 static  ParameterSet *IsResourceForWebSearchJSONService (Service *service_p, Resource *resource_p, Handler *handler_p);
@@ -230,7 +230,7 @@ static bool CloseWebSearchJSONService (Service *service_p)
 }
 
 
-ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_set_p, json_t * UNUSED_PARAM (credentials_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
+ServiceJobSet *RunWebSearchJSONService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	WebSearchJSONServiceData *service_data_p = (WebSearchJSONServiceData *) (service_p -> se_data_p);
 	WebServiceData *data_p = & (service_data_p -> wssjd_base_data);

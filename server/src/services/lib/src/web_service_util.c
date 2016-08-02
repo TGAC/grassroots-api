@@ -111,7 +111,7 @@ bool InitWebServiceData (WebServiceData * const data_p, json_t *op_json_p)
 
 											if (data_p -> wsd_params_p)
 												{
-													data_p -> wsd_curl_data_p = AllocateCurlTool ();
+													data_p -> wsd_curl_data_p = AllocateCurlTool (CM_MEMORY);
 
 													if (data_p -> wsd_curl_data_p)
 														{

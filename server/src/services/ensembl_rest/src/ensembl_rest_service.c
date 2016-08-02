@@ -57,13 +57,9 @@ static ParameterSet *GetEnsemblRestServiceParameters (Service *service_p, Resour
 
 static void ReleaseEnsemblRestServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsFileForEnsemblRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
-
-
-static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_t job_id);
-
 
 static bool CloseEnsemblRestService (Service *service_p);
 
@@ -216,7 +212,7 @@ static void ReleaseEnsemblRestServiceParameters (Service * UNUSED_PARAM (service
 }
 
 
-static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, json_t * UNUSED_PARAM (credentials_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
+static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	EnsemblRestServiceData *data_p = (EnsemblRestServiceData *) service_p -> se_data_p;
 
@@ -225,7 +221,7 @@ static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *p
 
 	if (service_p -> se_jobs_p)
 		{
-			CurlTool *curl_tool_p = AllocateCurlTool ();
+			CurlTool *curl_tool_p = AllocateCurlTool (CM_MEMORY);
 			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
 			job_p -> sj_status = OS_FAILED_TO_START;
@@ -284,24 +280,6 @@ static ServiceJobSet *RunEnsemblRestService (Service *service_p, ParameterSet *p
 	return service_p -> se_jobs_p;
 }
 
-
-static json_t *GetEnsembleServiceResults (struct Service *service_p, const uuid_t job_id)
-{
-	EnsemblRestServiceData *data_p = (EnsemblRestServiceData *) service_p -> se_data_p;
-
-	/* Check that we have the correct job */
-	ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
-
-	if (job_p)
-		{
-			if (uuid_compare (job_p -> sj_id, job_id) == 0)
-				{
-					return (data_p -> ersd_results_p);
-				}
-		}
-
-	return NULL;
-}
 
 
 static ParameterSet *IsFileForEnsemblRestService (Service * UNUSED_PARAM (service_p), Resource * UNUSED_PARAM (resource_p), Handler * UNUSED_PARAM (handler_p))

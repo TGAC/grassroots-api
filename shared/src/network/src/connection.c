@@ -156,7 +156,7 @@ Connection *AllocateWebServerConnection (const char * const full_uri_s)
 
 	if (connection_p)
 		{
-			CurlTool *curl_p = AllocateCurlTool ();
+			CurlTool *curl_p = AllocateCurlTool (CM_MEMORY);
 
 			if (curl_p)
 				{

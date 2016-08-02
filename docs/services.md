@@ -2,7 +2,7 @@
 
 # [Services Introduction](#services-introduction)
 
-A Service is the compsonent that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](#standalone-services) or as [referred services](#referred-services). 
+A Service is the component that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](#standalone-services) or as [referred services](#referred-services). 
 
 
 ## [Standalone Services](#standalone-services)
@@ -19,7 +19,11 @@ ServicesArray *GetServices (const json_t *config_p);
 void ReleaseServices (ServicesArray *services_p);
 ~~~
 
-The first function gets an array detailing all of the operations that this Service can perform and the second function is used when these operations go out of scope. Effectively they a constructor/destructor pair for a given Service. 
+The first function gets an array detailing all of the operations that this Service can perform. Most commonly the ServicesArray will contain a single Service, though it can have more if appropriate. The second function is used when these operations go out of scope. 
+Effectively these 2 functions  a constructor/destructor pair for a given ServicesArray. 
+
+So to 
+
 
 
 ## [Referred Services](#referred-services)
@@ -63,7 +67,7 @@ of these are that has a number of Referred Services that access various web-base
   }
 ~~~
 
-This details how to call Agris' search engine by specifying the URI to call (http://agris.fao.org/agris-search/searchIndex.do), the parameters to send, how to call the search engine and the css selector to use to extract each of the hits from the subsequent results page. So all that needs to be done to add another web-based search  service to the system is to add another configuration file to the references directory. 
+This details how to call Agris' search engine by specifying the URI to call (http://agris.fao.org/agris-search/searchIndex.do), the parameters to send, how to call the search engine and the Cascading Style Sheet (CSS) selector to use to extract each of the hits from the subsequent results page. So all that needs to be done to add another web-based search  service to the system is to add another configuration file to the references directory. 
 
 
 ## Web Search Service
@@ -115,7 +119,7 @@ The functionality to wrap this web-based search up into a Grassroots service is 
 
 ### Adding the parameters
 
-On our example http://foobar.com/search.html, imagine that there is a single html-based seach form defined and a snippet of its HTML is
+On our example http://foobar.com/search.html, imagine that there is a single html-based search form defined and a snippet of its HTML is
 
 ~~~{.html}
 <form action="/search" method="GET">
@@ -252,7 +256,7 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 ### Getting the search results
 
 The final part that we need to add are the details for how to extract the hits from the results page that the search engine returns.
-This is done by specifying a key called *selector* that has the Cascading Style Sheet (CSS) selector for each entry on the list of results. 
+This is done by specifying a key called *selector* that has the CSS selector for each entry on the list of results. 
 So imagine that on the results page that http://foobar.com/search returns, our hits are given in a structure such as 
 
 ~~~{.html}

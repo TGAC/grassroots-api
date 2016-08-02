@@ -435,18 +435,7 @@ json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const
 				{
 					if (!AddCredentialsToJson (root_p, user_p))
 						{
-							char *dump_s = json_dumps (root_p, 0);
-
-							if (dump_s)
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add user details for %s to %s", user_p -> ud_username_s, dump_s);
-									free (dump_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add user details for %s", user_p -> ud_username_s);
-								}
-
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add user details");
 						}		/* if (!AddCredentialsToJson (root_p, user_p)) */
 
 				}		/* if (user_p) */
@@ -470,30 +459,10 @@ json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const
 }
 
 
-bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss)
+bool GetUsernameAndPassword (const UserDetails * const user_p, const char *provider_s, const char **username_ss, const char **password_ss)
 {
 	bool success_flag = false;
-	char *dump_s = json_dumps (root_p, 0);
 
-	/* 
-	 * Take care of whether we have been passed the credentials group
-	 * or its parent.
-	 */
-	const json_t *group_p = json_object_get (root_p, CREDENTIALS_S);
-	if (!group_p)
-		{
-			group_p = root_p;
-		}
-
-	if ((*username_ss = GetJSONString (group_p, CREDENTIALS_USERNAME_S)) != NULL)
-		{
-			if ((*password_ss = GetJSONString (group_p, CREDENTIALS_PASSWORD_S)) != NULL)
-				{
-					success_flag = true;
-				}
-		}	
-
-	free (dump_s);
 
 	return success_flag;
 }

@@ -636,7 +636,7 @@ bool GetLocationDataByGoogle (PathogenomicsServiceData *data_p, json_t *row_p, c
 
 							if (success_flag)
 								{
-									CurlTool *curl_tool_p = AllocateCurlTool ();
+									CurlTool *curl_tool_p = AllocateCurlTool (CM_MEMORY);
 
 									if (curl_tool_p)
 										{
@@ -790,7 +790,7 @@ bool GetLocationDataByOpenCage (PathogenomicsServiceData *data_p, json_t *row_p,
 
 							if (success_flag)
 								{
-									CurlTool *curl_tool_p = AllocateCurlTool ();
+									CurlTool *curl_tool_p = AllocateCurlTool (CM_MEMORY);
 
 									if (curl_tool_p)
 										{

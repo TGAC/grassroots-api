@@ -114,7 +114,7 @@ static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resour
 
 static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsFileForLongRunningService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -446,7 +446,7 @@ static ServiceJobSet *GetServiceJobSet (Service *service_p, const uint32 num_job
 }
 
 
-static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, json_t * UNUSED_PARAM (credentials_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
+static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	SharedType param_value;
 

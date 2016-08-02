@@ -49,7 +49,7 @@ static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *reso
 
 static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable * UNUSED_PARAM (providers_p));
+static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable * UNUSED_PARAM (providers_p));
 
 static  ParameterSet *IsResourceForWebService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -224,7 +224,7 @@ static bool CloseWebService (Service *service_p)
 }
 
 
-static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, json_t * UNUSED_PARAM (credentials_p), ProvidersStateTable *providers_p)
+static ServiceJobSet *RunWebService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable *providers_p)
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 

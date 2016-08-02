@@ -61,7 +61,7 @@ Further details are provided by the Handler API documentation.
 
 ## Examples
 
-To show the standard C file I/O code and the equivalent using Handlers, there are some examples below.
+We will now give some examples that show some standard C file I/O code and the equivalent using Handlers.
 The first is to open a file, seek 20 bytes in and read 16 characters into a buffer and return it. The first code section uses standard C library calls, and the code below use the Grassroots API equivalents.
 
 ~~~{.c}

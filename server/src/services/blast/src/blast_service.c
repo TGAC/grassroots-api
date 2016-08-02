@@ -56,7 +56,7 @@ static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *re
 
 static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -825,7 +825,7 @@ static ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, cons
 }
 
 
-static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, json_t *  UNUSED_PARAM (credentials_p), ProvidersStateTable *providers_p)
+static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *  UNUSED_PARAM (user_p), ProvidersStateTable *providers_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	SharedType param_value;

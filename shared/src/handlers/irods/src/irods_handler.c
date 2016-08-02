@@ -100,7 +100,7 @@ Handler *GetHandler (const UserDetails *user_p)
 			PrintJSONToLog (credentials_p, NULL, STM_LEVEL_FINE, __FILE__, __LINE__);
 			#endif
 			
-			if (GetUsernameAndPassword (credentials_p, &username_s, &password_s))
+			if (GetUsernameAndPassword (user_p, PROTOCOL_IRODS_S, &username_s, &password_s))
 				{
 					struct IRodsConnection *connection_p = CreateIRodsConnection ((char *) username_s, (char *) password_s);
 
@@ -157,7 +157,7 @@ void FreeIRodsHandler (Handler *handler_p)
 }
 
 
-static bool InitIRodsHandler (struct Handler * UNUSED_PARAM (handler_p), const UserDetails * UNUSED_PARAM (user_p));
+static bool InitIRodsHandler (struct Handler * UNUSED_PARAM (handler_p), const UserDetails * UNUSED_PARAM (user_p))
 {
 	bool success_flag = true;
 	

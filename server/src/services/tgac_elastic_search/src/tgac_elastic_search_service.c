@@ -78,7 +78,7 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 
 static void ReleaseElasticSearchRestServiceParameters (Service *service_p, ParameterSet *params_p);
 
-static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsFileForElasticSearchRestService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -100,7 +100,7 @@ static ElasticSearchServiceData *AllocateElasticSearchServiceData (void)
 
 	if (data_p)
 		{
-			data_p -> essd_curl_tool_p = AllocateCurlTool ();
+			data_p -> essd_curl_tool_p = AllocateCurlTool (CM_MEMORY);
 
 			if (data_p -> essd_curl_tool_p)
 				{
@@ -270,7 +270,7 @@ static void ReleaseElasticSearchRestServiceParameters (Service * UNUSED_PARAM (s
 }
 
 
-static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, json_t * UNUSED_PARAM (credentials_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
+static ServiceJobSet *RunElasticSearchRestService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	ElasticSearchServiceData *data_p = (ElasticSearchServiceData *) (service_p -> se_data_p);
 	/* We only have one task */

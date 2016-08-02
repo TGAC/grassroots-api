@@ -72,7 +72,7 @@ GRASSROOTS_NETWORK_API json_t *GetAvailableServicesRequest (const UserDetails *u
  * the JSON fragment successfully,
  * <code>false</code> otherwise.
  */
-GRASSROOTS_NETWORK_API bool GetUsernameAndPassword (const json_t * const root_p, const char **username_ss, const char **password_ss);
+GRASSROOTS_NETWORK_API bool GetUsernameAndPassword (const UserDetails * const user_p, const char *provider_s, const char **username_ss, const char **password_ss);
 
 
 /**

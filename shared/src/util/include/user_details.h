@@ -21,7 +21,41 @@
 #ifndef USER_DETAILS_H
 #define USER_DETAILS_H
 
+#include "jansson.h"
+
+#include "typedefs.h"
 #include "grassroots_util_library.h"
+#include "linked_list.h"
+
+
+/**
+ * @brief  A datatype to store user credentials
+ */
+typedef struct UserAuthentication
+{
+	char *ua_system_id_s;
+
+	/** The username */
+	char *ua_username_s;
+
+	/** The encrypted password */
+	char *ua_password_s;
+
+	/** An OAth token for time-based authentication */
+	char *ua_oath_totp_token_s;
+} UserAuthentication;
+
+
+/**
+ * @brief  A datatype to store user credentials
+ */
+typedef struct UserAuthenticationNode
+{
+	ListItem uan_base_node;
+
+	UserAuthentication *uan_auth_p;
+
+} UserAuthenticationNode;
 
 
 /**
@@ -29,31 +63,25 @@
  */
 typedef struct UserDetails
 {
-	/** The username */
-	char *ud_username_s;
-
-	/** The encrypted password */
-	char *ud_password_s;
-
-	/** An OAth token for time-based authentication */
-	char *ud_oath_totp_token_s;
+	LinkedList *ud_auth_list_p;
 } UserDetails;
+
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+
 /**
  * Allocate a UserDetails with the given username.
  *
- * @param username_s The username to set. This will be copied by the
- * UserDetails so this value does not need to stay in scope after the
- * call.
+ * @param credentials_p The credentials to get the details of a user's
+ * authorisations for various systems. This can be NULL.
  * @return A newly-allocated UserDetails or <code>NULL</code> upon error.
  * @memberof UserDetails
  */
-GRASSROOTS_UTIL_API UserDetails *AllocateUserDetails (const char *username_s);
+GRASSROOTS_UTIL_API UserDetails *AllocateUserDetails (const json_t *credentials_p);
 
 
 /**
@@ -63,6 +91,14 @@ GRASSROOTS_UTIL_API UserDetails *AllocateUserDetails (const char *username_s);
  * @memberof UserDetails
  */
 GRASSROOTS_UTIL_API void FreeUserDetails (UserDetails *user_details_p);
+
+
+
+GRASSROOTS_UTIL_API bool GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s, const char **username_s, const char **password_ss, const char **token_ss);
+
+
+
+GRASSROOTS_UTIL_API bool AddUserAuthentication (UserDetails *user_details_p, const char *system_s, const char *username_s, const char *password_s, const char *token_s);
 
 /** @} */
 

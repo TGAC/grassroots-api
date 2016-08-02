@@ -62,9 +62,9 @@ void InitialiseHandler (Handler * const handler_p,
 
 
 
-bool InitHandler (struct Handler *handler_p, json_t *credentials_p)
+bool InitHandler (struct Handler *handler_p, const UserDetails *user_p)
 {
-	return (handler_p -> ha_init_fn (handler_p, credentials_p));
+	return (handler_p -> ha_init_fn (handler_p, user_p));
 }
 
 
@@ -196,7 +196,7 @@ Handler *GetHandlerFromPlugin (Plugin * const plugin_p, const UserDetails *user_
 
 			if (symbol_p)
 				{
-					Handler *(*fn_p) (const json_t *) = (Handler *(*) (const UserDetails *)) symbol_p;
+					Handler *(*fn_p) (const UserDetails *) = (Handler *(*) (const UserDetails *)) symbol_p;
 
 					plugin_p -> pl_handler_p = fn_p (user_p);
 
