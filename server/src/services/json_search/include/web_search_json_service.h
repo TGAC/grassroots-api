@@ -26,7 +26,7 @@ extern "C"
 #endif
 
 
-WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (json_t *config_p);
+WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (UserDetails *user_p, json_t *config_p);
 
 
 WEB_SEARCH_JSON_SERVICE_API void ReleaseServices (ServicesArray *services_p);

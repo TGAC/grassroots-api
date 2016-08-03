@@ -84,7 +84,7 @@ static const char s_default_column_delimiter =  '|';
  * STATIC PROTOTYPES
  */
 
-static Service *GetPathogenomicsService (json_t *operation_json_p, size_t i);
+static Service *GetPathogenomicsService (void);
 
 static const char *GetPathogenomicsServiceName (Service *service_p);
 
@@ -92,7 +92,7 @@ static const char *GetPathogenomicsServiceDesciption (Service *service_p);
 
 static const char *GetPathogenomicsServiceInformationUri (Service *service_p);
 
-static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleasePathogenomicsServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -101,7 +101,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 static  ParameterSet *IsResourceForPathogenomicsService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
 
-static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t *config_p);
+static PathogenomicsServiceData *AllocatePathogenomicsServiceData (void);
 
 static json_t *GetPathogenomicsServiceResults (Service *service_p, const uuid_t job_id);
 
@@ -148,7 +148,7 @@ ServicesArray *GetServices (json_t *config_p)
 
 	if (services_p)
 		{
-			Service *service_p = GetPathogenomicsService (config_p, 0);
+			Service *service_p = GetPathogenomicsService ();
 
 			if (service_p)
 				{
@@ -198,13 +198,13 @@ static json_t *GetPathogenomicsServiceResults (Service *service_p, const uuid_t 
 
 
 
-static Service *GetPathogenomicsService (json_t *operation_json_p, size_t UNUSED_PARAM (i))
+static Service *GetPathogenomicsService (void)
 {
 	Service *service_p = (Service *) AllocMemory (sizeof (Service));
 
 	if (service_p)
 		{
-			PathogenomicsServiceData *data_p = AllocatePathogenomicsServiceData (operation_json_p);
+			PathogenomicsServiceData *data_p = AllocatePathogenomicsServiceData ();
 
 			if (data_p)
 				{
@@ -334,7 +334,7 @@ static bool ConfigurePathogenomicsService (PathogenomicsServiceData *data_p)
 }
 
 
-static PathogenomicsServiceData *AllocatePathogenomicsServiceData (json_t * UNUSED_PARAM (op_json_p))
+static PathogenomicsServiceData *AllocatePathogenomicsServiceData (void)
 {
 	MongoTool *tool_p = AllocateMongoTool ();
 
@@ -410,7 +410,7 @@ static const char *GetPathogenomicsServiceInformationUri (Service * UNUSED_PARAM
 }
 
 
-static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *params_p  = AllocateParameterSet ("Pathogenomics service parameters", "The parameters used for the Pathogenomics service");
 

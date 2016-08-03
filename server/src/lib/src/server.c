@@ -72,11 +72,11 @@ static json_t *GetInterestedServices (const json_t * const req_p, UserDetails *u
 
 static json_t *GetAllServices (const json_t * const req_p, UserDetails *user_p);
 
-static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, const json_t *config_p, ProvidersStateTable *providers_p);
+static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, ProvidersStateTable *providers_p);
 
 static int8 RunServiceFromJSON (const json_t *service_req_p, const json_t *paired_servers_req_p, UserDetails *user_p, json_t *res_p, uuid_t user_uuid);
 
-static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p, const char *keyword_s);
+static json_t *RunKeywordServices (const json_t * const req_p, UserDetails *user_p, const char *keyword_s);
 
 static Operation GetOperation (json_t *ops_p);
 
@@ -105,7 +105,7 @@ static int32 AddPairedServices (Service *internal_service_p, UserDetails *user_p
 static int32 AddAllPairedServices (LinkedList *internal_services_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 
-static LinkedList *GetServicesList (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, const json_t *config_p, ProvidersStateTable *providers_p);
+static LinkedList *GetServicesList (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, ProvidersStateTable *providers_p);
 
 
 /***************************/
@@ -683,7 +683,7 @@ static json_t *GetInterestedServices (const json_t * const req_p, UserDetails *u
 
 					if (providers_p)
 						{
-							res_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, resource_p, handler_p, config_p, providers_p);
+							res_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, resource_p, handler_p, providers_p);
 							FreeProvidersStateTable (providers_p);
 						}
 
@@ -709,7 +709,7 @@ static json_t *GetAllServices (const json_t * const req_p, UserDetails *user_p)
 			if (providers_p)
 				{
 					/* Get the local services */
-					json_t *services_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, NULL, NULL, NULL, providers_p);
+					json_t *services_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, NULL, NULL, providers_p);
 
 					FreeProvidersStateTable (providers_p);
 
@@ -1045,7 +1045,6 @@ static json_t *GetNamedServices (const json_t * const req_p, UserDetails *user_p
 
 			if (services_p -> ll_size > 0)
 				{
-					json_t *paired_servers_p = (req_p != NULL) ? json_object_get (req_p, SERVERS_S) : NULL;
 					ProvidersStateTable *providers_p = GetInitialisedProvidersStateTable (req_p, services_p);
 
 					if (providers_p)
@@ -1055,7 +1054,7 @@ static json_t *GetNamedServices (const json_t * const req_p, UserDetails *user_p
 							//GetUsernameAndPassword (credentials_p, &username_s, &password_s);
 							AddAllPairedServices (services_p, user_p, providers_p);
 
-							services_json_p = GetServicesListAsJSON (services_p, NULL, credentials_p, false, providers_p);
+							services_json_p = GetServicesListAsJSON (services_p, NULL, user_p, false, providers_p);
 
 							if (services_json_p)
 								{
@@ -1063,7 +1062,7 @@ static json_t *GetNamedServices (const json_t * const req_p, UserDetails *user_p
 
 									if (!res_p)
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__,  "Failed to create repsonse for the services array");
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__,  "Failed to create response for the services array");
 											json_decref (services_json_p);
 										}
 
@@ -1087,13 +1086,14 @@ static json_t *GetNamedServices (const json_t * const req_p, UserDetails *user_p
 
 
 #if IRODS_ENABLED == 1
-static json_t *GetAllModifiedData (const json_t * const req_p, const json_t *credentials_p)
+static json_t *GetAllModifiedData (const json_t * const req_p, UserDetails *user_p)
 {
 	json_t *res_p = NULL;
 	const char *username_s = NULL;
 	const char *password_s = NULL;
+	const char *token_s = NULL;
 
-	if (GetUsernameAndPassword (credentials_p, PROTOCOL_IRODS_S, &username_s, &password_s))
+	if (GetUserAuthenticationForSystem (user_p, PROTOCOL_IRODS_S, &username_s, &password_s, &token_s))
 		{
 			const char *from_s = NULL;
 			const char *to_s = NULL;
@@ -1154,13 +1154,13 @@ static bool IsRequiredExternalOperation (const json_t *external_op_p, const char
 }
 
 
-static LinkedList *GetServicesList (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, const json_t *config_p, ProvidersStateTable *providers_p)
+static LinkedList *GetServicesList (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, ProvidersStateTable *providers_p)
 {
 	LinkedList *services_p = AllocateLinkedList (FreeServiceNode);
 
 	if (services_p)
 		{
-			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, config_p);
+			LoadMatchingServices (services_p, services_path_s, resource_p, handler_p, user_p);
 
 			if (services_p -> ll_size > 0)
 				{
@@ -1184,14 +1184,14 @@ static LinkedList *GetServicesList (const char * const services_path_s, UserDeta
 
 
 
-static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, const json_t *config_p, ProvidersStateTable *providers_p)
+static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, ProvidersStateTable *providers_p)
 {
 	json_t *json_p = NULL;
-	LinkedList *services_p = GetServicesList (services_path_s, user_p, resource_p, handler_p, config_p, providers_p);
+	LinkedList *services_p = GetServicesList (services_path_s, user_p, resource_p, handler_p, providers_p);
 
 	if (services_p)
 		{
-			json_p = GetServicesListAsJSON (services_p, resource_p, config_p, false, providers_p);
+			json_p = GetServicesListAsJSON (services_p, resource_p, user_p, false, providers_p);
 			FreeLinkedList (services_p);
 		}
 	else
@@ -1204,7 +1204,7 @@ static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetail
 }
 
 
-static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p, const char *keyword_s)
+static json_t *RunKeywordServices (const json_t * const req_p, UserDetails *user_p, const char *keyword_s)
 {
 	json_t *res_p = NULL;
 	json_t *results_p = json_array ();
@@ -1219,14 +1219,12 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 
 					if (resource_p)
 						{
-							const json_t *credentials_p = json_object_get (config_p, CREDENTIALS_S);
-							UserDetails *user_p = AllocateUserDetails (credentials_p);
 							json_t *paired_servers_p = (req_p != NULL) ? json_object_get (req_p, SERVERS_S) : NULL;
 							ProvidersStateTable *providers_p = AllocateProvidersStateTable (paired_servers_p);
 
 							if (providers_p)
 								{
-									LinkedList *services_p = GetServicesList (SERVICES_PATH_S, user_p, resource_p, NULL, config_p, providers_p);
+									LinkedList *services_p = GetServicesList (SERVICES_PATH_S, user_p, resource_p, NULL, providers_p);
 
 									if (services_p)
 										{
@@ -1246,7 +1244,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, json_t *config_p,
 																	ParameterSet *params_p = NULL;
 																	bool param_flag = true;
 
-																	params_p = GetServiceParameters (service_p, NULL, config_p);
+																	params_p = GetServiceParameters (service_p, NULL, user_p);
 
 																	if (params_p)
 																		{

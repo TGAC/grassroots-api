@@ -74,7 +74,7 @@ static const char *GetSamToolsServiceName (Service *service_p);
 
 static const char *GetSamToolsServiceDesciption (Service *service_p);
 
-static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseSamToolsServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -261,7 +261,7 @@ static const char *GetSamToolsServiceDesciption (Service * UNUSED_PARAM (service
 }
 
 
-static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (config_p))
+static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("SamTools service parameters", "The parameters used for the SamTools service");
 	

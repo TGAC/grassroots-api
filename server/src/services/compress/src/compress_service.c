@@ -80,7 +80,7 @@ static const char *GetCompressServiceName (Service *service_p);
 static const char *GetCompressServiceDesciption (Service *service_p);
 
 
-static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -307,7 +307,7 @@ static const char *GetCompressServiceDesciption (Service * UNUSED_PARAM (service
 }
 
 
-static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 

@@ -334,14 +334,13 @@ install: install_init install_references install_images all install_irods_stuff
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/lib install
 	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/file install
 	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/irods install
-#	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/dropbox install
+	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/dropbox install
 	$(MAKE) -C $(DIR_CLIENTS_BUILD_ROOT)/lib install 
 	$(MAKE) -C $(DIR_CLIENTS_BUILD_ROOT)/standalone install 
-	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/httpd install
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/lib install
+	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/httpd install
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/standalone install
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/mongodb install
-	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/drmaa install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/blast install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/compress install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/web install
