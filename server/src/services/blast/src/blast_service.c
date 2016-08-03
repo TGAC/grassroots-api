@@ -52,7 +52,7 @@ static const char *GetBlastServiceName (Service *service_p);
 
 static const char *GetBlastServiceDesciption (Service *service_p);
 
-static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -329,7 +329,7 @@ static const char *GetBlastServiceDesciption (Service * UNUSED_PARAM (service_p)
 }
 
 
-static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (config_p))
+static ParameterSet *GetBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
 

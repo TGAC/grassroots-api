@@ -97,9 +97,20 @@ bool GetUserAuthenticationForSystem (const UserDetails *user_p, const char *syst
 
 			if (strcmp (auth_p -> ua_system_id_s, system_s) == 0)
 				{
-					*username_ss = auth_p -> ua_username_s;
-					*password_ss = auth_p -> ua_password_s;
-					*token_ss = auth_p -> ua_oath_totp_token_s;
+					if (username_ss)
+						{
+							*username_ss = auth_p -> ua_username_s;
+						}
+
+					if (password_ss)
+						{
+							*password_ss = auth_p -> ua_password_s;
+						}
+
+					if (token_ss)
+						{
+							*token_ss = auth_p -> ua_oath_totp_token_s;
+						}
 
 					success_flag = true;
 				}

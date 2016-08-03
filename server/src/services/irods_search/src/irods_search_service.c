@@ -63,10 +63,10 @@ static const char *GetIRodsSearchServiceName (Service *service_p);
 
 static const char *GetIRodsSearchServiceDesciption (Service *service_p);
 
-static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 
-static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -602,7 +602,7 @@ static const char *GetIRodsSearchServiceDesciption (Service *service_p)
 }
 
 
-static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
+static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, UserDetails * UNUSED_PARAM (user_p))
 {
 	IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) (service_p -> se_data_p);
 
@@ -640,7 +640,7 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 }
 
 
-static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p)
+static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
 	IRodsSearch *search_p = AllocateIRodsSearch ();
 

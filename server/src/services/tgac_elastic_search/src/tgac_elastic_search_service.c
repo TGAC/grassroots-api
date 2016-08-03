@@ -74,7 +74,7 @@ static const char *GetElasticSearchRestServiceDesciption (Service *service_p);
 
 static const char *GetElasticSearchRestServiceURI (Service *service_p);
 
-static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseElasticSearchRestServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -214,7 +214,7 @@ static const char *GetElasticSearchRestServiceURI (Service * UNUSED_PARAM (servi
 }
 
 
-static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Elastic Search service parameters", "The parameters used for the Elastic Search service");
 

@@ -57,7 +57,7 @@ static const char *GetWebSearchServiceDesciption (Service *service_p);
 static const char *GetWebSearchServiceInformationUri (Service *service_p);
 
 
-static ParameterSet *GetWebSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetWebSearchServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseWebSearchServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -82,7 +82,7 @@ static json_t *CreateWebSearchServiceResults (WebSearchServiceData *data_p);
  
 
  
-ServicesArray *GetServices (json_t *config_p)
+ServicesArray *GetServices (UserDetails *user_p, json_t *config_p)
 {
 	return GetReferenceServicesFromJSON (config_p, "web_search_service", GetWebSearchService);
 }
@@ -197,7 +197,7 @@ static const char *GetWebSearchServiceInformationUri (Service *service_p)
 }
 
 
-static ParameterSet *GetWebSearchServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetWebSearchServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	WebSearchServiceData *data_p = (WebSearchServiceData *) (service_p -> se_data_p);
 

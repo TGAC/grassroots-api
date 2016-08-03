@@ -110,7 +110,7 @@ static const char *GetLongRunningServiceName (Service *service_p);
 
 static const char *GetLongRunningServiceDesciption (Service *service_p);
 
-static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -309,7 +309,7 @@ static const char *GetLongRunningServiceDesciption (Service * UNUSED_PARAM (serv
 }
 
 
-static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (config_p))
+static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("LongRunning service parameters", "The parameters used for the LongRunning service");
 	
