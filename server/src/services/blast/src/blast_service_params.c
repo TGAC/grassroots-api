@@ -47,29 +47,35 @@ typedef enum
 	BOF_CSV,
 	BOF_BLAST_ASN1,
 	BOF_JSON_SEQALIGN,
-	BOF_JSON_BLAST,
-	BOF_XML2_BLAST,
+	BOF_MULTI_FILE_JSON_BLAST,
+	BOF_MULTI_FILE_XML2_BLAST,
+	BOF_SINGLE_FILE_JSON_BLAST,
+	BOF_SINGLE_FILE_XML2_BLAST,
+	BOF_SEQUENCE_ALIGNMENT,
 	BOF_NUM_TYPES
 } BlastOutputFormat;
 
 
 static const char *s_output_formats_ss [BOF_NUM_TYPES] =
 {
-		"pairwise",
-		"query-anchored showing identities",
-		"query-anchored no identities",
-		"flat query-anchored, show identities",
-		"flat query-anchored, no identities",
-		"XML Blast output",
-		"tabular",
-		"tabular with comment lines",
-		"Text ASN.1",
-		"Binary ASN.1",
-		"Comma-separated values",
-		"BLAST archive format (ASN.1)",
-		"JSON Seqalign output",
-		"JSON Blast output",
-		"XML2 Blast output"
+	"pairwise",
+	"query-anchored showing identities",
+	"query-anchored no identities",
+	"flat query-anchored, show identities",
+	"flat query-anchored, no identities",
+	"XML Blast output",
+	"tabular",
+	"tabular with comment lines",
+	"Text ASN.1",
+	"Binary ASN.1",
+	"Comma-separated values",
+	"BLAST archive format (ASN.1)",
+	"JSON Seqalign output",
+	"Multiple file JSON Blast output",
+	"Multiple file XML2 Blast output",
+	"Single file JSON Blast output",
+	"Single file XML2 Blast output",
+	"Sequence Alignmnent/Map (SAM)"
 };
 
 

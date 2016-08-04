@@ -1,6 +1,6 @@
-﻿﻿[Services](#services)
+﻿# ﻿[Services](#services)
 
-# [Services Introduction](#services-introduction)
+## [Introduction](#introduction)
 
 A Service is the component that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](#standalone-services) or as [referred services](#referred-services). 
 
@@ -9,27 +9,27 @@ A Service is the component that is used to add some scientific functionality, *i
 
 Standalone services are those which perform specific-tasks. They can be written in any language and just need to be loadable by the technology of whichever server application that they are running on. Many of the Services that come with the Grassroots system are written in C/C++ and are designed to be used by the Apache httpd server.
 
-### C/C++-based services within httpd
-
-Services built in C/C++-based are shared libraries that only require 2 exported functions:
-
-~~~{.c}
-ServicesArray *GetServices (const json_t *config_p);
-
-void ReleaseServices (ServicesArray *services_p);
-~~~
-
-The first function gets an array detailing all of the operations that this Service can perform. Most commonly the ServicesArray will contain a single Service, though it can have more if appropriate. The second function is used when these operations go out of scope. 
-Effectively these 2 functions  a constructor/destructor pair for a given ServicesArray. 
-
-So to 
-
-
-
 ## [Referred Services](#referred-services)
 
-These are Services that use generic modules for their functionality and only differ in their configuration. Each configuration is a JSON file that details the parameters and information about the Service. The GrassrootsIS has examples
-of these are that has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. The referred service accesses this functionality be setting the **plugin** key to *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. The configuration files are stored in the *references* folder. For example, the GrassrootsIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
+These are Services that use generic modules for their functionality and only differ in their configuration. Each configuration is a JSON file that details the parameters and information about the Service. The GrassrootsIS has examples of these are that has a number of Referred Services that access various web-based searches. The core functionality for this is contained in a Service called *web_search_service*. 
+
+
+### Web Search Service
+
+The **Web Search Service** wraps up the access to a web-based search page and retrieves the results and puts them into the standard results format. It uses a JSON file that has the standard format describing its operations, parameters, *etc.* along with the following additional keys:
+
+  * **plugin**: This is set to "web_search_service*.
+  * **uri**: The web address of the search page to use.
+  * **method**: This states the method used to send the query to the search page.
+  	* **POST**: To send the search query as an HTTP POST request.
+  	* **GET**: To send the search query as an HTTP GET request.
+  * **selector**: The CSS selector to get each of the resultant hits from the search 
+page's response. 
+
+
+
+The referred service accesses this functionality be setting the **plugin** key to *web_search_service*. This is then configured for each web-based search that is installed using a JSON file. 
+The configuration files are stored in the *references* folder. For example, the GrassrootsIS can access the search engine at [Agris](http://agris.fao.org/agris-search/index.do) and it uses the configuration file shown below:
   
 ~~~{.json}
 {
@@ -70,25 +70,58 @@ of these are that has a number of Referred Services that access various web-base
 This details how to call Agris' search engine by specifying the URI to call (http://agris.fao.org/agris-search/searchIndex.do), the parameters to send, how to call the search engine and the Cascading Style Sheet (CSS) selector to use to extract each of the hits from the subsequent results page. So all that needs to be done to add another web-based search  service to the system is to add another configuration file to the references directory. 
 
 
-## Web Search Service
+## Developing C/C++-based services within httpd
 
-The **Web Search Service** wraps up the access to a web-based search page and retrieves the results and puts them into the standard results format. It uses a JSON file that has the standard format describing its operations, parameters, *etc.* along with the following additional keys:
+Services built in C/C++-based are shared libraries that only require 2 exported functions; one to get the available Services and one to release them.  
 
-  * **plugin**: This is set to "web_search_service*.
-  * **uri**: The web address of the search page to use.
-  * **method**: This states the method used to send the query to the search page.
-  	* **POST**: To send the search query as an HTTP POST request.
-  	* **GET**: To send the search query as an HTTP GET request.
-  * **selector**: The CSS selector to get each of the resultant hits from the search 
-page's response. 
+~~~{.c}
+/* For standalone services ... */
+ServicesArray *GetServices (UserDetails *user_p);
+
+/* ... or for referred services */
+ServicesArray *GetServices (UserDetails *user_p, const json_t *referred_service_config_p);
+
+/* For all services */
+void ReleaseServices (ServicesArray *services_p);
+~~~
+
+```GetServices```, gets an array detailing all of the operations that this Service can perform. Most commonly the ServicesArray will contain a single Service, though it can have more if appropriate. The second function, ```ReleaseServices``` is used when these operations go out of scope. 
+Effectively these 2 functions  a constructor/destructor pair for a given ServicesArray. 
+
+So depending upon whether you are developing a specific Service or a reusable one for use by Referred Services you would choose the appropriate pair of functions.
 
 
+## Examples
 
-## Example Web Search Service
+So there are three ways of developing Services:
 
-This section details how to write and a web search service as a JSON file. 
+ * A standalone Service.
+ * A reusable Service which use separate reference files.
+ * A reference file that uses an already existing reusable Service.
 
-### Setting the service provider details
+We will now go through an example for each of these scenarios.
+
+
+### Standalone Service
+
+
+### Reusable Service
+
+For a reusable Service the two entry points that are required are:
+
+~~~{.c}
+/* Get referred services */
+ServicesArray *GetServices (UserDetails *user_p, const json_t *referred_service_config_p);
+
+/* For all services */
+void ReleaseServices (ServicesArray *services_p);
+~~~ 
+
+### Reference Service
+
+This section details how to write a JSON reference file that will use the existing web search service. 
+
+#### Setting the service provider details
 
 For this example imagine we have a web search engine at http://foobar.com/search.html for searching articles to do with wheat research, out initial JSON file might be:
 
@@ -117,7 +150,7 @@ The functionality to wrap this web-based search up into a Grassroots service is 
 
 
 
-### Adding the parameters
+#### Adding the parameters
 
 On our example http://foobar.com/search.html, imagine that there is a single html-based search form defined and a snippet of its HTML is
 
@@ -204,7 +237,7 @@ So adding these to our Service description gives:
 }
 ~~~
 
-### Submitting the search
+#### Submitting the search
 
 Now that we have specified the parameters, we need to tell the Grassroots system how and where to submit the search parameters to.
 The key for the submission URI is *uri* and its value should be set to the action of the form, which in this case is */search*.
@@ -253,7 +286,7 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 }
 ~~~
 
-### Getting the search results
+#### Getting the search results
 
 The final part that we need to add are the details for how to extract the hits from the results page that the search engine returns.
 This is done by specifying a key called *selector* that has the CSS selector for each entry on the list of results. 
