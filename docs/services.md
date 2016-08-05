@@ -117,6 +117,9 @@ ServicesArray *GetServices (UserDetails *user_p, const json_t *referred_service_
 void ReleaseServices (ServicesArray *services_p);
 ~~~ 
 
+
+
+
 ### Reference Service
 
 This section details how to write a JSON reference file that will use the existing web search service. 
@@ -201,39 +204,39 @@ So adding these to our Service description gives:
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
-		"description": "A comapny specializing in wheat research",
+		"description": "A company specializing in wheat research",
 		"uri": "http://foobar.com"
 	},
 	"services": {
-	  "path": "Foobar Search service",
-	  "summary": "A service to data mine wheat articles",
+		"path": "Foobar Search service",
+		"summary": "A service to data mine wheat articles",
 		"description": "A service to search for wheat research articles.",
 		"plugin": "web_search_service",
 		"operations": [{
-      "operation_id": "Foobar Search service",
-      "summary": "An operation to search for matching articles",
-      "description": "An operation to search for matching articles",
-      "parameter_set": {
-        "parameters": [{
-					"param": "query",
-					"name": "Query",
-					"default_value": "",
-					"current_value": "",
-					"type": "string",
-					"grassroots_type_text": "keyword",
-					"description": "The search term"
-				}, {
-					"param": "size",
-					"name": "Number of hits",
-					"default_value": "20",
-					"current_value": "20",
-					"type": "number",
-					"grassroots_type_text": "unsigned integer",
-					"description": "The number of hits to return"
-				}]
-			}
-    }]		
-  }
+			"operation_id": "Foobar Search service",
+				"summary": "An operation to search for matching articles",
+				"description": "An operation to search for matching articles",
+				"parameter_set": {
+					"parameters": [{
+						"param": "query",
+						"name": "Query",
+						"default_value": "",
+						"current_value": "",
+						"type": "string",
+						"grassroots_type_text": "keyword",
+						"description": "The search term"
+					}, {
+						"param": "size",
+						"name": "Number of hits",
+						"default_value": "20",
+						"current_value": "20",
+						"type": "number",
+						"grassroots_type_text": "unsigned integer",
+						"description": "The number of hits to return"
+					}]
+				}
+		}]		
+	}
 }
 ~~~
 

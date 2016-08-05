@@ -21,15 +21,33 @@
  */
 
 #include "schema_version.h"
+#include "json_util.h"
+#include "grassroots_config.h"
 
 
-uint32 GetSchemaMajorVersion (void)
+uint32 GetSchemaMajorVersionFromConfig (void)
 {
-	return 0;
+	uint32 major = 0;
+	const json_t *schema_p = GetGlobalConfigValue (SCHEMA_S);
+
+	if (schema_p)
+		{
+			GetJSONInteger (schema_p, VERSION_MAJOR_S, (int *) &major);
+		}
+
+	return major;
 }
 
 
-uint32 GetSchemaMinorVersion (void)
+uint32 GetSchemaMinorVersionFromConfig (void)
 {
-	return 9;
+	uint32 minor = 9;
+	const json_t *schema_p = GetGlobalConfigValue (SCHEMA_S);
+
+	if (schema_p)
+		{
+			GetJSONInteger (schema_p, VERSION_MINOR_S, (int *) &minor);
+		}
+
+	return minor;
 }
