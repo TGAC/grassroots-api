@@ -27,11 +27,38 @@
 #include "typedefs.h"
 
 
-GRASSROOTS_UTIL_API uint32 GetSchemaMajorVersion (void);
+typedef struct SchemaVersion
+{
+	uint32 sv_major;
+	uint32 sv_minor;
+} SchemaVersion;
 
 
-GRASSROOTS_UTIL_API uint32 GetSchemaMinorVersion (void);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
+
+/**
+ * Get the major version of the Grassroots schema to use.
+ *
+ * @return The major number.
+ */
+GRASSROOTS_UTIL_API uint32 GetSchemaMajorVersionFromConfig (void);
+
+
+/**
+ * Get the minor version of the Grassroots schema to use.
+ *
+ * @return The minor number.
+ */
+GRASSROOTS_UTIL_API uint32 GetSchemaMinorVersionFromConfig (void);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif /* SRC_UTIL_INCLUDE_SCHEMA_VERSION_H_ */

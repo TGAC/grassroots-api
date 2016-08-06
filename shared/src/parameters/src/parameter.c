@@ -25,9 +25,10 @@
 #include "string_hash_table.h"
 #include "parameter_set.h"
 #include "service.h"
-
+#include "schema_version.h"
 #include "json_tools.h"
 #include "json_util.h"
+
 
 #ifdef _DEBUG
 	#define PARAMETER_DEBUG	(STM_LEVEL_FINE)
@@ -158,6 +159,17 @@ static bool SetSharedTypeJSONValue (SharedType *value_p, const json_t * const sr
 static const json_t *GetParameterFromConfig (const json_t *service_config_p, const char * const param_name_s);
 
 static bool GetParameterStringFromConfig (const json_t *service_config_p, const char * const param_name_s, const char * const key_s, char **value_ss);
+
+
+
+static bool AddCompoundGrassrootsType (json_t *value_p, const ParameterType pt);
+
+
+static bool GetParameterTypeFromCompoundObject (const json_t *root_p, ParameterType *pt_p);
+
+static bool AddSeparateGrassrootsTypes (json_t *value_p, const ParameterType pt);
+
+static bool GetParameterTypeFromSeparateObjects (const json_t * const json_p, ParameterType *param_type_p);
 
 
 /******************************************************/
@@ -1173,32 +1185,239 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 
 	if (success_flag)
 		{
-			if (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0)
-				{
-					const char *type_s = GetGrassrootsTypeAsString (param_p -> pa_type);
+			const uint32 major_version = GetSchemaMajorVersion ();
+			const uint32 minor_version = GetSchemaMinorVersion ();
 
-					if (type_s)
-						{
-							if (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (type_s)) != 0)
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %s to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, type_s);
-								}
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", param_p -> pa_type);
-						}
+			if ((major_version == 0) && (minor_version == 1))
+				{
+					success_flag = AddSeparateGrassrootsTypes (root_p, param_p -> pa_type);
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %d to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_S, param_p -> pa_type);
-					success_flag = false;
+					success_flag = AddCompoundGrassrootsType (root_p, param_p -> pa_type);
 				}
+
+			if (!success_flag)
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, root_p, "Failed to add grassroots type for %d", param_p -> pa_type);
+				}		/* if (!AddCompoundGrassrootsType (root_p, param_p -> pa_type)) */
+
+		}		/* if (success_flag) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, root_p, "Failed to add type for %d", param_p -> pa_type);
 		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (root_p, "AddParameterTypeToJSON - root_p :: ", STM_LEVEL_FINER, __FILE__, __LINE__);
 	#endif
+
+	return success_flag;
+}
+
+
+static bool AddCompoundGrassrootsType (json_t *value_p, const ParameterType pt)
+{
+	bool success_flag = false;
+	json_t *grassroots_p = json_object ();
+
+	if (grassroots_p)
+		{
+			if (json_object_set_new (grassroots_p, PARAM_COMPOUND_VALUE_S, json_integer (pt)) == 0)
+				{
+					const char *type_s = GetGrassrootsTypeAsString (pt);
+
+					if (type_s)
+						{
+							if (json_object_set_new (grassroots_p, PARAM_COMPOUND_TEXT_S, json_string (type_s)) == 0)
+								{
+									if (json_object_set_new (value_p, PARAM_GRASSROOTS_S, grassroots_p) == 0)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add compound %s: %s to the json definition", PARAM_COMPOUND_TEXT_S, type_s);
+										}
+
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add compound %s: %s to the json definition", PARAM_COMPOUND_TEXT_S, type_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", pt);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add compound %s: %d to the json definition", PARAM_GRASSROOTS_TYPE_INFO_S, pt);
+				}
+
+			if (!success_flag)
+				{
+					json_decref (grassroots_p);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate json object for comppond grassroots type");
+		}
+
+	return success_flag;
+}
+
+
+static bool GetParameterTypeFromCompoundObject (const json_t *root_p, ParameterType *pt_p)
+{
+	bool success_flag = false;
+	const json_t *grassroots_p = json_object_get (root_p, PARAM_GRASSROOTS_S);
+
+	if (grassroots_p)
+		{
+			const json_t *value_p = json_object_get (grassroots_p, PARAM_COMPOUND_VALUE_S);
+
+			if (value_p)
+				{
+					if (json_is_integer (value_p))
+						{
+							json_int_t subtype = json_integer_value (value_p);
+
+							if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+								{
+									*pt_p = subtype;
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_COMPOUND_VALUE_S, json_typeof (value_p));
+						}
+				}
+			else if ((value_p = json_object_get (value_p, PARAM_COMPOUND_TEXT_S)) != NULL)
+				{
+					if (json_is_string (value_p))
+						{
+							const char *value_s = json_string_value (value_p);
+
+							if (value_s)
+								{
+									if (GetGrassrootsTypeFromString (value_s, pt_p))
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
+										}
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_COMPOUND_TEXT_S);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_COMPOUND_TEXT_S, json_typeof (value_p));
+						}
+				}
+
+		}		/* if (grassroots_p) */
+
+	return success_flag;
+}
+
+
+static bool AddSeparateGrassrootsTypes (json_t *value_p, const ParameterType pt)
+{
+	bool success_flag = false;
+
+	if (json_object_set_new (value_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (pt)) == 0)
+		{
+			const char *type_s = GetGrassrootsTypeAsString (pt);
+
+			if (type_s)
+				{
+					if (json_object_set_new (value_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (type_s)) != 0)
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %s to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, type_s);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", pt);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %d to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_S, pt);
+			success_flag = false;
+		}
+
+
+	return success_flag;
+}
+
+
+static bool GetParameterTypeFromSeparateObjects (const json_t * const json_p, ParameterType *param_type_p)
+{
+	bool success_flag = false;
+	json_t *value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_S);
+
+	if (value_p)
+		{
+			if (json_is_integer (value_p))
+				{
+					json_int_t subtype = json_integer_value (value_p);
+
+					if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+						{
+							*param_type_p = subtype;
+							success_flag = true;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_GRASSROOTS_TYPE_INFO_S, json_typeof (value_p));
+				}
+		}
+	else if ((value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S)) != NULL)
+		{
+			if (json_is_string (value_p))
+				{
+					const char *value_s = json_string_value (value_p);
+
+					if (value_s)
+						{
+							if (GetGrassrootsTypeFromString (value_s, param_type_p))
+								{
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_typeof (value_p));
+				}
+		}
 
 	return success_flag;
 }
@@ -1807,55 +2026,14 @@ static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLev
 static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType *param_type_p)
 {
 	bool success_flag = false;
-	json_t *value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_S);
 
-	if (value_p)
+	if (GetParameterTypeFromCompoundObject (json_p, param_type_p))
 		{
-			if (json_is_integer (value_p))
-				{
-					json_int_t subtype = json_integer_value (value_p);
-
-					if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
-						{
-							*param_type_p = subtype;
-							success_flag = true;
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
-						}
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_GRASSROOTS_TYPE_INFO_S, json_typeof (value_p));
-				}
+			success_flag = true;
 		}
-	else if ((value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S)) != NULL)
+	else
 		{
-			if (json_is_string (value_p))
-				{
-					const char *value_s = json_string_value (value_p);
-
-					if (value_s)
-						{
-							if (GetGrassrootsTypeFromString (value_s, param_type_p))
-								{
-									success_flag = true;
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
-								}
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
-						}
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_typeof (value_p));
-				}
+			success_flag = GetParameterTypeFromSeparateObjects (json_p, param_type_p);
 		}
 
 	return success_flag;
