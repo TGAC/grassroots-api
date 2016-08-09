@@ -24,6 +24,7 @@
 #include "request_tools.h"
 #include "uuid/uuid.h"
 #include "user_details.h"
+#include "schema_version.h"
 
 #define JSON_KEY_USERNAME ("username")
 #define JSON_KEY_PASSWORD ("password")
@@ -49,7 +50,7 @@ extern "C"
  * @param to_s The start of the interval in the form YYYYMMDDhhmmss.
  * @return The json_t object for this request or <code>NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s);
+GRASSROOTS_NETWORK_API json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p);
 
 
 /**
@@ -59,7 +60,7 @@ GRASSROOTS_NETWORK_API json_t *GetModifiedFilesRequest (const UserDetails *user_
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetAvailableServicesRequest (const UserDetails *user_p);
+GRASSROOTS_NETWORK_API json_t *GetAvailableServicesRequest (const UserDetails *user_p, const SchemaVersion * const sv_p);
 
 
 /**
@@ -85,7 +86,7 @@ GRASSROOTS_NETWORK_API bool GetUsernameAndPassword (const UserDetails * const us
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * const protocol_s, const char * const filename_s);
+GRASSROOTS_NETWORK_API json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * const protocol_s, const char * const filename_s, const SchemaVersion * const sv_p);
 
 
 /**
@@ -97,7 +98,7 @@ GRASSROOTS_NETWORK_API json_t *GetInterestedServicesRequest (const UserDetails *
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetKeywordServicesRequest (const UserDetails *user_p, const char * const keyword_s);
+GRASSROOTS_NETWORK_API json_t *GetKeywordServicesRequest (const UserDetails *user_p, const char * const keyword_s, const SchemaVersion * const sv_p);
 
 
 /**
@@ -109,7 +110,7 @@ GRASSROOTS_NETWORK_API json_t *GetKeywordServicesRequest (const UserDetails *use
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetNamedServicesRequest (const UserDetails *user_p, const char * const service_name_s);
+GRASSROOTS_NETWORK_API json_t *GetNamedServicesRequest (const UserDetails *user_p, const char * const service_name_s, const SchemaVersion * const sv_p);
 
 
 /**
@@ -121,7 +122,7 @@ GRASSROOTS_NETWORK_API json_t *GetNamedServicesRequest (const UserDetails *user_
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetCheckServicesRequest (const UserDetails *user_p, const char * const service_uuid_s);
+GRASSROOTS_NETWORK_API json_t *GetCheckServicesRequest (const UserDetails *user_p, const char * const service_uuid_s, const SchemaVersion * const sv_p);
 
 
 /**
@@ -142,7 +143,7 @@ GRASSROOTS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const UserDeta
  * @param op The Operation to generate the JSON for.
  * @return The JSON fragment or <code>NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
+GRASSROOTS_NETWORK_API json_t *GetOperationAsJSON (Operation op, const SchemaVersion * const sv_p);
 
 
 /**
@@ -162,7 +163,7 @@ GRASSROOTS_NETWORK_API json_t *GetOperationAsJSON (Operation op);
  * @param op_data_p The Operation-specific data.
  * @return The json_t for the request or <code>NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const char * const op_key_s, json_t * const op_data_p);
+GRASSROOTS_NETWORK_API json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const char * const op_key_s, json_t * const op_data_p, const SchemaVersion * const sv_p);
 
 /**
  * Send a JSON-based request to the server and get the JSON-based response.
@@ -212,7 +213,7 @@ GRASSROOTS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, 
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
+GRASSROOTS_NETWORK_API json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p, const SchemaVersion * const sv_p);
 
 
 /**
@@ -239,20 +240,6 @@ GRASSROOTS_NETWORK_API bool GetStatusFromJSON (const json_t *service_json_p, Ope
  */
 GRASSROOTS_NETWORK_API json_t *CallServices (json_t *client_results_p, const UserDetails *user_p, Connection *connection_p);
 
-/**
- * Create a response object with a valid header and a given key and value.
- *
- * @param req_p If this object is not <code>NULL</code> and contains a "verbose" key set to true,
- * then the request will be added to a "request" key within the "header" section of this response.
- * This is to allow the tracking of requests to responses if needed.
- * @param key_s The key to use to add the associated value to the generated response.
- * @param value_p The value to add to the generated response.
- * @return The response or <code>NULL</code> upon error.
- * @see GetInitialisedMessage
- */
-GRASSROOTS_NETWORK_API json_t *GetInitialisedResponse (const json_t *req_p, const char *key_s, json_t *value_p);
-
-
 
 /**
  * Create a response object with a valid header.
@@ -261,7 +248,7 @@ GRASSROOTS_NETWORK_API json_t *GetInitialisedResponse (const json_t *req_p, cons
  *
  * @return The response or <code>NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetInitialisedMessage (void);
+GRASSROOTS_NETWORK_API json_t *GetInitialisedMessage (const SchemaVersion * const sv_p);
 
 
 #ifdef __cplusplus

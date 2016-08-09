@@ -155,7 +155,7 @@ GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const stru
  * an error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
+GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 
 
@@ -178,7 +178,7 @@ GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const 
  * an error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p));
+GRASSROOTS_PARAMS_API json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const SchemaVersion * const sv_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p));
 
 
 /**

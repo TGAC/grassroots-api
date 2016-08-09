@@ -463,7 +463,8 @@ bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_
 {
 	bool success_flag = false;
 	ByteBuffer *buffer_p = data_p -> wsd_buffer_p;
-	json_t *json_p = GetParameterSetAsJSON (param_set_p, true);
+	const SchemaVersion *sv_p = GetSchemaVersion ();
+	json_t *json_p = GetParameterSetAsJSON (param_set_p, sv_p, true);
 
 	if (json_p)
 		{

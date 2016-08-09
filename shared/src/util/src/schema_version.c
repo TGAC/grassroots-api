@@ -22,32 +22,61 @@
 
 #include "schema_version.h"
 #include "json_util.h"
-#include "grassroots_config.h"
+#include "streams.h"
 
 
-uint32 GetSchemaMajorVersionFromConfig (void)
+json_t *GetSchemaVersionAsJSON (const SchemaVersion * const sv_p)
 {
-	uint32 major = 0;
-	const json_t *schema_p = GetGlobalConfigValue (SCHEMA_S);
+	json_error_t err;
+	json_t *res_p = json_pack_ex (&err, 0, "{s:i,s:i}", VERSION_MAJOR_S, sv_p -> sv_major, VERSION_MINOR_S, sv_p -> sv_minor);
 
-	if (schema_p)
+	if (!res_p)
 		{
-			GetJSONInteger (schema_p, VERSION_MAJOR_S, (int *) &major);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create schema version json: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
 		}
 
-	return major;
+	return res_p;
 }
 
 
-uint32 GetSchemaMinorVersionFromConfig (void)
+SchemaVersion *GetSchemaVersionFromJSON (const json_t * const json_p)
 {
-	uint32 minor = 9;
-	const json_t *schema_p = GetGlobalConfigValue (SCHEMA_S);
+	SchemaVersion *sv_p = NULL;
+	int major;
 
-	if (schema_p)
+	if (GetJSONInteger (json_p, VERSION_MAJOR_S, &major))
 		{
-			GetJSONInteger (schema_p, VERSION_MINOR_S, (int *) &minor);
+			int minor;
+
+			if (GetJSONInteger (json_p, VERSION_MINOR_S, &minor))
+				{
+					sv_p = (SchemaVersion *) AllocMemory (sizeof (SchemaVersion));
+
+					if (sv_p)
+						{
+							sv_p -> sv_major = major;
+							sv_p -> sv_minor = minor;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for schema version");
+						}
+				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, json_p, "Failed to get %s", VERSION_MINOR_S);
+				}
+		}
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, json_p, "Failed to get %s", VERSION_MAJOR_S);
 		}
 
-	return minor;
+	return sv_p;
+}
+
+
+void FreeSchemaVersion (SchemaVersion *sv_p)
+{
+	FreeMemory (sv_p);
 }

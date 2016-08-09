@@ -25,13 +25,24 @@
 
 #include "grassroots_util_library.h"
 #include "typedefs.h"
+#include "jansson.h"
 
 
+/**
+ * This is a datatype to store the versioning details
+ * for the Grassroots JSON schema that is being used.
+ * This allows backward compatibility code to be used
+ * as the schema is upgraded.
+ */
 typedef struct SchemaVersion
 {
+	/** The major revision of the schema. */
 	uint32 sv_major;
+
+	/** The minor revision of the schema. */
 	uint32 sv_minor;
 } SchemaVersion;
+
 
 
 #ifdef __cplusplus
@@ -41,19 +52,31 @@ extern "C"
 
 
 /**
- * Get the major version of the Grassroots schema to use.
+ * Get the JSON representation for a SchemaVersion.
  *
- * @return The major number.
+ * @param sv_p The SchemaVersion to get the JSON representation of.
+ * @return The newly-allocated JSON representation or <code>NULL</code> upon error.
  */
-GRASSROOTS_UTIL_API uint32 GetSchemaMajorVersionFromConfig (void);
+GRASSROOTS_UTIL_API json_t *GetSchemaVersionAsJSON (const SchemaVersion * const sv_p);
 
 
 /**
- * Get the minor version of the Grassroots schema to use.
+ * Create a SchemaVersion from a JSON representation.
  *
- * @return The minor number.
+ * @param json_p The JSON representation to create a SchemaVersion from.
+ * @return The newly-allocated SchemaVersion which will need to be freed
+ * when finished with or <code>NULL</code> upon error.
+ * @see FreeSchemaVersion
  */
-GRASSROOTS_UTIL_API uint32 GetSchemaMinorVersionFromConfig (void);
+GRASSROOTS_UTIL_API SchemaVersion *GetSchemaVersionFromJSON (const json_t * const json_p);
+
+
+/**
+ * Free the memory and resources for a given SchemaVersion.
+ *
+ * @param sv_p The SchemaVersion to free.
+ */
+GRASSROOTS_UTIL_API void FreeSchemaVersion (SchemaVersion *sv_p);
 
 
 #ifdef __cplusplus
