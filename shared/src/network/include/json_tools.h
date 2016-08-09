@@ -201,7 +201,7 @@ GRASSROOTS_NETWORK_API const char *GetUserUUIDStringFromJSON (const json_t *cred
  * @return The JSON fragment to send to the Server or <code>
  * NULL</code> upon error.
  */
-GRASSROOTS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p);
+GRASSROOTS_NETWORK_API json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p, const SchemaVersion * const sv_p);
 
 
 /**

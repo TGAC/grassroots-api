@@ -247,6 +247,7 @@ int main (int argc, char *argv [])
 
 					if (client_p)
 						{
+							SchemaVersion *sv_p = AllocateSchemaVersion ();
 							UserDetails *user_p = NULL;
 
 							switch (api_id)

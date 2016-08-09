@@ -45,10 +45,57 @@ typedef struct SchemaVersion
 
 
 
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_SCHEMA_VERSION_TAGS is defined then it will
+ * become
+ *
+ * 		const char *ALLOCATE_SCHEMA_VERSION_TAGS = "path";
+ *
+ * ALLOCATE_SCHEMA_VERSION_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * json_util.c.
+ */
+#ifdef ALLOCATE_SCHEMA_VERSION_TAGS
+	#define SV_PREFIX GRASSROOTS_UTIL_API
+	#define SV_VAL(x)	= x
+#else
+	#define SV_PREFIX extern
+	#define SV_VAL(x)
+#endif
+
+SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MAJOR SV_VAL(0);
+SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MINOR SV_VAL(9);
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+
+/**
+ * Create a new SchemaVersion.
+ *
+ * @param major The major revision of the SchemaVersion.
+ * @param minor The minor revision of the SchemaVersion.
+ * @return The newly-allocated SchemaVersion which will need to be freed
+ * when finished with or <code>NULL</code> upon error.
+ * @see FreeSchemaVersion
+ */
+GRASSROOTS_UTIL_API SchemaVersion *AllocateSchemaVersion (const int major, const int minor);
+
+
+/**
+ * Free the memory and resources for a given SchemaVersion.
+ *
+ * @param sv_p The SchemaVersion to free.
+ */
+GRASSROOTS_UTIL_API void FreeSchemaVersion (SchemaVersion *sv_p);
 
 
 /**
@@ -71,12 +118,6 @@ GRASSROOTS_UTIL_API json_t *GetSchemaVersionAsJSON (const SchemaVersion * const 
 GRASSROOTS_UTIL_API SchemaVersion *GetSchemaVersionFromJSON (const json_t * const json_p);
 
 
-/**
- * Free the memory and resources for a given SchemaVersion.
- *
- * @param sv_p The SchemaVersion to free.
- */
-GRASSROOTS_UTIL_API void FreeSchemaVersion (SchemaVersion *sv_p);
 
 
 #ifdef __cplusplus

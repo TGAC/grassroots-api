@@ -156,7 +156,7 @@ GRASSROOTS_SERVICE_API json_t *GetProvidersStateTableAsJSON (const ProvidersStat
  * @see AddProvidersStateTableToRequest
  * @memberof ProvidersStateTable
  */
-GRASSROOTS_SERVICE_API json_t *GetAvailableServicesRequestForAllProviders (const ProvidersStateTable * providers_p, UserDetails *user_p);
+GRASSROOTS_SERVICE_API json_t *GetAvailableServicesRequestForAllProviders (const ProvidersStateTable * providers_p, UserDetails *user_p, const SchemaVersion * const sv_p);
 
 
 

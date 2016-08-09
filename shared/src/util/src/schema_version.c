@@ -20,6 +20,14 @@
  *      Author: tyrrells
  */
 
+/**
+ * This define will allocate the variables
+ * CURRENT_SCHEMA_VERSION_MAJOR and
+ * CURRENT_SCHEMA_VERSION_MINOR
+ * in schema_version.h
+ */
+#define ALLOCATE_SCHEMA_VERSION_TAGS
+
 #include "schema_version.h"
 #include "json_util.h"
 #include "streams.h"
@@ -50,17 +58,7 @@ SchemaVersion *GetSchemaVersionFromJSON (const json_t * const json_p)
 
 			if (GetJSONInteger (json_p, VERSION_MINOR_S, &minor))
 				{
-					sv_p = (SchemaVersion *) AllocMemory (sizeof (SchemaVersion));
-
-					if (sv_p)
-						{
-							sv_p -> sv_major = major;
-							sv_p -> sv_minor = minor;
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for schema version");
-						}
+					sv_p = AllocateSchemaVersion (major, minor);
 				}
 			else
 				{
@@ -70,6 +68,24 @@ SchemaVersion *GetSchemaVersionFromJSON (const json_t * const json_p)
 	else
 		{
 			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, json_p, "Failed to get %s", VERSION_MAJOR_S);
+		}
+
+	return sv_p;
+}
+
+
+SchemaVersion *AllocateSchemaVersion (const int major, const int minor)
+{
+	SchemaVersion *sv_p = (SchemaVersion *) AllocMemory (sizeof (SchemaVersion));
+
+	if (sv_p)
+		{
+			sv_p -> sv_major = major;
+			sv_p -> sv_minor = minor;
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for schema version");
 		}
 
 	return sv_p;

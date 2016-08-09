@@ -259,8 +259,8 @@ static void InitSchemaVersionDetails (void)
 {
 	const json_t *schema_p = GetGlobalConfigValue (SCHEMA_S);
 
-	s_schema_version.sv_major = 0;
-	s_schema_version.sv_minor = 9;
+	s_schema_version.sv_major = CURRENT_SCHEMA_VERSION_MAJOR;
+	s_schema_version.sv_minor = CURRENT_SCHEMA_VERSION_MINOR;
 
 	if (schema_p)
 		{
