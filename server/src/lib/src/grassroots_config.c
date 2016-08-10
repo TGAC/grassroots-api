@@ -275,6 +275,7 @@ const SchemaVersion *GetSchemaVersion (void)
 	return &s_schema_version;
 }
 
+
 static const json_t *GetConfig (void)
 {
 	if (!s_config_p)

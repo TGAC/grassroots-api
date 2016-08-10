@@ -247,14 +247,16 @@ int main (int argc, char *argv [])
 
 					if (client_p)
 						{
-							SchemaVersion *sv_p = AllocateSchemaVersion ();
+							SchemaVersion *sv_p = AllocateSchemaVersion (CURRENT_SCHEMA_VERSION_MAJOR, CURRENT_SCHEMA_VERSION_MINOR);
 							UserDetails *user_p = NULL;
+
+							SetClientSchema (client_p, sv_p);
 
 							switch (api_id)
 								{
 									case OP_LIST_ALL_SERVICES:
 										{
-											json_t *req_p = GetAvailableServicesRequest (user_p);
+											json_t *req_p = GetAvailableServicesRequest (user_p, sv_p);
 
 											if (req_p)
 												{
@@ -288,7 +290,7 @@ int main (int argc, char *argv [])
 
 									case OP_IRODS_MODIFIED_DATA:
 										{
-											json_t *req_p = GetModifiedFilesRequest (user_p, from_s, to_s);
+											json_t *req_p = GetModifiedFilesRequest (user_p, from_s, to_s, sv_p);
 
 											if (req_p)
 												{
@@ -309,7 +311,7 @@ int main (int argc, char *argv [])
 										{
 											if (protocol_s && query_s)
 												{
-													json_t *req_p = GetInterestedServicesRequest (user_p, protocol_s, query_s);
+													json_t *req_p = GetInterestedServicesRequest (user_p, protocol_s, query_s, sv_p);
 
 													if (req_p)
 														{
@@ -339,7 +341,7 @@ int main (int argc, char *argv [])
 										{
 											if (query_s)
 												{
-													json_t *req_p = GetKeywordServicesRequest (user_p, query_s);
+													json_t *req_p = GetKeywordServicesRequest (user_p, query_s, sv_p);
 
 													if (req_p)
 														{
@@ -372,7 +374,7 @@ int main (int argc, char *argv [])
 
 									case OP_GET_NAMED_SERVICES:
 										{
-											json_t *req_p = GetNamedServicesRequest (user_p, query_s);
+											json_t *req_p = GetNamedServicesRequest (user_p, query_s, sv_p);
 
 											if (req_p)
 												{
@@ -397,7 +399,7 @@ int main (int argc, char *argv [])
 
 									case OP_CHECK_SERVICE_STATUS:
 										{
-											json_t *req_p = GetCheckServicesRequest (user_p, query_s);
+											json_t *req_p = GetCheckServicesRequest (user_p, query_s, sv_p);
 
 											if (req_p)
 												{
@@ -523,23 +525,22 @@ static char *GetFullServerURI (const char *hostname_s, const char *port_s, const
 
 
 
-static json_t *ShowServices (json_t *response_p, Client *client_p, UserDetails *user_p, Connection * UNUSED_PARAM (connection_p))
+static json_t *ShowServices (json_t *response_p, Client *client_p, UserDetails * UNUSED_PARAM (user_p), Connection * UNUSED_PARAM (connection_p))
 {
-	json_t *services_json_p = NULL;
+	json_t *client_results_p = NULL;
 	json_t *service_defs_p = json_object_get (response_p, SERVICES_NAME_S);
 
 	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
-	{
-	const char *args_s = "res:";
-	PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, response_p, args_s);
-	}
+		{
+			const char *args_s = "res:";
+			PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, response_p, args_s);
+		}
 	#endif
 
 	if (service_defs_p)
 		{
 			if (json_is_array (service_defs_p))
 				{
-					json_t *client_results_p = NULL;
 					const size_t num_services = json_array_size (service_defs_p);
 					size_t i = 0;
 
@@ -580,7 +581,7 @@ static json_t *ShowServices (json_t *response_p, Client *client_p, UserDetails *
 
 		}		/* if (service_defs_p) */
 
-	return services_json_p;
+	return client_results_p;
 }
 
 

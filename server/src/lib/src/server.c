@@ -443,7 +443,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 json_t *GetInitialisedResponseOnServer (const json_t *req_p, const char *key_s, json_t *value_p)
 {
 	const SchemaVersion * const sv_p = GetSchemaVersion ();
-	json_t *res_p = GetInitialisedMessage ();
+	json_t *res_p = GetInitialisedMessage (sv_p);
 
 	if (res_p)
 		{
@@ -731,7 +731,6 @@ static json_t *GetInterestedServices (const json_t * const req_p, UserDetails *u
 
 			if (handler_p)
 				{
-					json_t *config_p = NULL;
 					json_t *paired_servers_p = (req_p != NULL) ? json_object_get (req_p, SERVERS_S) : NULL;
 					ProvidersStateTable *providers_p = AllocateProvidersStateTable (paired_servers_p);
 
@@ -752,7 +751,8 @@ static json_t *GetInterestedServices (const json_t * const req_p, UserDetails *u
 								}
 							else
 								{
-									res_p = GetInitialisedMessage ();
+									const SchemaVersion *sv_p = GetSchemaVersion ();
+									res_p = GetInitialisedMessage (sv_p);
 
 									if (!res_p)
 										{
@@ -1438,6 +1438,7 @@ static int32 AddPairedServices (Service *internal_service_p, UserDetails *user_p
 
 	if (external_servers_p)
 		{
+			const SchemaVersion *sv_p = GetSchemaVersion ();
 			const char *internal_service_name_s = GetServiceName (internal_service_p);
 			ExternalServerNode *external_server_node_p = (ExternalServerNode *) (external_servers_p -> ll_head_p);
 
@@ -1459,7 +1460,7 @@ static int32 AddPairedServices (Service *internal_service_p, UserDetails *user_p
 											if (!IsServiceInProvidersStateTable (providers_p, external_server_p -> es_uri_s, external_service_name_s))
 												{
 													const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
-													json_t *req_p = GetAvailableServicesRequestForAllProviders (providers_p, user_p);
+													json_t *req_p = GetAvailableServicesRequestForAllProviders (providers_p, user_p, sv_p);
 
 													/* We don't need to loop after this iteration */
 													pairs_node_p = NULL;

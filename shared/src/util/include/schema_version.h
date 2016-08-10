@@ -59,7 +59,7 @@ typedef struct SchemaVersion
  *
  * ALLOCATE_SCHEMA_VERSION_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
- * json_util.c.
+ * schema_version.c.
  */
 #ifdef ALLOCATE_SCHEMA_VERSION_TAGS
 	#define SV_PREFIX GRASSROOTS_UTIL_API
@@ -86,6 +86,7 @@ extern "C"
  * @return The newly-allocated SchemaVersion which will need to be freed
  * when finished with or <code>NULL</code> upon error.
  * @see FreeSchemaVersion
+ * @memberof SchemaVersion
  */
 GRASSROOTS_UTIL_API SchemaVersion *AllocateSchemaVersion (const int major, const int minor);
 
@@ -94,6 +95,7 @@ GRASSROOTS_UTIL_API SchemaVersion *AllocateSchemaVersion (const int major, const
  * Free the memory and resources for a given SchemaVersion.
  *
  * @param sv_p The SchemaVersion to free.
+ * @memberof SchemaVersion
  */
 GRASSROOTS_UTIL_API void FreeSchemaVersion (SchemaVersion *sv_p);
 
@@ -103,6 +105,7 @@ GRASSROOTS_UTIL_API void FreeSchemaVersion (SchemaVersion *sv_p);
  *
  * @param sv_p The SchemaVersion to get the JSON representation of.
  * @return The newly-allocated JSON representation or <code>NULL</code> upon error.
+ * @memberof SchemaVersion
  */
 GRASSROOTS_UTIL_API json_t *GetSchemaVersionAsJSON (const SchemaVersion * const sv_p);
 
@@ -114,6 +117,7 @@ GRASSROOTS_UTIL_API json_t *GetSchemaVersionAsJSON (const SchemaVersion * const 
  * @return The newly-allocated SchemaVersion which will need to be freed
  * when finished with or <code>NULL</code> upon error.
  * @see FreeSchemaVersion
+ * @memberof SchemaVersion
  */
 GRASSROOTS_UTIL_API SchemaVersion *GetSchemaVersionFromJSON (const json_t * const json_p);
 

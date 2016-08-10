@@ -26,6 +26,8 @@
 #include "typedefs.h"
 #include "user_details.h"
 #include "request_tools.h"
+#include "schema_version.h"
+
 
 #include "jansson.h"
 
@@ -46,6 +48,10 @@ typedef struct ClientData
 
 	/** The Connection for this client. */
 	struct Connection *cd_connection_p;
+
+	/** The SchemaVerision to use. */
+	SchemaVersion *cd_schema_p;
+
 } ClientData;
 
 
@@ -305,6 +311,17 @@ GRASSROOTS_CLIENT_API Client *GetClientFromPlugin (struct Plugin * const plugin_
  * @memberof Client
  */
 GRASSROOTS_CLIENT_API bool DeallocatePluginClient (struct Plugin * const plugin_p);
+
+
+/**
+ * Set the SchemaVersion that a Client will use.
+ *
+ * @param client_p The Client that will use teh given SchemaVersion.
+ * @param sv_p The SchemeVersion that the Client will use. The Client
+ * will free this when FreeClient is called.
+ * @memberof Client
+ */
+GRASSROOTS_CLIENT_API void SetClientSchema (Client *client_p, SchemaVersion *sv_p);
 
 
 #ifdef __cplusplus

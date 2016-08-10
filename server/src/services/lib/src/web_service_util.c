@@ -25,6 +25,8 @@
 #include "web_service_util.h"
 #include "string_utils.h"
 #include "math_utils.h"
+#include "schema_version.h"
+
 
 #ifdef _DEBUG
 	#define WEB_SERVICE_UTIL_DEBUG	(STM_LEVEL_FINE)
