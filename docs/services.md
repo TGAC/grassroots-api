@@ -120,7 +120,7 @@ void ReleaseServices (ServicesArray *services_p);
 
 
 
-### Reference Service
+### ﻿[Reference Service](#reference-service)
 
 This section details how to write a JSON reference file that will use the existing web search service. 
 
@@ -314,19 +314,19 @@ So imagine that on the results page that http://foobar.com/search returns, our h
 
 then the CSS selector that the Grassroots Service needs is for the links within the results which in this case would be:
 
-~~~{.css}
+~~~{css}
 ol.results li a
 ~~~
 
 The Grassroots Web Search Service would convert these into results as shown below
 
-~~~.{json}
+~~~{.json}
 {
-    "path": "Foobar Search service",
-    "status": 3,
-    "description": "An operation to search for matching articles",
-    "uri": "http://foobar.com/search",
-    "results": [{
+	"path": "Foobar Search service",
+	"status": 3,
+	"description": "An operation to search for matching articles",
+	"uri": "http://foobar.com/search",
+	"results": [{
 		"protocol": "http",
 		"title": "Wheat research",
 		"data": "http://foobar.com/a.html"
@@ -390,7 +390,8 @@ The Server will send a message detailing which, if any, operations for the Servi
 
 ### Get Service Results
 
-As described [elsewhere](async_services.md), Services can perform operations either synchronously or asynchronously. When an operation is ran synchronously the Service waits for the operation to finish before returning the results, whereas when ran asynchronously the Service will return straight away and the Server will need to send a message to the Service to check whether the operation has completed. 
+As described [elsewhere](async_services.md), Services can perform operations either synchronously or asynchronously. 
+When an operation is ran synchronously the Service waits for the operation to finish before returning the results, whereas, when ran asynchronously ,the Service will return straight away and the Server will need to send a message to the Service to check whether the operation has completed. 
 
 Once the operation has completed, the Service will send the results in a format similar to the example below.
 

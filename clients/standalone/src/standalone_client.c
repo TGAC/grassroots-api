@@ -271,7 +271,17 @@ int main (int argc, char *argv [])
 
 													if (response_p)
 														{
-															json_t *run_services_response_p = ShowServices (response_p, client_p, user_p, connection_p);
+															json_t *run_services_response_p = NULL;
+
+															SchemaVersion *server_schema_p = GetSchemaVersionFromJSON (response_p);
+
+															if (server_schema_p)
+																{
+																	SetClientSchema (client_p, server_schema_p);
+																}
+
+
+															run_services_response_p = ShowServices (response_p, client_p, user_p, connection_p);
 
 															if (run_services_response_p)
 																{

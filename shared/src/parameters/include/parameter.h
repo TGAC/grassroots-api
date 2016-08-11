@@ -753,17 +753,6 @@ GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, cons
 
 
 /**
- * Get the remote Tag from a RemoteParameterDetails stored on a given Parameter.
- *
- * @param param_p The Parameter whose set of RemoteParameterDetails will be checked.
- * @param uri_s The uri to match.
- * @return A pointer to the Tag or <code>NULL</code> upon error.
- * @memberof Parameter
- */
-GRASSROOTS_PARAMS_API const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s);
-
-
-/**
  * Make a deep copy of all of the RemoteParameterDetails stored on one Parameter to another.
  *
  * @param src_param_p The Parameter to copy of all of the RemoteParameterDetails from.

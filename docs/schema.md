@@ -186,7 +186,7 @@ The elements in this array have two fields:
  * *value*: The programmatic value that the Parameter will be set to.
  * *description*: The user-friendly name of the parameter for displaying to a user. If this is not set, then the value for the *value* will be used instead.
 
-An example of this is: 
+ An example of this is: 
  ~~~.json
  "enum": 
  [
@@ -195,7 +195,7 @@ An example of this is:
       { "description": "Use GZip", "value": "gz" }
  ]
  ~~~
-which indicate that the Parameter can take 1 of 3 possible values, "z", "zip" or "gz", and the values to show 
+ which indicate that the Parameter can take 1 of 3 possible values, "z", "zip" or "gz", and the values to show 
 to the user are "Use Raw", "Use Zip" and "Use GZip". 
 
 * **level**:
@@ -204,7 +204,6 @@ This is a number used to determine whether to show a Parameter to a user. The sy
  * *intermediate* = 2
  * *advanced* = 4
  
-
  These values can be added or or'ed together. For example if you wanted a parameter to be displayed in just the beginner level then you would set this value to 1. If you wanted it displayed at the intermediate and advanced level, the value would be 2 + 4 = 6. If you wanted the Parameter to always be displayed then the value needed would be 1 + 2 + 4 = 7.
  
 * **group**:

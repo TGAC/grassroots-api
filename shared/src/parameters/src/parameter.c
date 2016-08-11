@@ -2660,27 +2660,6 @@ bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, 
 }
 
 
-const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s)
-{
-	RemoteParameterDetailsNode *node_p = (RemoteParameterDetailsNode *) (param_p -> pa_remote_parameter_details_p -> ll_head_p);
-
-	while (node_p)
-		{
-			if (strcmp (node_p -> rpdn_details_p -> rpd_server_uri_s, uri_s) == 0)
-				{
-					return & (node_p -> rpdn_details_p -> rpd_tag);
-				}
-			else
-				{
-					node_p = (RemoteParameterDetailsNode *) (node_p -> rpdn_node.ln_next_p);
-				}
-
-		}		/* while (node_p) */
-
-	return NULL;
-}
-
-
 
 /*************************************************/
 /************** STATIC FUNCTIONS *****************/
