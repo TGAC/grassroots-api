@@ -15,6 +15,6 @@ The iRods search service gives the ability to search against the data stored wit
 2. The ability for a value to be searched for across all possible keys. The results are then ranked by occurrence.
 
 
-![iRods Service] (images/irods_service.png)
+![iRods Service] (irods_service.png)
 
  
