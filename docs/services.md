@@ -133,7 +133,7 @@ For this example imagine we have a web search engine at http://foobar.com/search
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
-		"description": "A comapny specializing in wheat research",
+		"description": "A company specializing in wheat research",
 		"uri": "http://foobar.com"
 	},
 	"services": {
@@ -251,7 +251,7 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
- 		"description": "A comapny specializing in wheat research",
+ 		"description": "A company specializing in wheat research",
  		"uri": "http://foobar.com"
 	},
 	"services": {

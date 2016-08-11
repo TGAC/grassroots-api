@@ -33,14 +33,14 @@ The default visibility of a ParameterGroup can be toggled by a boolean key calle
 
 ## Parameters
 
-Various settings for a Service's Parameters can be configured within our configuration file using the **parameters** key. Within this key, each Parameter can be configured by using its **param** value as a key. The following options will be demonstrated by using the [example Reference Service](service.md#reference-service) specified elsewhere which is
+Various settings for a Service's Parameters can be configured within our configuration file using the **parameters** key. Within this key, each Parameter can be configured by using its **param** value as a key. The following options will be demonstrated by using the [example Reference Service](services.md#reference-service) specified elsewhere which is
 
 ~~~{.json}
 {
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
- 		"description": "A comapny specializing in wheat research",
+ 		"description": "A company specializing in wheat research",
  		"uri": "http://foobar.com"
 	},
 	"services": {
@@ -77,7 +77,6 @@ Various settings for a Service's Parameters can be configured within our configu
 	}
 }
 ~~~
-
 
 ### Display name
 
@@ -116,8 +115,6 @@ Continuing the example started above, to change the description to *A keyword or
 }
 ~~~
 
-
-
 ### Default value
 
 The default value for a Parameter can be changed using the **default\_value** key. 
@@ -139,7 +136,6 @@ So to change the default number of hits returned by the example Service, specifi
 	...
 }
 ~~~
-
 
 ### Level
 
