@@ -11,7 +11,7 @@ All messages are sent as JSON-based messages.
 An *operation_id* of 0 is the one for asking for all of its possible Operations.
  
  ~~~{.json}
-{
+ {
 		"operations": {
 			"operation_id": 0
 		}

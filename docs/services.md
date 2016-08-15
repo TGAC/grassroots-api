@@ -1,6 +1,4 @@
-﻿# ﻿[Services](#services)
-
-## [Introduction](#introduction)
+﻿# Services
 
 A Service is the component that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](#standalone-services) or as [referred services](#referred-services). 
 
