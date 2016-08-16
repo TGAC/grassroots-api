@@ -180,13 +180,13 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 
 static const char *GetQTClientName (ClientData *client_data_p)
 {
-	return "Qt-based WheatIS client";
+	return "Qt-based Grassroots client";
 }
 
 
 static const char *GetQTClientDescription (ClientData *client_data_p)
 {
-	return "A Qt-based WheatIS client user interface";
+	return "A Qt-based Grassroots client user interface";
 }
 
 

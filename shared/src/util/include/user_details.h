@@ -15,7 +15,7 @@
 */
 /**
  * @file
- * @addtogroup Parameters
+ * @addtogroup User User authentication and authorization
  * @{
  */
 #ifndef USER_DETAILS_H
@@ -29,10 +29,14 @@
 
 
 /**
- * @brief  A datatype to store user credentials
+ * @brief  A datatype to store user credentials for a single system.
  */
 typedef struct UserAuthentication
 {
+	/**
+	 * An identifier for the system that this
+	 * UserAuthentication is for.
+	 */
 	char *ua_system_id_s;
 
 	/** The username */
@@ -47,12 +51,15 @@ typedef struct UserAuthentication
 
 
 /**
- * @brief  A datatype to store user credentials
+ * @brief  A datatype to store UserAuthentications on a LinkedList
+ * @extends ListItem
  */
 typedef struct UserAuthenticationNode
 {
+	/** The base ListItem to allow the storage of UserAuthenticationNodes on a LinkedList. */
 	ListItem uan_base_node;
 
+	/** A pointer to the UserAuthentication details. */
 	UserAuthentication *uan_auth_p;
 
 } UserAuthenticationNode;
@@ -63,6 +70,7 @@ typedef struct UserAuthenticationNode
  */
 typedef struct UserDetails
 {
+	/** A LinkedList of UserAuthenticationNodes */
 	LinkedList *ud_auth_list_p;
 } UserDetails;
 
@@ -93,11 +101,28 @@ GRASSROOTS_UTIL_API UserDetails *AllocateUserDetails (const json_t *credentials_
 GRASSROOTS_UTIL_API void FreeUserDetails (UserDetails *user_details_p);
 
 
+/**
+ * Get the UserAuthentication details for a given system.
+ *
+ * @param user_p The UserDetails to get the UserAuthentication from.
+ * @param system_s The name of the system to add the credentials for e.g. "irods", "kerberos", etc.
+ * @return A pointer to the relevant UserAuthentication or <code>NULL</code> upon error.
+ * @memberof UserDetails
+ */
+GRASSROOTS_UTIL_API const UserAuthentication *GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s);
 
-GRASSROOTS_UTIL_API bool GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s, const char **username_s, const char **password_ss, const char **token_ss);
 
-
-
+/**
+ * This will create and add the UserAuthentication details for a given system.
+ *
+ * @param user_details_p The UserDetails to amend.
+ * @param system_s The name of the system to add the credentials for e.g. "irods", "kerberos", etc.
+ * @param username_s The username for the given system.
+ * @param password_s The password for the given system. This should only be used if the token option is unuable for a given system.
+ * @param token_s The token for the given system.
+ * @return <code>true</code> if the authentication details were added to the UserDetails successfully, <code>false</code> otherwise.
+ * @memberof UserDetails
+ */
 GRASSROOTS_UTIL_API bool AddUserAuthentication (UserDetails *user_details_p, const char *system_s, const char *username_s, const char *password_s, const char *token_s);
 
 /** @} */

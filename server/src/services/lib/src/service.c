@@ -47,7 +47,7 @@ static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p);
 
 static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root_p);
 
-static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, UserDetails *user_p);
+static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const SchemaVersion * const sv_p,  const bool full_definition_flag, Resource *resource_p, UserDetails *user_p);
 
 static bool AddOperationInformationURIToJSON (Service * const service_p, json_t *root_p);
 
@@ -812,7 +812,8 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 		{
 			if (run_flag)
 				{
-					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, false);
+					const SchemaVersion *sv_p = GetSchemaVersion ();
+					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, sv_p, false);
 
 					if (param_set_json_p)
 						{
@@ -856,6 +857,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 	
 	if (root_p)
 		{
+			const SchemaVersion *sv_p = GetSchemaVersion ();
 			const char *value_s = GetServiceName (service_p);
 			bool success_flag = true;
 			
@@ -996,7 +998,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 										{
 											if (AddServiceDescriptionToJSON (service_p, operation_p))
 												{
-													if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, user_p))
+													if (AddServiceParameterSetToJSON (service_p, operation_p, sv_p, true, resource_p, user_p))
 														{
 															if (json_object_set_new (operation_p, OPERATION_SYNCHRONOUS_S, service_p -> se_synchronous_flag ? json_true () : json_false ()) == 0)
 																{
@@ -1186,14 +1188,14 @@ static bool AddOperationInformationURIToJSON (Service * const service_p, json_t 
 }
 
 
-static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, UserDetails *user_p)
+static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const SchemaVersion * const sv_p, const bool full_definition_flag, Resource *resource_p, UserDetails *user_p)
 {
 	bool success_flag = false;
 	ParameterSet *param_set_p = GetServiceParameters (service_p, resource_p, user_p);
 	
 	if (param_set_p)
 		{
-			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p, full_definition_flag);
+			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p, sv_p, full_definition_flag);
 			
 			if (param_set_json_p)
 				{
@@ -1583,7 +1585,8 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 
 	if (res_p)
 		{
-			json_t *params_json_p = GetParameterSetAsJSON (params_p, true);
+			const SchemaVersion *sv_p = GetSchemaVersion ();
+			json_t *params_json_p = GetParameterSetAsJSON (params_p, sv_p, true);
 
 			if (params_json_p)
 				{

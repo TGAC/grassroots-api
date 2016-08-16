@@ -60,30 +60,30 @@ static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
 
-static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p);
+static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p);
+static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p);
+static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
 
-static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
@@ -766,7 +766,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p, const bo
 }
 
 
-json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag)
+json_t *GetParameterAsJSON (const Parameter * const parameter_p,  const SchemaVersion * const sv_p, const bool full_definition_flag)
 {
 	json_t *root_p = json_object ();
 
@@ -774,31 +774,31 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 		{
 			bool success_flag = false;
 
-			if (AddParameterNameToJSON (parameter_p, root_p))
+			if (AddParameterNameToJSON (parameter_p, root_p, sv_p))
 				{
-					if (AddCurrentValueToJSON (parameter_p, root_p))
+					if (AddCurrentValueToJSON (parameter_p, root_p, sv_p))
 						{
-							if (AddParameterTypeToJSON (parameter_p, root_p))
+							if (AddParameterTypeToJSON (parameter_p, root_p, sv_p))
 								{
-									if (AddParameterStoreToJSON (parameter_p, root_p))
+									if (AddParameterStoreToJSON (parameter_p, root_p, sv_p))
 										{
-											if (AddRemoteParameterDetailsToJSON (parameter_p, root_p))
+											if (AddRemoteParameterDetailsToJSON (parameter_p, root_p, sv_p))
 												{
 													if (full_definition_flag)
 														{
-															if (AddParameterLevelToJSON (parameter_p, root_p))
+															if (AddParameterLevelToJSON (parameter_p, root_p, sv_p))
 																{
-																	if (AddParameterDescriptionToJSON (parameter_p, root_p))
+																	if (AddParameterDescriptionToJSON (parameter_p, root_p, sv_p))
 																		{
-																			if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+																			if (AddParameterDisplayNameToJSON (parameter_p, root_p, sv_p))
 																				{
-																					if (AddDefaultValueToJSON (parameter_p, root_p))
+																					if (AddDefaultValueToJSON (parameter_p, root_p, sv_p))
 																						{
-																							if (AddParameterOptionsToJSON (parameter_p, root_p))
+																							if (AddParameterOptionsToJSON (parameter_p, root_p, sv_p))
 																								{
-																									if (AddParameterBoundsToJSON (parameter_p, root_p))
+																									if (AddParameterBoundsToJSON (parameter_p, root_p, sv_p))
 																										{
-																											if (AddParameterGroupToJSON (parameter_p, root_p))
+																											if (AddParameterGroupToJSON (parameter_p, root_p, sv_p))
 																												{
 																													success_flag = true;
 																												}		/* if (AddParameterGroupToJSON (parameter_p, root_p)) */
@@ -894,7 +894,7 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 }
 
 
-static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = (json_object_set_new (root_p, PARAM_NAME_S, json_string (param_p -> pa_name_s)) == 0);
 
@@ -906,7 +906,7 @@ static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *roo
 }
 
 
-static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 	
@@ -923,7 +923,7 @@ static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json
 }
 
 
-static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 
@@ -940,7 +940,7 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 }
 
 
-static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 
@@ -998,7 +998,7 @@ static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, js
 }
 
 
-static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = false;
 
@@ -1079,7 +1079,7 @@ static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *ro
 }
 
 
-static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 	uint32 i = GetHashTableSize (param_p -> pa_store_p);
@@ -1136,7 +1136,7 @@ static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *ro
 }
 
 
-static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
 
@@ -1185,10 +1185,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 
 	if (success_flag)
 		{
-			const uint32 major_version = GetSchemaMajorVersion ();
-			const uint32 minor_version = GetSchemaMinorVersion ();
-
-			if ((major_version == 0) && (minor_version == 1))
+			if ((sv_p -> sv_major == 0) && (sv_p -> sv_minor == 1))
 				{
 					success_flag = AddSeparateGrassrootsTypes (root_p, param_p -> pa_type);
 				}
@@ -1423,13 +1420,13 @@ static bool GetParameterTypeFromSeparateObjects (const json_t * const json_p, Pa
 }
 
 
-static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p)
 {
 	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_default), PARAM_DEFAULT_VALUE_S);
 }
 
 
-static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p)
 {
 	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_current_value), PARAM_CURRENT_VALUE_S);
 }
@@ -1767,7 +1764,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 
 
-static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p)
+static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
 
@@ -1899,7 +1896,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 }
 
 
-static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p)
+static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
 	const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
@@ -2663,34 +2660,13 @@ bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, 
 }
 
 
-const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s)
-{
-	RemoteParameterDetailsNode *node_p = (RemoteParameterDetailsNode *) (param_p -> pa_remote_parameter_details_p -> ll_head_p);
-
-	while (node_p)
-		{
-			if (strcmp (node_p -> rpdn_details_p -> rpd_server_uri_s, uri_s) == 0)
-				{
-					return & (node_p -> rpdn_details_p -> rpd_tag);
-				}
-			else
-				{
-					node_p = (RemoteParameterDetailsNode *) (node_p -> rpdn_node.ln_next_p);
-				}
-
-		}		/* while (node_p) */
-
-	return NULL;
-}
-
-
 
 /*************************************************/
 /************** STATIC FUNCTIONS *****************/
 /*************************************************/
 
 
-static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p)
+static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = true;
 

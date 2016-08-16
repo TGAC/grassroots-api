@@ -27,7 +27,7 @@
 #include "tags.h"
 #include "data_resource.h"
 #include "hash_table.h"
-
+#include "schema_version.h"
 
 #include "remote_parameter_details.h"
 
@@ -638,7 +638,7 @@ GRASSROOTS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const 
  * upon error. When you no longer require the value you need to call json_decref upon it.
  * @memberof Parameter
  */
-GRASSROOTS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
+GRASSROOTS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 
 /**
@@ -750,17 +750,6 @@ GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
  * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag);
-
-
-/**
- * Get the remote Tag from a RemoteParameterDetails stored on a given Parameter.
- *
- * @param param_p The Parameter whose set of RemoteParameterDetails will be checked.
- * @param uri_s The uri to match.
- * @return A pointer to the Tag or <code>NULL</code> upon error.
- * @memberof Parameter
- */
-GRASSROOTS_PARAMS_API const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s);
 
 
 /**

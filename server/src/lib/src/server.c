@@ -248,79 +248,79 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 							Operation op = GetOperation (op_p);
 
 							switch (op)
-							{
-								case OP_LIST_ALL_SERVICES:
-									res_p = GetAllServices (req_p, user_p);
-									break;
+								{
+									case OP_LIST_ALL_SERVICES:
+										res_p = GetAllServices (req_p, user_p);
+										break;
 
-								case OP_IRODS_MODIFIED_DATA:
-									{
-#if IRODS_ENABLED == 1
-										res_p = GetAllModifiedData (req_p, user_p);
-#endif
-									}
-									break;
+									case OP_IRODS_MODIFIED_DATA:
+										{
+											#if IRODS_ENABLED == 1
+											res_p = GetAllModifiedData (req_p, user_p);
+											#endif
+										}
+										break;
 
-								case OP_LIST_INTERESTED_SERVICES:
-									res_p = GetInterestedServices (req_p, user_p);
-									break;
+									case OP_LIST_INTERESTED_SERVICES:
+										res_p = GetInterestedServices (req_p, user_p);
+										break;
 
-								case OP_RUN_KEYWORD_SERVICES:
-									{
-										json_t *keyword_json_group_p = json_object_get (req_p, KEYWORDS_QUERY_S);
+									case OP_RUN_KEYWORD_SERVICES:
+										{
+											json_t *keyword_json_group_p = json_object_get (req_p, KEYWORDS_QUERY_S);
 
-										if (keyword_json_group_p)
-											{
-												json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEYWORDS_QUERY_S);
+											if (keyword_json_group_p)
+												{
+													json_t *keyword_json_value_p = json_object_get (keyword_json_group_p, KEYWORDS_QUERY_S);
 
-												if (keyword_json_value_p)
-													{
-														if (json_is_string (keyword_json_value_p))
-															{
-																const char *keyword_s = json_string_value (keyword_json_value_p);
+													if (keyword_json_value_p)
+														{
+															if (json_is_string (keyword_json_value_p))
+																{
+																	const char *keyword_s = json_string_value (keyword_json_value_p);
 
-																res_p = RunKeywordServices (req_p, user_p, keyword_s);
-															}
-														else
-															{
-																PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, keyword_json_value_p, "Keyword not a string");
-															}
-													}
-												else
-													{
-														PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, keyword_json_group_p, "Failed to get query keyword");
-													}
-											}
-										else
-											{
-												PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, req_p, "Failed to get query group");
-											}
-									}
-									break;
+																	res_p = RunKeywordServices (req_p, user_p, keyword_s);
+																}
+															else
+																{
+																	PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, keyword_json_value_p, "Keyword not a string");
+																}
+														}
+													else
+														{
+															PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, keyword_json_group_p, "Failed to get query keyword");
+														}
+												}
+											else
+												{
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, req_p, "Failed to get query group");
+												}
+										}
+										break;
 
-								case OP_GET_NAMED_SERVICES:
-									res_p = GetNamedServices (req_p, user_p);
-									break;
+									case OP_GET_NAMED_SERVICES:
+										res_p = GetNamedServices (req_p, user_p);
+										break;
 
-								case OP_CHECK_SERVICE_STATUS:
-									res_p = GetServiceStatus (req_p, user_p);
-									break;
+									case OP_CHECK_SERVICE_STATUS:
+										res_p = GetServiceStatus (req_p, user_p);
+										break;
 
-								case OP_GET_SERVICE_RESULTS:
-									res_p = GetServiceResultsAsJSON (req_p, user_p);
-									break;
+									case OP_GET_SERVICE_RESULTS:
+										res_p = GetServiceResultsAsJSON (req_p, user_p);
+										break;
 
-								case OP_CLEAN_UP_JOBS:
-									res_p = CleanUpJobs (req_p, user_p);
-									break;
+									case OP_CLEAN_UP_JOBS:
+										res_p = CleanUpJobs (req_p, user_p);
+										break;
 
-								case OP_GET_RESOURCE:
-									res_p = GetRequestedResource (req_p, user_p);
-									break;
+									case OP_GET_RESOURCE:
+										res_p = GetRequestedResource (req_p, user_p);
+										break;
 
-								default:
-									break;
-							}		/* switch (op) */
+									default:
+										break;
+								}		/* switch (op) */
 
 
 							//res_p = AddExternalServerOperationsToJSON (servers_manager_p, res_p, op);
@@ -344,7 +344,7 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 											uuid_clear (user_uuid);
 										}
 
-									res_p = GetInitialisedResponse (req_p, SERVICE_RESULTS_S, service_results_p);
+									res_p = GetInitialisedResponseOnServer (req_p, SERVICE_RESULTS_S, service_results_p);
 
 									if (res_p)
 										{
@@ -438,6 +438,60 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 	return res_p;
 }
 
+
+
+json_t *GetInitialisedResponseOnServer (const json_t *req_p, const char *key_s, json_t *value_p)
+{
+	const SchemaVersion * const sv_p = GetSchemaVersion ();
+	json_t *res_p = GetInitialisedMessage (sv_p);
+
+	if (res_p)
+		{
+			if (req_p)
+				{
+					bool verbose_flag = false;
+
+					GetJSONBoolean (req_p, REQUEST_VERBOSE_S, &verbose_flag);
+
+					if (verbose_flag)
+						{
+							json_t *copied_req_p = json_deep_copy (req_p);
+
+							if (copied_req_p)
+								{
+									if (json_object_set_new (res_p, REQUEST_S, copied_req_p) != 0)
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add request to response header");
+											json_decref (copied_req_p);
+										}
+
+								}		/* if (copied_req_p) */
+							else
+								{
+									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, req_p, "Failed to add request to response header");
+								}
+
+						}		/* if (verbose_flag) */
+
+				}		/* if (req_p) */
+
+			if (key_s && value_p)
+				{
+					if (json_object_set_new (res_p, key_s, value_p) != 0)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add %s to the response header", key_s);
+							json_decref (res_p);
+						}
+				}		/* if (key_s && value_p) */
+
+		}		/* if (res_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get initialised message");
+		}
+
+	return res_p;
+}
 
 
 
@@ -677,13 +731,35 @@ static json_t *GetInterestedServices (const json_t * const req_p, UserDetails *u
 
 			if (handler_p)
 				{
-					json_t *config_p = NULL;
 					json_t *paired_servers_p = (req_p != NULL) ? json_object_get (req_p, SERVERS_S) : NULL;
 					ProvidersStateTable *providers_p = AllocateProvidersStateTable (paired_servers_p);
 
 					if (providers_p)
 						{
-							res_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, resource_p, handler_p, providers_p);
+							json_t *services_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, resource_p, handler_p, providers_p);
+
+							if (services_p)
+								{
+									res_p = GetInitialisedResponseOnServer (req_p, SERVICES_NAME_S, services_p);
+
+									if (!res_p)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetInitialisedResponse failed for adding services");
+
+											json_decref (services_p);
+										}
+								}
+							else
+								{
+									const SchemaVersion *sv_p = GetSchemaVersion ();
+									res_p = GetInitialisedMessage (sv_p);
+
+									if (!res_p)
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetInitialisedMessage failed");
+										}
+								}
+
 							FreeProvidersStateTable (providers_p);
 						}
 
@@ -699,49 +775,43 @@ static json_t *GetInterestedServices (const json_t * const req_p, UserDetails *u
 
 static json_t *GetAllServices (const json_t * const req_p, UserDetails *user_p)
 {
-	json_t *res_p = json_object ();
+	json_t *paired_servers_p = (req_p != NULL) ? json_object_get (req_p, SERVERS_S) : NULL;
+	ProvidersStateTable *providers_p = AllocateProvidersStateTable (paired_servers_p);
 
-	if (res_p)
+	if (providers_p)
 		{
-			json_t *paired_servers_p = (req_p != NULL) ? json_object_get (req_p, SERVERS_S) : NULL;
-			ProvidersStateTable *providers_p = AllocateProvidersStateTable (paired_servers_p);
+			/* Get the local services */
+			json_t *services_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, NULL, NULL, providers_p);
 
-			if (providers_p)
+			FreeProvidersStateTable (providers_p);
+
+			if (services_p)
 				{
-					/* Get the local services */
-					json_t *services_p = GetServicesAsJSON (SERVICES_PATH_S, user_p, NULL, NULL, providers_p);
+					json_t *res_p = GetInitialisedResponseOnServer (req_p, SERVICES_NAME_S, services_p);
 
-					FreeProvidersStateTable (providers_p);
-
-					if (services_p)
+					if (res_p)
 						{
-							if (json_object_set_new (res_p, SERVICES_NAME_S, services_p) == 0)
-								{
-									return res_p;
-								}
-							else
-								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, services_p, "Failed to add services");
-								}
+							return res_p;
 						}
 					else
 						{
-							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "GetServicesAsJSON returned no services");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetInitialisedResponse failed for adding services");
 						}
 
-				}		/* if (providers_p) */
+					json_decref (services_p);
+				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate ProvidersStateTable");
+					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "GetServicesAsJSON returned no services");
 				}
 
-		}		/* if (res_p) */
+		}		/* if (providers_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate json object");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate ProvidersStateTable");
 		}
 
-	return res_p;
+	return NULL;
 }
 
 
@@ -761,46 +831,46 @@ static bool AddServiceDataToJSON (json_t *results_p, uuid_t job_id, const char *
 			if (old_status != current_status)
 				{
 					switch (current_status)
-					{
-
-						/*
-						 * If the job has finished, then remove it from the jobs manager.
-						 */
-						case OS_FINISHED:
-						case OS_SUCCEEDED:
-						case OS_PARTIALLY_SUCCEEDED:
-							{
-								RemoveServiceJobFromJobsManager (manager_p, job_id, false);
-							}
-							break;
-
-
-						case OS_ERROR:
-						case OS_FAILED_TO_START:
-						case OS_FAILED:
-							{
-								RemoveServiceJobFromJobsManager (manager_p, job_id, false);
-							}
-							break;
+						{
 
 							/*
-							 * If the job has updated its status but not yet finished running,
-							 * then update the value stored in the jobs manager
+							 * If the job has finished, then remove it from the jobs manager.
 							 */
-						case OS_PENDING:
-						case OS_STARTED:
-							{
-								if (!AddServiceJobToJobsManager (manager_p, job_id, job_p))
-									{
-										char job_uuid_s [UUID_STRING_BUFFER_SIZE];
+							case OS_FINISHED:
+							case OS_SUCCEEDED:
+							case OS_PARTIALLY_SUCCEEDED:
+								{
+									RemoveServiceJobFromJobsManager (manager_p, job_id, false);
+								}
+								break;
 
-										ConvertUUIDToString (job_id, job_uuid_s);
-										PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to update job %s from status %d to %d", job_uuid_s, old_status, current_status);
-									}
-							}
-							break;
 
-					}		/* switch (current_status) */
+							case OS_ERROR:
+							case OS_FAILED_TO_START:
+							case OS_FAILED:
+								{
+									RemoveServiceJobFromJobsManager (manager_p, job_id, false);
+								}
+								break;
+
+								/*
+								 * If the job has updated its status but not yet finished running,
+								 * then update the value stored in the jobs manager
+								 */
+							case OS_PENDING:
+							case OS_STARTED:
+								{
+									if (!AddServiceJobToJobsManager (manager_p, job_id, job_p))
+										{
+											char job_uuid_s [UUID_STRING_BUFFER_SIZE];
+
+											ConvertUUIDToString (job_id, job_uuid_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to update job %s from status %d to %d", job_uuid_s, old_status, current_status);
+										}
+								}
+								break;
+
+						}		/* switch (current_status) */
 
 				}		/* if (old_status != current_status) */
 
@@ -1058,7 +1128,7 @@ static json_t *GetNamedServices (const json_t * const req_p, UserDetails *user_p
 
 							if (services_json_p)
 								{
-									res_p = GetInitialisedResponse (req_p, SERVICES_NAME_S, services_json_p);
+									res_p = GetInitialisedResponseOnServer (req_p, SERVICES_NAME_S, services_json_p);
 
 									if (!res_p)
 										{
@@ -1211,7 +1281,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, UserDetails *user
 
 	if (results_p)
 		{
-			res_p = GetInitialisedResponse (req_p, SERVICE_RESULTS_S, results_p);
+			res_p = GetInitialisedResponseOnServer (req_p, SERVICE_RESULTS_S, results_p);
 
 			if (res_p)
 				{
@@ -1368,6 +1438,7 @@ static int32 AddPairedServices (Service *internal_service_p, UserDetails *user_p
 
 	if (external_servers_p)
 		{
+			const SchemaVersion *sv_p = GetSchemaVersion ();
 			const char *internal_service_name_s = GetServiceName (internal_service_p);
 			ExternalServerNode *external_server_node_p = (ExternalServerNode *) (external_servers_p -> ll_head_p);
 
@@ -1389,7 +1460,7 @@ static int32 AddPairedServices (Service *internal_service_p, UserDetails *user_p
 											if (!IsServiceInProvidersStateTable (providers_p, external_server_p -> es_uri_s, external_service_name_s))
 												{
 													const char *op_name_s = pairs_node_p -> kvpn_pair_p -> kvp_value_s;
-													json_t *req_p = GetAvailableServicesRequestForAllProviders (providers_p, user_p);
+													json_t *req_p = GetAvailableServicesRequestForAllProviders (providers_p, user_p, sv_p);
 
 													/* We don't need to loop after this iteration */
 													pairs_node_p = NULL;

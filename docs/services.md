@@ -1,6 +1,4 @@
-﻿# ﻿[Services](#services)
-
-## [Introduction](#introduction)
+﻿# Services
 
 A Service is the component that is used to add some scientific functionality, *i.e.* text mining, scientific analysis, *etc.* to a Grassroots Server. Each Service consists of a number of API entry points that the Grassroots Server hooks into. These are the ability to respond to particular JSON-based queries and entry points for a given programming language. The Services are completely self-describing, the Server has no prior knowledge or need any configuration changes when installing a Service. Simply copy the service module into the services directory and it will be available for use straight away. There are two ways to add a Service to a Grassroots Server; as [standalone services](#standalone-services) or as [referred services](#referred-services). 
 
@@ -94,7 +92,7 @@ So depending upon whether you are developing a specific Service or a reusable on
 ## Examples
 
 So there are three ways of developing Services:
-
+	
  * A standalone Service.
  * A reusable Service which use separate reference files.
  * A reference file that uses an already existing reusable Service.
@@ -120,7 +118,7 @@ void ReleaseServices (ServicesArray *services_p);
 
 
 
-### Reference Service
+### ﻿[Reference Service](#reference-service)
 
 This section details how to write a JSON reference file that will use the existing web search service. 
 
@@ -133,7 +131,7 @@ For this example imagine we have a web search engine at http://foobar.com/search
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
-		"description": "A comapny specializing in wheat research",
+		"description": "A company specializing in wheat research",
 		"uri": "http://foobar.com"
 	},
 	"services": {
@@ -251,7 +249,7 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 	"schema_version": 0.1,
 	"provider": {
 		"name": "Foobar",
- 		"description": "A comapny specializing in wheat research",
+ 		"description": "A company specializing in wheat research",
  		"uri": "http://foobar.com"
 	},
 	"services": {
@@ -314,19 +312,19 @@ So imagine that on the results page that http://foobar.com/search returns, our h
 
 then the CSS selector that the Grassroots Service needs is for the links within the results which in this case would be:
 
-~~~{.css}
+~~~{css}
 ol.results li a
 ~~~
 
 The Grassroots Web Search Service would convert these into results as shown below
 
-~~~.{json}
+~~~{.json}
 {
-    "path": "Foobar Search service",
-    "status": 3,
-    "description": "An operation to search for matching articles",
-    "uri": "http://foobar.com/search",
-    "results": [{
+	"path": "Foobar Search service",
+	"status": 3,
+	"description": "An operation to search for matching articles",
+	"uri": "http://foobar.com/search",
+	"results": [{
 		"protocol": "http",
 		"title": "Wheat research",
 		"data": "http://foobar.com/a.html"
@@ -390,7 +388,8 @@ The Server will send a message detailing which, if any, operations for the Servi
 
 ### Get Service Results
 
-As described [elsewhere](async_services.md), Services can perform operations either synchronously or asynchronously. When an operation is ran synchronously the Service waits for the operation to finish before returning the results, whereas when ran asynchronously the Service will return straight away and the Server will need to send a message to the Service to check whether the operation has completed. 
+As described [elsewhere](async_services.md), Services can perform operations either synchronously or asynchronously. 
+When an operation is ran synchronously the Service waits for the operation to finish before returning the results, whereas, when ran asynchronously ,the Service will return straight away and the Server will need to send a message to the Service to check whether the operation has completed. 
 
 Once the operation has completed, the Service will send the results in a format similar to the example below.
 

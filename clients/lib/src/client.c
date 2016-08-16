@@ -60,6 +60,7 @@ void InitialiseClient (Client * const client_p,
 		{
 			client_p -> cl_data_p -> cd_client_p = client_p;
 			client_p -> cl_data_p -> cd_connection_p = connection_p;
+			client_p -> cl_data_p -> cd_schema_p = NULL;
 		}
 }
 
@@ -90,6 +91,13 @@ json_t *DisplayResultsInClient (Client *client_p, json_t *response_p)
 void FreeClient (Client *client_p)
 {
 	Plugin *plugin_p = client_p -> cl_plugin_p;
+
+
+	if (client_p -> cl_data_p -> cd_schema_p)
+		{
+			FreeSchemaVersion (client_p -> cl_data_p -> cd_schema_p);
+			client_p -> cl_data_p -> cd_schema_p = NULL;
+		}
 
 	bool res = client_p -> cl_free_client_fn (client_p);
 
@@ -223,4 +231,16 @@ bool DeallocatePluginClient (Plugin * const plugin_p)
 		}
 
 	return success_flag;
+}
+
+
+
+void SetClientSchema (Client *client_p, SchemaVersion *sv_p)
+{
+	if (client_p -> cl_data_p -> cd_schema_p)
+		{
+			FreeSchemaVersion (client_p -> cl_data_p -> cd_schema_p);
+		}
+
+	client_p -> cl_data_p -> cd_schema_p = sv_p;
 }

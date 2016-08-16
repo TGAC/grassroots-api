@@ -49,7 +49,7 @@ struct ExternalServer;
  * 
  * ALLOCATE_JSON_TAGS must be defined only once prior to 
  * including this header file. Currently this happens in
- * json_util.c.
+ * service.c.
  */
 #ifdef ALLOCATE_PATH_TAGS
 	#define PATH_PREFIX GRASSROOTS_SERVICE_API
@@ -181,26 +181,6 @@ typedef struct Service
 	 * Function to get the ParameterSet for this Service.
 	 */
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, UserDetails *user_p);
-
-
-//	/**
-//	 * Get the JSON fragment for a given job that has been run by this Service.
-//	 *
-//	 * @param service_p A pointer to this Service.
-//	 * @param job_id The uuid_t of the ServiceJob.
-//	 * @return The JSON fragment or <code>NULL</code> upon error.
-//	 */
-	//json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t job_id);
-
-
-//	/**
-//	 * Get the OperationStatus for a given job that has been run by this Service.
-//	 *
-//	 * @param service_p A pointer to this Service.
-//	 * @param job_id The uuid_t of the ServiceJob.
-//	 * @return The OperationStatus for the given job.
-//	 */
-	//OperationStatus (*se_get_status_fn) (struct Service *service_p, const uuid_t job_id);
 
 
 	void (*se_customise_service_job_fn) (struct Service *service_p, struct ServiceJob *job_p);
@@ -521,16 +501,6 @@ GRASSROOTS_SERVICE_API bool CloseService (Service *service_p);
  */
 GRASSROOTS_SERVICE_API  bool IsServiceLive (Service *service_p);
 
-
-///**
-// * Get the results from a Service for a given ServiceJOb UUID.
-// *
-// * @param service_p The Service to get the results for.
-// * @param service_id The UUID of the ServiceJob to get the results for.
-// * @return The results or <code>NULL</code> if they are not any.
-// * @memberof Service
-// */
-//GRASSROOTS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
 
 /**
  * Generate a json-based description of a Service.

@@ -169,19 +169,6 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 }
 
 
-json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p, PairedService *paired_service_p)
-{
-	json_t *params_json_p = GetParameterSetSelectionAsJSON (params_p, false, paired_service_p, AddRemoteServiceParametersToJSON);
-
-	return params_json_p;
-}
-
-
-
-
-
-
-
 int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p)
 {
 	int32 num_successful_runs = -1;

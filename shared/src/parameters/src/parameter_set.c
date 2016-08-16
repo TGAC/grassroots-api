@@ -175,14 +175,14 @@ static bool AddAllParametersToParameterSetJSON (const Parameter * UNUSED_PARAM (
 }
 
 
-json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag)
+json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const SchemaVersion * const sv_p, const bool full_definition_flag)
 {
-	return GetParameterSetSelectionAsJSON (param_set_p, full_definition_flag, NULL, AddAllParametersToParameterSetJSON);
+	return GetParameterSetSelectionAsJSON (param_set_p, sv_p, full_definition_flag, NULL, AddAllParametersToParameterSetJSON);
 }
 
 
 
-json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p))
+json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const SchemaVersion * const sv_p, const bool full_definition_flag,  void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p))
 {
 	json_t *param_set_json_p = json_object ();
 
@@ -201,7 +201,7 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 
 							if (add_param_fn (param_p, data_p))
 								{
-									json_t *param_json_p = GetParameterAsJSON (param_p, full_definition_flag);
+									json_t *param_json_p = GetParameterAsJSON (param_p, sv_p, full_definition_flag);
 
 									if (param_json_p)
 										{

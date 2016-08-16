@@ -70,6 +70,6 @@ To delete documents from a collection, a Client would send a list of the queries
 }
 ~~~
 
-## Updating docuements
+## Updating documents
 
 Documents that were previously added can be subsequently updated.

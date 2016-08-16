@@ -26,10 +26,10 @@ typedef enum Operation {
 	
 	/** Get list of all available services */
 	OP_LIST_ALL_SERVICES,       //!< OP_LIST_ALL_SERVICES
-	
-	/** Get list of data objects and collections modified within a given time period */
-	OP_IRODS_MODIFIED_DATA,     //!< OP_IRODS_MODIFIED_DATA
 
+	/** Get the SchemaVersion that the Server is using */
+	OP_GET_SCHEMA_VERSION,
+	
 	/** Query services to see if they can work on file */
 	OP_LIST_INTERESTED_SERVICES,//!< OP_LIST_INTERESTED_SERVICES
 	
@@ -44,6 +44,9 @@ typedef enum Operation {
 
 	/** Get results from completed job */
 	OP_GET_SERVICE_RESULTS,     //!< OP_GET_SERVICE_RESULTS
+
+	/** Get list of data objects and collections modified within a given time period */
+	OP_IRODS_MODIFIED_DATA,     //!< OP_IRODS_MODIFIED_DATA
 
 	/** Tell the server that the jobs are no longer needed */
 	OP_CLEAN_UP_JOBS,           //!< OP_CLEAN_UP_JOBS
