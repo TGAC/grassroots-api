@@ -324,6 +324,13 @@ GRASSROOTS_CLIENT_API bool DeallocatePluginClient (struct Plugin * const plugin_
 GRASSROOTS_CLIENT_API void SetClientSchema (Client *client_p, SchemaVersion *sv_p);
 
 
+
+GRASSROOTS_CLIENT_API void GetAllServicesInClient (Client *client_p, UserDetails *user_p);
+
+
+GRASSROOTS_CLIENT_API void GetInterestedServicesInClient (Client *client_p, const char * const protocol_s, const char * const query_s, UserDetails *user_p);
+
+
 #ifdef __cplusplus
 }
 #endif

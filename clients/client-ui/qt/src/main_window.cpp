@@ -459,8 +459,8 @@ void MainWindow :: closeEvent (QCloseEvent *event_p)
 void MainWindow :: AddActions ()
 {
 	QMenuBar *menu_bar_p = menuBar ();
-	QToolBar *toolbar_p = new QToolBar (tr ("Main"));
-	toolbar_p -> setToolButtonStyle (Qt :: ToolButtonFollowStyle);
+	QToolBar *main_toolbar_p = new QToolBar (tr ("Main"));
+	main_toolbar_p -> setToolButtonStyle (Qt :: ToolButtonFollowStyle);
 
 	// File Menu
 	QMenu *menu_p = menu_bar_p -> addMenu (tr ("&File"));
@@ -471,7 +471,7 @@ void MainWindow :: AddActions ()
 	action_p -> setStatusTip (tr ("Load a configuration file."));
 	connect (action_p, &QAction :: triggered, this, &MainWindow :: LoadConfiguration);
 	menu_p -> addAction (action_p);
-	toolbar_p -> addAction (action_p);
+	main_toolbar_p -> addAction (action_p);
 
 	// Save configuration
 	action_p = new QAction (QIcon ("images/save"), tr ("&Save Configuration..."), this);
@@ -479,19 +479,51 @@ void MainWindow :: AddActions ()
 	action_p -> setStatusTip (tr ("Save configuration file."));
 	connect (action_p, &QAction :: triggered, this, &MainWindow :: SaveConfiguration);
 	menu_p -> addAction (action_p);
-	toolbar_p -> addAction (action_p);
+	main_toolbar_p -> addAction (action_p);
 
-	toolbar_p -> addSeparator ();
+	main_toolbar_p -> addSeparator ();
 
 	// Run
 	action_p = new QAction (QIcon ("images/run"), tr ("Run"), this);
-	toolbar_p -> addAction (action_p);
+	main_toolbar_p -> addAction (action_p);
 	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: Accept);
 
 	// Cancel
 	action_p = new QAction (QIcon ("images/cancel"), tr ("Quit"), this);
-	toolbar_p -> addAction (action_p);
+	main_toolbar_p -> addAction (action_p);
 	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: Accept);
+
+
+	// Connect Menu
+	menu_p = menu_bar_p -> addMenu (tr ("&Connect"));
+	action_p = new QAction (tr ("Connect to server"), this);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: ConnectToServer);
+	menu_p -> addAction (action_p);
+
+
+	// Operations
+
+	// Get all services
+	action_p = new QAction (tr ("Get all services"), this);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: GetAllServices);
+	menu_p -> addAction (action_p);
+
+	// Get interested services
+	action_p = new QAction (tr ("Get interested services"), this);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: GetInterestedServices);
+	menu_p -> addAction (action_p);
+
+	// Run keyword services
+	action_p = new QAction (tr ("Run keyword services"), this);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: RunKeywordServices);
+	menu_p -> addAction (action_p);
+
+	// Get named services
+	action_p = new QAction (tr ("Get named services"), this);
+	connect (action_p, &QAction :: triggered, 	this, &MainWindow :: GetNamedServices);
+	menu_p -> addAction (action_p);
+
+
 
 	// Tools Menu
 	menu_p = menu_bar_p -> addMenu (tr ("&Tools"));
@@ -525,7 +557,7 @@ void MainWindow :: AddActions ()
 	interface_levels_p -> addAction (action_p);
 
 
-	addToolBar (toolbar_p);
+	addToolBar (main_toolbar_p);
 }
 
 
@@ -544,6 +576,34 @@ void MainWindow :: SetIntermediateInterfaceLevel ()
 void MainWindow :: SetAdvancedInterfaceLevel ()
 {
 	mw_prefs_widget_p -> SetInterfaceLevel (PL_ADVANCED);
+}
+
+
+
+
+void MainWindow :: GetAllServices ()
+{
+	User *user_p = 0;
+	Client *client_p = mw_client_data_p -> qcd_base_data.cd_client_p;
+	GetAllServicesInClient (client_p, user_p);
+}
+
+
+void MainWindow :: GetInterestedServices ()
+{
+
+}
+
+
+void MainWindow :: RunKeywordServices ()
+{
+
+}
+
+
+void MainWindow :: GetNamedServices ()
+{
+
 }
 
 

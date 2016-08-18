@@ -256,44 +256,7 @@ int main (int argc, char *argv [])
 								{
 									case OP_LIST_ALL_SERVICES:
 										{
-											json_t *req_p = GetAvailableServicesRequest (user_p, sv_p);
-
-											if (req_p)
-												{
-													json_t *response_p = NULL;
-
-													if (!AddCredentialsToJson (req_p, user_p))
-														{
-															printf ("Failed to add credentials\n");
-														}
-
-													response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-													if (response_p)
-														{
-															json_t *run_services_response_p = NULL;
-
-															SchemaVersion *server_schema_p = GetSchemaVersionFromJSON (response_p);
-
-															if (server_schema_p)
-																{
-																	SetClientSchema (client_p, server_schema_p);
-																}
-
-
-															run_services_response_p = ShowServices (response_p, client_p, user_p, connection_p);
-
-															if (run_services_response_p)
-																{
-
-																	json_decref (run_services_response_p);
-																}
-
-															json_decref (response_p);
-														}		/* if (response_p) */
-
-													json_decref (req_p);
-												}		/* if (req_p) */
+											GetAllServicesInClient (client_p, user_p);
 										}
 										break;
 
@@ -319,31 +282,7 @@ int main (int argc, char *argv [])
 
 									case OP_LIST_INTERESTED_SERVICES:
 										{
-											if (protocol_s && query_s)
-												{
-													json_t *req_p = GetInterestedServicesRequest (user_p, protocol_s, query_s, sv_p);
-
-													if (req_p)
-														{
-															json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-															if (response_p)
-																{
-																	json_t *service_response_p = ShowServices (response_p, client_p, user_p, connection_p);
-
-																	if (service_response_p)
-																		{
-
-																			json_decref (service_response_p);
-																		}
-
-																	json_decref (response_p);
-																}		/* if (response_p) */
-
-															json_decref (req_p);
-														}		/* if (req_p) */
-
-												}
+											GetInterestedServicesInClient (client_p, protocol_s, query_s, user_p);
 										}
 										break;
 
@@ -384,26 +323,7 @@ int main (int argc, char *argv [])
 
 									case OP_GET_NAMED_SERVICES:
 										{
-											json_t *req_p = GetNamedServicesRequest (user_p, query_s, sv_p);
-
-											if (req_p)
-												{
-													json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-													if (response_p)
-														{
-															json_t *shown_services_p = ShowServices (response_p, client_p, user_p, connection_p);
-
-															if (shown_services_p)
-																{
-																	json_decref (shown_services_p);
-																}		/* if (shown_services_p) */
-
-															json_decref (response_p);
-														}		/* if (response_p) */
-
-													json_decref (req_p);
-												}		/* if (req_p) */
+											GetNamedServicesInClient (client_p, query_s, user_p);
 										}
 										break;
 
