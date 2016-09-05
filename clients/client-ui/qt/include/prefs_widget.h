@@ -27,12 +27,12 @@
 #include "jansson.h"
 
 #include "runnable_widget.h"
-#include "service_prefs_widget.h"
 #include "services_list.h"
 
 
 class MainWindow;
 class QTClientData;
+class ServicePrefsWidget;
 
 /**
  * @brief The PrefsWidget class

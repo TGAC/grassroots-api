@@ -42,6 +42,8 @@
 
 #include "qt_client_data.h"
 #include "ui_utils.h"
+#include "user_details.h"
+
 
 #ifdef _DEBUG
 	#define MAIN_WINDOW_DEBUG	(STM_LEVEL_FINE)
@@ -266,7 +268,7 @@ void MainWindow :: RunKeywordSearch (QString keywords)
 	QByteArray ba = keywords.toLocal8Bit ();
 	const char *keywords_s = ba.constData ();
 	UserDetails *user_p = NULL;
-	json_t *query_p  = GetKeywordServicesRequest (user_p, keywords_s);
+	json_t *query_p  = GetKeywordServicesRequest (user_p, keywords_s, mw_client_data_p -> qcd_base_data.cd_schema_p);
 
 	if (query_p)
 		{
@@ -583,7 +585,7 @@ void MainWindow :: SetAdvancedInterfaceLevel ()
 
 void MainWindow :: GetAllServices ()
 {
-	User *user_p = 0;
+	UserDetails *user_p = 0;
 	Client *client_p = mw_client_data_p -> qcd_base_data.cd_client_p;
 	GetAllServicesInClient (client_p, user_p);
 }

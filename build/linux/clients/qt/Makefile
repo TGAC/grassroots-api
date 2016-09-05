@@ -2013,6 +2013,33 @@ moc_prefs_widget.cpp: /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLi
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
 		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
@@ -2034,6 +2061,38 @@ moc_prefs_widget.cpp: /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLi
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../clients/client-ui/qt/include/prefs_widget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/bin/moc
 	/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/usr/users/ga002/tyrrells/Projects/grassroots-api/build/linux/clients/qt -I/usr/users/ga002/tyrrells/Projects/grassroots-api/clients/client-ui/qt/include -I/opt/grassroots-0/grassroots/extras/libuuid/include -I/opt/grassroots-0/grassroots/extras/jansson/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/clients/lib/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/parameters/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include/containers -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include/io -I/usr/users/ga002/tyrrells/Projects/grassroots-api/server/src/services/lib/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/network/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/handlers/lib/include -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebEngineCore -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtQuick -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebChannel -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtQml -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtNetwork -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/prefs_widget.h -o moc_prefs_widget.cpp
@@ -2381,6 +2440,94 @@ moc_service_prefs_widget.cpp: /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/Qt
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/runnable_widget.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStackedWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstackedwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		../../../../clients/client-ui/qt/include/service_ui.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/bin/moc
 	/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/usr/users/ga002/tyrrells/Projects/grassroots-api/build/linux/clients/qt -I/usr/users/ga002/tyrrells/Projects/grassroots-api/clients/client-ui/qt/include -I/opt/grassroots-0/grassroots/extras/libuuid/include -I/opt/grassroots-0/grassroots/extras/jansson/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/clients/lib/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/parameters/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include/containers -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include/io -I/usr/users/ga002/tyrrells/Projects/grassroots-api/server/src/services/lib/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/network/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/handlers/lib/include -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebEngineCore -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtQuick -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebChannel -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtQml -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtNetwork -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/service_prefs_widget.h -o moc_service_prefs_widget.cpp
@@ -3017,7 +3164,36 @@ moc_main_window.cpp: /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDrag
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -3035,6 +3211,28 @@ moc_main_window.cpp: /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDrag
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -3236,6 +3434,70 @@ moc_services_list.cpp: /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/runnable_widget.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/bin/moc
 	/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/usr/users/ga002/tyrrells/Projects/grassroots-api/build/linux/clients/qt -I/usr/users/ga002/tyrrells/Projects/grassroots-api/clients/client-ui/qt/include -I/opt/grassroots-0/grassroots/extras/libuuid/include -I/opt/grassroots-0/grassroots/extras/jansson/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/clients/lib/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/parameters/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include/containers -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/util/include/io -I/usr/users/ga002/tyrrells/Projects/grassroots-api/server/src/services/lib/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/network/include -I/usr/users/ga002/tyrrells/Projects/grassroots-api/shared/src/handlers/lib/include -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebEngineCore -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtQuick -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWebChannel -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtQml -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtNetwork -I/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/services_list.h -o moc_services_list.cpp
@@ -4610,13 +4872,50 @@ file_chooser_widget.o: ../../../../clients/client-ui/qt/src/file_chooser_widget.
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h
@@ -4824,7 +5123,41 @@ param_check_box.o: ../../../../clients/client-ui/qt/src/param_check_box.cpp /usr
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -4842,6 +5175,9 @@ param_check_box.o: ../../../../clients/client-ui/qt/src/param_check_box.cpp /usr
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -5064,13 +5400,50 @@ param_combo_box.o: ../../../../clients/client-ui/qt/src/param_combo_box.cpp /usr
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -5264,7 +5637,43 @@ param_double_spin_box.o: ../../../../clients/client-ui/qt/src/param_double_spin_
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -5279,6 +5688,28 @@ param_double_spin_box.o: ../../../../clients/client-ui/qt/src/param_double_spin_
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -5471,7 +5902,43 @@ param_spin_box.o: ../../../../clients/client-ui/qt/src/param_spin_box.cpp /usr/u
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -5486,6 +5953,28 @@ param_spin_box.o: ../../../../clients/client-ui/qt/src/param_spin_box.cpp /usr/u
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -5677,7 +6166,39 @@ param_line_edit.o: ../../../../clients/client-ui/qt/src/param_line_edit.cpp /usr
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -5695,6 +6216,28 @@ param_line_edit.o: ../../../../clients/client-ui/qt/src/param_line_edit.cpp /usr
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -5899,7 +6442,39 @@ param_text_box.o: ../../../../clients/client-ui/qt/src/param_text_box.cpp /usr/u
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -5916,12 +6491,32 @@ param_text_box.o: ../../../../clients/client-ui/qt/src/param_text_box.cpp /usr/u
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
-		../../../../shared/src/util/include/string_utils.h \
-		../../../../shared/src/network/include/byte_buffer.h \
-		../../../../shared/src/network/include/network_library.h
+		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o param_text_box.o ../../../../clients/client-ui/qt/src/param_text_box.cpp
 
 prefs_widget.o: ../../../../clients/client-ui/qt/src/prefs_widget.cpp /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLayout \
@@ -6116,7 +6711,43 @@ prefs_widget.o: ../../../../clients/client-ui/qt/src/prefs_widget.cpp /usr/users
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -6134,39 +6765,44 @@ prefs_widget.o: ../../../../clients/client-ui/qt/src/prefs_widget.cpp /usr/users
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
-		../../../../clients/client-ui/qt/include/main_window.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
-		../../../../clients/client-ui/qt/include/keyword_widget.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
 		../../../../clients/client-ui/qt/include/file_chooser_widget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QComboBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qcombobox.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
 		../../../../clients/client-ui/qt/include/services_tabs.h \
 		../../../../server/src/services/lib/include/service.h \
 		../../../../server/src/services/lib/include/grassroots_service_library.h \
-		../../../../shared/src/network/include/byte_buffer.h \
-		../../../../shared/src/network/include/network_library.h \
 		../../../../shared/src/handlers/lib/include/handler.h \
 		../../../../shared/src/handlers/lib/include/grassroots_handler_library.h \
 		../../../../shared/src/util/include/plugin.h \
 		../../../../shared/src/util/include/io/filesystem_utils.h \
-		../../../../shared/src/util/include/user_details.h \
-		../../../../shared/src/util/include/operation.h \
 		../../../../server/src/services/lib/include/paired_service.h \
 		../../../../server/src/services/lib/include/providers_state_table.h \
 		../../../../shared/src/network/include/json_tools.h \
-		../../../../shared/src/network/include/request_tools.h \
-		../../../../shared/src/network/include/connection.h \
-		../../../../shared/src/network/include/curl_tools.h \
 		../../../../shared/src/parameters/include/tag_item.h \
 		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o prefs_widget.o ../../../../clients/client-ui/qt/src/prefs_widget.cpp
@@ -6401,12 +7037,62 @@ qt_parameter_widget.o: ../../../../clients/client-ui/qt/src/qt_parameter_widget.
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
 		../../../../clients/client-ui/qt/include/runnable_widget.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
@@ -6627,7 +7313,28 @@ client_ui_api.o: ../../../../clients/client-ui/qt/src/client_ui_api.cpp /usr/use
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -6645,32 +7352,6 @@ client_ui_api.o: ../../../../clients/client-ui/qt/src/client_ui_api.cpp /usr/use
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
-		../../../../clients/client-ui/qt/include/service_ui.h \
-		../../../../clients/client-ui/qt/include/results_widget.h \
-		../../../../clients/client-ui/qt/include/results_page.h \
-		../../../../clients/client-ui/qt/include/results_list.h \
-		../../../../clients/client-ui/qt/include/main_window.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
-		../../../../clients/client-ui/qt/include/keyword_widget.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		../../../../shared/src/util/include/string_utils.h \
-		../../../../clients/client-ui/qt/include/results_window.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
-		../../../../clients/client-ui/qt/include/qt_client_data.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
 		../../../../clients/client-ui/qt/include/progress_window.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
@@ -6689,7 +7370,12 @@ client_ui_api.o: ../../../../clients/client-ui/qt/src/client_ui_api.cpp /usr/use
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
 		../../../../shared/src/util/include/operation.h \
 		../../../../clients/client-ui/qt/include/viewer_widget.h \
-		../../../../clients/client-ui/qt/include/viewable_widget.h
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		../../../../clients/client-ui/qt/include/service_ui.h \
+		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o client_ui_api.o ../../../../clients/client-ui/qt/src/client_ui_api.cpp
 
 service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widget.cpp /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QHBoxLayout \
@@ -6871,14 +7557,91 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../shared/src/network/include/json_tools.h \
-		../../../../shared/src/network/include/network_library.h \
-		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
 		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
 		../../../../shared/src/network/include/byte_buffer.h \
 		../../../../shared/src/network/include/connection.h \
 		../../../../shared/src/network/include/curl_tools.h \
-		../../../../shared/src/util/include/user_details.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/runnable_widget.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStackedWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstackedwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		../../../../clients/client-ui/qt/include/service_ui.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../shared/src/network/include/json_tools.h \
 		../../../../server/src/services/lib/include/service.h \
 		../../../../server/src/services/lib/include/grassroots_service_library.h \
 		../../../../shared/src/handlers/lib/include/handler.h \
@@ -8176,7 +8939,28 @@ main_window.o: ../../../../clients/client-ui/qt/src/main_window.cpp /usr/users/g
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
@@ -8194,31 +8978,6 @@ main_window.o: ../../../../clients/client-ui/qt/src/main_window.cpp /usr/users/g
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
-		../../../../clients/client-ui/qt/include/service_ui.h \
-		../../../../clients/client-ui/qt/include/results_window.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
-		../../../../clients/client-ui/qt/include/results_widget.h \
-		../../../../clients/client-ui/qt/include/results_page.h \
-		../../../../clients/client-ui/qt/include/results_list.h \
-		../../../../clients/client-ui/qt/include/qt_client_data.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
-		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
-		../../../../clients/lib/include/client.h \
-		../../../../clients/lib/include/grassroots_client_library.h \
 		../../../../clients/client-ui/qt/include/progress_window.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
@@ -8233,6 +8992,10 @@ main_window.o: ../../../../clients/client-ui/qt/src/main_window.cpp /usr/users/g
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
 		../../../../clients/client-ui/qt/include/viewer_widget.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		../../../../clients/client-ui/qt/include/service_ui.h \
 		../../../../shared/src/util/include/io/filesystem_utils.h \
 		../../../../clients/client-ui/qt/include/ui_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main_window.o ../../../../clients/client-ui/qt/src/main_window.cpp
@@ -8598,6 +9361,69 @@ services_list.o: ../../../../clients/client-ui/qt/src/services_list.cpp /usr/use
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/runnable_widget.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../shared/src/util/include/io/filesystem_utils.h \
 		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o services_list.o ../../../../clients/client-ui/qt/src/services_list.cpp
@@ -8777,6 +9603,90 @@ services_tabs.o: ../../../../clients/client-ui/qt/src/services_tabs.cpp ../../..
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/runnable_widget.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStackedWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstackedwidget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../shared/src/util/include/io/filesystem_utils.h \
 		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o services_tabs.o ../../../../clients/client-ui/qt/src/services_tabs.cpp
@@ -10074,16 +10984,70 @@ param_table_widget.o: ../../../../clients/client-ui/qt/src/param_table_widget.cp
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
-		../../../../clients/client-ui/qt/include/services_list.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../clients/client-ui/qt/include/services_list.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
-		../../../../shared/src/util/include/string_utils.h \
-		../../../../shared/src/network/include/byte_buffer.h \
-		../../../../shared/src/network/include/network_library.h
+		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o param_table_widget.o ../../../../clients/client-ui/qt/src/param_table_widget.cpp
 
 param_json_editor.o: ../../../../clients/client-ui/qt/src/param_json_editor.cpp /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QDebug \
@@ -10660,7 +11624,93 @@ servce_ui.o: ../../../../clients/client-ui/qt/src/servce_ui.cpp ../../../../clie
 		../../../../clients/client-ui/qt/include/base_param_widget.h \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
-		../../../../clients/client-ui/qt/include/param_group_box.h
+		../../../../clients/client-ui/qt/include/param_group_box.h \
+		../../../../clients/client-ui/qt/include/qt_client_data.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		../../../../clients/lib/include/client.h \
+		../../../../clients/lib/include/grassroots_client_library.h \
+		../../../../shared/src/util/include/user_details.h \
+		../../../../shared/src/network/include/request_tools.h \
+		../../../../shared/src/network/include/network_library.h \
+		../../../../shared/src/network/include/byte_buffer.h \
+		../../../../shared/src/network/include/connection.h \
+		../../../../shared/src/network/include/curl_tools.h \
+		../../../../clients/client-ui/qt/include/main_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
+		../../../../clients/client-ui/qt/include/keyword_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
+		../../../../clients/client-ui/qt/include/runnable_widget.h \
+		../../../../clients/client-ui/qt/include/prefs_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStackedWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstackedwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		../../../../clients/client-ui/qt/include/services_list.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		../../../../clients/client-ui/qt/include/results_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QWindow \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QEvent \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QMargins \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QRect \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		../../../../clients/client-ui/qt/include/results_widget.h \
+		../../../../clients/client-ui/qt/include/results_page.h \
+		../../../../clients/client-ui/qt/include/results_list.h \
+		../../../../clients/client-ui/qt/include/progress_window.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QTimer \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		../../../../clients/client-ui/qt/include/progress_widget.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/QMovie \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
+		/usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
+		../../../../shared/src/util/include/operation.h \
+		../../../../clients/client-ui/qt/include/viewer_widget.h \
+		../../../../clients/client-ui/qt/include/viewable_widget.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o servce_ui.o ../../../../clients/client-ui/qt/src/servce_ui.cpp
 
 standard_list_widget_item.o: ../../../../clients/client-ui/qt/src/standard_list_widget_item.cpp /usr/users/ga002/tyrrells/Qt/5.7/gcc_64/include/QtCore/QVariant \

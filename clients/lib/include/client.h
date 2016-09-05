@@ -331,6 +331,15 @@ GRASSROOTS_CLIENT_API void GetAllServicesInClient (Client *client_p, UserDetails
 GRASSROOTS_CLIENT_API void GetInterestedServicesInClient (Client *client_p, const char * const protocol_s, const char * const query_s, UserDetails *user_p);
 
 
+GRASSROOTS_CLIENT_API json_t *ShowServices (json_t *response_p, Client *client_p, UserDetails *user_p, Connection *connection_p);
+
+
+GRASSROOTS_CLIENT_API void GetNamedServicesInClient (Client *client_p, const char * const service_s, UserDetails *user_p);
+
+
+GRASSROOTS_CLIENT_LOCAL int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, const json_t *provider_p);
+
+
 #ifdef __cplusplus
 }
 #endif

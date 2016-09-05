@@ -30,9 +30,10 @@
 #include "base_param_widget.h"
 #include "param_group_box.h"
 
+
 // forward class declaration
 class PrefsWidget;
-
+struct QTClientData;
 
 
 class QTParameterWidget : public QWidget
@@ -41,7 +42,7 @@ class QTParameterWidget : public QWidget
 
 
 public:
-	QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level);
+	QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level, const struct QTClientData *client_data_p);
 
 	virtual ~QTParameterWidget ();
 
@@ -75,9 +76,11 @@ private:
 
 	ParameterLevel qpw_level;
 
-    QList <QWebEngineView *> qpw_browsers;
+	QList <QWebEngineView *> qpw_browsers;
 
 	QList <ParamGroupBox *> qpw_groupings;
+
+	const struct QTClientData *qpw_client_data_p;
 
 	/**
 	 * Create widget for parameter.

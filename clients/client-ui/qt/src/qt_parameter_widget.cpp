@@ -32,6 +32,8 @@
 #include "param_table_widget.h"
 #include "param_json_editor.h"
 
+#include "qt_client_data.h"
+
 // WHEATIS INCLUDES
 #include "parameter.h"
 #include "parameter_set.h"
@@ -43,11 +45,12 @@
 const int QTParameterWidget :: QPW_NUM_COLUMNS = 2;
 
 
-QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
+QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level, const QTClientData *client_data_p)
 :	qpw_params_p (parameters_p),
 	qpw_prefs_widget_p (prefs_widget_p),
 	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
-	qpw_level (initial_level)
+	qpw_level (initial_level),
+	qpw_client_data_p (client_data_p)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	QVBoxLayout *info_layout_p = new QVBoxLayout;
@@ -504,6 +507,5 @@ ParameterSet *QTParameterWidget :: GetParameterSet () const
 
 json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
 {
-	GetParameterSet ();
-	return GetParameterSetAsJSON (qpw_params_p, false);
+	return GetParameterSetAsJSON (qpw_params_p, qpw_client_data_p -> qcd_base_data.cd_schema_p, false);
 }
