@@ -25,8 +25,6 @@
 #include "curl_tools.h"
 #include "service_job.h"
 
-#define TAG_SEARCH_FIELD MAKE_TAG ('E', 'S', 'F', 'D')
-#define TAG_SEARCH_KEYWORD MAKE_TAG ('E', 'S', 'K', 'Y')
 
 /*
  * STATIC DATATYPES
@@ -248,7 +246,7 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 						{
 							def.st_string_value_s = "";
 
-							if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, TES_SEARCH_FIELD.npt_type, false, TES_SEARCH_TERM.npt_name_s, NULL, "The term to search for in the given field", NULL, def, NULL, NULL, PL_ALL, NULL))
+							if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, TES_SEARCH_TERM.npt_type, false, TES_SEARCH_TERM.npt_name_s, NULL, "The term to search for in the given field", NULL, def, NULL, NULL, PL_ALL, NULL))
 								{
 									return param_set_p;
 								}

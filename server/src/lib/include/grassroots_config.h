@@ -66,7 +66,6 @@ GRASSROOTS_SERVICE_MANAGER_API const json_t *GetProviderAsJSON (void);
 GRASSROOTS_SERVICE_MANAGER_API  bool IsServiceEnabled (const char *service_name_s);
 
 
-GRASSROOTS_SERVICE_MANAGER_API const SchemaVersion *GetSchemaVersion (void);
 
 
 #ifdef __cplusplus

@@ -610,3 +610,9 @@ void MainWindow :: GetNamedServices ()
 
 
 
+void MainWindow :: ConnectToServer ()
+{
+
+}
+
+
