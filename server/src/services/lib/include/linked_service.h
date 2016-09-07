@@ -26,30 +26,23 @@
 #include "grassroots_service_library.h"
 
 #include "linked_list.h"
-
-
-typedef struct MappedParameter
-{
-	char *mp_input_param_s;
-
-	char *mp_output_param_s;
-} MappedParameter;
-
-
-typedef struct MappedParameterNode
-{
-	ListItem mpn_node;
-
-	MappedParameter *mpn_mapped_param_p;
-} MappedParameterNode;
+#include "mapped_parameter.h"
 
 
 typedef struct LinkedService
 {
 	char *ls_input_service_s;
-	LinkedList *ls_mapped_params_p;
 
+	LinkedList *ls_mapped_params_p;
 } LinkedService;
+
+
+typedef struct LinkedServiceNode
+{
+	ListItem lsn_node;
+
+	LinkedService *lsn_linked_service_p;
+} LinkedServiceNode;
 
 
 #ifdef __cplusplus
@@ -58,19 +51,46 @@ extern "C"
 #endif
 
 
-GRASSROOTS_SERVICE_API MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s);
+/**
+ * Allocate a LinkedService.
+ *
+ * @param input_service_s The name of the input service. The LinkedService will make a deep copy
+ * of this and store that value.
+ * @return The newly-allocated LinkedService or <code>NULL</code> upon error.
+ * @memberof LinkedService
+ */
+GRASSROOTS_SERVICE_API LinkedService *AllocateLinkedService (const char *input_service_s);
 
 
-GRASSROOTS_SERVICE_API void FreeMappedParameter (MappedParameter *mapped_param_p);
+/**
+ * Free a LinkedService.
+ *
+ * @param linked_service_p The LinkedService to free.
+ * @memberof LinkedService
+ */
+GRASSROOTS_SERVICE_API void FreeLinkedService (LinkedService *linked_service_p);
 
 
-GRASSROOTS_SERVICE_API MappedParameterNode *AllocateMappedParameterNode (MappedParameter *mapped_param_p);
+/**
+ * Allocate a LinkedServiceNode to store a LinkedService on a LinkedList.
+ *
+ * @param linked_service_p The LinkedService to store in this LinkedServiceNode.
+ * @return The newly-allocated LinkedServiceNode or <code>NULL</code> upon error.
+ * @memberof LinkedService
+ */
+GRASSROOTS_SERVICE_API LinkedServiceNode *AllocateLinkedServiceNode (LinkedService *linked_service_p);
 
 
-GRASSROOTS_SERVICE_API void FreeMappedParameterNode (ListItem *node_p);
+/**
+ * Free a LinkedServiceNode and its associated LinkedService.
+ *
+ * @param node_p The LinkedServiceNode to free.
+ * @memberof LinkedService
+ */
+GRASSROOTS_SERVICE_API void FreeLinkedServiceNode (ListItem *node_p);
 
 
-GRASSROOTS_SERVICE_API bool AddMappedParameter (LinkedService *linked_service_p, const char *input_s, const char *output_s);
+GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s);
 
 
 
