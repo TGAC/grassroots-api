@@ -90,8 +90,10 @@ GRASSROOTS_SERVICE_API LinkedServiceNode *AllocateLinkedServiceNode (LinkedServi
 GRASSROOTS_SERVICE_API void FreeLinkedServiceNode (ListItem *node_p);
 
 
-GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s);
+GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s);
 
+
+GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, MappedParameter *mapped_param_p);
 
 
 #ifdef __cplusplus
