@@ -52,6 +52,8 @@ typedef struct MappedParameter
 /**
  * This datatype allows the storage of MappedParameters
  * on a LinkedList.
+ *
+ * @extends ListItem
  */
 typedef struct MappedParameterNode
 {
@@ -72,7 +74,7 @@ extern "C"
  * Allocate a MappedParameter for the given Parameter names.
  *
  * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
- * @param input_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
+ * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @return The newly-allocated MappedParameter or <code>NULL</code> upon error.
  * @memberof MappedParameter
  */

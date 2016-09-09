@@ -29,18 +29,42 @@
 #include "mapped_parameter.h"
 
 
+/**
+ * This datatype stores the data needed to get the
+ * required information from the output of one
+ * Service to act as input for another.
+ */
 typedef struct LinkedService
 {
+	/**
+	 * The name of the first Service whose output will be used
+	 * as input for the Service that owns this LinkedService
+	 * object.
+	 */
 	char *ls_input_service_s;
 
+	/**
+	 * The list of MappedParameterNodes storing the information
+	 * required to map values from the input Service's results
+	 * to be input for the Service that owns this LinkedService
+	 * object.
+	 */
 	LinkedList *ls_mapped_params_p;
 } LinkedService;
 
 
+/**
+ * The datatype to allow the storage of LinkedServices
+ * on LinkedLists.
+ *
+ * @extends ListItem
+ */
 typedef struct LinkedServiceNode
 {
+	/** The base ListItem. */
 	ListItem lsn_node;
 
+	/** A pointer to the LinkedService. */
 	LinkedService *lsn_linked_service_p;
 } LinkedServiceNode;
 
@@ -90,9 +114,30 @@ GRASSROOTS_SERVICE_API LinkedServiceNode *AllocateLinkedServiceNode (LinkedServi
 GRASSROOTS_SERVICE_API void FreeLinkedServiceNode (ListItem *node_p);
 
 
+/**
+ * Create and add a MappedParameter to a LinkedService.
+ *
+ * This calls AllocateMappedParameter and AddMappedParameterToLinkedService.
+ *
+ * @param linked_service_p The LinkedService to add the MappedParameter to.
+ * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
+ * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
+ * @return <code>true</code> if the MappedParameter was created and added successfully, <code>false</code> otherwise.
+ * @memberof LinkedService
+ * @see AllocateMappedParameter
+ * @see AddMappedParameterToLinkedService
+ */
 GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s);
 
 
+/**
+ * Add a MappedParameter to a LinkedService.
+ *
+ * @param linked_service_p The LinkedService to add the MappedParameter to.
+ * @param mapped_param_p The MappedParameter to add.
+ * @return <code>true</code> if the MappedParameter was added successfully, <code>false</code> otherwise.
+ * @memberof LinkedService
+ */
 GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, MappedParameter *mapped_param_p);
 
 

@@ -1367,3 +1367,26 @@ static void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p)
 	job_p -> sj_free_fn = FreeBlastServiceJob;
 }
 
+
+
+char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+{
+	char *result_s = NULL;
+	char *raw_result_s = NULL;
+
+	/*
+	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+	 * available in blast 2.3+
+	 */
+	raw_result_s = GetBlastResultByUUID ((BlastServiceData *) (service_p -> se_data_p), job_p -> sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+	if (raw_result_s)
+		{
+
+		}
+
+
+
+	return result_s;
+}
+

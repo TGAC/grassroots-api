@@ -871,7 +871,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 {
 	bool success_flag = true;
 	uint32 i = 0;
-	JobsManager *manager_p = GetJobsManager ();
 	ServiceJobNode *node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
 
 	while (node_p)
@@ -880,7 +879,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 
 			json_t *job_json_p = NULL;
 			const OperationStatus job_status = GetServiceJobStatus (job_p);
-			bool clear_service_job_results_flag = false;
 
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job " UINT32_FMT ": status: %d", i, job_status);
@@ -889,43 +887,15 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 			if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
 				{
 					job_json_p = GetServiceJobAsJSON (job_p);
-					clear_service_job_results_flag = true;
+
+					/*
+					 * If this service has any linked services, fill in the data here
+					 */
+					ProcessLinkedServices (job_p);
 				}
 			else
 				{
 					job_json_p = GetServiceJobStatusAsJSON (job_p);
-
-					/*
-					 * If the job is running asynchronously and still going
-					 * then we need to make sure that it is in the jobs table.
-					 * If the ServiceJob needs custom serialisation,
-					 */
-
-//					if (! (job_p -> sj_service_p -> se_synchronous_flag))
-//						{
-//							if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
-//								{
-//									if (keep_service_p)
-//										{
-//											*keep_service_p = true;
-//										}
-//
-//									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p, NULL))
-//										{
-//											char *uuid_s = GetUUIDAsString (job_p -> sj_id);
-//
-//											if (uuid_s)
-//												{
-//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
-//													FreeCopiedString (uuid_s);
-//												}
-//											else
-//												{
-//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
-//												}
-//										}
-//								}
-//						}
 				}
 
 			if (job_json_p)
@@ -943,13 +913,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 							#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 							PrintJSONRefCounts (STM_LEVEL_FINE, __FILE__, __LINE__, job_json_p, "after array adding, job json ");
 							#endif
-
-							/*
-							if (clear_service_job_results_flag)
-								{
-									ClearServiceJobResults (job_p, false);
-								}
-							 */
 						}
 					else
 						{

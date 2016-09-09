@@ -75,6 +75,7 @@ typedef struct ServiceJob
 	 */
 	json_t *sj_errors_p;
 
+
 	/**
 	 * The callback function to use when checking the status of
 	 * this ServiceJob. This is useful for subclasses of ServiceJob that need custom

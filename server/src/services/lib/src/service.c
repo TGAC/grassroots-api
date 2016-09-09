@@ -114,6 +114,7 @@ void InitialiseService (Service * const service_p,
 
 	service_p -> se_deserialise_job_json_fn = NULL;
 	service_p -> se_serialise_job_json_fn = NULL;
+	service_p -> se_get_value_from_job_fn = NULL;
 
 	service_p -> se_jobs_p = NULL;
 
@@ -1613,3 +1614,35 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 	return res_p;
 }
 
+
+char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+{
+	char *result_s = NULL;
+
+	if (job_p)
+		{
+			if (input_s)
+				{
+					if (service_p -> se_get_value_from_job_fn)
+						{
+							service_p -> se_get_value_from_job_fn (service_p, job_p, input_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
+						}
+
+				}		/* if (input_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
+				}
+
+		}		/* if (job_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
+		}
+
+	return result_s;
+}
