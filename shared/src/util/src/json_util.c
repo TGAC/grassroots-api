@@ -1117,3 +1117,63 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 
 	return success_flag;
 }
+
+
+json_t *GetCompoundJSONObject (const json_t *input_p, char * const compound_s)
+{
+	bool loop_flag = true;
+	const json_t *parent_key_p = input_p;
+	const char *parent_key_s = compound_s;
+	const json_t *child_key_p = NULL;
+
+	while (parent_key_p)
+		{
+			const char *next_dot_s = strchr (parent_key_s, ".");
+
+			if (next_dot_s)
+				{
+					child_key_p = NULL;
+
+					/* temporarily terminate the current string */
+					*next_dot_s = '\0';
+
+					child_key_p = json_object_get (parent_key_p, parent_key_s);
+
+					/* restore the . */
+					*next_dot_s = '.';
+
+					parent_key_p = child_key_p;
+
+					parent_key_s = next_dot_s + 1;
+
+					if (parent_key_p)
+						{
+							/*
+							 * If we have reached the end of the input string,
+							 * then we've found the required object so no
+							 * need to loop anymore.
+							 */
+							if (*parent_key_s == '\0')
+								{
+									parent_key_p = NULL;
+								}
+						}
+					else
+						{
+							/* Have we reached the end of the input string? */
+							if (*parent_key_s != '\0')
+								{
+									/*
+									 * We've found the required object, so force the exit
+									 * from the loop.
+									 */
+									parent_key_p = NULL;
+								}
+						}
+
+				}		/* if (next_dot_s) */
+
+		}		/* while (parent_key_p) */
+
+
+}

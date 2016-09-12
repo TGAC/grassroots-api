@@ -1382,8 +1382,26 @@ char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, 
 
 	if (raw_result_s)
 		{
+			json_error_t err;
+			json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
 
-		}
+			if (blast_output_p)
+				{
+					/*
+					 * For the SamTools service, we want the database and scaffold names
+					 */
+
+
+
+					json_decref (blast_output_p);
+				}		/* if (blast_output_p) */
+			else
+				{
+
+				}
+
+			FreeCopiedString (raw_result_s);
+		}		/* if (raw_result_s) */
 
 
 
