@@ -62,7 +62,7 @@ void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char
 
 
 
-json_t *GetDrmmaaServiceJobAsJSON (const DrmaaServiceJob * const job_p)
+json_t *GetDrmaaServiceJobAsJSON (const DrmaaServiceJob * const job_p)
 {
 	json_t *json_p = GetServiceJobAsJSON (& (job_p -> dsj_job));
 
@@ -75,7 +75,7 @@ json_t *GetDrmmaaServiceJobAsJSON (const DrmaaServiceJob * const job_p)
 }
 
 
-DrmaaServiceJob *GetDrmmaaServiceJobFromJSON (const json_t * const json_p)
+DrmaaServiceJob *GetDrmaaServiceJobFromJSON (const json_t * const json_p)
 {
 
 }

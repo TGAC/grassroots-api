@@ -1122,31 +1122,31 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 json_t *GetCompoundJSONObject (const json_t *input_p, char * const compound_s)
 {
 	bool loop_flag = true;
-	const json_t *parent_key_p = input_p;
+	const json_t *parent_value_p = input_p;
 	const char *parent_key_s = compound_s;
-	const json_t *child_key_p = NULL;
+	const json_t *compound_value_p = NULL;
 
-	while (parent_key_p)
+	while (parent_value_p)
 		{
 			const char *next_dot_s = strchr (parent_key_s, ".");
 
 			if (next_dot_s)
 				{
-					child_key_p = NULL;
+					const json_t *child_value_p = NULL;
 
 					/* temporarily terminate the current string */
 					*next_dot_s = '\0';
 
-					child_key_p = json_object_get (parent_key_p, parent_key_s);
+					child_value_p = json_object_get (parent_value_p, parent_key_s);
 
 					/* restore the . */
 					*next_dot_s = '.';
 
-					parent_key_p = child_key_p;
+					parent_value_p = child_value_p;
 
 					parent_key_s = next_dot_s + 1;
 
-					if (parent_key_p)
+					if (parent_value_p)
 						{
 							/*
 							 * If we have reached the end of the input string,
@@ -1155,25 +1155,31 @@ json_t *GetCompoundJSONObject (const json_t *input_p, char * const compound_s)
 							 */
 							if (*parent_key_s == '\0')
 								{
+									compound_value_p = parent_value_p;
 									parent_key_p = NULL;
 								}
 						}
 					else
 						{
-							/* Have we reached the end of the input string? */
+							/* Have we fully parsed the input string? */
 							if (*parent_key_s != '\0')
 								{
 									/*
 									 * We've found the required object, so force the exit
 									 * from the loop.
 									 */
-									parent_key_p = NULL;
+									parent_value_p = NULL;
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to fully parse \"%s\", only got as far as \"%s\"", compound_s, parent_key_s);
 								}
 						}
 
 				}		/* if (next_dot_s) */
+			else
+				{
+					compound_value_p = json_object_get (parent_value_p, parent_key_s);
+				}
 
-		}		/* while (parent_key_p) */
+		}		/* while (parent_value_p) */
 
-
+	return compound_key_p;
 }
