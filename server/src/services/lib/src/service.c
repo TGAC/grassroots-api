@@ -32,6 +32,7 @@
 #include "service_job.h"
 #include "grassroots_config.h"
 #include "paired_service.h"
+#include "linked_service.h"
 #include "servers_pool.h"
 #include "string_utils.h"
 
@@ -120,6 +121,10 @@ void InitialiseService (Service * const service_p,
 
 	InitLinkedList (& (service_p -> se_paired_services));
 	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
+
+	InitLinkedList (& (service_p -> se_linked_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
+
 }
 
 
@@ -134,6 +139,8 @@ void FreeService (Service *service_p)
 		}
 
 	ClearLinkedList (& (service_p -> se_paired_services));
+
+	ClearLinkedList (& (service_p -> se_linked_services));
 
 	if (service_p -> se_data_p)
 		{
@@ -1645,4 +1652,22 @@ char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char *
 		}
 
 	return result_s;
+}
+
+
+void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
+{
+	if (service_p -> se_linked_services.ll_size)
+		{
+			LinkedServiceNode *node_p = (LinkedServiceNode *) (service_p -> se_linked_services.ll_head_p);
+
+			while (node_p)
+				{
+					LinkedService *linked_service_p = node_p -> lsn_linked_service_p;
+
+
+					node_p = (LinkedServiceNode *) (node_p -> lsn_node.ln_next_p);
+				}		/* while (node_p) */
+
+		}		/* if (service_p -> se_linked_services.ll_size) */
 }

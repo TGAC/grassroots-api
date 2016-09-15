@@ -11,7 +11,6 @@ DIR_OBJS = $(BUILD)
 
 #DIR_APACHE=/opt/grassroots-0/apache
 
-echo "DIR_APACHE=$(DIR_APACHE)"
 
 ifeq ($(DIR_APACHE),)
 HTTPD := $(shell httpd -V) 

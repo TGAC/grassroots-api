@@ -1390,19 +1390,51 @@ char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, 
 					/*
 					 * For the SamTools service, we want the database and scaffold names
 					 */
+					const json_t *value_p = GetCompoundJSONObject (blast_output_p, input_s);
 
+					if (value_p)
+						{
+							if (json_is_string (value_p))
+								{
+									const char *value_s = json_string_value (value_p);
 
+									if (value_s)
+										{
+											result_s = CopyToNewString (value_s, 0, false);
+
+											if (!result_s)
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", value_s);
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", value_s);
+										}
+								}		/* if (json_is_string (value_p)) */
+
+						}		/* if (value_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find \"%s\" in \"%s\"", input_s, raw_result_s);
+						}
 
 					json_decref (blast_output_p);
 				}		/* if (blast_output_p) */
 			else
 				{
-
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
 				}
 
 			FreeCopiedString (raw_result_s);
 		}		/* if (raw_result_s) */
+	else
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
 
+			ConvertUUIDToString (job_p -> sj_id, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", input_s, BOF_SINGLE_FILE_JSON_BLAST);
+		}
 
 
 	return result_s;

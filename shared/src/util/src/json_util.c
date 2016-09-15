@@ -1119,16 +1119,15 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 }
 
 
-json_t *GetCompoundJSONObject (const json_t *input_p, char * const compound_s)
+const json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s)
 {
-	bool loop_flag = true;
 	const json_t *parent_value_p = input_p;
-	const char *parent_key_s = compound_s;
+	char *parent_key_s = (char *) compound_s;
 	const json_t *compound_value_p = NULL;
 
 	while (parent_value_p)
 		{
-			const char *next_dot_s = strchr (parent_key_s, ".");
+			char *next_dot_s = strchr (parent_key_s, '.');
 
 			if (next_dot_s)
 				{
@@ -1156,7 +1155,7 @@ json_t *GetCompoundJSONObject (const json_t *input_p, char * const compound_s)
 							if (*parent_key_s == '\0')
 								{
 									compound_value_p = parent_value_p;
-									parent_key_p = NULL;
+									parent_value_p = NULL;
 								}
 						}
 					else
@@ -1181,5 +1180,5 @@ json_t *GetCompoundJSONObject (const json_t *input_p, char * const compound_s)
 
 		}		/* while (parent_value_p) */
 
-	return compound_key_p;
+	return compound_value_p;
 }

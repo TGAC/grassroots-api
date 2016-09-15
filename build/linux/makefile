@@ -7,7 +7,7 @@ export DIR_SRC_ROOT = $(DIR_PKG_ROOT)/src
 
 export DIR_SHARED_SRC_ROOT = $(DIR_PKG_ROOT)/shared/src
 export DIR_SERVER_SRC_ROOT = $(DIR_PKG_ROOT)/server/src
-export DIR_CLIENTS_SRC_ROOT = $(DIR_PKG_ROOT)/clients/
+export DIR_CLIENTS_SRC_ROOT = $(DIR_PKG_ROOT)/clients
 
 export DIR_SHARED_BUILD_ROOT = $(DIR_BUILD_ROOT)/shared
 export DIR_SERVER_BUILD_ROOT = $(DIR_BUILD_ROOT)/server

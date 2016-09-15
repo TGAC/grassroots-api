@@ -1483,3 +1483,11 @@ bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p)
 
 	return success_flag;
 }
+
+
+
+
+
+
+
+

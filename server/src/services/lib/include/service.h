@@ -207,7 +207,7 @@ typedef struct Service
 
 
 
-	char *(*se_get_value_from_job_fn) (struct Service *service_p, ServiceJob *job_p, const char * const input_s);
+	char *(*se_get_value_from_job_fn) (struct Service *service_p, struct ServiceJob *job_p, const char * const input_s);
 
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return
@@ -224,6 +224,12 @@ typedef struct Service
 
 	/** Any remote Services that are paired with this Service. */
 	LinkedList se_paired_services;
+
+	/**
+	 * Any LinkedServices that will  use the output from running this Service
+	 * as input for itself
+	 */
+	LinkedList se_linked_services;
 
 	/**
 	 * Any custom data that the service needs to store.
@@ -720,7 +726,7 @@ GRASSROOTS_SERVICE_API void SetServiceJobCustomFunctions (Service *service_p, st
 
 
 
-GRASSROOTS_SERVICE_API char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s);
+GRASSROOTS_SERVICE_API char *GetValueFromJobOutput (Service *service_p, struct ServiceJob *job_p, const char * const input_s);
 
 
 #ifdef __cplusplus

@@ -38,6 +38,8 @@ INCLUDES = \
 	
 SRCS 	= \
 	encode_dcc_metadata.c \
+	linked_service.c \
+	mapped_parameter.c \
 	paired_service.c \
 	provider.c \
 	providers_state_table.c \
