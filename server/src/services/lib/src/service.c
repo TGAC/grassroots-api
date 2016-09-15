@@ -1659,15 +1659,27 @@ void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
 {
 	if (service_p -> se_linked_services.ll_size)
 		{
-			LinkedServiceNode *node_p = (LinkedServiceNode *) (service_p -> se_linked_services.ll_head_p);
+			LinkedServiceNode *linked_service_node_p = (LinkedServiceNode *) (service_p -> se_linked_services.ll_head_p);
 
-			while (node_p)
+			while (linked_service_node_p)
 				{
-					LinkedService *linked_service_p = node_p -> lsn_linked_service_p;
+					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
 
+					if (linked_service_p -> ls_mapped_params_p -> ll_size)
+						{
+							MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+							char *value_s = GetValueFromJobOutput (service_p, job_p, mapped_param_node_p -> mpn_mapped_param_p -> mp_input_param_s);
 
-					node_p = (LinkedServiceNode *) (node_p -> lsn_node.ln_next_p);
-				}		/* while (node_p) */
+							if (value_s)
+								{
+
+								}		/* if (value_s) */
+
+							mapped_param_node_p = (MappedParameterNode *) (mapped_param_node_p -> mpn_node.ln_next_p);
+						}		/* if (linked_service_p -> ls_mapped_params_p -> ll_size) */
+
+					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
+				}		/* while (linked_service_node_p) */
 
 		}		/* if (service_p -> se_linked_services.ll_size) */
 }
