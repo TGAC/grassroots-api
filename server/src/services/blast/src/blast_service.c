@@ -86,6 +86,9 @@ static json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *s
 
 static void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p);
 
+static char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s);
+
+
 /***************************************/
 
 
@@ -128,6 +131,8 @@ ServicesArray *GetServices (const json_t *  UNUSED_PARAM (config_p))
 
 									blast_service_p -> se_deserialise_job_json_fn = BuildBlastServiceJob;
 									blast_service_p -> se_serialise_job_json_fn = BuildBlastServiceJobJSON;
+
+									blast_service_p -> se_get_value_from_job_fn = GetValueFromBlastServiceJobOutput;
 
 									* (services_p -> sa_services_pp) = blast_service_p;
 
@@ -1369,7 +1374,7 @@ static void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p)
 
 
 
-char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+static char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
 {
 	char *result_s = NULL;
 	char *raw_result_s = NULL;

@@ -37,6 +37,8 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
 
 static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p);
 
+static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p);
+
 
 ServiceJob *AllocateEmptyServiceJob (void)
 {
@@ -119,85 +121,95 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Initialising Job: %.16x\n", job_p);
 	#endif
 
+	memset (job_p, 0, sizeof (ServiceJob));
+
+
 	job_p -> sj_service_p = service_p;
 	uuid_generate (job_p -> sj_id);
 	job_p -> sj_status = OS_IDLE;
-
-	if (job_name_s)
-		{
-			job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
-
-			if (! (job_p -> sj_name_s))
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job name \"%s\"", job_name_s);
-					return false;
-				}
-		}
-	else
-		{
-			job_p -> sj_name_s = NULL;
-		}
-
-	if (job_description_s)
-		{
-			job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
-
-			if (! (job_p -> sj_description_s))
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job description \"%s\"", job_description_s);
-
-					if (job_p -> sj_name_s)
-						{
-							FreeCopiedString (job_p -> sj_name_s);
-							job_p -> sj_name_s = NULL;
-						}
-
-					return false;
-				}
-		}
-	else
-		{
-			job_p -> sj_description_s = NULL;
-		}
 
 	job_p -> sj_errors_p = json_object ();
 
 	if (job_p -> sj_errors_p)
 		{
-			job_p -> sj_result_p = NULL;
-			job_p -> sj_metadata_p = NULL;
+			job_p -> sj_linked_services_p = json_array ();
 
-			job_p -> sj_update_fn = update_fn;
-			job_p -> sj_free_fn = free_job_fn;
-
-			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+			if (job_p -> sj_linked_services_p)
 				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
+					/* Set the name if valid */
+						if (job_name_s)
+							{
+								job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
 
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
+								if (! (job_p -> sj_name_s))
+									{
+										PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job name \"%s\"", job_name_s);
+										return false;
+									}
+							}
+						else
+							{
+								job_p -> sj_name_s = NULL;
+							}
+
+						/* set the description if valid */
+						if (job_description_s)
+							{
+								job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
+
+								if (! (job_p -> sj_description_s))
+									{
+										PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job description \"%s\"", job_description_s);
+
+										if (job_p -> sj_name_s)
+											{
+												FreeCopiedString (job_p -> sj_name_s);
+												job_p -> sj_name_s = NULL;
+											}
+
+										return false;
+									}
+							}
+						else
+							{
+								job_p -> sj_description_s = NULL;
+							}
+
+
+
+					job_p -> sj_result_p = NULL;
+					job_p -> sj_metadata_p = NULL;
+
+					job_p -> sj_update_fn = update_fn;
+					job_p -> sj_free_fn = free_job_fn;
+
+					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+						{
+							char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+							ConvertUUIDToString (job_p -> sj_id, uuid_s);
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
+						}
+					#endif
+
+					return  true;
+				}		/* if (job_p -> sj_linked_services_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job linked services array");
 				}
-			#endif
 
+			json_decref (job_p -> sj_errors_p);
+			job_p -> sj_errors_p = NULL;
 		}		/* if (job_p -> sj_errors_p) */
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job errors");
-
-			if (job_p -> sj_name_s)
-				{
-					FreeCopiedString (job_p -> sj_name_s);
-					job_p -> sj_name_s = NULL;
-				}
-
-			if (job_p -> sj_description_s)
-				{
-					FreeCopiedString (job_p -> sj_description_s);
-					job_p -> sj_description_s = NULL;
-				}
 		}
 
-	return true;
+	return false;
+
+
 }
 
 
@@ -239,6 +251,13 @@ void ClearServiceJob (ServiceJob *job_p)
 		{
 			json_decref (job_p -> sj_errors_p);
 			job_p -> sj_errors_p = NULL;
+		}
+
+
+	if (job_p -> sj_linked_services_p)
+		{
+			json_decref (job_p -> sj_linked_services_p);
+			job_p -> sj_linked_services_p = NULL;
 		}
 
 	job_p -> sj_status = OS_CLEANED_UP;
@@ -1486,8 +1505,123 @@ bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p)
 
 
 
+bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_service_p)
+{
+	bool success_flag = true;
+	json_t *linked_service_json_p = json_object ();
+
+	if (linked_service_json_p)
+		{
+			json_t *params_p = json_array ();
+
+			if (params_p)
+				{
+					if (json_object_set_new (linked_service_json_p, PARAM_SET_PARAMS_S, params_p) == 0)
+						{
+							MappedParameterNode *node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+
+							while (success_flag && node_p)
+								{
+									if (AddMappedParameterDetails (job_p, node_p -> mpn_mapped_param_p, params_p))
+										{
+											node_p = (MappedParameterNode *) (node_p -> mpn_node.ln_next_p);
+										}
+									else
+										{
+											success_flag = false;
+										}
+
+								}		/* while (success_flag && node_p) */
+
+							if (success_flag)
+								{
+									if (json_array_append_new (job_p -> sj_linked_services_p, linked_service_json_p) != 0)
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to add linked service json to ServiceJob");
+											success_flag = false;
+										}		/* if (json_array_append_new (job_p -> sj_linked_services_p, linked_service_json_p) != 0) */
+
+								}		/* if (success_flag) */
+
+
+						}		/* if (json_object_set_new (linked_service_json_p, PARAM_SET_PARAMS_S, params_p) == 0) */
+					else
+						{
+							json_decref (params_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create params json array");
+						}
+
+				}		/* if (params_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create params json array");
+				}
+
+			if (!success_flag)
+				{
+					json_decref (linked_service_json_p);
+				}
+
+		}		/* if (linked_service_json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create linked service json object");
+		}
+
+	return success_flag;
+}
 
 
 
+static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p)
+{
+	char *value_s = GetValueFromJobOutput (job_p -> sj_service_p, job_p, mapped_param_p -> mp_input_param_s);
 
+	if (value_s)
+		{
+			json_t *param_json_p = json_object ();
+
+			if (param_json_p)
+				{
+					if (json_object_set_new (param_json_p, PARAM_NAME_S, json_string (mapped_param_p -> mp_output_param_s)) == 0)
+						{
+							if (json_object_set_new (param_json_p, PARAM_CURRENT_VALUE_S, json_string (value_s)) == 0)
+								{
+									if (json_array_append_new (parent_p, param_json_p) == 0)
+										{
+											return true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to append params json to parent object");
+										}
+
+								}		/* if (json_object_set_new (linked_service_json_p, PARAM_CURRENT_VALUE_S, json_string (value_s)) == 0) */
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\": \"%s\" to param json", PARAM_CURRENT_VALUE_S, value_s);
+								}
+
+						}		/* if (json_object_set_new (linked_service_json_p, PARAM_NAME_S, json_string (mapped_param_p -> mp_output_param_s)) == 0) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\": \"%s\" to param json", PARAM_NAME_S, mapped_param_p -> mp_output_param_s);
+						}
+
+					json_decref (param_json_p);
+				}		/* if (param_json_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate JSON for params object");
+				}
+
+			FreeCopiedString (value_s);
+		}		/* if (value_s) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "Failed to get \"%s\"", mapped_param_p -> mp_input_param_s);
+		}
+
+	return false;
+}
 

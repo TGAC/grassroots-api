@@ -404,7 +404,7 @@ install_init:
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/references
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/images
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/clients
-	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/HANDLER
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/handlers
 
 
 install_deps: install_init install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_uuid install_mongodb_c install_samlib
