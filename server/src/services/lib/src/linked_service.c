@@ -24,6 +24,9 @@
 #include "memory_allocations.h"
 #include "streams.h"
 
+#include "json_util.h"
+#include "string_utils.h"
+
 
 LinkedService *AllocateLinkedService (const char *input_service_s)
 {
@@ -110,6 +113,81 @@ void FreeLinkedServiceNode (ListItem *node_p)
 
 	FreeLinkedService (ls_node_p -> lsn_linked_service_p);
 	FreeMemory (node_p);
+}
+
+
+LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
+{
+	LinkedService *linked_service_p = NULL;
+	const char *service_s = GetJSONString (linked_service_json_p, SERVICE_NAME_S);
+
+	if (service_s)
+		{
+			const json_t *params_p = json_object_get (linked_service_json_p, PARAM_SET_PARAMS_S);
+
+			if (params_p)
+				{
+					if (json_is_array (params_p))
+						{
+							linked_service_p = AllocateLinkedService (service_s);
+
+							if (linked_service_p)
+								{
+									bool success_flag = true;
+									const size_t size = json_array_size (params_p);
+									size_t i;
+
+									for (i = 0; i < size; ++ i)
+										{
+											const json_t *param_json_p = json_array_get (params_p, i);
+											MappedParameter *mapped_param_p = CreateMappedParameterFromJSON (param_json_p);
+
+											if (mapped_param_p)
+												{
+													if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p))
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add mapped param \"%s\":\"%s\" for \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_input_service_s);
+															i = size; 		/* force exit from loop */
+															success_flag = false;
+														}		/* if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p)) */
+
+												}		/* if (mapped_param_p) */
+											else
+												{
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, param_json_p, "Failed to create mapped parameter");
+													i = size; 		/* force exit from loop */
+													success_flag = false;
+												}
+
+										}		/* for (i = 0; i < size; ++ i) */
+
+									if (!success_flag)
+										{
+											FreeLinkedService (linked_service_p);
+											linked_service_p = NULL;
+										}
+
+								}		/* if (linked_service_p) */
+
+						}		/* if (json_is_array (params_p)) */
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, params_p, "Fragment is not a JSON array");
+						}
+
+				}		/* if (params_p) */
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to get \"%s\"", PARAM_SET_PARAMS_S);
+				}
+
+		}		/* if (service_s) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to get %s", SERVICE_NAME_S);
+		}
+
+	return linked_service_p;
 }
 
 

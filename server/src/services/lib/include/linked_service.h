@@ -25,6 +25,8 @@
 
 #include "grassroots_service_library.h"
 
+#include "jansson.h"
+
 #include "linked_list.h"
 #include "mapped_parameter.h"
 
@@ -84,6 +86,16 @@ extern "C"
  * @memberof LinkedService
  */
 GRASSROOTS_SERVICE_API LinkedService *AllocateLinkedService (const char *input_service_s);
+
+
+/**
+ * Create a new LinkedService from a JSON fragment.
+ *
+ * @param linked_service_json_p The JSON fragment describing the LinkedService.
+ * @return The newly-allocated LinkedService or <code>NULL</code> upon error.
+ * @memberof LinkedService
+ */
+GRASSROOTS_SERVICE_API LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p);
 
 
 /**

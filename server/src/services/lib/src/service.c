@@ -97,17 +97,6 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_is_specific_service_flag = specific_flag;
 	service_p -> se_synchronous_flag = synchronous_flag;
 
-	if (service_p -> se_data_p)
-		{
-			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);
-
-			service_p -> se_data_p -> sd_service_p = service_p;
-
-			if (service_name_s)
-				{
-					service_p -> se_data_p -> sd_config_p = GetGlobalServiceConfig (service_name_s, & (service_p -> se_data_p -> sd_config_flag));
-				}
-		}
 
 	uuid_clear (service_p -> se_id);
 
@@ -126,6 +115,18 @@ void InitialiseService (Service * const service_p,
 	InitLinkedList (& (service_p -> se_linked_services));
 	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
 
+
+	if (service_p -> se_data_p)
+		{
+			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);
+
+			service_p -> se_data_p -> sd_service_p = service_p;
+
+			if (service_name_s)
+				{
+					service_p -> se_data_p -> sd_config_p = GetGlobalServiceConfig (service_name_s, & (service_p -> se_data_p -> sd_config_flag));
+				}
+		}
 }
 
 
@@ -189,6 +190,41 @@ bool IsServiceLive (Service *service_p)
 		}
 
 	return is_live_flag;
+}
+
+
+bool SetUpLinkedServices (Service *service_p)
+{
+	bool success_flag = true;
+	const char *linked_services_p = NULL;
+	const json_t *config_p = service_p -> se_data_p ? service_p -> se_data_p -> sd_config_p : NULL;
+
+	InitLinkedList (& (service_p -> se_linked_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
+
+	if (config_p)
+		{
+			const json_t *linked_services_json_p = json_object_get (config_p, LINKED_SERVICES_S);
+
+			if (linked_services_json_p)
+				{
+					if (json_is_array (linked_services_json_p))
+						{
+							size_t i;
+							const json_t *linked_service_json_p;
+
+							json_array_foreach (linked_services_json_p, i, linked_service_json_p)
+								{
+									LinkedService *linked_service_p = CreateLinkedServiceFromJSON (linked_service_json_p);
+
+									if (linked_service_p)
+										{
+										}
+								}
+						}
+				}
+		}
+
 }
 
 

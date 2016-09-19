@@ -23,6 +23,8 @@
 #ifndef SERVER_SRC_SERVICES_LIB_INCLUDE_MAPPED_PARAMETER_H_
 #define SERVER_SRC_SERVICES_LIB_INCLUDE_MAPPED_PARAMETER_H_
 
+#include "jansson.h"
+
 #include "grassroots_service_library.h"
 
 #include "linked_list.h"
@@ -79,6 +81,16 @@ extern "C"
  * @memberof MappedParameter
  */
 GRASSROOTS_SERVICE_API MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s);
+
+
+/**
+ * Create a new MappedParameter from a JSON fragment.
+ *
+ * @param mapped_param_json_p The JSON fragment describing the MappedParameter.
+ * @return The newly-allocated MappedParameter or <code>NULL</code> upon error.
+ * @memberof LinkedService
+ */
+GRASSROOTS_SERVICE_API MappedParameter *CreateMappedParameterFromJSON (const json_t *mapped_param_json_p);
 
 
 /**

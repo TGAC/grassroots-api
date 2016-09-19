@@ -24,6 +24,8 @@
 #include "mapped_parameter.h"
 #include "memory_allocations.h"
 #include "streams.h"
+#include "string_utils.h"
+#include "json_util.h"
 
 
 MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s)
@@ -104,3 +106,31 @@ void FreeMappedParameterNode (ListItem *node_p)
 	FreeMappedParameter (mp_node_p -> mpn_mapped_param_p);
 	FreeMemory (node_p);
 }
+
+
+MappedParameter *CreateMappedParameterFromJSON (const json_t *mapped_param_json_p)
+{
+	const char *input_s = GetJSONString (mapped_param_json_p, MAPPED_PARAM_INPUT_S);
+
+	if (input_s)
+		{
+			const char *output_s = GetJSONString (mapped_param_json_p, MAPPED_PARAM_OUTPUT_S);
+
+			if (output_s)
+				{
+					return AllocateMappedParameter (input_s, output_s);
+				}		/* if (output_s) */
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, mapped_param_json_p, "Failed to get %s", MAPPED_PARAM_OUTPUT_S);
+				}
+
+		}		/* if (input_s) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, mapped_param_json_p, "Failed to get %s", MAPPED_PARAM_INPUT_S);
+		}
+
+	return NULL;
+}
+

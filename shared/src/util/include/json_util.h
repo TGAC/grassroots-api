@@ -105,6 +105,8 @@ PREFIX const char *SERVICE_RESULTS_S VAL("results");
 PREFIX const char *SERVICE_METADATA_S VAL("metadata");
 PREFIX const char *SERVICE_JOBS_S VAL("jobs");
 
+PREFIX const char *MAPPED_PARAM_INPUT_S VAL("input");
+PREFIX const char *MAPPED_PARAM_OUTPUT_S VAL("output");
 
 PREFIX const char *JOB_NAME_S VAL("name");
 PREFIX const char *JOB_SERVICE_S VAL("service");
