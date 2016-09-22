@@ -1704,27 +1704,10 @@ void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
 			while (linked_service_node_p)
 				{
 					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
-					Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_input_service_s);
-
-					if (service_to_call_p)
-						{
-							Resource *resource_p = NULL;
-							UserDetails *user_p = NULL;
-							ParameterSet *params_p = GetServiceParameters (service_to_call_p, resource_p, user_p);
-
-							if (params_p)
-								{
-									GetInterestedServiceJSON (inked_service_p -> ls_input_service_s, NULL)
-									ReleaseServiceParameters (service_to_call_p, params_p);
-								}		/* if (params_p) */
-
-							FreeService (service_to_call_p);
-						}		/* if (service_to_call_p) */
-
 
 					if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
 						}
 
 					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);

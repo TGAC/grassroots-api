@@ -25,7 +25,7 @@
 #include "web_service_util.h"
 #include "string_utils.h"
 #include "math_utils.h"
-#include "schema_version.h"
+#include "service_config.h"
 
 
 #ifdef _DEBUG

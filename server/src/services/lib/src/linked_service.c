@@ -26,6 +26,10 @@
 
 #include "json_util.h"
 #include "string_utils.h"
+#include "service.h"
+#include "schema_version.h"
+#include "user_details.h"
+//#include "resource.h"
 
 
 LinkedService *AllocateLinkedService (const char *input_service_s)
