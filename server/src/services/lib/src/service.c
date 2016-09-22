@@ -1659,6 +1659,9 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 }
 
 
+
+
+
 char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
 {
 	char *result_s = NULL;
@@ -1701,6 +1704,23 @@ void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
 			while (linked_service_node_p)
 				{
 					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
+					Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_input_service_s);
+
+					if (service_to_call_p)
+						{
+							Resource *resource_p = NULL;
+							UserDetails *user_p = NULL;
+							ParameterSet *params_p = GetServiceParameters (service_to_call_p, resource_p, user_p);
+
+							if (params_p)
+								{
+									GetInterestedServiceJSON (inked_service_p -> ls_input_service_s, NULL)
+									ReleaseServiceParameters (service_to_call_p, params_p);
+								}		/* if (params_p) */
+
+							FreeService (service_to_call_p);
+						}		/* if (service_to_call_p) */
+
 
 					if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
 						{

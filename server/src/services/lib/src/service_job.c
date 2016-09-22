@@ -39,6 +39,8 @@ static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, Operati
 
 static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p);
 
+static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
+
 
 ServiceJob *AllocateEmptyServiceJob (void)
 {
@@ -576,6 +578,47 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
 }
 
 
+static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
+{
+	bool success_flag = false;
+
+	if (json_is_object (value_p))
+		{
+			size_t i;
+			json_t *linked_service_json_p = NULL;
+
+
+			json_array_foreach (job_p -> sj_linked_services_p, i, linked_service_json_p)
+				{
+
+					Service *service_p = GetServiceByName ()
+				}
+
+			Resource *resource_p = NULL;
+			UserDetails *user_p = NULL;
+
+			ParameterSet *params_p = GetServiceParameters (service_p, NULL, NULL);
+
+			if (params_p)
+				{
+
+					ReleaseServiceParameters (service_p, params_p);
+				}		/* if (params_p) */
+
+			job_p -> sj_linked_services_p
+
+
+
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Job status JSON can only be added to an object, value is of type %d", json_typeof (value_p));
+		}
+
+	return success_flag;
+}
+
+
 static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p)
 {
 	bool success_flag = false;
@@ -819,6 +862,11 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 																{
 																	if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
 																		{
+																			if (!AddLinkedServicesToServiceJobJSON (job_p, job_json_p))
+																				{
+																					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to Linked Services for %s to json", job_p -> sj_name_s ? job_p -> sj_name_s : "unnamed job");
+																				}
+
 																			success_flag = true;
 																		}
 																	else
