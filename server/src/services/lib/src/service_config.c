@@ -21,6 +21,8 @@
 static char S_DEFAULT_ROOT_PATH_S [] = "";
 static char *s_root_path_s = S_DEFAULT_ROOT_PATH_S;
 
+static SchemaVersion s_schema_version;
+
 
 
 void FreeServerResources (void)
@@ -69,4 +71,19 @@ bool SetServerRootDirectory (const char * const path_s)
 const char *GetServerRootDirectory (void)
 {
 	return s_root_path_s;
+}
+
+
+
+
+void SetSchemaVersionDetails (const uint32 major, const uint32 minor)
+{
+	s_schema_version.sv_major = major;
+	s_schema_version.sv_minor = minor;
+}
+
+
+const SchemaVersion *GetSchemaVersion (void)
+{
+	return &s_schema_version;
 }

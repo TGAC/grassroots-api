@@ -1117,3 +1117,68 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 
 	return success_flag;
 }
+
+
+const json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s)
+{
+	const json_t *parent_value_p = input_p;
+	char *parent_key_s = (char *) compound_s;
+	const json_t *compound_value_p = NULL;
+
+	while (parent_value_p)
+		{
+			char *next_dot_s = strchr (parent_key_s, '.');
+
+			if (next_dot_s)
+				{
+					const json_t *child_value_p = NULL;
+
+					/* temporarily terminate the current string */
+					*next_dot_s = '\0';
+
+					child_value_p = json_object_get (parent_value_p, parent_key_s);
+
+					/* restore the . */
+					*next_dot_s = '.';
+
+					parent_value_p = child_value_p;
+
+					parent_key_s = next_dot_s + 1;
+
+					if (parent_value_p)
+						{
+							/*
+							 * If we have reached the end of the input string,
+							 * then we've found the required object so no
+							 * need to loop anymore.
+							 */
+							if (*parent_key_s == '\0')
+								{
+									compound_value_p = parent_value_p;
+									parent_value_p = NULL;
+								}
+						}
+					else
+						{
+							/* Have we fully parsed the input string? */
+							if (*parent_key_s != '\0')
+								{
+									/*
+									 * We've found the required object, so force the exit
+									 * from the loop.
+									 */
+									parent_value_p = NULL;
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to fully parse \"%s\", only got as far as \"%s\"", compound_s, parent_key_s);
+								}
+						}
+
+				}		/* if (next_dot_s) */
+			else
+				{
+					compound_value_p = json_object_get (parent_value_p, parent_key_s);
+				}
+
+		}		/* while (parent_value_p) */
+
+	return compound_value_p;
+}

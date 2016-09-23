@@ -32,8 +32,10 @@
 #include "service_job.h"
 #include "grassroots_config.h"
 #include "paired_service.h"
+#include "linked_service.h"
 #include "servers_pool.h"
 #include "string_utils.h"
+#include "service_job.h"
 
 
 #ifdef _DEBUG
@@ -95,6 +97,25 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_is_specific_service_flag = specific_flag;
 	service_p -> se_synchronous_flag = synchronous_flag;
 
+
+	uuid_clear (service_p -> se_id);
+
+	service_p -> se_plugin_p = NULL;
+	service_p -> se_has_permissions_fn = NULL;
+
+	service_p -> se_deserialise_job_json_fn = NULL;
+	service_p -> se_serialise_job_json_fn = NULL;
+	service_p -> se_get_value_from_job_fn = NULL;
+
+	service_p -> se_jobs_p = NULL;
+
+	InitLinkedList (& (service_p -> se_paired_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
+
+	InitLinkedList (& (service_p -> se_linked_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
+
+
 	if (service_p -> se_data_p)
 		{
 			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);
@@ -106,19 +127,6 @@ void InitialiseService (Service * const service_p,
 					service_p -> se_data_p -> sd_config_p = GetGlobalServiceConfig (service_name_s, & (service_p -> se_data_p -> sd_config_flag));
 				}
 		}
-
-	uuid_clear (service_p -> se_id);
-
-	service_p -> se_plugin_p = NULL;
-	service_p -> se_has_permissions_fn = NULL;
-
-	service_p -> se_deserialise_job_json_fn = NULL;
-	service_p -> se_serialise_job_json_fn = NULL;
-
-	service_p -> se_jobs_p = NULL;
-
-	InitLinkedList (& (service_p -> se_paired_services));
-	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
 }
 
 
@@ -133,6 +141,8 @@ void FreeService (Service *service_p)
 		}
 
 	ClearLinkedList (& (service_p -> se_paired_services));
+
+	ClearLinkedList (& (service_p -> se_linked_services));
 
 	if (service_p -> se_data_p)
 		{
@@ -180,6 +190,41 @@ bool IsServiceLive (Service *service_p)
 		}
 
 	return is_live_flag;
+}
+
+
+bool SetUpLinkedServices (Service *service_p)
+{
+	bool success_flag = true;
+	const char *linked_services_p = NULL;
+	const json_t *config_p = service_p -> se_data_p ? service_p -> se_data_p -> sd_config_p : NULL;
+
+	InitLinkedList (& (service_p -> se_linked_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
+
+	if (config_p)
+		{
+			const json_t *linked_services_json_p = json_object_get (config_p, LINKED_SERVICES_S);
+
+			if (linked_services_json_p)
+				{
+					if (json_is_array (linked_services_json_p))
+						{
+							size_t i;
+							const json_t *linked_service_json_p;
+
+							json_array_foreach (linked_services_json_p, i, linked_service_json_p)
+								{
+									LinkedService *linked_service_p = CreateLinkedServiceFromJSON (linked_service_json_p);
+
+									if (linked_service_p)
+										{
+										}
+								}
+						}
+				}
+		}
+
 }
 
 
@@ -1613,3 +1658,60 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 	return res_p;
 }
 
+
+
+
+
+char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+{
+	char *result_s = NULL;
+
+	if (job_p)
+		{
+			if (input_s)
+				{
+					if (service_p -> se_get_value_from_job_fn)
+						{
+							service_p -> se_get_value_from_job_fn (service_p, job_p, input_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
+						}
+
+				}		/* if (input_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
+				}
+
+		}		/* if (job_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
+		}
+
+	return result_s;
+}
+
+
+void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
+{
+	if (service_p -> se_linked_services.ll_size)
+		{
+			LinkedServiceNode *linked_service_node_p = (LinkedServiceNode *) (service_p -> se_linked_services.ll_head_p);
+
+			while (linked_service_node_p)
+				{
+					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
+
+					if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
+						}
+
+					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
+				}		/* while (linked_service_node_p) */
+
+		}		/* if (service_p -> se_linked_services.ll_size) */
+}

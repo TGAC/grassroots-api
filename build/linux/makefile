@@ -7,7 +7,7 @@ export DIR_SRC_ROOT = $(DIR_PKG_ROOT)/src
 
 export DIR_SHARED_SRC_ROOT = $(DIR_PKG_ROOT)/shared/src
 export DIR_SERVER_SRC_ROOT = $(DIR_PKG_ROOT)/server/src
-export DIR_CLIENTS_SRC_ROOT = $(DIR_PKG_ROOT)/clients/
+export DIR_CLIENTS_SRC_ROOT = $(DIR_PKG_ROOT)/clients
 
 export DIR_SHARED_BUILD_ROOT = $(DIR_BUILD_ROOT)/shared
 export DIR_SERVER_BUILD_ROOT = $(DIR_BUILD_ROOT)/server
@@ -404,7 +404,7 @@ install_init:
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/references
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/images
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/clients
-	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/HANDLER
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/handlers
 
 
 install_deps: install_init install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_uuid install_mongodb_c install_samlib

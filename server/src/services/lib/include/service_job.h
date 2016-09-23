@@ -29,6 +29,8 @@
 #include "jansson.h"
 #include "linked_list.h"
 #include "memory_allocations.h"
+#include "linked_service.h"
+
 
 #include "uuid/uuid.h"
 
@@ -74,6 +76,15 @@ typedef struct ServiceJob
 	 * running this ServiceJob.
 	 */
 	json_t *sj_errors_p;
+
+
+	/**
+	 * A JSON array where each object contains the details of
+	 * running a different Service based upon the results of this
+	 * ServiceJob
+	 */
+	json_t *sj_linked_services_p;
+
 
 	/**
 	 * The callback function to use when checking the status of
@@ -593,6 +604,20 @@ GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *re
 GRASSROOTS_SERVICE_API bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag);
 
 
+/**
+ * Add a result to ServiceJob.
+ *
+ * @param job_p The ServiceJob to add the result to.
+ * @param result_p The result to add. This is a Resource stored in json format.
+ * @return <code>true</code> if the ServiceJob was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *result_p);
+
+
+
+
 GRASSROOTS_SERVICE_API void SetServiceJobStatus (ServiceJob *job_p, OperationStatus status);
 
 
@@ -614,6 +639,19 @@ GRASSROOTS_SERVICE_API uint32 GetNumberOfServiceJobResults (const ServiceJob *jo
 
 GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p);
 
+
+/**
+ * Add a LinkedService to ServiceJob.
+ *
+ * The ServiceJob needs to have its results set prior to calling this method
+ *
+ * @param job_p The ServiceJob to add the LinkedService details to.
+ * @param linked_service_p The LinkedService details to update the ServiceJob with.
+ * @return <code>true</code> if the ServiceJob was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_service_p);
 
 
 #ifdef __cplusplus

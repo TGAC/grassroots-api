@@ -86,6 +86,9 @@ static json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *s
 
 static void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p);
 
+static char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s);
+
+
 /***************************************/
 
 
@@ -128,6 +131,8 @@ ServicesArray *GetServices (const json_t *  UNUSED_PARAM (config_p))
 
 									blast_service_p -> se_deserialise_job_json_fn = BuildBlastServiceJob;
 									blast_service_p -> se_serialise_job_json_fn = BuildBlastServiceJobJSON;
+
+									blast_service_p -> se_get_value_from_job_fn = GetValueFromBlastServiceJobOutput;
 
 									* (services_p -> sa_services_pp) = blast_service_p;
 
@@ -1365,5 +1370,78 @@ static void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p)
 {
 	job_p -> sj_update_fn = UpdateBlastServiceJob;
 	job_p -> sj_free_fn = FreeBlastServiceJob;
+}
+
+
+
+static char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+{
+	char *result_s = NULL;
+	char *raw_result_s = NULL;
+
+	/*
+	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+	 * available in blast 2.3+
+	 */
+	raw_result_s = GetBlastResultByUUID ((BlastServiceData *) (service_p -> se_data_p), job_p -> sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+	if (raw_result_s)
+		{
+			json_error_t err;
+			json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
+
+			if (blast_output_p)
+				{
+					/*
+					 * For the SamTools service, we want the database and scaffold names
+					 */
+					const json_t *value_p = GetCompoundJSONObject (blast_output_p, input_s);
+
+					if (value_p)
+						{
+							if (json_is_string (value_p))
+								{
+									const char *value_s = json_string_value (value_p);
+
+									if (value_s)
+										{
+											result_s = CopyToNewString (value_s, 0, false);
+
+											if (!result_s)
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", value_s);
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", value_s);
+										}
+								}		/* if (json_is_string (value_p)) */
+
+						}		/* if (value_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find \"%s\" in \"%s\"", input_s, raw_result_s);
+						}
+
+					json_decref (blast_output_p);
+				}		/* if (blast_output_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
+				}
+
+			FreeCopiedString (raw_result_s);
+		}		/* if (raw_result_s) */
+	else
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_p -> sj_id, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", input_s, BOF_SINGLE_FILE_JSON_BLAST);
+		}
+
+
+	return result_s;
 }
 

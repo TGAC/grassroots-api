@@ -1162,8 +1162,10 @@ static json_t *GetAllModifiedData (const json_t * const req_p, UserDetails *user
 	const char *username_s = NULL;
 	const char *password_s = NULL;
 	const char *token_s = NULL;
+	const UserAuthentication *user_auth_p = GetUserAuthenticationForSystem (user_p, PROTOCOL_IRODS_S);
 
-	if (GetUserAuthenticationForSystem (user_p, PROTOCOL_IRODS_S, &username_s, &password_s, &token_s))
+
+	if (user_auth_p)
 		{
 			const char *from_s = NULL;
 			const char *to_s = NULL;

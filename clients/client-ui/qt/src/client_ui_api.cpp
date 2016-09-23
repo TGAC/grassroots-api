@@ -240,4 +240,3 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, json_t *resp
 }
 
 
-

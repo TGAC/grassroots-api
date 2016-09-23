@@ -29,6 +29,8 @@
 #include "string_utils.h"
 #include "filesystem_utils.h"
 #include "json_util.h"
+#include "json_tools.h"
+
 
 #ifdef _DEBUG
 	#define CLIENT_DEBUG (STM_LEVEL_FINE)
@@ -244,3 +246,356 @@ void SetClientSchema (Client *client_p, SchemaVersion *sv_p)
 
 	client_p -> cl_data_p -> cd_schema_p = sv_p;
 }
+
+
+void GetAllServicesInClient (Client *client_p, UserDetails *user_p)
+{
+	json_t *req_p = GetAvailableServicesRequest (user_p, client_p -> cl_data_p -> cd_schema_p);
+
+	if (req_p)
+		{
+			json_t *response_p = NULL;
+
+			if (!AddCredentialsToJson (req_p, user_p))
+				{
+					printf ("Failed to add credentials\n");
+				}
+
+			response_p = MakeRemoteJsonCall (req_p, client_p -> cl_data_p -> cd_connection_p);
+
+			if (response_p)
+				{
+					json_t *run_services_response_p = NULL;
+
+					SchemaVersion *server_schema_p = GetSchemaVersionFromJSON (response_p);
+
+					if (server_schema_p)
+						{
+							SetClientSchema (client_p, server_schema_p);
+						}
+
+					run_services_response_p = ShowServices (response_p, client_p, user_p, client_p -> cl_data_p -> cd_connection_p);
+
+					if (run_services_response_p)
+						{
+							json_decref (run_services_response_p);
+						}
+
+					json_decref (response_p);
+				}		/* if (response_p) */
+
+			json_decref (req_p);
+		}		/* if (req_p) */
+
+}
+
+
+void GetInterestedServicesInClient (Client *client_p, const char * const protocol_s, const char * const query_s, UserDetails *user_p)
+{
+	if (protocol_s && query_s)
+		{
+			json_t *req_p = GetInterestedServicesRequest (user_p, protocol_s, query_s, client_p -> cl_data_p -> cd_schema_p);
+
+			if (req_p)
+				{
+					json_t *response_p = MakeRemoteJsonCall (req_p, client_p -> cl_data_p -> cd_connection_p);
+
+					if (response_p)
+						{
+							json_t *service_response_p = ShowServices (response_p, client_p, user_p, client_p -> cl_data_p -> cd_connection_p);
+
+							if (service_response_p)
+								{
+
+									json_decref (service_response_p);
+								}
+
+							json_decref (response_p);
+						}		/* if (response_p) */
+
+					json_decref (req_p);
+				}		/* if (req_p) */
+
+		}
+
+}
+
+
+
+//void CallClient (Client *client_p, const uint32 api_id, UserDetails *user_p)
+//{
+//	Connection *connection_p = client_p -> cl_data_p -> cd_connection_p;
+//
+//	switch (api_id)
+//		{
+//			case OP_LIST_ALL_SERVICES:
+//				{
+//
+//				}		/* case OP_LIST_ALL_SERVICES */
+//				break;
+//
+//
+//			case OP_IRODS_MODIFIED_DATA:
+//				{
+//					json_t *req_p = GetModifiedFilesRequest (user_p, from_s, to_s, client_p -> cl_data_p -> cd_schema_p);
+//
+//					if (req_p)
+//						{
+//							json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+//
+//							if (response_p)
+//								{
+//
+//									json_decref (response_p);
+//								}
+//
+//							json_decref (req_p);
+//						}		/* if (req_p) */
+//				}
+//				break;
+//
+//			case OP_LIST_INTERESTED_SERVICES:
+//				{
+//					if (protocol_s && query_s)
+//						{
+//							json_t *req_p = GetInterestedServicesRequest (user_p, protocol_s, query_s, client_p -> cl_data_p -> cd_schema_p);
+//
+//							if (req_p)
+//								{
+//									json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+//
+//									if (response_p)
+//										{
+//											json_t *service_response_p = ShowServices (response_p, client_p, user_p, connection_p);
+//
+//											if (service_response_p)
+//												{
+//
+//													json_decref (service_response_p);
+//												}
+//
+//											json_decref (response_p);
+//										}		/* if (response_p) */
+//
+//									json_decref (req_p);
+//								}		/* if (req_p) */
+//
+//						}
+//				}
+//				break;
+//
+//			case OP_RUN_KEYWORD_SERVICES:
+//				{
+//					if (query_s)
+//						{
+//							json_t *req_p = GetKeywordServicesRequest (user_p, query_s, client_p -> cl_data_p -> cd_schema_p);
+//
+//							if (req_p)
+//								{
+//									json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+//
+//									if (response_p)
+//										{
+//											if (DisplayResultsInClient (client_p, response_p))
+//												{
+//
+//												}
+//
+//											json_decref (response_p);
+//										}		/* if (response_p) */
+//									else
+//										{
+//											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "MakeRemoteJsonCall failed");
+//										}
+//
+//									json_decref (req_p);
+//								}		/* if (req_p) */
+//							else
+//								{
+//									PrintErrors (STM_LEVEL_SEVERE,__FILE__, __LINE__, "GetKeywordServicesRequest failed for %s", query_s);
+//								}
+//
+//						}		/* if (query_s) */
+//				}
+//				break;
+//
+//			case OP_GET_NAMED_SERVICES:
+//				{
+//					json_t *req_p = GetNamedServicesRequest (user_p, query_s, client_p -> cl_data_p -> cd_schema_p);
+//
+//					if (req_p)
+//						{
+//							json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+//
+//							if (response_p)
+//								{
+//									json_t *shown_services_p = ShowServices (response_p, client_p, user_p, connection_p);
+//
+//									if (shown_services_p)
+//										{
+//											json_decref (shown_services_p);
+//										}		/* if (shown_services_p) */
+//
+//									json_decref (response_p);
+//								}		/* if (response_p) */
+//
+//							json_decref (req_p);
+//						}		/* if (req_p) */
+//				}
+//				break;
+//
+//			case OP_CHECK_SERVICE_STATUS:
+//				{
+//					json_t *req_p = GetCheckServicesRequest (user_p, query_s, client_p -> cl_data_p -> cd_schema_p);
+//
+//					if (req_p)
+//						{
+//							json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+//
+//							if (response_p)
+//								{
+//									char *dump_s = json_dumps (response_p, JSON_INDENT (2));
+//
+//									if (dump_s)
+//										{
+//											PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "%s", dump_s);
+//											free (dump_s);
+//										}
+//
+//									json_decref (response_p);
+//								}		/* if (response_p) */
+//
+//							json_decref (req_p);
+//						}		/* if (req_p) */
+//				}
+//				break;
+//
+//			default:
+//				break;
+//		}		/* switch (api_id) */
+//
+//}
+
+
+json_t *ShowServices (json_t *response_p, Client *client_p, UserDetails * UNUSED_PARAM (user_p), Connection * UNUSED_PARAM (connection_p))
+{
+	json_t *client_results_p = NULL;
+	json_t *service_defs_p = json_object_get (response_p, SERVICES_NAME_S);
+
+	#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+		{
+			const char *args_s = "res:";
+			PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, response_p, args_s);
+		}
+	#endif
+
+	if (service_defs_p)
+		{
+			if (json_is_array (service_defs_p))
+				{
+					const size_t num_services = json_array_size (service_defs_p);
+					size_t i = 0;
+
+					for (i = 0; i < num_services; ++ i)
+						{
+							json_t *service_json_p = json_array_get (service_defs_p, i);
+							json_t *ops_p = json_object_get (service_json_p, SERVER_OPERATIONS_S);
+							json_t *provider_p = json_object_get (service_json_p, SERVER_PROVIDER_S);
+
+
+							#if STANDALONE_CLIENT_DEBUG >= STM_LEVEL_FINER
+							PrintJSONToLog (STANDALONE_CLIENT_DEBUG, __FILE__, __LINE__, service_json_p, "next service:\n");
+							#endif
+
+							if (ops_p)
+								{
+									if (json_is_array (ops_p))
+										{
+											size_t j;
+											json_t *op_p;
+
+											json_array_foreach (ops_p, j, op_p)
+												{
+													AddServiceDetailsToClient (client_p, op_p, provider_p);
+												}
+										}
+									else
+										{
+											AddServiceDetailsToClient (client_p, ops_p, provider_p);
+										}
+								}
+
+						}		/* for (i = 0; i < num_services; ++ i) */
+
+					/* Get the results of the user's configuration */
+					client_results_p = RunClient (client_p);
+				}		/* if (json_is_array (service_defs_p)) */
+
+		}		/* if (service_defs_p) */
+
+	return client_results_p;
+}
+
+
+void GetNamedServicesInClient (Client *client_p, const char * const service_s, UserDetails *user_p)
+{
+	if (service_s)
+		{
+			json_t *req_p = GetNamedServicesRequest (user_p, service_s, client_p -> cl_data_p -> cd_schema_p);
+
+			if (req_p)
+				{
+					json_t *response_p = MakeRemoteJsonCall (req_p, client_p -> cl_data_p -> cd_connection_p);
+
+					if (response_p)
+						{
+							json_t *service_response_p = ShowServices (response_p, client_p, user_p, client_p -> cl_data_p -> cd_connection_p);
+
+							if (service_response_p)
+								{
+									json_decref (service_response_p);
+								}
+
+							json_decref (response_p);
+						}		/* if (response_p) */
+
+					json_decref (req_p);
+				}		/* if (req_p) */
+
+		}
+
+}
+
+
+int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, const json_t *provider_p)
+{
+	int res = -1;
+	const char *op_name_s = GetJSONString (service_json_p, OPERATION_ID_S);
+
+#if CLIENT_DEBUG >= STM_LEVEL_FINER
+	PrintJSONToLog (STANDALONE_CLIENT_DEBUG, __FILE__, __LINE__, service_json_p, "client received service:\n");
+#endif
+
+	if (op_name_s)
+		{
+			const char *service_description_s = GetJSONString (service_json_p, SERVICES_DESCRIPTION_S);
+
+			if (service_description_s)
+				{
+					ParameterSet *params_p = CreateParameterSetFromJSON (service_json_p, false);
+
+					if (params_p)
+						{
+							const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
+
+							res = AddServiceToClient (client_p, op_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
+						}		/* if (params_p) */
+
+				}		/* if (service_description_s) */
+
+		}		/* if (service_name_s) */
+
+	return res;
+}
+
+

@@ -84,7 +84,7 @@ void FreeUserDetails (UserDetails *user_details_p)
 }
 
 
-const UserAuthentication *GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s, const char **username_ss, const char **password_ss, const char **token_ss)
+const UserAuthentication *GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s)
 {
 	bool success_flag = false;
 	UserAuthenticationNode *node_p = (UserAuthenticationNode *) (user_p -> ud_auth_list_p -> ll_head_p);
