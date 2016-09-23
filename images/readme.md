@@ -2,4 +2,4 @@
 
 * BASE Web Search Service which is the [Bielefeld Academic Search Engine](https://www.base-search.net/) Copyright © 2004-2016 by Bielefeld University Library
 * Contig Service and Search Service which are from the [CerealsDB](http://www.cerealsdb.uk.net/cerealgenomics/Index_Home.html) website which is Copyright © School of Biological Sciences, University of Bristol
-* Ensembl Plants service which is from [Ensembl](the http://www.ensembl.org/) project and is Copyright © WTSI / EMBL-EBI
+* Ensembl Plants service which is from [Ensembl](http://www.ensembl.org/) project and is Copyright © WTSI / EMBL-EBI
