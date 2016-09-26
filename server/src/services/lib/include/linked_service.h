@@ -98,6 +98,7 @@ GRASSROOTS_SERVICE_API LinkedService *AllocateLinkedService (const char *input_s
 GRASSROOTS_SERVICE_API LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p);
 
 
+
 /**
  * Free a LinkedService.
  *
@@ -152,6 +153,9 @@ GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedSe
  */
 GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, MappedParameter *mapped_param_p);
 
+
+
+GRASSROOTS_SERVICE_API json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p);
 
 #ifdef __cplusplus
 }

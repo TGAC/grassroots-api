@@ -1659,6 +1659,9 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 }
 
 
+
+
+
 char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
 {
 	char *result_s = NULL;
@@ -1704,7 +1707,7 @@ void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
 
 					if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
 						}
 
 					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);

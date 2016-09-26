@@ -39,6 +39,8 @@ static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, Operati
 
 static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p);
 
+static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
+
 
 ServiceJob *AllocateEmptyServiceJob (void)
 {
@@ -576,6 +578,19 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
 }
 
 
+static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
+{
+	bool success_flag = true;
+
+	if ((job_p -> sj_linked_services_p) && (json_array_size (job_p -> sj_linked_services_p) > 0))
+		{
+
+		}
+
+	return success_flag;
+}
+
+
 static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p)
 {
 	bool success_flag = false;
@@ -819,6 +834,11 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 																{
 																	if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
 																		{
+																			if (!AddLinkedServicesToServiceJobJSON (job_p, job_json_p))
+																				{
+																					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to Linked Services for %s to json", job_p -> sj_name_s ? job_p -> sj_name_s : "unnamed job");
+																				}
+
 																			success_flag = true;
 																		}
 																	else
@@ -1507,65 +1527,23 @@ bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p)
 
 bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_service_p)
 {
-	bool success_flag = true;
-	json_t *linked_service_json_p = json_object ();
+	bool success_flag = false;
+	json_t *linked_service_json_p = GetLinkedServiceAsJSON (linked_service_p);
 
 	if (linked_service_json_p)
 		{
-			json_t *params_p = json_array ();
-
-			if (params_p)
+			if (json_array_append_new (job_p -> sj_linked_services_p, linked_service_json_p) == 0)
 				{
-					if (json_object_set_new (linked_service_json_p, PARAM_SET_PARAMS_S, params_p) == 0)
-						{
-							MappedParameterNode *node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
-
-							while (success_flag && node_p)
-								{
-									if (AddMappedParameterDetails (job_p, node_p -> mpn_mapped_param_p, params_p))
-										{
-											node_p = (MappedParameterNode *) (node_p -> mpn_node.ln_next_p);
-										}
-									else
-										{
-											success_flag = false;
-										}
-
-								}		/* while (success_flag && node_p) */
-
-							if (success_flag)
-								{
-									if (json_array_append_new (job_p -> sj_linked_services_p, linked_service_json_p) != 0)
-										{
-											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to add linked service json to ServiceJob");
-											success_flag = false;
-										}		/* if (json_array_append_new (job_p -> sj_linked_services_p, linked_service_json_p) != 0) */
-
-								}		/* if (success_flag) */
-
-
-						}		/* if (json_object_set_new (linked_service_json_p, PARAM_SET_PARAMS_S, params_p) == 0) */
-					else
-						{
-							json_decref (params_p);
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create params json array");
-						}
-
-				}		/* if (params_p) */
+					success_flag = true;
+				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create params json array");
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add linked service json object to job \"%s\"", job_p -> sj_name_s);
 				}
-
-			if (!success_flag)
-				{
-					json_decref (linked_service_json_p);
-				}
-
 		}		/* if (linked_service_json_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create linked service json object");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create linked service json objectjob \"%s\"", job_p -> sj_name_s);
 		}
 
 	return success_flag;
