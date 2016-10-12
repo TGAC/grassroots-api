@@ -200,19 +200,30 @@ static bool GetBlastServiceConfig (BlastServiceData *data_p)
 
 											json_array_foreach (value_p, i, db_json_p)
 											{
-												json_t *name_p = json_object_get (db_json_p, "name");
+												const char *name_s = GetJSONString (db_json_p, "name");
 
-												if (name_p && (json_is_string (name_p)))
+												if (name_s)
 													{
-														json_t *description_p = json_object_get (db_json_p, "description");
+														const char *description_s = GetJSONString (db_json_p, "description");
 
-														if (description_p && (json_is_string (description_p)))
+														if (description_s)
 															{
-																db_p -> di_name_s = json_string_value (name_p);
-																db_p -> di_description_s = json_string_value (description_p);
+																const char *type_s = GetJSONString (db_json_p, "type");
+
+																db_p -> di_name_s = name_s;
+																db_p -> di_description_s = description_s;
 																db_p -> di_active_flag = true;
+																db_p -> di_type = DT_NUCLEOTIDE;
 
 																GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
+
+																if (type_s)
+																	{
+																		if (strcmp (type_s, "protein") == 0)
+																			{
+																				db_p -> di_type = DT_PROTEIN;
+																			}
+																	}
 
 																success_flag = true;
 																++ db_p;

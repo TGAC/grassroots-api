@@ -219,7 +219,7 @@ bool SetUpLinkedServices (Service *service_p)
 
 									if (linked_service_p)
 										{
-										}
+ 										}
 								}
 						}
 				}

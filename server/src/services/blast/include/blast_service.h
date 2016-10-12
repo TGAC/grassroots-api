@@ -23,6 +23,13 @@
 #include "blast_formatter.h"
 
 
+typedef enum BLAST_SERVICE_LOCAL DatabaseType
+{
+	DT_NUCLEOTIDE,
+	DT_PROTEIN,
+	DT_NUM_TYPES
+} DatabaseType;
+
 
 /**
  * A datatype describing the details of each database available
@@ -41,6 +48,10 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 	 * or not.
 	 */
 	bool di_active_flag;
+
+	/** The DatabaseType for this database. */
+	DatabaseType di_type;
+
 } DatabaseInfo;
 
 
