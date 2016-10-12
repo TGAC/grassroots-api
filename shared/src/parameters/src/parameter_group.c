@@ -21,6 +21,7 @@
  *      Author: billy
  */
 
+#define ALLOCATE_PARAMETER_GROUP_TAGS_H
 #include "parameter_group.h"
 #include "string_utils.h"
 #include "json_util.h"
@@ -33,14 +34,10 @@ ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *
 
 	if (group_p)
 		{
-			ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
+			ParameterGroupNode *param_group_node_p = AllocateParameterGroupNodeForExistingParameterGroup (group_p);
 
 			if (param_group_node_p)
 				{
-					param_group_node_p -> pgn_param_group_p = group_p;
-					param_group_node_p -> pgn_node.ln_prev_p = NULL;
-					param_group_node_p -> pgn_node.ln_next_p = NULL;
-
 					return param_group_node_p;
 				}		/* if (param_group_node_p) */
 
@@ -49,6 +46,24 @@ ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *
 
 	return NULL;
 }
+
+
+ParameterGroupNode *AllocateParameterGroupNodeForExistingParameterGroup (ParameterGroup *group_p)
+{
+	ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
+
+	if (param_group_node_p)
+		{
+			param_group_node_p -> pgn_param_group_p = group_p;
+			param_group_node_p -> pgn_node.ln_prev_p = NULL;
+			param_group_node_p -> pgn_node.ln_next_p = NULL;
+
+			return param_group_node_p;
+		}		/* if (param_group_node_p) */
+
+	return NULL;
+}
+
 
 
 void FreeParameterGroupNode (ListItem *node_p)
@@ -66,6 +81,7 @@ ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, P
 
 	if (copied_name_s)
 		{
+			LinkedList *children_p = NULL;
 			ParameterGroup *param_group_p = NULL;
 			char *copied_key_s = NULL;
 
@@ -81,23 +97,35 @@ ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, P
 						}
 				}
 
-			param_group_p = (ParameterGroup *) AllocMemory (sizeof (ParameterGroup));
+			children_p = AllocateLinkedList (FreeParameterGroupNode);
 
-			if (param_group_p)
+			if (children_p)
 				{
-					param_group_p -> pg_name_s = copied_name_s;
-					param_group_p -> pg_key_s = copied_key_s;
-					param_group_p -> pg_params_pp = params_pp;
-					param_group_p -> pg_num_params = num_params;
-					param_group_p -> pg_visible_flag = true;
+					param_group_p = (ParameterGroup *) AllocMemory (sizeof (ParameterGroup));
 
-					if (service_data_p)
+					if (param_group_p)
 						{
-							GetParameterGroupVisibility (service_data_p, name_s, & (param_group_p -> pg_visible_flag));
+							param_group_p -> pg_name_s = copied_name_s;
+							param_group_p -> pg_key_s = copied_key_s;
+							param_group_p -> pg_params_pp = params_pp;
+							param_group_p -> pg_num_params = num_params;
+							param_group_p -> pg_visible_flag = true;
+
+							param_group_p -> pg_full_display_flag = true;
+							param_group_p -> pg_vertical_layout_flag = true;
+							param_group_p -> pg_child_groups_p = children_p;
+
+							if (service_data_p)
+								{
+									GetParameterGroupVisibility (service_data_p, name_s, & (param_group_p -> pg_visible_flag));
+								}
+
+							return param_group_p;
 						}
 
-					return param_group_p;
+					FreeLinkedList (children_p);
 				}
+
 
 			FreeCopiedString (copied_name_s);
 		}		/* if (copied_name_s) */
@@ -115,6 +143,8 @@ void FreeParameterGroup (ParameterGroup *param_group_p)
 			FreeCopiedString (param_group_p -> pg_key_s);
 		}
 
+	FreeLinkedList (param_group_p -> pg_child_groups_p);
+
 	FreeMemory (param_group_p -> pg_params_pp);
 	FreeMemory (param_group_p);
 }
@@ -131,5 +161,20 @@ json_t *GetParameterGroupAsJSON (ParameterGroup *param_group_p)
 		}
 
 	return value_p;
+}
+
+
+bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *child_group_p)
+{
+	bool success_flag = false;
+	ParameterGroupNode *node_p = AllocateParameterGroupNodeForExistingParameterGroup (child_group_p);
+
+	if (node_p)
+		{
+			LinkedListAddTail (parent_group_p -> pg_child_groups_p, node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 

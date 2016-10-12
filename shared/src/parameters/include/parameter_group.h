@@ -30,8 +30,39 @@
 #include "parameter.h"
 
 
+
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_JSON_TAGS is defined then it will
+ * become
+ *
+ * 		const char *SERVICE_NAME_S = "path";
+ *
+ * ALLOCATE_JSON_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * json_util.c.
+ */
+#ifdef ALLOCATE_PARAMETER_GROUP_TAGS_H
+	#define PARAMETER_GROUP_PREFIX GRASSROOTS_PARAMS_API
+	#define PARAMETER_GROUP_VAL(x)	= x
+#else
+	#define PARAMETER_GROUP_PREFIX extern
+	#define PARAMETER_GROUP_VAL(x)
+#endif
+
+
+
+PARAMETER_GROUP_PREFIX const char *PARAM_GROUP_DELIMITER_S PARAMETER_GROUP_VAL("/");
+
+
 /* forward declaration */
 struct ServiceData;
+struct ParameterGroup;
 
 /**
  * A datatype to tell the system that certain
@@ -46,17 +77,37 @@ typedef struct ParameterGroup
 	/** An internal key to denote this ParameterGroup */
 	char *pg_key_s;
 
-	/** The number of Parameters in this ParameterGroup */
-	uint32 pg_num_params;
-
 	/** Should this ParameterGroup initially be visible? */
 	bool pg_visible_flag;
+
+
+	/**
+	 * Should this ParameterGroup have a full display e.g. a titled
+	 * legend or simply be a minimal grouping
+	 */
+	bool pg_full_display_flag;
+
+
+	/**
+	 * Should the ParameterGroup layout its child parameters
+	 * horizontally or vertically?
+	 */
+	bool pg_vertical_layout_flag;
+
+
+	/** The number of Parameters in this ParameterGroup */
+	uint32 pg_num_params;
 
 	/**
 	 * An array of pointers to the Parameters that make up
 	 * this ParameterGroup.
 	 */
 	struct Parameter **pg_params_pp;
+
+
+	/** A list of child parameter groups. */
+	LinkedList *pg_child_groups_p;
+
 } ParameterGroup;
 
 
@@ -87,6 +138,9 @@ extern "C"
 GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
 
 
+GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNodeForExistingParameterGroup (ParameterGroup *group_p);
+
+
 GRASSROOTS_PARAMS_API void FreeParameterGroupNode (ListItem *node_p);
 
 
@@ -97,6 +151,9 @@ GRASSROOTS_PARAMS_API void FreeParameterGroup (ParameterGroup *param_group_p);
 
 
 GRASSROOTS_PARAMS_API json_t *GetParameterGroupAsJSON (ParameterGroup *param_group_p);
+
+
+GRASSROOTS_PARAMS_API bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *child_group_p);
 
 
 #ifdef __cplusplus
