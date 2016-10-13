@@ -84,10 +84,10 @@ BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, Pa
 BLAST_SERVICE_LOCAL bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 
-BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p);
+BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type);
 
 
-BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p);
+BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p, const DatabaseType dt);
 
 
 BLAST_SERVICE_LOCAL Parameter *SetUpPreviousJobUUIDParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p);

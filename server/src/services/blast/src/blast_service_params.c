@@ -61,7 +61,7 @@ static const char *s_output_formats_ss [BOF_NUM_TYPES] =
 /**************** PUBLIC FUNCTIONS ****************/
 /**************************************************/
 
-uint32 GetNumberOfDatabases (const BlastServiceData *data_p)
+uint32 GetNumberOfDatabases (const BlastServiceData *data_p, const DatabaseType dt)
 {
 	uint32 i = 0;
 	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
@@ -70,7 +70,11 @@ uint32 GetNumberOfDatabases (const BlastServiceData *data_p)
 		{
 			while (db_p -> di_name_s)
 				{
-					++ i;
+					if (db_p -> di_type == dt)
+						{
+							++ i;
+						}
+
 					++ db_p;
 				}
 		}
@@ -101,12 +105,12 @@ char *CreateGroupName (const char *server_s)
 /*
  * The list of databases that can be searched
  */
-uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type)
 {
 	uint16 num_added_databases = 0;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = GetNumberOfDatabases (data_p);
+	size_t num_group_params = GetNumberOfDatabases (data_p, db_type);
 
 	if (num_group_params)
 		{
@@ -121,31 +125,36 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 				{
 					while (db_p -> di_name_s)
 						{
-							/* try and get the local name of the database */
-							const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
-
-							def.st_boolean_value = db_p -> di_active_flag;
-
-							if (local_name_s)
+							if (db_p -> di_type == db_type)
 								{
-									++ local_name_s;
-								}
+									/* try and get the local name of the database */
+									const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
 
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
-								{
-									if (grouped_param_pp)
+									def.st_boolean_value = db_p -> di_active_flag;
+
+									if (local_name_s)
 										{
-											*grouped_param_pp = param_p;
-											++ grouped_param_pp;
+											++ local_name_s;
 										}
 
-									++ num_added_databases;
-									++ db_p;
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> di_name_s);
-								}
+									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+										{
+											if (grouped_param_pp)
+												{
+													*grouped_param_pp = param_p;
+													++ grouped_param_pp;
+												}
+
+											++ num_added_databases;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> di_name_s);
+										}
+
+								}		/* if (db_p -> di_type == db_type) */
+
+							++ db_p;
 
 						}		/* while (db_p && success_flag) */
 
