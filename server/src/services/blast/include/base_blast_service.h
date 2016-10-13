@@ -8,22 +8,33 @@
 #ifndef SERVER_SRC_SERVICES_BLAST_INCLUDE_BASE_BLAST_SERVICE_H_
 #define SERVER_SRC_SERVICES_BLAST_INCLUDE_BASE_BLAST_SERVICE_H_
 
+
 #include "blast_service_api.h"
-
-
-BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_service_p);
-
-BLAST_SERVICE_LOCAL void FreeBlastServiceData (BlastServiceData *data_p);
-
-BLAST_SERVICE_LOCAL ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
-
-BLAST_SERVICE_LOCAL ParameterSet *GetBaseBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
+#include "blast_service.h"
+#include "blast_service_job.h"
+#include "parameter_set.h"
+#include "temp_file.hpp"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+
+BLAST_SERVICE_LOCAL bool GetBlastServiceConfig (BlastServiceData *data_p);
+
+
+BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_service_p);
+
+BLAST_SERVICE_LOCAL void FreeBlastServiceData (BlastServiceData *data_p);
+
+BLAST_SERVICE_LOCAL bool CloseBlastService (Service *service_p);
+
+BLAST_SERVICE_LOCAL ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
+
+BLAST_SERVICE_LOCAL bool AddBaseBlastServiceParameters (Service *blast_service_p, ParameterSet *params_p, const DatabaseType db_type);
+
+BLAST_SERVICE_LOCAL void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
 
 
 BLAST_SERVICE_LOCAL bool DetermineBlastResult (Service *service_p, BlastServiceJob *job_p);

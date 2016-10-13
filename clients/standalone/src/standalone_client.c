@@ -73,7 +73,6 @@ int main (int argc, char *argv [])
 	const char *from_s = NULL;
 	const char *to_s = NULL;
 	const char *query_s = NULL;
-	const char *uri_s = NULL;
 	const char *client_s = "grassroots-qt-client";
 	const char *protocol_s = NULL;
 	bool web_server_flag = false;
@@ -186,17 +185,6 @@ int main (int argc, char *argv [])
 										}
 									break;
 
-								case 'U':
-									if (++ i < argc)
-										{
-											uri_s = argv [i];
-										}
-									else
-										{
-											error_arg = * (argv [i] - 1);
-										}
-									break;
-
 								case 'W':
 									web_server_flag = true;
 									break;
@@ -216,25 +204,21 @@ int main (int argc, char *argv [])
 
 			if (web_server_flag)
 				{
-					char *full_uri_s = GetFullServerURI (hostname_s, port_s, uri_s);
 
-					if (full_uri_s)
+					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
+
+					if (c == 0)
 						{
-							CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
-
-							if (c == 0)
-								{
-									connection_p = AllocateWebServerConnection (full_uri_s);
-									FreeCopiedString (full_uri_s);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init curl: %d", c);
-								}
+							connection_p = AllocateWebServerConnection (hostname_s);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to init curl: %d", c);
 						}
 				}
 			else
 				{
+
 					connection_p = AllocateRawServerConnection (hostname_s, port_s);
 				}
 

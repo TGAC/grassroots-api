@@ -16,7 +16,11 @@
 #include <string.h>
 
 #define ALLOCATE_BLAST_SERVICE_CONSTANTS (1)
-#include "blast_service.h"
+#include "base_blast_service.h"
+
+#include "nucleotide_blast_service.h"
+#include "protein_blast_service.h"
+
 #include "memory_allocations.h"
 
 #include "service_job_set_iterator.h"
@@ -38,97 +42,72 @@
 
 
 
-/*
- * STATIC PROTOTYPES
- */
-
-static bool GetBlastServiceConfig (BlastServiceData *data_p);
-
-
-static const char *GetNucleotideBlastServiceName (Service *service_p);
-
-static const char *GetNucleotideBlastServiceDesciption (Service *service_p);
-
-static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
-
-static void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
-
-static ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
-
-
-static bool CloseBlastService (Service *service_p);
-
 
 /***************************************/
 
+static bool InitBlastService (Service *blast_service_p, ServicesArray *services_p, size_t *index_p);
 
 
-
-static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p)
-{
-	ParameterSet *base_params_p = GetBaseBlastServiceParameters (service_p, resource_p, user_p);
-
-	/*
-	 * task: 'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn
-	 */
-
-	return base_params_p;
-}
 
 /*
  * API FUNCTIONS
  */
 ServicesArray *GetServices (const json_t *  UNUSED_PARAM (config_p))
 {
-	Service *blast_service_p = (Service *) AllocMemory (sizeof (Service));
+	ServicesArray *services_p = NULL;
+	Service *nucleotide_service_p = GetNucleotideBlastService ();
+	Service *protein_service_p = GetProteinBlastService ();
+	size_t num_services = 0;
 
-	if (blast_service_p)
+	if (nucleotide_service_p)
 		{
-			ServicesArray *services_p = AllocateServicesArray (1);
-
-			if (services_p)
-				{		
-					BlastServiceData *data_p = AllocateBlastServiceData (blast_service_p);
-
-					if (data_p)
-						{
-							InitialiseService (blast_service_p,
-																 GetNucleotideBlastServiceName,
-																 GetNucleotideBlastServiceDesciption,
-																 NULL,
-																 RunBlastService,
-																 IsResourceForBlastService,
-																 GetNucleotideBlastServiceParameters,
-																 ReleaseBlastServiceParameters,
-																 CloseBlastService,
-																 CustomiseBlastServiceJob,
-																 true,
-																 true,
-																 (ServiceData *) data_p);
-
-							if (GetBlastServiceConfig (data_p))
-								{
-									blast_service_p -> se_synchronous_flag = IsBlastToolFactorySynchronous (data_p -> bsd_tool_factory_p);
-
-									blast_service_p -> se_deserialise_job_json_fn = BuildBlastServiceJob;
-									blast_service_p -> se_serialise_job_json_fn = BuildBlastServiceJobJSON;
-
-									blast_service_p -> se_get_value_from_job_fn = GetValueFromBlastServiceJobOutput;
-
-									* (services_p -> sa_services_pp) = blast_service_p;
-
-									return services_p;
-								}
-
-						}
-
-					FreeServicesArray (services_p);
-				}
-
-			FreeService (blast_service_p);
+			++ num_services;
 		}
 
-	return NULL;
+	if (protein_service_p)
+		{
+			++ num_services;
+		}
+
+
+	services_p = AllocateServicesArray (num_services);
+
+	if (services_p)
+		{
+			bool success_flag = true;
+			size_t i = 0;
+
+			if (nucleotide_service_p && success_flag)
+				{
+					success_flag = InitBlastService (nucleotide_service_p, services_p, &i);
+				}
+
+			if (protein_service_p && success_flag)
+				{
+					success_flag = InitBlastService (protein_service_p, services_p, &i);
+				}
+
+			if (!success_flag)
+				{
+
+				}
+
+		}		/* if (services_p) */
+	else
+		{
+
+			if (nucleotide_service_p)
+				{
+					FreeService (nucleotide_service_p);
+				}
+
+			if (protein_service_p)
+				{
+					FreeService (protein_service_p);
+				}
+		}
+
+	return services_p;
 }
 
 
@@ -143,191 +122,33 @@ void ReleaseServices (ServicesArray *services_p)
  */
 
 
-static bool GetBlastServiceConfig (BlastServiceData *data_p)
+static bool InitBlastService (Service *blast_service_p, ServicesArray *services_p, size_t *index_p)
 {
-	bool success_flag = false;
-	const json_t *blast_config_p = data_p -> bsd_base_data.sd_config_p;
+	bool success_flag = true;
 
-	if (blast_config_p)
+	blast_service_p -> se_synchronous_flag = IsBlastToolFactorySynchronous (((BlastServiceData *) (blast_service_p -> se_data_p)) -> bsd_tool_factory_p);
+
+	blast_service_p -> se_deserialise_job_json_fn = BuildBlastServiceJob;
+	blast_service_p -> se_serialise_job_json_fn = BuildBlastServiceJobJSON;
+
+	blast_service_p -> se_get_value_from_job_fn = GetValueFromBlastServiceJobOutput;
+
+	if (*index_p < services_p -> sa_num_services)
 		{
-			json_t *value_p = json_object_get (blast_config_p, "working_directory");
-
-			if (value_p)
-				{
-					if (json_is_string (value_p))
-						{
-							data_p -> bsd_working_dir_s = json_string_value (value_p);
-							success_flag = true;
-						}
-				}
-
-			if (success_flag)
-				{
-					value_p = json_object_get (blast_config_p, "databases");
-
-					success_flag = false;
-
-					if (value_p)
-						{
-							if (json_is_array (value_p))
-								{
-									size_t i = json_array_size (value_p);
-									DatabaseInfo *databases_p = (DatabaseInfo *) AllocMemoryArray (i + 1, sizeof (DatabaseInfo));
-
-									if (databases_p)
-										{
-											json_t *db_json_p;
-											DatabaseInfo *db_p = databases_p;
-
-											json_array_foreach (value_p, i, db_json_p)
-											{
-												const char *name_s = GetJSONString (db_json_p, "name");
-
-												if (name_s)
-													{
-														const char *description_s = GetJSONString (db_json_p, "description");
-
-														if (description_s)
-															{
-																const char *type_s = GetJSONString (db_json_p, "type");
-
-																db_p -> di_name_s = name_s;
-																db_p -> di_description_s = description_s;
-																db_p -> di_active_flag = true;
-																db_p -> di_type = DT_NUCLEOTIDE;
-
-																GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
-
-																if (type_s)
-																	{
-																		if (strcmp (type_s, "protein") == 0)
-																			{
-																				db_p -> di_type = DT_PROTEIN;
-																			}
-																	}
-
-																success_flag = true;
-																++ db_p;
-															}		/* if (description_p) */
-
-													}		/* if (name_p) */
-
-											}		/* json_array_foreach (value_p, i, db_json_p) */
-
-											if (success_flag)
-												{
-													data_p -> bsd_databases_p = databases_p;
-												}
-											else
-												{
-													FreeMemory (databases_p);
-												}
-
-										}		/* if (databases_p) */
-
-									if (success_flag)
-										{
-											data_p -> bsd_tool_factory_p = BlastToolFactory :: GetBlastToolFactory (blast_config_p);
-
-											if (! (data_p -> bsd_tool_factory_p))
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetBlastToolFactory failed");
-													success_flag = false;
-												}
-										}
-
-								}		/* if (json_is_array (value_p)) */
-
-						}		/* if (value_p) */
-
-				}		/* if (success_flag) */
-
-			if (success_flag)
-				{
-					const char *formatter_type_s = GetJSONString (blast_config_p, "blast_formatter");
-
-					if (formatter_type_s)
-						{
-							if (strcmp (formatter_type_s, "system") == 0)
-								{
-									const json_t *formatter_config_p = json_object_get (blast_config_p, "system_formatter_config");
-
-									data_p -> bsd_formatter_p = SystemBlastFormatter :: Create (formatter_config_p);
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown BlastFormatter type \"%s\"", formatter_type_s);
-								}
-						}
-				}
-
-		}		/* if (blast_config_p) */
+			* ((services_p -> sa_services_pp) + (*index_p)) = blast_service_p;
+			++ (*index_p);
+		}
+	else
+		{
+			success_flag = false;
+		}
 
 	return success_flag;
 }
 
 
-static BlastServiceData *AllocateBlastServiceData (Service * UNUSED_PARAM (blast_service_p))
-{
-	BlastServiceData *data_p = (BlastServiceData *) AllocMemory (sizeof (BlastServiceData));
 
-	if (data_p)
-		{
-			data_p -> bsd_working_dir_s = NULL;
-			data_p -> bsd_databases_p = NULL;
-			data_p -> bsd_formatter_p = NULL;
-			data_p -> bsd_tool_factory_p = NULL;
-		}
-
-	return data_p;
-}
-
-
-static void FreeBlastServiceData (BlastServiceData *data_p)
-{
-	if (data_p -> bsd_databases_p)
-		{
-			FreeMemory (data_p -> bsd_databases_p);
-		}
-
-	if (data_p -> bsd_formatter_p)
-		{
-			delete (data_p -> bsd_formatter_p);
-		}
-
-	if (data_p -> bsd_tool_factory_p)
-		{
-			delete (data_p -> bsd_tool_factory_p);
-		}
-
-	FreeMemory (data_p);
-}
-
-
-static bool CloseBlastService (Service *service_p)
-{
-	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
-
-	FreeBlastServiceData (blast_data_p);
-
-	return true;
-}
-
-
-static const char *GetNucleotideBlastServiceName (Service * UNUSED_PARAM (service_p))
-{
-	return "Nucleotide Blast service";
-}
-
-
-static const char *GetNucleotideBlastServiceDesciption (Service * UNUSED_PARAM (service_p))
-{
-	return "A service to run Blast nucleotide searches";
-}
-
-
-
-static void ReleaseBlastServiceParameters (Service * UNUSED_PARAM (service_p), ParameterSet *params_p)
+void ReleaseBlastServiceParameters (Service * UNUSED_PARAM (service_p), ParameterSet *params_p)
 {
 	FreeParameterSet (params_p);
 }

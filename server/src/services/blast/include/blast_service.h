@@ -31,6 +31,13 @@ typedef enum BLAST_SERVICE_LOCAL DatabaseType
 } DatabaseType;
 
 
+typedef enum BLAST_SERVICE_LOCAL BlastServiceType
+{
+	BST_NUCLEOTIDE,
+	BST_PROTEIN,
+	BST_NUM_TYPES
+} BlastServiceType;
+
 /**
  * A datatype describing the details of each database available
  * to search against.

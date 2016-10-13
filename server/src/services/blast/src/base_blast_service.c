@@ -5,9 +5,17 @@
  *      Author: billy
  */
 
+
+#include <string.h>
+
+
 #include "base_blast_service.h"
-
-
+#include "blast_formatter.h"
+#include "blast_service_params.h"
+#include "paired_blast_service.h"
+#include "jobs_manager.h"
+#include "string_utils.h"
+#include "blast_tool_factory.hpp"
 
 
 LinkedList *GetUUIDSList (const char *ids_s)
@@ -178,36 +186,34 @@ ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char 
 }
 
 
-ParameterSet *GetBaseBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
+bool CloseBlastService (Service *service_p)
 {
-	ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
+	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 
-	if (param_set_p)
+	FreeBlastServiceData (blast_data_p);
+
+	return true;
+}
+
+
+bool AddBaseBlastServiceParameters (Service *blast_service_p, ParameterSet *param_set_p, const DatabaseType db_type)
+{
+	bool success_flag = false;
+	BlastServiceData *blast_data_p = (BlastServiceData *) (blast_service_p -> se_data_p);
+
+	if (AddQuerySequenceParams (blast_data_p, param_set_p))
 		{
-			BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
+			uint16 num_dbs = AddDatabaseParams (blast_data_p, param_set_p, db_type);
 
-			if (AddQuerySequenceParams (blast_data_p, param_set_p))
+			num_dbs = AddPairedServiceParameters (blast_service_p, param_set_p, num_dbs);
+
+			if (num_dbs > 0)
 				{
-					uint16 num_dbs = AddDatabaseParams (blast_data_p, param_set_p);
-
-					num_dbs = AddPairedServiceParameters (service_p, param_set_p, num_dbs);
-
-					if (num_dbs > 0)
-						{
-							if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
-								{
-									if (AddScoringParams (blast_data_p, param_set_p))
-										{
-											return param_set_p;
-										}
-								}
-						}
+					success_flag = true;
 				}
+		}
 
-			FreeParameterSet (param_set_p);
-		}		/* if (param_set_p) */
-
-	return NULL;
+	return success_flag;
 }
 
 
@@ -493,7 +499,7 @@ ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_
 					 */
 					if (db_p)
 						{
-							params_p = GetBlastServiceParameters (service_p, NULL, NULL);
+							params_p = NULL; //GetBaseBlastServiceParameters (service_p, NULL, NULL);
 
 							if (params_p)
 								{
@@ -752,7 +758,7 @@ char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *jo
 }
 
 
-json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *service_job_p)
+json_t *BuildBlastServiceJobJSON (Service * UNUSED_PARAM (service_p), const ServiceJob *service_job_p)
 {
 	return ConvertBlastServiceJobToJSON ((BlastServiceJob *) service_job_p);
 }
@@ -807,7 +813,7 @@ ServiceJob *BuildBlastServiceJob (struct Service *service_p, const json_t *servi
 }
 
 
-void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p)
+void CustomiseBlastServiceJob (Service * UNUSED_PARAM (service_p), ServiceJob *job_p)
 {
 	job_p -> sj_update_fn = UpdateBlastServiceJob;
 	job_p -> sj_free_fn = FreeBlastServiceJob;
@@ -886,3 +892,166 @@ char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, 
 	return result_s;
 }
 
+
+bool GetBlastServiceConfig (BlastServiceData *data_p)
+{
+	bool success_flag = false;
+	const json_t *blast_config_p = data_p -> bsd_base_data.sd_config_p;
+
+	if (blast_config_p)
+		{
+			json_t *value_p = json_object_get (blast_config_p, "working_directory");
+
+			if (value_p)
+				{
+					if (json_is_string (value_p))
+						{
+							data_p -> bsd_working_dir_s = json_string_value (value_p);
+							success_flag = true;
+						}
+				}
+
+			if (success_flag)
+				{
+					value_p = json_object_get (blast_config_p, "databases");
+
+					success_flag = false;
+
+					if (value_p)
+						{
+							if (json_is_array (value_p))
+								{
+									size_t i = json_array_size (value_p);
+									DatabaseInfo *databases_p = (DatabaseInfo *) AllocMemoryArray (i + 1, sizeof (DatabaseInfo));
+
+									if (databases_p)
+										{
+											json_t *db_json_p;
+											DatabaseInfo *db_p = databases_p;
+
+											json_array_foreach (value_p, i, db_json_p)
+											{
+												const char *name_s = GetJSONString (db_json_p, "name");
+
+												if (name_s)
+													{
+														const char *description_s = GetJSONString (db_json_p, "description");
+
+														if (description_s)
+															{
+																const char *type_s = GetJSONString (db_json_p, "type");
+
+																db_p -> di_name_s = name_s;
+																db_p -> di_description_s = description_s;
+																db_p -> di_active_flag = true;
+																db_p -> di_type = DT_NUCLEOTIDE;
+
+																GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
+
+																if (type_s)
+																	{
+																		if (strcmp (type_s, "protein") == 0)
+																			{
+																				db_p -> di_type = DT_PROTEIN;
+																			}
+																	}
+
+																success_flag = true;
+																++ db_p;
+															}		/* if (description_p) */
+
+													}		/* if (name_p) */
+
+											}		/* json_array_foreach (value_p, i, db_json_p) */
+
+											if (success_flag)
+												{
+													data_p -> bsd_databases_p = databases_p;
+												}
+											else
+												{
+													FreeMemory (databases_p);
+												}
+
+										}		/* if (databases_p) */
+
+									if (success_flag)
+										{
+											data_p -> bsd_tool_factory_p = BlastToolFactory :: GetBlastToolFactory (blast_config_p);
+
+											if (! (data_p -> bsd_tool_factory_p))
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetBlastToolFactory failed");
+													success_flag = false;
+												}
+										}
+
+								}		/* if (json_is_array (value_p)) */
+
+						}		/* if (value_p) */
+
+				}		/* if (success_flag) */
+
+			if (success_flag)
+				{
+					const char *formatter_type_s = GetJSONString (blast_config_p, "blast_formatter");
+
+					if (formatter_type_s)
+						{
+							if (strcmp (formatter_type_s, "system") == 0)
+								{
+									const json_t *formatter_config_p = json_object_get (blast_config_p, "system_formatter_config");
+
+									data_p -> bsd_formatter_p = SystemBlastFormatter :: Create (formatter_config_p);
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown BlastFormatter type \"%s\"", formatter_type_s);
+								}
+						}
+				}
+
+		}		/* if (blast_config_p) */
+
+	return success_flag;
+}
+
+
+
+BlastServiceData *AllocateBlastServiceData (Service * UNUSED_PARAM (blast_service_p))
+{
+	BlastServiceData *data_p = (BlastServiceData *) AllocMemory (sizeof (BlastServiceData));
+
+	if (data_p)
+		{
+			memset (& (data_p -> bsd_base_data), 0, sizeof (ServiceData));
+
+			data_p -> bsd_working_dir_s = NULL;
+			data_p -> bsd_databases_p = NULL;
+			data_p -> bsd_formatter_p = NULL;
+			data_p -> bsd_tool_factory_p = NULL;
+		}
+
+	return data_p;
+}
+
+
+void FreeBlastServiceData (BlastServiceData *data_p)
+{
+	if (data_p -> bsd_databases_p)
+		{
+			FreeMemory (data_p -> bsd_databases_p);
+		}
+
+	if (data_p -> bsd_formatter_p)
+		{
+			delete (data_p -> bsd_formatter_p);
+		}
+
+	if (data_p -> bsd_tool_factory_p)
+		{
+			delete (data_p -> bsd_tool_factory_p);
+		}
+
+	FreeMemory (data_p);
+}

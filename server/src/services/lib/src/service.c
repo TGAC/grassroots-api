@@ -225,6 +225,7 @@ bool SetUpLinkedServices (Service *service_p)
 				}
 		}
 
+	return success_flag;
 }
 
 

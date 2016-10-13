@@ -39,7 +39,10 @@ INCLUDES = \
 	-I$(DIR_BLAST_INC)
 	
 SRCS 	= \
+	base_blast_service.c \
 	blast_service.c \
+	nucleotide_blast_service.c \
+	protein_blast_service.c \
 	blast_service_job.c \
 	blast_service_params.c \
 	paired_blast_service.c \
