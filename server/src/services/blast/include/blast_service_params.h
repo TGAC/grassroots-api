@@ -29,6 +29,7 @@
 #include "blast_service.h"
 #include "parameter_set.h"
 
+BLAST_SERVICE_PREFIX NamedParameterType BS_TASK BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("task", PT_STRING));
 BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_QUERY BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("query_sequence", PT_LARGE_STRING));
 BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_FILE BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("input_file", PT_FILE_TO_READ));
 BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("job_id", PT_STRING));
@@ -92,7 +93,7 @@ BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, Pa
 BLAST_SERVICE_LOCAL bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 
-BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks);
+BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastServiceData *blast_data_p, const BlastTask *tasks_p, const size_t num_tasks);
 
 
 BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type);

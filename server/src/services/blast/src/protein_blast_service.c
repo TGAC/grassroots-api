@@ -17,9 +17,9 @@
 static const size_t S_NUM_TASKS = 3;
 static const BlastTask s_tasks_p [S_NUM_TASKS] =
 {
-  { "blastp", "Traditional BLASTP to compare a protein query to a protein database" },
-  { "blastp-short", "BLASTP optimized for queries shorter than 30 residues" },
-  { "blastp-fast", "BLASTP optimized for faster runtime" }
+  { "blastp", "blastp: Traditional BLASTP to compare a protein query to a protein database" },
+  { "blastp-short", "blastp-short: BLASTP optimized for queries shorter than 30 residues" },
+  { "blastp-fast", "blastp-fast: BLASTP optimized for faster runtime" }
 };
 
 
@@ -101,7 +101,10 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 						{
 							if (AddScoringParams (blast_data_p, param_set_p))
 								{
-									return param_set_p;
+								  if (AddProgramSelectionParameters (param_set_p, blast_data_p, s_tasks_p, S_NUM_TASKS))
+                    {
+                      return param_set_p;
+                    }
 								}
 						}
 				}		/* if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_PROTEIN)) */

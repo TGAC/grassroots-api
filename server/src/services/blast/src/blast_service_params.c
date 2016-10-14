@@ -415,22 +415,38 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 
 
 
-bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks)
+bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastServiceData *blast_data_p, const BlastTask *tasks_p, const size_t num_tasks)
 {
-	bool success_flag = false;
+  ParameterMultiOptionArray *options_p  = NULL;
   SharedType values_p [num_tasks];
   const char *descriptions_ss [num_tasks];
   size_t i;
 
   for (i = 0; i < num_tasks; ++ i)
     {
-      (values_p + i) -> st_string_value_s = (tasks_p + i) -> bt_name_s;
+      (values_p + i) -> st_string_value_s = (char *)  (tasks_p + i) -> bt_name_s;
       * (descriptions_ss + i) = (tasks_p + i) -> bt_description_s;
     }
 
+  options_p  = AllocateParameterMultiOptionArray (num_tasks, descriptions_ss, values_p, PT_STRING, true);
 
+  if (options_p)
+  	{
+  		Parameter *param_p = NULL;
+  		SharedType def;
+  		const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
 
-	return success_flag;
+  		def.st_string_value_s = (char *) tasks_p -> bt_name_s;
+
+  		if ((param_p = CreateAndAddParameterToParameterSet (& (blast_data_p -> bsd_base_data), param_set_p, BS_TASK.npt_type, false, BS_TASK.npt_name_s, "Program Selection", "The program to use to run the search.", options_p, def, NULL, NULL, level, NULL)) != NULL)
+  			{
+  				return true;
+  			}
+
+  		FreeParameterMultiOptionArray (options_p);
+  	}
+
+	return false;
 }
 
 

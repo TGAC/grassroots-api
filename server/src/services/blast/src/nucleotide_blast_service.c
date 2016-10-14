@@ -13,16 +13,15 @@
 /***** STATIC DECLARATIONS *****/
 /*******************************/
 
-static const size_t S_NUM_TASKS = 6;
+static const size_t S_NUM_TASKS = 5;
 
 static const BlastTask s_tasks_p [S_NUM_TASKS] =
 {
-  { "megablast", "Traditional megablast used to find very similar (e.g., intraspecies or closely related species) sequences" },
-  { "blastn", "Traditional BLASTN requiring an exact match of 11" },
-  { "blastn-short", "BLASTN program optimized for sequences shorter than 50 bases" },
-  { "rmblastn", "BLASTN with complexity adjusted scoring and masklevel" },
-  { "dc-megablast", "Discontiguous megablast used to find more distant (e.g., interspecies) sequences" },
-  { "megablast", "Traditional megablast used to find very similar (e.g., intraspecies or closely related species) sequences" }
+  { "megablast", "megablast: Traditional megablast used to find very similar (e.g., intraspecies or closely related species) sequences" },
+  { "dc-megablast", "dc-megablast: Discontiguous megablast used to find more distant (e.g., interspecies) sequences" },
+  { "blastn", "blastn: Traditional BLASTN requiring an exact match of 11" },
+  { "blastn-short", "blastn-short: BLASTN program optimized for sequences shorter than 50 bases" },
+  { "rmblastn", "rmblastn: BLASTN with complexity adjusted scoring and masklevel" },
 };
 
 
@@ -105,7 +104,7 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 						{
 							if (AddScoringParams (blast_data_p, param_set_p))
 								{
-								  if (AddProgramSelectionParameters (param_set_p, s_tasks_p, S_NUM_TASKS))
+								  if (AddProgramSelectionParameters (param_set_p, blast_data_p, s_tasks_p, S_NUM_TASKS))
                     {
                       return param_set_p;
                     }
