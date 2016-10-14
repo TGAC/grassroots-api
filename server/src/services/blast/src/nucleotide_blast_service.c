@@ -7,11 +7,23 @@
 
 #include "nucleotide_blast_service.h"
 #include "base_blast_service.h"
-
+#include "blast_service_params.h"
 
 /*******************************/
 /***** STATIC DECLARATIONS *****/
 /*******************************/
+
+static const size_t S_NUM_TASKS = 6;
+
+static const BlastTask s_tasks_p [S_NUM_TASKS] =
+{
+  { "megablast", "Traditional megablast used to find very similar (e.g., intraspecies or closely related species) sequences" },
+  { "blastn", "Traditional BLASTN requiring an exact match of 11" },
+  { "blastn-short", "BLASTN program optimized for sequences shorter than 50 bases" },
+  { "rmblastn", "BLASTN with complexity adjusted scoring and masklevel" },
+  { "dc-megablast", "Discontiguous megablast used to find more distant (e.g., interspecies) sequences" },
+  { "megablast", "Traditional megablast used to find very similar (e.g., intraspecies or closely related species) sequences" }
+};
 
 
 static const char *GetNucleotideBlastServiceName (Service *service_p);
@@ -81,25 +93,35 @@ static const char *GetNucleotideBlastServiceDescription (Service * UNUSED_PARAM 
 
 static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
-	ParameterSet *params_p = AllocateParameterSet ("Nucleotide Blast service parameters", "A service to run nucleotide Blast searches");
+	ParameterSet *param_set_p = AllocateParameterSet ("Nucleotide Blast service parameters", "A service to run nucleotide Blast searches");
 
-	if (params_p)
+	if (param_set_p)
 		{
-			if (AddBaseBlastServiceParameters (service_p, params_p, DT_NUCLEOTIDE))
+			if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_NUCLEOTIDE))
 				{
+				  BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 
-				}		/* if (AddBaseBlastServiceParameters (service_p, params_p, DT_NUCLEOTIDE)) */
+					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
+						{
+							if (AddScoringParams (blast_data_p, param_set_p))
+								{
+								  if (AddProgramSelectionParameters (param_set_p, s_tasks_p, S_NUM_TASKS))
+                    {
+                      return param_set_p;
+                    }
+								}
+						}
+				}		/* if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_NUCLEOTIDE)) */
 
 			/*
 			 * task: 'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn
 			 */
 
-		}		/* if (params_p) */
+		}		/* if (param_set_p) */
 
 
-	return params_p;
+	return param_set_p;
 }
-
 
 
 

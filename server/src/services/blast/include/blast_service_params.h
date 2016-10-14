@@ -1,12 +1,12 @@
 /*
 ** Copyright 2014-2015 The Genome Analysis Centre
-** 
+**
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
 ** You may obtain a copy of the License at
-** 
+**
 **     http://www.apache.org/licenses/LICENSE-2.0
-** 
+**
 ** Unless required by applicable law or agreed to in writing, software
 ** distributed under the License is distributed on an "AS IS" BASIS,
 ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -69,6 +69,14 @@ typedef enum
 } BlastOutputFormat;
 
 
+
+typedef struct BlastTask
+{
+  const char *bt_name_s;
+  const char *bt_description_s;
+} BlastTask;
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -82,6 +90,9 @@ BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, Pa
 
 
 BLAST_SERVICE_LOCAL bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
+
+
+BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks);
 
 
 BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type);

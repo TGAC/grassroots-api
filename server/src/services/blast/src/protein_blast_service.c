@@ -7,11 +7,20 @@
 
 #include "protein_blast_service.h"
 #include "base_blast_service.h"
+#include "blast_service_params.h"
 
 
 /*******************************/
 /***** STATIC DECLARATIONS *****/
 /*******************************/
+
+static const size_t S_NUM_TASKS = 3;
+static const BlastTask s_tasks_p [S_NUM_TASKS] =
+{
+  { "blastp", "Traditional BLASTP to compare a protein query to a protein database" },
+  { "blastp-short", "BLASTP optimized for queries shorter than 30 residues" },
+  { "blastp-fast", "BLASTP optimized for faster runtime" }
+};
 
 
 static const char *GetProteinBlastServiceName (Service *service_p);
@@ -56,8 +65,6 @@ Service *GetProteinBlastService ()
 						{
 							return protein_blast_service_p;
 						}
-
-					return protein_blast_service_p;
 				}
 
 			FreeService (protein_blast_service_p);
@@ -82,25 +89,32 @@ static const char *GetProteinBlastServiceDescription (Service * UNUSED_PARAM (se
 
 static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
-	ParameterSet *params_p = AllocateParameterSet ("Protein Blast service parameters", "A service to run Protein Blast searches");
+	ParameterSet *param_set_p = AllocateParameterSet ("Protein Blast service parameters", "A service to run Protein Blast searches");
 
-	if (params_p)
+	if (param_set_p)
 		{
-			if (AddBaseBlastServiceParameters (service_p, params_p, DT_PROTEIN))
+			if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_PROTEIN))
 				{
+          BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 
-				}		/* if (AddBaseBlastServiceParameters (service_p, params_p, DT_PROTEIN)) */
+					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
+						{
+							if (AddScoringParams (blast_data_p, param_set_p))
+								{
+									return param_set_p;
+								}
+						}
+				}		/* if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_PROTEIN)) */
 
 			/*
 			 * task: 'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn
 			 */
 
-		}		/* if (params_p) */
+		}		/* if (param_set_p) */
 
 
-	return params_p;
+	return param_set_p;
 }
-
 
 
 

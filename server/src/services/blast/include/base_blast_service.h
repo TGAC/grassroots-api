@@ -15,6 +15,9 @@
 #include "parameter_set.h"
 #include "temp_file.hpp"
 
+
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -22,7 +25,6 @@ extern "C"
 
 
 BLAST_SERVICE_LOCAL bool GetBlastServiceConfig (BlastServiceData *data_p);
-
 
 BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_service_p);
 

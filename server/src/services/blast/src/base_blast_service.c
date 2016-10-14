@@ -46,7 +46,7 @@ LinkedList *GetUUIDSList (const char *ids_s)
 									++ end_p;
 								}
 
-							/* Is the region the corrrect size for a uuid? */
+							/* Is the region the correct size for a uuid? */
 							if (end_p - start_p == UUID_STRING_BUFFER_SIZE - 1)
 								{
 									StringListNode *node_p = NULL;
@@ -215,6 +215,7 @@ bool AddBaseBlastServiceParameters (Service *blast_service_p, ParameterSet *para
 
 	return success_flag;
 }
+
 
 
 TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t id)
