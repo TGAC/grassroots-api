@@ -60,6 +60,11 @@ BLAST_SERVICE_PREFIX NamedParameterType BPS_COMP_BASED_STATS BLAST_SERVICE_VAL (
 /* blastx options */
 BLAST_SERVICE_PREFIX NamedParameterType BXS_LOWER_CASE_MASKING BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("lcase_masking", PT_BOOLEAN));
 
+BLAST_SERVICE_PREFIX NamedParameterType BSP_BLASTX_PARAMS_P [] =
+{
+	BXS_LOWER_CASE_MASKING,
+	NULL
+};
 
 
 /* tblastn options */
@@ -117,7 +122,16 @@ BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, Pa
 BLAST_SERVICE_LOCAL bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 
-BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastServiceData *blast_data_p, const BlastTask *tasks_p, const size_t num_tasks);
+BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks);
+
+
+BLAST_SERVICE_LOCAL bool AddBlastPParams (BlastServiceData *data_p, ParameterSet *param_set_p);
+
+
+BLAST_SERVICE_LOCAL bool AddBlastNParams (BlastServiceData *data_p, ParameterSet *param_set_p);
+
+
+BLAST_SERVICE_LOCAL bool AddBlastXParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 
 BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type);

@@ -415,7 +415,7 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 
 
 
-bool AddProgramSelectionParameters (ParameterSet *param_set_p, const BlastServiceData *blast_data_p, const BlastTask *tasks_p, const size_t num_tasks)
+bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks)
 {
   ParameterMultiOptionArray *options_p  = NULL;
   SharedType values_p [num_tasks];
@@ -519,4 +519,30 @@ bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 
 	return success_flag;
 }
+
+
+bool AddBlastPParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+
+	return success_flag;
+}
+
+
+bool AddBlastNParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+
+	return success_flag;
+
+}
+
+
+bool AddBlastXParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+
+	return success_flag;
+}
+
 
