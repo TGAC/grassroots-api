@@ -104,7 +104,7 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 						{
 							if (AddScoringParams (blast_data_p, param_set_p))
 								{
-								  if (AddProgramSelectionParameters (param_set_p, blast_data_p, s_tasks_p, S_NUM_TASKS))
+								  if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
                     {
                       return param_set_p;
                     }

@@ -285,16 +285,16 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 									if (AddArgsPair ("-db", bt_job_p -> bsj_job.sj_name_s))
 										{
 											/* Reward */
-											if (AddArgsPairFromIntegerParameter (params_p, BS_MATCH_SCORE.npt_name_s, "-reward", false, false))
+											if (AddArgsPairFromIntegerParameter (params_p, BNS_MATCH_SCORE.npt_name_s, "-reward", false, false))
 												{
 													/* Penalty */
-													if (AddArgsPairFromIntegerParameter (params_p, BS_MISMATCH_SCORE.npt_name_s, "-penalty", false, false))
+													if (AddArgsPairFromIntegerParameter (params_p, BNS_MISMATCH_SCORE.npt_name_s, "-penalty", false, false))
 														{
 															/* Expect threshold */
 															if (AddArgsPairFromIntegerParameter (params_p, BS_EXPECT_THRESHOLD.npt_name_s, "-evalue", true, false))
 																{
 																	/* Word Size */
-																	if (AddArgsPairFromIntegerParameter (params_p, BS_WORD_SIZE.npt_name_s, "-word_size", true, false))
+																	if (AddArgsPairFromIntegerParameter (params_p, BNS_WORD_SIZE.npt_name_s, "-word_size", true, false))
 																		{
 																			/* Output Format
 																			 * If we have a BlastFormatter then the output is always set to 11 which is ASN and
