@@ -28,7 +28,7 @@
 #include "service.h"
 
 
-ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, ServiceData *service_data_p, ParameterSet *param_set_p)
+ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, ServiceData *service_data_p)
 {
 	ParameterGroup *group_p = AllocateParameterGroup (name_s, group_key_s, service_data_p);
 
@@ -100,7 +100,13 @@ ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, S
 
 			if (children_p)
 				{
-					LinkedList *params_p = AllocateLinkedList (FreeParameterNode);
+					/*
+					 * The Parameters stored on this List are also known
+					 * to the ParameterSet which is where they will get
+					 * freed. So all we need to do on this LinkedList
+					 * is free the memory allocated for the nodes.
+					 */
+					LinkedList *params_p = AllocateLinkedList (NULL);
 
 					if (params_p)
 						{
@@ -156,7 +162,7 @@ void FreeParameterGroup (ParameterGroup *param_group_p)
 }
 
 
-ParameterGroup *CreateAddAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, ParameterSet *param_set_p)
+ParameterGroup *CreateAndAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, ParameterSet *param_set_p)
 {
 	ParameterGroup *group_p = AllocateParameterGroup (name_s, key_s, service_data_p);
 
@@ -200,7 +206,8 @@ bool AddParameterToParameterGroup (ParameterGroup *group_p, Parameter *param_p)
 
 	if (node_p)
 		{
-			LinkedListAddTail (group_p, node_p);
+			LinkedListAddTail (group_p -> pg_params_p, & (node_p -> pn_node));
+			param_p -> pa_group_p = group_p;
 		}
 
 	return success_flag;
@@ -214,7 +221,7 @@ bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *chi
 
 	if (node_p)
 		{
-			LinkedListAddTail (parent_group_p -> pg_child_groups_p, node_p);
+			LinkedListAddTail (parent_group_p -> pg_child_groups_p, & (node_p -> pgn_node));
 			success_flag = true;
 		}
 

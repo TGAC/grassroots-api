@@ -138,7 +138,7 @@ extern "C"
 #endif
 
 
-GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, struct ServiceData *service_data_p, struct ParameterSet *param_set_p);
+GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, struct ServiceData *service_data_p);
 
 
 GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNodeForExistingParameterGroup (ParameterGroup *group_p);
@@ -162,7 +162,7 @@ GRASSROOTS_PARAMS_API bool AddParameterGroupChild (ParameterGroup *parent_group_
 GRASSROOTS_PARAMS_API bool AddParameterToParameterGroup (ParameterGroup *parent_group_p, Parameter *param_p);
 
 
-GRASSROOTS_PARAMS_API ParameterGroup *CreateAddAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, struct ParameterSet *param_set_p);
+GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, struct ParameterSet *param_set_p);
 
 
 #ifdef __cplusplus

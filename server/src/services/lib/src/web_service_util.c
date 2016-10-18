@@ -293,7 +293,7 @@ bool AddMatchTypeParameter (WebServiceData *data_p, ParameterSet *param_set_p)
 
 			def.st_string_value_s = match_types_p [0].st_string_value_s;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> wsd_base_data), param_set_p, PT_STRING, false, "Query matching", NULL,
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> wsd_base_data), param_set_p, NULL, PT_STRING, false, "Query matching", NULL,
 			  "How the query will be interpreted by the service.",
 			  match_type_options_p, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 				{

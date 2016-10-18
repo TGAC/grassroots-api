@@ -74,7 +74,7 @@ static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *
 static bool CloseIRodsSearchService (Service *service_p);
 
 
-static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, ParameterGroup *group_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 
 static int AddParams (ServiceData *data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
@@ -122,7 +122,7 @@ static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p
 									SharedType def;
 									def.st_string_value_s = NULL;
 
-									if (CreateAndAddParameterToParameterSet (NULL, params_p, PT_KEYWORD, false, S_IRODS_KEYWORD_S, "Search term", "Search for matching metadata values", NULL, def, NULL, NULL, PL_ALL, NULL))
+									if (CreateAndAddParameterToParameterSet (NULL, params_p, NULL, PT_KEYWORD, false, S_IRODS_KEYWORD_S, "Search term", "Search for matching metadata values", NULL, def, NULL, NULL, PL_ALL, NULL))
 										{
 
 											data_p -> issd_connection_p = connection_p;
@@ -412,7 +412,7 @@ static int AddParams (ServiceData *data_p, IRodsConnection *connection_p, Parame
 						}
 
 
-					group_p = CreateAddAddParameterGroupToParameterSet (heading_s, NULL, data_p, param_set_p);
+					group_p = CreateAndAddParameterGroupToParameterSet (heading_s, NULL, data_p, param_set_p);
 
 
 					for ( ; i > 0; --i, ++ value_ss)
@@ -457,7 +457,7 @@ static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s,
 }
 
 
-static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, ParameterGroup *group_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;

@@ -368,71 +368,9 @@ ParameterGroup *AddParameterGroupToParameterSet (ParameterSet *param_set_p, cons
 
 	if (param_group_node_p)
 		{
+			LinkedListAddTail (params_p -> ps_grouped_params_p, & (param_group_node_p -> pgn_node));
 			group_p = param_group_node_p -> pgn_param_group_p;
 		}
-
-	return group_p;
-}
-
-
-ParameterGroup *AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params, ServiceData *service_data_p)
-{
-	ParameterGroup *group_p = NULL;
-	Parameter **params_pp = AllocMemoryArray (num_params, sizeof (Parameter *));
-
-	/* Get the parameters for the given names */
-	if (params_pp)
-		{
-			const char **param_name_ss = param_names_ss;
-			Parameter ** param_pp = params_pp;
-			uint32 i = num_params;
-
-			bool success_flag = true;
-
-			while (success_flag && (i > 0))
-				{
-					ParameterNode *param_node_p = (ParameterNode *) (param_set_p -> ps_params_p -> ll_head_p);
-					const char * const param_name_s = *param_name_ss;
-
-					success_flag = false;
-
-					while (param_node_p)
-						{
-							Parameter *param_p = param_node_p -> pn_parameter_p;
-
-							if (strcmp (param_name_s, param_p -> pa_name_s) == 0)
-								{
-									*param_pp = param_p;
-									success_flag = true;
-									param_node_p = NULL;
-								}
-							else
-								{
-									param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
-								}
-
-						}		/* while (param_node_p) */
-
-					if (success_flag)
-						{
-							-- i;
-							++ param_name_ss;
-							++ param_pp;
-						}		/* if (success_flag) */
-				}
-
-			if (success_flag)
-				{
-					group_p = AddParameterGroupToParameterSet (param_set_p, group_name_s, group_key_s, params_pp, num_params, service_data_p);
-				}
-
-			if (!group_p)
-				{
-					FreeMemory (params_pp);
-				}
-
-		}		/* if (params_pp) */
-
 
 	return group_p;
 }
@@ -542,63 +480,44 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p, const bool 
 
 															const char *group_name_s = GetJSONString (group_json_p, PARAM_GROUP_S);
 
-															/* Get the number of Parameters needed */
-															for (j = 0; j < num_params; ++ j)
-																{
-																	json_t *param_json_p = json_array_get (params_json_p, j);
-																	const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
+															ParameterGroup *param_group_p = CreateAndAddParameterGroupToParameterSet (group_name_s, NULL, NULL, params_p);
 
-																	if (param_group_name_s && (strcmp (param_group_name_s, group_name_s) == 0))
+															if (param_group_p)
+																{
+																	bool visible_flag = true;
+																	ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+																	const char *group_key_s = NULL;
+																	ParameterGroup *group_p = NULL;
+
+																	/* Get the number of Parameters needed */
+																	for (j = 0; j < num_params; ++ j)
 																		{
-																			++ num_group_params;
+																			json_t *param_json_p = json_array_get (params_json_p, j);
+																			const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
+
+																			if ((param_group_name_s) && (strcmp (param_group_name_s, group_name_s) == 0))
+																				{
+																					if (!AddParameterToParameterGroup (group_p, param_node_p -> pn_parameter_p))
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add parameter \"%s\" to group \"%s\"",  param_node_p -> pn_parameter_p -> pa_name_s, group_name_s);
+																						}
+																				}
+
+																			param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
+
+																		}		/* for (j = 0; j < num_params; ++ j) */
+
+
+																	if (GetJSONBoolean (group_json_p, PARAM_GROUP_VISIBLE_S, &visible_flag))
+																		{
+																			group_p -> pg_visible_flag = visible_flag;
 																		}
-																}		/* for (j = 0; j < num_params; ++ j) */
 
-															if (num_group_params > 0)
+																}		/* if (param_group_p) */
+															else
 																{
-																	Parameter **params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-
-																	if (params_pp)
-																		{
-																			Parameter **param_pp = params_pp;
-																			ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
-																			const char *group_key_s = NULL;
-																			ParameterGroup *group_p = NULL;
-
-																			/* Get the number of Parameters needed */
-																			for (j = 0; j < num_params; ++ j)
-																				{
-																					json_t *param_json_p = json_array_get (params_json_p, j);
-																					const char *param_group_name_s = GetJSONString (param_json_p, PARAM_GROUP_S);
-
-																					if ((param_group_name_s) && (strcmp (param_group_name_s, group_name_s) == 0))
-																						{
-																							*param_pp = param_node_p -> pn_parameter_p;
-																							++ param_pp;
-																						}
-
-																					param_node_p = (ParameterNode *) (param_node_p -> pn_node.ln_next_p);
-
-																				}		/* for (j = 0; j < num_params; ++ j) */
-
-																			if ((group_p = AddParameterGroupToParameterSet (params_p, group_name_s, group_key_s, params_pp, num_group_params, NULL)) != NULL)
-																				{
-																					bool visible_flag = true;
-
-																					if (GetJSONBoolean (group_json_p, PARAM_GROUP_VISIBLE_S, &visible_flag))
-																						{
-																							group_p -> pg_visible_flag = visible_flag;
-																						}
-																				}
-																			else
-																				{
-																					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create parameter group \"%s\"", group_name_s);
-																					FreeMemory (params_pp);
-																				}
-
-																		}		/* if (params_pp) */
-
-																}		/* if (num_group_params > 0) */
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create parameter group \"%s\"", group_name_s);
+																}
 
 														}		/* for (i = 0; i < num_groups; ++ i) */
 

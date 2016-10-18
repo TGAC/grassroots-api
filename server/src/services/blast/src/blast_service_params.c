@@ -114,12 +114,29 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 
 	if (num_group_params)
 		{
+			ParameterGroup *group_p = NULL;
 			Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
 			Parameter **grouped_param_pp = grouped_params_pp;
 			const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 			char *group_s = NULL;
 			const json_t *provider_p = NULL;
 			const char *group_to_use_s = NULL;
+
+			provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
+
+			if (provider_p)
+				{
+					const char *provider_s = GetProviderName (provider_p);
+
+					if (provider_s)
+						{
+							group_s = CreateGroupName (provider_s);
+						}
+				}
+
+			group_to_use_s = group_s ? group_s : BS_DATABASE_GROUP_NAME_S;
+
+			group_p = CreateAndAddParameterGroupToParameterSet (group_to_use_s, NULL, & (data_p -> bsd_base_data), param_set_p);
 
 			if (db_p)
 				{
@@ -137,7 +154,7 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 											++ local_name_s;
 										}
 
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
+									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
 										{
 											if (grouped_param_pp)
 												{
@@ -160,26 +177,6 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 
 				}		/* if (db_p) */
 
-			provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
-
-			if (provider_p)
-				{
-					const char *provider_s = GetProviderName (provider_p);
-
-					if (provider_s)
-						{
-							group_s = CreateGroupName (provider_s);
-						}
-				}
-
-			group_to_use_s = group_s ? group_s : BS_DATABASE_GROUP_NAME_S;
-
-			if (!AddParameterGroupToParameterSet (param_set_p, group_to_use_s, NULL, grouped_params_pp, num_group_params, & (data_p -> bsd_base_data)))
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", BS_DATABASE_GROUP_NAME_S);
-					FreeMemory (grouped_params_pp);
-				}
-
 			if (group_s)
 				{
 					FreeCopiedString (group_s);
@@ -191,20 +188,20 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 }
 
 
-Parameter *SetUpPreviousJobUUIDParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p)
+Parameter *SetUpPreviousJobUUIDParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
 	Parameter *param_p = NULL;
 	SharedType def;
 
 	memset (&def, 0, sizeof (def));
 
-	param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, BS_JOB_ID.npt_type, false, BS_JOB_ID.npt_name_s, "Job IDs", "The UUIDs for Blast jobs that have previously been run", NULL, def, NULL, NULL, PL_ALL, NULL);
+	param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, group_p, BS_JOB_ID.npt_type, false, BS_JOB_ID.npt_name_s, "Job IDs", "The UUIDs for Blast jobs that have previously been run", NULL, def, NULL, NULL, PL_ALL, NULL);
 
 	return param_p;
 }
 
 
-Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p,ParameterSet *param_set_p)
+Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
 	Parameter *param_p = NULL;
 	ParameterMultiOptionArray *options_p = NULL;
@@ -227,7 +224,7 @@ Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p,Pa
 			/* default to  blast asn */
 			def.st_ulong_value = BOF_BLAST_ASN1;
 
-			param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, BS_OUTPUT_FORMAT.npt_type, false, BS_OUTPUT_FORMAT.npt_name_s, "Output format", "The output format for the results", options_p, def, NULL, NULL, PL_ALL, NULL);
+			param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, group_p, BS_OUTPUT_FORMAT.npt_type, false, BS_OUTPUT_FORMAT.npt_name_s, "Output format", "The output format for the results", options_p, def, NULL, NULL, PL_ALL, NULL);
 
 			if (!param_p)
 				{
@@ -244,7 +241,7 @@ bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	ParameterGroup *group_p = CreateAddAddParameterGroupToParameterSet ("Query Sequence Parameters", NULL, data_p, param_set_p);
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Query Sequence Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);
 
 	def.st_string_value_s = NULL;
 
@@ -291,7 +288,7 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 	const char *param_name_s = "max_target_sequences";
 	ParameterType pt = PT_UNSIGNED_INT;
 
-	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("General Algorithm Parameters", NULL, data_p, param_set_p);
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("General Algorithm Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);
 
 	def.st_ulong_value = 5;
 
@@ -330,7 +327,7 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 
 
 
-bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks)
+bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, ParameterSet *param_set_p, ParameterGroup *group_p, const BlastTask *tasks_p, const size_t num_tasks)
 {
   ParameterMultiOptionArray *options_p  = NULL;
   SharedType values_p [num_tasks];
@@ -353,7 +350,7 @@ bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, Parame
 
   		def.st_string_value_s = (char *) tasks_p -> bt_name_s;
 
-  		if ((param_p = CreateAndAddParameterToParameterSet (& (blast_data_p -> bsd_base_data), param_set_p, BS_TASK.npt_type, false, BS_TASK.npt_name_s, "Program Selection", "The program to use to run the search.", options_p, def, NULL, NULL, level, NULL)) != NULL)
+  		if ((param_p = CreateAndAddParameterToParameterSet (& (blast_data_p -> bsd_base_data), param_set_p, group_p, BS_TASK.npt_type, false, BS_TASK.npt_name_s, "Program Selection", "The program to use to run the search.", options_p, def, NULL, NULL, level, NULL)) != NULL)
   			{
   				return true;
   			}
@@ -373,7 +370,7 @@ bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
 	ParameterBounds *bounds_p = AllocateParameterBounds ();
 
-	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Scoring Parameters", NULL, data_p, param_set_p);
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Scoring Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);
 
 
 	/* Match must be positive */

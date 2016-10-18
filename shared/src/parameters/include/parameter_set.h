@@ -271,11 +271,11 @@ GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
  * otherwise.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+//GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
 
 
 
-GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
+//GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
 
 
 
@@ -292,7 +292,7 @@ GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_
  * @memberof ParameterSet
  * @see AddParameterGroupToParameterSet
  */
-GRASSROOTS_PARAMS_API ParameterGroup *AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params, struct ServiceData *service_data_p);
+//GRASSROOTS_PARAMS_API ParameterGroup *AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params, struct ServiceData *service_data_p);
 
 
 

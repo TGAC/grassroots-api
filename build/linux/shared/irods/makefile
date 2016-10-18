@@ -53,8 +53,6 @@ LDFLAGS += -L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 
 include $(DIR_BUILD_ROOT)/irods.mk
 
-LDFLAGS += $(IRODS_DEP_LIBS)
-
 include $(DIR_BUILD_ROOT)/generic_makefiles/shared_library.makefile
 
 
