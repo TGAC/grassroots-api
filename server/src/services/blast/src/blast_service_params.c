@@ -244,72 +244,33 @@ bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 5;
-	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	Parameter **grouped_param_pp = grouped_params_pp;
+	ParameterGroup *group_p = CreateAddAddParameterGroupToParameterSet ("Query Sequence Parameters", NULL, data_p, param_set_p);
 
 	def.st_string_value_s = NULL;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, BS_INPUT_FILE.npt_type, false, BS_INPUT_FILE.npt_name_s, "Input", "The input file to read", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BS_INPUT_FILE.npt_type, false, BS_INPUT_FILE.npt_name_s, "Input", "The input file to read", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 		{
 			def.st_string_value_s = NULL;
 
-			if (grouped_param_pp)
-				{
-					*grouped_param_pp = param_p;
-					++ grouped_param_pp;
-				}
-
-			if ((param_p = SetUpPreviousJobUUIDParamater (data_p, param_set_p)) != NULL)
+			if ((param_p = SetUpPreviousJobUUIDParamater (data_p, param_set_p, group_p)) != NULL)
 				{
 					def.st_string_value_s = NULL;
 
-					if (grouped_param_pp)
-						{
-							*grouped_param_pp = param_p;
-							++ grouped_param_pp;
-						}
 
-					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, BS_INPUT_QUERY.npt_type, false, BS_INPUT_QUERY.npt_name_s, "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
+					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BS_INPUT_QUERY.npt_type, false, BS_INPUT_QUERY.npt_name_s, "Query Sequence(s)", "Query sequence(s) to be used for a BLAST search should be pasted in the 'Search' text area. "
 																															"It accepts a number of different types of input and automatically determines the format or the input."
 																															" To allow this feature there are certain conventions required with regard to the input of identifiers (e.g., accessions or gi's)", NULL, def, NULL, NULL, PL_ALL, NULL))  != NULL)
 						{
 							const char *subrange_s = "Coordinates for a subrange of the query sequence. The BLAST search will apply only to the residues in the range. Valid sequence coordinates are from 1 to the sequence length. Set either From or To to 0 to ignore the range. The range includes the residue at the To coordinate.";
 
-							if (grouped_param_pp)
-								{
-									*grouped_param_pp = param_p;
-									++ grouped_param_pp;
-								}
-
 							def.st_ulong_value = 0;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, BS_SUBRANGE_FROM.npt_type, false, BS_SUBRANGE_FROM.npt_name_s, "From", subrange_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BS_SUBRANGE_FROM.npt_type, false, BS_SUBRANGE_FROM.npt_name_s, "From", subrange_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 								{
 									def.st_ulong_value = 0;
 
-									if (grouped_param_pp)
+									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BS_SUBRANGE_TO.npt_type, false, BS_SUBRANGE_TO.npt_name_s, "To", subrange_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
-											*grouped_param_pp = param_p;
-											++ grouped_param_pp;
-										}
-
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, BS_SUBRANGE_TO.npt_type, false, BS_SUBRANGE_TO.npt_name_s, "To", subrange_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
-										{
-											const char * const group_name_s = "Query Sequence Parameters";
-
-											if (grouped_param_pp)
-												{
-													*grouped_param_pp = param_p;
-													++ grouped_param_pp;
-												}
-
-											if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params, & (data_p -> bsd_base_data)))
-												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-													FreeMemory (grouped_params_pp);
-												}
-
 											success_flag = true;
 										}
 								}
@@ -326,82 +287,36 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 6;
-	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	Parameter **grouped_param_pp = grouped_params_pp;
 	uint8 level = PL_INTERMEDIATE | PL_ALL;
 	const char *param_name_s = "max_target_sequences";
 	ParameterType pt = PT_UNSIGNED_INT;
 
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("General Algorithm Parameters", NULL, data_p, param_set_p);
+
 	def.st_ulong_value = 5;
 
 
-	if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, pt, false, param_name_s, "Max target sequences", "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this).", NULL, def, NULL, NULL, level, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, pt, false, param_name_s, "Max target sequences", "Select the maximum number of aligned sequences to display (the actual number of alignments may be greater than this).", NULL, def, NULL, NULL, level, NULL)) != NULL)
 		{
 			def.st_boolean_value = true;
 
-			if (grouped_param_pp)
-				{
-					*grouped_param_pp = param_p;
-					++ grouped_param_pp;
-				}
-
-
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_BOOLEAN, false, "short_queries", "Short queries", "Automatically adjust parameters for short input sequences", NULL, def, NULL, NULL, level, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_BOOLEAN, false, "short_queries", "Short queries", "Automatically adjust parameters for short input sequences", NULL, def, NULL, NULL, level, NULL)) != NULL)
 				{
 					def.st_ulong_value = 10;
 
-					if (grouped_param_pp)
-						{
-							*grouped_param_pp = param_p;
-							++ grouped_param_pp;
-						}
-
-					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_UNSIGNED_INT, false, "expect_threshold", "Expect threshold", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "expect_threshold", "Expect threshold", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
 						{
 							def.st_ulong_value = 28;
 
-							if (grouped_param_pp)
-								{
-									*grouped_param_pp = param_p;
-									++ grouped_param_pp;
-								}
-
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_UNSIGNED_INT, false, "word_size", "Word size", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "word_size", "Word size", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
 								{
 									def.st_ulong_value = 0;
 
-									if (grouped_param_pp)
+									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", NULL, def, NULL, NULL, level, NULL)) != NULL)
 										{
-											*grouped_param_pp = param_p;
-											++ grouped_param_pp;
-										}
 
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", NULL, def, NULL, NULL, level, NULL)) != NULL)
-										{
-											if (grouped_param_pp)
+											if ((param_p = SetUpOutputFormatParamater (data_p, param_set_p, group_p)) != NULL)
 												{
-													*grouped_param_pp = param_p;
-													++ grouped_param_pp;
-												}
-
-
-											if ((param_p = SetUpOutputFormatParamater (data_p, param_set_p)) != NULL)
-												{
-													const char * const group_name_s = "General Algorithm Parameters";
-
-													if (grouped_param_pp)
-														{
-															*grouped_param_pp = param_p;
-															++ grouped_param_pp;
-														}
-
-													if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params, & (data_p -> bsd_base_data)))
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-															FreeMemory (grouped_params_pp);
-														}
-
 													success_flag = true;
 												}
 										}
@@ -455,11 +370,11 @@ bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 2;
-	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	Parameter **grouped_param_pp = grouped_params_pp;
 	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
 	ParameterBounds *bounds_p = AllocateParameterBounds ();
+
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Scoring Parameters", NULL, data_p, param_set_p);
+
 
 	/* Match must be positive */
 	if (bounds_p)
@@ -468,15 +383,8 @@ bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 			bounds_p -> pb_upper.st_long_value = INT_MAX;
 			def.st_long_value = 2;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", NULL, def, NULL, bounds_p, level, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", NULL, def, NULL, bounds_p, level, NULL)) != NULL)
 				{
-					if (grouped_param_pp)
-						{
-							*grouped_param_pp = param_p;
-							++ grouped_param_pp;
-						}
-
-
 					/* Mismatch must be positive */
 					bounds_p = AllocateParameterBounds ();
 
@@ -486,22 +394,8 @@ bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 							bounds_p -> pb_lower.st_long_value = INT_MIN;
 							bounds_p -> pb_upper.st_long_value = -1;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", NULL, def, NULL, bounds_p, level, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", NULL, def, NULL, bounds_p, level, NULL)) != NULL)
 								{
-									const char * const group_name_s = "Scoring Parameters";
-
-									if (grouped_param_pp)
-										{
-											*grouped_param_pp = param_p;
-											++ grouped_param_pp;
-										}
-
-									if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params, & (data_p -> bsd_base_data)))
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-											FreeMemory (grouped_params_pp);
-										}
-
 									success_flag = true;
 								}
 							else

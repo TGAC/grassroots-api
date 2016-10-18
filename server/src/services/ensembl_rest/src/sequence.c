@@ -208,26 +208,18 @@ static json_t *GetSequencesById (const char * const id_s, const char * const con
 
 bool AddSequenceParameters (ServiceData *data_p, ParameterSet *param_set_p)
 {
-	const uint32 num_params = 3;
 	Parameter *param_p = NULL;
-	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_params, sizeof (Parameter *));
-	Parameter **grouped_param_pp = grouped_params_pp;
 	bool success_flag = false;
 	SharedType def;
+	ParameterGroup *group_p = CreateAddAddParameterGroupToParameterSet ("Sequence Parameters", NULL, data_p, param_set_p);
 
 	def.st_string_value_s = NULL;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, ES_SEQUENCE_ID.npt_type, false, ES_SEQUENCE_ID.npt_name_s, "Sequence ID", "An Ensembl stable ID", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_SEQUENCE_ID.npt_type, false, ES_SEQUENCE_ID.npt_name_s, "Sequence ID", "An Ensembl stable ID", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 		{
 			ParameterMultiOptionArray *output_type_options_p = NULL;
 			SharedType output_types_p [ST_NUM_TYPES];
 			uint32 i;
-
-			if (grouped_param_pp)
-				{
-					*grouped_param_pp = param_p;
-					++ grouped_param_pp;
-				}
 
 			for (i = 0; i < ST_NUM_TYPES; ++ i)
 				{
@@ -240,18 +232,12 @@ bool AddSequenceParameters (ServiceData *data_p, ParameterSet *param_set_p)
 				{
 					def.st_string_value_s = output_types_p [0].st_string_value_s;
 
-					if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, ES_SEQUENCE_TYPE.npt_type, false, ES_SEQUENCE_TYPE.npt_name_s, "Type",
+					if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_SEQUENCE_TYPE.npt_type, false, ES_SEQUENCE_TYPE.npt_name_s, "Type",
 					  "Type of sequence. Defaults to genomic where applicable, i.e. not translations. cdna refers to the spliced transcript sequence with UTR; cds refers to the spliced transcript sequence without UTR.",
 					  output_type_options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
 							ParameterMultiOptionArray *output_format_options_p = NULL;
 							SharedType output_formats_p [SO_NUM_FORMATS];
-
-							if (grouped_param_pp)
-								{
-									*grouped_param_pp = param_p;
-									++ grouped_param_pp;
-								}
 
 							for (i = 0; i < SO_NUM_FORMATS; ++ i)
 								{
@@ -264,21 +250,10 @@ bool AddSequenceParameters (ServiceData *data_p, ParameterSet *param_set_p)
 								{
 									def.st_string_value_s = output_formats_p [0].st_string_value_s;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, ES_CONTENT_TYPE.npt_type, false, ES_CONTENT_TYPE.npt_name_s, "Output Format",
+									if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_CONTENT_TYPE.npt_type, false, ES_CONTENT_TYPE.npt_name_s, "Output Format",
 									  "The filetype that any results will be in",
 									  output_format_options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 										{
-											if (grouped_param_pp)
-												{
-													*grouped_param_pp = param_p;
-
-													if (!AddParameterGroupToParameterSet (param_set_p, "Sequence", NULL, grouped_params_pp, num_params, data_p))
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add sequence grouping");
-															FreeMemory (grouped_params_pp);
-														}
-												}
-
 											success_flag = true;
 										}
 									else

@@ -40,10 +40,6 @@
 /****************************************/
 
 
-static ParameterNode *AllocateParameterNode (Parameter *param_p);
-
-static void FreeParameterNode (ListItem *node_p);
-
 
 static bool AddAllParametersToParameterSetJSON (const Parameter *param_p, void *data_p);
 
@@ -103,7 +99,7 @@ void FreeParameterSet (ParameterSet *params_p)
 
 
 
-Parameter *CreateAndAddParameterToParameterSet (const ServiceData *service_data_p, ParameterSet *params_p, ParameterType type, bool multi_valued_flag,
+Parameter *CreateAndAddParameterToParameterSet (const ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, bool multi_valued_flag,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, ParameterMultiOptionArray *options_p,
 	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
@@ -112,8 +108,21 @@ Parameter *CreateAndAddParameterToParameterSet (const ServiceData *service_data_
 	
 	if (param_p)
 		{
+			if (group_p)
+				{
+					/*
+					 * If the parameter fails to get added to the group, it's
+					 * not a terminal error so still carry on
+					 */
+					if (!AddParameterToParameterGroup (group_p, param_p))
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add param \"%s\" to group \"%s\"", param_p -> pa_name_s, group_p -> pg_name_s);
+						}
+				}
+
 			if (!AddParameterToParameterSet (params_p, param_p))
 				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add param \"%s\" to set \"%s\"", param_p -> pa_name_s, params_p -> ps_name_s);
 					FreeParameter (param_p);
 					param_p = NULL;
 				}
@@ -137,35 +146,6 @@ bool AddParameterToParameterSet (ParameterSet *params_p, Parameter *param_p)
 		}		/* if (node_p) */
 	
 	return success_flag;
-}
-
-
-ParameterNode *AllocateParameterNode (Parameter *param_p)
-{
-	ParameterNode *node_p = (ParameterNode *) AllocMemory (sizeof (ParameterNode));
-	
-	if (node_p)
-		{
-			node_p -> pn_node.ln_prev_p = NULL;
-			node_p -> pn_node.ln_next_p = NULL;
-			
-			node_p -> pn_parameter_p = param_p;
-		}		/* if (node_p) */
-		
-	return node_p;
-}
-
-
-void FreeParameterNode (ListItem *node_p)
-{
-	ParameterNode *param_node_p = (ParameterNode *) node_p;
-	
-	if (param_node_p -> pn_parameter_p)
-		{
-			FreeParameter (param_node_p -> pn_parameter_p);
-		}
-
-	FreeMemory (param_node_p);
 }
 
 
@@ -381,24 +361,14 @@ bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, con
 }
 
 
-ParameterGroup *AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, ServiceData *service_data_p)
+ParameterGroup *AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, ServiceData *service_data_p, ParameterSet *params_p)
 {
 	ParameterGroup *group_p = NULL;
-	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, group_key_s, params_pp, num_params, service_data_p);
+	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, group_key_s, service_data_p);
 
 	if (param_group_node_p)
 		{
-			Parameter **param_pp = params_pp;
-			uint32 i;
-
 			group_p = param_group_node_p -> pgn_param_group_p;
-
-			LinkedListAddTail (param_set_p -> ps_grouped_params_p, (ListItem *) param_group_node_p);
-
-			for (i = num_params; i > 0; -- i, ++ param_pp)
-				{
-					(*param_pp) -> pa_group_p = group_p;
-				}
 		}
 
 	return group_p;

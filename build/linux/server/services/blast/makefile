@@ -45,6 +45,9 @@ SRCS 	= \
 	protein_blast_service.c \
 	blast_service_job.c \
 	blast_service_params.c \
+	blastn_service_params.c \
+	blastp_service_params.c \
+	blastx_service_params.c \
 	paired_blast_service.c \
 	blast_formatter.cpp \
 	blast_tool.cpp \

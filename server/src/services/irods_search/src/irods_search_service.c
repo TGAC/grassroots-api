@@ -403,41 +403,29 @@ static int AddParams (ServiceData *data_p, IRodsConnection *connection_p, Parame
 					QueryResult *result_p = results_p -> qr_values_p;
 					int i = result_p -> qr_num_values;
 					char **value_ss = result_p -> qr_values_pp;
-					Parameter **params_pp = (Parameter **) AllocMemoryArray (i, sizeof (Parameter *));
-					Parameter **param_pp = params_pp;
+					const char *heading_s = display_name_s;
+					ParameterGroup *group_p = NULL;
+
+					if (!heading_s)
+						{
+							heading_s = name_s;
+						}
+
+
+					group_p = CreateAddAddParameterGroupToParameterSet (heading_s, NULL, data_p, param_set_p);
+
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
-							Parameter *param_p = AddParam (data_p, connection_p, param_set_p, *value_ss, NULL, display_name_s);
+							Parameter *param_p = AddParam (data_p, connection_p, param_set_p, group_p, *value_ss, NULL, display_name_s);
 
 							if (param_p)
 								{
-									if (param_pp)
-										{
-											*param_pp = param_p;
-											++ param_pp;
-										}
-
 									++ res;
 								}
 							else
 								{
 									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get metadata values for \"%s\"\n", *value_ss);
-								}
-						}
-
-					if (params_pp)
-						{
-							const char *heading_s = display_name_s;
-
-							if (!heading_s)
-								{
-									heading_s = name_s;
-								}
-
-							if (!AddParameterGroupToParameterSet (param_set_p, heading_s, NULL, params_pp, result_p -> qr_num_values, data_p))
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add parameter group for \"%s\"\n", name_s);
 								}
 						}
 

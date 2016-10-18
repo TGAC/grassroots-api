@@ -63,6 +63,7 @@ PARAMETER_GROUP_PREFIX const char *PARAM_GROUP_DELIMITER_S PARAMETER_GROUP_VAL("
 /* forward declaration */
 struct ServiceData;
 struct ParameterGroup;
+struct ParameterSet;
 
 /**
  * A datatype to tell the system that certain
@@ -99,13 +100,15 @@ typedef struct ParameterGroup
 	uint32 pg_num_params;
 
 	/**
-	 * An array of pointers to the Parameters that make up
-	 * this ParameterGroup.
+	 * A list of ParameterNodes for the parameters in this group
 	 */
-	struct Parameter **pg_params_pp;
+	LinkedList *pg_params_p;
 
 
-	/** A list of child parameter groups. */
+	/**
+	 * A list of ParmameterGroupNodes for any
+	 * child parameter groups.
+	 */
 	LinkedList *pg_child_groups_p;
 
 } ParameterGroup;
@@ -135,7 +138,7 @@ extern "C"
 #endif
 
 
-GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, struct ServiceData *service_data_p, struct ParameterSet *param_set_p);
 
 
 GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNodeForExistingParameterGroup (ParameterGroup *group_p);
@@ -144,7 +147,7 @@ GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNodeForExistingP
 GRASSROOTS_PARAMS_API void FreeParameterGroupNode (ListItem *node_p);
 
 
-GRASSROOTS_PARAMS_API ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+GRASSROOTS_PARAMS_API ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, struct ServiceData *service_data_p);
 
 
 GRASSROOTS_PARAMS_API void FreeParameterGroup (ParameterGroup *param_group_p);
@@ -154,6 +157,12 @@ GRASSROOTS_PARAMS_API json_t *GetParameterGroupAsJSON (ParameterGroup *param_gro
 
 
 GRASSROOTS_PARAMS_API bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *child_group_p);
+
+
+GRASSROOTS_PARAMS_API bool AddParameterToParameterGroup (ParameterGroup *parent_group_p, Parameter *param_p);
+
+
+GRASSROOTS_PARAMS_API ParameterGroup *CreateAddAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, struct ParameterSet *param_set_p);
 
 
 #ifdef __cplusplus

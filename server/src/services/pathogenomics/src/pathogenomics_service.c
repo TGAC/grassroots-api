@@ -478,34 +478,16 @@ static bool AddUploadParams (ServiceData *data_p, ParameterSet *param_set_p)
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	size_t num_group_params = 2;
-	Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-	Parameter **grouped_param_pp = grouped_params_pp;
+	ParameterGroup *group_p = CreateAddAddParameterGroupToParameterSet ("Spreadsheet Import Parameters", NULL, data_p, param_set_p);
 
 	def.st_char_value = s_default_column_delimiter;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, PGS_DELIMITER.npt_type, false, PGS_DELIMITER.npt_name_s, "Delimiter", "The character delimiting columns", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+	if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, PGS_DELIMITER.npt_type, false, PGS_DELIMITER.npt_name_s, "Delimiter", "The character delimiting columns", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 		{
 			def.st_string_value_s = NULL;
 
-			if (grouped_param_pp)
+			if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, PGS_FILE.npt_type, false, PGS_FILE.npt_name_s, "Data to upload", "The data to upload", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
-					*grouped_param_pp = param_p;
-					++ grouped_param_pp;
-				}
-
-			if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, PGS_FILE.npt_type, false, PGS_FILE.npt_name_s, "Data to upload", "The data to upload", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
-				{
-					const char * const group_name_s = "Spreadsheet Import Parameters";
-
-					*grouped_param_pp = param_p;
-
-					if (!AddParameterGroupToParameterSet (param_set_p, group_name_s, NULL, grouped_params_pp, num_group_params, data_p))
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", group_name_s);
-							FreeMemory (grouped_params_pp);
-						}
-
 					success_flag = true;
 				}
 		}

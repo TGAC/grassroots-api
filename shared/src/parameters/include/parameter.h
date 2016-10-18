@@ -802,6 +802,14 @@ GRASSROOTS_PARAMS_API bool GetParameterDisplayNameFromConfig (const struct Servi
 GRASSROOTS_PARAMS_API bool GetParameterLevelFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, ParameterLevel *level_p);
 
 
+
+GRASSROOTS_PARAMS_API ParameterNode *AllocateParameterNode (Parameter *param_p);
+
+GRASSROOTS_PARAMS_API void FreeParameterNode (ListItem *node_p);
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

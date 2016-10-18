@@ -135,7 +135,7 @@ GRASSROOTS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, P
  * @return A newly-allocated Parameter or <code>NULL</code> upon error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
+GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, const bool multi_valued_flag,
   const char * const name_s, const char * const display_name_s, const char * const description_s,
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p,
 	ParameterBounds *bounds_p, uint8 level,
@@ -271,7 +271,12 @@ GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
  * otherwise.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API struct ParameterGroup *AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+
+
+
+GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
+
 
 
 /**

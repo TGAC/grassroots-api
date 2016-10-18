@@ -341,6 +341,35 @@ void FreeParameter (Parameter *param_p)
 }
 
 
+ParameterNode *AllocateParameterNode (Parameter *param_p)
+{
+	ParameterNode *node_p = (ParameterNode *) AllocMemory (sizeof (ParameterNode));
+
+	if (node_p)
+		{
+			node_p -> pn_node.ln_prev_p = NULL;
+			node_p -> pn_node.ln_next_p = NULL;
+
+			node_p -> pn_parameter_p = param_p;
+		}		/* if (node_p) */
+
+	return node_p;
+}
+
+
+void FreeParameterNode (ListItem *node_p)
+{
+	ParameterNode *param_node_p = (ParameterNode *) node_p;
+
+	if (param_node_p -> pn_parameter_p)
+		{
+			FreeParameter (param_node_p -> pn_parameter_p);
+		}
+
+	FreeMemory (param_node_p);
+}
+
+
 ParameterBounds *AllocateParameterBounds (void)
 {
 	ParameterBounds *bounds_p = (ParameterBounds *) AllocMemory (sizeof (ParameterBounds));
