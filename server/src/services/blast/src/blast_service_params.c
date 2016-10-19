@@ -303,19 +303,14 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 
 					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "expect_threshold", "Expect threshold", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
 						{
-							def.st_ulong_value = 28;
+							def.st_ulong_value = 0;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "word_size", "Word size", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", NULL, def, NULL, NULL, level, NULL)) != NULL)
 								{
-									def.st_ulong_value = 0;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", NULL, def, NULL, NULL, level, NULL)) != NULL)
+									if ((param_p = SetUpOutputFormatParamater (data_p, param_set_p, group_p)) != NULL)
 										{
-
-											if ((param_p = SetUpOutputFormatParamater (data_p, param_set_p, group_p)) != NULL)
-												{
-													success_flag = true;
-												}
+											success_flag = true;
 										}
 								}
 						}
@@ -327,12 +322,13 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 
 
 
-bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, ParameterSet *param_set_p, ParameterGroup *group_p, const BlastTask *tasks_p, const size_t num_tasks)
+bool AddProgramSelectionParameters (BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks)
 {
   ParameterMultiOptionArray *options_p  = NULL;
   SharedType values_p [num_tasks];
   const char *descriptions_ss [num_tasks];
   size_t i;
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Program Selection Parameters", NULL, & (blast_data_p -> bsd_base_data), param_set_p);
 
   for (i = 0; i < num_tasks; ++ i)
     {

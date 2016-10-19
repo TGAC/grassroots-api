@@ -33,8 +33,9 @@ typedef enum BLAST_SERVICE_LOCAL DatabaseType
 
 typedef enum BLAST_SERVICE_LOCAL BlastServiceType
 {
-	BST_NUCLEOTIDE,
-	BST_PROTEIN,
+	BST_BLASTN,
+	BST_BLASTP,
+	BST_BLASTX,
 	BST_NUM_TYPES
 } BlastServiceType;
 
@@ -94,6 +95,9 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 	/** The BlastToolFactory used to generate each BlastTool that actually run the Blast jobs. */
 	BlastToolFactory *bsd_tool_factory_p;
 
+
+	BlastServiceType bsd_type;
+
 } BlastServiceData;
 
 
@@ -122,6 +126,7 @@ BLAST_SERVICE_PREFIX const char *BS_DATABASE_GROUP_NAME_S BLAST_SERVICE_VAL ("Av
 
 BLAST_SERVICE_PREFIX const char *BS_TOOL_TYPE_NAME_S BLAST_SERVICE_VAL ("blast_tool");
 BLAST_SERVICE_PREFIX const char *BS_COMMAND_NAME_S BLAST_SERVICE_VAL ("blast_command");
+BLAST_SERVICE_PREFIX const char *BS_APP_NAME_S BLAST_SERVICE_VAL ("blast_app_type");
 
 
 #ifdef __cplusplus

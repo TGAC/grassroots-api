@@ -92,7 +92,7 @@ BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, Pa
 BLAST_SERVICE_LOCAL bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 
-BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (const BlastServiceData *blast_data_p, ParameterSet *param_set_p, ParameterGroup *group_p, const BlastTask *tasks_p, const size_t num_tasks);
+BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks);
 
 
 BLAST_SERVICE_LOCAL bool AddBlastPParams (BlastServiceData *data_p, ParameterSet *param_set_p);

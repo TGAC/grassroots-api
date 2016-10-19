@@ -132,7 +132,7 @@ protected:
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArg (const char * const arg_s);
+	virtual bool AddBlastArg (const char * const arg_s);
 
 
 

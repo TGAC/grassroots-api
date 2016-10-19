@@ -56,7 +56,7 @@ typedef struct ParameterSet
 	LinkedList *ps_params_p;
 
 	/**
-	 * A LinkedList of ParamneterGroupNode for this
+	 * A LinkedList of ParameterGroupNodes for this
 	 * ParameterSet.
 	 */
 	LinkedList *ps_grouped_params_p;

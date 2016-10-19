@@ -159,7 +159,7 @@ protected:
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArg (const char * const arg_s);
+	virtual bool AddBlastArg (const char * const arg_s);
 
 
 	/**
@@ -171,7 +171,7 @@ protected:
 	 * @return <code>true</code> if the arguments were added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArgsPair (const char *key_s, const char *value_s);
+	virtual bool AddBlastArgsPair (const char *key_s, const char *value_s);
 
 
 	/**
@@ -189,7 +189,7 @@ protected:
 	 * @return <code>true</code> if the arguments were added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, const bool unsigned_flag, const bool required_flag);
+	virtual bool AddBlastArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, const bool unsigned_flag, const bool required_flag);
 
 
 	/**

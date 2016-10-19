@@ -422,17 +422,17 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 
 			def.st_json_p = NULL;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, PGS_UPDATE.npt_type, false, PGS_UPDATE.npt_name_s, "Update", "Add data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_UPDATE.npt_type, false, PGS_UPDATE.npt_name_s, "Update", "Add data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 				{
-					if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, PGS_QUERY.npt_type, false, PGS_QUERY.npt_name_s, "Search", "Find data to the system", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_QUERY.npt_type, false, PGS_QUERY.npt_name_s, "Search", "Find data to the system", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
-							if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, PGS_REMOVE.npt_type, false, PGS_REMOVE.npt_name_s, "Delete", "Delete data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_REMOVE.npt_type, false, PGS_REMOVE.npt_name_s, "Delete", "Delete data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 								{
 									def.st_boolean_value = false;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, PGS_DUMP.npt_type, false, PGS_DUMP.npt_name_s, "Dump", "Get all of the data in the system", NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+									if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_DUMP.npt_type, false, PGS_DUMP.npt_name_s, "Dump", "Get all of the data in the system", NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
-											if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, PGS_PREVIEW.npt_type, false, PGS_PREVIEW.npt_name_s, "Preview", "Ignore the live dates", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+											if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_PREVIEW.npt_type, false, PGS_PREVIEW.npt_name_s, "Preview", "Ignore the live dates", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 												{
 													ParameterMultiOptionArray *options_p = NULL;
 													SharedType values [PD_NUM_TYPES];
@@ -449,7 +449,7 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 														{
 															def.st_string_value_s = values [0].st_string_value_s;
 
-															if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, PGS_COLLECTION.npt_type, false, PGS_COLLECTION.npt_name_s, "Collection", "The collection to act upon", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+															if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_COLLECTION.npt_type, false, PGS_COLLECTION.npt_name_s, "Collection", "The collection to act upon", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 																{
 																	if (AddUploadParams (service_p -> se_data_p, params_p))
 																		{
@@ -478,7 +478,7 @@ static bool AddUploadParams (ServiceData *data_p, ParameterSet *param_set_p)
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	ParameterGroup *group_p = CreateAddAddParameterGroupToParameterSet ("Spreadsheet Import Parameters", NULL, data_p, param_set_p);
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Spreadsheet Import Parameters", NULL, data_p, param_set_p);
 
 	def.st_char_value = s_default_column_delimiter;
 

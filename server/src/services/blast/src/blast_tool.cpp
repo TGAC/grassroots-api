@@ -30,6 +30,11 @@
 #include "blast_service_job.h"
 
 
+#include "blastn_app_parameters.hpp"
+#include "blastp_app_parameters.hpp"
+#include "blastx_app_parameters.hpp"
+
+
 const char * const BlastTool :: BT_NAME_S = "name";
 
 const char * const BlastTool :: BT_FACTORY_NAME_S = "factory";
@@ -70,11 +75,18 @@ BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, cons
 	bt_name_s = name_s;
 	bt_service_data_p = data_p;
 	bt_factory_name_s = factory_s;
+	bt_app_params_p = GetBlastAppParameters (data_p);
+
+	if (!bt_app_params_p)
+		{
+			throw std :: invalid_argument ("GetBlastAppParameters failed");
+		}
 
 	if (service_job_p)
 		{
 			SetServiceJobName (& (bt_job_p -> bsj_job), name_s);
 		}
+
 }
 
 
@@ -95,6 +107,39 @@ BlastTool :: BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, 
 
 	bt_job_p = job_p;
 	bt_service_data_p = data_p;
+	bt_app_params_p = GetBlastAppParameters (data_p);
+
+	if (!bt_app_params_p)
+		{
+			throw std :: invalid_argument ("GetBlastAppParameters failed");
+		}
+
+}
+
+
+BlastAppParameters *BlastTool :: GetBlastAppParameters (const BlastServiceData *service_data_p)
+{
+	BlastAppParameters *app_p = 0;
+
+	switch (service_data_p -> bsd_type)
+		{
+			case BST_BLASTN:
+				app_p = new BlastNAppParameters;
+				break;
+
+			case BST_BLASTP:
+				app_p = new BlastPAppParameters;
+				break;
+
+			case BST_BLASTX:
+				app_p = new BlastXAppParameters;
+				break;
+
+			default:
+				break;
+		}
+
+	return app_p;
 }
 
 
@@ -133,7 +178,11 @@ const char *BlastTool :: GetFactoryName () const
 
 
 BlastTool :: ~BlastTool ()
-{	
+{
+	if (bt_app_params_p)
+		{
+			delete bt_app_params_p;
+		}
 }
 
 

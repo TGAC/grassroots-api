@@ -24,6 +24,7 @@
 
 #include "service_job.h"
 #include "blast_formatter.h"
+#include "blast_app_parameters.hpp"
 
 
 /* forward declaration */
@@ -204,6 +205,9 @@ protected:
 	const BlastServiceData *bt_service_data_p;
 
 
+
+	BlastAppParameters *bt_app_params_p;
+
 	/**
 	 * This method is used to serialise this BlastTool so that
 	 * it can be recreated from another calling process when required.
@@ -220,6 +224,9 @@ protected:
 private:
 	static const char * const BT_NAME_S;
 	static const char * const BT_FACTORY_NAME_S;
+
+
+	BlastAppParameters * GetBlastAppParameters (const BlastServiceData *service_data_p);
 };
 
 
