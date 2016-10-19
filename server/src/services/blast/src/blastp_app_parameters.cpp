@@ -86,6 +86,26 @@ bool BlastPAppParameters :: ParseParametersToByteBuffer (const BlastServiceData 
 {
 	bool success_flag = false;
 
+	/* matrix */
+	if (AddArgsPairFromStringParameter (params_p, S_MATRIX.npt_name_s, "-matrix", buffer_p, false))
+		{
+			/* Word Size */
+			if (AddArgsPairFromIntegerParameter (params_p, S_COMP_BASED_STATS.npt_name_s, "-comp_based_stats", buffer_p, true, false))
+				{
+					success_flag = true;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_COMP_BASED_STATS.npt_name_s);
+				}
+
+
+		}		/* if (S_COMP_BASED_STATS (params_p, S_MATRIX.npt_name_s, "-reward", buffer_p, false)) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MATRIX.npt_name_s);
+		}
+
 	return success_flag;
 }
 

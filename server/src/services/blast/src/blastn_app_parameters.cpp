@@ -32,16 +32,6 @@ static NamedParameterType S_MISMATCH_SCORE = { "mismatch_score", PT_SIGNED_INT }
 
 
 
-static NamedParameterType S_BLASTN_PARAMS_P [] =
-{
-	S_WORD_SIZE,
-	S_MATCH_SCORE,
-	S_MISMATCH_SCORE,
-	NULL
-};
-
-
-
 BlastNAppParameters :: BlastNAppParameters ()
 {
 
@@ -54,19 +44,32 @@ BlastNAppParameters :: ~BlastNAppParameters ()
 }
 
 
-bool BlastNAppParameters ::AddParameters (BlastServiceData *data_p, ParameterSet *params_p)
+bool BlastNAppParameters ::AddParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
 {
 	bool success_flag = false;
 	SharedType def;
+	Parameter *param_p = NULL;
+	ParameterGroup *group_p = NULL;
+	ServiceData *service_data_p = & (data_p -> bsd_base_data);
 
 	def.st_ulong_value = 28;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_WORD_SIZE.npt_type, false, S_WORD_SIZE.npt_type, "Word size", "Expected number of chance matches in a random model", NULL, def, NULL, NULL, level, NULL)) != NULL)
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
 		{
-			success_flag = true;
+			def.st_long_value = 2;
+
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MATCH_SCORE.npt_type, S_MATCH_SCORE.npt_name_s, "Reward", "The reward for matching bases", def, PL_ALL)) != NULL)
+				{
+					def.st_long_value = 3;
+
+					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MISMATCH_SCORE.npt_type, S_MISMATCH_SCORE.npt_name_s, "Penalty", "The penalty for mismatching bases", def, PL_ALL)) != NULL)
+						{
+							success_flag = true;
+						}
+				}
 		}
 
-	return false;
+	return success_flag;
 }
 
 

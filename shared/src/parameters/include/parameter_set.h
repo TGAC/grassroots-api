@@ -142,6 +142,13 @@ GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const stru
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
+
+
+GRASSROOTS_PARAMS_API Parameter *EasyCreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type,
+	const char * const name_s, const char * const display_name_s, const char * const description_s, SharedType default_value, uint8 level);
+
+
+
 /**
  * Generate a json-based description of a ParameterSet. This uses the Swagger definitions
  * as much as possible.

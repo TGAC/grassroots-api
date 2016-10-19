@@ -80,6 +80,8 @@ BLAST_SERVICE_LOCAL bool AddArgsPairFromIntegerParameter (const ParameterSet *pa
 
 
 
+BLAST_SERVICE_LOCAL bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p,  const bool required_flag);
+
 #ifdef __cplusplus
 }
 #endif

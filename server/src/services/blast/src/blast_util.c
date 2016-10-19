@@ -92,3 +92,20 @@ bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char *
 	return success_flag;
 }
 
+
+
+bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p,  const bool required_flag)
+{
+	bool success_flag = !required_flag;
+	SharedType value;
+
+	memset (&value, 0, sizeof (SharedType));
+
+	if (GetParameterValueFromParameterSet (params_p, param_name_s, &value, true))
+		{
+			success_flag = AddArgsPair (key_s, value.st_string_value_s, buffer_p);
+		}
+
+	return success_flag;
+}
+

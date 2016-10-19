@@ -195,7 +195,7 @@ Parameter *SetUpPreviousJobUUIDParamater (const BlastServiceData *service_data_p
 
 	memset (&def, 0, sizeof (def));
 
-	param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, group_p, BS_JOB_ID.npt_type, false, BS_JOB_ID.npt_name_s, "Job IDs", "The UUIDs for Blast jobs that have previously been run", NULL, def, NULL, NULL, PL_ALL, NULL);
+	param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, group_p, BS_JOB_ID.npt_type, BS_JOB_ID.npt_name_s, "Job IDs", "The UUIDs for Blast jobs that have previously been run", def, PL_ALL);
 
 	return param_p;
 }

@@ -99,6 +99,16 @@ void FreeParameterSet (ParameterSet *params_p)
 
 
 
+
+Parameter *EasyCreateAndAddParameterToParameterSet (const ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type,
+	const char * const name_s, const char * const display_name_s, const char * const description_s,
+	SharedType default_value, uint8 level)
+{
+	return CreateAndAddParameterToParameterSet (service_data_p, params_p, group_p, type, false, name_s, display_name_s, description_s, NULL, default_value, NULL, NULL, level, NULL);
+}
+
+
+
 Parameter *CreateAndAddParameterToParameterSet (const ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, bool multi_valued_flag,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, ParameterMultiOptionArray *options_p,
 	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, uint8 level,
