@@ -37,6 +37,11 @@ public:
 	virtual bool AddParameters (BlastServiceData *data_p, ParameterSet *params_p);
 
 	virtual bool ParseParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+
+private:
+	static NamedParameterType BNAP_WORD_SIZE;
+	static NamedParameterType BNAP_MATCH_SCORE;
+	static NamedParameterType BNAP_MISMATCH_SCORE;
 };
 
 

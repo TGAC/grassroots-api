@@ -32,6 +32,13 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 
+
+static bool AddScoringParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
+
+static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+
+static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+
 /*******************************/
 /******* API DEFINITIONS *******/
 /*******************************/
@@ -43,7 +50,7 @@ Service *GetProteinBlastService ()
 
 	if (protein_blast_service_p)
 		{
-			BlastServiceData *data_p = AllocateBlastServiceData (protein_blast_service_p);
+			BlastServiceData *data_p = AllocateBlastServiceData (protein_blast_service_p, DT_PROTEIN);
 
 			if (data_p)
 				{
@@ -99,7 +106,7 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 
 					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
 						{
-							if (AddScoringParams (blast_data_p, param_set_p))
+							if (AddProteinBlastParameters (blast_data_p, param_set_p))
 								{
 								  if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
                     {
@@ -123,10 +130,162 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
-	ServiceJobSet *jobs_p = NULL;
+	ServiceJobSet *jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p);
 
 	return jobs_p;
 }
 
+
+
+
+bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
+{
+	bool success_flag = false;
+
+	/* matrix */
+	if (AddArgsPairFromStringParameter (params_p, BPAP_MATRIX.npt_name_s, "-matrix", buffer_p, false))
+		{
+			/* Word Size */
+			if (AddArgsPairFromIntegerParameter (params_p, BPAP_COMP_BASED_STATS.npt_name_s, "-comp_based_stats", buffer_p, true, false))
+				{
+					success_flag = true;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BPAP_COMP_BASED_STATS.npt_name_s);
+				}
+
+
+		}		/* if (BPAP_COMP_BASED_STATS (params_p, BPAP_MATRIX.npt_name_s, "-reward", buffer_p, false)) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BPAP_MATRIX.npt_name_s);
+		}
+
+	return success_flag;
+}
+
+
+
+static bool AddProteinBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+
+	if (AddScoringParameters (data_p, param_set_p))
+		{
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+
+static bool AddScoringParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Scoring Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);
+
+	if (AddMatrixParameter (data_p, param_set_p, group_p))
+		{
+			if (AddCompositionalAdjustmentsParameter (data_p, param_set_p, group_p))
+				{
+					success_flag = true;
+				}		/* if (AddCompositionalAdjustmentsParameter (data_p, param_set_p, group_p)) */
+			else
+				{
+
+				}
+		}		/* if (AddMatrixParameter (data_p, param_set_p, group_p)) */
+	else
+		{
+
+		}
+
+	return success_flag;
+}
+
+
+
+static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
+{
+	bool success_flag = false;
+	Parameter *param_p = NULL;
+	SharedType def;
+	SharedType matrix_values_p [BPAP_NUM_MATRICES];
+	uint32 i;
+	ParameterMultiOptionArray *options_p = NULL;
+
+	for (i = 0; i < BPAP_NUM_MATRICES; ++ i)
+		{
+			(matrix_values_p + i) -> st_string_value_s = (char *) * (BPAP_MATRICES_SS + i);
+		}
+
+	memset (&def, 0, sizeof (SharedType));
+
+	options_p = AllocateParameterMultiOptionArray (BPAP_NUM_MATRICES, NULL, matrix_values_p, PT_STRING, true);
+
+	if (options_p)
+		{
+			/* set BLOSUM62 as default */
+			def.st_string_value_s = (matrix_values_p + 4) -> st_string_value_s;
+
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BPAP_MATRIX.npt_type, false, BPAP_MATRIX.npt_name_s, "Matrix", "The Scoring matrix to use", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					FreeParameterMultiOptionArray (options_p);
+				}
+		}
+
+	return success_flag;
+}
+
+
+
+static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
+{
+	bool success_flag = false;
+	Parameter *param_p = NULL;
+	SharedType def;
+	SharedType comp_values_p [BPAP_NUM_COMP_BASED_STATS];
+	uint32 i;
+	ParameterMultiOptionArray *options_p = NULL;
+
+	for (i = 0; i < BPAP_NUM_COMP_BASED_STATS; ++ i)
+		{
+			(comp_values_p + i) -> st_ulong_value = i;
+		}
+
+	memset (&def, 0, sizeof (SharedType));
+
+	options_p = AllocateParameterMultiOptionArray (BPAP_NUM_COMP_BASED_STATS, NULL, comp_values_p, PT_UNSIGNED_INT, true);
+
+	if (options_p)
+		{
+			const char *descriptions_ss [] =
+				{
+					"No composition-based statistics",
+					"Composition-based statistics as in NAR 29:2994-3005, 2001",
+					"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, conditioned on sequence properties",
+					"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, unconditionally"
+				};
+
+			def.st_ulong_value = 2;
+
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BPAP_COMP_BASED_STATS.npt_type, false, BPAP_COMP_BASED_STATS.npt_name_s, "Compositional adjustments", "Matrix adjustment method to compensate for amino acid composition of sequences.", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					FreeParameterMultiOptionArray (options_p);
+				}
+		}
+
+	return success_flag;
+}
 
 

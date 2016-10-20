@@ -37,6 +37,17 @@ public:
 	virtual bool AddParameters (BlastServiceData *data_p, ParameterSet *params_p);
 
 	virtual bool ParseParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+
+private:
+	static NamedParameterType BPAP_MATRIX;
+	static NamedParameterType BPAP_COMP_BASED_STATS;
+
+	static const uint32 BPAP_NUM_MATRICES;
+
+	static const char *BPAP_MATRICES_SS [];
+
+	static uint32 BPAP_NUM_COMP_BASED_STATS;
+
 };
 
 

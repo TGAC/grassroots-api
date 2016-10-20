@@ -53,7 +53,7 @@ public:
 	 *
 	 * @param job_p The ServiceJob to associate with this ExternalBlastTool.
 	 * @param name_s The name to give to this ExternalBlastTool.
-	 * @param factory_s The name of the DrmaaBlastFactory that is creating this DrmaaBlastTool.
+	 * @param factory_s The name of the BlastToolFactory that is creating this ExternalBlastTool.
 	 * @param data_p The BlastServiceData for the Service that will run this ExternalBlastTool.
 	 * @param blast_program_name_s The name of blast command line executable that this ExternalBlastTool
 	 * will call to run its blast job.

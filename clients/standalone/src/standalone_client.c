@@ -75,7 +75,7 @@ int main (int argc, char *argv [])
 	const char *query_s = NULL;
 	const char *client_s = "grassroots-qt-client";
 	const char *protocol_s = NULL;
-	bool web_server_flag = false;
+	bool web_server_flag = true;
 	int api_id = -1;
 	int i;
 	Connection *connection_p = NULL;
@@ -185,8 +185,9 @@ int main (int argc, char *argv [])
 										}
 									break;
 
-								case 'W':
-									web_server_flag = true;
+								/* raw socket connection */
+								case 'r':
+									web_server_flag = false;
 									break;
 
 								default:
@@ -204,7 +205,6 @@ int main (int argc, char *argv [])
 
 			if (web_server_flag)
 				{
-
 					CURLcode c = curl_global_init (CURL_GLOBAL_DEFAULT);
 
 					if (c == 0)

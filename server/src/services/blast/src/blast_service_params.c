@@ -115,8 +115,6 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 	if (num_group_params)
 		{
 			ParameterGroup *group_p = NULL;
-			Parameter **grouped_params_pp = (Parameter **) AllocMemoryArray (num_group_params, sizeof (Parameter *));
-			Parameter **grouped_param_pp = grouped_params_pp;
 			const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 			char *group_s = NULL;
 			const json_t *provider_p = NULL;
@@ -154,17 +152,7 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 											++ local_name_s;
 										}
 
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) != NULL)
-										{
-											if (grouped_param_pp)
-												{
-													*grouped_param_pp = param_p;
-													++ grouped_param_pp;
-												}
-
-											++ num_added_databases;
-										}
-									else
+									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) == NULL)
 										{
 											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> di_name_s);
 										}
@@ -173,7 +161,7 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 
 							++ db_p;
 
-						}		/* while (db_p && success_flag) */
+						}		/* while (db_p -> di_name_s) */
 
 				}		/* if (db_p) */
 

@@ -26,9 +26,9 @@
 #include "streams.h"
 
 
-static NamedParameterType S_WORD_SIZE = { "word_size", PT_UNSIGNED_INT };
-static NamedParameterType S_MATCH_SCORE = { "match_score", PT_SIGNED_INT };
-static NamedParameterType S_MISMATCH_SCORE = { "mismatch_score", PT_SIGNED_INT };
+NamedParameterType BlastNAppParameters :: BNAP_WORD_SIZE = { "word_size", PT_UNSIGNED_INT };
+NamedParameterType BlastNAppParameters :: BNAP_MATCH_SCORE = { "match_score", PT_SIGNED_INT };
+NamedParameterType BlastNAppParameters :: BNAP_MISMATCH_SCORE = { "mismatch_score", PT_SIGNED_INT };
 
 
 
@@ -54,15 +54,15 @@ bool BlastNAppParameters ::AddParameters (BlastServiceData *data_p, ParameterSet
 
 	def.st_ulong_value = 28;
 
-	if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, BNAP_WORD_SIZE.npt_type, BNAP_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
 		{
 			def.st_long_value = 2;
 
-			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MATCH_SCORE.npt_type, S_MATCH_SCORE.npt_name_s, "Reward", "The reward for matching bases", def, PL_ALL)) != NULL)
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, BNAP_MATCH_SCORE.npt_type, BNAP_MATCH_SCORE.npt_name_s, "Reward", "The reward for matching bases", def, PL_ALL)) != NULL)
 				{
 					def.st_long_value = 3;
 
-					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MISMATCH_SCORE.npt_type, S_MISMATCH_SCORE.npt_name_s, "Penalty", "The penalty for mismatching bases", def, PL_ALL)) != NULL)
+					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, BNAP_MISMATCH_SCORE.npt_type, BNAP_MISMATCH_SCORE.npt_name_s, "Penalty", "The penalty for mismatching bases", def, PL_ALL)) != NULL)
 						{
 							success_flag = true;
 						}
@@ -78,31 +78,31 @@ bool BlastNAppParameters :: ParseParametersToByteBuffer (const BlastServiceData 
 	bool success_flag = false;
 
 	/* reward */
-	if (AddArgsPairFromIntegerParameter (params_p, S_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false))
+	if (AddArgsPairFromIntegerParameter (params_p, BNAP_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false))
 		{
 			/* Penalty */
-			if (AddArgsPairFromIntegerParameter (params_p, S_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false))
+			if (AddArgsPairFromIntegerParameter (params_p, BNAP_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false))
 				{
 					/* Word Size */
-					if (AddArgsPairFromIntegerParameter (params_p, S_WORD_SIZE.npt_name_s, "-word_size", buffer_p, true, false))
+					if (AddArgsPairFromIntegerParameter (params_p, BNAP_WORD_SIZE.npt_name_s, "-word_size", buffer_p, true, false))
 						{
 							success_flag = true;
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_WORD_SIZE.npt_name_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BNAP_WORD_SIZE.npt_name_s);
 						}
 
-				}		/* if (AddArgsPairFromIntegerParameter (params_p, S_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false)) */
+				}		/* if (AddArgsPairFromIntegerParameter (params_p, BNAP_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false)) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MISMATCH_SCORE.npt_name_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BNAP_MISMATCH_SCORE.npt_name_s);
 				}
 
-		}		/* if (AddArgsPairFromIntegerParameter (params_p, S_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false)) */
+		}		/* if (AddArgsPairFromIntegerParameter (params_p, BNAP_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false)) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MATCH_SCORE.npt_name_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BNAP_MATCH_SCORE.npt_name_s);
 		}
 
 	return success_flag;

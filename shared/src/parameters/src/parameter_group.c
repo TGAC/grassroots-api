@@ -23,32 +23,14 @@
 
 #define ALLOCATE_PARAMETER_GROUP_TAGS_H
 #include "parameter_group.h"
+#include "parameter_set.h"
 #include "string_utils.h"
 #include "json_util.h"
 #include "service.h"
 
 
-ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, ServiceData *service_data_p)
-{
-	ParameterGroup *group_p = AllocateParameterGroup (name_s, group_key_s, service_data_p);
 
-	if (group_p)
-		{
-			ParameterGroupNode *param_group_node_p = AllocateParameterGroupNodeForExistingParameterGroup (group_p);
-
-			if (param_group_node_p)
-				{
-					return param_group_node_p;
-				}		/* if (param_group_node_p) */
-
-			FreeParameterGroup (group_p);
-		}		/* if (group_p) */
-
-	return NULL;
-}
-
-
-ParameterGroupNode *AllocateParameterGroupNodeForExistingParameterGroup (ParameterGroup *group_p)
+ParameterGroupNode *AllocateParameterGroupNode (ParameterGroup *group_p)
 {
 	ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
 
@@ -208,6 +190,7 @@ bool AddParameterToParameterGroup (ParameterGroup *group_p, Parameter *param_p)
 		{
 			LinkedListAddTail (group_p -> pg_params_p, & (node_p -> pn_node));
 			param_p -> pa_group_p = group_p;
+			success_flag = true;
 		}
 
 	return success_flag;
@@ -217,7 +200,7 @@ bool AddParameterToParameterGroup (ParameterGroup *group_p, Parameter *param_p)
 bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *child_group_p)
 {
 	bool success_flag = false;
-	ParameterGroupNode *node_p = AllocateParameterGroupNodeForExistingParameterGroup (child_group_p);
+	ParameterGroupNode *node_p = AllocateParameterGroupNode (child_group_p);
 
 	if (node_p)
 		{

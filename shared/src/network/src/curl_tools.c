@@ -217,6 +217,12 @@ bool MakeRemoteJSONCallFromCurlTool (CurlTool *tool_p, json_t *req_p)
 						{
 							success_flag = true;
 						}
+					else
+						{
+							const char *error_s = curl_easy_strerror (res);
+
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "RunCurlTool failed with code " UINT32_FMT ": %s\n", res, error_s ? error_s : "NULL");
+						}
 				}
 
 			free (dump_s);

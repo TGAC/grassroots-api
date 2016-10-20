@@ -45,7 +45,7 @@ Service *GetNucleotideBlastService ()
 
 	if (nucleotide_blast_service_p)
 		{
-			BlastServiceData *data_p = AllocateBlastServiceData (nucleotide_blast_service_p);
+			BlastServiceData *data_p = AllocateBlastServiceData (nucleotide_blast_service_p, DT_NUCLEOTIDE);
 
 			if (data_p)
 				{
@@ -126,7 +126,7 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 
 static ServiceJobSet *RunNucleotideBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
-	ServiceJobSet *jobs_p = NULL;
+	ServiceJobSet *jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p);
 
 	return jobs_p;
 }

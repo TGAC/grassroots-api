@@ -371,18 +371,18 @@ bool GetParameterValueFromParameterSet (const ParameterSet * const params_p, con
 }
 
 
-ParameterGroup *AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, ServiceData *service_data_p, ParameterSet *params_p)
+bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p)
 {
-	ParameterGroup *group_p = NULL;
-	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_name_s, group_key_s, service_data_p);
+	bool success_flag = false;
+	ParameterGroupNode *param_group_node_p = AllocateParameterGroupNode (group_p);
 
 	if (param_group_node_p)
 		{
-			LinkedListAddTail (params_p -> ps_grouped_params_p, & (param_group_node_p -> pgn_node));
-			group_p = param_group_node_p -> pgn_param_group_p;
+			LinkedListAddTail (param_set_p -> ps_grouped_params_p, & (param_group_node_p -> pgn_node));
+			success_flag = true;
 		}
 
-	return group_p;
+	return success_flag;
 }
 
 
@@ -497,7 +497,6 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p, const bool 
 																	bool visible_flag = true;
 																	ParameterNode *param_node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
 																	const char *group_key_s = NULL;
-																	ParameterGroup *group_p = NULL;
 
 																	/* Get the number of Parameters needed */
 																	for (j = 0; j < num_params; ++ j)
@@ -507,7 +506,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p, const bool 
 
 																			if ((param_group_name_s) && (strcmp (param_group_name_s, group_name_s) == 0))
 																				{
-																					if (!AddParameterToParameterGroup (group_p, param_node_p -> pn_parameter_p))
+																					if (!AddParameterToParameterGroup (param_group_p, param_node_p -> pn_parameter_p))
 																						{
 																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add parameter \"%s\" to group \"%s\"",  param_node_p -> pn_parameter_p -> pa_name_s, group_name_s);
 																						}
@@ -520,7 +519,7 @@ ParameterSet *CreateParameterSetFromJSON (const json_t * const op_p, const bool 
 
 																	if (GetJSONBoolean (group_json_p, PARAM_GROUP_VISIBLE_S, &visible_flag))
 																		{
-																			group_p -> pg_visible_flag = visible_flag;
+																			param_group_p -> pg_visible_flag = visible_flag;
 																		}
 
 																}		/* if (param_group_p) */

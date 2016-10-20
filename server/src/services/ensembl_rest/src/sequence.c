@@ -211,7 +211,7 @@ bool AddSequenceParameters (ServiceData *data_p, ParameterSet *param_set_p)
 	Parameter *param_p = NULL;
 	bool success_flag = false;
 	SharedType def;
-	ParameterGroup *group_p = CreateAddAddParameterGroupToParameterSet ("Sequence Parameters", NULL, data_p, param_set_p);
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Sequence Parameters", NULL, data_p, param_set_p);
 
 	def.st_string_value_s = NULL;
 

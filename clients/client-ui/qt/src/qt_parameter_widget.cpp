@@ -244,15 +244,17 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 		{
 			ParameterGroup *group_p = param_group_node_p -> pgn_param_group_p;
 			ParamGroupBox *box_p = new ParamGroupBox (group_p -> pg_name_s, group_p -> pg_visible_flag);
-			Parameter **param_pp = group_p -> pg_params_pp;
+			ParameterNode *node_in_group_p = reinterpret_cast <ParameterNode *> (group_p -> pg_params_p -> ll_head_p);
 
-			for (uint32 i = group_p -> pg_num_params; i > 0; -- i, ++ param_pp)
+			while (node_in_group_p)
 				{
-					Parameter *param_p = const_cast <Parameter *> (*param_pp);
+					Parameter *param_p = node_in_group_p -> pn_parameter_p;
 
 					AddParameterWidget (param_p, box_p);
 
 					params_map.insert (param_p, param_p);
+
+					node_in_group_p = reinterpret_cast <ParameterNode *> (node_in_group_p -> pn_node.ln_next_p);
 				}
 
 			int row = qpw_layout_p -> rowCount ();

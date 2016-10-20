@@ -654,6 +654,9 @@ GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t 
 GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_service_p);
 
 
+GRASSROOTS_SERVICE_API void ProcessLinkedServices (struct ServiceJob *job_p);
+
+
 #ifdef __cplusplus
 }
 #endif

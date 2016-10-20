@@ -95,8 +95,7 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 	/** The BlastToolFactory used to generate each BlastTool that actually run the Blast jobs. */
 	BlastToolFactory *bsd_tool_factory_p;
 
-
-	BlastServiceType bsd_type;
+	DatabaseType bsd_type;
 
 } BlastServiceData;
 

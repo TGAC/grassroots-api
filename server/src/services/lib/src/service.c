@@ -1696,23 +1696,4 @@ char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char *
 }
 
 
-void ProcessLinkedServices (Service *service_p, ServiceJob *job_p)
-{
-	if (service_p -> se_linked_services.ll_size)
-		{
-			LinkedServiceNode *linked_service_node_p = (LinkedServiceNode *) (service_p -> se_linked_services.ll_head_p);
 
-			while (linked_service_node_p)
-				{
-					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
-
-					if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
-						}
-
-					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
-				}		/* while (linked_service_node_p) */
-
-		}		/* if (service_p -> se_linked_services.ll_size) */
-}

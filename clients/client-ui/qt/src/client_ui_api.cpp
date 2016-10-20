@@ -116,8 +116,10 @@ static QTClientData *AllocateQTClientData (void)
 					 *
 					 * The solution is to use a theme that isn't broken on Ubuntu such as Plastique.
 					 */
-					QStyle *style_p = QStyleFactory :: create ("fusion");
+					QStyle *style_p = QStyleFactory :: create ("Fusion");
 					QApplication :: setStyle (style_p);
+
+					qDebug() << QStyleFactory::keys();
 
 					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
 

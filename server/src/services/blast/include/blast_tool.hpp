@@ -47,7 +47,7 @@ public:
 	 * @param factory_s The name of the BlastToolFactory that created this BlastTool.
 	 * @see BlastServiceJob
 	 */
-	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p);
+	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, bool (*parse_params_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p));
 
 
 	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
@@ -206,7 +206,9 @@ protected:
 
 
 
-	BlastAppParameters *bt_app_params_p;
+	bool (*bt_parse_params_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+
+
 
 	/**
 	 * This method is used to serialise this BlastTool so that

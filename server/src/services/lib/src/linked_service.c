@@ -29,6 +29,7 @@
 #include "service.h"
 #include "schema_version.h"
 #include "user_details.h"
+#include "service_config.h"
 //#include "resource.h"
 
 

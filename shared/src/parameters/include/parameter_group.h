@@ -138,10 +138,8 @@ extern "C"
 #endif
 
 
-GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, struct ServiceData *service_data_p);
 
-
-GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNodeForExistingParameterGroup (ParameterGroup *group_p);
+GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (ParameterGroup *group_p);
 
 
 GRASSROOTS_PARAMS_API void FreeParameterGroupNode (ListItem *node_p);

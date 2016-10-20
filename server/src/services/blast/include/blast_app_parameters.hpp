@@ -37,9 +37,9 @@ public:
 	BlastAppParameters ();
 	virtual ~BlastAppParameters ();
 
-	virtual bool AddParameters (BlastServiceData *data_p, ParameterSet *params_p) = 0;
-
 	virtual bool ParseParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p) = 0;
+private:
+
 };
 
 

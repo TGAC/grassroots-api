@@ -23,10 +23,11 @@ extern "C"
 {
 #endif
 
+BLAST_SERVICE_LOCAL ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 BLAST_SERVICE_LOCAL bool GetBlastServiceConfig (BlastServiceData *data_p);
 
-BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_service_p);
+BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_service_p, DatabaseType database_type);
 
 BLAST_SERVICE_LOCAL void FreeBlastServiceData (BlastServiceData *data_p);
 
