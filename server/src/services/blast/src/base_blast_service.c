@@ -26,19 +26,28 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 	memset (&param_value, 0, sizeof (SharedType));
 
+	/*
+	 * We will check for all of our parameters, such as previous job ids, etc. first, until
+	 * we are left with the blast-specific parameters
+	 */
+
 	/* Are we retrieving previously run jobs? */
-	if ((GetParameterValueFromParameterSet (param_set_p, BS_JOB_ID.npt_name_s, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s)))
+	if (GetParameterValueFromParameterSet (param_set_p, BS_JOB_ID.npt_name_s, &param_value, true))
 		{
-			service_p -> se_jobs_p  = CreateJobsForPreviousResults (param_set_p, param_value.st_string_value_s, blast_data_p);
-		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) */
-	else
+			if (!!IsStringEmpty (param_value.st_string_value_s))
+				{
+					service_p -> se_jobs_p  = CreateJobsForPreviousResults (param_set_p, param_value.st_string_value_s, blast_data_p);
+				}
+		}		/* if (GetParameterValueFromParameterSet (param_set_p, BS_JOB_ID.npt_name_s, &param_value, true)) */
+
+	if (! (service_p -> se_jobs_p))
 		{
 			service_p -> se_jobs_p = AllocateServiceJobSet (service_p);
 
 			if (service_p -> se_jobs_p)
 				{
 					/* Get all of the selected databases and create a BlastServiceJob for each one */
-					PrepareBlastServiceJobs (blast_data_p -> bsd_databases_p, false, param_set_p, service_p -> se_jobs_p, blast_data_p);
+					PrepareBlastServiceJobs (blast_data_p -> bsd_databases_p, param_set_p, service_p -> se_jobs_p, blast_data_p);
 
 					if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0)
 						{
@@ -622,59 +631,43 @@ ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast
 
 
 
-void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const bool all_flag, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, BlastServiceData *data_p)
+void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, BlastServiceData *data_p)
 {
-	/* count the number of databases to search */
 	if (db_p)
 		{
 			while (db_p -> di_name_s)
 				{
-					const char *job_name_s = NULL;
-					const char *job_description_s = NULL;
+					Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
 
-					if (all_flag)
+					/* Do we have a matching parameter? */
+					if (param_p)
 						{
-							job_name_s = db_p -> di_name_s;
-							job_description_s = db_p -> di_description_s;
-						}
-					else
-						{
-							Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
-
-							if (param_p)
+							/* Is the database selected to search against? */
+							if (param_p -> pa_current_value.st_boolean_value)
 								{
-									if (param_p -> pa_current_value.st_boolean_value)
+									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p -> di_name_s, db_p -> di_description_s, data_p);
+
+									if (job_p)
 										{
-											job_name_s = db_p -> di_name_s;
-											job_description_s = db_p -> di_description_s;
+											if (!AddServiceJobToServiceJobSet (jobs_p, (ServiceJob *) job_p))
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ServiceJob to the ServiceJobSet for \"%s\"", db_p -> di_name_s);
+													FreeBlastServiceJob (& (job_p -> bsj_job));
+												}
 										}
-								}
-						}
-
-					if (job_name_s)
-						{
-							BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, job_name_s, job_description_s, data_p);
-
-							if (job_p)
-								{
-									if (!AddServiceJobToServiceJobSet (jobs_p, (ServiceJob *) job_p))
+									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ServiceJob to the ServiceJobSet for \"%s\"", job_name_s);
-											FreeBlastServiceJob (& (job_p -> bsj_job));
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob for \"%s\"", db_p -> di_name_s);
 										}
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob for \"%s\"", job_name_s);
-								}
 
-						}		/* if (job_name_s) */
+								}		/* if (param_p -> pa_current_value.st_boolean_value) */
+
+						}		/* if (param_p) */
 
 					++ db_p;
 				}		/* while (db_p) */
 
 		}		/* if (db_p) */
-
 }
 
 
@@ -997,6 +990,25 @@ json_t *BuildBlastServiceJobJSON (Service * UNUSED_PARAM (service_p), const Serv
 
 
 
+BlastServiceData *AllocateBlastServiceData (Service * UNUSED_PARAM (blast_service_p), DatabaseType database_type)
+{
+	BlastServiceData *data_p = (BlastServiceData *) AllocMemory (sizeof (BlastServiceData));
+
+	if (data_p)
+		{
+			memset (& (data_p -> bsd_base_data), 0, sizeof (ServiceData));
+
+			data_p -> bsd_working_dir_s = NULL;
+			data_p -> bsd_databases_p = NULL;
+			data_p -> bsd_formatter_p = NULL;
+			data_p -> bsd_tool_factory_p = NULL;
+			data_p -> bsd_type = database_type;
+		}
+
+	return data_p;
+}
+
+
 ServiceJob *BuildBlastServiceJob (struct Service *service_p, const json_t *service_job_json_p)
 {
 	BlastServiceData *config_p = (BlastServiceData*) (service_p -> se_data_p);
@@ -1237,25 +1249,6 @@ bool GetBlastServiceConfig (BlastServiceData *data_p)
 	return success_flag;
 }
 
-
-
-BlastServiceData *AllocateBlastServiceData (Service * UNUSED_PARAM (blast_service_p), DatabaseType database_type)
-{
-	BlastServiceData *data_p = (BlastServiceData *) AllocMemory (sizeof (BlastServiceData));
-
-	if (data_p)
-		{
-			memset (& (data_p -> bsd_base_data), 0, sizeof (ServiceData));
-
-			data_p -> bsd_working_dir_s = NULL;
-			data_p -> bsd_databases_p = NULL;
-			data_p -> bsd_formatter_p = NULL;
-			data_p -> bsd_tool_factory_p = NULL;
-			data_p -> bsd_type = database_type;
-		}
-
-	return data_p;
-}
 
 
 void FreeBlastServiceData (BlastServiceData *data_p)

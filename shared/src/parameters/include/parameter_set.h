@@ -304,14 +304,13 @@ GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
 
 
 /**
- * Remove the Parameter with a given tag from a ParameterSet.
+ * Remove the Parameter with a given name from a ParameterSet.
  *
  * @param params_p The ParameterSet to search.
- * @param name_s The name of ther Parameter to try and match.
+ * @param name_s The name of the Parameter to try and match.
  * @return If found, the Parameter with the matching Tag will be be removed from the ParameterSet
  * and returned. If it could not be found <code>NULL</code> will be returned.
  * be found.
- * @see GetParameterFromParameterSetByTag
  * @memberof ParameterSet
  */
 GRASSROOTS_PARAMS_API Parameter *DetachParameterByName (ParameterSet *params_p, const char * const name_s);

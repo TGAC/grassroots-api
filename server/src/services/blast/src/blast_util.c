@@ -28,17 +28,26 @@
 
 
 
-bool AddArg (const char *arg_s, ByteBuffer *buffer_p)
+bool AddArg (const char *arg_s, ByteBuffer *buffer_p, bool hyphen_flag)
 {
 	bool success_flag = true;
 
 	if (buffer_p -> bb_current_index > 0)
 		{
-			success_flag = AppendStringsToByteBuffer (buffer_p, " ", arg_s, NULL);
+			const char * const prefix_s = hyphen_flag ? " -" : " ";
+
+			success_flag = AppendStringsToByteBuffer (buffer_p, prefix_s, arg_s, NULL);
 		}
 	else
 		{
-			success_flag =  AppendStringToByteBuffer (buffer_p, arg_s);
+			if (hyphen_flag)
+				{
+					success_flag = AppendStringsToByteBuffer (buffer_p, "-", arg_s, NULL);
+				}
+			else
+				{
+					success_flag =  AppendStringToByteBuffer (buffer_p, arg_s);
+				}
 		}
 
 	return success_flag;
@@ -51,9 +60,9 @@ bool AddArgsPair (const char *key_s, const char *value_s, ByteBuffer *buffer_p)
 {
 	bool success_flag = false;
 
-	if (AddArg (key_s, buffer_p))
+	if (AddArg (key_s, buffer_p, true))
 		{
-			if (AddArg (value_s, buffer_p))
+			if (AddArg (value_s, buffer_p, false))
 				{
 					success_flag = true;
 				}
@@ -72,28 +81,71 @@ bool AddArgsPair (const char *key_s, const char *value_s, ByteBuffer *buffer_p)
 
 
 
-bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p, const bool unsigned_flag, const bool required_flag)
+bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 {
-	bool success_flag = !required_flag;
-	SharedType value;
+	bool success_flag = false;
 
-	memset (&value, 0, sizeof (SharedType));
-
-	if (GetParameterValueFromParameterSet (params_p, param_name_s, &value, true))
+	switch (param_p -> pa_type)
 		{
-			int32 param_value = unsigned_flag ? ((int32) value.st_ulong_value) : (value.st_long_value);
-			char *value_s = ConvertIntegerToString (param_value);
+			case PT_STRING:
+			case PT_DIRECTORY:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+			case PT_LARGE_STRING:
+			case PT_KEYWORD:
+			case PT_PASSWORD:
+				success_flag = AddArgsPair (param_p -> pa_name_s, param_p -> pa_current_value.st_string_value_s, buffer_p);
+				break;
 
-			if (value_s)
+			case PT_SIGNED_INT:
 				{
-					success_flag = AddArgsPair (key_s, value_s, buffer_p);
-					FreeCopiedString (value_s);
-				}		/* if (value_s) */
-		}
+					char *value_s = ConvertIntegerToString (param_p -> pa_current_value.st_long_value);
+
+					if (value_s)
+						{
+							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, buffer_p);
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
+				}
+				break;
+
+			case PT_UNSIGNED_INT:
+				{
+					char *value_s = ConvertIntegerToString (param_p -> pa_current_value.st_ulong_value);
+
+					if (value_s)
+						{
+							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, buffer_p);
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
+				}
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				{
+					char *value_s = ConvertNumberToString (param_p -> pa_current_value.st_data_value, 0);
+
+					if (value_s)
+						{
+							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, buffer_p);
+							FreeCopiedString (value_s);
+						}		/* if (value_s) */
+
+				}
+				break;
+
+			case PT_BOOLEAN:
+				success_flag = AddArg (param_p -> pa_name_s, buffer_p, true);
+				break;
+
+			default:
+				break;
+
+		}		/* switch (param_p -> pa_type) */
 
 	return success_flag;
 }
-
 
 
 bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p,  const bool required_flag)

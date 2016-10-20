@@ -41,10 +41,13 @@ extern "C"
  *
  * @param buffer_p The ByteBuffer to store the value in.
  * @param arg_s The argument to add.
+ * @param hyphen_flag If this is <code>true</code> then a "-"
+ * will be prepended to the argument that is being added to
+ * the ByteBuffer.
  * @return <code>true</code> if the argument was added
  * successfully, <code>false</code> otherwise.
  */
-BLAST_SERVICE_LOCAL bool AddArg (const char *arg_s, ByteBuffer *buffer_p);
+BLAST_SERVICE_LOCAL bool AddArg (const char *arg_s, ByteBuffer *buffer_p, bool hyphen_flag);
 
 
 
