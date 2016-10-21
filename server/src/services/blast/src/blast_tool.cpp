@@ -69,14 +69,12 @@ OperationStatus GetBlastStatus (BlastTool *tool_p)
 
 
 
-BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, bool (*parse_params_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p))
+BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p)
 {
 	bt_job_p = service_job_p;
 	bt_name_s = name_s;
 	bt_service_data_p = data_p;
 	bt_factory_name_s = factory_s;
-
-	bt_parse_params_fn = parse_params_fn;
 
 
 	if (service_job_p)
@@ -104,8 +102,6 @@ BlastTool :: BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, 
 
 	bt_job_p = job_p;
 	bt_service_data_p = data_p;
-	bt_parse_params_fn = NULL;
-
 }
 
 
@@ -171,10 +167,7 @@ const char *BlastTool :: GetFactoryName () const
 
 BlastTool :: ~BlastTool ()
 {
-	if (bt_app_params_p)
-		{
-			delete bt_app_params_p;
-		}
+
 }
 
 

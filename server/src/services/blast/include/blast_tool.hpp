@@ -47,7 +47,7 @@ public:
 	 * @param factory_s The name of the BlastToolFactory that created this BlastTool.
 	 * @see BlastServiceJob
 	 */
-	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, bool (*parse_params_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p));
+	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p);
 
 
 	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
@@ -77,7 +77,7 @@ public:
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
 	 */
-	virtual bool ParseParameters (ParameterSet *params_p) = 0;
+	virtual bool ParseParameters (ParameterSet *param_set_p, BlastAppParameters *app_params_p) = 0;
 
 	/**
 	 * Set the input filename for the BlastTool to use.
@@ -203,11 +203,6 @@ protected:
 	 * The ServiceData for this BlastTool.
 	 */
 	const BlastServiceData *bt_service_data_p;
-
-
-
-	bool (*bt_parse_params_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
-
 
 
 	/**

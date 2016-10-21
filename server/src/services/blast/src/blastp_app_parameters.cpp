@@ -72,10 +72,10 @@ bool BlastPAppParameters :: ParseParametersToByteBuffer (const BlastServiceData 
 	bool success_flag = false;
 
 	/* matrix */
-	if (AddArgsPairFromStringParameter (params_p, BPAP_MATRIX.npt_name_s, "-matrix", buffer_p, false))
+	if (GetAndAddBlastArgsToByteBuffer (params_p, BPAP_MATRIX.npt_name_s, false, buffer_p))
 		{
 			/* Word Size */
-			if (AddArgsPairFromIntegerParameter (params_p, BPAP_COMP_BASED_STATS.npt_name_s, "-comp_based_stats", buffer_p, true, false))
+			if (GetAndAddBlastArgsToByteBuffer (params_p, BPAP_COMP_BASED_STATS.npt_name_s, false, buffer_p))
 				{
 					success_flag = true;
 				}

@@ -14,7 +14,7 @@
 #include "blast_service_job.h"
 #include "parameter_set.h"
 #include "temp_file.hpp"
-
+#include "blast_app_parameters.hpp"
 
 
 
@@ -23,7 +23,7 @@ extern "C"
 {
 #endif
 
-BLAST_SERVICE_LOCAL ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
+BLAST_SERVICE_LOCAL ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p, BlastAppParameters *app_params_p);
 
 BLAST_SERVICE_LOCAL bool GetBlastServiceConfig (BlastServiceData *data_p);
 

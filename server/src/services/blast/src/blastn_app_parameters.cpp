@@ -27,8 +27,8 @@
 
 
 NamedParameterType BlastNAppParameters :: BNAP_WORD_SIZE = { "word_size", PT_UNSIGNED_INT };
-NamedParameterType BlastNAppParameters :: BNAP_MATCH_SCORE = { "match_score", PT_SIGNED_INT };
-NamedParameterType BlastNAppParameters :: BNAP_MISMATCH_SCORE = { "mismatch_score", PT_SIGNED_INT };
+NamedParameterType BlastNAppParameters :: BNAP_MATCH_SCORE = { "reward", PT_UNSIGNED_INT };
+NamedParameterType BlastNAppParameters :: BNAP_MISMATCH_SCORE = { "penalty", PT_SIGNED_INT };
 
 
 
@@ -78,13 +78,13 @@ bool BlastNAppParameters :: ParseParametersToByteBuffer (const BlastServiceData 
 	bool success_flag = false;
 
 	/* reward */
-	if (AddArgsPairFromIntegerParameter (params_p, BNAP_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false))
+	if (GetAndAddBlastArgsToByteBuffer (params_p, BNAP_MATCH_SCORE.npt_name_s, false, buffer_p))
 		{
 			/* Penalty */
-			if (AddArgsPairFromIntegerParameter (params_p, BNAP_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false))
+			if (GetAndAddBlastArgsToByteBuffer (params_p, BNAP_MISMATCH_SCORE.npt_name_s, false, buffer_p))
 				{
 					/* Word Size */
-					if (AddArgsPairFromIntegerParameter (params_p, BNAP_WORD_SIZE.npt_name_s, "-word_size", buffer_p, true, false))
+					if (GetAndAddBlastArgsToByteBuffer (params_p, BNAP_WORD_SIZE.npt_name_s, false, buffer_p))
 						{
 							success_flag = true;
 						}
@@ -93,13 +93,13 @@ bool BlastNAppParameters :: ParseParametersToByteBuffer (const BlastServiceData 
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BNAP_WORD_SIZE.npt_name_s);
 						}
 
-				}		/* if (AddArgsPairFromIntegerParameter (params_p, BNAP_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false)) */
+				}		/* if (GetAndAddBlastArgsToByteBuffer (params_p, BNAP_MISMATCH_SCORE.npt_name_s, "-penalty", buffer_p, false, false)) */
 			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BNAP_MISMATCH_SCORE.npt_name_s);
 				}
 
-		}		/* if (AddArgsPairFromIntegerParameter (params_p, BNAP_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false)) */
+		}		/* if (GetAndAddBlastArgsToByteBuffer (params_p, BNAP_MATCH_SCORE.npt_name_s, "-reward", buffer_p, false, false)) */
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BNAP_MATCH_SCORE.npt_name_s);

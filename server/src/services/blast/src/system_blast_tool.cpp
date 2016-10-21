@@ -38,7 +38,7 @@
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s)
 : ExternalBlastTool (job_p, name_s, factory_s, data_p, blast_program_name_s)
 {
-	if (!AddBlastArg (blast_program_name_s))
+	if (!AddBlastArg (blast_program_name_s, false))
 		{
 			throw std::bad_alloc ();
 		}
@@ -48,7 +48,7 @@ SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, 
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
 	: ExternalBlastTool (job_p, data_p, root_p)
 {
-	if (!AddBlastArg (ebt_blast_s))
+	if (!AddBlastArg (ebt_blast_s, false))
 		{
 			throw std::bad_alloc ();
 		}
@@ -61,21 +61,24 @@ SystemBlastTool :: ~SystemBlastTool ()
 }
 
 
-bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
+bool SystemBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParameters *app_params_p)
 {
 	bool success_flag = false;
 
-	if (ExternalBlastTool :: ParseParameters (params_p))
+	if (ExternalBlastTool :: ParseParameters (params_p, app_params_p))
 		{
 			char *logfile_s = GetJobFilename (NULL, BS_LOG_SUFFIX_S);
 
 			if (logfile_s)
 				{
-					if (AddBlastArgsPair (">>", logfile_s))
+					if (AddBlastArg (">>", false))
 						{
-							if (AddBlastArg ("2>&1"))
+							if (AddBlastArg (logfile_s, false))
 								{
-									success_flag = true;
+									if (AddBlastArg ("2>&1", false))
+										{
+											success_flag = true;
+										}
 								}
 						}
 

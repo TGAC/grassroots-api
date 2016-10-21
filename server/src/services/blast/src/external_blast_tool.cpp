@@ -29,7 +29,7 @@
 #include "blast_service_job.h"
 #include "blast_service_params.h"
 #include "blast_util.h"
-
+#include "math_utils.h"
 
 const char * const ExternalBlastTool :: EBT_INPUT_SUFFIX_S = ".input";
 const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
@@ -108,6 +108,7 @@ char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const ch
 
 	return job_filename_s;
 }
+
 
 ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s, factory_s, data_p)
@@ -225,8 +226,7 @@ char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 }
 
 
-
-bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
+bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParameters *app_params_p)
 {
 	bool success_flag = false;
 	SharedType value;
@@ -237,16 +237,16 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
 		{
 			if (AddBlastArgsPair ("-task", value.st_string_value_s))
 				{
-					if (AddBlastArgsPairFromIntegerParameter (params_p, BS_NUM_ALIGNMENTS.npt_name_s, "-num_alignments", false, false))
+					if (GetAndAddBlastArgsToByteBuffer (params_p, BS_MAX_SEQUENCES.npt_name_s, false, ebt_buffer_p))
 						{
 							if (bt_job_p -> bsj_job.sj_name_s)
 								{
 									if (AddBlastArgsPair ("-db", bt_job_p -> bsj_job.sj_name_s))
 										{
-											if (bt_app_params_p -> ParseParametersToByteBuffer (bt_service_data_p, params_p, ebt_buffer_p))
+											if (app_params_p -> ParseParametersToByteBuffer (bt_service_data_p, params_p, ebt_buffer_p))
 												{
 													/* Expect threshold */
-													if (AddBlastArgsPairFromIntegerParameter (params_p, BS_EXPECT_THRESHOLD.npt_name_s, "-evalue", true, false))
+													if (GetAndAddBlastArgsToByteBuffer (params_p, BS_EXPECT_THRESHOLD.npt_name_s, false, ebt_buffer_p))
 														{
 															/* Output Format
 															 * If we have a BlastFormatter then the output is always set to 11 which is ASN and
@@ -384,15 +384,9 @@ bool ExternalBlastTool :: AddBlastArgsPair (const char *key_s, const char *value
 }
 
 
-bool ExternalBlastTool :: AddBlastArg (const char *arg_s)
+bool ExternalBlastTool :: AddBlastArg (const char *arg_s, const bool hyphen_flag)
 {
-	return AddArg (arg_s, ebt_buffer_p);
-}
-
-
-bool ExternalBlastTool :: AddBlastArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, const bool unsigned_flag, const bool required_flag)
-{
-	return AddArgsPairFromIntegerParameter (params_p, param_name_s, key_s, ebt_buffer_p, unsigned_flag, required_flag);
+	return AddArg (arg_s, ebt_buffer_p, hyphen_flag);
 }
 
 

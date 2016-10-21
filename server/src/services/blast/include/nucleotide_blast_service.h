@@ -21,7 +21,6 @@ extern "C"
 
 BLAST_SERVICE_LOCAL Service *GetNucleotideBlastService ();
 
-
 #ifdef __cplusplus
 }
 #endif

@@ -208,9 +208,29 @@ OperationStatus DrmaaBlastTool :: Run ()
 }
 
 
-bool DrmaaBlastTool :: AddBlastArg (const char * const arg_s)
+bool DrmaaBlastTool :: AddBlastArg (const char * const arg_s, const bool hyphen_flag)
 {
 	bool success_flag = AddDrmaaToolArgument (dbt_drmaa_tool_p, arg_s);
+
+	if (hyphen_flag)
+		{
+			char *value_s = ConcatenateStrings ("-", arg_s);
+
+			if (value_s)
+				{
+					success_flag = AddDrmaaToolArgument (dbt_drmaa_tool_p, value_s);
+					FreeCopiedString (value_s);
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to concatenate \"-\" and \"%s\"", arg_s);
+				}
+		}
+	else
+		{
+			success_flag = AddDrmaaToolArgument (dbt_drmaa_tool_p, arg_s);
+		}
+
 
 	return success_flag;
 }

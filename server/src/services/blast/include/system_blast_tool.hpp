@@ -62,7 +62,7 @@ public:
 	 * otherwise.
 	 * @see BlastTool::ParseParameters
 	 */
-	virtual bool ParseParameters (ParameterSet *params_p);
+	virtual bool ParseParameters (ParameterSet *params_p, BlastAppParameters *app_params_p);
 
 
 	/**

@@ -21,7 +21,6 @@ extern "C"
 
 BLAST_SERVICE_LOCAL Service *GetProteinBlastService ();
 
-
 #ifdef __cplusplus
 }
 #endif

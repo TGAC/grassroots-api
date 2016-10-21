@@ -78,7 +78,7 @@ public:
 	 * otherwise.
 	 * @see BlastTool::ParseParameters
 	 */
-	virtual bool ParseParameters (ParameterSet *params_p);
+	virtual bool ParseParameters (ParameterSet *param_set_p, BlastAppParameters *app_params_p);
 
 
 	/**
@@ -159,7 +159,7 @@ protected:
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddBlastArg (const char * const arg_s);
+	virtual bool AddBlastArg (const char * const arg_s, const bool hyphen_flag);
 
 
 	/**
@@ -173,23 +173,6 @@ protected:
 	 */
 	virtual bool AddBlastArgsPair (const char *key_s, const char *value_s);
 
-
-	/**
-	 * Get the value of an integer-based Parameter and add it as key-value pair
-	 * to the command line arguments
-	 * that this BlastTool will run with.
-	 *
-	 * @param params_p The ParameterSet to get the Parameter from.
-	 * @param param_name_s The name of the desired Parameter.
-	 * @param key_s The key to use when creating the command line arguments.
-	 * @param unsigned_flag Is the parameter value unsigned or not?
-	 * @param required_flag If this is <code>true</code> then failure to find
-	 * the Parameter will cause this function to return <code>false</code>. If the
-	 * value is optional, then set this to <code>false</code>.
-	 * @return <code>true</code> if the arguments were added
-	 * successfully, <code>false</code> otherwise.
-	 */
-	virtual bool AddBlastArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, const bool unsigned_flag, const bool required_flag);
 
 
 	/**

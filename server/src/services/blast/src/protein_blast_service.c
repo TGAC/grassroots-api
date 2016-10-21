@@ -5,14 +5,24 @@
  *      Author: billy
  */
 
+#include <string.h>
+
 #include "protein_blast_service.h"
 #include "base_blast_service.h"
 #include "blast_service_params.h"
+#include "blastp_app_parameters.hpp"
+#include "blast_util.h"
 
 
 /*******************************/
 /***** STATIC DECLARATIONS *****/
 /*******************************/
+
+
+static NamedParameterType S_WORD_SIZE = { "word_size", PT_UNSIGNED_INT };
+static NamedParameterType S_MATRIX = { "matrix", PT_STRING };
+static NamedParameterType S_COMP_BASED_STATS = { "comp_based_stats", PT_UNSIGNED_INT };
+
 
 static const size_t S_NUM_TASKS = 3;
 static const BlastTask s_tasks_p [S_NUM_TASKS] =
@@ -23,6 +33,26 @@ static const BlastTask s_tasks_p [S_NUM_TASKS] =
 };
 
 
+
+static const uint32 S_NUM_MATRICES = 8;
+
+static const char *S_MATRICES_SS [S_NUM_MATRICES] =
+{
+	"PAM30",
+	"PAM70",
+	"PAM250",
+	"BLOSUM80",
+	"BLOSUM62",
+	"BLOSUM45",
+	"BLOSUM50",
+	"BLOSUM90"
+};
+
+
+
+static const uint32 S_NUM_COMP_BASED_STATS = 4;
+
+
 static const char *GetProteinBlastServiceName (Service *service_p);
 
 static const char *GetProteinBlastServiceDescription (Service *service_p);
@@ -31,7 +61,7 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
-
+static bool AddProteinBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 static bool AddScoringParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
 
@@ -130,7 +160,9 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
-	ServiceJobSet *jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p);
+	BlastPAppParameters app_params;
+
+	ServiceJobSet *jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
 
 	return jobs_p;
 }
@@ -142,24 +174,25 @@ bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, Pa
 {
 	bool success_flag = false;
 
+
 	/* matrix */
-	if (AddArgsPairFromStringParameter (params_p, BPAP_MATRIX.npt_name_s, "-matrix", buffer_p, false))
+	if (GetAndAddBlastArgsToByteBuffer (params_p, S_MATRIX.npt_name_s, false, buffer_p))
 		{
 			/* Word Size */
-			if (AddArgsPairFromIntegerParameter (params_p, BPAP_COMP_BASED_STATS.npt_name_s, "-comp_based_stats", buffer_p, true, false))
+			if (GetAndAddBlastArgsToByteBuffer (params_p, S_COMP_BASED_STATS.npt_name_s, false, buffer_p))
 				{
 					success_flag = true;
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BPAP_COMP_BASED_STATS.npt_name_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_COMP_BASED_STATS.npt_name_s);
 				}
 
 
-		}		/* if (BPAP_COMP_BASED_STATS (params_p, BPAP_MATRIX.npt_name_s, "-reward", buffer_p, false)) */
+		}		/* if (BPAP_COMP_BASED_STATS (params_p, S_MATRIX.npt_name_s, "-reward", buffer_p, false)) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", BPAP_MATRIX.npt_name_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MATRIX.npt_name_s);
 		}
 
 	return success_flag;
@@ -212,25 +245,25 @@ static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_se
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	SharedType matrix_values_p [BPAP_NUM_MATRICES];
+	SharedType matrix_values_p [S_NUM_MATRICES];
 	uint32 i;
 	ParameterMultiOptionArray *options_p = NULL;
 
-	for (i = 0; i < BPAP_NUM_MATRICES; ++ i)
+	for (i = 0; i < S_NUM_MATRICES; ++ i)
 		{
-			(matrix_values_p + i) -> st_string_value_s = (char *) * (BPAP_MATRICES_SS + i);
+			(matrix_values_p + i) -> st_string_value_s = (char *) * (S_MATRICES_SS + i);
 		}
 
 	memset (&def, 0, sizeof (SharedType));
 
-	options_p = AllocateParameterMultiOptionArray (BPAP_NUM_MATRICES, NULL, matrix_values_p, PT_STRING, true);
+	options_p = AllocateParameterMultiOptionArray (S_NUM_MATRICES, NULL, matrix_values_p, PT_STRING, true);
 
 	if (options_p)
 		{
 			/* set BLOSUM62 as default */
 			def.st_string_value_s = (matrix_values_p + 4) -> st_string_value_s;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BPAP_MATRIX.npt_type, false, BPAP_MATRIX.npt_name_s, "Matrix", "The Scoring matrix to use", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_MATRIX.npt_type, false, S_MATRIX.npt_name_s, "Matrix", "The Scoring matrix to use", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					success_flag = true;
 				}
@@ -250,18 +283,18 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	SharedType comp_values_p [BPAP_NUM_COMP_BASED_STATS];
+	SharedType comp_values_p [S_NUM_COMP_BASED_STATS];
 	uint32 i;
 	ParameterMultiOptionArray *options_p = NULL;
 
-	for (i = 0; i < BPAP_NUM_COMP_BASED_STATS; ++ i)
+	for (i = 0; i < S_NUM_COMP_BASED_STATS; ++ i)
 		{
 			(comp_values_p + i) -> st_ulong_value = i;
 		}
 
 	memset (&def, 0, sizeof (SharedType));
 
-	options_p = AllocateParameterMultiOptionArray (BPAP_NUM_COMP_BASED_STATS, NULL, comp_values_p, PT_UNSIGNED_INT, true);
+	options_p = AllocateParameterMultiOptionArray (S_NUM_COMP_BASED_STATS, NULL, comp_values_p, PT_UNSIGNED_INT, true);
 
 	if (options_p)
 		{
@@ -275,7 +308,7 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 
 			def.st_ulong_value = 2;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BPAP_COMP_BASED_STATS.npt_type, false, BPAP_COMP_BASED_STATS.npt_name_s, "Compositional adjustments", "Matrix adjustment method to compensate for amino acid composition of sequences.", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_COMP_BASED_STATS.npt_type, false, S_COMP_BASED_STATS.npt_name_s, "Compositional adjustments", "Matrix adjustment method to compensate for amino acid composition of sequences.", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					success_flag = true;
 				}

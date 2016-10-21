@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "blast_util.h"
+#include "math_utils.h"
 #include "string_utils.h"
 
 
@@ -79,6 +80,19 @@ bool AddArgsPair (const char *key_s, const char *value_s, ByteBuffer *buffer_p)
 	return success_flag;
 }
 
+
+bool GetAndAddBlastArgsToByteBuffer (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ByteBuffer *buffer_p)
+{
+	bool success_flag = !required_flag;
+	const Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, param_name_s);
+
+	if (param_p)
+		{
+			success_flag = AddBlastArgsToByteBuffer (param_p, buffer_p);
+		}
+
+	return success_flag;
+}
 
 
 bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)

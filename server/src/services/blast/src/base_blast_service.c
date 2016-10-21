@@ -17,9 +17,10 @@
 #include "string_utils.h"
 #include "blast_tool_factory.hpp"
 #include "service_job_set_iterator.h"
+#include "blast_app_parameters.hpp"
 
 
-ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *  UNUSED_PARAM (user_p), ProvidersStateTable *providers_p)
+ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *  UNUSED_PARAM (user_p), ProvidersStateTable *providers_p, BlastAppParameters *app_params_p)
 {
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	SharedType param_value;
@@ -94,7 +95,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 																		{
 																			if (tool_p -> SetUpOutputFile ())
 																				{
-																					if (tool_p -> ParseParameters (param_set_p))
+																					if (tool_p -> ParseParameters (param_set_p, app_params_p))
 																						{
 																							if (RunBlast (tool_p))
 																								{

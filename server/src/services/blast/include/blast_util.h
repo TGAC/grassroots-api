@@ -27,12 +27,21 @@
 
 #include "blast_service_api.h"
 #include "byte_buffer.h"
+#include "parameter_set.h"
+
 
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
+
+
+
+BLAST_SERVICE_LOCAL bool GetAndAddBlastArgsToByteBuffer (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ByteBuffer *buffer_p);
+
+
+BLAST_SERVICE_LOCAL bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p);
 
 
 /**
