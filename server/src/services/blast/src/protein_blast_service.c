@@ -290,6 +290,13 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 	SharedType comp_values_p [S_NUM_COMP_BASED_STATS];
 	uint32 i;
 	ParameterMultiOptionArray *options_p = NULL;
+	const char *descriptions_ss [] =
+		{
+			"No composition-based statistics",
+			"Composition-based statistics as in NAR 29:2994-3005, 2001",
+			"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, conditioned on sequence properties",
+			"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, unconditionally"
+		};
 
 	for (i = 0; i < S_NUM_COMP_BASED_STATS; ++ i)
 		{
@@ -298,18 +305,10 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 
 	memset (&def, 0, sizeof (SharedType));
 
-	options_p = AllocateParameterMultiOptionArray (S_NUM_COMP_BASED_STATS, NULL, comp_values_p, PT_UNSIGNED_INT, true);
+	options_p = AllocateParameterMultiOptionArray (S_NUM_COMP_BASED_STATS, descriptions_ss, comp_values_p, PT_UNSIGNED_INT, true);
 
 	if (options_p)
 		{
-			const char *descriptions_ss [] =
-				{
-					"No composition-based statistics",
-					"Composition-based statistics as in NAR 29:2994-3005, 2001",
-					"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, conditioned on sequence properties",
-					"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, unconditionally"
-				};
-
 			def.st_ulong_value = 2;
 
 			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_COMP_BASED_STATS.npt_type, false, S_COMP_BASED_STATS.npt_name_s, "Compositional adjustments", "Matrix adjustment method to compensate for amino acid composition of sequences.", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
