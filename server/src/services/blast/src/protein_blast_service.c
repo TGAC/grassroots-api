@@ -10,7 +10,7 @@
 #include "protein_blast_service.h"
 #include "base_blast_service.h"
 #include "blast_service_params.h"
-#include "blastp_app_parameters.hpp"
+#include "blast_app_parameters.h"
 #include "blast_util.h"
 
 
@@ -68,6 +68,9 @@ static bool AddScoringParameters (BlastServiceData *data_p, ParameterSet *param_
 static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
 static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+
+static bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+
 
 /*******************************/
 /******* API DEFINITIONS *******/
@@ -160,17 +163,18 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
-	BlastPAppParameters app_params;
+	BlastAppParameters app_params;
+	ServiceJobSet *jobs_p = NULL;
 
-	ServiceJobSet *jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
+	app_params.bap_parse_params_to_byte_buffer_fn = ParseProteinBlastParametersToByteBuffer;
+
+	jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
 
 	return jobs_p;
 }
 
 
-
-
-bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
+static bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
 {
 	bool success_flag = false;
 

@@ -105,30 +105,6 @@ BlastTool :: BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, 
 }
 
 
-BlastAppParameters *BlastTool :: GetBlastAppParameters (const BlastServiceData *service_data_p)
-{
-	BlastAppParameters *app_p = 0;
-
-	switch (service_data_p -> bsd_type)
-		{
-			case BST_BLASTN:
-				app_p = new BlastNAppParameters;
-				break;
-
-			case BST_BLASTP:
-				app_p = new BlastPAppParameters;
-				break;
-
-			case BST_BLASTX:
-				app_p = new BlastXAppParameters;
-				break;
-
-			default:
-				break;
-		}
-
-	return app_p;
-}
 
 
 OperationStatus BlastTool :: GetStatus (bool update_flag)

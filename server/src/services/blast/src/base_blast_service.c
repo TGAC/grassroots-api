@@ -10,6 +10,8 @@
 
 
 #include "base_blast_service.h"
+
+#include "../include/blast_app_parameters.h"
 #include "blast_formatter.h"
 #include "blast_service_params.h"
 #include "paired_blast_service.h"
@@ -17,7 +19,6 @@
 #include "string_utils.h"
 #include "blast_tool_factory.hpp"
 #include "service_job_set_iterator.h"
-#include "blast_app_parameters.hpp"
 
 
 ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *  UNUSED_PARAM (user_p), ProvidersStateTable *providers_p, BlastAppParameters *app_params_p)

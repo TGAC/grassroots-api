@@ -49,10 +49,7 @@ SRCS 	= \
 	blast_util.c \
 	blast_formatter.cpp \
 	blast_tool.cpp \
-	blast_app_parameters.cpp \
-	blastn_app_parameters.cpp \
-	blastp_app_parameters.cpp \
-	blastx_app_parameters.cpp \
+	blast_app_parameters.c \
 	blast_tool_factory.cpp \
 	external_blast_tool.cpp \
 	external_blast_tool_factory.cpp \

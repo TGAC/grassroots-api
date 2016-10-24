@@ -243,7 +243,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 								{
 									if (AddBlastArgsPair ("-db", bt_job_p -> bsj_job.sj_name_s))
 										{
-											if (app_params_p -> ParseParametersToByteBuffer (bt_service_data_p, params_p, ebt_buffer_p))
+											if (ParseBlastAppParametersToByteBuffer (app_params_p, bt_service_data_p, params_p, ebt_buffer_p))
 												{
 													/* Expect threshold */
 													if (GetAndAddBlastArgsToByteBuffer (params_p, BS_EXPECT_THRESHOLD.npt_name_s, false, ebt_buffer_p))

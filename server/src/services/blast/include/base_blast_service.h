@@ -9,12 +9,12 @@
 #define SERVER_SRC_SERVICES_BLAST_INCLUDE_BASE_BLAST_SERVICE_H_
 
 
+#include "blast_app_parameters.h"
 #include "blast_service_api.h"
 #include "blast_service.h"
 #include "blast_service_job.h"
 #include "parameter_set.h"
 #include "temp_file.hpp"
-#include "blast_app_parameters.hpp"
 
 
 

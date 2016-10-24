@@ -8,7 +8,8 @@
 #include "nucleotide_blast_service.h"
 #include "base_blast_service.h"
 #include "blast_service_params.h"
-#include "blastn_app_parameters.hpp"
+#include "blast_app_parameters.h"
+#include "blast_util.h"
 
 
 /*******************************/
@@ -45,6 +46,8 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 static ServiceJobSet *RunNucleotideBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
+
+static bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
 
 
 /*******************************/
@@ -119,7 +122,10 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 								{
 								  if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
                     {
-                      return param_set_p;
+								  		if (AddNucleotideBlastParameters (blast_data_p, param_set_p))
+								  			{
+								  				return param_set_p;
+								  			}
                     }
 								}
 						}
@@ -166,11 +172,52 @@ static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet
 }
 
 
+bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
+{
+	bool success_flag = false;
+
+
+	/* Word size */
+	if (GetAndAddBlastArgsToByteBuffer (params_p, S_WORD_SIZE.npt_name_s, false, buffer_p))
+		{
+			/* Reward */
+			if (GetAndAddBlastArgsToByteBuffer (params_p, S_MATCH_SCORE.npt_name_s, false, buffer_p))
+				{
+					/* Penalty */
+					if (GetAndAddBlastArgsToByteBuffer (params_p, S_MISMATCH_SCORE.npt_name_s, false, buffer_p))
+						{
+							success_flag = true;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MISMATCH_SCORE.npt_name_s);
+						}
+
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MATCH_SCORE.npt_name_s);
+				}
+
+		}		/* if (GetAndAddBlastArgsToByteBuffer (params_p, S_WORD_SIZE.npt_name_s, false, buffer_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_WORD_SIZE.npt_name_s);
+		}
+
+	return success_flag;
+}
+
+
 
 static ServiceJobSet *RunNucleotideBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
-	BlastNAppParameters app_params;
-	ServiceJobSet *jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
+	BlastAppParameters app_params;
+	ServiceJobSet *jobs_p = NULL;
+
+	app_params.bap_parse_params_to_byte_buffer_fn = ParseNucleotideBlastParametersToByteBuffer;
+
+	jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
 
 	return jobs_p;
 }

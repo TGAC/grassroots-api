@@ -14,33 +14,18 @@
 ** limitations under the License.
 */
 /*
- * blast_app_parameters.hpp
+ * blast_app_parameters.cpp
  *
  *  Created on: 19 Oct 2016
  *      Author: billy
  */
 
-#ifndef SERVER_SRC_SERVICES_BLAST_INCLUDE_BLAST_APP_PARAMETERS_HPP_
-#define SERVER_SRC_SERVICES_BLAST_INCLUDE_BLAST_APP_PARAMETERS_HPP_
 
 
-#include "blast_service_api.h"
-#include "blast_service.h"
-#include "parameter_set.h"
-#include "byte_buffer.h"
+#include "blast_app_parameters.h"
 
 
-
-class BLAST_SERVICE_LOCAL BlastAppParameters
+bool ParseBlastAppParametersToByteBuffer (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
 {
-public:
-	BlastAppParameters ();
-	virtual ~BlastAppParameters ();
-
-	virtual bool ParseParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p) = 0;
-private:
-
-};
-
-
-#endif /* SERVER_SRC_SERVICES_BLAST_INCLUDE_BLAST_APP_PARAMETERS_HPP_ */
+	return app_p -> bap_parse_params_to_byte_buffer_fn (data_p, params_p, buffer_p);
+}
