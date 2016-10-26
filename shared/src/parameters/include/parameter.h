@@ -50,6 +50,11 @@ typedef enum ParameterType
 	/** A non-negative 32-bit integer */
 	PT_UNSIGNED_INT,
 
+
+	/** A non-positive 32-bit integer */
+	PT_NON_POSITIVE_INT,
+
+
 	/** A real number */
 	PT_SIGNED_REAL,
 

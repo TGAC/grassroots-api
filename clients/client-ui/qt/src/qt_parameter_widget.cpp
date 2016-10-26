@@ -445,6 +445,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						break;
 
 					case PT_SIGNED_INT:
+					case PT_NON_POSITIVE_INT:
 						widget_p = new ParamSpinBox (param_p, qpw_prefs_widget_p, true);
 						break;
 
@@ -483,7 +484,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 			return widget_p;
 		}		/* if (widget_p) */
 
-	return NULL;
+	return 0;
 }
 
 

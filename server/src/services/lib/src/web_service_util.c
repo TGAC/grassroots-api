@@ -536,6 +536,7 @@ static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
 				alloc_value = AT_STANDARD;
 				break;

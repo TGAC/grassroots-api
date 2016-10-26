@@ -235,13 +235,13 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 	if (GetParameterValueFromParameterSet (params_p, BS_TASK.npt_name_s, &value, true))
 		{
-			if (AddBlastArgsPair ("-task", value.st_string_value_s))
+			if (AddBlastArgsPair ("task", value.st_string_value_s))
 				{
 					if (GetAndAddBlastArgsToByteBuffer (params_p, BS_MAX_SEQUENCES.npt_name_s, false, ebt_buffer_p))
 						{
 							if (bt_job_p -> bsj_job.sj_name_s)
 								{
-									if (AddBlastArgsPair ("-db", bt_job_p -> bsj_job.sj_name_s))
+									if (AddBlastArgsPair ("db", bt_job_p -> bsj_job.sj_name_s))
 										{
 											if (ParseBlastAppParametersToByteBuffer (app_params_p, bt_service_data_p, params_p, ebt_buffer_p))
 												{
@@ -260,7 +260,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 																	if (bt_service_data_p -> bsd_formatter_p)
 																		{
-																			success_flag = AddBlastArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S);
+																			success_flag = AddBlastArgsPair ("outfmt", BS_DEFAULT_OUTPUT_FORMAT_S);
 																		}
 																	else
 																		{
@@ -268,7 +268,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 																			if (value_s)
 																				{
-																					success_flag = AddBlastArgsPair ("-outfmt", value_s);
+																					success_flag = AddBlastArgsPair ("outfmt", value_s);
 																					FreeCopiedString (value_s);
 																				}		/* if (value_s) */
 																			else
@@ -312,7 +312,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 																														{
 																															const char *query_loc_s = GetByteBufferData (buffer_p);
 
-																															if (!AddBlastArgsPair ("-query_loc", query_loc_s))
+																															if (!AddBlastArgsPair ("query_loc", query_loc_s))
 																																{
 																																	success_flag = false;
 																																}
@@ -406,7 +406,7 @@ bool ExternalBlastTool :: SetUpOutputFile ()
 
 			if (ebt_results_filename_s)
 				{
-					if (AddBlastArgsPair ("-out", ebt_results_filename_s))
+					if (AddBlastArgsPair ("out", ebt_results_filename_s))
 						{
 							success_flag = true;
 						}
@@ -439,7 +439,7 @@ bool ExternalBlastTool :: SetInputFilename (const char * const filename_s)
 
 	if (filename_s)
 		{
-			success_flag = AddBlastArgsPair ("-query", filename_s);
+			success_flag = AddBlastArgsPair ("query", filename_s);
 		}
 
 	return success_flag;

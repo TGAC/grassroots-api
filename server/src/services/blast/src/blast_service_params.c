@@ -346,55 +346,6 @@ bool AddProgramSelectionParameters (BlastServiceData *blast_data_p, ParameterSet
 }
 
 
-bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
-{
-	bool success_flag = false;
-	Parameter *param_p = NULL;
-	SharedType def;
-	const ParameterLevel level = PL_INTERMEDIATE | PL_ADVANCED;
-	ParameterBounds *bounds_p = AllocateParameterBounds ();
-
-	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Scoring Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);
-
-
-	/* Match must be positive */
-	if (bounds_p)
-		{
-			bounds_p -> pb_lower.st_long_value = 1;
-			bounds_p -> pb_upper.st_long_value = INT_MAX;
-			def.st_long_value = 2;
-
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_SIGNED_INT, false, "match", "Match", "Reward for a nucleotide match.", NULL, def, NULL, bounds_p, level, NULL)) != NULL)
-				{
-					/* Mismatch must be positive */
-					bounds_p = AllocateParameterBounds ();
-
-					if (bounds_p)
-						{
-							def.st_long_value = -3;
-							bounds_p -> pb_lower.st_long_value = INT_MIN;
-							bounds_p -> pb_upper.st_long_value = -1;
-
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_SIGNED_INT, false, "mismatch", "Mismatch", "Penalty for a nucleotide mismatch.", NULL, def, NULL, bounds_p, level, NULL)) != NULL)
-								{
-									success_flag = true;
-								}
-							else
-								{
-									FreeParameterBounds (bounds_p, PT_SIGNED_INT);
-								}
-						}		/* if (bounds_p) */
-				}
-			else
-				{
-					FreeParameterBounds (bounds_p, PT_SIGNED_INT);
-				}
-		}
-
-
-	return success_flag;
-}
-
 
 bool AddBlastPParams (BlastServiceData *data_p, ParameterSet *param_set_p)
 {

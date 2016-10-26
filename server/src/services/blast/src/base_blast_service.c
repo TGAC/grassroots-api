@@ -11,7 +11,7 @@
 
 #include "base_blast_service.h"
 
-#include "../include/blast_app_parameters.h"
+#include "blast_app_parameters.h"
 #include "blast_formatter.h"
 #include "blast_service_params.h"
 #include "paired_blast_service.h"
@@ -36,7 +36,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 	/* Are we retrieving previously run jobs? */
 	if (GetParameterValueFromParameterSet (param_set_p, BS_JOB_ID.npt_name_s, &param_value, true))
 		{
-			if (!!IsStringEmpty (param_value.st_string_value_s))
+			if (!IsStringEmpty (param_value.st_string_value_s))
 				{
 					service_p -> se_jobs_p  = CreateJobsForPreviousResults (param_set_p, param_value.st_string_value_s, blast_data_p);
 				}

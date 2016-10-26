@@ -112,6 +112,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				{
 					char *value_s = ConvertIntegerToString (param_p -> pa_current_value.st_long_value);
 

@@ -42,6 +42,7 @@ static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 	"boolean",
 	"signed integer",
 	"unsigned integer",
+	"non-positive integer"
 	"signed number",
 	"unsigned number",
 	"string",
@@ -678,6 +679,7 @@ bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedTyp
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				success_flag = SetParameterValueFromSignedInt (param_p, src_p -> st_long_value, current_value_flag);
 				break;
 
@@ -739,6 +741,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p, const bo
 
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				{
 					const int32 i = * ((int32 *) value_p);
 					success_flag = SetParameterValueFromSignedInt (param_p, i, current_value_flag);
@@ -1181,6 +1184,7 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 			case PT_UNSIGNED_INT:
 				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("integer")) == 0);
 				break;
@@ -1485,6 +1489,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				value_p = json_integer (val_p -> st_long_value);
 				break;
 
@@ -1663,6 +1668,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 						break;
 
 					case PT_SIGNED_INT:
+					case PT_NON_POSITIVE_INT:
 						if (json_is_integer (json_value_p))
 							{
 								value_p -> st_long_value = (int32) json_integer_value (json_value_p);
@@ -1828,6 +1834,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										break;
 
 									case PT_SIGNED_INT:
+									case PT_NON_POSITIVE_INT:
 										value_p = json_integer (option_p -> pmo_value.st_long_value);
 										break;
 
@@ -1943,6 +1950,7 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 						break;
 
 					case PT_SIGNED_INT:
+					case PT_NON_POSITIVE_INT:
 						min_p = json_integer (bounds_p -> pb_lower.st_long_value);
 						max_p = json_integer (bounds_p -> pb_upper.st_long_value);
 						break;
@@ -2192,6 +2200,7 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 										break;
 
 									case PT_SIGNED_INT:
+									case PT_NON_POSITIVE_INT:
 										{
 											if (json_is_integer (min_p))
 												{
@@ -2367,6 +2376,7 @@ bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterTy
 			break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				dest_p -> st_long_value = src.st_long_value;
 				success_flag = true;
 				break;
@@ -2611,6 +2621,7 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
 				*alloc_flag_p = true;
 				break;
@@ -3154,6 +3165,7 @@ bool SetSharedTypeFromJSON (SharedType *value_p, const json_t *json_p, const Par
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
 				{
 					success_flag = SetIntegerFromJSON (json_p, & (value_p -> st_long_value));
 				}

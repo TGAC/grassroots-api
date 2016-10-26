@@ -20,6 +20,11 @@
 #include "math_utils.h"
 
 
+int ParamSpinBox :: PSB_DEFAULT_MIN = INT32_MIN;
+
+int ParamSpinBox :: PSB_DEFAULT_MAX = INT32_MAX;
+
+
 ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * const options_widget_p, bool signed_flag, QWidget *parent_p)
 :	BaseParamWidget (param_p, options_widget_p),
 	psb_signed_flag (signed_flag)
@@ -33,8 +38,25 @@ ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * con
 		}
 	else
 		{
-			psb_spin_box_p -> setMaximum (1000000);
+			switch (param_p -> pa_type)
+				{
+					case PT_NON_POSITIVE_INT:
+						psb_spin_box_p -> setRange (ParamSpinBox :: PSB_DEFAULT_MIN, 0);
+						break;
+
+					case PT_UNSIGNED_INT:
+						psb_spin_box_p -> setRange (0, ParamSpinBox :: PSB_DEFAULT_MAX);
+						break;
+
+					case PT_SIGNED_INT:
+						psb_spin_box_p -> setRange (ParamSpinBox :: PSB_DEFAULT_MIN, ParamSpinBox :: PSB_DEFAULT_MAX);
+						break;
+
+					default:
+						break;
+				}
 		}
+
 }
 
 

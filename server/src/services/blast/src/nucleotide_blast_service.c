@@ -20,7 +20,7 @@
 
 
 static NamedParameterType S_MATCH_SCORE = { "reward", PT_UNSIGNED_INT };
-static NamedParameterType S_MISMATCH_SCORE = { "penalty", PT_SIGNED_INT };
+static NamedParameterType S_MISMATCH_SCORE = { "penalty", PT_NON_POSITIVE_INT };
 static NamedParameterType S_WORD_SIZE = { "word_size", PT_UNSIGNED_INT };
 
 
@@ -46,6 +46,8 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 static ServiceJobSet *RunNucleotideBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
+
+static bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
 static bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
 
@@ -118,15 +120,12 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 
 					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
 						{
-							if (AddScoringParams (blast_data_p, param_set_p))
+							if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
 								{
-								  if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
-                    {
-								  		if (AddNucleotideBlastParameters (blast_data_p, param_set_p))
-								  			{
-								  				return param_set_p;
-								  			}
-                    }
+									if (AddNucleotideBlastParameters (blast_data_p, param_set_p))
+										{
+											return param_set_p;
+										}
 								}
 						}
 				}		/* if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_NUCLEOTIDE)) */
@@ -135,10 +134,11 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 			 * task: 'blastn' 'blastn-short' 'dc-megablast' 'megablast' 'rmblastn
 			 */
 
+			FreeParameterSet (param_set_p);
 		}		/* if (param_set_p) */
 
 
-	return param_set_p;
+	return NULL;
 }
 
 
@@ -155,22 +155,41 @@ static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet
 
 	if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
 		{
-			def.st_long_value = 2;
-
-			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MATCH_SCORE.npt_type, S_MATCH_SCORE.npt_name_s, "Reward", "The reward for matching bases", def, PL_ALL)) != NULL)
+			if (AddScoringParams (data_p, param_set_p))
 				{
-					def.st_long_value = 3;
-
-					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MISMATCH_SCORE.npt_type, S_MISMATCH_SCORE.npt_name_s, "Penalty", "The penalty for mismatching bases", def, PL_ALL)) != NULL)
-						{
-							success_flag = true;
-						}
+					success_flag = true;
 				}
 		}
 
 	return success_flag;
 }
 
+
+static bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+	Parameter *param_p = NULL;
+	SharedType def;
+	ServiceData *service_data_p = & (data_p -> bsd_base_data);
+
+	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("Scoring Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);
+
+
+	def.st_long_value = 2;
+
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MATCH_SCORE.npt_type, S_MATCH_SCORE.npt_name_s, "Reward", "The reward for matching bases", def, PL_ALL)) != NULL)
+		{
+			def.st_long_value = -3;
+
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_MISMATCH_SCORE.npt_type, S_MISMATCH_SCORE.npt_name_s, "Penalty", "The penalty for mismatching bases", def, PL_ALL)) != NULL)
+				{
+					success_flag = true;
+				}
+		}
+
+
+	return success_flag;
+}
 
 bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
 {

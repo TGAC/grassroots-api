@@ -29,12 +29,6 @@
 #include "jansson.h"
 #include "blast_service_job.h"
 
-
-#include "blastn_app_parameters.hpp"
-#include "blastp_app_parameters.hpp"
-#include "blastx_app_parameters.hpp"
-
-
 const char * const BlastTool :: BT_NAME_S = "name";
 
 const char * const BlastTool :: BT_FACTORY_NAME_S = "factory";
