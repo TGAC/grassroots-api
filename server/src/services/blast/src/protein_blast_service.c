@@ -69,6 +69,8 @@ static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_se
 
 static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
+static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+
 static bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
 
 
@@ -137,7 +139,7 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 				{
           BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 
-					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
+					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p, AddProteinGeneralAlgorithmParameters))
 						{
 							if (AddProteinBlastParameters (blast_data_p, param_set_p))
 								{
@@ -159,6 +161,23 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 	return param_set_p;
 }
 
+
+
+static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
+{
+	bool success_flag = false;
+	SharedType def;
+	Parameter *param_p;
+
+	def.st_ulong_value = 3;
+
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
+		{
+			success_flag = true;
+		}
+
+	return success_flag;
+}
 
 
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
@@ -241,7 +260,6 @@ static bool AddScoringParameters (BlastServiceData *data_p, ParameterSet *param_
 
 	return success_flag;
 }
-
 
 
 static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)

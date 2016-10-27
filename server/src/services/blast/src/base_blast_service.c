@@ -647,7 +647,7 @@ void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const ParameterSet * con
 							/* Is the database selected to search against? */
 							if (param_p -> pa_current_value.st_boolean_value)
 								{
-									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p -> di_name_s, db_p -> di_description_s, data_p);
+									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p -> di_filename_s, db_p -> di_description_s, data_p);
 
 									if (job_p)
 										{
@@ -1165,39 +1165,59 @@ bool GetBlastServiceConfig (BlastServiceData *data_p)
 											DatabaseInfo *db_p = databases_p;
 
 											json_array_foreach (value_p, i, db_json_p)
-											{
-												const char *name_s = GetJSONString (db_json_p, "name");
+												{
+													const char *filename_s = GetJSONString (db_json_p, "filename");
 
-												if (name_s)
-													{
-														const char *description_s = GetJSONString (db_json_p, "description");
+													if (filename_s)
+														{
+															const char *name_s = GetJSONString (db_json_p, "name");
 
-														if (description_s)
-															{
-																const char *type_s = GetJSONString (db_json_p, "type");
+															if (name_s)
+																{
+																	const char *description_s = GetJSONString (db_json_p, "description");
 
-																db_p -> di_name_s = name_s;
-																db_p -> di_description_s = description_s;
-																db_p -> di_active_flag = true;
-																db_p -> di_type = DT_NUCLEOTIDE;
+																	if (description_s)
+																		{
+																			const char *type_s = GetJSONString (db_json_p, "type");
 
-																GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
+																			db_p -> di_name_s = name_s;
+																			db_p -> di_filename_s = filename_s;
+																			db_p -> di_description_s = description_s;
+																			db_p -> di_active_flag = true;
+																			db_p -> di_type = DT_NUCLEOTIDE;
 
-																if (type_s)
-																	{
-																		if (strcmp (type_s, "protein") == 0)
-																			{
-																				db_p -> di_type = DT_PROTEIN;
-																			}
-																	}
+																			GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
 
-																success_flag = true;
-																++ db_p;
-															}		/* if (description_p) */
+																			if (type_s)
+																				{
+																					if (strcmp (type_s, "protein") == 0)
+																						{
+																							db_p -> di_type = DT_PROTEIN;
+																						}
+																				}
 
-													}		/* if (name_p) */
+																			success_flag = true;
+																			++ db_p;
+																		}		/* if (description_s) */
+																	else
+																		{
+																			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, db_json_p, "Failed to add database, no description key");
+																		}
 
-											}		/* json_array_foreach (value_p, i, db_json_p) */
+																}		/* if (name_s) */
+															else
+																{
+																	PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, db_json_p, "Failed to add database, no name key");
+																}
+
+														}		/* if (filename_s) */
+													else
+														{
+															PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, db_json_p, "Failed to add database, no filename key");
+														}
+
+
+												}		/* json_array_foreach (value_p, i, db_json_p) */
 
 											if (success_flag)
 												{

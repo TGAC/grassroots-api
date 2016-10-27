@@ -48,6 +48,9 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 	/** The name of the database to display to the user. */
 	const char *di_name_s;
 
+	/** The filename for the database */
+	const char *di_filename_s;
+
 	/** The description of the database to display to the user. */
 	const char *di_description_s;
 

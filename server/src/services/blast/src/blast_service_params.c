@@ -138,21 +138,15 @@ uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, c
 
 			if (db_p)
 				{
+					const ServiceData *service_data_p = & (data_p -> bsd_base_data);
+
 					while (db_p -> di_name_s)
 						{
 							if (db_p -> di_type == db_type)
 								{
-									/* try and get the local name of the database */
-									const char *local_name_s = strrchr (db_p -> di_name_s, GetFileSeparatorChar ());
-
 									def.st_boolean_value = db_p -> di_active_flag;
 
-									if (local_name_s)
-										{
-											++ local_name_s;
-										}
-
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_BOOLEAN, false, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_name_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL)) == NULL)
+									if (!EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, PT_BOOLEAN, db_p -> di_name_s, db_p -> di_name_s, db_p -> di_description_s, def, PL_ALL))
 										{
 											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> di_name_s);
 										}
@@ -267,7 +261,7 @@ bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p
 }
 
 
-bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p, bool (*add_additional_params_fn) (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p))
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;
@@ -295,10 +289,16 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 
 							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, PT_UNSIGNED_INT, false, "max_matches_in_a_query_range", "Max matches in a query range", "Limit the number of matches to a query range. This option is useful if many strong matches to one part of a query may prevent BLAST from presenting weaker matches to another part of the query", NULL, def, NULL, NULL, level, NULL)) != NULL)
 								{
-
 									if ((param_p = SetUpOutputFormatParamater (data_p, param_set_p, group_p)) != NULL)
 										{
-											success_flag = true;
+											if (add_additional_params_fn)
+												{
+													success_flag = add_additional_params_fn (data_p, param_set_p, group_p);
+												}
+											else
+												{
+													success_flag = true;
+												}
 										}
 								}
 						}

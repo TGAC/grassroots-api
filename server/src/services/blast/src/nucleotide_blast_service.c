@@ -49,6 +49,9 @@ static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet
 
 static bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_p);
 
+static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+
+
 static bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
 
 
@@ -118,7 +121,7 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 				{
 				  BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 
-					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p))
+					if (AddGeneralAlgorithmParams (blast_data_p, param_set_p, AddProteinGeneralAlgorithmParameters))
 						{
 							if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
 								{
@@ -142,23 +145,31 @@ static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Re
 }
 
 
-
-static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
+static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
 	bool success_flag = false;
 	SharedType def;
 	Parameter *param_p = NULL;
-	ParameterGroup *group_p = NULL;
 	ServiceData *service_data_p = & (data_p -> bsd_base_data);
 
 	def.st_ulong_value = 28;
 
 	if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
 		{
-			if (AddScoringParams (data_p, param_set_p))
-				{
-					success_flag = true;
-				}
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool AddNucleotideBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
+{
+	bool success_flag = false;
+
+	if (AddScoringParams (data_p, param_set_p))
+		{
+			success_flag = true;
 		}
 
 	return success_flag;
