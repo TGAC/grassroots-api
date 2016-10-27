@@ -8,7 +8,7 @@
 #include "nucleotide_blast_service.h"
 #include "base_blast_service.h"
 #include "blast_service_params.h"
-#include "blast_app_parameters.h"
+#include "args_processor.hpp"
 #include "blast_util.h"
 
 
@@ -51,8 +51,7 @@ static bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_
 
 static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
-
-static bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+static bool ParseNucleotideBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 
 
 /*******************************/
@@ -202,19 +201,20 @@ static bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_
 	return success_flag;
 }
 
-bool ParseNucleotideBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
+
+bool ParseNucleotideBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p)
 {
 	bool success_flag = false;
 
 
 	/* Word size */
-	if (GetAndAddBlastArgsToByteBuffer (params_p, S_WORD_SIZE.npt_name_s, false, buffer_p))
+	if (GetAndAddBlastArgs (params_p, S_WORD_SIZE.npt_name_s, false, ap_p))
 		{
 			/* Reward */
-			if (GetAndAddBlastArgsToByteBuffer (params_p, S_MATCH_SCORE.npt_name_s, false, buffer_p))
+			if (GetAndAddBlastArgs (params_p, S_MATCH_SCORE.npt_name_s, false, ap_p))
 				{
 					/* Penalty */
-					if (GetAndAddBlastArgsToByteBuffer (params_p, S_MISMATCH_SCORE.npt_name_s, false, buffer_p))
+					if (GetAndAddBlastArgs (params_p, S_MISMATCH_SCORE.npt_name_s, false, ap_p))
 						{
 							success_flag = true;
 						}
@@ -245,7 +245,7 @@ static ServiceJobSet *RunNucleotideBlastService (Service *service_p, ParameterSe
 	BlastAppParameters app_params;
 	ServiceJobSet *jobs_p = NULL;
 
-	app_params.bap_parse_params_to_byte_buffer_fn = ParseNucleotideBlastParametersToByteBuffer;
+	app_params.bap_parse_params_fn = ParseNucleotideBlastParameters;
 
 	jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
 

@@ -30,7 +30,7 @@
 #include "jobs_manager.h"
 #include "alloc_failure.hpp"
 #include "blast_service_job.h"
-
+#include "drmaa_tool_args_processor.hpp"
 
 #ifdef _DEBUG
 	#define DRMAA_BLAST_TOOL_DEBUG	(STM_LEVEL_FINEST)
@@ -72,6 +72,9 @@ DrmaaBlastTool :: DrmaaBlastTool (BlastServiceJob *job_p, const char *name_s, co
 								{
 									SetDrmaaOptions (drmaa_tool_p, async_flag);
 									SetServiceJobUpdateFunction (& (job_p -> bsj_job), UpdateDrmaaBlastServiceJob);
+
+									dbt_args_processor_p = new DrmaaToolArgsProcessor (drmaa_tool_p);
+
 									return;
 								}
 							else
@@ -92,7 +95,8 @@ DrmaaBlastTool :: DrmaaBlastTool (BlastServiceJob *job_p, const char *name_s, co
 					error_s = "SetDrmaaToolQueueName failed";
 				}
 
-			FreeDrmaaTool (dbt_drmaa_tool_p);
+			FreeDrmaaTool (drmaa_tool_p);
+
 		}
 	else
 		{
@@ -119,7 +123,11 @@ DrmaaBlastTool :: DrmaaBlastTool (BlastServiceJob *job_p, const BlastServiceData
 		{
 			dbt_drmaa_tool_p = ConvertDrmaaToolFromJSON (drmaa_json_p);
 
-			if (!dbt_drmaa_tool_p)
+			if (dbt_drmaa_tool_p)
+				{
+					dbt_args_processor_p = new DrmaaToolArgsProcessor (dbt_drmaa_tool_p);
+				}
+			else
 				{
 					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, drmaa_json_p, "Failed to get drmaa tool");
 					throw std :: invalid_argument ("Failed to create drmaa tool");
@@ -130,6 +138,8 @@ DrmaaBlastTool :: DrmaaBlastTool (BlastServiceJob *job_p, const BlastServiceData
 			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, drmaa_json_p, "Failed to get drmaa json");
 			throw std :: invalid_argument ("Failed to create drmaa tool");
 		}
+
+
 }
 
 
@@ -143,6 +153,9 @@ DrmaaBlastTool :: ~DrmaaBlastTool ()
 	#endif
 
 	FreeDrmaaTool (dbt_drmaa_tool_p);
+
+	delete dbt_args_processor_p;
+
 
 	#if DRMAA_BLAST_TOOL_DEBUG >= STM_LEVEL_FINEST
 	PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Exiting ~DrmaaBlastTool for %s", uuid_s);
@@ -347,6 +360,11 @@ bool DrmaaBlastTool :: AddToJSON (json_t *root_p)
 	return success_flag;
 }
 
+
+ArgsProcessor *DrmaaBlastTool :: GetArgsProcessor ()
+{
+	return dbt_args_processor_p;
+}
 
 
 static bool UpdateDrmaaBlastServiceJob (struct ServiceJob *job_p)

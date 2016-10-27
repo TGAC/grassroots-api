@@ -24,7 +24,7 @@
 #include "streams.h"
 #include "string_utils.h"
 #include "blast_service_job.h"
-
+#include "byte_buffer_args_processor.hpp"
 
 
 #ifdef _DEBUG
@@ -38,9 +38,9 @@
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s)
 : ExternalBlastTool (job_p, name_s, factory_s, data_p, blast_program_name_s)
 {
-	if (!AddBlastArg (blast_program_name_s, false))
+	if (!Init (blast_program_name_s))
 		{
-			throw std::bad_alloc ();
+			throw std :: bad_alloc ();
 		}
 }
 
@@ -48,16 +48,37 @@ SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, 
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
 	: ExternalBlastTool (job_p, data_p, root_p)
 {
-	if (!AddBlastArg (ebt_blast_s, false))
+	if (!Init (ebt_blast_s))
 		{
-			throw std::bad_alloc ();
+			throw std :: bad_alloc ();
 		}
+}
+
+
+bool SystemBlastTool :: Init (const char *prog_s)
+{
+	bool success_flag = false;
+	sbt_buffer_p = AllocateByteBuffer (1024);
+
+	if (sbt_buffer_p)
+		{
+			sbt_args_processor_p = new ByteBufferArgsProcessor (sbt_buffer_p);
+
+			if (AddBlastArg (prog_s, false))
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
 }
 
 
 
 SystemBlastTool :: ~SystemBlastTool ()
 {
+	delete sbt_buffer_p;
+	delete sbt_args_processor_p;
 }
 
 
@@ -88,6 +109,12 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParamet
 		}		/* if (ExternalBlastTool :: ParseParameters (params_p)) */
 
 	return success_flag;
+}
+
+
+ArgsProcessor *SystemBlastTool :: GetArgsProcessor ()
+{
+	return sbt_args_processor_p;
 }
 
 

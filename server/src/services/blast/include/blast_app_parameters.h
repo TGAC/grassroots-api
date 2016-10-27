@@ -43,7 +43,7 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_LOCAL bool ParseBlastAppParametersToByteBuffer (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
+BLAST_SERVICE_LOCAL bool ParseBlastAppParameters (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 
 
 #ifdef __cplusplus

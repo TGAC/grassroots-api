@@ -113,13 +113,6 @@ char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const ch
 ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char * const blast_program_name_s)
 : BlastTool (job_p, name_s, factory_s, data_p)
 {
-	ebt_buffer_p = AllocateByteBuffer (1024);
-
-	if (!ebt_buffer_p)
-		{
-			throw std :: bad_alloc ();
-		}
-
 	ebt_results_filename_s = 0;
 	ebt_working_directory_s = data_p -> bsd_working_dir_s;
 	ebt_blast_s = blast_program_name_s;
@@ -141,12 +134,6 @@ ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const BlastServi
 	if (!ebt_working_directory_s)
 		{
 			throw std :: invalid_argument ("working directory not set");
-		}
-
-	ebt_buffer_p = AllocateByteBuffer (1024);
-	if (!ebt_buffer_p)
-		{
-			throw std :: bad_alloc ();
 		}
 
 	const char *result_s = GetJSONString (root_p, EBT_RESULTS_FILE_S);
@@ -174,8 +161,6 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 		{
 			FreeCopiedString (ebt_results_filename_s);
 		}
-
-	FreeByteBuffer (ebt_buffer_p);
 }
 
 
@@ -237,16 +222,18 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 		{
 			if (AddBlastArgsPair ("task", value.st_string_value_s))
 				{
-					if (GetAndAddBlastArgsToByteBuffer (params_p, BS_MAX_SEQUENCES.npt_name_s, false, ebt_buffer_p))
+					ArgsProcessor *args_processor_p = GetArgsProcessor ();
+
+					if (GetAndAddBlastArgs (params_p, BS_MAX_SEQUENCES.npt_name_s, false, args_processor_p))
 						{
 							if (bt_job_p -> bsj_job.sj_name_s)
 								{
 									if (AddBlastArgsPair ("db", bt_job_p -> bsj_job.sj_name_s))
 										{
-											if (ParseBlastAppParametersToByteBuffer (app_params_p, bt_service_data_p, params_p, ebt_buffer_p))
+											if (ParseBlastAppParameters (app_params_p, bt_service_data_p, params_p, args_processor_p))
 												{
 													/* Expect threshold */
-													if (GetAndAddBlastArgsToByteBuffer (params_p, BS_EXPECT_THRESHOLD.npt_name_s, false, ebt_buffer_p))
+													if (GetAndAddBlastArgs (params_p, BS_EXPECT_THRESHOLD.npt_name_s, false, args_processor_p))
 														{
 															/* Output Format
 															 * If we have a BlastFormatter then the output is always set to 11 which is ASN and
@@ -380,13 +367,29 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 bool ExternalBlastTool :: AddBlastArgsPair (const char *key_s, const char *value_s)
 {
-	return AddArgsPair (key_s, value_s, ebt_buffer_p);
+	bool success_flag = false;
+	ArgsProcessor *ap_p = GetArgsProcessor ();
+
+	if (ap_p)
+		{
+			success_flag = AddArgsPair (key_s, value_s, ap_p);
+		}
+
+	return success_flag;
 }
 
 
 bool ExternalBlastTool :: AddBlastArg (const char *arg_s, const bool hyphen_flag)
 {
-	return AddArg (arg_s, ebt_buffer_p, hyphen_flag);
+	bool success_flag = false;
+	ArgsProcessor *ap_p = GetArgsProcessor ();
+
+	if (ap_p)
+		{
+			success_flag = ap_p -> AddArg (arg_s, hyphen_flag);
+		}
+
+	return success_flag;
 }
 
 

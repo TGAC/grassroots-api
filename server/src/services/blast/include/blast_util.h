@@ -28,7 +28,7 @@
 #include "blast_service_api.h"
 #include "byte_buffer.h"
 #include "parameter_set.h"
-
+#include "args_processor.hpp"
 
 
 #ifdef __cplusplus
@@ -38,10 +38,10 @@ extern "C"
 
 
 
-BLAST_SERVICE_LOCAL bool GetAndAddBlastArgsToByteBuffer (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ByteBuffer *buffer_p);
+BLAST_SERVICE_LOCAL bool GetAndAddBlastArgs (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ArgsProcessor *ap_p);
 
 
-BLAST_SERVICE_LOCAL bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p);
+BLAST_SERVICE_LOCAL bool AddBlastArgs (const Parameter *param_p, ArgsProcessor *ap_p);
 
 
 /**
@@ -56,7 +56,7 @@ BLAST_SERVICE_LOCAL bool AddBlastArgsToByteBuffer (const Parameter *param_p, Byt
  * @return <code>true</code> if the argument was added
  * successfully, <code>false</code> otherwise.
  */
-BLAST_SERVICE_LOCAL bool AddArg (const char *arg_s, ByteBuffer *buffer_p, bool hyphen_flag);
+BLAST_SERVICE_LOCAL bool AddArg (const char *arg_s, ArgsProcessor *ap_p, bool hyphen_flag);
 
 
 
@@ -70,7 +70,7 @@ BLAST_SERVICE_LOCAL bool AddArg (const char *arg_s, ByteBuffer *buffer_p, bool h
  * @return <code>true</code> if the arguments were added
  * successfully, <code>false</code> otherwise.
  */
-BLAST_SERVICE_LOCAL bool AddArgsPair (const char *key_s, const char *value_s, ByteBuffer *buffer_p);
+BLAST_SERVICE_LOCAL bool AddArgsPair (const char *key_s, const char *value_s, ArgsProcessor *ap_p);
 
 
 /**
@@ -88,11 +88,11 @@ BLAST_SERVICE_LOCAL bool AddArgsPair (const char *key_s, const char *value_s, By
  * @return <code>true</code> if the arguments were added
  * successfully, <code>false</code> otherwise.
  */
-BLAST_SERVICE_LOCAL bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p, const bool unsigned_flag, const bool required_flag);
+BLAST_SERVICE_LOCAL bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ArgsProcessor *ap_p, const bool unsigned_flag, const bool required_flag);
 
 
 
-BLAST_SERVICE_LOCAL bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p,  const bool required_flag);
+BLAST_SERVICE_LOCAL bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ArgsProcessor *ap_p,  const bool required_flag);
 
 
 

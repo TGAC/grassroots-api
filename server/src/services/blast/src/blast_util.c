@@ -27,28 +27,13 @@
 #include "string_utils.h"
 
 
-
-typedef struct ByteBufferToolArgs
-{
-	ByteBuffer *bbta_buffer_p;
-
-} ByteBufferToolArgs;
-
-typedef struct DrmaaToolArgs
-{
-	DrmaaTool *dta_drmaa_tool_p;
-
-} DrmaaToolArgs;
-
-
-
-bool AddArgsPair (const char *key_s, const char *value_s, ByteBuffer *buffer_p)
+bool AddArgsPair (const char *key_s, const char *value_s, ArgsProcessor *ap_p)
 {
 	bool success_flag = false;
 
-	if (AddArg (key_s, buffer_p, true))
+	if (ap_p -> AddArg (key_s, true))
 		{
-			if (AddArg (value_s, buffer_p, false))
+			if (ap_p -> AddArg (value_s, false))
 				{
 					success_flag = true;
 				}
@@ -66,21 +51,21 @@ bool AddArgsPair (const char *key_s, const char *value_s, ByteBuffer *buffer_p)
 }
 
 
-bool GetAndAddBlastArgsToByteBuffer (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ByteBuffer *buffer_p)
+bool GetAndAddBlastArgs (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ArgsProcessor *ap_p)
 {
 	bool success_flag = !required_flag;
 	const Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, param_name_s);
 
 	if (param_p)
 		{
-			success_flag = AddBlastArgsToByteBuffer (param_p, buffer_p);
+			success_flag = AddBlastArgs (param_p, ap_p);
 		}
 
 	return success_flag;
 }
 
 
-bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
+bool AddBlastArgs (const Parameter *param_p, ArgsProcessor *ap_p)
 {
 	bool success_flag = false;
 
@@ -93,7 +78,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 			case PT_LARGE_STRING:
 			case PT_KEYWORD:
 			case PT_PASSWORD:
-				success_flag = AddArgsPair (param_p -> pa_name_s, param_p -> pa_current_value.st_string_value_s, buffer_p);
+				success_flag = AddArgsPair (param_p -> pa_name_s, param_p -> pa_current_value.st_string_value_s, ap_p);
 				break;
 
 			case PT_SIGNED_INT:
@@ -103,7 +88,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 
 					if (value_s)
 						{
-							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, buffer_p);
+							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, ap_p);
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
 				}
@@ -115,7 +100,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 
 					if (value_s)
 						{
-							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, buffer_p);
+							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, ap_p);
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
 				}
@@ -128,7 +113,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 
 					if (value_s)
 						{
-							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, buffer_p);
+							success_flag = AddArgsPair (param_p -> pa_name_s, value_s, ap_p);
 							FreeCopiedString (value_s);
 						}		/* if (value_s) */
 
@@ -136,7 +121,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 				break;
 
 			case PT_BOOLEAN:
-				success_flag = AddArg (param_p -> pa_name_s, buffer_p, true);
+				success_flag = ap_p -> AddArg (param_p -> pa_name_s, true);
 				break;
 
 			default:
@@ -148,7 +133,7 @@ bool AddBlastArgsToByteBuffer (const Parameter *param_p, ByteBuffer *buffer_p)
 }
 
 
-bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ByteBuffer *buffer_p,  const bool required_flag)
+bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ArgsProcessor *ap_p,  const bool required_flag)
 {
 	bool success_flag = !required_flag;
 	SharedType value;
@@ -157,7 +142,7 @@ bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * 
 
 	if (GetParameterValueFromParameterSet (params_p, param_name_s, &value, true))
 		{
-			success_flag = AddArgsPair (key_s, value.st_string_value_s, buffer_p);
+			success_flag = AddArgsPair (key_s, value.st_string_value_s, ap_p);
 		}
 
 	return success_flag;

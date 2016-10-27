@@ -25,7 +25,7 @@
 #include "blast_app_parameters.h"
 
 
-bool ParseBlastAppParametersToByteBuffer (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
+bool ParseBlastAppParameters (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p)
 {
-	return app_p -> bap_parse_params_to_byte_buffer_fn (data_p, params_p, buffer_p);
+	return app_p -> bap_parse_params_fn (data_p, params_p, ap_p);
 }

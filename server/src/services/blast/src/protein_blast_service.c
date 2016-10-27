@@ -71,7 +71,7 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 
 static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
-static bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+static bool ParseProteinBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 
 
 /*******************************/
@@ -185,7 +185,7 @@ static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *
 	BlastAppParameters app_params;
 	ServiceJobSet *jobs_p = NULL;
 
-	app_params.bap_parse_params_to_byte_buffer_fn = ParseProteinBlastParametersToByteBuffer;
+	app_params.bap_parse_params_fn = ParseProteinBlastParameters;
 
 	jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
 
@@ -193,16 +193,15 @@ static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *
 }
 
 
-static bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p)
+static bool ParseProteinBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p)
 {
 	bool success_flag = false;
 
-
 	/* matrix */
-	if (GetAndAddBlastArgsToByteBuffer (params_p, S_MATRIX.npt_name_s, false, buffer_p))
+	if (GetAndAddBlastArgs (params_p, S_MATRIX.npt_name_s, false, ap_p))
 		{
 			/* Word Size */
-			if (GetAndAddBlastArgsToByteBuffer (params_p, S_COMP_BASED_STATS.npt_name_s, false, buffer_p))
+			if (GetAndAddBlastArgs (params_p, S_COMP_BASED_STATS.npt_name_s, false, ap_p))
 				{
 					success_flag = true;
 				}
@@ -211,8 +210,7 @@ static bool ParseProteinBlastParametersToByteBuffer (const BlastServiceData *dat
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_COMP_BASED_STATS.npt_name_s);
 				}
 
-
-		}		/* if (BPAP_COMP_BASED_STATS (params_p, S_MATRIX.npt_name_s, "-reward", buffer_p, false)) */
+		}		/* if (GetAndAddBlastArgs (params_p, S_MATRIX.npt_name_s, false, ap_p)) */
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\"", S_MATRIX.npt_name_s);

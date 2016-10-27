@@ -151,6 +151,9 @@ protected:
 	uint32 ebt_output_format;
 
 
+	virtual ArgsProcessor *GetArgsProcessor () = 0;
+
+
 	/**
 	 * Add the argument to the command line arguments
 	 * that this BlastTool will run with.

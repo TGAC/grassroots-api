@@ -124,6 +124,11 @@ public:
 
 protected:
 
+	DrmaaToolArgsProcessor *dbt_args_processor_p;
+
+
+	virtual ArgsProcessor *GetArgsProcessor ();
+
 	/**
 	 * Add the argument to the command line arguments
 	 * that this DrmaaBlastTool will run with.

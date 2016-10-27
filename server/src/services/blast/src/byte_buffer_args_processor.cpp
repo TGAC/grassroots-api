@@ -41,17 +41,16 @@ ByteBufferArgsProcessor :: ~ByteBufferArgsProcessor ()
 bool ByteBufferArgsProcessor :: AddArg (const char *arg_s, const bool hyphen_flag)
 {
 	bool success_flag = true;
-	const char * const prefix_s;
 	const bool add_quotes_flag = DoesStringContainWhitespace (arg_s);
 
 	if (bbap_buffer_p -> bb_current_index == 0)
 		{
-			success_flag = AppendStringToByteBuffer (buffer_p, " ");
+			success_flag = AppendStringToByteBuffer (bbap_buffer_p, " ");
 		}
 
 	if (success_flag && hyphen_flag)
 		{
-			success_flag = AppendStringToByteBuffer (buffer_p, "-");
+			success_flag = AppendStringToByteBuffer (bbap_buffer_p, "-");
 		}
 
 	if (success_flag)

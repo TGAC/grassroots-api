@@ -91,6 +91,7 @@ public:
 	virtual bool AreToolsAsynchronous () const;
 
 protected:
+
 	/**
 	 * The constructor for DrmaaBlastToolFactory.
 	 *
