@@ -28,32 +28,17 @@
 
 
 
-
-bool AddArg (const char *arg_s, ByteBuffer *buffer_p, bool hyphen_flag)
+typedef struct ByteBufferToolArgs
 {
-	bool success_flag = true;
+	ByteBuffer *bbta_buffer_p;
 
-	if (buffer_p -> bb_current_index > 0)
-		{
-			const char * const prefix_s = hyphen_flag ? " -" : " ";
+} ByteBufferToolArgs;
 
-			success_flag = AppendStringsToByteBuffer (buffer_p, prefix_s, arg_s, NULL);
-		}
-	else
-		{
-			if (hyphen_flag)
-				{
-					success_flag = AppendStringsToByteBuffer (buffer_p, "-", arg_s, NULL);
-				}
-			else
-				{
-					success_flag =  AppendStringToByteBuffer (buffer_p, arg_s);
-				}
-		}
+typedef struct DrmaaToolArgs
+{
+	DrmaaTool *dta_drmaa_tool_p;
 
-	return success_flag;
-}
-
+} DrmaaToolArgs;
 
 
 

@@ -47,10 +47,13 @@ SRCS 	= \
 	blast_service_params.c \
 	paired_blast_service.c \
 	blast_util.c \
+	args_processor.cpp \
 	blast_formatter.cpp \
 	blast_tool.cpp \
 	blast_app_parameters.c \
 	blast_tool_factory.cpp \
+	byte_buffer_args_processor.cpp \
+	drmaa_tool_args_processor.cpp \
 	external_blast_tool.cpp \
 	external_blast_tool_factory.cpp \
 	system_blast_tool.cpp \

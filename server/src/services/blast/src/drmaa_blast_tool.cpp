@@ -156,6 +156,7 @@ void DrmaaBlastTool :: SetCoresPerSearch (uint32 cores)
 }
 
 
+
 bool DrmaaBlastTool :: SetEmailNotifications (const char **email_addresses_ss)
 {
 	return SetDrmaaToolEmailNotifications (dbt_drmaa_tool_p, email_addresses_ss);
@@ -175,6 +176,7 @@ OperationStatus DrmaaBlastTool :: Run ()
 		{
 			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create job filename for ", uuid_s);
 		}
+
 
 	if (RunDrmaaTool (dbt_drmaa_tool_p, dbt_async_flag, job_id_filename_s))
 		{

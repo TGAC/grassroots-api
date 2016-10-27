@@ -148,6 +148,10 @@ protected:
 	 */
 	virtual bool AddToJSON (json_t *root_p);
 
+
+	bool ConvertArgsToDrmaa ();
+
+
 private:
 
 	static const char * const DBT_ASYNC_S;

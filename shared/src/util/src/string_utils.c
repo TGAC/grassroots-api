@@ -1057,3 +1057,21 @@ char *GetFileContentsAsStringByFilename (const char *filename_s)
 
 
 
+bool DoesStringContainWhitespace (const char *value_s)
+{
+  while (*value_s != '\0')
+  	{
+  		if (isspace (*value_s))
+  			{
+  				return true;
+  			}
+  		else
+  			{
+  				++ value_s;
+  			}
+  	}
+
+  return false;
+}
+
+

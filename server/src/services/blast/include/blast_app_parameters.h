@@ -27,13 +27,13 @@
 #include "blast_service_api.h"
 #include "blast_service.h"
 #include "parameter_set.h"
-#include "byte_buffer.h"
+#include "args_processor.hpp"
 
 
 
 typedef struct BLAST_SERVICE_LOCAL BlastAppParameters
 {
-	bool (*bap_parse_params_to_byte_buffer_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+	bool (*bap_parse_params_fn) (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 } BlastAppParameters;
 
 
@@ -43,7 +43,7 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_LOCAL bool ParseBlastAppParametersToByteBuffer (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ByteBuffer *buffer_p);
+BLAST_SERVICE_LOCAL bool ParseBlastAppParametersToByteBuffer (BlastAppParameters *app_p, const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 
 
 #ifdef __cplusplus

@@ -394,6 +394,10 @@ GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
 GRASSROOTS_UTIL_API bool IsUUIDSet (uuid_t id);
 
 
+
+GRASSROOTS_UTIL_API bool DoesStringContainWhitespace (const char *value_s);
+
+
 #ifdef __cplusplus
 }
 #endif
