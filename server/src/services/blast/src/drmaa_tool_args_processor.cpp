@@ -45,7 +45,7 @@ DrmaaToolArgsProcessor :: ~DrmaaToolArgsProcessor ()
 
 bool DrmaaToolArgsProcessor :: AddArg (const char *arg_s, const bool hyphen_flag)
 {
-	bool success_flag = AddDrmaaToolArgument (dtap_drmaa_p, arg_s);
+	bool success_flag = false;
 
 	if (hyphen_flag)
 		{
