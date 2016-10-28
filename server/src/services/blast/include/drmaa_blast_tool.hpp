@@ -25,6 +25,8 @@
 
 #include "external_blast_tool.hpp"
 #include "drmaa_tool.h"
+#include "drmaa_tool_args_processor.hpp"
+
 
 /**
  * A class that will run Blast as a drmaa process.
