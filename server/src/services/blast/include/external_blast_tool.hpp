@@ -116,13 +116,6 @@ public:
 
 protected:
 	/**
-	 *
-	 * This is the buffer used to build all of the command line
-	 * arguments for the executable used to run the blast job.
-	 */
-	ByteBuffer *ebt_buffer_p;
-
-	/**
 	 * The filename which the Blast results will be written to if the
 	 * job runs successfully.
 	 */

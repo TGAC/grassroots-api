@@ -5,9 +5,10 @@
  *      Author: billy
  */
 
+#include "blastp_service.h"
+
 #include <string.h>
 
-#include "protein_blast_service.h"
 #include "base_blast_service.h"
 #include "blast_service_params.h"
 #include "blast_app_parameters.h"
@@ -57,11 +58,11 @@ static const char *GetProteinBlastServiceName (Service *service_p);
 
 static const char *GetProteinBlastServiceDescription (Service *service_p);
 
-static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
-static bool AddProteinBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
+static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
+
 
 static bool AddScoringParameters (BlastServiceData *data_p, ParameterSet *param_set_p);
 
@@ -71,7 +72,6 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 
 static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
-static bool ParseProteinBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 
 
 /*******************************/
@@ -79,7 +79,7 @@ static bool ParseProteinBlastParameters (const BlastServiceData *data_p, Paramet
 /*******************************/
 
 
-Service *GetProteinBlastService ()
+Service *GetBlastPService ()
 {
 	Service *protein_blast_service_p = (Service *) AllocMemory (sizeof (Service));
 
@@ -116,26 +116,13 @@ Service *GetProteinBlastService ()
 }
 
 
-
-static const char *GetProteinBlastServiceName (Service * UNUSED_PARAM (service_p))
+ParameterSet *CreateProteinBlastServiceParameters (Service *service_p, const char *param_set_name_s, const char *param_set_description_s, AddAdditionalParamsFn query_sequence_callback_fn, const BlastTask *tasks_p, const uint32 num_tasks)
 {
-	return "Protein Blast service";
-}
-
-
-static const char *GetProteinBlastServiceDescription (Service * UNUSED_PARAM (service_p))
-{
-	return "A service to run Blast Protein searches";
-}
-
-
-static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
-{
-	ParameterSet *param_set_p = AllocateParameterSet ("Protein Blast service parameters", "A service to run Protein Blast searches");
+	ParameterSet *param_set_p = AllocateParameterSet (param_set_name_s, param_set_description_s);
 
 	if (param_set_p)
 		{
-			if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_PROTEIN))
+			if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_PROTEIN, query_sequence_callback_fn))
 				{
           BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 
@@ -143,7 +130,7 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 						{
 							if (AddProteinBlastParameters (blast_data_p, param_set_p))
 								{
-								  if (AddProgramSelectionParameters (blast_data_p, param_set_p, s_tasks_p, S_NUM_TASKS))
+								  if (AddProgramSelectionParameters (blast_data_p, param_set_p, tasks_p, num_tasks))
                     {
                       return param_set_p;
                     }
@@ -163,15 +150,12 @@ static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resou
 
 
 
-static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
+
+bool AddProteinBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
 {
 	bool success_flag = false;
-	SharedType def;
-	Parameter *param_p;
 
-	def.st_ulong_value = 3;
-
-	if ((param_p = EasyCreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
+	if (AddScoringParameters (data_p, param_set_p))
 		{
 			success_flag = true;
 		}
@@ -180,20 +164,7 @@ static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, Para
 }
 
 
-static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
-{
-	BlastAppParameters app_params;
-	ServiceJobSet *jobs_p = NULL;
-
-	app_params.bap_parse_params_fn = ParseProteinBlastParameters;
-
-	jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
-
-	return jobs_p;
-}
-
-
-static bool ParseProteinBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p)
+bool ParseBlastPParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p)
 {
 	bool success_flag = false;
 
@@ -220,18 +191,58 @@ static bool ParseProteinBlastParameters (const BlastServiceData *data_p, Paramet
 }
 
 
+static const char *GetProteinBlastServiceName (Service * UNUSED_PARAM (service_p))
+{
+ 	return "BlastP service";
+}
 
-static bool AddProteinBlastParameters (BlastServiceData *data_p, ParameterSet *param_set_p)
+
+static const char *GetProteinBlastServiceDescription (Service * UNUSED_PARAM (service_p))
+{
+	return "A service to search protein databases with protein queries";
+}
+
+
+
+static ParameterSet *GetProteinBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
+{
+	return CreateProteinBlastServiceParameters (service_p, "Protein Blast service parameters", "A service to run Protein Blast searches", NULL, s_tasks_p, S_NUM_TASKS);
+}
+
+
+
+
+
+static bool AddProteinGeneralAlgorithmParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
 	bool success_flag = false;
+	SharedType def;
+	Parameter *param_p;
 
-	if (AddScoringParameters (data_p, param_set_p))
+	def.st_ulong_value = 3;
+
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_WORD_SIZE.npt_type, S_WORD_SIZE.npt_name_s, "Word size", "Expected number of chance matches in a random model", def, PL_ALL)) != NULL)
 		{
 			success_flag = true;
 		}
 
 	return success_flag;
 }
+
+
+static ServiceJobSet *RunProteinBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
+{
+	BlastAppParameters app_params;
+	ServiceJobSet *jobs_p = NULL;
+
+	app_params.bap_parse_params_fn = ParseBlastPParameters;
+
+	jobs_p = RunBlastService (service_p, param_set_p, user_p, providers_p, &app_params);
+
+	return jobs_p;
+}
+
+
 
 
 

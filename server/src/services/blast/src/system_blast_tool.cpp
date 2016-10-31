@@ -120,7 +120,7 @@ ArgsProcessor *SystemBlastTool :: GetArgsProcessor ()
 
 OperationStatus SystemBlastTool :: Run ()
 {
-	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
+	const char *command_line_s = GetByteBufferData (sbt_buffer_p);
 	int res;
 	OperationStatus status;
 

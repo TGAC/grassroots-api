@@ -5,7 +5,8 @@
  *      Author: billy
  */
 
-#include "nucleotide_blast_service.h"
+#include "blastn_service.h"
+
 #include "base_blast_service.h"
 #include "blast_service_params.h"
 #include "args_processor.hpp"
@@ -37,11 +38,11 @@ static const BlastTask s_tasks_p [S_NUM_TASKS] =
 };
 
 
-static const char *GetNucleotideBlastServiceName (Service *service_p);
+static const char *GetBlastNServiceName (Service *service_p);
 
-static const char *GetNucleotideBlastServiceDescription (Service *service_p);
+static const char *GetBlastNServiceDescription (Service *service_p);
 
-static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
+static ParameterSet *GetBlastNServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static ServiceJobSet *RunNucleotideBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
@@ -59,7 +60,7 @@ static bool ParseNucleotideBlastParameters (const BlastServiceData *data_p, Para
 /*******************************/
 
 
-Service *GetNucleotideBlastService ()
+Service *GetBlastNService ()
 {
 	Service *nucleotide_blast_service_p = (Service *) AllocMemory (sizeof (Service));
 
@@ -70,12 +71,12 @@ Service *GetNucleotideBlastService ()
 			if (data_p)
 				{
 					InitialiseService (nucleotide_blast_service_p,
-														 GetNucleotideBlastServiceName,
-														 GetNucleotideBlastServiceDescription,
+														 GetBlastNServiceName,
+														 GetBlastNServiceDescription,
 														 NULL,
 														 RunNucleotideBlastService,
 														 IsResourceForBlastService,
-														 GetNucleotideBlastServiceParameters,
+														 GetBlastNServiceParameters,
 														 ReleaseBlastServiceParameters,
 														 CloseBlastService,
 														 CustomiseBlastServiceJob,
@@ -98,25 +99,25 @@ Service *GetNucleotideBlastService ()
 
 
 
-static const char *GetNucleotideBlastServiceName (Service * UNUSED_PARAM (service_p))
+static const char *GetBlastNServiceName (Service * UNUSED_PARAM (service_p))
 {
-	return "Nucleotide Blast service";
+	return "BlastN service";
 }
 
 
-static const char *GetNucleotideBlastServiceDescription (Service * UNUSED_PARAM (service_p))
+static const char *GetBlastNServiceDescription (Service * UNUSED_PARAM (service_p))
 {
-	return "A service to run Blast nucleotide searches";
+	return "A service to search nucleotide databases with nucleotide queries";
 }
 
 
-static ParameterSet *GetNucleotideBlastServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
+static ParameterSet *GetBlastNServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Nucleotide Blast service parameters", "A service to run nucleotide Blast searches");
 
 	if (param_set_p)
 		{
-			if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_NUCLEOTIDE))
+			if (AddBaseBlastServiceParameters (service_p, param_set_p, DT_NUCLEOTIDE, NULL))
 				{
 				  BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 

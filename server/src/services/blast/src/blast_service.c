@@ -18,8 +18,9 @@
 #define ALLOCATE_BLAST_SERVICE_CONSTANTS (1)
 #include "base_blast_service.h"
 
-#include "nucleotide_blast_service.h"
-#include "protein_blast_service.h"
+#include "blastn_service.h"
+#include "blastp_service.h"
+#include "blastx_service.h"
 
 #include "memory_allocations.h"
 
@@ -45,7 +46,7 @@
 
 /***************************************/
 
-static bool InitBlastService (Service *blast_service_p, ServicesArray *services_p, size_t *index_p);
+static void InitBlastService (Service *blast_service_p);
 
 
 
@@ -54,60 +55,78 @@ static bool InitBlastService (Service *blast_service_p, ServicesArray *services_
  */
 ServicesArray *GetServices (const json_t *  UNUSED_PARAM (config_p))
 {
-	ServicesArray *services_p = NULL;
-	Service *nucleotide_service_p = GetNucleotideBlastService ();
-	Service *protein_service_p = GetProteinBlastService ();
-	size_t num_services = 0;
+	ServicesArray *services_array_p = NULL;
+	const uint32 NUM_SERVICES = 3;
+	Service *services_pp [NUM_SERVICES];
+	uint32 num_added_services = 0;
+	uint32 i;
 
-	if (nucleotide_service_p)
+	memset (services_pp, 0, NUM_SERVICES * (sizeof (Service *)));
+
+	*services_pp = GetBlastNService ();
+	* (services_pp + 1) = GetBlastPService ();
+	* (services_pp + 2) = GetBlastXService ();
+
+
+	/*
+	 * Loop through all of the Blast services
+	 * and try and initialise them
+	 */
+	for (i = 0; i < NUM_SERVICES; ++ i)
 		{
-			++ num_services;
+			Service *service_p = * (services_pp + i);
+
+			if (service_p)
+				{
+					InitBlastService (service_p);
+					 ++ num_added_services;
+				}
 		}
 
-	if (protein_service_p)
+	/*
+	 * If we have successfully got any Blast services,
+	 * create and populate the ServicesArray that will
+	 * contain them
+	 */
+	if (num_added_services > 0)
 		{
-			++ num_services;
-		}
+			services_array_p = AllocateServicesArray (num_added_services);
 
-
-	services_p = AllocateServicesArray (num_services);
-
-	if (services_p)
-		{
-			bool success_flag = true;
-			size_t i = 0;
-
-			if (nucleotide_service_p && success_flag)
+			if (services_array_p)
 				{
-					success_flag = InitBlastService (nucleotide_service_p, services_p, &i);
+					Service **added_service_pp = services_array_p -> sa_services_pp;
+
+					for (i = 0; i < NUM_SERVICES; ++ i)
+						{
+							if (* (services_pp + i))
+								{
+									*added_service_pp = * (services_pp + i);
+									++ added_service_pp;
+								}
+						}
+
+				}		/* if (services_array_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServicesArray for Blast services");
+
+					for (i = 0; i < NUM_SERVICES; ++ i)
+						{
+							if (* (services_pp + i))
+								{
+									FreeService (* (services_pp + i));
+								}
+						}
+
 				}
 
-			if (protein_service_p && success_flag)
-				{
-					success_flag = InitBlastService (protein_service_p, services_p, &i);
-				}
-
-			if (!success_flag)
-				{
-
-				}
-
-		}		/* if (services_p) */
+		}		/* if (num_added_services > 0) */
 	else
 		{
-
-			if (nucleotide_service_p)
-				{
-					FreeService (nucleotide_service_p);
-				}
-
-			if (protein_service_p)
-				{
-					FreeService (protein_service_p);
-				}
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create any Blast services");
 		}
 
-	return services_p;
+	return services_array_p;
 }
 
 
@@ -122,28 +141,14 @@ void ReleaseServices (ServicesArray *services_p)
  */
 
 
-static bool InitBlastService (Service *blast_service_p, ServicesArray *services_p, size_t *index_p)
+static void InitBlastService (Service *blast_service_p)
 {
-	bool success_flag = true;
-
 	blast_service_p -> se_synchronous_flag = IsBlastToolFactorySynchronous (((BlastServiceData *) (blast_service_p -> se_data_p)) -> bsd_tool_factory_p);
 
 	blast_service_p -> se_deserialise_job_json_fn = BuildBlastServiceJob;
 	blast_service_p -> se_serialise_job_json_fn = BuildBlastServiceJobJSON;
 
 	blast_service_p -> se_get_value_from_job_fn = GetValueFromBlastServiceJobOutput;
-
-	if (*index_p < services_p -> sa_num_services)
-		{
-			* ((services_p -> sa_services_pp) + (*index_p)) = blast_service_p;
-			++ (*index_p);
-		}
-	else
-		{
-			success_flag = false;
-		}
-
-	return success_flag;
 }
 
 

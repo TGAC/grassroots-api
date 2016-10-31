@@ -80,16 +80,19 @@ typedef struct BlastTask
 } BlastTask;
 
 
+typedef bool (*AddAdditionalParamsFn) (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 
-BLAST_SERVICE_LOCAL bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p);
+BLAST_SERVICE_LOCAL bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p, AddAdditionalParamsFn callback_fn	);
 
 
-BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p, bool (*add_additional_params_fn) (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p));
+BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p, AddAdditionalParamsFn callback_fn);
 
 
 BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks);

@@ -218,7 +218,7 @@ Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p, P
 }
 
 
-bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p)
+bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p, AddAdditionalParamsFn callback_fn)
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;
@@ -250,7 +250,14 @@ bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p
 
 									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, BS_SUBRANGE_TO.npt_type, false, BS_SUBRANGE_TO.npt_name_s, "To", subrange_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 										{
-											success_flag = true;
+											if (callback_fn)
+												{
+													success_flag = callback_fn (data_p, param_set_p, group_p);
+												}
+											else
+												{
+													success_flag = true;
+												}
 										}
 								}
 						}
@@ -261,7 +268,7 @@ bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p
 }
 
 
-bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p, bool (*add_additional_params_fn) (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p))
+bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p, AddAdditionalParamsFn callback_fn)
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;
@@ -291,9 +298,9 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 								{
 									if ((param_p = SetUpOutputFormatParamater (data_p, param_set_p, group_p)) != NULL)
 										{
-											if (add_additional_params_fn)
+											if (callback_fn)
 												{
-													success_flag = add_additional_params_fn (data_p, param_set_p, group_p);
+													success_flag = callback_fn (data_p, param_set_p, group_p);
 												}
 											else
 												{

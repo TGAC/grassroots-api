@@ -67,7 +67,7 @@ static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json
 
 static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
+static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
@@ -810,7 +810,7 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p,  const SchemaVe
 				{
 					if (AddCurrentValueToJSON (parameter_p, root_p, sv_p))
 						{
-							if (AddParameterTypeToJSON (parameter_p, root_p, sv_p))
+							if (AddParameterTypeToJSON (parameter_p, root_p, sv_p, full_definition_flag))
 								{
 									if (AddParameterStoreToJSON (parameter_p, root_p, sv_p))
 										{
@@ -1168,53 +1168,61 @@ static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *ro
 }
 
 
-static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p)
+static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p, const bool full_definition_flag)
 {
 	bool success_flag = false;
 
-	/* Set the parameter type */
-	switch (param_p -> pa_type)
+	if (full_definition_flag)
 		{
-			case PT_BOOLEAN:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("boolean")) == 0);
-				break;
+			/* Set the parameter type */
+			switch (param_p -> pa_type)
+				{
+					case PT_BOOLEAN:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("boolean")) == 0);
+						break;
 
-			case PT_CHAR:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("character")) == 0);
-				break;
+					case PT_CHAR:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("character")) == 0);
+						break;
 
-			case PT_SIGNED_INT:
-			case PT_NON_POSITIVE_INT:
-			case PT_UNSIGNED_INT:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("integer")) == 0);
-				break;
+					case PT_SIGNED_INT:
+					case PT_NON_POSITIVE_INT:
+					case PT_UNSIGNED_INT:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("integer")) == 0);
+						break;
 
-			case PT_SIGNED_REAL:
-			case PT_UNSIGNED_REAL:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("number")) == 0);
-				break;
+					case PT_SIGNED_REAL:
+					case PT_UNSIGNED_REAL:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("number")) == 0);
+						break;
 
-			case PT_STRING:
-			case PT_TABLE:
-			case PT_LARGE_STRING:
-			case PT_PASSWORD:
-			case PT_FILE_TO_WRITE:
-			case PT_DIRECTORY:
-			case PT_KEYWORD:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
-				break;
+					case PT_STRING:
+					case PT_TABLE:
+					case PT_LARGE_STRING:
+					case PT_PASSWORD:
+					case PT_FILE_TO_WRITE:
+					case PT_DIRECTORY:
+					case PT_KEYWORD:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
+						break;
 
-			case PT_FILE_TO_READ:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
-				break;
+					case PT_FILE_TO_READ:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
+						break;
 
-			case PT_JSON:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("json")) == 0);
-				break;
+					case PT_JSON:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("json")) == 0);
+						break;
 
-			default:
-				break;
-		}		/* switch (param_p -> pa_type) */
+					default:
+						break;
+				}		/* switch (param_p -> pa_type) */
+
+		}		/* if (full_definition_flag) */
+	else
+		{
+			success_flag = true;
+		}
 
 	if (success_flag)
 		{

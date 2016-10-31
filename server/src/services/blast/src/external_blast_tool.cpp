@@ -247,7 +247,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 																	if (bt_service_data_p -> bsd_formatter_p)
 																		{
-																			success_flag = AddBlastArgsPair ("outfmt", BS_DEFAULT_OUTPUT_FORMAT_S);
+																			success_flag = AddBlastArgsPair (BS_OUTPUT_FORMAT.npt_name_s, BS_DEFAULT_OUTPUT_FORMAT_S);
 																		}
 																	else
 																		{
@@ -255,7 +255,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 																			if (value_s)
 																				{
-																					success_flag = AddBlastArgsPair ("outfmt", value_s);
+																					success_flag = AddBlastArgsPair (BS_OUTPUT_FORMAT.npt_name_s, value_s);
 																					FreeCopiedString (value_s);
 																				}		/* if (value_s) */
 																			else
