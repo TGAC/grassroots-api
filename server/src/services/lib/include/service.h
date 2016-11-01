@@ -26,6 +26,7 @@
 #include "user_details.h"
 #include "operation.h"
 #include "paired_service.h"
+#include "linked_service.h"
 #include "uuid/uuid.h"
 
 #include "jansson.h"
@@ -677,6 +678,7 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
  */
 GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p, const json_t *provider_p);
 
+
 /**
  * Add a PairedService to a Service.
  *
@@ -686,6 +688,20 @@ GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struc
  * @memberof Service
  */
 GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
+
+
+
+
+/**
+ * Add a LinkedService to a Service.
+ *
+ * @param service_p The Service to add the LinkedService to.
+ * @param paired_service_p The LinkedService to add.
+ * @return <code>true</code> if the LinkedService was added successfully, <code>false</code> otherwise.
+ * @memberof Service
+ */
+GRASSROOTS_SERVICE_API bool AddLinkedService (Service *service_p, LinkedService *paired_service_p);
+
 
 
 /**

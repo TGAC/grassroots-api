@@ -196,11 +196,7 @@ bool IsServiceLive (Service *service_p)
 bool SetUpLinkedServices (Service *service_p)
 {
 	bool success_flag = true;
-	const char *linked_services_p = NULL;
 	const json_t *config_p = service_p -> se_data_p ? service_p -> se_data_p -> sd_config_p : NULL;
-
-	InitLinkedList (& (service_p -> se_linked_services));
-	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
 
 	if (config_p)
 		{
@@ -219,7 +215,15 @@ bool SetUpLinkedServices (Service *service_p)
 
 									if (linked_service_p)
 										{
+											if (!AddLinkedService (service_p, linked_service_p))
+												{
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to add LinkedService \"%s\" to \"%s\"", linked_service_p -> ls_input_service_s, GetServiceName (service_p));
+												}
  										}
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to create LinkedService");
+										}
 								}
 						}
 				}
@@ -1299,6 +1303,22 @@ bool AddPairedService (Service *service_p, PairedService *paired_service_p)
 
 	return success_flag;
 }
+
+
+bool AddLinkedService (Service *service_p, LinkedService *linked_service_p)
+{
+	bool success_flag = false;
+	LinkedServiceNode *node_p = AllocateLinkedServiceNode (linked_service_p);
+
+	if (node_p)
+		{
+			LinkedListAddTail (& (service_p -> se_linked_services), (ListItem *) node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
 
 
 json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, UserDetails *user_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p)

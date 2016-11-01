@@ -266,11 +266,7 @@ json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p)
 
 							if (params_json_p)
 								{
-									if (json_object_set_new (res_p, PARAM_SET_KEY_S, params_json_p) == 0)
-										{
-
-										}
-									else
+									if (!json_object_set_new (res_p, PARAM_SET_KEY_S, params_json_p) == 0)
 										{
 											json_decref (params_json_p);
 											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add parameters JSON to InterestedServiceJSON");
@@ -285,9 +281,8 @@ json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p)
 						}		/* if (params_p) */
 					else
 						{
-
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "GetServiceParameters failed for \"%s\"", GetServiceName (service_p));
 						}
-
 
 					FreeService (service_p);
 				}		/* if (service_p) */
