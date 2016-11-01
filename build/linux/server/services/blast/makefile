@@ -39,7 +39,6 @@ INCLUDES = \
 	-I$(DIR_BLAST_INC)
 	
 SRCS 	= \
-	base_blast_service.c \
 	blast_service.c \
 	blastn_service.c \
 	blastp_service.c \

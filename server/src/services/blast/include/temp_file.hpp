@@ -26,7 +26,7 @@
 #include <fstream>
 #include <cstdio>
 
-#include "blast_service.h"
+#include "blast_service_api.h"
 
 using namespace std;
 

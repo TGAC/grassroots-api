@@ -13,9 +13,12 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+#include <windows.h>
+
 #include "platform.h"
 
-BOOLEAN InitPlatform ()
+bool InitPlatform ()
 {
 	
 	#if defined _DEBUG && defined _CRTDBG_MAP_ALLOC
@@ -25,9 +28,18 @@ BOOLEAN InitPlatform ()
 	_crtBreakAlloc = 608;
 	#endif
 
-	return TRUE;
+	return true;
 }
 
 void ExitPlatform ()
-{}
+{
+}
 
+
+
+uint32 Snooze (uint32 milliseconds)
+{
+	Sleep (milliseconds);
+
+	return milliseconds;
+}

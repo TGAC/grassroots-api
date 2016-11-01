@@ -61,7 +61,7 @@ extern "C"
  * @param data_p The BlastServiceData.
  * @return The newly-allocated BlastServiceJob or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, BlastServiceData *data_p);
+BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, struct BlastServiceData *data_p);
 
 
 /**

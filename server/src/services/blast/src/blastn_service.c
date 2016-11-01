@@ -7,7 +7,7 @@
 
 #include "blastn_service.h"
 
-#include "base_blast_service.h"
+#include "blast_service.h"
 #include "blast_service_params.h"
 #include "args_processor.hpp"
 #include "blast_util.h"
@@ -203,7 +203,7 @@ static bool AddScoringParams (BlastServiceData *data_p, ParameterSet *param_set_
 }
 
 
-bool ParseNucleotideBlastParameters (const BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p)
+bool ParseNucleotideBlastParameters (const BlastServiceData * UNUSED_PARAM (data_p), ParameterSet *params_p, ArgsProcessor *ap_p)
 {
 	bool success_flag = false;
 

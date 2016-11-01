@@ -17,14 +17,21 @@
 #define PLATFORM_H
 
 #include "typedefs.h"
-#include "runner_api.h"
+#include "grassroots_util_library.h"
 
 #ifdef __cplusplus
 	extern "C" {
 #endif
 
-RUNNER_API BOOLEAN InitPlatform (void);
-RUNNER_API void ExitPlatform (void);
+
+GRASSROOTS_UTIL_API bool InitPlatform (void);
+
+
+GRASSROOTS_UTIL_API void ExitPlatform (void);
+
+
+GRASSROOTS_UTIL_API uint32 Snooze (uint32 milliseconds);
+
 
 #ifdef __cplusplus
 }

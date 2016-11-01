@@ -46,7 +46,7 @@ SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, 
 
 
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
-	: ExternalBlastTool (job_p, data_p, root_p)
+	: ExternalBlastTool (job_p, data_p, root_p), sbt_buffer_p (0), sbt_args_processor_p (0)
 {
 	if (!Init (ebt_blast_s))
 		{
@@ -77,8 +77,15 @@ bool SystemBlastTool :: Init (const char *prog_s)
 
 SystemBlastTool :: ~SystemBlastTool ()
 {
-	delete sbt_buffer_p;
-	delete sbt_args_processor_p;
+	if (sbt_buffer_p)
+		{
+			FreeByteBuffer (sbt_buffer_p);
+		}
+
+	if (sbt_args_processor_p)
+		{
+			delete sbt_args_processor_p;
+		}
 }
 
 
