@@ -1305,6 +1305,40 @@ bool AddPairedService (Service *service_p, PairedService *paired_service_p)
 }
 
 
+
+uint32 AddLinkedServices (Service *service_p)
+{
+	uint32 num_added_services = 0;
+
+	if (service_p -> se_data_p)
+		{
+			if (service_p -> se_data_p -> sd_config_p)
+				{
+					const json_t *linked_services_config_p = json_object_get (service_p -> se_data_p -> sd_config_p, LINKED_SERVICES_S);
+
+					if (linked_services_config_p)
+						{
+							if (json_is_array (linked_services_config_p))
+								{
+
+								}		/* if (json_is_array (linked_services_config_p)) */
+							else
+								{
+
+								}
+
+						}		/* if (linked_services_config_p) */
+
+				}		/* if (service_p -> se_data_p -> sd_config_p) */
+
+		}		/* if (service_p -> se_data_p) */
+
+
+
+	return num_added_services;
+}
+
+
 bool AddLinkedService (Service *service_p, LinkedService *linked_service_p)
 {
 	bool success_flag = false;
