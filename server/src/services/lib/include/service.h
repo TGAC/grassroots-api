@@ -690,6 +690,15 @@ GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struc
 GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
 
 
+/**
+ * Create and add a LinkedService to a Service.
+ *
+ * @param service_p The Service to add the LinkedService to.
+ * @param service_config_p The json fragement defining the LinkedService to add.
+ * @return <code>true</code> if the LinkedService was added successfully, <code>false</code> otherwise.
+ * @memberof Service
+ */
+GRASSROOTS_SERVICE_API bool CreateAndAddLinkedService (Service *service_p, const json_t *service_config_p);
 
 
 /**

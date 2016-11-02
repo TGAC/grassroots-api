@@ -109,6 +109,7 @@ PREFIX const char *LINKED_SERVICES_S VAL("linked_services");
 
 PREFIX const char *MAPPED_PARAM_INPUT_S VAL("input");
 PREFIX const char *MAPPED_PARAM_OUTPUT_S VAL("output");
+PREFIX const char *MAPPED_PARAM_REQUIRED_S VAL("required");
 
 PREFIX const char *JOB_NAME_S VAL("name");
 PREFIX const char *JOB_SERVICE_S VAL("service");

@@ -68,6 +68,10 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 static void GenerateServiceUUID (Service *service_p);
 
 
+static  uint32 AddLinkedServices (Service *service_p);
+
+
+
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
@@ -112,10 +116,6 @@ void InitialiseService (Service * const service_p,
 	InitLinkedList (& (service_p -> se_paired_services));
 	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
 
-	InitLinkedList (& (service_p -> se_linked_services));
-	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
-
-
 	if (service_p -> se_data_p)
 		{
 			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);
@@ -127,6 +127,14 @@ void InitialiseService (Service * const service_p,
 					service_p -> se_data_p -> sd_config_p = GetGlobalServiceConfig (service_name_s, & (service_p -> se_data_p -> sd_config_flag));
 				}
 		}
+
+
+	/*
+	 * Add the LinkedServices
+	 */
+	InitLinkedList (& (service_p -> se_linked_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
+	AddLinkedServices (service_p);
 }
 
 
@@ -1306,7 +1314,7 @@ bool AddPairedService (Service *service_p, PairedService *paired_service_p)
 
 
 
-uint32 AddLinkedServices (Service *service_p)
+static uint32 AddLinkedServices (Service *service_p)
 {
 	uint32 num_added_services = 0;
 
@@ -1320,11 +1328,25 @@ uint32 AddLinkedServices (Service *service_p)
 						{
 							if (json_is_array (linked_services_config_p))
 								{
+									json_t *link_config_p;
+									size_t i;
+
+									json_array_foreach (linked_services_config_p, i, link_config_p)
+										{
+											if (!CreateAndAddLinkedService (service_p, link_config_p))
+												{
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, link_config_p, "Failed to add LinkedService to \"%s\"", GetServiceName (service_p));
+												}
+										}
+
 
 								}		/* if (json_is_array (linked_services_config_p)) */
 							else
 								{
-
+									if (!CreateAndAddLinkedService (service_p, linked_services_config_p))
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_services_config_p, "Failed to add LinkedService to \"%s\"", GetServiceName (service_p));
+										}
 								}
 
 						}		/* if (linked_services_config_p) */
@@ -1336,6 +1358,24 @@ uint32 AddLinkedServices (Service *service_p)
 
 
 	return num_added_services;
+}
+
+
+bool CreateAndAddLinkedService (Service *service_p, const json_t *service_config_p)
+{
+	LinkedService *linked_service_p = CreateLinkedServiceFromJSON (service_config_p);
+
+	if (linked_service_p)
+		{
+			if (AddLinkedService (service_p, linked_service_p))
+				{
+					return true;
+				}
+
+			FreeLinkedService (linked_service_p);
+		}
+
+	return false;
 }
 
 

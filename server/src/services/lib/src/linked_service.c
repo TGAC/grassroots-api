@@ -121,6 +121,7 @@ void FreeLinkedServiceNode (ListItem *node_p)
 }
 
 
+
 LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 {
 	LinkedService *linked_service_p = NULL;
@@ -196,9 +197,9 @@ LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 }
 
 
-bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s)
+bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s, bool required_flag)
 {
-	MappedParameter *mapped_param_p = AllocateMappedParameter (input_s, output_s);
+	MappedParameter *mapped_param_p = AllocateMappedParameter (input_s, output_s, required_flag);
 
 	if (mapped_param_p)
 		{

@@ -28,7 +28,7 @@
 #include "json_util.h"
 
 
-MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s)
+MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s, bool required_flag)
 {
 	MappedParameter *param_p = (MappedParameter *) AllocMemory (sizeof (MappedParameter));
 
@@ -44,6 +44,7 @@ MappedParameter *AllocateMappedParameter (const char *input_s, const char *outpu
 						{
 							param_p -> mp_input_param_s = input_copy_s;
 							param_p -> mp_output_param_s = output_copy_s;
+							param_p -> mp_required_flag = required_flag;
 
 							return param_p;
 						}
@@ -118,7 +119,11 @@ MappedParameter *CreateMappedParameterFromJSON (const json_t *mapped_param_json_
 
 			if (output_s)
 				{
-					return AllocateMappedParameter (input_s, output_s);
+					bool required_flag = false;
+
+					GetJSONBoolean (mapped_param_json_p, MAPPED_PARAM_REQUIRED_S, &required_flag);
+
+					return AllocateMappedParameter (input_s, output_s, required_flag);
 				}		/* if (output_s) */
 			else
 				{

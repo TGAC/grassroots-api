@@ -135,12 +135,13 @@ GRASSROOTS_SERVICE_API void FreeLinkedServiceNode (ListItem *node_p);
  * @param linked_service_p The LinkedService to add the MappedParameter to.
  * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
+ * @param required_flag Is this MappedParameter required or is optional to run the LinkedService?
  * @return <code>true</code> if the MappedParameter was created and added successfully, <code>false</code> otherwise.
  * @memberof LinkedService
  * @see AllocateMappedParameter
  * @see AddMappedParameterToLinkedService
  */
-GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s);
+GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s, bool required_flag);
 
 
 /**

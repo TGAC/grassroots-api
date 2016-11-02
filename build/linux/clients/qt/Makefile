@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -D_DEBUG -DUNIX -D_DEBUG -DQT_QML_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_WEBCHANNEL_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I. -I../../../../clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I../../../../clients/lib/include -I../../../../shared/src/parameters/include -I../../../../shared/src/util/include -I../../../../shared/src/util/include/containers -I../../../../shared/src/util/include/io -I../../../../server/src/services/lib/include -I../../../../shared/src/network/include -I../../../../shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I. -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++
+INCPATH       = -I. -I../../../../clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I../../../../clients/lib/include -I../../../../shared/src/parameters/include -I../../../../shared/src/util/include -I../../../../shared/src/util/include/containers -I../../../../shared/src/util/include/io -I../../../../server/src/services/lib/include -I../../../../shared/src/network/include -I../../../../shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I. -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++
 QMAKE         = /home/billy/Applications/Qt/5.7/gcc_64/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -36,7 +36,7 @@ DISTNAME      = grassroots-qt-client1.0.0
 DISTDIR = /home/billy/Projects/grassroots/build/linux/clients/qt/.tmp/grassroots-qt-client1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-rpath,/home/billy/Applications/Qt/5.7/gcc_64/lib -Wl,-rpath-link,/home/billy/Applications/Qt/5.7/gcc_64/lib -shared -Wl,-soname,libgrassroots-qt-client.so.1
-LIBS          = $(SUBLIBS) -L/home/billy/Applications/grassroots-0/grassroots/lib -lgrassroots_util -lgrassroots_service -lgrassroots_clients -lgrassroots_params -L/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/lib -luuid -L/home/billy/Applications/grassroots-0/grassroots/extras/jansson/lib -ljansson -L/home/billy/Applications/Qt/5.7/gcc_64/lib -lQt5WebEngineWidgets -L/usr/lib64 -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5WebChannel -lQt5Qml -lQt5Network -lQt5Core -lGL -lpthread 
+LIBS          = $(SUBLIBS) -L/lib -lgrassroots_util -lgrassroots_service -lgrassroots_clients -lgrassroots_params -L/extras/libuuid/lib -luuid -L/extras/jansson/lib -ljansson -L/home/billy/Applications/Qt/5.7/gcc_64/lib -lQt5WebEngineWidgets -L/usr/lib64 -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5WebChannel -lQt5Qml -lQt5Network -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -855,9 +855,6 @@ moc_base_param_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidg
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -867,12 +864,13 @@ moc_base_param_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidg
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
 		../../../../clients/client-ui/qt/include/base_param_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/base_param_widget.h -o moc_base_param_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/base_param_widget.h -o moc_base_param_widget.cpp
 
 moc_file_chooser_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QComboBox \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qcombobox.h \
@@ -1001,9 +999,6 @@ moc_file_chooser_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWi
 		../../../../clients/client-ui/qt/include/base_param_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1013,12 +1008,13 @@ moc_file_chooser_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWi
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
 		../../../../clients/client-ui/qt/include/file_chooser_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/file_chooser_widget.h -o moc_file_chooser_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/file_chooser_widget.h -o moc_file_chooser_widget.cpp
 
 moc_param_check_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -1122,9 +1118,6 @@ moc_param_check_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1134,6 +1127,7 @@ moc_param_check_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -1143,7 +1137,7 @@ moc_param_check_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		../../../../clients/client-ui/qt/include/param_check_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_check_box.h -o moc_param_check_box.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_check_box.h -o moc_param_check_box.cpp
 
 moc_param_combo_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -1261,9 +1255,6 @@ moc_param_combo_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1273,6 +1264,7 @@ moc_param_combo_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -1281,7 +1273,7 @@ moc_param_combo_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_combo_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_combo_box.h -o moc_param_combo_box.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_combo_box.h -o moc_param_combo_box.cpp
 
 moc_param_double_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -1386,9 +1378,6 @@ moc_param_double_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/Qt
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1398,6 +1387,7 @@ moc_param_double_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/Qt
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -1407,7 +1397,7 @@ moc_param_double_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/Qt
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		../../../../clients/client-ui/qt/include/param_double_spin_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_double_spin_box.h -o moc_param_double_spin_box.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_double_spin_box.h -o moc_param_double_spin_box.cpp
 
 moc_param_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -1512,9 +1502,6 @@ moc_param_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1524,6 +1511,7 @@ moc_param_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -1533,7 +1521,7 @@ moc_param_spin_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		../../../../clients/client-ui/qt/include/param_spin_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_spin_box.h -o moc_param_spin_box.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_spin_box.h -o moc_param_spin_box.cpp
 
 moc_param_text_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -1650,9 +1638,6 @@ moc_param_text_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1662,6 +1647,7 @@ moc_param_text_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -1670,7 +1656,7 @@ moc_param_text_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_text_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_text_box.h -o moc_param_text_box.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_text_box.h -o moc_param_text_box.cpp
 
 moc_param_line_edit.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -1777,9 +1763,6 @@ moc_param_line_edit.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1789,6 +1772,7 @@ moc_param_line_edit.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -1797,7 +1781,7 @@ moc_param_line_edit.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_line_edit.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_line_edit.h -o moc_param_line_edit.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_line_edit.h -o moc_param_line_edit.cpp
 
 moc_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
@@ -1906,9 +1890,6 @@ moc_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QLis
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -1918,6 +1899,7 @@ moc_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QLis
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -2000,7 +1982,7 @@ moc_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QLis
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		../../../../clients/client-ui/qt/include/prefs_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/prefs_widget.h -o moc_prefs_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/prefs_widget.h -o moc_prefs_widget.cpp
 
 moc_qt_parameter_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QFormLayout \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qformlayout.h \
@@ -2148,9 +2130,6 @@ moc_qt_parameter_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWi
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -2160,6 +2139,7 @@ moc_qt_parameter_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWi
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -2173,7 +2153,7 @@ moc_qt_parameter_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWi
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		../../../../clients/client-ui/qt/include/qt_parameter_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/qt_parameter_widget.h -o moc_qt_parameter_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/qt_parameter_widget.h -o moc_qt_parameter_widget.cpp
 
 moc_service_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -2277,19 +2257,17 @@ moc_service_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtW
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		../../../../shared/src/parameters/include/parameter_set.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -2347,7 +2325,7 @@ moc_service_prefs_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtW
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/service_prefs_widget.h -o moc_service_prefs_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/service_prefs_widget.h -o moc_service_prefs_widget.cpp
 
 moc_results_list.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -2498,11 +2476,9 @@ moc_results_list.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/Q
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_list.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_list.h -o moc_results_list.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_list.h -o moc_results_list.cpp
 
 moc_results_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
@@ -2658,12 +2634,10 @@ moc_results_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../clients/client-ui/qt/include/results_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_widget.h -o moc_results_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_widget.h -o moc_results_widget.cpp
 
 moc_json_viewer.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTreeWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidget.h \
@@ -2789,11 +2763,9 @@ moc_json_viewer.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QT
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/json_viewer.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/json_viewer.h -o moc_json_viewer.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/json_viewer.h -o moc_json_viewer.cpp
 
 moc_main_window.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
@@ -2907,9 +2879,6 @@ moc_main_window.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragE
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -2919,6 +2888,7 @@ moc_main_window.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragE
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -3004,7 +2974,7 @@ moc_main_window.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragE
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		../../../../clients/client-ui/qt/include/main_window.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/main_window.h -o moc_main_window.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/main_window.h -o moc_main_window.cpp
 
 moc_services_list.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
@@ -3128,8 +3098,6 @@ moc_services_list.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QCheckBox \
@@ -3141,12 +3109,12 @@ moc_services_list.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -3202,7 +3170,7 @@ moc_services_list.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		../../../../clients/client-ui/qt/include/services_list.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/services_list.h -o moc_services_list.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/services_list.h -o moc_services_list.cpp
 
 moc_keyword_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -3309,9 +3277,6 @@ moc_keyword_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -3321,13 +3286,14 @@ moc_keyword_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
 		../../../../clients/client-ui/qt/include/runnable_widget.h \
 		../../../../clients/client-ui/qt/include/keyword_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/keyword_widget.h -o moc_keyword_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/keyword_widget.h -o moc_keyword_widget.cpp
 
 moc_param_group_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QFormLayout \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qformlayout.h \
@@ -3440,9 +3406,6 @@ moc_param_group_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -3452,12 +3415,13 @@ moc_param_group_box.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidget
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_group_box.h -o moc_param_group_box.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_group_box.h -o moc_param_group_box.cpp
 
 moc_param_table_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -3580,9 +3544,6 @@ moc_param_table_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWid
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QPoint \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -3592,6 +3553,7 @@ moc_param_table_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWid
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -3600,7 +3562,7 @@ moc_param_table_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWid
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_table_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_table_widget.h -o moc_param_table_widget.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_table_widget.h -o moc_param_table_widget.cpp
 
 moc_param_json_editor.cpp: ../../../../clients/client-ui/qt/include/param_text_box.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
@@ -3718,9 +3680,6 @@ moc_param_json_editor.cpp: ../../../../clients/client-ui/qt/include/param_text_b
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -3730,6 +3689,7 @@ moc_param_json_editor.cpp: ../../../../clients/client-ui/qt/include/param_text_b
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -3738,7 +3698,7 @@ moc_param_json_editor.cpp: ../../../../clients/client-ui/qt/include/param_text_b
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_json_editor.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_json_editor.h -o moc_param_json_editor.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/param_json_editor.h -o moc_param_json_editor.cpp
 
 moc_matched_service_list_widget_item.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
@@ -3789,8 +3749,6 @@ moc_matched_service_list_widget_item.cpp: /home/billy/Applications/Qt/5.7/gcc_64
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
 		../../../../clients/client-ui/qt/include/json_list_widget_item.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_list.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -3903,7 +3861,7 @@ moc_matched_service_list_widget_item.cpp: /home/billy/Applications/Qt/5.7/gcc_64
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../clients/client-ui/qt/include/matched_service_list_widget_item.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/matched_service_list_widget_item.h -o moc_matched_service_list_widget_item.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/matched_service_list_widget_item.h -o moc_matched_service_list_widget_item.cpp
 
 moc_standard_list_widget_item.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QListWidgetItem \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
@@ -4056,11 +4014,9 @@ moc_standard_list_widget_item.cpp: /home/billy/Applications/Qt/5.7/gcc_64/includ
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/standard_list_widget_item.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/standard_list_widget_item.h -o moc_standard_list_widget_item.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/standard_list_widget_item.h -o moc_standard_list_widget_item.cpp
 
 moc_results_page.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
@@ -4214,11 +4170,9 @@ moc_results_page.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/Q
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_page.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_page.h -o moc_results_page.cpp
+	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/extras/libuuid/include -I/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_page.h -o moc_results_page.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
@@ -4336,9 +4290,6 @@ base_param_widget.o: ../../../../clients/client-ui/qt/src/base_param_widget.cpp 
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -4348,6 +4299,7 @@ base_param_widget.o: ../../../../clients/client-ui/qt/src/base_param_widget.cpp 
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -4488,9 +4440,6 @@ file_chooser_widget.o: ../../../../clients/client-ui/qt/src/file_chooser_widget.
 		../../../../clients/client-ui/qt/include/base_param_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -4500,6 +4449,7 @@ file_chooser_widget.o: ../../../../clients/client-ui/qt/src/file_chooser_widget.
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -4690,9 +4640,6 @@ param_check_box.o: ../../../../clients/client-ui/qt/src/param_check_box.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -4702,6 +4649,7 @@ param_check_box.o: ../../../../clients/client-ui/qt/src/param_check_box.cpp /hom
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -4935,9 +4883,6 @@ param_combo_box.o: ../../../../clients/client-ui/qt/src/param_combo_box.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -4947,6 +4892,7 @@ param_combo_box.o: ../../../../clients/client-ui/qt/src/param_combo_box.cpp /hom
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -5147,9 +5093,6 @@ param_double_spin_box.o: ../../../../clients/client-ui/qt/src/param_double_spin_
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -5159,6 +5102,7 @@ param_double_spin_box.o: ../../../../clients/client-ui/qt/src/param_double_spin_
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -5354,9 +5298,6 @@ param_spin_box.o: ../../../../clients/client-ui/qt/src/param_spin_box.cpp /home/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -5366,6 +5307,7 @@ param_spin_box.o: ../../../../clients/client-ui/qt/src/param_spin_box.cpp /home/
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -5563,9 +5505,6 @@ param_line_edit.o: ../../../../clients/client-ui/qt/src/param_line_edit.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -5575,6 +5514,7 @@ param_line_edit.o: ../../../../clients/client-ui/qt/src/param_line_edit.cpp /hom
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -5785,9 +5725,6 @@ param_text_box.o: ../../../../clients/client-ui/qt/src/param_text_box.cpp /home/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -5797,6 +5734,7 @@ param_text_box.o: ../../../../clients/client-ui/qt/src/param_text_box.cpp /home/
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -6022,9 +5960,6 @@ prefs_widget.o: ../../../../clients/client-ui/qt/src/prefs_widget.cpp /home/bill
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstackedwidget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -6034,6 +5969,7 @@ prefs_widget.o: ../../../../clients/client-ui/qt/src/prefs_widget.cpp /home/bill
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -6131,6 +6067,8 @@ prefs_widget.o: ../../../../clients/client-ui/qt/src/prefs_widget.cpp /home/bill
 		../../../../shared/src/network/include/request_tools.h \
 		../../../../shared/src/network/include/connection.h \
 		../../../../shared/src/network/include/curl_tools.h \
+		../../../../server/src/services/lib/include/linked_service.h \
+		../../../../server/src/services/lib/include/mapped_parameter.h \
 		../../../../shared/src/parameters/include/tag_item.h \
 		../../../../shared/src/util/include/string_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o prefs_widget.o ../../../../clients/client-ui/qt/src/prefs_widget.cpp
@@ -6289,9 +6227,6 @@ qt_parameter_widget.o: ../../../../clients/client-ui/qt/src/qt_parameter_widget.
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -6301,6 +6236,7 @@ qt_parameter_widget.o: ../../../../clients/client-ui/qt/src/qt_parameter_widget.
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -6564,15 +6500,13 @@ client_ui_api.o: ../../../../clients/client-ui/qt/src/client_ui_api.cpp /home/bi
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/parameters/include/parameter_set.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -6824,19 +6758,17 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QCheckBox \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qcheckbox.h \
 		../../../../shared/src/parameters/include/parameter_set.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -6901,6 +6833,8 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		../../../../shared/src/util/include/io/filesystem_utils.h \
 		../../../../server/src/services/lib/include/paired_service.h \
 		../../../../server/src/services/lib/include/providers_state_table.h \
+		../../../../server/src/services/lib/include/linked_service.h \
+		../../../../server/src/services/lib/include/mapped_parameter.h \
 		../../../../shared/src/parameters/include/tag_item.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o service_prefs_widget.o ../../../../clients/client-ui/qt/src/service_prefs_widget.cpp
 
@@ -7073,8 +7007,6 @@ results_list.o: ../../../../clients/client-ui/qt/src/results_list.cpp /home/bill
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_page.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
@@ -7113,9 +7045,9 @@ results_list.o: ../../../../clients/client-ui/qt/src/results_list.cpp /home/bill
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/string_utils.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/io/filesystem_utils.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o results_list.o ../../../../clients/client-ui/qt/src/results_list.cpp
 
@@ -7279,8 +7211,6 @@ results_widget.o: ../../../../clients/client-ui/qt/src/results_widget.cpp /home/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/json_util.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -7288,12 +7218,11 @@ results_widget.o: ../../../../clients/client-ui/qt/src/results_widget.cpp /home/
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o results_widget.o ../../../../clients/client-ui/qt/src/results_widget.cpp
 
 json_list_widget_item.o: ../../../../clients/client-ui/qt/src/json_list_widget_item.cpp ../../../../clients/client-ui/qt/include/json_list_widget_item.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_list.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -7599,9 +7528,7 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o json_viewer.o ../../../../clients/client-ui/qt/src/json_viewer.cpp
 
 text_viewer.o: ../../../../clients/client-ui/qt/src/text_viewer.cpp /home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QFontDatabase \
@@ -8104,10 +8031,7 @@ main_window.o: ../../../../clients/client-ui/qt/src/main_window.cpp /home/billy/
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/network/include/request_tools.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/network/include/network_library.h \
 		../../../../shared/src/network/include/byte_buffer.h \
 		../../../../shared/src/network/include/connection.h \
@@ -8119,6 +8043,7 @@ main_window.o: ../../../../clients/client-ui/qt/src/main_window.cpp /home/billy/
 		../../../../shared/src/util/include/json_util.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../clients/client-ui/qt/include/main_window.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
@@ -8301,8 +8226,6 @@ matched_service_list_widget_item.o: ../../../../clients/client-ui/qt/src/matched
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
 		../../../../clients/client-ui/qt/include/json_list_widget_item.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_list.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -8542,8 +8465,6 @@ services_list.o: ../../../../clients/client-ui/qt/src/services_list.cpp /home/bi
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QCheckBox \
@@ -8555,12 +8476,12 @@ services_list.o: ../../../../clients/client-ui/qt/src/services_list.cpp /home/bi
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -8718,8 +8639,6 @@ services_tabs.o: ../../../../clients/client-ui/qt/src/services_tabs.cpp ../../..
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QCheckBox \
@@ -8731,12 +8650,12 @@ services_tabs.o: ../../../../clients/client-ui/qt/src/services_tabs.cpp ../../..
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -8981,8 +8900,6 @@ results_window.o: ../../../../clients/client-ui/qt/src/results_window.cpp /home/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../clients/client-ui/qt/include/qt_client_data.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
@@ -9001,12 +8918,12 @@ results_window.o: ../../../../clients/client-ui/qt/src/results_window.cpp /home/
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/parameters/include/parameter_set.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -9187,9 +9104,6 @@ keyword_widget.o: ../../../../clients/client-ui/qt/src/keyword_widget.cpp /home/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -9199,6 +9113,7 @@ keyword_widget.o: ../../../../clients/client-ui/qt/src/keyword_widget.cpp /home/
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -9425,9 +9340,6 @@ param_group_box.o: ../../../../clients/client-ui/qt/src/param_group_box.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -9437,6 +9349,7 @@ param_group_box.o: ../../../../clients/client-ui/qt/src/param_group_box.cpp /hom
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h
@@ -9565,9 +9478,6 @@ progress_window.o: ../../../../clients/client-ui/qt/src/progress_window.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/operation.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
@@ -9591,6 +9501,7 @@ progress_window.o: ../../../../clients/client-ui/qt/src/progress_window.cpp /hom
 		../../../../shared/src/util/include/json_util.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../clients/client-ui/qt/include/qt_client_data.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
@@ -9828,9 +9739,6 @@ progress_widget.o: ../../../../clients/client-ui/qt/src/progress_widget.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/operation.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
@@ -9839,6 +9747,7 @@ progress_widget.o: ../../../../clients/client-ui/qt/src/progress_widget.cpp /hom
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/network/include/json_tools.h \
 		../../../../shared/src/network/include/network_library.h \
 		../../../../shared/src/network/include/request_tools.h \
@@ -10000,9 +9909,6 @@ param_table_widget.o: ../../../../clients/client-ui/qt/src/param_table_widget.cp
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QPoint \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -10012,6 +9918,7 @@ param_table_widget.o: ../../../../clients/client-ui/qt/src/param_table_widget.cp
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -10220,9 +10127,6 @@ param_json_editor.o: ../../../../clients/client-ui/qt/src/param_json_editor.cpp 
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -10232,6 +10136,7 @@ param_json_editor.o: ../../../../clients/client-ui/qt/src/param_json_editor.cpp 
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -10356,15 +10261,13 @@ qt_client_data.o: ../../../../clients/client-ui/qt/src/qt_client_data.cpp ../../
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/parameters/include/parameter_set.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -10552,8 +10455,6 @@ servce_ui.o: ../../../../clients/client-ui/qt/src/servce_ui.cpp ../../../../clie
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
@@ -10615,12 +10516,12 @@ servce_ui.o: ../../../../clients/client-ui/qt/src/servce_ui.cpp ../../../../clie
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/parameters/include/parameter.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
 		../../../../shared/src/util/include/tags.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/containers/hash_table.h \
 		../../../../shared/src/util/include/memory_allocations.h \
+		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/io/streams.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../shared/src/parameters/include/remote_parameter_details.h \
@@ -10830,8 +10731,6 @@ standard_list_widget_item.o: ../../../../clients/client-ui/qt/src/standard_list_
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/util/include/data_resource.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
@@ -10999,8 +10898,6 @@ results_page.o: ../../../../clients/client-ui/qt/src/results_page.cpp /home/bill
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_widget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
 		../../../../shared/src/util/include/typedefs.h
@@ -11078,18 +10975,18 @@ moc_results_page.o: moc_results_page.cpp
 ####### Install
 
 install_target: first FORCE
-	@test -d $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/ || mkdir -p $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/
-	-$(INSTALL_PROGRAM) $(TARGET) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET)
-	-$(SYMLINK) $(TARGET) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET0)
-	-$(SYMLINK) $(TARGET) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET1)
-	-$(SYMLINK) $(TARGET) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET2)
+	@test -d $(INSTALL_ROOT)/clients/ || mkdir -p $(INSTALL_ROOT)/clients/
+	-$(INSTALL_PROGRAM) $(TARGET) $(INSTALL_ROOT)/clients/$(TARGET)
+	-$(SYMLINK) $(TARGET) $(INSTALL_ROOT)/clients/$(TARGET0)
+	-$(SYMLINK) $(TARGET) $(INSTALL_ROOT)/clients/$(TARGET1)
+	-$(SYMLINK) $(TARGET) $(INSTALL_ROOT)/clients/$(TARGET2)
 
 uninstall_target: FORCE
-	-$(DEL_FILE) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET) 
-	 -$(DEL_FILE) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET0) 
-	 -$(DEL_FILE) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET1) 
-	 -$(DEL_FILE) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/$(TARGET2)
-	-$(DEL_DIR) $(INSTALL_ROOT)/home/billy/Applications/grassroots-0/grassroots/clients/ 
+	-$(DEL_FILE) $(INSTALL_ROOT)/clients/$(TARGET) 
+	 -$(DEL_FILE) $(INSTALL_ROOT)/clients/$(TARGET0) 
+	 -$(DEL_FILE) $(INSTALL_ROOT)/clients/$(TARGET1) 
+	 -$(DEL_FILE) $(INSTALL_ROOT)/clients/$(TARGET2)
+	-$(DEL_DIR) $(INSTALL_ROOT)/clients/ 
 
 
 install: install_target  FORCE

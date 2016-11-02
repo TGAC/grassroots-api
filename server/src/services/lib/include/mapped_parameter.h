@@ -48,6 +48,12 @@ typedef struct MappedParameter
 	 * This is name of the parameter in the second service.
 	 */
 	char *mp_output_param_s;
+
+
+	/**
+	 * Is this MappedParameter required for the LinkedService to run?
+	 */
+	bool mp_required_flag;
 } MappedParameter;
 
 
@@ -77,10 +83,11 @@ extern "C"
  *
  * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
+ * @param required_flag Is this MappedParameter required or is optional to run the LinkedService?
  * @return The newly-allocated MappedParameter or <code>NULL</code> upon error.
  * @memberof MappedParameter
  */
-GRASSROOTS_SERVICE_API MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s);
+GRASSROOTS_SERVICE_API MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s, bool required_flag);
 
 
 /**
