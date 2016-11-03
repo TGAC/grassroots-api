@@ -724,6 +724,10 @@ GRASSROOTS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p
 GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
+
+GRASSROOTS_PARAMS_API bool SetParameterValueFromString (const Parameter * const param_p, const char *value_s);
+
+
 /**
  * Allocate a SharedTypeNode set to the given value.
  *

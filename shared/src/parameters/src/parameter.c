@@ -124,7 +124,7 @@ static bool SetParameterValueFromUnsignedInt (Parameter * const param_p, const u
 static bool SetParameterValueFromReal (Parameter * const param_p, const double64 d, const bool current_flag);
 
 
-static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s, const bool current_flag);
+static bool SetParameterValueFromStringValue (Parameter * const param_p, const char * const src_s, const bool current_flag);
 
 
 static bool SetParameterValueFromResource (Parameter * const param_p, const Resource * const src_p, const bool current_flag);
@@ -697,7 +697,7 @@ bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedTyp
 			case PT_TABLE:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
-				success_flag = SetParameterValueFromString (param_p, src_p -> st_string_value_s, current_value_flag);
+				success_flag = SetParameterValueFromStringValue (param_p, src_p -> st_string_value_s, current_value_flag);
 				break;
 
 			case PT_FILE_TO_WRITE:
@@ -2671,6 +2671,70 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 
 
 
+bool SetParameterValueFromString (const Parameter * const param_p, const char *value_s)
+{
+	bool success_flag = false;
+	const SharedType * const value_p = & (param_p -> pa_current_value);
+
+	switch (param_p -> pa_type)
+		{
+			case PT_BOOLEAN:
+				{
+					if (Stricmp (value_s, "true") == 0)
+						{
+							value_p -> st_boolean_value = true;
+							success_flag = true;
+						}
+					else if (Stricmp (value_s, "false") == 0)
+						{
+							value_p -> st_boolean_value = false;
+							success_flag = true;
+						}
+				}
+				break;
+
+			case PT_SIGNED_INT:
+			case PT_NON_POSITIVE_INT:
+				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
+				break;
+
+			case PT_UNSIGNED_INT:
+				value_s = ConvertNumberToString ((double) (value_p -> st_ulong_value), 0);
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				value_s = ConvertNumberToString (value_p -> st_data_value, 0);
+				break;
+
+			case PT_DIRECTORY:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+				value_s = value_p -> st_resource_value_p -> re_value_s;
+				break;
+
+			case PT_TABLE:
+			case PT_LARGE_STRING:
+			case PT_STRING:
+			case PT_PASSWORD:
+			case PT_KEYWORD:
+				value_s = value_p -> st_string_value_s;
+				break;
+
+			default:
+				break;
+		}		/* switch (param_p -> pa_type) */
+
+	if (!success_flag)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set parameter \"%s\" with type " UINT32_FMT " to \"%s\"", param_p -> pa_name_s, param_p -> pa_type, value_s);
+		}
+
+	return success_flag;
+}
+
+
+
 SharedTypeNode *AllocateSharedTypeNode (SharedType value)
 {
 	SharedTypeNode *node_p = (SharedTypeNode *) AllocMemory (sizeof (SharedTypeNode));
@@ -2896,7 +2960,7 @@ static bool SetParameterValueFromReal (Parameter * const param_p, const double64
 
 
 
-static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s, const bool current_flag)
+static bool SetParameterValueFromStringValue (Parameter * const param_p, const char * const src_s, const bool current_flag)
 {
 	bool success_flag = false;
 
