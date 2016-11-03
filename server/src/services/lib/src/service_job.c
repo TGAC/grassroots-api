@@ -1040,7 +1040,7 @@ void ProcessLinkedServices (ServiceJob *job_p)
 															/*
 															 * We now have the value to set for linked service
 															 */
-															Parameter *output_parameter_p = GetParameterFromParameterSetByName (mapped_param_p -> mp_output_param_s);
+															Parameter *output_parameter_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
 
 															if (output_parameter_p)
 																{

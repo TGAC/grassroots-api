@@ -770,7 +770,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p, const bo
 			case PT_KEYWORD:
 				{
 					const char * const value_s = (const char *) value_p;
-					success_flag = SetParameterValueFromString (param_p, value_s, current_value_flag);
+					success_flag = SetParameterValueFromStringValue (param_p, value_s, current_value_flag);
 				}
 				break;
 
@@ -2671,10 +2671,10 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 
 
 
-bool SetParameterValueFromString (const Parameter * const param_p, const char *value_s)
+bool SetParameterValueFromString (Parameter * const param_p, const char *value_s)
 {
 	bool success_flag = false;
-	const SharedType * const value_p = & (param_p -> pa_current_value);
+	SharedType * const value_p = & (param_p -> pa_current_value);
 
 	switch (param_p -> pa_type)
 		{
@@ -2695,22 +2695,54 @@ bool SetParameterValueFromString (const Parameter * const param_p, const char *v
 
 			case PT_SIGNED_INT:
 			case PT_NON_POSITIVE_INT:
-				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
+				{
+					int32 value;
+
+					if (sscanf (value_s, INT32_FMT, &value) > 0)
+						{
+							value_p -> st_long_value = value;
+							success_flag = true;
+						}
+				}
 				break;
 
 			case PT_UNSIGNED_INT:
-				value_s = ConvertNumberToString ((double) (value_p -> st_ulong_value), 0);
+				{
+					uint32 value;
+
+					if (sscanf (value_s, UINT32_FMT, &value) > 0)
+						{
+							value_p -> st_ulong_value = value;
+							success_flag = true;
+						}
+				}
 				break;
 
 			case PT_SIGNED_REAL:
 			case PT_UNSIGNED_REAL:
-				value_s = ConvertNumberToString (value_p -> st_data_value, 0);
+				{
+					double64 value;
+
+					if (sscanf (value_s, DOUBLE64_FMT, &value) > 0)
+						{
+							value_p -> st_data_value = value;
+							success_flag = true;
+						}
+				}
 				break;
 
 			case PT_DIRECTORY:
 			case PT_FILE_TO_READ:
 			case PT_FILE_TO_WRITE:
-				value_s = value_p -> st_resource_value_p -> re_value_s;
+				{
+					Resource *resource_p = ParseStringToResource (value_s);
+
+					if (resource_p)
+						{
+							success_flag = SetParameterValueFromResource (param_p, resource_p, true);
+							FreeResource (resource_p);
+						}
+				}
 				break;
 
 			case PT_TABLE:
@@ -2718,7 +2750,7 @@ bool SetParameterValueFromString (const Parameter * const param_p, const char *v
 			case PT_STRING:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
-				value_s = value_p -> st_string_value_s;
+				success_flag = SetParameterValueFromStringValue (param_p, value_s, true);
 				break;
 
 			default:
