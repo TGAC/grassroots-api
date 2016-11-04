@@ -109,7 +109,7 @@ void InitialiseService (Service * const service_p,
 
 	service_p -> se_deserialise_job_json_fn = NULL;
 	service_p -> se_serialise_job_json_fn = NULL;
-	service_p -> se_get_value_from_job_fn = NULL;
+	service_p -> se_process_linked_services_fn = NULL;
 
 	service_p -> se_jobs_p = NULL;
 
@@ -1755,19 +1755,17 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 
 
 
-
-
-char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+json_t *GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
 {
-	char *result_s = NULL;
+	json_t *results_p = NULL;
 
 	if (job_p)
 		{
-			if (input_s)
+			if (linked_service_p)
 				{
-					if (service_p -> se_get_value_from_job_fn)
+					if (service_p -> se_process_linked_services_fn)
 						{
-							service_p -> se_get_value_from_job_fn (service_p, job_p, input_s);
+							results_p = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
 						}
 					else
 						{
@@ -1786,7 +1784,7 @@ char *GetValueFromJobOutput (Service *service_p, ServiceJob *job_p, const char *
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
 		}
 
-	return result_s;
+	return results_p;
 }
 
 

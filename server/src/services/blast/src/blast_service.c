@@ -1192,9 +1192,9 @@ void CustomiseBlastServiceJob (Service * UNUSED_PARAM (service_p), ServiceJob *j
 
 
 
-char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s)
+json_t *GetValueFromBlastServiceJobOutput (struct Service *service_p, struct ServiceJob *job_p, MappedParameter *mapped_param_p, const char * const input_root_s)
 {
-	char *result_s = NULL;
+	json_t *results_p = NULL;
 	char *raw_result_s = NULL;
 
 	/*
@@ -1210,37 +1210,43 @@ char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, 
 
 			if (blast_output_p)
 				{
-					/*
-					 * For the SamTools service, we want the database and scaffold names
-					 */
-					const json_t *value_p = GetCompoundJSONObject (blast_output_p, input_s);
+					const json_t *root_p = NULL;
 
-					if (value_p)
+					if (input_root_s)
 						{
-							if (json_is_string (value_p))
+							root_p = GetCompoundJSONObject (blast_output_p, input_root_s);
+
+							if (!root_p)
 								{
-									const char *value_s = json_string_value (value_p);
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, blast_output_p, "Failed to get root \"%s\" from json", input_root_s);
+								}
 
-									if (value_s)
-										{
-											result_s = CopyToNewString (value_s, 0, false);
-
-											if (!result_s)
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", value_s);
-												}
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy \"%s\"", value_s);
-										}
-								}		/* if (json_is_string (value_p)) */
-
-						}		/* if (value_p) */
+						}		/* if (input_root_s) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find \"%s\" in \"%s\"", input_s, raw_result_s);
+							root_p = blast_output_p;
 						}
+
+					if (root_p)
+						{
+							results_p = GetCompoundJSONObject (root_p, mapped_param_p -> mp_input_param_s);
+
+							if (results_p)
+								{
+									/* Make sure that it's ok to be an array */
+									if ((json_is_array (results_p)) && (! (mapped_param_p -> mp_multiple_flag)))
+										{
+											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, results_p, "Array for a single-valued parameter");
+											json_decref (results_p);
+											results_p = NULL;
+										}
+								}
+							else
+								{
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, root_p, "Failed to find \"%s\"", mapped_param_p -> mp_input_param_s);
+								}
+
+						}		/* if (root_p) */
 
 					json_decref (blast_output_p);
 				}		/* if (blast_output_p) */
@@ -1256,11 +1262,10 @@ char *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, 
 			char uuid_s [UUID_STRING_BUFFER_SIZE];
 
 			ConvertUUIDToString (job_p -> sj_id, uuid_s);
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", input_s, BOF_SINGLE_FILE_JSON_BLAST);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
 		}
 
-
-	return result_s;
+	return results_p;
 }
 
 
@@ -1431,7 +1436,7 @@ static void InitBlastService (Service *blast_service_p)
 	blast_service_p -> se_deserialise_job_json_fn = BuildBlastServiceJob;
 	blast_service_p -> se_serialise_job_json_fn = BuildBlastServiceJobJSON;
 
-	blast_service_p -> se_get_value_from_job_fn = GetValueFromBlastServiceJobOutput;
+	blast_service_p -> se_process_linked_services_fn = GetValueFromBlastServiceJobOutput;
 }
 
 

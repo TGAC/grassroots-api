@@ -208,7 +208,7 @@ typedef struct Service
 
 
 
-	char *(*se_get_value_from_job_fn) (struct Service *service_p, struct ServiceJob *job_p, const char * const input_s);
+	json_t *(*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, MappedParameter *mapped_param_p, const char * const root_s);
 
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return
@@ -751,7 +751,7 @@ GRASSROOTS_SERVICE_API void SetServiceJobCustomFunctions (Service *service_p, st
 
 
 
-GRASSROOTS_SERVICE_API char *GetValueFromJobOutput (Service *service_p, struct ServiceJob *job_p, const char * const input_s);
+GRASSROOTS_SERVICE_API json_t *GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
 
 
 #ifdef __cplusplus

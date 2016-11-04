@@ -30,40 +30,48 @@
 #include "schema_version.h"
 #include "user_details.h"
 #include "service_config.h"
+#include "service_job.h"
 //#include "resource.h"
 
 
-LinkedService *AllocateLinkedService (const char *input_service_s)
+LinkedService *AllocateLinkedService (const char *input_service_s, const char *input_key_s)
 {
 	char *input_service_copy_s = CopyToNewString (input_service_s, 0, false);
 
 	if (input_service_copy_s)
 		{
-			LinkedList *list_p = AllocateLinkedList (FreeMappedParameterNode);
+			char *input_key_copy_s = CopyToNewString (input_key_s, 0, false);
 
-			if (list_p)
+			if (input_key_copy_s)
 				{
-					LinkedService *linked_service_p = (LinkedService *) AllocMemory (sizeof (LinkedService));
+					LinkedList *list_p = AllocateLinkedList (FreeMappedParameterNode);
 
-					if (linked_service_p)
+					if (list_p)
 						{
-							linked_service_p -> ls_input_service_s = input_service_copy_s;
-							linked_service_p -> ls_mapped_params_p = list_p;
+							LinkedService *linked_service_p = (LinkedService *) AllocMemory (sizeof (LinkedService));
 
-							return linked_service_p;
+							if (linked_service_p)
+								{
+									linked_service_p -> ls_input_service_s = input_service_copy_s;
+									linked_service_p -> ls_input_key_s = input_key_copy_s;
+									linked_service_p -> ls_mapped_params_p = list_p;
+
+									return linked_service_p;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate LinkedService for \"%s\"", input_service_s);
+
+								}
+
+							FreeLinkedList (list_p);
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate LinkedService for \"%s\"", input_service_s);
-
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate list of mapped params for \"%s\"", input_service_s);
 						}
 
-					FreeLinkedList (list_p);
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate list of mapped params for \"%s\"", input_service_s);
-				}
+				}		/* if (input_key_copy_s) */
 
 			FreeCopiedString (input_service_copy_s);
 		}
@@ -121,6 +129,94 @@ void FreeLinkedServiceNode (ListItem *node_p)
 }
 
 
+json_t *ProcessLinkedService (LinkedService *linked_service_p, ServiceJob *job_p)
+{
+	json_t *res_p = NULL;
+	Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_input_service_s);
+
+	if (service_to_call_p)
+		{
+			if (linked_service_p -> ls_mapped_params_p -> ll_size > 0)
+				{
+					UserDetails *user_p = NULL;
+					ParameterSet *output_params_p = GetServiceParameters (service_to_call_p, NULL, user_p);
+
+					if (output_params_p)
+						{
+							Service *service_p = job_p -> sj_service_p;
+							MappedParameterNode *param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p);
+							bool success_flag = true;
+
+							while (param_node_p && success_flag)
+								{
+									MappedParameter *mapped_param_p = param_node_p -> mpn_mapped_param_p;
+									char *param_value_s = GenerateLinkedServiceResults (service_p, job_p, mapped_param_p -> mp_input_param_s);
+
+									if (param_value_s)
+										{
+											/*
+											 * We now have the value to set for linked service
+											 */
+											Parameter *output_parameter_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+											if (output_parameter_p)
+												{
+													if (!SetParameterValueFromString (output_parameter_p, param_value_s))
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\" to \"%s\"", output_parameter_p -> pa_name_s, param_value_s);
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameter \"%s\"", mapped_param_p -> mp_output_param_s);
+												}
+
+										}
+									else
+										{
+											if (mapped_param_p -> mp_required_flag)
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get the value for \"%s\" from \"%s\"", mapped_param_p -> mp_input_param_s, service_p);
+													success_flag = false;
+												}
+											else
+												{
+													#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Could not get value for optional parameter \"%s\" ", mapped_param_p -> mp_input_param_s);
+													#endif
+												}
+										}
+
+
+									param_node_p = (MappedParameterNode *) (param_node_p -> mpn_node.ln_next_p);
+								}		/* while (param_node_p && success_flag) */
+
+
+							if (success_flag)
+								{
+									if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
+										}
+								}
+
+						}		/* if (output_params_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameters from output Service \"%s\"", linked_service_p -> ls_input_service_s);
+						}
+
+				}		/* if (linked_service_p -> ls_mapped_params_p -> ll_size > 0) */
+
+		}		/* if (service_to_call_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get output Service \"%s\"", linked_service_p -> ls_input_service_s);
+		}
+
+	return res_p;
+}
+
 
 LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 {
@@ -135,7 +231,8 @@ LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 				{
 					if (json_is_array (params_p))
 						{
-							linked_service_p = AllocateLinkedService (service_s);
+							const char *input_root_s = GetJSONString (params_p, MAPPED_PARAMS_ROOT_S);
+							linked_service_p = AllocateLinkedService (service_s, input_root_s);
 
 							if (linked_service_p)
 								{
@@ -197,9 +294,9 @@ LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 }
 
 
-bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s, bool required_flag)
+bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s, bool required_flag, bool multi_flag)
 {
-	MappedParameter *mapped_param_p = AllocateMappedParameter (input_s, output_s, required_flag);
+	MappedParameter *mapped_param_p = AllocateMappedParameter (input_s, output_s, required_flag, multi_flag);
 
 	if (mapped_param_p)
 		{

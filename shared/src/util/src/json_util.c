@@ -1119,11 +1119,11 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 }
 
 
-const json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s)
+json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s)
 {
 	const json_t *parent_value_p = input_p;
 	char *parent_key_s = (char *) compound_s;
-	const json_t *compound_value_p = NULL;
+	json_t *compound_value_p = NULL;
 
 	while (parent_value_p)
 		{

@@ -1016,87 +1016,6 @@ void ProcessLinkedServices (ServiceJob *job_p)
 			while (linked_service_node_p)
 				{
 					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
-					Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_input_service_s);
-
-					if (service_to_call_p)
-						{
-							if (linked_service_p -> ls_mapped_params_p -> ll_size > 0)
-								{
-									UserDetails *user_p = NULL;
-									ParameterSet *output_params_p = GetServiceParameters (service_to_call_p, NULL, user_p);
-
-									if (output_params_p)
-										{
-											MappedParameterNode *param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p);
-											bool success_flag = true;
-
-											while (param_node_p && success_flag)
-												{
-													MappedParameter *mapped_param_p = param_node_p -> mpn_mapped_param_p;
-													char *param_value_s = GetValueFromJobOutput (service_p, job_p, mapped_param_p -> mp_input_param_s);
-
-													if (param_value_s)
-														{
-															/*
-															 * We now have the value to set for linked service
-															 */
-															Parameter *output_parameter_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-															if (output_parameter_p)
-																{
-																	if (!SetParameterValueFromString (output_parameter_p, param_value_s))
-																		{
-																			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\" to \"%s\"", output_parameter_p -> pa_name_s, param_value_s);
-																		}
-																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameter \"%s\"", mapped_param_p -> mp_output_param_s);
-																}
-
-														}
-													else
-														{
-															if (mapped_param_p -> mp_required_flag)
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get the value for \"%s\" from \"%s\"", mapped_param_p -> mp_input_param_s, service_p);
-																	success_flag = false;
-																}
-															else
-																{
-																	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
-																	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Could not get value for optional parameter \"%s\" ", mapped_param_p -> mp_input_param_s);
-																	#endif
-																}
-														}
-
-
-													param_node_p = (MappedParameterNode *) (param_node_p -> mpn_node.ln_next_p);
-												}		/* while (param_node_p && success_flag) */
-
-
-											if (success_flag)
-												{
-													if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
-														}
-												}
-
-										}		/* if (output_params_p) */
-									else
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameters from output Service \"%s\"", linked_service_p -> ls_input_service_s);
-										}
-
-								}		/* if (linked_service_p -> ls_mapped_params_p -> ll_size > 0) */
-
-						}		/* if (service_to_call_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get output Service \"%s\"", linked_service_p -> ls_input_service_s);
-						}
-
 
 					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
 				}		/* while (linked_service_node_p) */
@@ -1652,9 +1571,9 @@ bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_serv
 
 static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p)
 {
-	char *value_s = GetValueFromJobOutput (job_p -> sj_service_p, job_p, mapped_param_p -> mp_input_param_s);
+	json_t *values_p = GenerateLinkedServiceResults (job_p -> sj_service_p, job_p, mapped_param_p);
 
-	if (value_s)
+	if (values_p)
 		{
 			json_t *param_json_p = json_object ();
 
@@ -1662,6 +1581,8 @@ static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter 
 				{
 					if (json_object_set_new (param_json_p, PARAM_NAME_S, json_string (mapped_param_p -> mp_output_param_s)) == 0)
 						{
+							const char *value_s = "";
+
 							if (json_object_set_new (param_json_p, PARAM_CURRENT_VALUE_S, json_string (value_s)) == 0)
 								{
 									if (json_array_append_new (parent_p, param_json_p) == 0)
@@ -1692,8 +1613,8 @@ static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter 
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate JSON for params object");
 				}
 
-			FreeCopiedString (value_s);
-		}		/* if (value_s) */
+			json_decref (values_p);
+		}		/* if (values_p) */
 	else
 		{
 			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "Failed to get \"%s\"", mapped_param_p -> mp_input_param_s);

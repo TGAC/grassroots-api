@@ -45,6 +45,9 @@ typedef struct LinkedService
 	 */
 	char *ls_input_service_s;
 
+
+	char *ls_input_key_s;
+
 	/**
 	 * The list of MappedParameterNodes storing the information
 	 * required to map values from the input Service's results
@@ -82,10 +85,13 @@ extern "C"
  *
  * @param input_service_s The name of the input service. The LinkedService will make a deep copy
  * of this and store that value.
+ * @param input_key_s The key for each result to generate a link for. This can be NULL if there
+ * is only a single object. The LinkedService will make a deep copy
+ * of this and store that value.
  * @return The newly-allocated LinkedService or <code>NULL</code> upon error.
  * @memberof LinkedService
  */
-GRASSROOTS_SERVICE_API LinkedService *AllocateLinkedService (const char *input_service_s);
+GRASSROOTS_SERVICE_API LinkedService *AllocateLinkedService (const char *input_service_s, const char *input_key_s);
 
 
 /**
@@ -141,7 +147,7 @@ GRASSROOTS_SERVICE_API void FreeLinkedServiceNode (ListItem *node_p);
  * @see AllocateMappedParameter
  * @see AddMappedParameterToLinkedService
  */
-GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s, bool required_flag);
+GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p, const char *input_s, const char *output_s, bool required_flag, bool multi_flag);
 
 
 /**

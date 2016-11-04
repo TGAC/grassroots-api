@@ -57,7 +57,7 @@ static const char * const FASTA_FILENAME_S = "Fasta";
 static NamedParameterType SS_INPUT_FILENAME = { "Index filename", PT_STRING };
 static NamedParameterType SS_BLASTDB_FILENAME = { "Blast database", PT_STRING };
 static NamedParameterType SS_SCAFFOLD = { "Scaffold", PT_STRING };
-static NamedParameterType SS_SCAFFOLLD_LINE_BREAK = { "Scaffold line break index", PT_SIGNED_INT };
+static NamedParameterType SS_SCAFFOLD_LINE_BREAK = { "Scaffold line break index", PT_SIGNED_INT };
 
 
 
@@ -301,7 +301,7 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 										{
 											def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
 
-											if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_SCAFFOLLD_LINE_BREAK.npt_type, false, SS_SCAFFOLLD_LINE_BREAK.npt_name_s, "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+											if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_SCAFFOLD_LINE_BREAK.npt_type, false, SS_SCAFFOLD_LINE_BREAK.npt_name_s, "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 												{
 													return param_set_p;
 												}
@@ -453,7 +453,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 									if (buffer_p)
 										{
 											int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
-											param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLLD_LINE_BREAK.npt_name_s);
+											param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLD_LINE_BREAK.npt_name_s);
 
 											if (param_p)
 												{

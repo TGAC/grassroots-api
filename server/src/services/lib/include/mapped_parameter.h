@@ -54,6 +54,14 @@ typedef struct MappedParameter
 	 * Is this MappedParameter required for the LinkedService to run?
 	 */
 	bool mp_required_flag;
+
+
+	/**
+	 * Can there be multiple input values?
+	 */
+	bool mp_multiple_flag;
+
+
 } MappedParameter;
 
 
@@ -87,7 +95,7 @@ extern "C"
  * @return The newly-allocated MappedParameter or <code>NULL</code> upon error.
  * @memberof MappedParameter
  */
-GRASSROOTS_SERVICE_API MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s, bool required_flag);
+GRASSROOTS_SERVICE_API MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s, bool required_flag, bool multi_flag);
 
 
 /**

@@ -110,6 +110,9 @@ PREFIX const char *LINKED_SERVICES_S VAL("linked_services");
 PREFIX const char *MAPPED_PARAM_INPUT_S VAL("input");
 PREFIX const char *MAPPED_PARAM_OUTPUT_S VAL("output");
 PREFIX const char *MAPPED_PARAM_REQUIRED_S VAL("required");
+PREFIX const char *MAPPED_PARAMS_ROOT_S VAL("input_root");
+PREFIX const char *MAPPED_PARAM_MULTI_VALUED_S VAL("multiple");
+
 
 PREFIX const char *JOB_NAME_S VAL("name");
 PREFIX const char *JOB_SERVICE_S VAL("service");
@@ -529,7 +532,7 @@ GRASSROOTS_UTIL_API bool SetLongFromJSON (const json_t *json_p, int64 *value_p);
 GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_ss);
 
 
-GRASSROOTS_UTIL_API const json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s);
+GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s);
 
 
 #ifdef __cplusplus
