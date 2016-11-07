@@ -23,7 +23,7 @@
 #include "blast_formatter.h"
 #include "blast_app_parameters.h"
 #include "blast_service_api.h"
-#include "blast_service_job.h"
+
 #include "parameter_set.h"
 #include "temp_file.hpp"
 
@@ -138,6 +138,7 @@ BLAST_SERVICE_PREFIX const char *BS_DATABASE_GROUP_NAME_S BLAST_SERVICE_VAL ("Av
 BLAST_SERVICE_PREFIX const char *BS_TOOL_TYPE_NAME_S BLAST_SERVICE_VAL ("blast_tool");
 BLAST_SERVICE_PREFIX const char *BS_COMMAND_NAME_S BLAST_SERVICE_VAL ("blast_command");
 BLAST_SERVICE_PREFIX const char *BS_APP_NAME_S BLAST_SERVICE_VAL ("blast_app_type");
+
 
 
 #ifdef __cplusplus

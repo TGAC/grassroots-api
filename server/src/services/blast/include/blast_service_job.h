@@ -43,7 +43,14 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceJob
 
 	/** The BlastTool. */
 	BlastTool *bsj_tool_p;
+
 } BlastServiceJob;
+
+
+
+BLAST_SERVICE_PREFIX const char *BSJ_LINKED_SERVICE_DATABASE_S BLAST_SERVICE_VAL ("database");
+BLAST_SERVICE_PREFIX const char *BSJ_LINKED_SERVICE_SCAFFOLD_S BLAST_SERVICE_VAL ("scaffold");
+
 
 
 #ifdef __cplusplus
@@ -95,6 +102,22 @@ BLAST_SERVICE_LOCAL bool AddErrorToBlastServiceJob (BlastServiceJob *job_p);
 
 
 BLAST_SERVICE_LOCAL bool UpdateBlastServiceJob (ServiceJob *job_p);
+
+
+
+/**
+ * After the blast job has ran, get the database that it ran against.
+ *
+ */
+BLAST_SERVICE_LOCAL const char *GetDatabase (const BlastServiceJob *job_p);
+
+
+/**
+ * Get a LinkedList of StringListNodes containing the scaffold names for the
+ * hits against a given database
+ */
+BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsForDatabaseHits (const BlastServiceJob *job_p, const char * const database_s);
+
 
 
 

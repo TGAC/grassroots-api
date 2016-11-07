@@ -101,6 +101,9 @@ typedef struct ServiceJob
 	 */
 	void (*sj_free_fn) (struct ServiceJob *job_p);
 
+
+	//SharedType *(*sj_get_application_output_value_fn) (struct ServiceJob *job_p, const char * const key_s);
+
 } ServiceJob;
 
 
@@ -604,20 +607,6 @@ GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *re
 
 
 GRASSROOTS_SERVICE_API bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag);
-
-
-/**
- * Add a result to ServiceJob.
- *
- * @param job_p The ServiceJob to add the result to.
- * @param result_p The result to add. This is a Resource stored in json format.
- * @return <code>true</code> if the ServiceJob was updated successfully,
- * <code>false</code> otherwise.
- * @memberof ServiceJob
- */
-GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *result_p);
-
-
 
 
 GRASSROOTS_SERVICE_API void SetServiceJobStatus (ServiceJob *job_p, OperationStatus status);

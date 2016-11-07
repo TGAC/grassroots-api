@@ -378,3 +378,163 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 
 	return true;
 }
+
+
+
+
+json_t *GetValueFromBlastServiceJobOutput (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
+{
+	json_t *results_p = NULL;
+	char *raw_result_s = NULL;
+
+	/*
+	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+	 * available in blast 2.3+
+	 */
+	raw_result_s = GetBlastResultByUUID ((BlastServiceData *) (service_p -> se_data_p), job_p -> sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+	if (raw_result_s)
+		{
+			json_error_t err;
+			json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
+
+			if (blast_output_p)
+				{
+					/*
+					 * We currently understand hits objects and database names
+					 */
+					json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
+
+					if (root_p)
+						{
+							if (json_is_array (root_p))
+								{
+									size_t i;
+									json_t *output_p;
+
+									json_array_foreach (root_p, i, output_p)
+										{
+											json_t *report_p = json_object_get (output_p, "report");
+
+											if (report_p)
+												{
+													const char *database_s = NULL;
+													MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+
+
+													/*
+													 * Now we've got to the report we can see what values
+													 * the LinkedService is after.
+													 */
+													MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+
+													while (mapped_param_node_p)
+														{
+															MappedParameter *mapped_param_p = mapped_param_node_p -> mpn_mapped_param_p;
+
+															if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0)
+																{
+																	json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
+
+																	if (db_p)
+																		{
+																			if (json_is_string (db_p))
+																				{
+																					database_s = json_string_value (db_p);
+																				}
+																		}
+
+																}		/* if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0) */
+															else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0)
+																{
+																	json_t *hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
+
+																	if (hits_p)
+																		{
+																			if (json_is_array (hits_p))
+																				{
+																					size_t j;
+																					json_t *hit_p;
+
+																					json_array_foreach (hits_p, j, hit_p)
+																						{
+																							json_t *description_p = json_object_get (hit_p, "description");
+
+																							if (description_p)
+																								{
+																									if (json_is_array (description_p))
+																										{
+																											size_t k;
+																											json_t *item_p;
+
+																											json_array_foreach (description_p, k, item_p)
+																												{
+																													const char *full_title_s = GetJSONString (item_p, "title_p");
+
+																													if (full_title_s)
+																														{
+																															/*
+																															 * There may be more on this line than just the scaffold name
+																															 * so lets get up until the first space or |
+																															 */
+
+																															const char *id_end_p = strpbrk (full_title_s, " |");
+
+																															if (id_end_p)
+																																{
+
+																																}
+																															else
+																																{
+																																	/* just get the whole string */
+																																}
+
+																														}
+																												}
+
+																										}
+																								}
+
+																						}
+
+																				}		/* if (json_is_array (hits_p)) */
+
+																		}		/* if (hits_p) */
+
+																}		/* else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown MappedParameter input key %s", mapped_param_p -> mp_input_param_s);
+																}
+															mapped_param_node_p = (MappedParameterNode *) (mapped_param_node_p -> mpn_node.ln_next_p);
+														}		/* while (mapped_param_node_p) */
+
+												}		/* if (report_p) */
+
+										}		/* json_array_foreach (root_p, i, output_p) */
+
+								}		/* if (json_is_array (root_p)) */
+
+						}		/* if (root_p) */
+
+
+					json_decref (blast_output_p);
+				}		/* if (blast_output_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
+				}
+
+			FreeCopiedString (raw_result_s);
+		}		/* if (raw_result_s) */
+	else
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_p -> sj_id, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
+		}
+
+	return results_p;
+}
+

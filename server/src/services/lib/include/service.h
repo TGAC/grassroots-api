@@ -207,8 +207,7 @@ typedef struct Service
 	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
 
 
-
-	json_t *(*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, MappedParameter *mapped_param_p, const char * const root_s);
+	bool (*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
 
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return
@@ -236,6 +235,9 @@ typedef struct Service
 	 * Any custom data that the service needs to store.
 	 */
 	ServiceData *se_data_p;
+
+
+
 
 } Service;
 
@@ -751,7 +753,7 @@ GRASSROOTS_SERVICE_API void SetServiceJobCustomFunctions (Service *service_p, st
 
 
 
-GRASSROOTS_SERVICE_API json_t *GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
+GRASSROOTS_SERVICE_API bool GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
 
 
 #ifdef __cplusplus

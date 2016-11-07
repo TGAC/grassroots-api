@@ -120,7 +120,7 @@ MappedParameter *CreateMappedParameterFromJSON (const json_t *mapped_param_json_
 
 			if (output_s)
 				{
-					bool required_flag = false;
+					bool required_flag = true;
 					bool multi_flag = false;
 
 					GetJSONBoolean (mapped_param_json_p, MAPPED_PARAM_REQUIRED_S, &required_flag);

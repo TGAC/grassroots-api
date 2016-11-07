@@ -1017,6 +1017,15 @@ void ProcessLinkedServices (ServiceJob *job_p)
 				{
 					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
 
+					if (ProcessLinkedService (linked_service_p, job_p))
+						{
+
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "ProcessLinkedService failed for input service %s to output service%s for service %s", GetServiceName (job_p -> sj_service_p), linked_service_p -> ls_input_service_s);
+						}
+
 					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
 				}		/* while (linked_service_node_p) */
 
