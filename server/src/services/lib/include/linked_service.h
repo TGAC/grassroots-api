@@ -39,11 +39,11 @@
 typedef struct LinkedService
 {
 	/**
-	 * The name of the first Service whose output will be used
-	 * as input for the Service that owns this LinkedService
-	 * object.
+	 * The name of the Service whose input will be generated
+	 * from the output of the Service that owns this
+	 * LinkedService object.
 	 */
-	char *ls_input_service_s;
+	char *ls_output_service_s;
 
 
 	char *ls_input_key_s;
@@ -159,6 +159,10 @@ GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedSe
  * @memberof LinkedService
  */
 GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, MappedParameter *mapped_param_p);
+
+
+
+GRASSROOTS_SERVICE_API MappedParameter *GetMappedParameterByInputParamName (const LinkedService *linked_service_p, const char * const name_s);
 
 
 

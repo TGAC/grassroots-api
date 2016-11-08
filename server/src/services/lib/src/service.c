@@ -225,7 +225,7 @@ bool SetUpLinkedServices (Service *service_p)
 										{
 											if (!AddLinkedService (service_p, linked_service_p))
 												{
-													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to add LinkedService \"%s\" to \"%s\"", linked_service_p -> ls_input_service_s, GetServiceName (service_p));
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to add LinkedService \"%s\" to \"%s\"", linked_service_p -> ls_output_service_s, GetServiceName (service_p));
 												}
  										}
 									else
@@ -1755,9 +1755,9 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 
 
 
-bool GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
+json_t *GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
 {
-	bool success_flag = false;
+	json_t *results_p = NULL;
 
 	if (job_p)
 		{
@@ -1765,7 +1765,7 @@ bool GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p,
 				{
 					if (service_p -> se_process_linked_services_fn)
 						{
-							success_flag = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
+							job_p -> sj_processed_results_p = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
 						}
 					else
 						{
@@ -1784,7 +1784,7 @@ bool GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p,
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
 		}
 
-	return success_flag;
+	return results_p;
 }
 
 

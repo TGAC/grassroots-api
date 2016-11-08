@@ -120,6 +120,10 @@ BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsForDatabaseHits (const BlastServiceJ
 
 
 
+BLAST_SERVICE_LOCAL json_t *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p);
+
+
+
 
 #ifdef __cplusplus
 }

@@ -50,6 +50,9 @@ typedef struct MappedParameter
 	char *mp_output_param_s;
 
 
+	ParameterType pa_type;
+
+
 	/**
 	 * Is this MappedParameter required for the LinkedService to run?
 	 */
@@ -60,7 +63,6 @@ typedef struct MappedParameter
 	 * Can there be multiple input values?
 	 */
 	bool mp_multiple_flag;
-
 
 } MappedParameter;
 

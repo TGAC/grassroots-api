@@ -728,6 +728,9 @@ GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const p
 GRASSROOTS_PARAMS_API bool SetParameterValueFromString (Parameter * const param_p, const char *value_s);
 
 
+GRASSROOTS_PARAMS_API bool SetSharedTypeFromString (SharedType * const value_p, const ParameterType pt, const char *value_s);
+
+
 /**
  * Allocate a SharedTypeNode set to the given value.
  *
@@ -816,6 +819,11 @@ GRASSROOTS_PARAMS_API ParameterNode *AllocateParameterNode (Parameter *param_p);
 
 GRASSROOTS_PARAMS_API void FreeParameterNode (ListItem *node_p);
 
+
+
+
+
+GRASSROOTS_PARAMS_API json_t *GetRunnableParameterAsJSON (const char * const name_s, const SharedType * const value_p, const ParameterType param_type, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 
 

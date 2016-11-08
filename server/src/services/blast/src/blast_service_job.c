@@ -29,15 +29,24 @@
 #include "string_utils.h"
 #include "blast_tool_factory.hpp"
 #include "blast_tool.hpp"
+#include "blast_service_params.h"
 
-
-
+/*
+ * STATIC DECLARATIONS
+ */
 
 static const char * const BSJ_TOOL_S = "tool";
 static const char * const BSJ_FACTORY_S = "factory";
 static const char * const BSJ_JOB_S = "job";
 
 
+static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char *output_key_s);
+
+static LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
+
+/*
+ * API DEFINITIONS
+ */
 
 BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, BlastServiceData *data_p)
 {
@@ -382,159 +391,431 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 
 
 
-json_t *GetValueFromBlastServiceJobOutput (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
+json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
 {
-	json_t *results_p = NULL;
-	char *raw_result_s = NULL;
+	json_t *results_p = json_array ();
 
-	/*
-	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
-	 * available in blast 2.3+
-	 */
-	raw_result_s = GetBlastResultByUUID ((BlastServiceData *) (service_p -> se_data_p), job_p -> sj_id, BOF_SINGLE_FILE_JSON_BLAST);
-
-	if (raw_result_s)
+	if (results_p)
 		{
-			json_error_t err;
-			json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
+			char *raw_result_s = NULL;
 
-			if (blast_output_p)
+			/*
+			 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+			 * available in blast 2.3+
+			 */
+			raw_result_s = GetBlastResultByUUID ((BlastServiceData *) (service_p -> se_data_p), job_p -> sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+			if (raw_result_s)
 				{
-					/*
-					 * We currently understand hits objects and database names
-					 */
-					json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
+					json_error_t err;
+					json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
 
-					if (root_p)
+					if (blast_output_p)
 						{
-							if (json_is_array (root_p))
+							/*
+							 * We currently understand hits objects and database names
+							 */
+							json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
+
+							if (root_p)
 								{
-									size_t i;
-									json_t *output_p;
-
-									json_array_foreach (root_p, i, output_p)
+									if (json_is_array (root_p))
 										{
-											json_t *report_p = json_object_get (output_p, "report");
+											size_t i;
+											json_t *output_p;
 
-											if (report_p)
+											json_array_foreach (root_p, i, output_p)
 												{
-													const char *database_s = NULL;
-													MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+													json_t *report_p = json_object_get (output_p, "report");
 
-
-													/*
-													 * Now we've got to the report we can see what values
-													 * the LinkedService is after.
-													 */
-													MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
-
-													while (mapped_param_node_p)
+													if (report_p)
 														{
-															MappedParameter *mapped_param_p = mapped_param_node_p -> mpn_mapped_param_p;
+															json_t *hits_p = NULL;
+															const char *database_s = NULL;
+															const char *output_database_key_s = NULL;
+															MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
 
-															if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0)
+															/*
+															 * Now we've got to the report, we can see what values
+															 * the LinkedService is after.
+															 */
+
+															while (mapped_param_node_p)
 																{
-																	json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
+																	MappedParameter *mapped_param_p = mapped_param_node_p -> mpn_mapped_param_p;
 
-																	if (db_p)
+																	if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0)
 																		{
-																			if (json_is_string (db_p))
+																			/*
+																			 * We will cache the database details, ready to add in
+																			 * after we've collated all of the hits
+																			 */
+																			json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
+
+																			if (db_p)
 																				{
-																					database_s = json_string_value (db_p);
+																					if (json_is_string (db_p))
+																						{
+																							database_s = json_string_value (db_p);
+																							output_database_key_s = mapped_param_p -> mp_output_param_s;
+																						}
 																				}
+
+																		}		/* if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0) */
+																	else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0)
+																		{
+																			hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
+//
+//																			if (hits_p)
+//																				{
+//																					if (json_is_array (hits_p))
+//																						{
+//																							size_t j;
+//																							const size_t num_hits = json_array_size (hits_p);
+//
+//																							for (j = 0; j < num_hits; ++ j)
+//																								{
+//																									json_t *hit_p = json_array_get (hits_p, j);
+//
+//																									if (!AddHitToResults (results_p, hit_p, mapped_param_p -> mp_output_param_s))
+//																										{
+//																											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, hit_p, "Failed to add hit to results");
+//																										}
+//																								}
+//
+//																						}		/* if (json_is_array (hits_p)) */
+//
+//																				}		/* if (hits_p) */
+
+																		}		/* else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown MappedParameter input key %s", mapped_param_p -> mp_input_param_s);
 																		}
 
-																}		/* if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0) */
-															else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0)
-																{
-																	json_t *hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
+																	mapped_param_node_p = (MappedParameterNode *) (mapped_param_node_p -> mpn_node.ln_next_p);
+																}		/* while (mapped_param_node_p) */
 
-																	if (hits_p)
+
+															/*
+															 * Now we can add in the requested details
+															 */
+															if (hits_p)
+																{
+																	if (json_is_array (hits_p))
 																		{
-																			if (json_is_array (hits_p))
-																				{
-																					size_t j;
-																					json_t *hit_p;
 
-																					json_array_foreach (hits_p, j, hit_p)
-																						{
-																							json_t *description_p = json_object_get (hit_p, "description");
+																		}		/* if (json_is_array (hits_p)) */
+																	else
+																		{
 
-																							if (description_p)
-																								{
-																									if (json_is_array (description_p))
-																										{
-																											size_t k;
-																											json_t *item_p;
+																		}
 
-																											json_array_foreach (description_p, k, item_p)
-																												{
-																													const char *full_title_s = GetJSONString (item_p, "title_p");
 
-																													if (full_title_s)
-																														{
-																															/*
-																															 * There may be more on this line than just the scaffold name
-																															 * so lets get up until the first space or |
-																															 */
+																}		/* if (hits_p) */
 
-																															const char *id_end_p = strpbrk (full_title_s, " |");
 
-																															if (id_end_p)
-																																{
-
-																																}
-																															else
-																																{
-																																	/* just get the whole string */
-																																}
-
-																														}
-																												}
-
-																										}
-																								}
-
-																						}
-
-																				}		/* if (json_is_array (hits_p)) */
-
-																		}		/* if (hits_p) */
-
-																}		/* else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0) */
-															else
+															/*
+															 * Add in the database details
+															 */
+															if (database_s && output_database_key_s)
 																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown MappedParameter input key %s", mapped_param_p -> mp_input_param_s);
-																}
-															mapped_param_node_p = (MappedParameterNode *) (mapped_param_node_p -> mpn_node.ln_next_p);
-														}		/* while (mapped_param_node_p) */
+																	json_array_foreach (results_p, i, output_p)
+																		{
+																			if (!json_object_get (output_p, output_database_key_s))
+																				{
+																					if (json_object_set_new (output_p, output_database_key_s, json_string (database_s)) != 0)
+																						{
+																							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, output_p, "Unable to add \"%s\"=\"%s\"", output_database_key_s, database_s);
+																						}
+																				}
 
-												}		/* if (report_p) */
+																		}		/* json_array_foreach (results_p, i, output_p) */
 
-										}		/* json_array_foreach (root_p, i, output_p) */
+																}		/* json_array_foreach (results_p, i, output_p) */
 
-								}		/* if (json_is_array (root_p)) */
+														}		/* if (report_p) */
 
-						}		/* if (root_p) */
+												}		/* json_array_foreach (root_p, i, output_p) */
 
+										}		/* if (json_is_array (root_p)) */
 
-					json_decref (blast_output_p);
-				}		/* if (blast_output_p) */
+								}		/* if (root_p) */
+
+							json_decref (blast_output_p);
+						}		/* if (blast_output_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
+						}
+
+					FreeCopiedString (raw_result_s);
+				}		/* if (raw_result_s) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_p -> sj_id, uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
 				}
 
-			FreeCopiedString (raw_result_s);
-		}		/* if (raw_result_s) */
+		}		/* if (results_p) */
 	else
 		{
-			char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-			ConvertUUIDToString (job_p -> sj_id, uuid_s);
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get allocate json array");
 		}
 
 	return results_p;
 }
+
+
+
+/*
+ * STATIC DEFINITIONS
+ */
+
+
+static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, const char *database_s, json_t *results_p)
+{
+	bool success_flag = true;
+	Service output_service_p = GetServiceByName (linked_service_p -> ls_output_service_s);
+
+	if (output_service_p)
+		{
+			ParameterSet *output_params_p = GetServiceParameters (output_service_p, NULL, NULL);
+
+			if (output_params_p)
+				{
+					/*
+					 * Start by setting the database value if the LinkedService wants it.
+					 */
+					MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
+
+					if (mapped_param_p)
+						{
+							Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+							if (output_param_p)
+								{
+									if (SetParameterValue (output_param_p, database_s, true))
+										{
+
+										}
+								}
+						}
+
+					/*
+					 * Now iterate over the scaffolds if required
+					 */
+					mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
+
+					if (mapped_param_p)
+						{
+							Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+							if (output_param_p)
+								{
+									if (SetParameterValue (output_param_p, database_s, true))
+										{
+											LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p);
+
+											if (scaffolds_p)
+												{
+													StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
+
+													while (node_p)
+														{
+															if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
+																{
+																	json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+
+																	if (run_service_json_p)
+																		{
+																			if (json_array_append_new (results_p, run_service_json_p) == 0)
+																				{
+
+																				}
+																			else
+																				{
+																					json_decref (run_service_json_p);
+																				}
+																		}
+
+																}
+
+															node_p = node_p -> sln_node.ln_next_p;
+														}
+
+													FreeLinkedList (scaffolds_p);
+												}
+										}
+								}
+						}
+
+					if (success_flag)
+						{
+							json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+
+							if (success_flag)
+								{
+
+								}
+						}
+
+
+					FreeParameterSet (output_params_p);
+				}		/* if (output_params_p) */
+
+			FreeService (output_service_p);
+		}		/* if (output_service_p) */
+
+	return success_flag;
+}
+
+
+
+static LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
+{
+	LinkedList *scaffolds_p = AllocateStringLinkedList ();
+
+	if (scaffolds_p)
+		{
+			json_t *description_p = json_object_get (hit_p, "description");
+
+			if (description_p)
+				{
+					if (json_is_array (description_p))
+						{
+							size_t k;
+							json_t *item_p;
+
+							json_array_foreach (description_p, k, item_p)
+								{
+									json_t *data_p = json_object ();
+
+									if (data_p)
+										{
+											const char *full_title_s = GetJSONString (item_p, "title_p");
+
+											if (full_title_s)
+												{
+													/*
+													 * There may be more on this line than just the scaffold name
+													 * so lets get up until the first space or |
+													 */
+													const char *id_end_p = strpbrk (full_title_s, " |");
+													const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
+													char *scaffold_s = CopyToNewString (full_title_s, size, false);
+
+													if (scaffold_s)
+														{
+															StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
+
+															if (node_p)
+																{
+																	LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
+																}		/* if (node_p) */
+
+														}		/* if (scaffold_s) */
+
+												}		/* if (full_title_s) */
+
+										}		/* if (data_p) */
+								}
+						}
+				}
+
+		}		/* if (scaffolds_p) */
+
+	return scaffolds_p;
+}
+
+
+static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char *output_key_s)
+{
+	bool success_flag = false;
+	json_t *description_p = json_object_get (hit_p, "description");
+
+	if (description_p)
+		{
+			if (json_is_array (description_p))
+				{
+					size_t k;
+					json_t *item_p;
+
+					json_array_foreach (description_p, k, item_p)
+						{
+							json_t *data_p = json_object ();
+
+							if (data_p)
+								{
+									const char *full_title_s = GetJSONString (item_p, "title_p");
+
+									if (full_title_s)
+										{
+											/*
+											 * There may be more on this line than just the scaffold name
+											 * so lets get up until the first space or |
+											 */
+											const char *id_end_p = strpbrk (full_title_s, " |");
+
+											if (id_end_p)
+												{
+													char *scaffold_s = CopyToNewString (full_title_s, id_end_p - full_title_s, false);
+
+													if (scaffold_s)
+														{
+															if (json_object_set_new (data_p, output_key_s, json_string (scaffold_s)) == 0)
+																{
+																	success_flag = true;
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, scaffold_s);
+																}
+
+															FreeCopiedString (scaffold_s);
+														}		/* if (scaffold_s) */
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to get copy of initial " UINT32_FMT " characters of \"%s\"", id_end_p - full_title_s, full_title_s);
+														}
+												}
+											else
+												{
+													/* just get the whole string */
+													if (json_object_set_new (data_p, output_key_s, json_string (full_title_s)) == 0)
+														{
+															success_flag = true;
+														}
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, full_title_s);
+														}
+												}
+
+											if (success_flag)
+												{
+													if (json_array_append_new (results_p, data_p) != 0)
+														{
+															PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, data_p, "failed to add data to results array");
+															success_flag = false;
+														}
+												}
+
+										}		/* if (full_title_s) */
+
+									if (!success_flag)
+										{
+											json_decref (data_p);
+										}
+
+								}		/* if (data_p) */
+						}
+				}
+		}
+
+	return success_flag;
+}
+
 

@@ -52,7 +52,7 @@ LinkedService *AllocateLinkedService (const char *input_service_s, const char *i
 
 							if (linked_service_p)
 								{
-									linked_service_p -> ls_input_service_s = input_service_copy_s;
+									linked_service_p -> ls_output_service_s = input_service_copy_s;
 									linked_service_p -> ls_input_key_s = input_key_copy_s;
 									linked_service_p -> ls_mapped_params_p = list_p;
 
@@ -86,9 +86,9 @@ LinkedService *AllocateLinkedService (const char *input_service_s, const char *i
 
 void FreeLinkedService (LinkedService *linked_service_p)
 {
-	if (linked_service_p -> ls_input_service_s)
+	if (linked_service_p -> ls_output_service_s)
 		{
-			FreeCopiedString (linked_service_p -> ls_input_service_s);
+			FreeCopiedString (linked_service_p -> ls_output_service_s);
 		}
 
 	if (linked_service_p -> ls_mapped_params_p)
@@ -113,7 +113,7 @@ LinkedServiceNode *AllocateLinkedServiceNode (LinkedService *linked_service_p)
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate LinkedServiceNode for \"%s\"", linked_service_p -> ls_input_service_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate LinkedServiceNode for \"%s\"", linked_service_p -> ls_output_service_s);
 		}
 
 	return node_p;
@@ -129,10 +129,32 @@ void FreeLinkedServiceNode (ListItem *node_p)
 }
 
 
+
+MappedParameter *GetMappedParameterByInputParamName (const LinkedService *linked_service_p, const char * const name_s)
+{
+	MappedParameterNode *param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+
+	while (param_node_p)
+		{
+			MappedParameter *mapped_param_p = param_node_p -> mpn_mapped_param_p;
+
+			if (strcmp (mapped_param_p -> mp_input_param_s, name_s) == 0)
+				{
+					return mapped_param_p;
+				}
+
+			param_node_p = (MappedParameterNode *) param_node_p -> mpn_node.ln_next_p;
+		}
+
+	return NULL;
+}
+
+
+
 json_t *ProcessLinkedService (LinkedService *linked_service_p, ServiceJob *job_p)
 {
 	json_t *res_p = NULL;
-	Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_input_service_s);
+	Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_output_service_s);
 
 	if (service_to_call_p)
 		{
@@ -196,14 +218,14 @@ json_t *ProcessLinkedService (LinkedService *linked_service_p, ServiceJob *job_p
 								{
 									if (!AddLinkedServiceToServiceJob (job_p, linked_service_p))
 										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_input_service_s);
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_output_service_s);
 										}
 								}
 
 						}		/* if (output_params_p) */
 					else
 						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameters from output Service \"%s\"", linked_service_p -> ls_input_service_s);
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameters from output Service \"%s\"", linked_service_p -> ls_output_service_s);
 						}
 
 				}		/* if (linked_service_p -> ls_mapped_params_p -> ll_size > 0) */
@@ -211,7 +233,7 @@ json_t *ProcessLinkedService (LinkedService *linked_service_p, ServiceJob *job_p
 		}		/* if (service_to_call_p) */
 	else
 		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get output Service \"%s\"", linked_service_p -> ls_input_service_s);
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get output Service \"%s\"", linked_service_p -> ls_output_service_s);
 		}
 
 	return res_p;
@@ -249,7 +271,7 @@ LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 												{
 													if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p))
 														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add mapped param \"%s\":\"%s\" for \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_input_service_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add mapped param \"%s\":\"%s\" for \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_output_service_s);
 															i = size; 		/* force exit from loop */
 															success_flag = false;
 														}		/* if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p)) */
@@ -306,7 +328,7 @@ bool CreateAndAddMappedParameterToLinkedService (LinkedService *linked_service_p
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add MappedParameter for \"%s\"=\"%s\" to \"%s\"", input_s, output_s, linked_service_p -> ls_input_service_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add MappedParameter for \"%s\"=\"%s\" to \"%s\"", input_s, output_s, linked_service_p -> ls_output_service_s);
 				}
 
 			FreeMappedParameter (mapped_param_p);
@@ -332,7 +354,7 @@ bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, MappedP
 		}
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory of MappedParameterNode for \"%s\"=\"%s\" to \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_input_service_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory of MappedParameterNode for \"%s\"=\"%s\" to \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_output_service_s);
 		}
 
 	return success_flag;
@@ -345,12 +367,12 @@ json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p)
 	json_t *res_p = NULL;
 	json_error_t json_err;
 
-	res_p = json_pack_ex (&json_err, 0, "{s:s,s:b}", JOB_SERVICE_S, linked_service_p -> ls_input_service_s, SERVICE_RUN_S, true);
+	res_p = json_pack_ex (&json_err, 0, "{s:s,s:b}", JOB_SERVICE_S, linked_service_p -> ls_output_service_s, SERVICE_RUN_S, true);
 
 	if (res_p)
 		{
 			const SchemaVersion *sv_p = GetSchemaVersion ();
-			Service *service_p = GetServiceByName (linked_service_p -> ls_input_service_s);
+			Service *service_p = GetServiceByName (linked_service_p -> ls_output_service_s);
 
 			if (service_p)
 				{

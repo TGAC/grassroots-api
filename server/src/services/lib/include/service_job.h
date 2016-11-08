@@ -66,6 +66,13 @@ typedef struct ServiceJob
 	 */
 	json_t *sj_result_p;
 
+
+	/**
+	 * The JSON fragment for the ServiceJob results after any
+	 * post-processing after and LinkedService processing
+	 */
+	json_t *sj_processed_results_p;
+
 	/**
 	 * The JSON fragment for any extra information for this ServiceJob.
 	 */
@@ -101,8 +108,6 @@ typedef struct ServiceJob
 	 */
 	void (*sj_free_fn) (struct ServiceJob *job_p);
 
-
-	//SharedType *(*sj_get_application_output_value_fn) (struct ServiceJob *job_p, const char * const key_s);
 
 } ServiceJob;
 

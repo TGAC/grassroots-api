@@ -194,7 +194,8 @@ BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, const 
 
 BLAST_SERVICE_LOCAL void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p);
 
-BLAST_SERVICE_LOCAL LinkedList *GetValueFromBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, const char * const input_s);
+
+
 
 #ifdef __cplusplus
 }

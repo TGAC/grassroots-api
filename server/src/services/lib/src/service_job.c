@@ -181,6 +181,7 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 					job_p -> sj_result_p = NULL;
 					job_p -> sj_metadata_p = NULL;
+					job_p -> sj_processed_results_p = NULL;
 
 					job_p -> sj_update_fn = update_fn;
 					job_p -> sj_free_fn = free_job_fn;
@@ -253,6 +254,12 @@ void ClearServiceJob (ServiceJob *job_p)
 		{
 			json_decref (job_p -> sj_errors_p);
 			job_p -> sj_errors_p = NULL;
+		}
+
+	if (job_p -> sj_processed_results_p)
+		{
+			json_decref (job_p -> sj_processed_results_p);
+			job_p -> sj_processed_results_p = NULL;
 		}
 
 
@@ -822,46 +829,54 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 								{
 									if (AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false))
 										{
-											if (AddStatusToServiceJobJSON (job_p, job_json_p))
+											if (AddValidJSON (job_json_p, JOB_PROCESSED_RESULTS_S, job_p -> sj_metadata_p, false))
 												{
-													char buffer_s [UUID_STRING_BUFFER_SIZE];
-
-													ConvertUUIDToString (job_p -> sj_id, buffer_s);
-
-													if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0)
+													if (AddStatusToServiceJobJSON (job_p, job_json_p))
 														{
-															if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s))
+															char buffer_s [UUID_STRING_BUFFER_SIZE];
+
+															ConvertUUIDToString (job_p -> sj_id, buffer_s);
+
+															if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0)
 																{
-																	if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
+																	if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s))
 																		{
-																			if (!AddLinkedServicesToServiceJobJSON (job_p, job_json_p))
+																			if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
 																				{
-																					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to Linked Services for %s to json", job_p -> sj_name_s ? job_p -> sj_name_s : "unnamed job");
+																					if (!AddLinkedServicesToServiceJobJSON (job_p, job_json_p))
+																						{
+																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to Linked Services for %s to json", job_p -> sj_name_s ? job_p -> sj_name_s : "unnamed job");
+																						}
+
+																					success_flag = true;
+																				}
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add description \"%s\" %s to json", job_p -> sj_description_s ? job_p -> sj_description_s : "");
 																				}
 
-																			success_flag = true;
-																		}
+																		}		/* if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s)) */
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add description \"%s\" %s to json", job_p -> sj_description_s ? job_p -> sj_description_s : "");
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add name \"%s\" to json", job_p -> sj_name_s ? job_p -> sj_name_s : "");
 																		}
 
-																}		/* if (AddValidJSONString (job_json_p, JOB_NAME_S, job_p -> sj_name_s)) */
+																}		/* if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0) */
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add name \"%s\" to json", job_p -> sj_name_s ? job_p -> sj_name_s : "");
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid %s to json", buffer_s);
 																}
 
-														}		/* if (json_object_set_new (job_json_p, JOB_UUID_S, json_string (buffer_s)) == 0) */
+														}		/* if (AddStatusToServiceJobJSON (job_p, job_json_p)) */
 													else
 														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add uuid %s to json", buffer_s);
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add status to service job json");
 														}
 
-												}		/* if (AddStatusToServiceJobJSON (job_p, job_json_p)) */
+												}		/* if (AddValidJSON (job_json_p, JOB_PROCESSED_RESULTS_S, job_p -> sj_metadata_p, false)) */
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add status to service job json");
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add processed results to service job json");
 												}
 
 										}		/* if (AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false)) */
@@ -1023,7 +1038,7 @@ void ProcessLinkedServices (ServiceJob *job_p)
 						}
 					else
 						{
-							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "ProcessLinkedService failed for input service %s to output service%s for service %s", GetServiceName (job_p -> sj_service_p), linked_service_p -> ls_input_service_s);
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "ProcessLinkedService failed for input service %s to output service%s for service %s", GetServiceName (job_p -> sj_service_p), linked_service_p -> ls_output_service_s);
 						}
 
 					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
