@@ -611,6 +611,19 @@ GRASSROOTS_SERVICE_API bool AddErrorToServiceJob (ServiceJob *job_p, const char 
 GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *result_p);
 
 
+
+/**
+ * Add a preocessed result to ServiceJob.
+ *
+ * @param job_p The ServiceJob to add the result to.
+ * @param processed_result_p The result to add. This is a Resource stored in json format.
+ * @return <code>true</code> if the ServiceJob was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API bool AddProcessedResultToServiceJob (ServiceJob *job_p, json_t *processed_result_p);
+
+
 GRASSROOTS_SERVICE_API bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag);
 
 

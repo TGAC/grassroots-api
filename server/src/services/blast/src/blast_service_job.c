@@ -31,6 +31,7 @@
 #include "blast_tool.hpp"
 #include "blast_service_params.h"
 
+
 /*
  * STATIC DECLARATIONS
  */
@@ -43,6 +44,9 @@ static const char * const BSJ_JOB_S = "job";
 static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char *output_key_s);
 
 static LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
+
+static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, Service *output_service_p, const char *database_s, json_t *results_p);
+
 
 /*
  * API DEFINITIONS
@@ -421,122 +425,59 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 								{
 									if (json_is_array (root_p))
 										{
-											size_t i;
-											json_t *output_p;
+											Service *output_service_p = GetServiceByName (linked_service_p -> ls_output_service_s);
 
-											json_array_foreach (root_p, i, output_p)
+											if (output_service_p)
 												{
-													json_t *report_p = json_object_get (output_p, "report");
+													size_t i;
+													json_t *output_p;
 
-													if (report_p)
+													json_array_foreach (root_p, i, output_p)
 														{
-															json_t *hits_p = NULL;
-															const char *database_s = NULL;
-															const char *output_database_key_s = NULL;
-															MappedParameterNode *mapped_param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p -> ll_head_p);
+															json_t *report_p = json_object_get (output_p, "report");
 
-															/*
-															 * Now we've got to the report, we can see what values
-															 * the LinkedService is after.
-															 */
-
-															while (mapped_param_node_p)
+															if (report_p)
 																{
-																	MappedParameter *mapped_param_p = mapped_param_node_p -> mpn_mapped_param_p;
+																	json_t *hits_p = NULL;
+																	const char *database_s = NULL;
+																	json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
 
-																	if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0)
+																	/* Get the database name */
+																	if (db_p)
 																		{
-																			/*
-																			 * We will cache the database details, ready to add in
-																			 * after we've collated all of the hits
-																			 */
-																			json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
-
-																			if (db_p)
+																			if (json_is_string (db_p))
 																				{
-																					if (json_is_string (db_p))
-																						{
-																							database_s = json_string_value (db_p);
-																							output_database_key_s = mapped_param_p -> mp_output_param_s;
-																						}
+																					database_s = json_string_value (db_p);
 																				}
-
-																		}		/* if (strcmp (mapped_param_p -> mp_input_param_s, "database") == 0) */
-																	else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0)
-																		{
-																			hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
-//
-//																			if (hits_p)
-//																				{
-//																					if (json_is_array (hits_p))
-//																						{
-//																							size_t j;
-//																							const size_t num_hits = json_array_size (hits_p);
-//
-//																							for (j = 0; j < num_hits; ++ j)
-//																								{
-//																									json_t *hit_p = json_array_get (hits_p, j);
-//
-//																									if (!AddHitToResults (results_p, hit_p, mapped_param_p -> mp_output_param_s))
-//																										{
-//																											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, hit_p, "Failed to add hit to results");
-//																										}
-//																								}
-//
-//																						}		/* if (json_is_array (hits_p)) */
-//
-//																				}		/* if (hits_p) */
-
-																		}		/* else if (strcmp (mapped_param_p -> mp_input_param_s, "scaffold") == 0) */
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Unknown MappedParameter input key %s", mapped_param_p -> mp_input_param_s);
 																		}
 
-																	mapped_param_node_p = (MappedParameterNode *) (mapped_param_node_p -> mpn_node.ln_next_p);
-																}		/* while (mapped_param_node_p) */
+																	/* Get the hits */
+																	hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
 
-
-															/*
-															 * Now we can add in the requested details
-															 */
-															if (hits_p)
-																{
-																	if (json_is_array (hits_p))
+																	if (hits_p)
 																		{
-
-																		}		/* if (json_is_array (hits_p)) */
-																	else
-																		{
-
-																		}
-
-
-																}		/* if (hits_p) */
-
-
-															/*
-															 * Add in the database details
-															 */
-															if (database_s && output_database_key_s)
-																{
-																	json_array_foreach (results_p, i, output_p)
-																		{
-																			if (!json_object_get (output_p, output_database_key_s))
+																			if (json_is_array (hits_p))
 																				{
-																					if (json_object_set_new (output_p, output_database_key_s, json_string (database_s)) != 0)
+																					size_t i;
+																					json_t *hit_p;
+
+
+																					json_array_foreach (hits_p, i, hit_p)
 																						{
-																							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, output_p, "Unable to add \"%s\"=\"%s\"", output_database_key_s, database_s);
-																						}
-																				}
+																							ProcessHitForLinkedService (hit_p, linked_service_p, database_s, job_p);
+																						}		/* json_array_foreach (hits_p, i, hit_p) */
 
-																		}		/* json_array_foreach (results_p, i, output_p) */
+																				}		/* if (json_is_array (hits_p)) */
 
-																}		/* json_array_foreach (results_p, i, output_p) */
+																		}		/* if (hits_p) */
 
-														}		/* if (report_p) */
+																}		/* if (report_p) */
 
-												}		/* json_array_foreach (root_p, i, output_p) */
+														}		/* json_array_foreach (root_p, i, output_p) */
+
+													FreeService (output_service_p);
+												}		/* if (output_service_p) */
+
 
 										}		/* if (json_is_array (root_p)) */
 
@@ -575,99 +516,164 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
  */
 
 
-static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, const char *database_s, json_t *results_p)
+/*
+"hits": [
+  {
+    "num": 1,
+    "description": [
+      {
+        "id": "gnl|BL_ORD_ID|1",
+        "accession": "1",
+        "title": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1   gene=TRIAE_CS42_1AL_TGACv1_000001_AA0000020   biotype=protein_coding   confidence=Low"
+      }
+    ],
+    "len": 354,
+    "hsps": [
+      {
+        "num": 1,
+        "bit_score": 113.339,
+        "score": 140,
+        "evalue": 6.2069e-25,
+        "identity": 70,
+        "query_from": 1,
+        "query_to": 70,
+        "query_strand": "Plus",
+        "hit_from": 99,
+        "hit_to": 168,
+        "hit_strand": "Plus",
+        "align_len": 70,
+        "gaps": 0,
+        "qseq": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
+        "hseq": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
+        "midline": "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+      }
+    ]
+  }
+]
+
+{
+	"@context": {
+		"scaffold": {
+			"@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148",
+			"@type": "@id"
+		}
+
+		"contig": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
+      "@type": "@id"
+    },
+		"contained_by": {
+			"@id": "http://www.sequenceontology.org/browser/current_svn/term/contained_by",
+			"@type": "@id"
+		},
+    "faldo": "http://biohackathon.org/resource/faldo"
+	}
+
+	"hit": {
+
+		"contig": {
+			"GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
+			"faldo:location": {
+				"@type": "faldo:Region",
+				"faldo:begin": {
+					"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+					"faldo:position": "99"
+				},
+				"faldo:end": {
+					"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+					"faldo:position": "168"
+				}
+				"contained_by": {
+					"scaffold": {
+						"title": {
+							"@context": "http://schema.org/Thing",
+							"name": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1"
+						}
+					}
+				}
+			}
+		}
+	}
+}
+*/
+
+
+static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, Service *output_service_p, const char *database_s, ServiceJob *job_p)
 {
 	bool success_flag = true;
-	Service output_service_p = GetServiceByName (linked_service_p -> ls_output_service_s);
 
-	if (output_service_p)
+	ParameterSet *output_params_p = GetServiceParameters (output_service_p, NULL, NULL);
+
+	if (output_params_p)
 		{
-			ParameterSet *output_params_p = GetServiceParameters (output_service_p, NULL, NULL);
+			/*
+			 * Start by setting the database value if the LinkedService wants it.
+			 */
+			MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
 
-			if (output_params_p)
+			if (mapped_param_p)
 				{
-					/*
-					 * Start by setting the database value if the LinkedService wants it.
-					 */
-					MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
+					Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
 
-					if (mapped_param_p)
+					if (output_param_p)
 						{
-							Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-							if (output_param_p)
+							if (SetParameterValue (output_param_p, database_s, true))
 								{
-									if (SetParameterValue (output_param_p, database_s, true))
-										{
 
-										}
 								}
 						}
+				}
 
-					/*
-					 * Now iterate over the scaffolds if required
-					 */
-					mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
+			/*
+			 * Now iterate over the scaffolds if required
+			 */
+			mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
 
-					if (mapped_param_p)
+			if (mapped_param_p)
+				{
+					Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+					if (output_param_p)
 						{
-							Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-							if (output_param_p)
+							if (SetParameterValue (output_param_p, database_s, true))
 								{
-									if (SetParameterValue (output_param_p, database_s, true))
+									LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p);
+
+									if (scaffolds_p)
 										{
-											LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p);
+											StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
 
-											if (scaffolds_p)
+											while (node_p)
 												{
-													StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
-
-													while (node_p)
+													if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
 														{
-															if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
+															json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+
+															if (run_service_json_p)
 																{
-																	json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-
-																	if (run_service_json_p)
+																	if (AddProcessedResultToServiceJob (job_p, run_service_json_p))
 																		{
-																			if (json_array_append_new (results_p, run_service_json_p) == 0)
-																				{
 
-																				}
-																			else
-																				{
-																					json_decref (run_service_json_p);
-																				}
 																		}
-
+																	else
+																		{
+																			json_decref (run_service_json_p);
+																		}
 																}
 
-															node_p = node_p -> sln_node.ln_next_p;
 														}
 
-													FreeLinkedList (scaffolds_p);
+													node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
 												}
+
+											FreeLinkedList (scaffolds_p);
 										}
 								}
 						}
+				}
 
-					if (success_flag)
-						{
-							json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-
-							if (success_flag)
-								{
-
-								}
-						}
-
-
-					FreeParameterSet (output_params_p);
-				}		/* if (output_params_p) */
-
-			FreeService (output_service_p);
-		}		/* if (output_service_p) */
+			FreeParameterSet (output_params_p);
+		}		/* if (output_params_p) */
 
 	return success_flag;
 }

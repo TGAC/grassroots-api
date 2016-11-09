@@ -50,9 +50,6 @@ typedef struct MappedParameter
 	char *mp_output_param_s;
 
 
-	ParameterType pa_type;
-
-
 	/**
 	 * Is this MappedParameter required for the LinkedService to run?
 	 */

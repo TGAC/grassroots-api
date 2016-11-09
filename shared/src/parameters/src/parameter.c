@@ -2676,7 +2676,14 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 
 bool SetParameterValueFromString (Parameter * const param_p, const char *value_s)
 {
-	return SetSharedTypeFromString (& (param_p -> pa_current_value), param_p -> pa_type, value_s);
+	bool success_flag = SetSharedTypeFromString (& (param_p -> pa_current_value), param_p -> pa_type, value_s);
+
+	if (!success_flag)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set parameter \"%s\" with type " UINT32_FMT " to \"%s\"", param_p -> pa_name_s, param_p -> pa_type, value_s);
+		}
+
+	return success_flag;
 }
 
 
@@ -2759,17 +2766,13 @@ bool SetSharedTypeFromString (SharedType * const value_p, const ParameterType pt
 			case PT_STRING:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
-				success_flag = SetSharedTypeStringValue (value_p, value_s, true);
+				success_flag = SetSharedTypeStringValue (value_p, value_s);
 				break;
 
 			default:
 				break;
 		}		/* switch (param_p -> pa_type) */
 
-	if (!success_flag)
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set parameter \"%s\" with type " UINT32_FMT " to \"%s\"", param_p -> pa_name_s, param_p -> pa_type, value_s);
-		}
 
 	return success_flag;
 }

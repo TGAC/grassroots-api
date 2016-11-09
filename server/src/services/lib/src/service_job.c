@@ -41,6 +41,9 @@ static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter 
 
 static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
 
+static bool AddResultEntryToServiceJob (ServiceJob *job_p, json_t **results_pp, json_t *result_to_add_p);
+
+
 
 ServiceJob *AllocateEmptyServiceJob (void)
 {
@@ -1498,39 +1501,13 @@ void SetServiceJobUpdateFunction (ServiceJob *job_p, bool (*update_fn) (ServiceJ
 
 bool AddResultToServiceJob (ServiceJob *job_p, json_t *result_p)
 {
-	bool success_flag = false;
+	return AddResultEntryToServiceJob (job_p, & (job_p -> sj_result_p), result_p);
+}
 
-	if (! (job_p -> sj_result_p))
-		{
-			job_p -> sj_result_p = json_array ();
 
-			if (! (job_p -> sj_result_p))
-				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate results array for %s", uuid_s);
-				}
-
-		}		/* if (! (job_p -> sj_result_p)) */
-
-	if (job_p -> sj_result_p)
-		{
-			if (json_array_append_new (job_p -> sj_result_p, result_p) == 0)
-				{
-					success_flag = true;
-				}
-			else
-				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintJSONToErrors(STM_LEVEL_SEVERE, __FILE__, __LINE__, result_p, "Failed to add result to %s", uuid_s);
-				}
-
-		}		/* if (job_p -> sj_result_p) */
-
-	return success_flag;
+bool AddProcessedResultToServiceJob (ServiceJob *job_p, json_t *processed_result_p)
+{
+	return AddResultEntryToServiceJob (job_p, & (job_p -> sj_processed_results_p), processed_result_p);
 }
 
 
@@ -1646,4 +1623,51 @@ static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter 
 
 	return false;
 }
+
+
+
+static bool AddResultEntryToServiceJob (ServiceJob *job_p, json_t **results_pp, json_t *result_to_add_p)
+{
+	bool success_flag = false;
+	json_t *results_p = *results_pp;
+
+	if (!results_p)
+		{
+			results_p = json_array ();
+
+			if (results_p)
+				{
+					*results_pp = results_p;
+				}
+			else
+				{
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_p -> sj_id, uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate results array for %s", uuid_s);
+				}
+
+		}		/* if (! (job_p -> sj_result_p)) */
+
+	if (results_p)
+		{
+			if (json_array_append_new (results_p, result_to_add_p) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_p -> sj_id, uuid_s);
+					PrintJSONToErrors(STM_LEVEL_SEVERE, __FILE__, __LINE__, result_to_add_p, "Failed to add result to %s", uuid_s);
+				}
+
+		}		/* if (job_p -> sj_result_p) */
+
+	return success_flag;
+
+
+}
+
 
