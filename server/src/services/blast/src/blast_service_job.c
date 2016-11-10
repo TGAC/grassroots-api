@@ -47,6 +47,10 @@ static LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
 
 static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, Service *output_service_p, const char *database_s, json_t *results_p);
 
+static json_t *GetInitialisedProcessedRequest (void);
+
+static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s);
+
 
 /*
  * API DEFINITIONS
@@ -553,6 +557,11 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 
 {
 	"@context": {
+		"reference_genome": {
+			"@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505",
+			"@type": "@id"
+		}
+
 		"scaffold": {
 			"@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148",
 			"@type": "@id"
@@ -562,6 +571,17 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
       "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
       "@type": "@id"
     },
+
+    "quality_value": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001686",
+      "@type": "@id"
+    },
+
+    "score": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001685",
+      "@type": "@id"
+    },
+
 		"contained_by": {
 			"@id": "http://www.sequenceontology.org/browser/current_svn/term/contained_by",
 			"@type": "@id"
@@ -569,26 +589,53 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
     "faldo": "http://biohackathon.org/resource/faldo"
 	}
 
-	"hit": {
 
-		"contig": {
-			"GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
-			"faldo:location": {
-				"@type": "faldo:Region",
-				"faldo:begin": {
-					"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
-					"faldo:position": "99"
-				},
-				"faldo:end": {
-					"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
-					"faldo:position": "168"
-				}
-				"contained_by": {
-					"scaffold": {
-						"title": {
-							"@context": "http://schema.org/Thing",
-							"name": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1"
-						}
+	"database": {
+		"@type": "reference_genome",
+		"name": "/home/billy/Applications/grassroots-0/grassroots/extras/blast/databases/Triticum_aestivum_CS42_TGACv1_scaffold.annotation.gff3.cds.fa"
+	}
+
+
+	"query": {
+		"sequence": {
+			"@type": "contig",
+			"value": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
+		}
+	}
+
+	"hit": {
+		"sequence": {
+			"@type": "contig",
+			"value": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA"
+		}
+		"bit_score": {
+			"@type": "score",
+			"value": 113.339
+		},
+		"score": {
+			"@type": "score",
+			"value": 140
+		},
+		"bit_score": {
+			"@type": "score",
+			"evalue": 6.2069e-25
+		}
+
+		"faldo:location": {
+			"@type": "faldo:Region",
+			"faldo:begin": {
+				"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+				"faldo:position": "99"
+			},
+			"faldo:end": {
+				"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+				"faldo:position": "168"
+			}
+			"contained_by": {
+				"scaffold": {
+					"title": {
+						"@context": "http://schema.org/Thing",
+						"name": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1"
 					}
 				}
 			}
@@ -596,6 +643,119 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 	}
 }
 */
+
+
+static json_t *GetInitialisedProcessedRequest (void)
+{
+/*
+ "@context": {
+    "reference_genome": {
+      "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505",
+      "@type": "@id"
+    }
+
+    "scaffold": {
+      "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148",
+      "@type": "@id"
+    }
+
+    "contig": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
+      "@type": "@id"
+    },
+
+    "quality_value": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001686",
+      "@type": "@id"
+    },
+
+    "score": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001685",
+      "@type": "@id"
+    },
+
+    "contained_by": {
+      "@id": "http://www.sequenceontology.org/browser/current_svn/term/contained_by",
+      "@type": "@id"
+    },
+    "faldo": "http://biohackathon.org/resource/faldo"
+  }
+*/
+
+	json_t *root_p = json_object ();
+
+	if (root_p)
+		{
+			json_t *context_p = json_object ();
+
+			if (context_p)
+				{
+					if (json_object_set_new (root_p, "@context", context_p) == 0)
+						{
+							if (AddTerm (context_p, "reference_genome", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505"))
+								{
+									if (AddTerm (context_p, "scaffold", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148"))
+										{
+											if (AddTerm (context_p, "contig", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149"))
+												{
+													if (AddTerm (context_p, "quality_value", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686"))
+														{
+															if (AddTerm (context_p, "score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685"))
+																{
+																	if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by"))
+																		{
+																			if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																				{
+																					return root_p;
+																				}
+																		}
+																}
+														}
+												}
+										}
+								}
+
+						}		/* if (json_object_set_new (root_p, "@context", context_p) == 0) */
+					else
+						{
+							json_decref (context_p);
+						}
+
+				}		/* if (context_p) */
+
+			json_decref (root_p);
+		}		/* if (root_p) */
+
+	return NULL;
+}
+
+
+static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s)
+{
+	json_t *term_p = json_object ();
+
+	if (term_p)
+		{
+			if (json_object_set_new (term_p, "@context", json_string (term_s)) == 0)
+				{
+					if (json_object_set_new (term_p, "@type", json_string ("@id")) == 0)
+						{
+							if (json_object_set_new (root_p, key_s, term_p) == 0)
+								{
+									return true;
+								}
+						}
+
+				}
+
+			json_decref (term_p);
+		}
+
+	return false;
+}
+
+
+
 
 
 static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, Service *output_service_p, const char *database_s, ServiceJob *job_p)
