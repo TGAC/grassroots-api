@@ -49,6 +49,7 @@ static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_ser
 
 static json_t *GetInitialisedProcessedRequest (void);
 
+
 static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s);
 
 
