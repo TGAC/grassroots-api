@@ -652,17 +652,6 @@ static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_ser
 								}
 						}
 
-					if (success_flag)
-						{
-							json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-
-							if (success_flag)
-								{
-
-								}
-						}
-
-
 					FreeParameterSet (output_params_p);
 				}		/* if (output_params_p) */
 
