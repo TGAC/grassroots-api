@@ -522,39 +522,497 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 
 
 /*
-"hits": [
-  {
-    "num": 1,
-    "description": [
-      {
-        "id": "gnl|BL_ORD_ID|1",
-        "accession": "1",
-        "title": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1   gene=TRIAE_CS42_1AL_TGACv1_000001_AA0000020   biotype=protein_coding   confidence=Low"
+{
+"BlastOutput2": [
+{
+    "report": {
+      "program": "blastp",
+      "version": "BLASTP 2.5.0+",
+      "reference": "Stephen F. Altschul, Thomas L. Madden, Alejandro A. Sch&auml;ffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), \"Gapped BLAST and PSI-BLAST: a new generation of protein database search programs\", Nucleic Acids Res. 25:3389-3402.",
+      "search_target": {
+        "db": "/home/billy/Applications/grassroots-0/grassroots/extras/blast/databases/Triticum_aestivum_CS42_TGACv1_scaffold.annotation.gff3.pep.fa"
+      },
+      "params": {
+        "matrix": "BLOSUM62",
+        "expect": 10,
+        "gap_open": 11,
+        "gap_extend": 1,
+        "filter": "F",
+        "cbs": 2
+      },
+      "results": {
+        "search": {
+          "query_id": "Query_1",
+          "query_title": "unnamed protein product",
+          "query_len": 58,
+          "hits": [
+            {
+              "num": 1,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|0",
+                  "accession": "0",
+                  "title": "TRIAE_CS42_1AL_TGACv1_000001_AA0000010.1   gene=TRIAE_CS42_1AL_TGACv1_000001_AA0000010   biotype=protein_coding   confidence=Low"
+                }
+              ],
+              "len": 153,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 107.842,
+                  "score": 268,
+                  "evalue": 2.92884e-31,
+                  "identity": 58,
+                  "positive": 58,
+                  "query_from": 1,
+                  "query_to": 58,
+                  "hit_from": 1,
+                  "hit_to": 60,
+                  "align_len": 60,
+                  "gaps": 2,
+                  "qseq": "MASDPRRRRRRTSPATGSSTTTTGSS--ASDLPVPGHPNLASSLGAQRDGHGRPIAERRR",
+                  "hseq": "MASDPRRRRRRTSPATGSSTTTTGSSCPASDLPVPGHPNLASSLGAQRDGHGRPIAERRR",
+                  "midline": "MASDPRRRRRRTSPATGSSTTTTGSS  ASDLPVPGHPNLASSLGAQRDGHGRPIAERRR"
+                }
+              ]
+            },
+            {
+              "num": 2,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|13485",
+                  "accession": "13485",
+                  "title": "TRIAE_CS42_1BL_TGACv1_031607_AA0117040.3   gene=TRIAE_CS42_1BL_TGACv1_031607_AA0117040   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 500,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 28.4906,
+                  "score": 62,
+                  "evalue": 1.46958,
+                  "identity": 19,
+                  "positive": 25,
+                  "query_from": 4,
+                  "query_to": 53,
+                  "hit_from": 301,
+                  "hit_to": 348,
+                  "align_len": 50,
+                  "gaps": 2,
+                  "qseq": "DPRRRRRRTSPATGSSTTTTGSSASDLPVPGHPNLASSLGAQRDGHGRPI",
+                  "hseq": "DERKIRIRPLPAGAADRTVATAAALDLPLES--GLASSYRGGVDSEGRPV",
+                  "midline": "D R+ R R  PA  +  T   ++A DLP+     LASS     D  GRP+"
+                }
+              ]
+            },
+            {
+              "num": 3,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|71187",
+                  "accession": "71187",
+                  "title": "TRIAE_CS42_3AL_TGACv1_193702_AA0618020.1   gene=TRIAE_CS42_3AL_TGACv1_193702_AA0618020   biotype=protein_coding   confidence=Low"
+                }
+              ],
+              "len": 180,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 27.7202,
+                  "score": 60,
+                  "evalue": 2.35238,
+                  "identity": 12,
+                  "positive": 16,
+                  "query_from": 36,
+                  "query_to": 58,
+                  "hit_from": 106,
+                  "hit_to": 128,
+                  "align_len": 23,
+                  "gaps": 0,
+                  "qseq": "PNLASSLGAQRDGHGRPIAERRR",
+                  "hseq": "PSVSSQDETSRDGHGRPMPEHRR",
+                  "midline": "P+++S     RDGHGRP+ E RR"
+                }
+              ]
+            },
+            {
+              "num": 4,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|154126",
+                  "accession": "154126",
+                  "title": "TRIAE_CS42_5BL_TGACv1_405499_AA1328790.1   gene=TRIAE_CS42_5BL_TGACv1_405499_AA1328790   biotype=protein_coding   confidence=Low"
+                }
+              ],
+              "len": 310,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 27.7202,
+                  "score": 60,
+                  "evalue": 2.66381,
+                  "identity": 12,
+                  "positive": 16,
+                  "query_from": 36,
+                  "query_to": 58,
+                  "hit_from": 175,
+                  "hit_to": 197,
+                  "align_len": 23,
+                  "gaps": 0,
+                  "qseq": "PNLASSLGAQRDGHGRPIAERRR",
+                  "hseq": "PSVSSQDVTSRDGHGRPMPEHRR",
+                  "midline": "P+++S     RDGHGRP+ E RR"
+                }
+              ]
+            },
+            {
+              "num": 5,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|73272",
+                  "accession": "73272",
+                  "title": "TRIAE_CS42_3AL_TGACv1_194560_AA0635830.2   gene=TRIAE_CS42_3AL_TGACv1_194560_AA0635830   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 696,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.9498,
+                  "score": 58,
+                  "evalue": 4.65126,
+                  "identity": 18,
+                  "positive": 24,
+                  "query_from": 1,
+                  "query_to": 52,
+                  "hit_from": 112,
+                  "hit_to": 157,
+                  "align_len": 52,
+                  "gaps": 6,
+                  "qseq": "MASDPRRRRRRTSPATGSSTTTTGSSASDLPVPGHPNLASSLGAQRDGHGRP",
+                  "hseq": "VLSDPAKR------ASFDSSNTAGCSVKQMAVGNCSNLASSSKTKRTDHCFP",
+                  "midline": "+ SDP +R      A+  S+ T G S   + V    NLASS   +R  H  P"
+                }
+              ]
+            },
+            {
+              "num": 6,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|54003",
+                  "accession": "54003",
+                  "title": "TRIAE_CS42_2BS_TGACv1_146627_AA0469650.6   gene=TRIAE_CS42_2BS_TGACv1_146627_AA0469650   biotype=protein_coding   confidence=Low"
+                }
+              ],
+              "len": 1057,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.5646,
+                  "score": 57,
+                  "evalue": 5.89578,
+                  "identity": 17,
+                  "positive": 32,
+                  "query_from": 3,
+                  "query_to": 57,
+                  "hit_from": 860,
+                  "hit_to": 917,
+                  "align_len": 59,
+                  "gaps": 5,
+                  "qseq": "SDPRRRRRRTSPATGSSTTTTGSSASDLPVPG----HPNLASSLGAQRDGHGRPIAERR",
+                  "hseq": "SSPQQHAAKNSPSTSGSKSASTNPYSSMPMPSILGQQPNMAHSGGKQQS-HGPSLKQQQ",
+                  "midline": "S P++   + SP+T  S + + +  S +P+P      PN+A S G Q+  HG  + +++"
+                }
+              ]
+            },
+            {
+              "num": 7,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|54002",
+                  "accession": "54002",
+                  "title": "TRIAE_CS42_2BS_TGACv1_146627_AA0469650.5   gene=TRIAE_CS42_2BS_TGACv1_146627_AA0469650   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 1182,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.5646,
+                  "score": 57,
+                  "evalue": 7.20645,
+                  "identity": 17,
+                  "positive": 32,
+                  "query_from": 3,
+                  "query_to": 57,
+                  "hit_from": 985,
+                  "hit_to": 1042,
+                  "align_len": 59,
+                  "gaps": 5,
+                  "qseq": "SDPRRRRRRTSPATGSSTTTTGSSASDLPVPG----HPNLASSLGAQRDGHGRPIAERR",
+                  "hseq": "SSPQQHAAKNSPSTSGSKSASTNPYSSMPMPSILGQQPNMAHSGGKQQS-HGPSLKQQQ",
+                  "midline": "S P++   + SP+T  S + + +  S +P+P      PN+A S G Q+  HG  + +++"
+                }
+              ]
+            },
+            {
+              "num": 8,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|234446",
+                  "accession": "234446",
+                  "title": "TRIAE_CS42_7DS_TGACv1_622080_AA2032400.1   gene=TRIAE_CS42_7DS_TGACv1_622080_AA2032400   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 863,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 8.49026,
+                  "identity": 16,
+                  "positive": 20,
+                  "query_from": 9,
+                  "query_to": 46,
+                  "hit_from": 38,
+                  "hit_to": 74,
+                  "align_len": 38,
+                  "gaps": 1,
+                  "qseq": "RRRTSPATGSSTTTTGSSASDLPVPGHPNLASSLGAQR",
+                  "hseq": "RRRASPAAKGKSPATNARLQ-MPVAGQVELESSLGIKR",
+                  "midline": "RRR SPA    +  T +    +PV G   L SSLG +R"
+                }
+              ]
+            },
+            {
+              "num": 9,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|234447",
+                  "accession": "234447",
+                  "title": "TRIAE_CS42_7DS_TGACv1_622080_AA2032400.2   gene=TRIAE_CS42_7DS_TGACv1_622080_AA2032400   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 891,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 8.49552,
+                  "identity": 16,
+                  "positive": 20,
+                  "query_from": 9,
+                  "query_to": 46,
+                  "hit_from": 38,
+                  "hit_to": 74,
+                  "align_len": 38,
+                  "gaps": 1,
+                  "qseq": "RRRTSPATGSSTTTTGSSASDLPVPGHPNLASSLGAQR",
+                  "hseq": "RRRASPAAKGKSPATNARLQ-MPVAGQVELESSLGIKR",
+                  "midline": "RRR SPA    +  T +    +PV G   L SSLG +R"
+                }
+              ]
+            },
+            {
+              "num": 10,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|181553",
+                  "accession": "181553",
+                  "title": "TRIAE_CS42_6AS_TGACv1_486703_AA1564240.3   gene=TRIAE_CS42_6AS_TGACv1_486703_AA1564240   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 941,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 8.76199,
+                  "identity": 13,
+                  "positive": 18,
+                  "query_from": 5,
+                  "query_to": 36,
+                  "hit_from": 879,
+                  "hit_to": 913,
+                  "align_len": 35,
+                  "gaps": 3,
+                  "qseq": "PRRRRRRTSPATGSSTTTT---GSSASDLPVPGHP",
+                  "hseq": "PKNKERRSMSLPGSSTPTTPMSSHSSLDMERPARP",
+                  "midline": "P+ + RR+    GSST TT     S+ D+  P  P"
+                }
+              ]
+            },
+            {
+              "num": 11,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|181552",
+                  "accession": "181552",
+                  "title": "TRIAE_CS42_6AS_TGACv1_486703_AA1564240.2   gene=TRIAE_CS42_6AS_TGACv1_486703_AA1564240   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 923,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 9.0245,
+                  "identity": 13,
+                  "positive": 18,
+                  "query_from": 5,
+                  "query_to": 36,
+                  "hit_from": 861,
+                  "hit_to": 895,
+                  "align_len": 35,
+                  "gaps": 3,
+                  "qseq": "PRRRRRRTSPATGSSTTTT---GSSASDLPVPGHP",
+                  "hseq": "PKNKERRSMSLPGSSTPTTPMSSHSSLDMERPARP",
+                  "midline": "P+ + RR+    GSST TT     S+ D+  P  P"
+                }
+              ]
+            },
+            {
+              "num": 12,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|181551",
+                  "accession": "181551",
+                  "title": "TRIAE_CS42_6AS_TGACv1_486703_AA1564240.1   gene=TRIAE_CS42_6AS_TGACv1_486703_AA1564240   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 924,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 9.11499,
+                  "identity": 13,
+                  "positive": 18,
+                  "query_from": 5,
+                  "query_to": 36,
+                  "hit_from": 879,
+                  "hit_to": 913,
+                  "align_len": 35,
+                  "gaps": 3,
+                  "qseq": "PRRRRRRTSPATGSSTTTT---GSSASDLPVPGHP",
+                  "hseq": "PKNKERRSMSLPGSSTPTTPMSSHSSLDMERPARP",
+                  "midline": "P+ + RR+    GSST TT     S+ D+  P  P"
+                }
+              ]
+            },
+            {
+              "num": 13,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|181555",
+                  "accession": "181555",
+                  "title": "TRIAE_CS42_6AS_TGACv1_486703_AA1564240.5   gene=TRIAE_CS42_6AS_TGACv1_486703_AA1564240   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 774,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 9.35788,
+                  "identity": 13,
+                  "positive": 18,
+                  "query_from": 5,
+                  "query_to": 36,
+                  "hit_from": 729,
+                  "hit_to": 763,
+                  "align_len": 35,
+                  "gaps": 3,
+                  "qseq": "PRRRRRRTSPATGSSTTTT---GSSASDLPVPGHP",
+                  "hseq": "PKNKERRSMSLPGSSTPTTPMSSHSSLDMERPARP",
+                  "midline": "P+ + RR+    GSST TT     S+ D+  P  P"
+                }
+              ]
+            },
+            {
+              "num": 14,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|181554",
+                  "accession": "181554",
+                  "title": "TRIAE_CS42_6AS_TGACv1_486703_AA1564240.4   gene=TRIAE_CS42_6AS_TGACv1_486703_AA1564240   biotype=protein_coding   confidence=High"
+                }
+              ],
+              "len": 906,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 9.38797,
+                  "identity": 13,
+                  "positive": 18,
+                  "query_from": 5,
+                  "query_to": 36,
+                  "hit_from": 861,
+                  "hit_to": 895,
+                  "align_len": 35,
+                  "gaps": 3,
+                  "qseq": "PRRRRRRTSPATGSSTTTT---GSSASDLPVPGHP",
+                  "hseq": "PKNKERRSMSLPGSSTPTTPMSSHSSLDMERPARP",
+                  "midline": "P+ + RR+    GSST TT     S+ D+  P  P"
+                }
+              ]
+            },
+            {
+              "num": 15,
+              "description": [
+                {
+                  "id": "gnl|BL_ORD_ID|133310",
+                  "accession": "133310",
+                  "title": "TRIAE_CS42_4DL_TGACv1_345080_AA1151470.1   gene=TRIAE_CS42_4DL_TGACv1_345080_AA1151470   biotype=protein_coding   confidence=Low"
+                }
+              ],
+              "len": 390,
+              "hsps": [
+                {
+                  "num": 1,
+                  "bit_score": 26.1794,
+                  "score": 56,
+                  "evalue": 9.62175,
+                  "identity": 13,
+                  "positive": 16,
+                  "query_from": 26,
+                  "query_to": 55,
+                  "hit_from": 325,
+                  "hit_to": 354,
+                  "align_len": 30,
+                  "gaps": 0,
+                  "qseq": "SASDLPVPGHPNLASSLGAQRDGHGRPIAE",
+                  "hseq": "NMDDAVVVGHPNKHSTLLAITDGCGEDLKE",
+                  "midline": "+  D  V GHPN  S+L A  DG G  + E"
+                }
+              ]
+            }
+          ],
+          "stat": {
+            "db_num": 249547,
+            "db_len": 96882341,
+            "hsp_len": 31,
+            "eff_space": 2406952368,
+            "kappa": 0.041,
+            "lambda": 0.267,
+            "entropy": 0.14
+          }
+        }
       }
-    ],
-    "len": 354,
-    "hsps": [
-      {
-        "num": 1,
-        "bit_score": 113.339,
-        "score": 140,
-        "evalue": 6.2069e-25,
-        "identity": 70,
-        "query_from": 1,
-        "query_to": 70,
-        "query_strand": "Plus",
-        "hit_from": 99,
-        "hit_to": 168,
-        "hit_strand": "Plus",
-        "align_len": 70,
-        "gaps": 0,
-        "qseq": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
-        "hseq": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
-        "midline": "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
-      }
-    ]
+    }
   }
 ]
+}
+
 
 {
 	"@context": {
@@ -644,6 +1102,388 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 	}
 }
 */
+
+
+/*
+ "query": {
+	"sequence": {
+		"@type": "contig",
+		"value": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
+	}
+ */
+static bool AddSequenceChild (json_t *marked_up_result_p, const char *key_s, const char *query_sequence_s)
+{
+	json_t *parent_p = json_object ();
+
+	if (parent_p)
+		{
+			if (AddSequence (parent_p, query_sequence_s))
+				{
+					if (json_object_set_new (marked_up_result_p, key_s, parent_p) == 0)
+						{
+							return true;
+						}
+				}
+
+			json_decref (parent_p);
+		}
+
+	return false;
+}
+
+
+
+static bool AddSequence (json_t *root_p, const char *query_sequence_s)
+{
+	json_t *sequence_p = json_object ();
+
+	if (sequence_p)
+		{
+			if (json_object_set_new (sequence_p, "@type", json_string ("contig")) == 0)
+				{
+					if (json_object_set_new (sequence_p, "value", json_string (query_sequence_s)) == 0)
+						{
+							if (json_object_set_new (root_p, "sequence", sequence_p) == 0)
+								{
+									return true;
+								}
+						}
+				}
+
+			json_decref (sequence_p);
+		}
+
+	return false;
+}
+
+/*
+"hit": {
+		"sequence": {
+			"@type": "contig",
+			"value": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA"
+		}
+		"bit_score": {
+			"@type": "score",
+			"value": 113.339
+		},
+		"score": {
+			"@type": "score",
+			"value": 140
+		},
+		"bit_score": {
+			"@type": "score",
+			"evalue": 6.2069e-25
+		}
+
+		"faldo:location": {
+			"@type": "faldo:Region",
+			"faldo:begin": {
+				"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+				"faldo:position": "99"
+			},
+			"faldo:end": {
+				"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+				"faldo:position": "168"
+			}
+			"contained_by": {
+				"scaffold": {
+					"title": {
+						"@context": "http://schema.org/Thing",
+						"name": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1"
+					}
+				}
+			}
+		}
+ */
+static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p)
+{
+	json_t *marked_up_hit_p = json_object ();
+
+	if (marked_up_hit_p)
+		{
+			const json_t *hsps_p = json_object_get (blast_hit_p, "hsps");
+
+			if (hsps_p)
+				{
+					if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score", "value"))
+						{
+							if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue", "value"))
+								{
+									if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score", "value"))
+										{
+											if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence", "value"))
+												{
+
+												}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence", "value")) */
+
+										}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score", "value") */
+
+								}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue", "value")) */
+
+
+						}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score", "value")) */
+
+				}		/* if (hsps_p) */
+
+			json_decref (marked_up_hit_p);
+		}		/* if (marked_up_hit_p) */
+
+	return false;
+}
+
+
+
+static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *child_key_s)
+{
+	bool success_flag = false;
+	int32 from;
+
+	if (GetJSONInteger (hsps_p, hsp_from_key_s, &from))
+		{
+			int32 to;
+
+			if (GetJSONInteger (hsps_p, hsp_to_key_s, &to))
+				{
+					json_t *location_p = json_object ();
+
+
+					/*
+						"faldo:location": {
+							"@type": "faldo:Region",
+							"faldo:begin": {
+								"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+								"faldo:position": "99"
+							},
+							"faldo:end": {
+								"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
+								"faldo:position": "168"
+							}
+						}
+					 */
+
+					if (location_p)
+						{
+							bool forward_strand_flag = true;
+							char *strand_s = GetJSONString (hsps_p, "hit_strand");
+
+							if (strand_s)
+								{
+									if (strcmp (strand_s, "Plus") == 0)
+										{
+											forward_strand_flag = true;
+										}
+									else if (strcmp (strand_s, "Minus") == 0)
+										{
+											forward_strand_flag = false;
+										}
+
+									if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag))
+										{
+											if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag))
+												{
+													if (json_object_set_new (location_p, "@type", "faldo:Region") == 0)
+														{
+															if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0)
+																{
+																	return true;
+																}
+														}
+												}
+
+										}
+								}
+
+							json_decref (location_p);
+						}		/* if (location_p) */
+
+				}		/* if (GetJSONInteger (hsps_p, hsp_to_key_s, &to)) */
+
+		}		/* if (GetJSONInteger (hsps_p, hsp_from_key_s, &from)) */
+
+	return success_flag;
+}
+
+
+static bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, const int32 position, const bool forward_strand_flag)
+{
+	json_t *faldo_p = json_object ();
+
+	if (faldo_p)
+		{
+			json_t *type_array_p = json_array ();
+
+			if (type_array_p)
+				{
+					if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
+						{
+							if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0)
+								{
+									if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
+										{
+											const char *strand_s = forward_strand_flag ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
+
+											if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
+												{
+													if (json_object_set_new (faldo_p, "@type", type_array_p) == 0)
+														{
+															if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) == 0)
+																{
+																	return true;
+																}		/* if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) */
+
+														}		/* if (json_object_set_new (faldo_p, "@type", type_array_p) == 0) */
+
+												}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
+
+										}		/* if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0) */
+
+								}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
+
+						}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
+
+					json_decref (type_array_p);
+				}		/* if (type_array_p) */
+
+			json_decref (faldo_p);
+		}		/* if (faldo_p) */
+
+	return false;
+}
+
+
+
+
+
+static bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *child_key_s, const char *sequence_key_s)
+{
+	bool success_flag = false;
+	const char *sequence_value_s = GetJSONString (hsps_p, hsp_key_s);
+
+	if (sequence_value_s)
+		{
+			if (AddSequence (marked_up_result_p, child_key_s, sequence_key_s, sequence_value_s))
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+static bool GetAndAddDoubleScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *child_key_s, const char *score_key_s)
+{
+	bool success_flag = false;
+	double64 value;
+
+	if (GetJSONReal (hsps_p, hsp_key_s, &value))
+		{
+			if (AddDoubleScoreValue (marked_up_result_p, child_key_s, score_key_s, value))
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+static bool GetAndAddIntScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *child_key_s, const char *score_key_s)
+{
+	bool success_flag = false;
+	int32 value;
+
+	if (GetJSONInteger (hsps_p, hsp_key_s, &value))
+		{
+			if (AddIntScoreValue (marked_up_result_p, child_key_s, score_key_s, value))
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+static bool AddIntScoreValue (json_t *parent_p, const char *child_key_s, const char *score_key_s, int score_value)
+{
+	json_t *score_p = json_object ();
+
+	if (score_p)
+		{
+			if (json_object_set_new (score_p, "@type", json_string ("score")) == 0)
+				{
+					if (json_object_set_new (score_p, score_key_s, json_integer (score_value)) == 0)
+						{
+							if (json_object_set_new (parent_p, child_key_s, score_p) == 0)
+								{
+									return true;
+								}
+						}
+				}
+
+			json_decref (score_p);
+		}
+
+	return false;
+
+}
+
+
+
+static bool AddDoubleScoreValue (json_t *parent_p, const char *child_key_s, const char *score_key_s, double64 score_value)
+{
+	json_t *score_p = json_object ();
+
+	if (score_p)
+		{
+			if (json_object_set_new (score_p, "@type", json_string ("score")) == 0)
+				{
+					if (json_object_set_new (score_p, score_key_s, json_real (score_value)) == 0)
+						{
+							if (json_object_set_new (parent_p, child_key_s, score_p) == 0)
+								{
+									return true;
+								}
+						}
+				}
+
+			json_decref (score_p);
+		}
+
+	return false;
+
+}
+
+
+/*
+"database": {
+	"@type": "reference_genome",
+	"name": "/home/billy/Applications/grassroots-0/grassroots/extras/blast/databases/Triticum_aestivum_CS42_TGACv1_scaffold.annotation.gff3.cds.fa"
+}
+*/
+static bool AddDatabaseDetails (json_t *marked_up_result_p, const char *database_s)
+{
+	json_t *db_p = json_object ();
+
+	if (db_p)
+		{
+			if (json_object_set_new (db_p, "@type", json_string ("reference_genome")) == 0)
+				{
+					if (json_object_set_new (db_p, "name", json_string (database_s)) == 0)
+						{
+							if (json_object_set_new (marked_up_result_p, "database", db_p) == 0)
+								{
+									return true;
+								}
+						}
+				}
+
+			json_decref (db_p);
+		}
+
+	return false;
+}
 
 
 static json_t *GetInitialisedProcessedRequest (void)
