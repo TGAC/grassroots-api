@@ -45,12 +45,38 @@ static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char 
 
 static LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
 
-static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, Service *output_service_p, const char *database_s, ServiceJob *job_p);
+static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s);
 
 static json_t *GetInitialisedProcessedRequest (void);
 
 
 static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s);
+
+
+
+static bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_s);
+
+static bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, const int32 position, const bool forward_strand_flag);
+
+
+static bool AddIntScoreValue (json_t *parent_p, const char *key_s, int score_value);
+
+static bool AddDoubleScoreValue (json_t *parent_p, const char *key_s, double64 score_value);
+
+
+static bool GetAndAddDoubleScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *marked_up_key_s);
+
+static bool GetAndAddIntScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *marked_up_key_s);
+
+static bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *sequence_key_s);
+
+static bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s);
+
+
+static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p);
+
+
+static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p);
 
 
 /*
@@ -392,7 +418,8 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 {
 	BlastServiceJob *blast_job_p = (BlastServiceJob *) job_p;
 	BlastTool *tool_p = blast_job_p -> bsj_tool_p;
-	OperationStatus status = tool_p -> GetStatus ();
+
+	tool_p -> GetStatus ();
 
 	return true;
 }
@@ -400,62 +427,66 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 
 
 
-json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
+bool MarkUpBlastResult (BlastServiceJob *job_p)
 {
-	json_t *results_p = json_array ();
+	bool success_flag = false;
+	BlastServiceData *data_p = (BlastServiceData *) (job_p -> bsj_job.sj_service_p -> se_data_p);
 
-	if (results_p)
+	/*
+	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+	 * available in blast 2.3+
+	 */
+	char *raw_result_s = GetBlastResultByUUID (data_p, job_p -> bsj_job.sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+	if (raw_result_s)
 		{
-			char *raw_result_s = NULL;
+			json_error_t err;
+			json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
 
-			/*
-			 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
-			 * available in blast 2.3+
-			 */
-			raw_result_s = GetBlastResultByUUID ((BlastServiceData *) (service_p -> se_data_p), job_p -> sj_id, BOF_SINGLE_FILE_JSON_BLAST);
-
-			if (raw_result_s)
+			if (blast_output_p)
 				{
-					json_error_t err;
-					json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
+					/*
+					 * We currently understand hits objects and database names
+					 */
+					json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
 
-					if (blast_output_p)
+					if (root_p)
 						{
-							/*
-							 * We currently understand hits objects and database names
-							 */
-							json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
-
-							if (root_p)
+							if (json_is_array (root_p))
 								{
-									if (json_is_array (root_p))
+									size_t i;
+									json_t *result_p;
+
+									json_array_foreach (root_p, i, result_p)
 										{
-											Service *output_service_p = GetServiceByName (linked_service_p -> ls_output_service_s);
+											json_t *report_p = json_object_get (result_p, "report");
 
-											if (output_service_p)
+											if (report_p)
 												{
-													size_t i;
-													json_t *output_p;
+													json_t *hits_p = NULL;
+													const char *database_s = NULL;
+													json_t *output_p = GetInitialisedProcessedRequest ();
 
-													json_array_foreach (root_p, i, output_p)
+													if (output_p)
 														{
-															json_t *report_p = json_object_get (output_p, "report");
+															json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
 
-															if (report_p)
+															/* Get the database name */
+															if (db_p)
 																{
-																	json_t *hits_p = NULL;
-																	const char *database_s = NULL;
-																	json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
-
-																	/* Get the database name */
-																	if (db_p)
+																	if (json_is_string (db_p))
 																		{
-																			if (json_is_string (db_p))
-																				{
-																					database_s = json_string_value (db_p);
-																				}
-																		}
+																			database_s = json_string_value (db_p);
 
+																			if (database_s)
+																				{
+																					success_flag = GetAndAddDatabaseDetails (output_p, database_s);
+																				}		/* if (database_s) */
+																		}
+																}
+
+															if (success_flag)
+																{
 																	/* Get the hits */
 																	hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
 
@@ -465,56 +496,164 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 																				{
 																					size_t j;
 																					json_t *hit_p;
-
-
 																					json_array_foreach (hits_p, j, hit_p)
 																						{
-																							ProcessHitForLinkedService (hit_p, linked_service_p, output_service_p, database_s, job_p);
+
+																							if (MarkUpHit (hit_p, output_p, database_s))
+																								{
+																									success_flag = AddProcessedResultToServiceJob (& (job_p -> bsj_job), output_p);
+																								}
+																							else
+																								{
+																									success_flag = false;
+																								}
+
 																						}		/* json_array_foreach (hits_p, i, hit_p) */
 
 																				}		/* if (json_is_array (hits_p)) */
 
 																		}		/* if (hits_p) */
 
-																}		/* if (report_p) */
+																}		/* if (success_flag) */
 
-														}		/* json_array_foreach (root_p, i, output_p) */
+															if (!success_flag)
+																{
+																	json_decref (output_p);
+																}
+														}		/* if (output_p) */
 
-													FreeService (output_service_p);
-												}		/* if (output_service_p) */
+												}		/* if (report_p) */
 
+										}		/* json_array_foreach (root_p, i, output_p) */
 
-										}		/* if (json_is_array (root_p)) */
+								}		/* if (json_is_array (root_p)) */
 
-								}		/* if (root_p) */
+						}		/* if (root_p) */
 
-							json_decref (blast_output_p);
-						}		/* if (blast_output_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
-						}
-
-					FreeCopiedString (raw_result_s);
-				}		/* if (raw_result_s) */
+					json_decref (blast_output_p);
+				}		/* if (blast_output_p) */
 			else
 				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
 				}
 
-		}		/* if (results_p) */
+			FreeCopiedString (raw_result_s);
+		}		/* if (raw_result_s) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get allocate json array");
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_p -> bsj_job.sj_id, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
 		}
 
-	return results_p;
+
+	return success_flag;
 }
 
 
+
+
+
+char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)
+{
+	BlastServiceJob *blast_job_p = (BlastServiceJob *) job_p;
+
+	if (job_p -> sj_processed_results_p)
+		{
+			UserDetails *user_p = NULL;
+			Resource *resource_p = NULL;
+			ParameterSet *output_params_p = GetServiceParameters (service_p, resource_p, user_p);
+
+			if (output_params_p)
+				{
+					if (json_is_array (job_p -> sj_processed_results_p))
+						{
+							size_t i;
+							json_t *result_p;
+
+							json_array_foreach (job_p -> sj_processed_results_p, i, result_p)
+								{
+									bool continue_flag = false;
+
+									/*
+									 * Database
+									 */
+									MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
+
+									if (mapped_param_p)
+										{
+											const char *database_s = GetDatabase (result_p);
+
+											if (database_s)
+												{
+													Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+													if (param_p)
+														{
+															if (SetParameterValueFromString (param_p, database_s))
+																{
+																	continue_flag = true;
+																}
+														}		/* if (param_p) */
+												}
+
+										}		/* if (mapped_param_p) */
+									else
+										{
+											continue_flag = true;
+										}
+
+
+									if (continue_flag)
+										{
+											json_t *scaffolds_p = GetScaffoldsForDatabaseHits (result_p, database_s);
+
+											if (scaffolds_p)
+												{
+
+												}		/* if (scaffolds_p) */
+
+										}		/* if (contune_flag) */
+
+								}		/* json_array_foreach (job_p -> sj_processed_results_p, i, result_p) */
+
+						}		/* if (json_is_array (job_p -> sj_processed_results_p)) */
+
+					FreeParameterSet (output_params_p);
+				}		/* if (output_params_p) */
+
+		}
+
+	return NULL;
+}
+
+
+
+const char *GetDatabase (const json_t *result_p)
+{
+	const char *database_s = NULL;
+
+	if (result_p)
+		{
+			database_s = GetJSONString (result_p, "database");
+		}
+
+	return database_s;
+}
+
+
+const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * const database_s)
+{
+	const json_t *scaffolds_p = NULL;
+
+	if (result_p)
+		{
+			scaffolds_p = json_object_get (result_p, "scaffolds");
+		}
+
+	return scaffolds_p;
+}
 
 /*
  * STATIC DEFINITIONS
@@ -1111,70 +1250,28 @@ json_t *ProcessLinkedServicesForBlastServiceJobOutput (struct Service *service_p
 		"value": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
 	}
  */
-static bool AddSequenceChild (json_t *marked_up_result_p, const char *key_s, const char *query_sequence_s)
+
+
+
+
+static bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_s)
 {
-	json_t *parent_p = json_object ();
+	bool success_flag = false;
 
-	if (parent_p)
+	if (json_object_set_new (root_p, key_s, json_string (query_sequence_s)) == 0)
 		{
-			if (AddSequence (parent_p, query_sequence_s))
-				{
-					if (json_object_set_new (marked_up_result_p, key_s, parent_p) == 0)
-						{
-							return true;
-						}
-				}
-
-			json_decref (parent_p);
+			success_flag = true;
 		}
 
-	return false;
-}
-
-
-
-static bool AddSequence (json_t *root_p, const char *query_sequence_s)
-{
-	json_t *sequence_p = json_object ();
-
-	if (sequence_p)
-		{
-			if (json_object_set_new (sequence_p, "@type", json_string ("contig")) == 0)
-				{
-					if (json_object_set_new (sequence_p, "value", json_string (query_sequence_s)) == 0)
-						{
-							if (json_object_set_new (root_p, "sequence", sequence_p) == 0)
-								{
-									return true;
-								}
-						}
-				}
-
-			json_decref (sequence_p);
-		}
-
-	return false;
+	return success_flag;
 }
 
 /*
 "hit": {
-		"sequence": {
-			"@type": "contig",
-			"value": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA"
-		}
-		"bit_score": {
-			"@type": "score",
-			"value": 113.339
-		},
-		"score": {
-			"@type": "score",
-			"value": 140
-		},
-		"bit_score": {
-			"@type": "score",
-			"evalue": 6.2069e-25
-		}
-
+		"hit_sequence": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
+		"bit_score": 113.339,
+		"score": 140,
+		"evalue": 6.2069e-25,
 		"faldo:location": {
 			"@type": "faldo:Region",
 			"faldo:begin": {
@@ -1197,40 +1294,86 @@ static bool AddSequence (json_t *root_p, const char *query_sequence_s)
  */
 static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p)
 {
-	json_t *marked_up_hit_p = json_object ();
+	bool success_flag = false;
+	const json_t *hsps_p = json_object_get (blast_hit_p, "hsps");
 
-	if (marked_up_hit_p)
+	if (hsps_p)
 		{
-			const json_t *hsps_p = json_object_get (blast_hit_p, "hsps");
+			json_t *marked_up_hsps_p = json_array ();
 
-			if (hsps_p)
+			if (marked_up_hsps_p)
 				{
-					if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score", "value"))
+					if (json_object_set_new (marked_up_result_p, "hit_details", marked_up_hsps_p) == 0)
 						{
-							if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue", "value"))
+
+							if (json_is_array (hsps_p))
 								{
-									if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score", "value"))
+									size_t i;
+									json_t *hsp_p;
+
+									json_array_foreach (hsps_p, i, hsp_p)
 										{
-											if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence", "value"))
+											json_t *marked_up_hit_p = json_object ();
+
+											if (marked_up_hit_p)
 												{
+													if (AddHsp (marked_up_hit_p, hsp_p))
+														{
+															if (json_array_append_new (marked_up_hsps_p, marked_up_hit_p) == 0)
+																{
 
-												}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence", "value")) */
-
-										}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score", "value") */
-
-								}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue", "value")) */
+																}
+															else
+																{
 
 
-						}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score", "value")) */
+																}
+														}
 
-				}		/* if (hsps_p) */
+												}
+										}
 
-			json_decref (marked_up_hit_p);
-		}		/* if (marked_up_hit_p) */
+									success_flag = (json_array_size (hsps_p) == json_array_size (marked_up_hsps_p));
+								}		/* if (json_is_array (hsps_p)) */
+
+
+						}		/* if (json_object_set_new (marked_up_result_p, "hit_details", marked_up_hsps_p) == 0) */
+					else
+						{
+							json_decref (marked_up_hsps_p);
+						}
+
+				}		/* if (marked_up_hsps_p) */
+
+		}		/* if (hsps_p) */
+
+
+	return success_flag;
+}
+
+
+
+static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
+{
+	if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsp_p, "bit_score", "bit_score"))
+		{
+			if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsp_p, "evalue", "evalue"))
+				{
+					if (GetAndAddIntScoreValue (marked_up_hit_p, hsp_p, "score", "score"))
+						{
+							if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "hseq", "hit_sequence"))
+								{
+									return true;
+								}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence")) */
+
+						}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score") */
+
+				}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue")) */
+
+		}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score")) */
 
 	return false;
 }
-
 
 
 static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *child_key_s)
@@ -1264,7 +1407,7 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 					if (location_p)
 						{
 							bool forward_strand_flag = true;
-							char *strand_s = GetJSONString (hsps_p, "hit_strand");
+							const char *strand_s = GetJSONString (hsps_p, "hit_strand");
 
 							if (strand_s)
 								{
@@ -1281,7 +1424,7 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 										{
 											if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag))
 												{
-													if (json_object_set_new (location_p, "@type", "faldo:Region") == 0)
+													if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0)
 														{
 															if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0)
 																{
@@ -1314,34 +1457,41 @@ static bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, co
 
 			if (type_array_p)
 				{
-					if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
+					if (json_object_set_new (faldo_p, "@type", type_array_p) == 0)
 						{
-							if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0)
+							if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
 								{
-									if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
+									if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0)
 										{
-											const char *strand_s = forward_strand_flag ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
-
-											if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
+											if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
 												{
-													if (json_object_set_new (faldo_p, "@type", type_array_p) == 0)
+													const char *strand_s = forward_strand_flag ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
+
+													if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
 														{
 															if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) == 0)
 																{
-																	return true;
+																	if (json_object_set_new (parent_json_p, child_key_s, faldo_p) == 0)
+																		{
+																			return true;
+																		}
+
 																}		/* if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) */
 
-														}		/* if (json_object_set_new (faldo_p, "@type", type_array_p) == 0) */
+														}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
 
-												}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
+												}		/* if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0) */
 
-										}		/* if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0) */
+										}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
 
 								}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
 
-						}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
 
-					json_decref (type_array_p);
+						}		/* if (json_object_set_new (faldo_p, "@type", type_array_p) == 0) */
+					else
+						{
+							json_decref (type_array_p);
+						}
 				}		/* if (type_array_p) */
 
 			json_decref (faldo_p);
@@ -1354,14 +1504,14 @@ static bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, co
 
 
 
-static bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *child_key_s, const char *sequence_key_s)
+static bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *sequence_key_s)
 {
 	bool success_flag = false;
 	const char *sequence_value_s = GetJSONString (hsps_p, hsp_key_s);
 
 	if (sequence_value_s)
 		{
-			if (AddSequence (marked_up_result_p, child_key_s, sequence_key_s, sequence_value_s))
+			if (AddSequence (marked_up_result_p, sequence_key_s, sequence_value_s))
 				{
 					success_flag = true;
 				}
@@ -1371,14 +1521,14 @@ static bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hs
 }
 
 
-static bool GetAndAddDoubleScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *child_key_s, const char *score_key_s)
+static bool GetAndAddDoubleScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *marked_up_key_s)
 {
 	bool success_flag = false;
 	double64 value;
 
 	if (GetJSONReal (hsps_p, hsp_key_s, &value))
 		{
-			if (AddDoubleScoreValue (marked_up_result_p, child_key_s, score_key_s, value))
+			if (AddDoubleScoreValue (marked_up_result_p, marked_up_key_s, value))
 				{
 					success_flag = true;
 				}
@@ -1388,14 +1538,14 @@ static bool GetAndAddDoubleScoreValue (json_t *marked_up_result_p, const json_t 
 }
 
 
-static bool GetAndAddIntScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *child_key_s, const char *score_key_s)
+static bool GetAndAddIntScoreValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *marked_up_key_s)
 {
 	bool success_flag = false;
 	int32 value;
 
 	if (GetJSONInteger (hsps_p, hsp_key_s, &value))
 		{
-			if (AddIntScoreValue (marked_up_result_p, child_key_s, score_key_s, value))
+			if (AddIntScoreValue (marked_up_result_p, marked_up_key_s, value))
 				{
 					success_flag = true;
 				}
@@ -1405,84 +1555,58 @@ static bool GetAndAddIntScoreValue (json_t *marked_up_result_p, const json_t *hs
 }
 
 
-static bool AddIntScoreValue (json_t *parent_p, const char *child_key_s, const char *score_key_s, int score_value)
+static bool AddIntScoreValue (json_t *parent_p, const char *key_s, int score_value)
 {
-	json_t *score_p = json_object ();
+	bool success_flag = false;
 
-	if (score_p)
+	if (json_object_set_new (parent_p, key_s, json_integer (score_value)) == 0)
 		{
-			if (json_object_set_new (score_p, "@type", json_string ("score")) == 0)
-				{
-					if (json_object_set_new (score_p, score_key_s, json_integer (score_value)) == 0)
-						{
-							if (json_object_set_new (parent_p, child_key_s, score_p) == 0)
-								{
-									return true;
-								}
-						}
-				}
-
-			json_decref (score_p);
+			success_flag = true;
 		}
 
-	return false;
-
+	return success_flag;
 }
 
 
 
-static bool AddDoubleScoreValue (json_t *parent_p, const char *child_key_s, const char *score_key_s, double64 score_value)
+static bool AddDoubleScoreValue (json_t *parent_p, const char *key_s, double64 score_value)
 {
-	json_t *score_p = json_object ();
+	bool success_flag = false;
 
-	if (score_p)
+	if (json_object_set_new (parent_p, key_s, json_real (score_value)) == 0)
 		{
-			if (json_object_set_new (score_p, "@type", json_string ("score")) == 0)
-				{
-					if (json_object_set_new (score_p, score_key_s, json_real (score_value)) == 0)
-						{
-							if (json_object_set_new (parent_p, child_key_s, score_p) == 0)
-								{
-									return true;
-								}
-						}
-				}
-
-			json_decref (score_p);
+			success_flag = true;
 		}
 
-	return false;
-
+	return success_flag;
 }
 
 
-/*
-"database": {
-	"@type": "reference_genome",
-	"name": "/home/billy/Applications/grassroots-0/grassroots/extras/blast/databases/Triticum_aestivum_CS42_TGACv1_scaffold.annotation.gff3.cds.fa"
-}
-*/
-static bool AddDatabaseDetails (json_t *marked_up_result_p, const char *database_s)
+static bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s)
 {
-	json_t *db_p = json_object ();
+	bool succes_flag = false;
 
-	if (db_p)
+	if (json_object_set_new (marked_up_result_p, "database", json_string (database_s)) == 0)
 		{
-			if (json_object_set_new (db_p, "@type", json_string ("reference_genome")) == 0)
-				{
-					if (json_object_set_new (db_p, "name", json_string (database_s)) == 0)
-						{
-							if (json_object_set_new (marked_up_result_p, "database", db_p) == 0)
-								{
-									return true;
-								}
-						}
-				}
-
-			json_decref (db_p);
+			return true;
 		}
 
-	return false;
+	return succes_flag;
+}
+
+
+
+bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p)
+{
+	bool success_flag = false;
+	json_t *mark_up_p = GetInitialisedProcessedRequest ();
+
+	if (mark_up_p)
+		{
+
+		}		/* if (mark_up_p) */
+
+	return success_flag;
 }
 
 
@@ -1490,7 +1614,7 @@ static json_t *GetInitialisedProcessedRequest (void)
 {
 /*
  "@context": {
-    "reference_genome": {
+    "database": {
       "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505",
       "@type": "@id"
     }
@@ -1500,18 +1624,24 @@ static json_t *GetInitialisedProcessedRequest (void)
       "@type": "@id"
     }
 
-    "contig": {
+    "query_sequence": {
       "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
       "@type": "@id"
     },
 
-    "quality_value": {
+    "hit_sequence": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
+      "@type": "@id"
+    },
+
+
+    "bit_score": {
       "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001686",
       "@type": "@id"
     },
 
-    "score": {
-      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001685",
+    "evalue": {
+      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001686",
       "@type": "@id"
     },
 
@@ -1519,6 +1649,7 @@ static json_t *GetInitialisedProcessedRequest (void)
       "@id": "http://www.sequenceontology.org/browser/current_svn/term/contained_by",
       "@type": "@id"
     },
+
     "faldo": "http://biohackathon.org/resource/faldo"
   }
 */
@@ -1533,21 +1664,24 @@ static json_t *GetInitialisedProcessedRequest (void)
 				{
 					if (json_object_set_new (root_p, "@context", context_p) == 0)
 						{
-							if (AddTerm (context_p, "reference_genome", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505"))
+							if (AddTerm (context_p, "database", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505"))
 								{
 									if (AddTerm (context_p, "scaffold", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148"))
 										{
-											if (AddTerm (context_p, "contig", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149"))
+											if (AddTerm (context_p, "query_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149"))
 												{
-													if (AddTerm (context_p, "quality_value", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686"))
+													if (AddTerm (context_p, "hit_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149"))
 														{
-															if (AddTerm (context_p, "score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685"))
+															if (AddTerm (context_p, "evalue", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686"))
 																{
-																	if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by"))
+																	if (AddTerm (context_p, "bit_score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685"))
 																		{
-																			if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																			if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by"))
 																				{
-																					return root_p;
+																					if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																						{
+																							return root_p;
+																						}
 																				}
 																		}
 																}
@@ -1597,85 +1731,80 @@ static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s)
 
 
 
+static bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p)
+{
+	bool success_flag = false;
+
+	LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p);
+
+	if (scaffolds_p)
+		{
+			json_t *scaffolds_array_p = json_array ();
+
+			if (scaffolds_array_p)
+				{
+					if (json_object_set_new (mark_up_p, "scaffolds", scaffolds_array_p) == 0)
+						{
+							StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
+
+							success_flag = true;
+
+							while (node_p)
+								{
+									if (json_array_append_new (scaffolds_array_p, json_string (node_p -> sln_string_s)) == 0)
+										{
+
+										}
+									else
+										{
+											success_flag = false;
+										}
+//									if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
+//										{
+//											json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+//
+//											if (run_service_json_p)
+//												{
+//													if (AddProcessedResultToServiceJob (job_p, run_service_json_p))
+//														{
+//
+//														}
+//													else
+//														{
+//															json_decref (run_service_json_p);
+//														}
+//												}
+//
+//										}
+
+									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+								}		/* while (node_p) */
+
+						}		/* if (json_object_set_new (mark_up_p, "scaffolds", scaffolds_array_p) == 0) */
+
+				}		/* if (scaffolds_array_p) */
+
+		}		/* if (scaffolds_p) */
+
+	return success_flag;
+}
 
 
-static bool ProcessHitForLinkedService (json_t *hit_p, LinkedService *linked_service_p, Service *output_service_p, const char *database_s, ServiceJob *job_p)
+static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s)
 {
 	bool success_flag = true;
 
-	ParameterSet *output_params_p = GetServiceParameters (output_service_p, NULL, NULL);
-
-	if (output_params_p)
+	if (GetAndAddDatabaseDetails (mark_up_p, database_s))
 		{
-			/*
-			 * Start by setting the database value if the LinkedService wants it.
-			 */
-			MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
-
-			if (mapped_param_p)
+			if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p))
 				{
-					Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-					if (output_param_p)
+					if (AddHitDetails (mark_up_p, hit_p))
 						{
-							if (SetParameterValue (output_param_p, database_s, true))
-								{
 
-								}
 						}
-				}
 
-			/*
-			 * Now iterate over the scaffolds if required
-			 */
-			mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
-
-			if (mapped_param_p)
-				{
-					Parameter *output_param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-					if (output_param_p)
-						{
-							if (SetParameterValue (output_param_p, database_s, true))
-								{
-									LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p);
-
-									if (scaffolds_p)
-										{
-											StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
-
-											while (node_p)
-												{
-													if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
-														{
-															json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-
-															if (run_service_json_p)
-																{
-																	if (AddProcessedResultToServiceJob (job_p, run_service_json_p))
-																		{
-
-																		}
-																	else
-																		{
-																			json_decref (run_service_json_p);
-																		}
-																}
-
-														}
-
-													node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-												}
-
-											FreeLinkedList (scaffolds_p);
-										}
-								}
-						}
-				}
-
-
-			FreeParameterSet (output_params_p);
-		}		/* if (output_params_p) */
+				}		/* if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p)) */
+		}
 
 	return success_flag;
 }
@@ -1703,7 +1832,7 @@ static LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 
 									if (data_p)
 										{
-											const char *full_title_s = GetJSONString (item_p, "title_p");
+											const char *full_title_s = GetJSONString (item_p, "title");
 
 											if (full_title_s)
 												{

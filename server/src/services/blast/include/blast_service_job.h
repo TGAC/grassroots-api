@@ -104,23 +104,28 @@ BLAST_SERVICE_LOCAL bool AddErrorToBlastServiceJob (BlastServiceJob *job_p);
 BLAST_SERVICE_LOCAL bool UpdateBlastServiceJob (ServiceJob *job_p);
 
 
+BLAST_SERVICE_LOCAL bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p);
+
 
 /**
  * After the blast job has ran, get the database that it ran against.
  *
  */
-BLAST_SERVICE_LOCAL const char *GetDatabase (const BlastServiceJob *job_p);
+BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *result_p);
 
 
 /**
- * Get a LinkedList of StringListNodes containing the scaffold names for the
+ * Get a json array of the scaffold names for the
  * hits against a given database
  */
-BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsForDatabaseHits (const BlastServiceJob *job_p, const char * const database_s);
+BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const BlastServiceJob *job_p, const char * const database_s);
+
+
+BLAST_SERVICE_LOCAL bool MarkUpBlastResult (BlastServiceJob *job_p);
 
 
 
-BLAST_SERVICE_LOCAL json_t *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p);
+BLAST_SERVICE_LOCAL char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p);
 
 
 

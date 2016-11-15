@@ -37,8 +37,6 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
 
 static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p);
 
-static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p);
-
 static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
 
 static bool AddResultEntryToServiceJob (ServiceJob *job_p, json_t **results_pp, json_t *result_to_add_p);
@@ -309,6 +307,42 @@ uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p)
 		}		/* if (job_p -> sj_result_p) */
 
 	return size;
+}
+
+
+
+char *GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_service_p)
+{
+	char *result_s = NULL;
+
+	if (job_p)
+		{
+			if (linked_service_p)
+				{
+					Service *service_p = job_p -> sj_service_p;
+
+					if (service_p -> se_process_linked_services_fn)
+						{
+							result_s = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
+						}
+
+				}		/* if (input_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
+				}
+
+		}		/* if (job_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
+		}
+
+	return result_s;
 }
 
 
@@ -832,7 +866,7 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 								{
 									if (AddValidJSON (job_json_p, JOB_METADATA_S, job_p -> sj_metadata_p, false))
 										{
-											if (AddValidJSON (job_json_p, JOB_PROCESSED_RESULTS_S, job_p -> sj_metadata_p, false))
+											if (AddValidJSON (job_json_p, JOB_PROCESSED_RESULTS_S, job_p -> sj_processed_results_p, false))
 												{
 													if (AddStatusToServiceJobJSON (job_p, job_json_p))
 														{
@@ -1567,63 +1601,6 @@ bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_serv
 
 	return success_flag;
 }
-
-
-
-static bool AddMappedParameterDetails (ServiceJob *job_p, const MappedParameter * const mapped_param_p, json_t *parent_p)
-{
-	json_t *values_p = GenerateLinkedServiceResults (job_p -> sj_service_p, job_p, mapped_param_p);
-
-	if (values_p)
-		{
-			json_t *param_json_p = json_object ();
-
-			if (param_json_p)
-				{
-					if (json_object_set_new (param_json_p, PARAM_NAME_S, json_string (mapped_param_p -> mp_output_param_s)) == 0)
-						{
-							const char *value_s = "";
-
-							if (json_object_set_new (param_json_p, PARAM_CURRENT_VALUE_S, json_string (value_s)) == 0)
-								{
-									if (json_array_append_new (parent_p, param_json_p) == 0)
-										{
-											return true;
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to append params json to parent object");
-										}
-
-								}		/* if (json_object_set_new (linked_service_json_p, PARAM_CURRENT_VALUE_S, json_string (value_s)) == 0) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\": \"%s\" to param json", PARAM_CURRENT_VALUE_S, value_s);
-								}
-
-						}		/* if (json_object_set_new (linked_service_json_p, PARAM_NAME_S, json_string (mapped_param_p -> mp_output_param_s)) == 0) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add \"%s\": \"%s\" to param json", PARAM_NAME_S, mapped_param_p -> mp_output_param_s);
-						}
-
-					json_decref (param_json_p);
-				}		/* if (param_json_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate JSON for params object");
-				}
-
-			json_decref (values_p);
-		}		/* if (values_p) */
-	else
-		{
-			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "Failed to get \"%s\"", mapped_param_p -> mp_input_param_s);
-		}
-
-	return false;
-}
-
 
 
 static bool AddResultEntryToServiceJob (ServiceJob *job_p, json_t **results_pp, json_t *result_to_add_p)

@@ -172,43 +172,7 @@ json_t *ProcessLinkedService (LinkedService *linked_service_p, ServiceJob *job_p
 							while (param_node_p && success_flag)
 								{
 									MappedParameter *mapped_param_p = param_node_p -> mpn_mapped_param_p;
-									char *param_value_s = GenerateLinkedServiceResults (service_p, job_p, mapped_param_p -> mp_input_param_s);
-
-									if (param_value_s)
-										{
-											/*
-											 * We now have the value to set for linked service
-											 */
-											Parameter *output_parameter_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-											if (output_parameter_p)
-												{
-													if (!SetParameterValueFromString (output_parameter_p, param_value_s))
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\" to \"%s\"", output_parameter_p -> pa_name_s, param_value_s);
-														}
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameter \"%s\"", mapped_param_p -> mp_output_param_s);
-												}
-
-										}
-									else
-										{
-											if (mapped_param_p -> mp_required_flag)
-												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get the value for \"%s\" from \"%s\"", mapped_param_p -> mp_input_param_s, service_p);
-													success_flag = false;
-												}
-											else
-												{
-													#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
-													PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Could not get value for optional parameter \"%s\" ", mapped_param_p -> mp_input_param_s);
-													#endif
-												}
-										}
-
+									success_flag = ProcessMappedParameter (mapped_param_p, job_p, output_params_p);
 
 									param_node_p = (MappedParameterNode *) (param_node_p -> mpn_node.ln_next_p);
 								}		/* while (param_node_p && success_flag) */

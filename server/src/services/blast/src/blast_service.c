@@ -966,8 +966,6 @@ OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t job_id)
 
 
 
-
-
 bool DetermineBlastResult (Service *service_p, BlastServiceJob *job_p)
 {
 	bool success_flag = false;
@@ -1010,6 +1008,13 @@ bool DetermineBlastResult (Service *service_p, BlastServiceJob *job_p)
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result as json from \"%s\" for \"%s\"", result_s, uuid_s);
 						}
+
+
+					if (!MarkUpBlastResult (job_p))
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to produce marked up result for blast job \"%s\"", uuid_s);
+						}
+
 
 					FreeCopiedString (result_s);
 				}		/* if (result_s) */

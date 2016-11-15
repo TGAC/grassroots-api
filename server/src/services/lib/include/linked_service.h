@@ -158,11 +158,11 @@ GRASSROOTS_SERVICE_API bool CreateAndAddMappedParameterToLinkedService (LinkedSe
  * @return <code>true</code> if the MappedParameter was added successfully, <code>false</code> otherwise.
  * @memberof LinkedService
  */
-GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, MappedParameter *mapped_param_p);
+GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *linked_service_p, struct MappedParameter *mapped_param_p);
 
 
 
-GRASSROOTS_SERVICE_API MappedParameter *GetMappedParameterByInputParamName (const LinkedService *linked_service_p, const char * const name_s);
+GRASSROOTS_SERVICE_API struct MappedParameter *GetMappedParameterByInputParamName (const LinkedService *linked_service_p, const char * const name_s);
 
 
 

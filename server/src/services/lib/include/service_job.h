@@ -37,6 +37,7 @@
 /* forward declarations */
 struct Service;
 struct ServiceJob;
+struct LinkedService;
 
 
 /**
@@ -660,10 +661,14 @@ GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t 
  * <code>false</code> otherwise.
  * @memberof ServiceJob
  */
-GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_service_p);
+GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, struct LinkedService *linked_service_p);
 
 
-GRASSROOTS_SERVICE_API void ProcessLinkedServices (struct ServiceJob *job_p);
+GRASSROOTS_SERVICE_API void ProcessLinkedServices (ServiceJob *job_p);
+
+
+GRASSROOTS_SERVICE_API char *GenerateLinkedServiceResults (ServiceJob *job_p, struct LinkedService *linked_service_p);
+
 
 
 #ifdef __cplusplus

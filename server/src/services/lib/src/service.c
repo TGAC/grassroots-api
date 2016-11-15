@@ -1755,37 +1755,7 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 
 
 
-json_t *GenerateLinkedServiceResults (Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p)
-{
-	json_t *results_p = NULL;
 
-	if (job_p)
-		{
-			if (linked_service_p)
-				{
-					if (service_p -> se_process_linked_services_fn)
-						{
-							job_p -> sj_processed_results_p = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
-						}
-
-				}		/* if (input_s) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
-				}
-
-		}		/* if (job_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
-		}
-
-	return results_p;
-}
 
 
 

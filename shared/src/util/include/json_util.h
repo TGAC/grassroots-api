@@ -533,7 +533,7 @@ GRASSROOTS_UTIL_API bool SetLongFromJSON (const json_t *json_p, int64 *value_p);
 GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_ss);
 
 
-GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s);
+GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s);
 
 
 #ifdef __cplusplus

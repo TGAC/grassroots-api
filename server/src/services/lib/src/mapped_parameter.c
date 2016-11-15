@@ -26,6 +26,8 @@
 #include "streams.h"
 #include "string_utils.h"
 #include "json_util.h"
+#include "service_job.h"
+
 
 
 MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s, bool required_flag, bool multi_flag)
@@ -141,4 +143,54 @@ MappedParameter *CreateMappedParameterFromJSON (const json_t *mapped_param_json_
 
 	return NULL;
 }
+
+
+bool ProcessMappedParameter (MappedParameter *mapped_param_p, ServiceJob *job_p, ParameterSet *output_params_p)
+{
+	bool success_flag = false;
+	char *param_value_s = NULL; //GenerateLinkedServiceResults (job_p, mapped_param_p -> mp_input_param_s);
+
+	if (param_value_s)
+		{
+			/*
+			 * We now have the value to set for linked service
+			 */
+			Parameter *output_parameter_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+			if (output_parameter_p)
+				{
+					if (SetParameterValueFromString (output_parameter_p, param_value_s))
+						{
+							success_flag = true;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set \"%s\" to \"%s\"", output_parameter_p -> pa_name_s, param_value_s);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameter \"%s\"", mapped_param_p -> mp_output_param_s);
+				}
+
+		}
+	else
+		{
+			if (mapped_param_p -> mp_required_flag)
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get the value for \"%s\" from \"%s\"", mapped_param_p -> mp_input_param_s, GetServiceName (job_p -> sj_service_p));
+					success_flag = false;
+				}
+			else
+				{
+					success_flag = true;
+					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
+					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Could not get value for optional parameter \"%s\" ", mapped_param_p -> mp_input_param_s);
+					#endif
+				}
+		}
+
+	return success_flag;
+}
+
 

@@ -29,6 +29,13 @@
 
 #include "linked_list.h"
 
+#include "parameter_set.h"
+
+
+
+/* forward declarations */
+struct ServiceJob;
+
 
 /**
  * This structure is used to store a relationship between
@@ -133,6 +140,10 @@ GRASSROOTS_SERVICE_API MappedParameterNode *AllocateMappedParameterNode (MappedP
  * @memberof MappedParameter
  */
 GRASSROOTS_SERVICE_API void FreeMappedParameterNode (ListItem *node_p);
+
+
+
+GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params);
 
 
 #ifdef __cplusplus
