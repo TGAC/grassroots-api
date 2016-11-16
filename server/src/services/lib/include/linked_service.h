@@ -31,6 +31,10 @@
 #include "mapped_parameter.h"
 
 
+/* forward declarations */
+struct ServiceJob;
+
+
 /**
  * This datatype stores the data needed to get the
  * required information from the output of one
@@ -167,6 +171,9 @@ GRASSROOTS_SERVICE_API struct MappedParameter *GetMappedParameterByInputParamNam
 
 
 GRASSROOTS_SERVICE_API json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p);
+
+
+GRASSROOTS_SERVICE_API bool ProcessLinkedService (LinkedService *linked_service_p, struct ServiceJob *job_p);
 
 #ifdef __cplusplus
 }

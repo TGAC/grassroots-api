@@ -1,18 +1,18 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
-** 
-** Licensed under the Apache License, Version 2.0 (the "License");
-** you may not use this file except in compliance with the License.
-** You may obtain a copy of the License at
-** 
-**     http://www.apache.org/licenses/LICENSE-2.0
-** 
-** Unless required by applicable law or agreed to in writing, software
-** distributed under the License is distributed on an "AS IS" BASIS,
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-** See the License for the specific language governing permissions and
-** limitations under the License.
-*/
+ ** Copyright 2014-2015 The Genome Analysis Centre
+ **
+ ** Licensed under the Apache License, Version 2.0 (the "License");
+ ** you may not use this file except in compliance with the License.
+ ** You may obtain a copy of the License at
+ **
+ **     http://www.apache.org/licenses/LICENSE-2.0
+ **
+ ** Unless required by applicable law or agreed to in writing, software
+ ** distributed under the License is distributed on an "AS IS" BASIS,
+ ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ** See the License for the specific language governing permissions and
+ ** limitations under the License.
+ */
 /*
  * blast_service_job.c
  *
@@ -458,73 +458,73 @@ bool MarkUpBlastResult (BlastServiceJob *job_p)
 									json_t *result_p;
 
 									json_array_foreach (root_p, i, result_p)
-										{
-											json_t *report_p = json_object_get (result_p, "report");
+									{
+										json_t *report_p = json_object_get (result_p, "report");
 
-											if (report_p)
-												{
-													json_t *hits_p = NULL;
-													const char *database_s = NULL;
-													json_t *output_p = GetInitialisedProcessedRequest ();
+										if (report_p)
+											{
+												json_t *hits_p = NULL;
+												const char *database_s = NULL;
+												json_t *output_p = GetInitialisedProcessedRequest ();
 
-													if (output_p)
-														{
-															json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
+												if (output_p)
+													{
+														json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
 
-															/* Get the database name */
-															if (db_p)
-																{
-																	if (json_is_string (db_p))
-																		{
-																			database_s = json_string_value (db_p);
+														/* Get the database name */
+														if (db_p)
+															{
+																if (json_is_string (db_p))
+																	{
+																		database_s = json_string_value (db_p);
 
-																			if (database_s)
+																		if (database_s)
+																			{
+																				success_flag = GetAndAddDatabaseDetails (output_p, database_s);
+																			}		/* if (database_s) */
+																	}
+															}
+
+														if (success_flag)
+															{
+																/* Get the hits */
+																hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
+
+																if (hits_p)
+																	{
+																		if (json_is_array (hits_p))
+																			{
+																				size_t j;
+																				json_t *hit_p;
+																				json_array_foreach (hits_p, j, hit_p)
 																				{
-																					success_flag = GetAndAddDatabaseDetails (output_p, database_s);
-																				}		/* if (database_s) */
-																		}
-																}
 
-															if (success_flag)
-																{
-																	/* Get the hits */
-																	hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
-
-																	if (hits_p)
-																		{
-																			if (json_is_array (hits_p))
-																				{
-																					size_t j;
-																					json_t *hit_p;
-																					json_array_foreach (hits_p, j, hit_p)
+																					if (MarkUpHit (hit_p, output_p, database_s))
 																						{
+																							success_flag = AddProcessedResultToServiceJob (& (job_p -> bsj_job), output_p);
+																						}
+																					else
+																						{
+																							success_flag = false;
+																						}
 
-																							if (MarkUpHit (hit_p, output_p, database_s))
-																								{
-																									success_flag = AddProcessedResultToServiceJob (& (job_p -> bsj_job), output_p);
-																								}
-																							else
-																								{
-																									success_flag = false;
-																								}
+																				}		/* json_array_foreach (hits_p, i, hit_p) */
 
-																						}		/* json_array_foreach (hits_p, i, hit_p) */
+																			}		/* if (json_is_array (hits_p)) */
 
-																				}		/* if (json_is_array (hits_p)) */
+																	}		/* if (hits_p) */
 
-																		}		/* if (hits_p) */
+															}		/* if (success_flag) */
 
-																}		/* if (success_flag) */
+														if (!success_flag)
+															{
+																json_decref (output_p);
+															}
+													}		/* if (output_p) */
 
-															if (!success_flag)
-																{
-																	json_decref (output_p);
-																}
-														}		/* if (output_p) */
+											}		/* if (report_p) */
 
-												}		/* if (report_p) */
-
-										}		/* json_array_foreach (root_p, i, output_p) */
+									}		/* json_array_foreach (root_p, i, output_p) */
 
 								}		/* if (json_is_array (root_p)) */
 
@@ -563,66 +563,143 @@ char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, Service
 		{
 			UserDetails *user_p = NULL;
 			Resource *resource_p = NULL;
-			ParameterSet *output_params_p = GetServiceParameters (service_p, resource_p, user_p);
+			Service *output_service_p = GetServiceByName (linked_service_p -> ls_output_service_s);
 
-			if (output_params_p)
+			if (output_service_p)
 				{
-					if (json_is_array (job_p -> sj_processed_results_p))
+					ParameterSet *output_params_p = GetServiceParameters (output_service_p, resource_p, user_p);
+
+					if (output_params_p)
 						{
-							size_t i;
-							json_t *result_p;
-
-							json_array_foreach (job_p -> sj_processed_results_p, i, result_p)
+							if (json_is_array (job_p -> sj_processed_results_p))
 								{
-									bool continue_flag = false;
+									size_t i;
+									json_t *result_p;
 
-									/*
-									 * Database
-									 */
-									MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
+									json_array_foreach (job_p -> sj_processed_results_p, i, result_p)
+									{
+										bool continue_flag = false;
+										json_t *linked_services_array_p = json_array ();
 
-									if (mapped_param_p)
-										{
-											const char *database_s = GetDatabase (result_p);
+										if (linked_services_array_p)
+											{
+												if (json_object_set_new (result_p, "grassroots:services", linked_services_array_p) == 0)
+													{
+														/*
+														 * Database
+														 */
+														MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
+														const char *database_s = NULL;
 
-											if (database_s)
-												{
-													Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+														if (mapped_param_p)
+															{
+																database_s = GetDatabase (result_p);
 
-													if (param_p)
-														{
-															if (SetParameterValueFromString (param_p, database_s))
+																if (database_s)
+																	{
+																		Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+																		if (param_p)
+																			{
+																				if (SetParameterValueFromString (param_p, database_s))
+																					{
+																						continue_flag = true;
+																					}
+																			}		/* if (param_p) */
+																	}
+
+															}		/* if (mapped_param_p) */
+															else
 																{
 																	continue_flag = true;
 																}
-														}		/* if (param_p) */
-												}
-
-										}		/* if (mapped_param_p) */
-									else
-										{
-											continue_flag = true;
-										}
 
 
-									if (continue_flag)
-										{
-											json_t *scaffolds_p = GetScaffoldsForDatabaseHits (result_p, database_s);
+														if (continue_flag)
+															{
+																mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
 
-											if (scaffolds_p)
-												{
+																if (mapped_param_p)
+																	{
+																		Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
 
-												}		/* if (scaffolds_p) */
+																		if (param_p)
+																			{
+																				const json_t *scaffolds_p = GetScaffoldsForDatabaseHits (result_p, database_s);
 
-										}		/* if (contune_flag) */
+																				if (scaffolds_p)
+																					{
+																						if (json_is_array (scaffolds_p))
+																							{
+																								size_t j;
+																								json_t *scaffold_p;
 
-								}		/* json_array_foreach (job_p -> sj_processed_results_p, i, result_p) */
+																								json_array_foreach (scaffolds_p, j, scaffold_p)
+																								{
+																									if (json_is_string (scaffold_p))
+																										{
+																											const char *scaffold_s = json_string_value (scaffold_p);
 
-						}		/* if (json_is_array (job_p -> sj_processed_results_p)) */
+																											if (SetParameterValueFromString (param_p, scaffold_s))
+																												{
+																													json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
 
-					FreeParameterSet (output_params_p);
-				}		/* if (output_params_p) */
+																													if (run_service_p)
+																														{
+																															if (json_array_append_new (linked_services_array_p, run_service_p) == 0)
+																																{
 
+																																}
+																															else
+																																{
+																																	json_decref (run_service_p);
+																																}
+
+																														}		/* if (run_service_p) */
+
+																												}		/* if (SetParameterValueFromString (param_p, scaffold_s)) */
+
+																										}		/* if (json_is_string (scaffold_p)) */
+
+																								}		/* json_array_foreach (scaffolds_p, j, scaffold_p) */
+
+																							}		/* if (json_is_array (scaffolds_p)) */
+																						else
+																							{
+
+																							}
+
+																					}		/* if (scaffolds_p) */
+
+																			}		/* if (param_p) */
+
+																	}		/* if (mapped_param_p) */
+
+															}		/* if (contune_flag) */
+
+													}
+												else
+													{
+														json_decref (linked_services_array_p);
+													}
+
+											}		/* if (linked_services_array_p) */
+
+
+
+									}		/* json_array_foreach (job_p -> sj_processed_results_p, i, result_p) */
+
+								}		/* if (json_is_array (job_p -> sj_processed_results_p)) */
+
+							FreeParameterSet (output_params_p);
+						}		/* if (output_params_p) */
+
+					FreeService (output_service_p);
+				}		/* if (output_service_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING,__FILE__, __LINE__, "Failed to get service \"%s\"", linked_service_p -> ls_output_service_s);
+				}
 		}
 
 	return NULL;
@@ -1240,7 +1317,7 @@ const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * 
 		}
 	}
 }
-*/
+ */
 
 
 /*
@@ -1312,26 +1389,26 @@ static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p
 									json_t *hsp_p;
 
 									json_array_foreach (hsps_p, i, hsp_p)
-										{
-											json_t *marked_up_hit_p = json_object ();
+									{
+										json_t *marked_up_hit_p = json_object ();
 
-											if (marked_up_hit_p)
-												{
-													if (AddHsp (marked_up_hit_p, hsp_p))
-														{
-															if (json_array_append_new (marked_up_hsps_p, marked_up_hit_p) == 0)
-																{
+										if (marked_up_hit_p)
+											{
+												if (AddHsp (marked_up_hit_p, hsp_p))
+													{
+														if (json_array_append_new (marked_up_hsps_p, marked_up_hit_p) == 0)
+															{
 
-																}
-															else
-																{
+															}
+														else
+															{
 
 
-																}
-														}
+															}
+													}
 
-												}
-										}
+											}
+									}
 
 									success_flag = (json_array_size (hsps_p) == json_array_size (marked_up_hsps_p));
 								}		/* if (json_is_array (hsps_p)) */
@@ -1612,7 +1689,7 @@ bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p
 
 static json_t *GetInitialisedProcessedRequest (void)
 {
-/*
+	/*
  "@context": {
     "database": {
       "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505",
@@ -1652,7 +1729,7 @@ static json_t *GetInitialisedProcessedRequest (void)
 
     "faldo": "http://biohackathon.org/resource/faldo"
   }
-*/
+	 */
 
 	json_t *root_p = json_object ();
 
@@ -1759,23 +1836,23 @@ static bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p)
 										{
 											success_flag = false;
 										}
-//									if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
-//										{
-//											json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-//
-//											if (run_service_json_p)
-//												{
-//													if (AddProcessedResultToServiceJob (job_p, run_service_json_p))
-//														{
-//
-//														}
-//													else
-//														{
-//															json_decref (run_service_json_p);
-//														}
-//												}
-//
-//										}
+									//									if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
+									//										{
+									//											json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+									//
+									//											if (run_service_json_p)
+									//												{
+									//													if (AddProcessedResultToServiceJob (job_p, run_service_json_p))
+									//														{
+									//
+									//														}
+									//													else
+									//														{
+									//															json_decref (run_service_json_p);
+									//														}
+									//												}
+									//
+									//										}
 
 									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
 								}		/* while (node_p) */
@@ -1800,7 +1877,6 @@ static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *datab
 				{
 					if (AddHitDetails (mark_up_p, hit_p))
 						{
-
 						}
 
 				}		/* if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p)) */
@@ -1827,38 +1903,38 @@ static LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 							json_t *item_p;
 
 							json_array_foreach (description_p, k, item_p)
-								{
-									json_t *data_p = json_object ();
+							{
+								json_t *data_p = json_object ();
 
-									if (data_p)
-										{
-											const char *full_title_s = GetJSONString (item_p, "title");
+								if (data_p)
+									{
+										const char *full_title_s = GetJSONString (item_p, "title");
 
-											if (full_title_s)
-												{
-													/*
-													 * There may be more on this line than just the scaffold name
-													 * so lets get up until the first space or |
-													 */
-													const char *id_end_p = strpbrk (full_title_s, " |");
-													const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
-													char *scaffold_s = CopyToNewString (full_title_s, size, false);
+										if (full_title_s)
+											{
+												/*
+												 * There may be more on this line than just the scaffold name
+												 * so lets get up until the first space or |
+												 */
+												const char *id_end_p = strpbrk (full_title_s, " |");
+												const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
+												char *scaffold_s = CopyToNewString (full_title_s, size, false);
 
-													if (scaffold_s)
-														{
-															StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
+												if (scaffold_s)
+													{
+														StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
 
-															if (node_p)
-																{
-																	LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
-																}		/* if (node_p) */
+														if (node_p)
+															{
+																LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
+															}		/* if (node_p) */
 
-														}		/* if (scaffold_s) */
+													}		/* if (scaffold_s) */
 
-												}		/* if (full_title_s) */
+											}		/* if (full_title_s) */
 
-										}		/* if (data_p) */
-								}
+									}		/* if (data_p) */
+							}
 						}
 				}
 
@@ -1881,74 +1957,74 @@ static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char 
 					json_t *item_p;
 
 					json_array_foreach (description_p, k, item_p)
-						{
-							json_t *data_p = json_object ();
+					{
+						json_t *data_p = json_object ();
 
-							if (data_p)
-								{
-									const char *full_title_s = GetJSONString (item_p, "title_p");
+						if (data_p)
+							{
+								const char *full_title_s = GetJSONString (item_p, "title_p");
 
-									if (full_title_s)
-										{
-											/*
-											 * There may be more on this line than just the scaffold name
-											 * so lets get up until the first space or |
-											 */
-											const char *id_end_p = strpbrk (full_title_s, " |");
+								if (full_title_s)
+									{
+										/*
+										 * There may be more on this line than just the scaffold name
+										 * so lets get up until the first space or |
+										 */
+										const char *id_end_p = strpbrk (full_title_s, " |");
 
-											if (id_end_p)
-												{
-													char *scaffold_s = CopyToNewString (full_title_s, id_end_p - full_title_s, false);
+										if (id_end_p)
+											{
+												char *scaffold_s = CopyToNewString (full_title_s, id_end_p - full_title_s, false);
 
-													if (scaffold_s)
-														{
-															if (json_object_set_new (data_p, output_key_s, json_string (scaffold_s)) == 0)
-																{
-																	success_flag = true;
-																}
-															else
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, scaffold_s);
-																}
+												if (scaffold_s)
+													{
+														if (json_object_set_new (data_p, output_key_s, json_string (scaffold_s)) == 0)
+															{
+																success_flag = true;
+															}
+														else
+															{
+																PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, scaffold_s);
+															}
 
-															FreeCopiedString (scaffold_s);
-														}		/* if (scaffold_s) */
-													else
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to get copy of initial " UINT32_FMT " characters of \"%s\"", id_end_p - full_title_s, full_title_s);
-														}
-												}
-											else
-												{
-													/* just get the whole string */
-													if (json_object_set_new (data_p, output_key_s, json_string (full_title_s)) == 0)
-														{
-															success_flag = true;
-														}
-													else
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, full_title_s);
-														}
-												}
+														FreeCopiedString (scaffold_s);
+													}		/* if (scaffold_s) */
+												else
+													{
+														PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to get copy of initial " UINT32_FMT " characters of \"%s\"", id_end_p - full_title_s, full_title_s);
+													}
+											}
+										else
+											{
+												/* just get the whole string */
+												if (json_object_set_new (data_p, output_key_s, json_string (full_title_s)) == 0)
+													{
+														success_flag = true;
+													}
+												else
+													{
+														PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, full_title_s);
+													}
+											}
 
-											if (success_flag)
-												{
-													if (json_array_append_new (results_p, data_p) != 0)
-														{
-															PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, data_p, "failed to add data to results array");
-															success_flag = false;
-														}
-												}
+										if (success_flag)
+											{
+												if (json_array_append_new (results_p, data_p) != 0)
+													{
+														PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, data_p, "failed to add data to results array");
+														success_flag = false;
+													}
+											}
 
-										}		/* if (full_title_s) */
+									}		/* if (full_title_s) */
 
-									if (!success_flag)
-										{
-											json_decref (data_p);
-										}
+								if (!success_flag)
+									{
+										json_decref (data_p);
+									}
 
-								}		/* if (data_p) */
-						}
+							}		/* if (data_p) */
+					}
 				}
 		}
 

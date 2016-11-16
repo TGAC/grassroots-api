@@ -27,7 +27,7 @@
 #include "string_utils.h"
 #include "json_util.h"
 #include "service_job.h"
-
+#include "service.h"
 
 
 MappedParameter *AllocateMappedParameter (const char *input_s, const char *output_s, bool required_flag, bool multi_flag)
