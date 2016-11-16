@@ -1826,33 +1826,36 @@ static bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p)
 
 							success_flag = true;
 
-							while (node_p)
+							while (node_p && success_flag)
 								{
-									if (json_array_append_new (scaffolds_array_p, json_string (node_p -> sln_string_s)) == 0)
-										{
+									json_t *scaffold_p = json_object ();
 
+									if (scaffold_p)
+										{
+											if (json_object_set_new (scaffold_p, "scaffold", json_string (node_p -> sln_string_s)) == 0)
+												{
+													if (json_array_append_new (scaffolds_array_p, scaffold_p) != 0)
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add scaffold object to scaffolds array for \"%s\"", node_p -> sln_string_s);
+															success_flag = false;
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add scaffold \"%s\" to scaffold object", node_p -> sln_string_s);
+													success_flag = false;
+												}
+
+											if (!success_flag)
+												{
+													json_decref (scaffold_p);
+												}
 										}
 									else
 										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create JSON scaffold object");
 											success_flag = false;
 										}
-									//									if (SetParameterValue (output_param_p, node_p -> sln_string_s, true))
-									//										{
-									//											json_t *run_service_json_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-									//
-									//											if (run_service_json_p)
-									//												{
-									//													if (AddProcessedResultToServiceJob (job_p, run_service_json_p))
-									//														{
-									//
-									//														}
-									//													else
-									//														{
-									//															json_decref (run_service_json_p);
-									//														}
-									//												}
-									//
-									//										}
 
 									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
 								}		/* while (node_p) */
