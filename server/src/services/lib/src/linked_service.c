@@ -20,6 +20,8 @@
  *      Author: tyrrells
  */
 
+#include <string.h>
+
 #include "linked_service.h"
 #include "memory_allocations.h"
 #include "streams.h"

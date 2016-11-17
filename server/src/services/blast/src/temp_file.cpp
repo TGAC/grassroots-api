@@ -255,6 +255,7 @@ TempFile :: TempFile ()
 	tf_handle_f = 0;
 	tf_data_s = 0;
 	tf_name_s = 0;
+	tf_name_mem = MF_ALREADY_FREED;
 }
 
 

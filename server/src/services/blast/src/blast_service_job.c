@@ -30,6 +30,7 @@
 #include "blast_tool_factory.hpp"
 #include "blast_tool.hpp"
 #include "blast_service_params.h"
+#include "json_util.h"
 
 
 /*
@@ -582,8 +583,10 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)
 {
 	BlastServiceJob *blast_job_p = (BlastServiceJob *) job_p;
+	uint32 out_fmt = blast_job_p -> bsj_tool_p -> GetOutputFormat ();
+	json_t *results_p = job_p -> sj_result_p;
 
-	if (job_p -> sj_processed_results_p)
+	if (results_p && (out_fmt == BOF_GRASSROOTS))
 		{
 			UserDetails *user_p = NULL;
 			Resource *resource_p = NULL;
@@ -595,119 +598,138 @@ char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, Service
 
 					if (output_params_p)
 						{
-							if (json_is_array (job_p -> sj_processed_results_p))
+							if (json_is_array (results_p))
 								{
 									size_t i;
 									json_t *result_p;
 
-									json_array_foreach (job_p -> sj_processed_results_p, i, result_p)
+									json_array_foreach (results_p, i, result_p)
 									{
 										bool continue_flag = false;
-										json_t *linked_services_array_p = json_array ();
 
-										if (linked_services_array_p)
+										json_t *data_p = json_object_get (result_p, RESOURCE_DATA_S);
+
+										if (data_p)
 											{
-												if (json_object_set_new (result_p, "grassroots:services", linked_services_array_p) == 0)
+												if (json_is_array (data_p))
 													{
-														/*
-														 * Database
-														 */
-														MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
-														const char *database_s = NULL;
+														size_t k;
+														json_t *data_item_p;
 
-														if (mapped_param_p)
+														json_array_foreach (data_p, k, data_item_p)
 															{
-																database_s = GetDatabase (result_p);
+																json_t *linked_services_array_p = json_array ();
 
-																if (database_s)
+																if (linked_services_array_p)
 																	{
-																		Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-																		if (param_p)
+																		if (json_object_set_new (data_item_p, "grassroots:services", linked_services_array_p) == 0)
 																			{
-																				if (SetParameterValueFromString (param_p, database_s))
+																				/*
+																				 * Database
+																				 */
+																				MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
+																				const char *database_s = NULL;
+
+																				if (mapped_param_p)
 																					{
-																						continue_flag = true;
-																					}
-																			}		/* if (param_p) */
-																	}
+																						database_s = GetDatabase (data_item_p);
 
-															}		/* if (mapped_param_p) */
-															else
-																{
-																	continue_flag = true;
-																}
-
-
-														if (continue_flag)
-															{
-																mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
-
-																if (mapped_param_p)
-																	{
-																		Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-																		if (param_p)
-																			{
-																				const json_t *scaffolds_p = GetScaffoldsForDatabaseHits (result_p, database_s);
-
-																				if (scaffolds_p)
-																					{
-																						if (json_is_array (scaffolds_p))
+																						if (database_s)
 																							{
-																								size_t j;
-																								json_t *scaffold_p;
+																								Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
 
-																								json_array_foreach (scaffolds_p, j, scaffold_p)
-																								{
-																									if (json_is_string (scaffold_p))
-																										{
-																											const char *scaffold_s = json_string_value (scaffold_p);
-
-																											if (SetParameterValueFromString (param_p, scaffold_s))
-																												{
-																													json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
-
-																													if (run_service_p)
-																														{
-																															if (json_array_append_new (linked_services_array_p, run_service_p) == 0)
-																																{
-
-																																}
-																															else
-																																{
-																																	json_decref (run_service_p);
-																																}
-
-																														}		/* if (run_service_p) */
-
-																												}		/* if (SetParameterValueFromString (param_p, scaffold_s)) */
-
-																										}		/* if (json_is_string (scaffold_p)) */
-
-																								}		/* json_array_foreach (scaffolds_p, j, scaffold_p) */
-
-																							}		/* if (json_is_array (scaffolds_p)) */
-																						else
-																							{
-
+																								if (param_p)
+																									{
+																										if (SetParameterValueFromString (param_p, database_s))
+																											{
+																												continue_flag = true;
+																											}
+																									}		/* if (param_p) */
 																							}
 
-																					}		/* if (scaffolds_p) */
+																					}		/* if (mapped_param_p) */
+																					else
+																						{
+																							continue_flag = true;
+																						}
 
-																			}		/* if (param_p) */
 
-																	}		/* if (mapped_param_p) */
+																				if (continue_flag)
+																					{
+																						mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
 
-															}		/* if (contune_flag) */
+																						if (mapped_param_p)
+																							{
+																								Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+
+																								if (param_p)
+																									{
+																										const json_t *scaffolds_p = GetScaffoldsForDatabaseHits (data_item_p, database_s);
+
+																										if (scaffolds_p)
+																											{
+																												if (json_is_array (scaffolds_p))
+																													{
+																														size_t j;
+																														json_t *scaffold_p;
+
+																														json_array_foreach (scaffolds_p, j, scaffold_p)
+																														{
+																															const char *scaffold_s = GetJSONString (scaffold_p, "scaffold");
+
+																															if (scaffold_s)
+																																{
+																																	if (SetParameterValueFromString (param_p, scaffold_s))
+																																		{
+																																			json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+
+																																			if (run_service_p)
+																																				{
+																																					if (json_array_append_new (linked_services_array_p, run_service_p) == 0)
+																																						{
+
+																																						}
+																																					else
+																																						{
+																																							json_decref (run_service_p);
+																																						}
+
+																																				}		/* if (run_service_p) */
+
+																																		}		/* if (SetParameterValueFromString (param_p, scaffold_s)) */
+
+																																}		/* if (scaffold_s) */
+
+																														}		/* json_array_foreach (scaffolds_p, j, scaffold_p) */
+
+																													}		/* if (json_is_array (scaffolds_p)) */
+																												else
+																													{
+
+																													}
+
+																											}		/* if (scaffolds_p) */
+
+																									}		/* if (param_p) */
+
+																							}		/* if (mapped_param_p) */
+
+																					}		/* if (contune_flag) */
+
+																			}
+																		else
+																			{
+																				json_decref (linked_services_array_p);
+																			}
+
+																	}		/* if (linked_services_array_p) */
+
+															}
 
 													}
-												else
-													{
-														json_decref (linked_services_array_p);
-													}
 
-											}		/* if (linked_services_array_p) */
+											}		/* if (data_p) */
+
 
 
 
