@@ -63,6 +63,9 @@ public:
 
 	ExternalBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
 
+
+
+
 	/**
 	 * The ExternalBlastTool destructor.
 	 */
@@ -137,12 +140,6 @@ protected:
 	const char *ebt_blast_s;
 
 
-	/**
-	 *
-	 * The output format code to use.
-	 */
-	uint32 ebt_output_format;
-
 
 	virtual ArgsProcessor *GetArgsProcessor () = 0;
 
@@ -197,10 +194,10 @@ protected:
 	virtual bool AddToJSON (json_t *root_p);
 
 
+
 private:
 	static const char * const EBT_COMMAND_LINE_EXECUTABLE_S;
 	static const char * const EBT_WORKING_DIR_S;
-	static const char * const EBT_OUTPUT_FORMAT_S;
 	static const char * const EBT_RESULTS_FILE_S;
 };
 #endif /* EXTERNAL_BLAST_TOOL_HPP_ */

@@ -53,7 +53,8 @@ static const char *s_output_formats_ss [BOF_NUM_TYPES] =
 	"Multiple file XML2 Blast output",
 	"Single file JSON Blast output",
 	"Single file XML2 Blast output",
-	"Sequence Alignmnent/Map (SAM)"
+	"Sequence Alignmnent/Map (SAM)",
+	"Grassroots markup"
 };
 
 

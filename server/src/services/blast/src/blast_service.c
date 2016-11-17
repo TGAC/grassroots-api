@@ -973,51 +973,49 @@ bool DetermineBlastResult (Service *service_p, BlastServiceJob *job_p)
 	OperationStatus status = tool_p -> GetStatus ();
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
+	json_t *result_json_p = NULL;
 
 	ConvertUUIDToString (job_p -> bsj_job.sj_id, uuid_s);
 
 	if (status == OS_SUCCEEDED)
 		{
-			char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
+			uint32 out_fmt = tool_p -> GetOutputFormat ();
 
-			if (result_s)
+			if (out_fmt == BOF_GRASSROOTS)
 				{
-					json_t *result_json_p = json_string (result_s);
+					result_json_p = MarkUpBlastResult (job_p);
+				}		/* if (out_fmt == BOF_GRASSROOTS) */
+			else
+				{
+					char *result_s = tool_p -> GetResults (blast_data_p -> bsd_formatter_p);
 
-					if (result_json_p)
+					if (result_s)
 						{
-							json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, uuid_s, result_json_p);
+							result_json_p = json_string (result_s);
+							FreeCopiedString (result_s);
+						}
+				}
 
-							if (blast_result_json_p)
+			if (result_json_p)
+				{
+					json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, uuid_s, result_json_p);
+
+					if (blast_result_json_p)
+						{
+							if (AddResultToServiceJob (& (job_p -> bsj_job), blast_result_json_p))
 								{
-									if (AddResultToServiceJob (& (job_p -> bsj_job), blast_result_json_p))
-										{
-											success_flag = true;
-										}
-									else
-										{
-											json_decref (blast_result_json_p);
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to append blast result for \"%s\"", uuid_s);
-										}
+									success_flag = true;
+								}
+							else
+								{
+									json_decref (blast_result_json_p);
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to append blast result for \"%s\"", uuid_s);
+								}
 
-								}		/* if (blast_result_json_p) */
+						}		/* if (blast_result_json_p) */
 
-							json_decref (result_json_p);
-						}		/* if (result_json_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result as json from \"%s\" for \"%s\"", result_s, uuid_s);
-						}
-
-
-					if (!MarkUpBlastResult (job_p))
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to produce marked up result for blast job \"%s\"", uuid_s);
-						}
-
-
-					FreeCopiedString (result_s);
-				}		/* if (result_s) */
+					json_decref (result_json_p);
+				}		/* if (result_json_p) */
 			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result for \"%s\"", uuid_s);

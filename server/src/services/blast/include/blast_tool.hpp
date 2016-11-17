@@ -47,16 +47,19 @@ public:
 	 * @param factory_s The name of the BlastToolFactory that created this BlastTool.
 	 * @see BlastServiceJob
 	 */
-	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p);
+	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const uint32 output_format);
 
 
-	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
+	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p, const uint32 output_format);
 
 
 	/**
 	 * The BlastTool destructor,
 	 */
 	virtual ~BlastTool ();
+
+
+	uint32 GetOutputFormat () const;
 
 
 	/**
@@ -188,6 +191,14 @@ protected:
 	const char *bt_factory_name_s;
 
 
+	/**
+	 *
+	 * The output format code to use.
+	 */
+	uint32 bt_output_format;
+
+
+
 
 	/**
 	 * @private
@@ -221,6 +232,7 @@ protected:
 private:
 	static const char * const BT_NAME_S;
 	static const char * const BT_FACTORY_NAME_S;
+	static const char * const BT_OUTPUT_FORMAT_S;
 
 
 };

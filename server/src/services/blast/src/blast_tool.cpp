@@ -33,6 +33,8 @@ const char * const BlastTool :: BT_NAME_S = "name";
 
 const char * const BlastTool :: BT_FACTORY_NAME_S = "factory";
 
+const char * const BlastTool :: BT_OUTPUT_FORMAT_S = "output_format";
+
 
 
 void FreeBlastTool (BlastTool *tool_p)
@@ -63,13 +65,13 @@ OperationStatus GetBlastStatus (BlastTool *tool_p)
 
 
 
-BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p)
+BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const uint32 output_format)
 {
 	bt_job_p = service_job_p;
 	bt_name_s = name_s;
 	bt_service_data_p = data_p;
 	bt_factory_name_s = factory_s;
-
+	bt_output_format = output_format;
 
 	if (service_job_p)
 		{
@@ -80,7 +82,7 @@ BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, cons
 
 
 
-BlastTool :: BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
+BlastTool :: BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p, const uint32 output_format)
 {
 	bt_factory_name_s = GetJSONString (root_p, BT_FACTORY_NAME_S);
 	if (!bt_factory_name_s)
@@ -96,6 +98,7 @@ BlastTool :: BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, 
 
 	bt_job_p = job_p;
 	bt_service_data_p = data_p;
+	bt_output_format = output_format;
 }
 
 
@@ -152,6 +155,13 @@ void BlastTool :: PostRun ()
 }
 
 
+uint32 BlastTool :: GetOutputFormat () const
+{
+	return bt_output_format;
+}
+
+
+
 json_t *BlastTool :: GetAsJSON ()
 {
 	json_t *blast_tool_json_p = json_object ();
@@ -179,7 +189,14 @@ bool BlastTool :: AddToJSON (json_t *root_p)
 		{
 			if (json_object_set_new (root_p, BT_FACTORY_NAME_S, json_string (bt_factory_name_s)) == 0)
 				{
-					success_flag = true;
+					if (json_object_set_new (root_p, BT_OUTPUT_FORMAT_S, json_integer (bt_output_format)) == 0)
+						{
+							success_flag = true;
+						}		/* if (json_object_set_new (root_p, BT_OUTPUT_FORMAT_S, json_integer (bt_output_format)) == 0) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add %s:%d to BlastTool json", BT_OUTPUT_FORMAT_S, bt_output_format);
+						}
 				}		/* if (json_object_set_new (root_p, BT_FACTORY_NAME_S, json_string (bt_factory_name_s)) == 0) */
 			else
 				{

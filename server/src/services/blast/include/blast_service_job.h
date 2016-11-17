@@ -121,7 +121,7 @@ BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *result_p);
 BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * const database_s);
 
 
-BLAST_SERVICE_LOCAL bool MarkUpBlastResult (BlastServiceJob *job_p);
+BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
 
 
 

@@ -428,48 +428,49 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 
 
 
-bool MarkUpBlastResult (BlastServiceJob *job_p)
+json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 {
-	bool success_flag = false;
-	BlastServiceData *data_p = (BlastServiceData *) (job_p -> bsj_job.sj_service_p -> se_data_p);
+	json_t *results_array_p = json_array ();
 
-	/*
-	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
-	 * available in blast 2.3+
-	 */
-	char *raw_result_s = GetBlastResultByUUID (data_p, job_p -> bsj_job.sj_id, BOF_SINGLE_FILE_JSON_BLAST);
-
-	if (raw_result_s)
+	if (results_array_p)
 		{
-			json_error_t err;
-			json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
+			bool success_flag = false;
+			BlastServiceData *data_p = (BlastServiceData *) (job_p -> bsj_job.sj_service_p -> se_data_p);
 
-			if (blast_output_p)
+			/*
+			 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+			 * available in blast 2.3+
+			 */
+			char *raw_result_s = GetBlastResultByUUID (data_p, job_p -> bsj_job.sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+			if (raw_result_s)
 				{
-					/*
-					 * We currently understand hits objects and database names
-					 */
-					json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
+					json_error_t err;
+					json_t *blast_output_p = json_loads (raw_result_s, 0, &err);
 
-					if (root_p)
+					if (blast_output_p)
 						{
-							if (json_is_array (root_p))
+							/*
+							 * We currently understand hits objects and database names
+							 */
+							json_t *root_p = json_object_get (blast_output_p, "BlastOutput2");
+
+							if (root_p)
 								{
-									size_t i;
-									json_t *result_p;
+									if (json_is_array (root_p))
+										{
+											size_t i;
+											json_t *result_p;
 
-									json_array_foreach (root_p, i, result_p)
-									{
-										json_t *report_p = json_object_get (result_p, "report");
-
-										if (report_p)
+											json_array_foreach (root_p, i, result_p)
 											{
-												json_t *hits_p = NULL;
-												const char *database_s = NULL;
-												json_t *output_p = GetInitialisedProcessedRequest ();
+												json_t *report_p = json_object_get (result_p, "report");
 
-												if (output_p)
+												if (report_p)
 													{
+														json_t *hits_p = NULL;
+														const char *database_s = NULL;
+
 														json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
 
 														/* Get the database name */
@@ -481,7 +482,7 @@ bool MarkUpBlastResult (BlastServiceJob *job_p)
 
 																		if (database_s)
 																			{
-																				success_flag = GetAndAddDatabaseDetails (output_p, database_s);
+																				success_flag = true;
 																			}		/* if (database_s) */
 																	}
 															}
@@ -495,21 +496,51 @@ bool MarkUpBlastResult (BlastServiceJob *job_p)
 																	{
 																		if (json_is_array (hits_p))
 																			{
-																				size_t j;
-																				json_t *hit_p;
-																				json_array_foreach (hits_p, j, hit_p)
-																				{
+																				size_t j = 0;
+																				const size_t num_hits = json_array_size (hits_p);
 
-																					if (MarkUpHit (hit_p, output_p, database_s))
-																						{
-																							success_flag = AddProcessedResultToServiceJob (& (job_p -> bsj_job), output_p);
-																						}
-																					else
-																						{
-																							success_flag = false;
-																						}
+																				while ((j < num_hits) && success_flag)
+																					{
+																						json_t *hit_p = json_array_get (hits_p, j);
 
-																				}		/* json_array_foreach (hits_p, i, hit_p) */
+																						json_t *output_p = GetInitialisedProcessedRequest ();
+
+																						if (output_p)
+																							{
+																								if (GetAndAddDatabaseDetails (output_p, database_s))
+																									{
+																										if (MarkUpHit (hit_p, output_p, database_s))
+																											{
+																												if (json_array_append_new (results_array_p, output_p) == 0)
+																													{
+																														success_flag = true;
+																														++ j;
+																													}
+																												else
+																													{
+																														success_flag = false;
+																													}
+																											}
+																										else
+																											{
+																												success_flag = false;
+																											}
+
+																									}
+																								else
+																									{
+																										success_flag = true;
+																									}
+
+
+																								if (!success_flag)
+																									{
+																										json_decref (output_p);
+																									}
+
+																							}		/* if (output_p) */
+
+																					}		/* while ((j < num_hits) && success_flag) */
 
 																			}		/* if (json_is_array (hits_p)) */
 
@@ -517,43 +548,35 @@ bool MarkUpBlastResult (BlastServiceJob *job_p)
 
 															}		/* if (success_flag) */
 
-														if (!success_flag)
-															{
-																json_decref (output_p);
-															}
-													}		/* if (output_p) */
+													}		/* if (report_p) */
 
-											}		/* if (report_p) */
+											}		/* json_array_foreach (root_p, i, output_p) */
 
-									}		/* json_array_foreach (root_p, i, output_p) */
+										}		/* if (json_is_array (root_p)) */
 
-								}		/* if (json_is_array (root_p)) */
+								}		/* if (root_p) */
 
-						}		/* if (root_p) */
+							json_decref (blast_output_p);
+						}		/* if (blast_output_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
+						}
 
-					json_decref (blast_output_p);
-				}		/* if (blast_output_p) */
+					FreeCopiedString (raw_result_s);
+				}		/* if (raw_result_s) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to load \"%s\" as json, error at %d, %d", raw_result_s, err.line, err.column);
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_p -> bsj_job.sj_id, uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
 				}
 
-			FreeCopiedString (raw_result_s);
-		}		/* if (raw_result_s) */
-	else
-		{
-			char uuid_s [UUID_STRING_BUFFER_SIZE];
+		}		/* if (results_array_p) */
 
-			ConvertUUIDToString (job_p -> bsj_job.sj_id, uuid_s);
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast results for id \"%s\" in %d format", uuid_s, BOF_SINGLE_FILE_JSON_BLAST);
-		}
-
-
-	return success_flag;
+	return results_array_p;
 }
-
-
-
 
 
 char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)

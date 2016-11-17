@@ -37,7 +37,6 @@ const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
 
 const char * const ExternalBlastTool :: EBT_COMMAND_LINE_EXECUTABLE_S = "cli";
 const char * const ExternalBlastTool :: EBT_WORKING_DIR_S = "working_directory";
-const char * const ExternalBlastTool :: EBT_OUTPUT_FORMAT_S = "output_format";
 const char * const ExternalBlastTool :: EBT_RESULTS_FILE_S = "output_file";
 
 
@@ -111,18 +110,17 @@ char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const ch
 
 
 ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char * const blast_program_name_s)
-: BlastTool (job_p, name_s, factory_s, data_p)
+: BlastTool (job_p, name_s, factory_s, data_p, BS_DEFAULT_OUTPUT_FORMAT)
 {
 	ebt_results_filename_s = 0;
 	ebt_working_directory_s = data_p -> bsd_working_dir_s;
 	ebt_blast_s = blast_program_name_s;
-	ebt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
 }
 
 
 
 ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
-	: BlastTool (job_p, data_p, root_p)
+	: BlastTool (job_p, data_p, root_p, BS_DEFAULT_OUTPUT_FORMAT)
 {
 	ebt_blast_s = GetJSONString (root_p, EBT_COMMAND_LINE_EXECUTABLE_S);
 	if (!ebt_blast_s)
@@ -150,8 +148,6 @@ ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const BlastServi
 		{
 			throw std :: invalid_argument ("results filename not set");
 		}
-
-	ebt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
 }
 
 
@@ -164,22 +160,23 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 }
 
 
+
 char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 {
 	char *results_s = NULL;
 
 	if (ebt_results_filename_s)
 		{
-			if (formatter_p && (ebt_output_format != BS_DEFAULT_OUTPUT_FORMAT))
+			if (formatter_p && (bt_output_format != BS_DEFAULT_OUTPUT_FORMAT))
 				{
-					results_s = formatter_p -> GetConvertedOutput (ebt_results_filename_s, ebt_output_format);
+					results_s = formatter_p -> GetConvertedOutput (ebt_results_filename_s, bt_output_format);
 
 					if (!results_s)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to format %s to " UINT32_FMT, ebt_results_filename_s, ebt_output_format);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to format %s to " UINT32_FMT, ebt_results_filename_s, bt_output_format);
 						}
 
-				}		/* if (formatter_p && (ebt_output_format != BS_DEFAULT_OUTPUT_FORMAT)) */
+				}		/* if (formatter_p && (bt_output_format != BS_DEFAULT_OUTPUT_FORMAT)) */
 			else
 				{
 					if (IsPathValid (ebt_results_filename_s))
@@ -243,7 +240,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 															if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &value, true))
 																{
-																	ebt_output_format = value.st_ulong_value;
+																	bt_output_format = value.st_ulong_value;
 
 																	if (bt_service_data_p -> bsd_formatter_p)
 																		{
@@ -251,7 +248,19 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 																		}
 																	else
 																		{
-																			char *value_s = ConvertIntegerToString (ebt_output_format);
+																			char *value_s = NULL;
+
+																			/*
+																			 * If we are producing grassroots mark up, get the results
+																			 * in json file format as that is the format that we will
+																			 * convert from.
+																			 */
+																			if (value.st_ulong_value == BOF_GRASSROOTS)
+																				{
+																					value.st_ulong_value = BOF_SINGLE_FILE_JSON_BLAST;
+																				}
+
+																			value_s = ConvertIntegerToString (bt_output_format);
 
 																			if (value_s)
 																				{
@@ -260,9 +269,10 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 																				}		/* if (value_s) */
 																			else
 																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert output format \"" UINT32_FMT "\" to string", ebt_output_format);
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert output format \"" UINT32_FMT "\" to string", bt_output_format);
 																				}
-																		}
+
+																			}
 
 																}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true)) */
 															else
@@ -462,15 +472,7 @@ bool ExternalBlastTool :: AddToJSON (json_t *root_p)
 						{
 							if (json_object_set_new (root_p, EBT_WORKING_DIR_S, json_string (ebt_working_directory_s)) == 0)
 								{
-									if (json_object_set_new (root_p, EBT_OUTPUT_FORMAT_S, json_integer (ebt_output_format)) == 0)
-										{
-											success_flag = true;
-										}		/* if (json_object_set_new (root_p, EBT_OUTPUT_FORMAT_S, json_integer (ebt_output_format)) == 0) */
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add %s:%d to ExternalBlastTool json", EBT_OUTPUT_FORMAT_S, ebt_output_format);
-										}
-
+									success_flag = true;
 								}		/* if (json_object_set_new (root_p, BT_FACTORY_NAME_S, json_string (bt_factory_name_s)) == 0) */
 							else
 								{
