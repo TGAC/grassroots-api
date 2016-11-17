@@ -353,29 +353,3 @@ bool AddProgramSelectionParameters (BlastServiceData *blast_data_p, ParameterSet
 }
 
 
-
-bool AddBlastPParams (BlastServiceData *data_p, ParameterSet *param_set_p)
-{
-	bool success_flag = false;
-
-	return success_flag;
-}
-
-
-bool AddBlastNParams (BlastServiceData *data_p, ParameterSet *param_set_p)
-{
-	bool success_flag = false;
-
-	return success_flag;
-
-}
-
-
-bool AddBlastXParams (BlastServiceData *data_p, ParameterSet *param_set_p)
-{
-	bool success_flag = false;
-
-	return success_flag;
-}
-
-

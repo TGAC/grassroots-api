@@ -41,7 +41,8 @@ static const char * const BSJ_FACTORY_S = "factory";
 static const char * const BSJ_JOB_S = "job";
 
 
-static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char *output_key_s);
+static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *strand_key_s, const char *child_key_s);
+
 
 static LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
 
@@ -1440,7 +1441,15 @@ static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
 						{
 							if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "hseq", "hit_sequence"))
 								{
-									return true;
+									if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
+										{
+											if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
+												{
+													return true;
+												}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+
+										}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
+
 								}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence")) */
 
 						}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score") */
@@ -1453,7 +1462,7 @@ static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
 }
 
 
-static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *child_key_s)
+static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *strand_key_s, const char *child_key_s)
 {
 	bool success_flag = false;
 	int32 from;
@@ -1484,7 +1493,7 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 					if (location_p)
 						{
 							bool forward_strand_flag = true;
-							const char *strand_s = GetJSONString (hsps_p, "hit_strand");
+							const char *strand_s = GetJSONString (hsps_p, strand_key_s);
 
 							if (strand_s)
 								{
@@ -1506,11 +1515,13 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 															if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0)
 																{
 																	return true;
-																}
-														}
-												}
+																}		/* if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0) */
 
-										}
+														}		/* if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0) */
+
+												}		/* if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag)) */
+
+										}		/* if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag)) */
 								}
 
 							json_decref (location_p);
@@ -1540,24 +1551,20 @@ static bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, co
 								{
 									if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0)
 										{
-											if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
+											const char *strand_s = forward_strand_flag ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
+
+											if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
 												{
-													const char *strand_s = forward_strand_flag ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
-
-													if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
+													if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) == 0)
 														{
-															if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) == 0)
+															if (json_object_set_new (parent_json_p, child_key_s, faldo_p) == 0)
 																{
-																	if (json_object_set_new (parent_json_p, child_key_s, faldo_p) == 0)
-																		{
-																			return true;
-																		}
+																	return true;
+																}
 
-																}		/* if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) */
+														}		/* if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) */
 
-														}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
-
-												}		/* if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0) */
+												}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
 
 										}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
 
@@ -1661,14 +1668,14 @@ static bool AddDoubleScoreValue (json_t *parent_p, const char *key_s, double64 s
 
 static bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s)
 {
-	bool succes_flag = false;
+	bool success_flag = false;
 
 	if (json_object_set_new (marked_up_result_p, "database", json_string (database_s)) == 0)
 		{
-			return true;
+			success_flag = true;
 		}
 
-	return succes_flag;
+	return success_flag;
 }
 
 
@@ -1796,12 +1803,28 @@ static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s)
 								{
 									return true;
 								}
+							else
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json object to root object with context \"%s\" with key \"%s", term_s, key_s);
+								}
 						}
-
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json object type for context \"%s\" with key \"%s", term_s, key_s);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add json object context \"%s\" with key \"%s", term_s, key_s);
 				}
 
 			json_decref (term_p);
 		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json object for context \"%s\" with key \"%s", term_s, key_s);
+		}
+
 
 	return false;
 }
@@ -1946,92 +1969,5 @@ static LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 	return scaffolds_p;
 }
 
-
-static bool AddHitToResults (const json_t *hit_p, json_t *results_p, const char *output_key_s)
-{
-	bool success_flag = false;
-	json_t *description_p = json_object_get (hit_p, "description");
-
-	if (description_p)
-		{
-			if (json_is_array (description_p))
-				{
-					size_t k;
-					json_t *item_p;
-
-					json_array_foreach (description_p, k, item_p)
-					{
-						json_t *data_p = json_object ();
-
-						if (data_p)
-							{
-								const char *full_title_s = GetJSONString (item_p, "title_p");
-
-								if (full_title_s)
-									{
-										/*
-										 * There may be more on this line than just the scaffold name
-										 * so lets get up until the first space or |
-										 */
-										const char *id_end_p = strpbrk (full_title_s, " |");
-
-										if (id_end_p)
-											{
-												char *scaffold_s = CopyToNewString (full_title_s, id_end_p - full_title_s, false);
-
-												if (scaffold_s)
-													{
-														if (json_object_set_new (data_p, output_key_s, json_string (scaffold_s)) == 0)
-															{
-																success_flag = true;
-															}
-														else
-															{
-																PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, scaffold_s);
-															}
-
-														FreeCopiedString (scaffold_s);
-													}		/* if (scaffold_s) */
-												else
-													{
-														PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to get copy of initial " UINT32_FMT " characters of \"%s\"", id_end_p - full_title_s, full_title_s);
-													}
-											}
-										else
-											{
-												/* just get the whole string */
-												if (json_object_set_new (data_p, output_key_s, json_string (full_title_s)) == 0)
-													{
-														success_flag = true;
-													}
-												else
-													{
-														PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add \"%s\"=\"%s\" to json object", output_key_s, full_title_s);
-													}
-											}
-
-										if (success_flag)
-											{
-												if (json_array_append_new (results_p, data_p) != 0)
-													{
-														PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, data_p, "failed to add data to results array");
-														success_flag = false;
-													}
-											}
-
-									}		/* if (full_title_s) */
-
-								if (!success_flag)
-									{
-										json_decref (data_p);
-									}
-
-							}		/* if (data_p) */
-					}
-				}
-		}
-
-	return success_flag;
-}
 
 
