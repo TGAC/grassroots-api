@@ -622,7 +622,7 @@ char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, Service
 
 																if (linked_services_array_p)
 																	{
-																		if (json_object_set_new (data_item_p, "grassroots:services", linked_services_array_p) == 0)
+																		if (json_object_set_new (data_item_p, LINKED_SERVICES_S, linked_services_array_p) == 0)
 																			{
 																				/*
 																				 * Database
