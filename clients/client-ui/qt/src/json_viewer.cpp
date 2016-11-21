@@ -16,7 +16,8 @@
 #include <QHBoxLayout>
 
 #include "json_viewer.h"
-
+#include "math_utils.h"
+#include "string_utils.h"
 
 
 
@@ -40,23 +41,143 @@ JSONViewer ::	JSONViewer (QWidget *parent_p)
 
 
 
-void JSONViewer :: SetJSONData (const json_t *data_p)
+const char *JSONViewer :: GetText () const
 {
-	size_t size = 1;
+	QString s = jv_viewer_p ->  toPlainText ();
+	QByteArray ba = s.toLocal8Bit ();
 
+	return ba.constData ();
+}
+
+
+QWidget *JSONViewer :: GetWidget ()
+{
+	return this;
+}
+
+
+bool JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p)
+{
+	bool success_flag = true;
+	QTreeWidgetItem *child_node_p = 0;
+
+	if (parent_p)
+		{
+			child_node_p = new QTreeWidgetItem (parent_p);
+
+			int num_children = parent_p -> childCount ();
+			parent_p -> insertChild (num_children, child_node_p);
+		}
+	else
+		{
+			child_node_p = new QTreeWidgetItem;
+
+			jv_tree_p -> addTopLevelItem (child_node_p);
+		}
+
+	if (key_s)
+		{
+			child_node_p -> setText (0, key_s);
+		}
+
+
+	if (json_is_object (data_p))
+		{
+			json_t *child_json_p;
+			const char *child_key_s;
+
+			json_object_foreach (data_p, child_key_s, child_json_p)
+				{
+					success_flag = InsertData (child_node_p, child_key_s, child_json_p);
+				}
+		}
+	else if (json_is_array (data_p))
+		{
+			json_t *child_json_p;
+			size_t i;
+
+			json_array_foreach (data_p, i, child_json_p)
+				{
+					char *value_s = ConvertIntegerToString (i);
+
+					if (value_s)
+						{
+							success_flag = InsertData (child_node_p, value_s, child_json_p);
+
+							FreeCopiedString (value_s);
+						}
+				}
+		}
+	else if (json_is_string (data_p))
+		{
+			const char *value_s = json_string_value (data_p);
+
+			child_node_p -> setText (1, value_s);
+		}
+	else if (json_is_integer (data_p))
+		{
+			json_int_t i = json_integer_value (data_p);
+			char *value_s = ConvertIntegerToString (i);
+
+			if (value_s)
+				{
+					child_node_p -> setText (1, value_s);
+					FreeCopiedString (value_s);
+				}
+		}
+	else if (json_is_real (data_p))
+		{
+			double d = json_real_value (data_p);
+			char *value_s = ConvertDoubleToString (d);
+
+			if (value_s)
+				{
+					child_node_p -> setText (1, value_s);
+					FreeCopiedString (value_s);
+				}
+		}
+	else if (json_is_true (data_p))
+		{
+			child_node_p -> setText (1, "true");
+		}
+	else if (json_is_false (data_p))
+		{
+			child_node_p -> setText (1, "false");
+		}
+
+	return success_flag;
+}
+
+
+void JSONViewer :: SetJSONData (json_t *data_p)
+{
 	jv_data_p = data_p;
 
 	jv_tree_p -> clear ();
 	jv_viewer_p -> clear ();
 
+	jv_tree_p -> setColumnCount (2);
+
 	if (json_is_array (data_p))
 		{
-			size = json_array_size (data_p);
-			jv_tree_p -> setColumnCount (size);
+			size_t i;
+			json_t *item_p;
+
+			json_array_foreach (data_p, i, item_p)
+				{
+					char *value_s = ConvertIntegerToString (i);
+
+					InsertData (NULL, value_s, item_p);
+
+					if (value_s)
+						{
+							FreeCopiedString (value_s);
+						}
+				}
 		}
 	else
 		{
-			jv_tree_p -> setColumnCount (1);
+			InsertData (NULL, "0", data_p);
 		}
 
 	char *value_s = json_dumps (data_p, 0);
@@ -65,5 +186,5 @@ void JSONViewer :: SetJSONData (const json_t *data_p)
 			jv_viewer_p -> setPlainText (value_s);
 			free (value_s);
 		}
-
 }
+

@@ -35,6 +35,12 @@ public:
 
 protected:
 	json_t *jlwi_json_data_p;
+
+	void ParseLinkedServices (const json_t *data_p);
+
+	bool AddLinkedService (const json_t *linked_service_p);
+
+
 };
 
 #endif // JSON_LIST_WIDGET_ITEM_H
