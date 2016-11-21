@@ -36,13 +36,20 @@ public:
 
 	virtual QWidget *GetWidget ();
 
+	void MakeGrassrootsServicesRunnable ();
+
+
 private:
 	QTreeWidget *jv_tree_p;
 	QTextEdit *jv_viewer_p;
 	const json_t *jv_data_p;
 
-	bool InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p);
-	void AddTopLevelNode (json_t *data_p);
+	QTreeWidgetItem *InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p);
+	void AddTopLevelNode (const char *key_s, json_t *data_p);
+
+private slots:
+	void ProcessDoubleClick (QTreeWidgetItem *item_p, int column);
+
 };
 
 #endif // JSON_VIEWER_H

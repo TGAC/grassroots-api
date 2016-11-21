@@ -204,8 +204,8 @@ Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p, P
 
 	if (options_p)
 		{
-			/* default to  blast asn */
-			def.st_ulong_value = BOF_BLAST_ASN1;
+			/* default to grassroots */
+			def.st_ulong_value = BOF_GRASSROOTS;
 
 			param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, group_p, BS_OUTPUT_FORMAT.npt_type, false, BS_OUTPUT_FORMAT.npt_name_s, "Output format", "The output format for the results", options_p, def, NULL, NULL, PL_ALL, NULL);
 

@@ -84,6 +84,9 @@ void JSONListWidgetItem :: ShowData ()
 			JSONViewer *json_viewer_p = new JSONViewer;
 
 			json_viewer_p -> SetJSONData (jlwi_json_data_p);
+
+
+
 			viewer_p = json_viewer_p;
 		}
 

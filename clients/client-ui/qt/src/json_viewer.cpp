@@ -18,6 +18,7 @@
 #include "json_viewer.h"
 #include "math_utils.h"
 #include "string_utils.h"
+#include "json_util.h"
 
 
 
@@ -56,9 +57,8 @@ QWidget *JSONViewer :: GetWidget ()
 }
 
 
-bool JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p)
+QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p)
 {
-	bool success_flag = true;
 	QTreeWidgetItem *child_node_p = 0;
 
 	if (parent_p)
@@ -88,7 +88,7 @@ bool JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, jso
 
 			json_object_foreach (data_p, child_key_s, child_json_p)
 				{
-					success_flag = InsertData (child_node_p, child_key_s, child_json_p);
+					InsertData (child_node_p, child_key_s, child_json_p);
 				}
 		}
 	else if (json_is_array (data_p))
@@ -102,7 +102,7 @@ bool JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, jso
 
 					if (value_s)
 						{
-							success_flag = InsertData (child_node_p, value_s, child_json_p);
+							InsertData (child_node_p, value_s, child_json_p);
 
 							FreeCopiedString (value_s);
 						}
@@ -145,7 +145,7 @@ bool JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, jso
 			child_node_p -> setText (1, "false");
 		}
 
-	return success_flag;
+	return child_node_p;
 }
 
 
@@ -167,7 +167,7 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 				{
 					char *value_s = ConvertIntegerToString (i);
 
-					InsertData (NULL, value_s, item_p);
+					AddTopLevelNode (value_s, item_p);
 
 					if (value_s)
 						{
@@ -177,7 +177,7 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 		}
 	else
 		{
-			InsertData (NULL, "0", data_p);
+			AddTopLevelNode ("0", data_p);
 		}
 
 	char *value_s = json_dumps (data_p, 0);
@@ -186,5 +186,61 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			jv_viewer_p -> setPlainText (value_s);
 			free (value_s);
 		}
+}
+
+
+void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
+{
+	QTreeWidgetItem *top_level_node_p = InsertData (NULL, key_s, data_p);
+
+	if (top_level_node_p)
+		{
+			int i;
+			QString services_name (LINKED_SERVICES_S);
+			QTreeWidgetItem *services_node_p = 0;
+
+			for (i = top_level_node_p -> childCount () - 1; i >= 0; -- i)
+				{
+					QTreeWidgetItem *child_node_p = top_level_node_p -> child (i);
+					QString child_text = child_node_p -> text (0);
+
+					if (services_name.compare (child_text) == 0)
+						{
+							services_node_p = child_node_p;
+							i = -1;		/* force exit from loop */
+						}
+
+				}		/* or (i = top_level_node_p -> childCount (); i >= 0; -- i) */
+
+			if (services_node_p)
+				{
+					json_t *services_json_p = json_object_get (data_p, LINKED_SERVICES_S);
+
+					if (services_json_p)
+						{
+							if (json_is_array (services_json_p))
+								{
+									for (i = services_node_p -> childCount () - 1; i >= 0; -- i)
+										{
+											QTreeWidgetItem *service_node_p = services_node_p -> child (i);
+
+											services_node_p -> setIcon (0, QIcon ("images/list_use"));
+
+
+											if (services_name.compare (child_text) == 0)
+												{
+													services_node_p = child_node_p;
+													i = -1;		/* force exit from loop */
+												}
+
+										}		/* for (i = top_level_node_p -> childCount (); i >= 0; -- i) */
+
+								}		/* if (json_is_array (services_json_p) */
+
+						}		/* if (services_json_p) */
+
+				}		/* if (services_node_p) */
+		}
+
 }
 
