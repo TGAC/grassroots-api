@@ -23,6 +23,7 @@
 #include "math_utils.h"
 #include "string_utils.h"
 #include "json_util.h"
+#include "streams.h"
 
 
 Q_DECLARE_METATYPE (json_t *)
@@ -83,14 +84,10 @@ void JSONViewer :: PrepareMenu (const QPoint &pos_r)
 
 							menu.exec (jv_tree_p -> mapToGlobal (pos_r));
 
-							char *dump_s = json_dumps (json_p, 0);
+							#if JSON_VIEWER_DEBUG >= STM_LEVEL_FINE
+							PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, json_p, "service run json:\n");
+							#endif
 
-							if (dump_s)
-								{
-									qDebug () << "tree has: " << endl << dump_s << endl;
-
-									free (dump_s);
-								}
 						}
 				}
 
@@ -148,7 +145,7 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 		}
 	else
 		{
-			child_node_p = new QTreeWidgetItem;
+			child_node_p = new QTreeWidgetItem (jv_tree_p);
 
 			jv_tree_p -> addTopLevelItem (child_node_p);
 		}
@@ -270,7 +267,7 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			free (value_s);
 		}
 
-	jv_tree_p -> update ();
+	jv_tree_p -> repaint ();
 }
 
 
@@ -320,7 +317,9 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 													const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
 													QVariant var = QVariant :: fromValue (service_json_p);
 
-													qDebug () << "service name " << service_name_s << endl;
+													#if JSON_VIEWER_DEBUG >= STM_LEVEL_FINE
+													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "service name \"%s\"", service_name_s);
+													#endif
 
 													/*
 													 * Set the node name to the service that it will run
@@ -330,6 +329,7 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 													if (service_name_s)
 														{
 															service_node_p -> setText (0, service_name_s);
+															service_node_p -> setToolTip (0, service_name_s);
 														}
 
 													service_node_p -> setData (0, Qt :: DisplayRole, var);
@@ -347,21 +347,4 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 		}
 
 }
-
-
-
-
-//QJsonDocument *ConvertToQJsonDocument (const json_t *json_p)
-//{
-//	char *dump_s = json_dumps (json_p, 0);
-
-//	if (dump_s)
-//		{
-//			return QJsonDocument :: fromRawData (dump_s, )
-//		}
-
-
-//}
-
-
 

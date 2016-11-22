@@ -373,7 +373,7 @@ json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p)
 
 					if (params_p)
 						{
-							json_t *params_json_p = GetParameterSetAsJSON (params_p, sv_p, true);
+							json_t *params_json_p = GetParameterSetAsJSON (params_p, sv_p, false);
 
 							if (params_json_p)
 								{

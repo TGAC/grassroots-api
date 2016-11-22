@@ -196,6 +196,11 @@ BLAST_SERVICE_LOCAL void CustomiseBlastServiceJob (Service *service_p, ServiceJo
 
 
 
+BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseFilename (BlastServiceData *data_p, const char *name_s);
+
+
+BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseName (BlastServiceData *data_p, const char *filename_s);
+
 
 #ifdef __cplusplus
 }

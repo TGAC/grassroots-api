@@ -479,10 +479,11 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 															{
 																if (json_is_string (db_p))
 																	{
-																		database_s = json_string_value (db_p);
+																		const char *database_filename_s = json_string_value (db_p);
 
-																		if (database_s)
+																		if (database_filename_s)
 																			{
+																				database_s = GetMatchingDatabaseName (data_p, database_filename_s);
 																				success_flag = true;
 																			}		/* if (database_s) */
 																	}

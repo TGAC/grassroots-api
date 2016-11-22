@@ -1368,3 +1368,47 @@ static void InitBlastService (Service *blast_service_p)
 
 
 
+const char *GetMatchingDatabaseFilename (BlastServiceData *data_p, const char *name_s)
+{
+	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
+
+	if (db_p)
+		{
+			while (db_p -> di_name_s)
+				{
+					if (strcmp (name_s, db_p -> di_name_s) == 0)
+						{
+							return db_p -> di_filename_s;
+						}
+
+					++ db_p;
+
+				}		/* while (db_p -> di_name_s) */
+
+		}		/* if (db_p) */
+
+	return NULL;
+}
+
+
+const char *GetMatchingDatabaseName (BlastServiceData *data_p, const char *filename_s)
+{
+	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
+
+	if (db_p)
+		{
+			while (db_p -> di_filename_s)
+				{
+					if (strcmp (filename_s, db_p -> di_filename_s) == 0)
+						{
+							return db_p -> di_name_s;
+						}
+
+					++ db_p;
+
+				}		/* while (db_p -> di_name_s) */
+
+		}		/* if (db_p) */
+
+	return NULL;
+}
