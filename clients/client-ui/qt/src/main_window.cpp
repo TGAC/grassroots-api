@@ -241,17 +241,7 @@ void MainWindow :: RunServices (bool run_flag)
 
 			if (client_params_p)
 				{
-					UserDetails *user_p = NULL;
-
-					setCursor (Qt :: BusyCursor);
-					json_t *services_json_p = CallServices (client_params_p, user_p, mw_client_data_p -> qcd_base_data.cd_connection_p);
-					setCursor (Qt :: ArrowCursor);
-
-					if (services_json_p)
-						{
-							ProcessResults (services_json_p);
-							json_decref (services_json_p);
-						}		/* if (services_json_p) */
+					RunService (client_params_p);
 
 					json_decref (client_params_p);
 				}		/* if (client_params_p) */
@@ -260,6 +250,27 @@ void MainWindow :: RunServices (bool run_flag)
 		{
 			close ();
 		}
+}
+
+
+
+void MainWindow :: RunService (json_t *service_p)
+{
+	if (service_p)
+		{
+			UserDetails *user_p = NULL;
+
+			setCursor (Qt :: BusyCursor);
+			json_t *services_json_p = CallServices (service_p, user_p, mw_client_data_p -> qcd_base_data.cd_connection_p);
+			setCursor (Qt :: ArrowCursor);
+
+			if (services_json_p)
+				{
+					ProcessResults (services_json_p);
+					json_decref (services_json_p);
+				}		/* if (services_json_p) */
+
+		}		/* if (service_p) */
 }
 
 

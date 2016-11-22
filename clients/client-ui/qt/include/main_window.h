@@ -44,6 +44,8 @@ public slots:
 	void RunKeywordSearch (QString keywords);
 	void SelectService (const char *service_name_s, const json_t *params_json_p);
 
+	void RunService (json_t *service_p);
+
 	void GetAllServices ();
 	void GetInterestedServices ();
 	void RunKeywordServices ();

@@ -123,6 +123,8 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 						{
 							JSONListWidgetItem *item_p = new JSONListWidgetItem (title_s, rl_list_p);
 
+							connect (item_p, &JSONListWidgetItem :: RunServiceRequested, rl_parent_p, &ResultsPage :: RunService);
+
 							icon_path_s = "images/list_objects";
 
 							item_p -> SetJSONData (data_p);

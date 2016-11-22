@@ -14,12 +14,18 @@
 ** limitations under the License.
 */
 #include <QHBoxLayout>
+#include <QJsonDocument>
+#include <QDebug>
+#include <QAction>
+#include <QMenu>
 
 #include "json_viewer.h"
 #include "math_utils.h"
 #include "string_utils.h"
 #include "json_util.h"
 
+
+Q_DECLARE_METATYPE (json_t *)
 
 
 JSONViewer ::	JSONViewer (QWidget *parent_p)
@@ -28,6 +34,9 @@ JSONViewer ::	JSONViewer (QWidget *parent_p)
 	QHBoxLayout *layout_p = new QHBoxLayout;
 
 	jv_tree_p = new QTreeWidget (this);
+	jv_tree_p -> setContextMenuPolicy (Qt :: CustomContextMenu);
+	connect (jv_tree_p, &QTreeWidget :: customContextMenuRequested, this, &JSONViewer :: PrepareMenu);
+
 	layout_p -> addWidget (jv_tree_p);
 
 	jv_viewer_p = new QTextEdit (this);
@@ -37,9 +46,78 @@ JSONViewer ::	JSONViewer (QWidget *parent_p)
 	setLayout (layout_p);
 
 	setWindowTitle ("JSON Viewer");
-
 }
 
+
+void JSONViewer :: PrepareMenu (const QPoint &pos_r)
+{
+	QTreeWidgetItem *item_p = jv_tree_p -> itemAt (pos_r);
+
+	if (item_p)
+		{
+			QVariant v = item_p -> data (0, Qt :: DisplayRole);
+
+			if (!v.isNull ())
+				{
+					json_t *json_p = v.value <json_t *> ();
+
+					if (json_p)
+						{
+							QAction *run_action_p = new QAction (QIcon ("images/run"), tr ("&Run"), jv_tree_p);
+							QString s ("Run ");
+
+							s.append (item_p -> text (0));
+							QByteArray ba = s.toLocal8Bit ();
+							const char *value_s = ba.constData ();
+
+							run_action_p -> setStatusTip (tr (value_s));
+
+							QVariant var = QVariant :: fromValue (json_p);
+							run_action_p -> setData (var);
+
+							connect (run_action_p, &QAction :: triggered, this, &JSONViewer :: RunLinkedService);
+
+
+							QMenu menu (this);
+							menu.addAction (run_action_p);
+
+							menu.exec (jv_tree_p -> mapToGlobal (pos_r));
+
+							char *dump_s = json_dumps (json_p, 0);
+
+							if (dump_s)
+								{
+									qDebug () << "tree has: " << endl << dump_s << endl;
+
+									free (dump_s);
+								}
+						}
+				}
+
+		}		/* if (item_p) */
+}
+
+
+void JSONViewer :: RunLinkedService (bool checked_flag)
+{
+	QAction *action_p = qobject_cast <QAction *> (sender ());
+
+	if (action_p)
+		{
+			QVariant var = action_p -> data ();
+
+			if (!var.isNull ())
+				{
+					json_t *json_p = var.value <json_t *> ();
+
+					if (json_p)
+						{
+							emit RunServiceRequested (json_p);
+						}
+				}
+		}
+
+}
 
 
 const char *JSONViewer :: GetText () const
@@ -77,7 +155,12 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 
 	if (key_s)
 		{
-			child_node_p -> setText (0, key_s);
+			QString s = child_node_p -> text (0);
+
+			if (s.isEmpty() || s.isNull ())
+				{
+					child_node_p -> setText (0, key_s);
+				}
 		}
 
 
@@ -186,7 +269,11 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			jv_viewer_p -> setPlainText (value_s);
 			free (value_s);
 		}
+
+	jv_tree_p -> update ();
 }
+
+
 
 
 void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
@@ -210,7 +297,7 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 							i = -1;		/* force exit from loop */
 						}
 
-				}		/* or (i = top_level_node_p -> childCount (); i >= 0; -- i) */
+				}		/* for (i = top_level_node_p -> childCount (); i >= 0; -- i) */
 
 			if (services_node_p)
 				{
@@ -220,20 +307,37 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 						{
 							if (json_is_array (services_json_p))
 								{
-									for (i = services_node_p -> childCount () - 1; i >= 0; -- i)
+									const size_t num_nodes = services_node_p -> childCount ();
+									const size_t num_json_children = json_array_size (services_json_p);
+
+									if (num_json_children == num_nodes)
 										{
-											QTreeWidgetItem *service_node_p = services_node_p -> child (i);
-
-											services_node_p -> setIcon (0, QIcon ("images/list_use"));
-
-
-											if (services_name.compare (child_text) == 0)
+											for (i = 0; i < (int) num_nodes; ++ i)
 												{
-													services_node_p = child_node_p;
-													i = -1;		/* force exit from loop */
-												}
+													QTreeWidgetItem *service_node_p = services_node_p -> child (i);
+													json_t *service_json_p = json_array_get (services_json_p, i);
 
-										}		/* for (i = top_level_node_p -> childCount (); i >= 0; -- i) */
+													const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
+													QVariant var = QVariant :: fromValue (service_json_p);
+
+													qDebug () << "service name " << service_name_s << endl;
+
+													/*
+													 * Set the node name to the service that it will run
+													 */
+
+													service_node_p -> setIcon (0, QIcon ("images/list_use"));
+													if (service_name_s)
+														{
+															service_node_p -> setText (0, service_name_s);
+														}
+
+													service_node_p -> setData (0, Qt :: DisplayRole, var);
+
+												}		/* for (i = top_level_node_p -> childCount (); i >= 0; -- i) */
+
+										}
+
 
 								}		/* if (json_is_array (services_json_p) */
 
@@ -243,4 +347,21 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 		}
 
 }
+
+
+
+
+//QJsonDocument *ConvertToQJsonDocument (const json_t *json_p)
+//{
+//	char *dump_s = json_dumps (json_p, 0);
+
+//	if (dump_s)
+//		{
+//			return QJsonDocument :: fromRawData (dump_s, )
+//		}
+
+
+//}
+
+
 

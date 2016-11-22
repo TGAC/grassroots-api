@@ -38,11 +38,12 @@ public:
 
 signals:
 	void ServiceRequested (const char *service_name_s, const json_t *params_json_p);
-
+	void RunServiceRequested (json_t *request_p);
 
 public slots:
 	void OpenWebLink (const char * const uri_s);
 	void SelectService (const char *service_name_s, const json_t *params_json_p);
+	void RunService (json_t *request_p);
 
 private:
   QList <QWebEngineView *> rp_browsers;

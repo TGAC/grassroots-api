@@ -42,11 +42,12 @@ public:
 
 signals:
 	void ServiceRequested (const char *service_name_s, const json_t *params_json_p);
+	void RunServiceRequested (json_t *service_json_p);
 
 
 public slots:
   void SelectService (const char *service_name_s, const json_t *params_json_p);
-
+	void RunService (json_t *service_json_p);
 
 private:
 	ResultsPage *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);

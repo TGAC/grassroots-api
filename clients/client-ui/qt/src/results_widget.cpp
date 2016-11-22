@@ -197,6 +197,12 @@ void ResultsWidget :: SelectService (const char *service_name_s, const json_t *p
 }
 
 
+void ResultsWidget :: RunService (json_t *service_json_p)
+{
+	emit RunServiceRequested (service_json_p);
+}
+
+
 ResultsPage *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const description_s, const char * const uri_s)
 {
 	ResultsPage *page_p = 0;

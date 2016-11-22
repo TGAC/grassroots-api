@@ -39,6 +39,10 @@ public:
 	void MakeGrassrootsServicesRunnable ();
 
 
+signals:
+	void RunServiceRequested (json_t *request_p);
+
+
 private:
 	QTreeWidget *jv_tree_p;
 	QTextEdit *jv_viewer_p;
@@ -48,7 +52,8 @@ private:
 	void AddTopLevelNode (const char *key_s, json_t *data_p);
 
 private slots:
-	void ProcessDoubleClick (QTreeWidgetItem *item_p, int column);
+	void PrepareMenu (const QPoint &pos_r);
+	void RunLinkedService (bool checked_flag);
 
 };
 

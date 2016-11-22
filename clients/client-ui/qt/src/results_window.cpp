@@ -40,6 +40,8 @@ ResultsWindow :: ResultsWindow (MainWindow *parent_p, QTClientData *client_data_
 	rw_results_p = new ResultsWidget (this);
 
 	connect (rw_results_p, &ResultsWidget :: ServiceRequested, parent_p, &MainWindow :: SelectService);
+	connect (rw_results_p, &ResultsWidget :: RunServiceRequested, parent_p, &MainWindow :: RunService);
+
 
 	layout_p -> addWidget (rw_results_p);
 

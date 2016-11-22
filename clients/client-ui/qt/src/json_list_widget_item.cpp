@@ -65,6 +65,11 @@ const json_t *JSONListWidgetItem :: GetJSONData () const
 }
 
 
+void JSONListWidgetItem :: RunLinkedService (json_t *request_p)
+{
+	emit RunServiceRequested (request_p);
+}
+
 
 void JSONListWidgetItem :: ShowData ()
 {
@@ -85,7 +90,7 @@ void JSONListWidgetItem :: ShowData ()
 
 			json_viewer_p -> SetJSONData (jlwi_json_data_p);
 
-
+			connect (json_viewer_p, &JSONViewer :: RunServiceRequested, this, &JSONListWidgetItem :: RunLinkedService);
 
 			viewer_p = json_viewer_p;
 		}
