@@ -67,6 +67,7 @@
 	rdf:comment "The name of a file to write data to"
 	rdf:subClassOf edam:data_1050
 
+
 :directory
 	rdf:type owl:Class ;
 	rdf:label "A directory"^^xsd:string ;
@@ -86,5 +87,18 @@
 		owl:cardinality "1"^^xsd:nonNegativeInteger ;
 	] ;
 
+
+tabular:
+	rdf:type owl:Class ;
+	rdf:label "A table"^^xsd:string ;
+	rdf:comment "A tabular text file"
+	rdf:subClassOf edam:format_3751
+
+
+json:
+	rdf:type owl:Class ;
+	rdf:label "JSON-formatted text"^^xsd:string ;
+	rdf:comment "A JSON-formatted text"
+	rdf:subClassOf edam:format_3464
 
 
