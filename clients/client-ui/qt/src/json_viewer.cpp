@@ -26,6 +26,9 @@
 #include "streams.h"
 
 
+#define JSON_VIEWER_DEBUG (STM_LEVEL_FINE)
+
+
 Q_DECLARE_METATYPE (json_t *)
 
 
@@ -56,7 +59,7 @@ void JSONViewer :: PrepareMenu (const QPoint &pos_r)
 
 	if (item_p)
 		{
-			QVariant v = item_p -> data (0, Qt :: DisplayRole);
+			QVariant v = item_p -> data (0, Qt :: UserRole);
 
 			if (!v.isNull ())
 				{
@@ -140,8 +143,7 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 		{
 			child_node_p = new QTreeWidgetItem (parent_p);
 
-			int num_children = parent_p -> childCount ();
-			parent_p -> insertChild (num_children, child_node_p);
+			parent_p -> addChild (child_node_p);
 		}
 	else
 		{
@@ -152,12 +154,7 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 
 	if (key_s)
 		{
-			QString s = child_node_p -> text (0);
-
-			if (s.isEmpty() || s.isNull ())
-				{
-					child_node_p -> setText (0, key_s);
-				}
+			child_node_p -> setText (0, key_s);
 		}
 
 
@@ -176,17 +173,54 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 			json_t *child_json_p;
 			size_t i;
 
-			json_array_foreach (data_p, i, child_json_p)
+
+			if (strcmp (key_s, LINKED_SERVICES_S) == 0)
 				{
-					char *value_s = ConvertIntegerToString (i);
-
-					if (value_s)
+					json_array_foreach (data_p, i, child_json_p)
 						{
-							InsertData (child_node_p, value_s, child_json_p);
+							const char *service_name_s = GetJSONString (child_json_p, SERVICE_NAME_S);
 
-							FreeCopiedString (value_s);
+							#if JSON_VIEWER_DEBUG >= STM_LEVEL_FINE
+							qDebug () << "service name \"" << service_name_s << "\"" << endl;
+							#endif
+
+							QTreeWidgetItem *item_p = InsertData (child_node_p, service_name_s, child_json_p);
+
+							if (item_p)
+								{
+									item_p -> setIcon (0, QIcon ("images/list_use"));
+
+									if (service_name_s)
+										{
+											QString s ("Run ");
+											s.append (service_name_s);
+
+											item_p -> setText (0, s);
+										}
+
+									QVariant var = QVariant :: fromValue (child_json_p);
+									item_p -> setData (0, Qt :: UserRole, var);
+								}		/* if (item_p) */
+
+						}		/* json_array_foreach (data_p, i, child_json_p) */
+
+				}		/* if (strcmp (key_s, LINKED_SERVICES_S) == 0) */
+			else
+				{
+					json_array_foreach (data_p, i, child_json_p)
+						{
+							char *value_s = ConvertIntegerToString (i);
+
+							if (value_s)
+								{
+									InsertData (child_node_p, value_s, child_json_p);
+
+									FreeCopiedString (value_s);
+								}
 						}
+
 				}
+
 		}
 	else if (json_is_string (data_p))
 		{
@@ -260,7 +294,7 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			AddTopLevelNode ("0", data_p);
 		}
 
-	char *value_s = json_dumps (data_p, 0);
+	char *value_s = json_dumps (data_p, JSON_INDENT (2));
 	if (value_s)
 		{
 			jv_viewer_p -> setPlainText (value_s);
@@ -276,75 +310,6 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 {
 	QTreeWidgetItem *top_level_node_p = InsertData (NULL, key_s, data_p);
-
-	if (top_level_node_p)
-		{
-			int i;
-			QString services_name (LINKED_SERVICES_S);
-			QTreeWidgetItem *services_node_p = 0;
-
-			for (i = top_level_node_p -> childCount () - 1; i >= 0; -- i)
-				{
-					QTreeWidgetItem *child_node_p = top_level_node_p -> child (i);
-					QString child_text = child_node_p -> text (0);
-
-					if (services_name.compare (child_text) == 0)
-						{
-							services_node_p = child_node_p;
-							i = -1;		/* force exit from loop */
-						}
-
-				}		/* for (i = top_level_node_p -> childCount (); i >= 0; -- i) */
-
-			if (services_node_p)
-				{
-					json_t *services_json_p = json_object_get (data_p, LINKED_SERVICES_S);
-
-					if (services_json_p)
-						{
-							if (json_is_array (services_json_p))
-								{
-									const size_t num_nodes = services_node_p -> childCount ();
-									const size_t num_json_children = json_array_size (services_json_p);
-
-									if (num_json_children == num_nodes)
-										{
-											for (i = 0; i < (int) num_nodes; ++ i)
-												{
-													QTreeWidgetItem *service_node_p = services_node_p -> child (i);
-													json_t *service_json_p = json_array_get (services_json_p, i);
-
-													const char *service_name_s = GetJSONString (service_json_p, SERVICE_NAME_S);
-													QVariant var = QVariant :: fromValue (service_json_p);
-
-													#if JSON_VIEWER_DEBUG >= STM_LEVEL_FINE
-													PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "service name \"%s\"", service_name_s);
-													#endif
-
-													/*
-													 * Set the node name to the service that it will run
-													 */
-
-													service_node_p -> setIcon (0, QIcon ("images/list_use"));
-													if (service_name_s)
-														{
-															service_node_p -> setText (0, service_name_s);
-															service_node_p -> setToolTip (0, service_name_s);
-														}
-
-													service_node_p -> setData (0, Qt :: DisplayRole, var);
-
-												}		/* for (i = top_level_node_p -> childCount (); i >= 0; -- i) */
-
-										}
-
-
-								}		/* if (json_is_array (services_json_p) */
-
-						}		/* if (services_json_p) */
-
-				}		/* if (services_node_p) */
-		}
 
 }
 
