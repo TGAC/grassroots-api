@@ -682,7 +682,7 @@ char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, Service
 																																{
 																																	if (SetParameterValueFromString (param_p, scaffold_s))
 																																		{
-																																			json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p);
+																																			json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p, false);
 
 																																			if (run_service_p)
 																																				{

@@ -1,0 +1,90 @@
+# Grassroots parameters
+
+@prefix : 			<http://grassroots.services/schema/parameters#> .
+@prefix owl:		<http://www.w3.org/2002/07/owl#> .
+@prefix rdf:		<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:		<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix spin:		<http://spinrdf.org/spin#> .
+@prefix xsd:		<http://www.w3.org/2001/XMLSchema#> .
+@prefix edam: 	<http://edamontology.org/>
+
+
+:signed_integer
+	rdf:type owl:Class ;
+	rdf:label "A natural number"^^xsd:string ;
+	rdf:comment "A natural number"
+	rdf:subClassOf xsd:integer
+
+
+:negative_integer
+	rdf:type owl:Class ;
+	rdf:label "A negative number"^^xsd:string ;
+	rdf:comment "A negative number"
+	rdf:subClassOf xsd:integer
+	rdfs:subClassOf
+	[ 
+		rdf:type owl:Restriction ;
+		owl:onProperty        rdf:value ;
+		owl:someValuesFrom   
+		[ 
+			rdf:type        rdfs:Datatype ;
+      owl:onDatatype  xsd:unsignedLong ;
+			owl:withRestrictions
+			([
+				xsd:maxInclusive -1
+      ])
+    ]
+	] ;
+
+
+:unsigned_integer
+	rdf:type owl:Class ;
+	rdf:label "A non-negative number"^^xsd:string ;
+	rdf:comment "A non-negative number"
+	rdf:subClassOf xsd:integer
+	rdfs:subClassOf
+	[ 
+		rdf:type owl:Restriction ;
+		owl:onProperty        rdf:value ;
+		owl:someValuesFrom   
+		[ 
+			rdf:type        rdfs:Datatype ;
+      owl:onDatatype  xsd:unsignedLong
+    ]
+	] ;
+
+
+:input_filename
+	rdf:type owl:Class ;
+	rdf:label "An input filename"^^xsd:string ;
+	rdf:comment "The name of a file to read data from"
+	rdf:subClassOf edam:data_1050
+
+
+:output_filename
+	rdf:type owl:Class ;
+	rdf:label "An output filename"^^xsd:string ;
+	rdf:comment "The name of a file to write data to"
+	rdf:subClassOf edam:data_1050
+
+:directory
+	rdf:type owl:Class ;
+	rdf:label "A directory"^^xsd:string ;
+	rdf:comment "The name of a directory"
+	rdf:subClassOf edam:data_1049
+
+
+:character
+	rdf:type owl:Class ;
+	rdf:label "A character" ;
+	rdf:comment "A single character"
+	rdf:subClassOf xsd:string
+	rdfs:subClassOf
+	[ 
+		rdf:type owl:Restriction ;
+		owl:onProperty        rdf:value ;
+		owl:cardinality "1"^^xsd:nonNegativeInteger ;
+	] ;
+
+
+

@@ -93,11 +93,11 @@ PREFIX const char *OPERATION_SYNCHRONOUS_S VAL("synchronous");
 PREFIX const char *SERVICES_NAME_S VAL("services");
 PREFIX const char *SERVICES_ID_S VAL("path");
 PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
-PREFIX const char *SERVICE_RUN_S VAL("run");
+PREFIX const char *SERVICE_RUN_S VAL("start_service");
 PREFIX const char *SERVICES_STATUS_S VAL("status");
 PREFIX const char *SERVICES_STATUS_DEFAULT_S VAL("default");
 
-PREFIX const char *SERVICE_NAME_S VAL("service");
+PREFIX const char *SERVICE_NAME_S VAL("service_name");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_VALUE_S VAL("status");
 PREFIX const char *SERVICE_STATUS_S VAL("status_text");

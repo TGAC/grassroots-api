@@ -745,7 +745,7 @@ GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_
  * @return The JSON fragment to send to the Server or <code>NULL</code> upon error.
  * @see IsServiceMatch
  */
-GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p);
+GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p,  const bool full_definition_flag);
 
 
 

@@ -42,7 +42,7 @@ static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 	"boolean",
 	"signed integer",
 	"unsigned integer",
-	"non-positive integer"
+	"negative integer"
 	"signed number",
 	"unsigned number",
 	"string",

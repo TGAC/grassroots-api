@@ -1383,7 +1383,7 @@ static json_t *RunKeywordServices (const json_t * const req_p, UserDetails *user
 																			 * and can be ran.
 																			 */
 																			const char *service_name_s = GetServiceName (service_p);
-																			json_t *interested_app_p = GetInterestedServiceJSON (service_name_s, keyword_s, params_p);
+																			json_t *interested_app_p = GetInterestedServiceJSON (service_name_s, keyword_s, params_p, true);
 
 																			if (interested_app_p)
 																				{

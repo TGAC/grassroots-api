@@ -1716,7 +1716,7 @@ const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
 }
 
 
-json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p)
+json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p, const bool full_definition_flag)
 {
 	json_t *res_p = NULL;
 	json_error_t json_err;
@@ -1726,7 +1726,7 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 	if (res_p)
 		{
 			const SchemaVersion *sv_p = GetSchemaVersion ();
-			json_t *params_json_p = GetParameterSetAsJSON (params_p, sv_p, true);
+			json_t *params_json_p = GetParameterSetAsJSON (params_p, sv_p, full_definition_flag);
 
 			if (params_json_p)
 				{
