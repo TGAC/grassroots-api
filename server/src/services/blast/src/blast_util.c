@@ -82,7 +82,7 @@ bool AddBlastArgs (const Parameter *param_p, ArgsProcessor *ap_p)
 				break;
 
 			case PT_SIGNED_INT:
-			case PT_NON_POSITIVE_INT:
+			case PT_NEGATIVE_INT:
 				{
 					char *value_s = ConvertIntegerToString (param_p -> pa_current_value.st_long_value);
 

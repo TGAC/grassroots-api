@@ -61,7 +61,7 @@ Various settings for a Service's Parameters can be configured within our configu
 					"default_value": "",
 					"current_value": "",
 					"type": "string",
-					"grassroots_type_text": "keyword",
+					"grassroots_type": "params:keyword",
 					"description": "The search term"
 				}, {
 					"param": "size",
@@ -69,7 +69,7 @@ Various settings for a Service's Parameters can be configured within our configu
 					"default_value": "20",
 					"current_value": "20",
 					"type": "number",
-					"grassroots_type_text": "unsigned integer",
+					"grassroots_type": "params:unsigned_integer",
 					"description": "The number of hits to return"
 				}]
 			}

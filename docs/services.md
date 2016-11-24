@@ -57,7 +57,7 @@ The configuration files are stored in the *references* folder. For example, the 
 					"default_value": "",
 					"current_value": "",
 					"type": "string",
-					"grassroots_type": 11,
+					"grassroots_type": "params:keyword",
 					"description": "The search term"
 				}]
 			}
@@ -174,7 +174,7 @@ The first is of type *text* and given that it is a search engine keyword, the ma
     "default_value": "",
     "current_value": "",
     "type": "string",
-    "grassroots_type_text": "keyword",
+    "grassroots_type": "params:keyword",
     "description": "The search term"
 }
 ~~~
@@ -189,7 +189,7 @@ The next parameter is *size* which is the number of hits to return so maps to an
     "default_value": "20",
     "current_value": "20",
     "type": "number",
-    "grassroots_type_text": "unsigned integer",
+    "grassroots_type": "params:unsigned_integer",
     "description": "The number of hits to return"
 }
 ~~~
@@ -221,7 +221,7 @@ So adding these to our Service description gives:
 						"default_value": "",
 						"current_value": "",
 						"type": "string",
-						"grassroots_type_text": "keyword",
+						"grassroots_type": "params:keyword",
 						"description": "The search term"
 					}, {
 						"param": "size",
@@ -229,7 +229,7 @@ So adding these to our Service description gives:
 						"default_value": "20",
 						"current_value": "20",
 						"type": "number",
-						"grassroots_type_text": "unsigned integer",
+						"grassroots_type": "params:unsigned_integer",
 						"description": "The number of hits to return"
 					}]
 				}
@@ -270,7 +270,7 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 					"default_value": "",
 					"current_value": "",
 					"type": "string",
-					"grassroots_type_text": "keyword",
+					"grassroots_type": "params:keyword",
 					"description": "The search term"
 				}, {
 					"param": "size",
@@ -278,7 +278,7 @@ The key for the http method is *method* and it specifies the HTTP protocol used 
 					"default_value": "20",
 					"current_value": "20",
 					"type": "number",
-					"grassroots_type_text": "unsigned integer",
+					"grassroots_type": "pararms:unsigned_integer",
 					"description": "The number of hits to return"
 				}]
 			}
@@ -370,13 +370,13 @@ The Server will send a message detailing which, if any, operations for the Servi
 ~~~{.json}
 {
 	"services": [{
-		"service": "Foobar Keyword Contig service",
+		"service_name": "Foobar Keyword Contig service",
 		"run": true,
 		"parameter_set": {
 			"parameters": [{
 				"param": "contig_name",
 				"current_value": "BC000000100",
-				"grassroots_type": 11,
+				"grassroots_type": "params:keyword",
 			}]
 		}
 	}, {
@@ -395,7 +395,7 @@ Once the operation has completed, the Service will send the results in a format 
 
 ~~~.json
 {
-	"service": "Foobar Keyword Contig service",
+	"service_name": "Foobar Keyword Contig service",
 	"status": 3,
 	"description": "An operation to obtain contig information using SNP or Contig names",
 	"uri": "http://foobar.com/search_by_contig",

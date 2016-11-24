@@ -21,7 +21,7 @@
 
 
 static NamedParameterType S_MATCH_SCORE = { "reward", PT_UNSIGNED_INT };
-static NamedParameterType S_MISMATCH_SCORE = { "penalty", PT_NON_POSITIVE_INT };
+static NamedParameterType S_MISMATCH_SCORE = { "penalty", PT_NEGATIVE_INT };
 static NamedParameterType S_WORD_SIZE = { "word_size", PT_UNSIGNED_INT };
 
 

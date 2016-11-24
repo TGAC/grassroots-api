@@ -40,7 +40,7 @@ ParamSpinBox :: ParamSpinBox (Parameter * const param_p, const PrefsWidget * con
 		{
 			switch (param_p -> pa_type)
 				{
-					case PT_NON_POSITIVE_INT:
+					case PT_NEGATIVE_INT:
 						psb_spin_box_p -> setRange (ParamSpinBox :: PSB_DEFAULT_MIN, 0);
 						break;
 

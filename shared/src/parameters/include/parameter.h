@@ -52,7 +52,7 @@ typedef enum ParameterType
 
 
 	/** A non-positive 32-bit integer */
-	PT_NON_POSITIVE_INT,
+	PT_NEGATIVE_INT,
 
 
 	/** A real number */
