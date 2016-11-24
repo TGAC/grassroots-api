@@ -70,7 +70,7 @@ typedef struct SchemaVersion
 #endif
 
 SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MAJOR SV_VAL(0);
-SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MINOR SV_VAL(9);
+SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MINOR SV_VAL(10);
 
 #ifdef __cplusplus
 extern "C"

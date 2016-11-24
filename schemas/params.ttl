@@ -4,23 +4,40 @@
 @prefix owl:		<http://www.w3.org/2002/07/owl#> .
 @prefix rdf:		<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:		<http://www.w3.org/2000/01/rdf-schema#> .
-@prefix spin:		<http://spinrdf.org/spin#> .
 @prefix xsd:		<http://www.w3.org/2001/XMLSchema#> .
-@prefix edam: 	<http://edamontology.org/>
+@prefix edam: 	<http://edamontology.org/> .
 
 
 :signed_integer
 	rdf:type owl:Class ;
 	rdf:label "A natural number"^^xsd:string ;
-	rdf:comment "A natural number"
-	rdf:subClassOf xsd:integer
+	rdf:comment "A natural number" ;
+	rdf:subClassOf xsd:integer .
+
+
+:unsigned_integer
+	rdf:type owl:Class ;
+	rdf:label "A non-negative number"^^xsd:string ;
+	rdf:comment "A non-negative number" ;
+	rdf:subClassOf xsd:integer ;
+	rdfs:subClassOf
+	[ 
+		rdf:type owl:Restriction ;
+		owl:onProperty        rdf:value ;
+		owl:someValuesFrom   
+		[ 
+			rdf:type        rdfs:Datatype ;
+      owl:onDatatype  xsd:unsignedLong
+    ]
+	] .
+
 
 
 :negative_integer
 	rdf:type owl:Class ;
 	rdf:label "A negative number"^^xsd:string ;
-	rdf:comment "A negative number"
-	rdf:subClassOf xsd:integer
+	rdf:comment "A negative number" ;
+	rdf:subClassOf xsd:integer ;
 	rdfs:subClassOf
 	[ 
 		rdf:type owl:Restriction ;
@@ -34,14 +51,14 @@
 				xsd:maxInclusive -1
       ])
     ]
-	] ;
+	] .
 
 
-:unsigned_integer
+:unsigned_number
 	rdf:type owl:Class ;
-	rdf:label "A non-negative number"^^xsd:string ;
-	rdf:comment "A non-negative number"
-	rdf:subClassOf xsd:integer
+	rdf:label "A negative number"^^xsd:string ;
+	rdf:comment "A negative number" ;
+	rdf:subClassOf xsd:double ;
 	rdfs:subClassOf
 	[ 
 		rdf:type owl:Restriction ;
@@ -49,56 +66,85 @@
 		owl:someValuesFrom   
 		[ 
 			rdf:type        rdfs:Datatype ;
-      owl:onDatatype  xsd:unsignedLong
+      owl:onDatatype  xsd:double ;
+			owl:withRestrictions
+			([
+				xsd:minInclusive 0
+      ])
     ]
-	] ;
-
-
-:input_filename
-	rdf:type owl:Class ;
-	rdf:label "An input filename"^^xsd:string ;
-	rdf:comment "The name of a file to read data from"
-	rdf:subClassOf edam:data_1050
+	] .
 
 
 :output_filename
 	rdf:type owl:Class ;
 	rdf:label "An output filename"^^xsd:string ;
-	rdf:comment "The name of a file to write data to"
-	rdf:subClassOf edam:data_1050
+	rdf:comment "The name of a file to write data to" ;
+	rdf:subClassOf edam:data_1050 .
+
+
+:input_filename
+	rdf:type owl:Class ;
+	rdf:label "An input filename"^^xsd:string ;
+	rdf:comment "The name of a file to read data from" ;
+	rdf:subClassOf edam:data_1050 .
+
+
 
 
 :directory
 	rdf:type owl:Class ;
 	rdf:label "A directory"^^xsd:string ;
-	rdf:comment "The name of a directory"
-	rdf:subClassOf edam:data_1049
+	rdf:comment "The name of a directory" ;
+	rdf:subClassOf edam:data_1049 .
 
 
 :character
 	rdf:type owl:Class ;
 	rdf:label "A character" ;
-	rdf:comment "A single character"
-	rdf:subClassOf xsd:string
+	rdf:comment "A single character" ;
+	rdf:subClassOf xsd:string ;
 	rdfs:subClassOf
 	[ 
 		rdf:type owl:Restriction ;
 		owl:onProperty        rdf:value ;
 		owl:cardinality "1"^^xsd:nonNegativeInteger ;
-	] ;
+	] .
 
 
-tabular:
+:password
+	rdf:type owl:Class ;
+	rdf:label "A password"^^xsd:string ;
+	rdf:comment "A password which the client should mask for display" ;
+	rdf:subClassOf edam:data_1690 .
+
+
+:keyword
+	rdf:type owl:Class ;
+	rdf:label "A keyword"^^xsd:string ;
+	rdf:comment "A keyword or phrase used for searching purposes and is usually the main parameter of a Service" ;
+	rdf:subClassOf edam:data_0968 .
+
+
+:large_string
+	rdf:type owl:Class ;
+	rdf:label "A large string"^^xsd:string ;
+	rdf:comment "A potentially multi-line string" ;
+	rdf:subClassOf xsd:string .
+
+
+:tabular
 	rdf:type owl:Class ;
 	rdf:label "A table"^^xsd:string ;
-	rdf:comment "A tabular text file"
-	rdf:subClassOf edam:format_3751
+	rdf:comment "A tabular text file" ;
+	rdf:subClassOf edam:format_3751 .
 
 
-json:
+:json
 	rdf:type owl:Class ;
 	rdf:label "JSON-formatted text"^^xsd:string ;
-	rdf:comment "A JSON-formatted text"
-	rdf:subClassOf edam:format_3464
+	rdf:comment "A JSON-formatted text" ;
+	rdf:subClassOf edam:format_3464 .
+
+
 
 

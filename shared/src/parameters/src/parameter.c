@@ -39,22 +39,22 @@
 
 static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 {
-	"boolean",
-	"signed integer",
-	"unsigned integer",
-	"negative integer"
-	"signed number",
-	"unsigned number",
-	"string",
-	"output filename",
-	"input filename",
-	"directory name",
-	"character",
-	"password",
-	"keyword",
-	"large string",
-	"json",
-	"tabular"
+	"xsd:boolean",
+	"params:signed_integer",
+	"params:unsigned_integer",
+	"params:negative_integer"
+	"xsd:double",
+	"params:unsigned_number",
+	"xsd:string",
+	"params:output_filename",
+	"params:input_filename",
+	"params:directory",
+	"params:character",
+	"params:password",
+	"params:keyword",
+	"params:large_string",
+	"params:json",
+	"params:tabular"
 };
 
 
@@ -1233,9 +1233,15 @@ static bool AddParameterTypeToJSON (const ParameterType param_type, json_t *root
 				{
 					success_flag = AddSeparateGrassrootsTypes (root_p, param_type);
 				}
-			else
+			else if ((sv_p -> sv_major == 0) && (sv_p -> sv_minor <= 9))
 				{
 					success_flag = AddCompoundGrassrootsType (root_p, param_type);
+				}
+			else
+				{
+					const char *param_type_s = * (S_PARAM_TYPE_NAMES_SS + param_type);
+
+					success_flag = (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (param_type_s)) == 0);
 				}
 
 			if (!success_flag)
@@ -1314,6 +1320,7 @@ static bool AddCompoundGrassrootsType (json_t *value_p, const ParameterType pt)
 static bool GetParameterTypeFromCompoundObject (const json_t *root_p, ParameterType *pt_p)
 {
 	bool success_flag = false;
+
 	const json_t *grassroots_p = json_object_get (root_p, PARAM_GRASSROOTS_S);
 
 	if (grassroots_p)
@@ -1369,7 +1376,8 @@ static bool GetParameterTypeFromCompoundObject (const json_t *root_p, ParameterT
 						}
 				}
 
-		}		/* if (grassroots_p) */
+				}		/* if (grassroots_p) */
+
 
 	return success_flag;
 }
@@ -2072,13 +2080,27 @@ static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType
 {
 	bool success_flag = false;
 
-	if (GetParameterTypeFromCompoundObject (json_p, param_type_p))
+	const char *value_s = GetJSONString (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
+
+	if (value_s)
 		{
-			success_flag = true;
-		}
+			if (GetGrassrootsTypeFromString (value_s, param_type_p))
+				{
+					success_flag = true;
+				}
+		}		/* if (value_s) */
 	else
 		{
-			success_flag = GetParameterTypeFromSeparateObjects (json_p, param_type_p);
+			/* Backward compatibility */
+
+			if (GetParameterTypeFromCompoundObject (json_p, param_type_p))
+				{
+					success_flag = true;
+				}
+			else
+				{
+					success_flag = GetParameterTypeFromSeparateObjects (json_p, param_type_p);
+				}
 		}
 
 	return success_flag;

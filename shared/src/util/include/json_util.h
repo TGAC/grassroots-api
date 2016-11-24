@@ -115,7 +115,7 @@ PREFIX const char *MAPPED_PARAM_MULTI_VALUED_S VAL("multiple");
 
 
 PREFIX const char *JOB_NAME_S VAL("name");
-PREFIX const char *JOB_SERVICE_S VAL("service");
+PREFIX const char *JOB_SERVICE_S VAL("service_name");
 PREFIX const char *JOB_DESCRIPTION_S VAL("description");
 PREFIX const char *JOB_RESULTS_S VAL("results");
 PREFIX const char *JOB_ERRORS_S VAL("errors");
@@ -139,8 +139,8 @@ PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_STORE_S VAL("store");
 PREFIX const char *PARAM_TAG_TEXT_S VAL("tag_text");
 PREFIX const char *PARAM_TYPE_S VAL("type");
-PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type");
-PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_TEXT_S VAL("grassroots_type_text");
+PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type_number");
+PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_TEXT_S VAL("grassroots_type");
 
 PREFIX const char *PARAM_GRASSROOTS_S VAL("grassroots");
 PREFIX const char *PARAM_COMPOUND_TEXT_S VAL("text");
