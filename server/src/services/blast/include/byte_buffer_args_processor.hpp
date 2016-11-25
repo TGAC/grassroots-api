@@ -27,12 +27,35 @@
 #include "byte_buffer.h"
 
 
+/**
+ * An ArgsProcessor that adds all of its values to a given ByteBuffer.
+ */
 class BLAST_SERVICE_LOCAL ByteBufferArgsProcessor : public ArgsProcessor
 {
 public:
+	/**
+	 * Construct a new ByteBufferArgsProcessor.
+	 *
+	 * @param buffer_p The ByteBuffer to add all arguments to.
+	 */
 	ByteBufferArgsProcessor (ByteBuffer *buffer_p);
+
+	/**
+	 * The ByteBufferArgsProcessor destructor.
+	 */
 	virtual ~ByteBufferArgsProcessor ();
 
+
+	/**
+	 * Add an argument to the underlying ByteBuffer
+	 *
+	 * @param arg_s The value to add.
+	 * @param hyphen_flag If this is <code>true</code> then the value
+	 * specified by arg_s will be prefixed by a '-' when adding to this
+	 * ArgsProcessor.
+	 * @return <code>true</code> if the argument was added successfully,
+	 * <code>false</code> otherwise.
+	 */
 	virtual bool AddArg (const char *arg_s, const bool hyphen_flag);
 
 private:

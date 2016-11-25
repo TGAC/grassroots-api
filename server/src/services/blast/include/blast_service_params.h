@@ -73,10 +73,22 @@ typedef enum
 } BlastOutputFormat;
 
 
-
+/**
+ * This datatype is used for describing the algorithms that some
+ * of the BLAST tools allow the user to choose to optimise the
+ * search procedure.
+ */
 typedef struct BlastTask
 {
+	/**
+	 * The name of the algorithm that will be passed to the BlastTool
+	 * using the -task parameter.
+	 */
   const char *bt_name_s;
+
+  /**
+   * A user-friendly descritpion of the algorithm.
+   */
   const char *bt_description_s;
 } BlastTask;
 

@@ -27,12 +27,36 @@
 #include "drmaa_tool.h"
 
 
+/**
+ * An ArgsProcessor that adds all of its values to a given DrmaaTool.
+ */
 class BLAST_SERVICE_LOCAL DrmaaToolArgsProcessor : public ArgsProcessor
 {
 public:
+
+	/**
+	 * Construct a new DrmaaToolArgsProcessor.
+	 *
+	 * @param drmaa_p The DrmaaTool to add all arguments to.
+	 */
 	DrmaaToolArgsProcessor (DrmaaTool *drmaa_p);
+
+	/**
+	 * The DrmaaToolArgsProcessor destructor.
+	 */
 	virtual ~DrmaaToolArgsProcessor ();
 
+
+	/**
+	 * Add an argument to the underlying DrmaaTool
+	 *
+	 * @param arg_s The value to add.
+	 * @param hyphen_flag If this is <code>true</code> then the value
+	 * specified by arg_s will be prefixed by a '-' when adding to this
+	 * ArgsProcessor.
+	 * @return <code>true</code> if the argument was added successfully,
+	 * <code>false</code> otherwise.
+	 */
 	virtual bool AddArg (const char *arg_s, const bool hyphen_flag);
 
 private:
