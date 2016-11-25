@@ -694,7 +694,7 @@ FILE_VERSION_FILTER    =
 # DoxygenLayout.xml, doxygen will parse it automatically even if the LAYOUT_FILE
 # tag is left empty.
 
-LAYOUT_FILE            = 
+LAYOUT_FILE            = DoxygenLayout.xml
 
 # The CITE_BIB_FILES tag can be used to specify one or more bib files containing
 # the reference definitions. This must be a list of .bib files. The .bib
@@ -785,7 +785,25 @@ INPUT                  = ../shared/src \
                          ../server/src \
                          ../clients \
                          ../readme.md \
-                         .
+                         admin_guide.md \
+                         user_guide.md \
+                         dev_guide.md \
+                         async_services.md \
+                         blast_service.md \
+                         examples.md \
+                         handlers.md \
+                         installation.md \
+                         irods.md \
+                         linked_services.md \
+                         mongodb.md \
+                         samtools_service.md \
+                         schema.md \
+                         searches.md \
+                         server_configuration.md \
+                         server.md \
+                         service_configuration.md \
+                         service_response.md \
+                         services.md
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses

@@ -1,4 +1,6 @@
-# BLAST Service
+﻿BLAST Service 
+=============
+
 
 The [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) Service allows BLAST queries to be submitted against a number of databases.
 
@@ -21,7 +23,7 @@ The [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) Service allows BLAST querie
     * **drmaa**: This will be run by submitting a job to a DRMAA environment.
 
 
-### Linked Service keys
+### Linked %Service keys
 
  * **database**: The database from which each hit comes from.
  * **scaffold**: The list of scaffolds that each hit belongs to 
