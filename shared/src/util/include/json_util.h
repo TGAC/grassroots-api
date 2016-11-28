@@ -142,7 +142,7 @@ PREFIX const char *PARAM_TYPE_S VAL("type");
 PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type_number");
 PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_TEXT_S VAL("grassroots_type");
 
-PREFIX const char *PARAM_GRASSROOTS_S VAL("grassroots");
+PREFIX const char *PARAM_GRASSROOTS_S VAL("parameter_type");
 PREFIX const char *PARAM_COMPOUND_TEXT_S VAL("text");
 PREFIX const char *PARAM_COMPOUND_VALUE_S VAL("value");
 
