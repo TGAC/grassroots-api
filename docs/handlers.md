@@ -211,7 +211,11 @@ char *ReadFileChunk (const char * const filename_s)
 }
 ~~~
 
+
+The complete list of Handler functions is shown below and clicking upon the function names will take you to the appropriate API documentation.
+
 ~~~{.c}
+
 size_t 	ReadFromHandler (struct Handler *handler_p, void *buffer_p, const size_t length)
  
 size_t 	WriteToHandler (struct Handler *handler_p, const void *buffer_p, const size_t length)

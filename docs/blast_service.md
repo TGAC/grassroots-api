@@ -13,7 +13,7 @@ The [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) Service allows BLAST querie
     * **filename**: This is the database value that the BLAST query will use to search against.
     * **description**: This is a user-friendly description to display to the user.
     * **active**: This is a boolean value that specifies whether the database is selected to search against by default. 
-    * **type**: This specfies the type of database which in turn determines what BLAST tools can query it. The available values are:
+    * **type**: This specifies the type of database which in turn determines what BLAST tools can query it. The available values are:
         * **nuceleotide**: This declares the database as nucleotide one for usage with tools such as BlastN. If the *type* key is omitted, this is the default.
         * **protein**: This specifies that the database is for a protein for usage with tools such as BlastP, BlastX, *etc.*
  * **blast_formatter**: This key determines how the output from the BLAST searches can be converted between the different available output formats. Currently the only available option for this is **system**. 

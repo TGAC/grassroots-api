@@ -1743,7 +1743,13 @@ bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p
 static json_t *GetInitialisedProcessedRequest (void)
 {
 	/*
- "@context": {
+"@context": {
+
+	 "gap_penalty": {
+		 "@id": "http://edamontology.org/data_2137",
+		 "@type": "@id"
+	 },
+
     "database": {
       "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505",
       "@type": "@id"

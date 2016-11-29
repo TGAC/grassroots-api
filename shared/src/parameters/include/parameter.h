@@ -719,13 +719,24 @@ GRASSROOTS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p
  * within the Parameter's current value.
  * @return The Parameter value as a string or <code>NULL</code> if there was an error.
  * @see FreeCopiedString
+ * @see SetParameterValueFromString
  * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
 
+/**
+ * Set the current value of a Parameter from a string.
+ *
+ * @param param_p The Parameter to get the current value for.
+ * @param value_s The Parameter value as a string.
+ * @return <code>true</code> if the Paremeter value was set successfully, <code>false</code> otherwise.
+ * @see GetParameterValueAsString
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API bool SetParameterValueFromString (Parameter * const param_p, const char *value_s);
+
 
 
 GRASSROOTS_PARAMS_API bool SetSharedTypeFromString (SharedType * const value_p, const ParameterType pt, const char *value_s);
@@ -814,13 +825,24 @@ GRASSROOTS_PARAMS_API bool GetParameterDisplayNameFromConfig (const struct Servi
 GRASSROOTS_PARAMS_API bool GetParameterLevelFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, ParameterLevel *level_p);
 
 
-
+/**
+ * Allocate a ParameterNode for a given Parameter so that it can be stored
+ * upon a LinkedList.
+ *
+ * @param param_p The Parameter that the ParameterNode will reference.
+ * @return the newly-allocated ParameterNode or <code>NULL</code> upon error.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API ParameterNode *AllocateParameterNode (Parameter *param_p);
 
+
+/**
+ * Free a ParameterNode.
+ *
+ * @param node_p The ParameterNode to free.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API void FreeParameterNode (ListItem *node_p);
-
-
-
 
 
 GRASSROOTS_PARAMS_API json_t *GetRunnableParameterAsJSON (const char * const name_s, const SharedType * const value_p, const ParameterType param_type, const SchemaVersion * const sv_p, const bool full_definition_flag);

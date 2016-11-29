@@ -57,7 +57,9 @@ Since the scientific functionality is delivered by each of the Services, most de
 
 ### %Handler
 
-Handlers are the family of components that allow data to be read or written to different storage systems. These are explained in the [Handlers guide] (handlers.md "Handlers guide").
+Handlers are the family of components that allow data to be read or written to different storage systems such as local filesystems, iRods, http(s), Dropbox, *etc*.
+By abstracting these different systems out, other parts of the Grassroots architecture can read and write data transparently without having to be concerned about the underlying storage mechanism.
+Handlers are explained in detail in the [Handlers guide] (handlers.md "Handlers guide").
 
 
 ### Utility
