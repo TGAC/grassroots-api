@@ -45,11 +45,21 @@ public:
 	 * @param name_s The name to give to this BlastTool.
 	 * @param data_p The BlastServiceData for the Service that will run this BlastTool.
 	 * @param factory_s The name of the BlastToolFactory that created this BlastTool.
+	 * @param output_format The output format that this BlastTool will produce its results in.
 	 * @see BlastServiceJob
 	 */
 	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const uint32 output_format);
 
 
+	/**
+	 * Create a BlastTool for a given ServiceJob.
+	 *
+	 * @param job_p The ServiceJob to associate with this BlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this BlastTool.
+	 * @param json_p The JSON fragment representing a serialised version of the BlastTool.
+	 * @param output_format The output format that this BlastTool will produce its results in.
+	 * @see BlastServiceJob
+	 */
 	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p, const uint32 output_format);
 
 
@@ -59,6 +69,12 @@ public:
 	virtual ~BlastTool ();
 
 
+	/**
+	 * Get the output format code that this BlastTool will produce its
+	 * results in.
+	 *
+	 * @return The output format code.
+	 */
 	uint32 GetOutputFormat () const;
 
 
@@ -76,6 +92,8 @@ public:
 	 * to it being ran.
 	 *
 	 * @param params_p The ParameterSet to parse.
+	 * @param app_params_p The BlastAppParameters to use process the
+	 * values from the given ParameterSe
 	 * @return <code>true</code> if the BlastTool was configured
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
@@ -115,6 +133,9 @@ public:
 	/**
 	 * Get the status of a BlastTool
 	 *
+	 * @param update_flag if this is <code>true</code> then the BlastTool
+	 * will check the status of its running jobs if necessary, if this is
+	 * <code>false</code> it will return the last cached value.
 	 * @return The OperationStatus of this BlastTool.
 	 */
 	virtual OperationStatus GetStatus (bool update_flag = true);

@@ -283,6 +283,11 @@ typedef struct NamedParameterType
 	const ParameterType npt_type;
 } NamedParameterType;
 
+
+/**
+ * A macro to provide a quick way to set the name and ParameterType for
+ * NamedParameterType objects.
+ */
 #define SET_NAMED_PARAMETER_TYPE_TAGS(a,b) {a, b}
 
 /* forward declaration */
@@ -449,6 +454,7 @@ GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *o
 /**
  * Allocate a Parameter
  *
+ * @param service_data_p The ServiceData for the Service that is allocating this Parmeter.
  * @param type The ParameterType for this Parameter.
  * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
  * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
@@ -635,12 +641,16 @@ GRASSROOTS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const 
  * Get the json-based representation of a Parameter.
  *
  * @param parameter_p The Parameter to get.
+ * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
+ * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
+ * current version of the running Grassroots system will be used.
  * @param full_definition_flag If this is <code>true</code> then all of the details for this
  * Parameter will get added. If this is <code>false</code> then just the name and current value
  * will get added. This is useful is you just want to send the values to use when running a
  * service.
  * @return A newly-allocated json-based description of the Parameter or <code>NULL</code>
  * upon error. When you no longer require the value you need to call json_decref upon it.
+ * @see GetRunnableParameterAsJSON
  * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
@@ -725,11 +735,10 @@ GRASSROOTS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p
 GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
-
 /**
  * Set the current value of a Parameter from a string.
  *
- * @param param_p The Parameter to get the current value for.
+ * @param param_p The Parameter to set the current value for.
  * @param value_s The Parameter value as a string.
  * @return <code>true</code> if the Paremeter value was set successfully, <code>false</code> otherwise.
  * @see GetParameterValueAsString
@@ -738,7 +747,15 @@ GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const p
 GRASSROOTS_PARAMS_API bool SetParameterValueFromString (Parameter * const param_p, const char *value_s);
 
 
-
+/**
+ * Set the current value of a SharedType from a string.
+ *
+ * @param value_p The Parameter to set the current value for.
+ * @param pt The ParameterType for the given SharedType.
+ * @param value_s The Parameter value as a string.
+ * @return <code>true</code> if the SharedType value was set successfully, <code>false</code> otherwise.
+ * @memberof SharedType
+ */
 GRASSROOTS_PARAMS_API bool SetSharedTypeFromString (SharedType * const value_p, const ParameterType pt, const char *value_s);
 
 
@@ -746,7 +763,7 @@ GRASSROOTS_PARAMS_API bool SetSharedTypeFromString (SharedType * const value_p, 
  * Allocate a SharedTypeNode set to the given value.
  *
  * @param value The value that will be copied to the SharedTypeNode.
- * @return The newly-allocated SharedTypeNodeor <code>NULL</code> if there was an error.
+ * @return The newly-allocated SharedTypeNode or <code>NULL</code> if there was an error.
  * @memberof SharedTypeNode
  */
 GRASSROOTS_PARAMS_API SharedTypeNode *AllocateSharedTypeNode (SharedType value);
@@ -805,23 +822,82 @@ GRASSROOTS_PARAMS_API const char *GetGrassrootsTypeAsString (const ParameterType
 GRASSROOTS_PARAMS_API bool GetGrassrootsTypeFromString (const char *param_type_s, ParameterType *param_type_p);
 
 
-
+/**
+ * Set the value for a given SharedType object from a JSON fragment.
+ *
+ * @param value_p The SharedType object to update.
+ * @param json_p The JSON fragment to read the value to update the SharedType object's value from.
+ * @param pt The ParameterType of the SharedType object.
+ * will be stored.
+ * @return <code>true</code> if the SharedType object was updated successfully, <code>false</code> otherwise.
+ * @memberof SharedType
+ */
 GRASSROOTS_PARAMS_API bool SetSharedTypeFromJSON (SharedType *value_p, const json_t *json_p, const ParameterType pt);
 
 
-
+/**
+ * Get the configured visibility value for a given ParameterGroup.
+ *
+ * @param service_data_p The ServiceData for the Service that the given ParameterGroup belongs to.
+ * @param group_name_s The name of the ParameterGroup to check.
+ * @param visibility_p Pointer to where the value for configured visibility value for the given ParameterGroup
+ * will be stored.
+ * @return <code>true</code> if the visibility flag was set successfully, <code>false</code> otherwise.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API bool GetParameterGroupVisibility (const struct ServiceData *service_data_p, const char *group_name_s, bool *visibility_p);
 
 
+/**
+ * Get the configured default value for a given Parameter.
+ *
+ * @param service_data_p The ServiceData for the Service that the given ParameterGroup belongs to.
+ * @param param_name_s The name of the Parameter to check.
+ * @param pt The ParameterType of the given Parameter.
+ * @param value_p Pointer to where the value for configured default value for the given Parameter
+ * will be stored.
+ * @return <code>true</code> if the default value was set successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API bool GetParameterDefaultValueFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, const ParameterType pt, SharedType *value_p);
 
 
+/**
+ * Get the configured description for a given Parameter.
+ *
+ * @param service_data_p The ServiceData for the Service that the given ParameterGroup belongs to.
+ * @param param_name_s The name of the Parameter to check.
+ * @param description_ss Pointer to where the value for configured default value for the given Parameter
+ * will be stored.
+ * @return <code>true</code> if the description was set successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API bool GetParameterDescriptionFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, char **description_ss);
 
 
+/**
+ * Get the configured display name for a given Parameter.
+ *
+ * @param service_data_p The ServiceData for the Service that the given ParameterGroup belongs to.
+ * @param param_name_s The name of the Parameter to check.
+ * @param display_name_ss Pointer to where the value for configured default value for the given Parameter
+ * will be stored.
+ * @return <code>true</code> if the description was set successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API bool GetParameterDisplayNameFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, char **display_name_ss);
 
 
+/**
+ * Get the configured ParameterLevel for a given Parameter.
+ *
+ * @param service_data_p The ServiceData for the Service that the given ParameterGroup belongs to.
+ * @param param_name_s The name of the Parameter to check.
+ * @param level_p Pointer to where the value for configured ParameterLevel of the given Parameter
+ * will be stored.
+ * @return <code>true</code> if the ParameterLevel was set successfully, <code>false</code> otherwise.
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API bool GetParameterLevelFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, ParameterLevel *level_p);
 
 
@@ -840,11 +916,31 @@ GRASSROOTS_PARAMS_API ParameterNode *AllocateParameterNode (Parameter *param_p);
  * Free a ParameterNode.
  *
  * @param node_p The ParameterNode to free.
- * @memberof Parameter
+ * @memberof Parameter,
  */
 GRASSROOTS_PARAMS_API void FreeParameterNode (ListItem *node_p);
 
 
+/**
+ * Get the minimal json-based representation of a Parameter needed to run one or
+ * more ServiceJobs. This is typically used when sending a request to a Server to
+ * run a Service.
+ *
+ * @param name_s The name of the Parameter.
+ * @param value_p The SharedValue containing the current value of the Parameter.
+ * @param param_type The ParameterType of the Parameter.
+ * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
+ * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
+ * current version of the running Grassroots system will be used.
+ * @param full_definition_flag If this is <code>true</code> then all of the details for this
+ * Parameter will get added. If this is <code>false</code> then just the name and current value
+ * will get added. This is useful is you just want to send the values to use when running a
+ * service.
+ * @return A newly-allocated json-based description of the Parameter or <code>NULL</code>
+ * upon error. When you no longer require the value you need to call json_decref upon it.
+ * @see GetParameterAsJSON
+ * @memberof Parameter
+ */
 GRASSROOTS_PARAMS_API json_t *GetRunnableParameterAsJSON (const char * const name_s, const SharedType * const value_p, const ParameterType param_type, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 

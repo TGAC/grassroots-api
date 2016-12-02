@@ -129,6 +129,14 @@ protected:
 	DrmaaToolArgsProcessor *dbt_args_processor_p;
 
 
+	/**
+	 * Get the ArgsProcessor that this BlastTool will use
+	 * to parse the input ParameterSet prior to running its
+	 * job.
+	 *
+	 * @return The ArgsProcessor for this BlastTool or
+	 * <code>0</code> upon error.
+	 */
 	virtual ArgsProcessor *GetArgsProcessor ();
 
 	/**

@@ -1,4 +1,4 @@
-﻿Server Guide {#ServerGuide}
+﻿Server Guide 
 ============
 
 # [Server](#server)

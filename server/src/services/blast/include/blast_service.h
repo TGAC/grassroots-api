@@ -106,7 +106,7 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 	BlastToolFactory *bsd_tool_factory_p;
 
 
-
+	/** Specifies whether the databases are nucelotide or protein databases. */
 	DatabaseType bsd_type;
 
 } BlastServiceData;

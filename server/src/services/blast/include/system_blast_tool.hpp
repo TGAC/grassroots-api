@@ -57,6 +57,8 @@ public:
 	 * to it being ran.
 	 *
 	 * @param params_p The ParameterSet to parse.
+	 * @param app_params_p The BlastAppParameters to use process the
+	 * values from the given ParameterSet.
 	 * @return <code>true</code> if the BlastTool was configured
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
@@ -74,6 +76,15 @@ public:
 	virtual OperationStatus Run ();
 
 protected:
+
+	/**
+	 * Get the ArgsProcessor that this BlastTool will use
+	 * to parse the input ParameterSet prior to running its
+	 * job.
+	 *
+	 * @return The ArgsProcessor for this BlastTool or
+	 * <code>0</code> upon error.
+	 */
 	virtual ArgsProcessor *GetArgsProcessor ();
 
 	bool Init (const char *prog_s);

@@ -76,6 +76,8 @@ public:
 	 * to it being ran.
 	 *
 	 * @param params_p The ParameterSet to parse.
+	 * @param app_params_p The BlastAppParameters to use process the
+	 * values from the given ParameterSet.
 	 * @return <code>true</code> if the BlastTool was configured
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
@@ -140,7 +142,14 @@ protected:
 	const char *ebt_blast_s;
 
 
-
+	/**
+	 * Get the ArgsProcessor that this BlastTool will use
+	 * to parse the input ParameterSet prior to running its
+	 * job.
+	 *
+	 * @return The ArgsProcessor for this BlastTool or
+	 * <code>0</code> upon error.
+	 */
 	virtual ArgsProcessor *GetArgsProcessor () = 0;
 
 
@@ -149,6 +158,10 @@ protected:
 	 * that this BlastTool will run with.
 	 *
 	 * @param arg_s The argument to add.
+	 * @param hyphen_flag If this is <code>true</code> then a hyphen
+	 * will be prefixed the given value e.g. turning "foo" into "-foo"
+	 * before being added, if this is <code>false</code> then the argument
+	 * is added unaltered.
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */

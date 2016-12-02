@@ -117,7 +117,10 @@ GRASSROOTS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, P
 /**
  * Allocate a new Parameter and add it to a ParameterSet.
  *
+ * @param service_data_p The ServiceData for the Service that is allocating this Parmeter.
  * @param params_p The ParameterSet to add the new Parameter to.
+ * @param group_p The ParameterGroup to add this Parameter to. This can be <code>NULL</code> in which case
+ * the Parameter will not be placed within any ParameterGroup.
  * @param type The ParameterType for this Parameter.
  * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
  * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
@@ -154,6 +157,9 @@ GRASSROOTS_PARAMS_API Parameter *EasyCreateAndAddParameterToParameterSet (const 
  * as much as possible.
  *
  * @param param_set_p The ParameterSet to generate the description for.
+ * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
+ * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
+ * current version of the running Grassroots system will be used.
  * @param full_definition_flag If this is <code>true</code> then all of the details for each of
  * the Parameters will get added. If this is <code>false</code> then just the name and
  * current value of each Parameter will get added. This is useful is you just want to send
@@ -171,6 +177,9 @@ GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const 
  * Generate a json-based description of a selection of ParameterSet.
  *
  * @param param_set_p The ParameterSet to generate the description for.
+ * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
+ * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
+ * current version of the running Grassroots system will be used.
  * @param full_definition_flag If this is <code>true</code> then all of the details for each of
  * the Parameters will get added. If this is <code>false</code> then just the name and
  * current value of each Parameter will get added. This is useful is you just want to send
@@ -266,42 +275,6 @@ GRASSROOTS_PARAMS_API ParameterSetNode *AllocateParameterSetNode (ParameterSet *
 GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
 
 
-/**
- * Create and add a ParameterGroup to a ParameterSet.
- *
- * @param param_set_p The ParameterSet to add the ParameterGroup to.
- * @param group_name_s The name of the ParameterGroup that will get displayed to the user.
- * @param group_key_s An internal name for the ParameterGroup
- * @param params_pp An array of pointers to Parameters that are within the given ParameterSet.
- * @param num_params The number of Parameters in params_pp.
- * @return the ParameterGroup if it was added successfully, <code>NULL/code>
- * otherwise.
- * @memberof ParameterSet
- */
-//GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
-
-
-
-//GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
-
-
-
-/**
- * Create and add a ParameterGroup to a ParameterSet by the Parameter names.
- *
- * @param param_set_p The ParameterSet to add the ParameterGroup to.
- * @param group_name_s The name of the ParameterGroup that will get displayed to the user.
- * @param group_key_s An internal name for the ParameterGroup
- * @param param_names_ss An array of names of Parameters that are within the given ParameterSet.
- * @param num_params The number of Parameters in params_pp.
- * @return the ParameterGroup if it was added successfully, <code>NULL/code>
- * otherwise.
- * @memberof ParameterSet
- * @see AddParameterGroupToParameterSet
- */
-//GRASSROOTS_PARAMS_API ParameterGroup *AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params, struct ServiceData *service_data_p);
-
-
 
 /**
  * Remove the Parameter with a given name from a ParameterSet.
@@ -328,7 +301,15 @@ GRASSROOTS_PARAMS_API Parameter *DetachParameterByName (ParameterSet *params_p, 
 GRASSROOTS_PARAMS_API struct ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 
 
-
+/**
+ * Add a ParameterGroup to a ParameterSet.
+ *
+ * @param param_set_p The ParameterSet to add the ParameterGroup to.
+ * @param group_p The ParameterGroup to add.
+ * @return <code>true</code> if the ParameterGroup was added successfully, <code>false</code>
+ * otherwise.
+ * @memberof ParameterSet
+ */
 GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
 
 

@@ -395,6 +395,12 @@ GRASSROOTS_UTIL_API bool IsUUIDSet (uuid_t id);
 
 
 
+/**
+ * Test whether a given string contains any whitespace characters.
+ *
+ * @param value_s The string to check.
+ * @return <code>true</code> if the string contains any whitespace characters, <code>false</code> otherwise.
+ */
 GRASSROOTS_UTIL_API bool DoesStringContainWhitespace (const char *value_s);
 
 

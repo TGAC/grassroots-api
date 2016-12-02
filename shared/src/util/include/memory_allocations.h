@@ -109,6 +109,8 @@ typedef enum MEM_FLAG
 
 		/** Free the memory pointed to by x */
 		#define FreeMemory(x)	free(x)
+
+		/** Is the current memory allocator suitable for use in a threaded environment> */
 		#define IsAllocatorThreadSafe() (1)
 	#endif
 
@@ -116,15 +118,47 @@ typedef enum MEM_FLAG
 
 
 
+/**
+ * Allocate some memory that can shared between different processes.
+ *
+ * @param id_s An identifier that will be used to access the shared memory segment
+ * if it is successfully allocated.
+ * @param size The size of the requested segment in bytes.
+ * @param flags The permissions for the owner, group and world permissions in
+ * standard unix format e.g. 0644 for owner to have read and write permissions whilst
+ * everyone else having read permissions.
+ * @return The segment identifier for the shared memory segment or -1 upon error.
+ */
 int AllocateSharedMemory (const char *id_s, size_t size, int flags);
 
 
+/**
+ * Free the shared memory segment for a given id.
+ *
+ * @param id The segment identifier for the shared memory segment to free.
+ * @return <code>true</code> if the memory segment was freed successfully,
+ * <code>false</code> otherwise.
+ */
 bool FreeSharedMemory (int id);
 
 
+/**
+ * Open a shared memory segment.
+ *
+ * @param id The segment identifier for the shared memory segment to open.
+ * @param flags This can be SHM_RDONLY for read-only memory.
+ * @return The pointer to the shared memory to be used or <code>NULL</code> upon error.
+ */
 void *OpenSharedMemory (int id, int flags);
 
 
+/**
+ * Close a shared memory segment.
+ *
+ * @param value_p The shared memory segment.
+ * @return <code>true</code> if the memory segment was closed successfully,
+ * <code>false</code> otherwise.
+ */
 bool CloseSharedMemory (void *value_p);
 
 

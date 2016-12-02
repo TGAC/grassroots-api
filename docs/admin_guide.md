@@ -1,4 +1,4 @@
-Administrator Guide {#admin_guide}
+﻿Administrator Guide {#admin_guide}
 ====================
 
 
@@ -29,6 +29,8 @@ The services with extra configuration options are listed [below](#specific_servi
 [Linked Services](linked_services.md) are when the output of running a %Service can be used to either fully or partially fill in the parameters of one or more other Services ready to be run by a user. The service-specific details for the linking of Services are listed below.
 
 ## Specific Services Configuration {#specific_services_configuration}
+
+Links for the configuration for the following services are listed below:
 
  * [BLAST services](blast_service.md)
  * [SamTools service](samtools_service.md)
