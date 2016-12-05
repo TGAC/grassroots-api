@@ -61,9 +61,15 @@ public:
 	ExternalBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s);
 
 
+	/**
+	 * Create a ExternalBlastTool for a given ServiceJob using the configuration details from
+	 * a serialised JSON fragment.
+	 *
+	 * @param job_p The ServiceJob to associate with this ExternalBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this ExternalBlastTool.
+	 * @param json_p The JSON fragment to fill in the serialised values such as job name, etc.
+	 */
 	ExternalBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
-
-
 
 
 	/**
@@ -75,7 +81,7 @@ public:
 	 * Parse a ParameterSet to configure a ExternalBlastTool prior
 	 * to it being ran.
 	 *
-	 * @param params_p The ParameterSet to parse.
+	 * @param param_set_p The ParameterSet to parse.
 	 * @param app_params_p The BlastAppParameters to use process the
 	 * values from the given ParameterSet.
 	 * @return <code>true</code> if the BlastTool was configured
@@ -117,6 +123,15 @@ public:
 	virtual char *GetResults (BlastFormatter *formatter_p);
 
 
+	/**
+	 * Get a copy of the log data from the run of this ExternalBlastTool's
+	 * run.
+	 *
+	 * @return The log data or <code>0</code> upon error. If a valid value is
+	 * returned, this will need to be freed by <code>FreeCopiedString</code>
+	 * to avoid a memory leak.
+	 * @see FreeCopiedString
+	 */
 	virtual char *GetLog ();
 
 protected:

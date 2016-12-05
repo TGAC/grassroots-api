@@ -184,7 +184,18 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 
+	/**
+	 * This function is used to customise any ServiceJob objects that this Service creates.
+	 * It is often used to automatically set the <code>sj_update_fn</code> and <code>sj_free_fn</code>
+	 * members of a ServiceJob.
+	 *
+	 * @param service_p This Service.
+	 * @param job_p The ServiceJob to customise.
+	 * @see ServiceJob
+	 * @see SetServiceJobCustomFunctions
+	 */
 	void (*se_customise_service_job_fn) (struct Service *service_p, struct ServiceJob *job_p);
+
 
 	/**
 	 * Function to release the ParameterSet for this Service.
@@ -201,9 +212,26 @@ typedef struct Service
 	bool (*se_close_fn) (struct Service *service_p);
 
 
+	/**
+	 * Function to parse a JSON fragment from a previously serialised ServiceJob created by
+	 * this Service.
+	 *
+	 * @param service_p A Service of the same type that the serialised ServiceJob was run by.
+	 * @param service_job_json_p The JSON fragment representing the serialised ServiceJob.
+	 * @return The newly-constructed ServiceJob or <code>NULL</code> upon error.
+	 * @see CreateSerialisedServiceJobFromService
+	 */
 	struct ServiceJob *(*se_deserialise_job_json_fn) (struct Service *service_p, const json_t *service_job_json_p);
 
 
+	/**
+	 * Function to create a JSON fragment representing a serialised ServiceJob.
+	 *
+	 * @param service_p The Service that created the ServiceJob.
+	 * @param service_job_p The ServiceJob to serialise.
+	 * @return TThe JSON fragment representing the serialised ServiceJob or <code>NULL</code> upon error.
+	 * @see CreateSerialisedJSONFromServiceJob
+	 */
 	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
 
 
@@ -235,9 +263,6 @@ typedef struct Service
 	 * Any custom data that the service needs to store.
 	 */
 	ServiceData *se_data_p;
-
-
-
 
 } Service;
 
@@ -321,7 +346,8 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
  *
  * @param service_p The Service to run.
  * @param param_set_p The ParameterSet to run the Service with.
- * @param credentials_p An optional set of UserDetails as json.
+ * @param user_p An optional set of UserDetails as json.
+ * @param providers_p The ProvidersStateTable to be used by any RemoteServices.
  * @return A newly-allocated ServiceJobSet containing the details for the new jobs or
  * <code>NULL</code> upon error.
  * @memberof Service
@@ -341,9 +367,27 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 GRASSROOTS_SERVICE_API bool DoesServiceHaveCustomServiceJobSerialisation (struct Service *service_p);
 
 
+/**
+ * Function to parse a JSON fragment from a previously serialised ServiceJob.
+ *
+ * @param service_p A Service of the same type that the serialised ServiceJob was run by.
+ * @param service_job_json_p The JSON fragment representing the serialised ServiceJob.
+ * @return The newly-constructed ServiceJob or <code>NULL</code> upon error.
+ * @see se_deserialise_job_fn
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API struct ServiceJob *CreateSerialisedServiceJobFromService (struct Service *service_p, const json_t *service_job_json_p);
 
 
+/**
+ * Function to create a JSON fragment representing a serialised ServiceJob.
+ *
+ * @param service_p A Service of the same type that the serialised ServiceJob was run by.
+ * @param service_job_p The ServiceJob to serialise.
+ * @return TThe JSON fragment representing the serialised ServiceJob or <code>NULL</code> upon error.
+ * @see se_serialise_job_fn
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API json_t *CreateSerialisedJSONForServiceJobFromService (struct Service *service_p, const struct ServiceJob *service_job_p);
 
 
@@ -672,6 +716,8 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
  * @param external_server_p The ExternalServer that the PairedService runs on.
  * @param remote_service_name_s The name of the PairedService on the ExternalServer.
  * @param op_p The JSON fragment to create the PairedService's ParameterSet from.
+ * @param provider_p The JSON fragment representing the Provider.
+ * @ref server_configuration.md
  * @return <code>true</code> if the PairedService was created and added successfully, <code>false</code> otherwise.
  * @see AddPairedService.
  * @see AllocatePairedService.
@@ -748,7 +794,16 @@ GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_
 GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p,  const bool full_definition_flag);
 
 
-
+/**
+ * This function is used to customise any ServiceJob objects that a given Service creates.
+ * It is often used to automatically set the <code>sj_update_fn</code> and <code>sj_free_fn</code>
+ * members of a ServiceJob.
+ *
+ * @param service_p The Service to set the custom ServiceJob functions for.
+ * @param job_p The ServiceJob to customise.
+ * @see ServiceJob
+ * @see se_customise_service_job_fn
+ */
 GRASSROOTS_SERVICE_API void SetServiceJobCustomFunctions (Service *service_p, struct ServiceJob *job_p);
 
 

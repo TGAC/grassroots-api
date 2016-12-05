@@ -97,7 +97,8 @@ extern "C"
  *
  * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
- * @param required_flag Is this MappedParameter required or is optional to run the LinkedService?
+ * @param required_flag <code>true</code> if this MappedParameter required or <code>false</code> if it is optional to run the LinkedService.
+ * @param multi_flag <code>true</code> if this MappedParameter can have multiple input values or <code>false</code> if it just has a single value.
  * @return The newly-allocated MappedParameter or <code>NULL</code> upon error.
  * @memberof MappedParameter
  */
@@ -142,8 +143,18 @@ GRASSROOTS_SERVICE_API MappedParameterNode *AllocateMappedParameterNode (MappedP
 GRASSROOTS_SERVICE_API void FreeMappedParameterNode (ListItem *node_p);
 
 
-
-GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params);
+/**
+ * Process a MappedParameter and fill in the appropriate value in a
+ * given ParameterSet belonging to an output Service to run based upon
+ * the results within a given ServiceJob.
+ *
+ * @param mapped_param_p The MappedParameter to process.
+ * @param job_p The ServiceJob to get the results from.
+ * @param output_params_p The ParameterSet to set the value for the output Service.
+ * @return <code>true</code> if the MappedParameter was processed successfully, <code>false</code> otherwise.
+ * @memberof MappedParameter
+ */
+GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params_p);
 
 
 #ifdef __cplusplus

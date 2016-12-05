@@ -49,9 +49,6 @@ typedef struct LinkedService
 	 */
 	char *ls_output_service_s;
 
-
-	char *ls_input_key_s;
-
 	/**
 	 * The list of MappedParameterNodes storing the information
 	 * required to map values from the input Service's results
@@ -146,6 +143,7 @@ GRASSROOTS_SERVICE_API void FreeLinkedServiceNode (ListItem *node_p);
  * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @param required_flag Is this MappedParameter required or is optional to run the LinkedService?
+ * @param multi_flag <code>true</code> if this MappedParameter can have multiple input values or <code>false</code> if it just has a single value.
  * @return <code>true</code> if the MappedParameter was created and added successfully, <code>false</code> otherwise.
  * @memberof LinkedService
  * @see AllocateMappedParameter
@@ -166,13 +164,35 @@ GRASSROOTS_SERVICE_API bool AddMappedParameterToLinkedService (LinkedService *li
 
 
 
+/**
+ * Get the MappedParameter with a given name from a LinkedService.
+ *
+ * @param linked_service_p The LinkedService to get the MappedParameter from.
+ * @param name_s The name of the MappedParmeter to search for.
+ * @return The matching MappedParameter or <code>NULL</code> if it copuld not be found.
+ */
 GRASSROOTS_SERVICE_API struct MappedParameter *GetMappedParameterByInputParamName (const LinkedService *linked_service_p, const char * const name_s);
 
 
-
+/**
+ * Get the JSON representation of a LinkedService.
+ *
+ * @param linked_service_p The LinkedService to serialise.
+ * @return The JSON fragment.
+ * @memberof LinkedService
+ */
 GRASSROOTS_SERVICE_API json_t *GetLinkedServiceAsJSON (LinkedService *linked_service_p);
 
 
+/**
+ * Run a LinkedService.
+ *
+ * @param linked_service_p The LinkedService to run.
+ * @param job_p The ServiceJob that the results of running the LinkedService will be
+ * added to.
+ * @return <code>true</code> if the LinkedService was run successfully, <code>false</code> otherwise.
+ * @memberof LinkedService
+ */
 GRASSROOTS_SERVICE_API bool ProcessLinkedService (LinkedService *linked_service_p, struct ServiceJob *job_p);
 
 #ifdef __cplusplus

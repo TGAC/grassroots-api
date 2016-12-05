@@ -148,7 +148,7 @@ MappedParameter *CreateMappedParameterFromJSON (const json_t *mapped_param_json_
 bool ProcessMappedParameter (MappedParameter *mapped_param_p, ServiceJob *job_p, ParameterSet *output_params_p)
 {
 	bool success_flag = false;
-	char *param_value_s = NULL; //GenerateLinkedServiceResults (job_p, mapped_param_p -> mp_input_param_s);
+	char *param_value_s = GenerateLinkedServiceResults (job_p, mapped_param_p -> mp_input_param_s);
 
 	if (param_value_s)
 		{

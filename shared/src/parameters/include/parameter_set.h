@@ -146,7 +146,25 @@ GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const stru
 
 
 
-
+/**
+ * Allocate a new Parameter and add it to a ParameterSet. This is suitable for most Parameters that are single-valued. For more
+ * complex Parameters, use <code>CreateAndAddParameterToParameterSet</code>.
+ *
+ * @param service_data_p The ServiceData for the Service that is allocating this Parmeter.
+ * @param params_p The ParameterSet to add the new Parameter to.
+ * @param group_p The ParameterGroup to add this Parameter to. This can be <code>NULL</code> in which case
+ * the Parameter will not be placed within any ParameterGroup.
+ * @param type The ParameterType for this Parameter.
+ * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * This can be <code>NULL</code>.
+ * @param description_s The description of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
+ * @param default_value The default value for this Parameter.
+ * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
+ * @return A newly-allocated Parameter or <code>NULL</code> upon error.
+ * @see CreateAndAddParameterToParameterSet
+ * @memberof ParameterSet
+ */
 GRASSROOTS_PARAMS_API Parameter *EasyCreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type,
 	const char * const name_s, const char * const display_name_s, const char * const description_s, SharedType default_value, uint8 level);
 

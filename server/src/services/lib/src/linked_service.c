@@ -68,7 +68,6 @@ LinkedService *AllocateLinkedService (const char *input_service_s, const char *i
 							if (linked_service_p)
 								{
 									linked_service_p -> ls_output_service_s = input_service_copy_s;
-									linked_service_p -> ls_input_key_s = input_key_copy_s;
 									linked_service_p -> ls_mapped_params_p = list_p;
 
 									return linked_service_p;

@@ -91,7 +91,7 @@ public:
 	 * Parse a ParameterSet to configure a BlastTool prior
 	 * to it being ran.
 	 *
-	 * @param params_p The ParameterSet to parse.
+	 * @param param_set_p The ParameterSet to parse.
 	 * @param app_params_p The BlastAppParameters to use process the
 	 * values from the given ParameterSe
 	 * @return <code>true</code> if the BlastTool was configured

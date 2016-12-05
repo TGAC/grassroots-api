@@ -36,8 +36,14 @@ typedef struct HttpHandler
 	 */
 	Handler hh_base_handler;
 	
+	/**
+	 * The CurlTool that this HttpHandler will use to connect to a URI.
+	 */
 	CurlTool *hh_curl_p;
 
+	/**
+	 * The FILE where the data will be written to.
+	 */
 	FILE *hh_local_f;
 
 } HttpHandler;
@@ -49,8 +55,22 @@ extern "C"
 #endif
 
 
+/**
+ * Get a newly-created HttpHandler.
+ *
+ * @param user_p The UserDetails for the user requesting the HttpHandler.
+ * @return The newly-created HttpHandler or <code>NULL</code> upon error.
+ * @memberof HttpHandler
+ */
 HTTP_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
+
+/**
+ * Free a HttpHandler.
+ *
+ * @param handler_p The HttpHandler to free.
+ * @memberof HttpHandler
+ */
 HTTP_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus

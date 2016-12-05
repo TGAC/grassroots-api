@@ -44,6 +44,14 @@ public:
 	SystemBlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s);
 
 
+	/**
+	 * Create a SystemBlastTool for a given ServiceJob using the configuration details from
+	 * a serialised JSON fragment.
+	 *
+	 * @param job_p The ServiceJob to associate with this SystemBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this SystemBlastTool.
+	 * @param json_p The JSON fragment to fill in the serialised values such as job name, etc.
+	 */
 	SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
 
 
@@ -87,6 +95,13 @@ protected:
 	 */
 	virtual ArgsProcessor *GetArgsProcessor ();
 
+	/**
+	 * Initialise the SystemBlastTool prior to it being run.
+	 *
+	 * @param prog_s The name of the BLAST program that this SystemBlastTool will run.
+	 * @return <code>true</code> if the SystemBlastTool was initialised successfully,
+	 * <code>false</code> otherwise.
+	 */
 	bool Init (const char *prog_s);
 
 

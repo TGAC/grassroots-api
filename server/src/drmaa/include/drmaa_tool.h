@@ -36,6 +36,7 @@
 //#include "drmaa.h"
 
 
+/** The default buffer size used for storing job ids */
 #define DRMAA_ID_BUFFER_SIZE (256)
 
 /* forward declaration */

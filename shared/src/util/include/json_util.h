@@ -408,6 +408,8 @@ GRASSROOTS_UTIL_API void FreeJsonNode (ListItem *node_p);
  * Allocate a FieldNode that points to the given json object.
  *
  * @param name_s The json object for the newly to point to.
+ * @param mf The MEM_FLAG used to store the name of this FieldNode.
+ * @param field_type The type of JSON object that this FieldNode will store.
  * @return A newly-allocated newly or <code>NULL</code> upon error.
  * @memberof FieldNode
  * @see FreeFieldNode

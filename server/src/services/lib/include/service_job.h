@@ -134,7 +134,6 @@ typedef struct ServiceJobSet
 	/** The ServiceJobs that are in use for the Service. */
 	LinkedList *sjs_jobs_p;
 
-	bool sjs_wait_on_jobs_flag;
 
 } ServiceJobSet;
 

@@ -32,10 +32,19 @@
 #include "byte_buffer.h"
 
 
+/**
+ * An enum specifying where any resultant data from
+ * running a CurlTool will be stored
+ */
 typedef enum CurlMode
 {
+	/** The data will be stored in memory. */
 	CM_MEMORY,
+
+	/** The data will be written to disk. */
 	CM_FILE,
+
+	/** The number of available modes. */
 	CM_NUM_MODES
 } CurlMode;
 
@@ -80,6 +89,7 @@ typedef struct CurlTool
 /**
  * Allocate a CurlTool.
  *
+ * @param mode The CurlMode that this CurlTool will use.
  * @return A newly-allocated CurlTool or <code>NULL</code> upon error.
  * @memberof CurlTool
  * @see FreeCurlTool

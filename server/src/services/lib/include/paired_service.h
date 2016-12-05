@@ -55,7 +55,7 @@ typedef struct PairedService
 	/** The URI of the ExternalServer's Grassroots service. */
 	char *ps_server_uri_s;
 
-
+	/** The JSON fragment detailing the Provider of this PairedService. */
 	json_t *ps_provider_p;
 
 	/** The ParameterSet for this PairedService. */
@@ -93,6 +93,7 @@ extern "C"
  * @param server_uri_s The URI for the ExternalServer's Grassroots access.
  * @param server_name_s The name of the ExternalServer.
  * @param op_p The JSON fragment for the Service.
+ * @param provider_p The JSON fragment from the server configuration file detailing the Provider of this PairedService.
  * @return The new PairedService or <code>NULL</code> upon error.
  * @memberof PairedService
  */
@@ -126,6 +127,8 @@ GRASSROOTS_SERVICE_API PairedServiceNode *AllocatePairedServiceNode (PairedServi
  * @param server_uri_s The URI for the ExternalServer's Grassroots access.
  * @param server_name_s The name of the ExternalServer.
  * @param op_p The JSON fragment for the Service.
+ * @param provider_p The JSON fragment representing the Provider.
+ * @ref server_configuration.md
  * @return The new PairedServiceNode or <code>NULL</code> upon error.
  * @memberof PairedServiceNode
  * @see AllocatePairedService
