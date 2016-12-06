@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * mongodb_tool.h
  *
@@ -106,7 +111,16 @@ extern "C"
 #endif
 
 
-
+/**
+ * Set the database an collection that a MongoTool will use.
+ *
+ * @param tool_p The MongoTool to update.
+ * @param db_s The database to use.
+ * @param collection_s The collection to use.
+ * @return <code>true</code> if the MongoTool was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof MongoTool
+ */
 GRASSROOTS_MONGODB_API bool SetMongoToolCollection (MongoTool *tool_p, const char *db_s, const char *collection_s);
 
 
@@ -130,12 +144,34 @@ GRASSROOTS_MONGODB_API MongoTool *AllocateMongoTool (void);
 GRASSROOTS_MONGODB_API void FreeMongoTool (MongoTool *tool_p);
 
 
+/**
+ * Insert data from a given JSON fragment using a given MongoTool.
+ *
+ * @param tool_p The MongoTool to use.
+ * @param json_p The JSON fragment to insert.
+ * @return A pointer to a newly-created BSON id or <code>NULL</code>
+ * upon error. This value will need to be freed using FreeMemory to
+ * avoid a memory leak.
+ * @memberof MongoTool
+ */
 GRASSROOTS_MONGODB_API bson_oid_t *InsertJSONIntoMongoCollection (MongoTool *tool_p, json_t *json_p);
 
 
+/**
+ * Create a new BSON fragment from a given JSON one.
+ *
+ * @param json_p The JSON fragment to convert to BSON.
+ * @return The BSON fragment or <code>NULL</code> upon error.
+ */
 GRASSROOTS_MONGODB_API bson_t *ConvertJSONToBSON (const json_t *json_p);
 
 
+/**
+ * Create a new JSON fragment from a given BSON one.
+ *
+ * @param bson_p The BSON fragment to convert to JSON.
+ * @return The JSON fragment or <code>NULL</code> upon error.
+ */
 GRASSROOTS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
 
 
@@ -160,6 +196,15 @@ GRASSROOTS_MONGODB_API bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p,
 GRASSROOTS_MONGODB_API bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p);
 
 
+/**
+ * Check whether a MongoTool has any results after running a query.
+ *
+ * @param tool_p The MongoTool to check.
+ * @return <code>true</code> if the MongoTool has results,
+ * <code>false</code> otherwise.
+ * @memberof MongoTool
+
+ */
 GRASSROOTS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
 
 
@@ -169,7 +214,8 @@ GRASSROOTS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
  *
  * @param tool_p The MongoTool to get the results with.
  * @param query_p The query to run.
- * @return A json_t arrary with all of the results from the search or <code>NULL</code> upon error.
+ * @return A json_t array with all of the results from the search or <code>NULL</code> upon error.
+ * @memberof MongoTool
  */
 GRASSROOTS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p);
 
@@ -186,9 +232,27 @@ GRASSROOTS_MONGODB_API json_t *GetAllExistingMongoResultsAsJSON (MongoTool *tool
 GRASSROOTS_MONGODB_API bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p);
 
 
+/**
+ * Print the JSON representation of a BSON fragment to the log Stream.
+ *
+ * @param level The Stream level to specify when printing this.
+ * @param filename_s The name of the file which will be specified with this message.
+ * @param line_number The line number which will be specified with this message.
+ * @param bson_p The BSON fragment to print.
+ * @param prefix_s An optional string to print in the stream prior to the BSON representation.
+ */
 GRASSROOTS_MONGODB_API void PrintBSONToLog (const int level, const char * const filename_s, const int line_number, const bson_t *bson_p, const char * const prefix_s);
 
 
+/**
+ * Print the JSON representation of a BSON fragment to the errors Stream.
+ *
+ * @param level The Stream level to specify when printing this.
+ * @param filename_s The name of the file which will be specified with this message.
+ * @param line_number The line number which will be specified with this message.
+ * @param bson_p The BSON fragment to print.
+ * @param prefix_s An optional string to print in the stream prior to the BSON representation.
+ */
 GRASSROOTS_MONGODB_API void PrintBSONToErrors (const int level, const char * const filename_s, const int line_number, const bson_t *bson_p, const char * const prefix_s);
 
 

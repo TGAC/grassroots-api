@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,15 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
+/**
+ * @file
+ * @brief
+ */
 #ifndef GRASSROOTS_SERVICE_H
 #define GRASSROOTS_SERVICE_H
 
@@ -48,7 +57,7 @@ struct ExternalServer;
  * 
  * 		const char *SERVICE_NAME_S = "path";
  * 
- * ALLOCATE_JSON_TAGS must be defined only once prior to 
+ * ALLOCATE_PATH_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
  * service.c.
  */
@@ -61,8 +70,17 @@ struct ExternalServer;
 #endif
 
 
-
+/**
+ * This specifies the relative filesystem path to where the Service
+ * plugins are stored.
+ */
 PATH_PREFIX const char *SERVICES_PATH_S PATH_VAL("services");
+
+
+/**
+ * This specifies the relative filesystem path to where the Referred Service
+ * configuration files are stored.
+ */
 PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
 
 
@@ -481,6 +499,15 @@ GRASSROOTS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
 GRASSROOTS_SERVICE_API void FreeService (Service *service_p);
 
 
+/**
+ * Free and service-specific configuration data.
+ *
+ * If a Service has a separate configuration file this function will ensure
+ * there isn't a memory leak when the Service is freed.
+ *
+ * @param data_p
+ * @memberof ServiceData.
+ */
 GRASSROOTS_SERVICE_LOCAL void ReleaseServiceData (ServiceData *data_p);
 
 /**
@@ -505,13 +532,23 @@ GRASSROOTS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 /**
  * Load the Service that matches a given service name
  *
- * @param services_p The List of Services that the named Services will get appended to if it is found succesfully.
+ * @param services_p The List of Services that the named Services will get appended to if it is found successfully.
  * @param services_path_s The directory where the Service modules are stored.
- * @param services_name_s The name of the Service to find.
- * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
+ * @param service_name_s The name of the Service to find.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
  */
 GRASSROOTS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, UserDetails *user_p);
 
+
+/**
+ * Load the Services that are able to act upon a given Resource.
+ *
+ * @param services_p The List of Services that the named Services will get appended to if it is found successfully.
+ * @param services_path_s The directory where the Service modules are stored.
+ * @param resource_p The Resource to check for matching Services for.
+ * @param handler_p The Handler that is appropriate for the given Resource.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
+ */
 GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, UserDetails *user_p);
 
 
@@ -520,7 +557,7 @@ GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const 
  *
  * @param services_p The List of Services that any keyword-aware Services will get appended to.
  * @param services_path_s The directory where the Service modules are stored.
- * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
  */
 GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, UserDetails *user_p);
 
@@ -533,7 +570,7 @@ GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const c
  * @param services_path_s The directory containing the Service plugins.
  * @param operation_name_s If this value is set, only referred Services that have an Operation with this name will be added
  * to Services list. If this is <code>NULL</code> then all possible reference Services will be added.
- * @param config_p Any user configuration details.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
  */
 GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, UserDetails *user_p);
 
@@ -627,11 +664,31 @@ GRASSROOTS_SERVICE_API const char *GetOperationInformationURIFromJSON (const jso
 GRASSROOTS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
 
 
-
+/**
+ * Close a Services-based Plugin and free all of the Services.
+ *
+ * @param plugin_p The Plugin to free the Services from.
+ * @return <code>true</code> if the Services were successfully released, <code>false</code> otherwise.
+ */
 GRASSROOTS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 
-
+/**
+ * Get the JSON fragment for exposing a list of Services to any interested Clients
+ * or ExternalServcers.
+ *
+ * @param services_list_p A LinkedList of ServiceNodes detailing the Services to generate the fragment for
+ * @param resource_p The Resource of interest to run the Services with. This can be <code>NULL</code>.
+ * @param user_p Any UserDetails for access o potentially restricted Services. This can be <code>NULL</code> for only
+ * publicly accessible Services.
+ * @param add_service_ids_flag If this is <code>true</code> then the UUID of the Service will be added
+ * to the returned JSON. If this is <code>false</code> then it will not.
+ * @param providers_p This is used to keep track of which ExternalServers and their Services have already been processed
+ * when generating the JSON fragment.
+ * @return The json-based representation of the Service or <code>NULL</code> if there was
+ * an error.
+ * @see GetServiceAsJSON
+ */
 GRASSROOTS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, UserDetails *user_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p);
 
 
@@ -666,13 +723,37 @@ GRASSROOTS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
 GRASSROOTS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
 
 
-
+/**
+ * Assign a given Plugin as the code that generated each Service within a ServicesArray.
+ *
+ * @param services_p The ServicesArray containing the Services to be amended.
+ * @param plugin_p The Plugin to be set for each Service.
+ * @memberof ServicesArray
+ */
 GRASSROOTS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
 
+/**
+ * Add a JSON fragment to the response for a given Service that has been run.
+ *
+ * @param service_p The Service which will have its response amended.
+ * @param result_json_p The JSON fragment to add.
+ * @return <code>true</code> if the sService response was successfully updated, <code>false</code> otherwise.
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *result_json_p);
 
 
+/**
+ * Get the ServicesArray generated from a Services reference file.
+ *
+ * @param config_p The JSON fragment loaded from a referemce file.
+ * @param plugin_name_s The name of the Plugin to use.
+ * @param get_service_fn The function used to generate each Service that will be placed in the resultant
+ * ServicesArray.
+ * @return The ServicesArray containing the generated Services or <code>NULL</code> upon error.
+ * @memberof ServicesArray
+ */
 GRASSROOTS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 
@@ -766,7 +847,7 @@ GRASSROOTS_SERVICE_API bool AddLinkedService (Service *service_p, LinkedService 
  * wants a Service to run. This object needs to be within a JSON array which is what the Server
  * requires.
  *
- * @param service_p The Service to get the JSON fragment for.
+ * @param service_name_s The name of the Service to get the JSON fragment for.
  * @param params_p The ParameterSet to use. If run_flag is false, then this can be NULL.
  * @param run_flag Whether the Service should be run or not.
  * @return The JSON fragment to be added to an array to send to the Server or <code>NULL
@@ -788,10 +869,14 @@ GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_
  * @param keyword_s The keyword.
  * @param params_p The parameters to encode within the JSON fragment. This will be set up based upon the
  * keyword used to check whether the Service was interested.
+ * @param full_definition_flag This should be set to <code>true</code> when a Server is exposing its Services
+ * and <code>false</code> when a request to run a Service is being generated. See GetParameterAsJSON for more
+ * information.
  * @return The JSON fragment to send to the Server or <code>NULL</code> upon error.
  * @see IsServiceMatch
+ * @see GetParameterAsJSON
  */
-GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p,  const bool full_definition_flag);
+GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p, const bool full_definition_flag);
 
 
 /**

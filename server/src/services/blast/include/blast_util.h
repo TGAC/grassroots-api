@@ -14,6 +14,11 @@
 ** limitations under the License.
 */
 
+/**
+ * @file
+ * @brief
+ */
+
 /*
  * blast_util.h
  *

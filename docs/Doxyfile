@@ -569,7 +569,7 @@ SORT_MEMBER_DOCS       = YES
 # this will also influence the order of the classes in the class list.
 # The default value is: NO.
 
-SORT_BRIEF_DOCS        = NO
+SORT_BRIEF_DOCS        = YES
 
 # If the SORT_MEMBERS_CTORS_1ST tag is set to YES then doxygen will sort the
 # (brief and detailed) documentation of class members so that constructors and
@@ -588,7 +588,7 @@ SORT_MEMBERS_CTORS_1ST = YES
 # appear in their defined order.
 # The default value is: NO.
 
-SORT_GROUP_NAMES       = NO
+SORT_GROUP_NAMES       = YES
 
 # If the SORT_BY_SCOPE_NAME tag is set to YES, the class list will be sorted by
 # fully-qualified names, including namespaces. If set to NO, the class list will
@@ -2099,7 +2099,9 @@ PREDEFINED             = GRASSROOTS_NETWORK_API \
                          PATHOGENOMICS_SERVICE_LOCAL=/**@private*/ \
                          PATHOGENOMICS_SERVICE_API \
                          ATTR_UNUSED \
-                         "UNUSED_PARAM(name)=unused_ ## name"
+                         "UNUSED_PARAM(name)=unused_ ## name" \
+                         ALLOCATE_PATH_TAGS \ 
+                         PATH_PREFIX=GRASSROOTS_SERVICE_API
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The
@@ -2108,7 +2110,7 @@ PREDEFINED             = GRASSROOTS_NETWORK_API \
 # definition found in the source code.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_AS_DEFINED      = 
+EXPAND_AS_DEFINED      = PATH_VAL(x)
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES then doxygen's preprocessor will
 # remove all references to function-like macros that are alone on a line, have

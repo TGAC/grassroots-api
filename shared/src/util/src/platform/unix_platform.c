@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -33,6 +33,12 @@ void ExitPlatform ()
 uint32 Snooze (uint32 milliseconds)
 {
 	const unsigned int secs = milliseconds * 0.0010;
+	unsigned int res = sleep (secs);
 
-	return sleep (secs);
+	if (res != 0)
+		{
+			res *= 1000;
+		}
+
+	return res;
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef TIME_UTIL_H
 #define TIME_UTIL_H
 
@@ -35,7 +40,7 @@ extern "C"
  * @param time_s The string to convert.
  * @param time_p The struct tm to store the converted time in.
  * @param offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm.
- * @return true if the value was converted successfully, false otherwise.
+ * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
@@ -46,7 +51,7 @@ GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, 
  * 
  * @param time_s The string to convert.
  * @param time_p The time_t to store the converted time in.
- * @return true if the value was converted successfully, false otherwise.
+ * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s, time_t *time_p);
 
@@ -59,7 +64,7 @@ GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const tim
  * @param time_s The string to convert.
  * @param time_p The struct tm to store the converted time in.
  * @param offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm.
- * @return true if the value was converted successfully, false otherwise.
+ * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
@@ -70,7 +75,7 @@ GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, 
  * 
  * @param time_s The string to convert.
  * @param time_p The time_t to store the converted time in.
- * @return true if the value was converted successfully, false otherwise.
+ * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p);
 
@@ -80,7 +85,7 @@ GRASSROOTS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const tim
  * Get the current time
  *
  * @param tm_p Where the current time will be stored.
- * @return true if the time was set successfully, false otherwise.
+ * @return <code>true</code> if the time was set successfully, <code>false</code> otherwise.
  */
 GRASSROOTS_UTIL_API bool GetCurrentTime (struct tm *tm_p);
 

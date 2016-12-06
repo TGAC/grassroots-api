@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef JSON_UTIL_H
 #define JSON_UTIL_H
 
@@ -366,7 +371,7 @@ GRASSROOTS_UTIL_API char **GetStringArrayFromJSON (const json_t * const array_p)
  * Create and add a LinkedList of StringListNodes to a json object.
  *
  * @param parent_p The json_t object to add the array to.
- * @param values_ss The LinkedList of StringListNodes.
+ * @param values_p The LinkedList of StringListNodes.
  * @param child_key_s The key to use to add the json array to parent_p.
  * @return <code>true</code> if the json_array was created and added successfully, <code>false</code> otherwise.
  */
@@ -465,8 +470,6 @@ GRASSROOTS_UTIL_API bool AddValidJSONString (json_t *parent_p, const char * cons
  * Print a json_t object to the logging stream
  *
  * @param json_p The json_t object to print.
- * @param prefix_s An optional message to print to the log prior to parsing the value's reference counts.
- * If this is <code>NULL</code>, then no message will be printed.
  * @param level The logging level to use.
  * @param filename_s The filename of the source file calling this method.
  * @param line_number The line number in the source file which called this method.
@@ -480,8 +483,6 @@ GRASSROOTS_UTIL_API int PrintJSONToLog (const uint32 level, const char *filename
  * Print a json_t object to the error stream
  *
  * @param json_p The json_t object to print.
- * @param prefix_s An optional message to print to the log prior to parsing the value's reference counts.
- * If this is <code>NULL</code>, then no message will be printed.
  * @param level The logging level to use.
  * @param filename_s The filename of the source file calling this method.
  * @param line_number The line number in the source file which called this method.

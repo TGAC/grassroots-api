@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,14 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
+/**
+ * @file
+ */
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
@@ -24,12 +32,28 @@
 #endif
 
 
+/**
+ * Initialise the Grassroots system for the operating system
+ * that it is running on.
+ *
+ * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
+ */
 GRASSROOTS_UTIL_API bool InitPlatform (void);
 
 
+/**
+ * Release any operating system-specific resources.
+ */
 GRASSROOTS_UTIL_API void ExitPlatform (void);
 
 
+/**
+ * Sleep the current process.
+ *
+ * @param milliseconds The number of milliseconds to sleep for.
+ * @return 0 if the process slept for the required time, or the
+ * number of milliseconds remaining if it was interrupted.
+ */
 GRASSROOTS_UTIL_API uint32 Snooze (uint32 milliseconds);
 
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef OPERATION_H
 #define OPERATION_H
 
@@ -90,9 +95,22 @@ extern "C"
 {
 #endif
 
+
+/**
+ * Get the string-based representation of a given OperationStatus
+ *
+ * @param status The OperationStatus to get the string-based representation of.
+ * @return The string-based representation.
+ */
 GRASSROOTS_UTIL_API const char *GetOperationStatusAsString (const OperationStatus status);
 
 
+/**
+ * Get the OperationStatus for a given String
+ *
+ * @param status_s The string to get the OperationStatus for.
+ * @return The OperationStatus.
+ */
 GRASSROOTS_UTIL_API OperationStatus GetOperationStatusFromString (const char *status_s);
 
 
