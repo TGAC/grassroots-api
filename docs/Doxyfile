@@ -542,7 +542,7 @@ SHOW_INCLUDE_FILES     = YES
 # which file to include in order to use the member.
 # The default value is: NO.
 
-SHOW_GROUPED_MEMB_INC  = NO
+SHOW_GROUPED_MEMB_INC  = YES
 
 # If the FORCE_LOCAL_INCLUDES tag is set to YES then doxygen will list include
 # files with double quotes in the documentation rather than with sharp brackets.
@@ -2074,8 +2074,11 @@ INCLUDE_FILE_PATTERNS  =
 # recursively expanded use the := operator instead of the = operator.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-PREDEFINED             = GRASSROOTS_NETWORK_API \
+PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
+                         GRASSROOTS_NETWORK_API \
                          "GRASSROOTS_NETWORK_LOCAL=/** @private */" \
+                         PREFIX= \
+                         VAL(x)=x \
                          GRASSROOTS_UTIL_API \
                          GRASSROOTS_UTIL_LOCAL=/**@private*/ \
                          GRASSROOTS_SERVICE_MANAGER_API \
@@ -2100,7 +2103,7 @@ PREDEFINED             = GRASSROOTS_NETWORK_API \
                          PATHOGENOMICS_SERVICE_API \
                          ATTR_UNUSED \
                          "UNUSED_PARAM(name)=unused_ ## name" \
-                         ALLOCATE_PATH_TAGS \ 
+                         ALLOCATE_PATH_TAGS \
                          PATH_PREFIX=GRASSROOTS_SERVICE_API
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
@@ -2110,7 +2113,7 @@ PREDEFINED             = GRASSROOTS_NETWORK_API \
 # definition found in the source code.
 # This tag requires that the tag ENABLE_PREPROCESSING is set to YES.
 
-EXPAND_AS_DEFINED      = PATH_VAL(x)
+EXPAND_AS_DEFINED      = 
 
 # If the SKIP_FUNCTION_MACROS tag is set to YES then doxygen's preprocessor will
 # remove all references to function-like macros that are alone on a line, have

@@ -48,6 +48,8 @@
  * including this header file. Currently this happens in
  * json_util.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_JSON_TAGS
 	#define PREFIX GRASSROOTS_UTIL_API
 	#define VAL(x)	= x
@@ -56,6 +58,13 @@
 	#define VAL(x)	
 #endif
 
+#endif
+
+/**
+ * The JSON key for the errors object of the server response.
+ *
+ * @ingroup SCHEMA_ERROR_GROUP
+ */
 PREFIX const char *ERROR_S VAL("error");
 
 PREFIX const char *HEADER_S VAL("header");
@@ -63,8 +72,27 @@ PREFIX const char *HEADER_S VAL("header");
 PREFIX const char *REQUEST_S VAL("request");
 PREFIX const char *REQUEST_VERBOSE_S VAL("verbose");
 
+/**
+ * The JSON key for the schema object of the server response.
+ *
+ * @addtogroup SCHEMA_SCHEMA_GROUP
+ */
 PREFIX const char *SCHEMA_S VAL("schema");
+
+/**
+ * The JSON key for specifying the major version of the schema.
+ * This is a child of SCHEMA_S
+ *
+ * @addtogroup SCHEMA_SCHEMA_GROUP
+ */
 PREFIX const char *VERSION_MAJOR_S VAL("major");
+
+/**
+ * The JSON key for specifying the minor version of the schema.
+ * This is a child of SCHEMA_S
+ *
+ * @addtogroup SCHEMA_SCHEMA_GROUP
+ */
 PREFIX const char *VERSION_MINOR_S VAL("minor");
 
 PREFIX const char *SERVER_MULTIPLE_PROVIDERS_S VAL("providers");
@@ -442,12 +470,24 @@ GRASSROOTS_UTIL_API json_t *LoadJSONFile (const char * const filename_s);
 
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, LinkedList *headers_p);
 
+
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataWithHeadersToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
+
 
 GRASSROOTS_UTIL_API LinkedList *GetTabularHeaders (char **data_ss,  const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
 
-
+/**
+ * Create a JSON object to store a given value in the fiven format.
+ *
+ * For instance, if the value is "6" and the given field_type is JSON_INTEGER
+ * a json_int with the value of 6 will be created.
+ *
+ * @param value_s The string to derive the value from.
+ * @param field_type The json_type to convert the value to.
+ * @return The newly-created JSON object containing the value or <code>NULL</code>
+ * upon error.
+ */
 GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type field_type);
 
 
@@ -462,7 +502,16 @@ GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type 
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
 
-
+/**
+ * Add a string key-value pair to a JSON object only if the value is not NULL
+ *
+ * @param parent_p The JSON object that the key-value pair will be added to.
+ * @param key_s The key to use.
+ * @param value_s The value to use.
+ * @return <code>true</code> if value_s is not <code>NULL</code> and the key-value pair were added successfully
+ * or if value_s is <code>NULL</code>. If value_s points to valid data and the key-value pair fails to get added,
+ * <code>false</code> will be returned.
+ */
 GRASSROOTS_UTIL_API bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s);
 
 
@@ -519,22 +568,75 @@ GRASSROOTS_UTIL_API bool IsJSONEmpty (const json_t *json_p);
 GRASSROOTS_UTIL_API void PrintJSONRefCounts (const uint32 log_level, const char * const filename_s, const int line_number, const json_t * const value_p, const char *initial_s);
 
 
-
+/**
+ * Set the boolean value of a JSON object.
+ *
+ * @param json_p The JSON value to get the boolean value from.
+ * @param value_p Pointer to where the boolean value will be stored if
+ * it is successfully retrieved.
+ * @return <code>true</code> if the value was successfully retrieved. If
+ * the JSON value is not a boolean type <code>false</code> will be returned.
+ */
 GRASSROOTS_UTIL_API bool SetBooleanFromJSON (const json_t *json_p, bool *value_p);
 
 
+/**
+ * Get the real value of a JSON object.
+ *
+ * @param json_p The JSON value to get the real value from.
+ * @param value_p Pointer to where the real value will be stored if
+ * it is successfully retrieved.
+ * @return <code>true</code> if the value was successfully retrieved. If
+ * the JSON value is not a real type <code>false</code> will be returned.
+ */
 GRASSROOTS_UTIL_API bool SetRealFromJSON (const json_t *json_p, double *value_p);
 
 
+/**
+ * Get the integer value of a JSON object.
+ *
+ * @param json_p The JSON value to get the integer value from.
+ * @param value_p Pointer to where the integer value will be stored if
+ * it is successfully retrieved.
+ * @return <code>true</code> if the value was successfully retrieved. If
+ * the JSON value is not a integer type <code>false</code> will be returned.
+ */
 GRASSROOTS_UTIL_API bool SetIntegerFromJSON (const json_t *json_p, int32 *value_p);
 
 
+/**
+ * Get the long value of a JSON object.
+ *
+ * @param json_p The JSON value to get the long value from.
+ * @param value_p Pointer to where the long value will be stored if
+ * it is successfully retrieved.
+ * @return <code>true</code> if the value was successfully retrieved. If
+ * the JSON value is not a long type <code>false</code> will be returned.
+ */
 GRASSROOTS_UTIL_API bool SetLongFromJSON (const json_t *json_p, int64 *value_p);
 
 
+/**
+ * Get the string value of a JSON object.
+ *
+ * @param json_p The JSON value to get the boolean value from.
+ * @param value_ss Pointer to where the string value will be copied to if
+ * it is successfully retrieved.
+ * @return <code>true</code> if the value was successfully retrieved and copied. If
+ * the JSON value is not a string type or the memory for copying the string value
+ * could not be allocated then <code>false</code> will be returned.
+ */
 GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_ss);
 
 
+/**
+ * Get a descendant JSON object from another using a given selector
+ *
+ * @param input_p The JSON object to get the value from
+ * @param compound_s The selector value using a dot notation. For example "foo.bar" would
+ * search for a "bar" child key belonging to a "foo" child object of the input value.
+ * @return The found JSON object or <code>NULL</code> if it could not be found.
+ */
 GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s);
 
 

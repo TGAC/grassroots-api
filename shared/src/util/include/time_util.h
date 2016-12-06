@@ -94,7 +94,7 @@ GRASSROOTS_UTIL_API bool GetCurrentTime (struct tm *tm_p);
 /**
  * Get a time as a string in the form YYYY-MM-DD
  *
- * @param tm_p The time to get as a c-style string
+ * @param time_p The time to get as a c-style string
  * @return The time as a c-style string or <code>NULL</code> upon error.
  */
 GRASSROOTS_UTIL_API char *GetTimeAsString (const struct tm * const time_p);

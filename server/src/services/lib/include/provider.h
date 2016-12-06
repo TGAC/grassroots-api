@@ -38,10 +38,30 @@ extern "C"
 #endif
 
 
+/**
+ * Get the name of the Provider from a given JSON configuration fragment.
+ *
+ * @param data_p The fragment to get the name of the Provider from.
+ * @return The name of the Provider or <code>NULL</code> if it could not be found.
+ */
 GRASSROOTS_SERVICE_API const char *GetProviderName (const json_t * const data_p);
 
+
+/**
+ * Get the URI of the Provider from a given JSON configuration fragment.
+ *
+ * @param data_p The fragment to get the URI of the Provider from.
+ * @return The URI of the Provider or <code>NULL</code> if it could not be found.
+ */
 GRASSROOTS_SERVICE_API const char *GetProviderURI (const json_t * const data_p);
 
+
+/**
+ * Get the description of the Provider from a given JSON configuration fragment.
+ *
+ * @param data_p The fragment to get the description of the Provider from.
+ * @return The description of the Provider or <code>NULL</code> if it could not be found.
+ */
 GRASSROOTS_SERVICE_API const char *GetProviderDescription (const json_t * const data_p);
 
 

@@ -69,7 +69,8 @@ GRASSROOTS_UTIL_API void FreeHashBucket (HashBucket * const bucket_p);
  * memory is all set to 0/NULL.
  *
  * @param num_buckets The number of HashBuckets to create.
- * @param mem_flag How the HashBuckets will deal with memory allocation of the keys and values.
+ * @param key_mem_flag How the HashBuckets will deal with memory allocation of the keys.
+ * @param value_mem_flag How the HashBuckets will deal with memory allocation of the values.
  * @return Pointer to the HashBuckets or NULL upon error.
  */
 GRASSROOTS_UTIL_API HashBucket *CreateHashBuckets (const uint32 num_buckets, const MEM_FLAG key_mem_flag, const MEM_FLAG value_mem_flag);
@@ -227,7 +228,7 @@ GRASSROOTS_UTIL_API void RemoveFromHashTable (HashTable * const hash_table_p, co
  * Print out a HashTable to a given stream.
  *
  * @param hash_table_p The HashTable to print out.
- * @param out_f The FILE to print the HashTable to.
+ * @param stream_p The OutputStream to print the HashTable to.
  */
 GRASSROOTS_UTIL_API void PrintHashTable (const HashTable * const hash_table_p, OutputStream * const stream_p);
 
