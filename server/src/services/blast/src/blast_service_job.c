@@ -581,8 +581,9 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 }
 
 
-char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)
+bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)
 {
+	bool success_flag = false;
 	BlastServiceJob *blast_job_p = (BlastServiceJob *) job_p;
 	uint32 out_fmt = blast_job_p -> bsj_tool_p -> GetOutputFormat ();
 	json_t *results_p = job_p -> sj_result_p;
@@ -749,7 +750,7 @@ char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, Service
 				}
 		}
 
-	return NULL;
+	return success_flag;
 }
 
 

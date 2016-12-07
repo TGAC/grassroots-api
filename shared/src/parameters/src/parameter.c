@@ -543,7 +543,7 @@ bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_
 				{
 					const RemoteParameterDetails *src_details_p = src_node_p -> rpdn_details_p;
 
-					if (AddRemoteDetailsToParameter (dest_p, src_details_p -> rpd_server_uri_s, src_details_p -> rpd_tag))
+					if (AddRemoteDetailsToParameter (dest_p, src_details_p -> rpd_server_uri_s, src_details_p -> rpd_name_s))
 						{
 							src_node_p = (const RemoteParameterDetailsNode *) (src_node_p -> rpdn_node.ln_next_p);
 						}
@@ -2819,10 +2819,10 @@ void FreeSharedTypeNode (ListItem *node_p)
 }
 
 
-bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag)
+bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const char * const name_s)
 {
 	bool success_flag = false;
-	RemoteParameterDetailsNode *node_p = AllocateRemoteParameterDetailsNodeByParts (uri_s, tag);
+	RemoteParameterDetailsNode *node_p = AllocateRemoteParameterDetailsNodeByParts (uri_s, name_s);
 
 	if (node_p)
 		{

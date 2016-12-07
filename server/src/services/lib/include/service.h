@@ -253,7 +253,7 @@ typedef struct Service
 	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
 
 
-	char *(*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
+	bool (*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
 
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return

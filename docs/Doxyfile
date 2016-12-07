@@ -2077,8 +2077,6 @@ INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          GRASSROOTS_NETWORK_API \
                          "GRASSROOTS_NETWORK_LOCAL=/** @private */" \
-                         PREFIX= \
-                         VAL(x)=x \
                          GRASSROOTS_UTIL_API \
                          GRASSROOTS_UTIL_LOCAL=/**@private*/ \
                          GRASSROOTS_SERVICE_MANAGER_API \
@@ -2104,7 +2102,9 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          ATTR_UNUSED \
                          "UNUSED_PARAM(name)=unused_ ## name" \
                          ALLOCATE_PATH_TAGS \
-                         PATH_PREFIX=GRASSROOTS_SERVICE_API
+                         PATH_PREFIX=GRASSROOTS_SERVICE_API \
+                         PREFIX= \
+                         "VAL(x)= =x"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

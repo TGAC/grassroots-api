@@ -304,9 +304,9 @@ uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p)
 
 
 
-char *GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_service_p)
+bool GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_service_p)
 {
-	char *result_s = NULL;
+	bool success_flag = true;
 
 	if (job_p)
 		{
@@ -316,17 +316,17 @@ char *GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_ser
 
 					if (service_p -> se_process_linked_services_fn)
 						{
-							result_s = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
+							success_flag = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
 						}
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" failed get job output value", GetServiceName (service_p));
 						}
 
 				}		/* if (input_s) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No LinkedService specified to use");
 				}
 
 		}		/* if (job_p) */
@@ -335,7 +335,7 @@ char *GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_ser
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
 		}
 
-	return result_s;
+	return success_flag;
 }
 
 

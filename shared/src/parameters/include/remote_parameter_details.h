@@ -50,10 +50,11 @@ typedef struct RemoteParameterDetails
 
 	/**
 	 * If the Parameter belongs to a local Service, this will be
-	 * 0. If it is for an external Service, then this
-	 * is the tag for the ExternalServer's Parameter running that Service.
+	 * <code>NULL</code>. If it is for an external Service, then this
+	 * is the name for the ExternalServer's Parameter running that Service.
 	 */
-	Tag rpd_tag;
+	char *rpd_name_s;
+
 } RemoteParameterDetails;
 
 
@@ -82,11 +83,11 @@ extern "C" {
  * Allocate a RemoteParameterDetails.
  *
  * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
- * @param tag The tag for this Parameter on the PairedService.
+ * @param param_s The name for this Parameter on the PairedService.
  * @memberof RemoteParameterDetails
  * @return The new RemoteParameterDetails or <code>NULL</code> upon error.
  */
-GRASSROOTS_PARAMS_API	RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, Tag tag);
+GRASSROOTS_PARAMS_API	RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, const char * const param_s);
 
 
 /**

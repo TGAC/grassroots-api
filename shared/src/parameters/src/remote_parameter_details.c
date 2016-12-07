@@ -26,20 +26,30 @@
 #include "json_util.h"
 
 
-RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, Tag tag)
+RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, const char * const param_s)
 {
 	char *copied_uri_s = CopyToNewString (uri_s, 0, false);
 
 	if (copied_uri_s)
 		{
-			RemoteParameterDetails *details_p = (RemoteParameterDetails *) AllocMemory (sizeof (RemoteParameterDetails));
+			char *copied_param_s = NULL;
 
-			if (details_p)
+			if (param_s)
 				{
-					details_p -> rpd_server_uri_s = copied_uri_s;
-					details_p -> rpd_tag = tag;
+					copied_param_s = CopyToNewString (param_s, 0, false);
+				}
 
-					return details_p;
+			if ((!param_s) || (param_s && copied_param_s))
+				{
+					RemoteParameterDetails *details_p = (RemoteParameterDetails *) AllocMemory (sizeof (RemoteParameterDetails));
+
+					if (details_p)
+						{
+							details_p -> rpd_server_uri_s = copied_uri_s;
+							details_p -> rpd_name_s = copied_param_s;
+
+							return details_p;
+						}
 				}
 
 			FreeCopiedString (copied_uri_s);
@@ -107,7 +117,7 @@ void FreeRemoteParameterDetailsNode (ListItem *node_p)
 json_t *GetRemoteParameterDetailsAsJSON (const RemoteParameterDetails *details_p)
 {
 	json_error_t err;
-	json_t *json_p = json_pack_ex (&err, 0, "{s:s,s:i}", PARAM_REMOTE_URI_S, details_p -> rpd_server_uri_s, PARAM_REMOTE_TAG_S, details_p -> rpd_tag);
+	json_t *json_p = json_pack_ex (&err, 0, "{s:s,s:i}", PARAM_REMOTE_URI_S, details_p -> rpd_server_uri_s, PARAM_REMOTE_NAME_S, details_p -> rpd_name_s);
 
 	if (!json_p)
 		{

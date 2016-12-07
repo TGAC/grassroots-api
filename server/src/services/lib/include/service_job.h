@@ -643,6 +643,13 @@ GRASSROOTS_SERVICE_API bool AddCompoundErrorToServiceJob (ServiceJob *job_p, con
 GRASSROOTS_SERVICE_API void SetServiceJobStatus (ServiceJob *job_p, OperationStatus status);
 
 
+/**
+ * Set the function that a ServiceJob will use to update itself.
+ *
+ * @param job_p The ServiceJob to amend.
+ * @param update_fn The new function that will be used for the ServiceJob to update itself.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API void SetServiceJobUpdateFunction (ServiceJob *job_p, bool (*update_fn) (ServiceJob *job_p));
 
 
@@ -672,7 +679,16 @@ GRASSROOTS_SERVICE_API bool UpdateServiceJob (ServiceJob *job_p);
 GRASSROOTS_SERVICE_API uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p);
 
 
-
+/**
+ * Replace the set of results for a given ServiceJob.
+ *
+ * @param job_p The ServiceJob to amend.
+ * @param results_p The new JSON fragment which will be the ServiceJob's results.
+ * Any previous results will have the reference count decremented.
+ * @return <code>true</code> if the ServiceJob was updated successfully, <code>false<code>
+ * otherwise.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p);
 
 
@@ -689,11 +705,26 @@ GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t 
  */
 GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, struct LinkedService *linked_service_p);
 
-
+/**
+ * Attempt to extract the relevant data for all LinkedServices that the ServiceJob's Service has and
+ * store them in the ServiceJob.
+ *
+ * @param job_p TheServiceJob to process.
+ * @memberof ServiceJob
+ * @see GenerateLinkedServiceResults
+ */
 GRASSROOTS_SERVICE_API void ProcessLinkedServices (ServiceJob *job_p);
 
 
-GRASSROOTS_SERVICE_API char *GenerateLinkedServiceResults (ServiceJob *job_p, struct LinkedService *linked_service_p);
+/**
+ * Fill in the required data for a LinkedService from a given ServiceJob.
+ *
+ * @param job_p The ServiceJob to process and store the LinekdService results in.
+ * @param linked_service_p The LinkedService to process.
+ * @return <code>true</code> if the LinkedService was processed succesfully for
+ * the given ServiceJob, <code>false</code> otherwise.
+ */
+GRASSROOTS_SERVICE_API bool GenerateLinkedServiceResults (ServiceJob *job_p, struct LinkedService *linked_service_p);
 
 
 

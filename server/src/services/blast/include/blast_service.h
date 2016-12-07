@@ -33,20 +33,41 @@
 #include "temp_file.hpp"
 
 
-
+/**
+ * An enumeration for differentiating between
+ * the different types of database that the
+ * BLAST algorithms can be used with.
+ */
 typedef enum BLAST_SERVICE_LOCAL DatabaseType
 {
+	/** The database is a nucleotide sequence. */
 	DT_NUCLEOTIDE,
+
+	/** The database is a protein sequence. */
 	DT_PROTEIN,
+
+	/** The number of different database types. */
 	DT_NUM_TYPES
 } DatabaseType;
 
 
+/**
+ * An enumeration for differentiating between
+ * the differentBLAST algorithms that can be
+ * used.
+ */
 typedef enum BLAST_SERVICE_LOCAL BlastServiceType
 {
+	/** A search using the BlastN program. */
 	BST_BLASTN,
+
+	/** A search using the BlastP program. */
 	BST_BLASTP,
+
+	/** A search using the BlastX program. */
 	BST_BLASTX,
+
+	/** The number of different Blast service types. */
 	BST_NUM_TYPES
 } BlastServiceType;
 

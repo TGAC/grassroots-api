@@ -109,15 +109,19 @@ extern "C"
 /**
  * Get a newly created BlastTool
  *
+ * @param factory_p The BlastToolFactory to use to create the BlastTool.
+ * @param job_p The ServiceJob to associate with the newly generated BlastTool.
+ * @param name_s The name to give to the new BlastTool.
+ * @param data_p The BlastServiceData for the Service that will use this BlastTool.
  * @return The BlastTool or <code>NULL</code> upon error.
  */
 BLAST_SERVICE_LOCAL BlastTool *CreateBlastToolFromFactory (BlastToolFactory *factory_p, BlastServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
 
 /**
- * Free a BlastTool
+ * Free a BlastToolFactory
  *
- * @param tool_p The BlastTool to deallocate.
+ * @param factory_p The BlastToolFactory to deallocate.
  */
 BLAST_SERVICE_LOCAL void FreeBlastToolFactory (BlastToolFactory *factory_p);
 
@@ -126,11 +130,12 @@ BLAST_SERVICE_LOCAL void FreeBlastToolFactory (BlastToolFactory *factory_p);
  * Are the BlastTools that this BlastToolFactory
  * create able to run asynchronously?
  *
+ * @param factory_p The BlastToolFactory to check.
  * @return <code>true</code> if the BlastTools are able
  * to run asynchronously, <code>false</code> otherwise.
  * @see BlastToolFactory::AreToolsAsynchronous
  */
-BLAST_SERVICE_LOCAL bool IsBlastToolFactorySynchronous (BlastToolFactory *tool_p);
+BLAST_SERVICE_LOCAL bool IsBlastToolFactorySynchronous (BlastToolFactory *factory_p);
 
 
 #ifdef __cplusplus

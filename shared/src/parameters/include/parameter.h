@@ -789,12 +789,12 @@ GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
  *
  * @param param_p The Parameter to add the new RemoteParameterDetails to.
  * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
- * @param tag The tag for this Parameter on the PairedService.
+ * @param name_s The name of this Parameter on the PairedService.
  * @return <code>true</code> if the RemoteParameterDetails was added successfully or <code>false</code> otherwise.
  * @see AllocateRemoteParameterDetails
  * @memberof Parameter
  */
-GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag);
+GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const char * const name_s);
 
 
 /**

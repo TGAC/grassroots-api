@@ -159,7 +159,7 @@ GRASSROOTS_SERVICE_API void FreeMappedParameterNode (ListItem *node_p);
  * @return <code>true</code> if the MappedParameter was processed successfully, <code>false</code> otherwise.
  * @memberof MappedParameter
  */
-GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params_p);
+//GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params_p);
 
 
 #ifdef __cplusplus
