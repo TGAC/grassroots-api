@@ -61,10 +61,20 @@ GRASSROOTS_SERVICE_API bool SetServerRootDirectory (const char * const path_s);
 GRASSROOTS_SERVICE_API const char *GetServerRootDirectory (void);
 
 
-
+/**
+ * Set the global SchemaVersion to use
+ *
+ * @param major The major version of the schema to use.
+ * @param minor The minor version of the schema to use.
+ */
 GRASSROOTS_SERVICE_API void SetSchemaVersionDetails (const uint32 major, const uint32 minor);
 
 
+/**
+ * Get the current global SchemaVersion in use.
+ *
+ * @return The global SchemaVersion.
+ */
 GRASSROOTS_SERVICE_API const SchemaVersion *GetSchemaVersion (void);
 
 

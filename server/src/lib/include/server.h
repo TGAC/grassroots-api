@@ -54,12 +54,25 @@ typedef struct ServerOperations
 /**
  * Construct a response message based upon a client's message.
  *
+ * This will attempt to create a JSON object from the incoming message
+ * and call ProcessServerJSONMessage.
+ *
  * @param request_s The message from the client.
- * @return The response from the server.
+ * @param socket_fd The socket file descriptor used.
+ * @return The response from the server or <code>NULL</code> upon error.
+ * @see ProcessServerJSONMessage
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd);
 
 
+/**
+ * Process a given JSON request and produce the server response.
+ *
+ * @param req_p The incoming JSON request.
+ * @param socket_fd The socket file descriptor used.
+ * @param error_s A pointer to a variable where any error messages can be stored.
+ * @return
+ */
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_s);
 
 

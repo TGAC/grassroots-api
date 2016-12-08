@@ -81,9 +81,9 @@ RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNode (RemoteParameterD
 }
 
 
-RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s, Tag tag)
+RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s, const char * const name_s)
 {
-	RemoteParameterDetails *details_p = AllocateRemoteParameterDetails (uri_s, tag);
+	RemoteParameterDetails *details_p = AllocateRemoteParameterDetails (uri_s, name_s);
 
 	if (details_p)
 		{

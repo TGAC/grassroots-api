@@ -304,40 +304,6 @@ uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p)
 
 
 
-bool GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_service_p)
-{
-	bool success_flag = true;
-
-	if (job_p)
-		{
-			if (linked_service_p)
-				{
-					Service *service_p = job_p -> sj_service_p;
-
-					if (service_p -> se_process_linked_services_fn)
-						{
-							success_flag = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" failed get job output value", GetServiceName (service_p));
-						}
-
-				}		/* if (input_s) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No LinkedService specified to use");
-				}
-
-		}		/* if (job_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
-		}
-
-	return success_flag;
-}
-
 
 void FreeServiceJob (ServiceJob *job_p)
 {

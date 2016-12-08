@@ -37,7 +37,6 @@
 #include "typedefs.h"
 #include "query.h"
 #include "handler.h"
-#include "tags.h"
 
 
 /**
@@ -79,21 +78,28 @@ typedef struct IRodsHandler
 
 
 
-#define TAG_IRODS_BASE 	(TAG_USER | 0x000000F0)
-
-#define TAG_IRODS_USER  (TAG_IRODS_BASE | 0x00000001)
-#define TAG_IRODS_PASSWORD  (TAG_IRODS_BASE | 0x00000002)
-#define TAG_IRODS_CONNECTION  (TAG_IRODS_BASE | 0x00000003)
-
-
-
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
 
+/**
+ * Get a new Handler suitable for use with iRODS.
+ *
+ * @param user_p The credentials of the current user.
+ * @return The newly-allocated Handler for iRODS data or <code>NULL</code>
+ * upon error.
+ * @memberof IRodsHandler
+ */
 IRODS_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
+
+/**
+ * Free an iRODS Handler.
+ *
+ * @param handler_p The Handler to free.
+ * @memberof IRodsHandler
+ */
 IRODS_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus

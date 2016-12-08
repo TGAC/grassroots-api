@@ -31,7 +31,6 @@
 
 
 #include "grassroots_params_library.h"
-#include "tags.h"
 #include "linked_list.h"
 #include "jansson.h"
 
@@ -113,11 +112,11 @@ GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetails
  * Allocate a new RemoteParameterDetailsNode and a new RemoteParameterDetails to store in it.
  *
  * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
- * @param tag The tag for this Parameter on the PairedService.
+ * @param param_s The name for this Parameter on the PairedService.
  * @memberof RemoteParameterDetailsNode
  * @return The new RemoteParameterDetailsNode or <code>NULL</code> upon error.
  */
-GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s, Tag tag);
+GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s,  const char * const param_s);
 
 
 /**

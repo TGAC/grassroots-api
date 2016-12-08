@@ -41,7 +41,6 @@
 #include "jansson.h"
 
 #include "providers_state_table.h"
-#include "tag_item.h"
 
 struct ExternalServer;
 

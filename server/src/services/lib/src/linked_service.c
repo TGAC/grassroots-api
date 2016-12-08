@@ -168,62 +168,10 @@ bool ProcessLinkedService (LinkedService *linked_service_p, ServiceJob *job_p)
 {
 	bool success_flag = false;
 
-	/* Does the input service hav a custom process function? */
+	/* Does the input service have a custom process function? */
 	if (job_p -> sj_service_p -> se_process_linked_services_fn)
 		{
 			success_flag = job_p -> sj_service_p -> se_process_linked_services_fn (job_p -> sj_service_p, job_p, linked_service_p);
-		}
-	else
-		{
-			Service *service_to_call_p = GetServiceByName (linked_service_p -> ls_output_service_s);
-
-			if (service_to_call_p)
-				{
-					if (linked_service_p -> ls_mapped_params_p -> ll_size > 0)
-						{
-							UserDetails *user_p = NULL;
-							ParameterSet *output_params_p = GetServiceParameters (service_to_call_p, NULL, user_p);
-
-							if (output_params_p)
-								{
-									Service *service_p = job_p -> sj_service_p;
-									MappedParameterNode *param_node_p = (MappedParameterNode *) (linked_service_p -> ls_mapped_params_p);
-									bool param_success_flag = true;
-
-									while (param_node_p && param_success_flag)
-										{
-											MappedParameter *mapped_param_p = param_node_p -> mpn_mapped_param_p;
-											param_success_flag = ProcessMappedParameter (mapped_param_p, job_p, output_params_p);
-
-											param_node_p = (MappedParameterNode *) (param_node_p -> mpn_node.ln_next_p);
-										}		/* while (param_node_p && success_flag) */
-
-
-									if (param_success_flag)
-										{
-											if (AddLinkedServiceToServiceJob (job_p, linked_service_p))
-												{
-													success_flag = true;
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add Linked Service for \"%s\" to service job", linked_service_p -> ls_output_service_s);
-												}
-										}
-
-								}		/* if (output_params_p) */
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get parameters from output Service \"%s\"", linked_service_p -> ls_output_service_s);
-								}
-
-						}		/* if (linked_service_p -> ls_mapped_params_p -> ll_size > 0) */
-
-				}		/* if (service_to_call_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get output Service \"%s\"", linked_service_p -> ls_output_service_s);
-				}
 		}
 
 	return success_flag;

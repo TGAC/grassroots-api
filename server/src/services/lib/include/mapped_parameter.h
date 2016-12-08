@@ -148,19 +148,6 @@ GRASSROOTS_SERVICE_API MappedParameterNode *AllocateMappedParameterNode (MappedP
 GRASSROOTS_SERVICE_API void FreeMappedParameterNode (ListItem *node_p);
 
 
-/**
- * Process a MappedParameter and fill in the appropriate value in a
- * given ParameterSet belonging to an output Service to run based upon
- * the results within a given ServiceJob.
- *
- * @param mapped_param_p The MappedParameter to process.
- * @param job_p The ServiceJob to get the results from.
- * @param output_params_p The ParameterSet to set the value for the output Service.
- * @return <code>true</code> if the MappedParameter was processed successfully, <code>false</code> otherwise.
- * @memberof MappedParameter
- */
-//GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params_p);
-
 
 #ifdef __cplusplus
 }

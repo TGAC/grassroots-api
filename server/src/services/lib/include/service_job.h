@@ -716,17 +716,6 @@ GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, str
 GRASSROOTS_SERVICE_API void ProcessLinkedServices (ServiceJob *job_p);
 
 
-/**
- * Fill in the required data for a LinkedService from a given ServiceJob.
- *
- * @param job_p The ServiceJob to process and store the LinekdService results in.
- * @param linked_service_p The LinkedService to process.
- * @return <code>true</code> if the LinkedService was processed succesfully for
- * the given ServiceJob, <code>false</code> otherwise.
- */
-GRASSROOTS_SERVICE_API bool GenerateLinkedServiceResults (ServiceJob *job_p, struct LinkedService *linked_service_p);
-
-
 
 #ifdef __cplusplus
 }

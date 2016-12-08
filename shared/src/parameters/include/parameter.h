@@ -29,7 +29,6 @@
 
 #include "linked_list.h"
 #include "grassroots_params_library.h"
-#include "tags.h"
 #include "data_resource.h"
 #include "hash_table.h"
 #include "schema_version.h"
@@ -252,19 +251,6 @@ typedef struct ParameterBounds
 	SharedType pb_upper;
 } ParameterBounds;
 
-
-/**
- * A datatype consisting of a Tag as a key and a
- * SharedType as a value.
- */
-typedef struct TagItem
-{
-	/** The Tag key */
-	Tag ti_tag;
-
-	/** The SharedTye value */
-	SharedType ti_value;
-} TagItem;
 
 
 /**
@@ -527,31 +513,6 @@ GRASSROOTS_PARAMS_API ParameterBounds *CopyParameterBounds (const ParameterBound
  * @memberof ParameterBounds
  */
 GRASSROOTS_PARAMS_API void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt);
-
-
-
-/**
- * Allocate a ParameterNode with an associated Parameter.
- *
- * @param type The ParameterType for this Parameter.
- * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
- * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
- * This can be <code>NULL</code>.
- * @param description_s The description of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
- * @param tag The Tag for this Parameter.
- * @param options_p This can be used to constrain the Parameter to a fixed set of values. If this is <code>NULL</code> then the Parameter can be set to any value.
- * @param default_value The default value for this Parameter.
- * @param current_value_p If this is not <code>NULL</code>, then copy this value as the current value of the Parameter. If this is <code>NULL</code>, then current value for this Parameter
- * will be set to be a copy of its default value.
- * @param bounds_p If this is not <code>NULL</code>, then this will be used to specify the minimum and maximum values that this Parameter can take. If this is <code>NULL</code>,
- * then the Parameter can take any value.
- * @param level The ParameterLevel for this Parameter. This determines when the Client should display this Parameter to the user.
- * @param check_value_fn If this is not <code>NULL</code>, then this will be used to check whether the Parameter has been set to a valid value.
- * @return A newly-allocated ParameterNode with a Parameter set to the given values or <code>NULL</code> upon error.
- * @memberof ParameterNode
- * @see AllocateParameter
- */
-GRASSROOTS_PARAMS_API ParameterNode *GetParameterNode (ParameterType type, const char * const name_s, const char * const display_name_s, const char * const description_s, Tag tag, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 /**
