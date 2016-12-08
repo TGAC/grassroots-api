@@ -852,7 +852,7 @@ GRASSROOTS_SERVICE_API bool AddLinkedService (Service *service_p, LinkedService 
  * @return The JSON fragment to be added to an array to send to the Server or <code>NULL
  * </code> upon error.
  */
-GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const bool run_flag);
+GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const SchemaVersion *sv_p, const bool run_flag);
 
 
 

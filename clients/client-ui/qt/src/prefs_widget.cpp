@@ -107,7 +107,7 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 
 void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p)
 {
-	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, provider_p, params_p, this);
+	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, provider_p, params_p, this, pw_data_p);
 
 	pw_services_ui_p -> AddService (service_name_s, service_widget_p);
 	pw_service_widgets.append (service_widget_p);

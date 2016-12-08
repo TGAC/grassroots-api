@@ -42,7 +42,7 @@ static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 	"xsd:boolean",
 	"params:signed_integer",
 	"params:unsigned_integer",
-	"params:negative_integer"
+	"params:negative_integer",
 	"xsd:double",
 	"params:unsigned_number",
 	"xsd:string",
