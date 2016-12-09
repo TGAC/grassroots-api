@@ -1727,20 +1727,6 @@ static bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *da
 
 
 
-bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p)
-{
-	bool success_flag = false;
-	json_t *mark_up_p = GetInitialisedProcessedRequest ();
-
-	if (mark_up_p)
-		{
-
-		}		/* if (mark_up_p) */
-
-	return success_flag;
-}
-
-
 static json_t *GetInitialisedProcessedRequest (void)
 {
 	/*

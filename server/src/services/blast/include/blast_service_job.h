@@ -85,9 +85,18 @@ BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p
 BLAST_SERVICE_LOCAL void FreeBlastServiceJob (ServiceJob *job_p);
 
 
-BLAST_SERVICE_LOCAL BlastServiceJob *CreateBlastServiceJobFromResultsJSON (const json_t *results_p, Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
-
-
+/**
+ * Get the filename with the data for a previously-ran BlastServiceJob.
+ *
+ * @param data_p The configuration data for the BlastService that ran the BlastServiceJob.
+ * @param job_id_s A string containing the UUID for the BlastServiceJob.
+ * @param suffix_s The file suffix to append.
+ * @return The appropriate filename or <code>NULL</code> upon error.
+ * @see BS_INPUT_SUFFIX_S
+ * @see BS_OUTPUT_SUFFIX_S
+ * @see BS_LOG_SUFFIX_S
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL char *GetPreviousJobFilename (const BlastServiceData *data_p, const char *job_id_s, const char *suffix_s);
 
 
@@ -125,39 +134,97 @@ BLAST_SERVICE_LOCAL unsigned char *SerialiseBlastServiceJob (ServiceJob *base_jo
 BLAST_SERVICE_LOCAL ServiceJob *DeserialiseBlastServiceJob (unsigned char *data_p, void *config_p);
 
 
+/**
+ * Deserialise a BlastServiceJob from a JSON fragment.
+ *
+ * @param blast_job_json_p The JSON fragment to generate the BlastServiceJob from .
+ * @param config_p The configuration data for the Blast Service.
+ * @return The newly-created BlastServiceJob or <code>NULL</code> upon error.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL BlastServiceJob *GetBlastServiceJobFromJSON (const json_t *blast_job_json_p, BlastServiceData *config_p);
 
 
+/**
+ * Serialise a BlastServiceJob into a JSON fragment.
+ *
+ * @param job_p The BlastServiceJob to serialise
+ * @return The newly-created JSON fragment or <code>NULL</code> upon error.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL json_t *ConvertBlastServiceJobToJSON (BlastServiceJob *job_p);
 
 
+/**
+ * Add the logged information from a failed BlastServiceJob to its
+ * list of stored errors.
+ *
+ * @param job_p The BlastServiceJob to update
+ * @return <code>true</code> if the BlastServiceJob had its errors
+ * updated successfully, <code>false</code> otherwise.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL bool AddErrorToBlastServiceJob (BlastServiceJob *job_p);
 
 
+/**
+ * Update the running status of BlastServiceJob if neeeded.
+ *
+ * @param job_p The BlastServiceJob to check.
+ * @return <code>true</code> if the BlastServiceJob was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL bool UpdateBlastServiceJob (ServiceJob *job_p);
 
 
-BLAST_SERVICE_LOCAL bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p);
-
-
 /**
- * After the blast job has ran, get the database that it ran against.
+ * After the blast job has ran, get the database that it ran against from a
+ * hit from within SINGLE_JSON_FILE output formatted result.
  *
+ * @param hit_p The JSON fragment for the hit.
+ * @return The database name or <code>
+ * NULL</code> upon error.
+ * @memberof BlastServiceJob
  */
-BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *result_p);
+BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *hit_p);
 
 
 /**
- * Get a json array of the scaffold names for the
- * hits against a given database
+ * After the blast job has ran, get the scaffolds that it ran against from a
+ * hit from within SINGLE_JSON_FILE output formatted result.
+ *
+ * @param hit_p The JSON fragment for the hit.
+ * @param database_s The database name.
+ * @return A JSON array where each element is an object with "scaffold" as the key
+ * and the scaffold name as the value or <code>NULL</code> upon error.
+ * @memberof BlastServiceJob
  */
-BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * const database_s);
+BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *hit_p, const char * const database_s);
 
 
+/**
+ * Get the Grassroots marked-up data from a BlastServiceJob.
+ *
+ * @param job_p The BlastServiceJob to get the marked-up result for.
+ * @return The JSON fragment containing the marked-up data or <code>
+ * NULL</code> upon error.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
 
 
-
+/**
+ * Process a LinkedService for a given BlastServiceJob.
+ *
+ * @param service_p The BlastService that generated the BlastServiceJob.
+ * @param job_p The BlastServiceJob to process for LinkedSrevice results.
+ * @param linked_service_p The LinkedService definition to produce the
+ * values for.
+ * @return <code>true</code> if the BlastServiceJob was processed
+ * successfully, <code>false</code> otherwise.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p);
 
 

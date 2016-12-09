@@ -185,6 +185,7 @@ extern "C"
  */
 BLAST_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
+
 /**
  * Free the ServicesArray and its associated BLAST Services.
  *
@@ -195,10 +196,36 @@ BLAST_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 BLAST_SERVICE_LOCAL ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p, BlastAppParameters *app_params_p);
 
+
+/**
+ * Check whether the required configuration details contain the
+ * required information for a Blast Service to be used.
+ *
+ * @param data_p The BlastServcieData to check.
+ * @return <code>true</code> if the configuration details are sufficient,
+ * <code>false</code> otherwise.
+ * @memberof BlastServiceData
+ */
 BLAST_SERVICE_LOCAL bool GetBlastServiceConfig (BlastServiceData *data_p);
 
+
+/**
+ * Allocate a BlastServiceData.
+ *
+ * @param blast_service_p The Blast Service that will own this BlastServiceData.
+ * @param database_type The type of data that the given Blast Service can act upon.
+ * @return The newly-created BlastServiceData or <code>NULL</code> upon error.
+ * @memberof BlastServiceData
+ */
 BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_service_p, DatabaseType database_type);
 
+
+/**
+ * Free a BlastServiceData.
+ *
+ * @param data_p The BlastServiceData to free.
+ * @memberof BlastServiceData
+ */
 BLAST_SERVICE_LOCAL void FreeBlastServiceData (BlastServiceData *data_p);
 
 BLAST_SERVICE_LOCAL bool CloseBlastService (Service *service_p);
@@ -216,8 +243,29 @@ BLAST_SERVICE_LOCAL OperationStatus GetBlastServiceStatus (Service *service_p, c
 
 BLAST_SERVICE_LOCAL TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id);
 
+
+/**
+ * Get the result of a previously ran BlastServiceJob in a given output format.
+ *
+ * @param data_p The BlastServiceData of the Blast Service that ran the job.
+ * @param job_id The ServiceJob identifier to get the results for.
+ * @param output_format_code The required output format code.
+ * @return A newly-allocated string containing the results in the requested format
+ * or <code>NULL</code> upon error.
+ * @see GetBlastResultByUUIDString
+ */
 BLAST_SERVICE_LOCAL char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id, const uint32 output_format_code);
 
+/**
+ * Get the result of a previously ran BlastServiceJob in a given output format.
+ *
+ * @param data_p The BlastServiceData of the Blast Service that ran the job.
+ * @param job_id_s The ServiceJob identifier, as a string, to get the results for.
+ * @param output_format_code The required output format code.
+ * @return A newly-allocated string containing the results in the requested format
+ * or <code>NULL</code> upon error.
+ * @see GetBlastResultByUUID
+ */
 BLAST_SERVICE_LOCAL char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *job_id_s, const uint32 output_format_code);
 
 BLAST_SERVICE_LOCAL ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code);

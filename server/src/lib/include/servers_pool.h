@@ -373,6 +373,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool FreeServersManager (ServersManager *manager_
  * @param manager_p The ServersManager containing the details of all of the ExternalServers.
  * @param op The Operation to get the available facilities for.
  * @return The JSON fragment containing all of the details or <code>NULL</code> upon error.
+ * @memberof ServersManager
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, Operation op);
 
@@ -452,23 +453,6 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *MakeRemoteJSONCallToExternalServer (Exter
  * @see ServersManager
  */
 GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *json_p);
-
-
-
-/**
- * @brief Add operations from ExternalServers.
- *
- * This will iterate through all of the ExternalServers that a ServersManager has
- * and add JSON objects to an existing JSON object so that all operations appear
- * to be on this Server as far as the Client is concerned
- *
- * @param manager_p The ServersManager to add the ExternalServer to.
- * @param internal_services_p The LinkedList of ServerNodes on the local Server.
- * @param op The Operation to check on each of the ExternalServers.
- * @return the resultant JSON object.
- * @memberof ServersManager
- */
-GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
 
 
 /**

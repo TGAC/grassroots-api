@@ -595,7 +595,7 @@ ExternalServerNode *AllocateExternalServerNode (ExternalServer *server_p, MEM_FL
 
 					case MF_DEEP_COPY:
 						/* Currently unimplemented */
-						PrintLog (STM_LEVEL_WARNING, __FILE__, __LINE, "MF_DEEP_COPY for AllocateExternalServerNode is currently unimplemented");
+						PrintLog (STM_LEVEL_WARNING, __FILE__, __LINE__, "MF_DEEP_COPY for AllocateExternalServerNode is currently unimplemented");
 						break;
 
 					default:
