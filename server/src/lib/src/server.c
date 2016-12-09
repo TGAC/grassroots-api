@@ -1269,7 +1269,7 @@ static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetail
 	else
 		{
 			ServersManager *servers_manager_p = GetServersManager ();
-			json_p = AddExternalServerOperationsToJSON (servers_manager_p, NULL, OP_LIST_ALL_SERVICES);
+			json_p = AddExternalServerOperationsToJSON (servers_manager_p, OP_LIST_ALL_SERVICES);
 		}
 
 	return json_p;

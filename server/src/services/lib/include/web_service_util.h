@@ -221,6 +221,7 @@ GRASSROOTS_SERVICE_API ServiceJobSet *RunWebSearchService (Service *service_p, P
 /**
  * Add a Parameter giving the choice of MatchTypes to a ParameterSet.
  *
+ * @param data_p The WebServiceData to to use for configuration details.
  * @param param_set_p The ParameterSet to add the MatchType parameter to.
  * @return <code>true</code> if successful, <code>false</code> otherwise.
  */

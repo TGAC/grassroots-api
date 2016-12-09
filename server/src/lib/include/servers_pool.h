@@ -365,7 +365,16 @@ GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManag
 GRASSROOTS_SERVICE_MANAGER_API bool FreeServersManager (ServersManager *manager_p);
 
 
-GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
+/**
+ * Get the JSON fragment which will form part of a response to other servers and
+ * clients. representing the capabilities available on for all
+ * available ExternalServers for a given Operation.
+ *
+ * @param manager_p The ServersManager containing the details of all of the ExternalServers.
+ * @param op The Operation to get the available facilities for.
+ * @return The JSON fragment containing all of the details or <code>NULL</code> upon error.
+ */
+GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, Operation op);
 
 
 /**
@@ -391,8 +400,6 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *AllocateExternalServer (const cha
 GRASSROOTS_SERVICE_MANAGER_API void FreeExternalServer (ExternalServer *server_p);
 
 
-
-
 /**
  * Allocate an ExternalServerNode
  *
@@ -412,7 +419,6 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServerNode *AllocateExternalServerNode (E
  * @memberof ExternalServerNode
  */
 GRASSROOTS_SERVICE_MANAGER_API void FreeExternalServerNode (ListItem *node_p);
-
 
 
 /**
@@ -465,10 +471,15 @@ GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *jso
 GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
 
 
-
-GRASSROOTS_SERVICE_MANAGER_API ExternalServer *CopyExternalServer (const ExternalServer * const src_p);
-
-
+/**
+ * Get the name of the remote paired service corresponding to a given local
+ * service name.
+ *
+ * @param src_p The ExternalServer which has the remote Service.
+ * @param local_service_name_s The name of the local Service.
+ * @return The name of the remote paired service or <code>NULL</code>
+ * upon error.
+ */
 GRASSROOTS_SERVICE_MANAGER_API const char *GetRemotePairedServiceName (const ExternalServer * const src_p, const char * const local_service_name_s);
 
 

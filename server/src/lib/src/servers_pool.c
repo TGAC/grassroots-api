@@ -110,13 +110,7 @@ bool FreeServersManager (ServersManager *manager_p)
 }
 
 
-json_t *PairServices (ExternalServer *external_server_p, LinkedList *services_p)
-{
-	return NULL;
-}
-
-
-json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op)
+json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, Operation op)
 {
 	/* build the request that we will send to each external server */
 	json_error_t error;
@@ -600,7 +594,8 @@ ExternalServerNode *AllocateExternalServerNode (ExternalServer *server_p, MEM_FL
 						break;
 
 					case MF_DEEP_COPY:
-						node_p -> esn_server_p = CopyExternalServer (server_p);
+						/* Currently unimplemented */
+						PrintLog (STM_LEVEL_WARNING, __FILE__, __LINE, "MF_DEEP_COPY for AllocateExternalServerNode is currently unimplemented");
 						break;
 
 					default:
@@ -664,12 +659,6 @@ json_t *MakeRemoteJSONCallToExternalServer (ExternalServer *server_p, json_t *re
 		}		/* if (result_s) */
 
 	return response_p;
-}
-
-
-ExternalServer *CopyExternalServer (const ExternalServer * const src_p)
-{
-	return NULL;
 }
 
 

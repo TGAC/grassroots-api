@@ -147,8 +147,26 @@ apr_status_t FreeAPRGlobalStorage (void *data_p);
 void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p);
 
 
-unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
+/**
+ * Calculate a hash code for a given string.
+ *
+ * @param uuid_s The raw UUID data to calculate the hashed value for.
+ * @param len_p The length of the data.
+ * @return The hash value.
+ */
+unsigned int HashUUIDForAPR (const char *uuid_s, apr_ssize_t *len_p);
 
+
+/**
+ * Get a string representation of a raw UUID value.
+ *
+ * @param data_p Pointer to the raw UUID value.
+ * @param raw_key_length The length of the raw value given by data_p.
+ * @param key_len_p POinter to where the length of the returned string
+ * will be stored.
+ * @return The string representation of the UUID value or <code>NULL</code>
+ * upon error.
+ */
 unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint32 *key_len_p);
 
 
@@ -191,14 +209,25 @@ void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *ra
  */
 void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length);
 
+
 bool IterateOverAPRGlobalStorage (APRGlobalStorage *storage_p, ap_socache_iterator_t *iterator_p, void *data_p);
+
 
 bool InitAPRGlobalStorageForChild (APRGlobalStorage *storage_p, apr_pool_t *pool_p);
 
+
 bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p);
+
 
 bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s, struct ap_socache_hints *cache_hints_p);
 
+
+/**
+ * Print the contents of an APRGlobalStorage object to the log OUtputStream.
+ *
+ * @param storage_p The APRGlobalStorage to print.
+ * @memberof APRGlobalStorage
+ */
 void PrintAPRGlobalStorage (APRGlobalStorage *storage_p);
 
 #ifdef __cplusplus

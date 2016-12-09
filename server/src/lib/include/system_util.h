@@ -28,8 +28,24 @@
 	extern "C" {
 #endif
 
+
+/**
+ * Initialise the various base components of the Grassroots
+ * system.
+ *
+ * @return <code>true</code> if the system was successfully
+ * initialised, <code>false</code> otherwise.
+ */
 GRASSROOTS_SERVICE_MANAGER_API bool InitInformationSystem (void);
 
+
+/**
+ * Perform any pre-termination tasks of the Grassroots
+ * system prior to it exiting.
+ *
+ * @return <code>true</code> if the tasks were successfully
+ * completed, <code>false</code> otherwise.
+ */
 GRASSROOTS_SERVICE_MANAGER_API bool DestroyInformationSystem (void);
 
 

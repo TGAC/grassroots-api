@@ -40,15 +40,17 @@
  *
  * 		extern const char *SERVICE_NAME_S;
  *
- * however if ALLOCATE_JSON_TAGS is defined then it will
- * become
+ * however if ALLOCATE_APR_SERVERS_MANAGER_TAGS is defined
+ * then it will become
  *
  * 		const char *SERVICE_NAME_S = "path";
  *
  * ALLOCATE_RESOURCE_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
- * resource.c.
+ * apr_external_servers__manager.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_APR_SERVERS_MANAGER_TAGS
 	#define APR_SERVERS_MANAGER_PREFIX
 	#define APR_SERVERS_MANAGER_VAL(x)	= x
@@ -56,6 +58,8 @@
 	#define APR_SERVERS_MANAGER_PREFIX extern
 	#define APR_SERVERS_MANAGER_VAL(x)
 #endif
+
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 
 APR_SERVERS_MANAGER_PREFIX const char *APR_SERVERS_MANAGER_CACHE_ID_S APR_SERVERS_MANAGER_VAL("grassroots-servers-socache");

@@ -1452,23 +1452,6 @@ bool AddErrorToServiceJob (ServiceJob *job_p, const char * const key_s, const ch
 }
 
 
-bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag)
-{
-	bool success_flag = false;
-
-	if (claim_flag)
-		{
-			success_flag = (json_object_set_new (job_p -> sj_errors_p, key_s, values_p) == 0);
-		}
-	else
-		{
-			success_flag = (json_object_set (job_p -> sj_errors_p, key_s, values_p) == 0);
-		}
-
-	return success_flag;
-}
-
-
 
 bool UpdateServiceJob (ServiceJob *job_p)
 {

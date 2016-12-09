@@ -630,9 +630,6 @@ GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *re
 
 
 
-GRASSROOTS_SERVICE_API bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag);
-
-
 /**
  * Set the current OperationStatus for a given ServiceJob.
  *
@@ -685,7 +682,7 @@ GRASSROOTS_SERVICE_API uint32 GetNumberOfServiceJobResults (const ServiceJob *jo
  * @param job_p The ServiceJob to amend.
  * @param results_p The new JSON fragment which will be the ServiceJob's results.
  * Any previous results will have the reference count decremented.
- * @return <code>true</code> if the ServiceJob was updated successfully, <code>false<code>
+ * @return <code>true</code> if the ServiceJob was updated successfully, <code>false</code>
  * otherwise.
  * @memberof ServiceJob
  */

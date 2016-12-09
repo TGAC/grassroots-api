@@ -60,6 +60,8 @@ struct ExternalServer;
  * including this header file. Currently this happens in
  * service.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_PATH_TAGS
 	#define PATH_PREFIX GRASSROOTS_SERVICE_API
 	#define PATH_VAL(x)	= x
@@ -68,6 +70,7 @@ struct ExternalServer;
 	#define PATH_VAL(x)	
 #endif
 
+#endif
 
 /**
  * This specifies the relative filesystem path to where the Service
@@ -847,7 +850,10 @@ GRASSROOTS_SERVICE_API bool AddLinkedService (Service *service_p, LinkedService 
  * requires.
  *
  * @param service_name_s The name of the Service to get the JSON fragment for.
- * @param params_p The ParameterSet to use. If run_flag is false, then this can be NULL.
+ * @param params_p The ParameterSet to use. If run_flag is false, then this can be <code>NULL</code>.
+ * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
+ * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
+ * current version of the running Grassroots system will be used.
  * @param run_flag Whether the Service should be run or not.
  * @return The JSON fragment to be added to an array to send to the Server or <code>NULL
  * </code> upon error.

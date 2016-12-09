@@ -51,6 +51,9 @@
  * including this header file. Currently this happens in
  * resource.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_APR_JOBS_MANAGER_TAGS
 	#define APR_JOBS_MANAGER_PREFIX
 	#define APR_JOBS_MANAGER_VAL(x)	= x
@@ -59,6 +62,7 @@
 	#define APR_JOBS_MANAGER_VAL(x)
 #endif
 
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 APR_JOBS_MANAGER_PREFIX const char *APR_JOBS_MANAGER_CACHE_ID_S APR_JOBS_MANAGER_VAL("grassroots-jobs-socache");
 
@@ -112,9 +116,26 @@ bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_poo
 
 bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_pool_p);
 
+/**
+ * Notify that a ServiceJob with a given UUID has finished and
+ * can be removed from the given JobsManager.
+ *
+ * @param jobs_manager_p The JobsManager to remove the ServiceJob from.
+ * @param job_key The UUID of the ServiceJob to be removed.
+ *
+ * @memberof APRJobsManager
+ */
 void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key);
 
 
+/**
+ * Free an APRJobsManager.
+ *
+ * @param jobs_manager_p The APRJobsManager to free.
+ * @return<code>true</code> if the APRJobsManager was freed successfully, ,
+ * <code>false</code> upon error.
+ * @memberof APRJobsManager
+ */
 bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p);
 
 

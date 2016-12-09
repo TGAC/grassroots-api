@@ -33,6 +33,7 @@
 #include "jansson.h"
 #include "mongodb_library.h"
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 
 #ifdef ALLOCATE_MONGODB_TAGS
 	#define MONGODB_PREFIX GRASSROOTS_MONGODB_API
@@ -42,6 +43,7 @@
 	#define MONGODB_VAL(x)
 #endif
 
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 MONGODB_PREFIX const char *MONGO_ID_S MONGODB_VAL("_id");
 MONGODB_PREFIX const char *MONGO_COLLECTION_S MONGODB_VAL("collection");

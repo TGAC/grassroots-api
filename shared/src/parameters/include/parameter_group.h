@@ -52,6 +52,9 @@
  * including this header file. Currently this happens in
  * json_util.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_PARAMETER_GROUP_TAGS_H
 	#define PARAMETER_GROUP_PREFIX GRASSROOTS_PARAMS_API
 	#define PARAMETER_GROUP_VAL(x)	= x
@@ -60,7 +63,7 @@
 	#define PARAMETER_GROUP_VAL(x)
 #endif
 
-
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 PARAMETER_GROUP_PREFIX const char *PARAM_GROUP_DELIMITER_S PARAMETER_GROUP_VAL("/");
 
