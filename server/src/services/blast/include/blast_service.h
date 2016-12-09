@@ -139,6 +139,9 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 
 
 
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_BLAST_SERVICE_CONSTANTS
 	#define BLAST_SERVICE_PREFIX BLAST_SERVICE_LOCAL
 	#define BLAST_SERVICE_VAL(x)	= x
@@ -149,6 +152,7 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 	 #define BLAST_SERVICE_STRUCT_INITIALIZER(x)
 #endif
 
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 
 #define BS_DEFAULT_OUTPUT_FORMAT (11)
@@ -172,10 +176,20 @@ extern "C"
 {
 #endif
 
-
+/**
+ * Get the Services available for running BLAST jobs.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing all of the BLAST Services or
+ * <code>NULL</code> upon error.
+ */
 BLAST_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
-
+/**
+ * Free the ServicesArray and its associated BLAST Services.
+ *
+ * @param services_p The ServicesArray to free.
+ */
 BLAST_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 
@@ -221,10 +235,25 @@ BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, const 
 BLAST_SERVICE_LOCAL void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p);
 
 
-
+/**
+ * For a given service-configured name, find the corresponding BLAST database filename.
+ *
+ * @param data_p The BlastServiceData with the service configuration details.
+ * @param name_s The service-configured name.
+ * @return The corresponding BLAST database filename or <code>NULL</code> if it could
+ * not be found.
+ */
 BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseFilename (BlastServiceData *data_p, const char *name_s);
 
 
+/**
+ * For a given BLAST database filename, find the corresponding service-configured name.
+ *
+ * @param data_p The BlastServiceData with the service configuration details.
+ * @param name_s The BLAST database filename.
+ * @return The corresponding service-configured name or <code>NULL</code> if it could
+ * not be found.
+ */
 BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseName (BlastServiceData *data_p, const char *filename_s);
 
 
