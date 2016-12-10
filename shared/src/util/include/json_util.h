@@ -629,11 +629,20 @@ GRASSROOTS_UTIL_API void FreeFieldNode (ListItem *node_p);
  *
  * @param filename_s The filename to load.
  * @return The resultant JSON fragment or <code>NULL</code> upon errors
- * such as the file  being unable to be read or not a JSON fiile.
+ * such as the file being unable to be read or not a JSON file.
  */
 GRASSROOTS_UTIL_API json_t *LoadJSONFile (const char * const filename_s);
 
 
+/**
+ * Convert a string of tabular data into a JSON array.
+ *
+ * @param data_s The string of data to convert.
+ * @param column_delimiter The character used to separate the data into columns.
+ * @param row_delimiter The character used to separate the data into rows.
+ * @param headers_p A LinkedList of FieldNodes where specifying the headers for each column of data.
+ * @return <code>true</code> if the data was successfully converted, <code>false</code> otherwise.
+ */
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, LinkedList *headers_p);
 
 

@@ -22,6 +22,11 @@ extern "C"
 {
 #endif
 
+/**
+ * Get a Service capable of running BlastP searches.
+ *
+ * @return The BlastP Service or <code>NULL</code> upon error.
+ */
 
 BLAST_SERVICE_LOCAL Service *GetBlastPService ();
 

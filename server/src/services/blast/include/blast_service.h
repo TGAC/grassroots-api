@@ -280,6 +280,14 @@ BLAST_SERVICE_LOCAL ServiceJob *BuildBlastServiceJob (struct Service *service_p,
 BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *service_job_p);
 
 
+/**
+ * Initialise a BlastServiceJob with its required functions for
+ * updating and freeing itself.
+ *
+ * @param service_p The BlastService that has created the BlastServiceJob.
+ * @param job_p The BlastServiceJob.
+ * @memberof BlastServiceJob
+ */
 BLAST_SERVICE_LOCAL void CustomiseBlastServiceJob (Service *service_p, ServiceJob *job_p);
 
 
@@ -298,7 +306,7 @@ BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseFilename (BlastServiceData *d
  * For a given BLAST database filename, find the corresponding service-configured name.
  *
  * @param data_p The BlastServiceData with the service configuration details.
- * @param name_s The BLAST database filename.
+ * @param filename_s The BLAST database filename.
  * @return The corresponding service-configured name or <code>NULL</code> if it could
  * not be found.
  */

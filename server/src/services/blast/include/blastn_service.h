@@ -19,6 +19,11 @@ extern "C"
 #endif
 
 
+/**
+ * Get a Service capable of running BlastN searches.
+ *
+ * @return The BlastN Service or <code>NULL</code> upon error.
+ */
 BLAST_SERVICE_LOCAL Service *GetBlastNService ();
 
 #ifdef __cplusplus
