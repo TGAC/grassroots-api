@@ -239,6 +239,14 @@ BLAST_SERVICE_LOCAL void ReleaseBlastServiceParameters (Service *service_p, Para
 
 BLAST_SERVICE_LOCAL bool DetermineBlastResult (Service *service_p, struct BlastServiceJob *job_p);
 
+
+/**
+ * Get the OperationStatus for a BlastServiceJob with the given job id.
+ *
+ * @param service_p The Blast Service of the type which ran the BlastServiceJob.
+ * @param service_id The UUID for the given BlastServiceJob.
+ * @return The OperationStatus for the given BlastServiceJob.
+ */
 BLAST_SERVICE_LOCAL OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
 
 BLAST_SERVICE_LOCAL TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id);
