@@ -119,6 +119,13 @@ BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (BlastServiceData *blast_
 BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type);
 
 
+/**
+ * Get the number of databases of a given type that this BlastService has.
+ *
+ * @param data_p The configuration data for the BlastService to check.
+ * @param dt The type of database to check.
+ * @return The number of available databases of the given type.
+ */
 BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p, const DatabaseType dt);
 
 
