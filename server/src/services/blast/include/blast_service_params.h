@@ -179,7 +179,7 @@ BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p,
 /**
  * Create the Parameter for specifying the UUIDs for any previous Blast searches.
  *
- * @param data_p The configuration data for the Blast Service.
+ * @param service_data_p The configuration data for the Blast Service.
  * @param param_set_p The ParameterSet that the UUID Parameter will be added to.
  * @param group_p The optional ParameterGroup to add the generated Parameter to. This can be <code>NULL</code>.
  * @return The UUID Parameter or <code>NULL</code> upon error.

@@ -64,6 +64,11 @@
 
 #endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
+
+/**
+ * The identifier for the named shared object cache to use for sharing ServiceJobs
+ * between different httpd processes and threads.
+ */
 APR_JOBS_MANAGER_PREFIX const char *APR_JOBS_MANAGER_CACHE_ID_S APR_JOBS_MANAGER_VAL("grassroots-jobs-socache");
 
 
@@ -111,9 +116,28 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p);
 apr_status_t CleanUpAPRJobsManager (void *value_p);
 
 
-
+/**
+ * Configure an APRJobsManager in the Apache parent process before any child processes
+ * are launched.
+ *
+ * @param manager_p The APRJobsManager to configure.
+ * @param config_pool_p The memory pool available to use.
+ * @param server_p The Apache server structure.
+ * @param provider_name_s The name of sharded object cache provider to use.
+ * @return <code>true</code> if successful or <code>false</code> if there was a problem.
+ * @memberof APRJobsManager
+ */
 bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
 
+
+/**
+ * Set up an APRJobsManager prior to the configuration details being used.
+ *
+ * @param manager_p The APRJobsManager to initialise.
+ * @param config_pool_p A memory pool to use if needed.
+ * @return <code>true</code> if the initialisation was successful or <code>false</code> if there was a problem.
+ * @memberof APRJobsManager
+ */
 bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_pool_p);
 
 /**

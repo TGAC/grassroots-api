@@ -155,18 +155,46 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 #endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 
+/**
+ * The default output format as a number to use.
+ *
+ * @see BS_DEFAULT_OUTPUT_FORMAT_S
+ */
 #define BS_DEFAULT_OUTPUT_FORMAT (11)
 
+/** The suffix to use for Blast Service input files. */
 BLAST_SERVICE_PREFIX const char *BS_INPUT_SUFFIX_S BLAST_SERVICE_VAL (".input");
+
+/** The suffix to use for Blast Service output files. */
 BLAST_SERVICE_PREFIX const char *BS_OUTPUT_SUFFIX_S BLAST_SERVICE_VAL (".output");
+
+/** The suffix to use for Blast Service log files. */
 BLAST_SERVICE_PREFIX const char *BS_LOG_SUFFIX_S BLAST_SERVICE_VAL (".log");
-//BLAST_SERVICE_PREFIX const uint32 BS_DEFAULT_OUTPUT_FORMAT BLAST_SERVICE_VAL (11);
+
+/**
+ * The default output format as a string to use.
+ *
+ * @see BS_DEFAULT_OUTPUT_FORMAT
+ */
 BLAST_SERVICE_PREFIX const char *BS_DEFAULT_OUTPUT_FORMAT_S BLAST_SERVICE_VAL ("11");
 
+/** The prefix to use for the ParameterGroup names for available databases from all of the connected servers. */
 BLAST_SERVICE_PREFIX const char *BS_DATABASE_GROUP_NAME_S BLAST_SERVICE_VAL ("Available Databases");
 
+/**
+ * The configuration key used to declare which type of BlastTool to use.
+ */
 BLAST_SERVICE_PREFIX const char *BS_TOOL_TYPE_NAME_S BLAST_SERVICE_VAL ("blast_tool");
+
+/**
+ * The configuration key used to declare the Blast executable file to use.
+ */
 BLAST_SERVICE_PREFIX const char *BS_COMMAND_NAME_S BLAST_SERVICE_VAL ("blast_command");
+
+
+/**
+ * The configuration key used to declare the type of Blast application to use.
+ */
 BLAST_SERVICE_PREFIX const char *BS_APP_NAME_S BLAST_SERVICE_VAL ("blast_app_type");
 
 
@@ -228,11 +256,22 @@ BLAST_SERVICE_LOCAL BlastServiceData *AllocateBlastServiceData (Service *blast_s
  */
 BLAST_SERVICE_LOCAL void FreeBlastServiceData (BlastServiceData *data_p);
 
+
+/**
+ * Close a Blast Service.
+ *
+ * @param service_p The Blast Service to close.
+ * @return <code>true</code> if the Blast Service was closed successfully, <code>
+ * false</code> otherwise.
+ */
 BLAST_SERVICE_LOCAL bool CloseBlastService (Service *service_p);
+
 
 BLAST_SERVICE_LOCAL ParameterSet *IsResourceForBlastService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
+
 BLAST_SERVICE_LOCAL bool AddBaseBlastServiceParameters (Service *blast_service_p, ParameterSet *param_set_p, const DatabaseType db_type, bool (*add_additional_params_fn) (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p));
+
 
 BLAST_SERVICE_LOCAL void ReleaseBlastServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -249,6 +288,7 @@ BLAST_SERVICE_LOCAL bool DetermineBlastResult (Service *service_p, struct BlastS
  */
 BLAST_SERVICE_LOCAL OperationStatus GetBlastServiceStatus (Service *service_p, const uuid_t service_id);
 
+
 BLAST_SERVICE_LOCAL TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_directory_s, const uuid_t job_id);
 
 
@@ -263,6 +303,7 @@ BLAST_SERVICE_LOCAL TempFile *GetInputTempFile (const ParameterSet *params_p, co
  * @see GetBlastResultByUUIDString
  */
 BLAST_SERVICE_LOCAL char *GetBlastResultByUUID (const BlastServiceData *data_p, const uuid_t job_id, const uint32 output_format_code);
+
 
 /**
  * Get the result of a previously ran BlastServiceJob in a given output format.
@@ -279,12 +320,15 @@ BLAST_SERVICE_LOCAL char *GetBlastResultByUUIDString (const BlastServiceData *da
 
 BLAST_SERVICE_LOCAL ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast_data_p, const uint32 output_format_code);
 
+
 BLAST_SERVICE_LOCAL ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char *ids_s, BlastServiceData *blast_data_p);
+
 
 BLAST_SERVICE_LOCAL void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, BlastServiceData *data_p);
 
 
 BLAST_SERVICE_LOCAL ServiceJob *BuildBlastServiceJob (struct Service *service_p, const json_t *service_job_json_p);
+
 
 BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *service_job_p);
 

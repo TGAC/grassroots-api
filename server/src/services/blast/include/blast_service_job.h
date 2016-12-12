@@ -52,8 +52,11 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceJob
 } BlastServiceJob;
 
 
-
+/** The name of the exposed database output parameter for LinkedServices. */
 BLAST_SERVICE_PREFIX const char *BSJ_LINKED_SERVICE_DATABASE_S BLAST_SERVICE_VAL ("database");
+
+
+/** The name of the exposed scaffold output parameter for LinkedServices. */
 BLAST_SERVICE_PREFIX const char *BSJ_LINKED_SERVICE_SCAFFOLD_S BLAST_SERVICE_VAL ("scaffold");
 
 
