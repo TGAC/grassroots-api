@@ -36,8 +36,23 @@
 	extern "C" {
 #endif
 
+/**
+ * Get any DRMAA environment resources, if required, when starting
+ * the Grassroots Server.
+ *
+ * @return <code>true</code> if the DRMAA environment was started up
+ * successfully, <code>false</code> otherwise.
+ */
 GRASSROOTS_SERVICE_MANAGER_API bool InitDrmaaEnvironment (void);
 
+
+/**
+ * Release any DRMAA environment resources, if required, when
+ * shutting down the Grassroots Server.
+ *
+ * @return <code>true</code> if the DRMAA environment was started up
+ * successfully, <code>false</code> otherwise.
+ */
 GRASSROOTS_SERVICE_MANAGER_API bool ExitDrmaaEnvironment (void);
 
 #ifdef __cplusplus

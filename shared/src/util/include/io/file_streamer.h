@@ -51,7 +51,20 @@
 #endif /* #ifdef SHARED_LIBRARY */
 
 
+/**
+ * Allocate an OutputStreamerModule for writing log and error messages to named output files.
+ *
+ * @param config_manager_p The ConfigurationManager used to specify the details of the
+ * output filenames.
+ * @return A newly-allocated OutputStreamerModule or <code>NULL</code> upon error.
+ */
 FILE_STREAMER_API OutputStreamerModule *AllocateStreamer (const ConfigurationManager * const config_manager_p);
+
+/**
+ * Free an OutputStreamerModule.
+ *
+ * @param streamer_p The OutputStreamerModule to free.
+ */
 FILE_STREAMER_API void DeallocateStreamer (OutputStreamerModule *streamer_p);
 
 
