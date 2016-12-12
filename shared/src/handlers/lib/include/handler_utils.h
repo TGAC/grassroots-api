@@ -48,7 +48,7 @@ GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, 
 /**
  * This allocates the internal structures used by the Handler library.
  *
- * @return <code>true</code> upon success, <code>false</code>s on failure.
+ * @return <code>true</code> upon success, <code>false</code> on failure.
  */
 GRASSROOTS_HANDLER_API bool InitHandlerUtil (void);
 
@@ -56,13 +56,23 @@ GRASSROOTS_HANDLER_API bool InitHandlerUtil (void);
 /**
  * This frees the internal structures used by the Handler library.
  *
- * @return true upon success, false on failure.
+ * @return <code>true</code> upon success, <code>false</code> on failure.
  */
 GRASSROOTS_HANDLER_API bool DestroyHandlerUtil (void);
 
 
-
+/**
+ * Create a local file for caching changes to a remote file allowing changes
+ * to be committed once editing has finished,
+ *
+ * @param protocol_s The protocol of the remote file.
+ * @param user_id_s The id of the cuurent user. This can be <code>NULL</code>.
+ * @param filename_s The remote filename.
+ * @param time_p The time when the local cached file was created.
+ * @return The local filename or <code>NULL</code> upon error.
+ */
 GRASSROOTS_HANDLER_API const char *GetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, time_t *time_p);
+
 
 GRASSROOTS_HANDLER_API bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, const char *mapped_filename_s, const time_t last_mod_time);
 

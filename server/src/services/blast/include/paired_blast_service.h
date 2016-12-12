@@ -42,9 +42,27 @@ extern "C"
 #endif
 
 
-BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter);
+/**
+ * Add the parameters for all PairedServices of a given Service to given ParameterSet.
+ *
+ * @param service_p The Blast Service whose PairedService Parameters will be added.
+ * @param internal_params_p The ParameterSet to add the PairedService Parameters to.
+ * @return <code>true</code> if the PairedServices were added successfully, <code>
+ * false</code> otherwise.
+ */
+BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p);
 
 
+/**
+ * Run a remote PairedService and add the results to the current ServiceJobSet.
+ *
+ * @param service_p The Blast Service whose PairedService will be run.
+ * @param jobs_p The ServiceJobSet that the remote results will be added to.
+ * @param params_p The ParameterSet specifying the Blast search parameters.
+ * @param paired_service_p The PairedService to process.
+ * @param providers_p The details of ExternalServers for any paired or external Services.
+ * @return The number of successfully remote ServiceJobs ran or -1 on error.
+ */
 BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p);
 
 

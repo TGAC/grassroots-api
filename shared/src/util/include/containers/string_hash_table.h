@@ -52,9 +52,25 @@ GRASSROOTS_UTIL_API HashTable *GetHashTableOfStrings (const uint32 initial_capac
 GRASSROOTS_UTIL_API HashTable *GetHashTableOfStringInts (const uint32 initial_capacity, const uint8 load_percentage);
 
 
+/**
+ * Compare the keys of two StringHashBuckets.
+ *
+ * @param bucket_key_p The first string
+ * @param key_p The second string.
+ * @return Less than zero if the first string is before the second, zero if they are
+ * identical strings and greater than zero if the first string is after the second.
+ */
 GRASSROOTS_UTIL_API bool CompareStringHashBuckets (const void * const bucket_key_p, const void * const key_p);
 
 
+/**
+ * Compare two strings alphabetically.
+ *
+ * @param v0_p A const char ** for the first string.
+ * @param v1_p A const char ** for the second string.
+ * @return Less than zero if the first string is before the second, zero if they are
+ * identical strings and greater than zero if the first string is after the second.
+ */
 GRASSROOTS_UTIL_API int CompareKeysAlphabetically (const void *v0_p, const void *v1_p);
 
 

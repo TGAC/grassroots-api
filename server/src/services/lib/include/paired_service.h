@@ -156,6 +156,7 @@ GRASSROOTS_SERVICE_API void FreePairedServiceNode (ListItem *node_p);
  * @param service_name_s The name of the PairedServce to call.
  * @param params_p The ParameterSet to send to the PairedService.
  * @param paired_service_uri_s The URI of the ExternalServer to send the request to.
+ * @param providers_p The details of ExternalServers for any paired or external Services.
  * @return The JSON fragment of the results of the PairedService or <code>NULL</code> upon error.
  */
 GRASSROOTS_SERVICE_API json_t *MakeRemotePairedServiceCall (const char * const service_name_s, ParameterSet *params_p, const char * const paired_service_uri_s, ProvidersStateTable *providers_p);

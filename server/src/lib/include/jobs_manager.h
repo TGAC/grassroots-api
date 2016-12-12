@@ -37,11 +37,27 @@
 /* forward declaration */
 struct JobsManager;
 
-
+/**
+ * A typedef'd function for serialising a ServiceJob into an
+ * array of raw bytes.
+ *
+ * @param job_p The ServiceJob to serialise.
+ * @param length_p If the serialisation is successful, the
+ * length of the resultant array will be stored here.
+ * @return The raw array or <code>NULL</code> upon error.
+ */
 typedef unsigned char *(*ServiceJobSerialiser) (ServiceJob *job_p, uint32 *length_p);
 
 
-typedef ServiceJob *(*ServiceJobDeserialiser) (unsigned char *input_data_p, void *config_p);
+/**
+ * A typedef'd function for deserialising a ServiceJob from an
+ * array of raw bytes.
+ *
+ * @param input_data_p The array of raw bytes from a previously serialised ServiceJob.
+ * @param config_p If the ServiceJobDeserialiser requires some configuration data, it
+ * can be passed in here. This can be <code>NULL</code>.
+ * @return The ServiceJob or <code>NULL</code> upon error.
+ */typedef ServiceJob *(*ServiceJobDeserialiser) (unsigned char *input_data_p, void *config_p);
 
 
 /**

@@ -572,12 +572,7 @@ bool AddBaseBlastServiceParameters (Service *blast_service_p, ParameterSet *para
 		{
 			uint16 num_dbs = AddDatabaseParams (blast_data_p, param_set_p, db_type);
 
-			num_dbs = AddPairedServiceParameters (blast_service_p, param_set_p, num_dbs);
-
-			if (num_dbs > 0)
-				{
-					success_flag = true;
-				}
+			success_flag = AddPairedServiceParameters (blast_service_p, param_set_p);
 		}
 
 	return success_flag;
