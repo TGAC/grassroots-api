@@ -224,23 +224,5 @@ private:
 };
 
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-
-/**
- * Get a newly created BlastTool
- *
- * @return The BlastTool or <code>NULL</code> upon error.
- */
-BLAST_SERVICE_API BlastTool *CreateDrmaaBlastTool (ServiceJob *job_p, const char *name_s, const char *working_directory_s);
-
-
-#ifdef __cplusplus
-}
-#endif
-
 
 #endif /* DRMAA_BLAST_TOOL_HPP_ */
