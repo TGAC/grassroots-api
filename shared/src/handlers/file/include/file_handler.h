@@ -54,7 +54,7 @@ extern "C"
  * Get a FileHandler.
  *
  * @param user_p The UserDetails used to determine file access permissions. This can be <code>NULL</code>.
- * @return  The newly-allocated FileHandler or <code>NULL</code> upon error.
+ * @return The newly-allocated FileHandler or <code>NULL</code> upon error.
  * @memberof FileHandler
  */
 FILE_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
@@ -64,7 +64,7 @@ FILE_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
  * Free a FileHandler.
  *
  * @param handler_p The FileHandler to free.
- * @memberof FileHandler.
+ * @memberof FileHandler
  */
 FILE_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

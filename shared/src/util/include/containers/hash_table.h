@@ -148,7 +148,8 @@ typedef struct HashTable
  * determines whether they have the same key.
  * @param print_bucket_fn The callback function that prints out the contents of
  * the given HashBucket to the given stream.
- * @return The new HashTable or NULL if there was an error.
+ * @return The new HashTable or <code>NULL</code> if there was an error.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API HashTable *AllocateHashTable (const uint32 initial_size,
 	const uint8 load_percentage,
@@ -165,6 +166,7 @@ GRASSROOTS_UTIL_API HashTable *AllocateHashTable (const uint32 initial_size,
  * Free a HashTable
  *
  * @param hash_table_p The HashTable to free.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API void FreeHashTable (HashTable * const hash_table_p);
 
@@ -173,6 +175,7 @@ GRASSROOTS_UTIL_API void FreeHashTable (HashTable * const hash_table_p);
  * Clear a HashTable.
  *
  * @param hash_table_p The HashTable to clear.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API void ClearHashTable (HashTable * const hash_table_p);
 
@@ -182,6 +185,7 @@ GRASSROOTS_UTIL_API void ClearHashTable (HashTable * const hash_table_p);
  *
  * @param bucket_p The HashBucket.
  * @return TRUE if the bucket does contain a valid key-value pair, FALSE if it is empty.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API bool IsValidHashBucket (const HashBucket * const bucket_p);
 
@@ -194,6 +198,9 @@ GRASSROOTS_UTIL_API bool IsValidHashBucket (const HashBucket * const bucket_p);
  * @param hash_table_p The HashTable to put for the key-value pair in.
  * @param key_p The key.
  * @param value_p The value.
+ * @return <code>true</code> if the key-value pair were added successfully,
+ * <code>false</code> otherwise.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API bool PutInHashTable (HashTable * const hash_table_p, const void * const key_p, const void * const value_p);
 
@@ -206,6 +213,7 @@ GRASSROOTS_UTIL_API bool PutInHashTable (HashTable * const hash_table_p, const v
  * @param key_p The key.
  * @return The value or NULL if there is not a matching value for the
  * given key.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API const void *GetFromHashTable (const HashTable * const hash_table_p, const void * const key_p);
 
@@ -220,6 +228,7 @@ GRASSROOTS_UTIL_API void FreeKeysIndex (void **index_pp);
  *
  * @param hash_table_p The HashTable to search for the in.
  * @param key_p The key.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API void RemoveFromHashTable (HashTable * const hash_table_p, const void * const key_p);
 
@@ -229,6 +238,7 @@ GRASSROOTS_UTIL_API void RemoveFromHashTable (HashTable * const hash_table_p, co
  *
  * @param hash_table_p The HashTable to print out.
  * @param stream_p The OutputStream to print the HashTable to.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API void PrintHashTable (const HashTable * const hash_table_p, OutputStream * const stream_p);
 
@@ -247,7 +257,8 @@ GRASSROOTS_UTIL_API void PrintHashTable (const HashTable * const hash_table_p, O
  * the same memory. So switch to either MF_DEEP_COPY or
  * MF_SHADOW_USE depending upon deep_copy_if_necessary.
  *
- * @return The copied HashTable or NULL upon error.
+ * @return The copied HashTable or <code>NULL</code> upon error.
+ * @memberof HashTable
  */
 GRASSROOTS_UTIL_API HashTable *CopyHashTable (const HashTable * const src_table_p, const bool deep_copy_if_necessary);
 
@@ -257,7 +268,13 @@ GRASSROOTS_UTIL_API bool SaveHashTable (const HashTable * const table_p, const c
 
 GRASSROOTS_UTIL_API bool LoadHashTable (HashTable * const table_p, char *current_path_s, const char * const filename_s);
 
-
+/**
+ * Get the number of entries in a HashTable.
+ *
+ * @param The HashTable to get the size of.
+ * @return The number of entries in the HashTable.
+ * @memberof HashTable
+ */
 GRASSROOTS_UTIL_API uint32 GetHashTableSize (const HashTable * const table_p);
 
 #ifdef __cplusplus
