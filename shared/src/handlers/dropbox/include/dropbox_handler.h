@@ -100,6 +100,9 @@ typedef struct DropboxHandler
  * including this header file. Currently this happens in
  * dropbox_handler.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_DROPBOX_TAGS
 	#define DROPBOX_HANDLER_DECLARE DROPBOX_HANDLER_LOCAL
 	#define DROPBOX_HANDLER_VAL(x)	= x
@@ -108,6 +111,7 @@ typedef struct DropboxHandler
 	#define DROPBOX_HANDLER_VAL(x)
 #endif
 
+#endif		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_KEY_S DROPBOX_HANDLER_VAL("token_key");
 DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_SECRET_S DROPBOX_HANDLER_VAL("token_secret");
@@ -120,8 +124,24 @@ extern "C"
 {
 #endif
 
+/**
+ * Get a DropboxHandler.
+ *
+ * @param user_p The UserDetails used to determine file access permissions. This can be <code>NULL</code>.
+ * @return The newly-allocated DropboxHandler or <code>NULL</code> upon error.
+ * @memberof DropboxHandler
+ * @ingroup dropbox_handler
+ */
 DROPBOX_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
+
+/**
+ * Free a DropboxHandler.
+ *
+ * @param handler_p The DropboxHandler to free.
+ * @memberof DropboxHandler
+ * @ingroup dropbox_handler
+ */
 DROPBOX_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus

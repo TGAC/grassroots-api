@@ -90,6 +90,8 @@ typedef struct Resource
  * including this header file. Currently this happens in
  * resource.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_RESOURCE_TAGS
 	#define RESOURCE_PREFIX GRASSROOTS_UTIL_API
 	#define RESOURCE_VAL(x)	= x
@@ -97,6 +99,8 @@ typedef struct Resource
 	#define RESOURCE_PREFIX extern
 	#define RESOURCE_VAL(x)
 #endif
+
+#endif		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * @brief The string used to separate the protocol and values of a Resource.

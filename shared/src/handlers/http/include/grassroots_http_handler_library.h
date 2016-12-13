@@ -15,11 +15,10 @@
 */
 
 /**
- * @file
+ * @file grassroots_http_handler_library.h
+ * @defgroup http_handler The HTTP Handler Module
  * @brief
  */
-/**@file grassroots_http_handler_library.h
-*/ 
 
 #ifndef GRASSROOTS_HTTP_HANDLER_LIBRARY_H
 #define GRASSROOTS_HTTP_HANDLER_LIBRARY_H

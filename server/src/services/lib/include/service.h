@@ -353,11 +353,33 @@ GRASSROOTS_SERVICE_API ServicesArray *GetReferrableServicesFromPlugin (Plugin * 
 GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, UserDetails *user_p);
 
 
-
+/**
+ * Initialise the basic structure of a Service.
+ *
+ * @param service_p The Service to initialise.
+ * @param get_service_name_fn The callback function that the Service will call to get its name.
+ * @param get_service_description_fn The callback function that the Service will call to get its description.
+ * @param get_service_info_uri_fn The callback function that the Service will call to get a web address for more information about the
+ * Service. This can be <code>NULL</code>.
+ * @param run_fn The callback function that the Service will call to run itself.
+ * @param match_fn The callback function that the Service will call to check whether it is an appropriate Service for
+ * a given Resource.
+ * @param get_parameters_fn The callback function that the Service will call to get its ParameterSet.
+ * @param release_parameters_fn The callback function that the Service will call to free a ParameterSet returned from a previous call
+ * to get its ParameterSet.
+ * @param close_fn The callback function that the Service will call when the Service is closed.
+ * @param customise_service_job_fn If the ServiceJobs that this Service uses are extended from the Base ServiceJob datatype,
+ * this function is used to set them up. This can be <code>NULL</code>.
+ * @param specific_flag <code>true</code> if this Service performs a specific analysis. For Services used by scripted reference Services
+ * detailed by JSON configuration files, then this should be <code>false</code>.
+ * @param synchronous_flag <code>true</code> if this Service runs synchronously, <code>false</code> if it runs asynchronously.
+ * @param data_p The ServiceDat for this Service.
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
-	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
+	const char *(*get_service_info_uri_fn) (struct Service *service_p),
 	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p),
 	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, UserDetails *user_p),
@@ -388,7 +410,7 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 
 /**
  * Does the Service use the default ServiceJob serialisation/deserialisation when storing ServiceJobs in the
- * JobsManager or does it use itsown specialised routines?
+ * JobsManager or does it use its own specialised routines?
  *
  * @param service_p The Service to check.
  * @return <code>true</code> if the Service use custom routines, <code>false</code> if it uses the standard ones.

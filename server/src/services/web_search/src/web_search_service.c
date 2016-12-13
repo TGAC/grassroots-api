@@ -82,7 +82,7 @@ static json_t *CreateWebSearchServiceResults (WebSearchServiceData *data_p);
  
 
  
-ServicesArray *GetServices (UserDetails *user_p, json_t *config_p)
+ServicesArray *GetServices (json_t *config_p)
 {
 	return GetReferenceServicesFromJSON (config_p, "web_search_service", GetWebSearchService);
 }

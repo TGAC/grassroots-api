@@ -39,11 +39,15 @@
 
 /**
  * The Blast Service NamedParameterType for specifying the input filename.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_FILE BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("input_file", PT_FILE_TO_READ));
 
 /**
  * The Blast Service NamedParameterType for specifying previous job UUIDs.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("job_id", PT_STRING));
 
@@ -52,65 +56,125 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_VAL (SET_NAMED_P
  */
 /**
  * The Blast Service NamedParameterType for specifying the start of a subrange.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_FROM BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("subrange_from", PT_UNSIGNED_INT));
 
 /**
  * The Blast Service NamedParameterType for specifying the end of a subrange.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_TO BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("subrange_to", PT_UNSIGNED_INT));
 
 /* General Blast params */
 /**
  * The Blast Service NamedParameterType for specifying the algorithm-specific task to use.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_TASK BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("task", PT_STRING));
 
 /**
  * The Blast Service NamedParameterType for specifying the input query.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_QUERY BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("query", PT_LARGE_STRING));
 
 /**
  * The Blast Service NamedParameterType for specifying the maximum number of sequences to return.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_MAX_SEQUENCES BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("max_target_seqs", PT_UNSIGNED_INT));
 
 
 /**
  * The Blast Service NamedParameterType for specifying the maximum number of e-value to use.
+ *
+ * @ingroup blast_service
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_EXPECT_THRESHOLD BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("evalue", PT_UNSIGNED_REAL));
 
 /**
  * The Blast Service NamedParameterType for specifying the output format to use.
  *
+ * @ingroup blast_service
  * @see BlastOutputFormat
  */
 BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("outfmt", PT_UNSIGNED_INT));
 
 
+/**
+ * The different available output formats.
+ *
+ * @ingroup blast_service
+ */
 typedef enum
 {
+	/** Pairwise */
 	BOF_PAIRWISE,
+
+	/** Query-anchored showing identities */
 	BOF_QUERY_ANCHORED_WITH_IDENTITIES,
+
+	/** Query-anchored no identities */
 	BOF_QUERY_ANCHORED_NO_IDENTITIES,
+
+	/** Flat query-anchored showing identities */
 	BOF_FLAT_QUERY_ANCHORED_WITH_IDENTITIES,
+
+	/** Flat query-anchored no identities */
 	BOF_FLAT_QUERY_ANCHORED_NO_IDENTITIES,
+
+	/** BLAST XML */
 	BOF_XML_BLAST,
+
+	/** Tabular */
 	BOF_TABULAR,
+
+	/** Tabular with comment lines */
 	BOF_TABULAR_WITH_COMMENTS,
+
+	/** Seqalign (Text ASN.1) */
 	BOF_TEXT_ASN1,
+
+	/** Seqalign (Binary ASN.1) */
 	BOF_BINARY_ASN1,
+
+	/** Comma-separated values */
 	BOF_CSV,
+
+	/** BLAST archive (ASN.1) */
 	BOF_BLAST_ASN1,
+
+	/** Seqalign (JSON) */
 	BOF_JSON_SEQALIGN,
+
+	/** Multiple-file BLAST JSON */
 	BOF_MULTI_FILE_JSON_BLAST,
+
+	/** Multiple-file BLAST XML2 */
 	BOF_MULTI_FILE_XML2_BLAST,
+
+	/** Single-file BLAST JSON */
 	BOF_SINGLE_FILE_JSON_BLAST,
+
+	/** Single-file BLAST XML2 */
 	BOF_SINGLE_FILE_XML2_BLAST,
+
+	/** Sequence Alignment/Map (SAM) */
 	BOF_SEQUENCE_ALIGNMENT,
+
+	/** Organism Report */
+	BOF_ORGANISM_REPORT,
+
+	/** Grassroots JSON */
 	BOF_GRASSROOTS,
+
+	/** The number of different output formats */
 	BOF_NUM_TYPES
 } BlastOutputFormat;
 
@@ -119,6 +183,8 @@ typedef enum
  * This datatype is used for describing the algorithms that some
  * of the BLAST tools allow the user to choose to optimise the
  * search procedure.
+ *
+ * @ingroup blast_service
  */
 typedef struct BlastTask
 {
@@ -161,6 +227,7 @@ extern "C"
  * of Parameters, it can do so via this callback_fn. This can be <code>NULL</code>
  * @return <code>true</code> if the query sequence parameters were added successfully, <code>
  * false</code> otherwise.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL bool AddQuerySequenceParams (BlastServiceData *data_p, ParameterSet *param_set_p, AddAdditionalParamsFn callback_fn	);
 
@@ -174,6 +241,7 @@ BLAST_SERVICE_LOCAL bool AddQuerySequenceParams (BlastServiceData *data_p, Param
  * of Parameters, it can do so via this callback_fn. This can be <code>NULL</code>
  * @return <code>true</code> if the general algorithm parameters were added successfully, <code>
  * false</code> otherwise.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_set_p, AddAdditionalParamsFn callback_fn);
 
@@ -187,6 +255,7 @@ BLAST_SERVICE_LOCAL bool AddGeneralAlgorithmParams (BlastServiceData *data_p, Pa
  * @param num_tasks The number of BlastTasks in the array pointed to by tasks_p.
  * @return <code>true</code> if the general algorithm parameters were added successfully, <code>
  * false</code> otherwise.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (BlastServiceData *blast_data_p, ParameterSet *param_set_p, const BlastTask *tasks_p, const size_t num_tasks);
 
@@ -198,6 +267,7 @@ BLAST_SERVICE_LOCAL bool AddProgramSelectionParameters (BlastServiceData *blast_
  * @param param_set_p The ParameterSet that the general algorithm parameters will be added to.
  * @param db_type The type of databases to add.
  * @return The number of database parameters added.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, ParameterSet *param_set_p, const DatabaseType db_type);
 
@@ -208,6 +278,7 @@ BLAST_SERVICE_LOCAL uint16 AddDatabaseParams (BlastServiceData *data_p, Paramete
  * @param data_p The configuration data for the BlastService to check.
  * @param dt The type of database to check.
  * @return The number of available databases of the given type.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p, const DatabaseType dt);
 
@@ -220,6 +291,7 @@ BLAST_SERVICE_LOCAL uint32 GetNumberOfDatabases (const BlastServiceData *data_p,
  * @param param_set_p The ParameterSet that the UUID Parameter will be added to.
  * @param group_p The optional ParameterGroup to add the generated Parameter to. This can be <code>NULL</code>.
  * @return The UUID Parameter or <code>NULL</code> upon error.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL Parameter *SetUpPreviousJobUUIDParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
@@ -231,6 +303,7 @@ BLAST_SERVICE_LOCAL Parameter *SetUpPreviousJobUUIDParamater (const BlastService
  * @param param_set_p The ParameterSet that the output format Parameter will be added to.
  * @param group_p The optional ParameterGroup to add the generated Parameter to. This can be <code>NULL</code>.
  * @return The output format Parameter or <code>NULL</code> upon error.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
@@ -241,6 +314,7 @@ BLAST_SERVICE_LOCAL Parameter *SetUpOutputFormatParamater (const BlastServiceDat
  * @param server_s The name of the Server.
  * @return The newly-allocated group name that will need to be freed with
  * FreeCopiedString to avoid a memory leak or <code>NULL</code> upon error.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL char *CreateGroupName (const char *server_s);
 

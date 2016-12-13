@@ -16,10 +16,9 @@
 
 /**
  * @file
+ * @defgroup dropbox_handler The Dropbox Handler Module
  * @brief
  */
-/**@file grassroots_util_library.h
-*/ 
 
 #ifndef GRASSROOTS_DROPBOX_HANDLER_LIBRARY_H
 #define GRASSROOTS_DROPBOX_HANDLER_LIBRARY_H

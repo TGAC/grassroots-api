@@ -16,10 +16,9 @@
 
 /**
  * @file
+ * @defgroup irods_handler The iRODS Handler Module
  * @brief
  */
-/**@file grassroots_util_library.h
-*/ 
 
 #ifndef GRASSROOTS_IRODS_HANDLER_LIBRARY_H
 #define GRASSROOTS_IRODS_HANDLER_LIBRARY_H

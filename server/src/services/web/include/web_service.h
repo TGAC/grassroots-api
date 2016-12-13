@@ -16,6 +16,7 @@
 
 /**
  * @file
+ * @defgroup web_service The Web Services Module
  * @brief
  */
 #ifndef WEB_SERVICE_H
@@ -31,9 +32,23 @@ extern "C"
 #endif
 
 
-WEB_SERVICE_API ServicesArray *GetServices (UserDetails *user_p, json_t *config_p);
+/**
+ * Get the ServicesArray containing the Web Services.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing all of the Web Services or
+ * <code>NULL</code> upon error.
+ * @ingroup web_service
+ */
+WEB_SERVICE_API ServicesArray *GetServices (json_t *config_p);
 
 
+/**
+ * Free the ServicesArray containing the Web Services.
+ *
+ * @param services_p The ServicesArray to free.
+ * @ingroup web_service
+ */
 WEB_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 
