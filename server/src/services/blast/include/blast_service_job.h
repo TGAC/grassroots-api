@@ -40,6 +40,7 @@ class BlastTool;
  * This datatype stores the ServiceJob and its associated BlastTool.
  *
  * @extends ServiceJob
+ * @ingroup blast_service
  */
 typedef struct BLAST_SERVICE_LOCAL BlastServiceJob
 {

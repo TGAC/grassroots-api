@@ -53,6 +53,8 @@ extern "C"
  * @return <code>true</code> if the value was successfully added to the ArgsProcessor or
  * if the value could not be found and the required_flag was false.
  * <code>false</code> otherwise.
+ * @ingroup blast_service
+ * @memberof ArgsProcessor
  */
 BLAST_SERVICE_LOCAL bool GetAndAddBlastArgs (const ParameterSet *param_set_p, const char *param_name_s, bool required_flag, ArgsProcessor *ap_p);
 
@@ -67,6 +69,8 @@ BLAST_SERVICE_LOCAL bool GetAndAddBlastArgs (const ParameterSet *param_set_p, co
  * @param ap_p The ArgsProcessor to use.
  * @return <code>true</code> if the value was successfully added to the ArgsProcessor,
  * <code>false</code> otherwise.
+ * @ingroup blast_service
+ * @memberof ArgsProcessor
  */
 BLAST_SERVICE_LOCAL bool AddBlastArgs (const Parameter *param_p, ArgsProcessor *ap_p);
 
@@ -96,6 +100,8 @@ BLAST_SERVICE_LOCAL bool AddArg (const char *arg_s, ArgsProcessor *ap_p, bool hy
  * @param value_s The second argument to add.
  * @return <code>true</code> if the arguments were added
  * successfully, <code>false</code> otherwise.
+ * @ingroup blast_service
+ * @memberof ArgsProcessor
  */
 BLAST_SERVICE_LOCAL bool AddArgsPair (const char *key_s, const char *value_s, ArgsProcessor *ap_p);
 
@@ -114,6 +120,8 @@ BLAST_SERVICE_LOCAL bool AddArgsPair (const char *key_s, const char *value_s, Ar
  * value is optional, then set this to <code>false</code>.
  * @return <code>true</code> if the arguments were added
  * successfully, <code>false</code> otherwise.
+ * @ingroup blast_service
+ * @memberof ArgsProcessor
  */
 BLAST_SERVICE_LOCAL bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ArgsProcessor *ap_p, const bool unsigned_flag, const bool required_flag);
 
@@ -131,6 +139,8 @@ BLAST_SERVICE_LOCAL bool AddArgsPairFromIntegerParameter (const ParameterSet *pa
  * value is optional, then set this to <code>false</code>.
  * @return <code>true</code> if the arguments were added
  * successfully, <code>false</code> otherwise.
+ * @ingroup blast_service
+ * @memberof ArgsProcessor
  */
 BLAST_SERVICE_LOCAL bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, ArgsProcessor *ap_p,  const bool required_flag);
 

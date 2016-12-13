@@ -34,6 +34,8 @@
 
 /**
  * An ArgsProcessor that adds all of its values to a given DrmaaTool.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL DrmaaToolArgsProcessor : public ArgsProcessor
 {

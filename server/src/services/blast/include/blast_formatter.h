@@ -37,6 +37,8 @@
  * This class is for converting the output of a blast
  * job between the available different formats. The
  * input format must be "BLAST archive format (ASN.1)"
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL BlastFormatter
 {

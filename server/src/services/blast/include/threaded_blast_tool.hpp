@@ -35,6 +35,8 @@
 
 /**
  * A class that will run Blast within a pthread.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL ThreadedBlastTool : public SystemBlastTool
 {
@@ -50,9 +52,26 @@ public:
 	 */
 	virtual OperationStatus Run ();
 
-	virtual const char *GetResults ();
+	/**
+	 * Get the results after the ThreadedBlastTool has finished
+	 * running.
+	 *
+	 * @param formatter_p The BlastFormatter to convert the results
+	 * into a different format. If this is 0, then the results will be
+	 * returned without any conversion.
+	 * @return The results as a c-style string or 0 upon error.
+	 */
+	virtual char *GetResults (BlastFormatter *formatter_p);
 
-	virtual OperationStatus GetStatus ();
+	/**
+	 * Get the status of a ThreadedBlastTool
+	 *
+	 * @param update_flag if this is <code>true</code> then the ThreadedBlastTool
+	 * will check the status of its running jobs if necessary, if this is
+	 * <code>false</code> it will return the last cached value.
+	 * @return The OperationStatus of this ThreadedBlastTool.
+	 */
+	virtual OperationStatus GetStatus (bool update_flag = true);
 
 protected:
 	pthread_t *tbt_thread_p;

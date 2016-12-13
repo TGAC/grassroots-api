@@ -57,32 +57,73 @@ typedef struct HashBucket
 
 
 /**
- * Function for freeing a HashBucket
+ * Function for freeing a HashBucket.
  *
  * @param bucket_p The HashBucket to free.
+ * @memberof HashBucket
  */
 GRASSROOTS_UTIL_API void FreeHashBucket (HashBucket * const bucket_p);
 
 
 /**
  * Function for creating the HashBuckets. The allocated
- * memory is all set to 0/NULL.
+ * memory is all set to 0/<code>NULL</code>.
  *
  * @param num_buckets The number of HashBuckets to create.
  * @param key_mem_flag How the HashBuckets will deal with memory allocation of the keys.
  * @param value_mem_flag How the HashBuckets will deal with memory allocation of the values.
- * @return Pointer to the HashBuckets or NULL upon error.
+ * @return Pointer to the HashBuckets or <code>NULL</code> upon error.
+ * @memberof HashBucket
  */
 GRASSROOTS_UTIL_API HashBucket *CreateHashBuckets (const uint32 num_buckets, const MEM_FLAG key_mem_flag, const MEM_FLAG value_mem_flag);
 
 
+/**
+ * Create an array of HashBuckets where each one will make a deep copy of the key and value when they are
+ * put into the HashTable.
+ *
+ * @param num_buckets The number of HashBuckets to allocate.
+ * @return The array of HashBuckets or <code>NULL</code> upon error.
+ * @memberof HashBucket
+ * @see MF_DEEP_COPY
+ */
 GRASSROOTS_UTIL_API HashBucket *CreateDeepCopyHashBuckets (const uint32 num_buckets);
 
+
+/**
+ * Create an array of HashBuckets where each one will make a shallow copy of the key and value when they are
+ * put into the HashTable.
+ *
+ * @param num_buckets The number of HashBuckets to allocate.
+ * @return The array of HashBuckets or <code>NULL</code> upon error.
+ * @memberof HashBucket
+ * @see MF_SHALLOW_COPY
+ */
 GRASSROOTS_UTIL_API HashBucket *CreateShallowCopyHashBuckets (const uint32 num_buckets);
 
+
+/**
+ * Create an array of HashBuckets where each one will make shadow use the key and value when they are
+ * put into the HashTable.
+ *
+ * @param num_buckets The number of HashBuckets to allocate.
+ * @return The array of HashBuckets or <code>NULL</code> upon error.
+ * @memberof HashBucket
+ * @see MF_SHADOW_USE
+ */
 GRASSROOTS_UTIL_API HashBucket *CreateShadowUseHashBuckets (const uint32 num_buckets);
 
 
+/**
+ * Create an array of HashBuckets where each one will make a deep copy of the key and a shallow
+ * copy of the value when they are put into the HashTable.
+ *
+ * @param num_buckets The number of HashBuckets to allocate.
+ * @return The array of HashBuckets or <code>NULL</code> upon error.
+ * @memberof HashBucket
+ * @see MF_SHALLOW_COPY
+ * @see MF_DEEP_COPY
+ */
 GRASSROOTS_UTIL_API HashBucket *CreateDeepCopyKeysShallowCopyValueHashBuckets (const uint32 num_buckets);
 
 
@@ -144,10 +185,14 @@ typedef struct HashTable
  * of HashBuckets.
  * @param free_bucket_fn The callback function used to free each given HashBucket
  * when the HashTable is freed.
+ * @param fill_bucket_fn The callback function to use when adding a key-value pair
+ * to the HashTable.
  * @param compare_keys_fn The callback function that takes 2 HashBuckets and
  * determines whether they have the same key.
  * @param print_bucket_fn The callback function that prints out the contents of
  * the given HashBucket to the given stream.
+ * @param save_bucket_fn The callback function to use for saving each HashBucket when
+ * saving the HashTable to a file.
  * @return The new HashTable or <code>NULL</code> if there was an error.
  * @memberof HashTable
  */
@@ -211,15 +256,27 @@ GRASSROOTS_UTIL_API bool PutInHashTable (HashTable * const hash_table_p, const v
  *
  * @param hash_table_p The HashTable to search for the value in.
  * @param key_p The key.
- * @return The value or NULL if there is not a matching value for the
+ * @return The value or <code>NULL</code> if there is not a matching value for the
  * given key.
  * @memberof HashTable
  */
 GRASSROOTS_UTIL_API const void *GetFromHashTable (const HashTable * const hash_table_p, const void * const key_p);
 
-
+/**
+ * Get a new array with pointers to each of the keys in a given HashTable.
+ *
+ * @param hash_table_p The HashTable to get the keys from.
+ * @memberof HashTable
+ * @see FreeKeysIndex
+ */
 GRASSROOTS_UTIL_API void **GetKeysIndexFromHashTable (const HashTable * const hash_table_p);
 
+/**
+ * Free an index array previously returned by a call to GetKeysIndexFromHashTable.
+ *
+ * @param index_pp The array of index pointers to free.
+ * @memberof HashTable
+ */
 GRASSROOTS_UTIL_API void FreeKeysIndex (void **index_pp);
 
 /**
@@ -263,15 +320,38 @@ GRASSROOTS_UTIL_API void PrintHashTable (const HashTable * const hash_table_p, O
 GRASSROOTS_UTIL_API HashTable *CopyHashTable (const HashTable * const src_table_p, const bool deep_copy_if_necessary);
 
 
+/**
+ * Save a HashTable to a file.
+ *
+ * @param table_p The HashTable to save.
+ * @param filename_s The filename where the HashTable will be saved to.
+ * @param compare_fn An optional callback function allowing the contents of the HashTable
+ * to be saved in a user-defined order. If this is <code>NULL</code> then the contents
+ * will be saved in an undetermined order.
+ * @return <code>true</code> if the data was saved successfully, <code>false</code>
+ * otherwise.
+ * @memberof HashTable
+ */
 GRASSROOTS_UTIL_API bool SaveHashTable (const HashTable * const table_p, const char * const filename_s, int (*compare_fn) (const void *v0_p, const void *v1_p));
 
 
+/**
+ * Load the contents of a previously-saved HashTable file into a HashTable.
+ *
+ * @param table_p The HastTable to load the data into.
+ * @param current_path_s The directory containing the saved file.
+ * @param filename_s The filename to load.
+ * @return <code>true</code> if the data was loaded successfully, <code>false</code>
+ * otherwise.
+ * @memberof HashTable
+ */
 GRASSROOTS_UTIL_API bool LoadHashTable (HashTable * const table_p, char *current_path_s, const char * const filename_s);
+
 
 /**
  * Get the number of entries in a HashTable.
  *
- * @param The HashTable to get the size of.
+ * @param table_p The HashTable to get the size of.
  * @return The number of entries in the HashTable.
  * @memberof HashTable
  */

@@ -16,7 +16,13 @@
 
 /**
  * @file
- * @brief
+ * @defgroup blast_service The BLAST Services Module
+ * @brief Services for the BLAST suite of tools.
+ *
+ * This Module performs BLAST searches on both nucleotide and protein
+ * databases. It currently offers the functionality given by blastn, blastp
+ * and blastx. The BLAST jobs can be run locally or also on a computing
+ * cluster using DRMAA.
  */
 /*
  * blast_service_api.h

@@ -35,6 +35,7 @@
  * The base class for generating DrmaaBlastTools.
  *
  * @see DrmaaBlastTool
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL DrmaaBlastToolFactory : public ExternalBlastToolFactory
 {

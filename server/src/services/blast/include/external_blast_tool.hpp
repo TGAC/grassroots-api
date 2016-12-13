@@ -36,6 +36,8 @@
 /**
  * A class that will run Blast using an external application such as blastn
  * rather than calling Blast library routines directly.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {

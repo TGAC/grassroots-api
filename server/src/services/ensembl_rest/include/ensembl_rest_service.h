@@ -31,12 +31,32 @@ extern "C"
 #endif
 
 
+/**
+ * Get the ServicesArray containing the Ensembl Services.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing all of the Ensembl Services or
+ * <code>NULL</code> upon error.
+ * @ingroup ensembl_rest_service
+ */
 ENSEMBL_REST_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
+/**
+ * Free the ServicesArray containing the Ensembl Services.
+ *
+ * @param services_p The ServicesArray to free.
+ * @ingroup ensembl_rest_service
+ */
+ENSEMBL_REST_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
-ENSEMBL_REST_SERVICE_API void ReleaseServices (ServicesArray *service_p);
 
-
+/**
+ * Get the root URI used for the Ensembl REST api.
+ *
+ * @return The URI for the Ensembl Services or
+ * <code>NULL</code> upon error.
+ * @ingroup ensembl_rest_service
+ */
 ENSEMBL_REST_SERVICE_LOCAL const char *GetRootRestURI (void);
 
 

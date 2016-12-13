@@ -35,6 +35,8 @@
 
 /**
  * A class that will run Blast as a drmaa process.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL DrmaaBlastTool : public ExternalBlastTool
 {

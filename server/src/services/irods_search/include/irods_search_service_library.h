@@ -16,6 +16,7 @@
 
 /**
  * @file
+ * @defgroup irods_search_service The iRODS Services Module
  * @brief
  */
 #ifndef IRODS_SEARCH_SERVICE_LIBRARY_H
@@ -49,8 +50,23 @@ extern "C"
 {
 #endif
 
+/**
+ * Get the ServicesArray containing the iRODS Services.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing all of the iRODS Services or
+ * <code>NULL</code> upon error.
+ * @ingroup irods_search_service
+ */
 IRODS_SEARCH_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
+
+/**
+ * Free the ServicesArray containing the iRODS Services.
+ *
+ * @param services_p The ServicesArray to free.
+ * @ingroup irods_search_service
+ */
 IRODS_SEARCH_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 #ifdef __cplusplus

@@ -33,6 +33,8 @@
 
 /**
  * The base class for generating system blast tools
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL SystemBlastToolFactory : public ExternalBlastToolFactory
 {

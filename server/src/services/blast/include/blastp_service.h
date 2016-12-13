@@ -26,6 +26,7 @@ extern "C"
  * Get a Service capable of running BlastP searches.
  *
  * @return The BlastP Service or <code>NULL</code> upon error.
+ * @ingroup blast_service
  */
 
 BLAST_SERVICE_LOCAL Service *GetBlastPService ();

@@ -37,6 +37,8 @@ using namespace std;
 
 /**
  * Create a temporary file to read and write data to.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL TempFile
 {

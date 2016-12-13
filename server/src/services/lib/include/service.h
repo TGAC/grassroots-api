@@ -254,7 +254,17 @@ typedef struct Service
 	 */
 	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
 
-
+	/**
+	 * Callback function used when processing the results from running ServiceJobs for this Service as
+	 * input for any LinkedServices for this Service.
+	 *
+	 * @param service_p This Service.
+	 * @param job_p The ServiceJob whose results will be processed.
+	 * @param linked_service_p The LinkedService defining how to generate the Parameters for the Service
+	 * to run based upon the given ServiceJob's results
+	 * @return <code>true</code> if the LinkedService was processed successfully,
+	 * <code>false</code> otherwise.
+	 */
 	bool (*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
 
 	/**

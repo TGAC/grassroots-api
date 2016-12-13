@@ -34,6 +34,8 @@
 
 /**
  * The base class for running blast tools as a separate process
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL ExternalBlastToolFactory : public BlastToolFactory
 {

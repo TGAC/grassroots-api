@@ -37,6 +37,8 @@
  * An enumeration for differentiating between
  * the different types of database that the
  * BLAST algorithms can be used with.
+ *
+ * @ingroup blast_service
  */
 typedef enum BLAST_SERVICE_LOCAL DatabaseType
 {
@@ -55,6 +57,8 @@ typedef enum BLAST_SERVICE_LOCAL DatabaseType
  * An enumeration for differentiating between
  * the differentBLAST algorithms that can be
  * used.
+ *
+ * @ingroup blast_service
  */
 typedef enum BLAST_SERVICE_LOCAL BlastServiceType
 {
@@ -74,6 +78,8 @@ typedef enum BLAST_SERVICE_LOCAL BlastServiceType
 /**
  * A datatype describing the details of each database available
  * to search against.
+ *
+ * @ingroup blast_service
  */
 typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 {
@@ -107,6 +113,7 @@ struct BlastServiceJob;
  * The configuration data for the Blast Service.
  *
  * @extends ServiceData
+ * @ingroup blast_service
  */
 typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 {

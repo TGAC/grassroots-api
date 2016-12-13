@@ -38,6 +38,8 @@ struct BlastServiceJob;
 
 /**
  * The base class for running Blast.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL BlastTool
 {

@@ -49,6 +49,7 @@ extern "C"
  * @param internal_params_p The ParameterSet to add the PairedService Parameters to.
  * @return <code>true</code> if the PairedServices were added successfully, <code>
  * false</code> otherwise.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p);
 
@@ -62,6 +63,7 @@ BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, Paramet
  * @param paired_service_p The PairedService to process.
  * @param providers_p The details of ExternalServers for any paired or external Services.
  * @return The number of successfully remote ServiceJobs ran or -1 on error.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p);
 
@@ -73,6 +75,7 @@ BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet 
  * @param output_format_code The output format to convert the result to.
  * @param blast_data_p The configuration data for the local BlastService.
  * @return The previous result or <code>NULL</code> upon error.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL char *GetPreviousRemoteBlastServiceJob (const char *local_job_id_s, const uint32 output_format_code, const BlastServiceData *blast_data_p);
 

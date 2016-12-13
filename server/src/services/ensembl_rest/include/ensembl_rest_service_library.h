@@ -16,6 +16,7 @@
 
 /**
  * @file
+ * @defgroup ensembl_rest_service The Ensembl Services Module
  * @brief
  */
 #ifndef ENSEMBL_REST_SERVICE_LIBRARY_H

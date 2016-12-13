@@ -39,6 +39,8 @@
 
 /**
  * The base class for generating blast tools
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL BlastToolFactory
 {

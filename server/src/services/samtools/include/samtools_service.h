@@ -16,10 +16,12 @@
 
 /**
  * @file
- * @brief
+ * @defgroup samtools_service The SamTools Services Module
+ * @brief Services for the SamTools suite of tools
+ *
+ * This Module offers some of the functionality available within
+ * the <a href="http://www.htslib.org/">SamTools</a> libraries.
  */
-/**@file samtools_service.h
-*/ 
 
 #ifndef SAMTOOLS_SERVICE_H
 #define SAMTOOLS_SERVICE_H
@@ -35,10 +37,7 @@
 */
 
 
-/**
- * @privatesection
- * @{
- */
+
 
 #ifdef SHARED_LIBRARY /* defined if LIB is compiled as a DLL */
   #ifdef SAMTOOLS_LIBRARY_EXPORTS /* defined if we are building the LIB DLL (instead of using it) */
@@ -53,26 +52,29 @@
 #endif /* #ifdef SHARED_LIBRARY */
 
 
-//#define TAG_SAMTOOLS_FILENAME MAKE_TAG ('S', 'T', 'F', 'L')
-//#define TAG_SAMTOOLS_BLASTDB_FILENAME MAKE_TAG ('S', 'T', 'B', 'F')
-//#define TAG_SAMTOOLS_SCAFFOLD MAKE_TAG ('S', 'T', 'S', 'C')
-//#define TAG_SAMTOOLS_SCAFFOLD_LINE_BREAK MAKE_TAG ('S', 'T', 'L', 'B')
-
-
-
-/**
- * @}
- */
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-
+/**
+ * Get the ServicesArray containing the SamTools Services.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing all of the SamTools Services or
+ * <code>NULL</code> upon error.
+ * @ingroup samtools_service
+ */
 SAMTOOLS_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
 
+/**
+ * Free the ServicesArray containing the SamTools Services.
+ *
+ * @param services_p The ServicesArray to free.
+ * @ingroup samtools_service
+ */
 SAMTOOLS_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 #ifdef __cplusplus

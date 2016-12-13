@@ -36,20 +36,57 @@
 
 
 /* Grassroots params */
+
+/**
+ * The Blast Service NamedParameterType for specifying the input filename.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_FILE BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("input_file", PT_FILE_TO_READ));
+
+/**
+ * The Blast Service NamedParameterType for specifying previous job UUIDs.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("job_id", PT_STRING));
 
 /*
  * These become the -query_loc parameter with the value "<subrange_from>-<subrange_to>"
  */
+/**
+ * The Blast Service NamedParameterType for specifying the start of a subrange.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_FROM BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("subrange_from", PT_UNSIGNED_INT));
+
+/**
+ * The Blast Service NamedParameterType for specifying the end of a subrange.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_TO BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("subrange_to", PT_UNSIGNED_INT));
 
 /* General Blast params */
+/**
+ * The Blast Service NamedParameterType for specifying the algorithm-specific task to use.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_TASK BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("task", PT_STRING));
+
+/**
+ * The Blast Service NamedParameterType for specifying the input query.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_QUERY BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("query", PT_LARGE_STRING));
+
+/**
+ * The Blast Service NamedParameterType for specifying the maximum number of sequences to return.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_MAX_SEQUENCES BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("max_target_seqs", PT_UNSIGNED_INT));
+
+
+/**
+ * The Blast Service NamedParameterType for specifying the maximum number of e-value to use.
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_EXPECT_THRESHOLD BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("evalue", PT_UNSIGNED_REAL));
+
+/**
+ * The Blast Service NamedParameterType for specifying the output format to use.
+ *
+ * @see BlastOutputFormat
+ */
 BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("outfmt", PT_UNSIGNED_INT));
 
 

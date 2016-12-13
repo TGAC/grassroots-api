@@ -40,6 +40,8 @@ struct BlastServiceData;
 /**
  * This datatype is used to parse a given ParameterSet in a method
  * suitable for a particular BLAST configuration.
+ *
+ * @ingroup blast_service
  */
 typedef struct BLAST_SERVICE_LOCAL BlastAppParameters
 {

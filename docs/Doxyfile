@@ -107,7 +107,7 @@ BRIEF_MEMBER_DESC      = YES
 # brief descriptions will be completely suppressed.
 # The default value is: YES.
 
-REPEAT_BRIEF           = YES
+REPEAT_BRIEF           = NO
 
 # This tag implements a quasi-intelligent brief description abbreviator that is
 # used to form the text in various listings. Each string in this list, if found
@@ -1453,7 +1453,7 @@ DISABLE_INDEX          = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 
 # The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values that
 # doxygen will group on one line in the generated HTML documentation.
@@ -2105,17 +2105,25 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          PATH_PREFIX=GRASSROOTS_SERVICE_API \
                          PREFIX= \
                          "VAL(x)= =x" \
-												 BLAST_SERVICE_PREFIX= \
-												 "BLAST_SERVICE_VAL(x)= =x" \
-												 APR_JOBS_MANAGER_PREFIX= \
-												 "APR_JOBS_MANAGER_VAL(x)= =x" \ 
-												 APR_SERVERS_MANAGER_PREFIX= \
-												 "APR_SERVERS_MANAGER_VAL(x)= =x" \ 
-												 MONGODB_PREFIX= \
-												 "MONGODB_VAL(x)= =x" \
-												 PATHOGENOMICS_PREFIX= \
-												 "PATHOGENOMICS_VAL(x)= =x" 
-
+                         BLAST_SERVICE_PREFIX= \
+                         "BLAST_SERVICE_VAL(x)= =x" \
+                         IRODS_SEARCH_SERVICE_API= \
+                         IRODS_SEARCH_SERVICE_LOCAL= \
+                         ENSEMBL_REST_SERVICE_API= \
+                         "ENSEMBL_REST_SERVICE_LOCAL= /** @private */" \     
+                         APR_JOBS_MANAGER_PREFIX= \
+                         "APR_JOBS_MANAGER_VAL(x)= =x" \
+                         APR_SERVERS_MANAGER_PREFIX= \
+                         "APR_SERVERS_MANAGER_VAL(x)= =x" \
+                         MONGODB_PREFIX= \
+                         "MONGODB_VAL(x)= =x" \
+                         PATHOGENOMICS_PREFIX= \
+                         "PATHOGENOMICS_VAL(x)= =x" \
+                         SV_PREFIX= \
+                         "SV_VAL(x)= =x" \
+                         SEARCH_PREFIX= \
+                         "SEARCH_VAL(x)= =x" \
+                         "SET_NAMED_PARAMETER_TYPE_TAGS(x,y)= { .npt_name_s = x, .npt_type = y }"
 
 # If the MACRO_EXPANSION and EXPAND_ONLY_PREDEF tags are set to YES then this
 # tag can be used to specify a list of macro names that should be expanded. The

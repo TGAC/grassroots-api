@@ -32,6 +32,8 @@
 
 /**
  * A class that will run Blast as a system process.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL SystemBlastTool : public ExternalBlastTool
 {
