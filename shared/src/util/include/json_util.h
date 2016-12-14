@@ -635,20 +635,47 @@ GRASSROOTS_UTIL_API json_t *LoadJSONFile (const char * const filename_s);
 
 
 /**
- * Convert a string of tabular data into a JSON array.
+ * Convert a string of tabular data into a JSON array using the given column headings.
  *
  * @param data_s The string of data to convert.
  * @param column_delimiter The character used to separate the data into columns.
  * @param row_delimiter The character used to separate the data into rows.
  * @param headers_p A LinkedList of FieldNodes where specifying the headers for each column of data.
- * @return <code>true</code> if the data was successfully converted, <code>false</code> otherwise.
+ * @return The tabular data as a JSON array with each child object containing the data for a row
+ * with the keys being the header values or <code>NULL</code> upon error.
  */
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, LinkedList *headers_p);
 
 
+/**
+ * Convert a string of tabular data into a JSON array. This effectively is a wrapper for calling
+ * GetTabularHeaders and ConvertTabularDataToJSON.
+ *
+ * @param data_s The string of data to convert.
+ * @param column_delimiter The character used to separate the data into columns.
+ * @param row_delimiter The character used to separate the data into rows.
+ * @param get_type_fn A function used to determine the datatype for each of the header values.
+ * If this is <code>NULL</code>, then each value will be treated as a string.
+ * @param type_data_p If get_type_fn needs any extra data, it can be passed in here.
+ * @return The tabular data as a JSON array with each child object containing the data for a row
+ * with the keys being the header values or <code>NULL</code> upon error.
+ */
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataWithHeadersToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
 
+/**
+ * Get the column headers from the first row of a tabular data variable.
+ *
+ * @param data_ss A pointer to the tabular data. If the headers get retrieved successfully
+ * then the value that this points to will get incremented to the first row of data.
+ * @param column_delimiter The character used to separate the data into columns.
+ * @param row_delimiter The character used to separate the data into rows.
+ * @param get_type_fn A function used to determine the datatype for each of the header values.
+ * If this is <code>NULL</code>, then each value will be treated as a string.
+ * @param type_data_p If get_type_fn needs any extra data, it can be passed in here.
+ * @return A LinkedList of FieldNodes with each one containing a header value or
+ * <code>NULL</code> upon error.
+ */
 GRASSROOTS_UTIL_API LinkedList *GetTabularHeaders (char **data_ss,  const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
 

@@ -207,7 +207,6 @@ GRASSROOTS_CLIENT_API void InitialiseClient (Client * const client_p,
  * This calls the cl_run_fn for the Client.
  *
  * @param client_p The Client to run.
- * @return Any resultant data after the Client has finished running.
  * @return Any resultant data after the Client has finished displaying the results.
  * @memberof Client
  */
@@ -221,6 +220,7 @@ GRASSROOTS_CLIENT_API json_t *RunClient (Client *client_p);
  *
  * @param client_p The Client to display the results.
  * @param response_p The JSON response from a Server that ran the Services.
+ * @return Any resultant data after the Client has finished displaying the results.
  * @memberof Client
  */
 GRASSROOTS_CLIENT_API json_t *DisplayResultsInClient (Client *client_p, json_t *response_p);
@@ -321,7 +321,7 @@ GRASSROOTS_CLIENT_API bool DeallocatePluginClient (struct Plugin * const plugin_
 /**
  * Set the SchemaVersion that a Client will use.
  *
- * @param client_p The Client that will use teh given SchemaVersion.
+ * @param client_p The Client that will use the given SchemaVersion.
  * @param sv_p The SchemeVersion that the Client will use. The Client
  * will free this when FreeClient is called.
  * @memberof Client
@@ -329,19 +329,63 @@ GRASSROOTS_CLIENT_API bool DeallocatePluginClient (struct Plugin * const plugin_
 GRASSROOTS_CLIENT_API void SetClientSchema (Client *client_p, SchemaVersion *sv_p);
 
 
-
+/**
+ * Get all available Services in a Client from its connected Server.
+ *
+ * @param client_p The Client to get all of the Services for.
+ * @param user_p The current user in case of restricted user access or any of the Services.
+ * @memberof Client
+ */
 GRASSROOTS_CLIENT_API void GetAllServicesInClient (Client *client_p, UserDetails *user_p);
 
 
+/**
+ * Get all interested Services for given Resource in a Client.
+ *
+ * @param client_p The Client to get all of the Services for.
+ * @param protocol_s The protocol of the Resource.
+ * @param query_s The name of the Resource.
+ * @param user_p The current user in case of restricted user access or any of the Services.
+ * This can be <code>NULL</code>.
+ * @memberof Client
+ */
 GRASSROOTS_CLIENT_API void GetInterestedServicesInClient (Client *client_p, const char * const protocol_s, const char * const query_s, UserDetails *user_p);
 
 
+/**
+ * Load a JSON fragment containing a set of Services into a Client.
+ *
+ * @param response_p The JSON fragment containing a set of Services to show.
+ * @param client_p The Client to display the Services with.
+ * @param user_p The current user in case of restricted user access or any of the Services.
+ * This can be <code>NULL</code>.
+ * @param connection_p The connection to a Grassroots Server.
+ * @memberof Client
+ * @return The JSON fragment detailing any messages from the Client after it has been run.
+ */
 GRASSROOTS_CLIENT_API json_t *ShowServices (json_t *response_p, Client *client_p, UserDetails *user_p, Connection *connection_p);
 
 
+/**
+ * Get a named Service in a Client from its connected Server.
+ *
+ * @param client_p The Client to get all of the Services for.
+ * @param service_s The name of the Service to get.
+ * @param user_p The current user in case of restricted user access or any of the Services.
+ * @memberof Client
+ */
 GRASSROOTS_CLIENT_API void GetNamedServicesInClient (Client *client_p, const char * const service_s, UserDetails *user_p);
 
 
+/**
+ * Add a single Service to a Client from its JSON definition.
+ *
+ * @param client_p The Client to add the Service to.
+ * @param service_json_p The JSON fragment for the Service.
+ * @param provider_p A JSON fragment detailing the Proivider for this Service.
+ * @return 0 upon success, non-zero on error.
+ * @see AddServiceToClient
+ */
 GRASSROOTS_CLIENT_LOCAL int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, const json_t *provider_p);
 
 
