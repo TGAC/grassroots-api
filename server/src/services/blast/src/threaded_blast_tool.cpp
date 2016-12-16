@@ -82,14 +82,13 @@ OperationStatus ThreadedBlastTool :: Run ()
 	return status;
 }
 
-
-const char *ThreadedBlastTool :: GetResults ()
+char *ThreadedBlastTool :: GetResults (BlastFormatter *formatter_p)
 {
 	return NULL;
 }
 
 
-OperationStatus ThreadedBlastTool :: GetStatus ()
+OperationStatus ThreadedBlastTool :: GetStatus (bool update_flag)
 {
 	OperationStatus status = OS_ERROR;
 

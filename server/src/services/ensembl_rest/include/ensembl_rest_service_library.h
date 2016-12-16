@@ -17,7 +17,7 @@
 /**
  * @file
  * @defgroup ensembl_rest_service The Ensembl Services Module
- * @brief
+ * @brief A service that uses the functionality provided by Ensembl Webservices.
  */
 #ifndef ENSEMBL_REST_SERVICE_LIBRARY_H
 #define ENSEMBL_REST_SERVICE_LIBRARY_H

@@ -65,8 +65,10 @@
 
 #endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
-PARAMETER_GROUP_PREFIX const char *PARAM_GROUP_DELIMITER_S PARAMETER_GROUP_VAL("/");
 
+/*
+PARAMETER_GROUP_PREFIX const char *PARAM_GROUP_DELIMITER_S PARAMETER_GROUP_VAL("/");
+*/
 
 /* forward declaration */
 struct ServiceData;

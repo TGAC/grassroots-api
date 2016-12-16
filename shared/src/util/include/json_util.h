@@ -696,10 +696,11 @@ GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type 
 /**
  * Create a JSON object from a delimited string of data.
  *
- * @param row_s The delimited data
- * @param headers_p
- * @param delimiter
- * @return
+ * @param row_s The delimited data for a single row.
+ * @param headers_p The LinkedList of FieldNodes defining the column titles.
+ * @param delimiter The column delimiter.
+ * @return The JSON object containing the data from headers_p as the keys and the data
+ * from row_s as the values or <code>NULL</code> upon error.
  */
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
@@ -747,10 +748,10 @@ GRASSROOTS_UTIL_API int PrintJSONToErrors (const uint32 level, const char *filen
 
 
 /**
- * Is a json_t NULL or empty?
+ * Is a json_t <code>NULL</code> or empty?
  *
  * @param json_p The json_t object to test.
- * @return <code>true</code> if the json_t is NULL, an empty array, an empty object or
+ * @return <code>true</code> if the json_t is <code>NULL</code>, an empty array, an empty object or
  * an empty string, <code>false</code> otherwise.
  * @see IsStringEmpty
  */
