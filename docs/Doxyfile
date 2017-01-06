@@ -2121,6 +2121,7 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          "UNUSED_PARAM(name)=unused_ ## name" \
                          ALLOCATE_PATH_TAGS \
                          PATH_PREFIX=GRASSROOTS_SERVICE_API \
+                         "PATH_VAL(x)= =x" \
                          PREFIX= \
                          "VAL(x)= =x" \
                          APR_JOBS_MANAGER_PREFIX= \

@@ -28,6 +28,8 @@
 
 #include <clib/debug_protos.h>
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef __amigaos4__
 	#include <proto/exec.h>
 	#define KPRINTF IExec->DebugPrintF
@@ -42,6 +44,7 @@
 	#define DB(X)
 #endif
 
+#endif		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 #endif	/* #ifndef DEBUGGING_UTILS_H */
 
