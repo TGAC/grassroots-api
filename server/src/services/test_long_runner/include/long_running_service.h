@@ -34,6 +34,13 @@
 ** LIB_LOCAL is used for non-api symbols.
 */
 
+	/** \example long_running_service.c
+	 * This is an example Service showing some commonly needed techniques.
+	 *
+	 * This service is an example to show how job data can be persisted between separate
+	 * requests. It mimics real world jobs by running a user-specified number of jobs that
+	 * are have a start and end times, each one an equivalent to a stopwatch.
+	 */
 /**
  * @privatesection
  * @{
@@ -62,6 +69,7 @@
 extern "C"
 {
 #endif
+
 
 
 LONG_RUNNING_SERVICE_API ServicesArray *GetServices (const json_t *config_p);

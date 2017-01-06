@@ -15,16 +15,25 @@
 */
 
 /**
- * schema_keys.h
+ *
  *
  *  Created on: 6 Jan 2017
  *      Author: billy
  *
- * @file
- * @brief
- * @page jsonkeys The keys for the Grassroots Schema
- * - @ref providers_page for providers schema definitions.
- * @brief The keys for describing the Services, Servers, Parameters, etc within the Grassroots Schema.
+ * @file schema_keys.h
+ * @brief The keys for the Grassroots Schema.
+ * The messages sent between the Grassroots Servers and Clients are JSON-based
+ * and the various available keys are documented in this file.
+ *
+ * The keys are available as constant strings where the first word or phrase
+ * shows the object which the key represents a member of. For instance ::PARAM_CURRENT_VALUE_S
+ * and ::PARAM_SET_NAME_S refer to the current value of a Parameter and the name of
+ * a ParameterSet respectively.
+ *
+ * Under normal usage you will not need to explicitly do the conversion of a JSON description to the
+ * object that it represents in a step-by-step way as each object will have functions to do this e.g.
+ * a ParameterSet has GetParameterSetAsJSON() to get the JSON message for a given ParameterSet and
+ * CreateParameterSetFromJSON() to convert back from the JSON to a ParameterSet.
  */
 
 #ifndef SHARED_SRC_UTIL_INCLUDE_SCHEMA_KEYS_H_
@@ -67,7 +76,7 @@ extern "C"
 
 
 	/**
-	 *  @nosubgrouping
+	 *  nosubgrouping
 	 *
 	 */
 
@@ -114,14 +123,51 @@ extern "C"
 
 	/** @name The Schema definitions for specifying the Service Providers.
 	 * @ingroup SCHEMA_SERVICE_PROVIDERS_GROUP
-	 * @subsection providers_page a page about providers
 	 */
 	/* Start of doxygen member group */
 	/**@{*/
+	/**
+	 * @brief The JSON key for specifying an array of external Grassroots Servers.
+	 *
+	 * The objects contained in this array each have ::PROVIDER_NAME_S,
+	 * ::PROVIDER_DESCRIPTION_S and ::PROVIDER_URI_S keys to describe each of the
+	 * Servers.
+	 */
 	PREFIX const char *SERVER_MULTIPLE_PROVIDERS_S VAL("providers");
+
+	/**
+	 * @brief The JSON key for specifying details about this Grassroots Server.
+	 *
+	 * The child key-value pairs of this object are ::PROVIDER_NAME_S,
+	 * ::PROVIDER_DESCRIPTION_S and ::PROVIDER_URI_S keys to describe each of the
+	 * Servers.
+	 */
 	PREFIX const char *SERVER_PROVIDER_S VAL("provider");
+
+	/**
+	 * @brief The JSON key for the name of the Server to show to Clients and other connected
+	 * Servers.
+	 *
+	 * @see ::SERVER_MULTIPLE_PROVIDERS_S
+	 * @see :: SERVER_PROVIDER_S
+	 */
 	PREFIX const char *PROVIDER_NAME_S VAL("name");
+
+	/**
+	 * @brief The JSON key for the description of the Server to show to Clients and other connected
+	 * Servers.
+	 *
+	 * @see ::SERVER_MULTIPLE_PROVIDERS_S
+	 * @see :: SERVER_PROVIDER_S
+	 */
 	PREFIX const char *PROVIDER_DESCRIPTION_S VAL("description");
+
+	/**
+	 * @brief The JSON key for the URI that accepts Grassroots message on the Server.
+	 *
+	 * @see ::SERVER_MULTIPLE_PROVIDERS_S
+	 * @see :: SERVER_PROVIDER_S
+	 */
 	PREFIX const char *PROVIDER_URI_S VAL("uri");
 	/* End of doxygen member group */
 	/**@}*/
