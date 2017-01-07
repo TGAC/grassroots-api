@@ -318,11 +318,11 @@ json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * co
 {
 	json_t *res_p = NULL;
 	json_error_t error;
-	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
+	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", RESOURCE_PROTOCOL_S, protocol_s, RESOURCE_VALUE_S, filename_s);
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, KEY_FILE_DATA, op_data_p, sv_p);
+			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, RESOURCE_S, op_data_p, sv_p);
 		}
 	else
 		{

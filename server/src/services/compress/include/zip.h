@@ -35,11 +35,13 @@ extern "C"
 {
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 COMPRESS_SERVICE_API int CompressAsZipNoHeader (Handler*in_p, Handler *out_p, int level);
 
 COMPRESS_SERVICE_API int CompressAsZip (Handler*in_p, Handler *out_p, int level);
 
-COMPRESS_SERVICE_API int CompressAsZip1 (Handler *in_p, Handler *out_p, int level);
+#endif
 
 #ifdef __cplusplus
 }

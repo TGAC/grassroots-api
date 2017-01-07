@@ -44,7 +44,6 @@
 #include "uuid/uuid.h"
 
 //#include "irods_handle.h"
-#include "json_tools.h"
 #include "providers_state_table.h"
 #include "grassroots_config.h"
 
@@ -689,18 +688,17 @@ static Operation GetOperation (json_t *ops_p)
 static Resource *GetResourceOfInterest (const json_t * const req_p)
 {
 	Resource *resource_p = NULL;
-	json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
+	json_t *file_data_p = json_object_get (req_p, RESOURCE_S);
 
 	if (file_data_p)
 		{
-			json_t *protocol_p = json_object_get (file_data_p, KEY_PROTOCOL);
+			json_t *protocol_p = json_object_get (file_data_p, RESOURCE_PROTOCOL_S);
 
 			if (protocol_p)
 				{
 					if (json_is_string (protocol_p))
 						{
-							/* is it a single file or a dir? */
-							json_t *data_name_p = json_object_get (file_data_p, KEY_FILENAME);
+							json_t *data_name_p = json_object_get (file_data_p, RESOURCE_VALUE_S);
 
 							if (data_name_p && (json_is_string (data_name_p)))
 								{

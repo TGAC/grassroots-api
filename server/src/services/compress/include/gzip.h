@@ -45,6 +45,10 @@
 #elif defined APPLE
 	#define OS (7)
 #else
+	/**
+	 * The numeric value specifying the operating system
+	 * that the Service is running on.
+	 */
 	#define OS (255)
 #endif
 	
@@ -55,6 +59,14 @@ extern "C"
 {
 #endif
 
+/**
+ * Compress some data using the gzip algorithm.
+ *
+ * @param in_p The Handler for the data to compress.
+ * @param out_p The Handler where the compressed data will be written to.
+ * @param level The level of compression to apply
+ * @return 0 upon success, non-zero error code upon error.
+ */
 COMPRESS_SERVICE_API int CompressAsGZip (Handler *in_p, Handler *out_p, int level);
 
 

@@ -281,7 +281,7 @@ extern "C"
  * @param file_info_fn The callback function to use for the Handler's ha_file_info_fn function.
  * @see ha_file_info_fn
  * @param free_handler_fn The callback function to use for the Handler's ha_free_handler_fn function.
- * @param ha_free_handler_fn
+ * @see ha_free_handler_fn
  */
 GRASSROOTS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	bool (*init_fn) (struct Handler *handler_p, const UserDetails *user_p),

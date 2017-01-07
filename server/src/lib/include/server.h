@@ -27,14 +27,15 @@
 #include "operation.h"
 
 
+/**
+ * This is the default port to run the Grassroots server on when it
+ * is running as a standalone server rather than as a module within
+ * Apache which is the recommended mode of operation.
+ */
 #define DEFAULT_SERVER_PORT	("9991")
 
 #define KEY_IRODS				("irods")
-#define	KEY_FILE_DATA		("file_data")
 
-#define KEY_FILENAME	("file")
-#define KEY_DIRNAME		("dir")
-#define KEY_PROTOCOL	("protocol")
 #define KEY_INTERVAL	("interval")
 
 /*

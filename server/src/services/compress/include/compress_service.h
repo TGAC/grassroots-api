@@ -49,7 +49,6 @@ COMPRESS_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 COMPRESS_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
 
-COMPRESS_SERVICE_LOCAL bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p, const int flush);
 
 #ifdef __cplusplus
 }

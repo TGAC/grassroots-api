@@ -29,15 +29,14 @@
 #include "dropbox.h"
 #include "dropboxOAuth.h"
 
-/* 
- * This handler uses the library available from
- * 
- * https://github.com/Dwii/Dropbox-C
- */
  
  /**
  * A datatype for a Handler that can access data
  * stored within a Dropbox account.
+ *
+ * This handler uses the library available from
+ *
+ * https://github.com/Dwii/Dropbox-C
  *
  * @extends Handler
  */
@@ -113,7 +112,17 @@ typedef struct DropboxHandler
 
 #endif		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
+/**
+ * The token key value from the dropbox servers allowing Grassroots to access
+ * the files and directories for the given account.
+ */
 DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_KEY_S DROPBOX_HANDLER_VAL("token_key");
+
+
+/**
+ * The token secret value from the dropbox servers allowing Grassroots to access
+ * the files and directories for the given account.
+ */
 DROPBOX_HANDLER_DECLARE const char *DROPBOX_TOKEN_SECRET_S DROPBOX_HANDLER_VAL("token_secret");
 
 

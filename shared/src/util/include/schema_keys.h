@@ -453,6 +453,11 @@ extern "C"
 	/**@{*/
 
 	/**
+	 * The JSON key for specifying a Resource object.
+	 */
+	PREFIX const char *RESOURCE_S  VAL("resource");
+
+	/**
 	 * The JSON key for specifying the protocol for a Resource.
 	 */
 	PREFIX const char *RESOURCE_PROTOCOL_S  VAL("protocol");
@@ -463,7 +468,17 @@ extern "C"
 	 * the protocol for this Resource.
 	 */
 	PREFIX const char *RESOURCE_VALUE_S  VAL("value");
+
+	/**
+	 * The JSON key for specifying the a user-friendly description
+	 * of a Resource.
+	 */
 	PREFIX const char *RESOURCE_DESCRIPTION_S  VAL("description");
+
+	/**
+	 * The JSON key for specifying a title to display to Clients
+	 * and external Servers, rather than show the name.
+	 */
 	PREFIX const char *RESOURCE_TITLE_S  VAL("title");
 
 
