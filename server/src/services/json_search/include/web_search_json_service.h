@@ -31,10 +31,23 @@ extern "C"
 #endif
 
 
-WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (UserDetails *user_p, json_t *config_p);
+/**
+ * Get the Services available for accessing the JSON-based Web Search Service.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing the JSON-based Web Search Servic or
+ * <code>NULL</code> upon error.
+ */
+WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
 
+/**
+ * Free the ServicesArray and its associated JSON-based Web Search Service.
+ *
+ * @param services_p The ServicesArray to free.
+ */
 WEB_SEARCH_JSON_SERVICE_API void ReleaseServices (ServicesArray *services_p);
+
 
 
 #ifdef __cplusplus

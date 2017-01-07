@@ -34,22 +34,38 @@
 #include "service.h"
 
 
-
+/**
+ * This enumeration is for choosing the response format from the
+ * call to Ensembl's web services.
+ */
 typedef enum
 {
-	SO_JSON,
-	SO_FASTA,
-	SO_SEQXML,
-	SO_NUM_FORMATS
+	SO_JSON,      //!< Get the response in JSON format.
+	SO_FASTA,     //!< Get the response in fasta format.
+	SO_SEQXML,    //!< Get the response in Seqxml format.
+	SO_NUM_FORMATS//!< The number of available output formats.
 } SequenceOutput;
 
 
+/**
+ * An enumeration specifying the different types of
+ * sequence
+ */
 typedef enum
 {
+	/** The default value */
 	ST_GENOMIC,
+
+	/** This refers to the spliced transcript sequence without UTR */
 	ST_CDS,
+
+	/** This refers to the spliced transcript sequence with UTR */
 	ST_CDNA,
+
+	/** This refers to the protein */
 	ST_PROTEIN,
+
+	/** The number of available SequencTypes */
 	ST_NUM_TYPES
 } SequenceType;
 
