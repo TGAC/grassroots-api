@@ -230,7 +230,7 @@ static json_t *LoadConfig (const char *path_s)
 json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
-	json_t *root_p = GetOperationAsJSON (OP_IRODS_MODIFIED_DATA, sv_p);
+	json_t *root_p = NULL; //GetOperationAsJSON (OP_IRODS_MODIFIED_DATA, sv_p);
 
 	if (root_p)
 		{
@@ -453,21 +453,31 @@ json_t *GetOperationAsJSON (Operation op, const SchemaVersion * const sv_p)
 
 			if (op_p)
 				{
-					if (json_object_set_new (op_p, OPERATION_ID_S, json_integer (op)) == 0)
+					const char *op_s = GetOperationAsString (op);
+
+					if (op_s)
 						{
-							if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0)
+							if (json_object_set_new (op_p, OPERATION_S, json_string (op_s)) == 0)
 								{
-									return msg_p;
-								}		/* if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0) */
+									if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0)
+										{
+											return msg_p;
+										}		/* if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0) */
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add ops");
+										}
+
+								}		/* if (json_object_set (op_p, OPERATION_ID_S, json_integer (op)) == 0) */
 							else
 								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add ops");
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add op id");
 								}
 
-						}		/* if (json_object_set (op_p, OPERATION_ID_S, json_integer (op)) == 0) */
+						}		/* if (op_s) */
 					else
 						{
-							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add op id");
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to get op string for " UINT32_FMT, op);
 						}
 
 					json_decref (op_p);

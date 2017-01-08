@@ -231,8 +231,6 @@ json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, Operation 
 													//	element_name_s = SERVICE_RESULTS_S;
 														break;
 
-													case OP_IRODS_MODIFIED_DATA:
-														break;
 
 													case OP_CHECK_SERVICE_STATUS:
 														break;

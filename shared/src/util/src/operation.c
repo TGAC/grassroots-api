@@ -38,6 +38,51 @@ static const char * const S_SUCCEEDED_S = "Succeeded";
 static const char * const S_CLEANED_UP_S = "Cleaned up";
 
 
+static const char *S_OPERATIONS_SS [OP_NUM_OPERATIONS] =
+{
+	"get_all_services",
+	"get_schema_version",
+	"get_interested_services",
+	"run_keyword_services",
+	"get_named_service",
+	"check_service_status",
+	"get_service_results",
+	"clean_up_jobs",
+	"get_resource"
+};
+
+
+
+const char *GetOperationAsString (const Operation op)
+{
+	const char *op_s = NULL;
+
+	if ((op != OP_NUM_OPERATIONS) && (op != OP_NONE))
+		{
+			op_s = * (S_OPERATIONS_SS + op);
+		}
+
+	return op_s;
+}
+
+
+
+Operation GetOperationFromString (const char *op_s)
+{
+	Operation op;
+
+	for (op = OP_NONE; op < OP_NUM_OPERATIONS; ++ op)
+		{
+			if (strcmp (* (S_OPERATIONS_SS + op), op_s) == 0)
+				{
+					return op;
+				}
+		}
+
+	return OP_NONE;
+}
+
+
 const char *GetOperationStatusAsString (const OperationStatus status)
 {
 	const char *result_s = NULL;

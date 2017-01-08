@@ -79,20 +79,6 @@ typedef enum Operation {
 } Operation;
 
 
-OPERATION_PREFIX const char *OPERATIONS_SS [OP_NUM_OPERATIONS] =
-{
-	"get_all_services",
-	"get_schema_version",
-	"get_interested_services",
-	"run_keyword_services",
-	"get_named_service",
-	"check_service_status",
-	"get_service_results",
-	"clean_up_jobs",
-	"get_resource"
-};
-
-
 
 /**
  * @brief The current status of an Operation.
@@ -126,7 +112,26 @@ extern "C"
 
 
 /**
- * Get the string-based representation of a given OperationStatus
+ * @brief Get the string-based representation of a given Operation.
+ *
+ * @param op The Operation to get the string-based representation of.
+ * @return The string-based representation.
+ */
+GRASSROOTS_UTIL_API const char *GetOperationAsString (const Operation op);
+
+
+/**
+ * @brief Get the Operation for a given String.
+ *
+ * @param op_s The string to get the Operation for.
+ * @return The Operation or OP_NONE if the string did not match a valid
+ * operation string.
+ */
+GRASSROOTS_UTIL_API Operation GetOperationFromString (const char *op_s);
+
+
+/**
+ * @brief Get the string-based representation of a given OperationStatus
  *
  * @param status The OperationStatus to get the string-based representation of.
  * @return The string-based representation.
@@ -135,7 +140,7 @@ GRASSROOTS_UTIL_API const char *GetOperationStatusAsString (const OperationStatu
 
 
 /**
- * Get the OperationStatus for a given String
+ * @brief Get the OperationStatus for a given String
  *
  * @param status_s The string to get the OperationStatus for.
  * @return The OperationStatus.
