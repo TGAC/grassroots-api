@@ -17,11 +17,7 @@
 /**
  * @file
  * @brief
- */
-/**
- * @file
  * @page Drmaa Drmaa Utility
- * See [md_readme](readme.md)
 */ 
 
 #ifndef GRASSROOTS_MONGODB_LIBRARY_H

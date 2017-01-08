@@ -23,6 +23,19 @@
 
 #include "grassroots_util_library.h"
 
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+#ifdef ALLOCATE_OPERATION_CONSTANTS
+	#define OPERATION_PREFIX GRASSROOTS_UTIL_API
+	#define OPERATION_VAL(x)	= x
+#else
+	#define OPERATION_PREFIX extern
+	#define OPERATION_VAL(x)
+#endif
+
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
+
 /**
  * @brief The various Operations that a Server can perform.
  */
@@ -50,8 +63,8 @@ typedef enum Operation {
 	/** Get results from completed job */
 	OP_GET_SERVICE_RESULTS,     //!< OP_GET_SERVICE_RESULTS
 
-	/** Get list of data objects and collections modified within a given time period */
-	OP_IRODS_MODIFIED_DATA,     //!< OP_IRODS_MODIFIED_DATA
+//	/** Get list of data objects and collections modified within a given time period */
+//	OP_IRODS_MODIFIED_DATA,     //!< OP_IRODS_MODIFIED_DATA
 
 	/** Tell the server that the jobs are no longer needed */
 	OP_CLEAN_UP_JOBS,           //!< OP_CLEAN_UP_JOBS
@@ -64,6 +77,22 @@ typedef enum Operation {
 
 	OP_NUM_OPERATIONS           //!< OP_NUM_OPERATIONS
 } Operation;
+
+
+OPERATION_PREFIX const char *OPERATIONS_SS [OP_NUM_OPERATIONS] =
+{
+	"get_all_services",
+	"get_schema_version",
+	"get_interested_services",
+	"run_keyword_services",
+	"get_named_service",
+	"check_service_status",
+	"get_service_results",
+	"clean_up_jobs",
+	"get_resource"
+};
+
+
 
 /**
  * @brief The current status of an Operation.
