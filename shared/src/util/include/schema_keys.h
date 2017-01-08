@@ -15,13 +15,9 @@
 */
 
 /**
- *
- *
- *  Created on: 6 Jan 2017
- *      Author: billy
- *
  * @file schema_keys.h
  * @brief The keys for the Grassroots Schema.
+ *
  * The messages sent between the Grassroots Servers and Clients are JSON-based
  * and the various available keys are documented in this file.
  *
@@ -76,7 +72,7 @@ extern "C"
 
 
 	/**
-	 *  nosubgrouping
+	 *  @nosubgrouping
 	 *
 	 */
 
@@ -202,8 +198,29 @@ extern "C"
 	/* Start of doxygen member group */
 	/**@{*/
 	PREFIX const char *SERVER_OPERATIONS_S VAL("operations");
+
+	/**
+	 * The key to specify the operation id.
+	 * This uses the numeric values from enum Operation.
+	 *
+	 * @deprecated Use ::OPERATION_S instead.
+	 */
 	PREFIX const char *OPERATION_ID_OLD_S VAL("operationId");
+
+	/**
+	 * The key to specify the operation id.
+	 * This uses the numeric values from enum Operation.
+	 *
+	 * @deprecated Use ::OPERATION_S instead.
+	 */
 	PREFIX const char *OPERATION_ID_S VAL("operation_id");
+
+	/**
+	 * The key to specify the operation id.
+	 * This uses the string values returned from
+	 * GetOperationAsString().
+	 *
+	 */
 	PREFIX const char *OPERATION_S VAL("operation");
 	PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
 	PREFIX const char *OPERATION_INFORMATION_URI_S VAL("about_url");

@@ -172,7 +172,7 @@ extern "C"
 #endif
 
 /**
- * Initialise a Client.
+ * @brief Initialise a Client.
  *
  * @param client_p The Client to iniitalise.
  * @param get_client_name_fn The function to get the name of the Client.

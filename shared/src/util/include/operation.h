@@ -37,6 +37,7 @@
 #endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
+ * @enum Operation
  * @brief The various Operations that a Server can perform.
  */
 typedef enum Operation {
@@ -81,6 +82,7 @@ typedef enum Operation {
 
 
 /**
+ * @enum OperationStatus
  * @brief The current status of an Operation.
  * @details Each Operation has an OperationStatus detailing its current
  * state. Any value less than zero indicates an error with OS_LOWER_LIMIT
@@ -116,6 +118,7 @@ extern "C"
  *
  * @param op The Operation to get the string-based representation of.
  * @return The string-based representation.
+ * @memberof Operation
  */
 GRASSROOTS_UTIL_API const char *GetOperationAsString (const Operation op);
 
@@ -124,8 +127,9 @@ GRASSROOTS_UTIL_API const char *GetOperationAsString (const Operation op);
  * @brief Get the Operation for a given String.
  *
  * @param op_s The string to get the Operation for.
- * @return The Operation or OP_NONE if the string did not match a valid
+ * @return The Operation or Operation::OP_NONE if the string did not match a valid
  * operation string.
+ * @memberof Operation
  */
 GRASSROOTS_UTIL_API Operation GetOperationFromString (const char *op_s);
 
@@ -135,6 +139,7 @@ GRASSROOTS_UTIL_API Operation GetOperationFromString (const char *op_s);
  *
  * @param status The OperationStatus to get the string-based representation of.
  * @return The string-based representation.
+ * @memberof OperationStatus
  */
 GRASSROOTS_UTIL_API const char *GetOperationStatusAsString (const OperationStatus status);
 
@@ -144,6 +149,7 @@ GRASSROOTS_UTIL_API const char *GetOperationStatusAsString (const OperationStatu
  *
  * @param status_s The string to get the OperationStatus for.
  * @return The OperationStatus.
+ * @memberof OperationStatus
  */
 GRASSROOTS_UTIL_API OperationStatus GetOperationStatusFromString (const char *status_s);
 
