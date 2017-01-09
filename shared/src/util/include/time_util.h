@@ -41,6 +41,7 @@ extern "C"
  * @param time_p The struct tm to store the converted time in.
  * @param offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm.
  * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
@@ -52,6 +53,7 @@ GRASSROOTS_UTIL_API bool ConvertCompactStringToTime (const char * const time_s, 
  * @param time_s The string to convert.
  * @param time_p The time_t to store the converted time in.
  * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const time_s, time_t *time_p);
 
@@ -65,6 +67,7 @@ GRASSROOTS_UTIL_API bool ConvertCompactStringToEpochTime (const char * const tim
  * @param time_p The struct tm to store the converted time in.
  * @param offset_p Where the timezone adjustment will be stored. It's in the form (+/-)hhmm.
  * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, struct tm *time_p, int *offset_p);
 
@@ -76,6 +79,7 @@ GRASSROOTS_UTIL_API bool ConvertDropboxStringToTime (const char * const time_s, 
  * @param time_s The string to convert.
  * @param time_p The time_t to store the converted time in.
  * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const time_s, time_t *time_p);
 
@@ -86,6 +90,7 @@ GRASSROOTS_UTIL_API bool ConvertDropboxStringToEpochTime (const char * const tim
  *
  * @param tm_p Where the current time will be stored.
  * @return <code>true</code> if the time was set successfully, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetCurrentTime (struct tm *tm_p);
 
@@ -96,6 +101,7 @@ GRASSROOTS_UTIL_API bool GetCurrentTime (struct tm *tm_p);
  *
  * @param time_p The time to get as a c-style string
  * @return The time as a c-style string or <code>NULL</code> upon error.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetTimeAsString (const struct tm * const time_p);
 

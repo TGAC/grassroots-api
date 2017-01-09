@@ -35,6 +35,8 @@
  * @brief An OutputStream that writes to user-specified files
  *
  * @extends OutputStream
+ *
+ * @ingroup utility_group
  */
 typedef struct FileOutputStream
 {

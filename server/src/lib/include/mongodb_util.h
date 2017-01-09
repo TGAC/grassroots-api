@@ -44,6 +44,7 @@
  * @return <code>true</code> if the global MongoDB resources
  * were acquired successfully,
  * <code>false</code> otherwise.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API bool InitMongoDB (void);
 
@@ -51,6 +52,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool InitMongoDB (void);
 /**
  * Free any MongoDB resources that the Grassroots system
  * obtained when it was started.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API void ExitMongoDB (void);
 
@@ -60,6 +62,7 @@ GRASSROOTS_SERVICE_MANAGER_API void ExitMongoDB (void);
  *
  * @return The new mongoc_client_t or <code>NULL</code> upon error.
  * @see ReleaseMongoClient
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API mongoc_client_t *GetMongoClient (void);
 
@@ -69,6 +72,7 @@ GRASSROOTS_SERVICE_MANAGER_API mongoc_client_t *GetMongoClient (void);
  *
  * @param client_p The mongoc_client_t to free
  * @see GetMongoClient
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API void ReleaseMongoClient (mongoc_client_t *client_p);
 

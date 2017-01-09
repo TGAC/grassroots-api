@@ -36,6 +36,8 @@
 /**
  * An enumeration of the possible status values
  * of a stream being used by a Handler.
+ *
+ * @ingroup handler_group
  */
 typedef enum
 {
@@ -64,6 +66,8 @@ struct Handler;
  * can use any Handler to access data without having to worry about the internals.
  * So just by loading the appropriate Handler, a task can read data from a file,
  * and iRODS data object, a webpage, etc. simply by using the Handler API.
+ *
+ * @ingroup handler_group
  */
 typedef struct Handler
 {
@@ -236,6 +240,8 @@ typedef struct Handler
  * A datatype for storing a Handler on a LinkedList.
  *
  * @extends ListItem
+ *
+ * @ingroup handler_group
  */
 typedef struct HandlerNode
 {
@@ -282,6 +288,7 @@ extern "C"
  * @see ha_file_info_fn
  * @param free_handler_fn The callback function to use for the Handler's ha_free_handler_fn function.
  * @see ha_free_handler_fn
+ * @memberof Handler
  */
 GRASSROOTS_HANDLER_API void InitialiseHandler (Handler * const handler_p,
 	bool (*init_fn) (struct Handler *handler_p, const UserDetails *user_p),

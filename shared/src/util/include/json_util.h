@@ -37,6 +37,8 @@
  *
  * @see LinkedList
  * @extends ListItem
+ *
+ * @ingroup utility_group
  */
 typedef struct JsonNode
 {
@@ -63,6 +65,8 @@ typedef struct JsonNode
  * back to the correct type.
  *
  * @extends StringListNode
+ *
+ * @ingroup utility_group
  */
 typedef struct FieldNode
 {
@@ -88,6 +92,8 @@ extern "C"
  * @param json_p The json object to print.
  * @param prefix_s An optional string to precede the json output in the given FILE.
  * @return O if successful, less than 0 upon error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, const char * const prefix_s);
 
@@ -99,6 +105,8 @@ GRASSROOTS_UTIL_API int PrintJSON (FILE *out_f, const json_t * const json_p, con
  * @param key_s The key to search for.
  * @return The corresponding value or <code>NULL</code> if the key does not exist in the
  * given json_t object.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API const char *GetJSONString (const json_t *json_p, const char * const key_s);
 
@@ -110,8 +118,9 @@ GRASSROOTS_UTIL_API const char *GetJSONString (const json_t *json_p, const char 
  * @param json_p The json object to query.
  * @param key_s The key to search for.
  * @return A newly-allocated copy of the corresponding value or <code>NULL</code> if the key does not exist in the
- * given json_t object or failed to be copied. This value, if valid, should be freed with FreeCopiedString.
- * @see FreeCopiedString.
+ * given json_t object or failed to be copied. This value, if valid, should be freed with FreeCopiedString().
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetCopiedJSONString (const json_t *json_p, const char * const key_s);
 
@@ -123,6 +132,8 @@ GRASSROOTS_UTIL_API char *GetCopiedJSONString (const json_t *json_p, const char 
  * @param key_s The key to search for.
  * @param value_p Where the corresponding value will be stored if the key exists and relates to an int.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * const key_s, int *value_p);
 
@@ -134,6 +145,8 @@ GRASSROOTS_UTIL_API bool GetJSONInteger (const json_t *json_p, const char * cons
  * @param key_s The key to search for.
  * @param value_p Where the corresponding value will be stored if the key exists and relates to an int.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetJSONLong (const json_t *json_p, const char * const key_s, long *value_p);
 
@@ -145,6 +158,8 @@ GRASSROOTS_UTIL_API bool GetJSONLong (const json_t *json_p, const char * const k
  * @param key_s The key to search for.
  * @param value_p Where the corresponding value will be stored if the key exists and relates to a double.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const key_s, double *value_p);
 
@@ -156,6 +171,8 @@ GRASSROOTS_UTIL_API bool GetJSONReal (const json_t *json_p, const char * const k
  * @param key_s The key to search for.
  * @param value_p Where the corresponding value will be stored if the key exists and relates to a boolean.
  * @return <code>true</code> if the value was retrieved successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * const key_s, bool *value_p);
 
@@ -167,6 +184,8 @@ GRASSROOTS_UTIL_API bool GetJSONBoolean (const json_t *json_p, const char * cons
  * @param values_ss The array of c-style strings with a final element set to NULL.
  * @param child_key_s The key to use to add the json array to parent_p.
  * @return <code>true</code> if the json_array was created and added successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool AddStringArrayToJSON (json_t *parent_p, const char ** const values_ss, const char * const child_key_s);
 
@@ -174,9 +193,11 @@ GRASSROOTS_UTIL_API bool AddStringArrayToJSON (json_t *parent_p, const char ** c
 /**
  * Created an array of c-style string of StringListNodes from a json array.
  *
- * @param array_p The json_t array to create the c-style strings arrayt from.
+ * @param array_p The json_t array to create the c-style strings array from.
  * @return The array of c-style strings or <code>NULL</code> if array_p is
  * an empty array or if there was an error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char **GetStringArrayFromJSON (const json_t * const array_p);
 
@@ -188,6 +209,8 @@ GRASSROOTS_UTIL_API char **GetStringArrayFromJSON (const json_t * const array_p)
  * @param values_p The LinkedList of StringListNodes.
  * @param child_key_s The key to use to add the json array to parent_p.
  * @return <code>true</code> if the json_array was created and added successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool AddStringListToJSON (json_t *parent_p, LinkedList *values_p, const char * const child_key_s);
 
@@ -198,6 +221,8 @@ GRASSROOTS_UTIL_API bool AddStringListToJSON (json_t *parent_p, LinkedList *valu
  * @param array_p The json_t object to generate the list from.
  * @return The LinkedList of StringListNodes or <code>NULL</code> if array_p is
  * an empty array or if there was an error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API LinkedList *GetStringListFromJSON (const json_t * const array_p);
 
@@ -250,6 +275,8 @@ GRASSROOTS_UTIL_API void FreeFieldNode (ListItem *node_p);
  * @param filename_s The filename to load.
  * @return The resultant JSON fragment or <code>NULL</code> upon errors
  * such as the file being unable to be read or not a JSON file.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API json_t *LoadJSONFile (const char * const filename_s);
 
@@ -263,6 +290,8 @@ GRASSROOTS_UTIL_API json_t *LoadJSONFile (const char * const filename_s);
  * @param headers_p A LinkedList of FieldNodes where specifying the headers for each column of data.
  * @return The tabular data as a JSON array with each child object containing the data for a row
  * with the keys being the header values or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char column_delimiter, const char row_delimiter, LinkedList *headers_p);
 
@@ -279,6 +308,8 @@ GRASSROOTS_UTIL_API json_t *ConvertTabularDataToJSON (char *data_s, const char c
  * @param type_data_p If get_type_fn needs any extra data, it can be passed in here.
  * @return The tabular data as a JSON array with each child object containing the data for a row
  * with the keys being the header values or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API json_t *ConvertTabularDataWithHeadersToJSON (char *data_s, const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
@@ -295,6 +326,8 @@ GRASSROOTS_UTIL_API json_t *ConvertTabularDataWithHeadersToJSON (char *data_s, c
  * @param type_data_p If get_type_fn needs any extra data, it can be passed in here.
  * @return A LinkedList of FieldNodes with each one containing a header value or
  * <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API LinkedList *GetTabularHeaders (char **data_ss,  const char column_delimiter, const char row_delimiter, json_type (*get_type_fn) (const char *name_s, const void * const data_p), const void * const type_data_p);
 
@@ -309,6 +342,8 @@ GRASSROOTS_UTIL_API LinkedList *GetTabularHeaders (char **data_ss,  const char c
  * @param field_type The json_type to convert the value to.
  * @return The newly-created JSON object containing the value or <code>NULL</code>
  * upon error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type field_type);
 
@@ -321,6 +356,8 @@ GRASSROOTS_UTIL_LOCAL json_t *GetJSONFromString (const char *value_s, json_type 
  * @param delimiter The column delimiter.
  * @return The JSON object containing the data from headers_p as the keys and the data
  * from row_s as the values or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p, const char delimiter);
 
@@ -334,6 +371,8 @@ GRASSROOTS_UTIL_API json_t *ConvertRowToJSON (char *row_s, LinkedList *headers_p
  * @return <code>true</code> if value_s is not <code>NULL</code> and the key-value pair were added successfully
  * or if value_s is <code>NULL</code>. If value_s points to valid data and the key-value pair fails to get added,
  * <code>false</code> will be returned.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool AddValidJSONString (json_t *parent_p, const char * const key_s, const char * const value_s);
 
@@ -348,6 +387,8 @@ GRASSROOTS_UTIL_API bool AddValidJSONString (json_t *parent_p, const char * cons
  * @param message_s A char * using the same format as printf, etc.
  * @return The number of characters written or a negative number upon error.
  * @see PrintLog
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int PrintJSONToLog (const uint32 level, const char *filename_s, const int line_number, const json_t *json_p, const char *message_s, ...);
 
@@ -361,7 +402,9 @@ GRASSROOTS_UTIL_API int PrintJSONToLog (const uint32 level, const char *filename
  * @param line_number The line number in the source file which called this method.
  * @param message_s A char * using the same format as printf, etc.
  * @return The number of characters written or a negative number upon error.
- * @see PrintLog
+ * @see PrintErrors
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int PrintJSONToErrors (const uint32 level, const char *filename_s, const int line_number, const json_t *json_p, const char *message_s, ...);
 
@@ -374,6 +417,8 @@ GRASSROOTS_UTIL_API int PrintJSONToErrors (const uint32 level, const char *filen
  * @return <code>true</code> if the json_t is <code>NULL</code>, an empty array, an empty object or
  * an empty string, <code>false</code> otherwise.
  * @see IsStringEmpty
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool IsJSONEmpty (const json_t *json_p);
 
@@ -389,6 +434,8 @@ GRASSROOTS_UTIL_API bool IsJSONEmpty (const json_t *json_p);
  * @param filename_s The filename of the source file calling this method.
  * @param line_number The line number in the source file which called this method.
  * @see PrintLog
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void PrintJSONRefCounts (const uint32 log_level, const char * const filename_s, const int line_number, const json_t * const value_p, const char *initial_s);
 
@@ -401,6 +448,8 @@ GRASSROOTS_UTIL_API void PrintJSONRefCounts (const uint32 log_level, const char 
  * it is successfully retrieved.
  * @return <code>true</code> if the value was successfully retrieved. If
  * the JSON value is not a boolean type <code>false</code> will be returned.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool SetBooleanFromJSON (const json_t *json_p, bool *value_p);
 
@@ -413,6 +462,8 @@ GRASSROOTS_UTIL_API bool SetBooleanFromJSON (const json_t *json_p, bool *value_p
  * it is successfully retrieved.
  * @return <code>true</code> if the value was successfully retrieved. If
  * the JSON value is not a real type <code>false</code> will be returned.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool SetRealFromJSON (const json_t *json_p, double *value_p);
 
@@ -425,6 +476,8 @@ GRASSROOTS_UTIL_API bool SetRealFromJSON (const json_t *json_p, double *value_p)
  * it is successfully retrieved.
  * @return <code>true</code> if the value was successfully retrieved. If
  * the JSON value is not a integer type <code>false</code> will be returned.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool SetIntegerFromJSON (const json_t *json_p, int32 *value_p);
 
@@ -437,6 +490,8 @@ GRASSROOTS_UTIL_API bool SetIntegerFromJSON (const json_t *json_p, int32 *value_
  * it is successfully retrieved.
  * @return <code>true</code> if the value was successfully retrieved. If
  * the JSON value is not a long type <code>false</code> will be returned.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool SetLongFromJSON (const json_t *json_p, int64 *value_p);
 
@@ -450,6 +505,8 @@ GRASSROOTS_UTIL_API bool SetLongFromJSON (const json_t *json_p, int64 *value_p);
  * @return <code>true</code> if the value was successfully retrieved and copied. If
  * the JSON value is not a string type or the memory for copying the string value
  * could not be allocated then <code>false</code> will be returned.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_ss);
 
@@ -461,6 +518,8 @@ GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_s
  * @param compound_s The selector value using a dot notation. For example "foo.bar" would
  * search for a "bar" child key belonging to a "foo" child object of the input value.
  * @return The found JSON object or <code>NULL</code> if it could not be found.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s);
 

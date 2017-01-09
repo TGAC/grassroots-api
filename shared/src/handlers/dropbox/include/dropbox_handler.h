@@ -139,7 +139,7 @@ extern "C"
  * @param user_p The UserDetails used to determine file access permissions. This can be <code>NULL</code>.
  * @return The newly-allocated DropboxHandler or <code>NULL</code> upon error.
  * @memberof DropboxHandler
- * @ingroup dropbox_handler
+ * @ingroup dropbox_handler_group
  */
 DROPBOX_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
@@ -149,7 +149,7 @@ DROPBOX_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
  *
  * @param handler_p The DropboxHandler to free.
  * @memberof DropboxHandler
- * @ingroup dropbox_handler
+ * @ingroup dropbox_handler_group
  */
 DROPBOX_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

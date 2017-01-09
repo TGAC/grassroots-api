@@ -63,50 +63,68 @@
 /**
  * The identifier for specifying a search for any value
  * within a given set of values.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_RANGE_S SEARCH_VAL("in");
 
 
 /**
  * The identifier for equality search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_EQUALS_S SEARCH_VAL("=");
 
 
 /**
  * The identifier for "less than" search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_LESS_THAN_S SEARCH_VAL("<");
 
 
 /**
  * The identifier for "less than or equals" search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_LESS_THAN_OR_EQUALS_S SEARCH_VAL("<=");
 
 
 /**
  * The identifier for "greater than" search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_GREATER_THAN_S SEARCH_VAL(">");
 
 /**
  * The identifier for "greater than or equals" search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_GREATER_THAN_OR_EQUALS_S SEARCH_VAL(">=");
 
 /**
  * The identifier for "not equals" search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_NOT_EQUALS_S SEARCH_VAL("!=");
 
 /**
  * The identifier for "like" search operations.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_LIKE_S SEARCH_VAL("like");
 
 /**
  * The identifier for specifying case-insensitive searches.
+ *
+ * @ingroup utility_group
  */
 SEARCH_PREFIX const char *SO_CASE_INSENSITIVE_S SEARCH_VAL("insensitive");
 

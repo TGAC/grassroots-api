@@ -33,7 +33,8 @@
 
 /**
  * A datatype to hold a collection of metadata about a file.
-
+ *
+ * @ingroup utility_group
  */
 typedef struct FileInformation
 {
@@ -56,8 +57,10 @@ typedef struct FileInformation
  *
  * @param full_path_to_file_s The full path.
  * @return A newly-allocated string containing the filename only. This will
- * need to be freed with FreeCopiedString to avoid a memory leak. If there was an
+ * need to be freed with FreeCopiedString() to avoid a memory leak. If there was an
  * error, then this will be <code>NULL</code>.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetFilenameOnly (const char * const full_path_to_file_s);
 
@@ -67,8 +70,10 @@ GRASSROOTS_UTIL_API char *GetFilenameOnly (const char * const full_path_to_file_
  *
  * @param full_path_to_file_s The full path.
  * @return A newly-allocated string containing the full path to the parent
- * directory only. This will need to be freed with FreeCopiedString to
+ * directory only. This will need to be freed with FreeCopiedString() to
  * avoid a memory leak. If there was an error, then this will be <code>NULL</code>.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetPathOnly (const char * const full_path_to_file_s);
 
@@ -82,8 +87,10 @@ GRASSROOTS_UTIL_API char *GetPathOnly (const char * const full_path_to_file_s);
  * @param path_s The path to append the filename to.
  * @param filename_s The filename to append.
  * @return A newly-allocated string containing the concatenated value which will
- * need to be freed with FreeCopiedString to avoid a memory leak. If there was an
+ * need to be freed with FreeCopiedString() to avoid a memory leak. If there was an
  * error, then this will be <code>NULL</code>.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *MakeFilename (const char * const path_s, const char * const filename_s);
 
@@ -97,11 +104,13 @@ GRASSROOTS_UTIL_API char *MakeFilename (const char * const path_s, const char * 
  *
  * @param full_path_s The value to extract the path and filename from.
  * @param path_ss Pointer to where a newly-allocated string containing the extracted path
- * will be stored. This will need to be freed with FreeCopiedString to avoid a memory leak
+ * will be stored. This will need to be freed with FreeCopiedString() to avoid a memory leak
  * @param filename_ss Pointer to where a newly-allocated string containing the extracted filename
- * will be stored. This will need to be freed with FreeCopiedString to avoid a memory leak
+ * will be stored. This will need to be freed with FreeCopiedString() to avoid a memory leak
  * @return <code>true</code> if the extraction was successful <code>false</code>
  * otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, char ** const path_ss, char ** const filename_ss);
 
@@ -120,8 +129,10 @@ GRASSROOTS_UTIL_API bool DeterminePathAndFile (const char * const full_path_s, c
  * the filename will be replaced. If this is <code>false</code> then the extension
  * will get concatenated to the end of the filename.
  * @return A newly-allocated string containing the new value which will
- * need to be freed with FreeCopiedString to avoid a memory leak. If there was an
+ * need to be freed with FreeCopiedString() to avoid a memory leak. If there was an
  * error, then this will be <code>NULL</code>.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *SetFileExtension (const char * const filename_s, const char * const extension_s, bool replace_flag);
 
@@ -131,6 +142,8 @@ GRASSROOTS_UTIL_API char *SetFileExtension (const char * const filename_s, const
  * file separator.
  *
  * @param value_s The string to be amended.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void UsePlatformFileSeparator (char *value_s);
 
@@ -141,6 +154,8 @@ GRASSROOTS_UTIL_API void UsePlatformFileSeparator (char *value_s);
  * @param path_s The path to check.
  * @return <code>true</code> if the object referred to by the path
  * exists, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool IsPathValid (const char * const path_s);
 
@@ -151,6 +166,8 @@ GRASSROOTS_UTIL_API bool IsPathValid (const char * const path_s);
  * @param path_s The path to check.
  * @return <code>true</code> if the path is absolute, <code>false</code>
  * otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool IsPathAbsolute (const char * const path_s);
 
@@ -163,6 +180,8 @@ GRASSROOTS_UTIL_API bool IsPathAbsolute (const char * const path_s);
  * be stored. If it is <code>false</code> then only the local filenames will be stored.
  * @return A LinkedList of StringListNode containing the matching filenames or <code>NULL</code>
  * if no matches could be found.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern_s, const bool full_path_flag);
 
@@ -174,6 +193,8 @@ GRASSROOTS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern_s, 
  * // on Unix, Amiga, etc., \ on Windows.
  *
  * @return The separator
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char GetFileSeparatorChar (void);
 
@@ -185,6 +206,8 @@ GRASSROOTS_UTIL_API char GetFileSeparatorChar (void);
  * .// on Unix, .\ on Windows.
  *
  * @return The string for the current directory.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API const char *GetCurrentDirectoryString (void);
 
@@ -196,6 +219,8 @@ GRASSROOTS_UTIL_API const char *GetCurrentDirectoryString (void);
  * ..// on Unix, ..\ on Windows.
  *
  * @return The string for the parent directory.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API const char *GetParentDirectory (void);
 
@@ -207,6 +232,8 @@ GRASSROOTS_UTIL_API const char *GetParentDirectory (void);
  * lib*.so on Unix, *.dll on Windows.
  *
  * @return The string for the plugin pattern.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API const char *GetPluginPattern (void);
 
@@ -218,6 +245,8 @@ GRASSROOTS_UTIL_API const char *GetPluginPattern (void);
   * @return <code>true</code> if the path already exists. If not, the all of directories
   * will attempt to be created. If this succeed then <code>true</code> will be returned, <code>false</code>
   * otherwise.
+ *
+ * @ingroup utility_group
   */
 GRASSROOTS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
 
@@ -231,6 +260,8 @@ GRASSROOTS_UTIL_API bool EnsureDirectoryExists (const char * const path_s);
  * progress with.
  * @return <code>true</code> if the copy was successful <code>false</code>
  * otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void));
 
@@ -241,6 +272,8 @@ GRASSROOTS_UTIL_API bool CopyToNewFile (const char * const src_filename_s, const
  * @param path_s The path to set.
  * @return <code>true</code> if the change was successful <code>false</code>
  * otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path_s);
 
@@ -249,6 +282,8 @@ GRASSROOTS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path_s);
  * Get the current working directory.
  *
  * @return The current working directory.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetCurrentWorkingDirectory (void);
 
@@ -259,6 +294,8 @@ GRASSROOTS_UTIL_API char *GetCurrentWorkingDirectory (void);
  * @param path_s The path to check.
  * @return <code>true</code> if the path exists and is a directory, <code>false</code>
  * otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool IsDirectory (const char * const path_s);
 
@@ -281,6 +318,8 @@ GRASSROOTS_UTIL_API bool CalculateFileInformation (const char * const path_s, Fi
  * @param path_s The name of the file to delete.
  * @return <code>true</code> if the file was deleted successfully, <code>false</code>
  * otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool RemoveFile (const char * const path_s);
 

@@ -38,6 +38,8 @@
  * A datatype for holding a key-value pair where the
  * key is a c-style string and the value is an unsigned
  * integer.
+ *
+ * @ingroup utility_group
  */
 typedef struct StringIntPair
 {
@@ -54,6 +56,8 @@ typedef struct StringIntPair
 
 /**
  * A datatype for storing a set of StringIntPairs.
+ *
+ * @ingroup utility_group
  */
 typedef struct StringIntPairArray
 {

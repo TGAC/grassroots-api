@@ -18,11 +18,7 @@
  * @file
  * @brief
  */
-/**
- * @file
- * @defgroup Network Network Library
- * @brief The datatypes and methods for network functionality.
- */
+
 #ifndef GRASSROOTS_NETWORK_LIBRARY_H
 #define GRASSROOTS_NETWORK_LIBRARY_H
 

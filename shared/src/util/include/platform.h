@@ -37,12 +37,16 @@
  * that it is running on.
  *
  * @return <code>true</code> if the value was converted successfully, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool InitPlatform (void);
 
 
 /**
  * Release any operating system-specific resources.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void ExitPlatform (void);
 
@@ -53,6 +57,8 @@ GRASSROOTS_UTIL_API void ExitPlatform (void);
  * @param milliseconds The number of milliseconds to sleep for.
  * @return 0 if the process slept for the required time, or the
  * number of milliseconds remaining if it was interrupted.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API uint32 Snooze (uint32 milliseconds);
 

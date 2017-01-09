@@ -16,8 +16,6 @@
 
 /**
  * @file
- * @defgroup irods_handler The iRODS Handler Module
- * @brief
  */
 
 #ifndef GRASSROOTS_IRODS_HANDLER_LIBRARY_H

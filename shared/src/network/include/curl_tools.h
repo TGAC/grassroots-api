@@ -18,10 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @addtogroup Network
- * @{
- */
 
 #ifndef GRASSROOTS_CURL_TOOLS_H
 #define GRASSROOTS_CURL_TOOLS_H
@@ -40,6 +36,7 @@
 /**
  * An enum specifying where any resultant data from
  * running a CurlTool will be stored
+ * @ingroup network_group
  */
 typedef enum CurlMode
 {
@@ -58,6 +55,7 @@ typedef enum CurlMode
  *
  * A datatype that uses CURL to perform http(s) requests
  * and responses.
+ * @ingroup network_group
  */
 typedef struct CurlTool
 {
@@ -277,4 +275,3 @@ GRASSROOTS_NETWORK_API void FreeURLEscapedString (char *value_s);
 
 #endif		/* #ifndef GRASSROOTS_CURL_TOOLS_H */
 
-/* @} */

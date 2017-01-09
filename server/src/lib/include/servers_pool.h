@@ -42,6 +42,7 @@
  *
  * This stores the information needed to consolidate the Services
  * available on other Grassroots Servers
+ * @ingroup server_group
  */
 typedef struct ExternalServer
 {
@@ -80,6 +81,7 @@ typedef struct ExternalServer
  * in a LinkedList.
  *
  * @extends ListItem
+ * @ingroup server_group
  */
 typedef struct ExternalServerNode
 {
@@ -108,6 +110,7 @@ struct ServersManager;
  *
  * @param data_p The raw binary data representation of the ExternalServer.
  * @return The newly created ExternalServer or <code>NULL</code> upon error.
+ * @ingroup server_group
  */
 typedef ExternalServer *(*ExternalServerDeserialiser) (const unsigned char *data_p);
 
@@ -121,6 +124,7 @@ typedef ExternalServer *(*ExternalServerDeserialiser) (const unsigned char *data
  * @param length_p Upon success, the length of the generated binary data
  * stream will be stored here.
  * @return The raw binary data or <code>NULL</code> upon error.
+ * @ingroup server_group
  */
 typedef unsigned char *(*ExternalServerSerialiser) (ExternalServer *server_p, uint32 *length_p);
 
@@ -130,6 +134,7 @@ typedef unsigned char *(*ExternalServerSerialiser) (ExternalServer *server_p, ui
  *
  * A ServersManager is used to store details of the ExternalServers that are currently
  * running on a Server. ExternalServers can be added, removed and searched for.
+ * @ingroup server_group
  */
 typedef struct ServersManager
 {
@@ -239,6 +244,7 @@ extern "C"
  * Get the current Server-wide ServersManager.
  *
  * @return The ServersManager.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
 
@@ -247,6 +253,7 @@ GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
  * Get the current Server uuid.
  *
  * @return The pointer to the uuid.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API uuid_t *GetLocalServerId (void);
 
@@ -255,6 +262,7 @@ GRASSROOTS_SERVICE_MANAGER_API uuid_t *GetLocalServerId (void);
  * Get the current Server uuid as a c-style string.
  *
  * @return The c-style string of the uuid.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
 
@@ -270,6 +278,7 @@ GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
  * @param remove_server_fn The callback function to set for sm_remove_server_fn for the given ServersManager.
  * @param get_all_servers_fn The callback function to set for sm_get_all_servers_fn for the given ServersManager.
  * @param free_servers_manager_fn The callback function to set for sm_free_servers_manager_fn for the given ServersManager.
+ * @memberof ServersManager
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, ExternalServerSerialiser serialise_fn),

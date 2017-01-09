@@ -18,11 +18,7 @@
  * @file
  * @brief
  */
-/**
- * @file
- * @addtogroup User User authentication and authorization
- * @{
- */
+
 #ifndef USER_DETAILS_H
 #define USER_DETAILS_H
 
@@ -35,6 +31,8 @@
 
 /**
  * @brief  A datatype to store user credentials for a single system.
+ *
+ * @ingroup utility_group
  */
 typedef struct UserAuthentication
 {
@@ -58,6 +56,7 @@ typedef struct UserAuthentication
 /**
  * @brief  A datatype to store UserAuthentications on a LinkedList
  * @extends ListItem
+ * @ingroup utility_group
  */
 typedef struct UserAuthenticationNode
 {
@@ -72,6 +71,7 @@ typedef struct UserAuthenticationNode
 
 /**
  * @brief  A datatype to store user credentials
+ * @ingroup utility_group
  */
 typedef struct UserDetails
 {
@@ -130,7 +130,6 @@ GRASSROOTS_UTIL_API const UserAuthentication *GetUserAuthenticationForSystem (co
  */
 GRASSROOTS_UTIL_API bool AddUserAuthentication (UserDetails *user_details_p, const char *system_s, const char *username_s, const char *password_s, const char *token_s);
 
-/** @} */
 
 #ifdef __cplusplus
 }

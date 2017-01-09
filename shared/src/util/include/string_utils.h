@@ -37,12 +37,14 @@
 /**
  * The number of bytes required to store a c-style string
  * representation of a UUID.
+ * @ingroup utility_group
  */
 #define UUID_STRING_BUFFER_SIZE (37)
 
 /**
  * The number of bytes required to store the raw data
  * of a UUID.
+ * @ingroup utility_group
  */
 #define UUID_RAW_SIZE (16)
 
@@ -61,6 +63,7 @@
  * @return A newly allocated copy of the source string or NULL if there was an error. If
  * the string was successfully created, its deallocation must be done with FreeCopiedString
  * when you are finished with it.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *CopyToNewString (const char * const src_p, const size_t length_to_copy, bool trim);
 
@@ -69,6 +72,7 @@ GRASSROOTS_UTIL_API char *CopyToNewString (const char * const src_p, const size_
  * Delete a string previously allocated using CopyToNewString.
  *
  * @param str_p The string to deallocate.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void FreeCopiedString (char *str_p);
 
@@ -80,6 +84,7 @@ GRASSROOTS_UTIL_API void FreeCopiedString (char *str_p);
  * @param buffer_pp Pointer to a buffer string where the line will get written to.
  * After being used, *buffer_pp muet be freed.
  * @return TRUE if the line was read successfully, false if there was an error.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
 
@@ -88,6 +93,7 @@ GRASSROOTS_UTIL_API bool GetLineFromFile (FILE *in_f, char **buffer_pp);
  * Free a buffer that has been allocated with GetLineFromFile.
  *
  * @param buffer_p Pointer to a buffer to be freed.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void FreeLineBuffer (char *buffer_p);
 
@@ -103,6 +109,7 @@ GRASSROOTS_UTIL_API void FreeLineBuffer (char *buffer_p);
  * @param treat_whitespace_as_delimiter_flag If TRUE whitespace will be treated as a delimiter.
  * @return A pointer to a StringLinkedList where each node
  * refers to a token or NULL upon error.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * const format_p, const char * const delimiters_p, const bool treat_whitespace_as_delimiter_flag);
 
@@ -118,6 +125,7 @@ GRASSROOTS_UTIL_API LinkedList *ParseStringToStringLinkedList (const char * cons
  * to delimit the tokens.
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const format_p, const char * const delimiters_p);
 
@@ -132,6 +140,7 @@ GRASSROOTS_UTIL_API LinkedList *ParseStringToIntLinkedList (const char * const f
  * to delimit the tokens.
  * @return A pointer to a IntLinkedList where each node
  * refers to a token or NULL upon error.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API LinkedList *ParseStringToDataLinkedList (const char * const format_p, const char * const delimiters_p);
 
@@ -142,6 +151,7 @@ GRASSROOTS_UTIL_API LinkedList *ParseStringToDataLinkedList (const char * const 
  * @param first_s  The first string to concatenate.
  * @param second_s  The second string to concatenate.
  * @return The newly created string or NULL if there was an error.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *ConcatenateStrings (const char * const first_s, const char * const second_s);
 
@@ -152,6 +162,7 @@ GRASSROOTS_UTIL_API char *ConcatenateStrings (const char * const first_s, const 
  * @param value_s The string to be altered.
  * @param char_to_replace  The character to replace.
  * @param replacement_char The replacement character.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_replace, const char replacement_char);
 
@@ -167,6 +178,7 @@ GRASSROOTS_UTIL_API void ReplaceExpression (char *value_s, const char char_to_re
  * @param comment_identifier If the line begins with this charcter then treat the whole
  * line as a comment and do not try to get the key and value.
  * @return TRUE if the key and values were successfully copied, FALSE otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **value_pp, const char comment_identifier);
 
@@ -182,6 +194,7 @@ GRASSROOTS_UTIL_API bool GetKeyValuePair (char *line_p, char **key_pp, char **va
  * the token.
  * @return A copied version of the string or <code>NULL</code> if there was an error or no more tokens were available.
  * @see FreeToken
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetNextToken (const char **start_pp, const char *delimiters_p, const bool check_for_whitespace_flag, const bool update_position_flag);
 
@@ -190,6 +203,7 @@ GRASSROOTS_UTIL_API char *GetNextToken (const char **start_pp, const char *delim
  *
  * @param token_s The token to free.
  * @see GetNextToken
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void FreeToken (char *token_s);
 
@@ -202,6 +216,7 @@ GRASSROOTS_UTIL_API void FreeToken (char *token_s);
  *		7.5000 would become 7.5
  *
  * @param numeric_string_p The string to formatted.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
 
@@ -211,6 +226,7 @@ GRASSROOTS_UTIL_API void NullifyTrailingZeroes (char *numeric_string_p);
  *
  * @param value_s The string to test.
  * @return <code>true</code> If the string is <code>NULL</code> or just whitespace, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool IsStringEmpty (const char *value_s);
 
@@ -224,6 +240,7 @@ GRASSROOTS_UTIL_API bool IsStringEmpty (const char *value_s);
  * @return Less than zero if the first string is less than the second,
  * greater than zero if the first string is greater than the second and
  * zero if the strings match.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
 
@@ -238,6 +255,7 @@ GRASSROOTS_UTIL_API int Stricmp (const char *c0_s, const char *c1_s);
  * @return Less than zero if the first string is less than the second,
  * greater than zero if the first string is greater than the second and
  * zero if the strings match.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int Strnicmp (const char *c0_s, const char *c1_s, size_t length);
 
@@ -250,6 +268,7 @@ GRASSROOTS_UTIL_API int Strnicmp (const char *c0_s, const char *c1_s, size_t len
  * @param substring_s The string to search for
  * @return The substring within the larger string or <code>NULL</code> if it was
  * not found.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API const char *Stristr (const char *value_s, const char *substring_s);
 
@@ -261,8 +280,8 @@ GRASSROOTS_UTIL_API const char *Stristr (const char *value_s, const char *substr
  *
  * @param value The value to convert to a string.
  * @return The c-style string or <code>NULL</code> upon error.
- * This needs to be freed using FreeCopiedString.
- * @see FreeCopiedString.
+ * This needs to be freed using FreeCopiedString().
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *ConvertIntegerToString (const int value);
 
@@ -274,8 +293,8 @@ GRASSROOTS_UTIL_API char *ConvertIntegerToString (const int value);
  *
  * @param value The value to convert to a string.
  * @return The c-style string or <code>NULL</code> upon error.
- * This needs to be freed using FreeCopiedString.
- * @see FreeCopiedString.
+ * This needs to be freed using FreeCopiedString().
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *ConvertDoubleToString (const double64 value);
 
@@ -286,6 +305,7 @@ GRASSROOTS_UTIL_API char *ConvertDoubleToString (const double64 value);
  * @param id The uuid_t to get the string representation of.
  * @return A newly-allocated string of the id or <code>NULL</code> upon error.
  * @see FreeUUIDString.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetUUIDAsString (const uuid_t id);
 
@@ -297,6 +317,7 @@ GRASSROOTS_UTIL_API char *GetUUIDAsString (const uuid_t id);
  * @param uuid_s The buffer to write the representation to. This must be at least
  * UUID_STRING_BUFFER_SIZE bytes long.
  * @see UUID_STRING_BUFFER_SIZE
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);
 
@@ -308,6 +329,7 @@ GRASSROOTS_UTIL_API void ConvertUUIDToString (const uuid_t id, char *uuid_s);
  * @param id_s The buffer containing the representation.
  * @param id The uuid_t to set.
  * @return <code>true</code> if the uuid_t was set successfully, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
 
@@ -317,6 +339,7 @@ GRASSROOTS_UTIL_API bool ConvertStringToUUID (const char *id_s, uuid_t id);
  *
  * @param uuid_s The string representation to free.
  * @see GetUUIDAsString.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void FreeUUIDString (char *uuid_s);
 
@@ -325,11 +348,13 @@ GRASSROOTS_UTIL_API void FreeUUIDString (char *uuid_s);
  * Make a copy of a string.
  *
  * @param dest_ss Pointer to the string where the source string
- * will be copied to.  * @param src_s The string to copy.
+ * will be copied to.
+ * @param src_s The string to copy.
  * @return <code>true</code> if successful, <code>false</code> otherwise.
  * If successful, any string that dest_ss currently points to will be freed
  * prior to pointing at the copy. If the function is unsuccessful then the value
  * pointed to by dest_ss will remain intact.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const src_s);
 
@@ -340,6 +365,7 @@ GRASSROOTS_UTIL_API bool ReplaceStringValue (char **dest_ss, const char * const 
  * @param value_s The string to replace the character in.
  * @param old_data The character to be replaced.
  * @param new_data The replacement character.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_data);
 
@@ -349,6 +375,7 @@ GRASSROOTS_UTIL_API void ReplaceChars (char *value_s, char old_data, char new_da
  *
  * @param key_p The string to create the hashed value for.
  * @return The hashed value.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
 
@@ -362,6 +389,7 @@ GRASSROOTS_UTIL_API uint32 HashString (const void * const key_p);
  * <code>NULL</code>, it should be freed by calling FreeCopiedString
  * when it is no longer needed.
  * @see FreeCopiedString
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
 
@@ -372,9 +400,10 @@ GRASSROOTS_UTIL_API char *GetFileContentsAsString (FILE *input_f);
  * @param filename_s The filename to get the contents of
  * @return The newly-allocated c-style string containing the contents
  * of the FILE or <code>NULL</code> upon error. If this value is not
- * <code>NULL</code>, it should be freed by calling FreeCopiedString
+ * <code>NULL</code>, it should be freed by calling FreeCopiedString()
  * when it is no longer needed.
  * @see GetFileContentsAsString
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetFileContentsAsStringByFilename (const char *filename_s);
 
@@ -383,8 +412,9 @@ GRASSROOTS_UTIL_API char *GetFileContentsAsStringByFilename (const char *filenam
  *
  * @param value_s The varargs-style array of <code>NULL</code> terminated strings to append. The final entry
  * in this varargs-array must be a <code>NULL</code>.
- * @return The newly-allocated string that should be freed with FreeCopiedString when
+ * @return The newly-allocated string that should be freed with FreeCopiedString() when
  * no longer needed or <code>NULL</code> upon failure.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
 
@@ -395,6 +425,7 @@ GRASSROOTS_UTIL_API char *ConcatenateVarargsStrings (const char *value_s, ...);
  *
  * @param id The uuid_t to test.
  * @return <code>true</code> if the uuid_t is valid, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool IsUUIDSet (uuid_t id);
 
@@ -405,6 +436,7 @@ GRASSROOTS_UTIL_API bool IsUUIDSet (uuid_t id);
  *
  * @param value_s The string to check.
  * @return <code>true</code> if the string contains any whitespace characters, <code>false</code> otherwise.
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool DoesStringContainWhitespace (const char *value_s);
 

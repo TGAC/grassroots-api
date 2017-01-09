@@ -16,13 +16,7 @@
 
 /**
  * @file
- * @brief
- */
-/**
- * @file user.h
- * @addtogroup iRODS
  * @brief Routines to query user data objects and collections
- * @{
  */
 #ifndef IRODS_UTIL_USER_H
 #define IRODS_UTIL_USER_H
@@ -59,6 +53,7 @@ extern "C"
  * @param to The end of the time interval.
  * @return A json-based representation of the matching data objects.
  * @see GetAllModifiedDataForUsername
+ * @ingroup irods_group
  */
 IRODS_UTIL_API json_t *GetModifiedIRodsFiles  (const char * const username_s, const char * const password_s, const time_t from, const time_t to);
 
@@ -71,10 +66,10 @@ IRODS_UTIL_API json_t *GetModifiedIRodsFiles  (const char * const username_s, co
  * @param password_s The iRODS password. FIXME! This needs to change to being encrypted.
  * @param data_name_s The name of the data object.
  * @return A json-based representation of the matching Services.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API json_t *GetInterestedServicesForIrodsDataObject (const char *services_path_s, char * const username_s, char * const password_s, const char *data_name_s);
 
-/** @} */
 
 #ifdef __cplusplus
 }

@@ -18,9 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @addtogroup Client
- */
 #ifndef GRASSROOTS_CLIENT_H
 #define GRASSROOTS_CLIENT_H
 
@@ -45,6 +42,7 @@ struct Client;
 
 /**
  * @brief The base structure for any Client-specific data.
+ * @ingroup client_group
  */
 typedef struct ClientData
 {
@@ -66,6 +64,8 @@ typedef struct ClientData
  *
  * Client defines the interface that an instance needs to fulfil to access a
  * Server. This is achieved using a variety of callback functions.
+ *
+ * @ingroup client_group
  */
 typedef struct Client
 {
@@ -155,6 +155,7 @@ typedef struct Client
  * @brief A datatype for storing a Client on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup client_group
  */
 typedef struct
 {

@@ -18,12 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @file
- * @defgroup parameters_group Parameters Library
- * @brief The datatypes and methods for dealing
- * with parameters.
- */
 #ifndef GRASSROOTS_PARAMS_LIBRARY_H
 #define GRASSROOTS_PARAMS_LIBRARY_H
 

@@ -118,6 +118,7 @@
 /**
  * An enum specifying whether a file is located on a
  * local or remote filesystem.
+ * @ingroup utility_group
  */
 typedef enum FileLocation
 {

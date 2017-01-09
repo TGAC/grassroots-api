@@ -43,6 +43,8 @@
  * a string value.
  * 
  * @extends ListItem
+ *
+ * @ingroup utility_group
  */
 typedef struct StringListNode
 {

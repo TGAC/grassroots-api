@@ -16,8 +16,6 @@
 
 /**
  * @file
- * @defgroup irods_search_service The iRODS Services Module
- * @brief A Service that can perform queries against the iRODS metadata attributes for iRODS collections and data objects.
  */
 #ifndef IRODS_SEARCH_SERVICE_LIBRARY_H
 #define IRODS_SEARCH_SERVICE_LIBRARY_H

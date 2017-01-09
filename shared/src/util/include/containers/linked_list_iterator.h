@@ -34,6 +34,8 @@ struct Iterator;
  * ListItem itself.
  *
  * @see LinkedList
+ *
+ * @ingroup utility_group
  */
 typedef struct Iterator 
 {

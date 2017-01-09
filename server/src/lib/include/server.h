@@ -31,6 +31,7 @@
  * This is the default port to run the Grassroots server on when it
  * is running as a standalone server rather than as a module within
  * Apache which is the recommended mode of operation.
+ * @ingroup server_group
  */
 #define DEFAULT_SERVER_PORT	("9991")
 
@@ -62,6 +63,7 @@ typedef struct ServerOperations
  * @param socket_fd The socket file descriptor used.
  * @return The response from the server or <code>NULL</code> upon error.
  * @see ProcessServerJSONMessage
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd);
 
@@ -73,6 +75,7 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * con
  * @param socket_fd The socket file descriptor used.
  * @param error_s A pointer to a variable where any error messages can be stored.
  * @return
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_s);
 
@@ -87,6 +90,7 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, 
  * @param value_p The value to add to the generated response.
  * @return The response or <code>NULL</code> upon error.
  * @see GetInitialisedMessage
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *GetInitialisedResponseOnServer (const json_t *req_p, const char *key_s, json_t *value_p);
 

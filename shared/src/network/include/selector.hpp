@@ -35,6 +35,8 @@
 
 /**
  * @brief A datatype representing an http link.
+ *
+ * @ingroup network_group
  */
 typedef struct HtmlLink
 {
@@ -51,6 +53,8 @@ typedef struct HtmlLink
 
 /**
  * A collection of HtmlLinks
+ *
+ * @ingroup network_group
  */
 typedef struct HtmlLinkArray
 {
@@ -79,7 +83,7 @@ extern "C"
  * then the inner text of the element found by link_selector_s will be used.
  * @return A newly-allocated HtmlLinkArray if successful or <code>NULL</code>
  * upon error.
- * @memberof CurlTool
+ * @memberof HtmlLinkArray
  * @see GetMatchingLinks
  */
 GRASSROOTS_NETWORK_API HtmlLinkArray *GetLinks (CurlTool *tool_p, const char * const uri_s, const char * const link_selector_s, const char * const title_selector_s);

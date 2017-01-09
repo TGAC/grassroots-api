@@ -16,8 +16,6 @@
 
 /**
  * @file
- * @defgroup web_service The Web Services Module
- * @brief
  */
 #ifndef WEB_SERVICE_H
 #define WEB_SERVICE_H

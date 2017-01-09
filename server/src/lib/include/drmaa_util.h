@@ -42,6 +42,7 @@
  *
  * @return <code>true</code> if the DRMAA environment was started up
  * successfully, <code>false</code> otherwise.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API bool InitDrmaaEnvironment (void);
 
@@ -52,6 +53,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool InitDrmaaEnvironment (void);
  *
  * @return <code>true</code> if the DRMAA environment was started up
  * successfully, <code>false</code> otherwise.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API bool ExitDrmaaEnvironment (void);
 

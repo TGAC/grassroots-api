@@ -16,11 +16,8 @@
 
 /**
  * @file
- * @defgroup file_handler The File Handler Module
- * @brief
  */
-/**@file grassroots_util_library.h
-*/ 
+
 
 #ifndef GRASSROOTS_FILE_HANDLER_LIBRARY_H
 #define GRASSROOTS_FILE_HANDLER_LIBRARY_H

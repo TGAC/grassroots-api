@@ -30,6 +30,8 @@
  * An enum specifying the particular status of a piece of dynamically allocated memory for
  * a particular object. Its use is to allow many objects to have a pointer to some memory
  * but only one takes care of deallocating it.
+ *
+ * @ingroup utility_group
  */
 typedef enum MEM_FLAG
 {
@@ -133,6 +135,8 @@ typedef enum MEM_FLAG
  * standard unix format e.g. 0644 for owner to have read and write permissions whilst
  * everyone else having read permissions.
  * @return The segment identifier for the shared memory segment or -1 upon error.
+ *
+ * @ingroup utility_group
  */
 int AllocateSharedMemory (const char *id_s, size_t size, int flags);
 
@@ -143,6 +147,8 @@ int AllocateSharedMemory (const char *id_s, size_t size, int flags);
  * @param id The segment identifier for the shared memory segment to free.
  * @return <code>true</code> if the memory segment was freed successfully,
  * <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 bool FreeSharedMemory (int id);
 
@@ -153,6 +159,8 @@ bool FreeSharedMemory (int id);
  * @param id The segment identifier for the shared memory segment to open.
  * @param flags This can be SHM_RDONLY for read-only memory.
  * @return The pointer to the shared memory to be used or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
  */
 void *OpenSharedMemory (int id, int flags);
 
@@ -163,6 +171,8 @@ void *OpenSharedMemory (int id, int flags);
  * @param value_p The shared memory segment.
  * @return <code>true</code> if the memory segment was closed successfully,
  * <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 bool CloseSharedMemory (void *value_p);
 

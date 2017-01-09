@@ -16,11 +16,6 @@
 
 /**
  * @file
- * @defgroup samtools_service The SamTools Services Module
- * @brief Services for the SamTools suite of tools
- *
- * This Module offers some of the functionality available within
- * the <a href="http://www.htslib.org/">SamTools</a> libraries.
  */
 
 #ifndef SAMTOOLS_SERVICE_H

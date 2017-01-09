@@ -57,6 +57,8 @@
  * @param config_manager_p The ConfigurationManager used to specify the details of the
  * output filenames.
  * @return A newly-allocated OutputStreamerModule or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
  */
 FILE_STREAMER_API OutputStreamerModule *AllocateStreamer (const ConfigurationManager * const config_manager_p);
 
@@ -64,6 +66,8 @@ FILE_STREAMER_API OutputStreamerModule *AllocateStreamer (const ConfigurationMan
  * Free an OutputStreamerModule.
  *
  * @param streamer_p The OutputStreamerModule to free.
+ *
+ * @ingroup utility_group
  */
 FILE_STREAMER_API void DeallocateStreamer (OutputStreamerModule *streamer_p);
 

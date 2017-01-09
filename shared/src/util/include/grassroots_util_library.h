@@ -18,9 +18,6 @@
  * @file
  * @brief
  */
-/**@file grassroots_util_library.h
- * @defgroup Utility Utility Library
-*/ 
 
 #ifndef GRASSROOTS_UTIL_LIBRARY_H
 #define GRASSROOTS_UTIL_LIBRARY_H

@@ -36,6 +36,8 @@
  * of the code and objects needed to access an
  * iRODS system. This means that you can interact
  * with the iRODS server more easily.
+ *
+ * @ingroup irods_group
  */
 typedef struct IRodsConnection
 {

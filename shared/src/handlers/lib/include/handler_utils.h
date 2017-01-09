@@ -41,6 +41,7 @@ extern "C"
  * @param resource_p The Resource to get the Handler for.
  * @param user_p An optional UserDetails for any user authentication if needed.
  * @return The matching Handler or <code>NULL</code> if none could be found.
+ * @ingroup handler_group
  */
 GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, const UserDetails *user_p);
 
@@ -49,6 +50,7 @@ GRASSROOTS_HANDLER_API Handler *GetResourceHandler (const Resource *resource_p, 
  * This allocates the internal structures used by the Handler library.
  *
  * @return <code>true</code> upon success, <code>false</code> on failure.
+ * @ingroup handler_group
  */
 GRASSROOTS_HANDLER_API bool InitHandlerUtil (void);
 
@@ -57,6 +59,7 @@ GRASSROOTS_HANDLER_API bool InitHandlerUtil (void);
  * This frees the internal structures used by the Handler library.
  *
  * @return <code>true</code> upon success, <code>false</code> on failure.
+ * @ingroup handler_group
  */
 GRASSROOTS_HANDLER_API bool DestroyHandlerUtil (void);
 
@@ -66,14 +69,26 @@ GRASSROOTS_HANDLER_API bool DestroyHandlerUtil (void);
  * to be committed once editing has finished,
  *
  * @param protocol_s The protocol of the remote file.
- * @param user_id_s The id of the cuurent user. This can be <code>NULL</code>.
+ * @param user_id_s The id of the current user. This can be <code>NULL</code>.
  * @param filename_s The remote filename.
  * @param time_p The time when the local cached file was created.
  * @return The local filename or <code>NULL</code> upon error.
+ * @ingroup handler_group
  */
 GRASSROOTS_HANDLER_API const char *GetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, time_t *time_p);
 
 
+/**
+ * Store the details of an external file and its locally-mapped copy.
+ *
+ * @param protocol_s The protocol of the remote file.
+ * @param user_id_s The id of the current user. This can be <code>NULL</code>.
+ * @param filename_s The external filename of the file that is to be mapped.
+ * @param mapped_filename_s The local mapped filename.
+ * @param last_mod_time The time that the local cached file was last modified.
+ * @return <code>true</code> upon success, <code>false</code> on failure.
+ * @ingroup handler_group
+ */
 GRASSROOTS_HANDLER_API bool SetMappedFilename (const char *protocol_s, const char *user_id_s, const char *filename_s, const char *mapped_filename_s, const time_t last_mod_time);
 
 

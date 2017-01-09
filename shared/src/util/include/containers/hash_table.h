@@ -36,6 +36,8 @@
 /**
  * A datatype for holding a key-value pair along with
  * the hashed value of the key.
+ *
+ * @ingroup utility_group
  */
 typedef struct HashBucket
 {
@@ -131,6 +133,8 @@ GRASSROOTS_UTIL_API HashBucket *CreateDeepCopyKeysShallowCopyValueHashBuckets (c
 /**
  * A container using HashBuckets to allow for fast lookup
  * of key-value pairs.
+ *
+ * @ingroup utility_group
  */
 typedef struct HashTable
 {

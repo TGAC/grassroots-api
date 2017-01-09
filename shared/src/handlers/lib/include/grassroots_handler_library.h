@@ -18,10 +18,6 @@
  * @file
  * @brief
  */
-/**@file
- * @defgroup Handler Handler Library
- * @brief
- */
 
 #ifndef GRASSROOTS_HANDLER_LIBRARY_H
 #define GRASSROOTS_HANDLER_LIBRARY_H

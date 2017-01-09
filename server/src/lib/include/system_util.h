@@ -35,6 +35,7 @@
  *
  * @return <code>true</code> if the system was successfully
  * initialised, <code>false</code> otherwise.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API bool InitInformationSystem (void);
 
@@ -45,6 +46,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool InitInformationSystem (void);
  *
  * @return <code>true</code> if the tasks were successfully
  * completed, <code>false</code> otherwise.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API bool DestroyInformationSystem (void);
 
@@ -58,6 +60,7 @@ GRASSROOTS_SERVICE_MANAGER_API bool DestroyInformationSystem (void);
  * @param b <code>true</code> if the system is potentially running
  * within multiple processes, <code>false</code> if definitely
  * running within a single process.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API void SetMultiProcessSystem (bool b);
 
@@ -71,6 +74,7 @@ GRASSROOTS_SERVICE_MANAGER_API void SetMultiProcessSystem (bool b);
  * @return <code>true</code> if the system is potentially running
  * within multiple processes, <code>false</code> if definitely
  * running within a single process.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API bool IsMultiProcessSystem (void);
 

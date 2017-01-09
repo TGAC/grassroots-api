@@ -90,7 +90,7 @@ extern "C"
  * @return The newly-allocated Handler for iRODS data or <code>NULL</code>
  * upon error.
  * @memberof IRodsHandler
- * @ingroup irods_handler
+ * @ingroup irods_handler_group
  */
 IRODS_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
@@ -100,7 +100,7 @@ IRODS_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
  *
  * @param handler_p The Handler to free.
  * @memberof IRodsHandler
- * @ingroup irods_handler
+ * @ingroup irods_handler_group
  */
 IRODS_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

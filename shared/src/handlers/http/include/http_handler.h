@@ -66,7 +66,7 @@ extern "C"
  * @param user_p The UserDetails for the user requesting the HttpHandler.
  * @return The newly-created HttpHandler or <code>NULL</code> upon error.
  * @memberof HttpHandler
- * @ingroup http_handler
+ * @ingroup http_handler_group
  */
 HTTP_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
@@ -76,7 +76,7 @@ HTTP_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
  *
  * @param handler_p The HttpHandler to free.
  * @memberof HttpHandler
- * @ingroup http_handler
+ * @ingroup http_handler_group
  */
 HTTP_HANDLER_API void ReleaseHandler (Handler *handler_p);
 

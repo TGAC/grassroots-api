@@ -16,8 +16,6 @@
 
 /**
  * @file
- * @defgroup services_group Services Library
- * @brief Shared code specific for Services.
  */
 
 

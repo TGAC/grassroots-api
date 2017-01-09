@@ -38,6 +38,8 @@ using namespace std;
  * This is a thin wrapper on top of bad_alloc, allowing
  * the error message to be set when constructing the
  * Exception.
+ *
+ * @ingroup utility_group
  */
 class AllocFailure : public bad_alloc
 {

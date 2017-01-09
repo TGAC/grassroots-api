@@ -18,12 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @file grassroots_client_library.h
- *
- * @defgroup Client Client Library
- * @page Client Client Library
- */
 
 #ifndef GRASSROOTS_CLIENT_LIBRARY_H
 #define GRASSROOTS_CLIENT_LIBRARY_H

@@ -18,11 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @file byte_buffer.h
- * @addtogroup Network
- * @{
- */
 #ifndef BYTE_BUFFER_H
 #define BYTE_BUFFER_H
 
@@ -35,6 +30,7 @@
 /**
  * A datatype to allow an automatically growing buffer for appending
  * data to.
+ * @ingroup network_group
  */
 typedef struct ByteBuffer
 {
@@ -231,8 +227,6 @@ GRASSROOTS_NETWORK_API void ReplaceCharsInByteBuffer (ByteBuffer *buffer_p, char
 }
 #endif
 
-
-/* @} */
 
 
 #endif		/* #ifndef BYTE_BUFFER_H */

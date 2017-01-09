@@ -15,10 +15,6 @@
 */
 
 /**
- * @file
- * @brief
- */
-/**
  * @file meta_search.h
  *
  *  Created on: 2 Feb 2015
@@ -26,8 +22,6 @@
  *
  *  @brief A set of routines to perform a metadata-based search
  *  of an iRODS server. It uses the iCAT functionality
- *  @addtogroup iRODS
- *  @{
  */
 
 #ifndef META_SEARCH_H
@@ -44,6 +38,7 @@
 /**
  * A set of SearchTerms to use when running a search.
  *
+ * @ingroup irods_group
  */
 typedef struct IRodsSearch
 {
@@ -60,6 +55,8 @@ typedef struct IRodsSearch
  *
  * A SearchTerm contains the values needed to build an SQL-style query
  * to run on an iRODS server.
+ *
+ * @ingroup irods_group
  */
 typedef struct SearchTerm
 {
@@ -129,6 +126,7 @@ typedef struct SearchTerm
  * A datatype for storing a SearchTerm on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup irods_group
  */
 typedef struct SearchTermNode
 {
@@ -273,9 +271,6 @@ IRODS_UTIL_API QueryResults *DoMetaSearch (const IRodsSearch * const search_p, s
  * @return The QueryResults from the search.
  */
 IRODS_UTIL_API QueryResults *DoMetaSearchForAllDataAndCollections (const IRodsSearch * const search_p, struct IRodsConnection *connection_p, const bool upper_case_flag, char *zone_s);
-
-
-/** @} */
 
 
 #ifdef __cplusplus

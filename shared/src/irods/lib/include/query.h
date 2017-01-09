@@ -41,6 +41,7 @@ struct IRodsConnection;
 
 /**
  * A datatype for accessing a single result of a search on an iRODS server.
+ * @ingroup irods_group
  */
 typedef struct QueryResult
 {
@@ -62,6 +63,7 @@ typedef struct QueryResult
 
 /**
  * A datatype for holding an array of the results of a search on an iRODS server.
+ * @ingroup irods_group
  */
 typedef struct QueryResults
 {
@@ -85,6 +87,7 @@ extern "C"
  *
  * @param args_ss The array of strings to build query string from terminated by a NULL.
  * @return A newly-allocated string containing the query or <code>NULL</code> upon error.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API char *BuildQueryString (const char **args_ss);
 
@@ -94,6 +97,7 @@ IRODS_UTIL_API char *BuildQueryString (const char **args_ss);
  *
  * @param query_s The string to free.
  * @see BuildQueryString
+ * @ingroup irods_group
  */
 IRODS_UTIL_API void FreeBuiltQueryString (char *query_s);
 

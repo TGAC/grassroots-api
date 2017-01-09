@@ -32,28 +32,63 @@
 /**
  * The Stream levels to use
  */
-/** Do not print a message */
+
+/**
+ * Do not print a message
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_NONE			(0)
 
-/** A severe, probably terminal error */
+
+/**
+ * A severe, probably terminal error
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_SEVERE	(1024)
 
-/** A recoverable error where some functionality may be reduced. */
+/**
+ * A recoverable error where some functionality may be reduced.
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_WARNING	(1025)
 
-/** An general information message */
+/**
+ * An general information message
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_INFO		(1026)
 
-/** A fine level message */
+/**
+ * A fine level message
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_FINE		(1027)
 
-/** A more finely-grained level message */
+/**
+ * A more finely-grained level message
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_FINER		(1028)
 
-/** An  even more finely-grained level message */
+/**
+ * An even more finely-grained level message
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_FINEST	(1029)
 
-/** Print all messages */
+
+/**
+ * Print all messages
+ *
+ * @ingroup utility_group
+ */
 #define STM_LEVEL_ALL		(0xFFFFFFFF)
 
 
@@ -65,6 +100,8 @@ struct OutputStream;
 /**
  * An datatype to abstract out the process of writing log and error messages
  * to the appropriate processes and places on a given Server.
+ *
+ * @ingroup utility_group
  */
 typedef struct OutputStream
 {
@@ -113,6 +150,8 @@ typedef struct OutputStream
  *
  * @return <code>true</code> if the initialisation was succesful,
  * <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool InitDefaultOutputStream (void);
 

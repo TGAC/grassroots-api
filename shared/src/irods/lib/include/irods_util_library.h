@@ -18,12 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @file irods_util_library.h
- * @defgroup iRODS iRODS Utility Library
- * @brief A collection of methods to access parts of an
- * iRODS system.
- */
 
 #ifndef IRODS_UTIL_LIBRARY_H
 #define IRODS_UTIL_LIBRARY_H

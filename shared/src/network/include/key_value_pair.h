@@ -33,6 +33,8 @@
 
 /**
  * A pair of strings.
+ *
+ * @ingroup network_group
  */
 typedef struct KeyValuePair
 {
@@ -49,6 +51,8 @@ typedef struct KeyValuePair
  * on a LinkedList.
  *
  * @extends ListItem
+ *
+ * @ingroup network_group
  */
 typedef struct KeyValuePairNode
 {
