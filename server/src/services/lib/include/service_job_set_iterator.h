@@ -35,6 +35,8 @@
 /**
  * A datatype allowing easy traversal over all of
  * the ServiceJobs within a ServiceJobSet.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceJobSetIterator
 {

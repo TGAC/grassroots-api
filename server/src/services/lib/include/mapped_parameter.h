@@ -46,6 +46,8 @@ struct ServiceJob;
  * This structure is used to store a relationship between
  * a value from the output of running one service to use
  * as an input parameter value for another service.
+ *
+ * @ingroup services_group
  */
 typedef struct MappedParameter
 {
@@ -81,6 +83,7 @@ typedef struct MappedParameter
  * on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct MappedParameterNode
 {

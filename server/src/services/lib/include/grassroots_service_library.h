@@ -16,10 +16,10 @@
 
 /**
  * @file
- * @brief
+ * @defgroup services_group Services Library
+ * @brief Shared code specific for Services.
  */
-/**@file grassroots_util_library.h
-*/ 
+
 
 #ifndef GRASSROOTS_SERVICE_LIBRARY_H
 #define GRASSROOTS_SERVICE_LIBRARY_H

@@ -39,6 +39,8 @@ struct ServiceData;
 /**
  * @brief A set of Parameters along with an optional name
  * and description.
+ *
+ * @ingroup parameters_group
  */
 typedef struct ParameterSet
 {
@@ -72,6 +74,7 @@ typedef struct ParameterSet
  * A datatype for storing a ParameterSet on a LinkedList
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct ParameterSetNode
 {

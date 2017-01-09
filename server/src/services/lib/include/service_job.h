@@ -49,6 +49,8 @@ struct LinkedService;
  * @brief A datatype to represent a running task.
  *
  * Each Service can run one or more ServiceJobs.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceJob
 {
@@ -116,6 +118,7 @@ typedef struct ServiceJob
  * a ServceJobSet using a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct ServiceJobNode
 {
@@ -130,6 +133,8 @@ typedef struct ServiceJobNode
 
 /**
  * A datatype to represent a collection of ServiceJobs.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceJobSet
 {

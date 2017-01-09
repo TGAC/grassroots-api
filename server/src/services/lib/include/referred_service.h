@@ -45,6 +45,7 @@ struct Service;
 
 /**
  * @brief The base structure for storing Service configuration data.
+ * @ingroup services_group
  */
 typedef struct ReferredServiceData
 {
@@ -56,6 +57,8 @@ typedef struct ReferredServiceData
 /**
  * A datatype which defines an available service, its capabilities and
  * its parameters.
+ *
+ * @ingroup services_group
  */
 typedef struct ReferredService
 {
@@ -71,6 +74,7 @@ typedef struct ReferredService
  * A datatype for storing a ReferredService on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct
 {

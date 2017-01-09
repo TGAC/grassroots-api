@@ -79,6 +79,8 @@ struct ParameterSet;
  * A datatype to tell the system that certain
  * parameters should be grouped together in the
  * client's user interface if possible.
+ *
+ * @ingroup parameters_group
  */
 typedef struct ParameterGroup
 {
@@ -129,6 +131,7 @@ typedef struct ParameterGroup
  * A datatype for storing a ParameterGroup on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct ParameterGroupNode
 {

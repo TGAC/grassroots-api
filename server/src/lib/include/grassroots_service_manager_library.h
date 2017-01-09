@@ -18,8 +18,6 @@
  * @file
  * @brief
  */
-/**@file grassroots_util_library.h
-*/ 
 
 #ifndef GRASSROOTS_SERVER_LIBRARY_H
 #define GRASSROOTS_SERVER_LIBRARY_H

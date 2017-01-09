@@ -40,6 +40,7 @@
  * Grassroots Server.
  *
  * @extends ServiceJob
+ * @ingroup services_group
  */
 typedef struct RemoteServiceJob
 {

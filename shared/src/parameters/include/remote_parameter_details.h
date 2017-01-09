@@ -37,6 +37,8 @@
 /**
  * This datatype is used to denote that a Parameter is
  * for use on a PairedService.
+ *
+ * @ingroup parameters_group
  */
 typedef struct RemoteParameterDetails
 {
@@ -62,6 +64,7 @@ typedef struct RemoteParameterDetails
  * on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct RemoteParameterDetailsNode
 {

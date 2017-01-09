@@ -45,6 +45,8 @@
  * A datatype for describing a remote Service
  * that can be used in conjuction with a local
  * Service.
+ *
+ * @ingroup services_group
  */
 typedef struct PairedService
 {
@@ -73,6 +75,7 @@ typedef struct PairedService
  * a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct PairedServiceNode
 {

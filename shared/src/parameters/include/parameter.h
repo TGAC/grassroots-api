@@ -42,6 +42,7 @@ struct ServiceData;
 
 /**
  * The different types that a Parameter can take.
+ * @ingroup parameters_group
  */
 typedef enum ParameterType
 {
@@ -121,12 +122,16 @@ typedef enum ParameterType
  * should be to adjust the Parameter. The level of
  * Parameters that a user wishes to work with can
  * be adjusted within the user interface.
+ *
+ * @ingroup parameters_group
  */
 typedef uint8 ParameterLevel;
 
 /**
  * The value of a ParameterLevel for Parameters that
  * are considered the most simple options.
+ *
+ * @ingroup parameters_group
  */
 #define PL_BASIC (1)
 
@@ -134,20 +139,26 @@ typedef uint8 ParameterLevel;
 /**
  * The value of a ParameterLevel for Parameters that
  * are considered suitable for more knowledgeable users.
+ *
+ * @ingroup parameters_group
  */
 #define PL_INTERMEDIATE (1 << 1)
+
 
 /**
  * The value of a ParameterLevel for Parameters that
  * are considered the options that require the most expertise.
+ *
+ * @ingroup parameters_group
  */
 #define PL_ADVANCED (1 << 2)
-
 
 
 /**
  * The value of a ParameterLevel for Parameters that
  * are considered the options suitable for all levels
+ *
+ * @ingroup parameters_group
  */
 #define PL_ALL (PL_BASIC | PL_INTERMEDIATE | PL_ADVANCED)
 
@@ -156,6 +167,8 @@ typedef uint8 ParameterLevel;
  * A datatype to store values for a Parameter.
  * Use the ParameterType to access the correct
  * value.
+ *
+ * @ingroup parameters_group
  */
 typedef union SharedType
 {
@@ -193,6 +206,7 @@ typedef union SharedType
  * on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct SharedTypeNode
 {
@@ -208,7 +222,9 @@ typedef struct SharedTypeNode
  * A ParameterMultiOption is used when a Parameter
  * wants to constrain the possible values to one from
  * a fixed set.
+ *
  * @see ParameterMultiOptionArray
+ * @ingroup parameters_group
  */
 typedef struct ParameterMultiOption
 {
@@ -223,7 +239,9 @@ typedef struct ParameterMultiOption
 /**
  * A ParameterMultiOptionArray is a set of ParameterMultiOptions
  * that a user can choose one of.
+ *
  * @see ParameterMultiOption
+ * @ingroup parameters_group
  */
  typedef struct ParameterMultiOptionArray
 {
@@ -241,6 +259,8 @@ typedef struct ParameterMultiOption
 /**
  * A datatype used for numeric parameters that
  * have a finite range of values.
+ *
+ * @ingroup parameters_group
  */
 typedef struct ParameterBounds
 {
@@ -261,6 +281,8 @@ typedef struct ParameterBounds
  * within a Service as its parameters are being generated from
  * a json request object to make sure that the datatypes are
  * correct.
+ *
+ * @ingroup parameters_group
  */
 typedef struct NamedParameterType
 {
@@ -278,6 +300,8 @@ typedef struct NamedParameterType
 /**
  * A macro to provide a quick way to set the name and ParameterType for
  * NamedParameterType objects.
+ *
+ * @ingroup parameters_group
  */
 #define SET_NAMED_PARAMETER_TYPE_TAGS(a,b) {a, b}
 
@@ -292,6 +316,8 @@ struct ParamerterGroup;
  * set or get the information required for a settable option. This includes a name,
  * description, the datatype of this parameter and much more. The Parameter can also
  * hold arbitrary key-value pairs of char * for extra information if needed.
+ *
+ * @ingroup parameters_group
  */
 typedef struct Parameter
 {
@@ -384,6 +410,7 @@ typedef struct Parameter
  * LinkedList.
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct ParameterNode
 {

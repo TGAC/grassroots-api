@@ -16,7 +16,8 @@
 
 /**
  * @file
- * @brief
+ * @defgroup drmaa_group DRMAA Library
+ * @brief Shared code specific for running DRMAA jobs..
  */
 
 

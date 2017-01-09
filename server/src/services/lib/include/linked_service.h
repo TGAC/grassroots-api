@@ -44,6 +44,8 @@ struct ServiceJob;
  * This datatype stores the data needed to get the
  * required information from the output of one
  * Service to act as input for another.
+ *
+ * @ingroup services_group
  */
 typedef struct LinkedService
 {
@@ -69,6 +71,7 @@ typedef struct LinkedService
  * on LinkedLists.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct LinkedServiceNode
 {

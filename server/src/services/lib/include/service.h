@@ -102,6 +102,8 @@ struct ServiceJobSet;
 /**
  * A datatype for holding the configuration data for a Service. This is normally
  * used as a base class.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceData
 {
@@ -125,6 +127,8 @@ typedef struct ServiceData
 /**
  * A datatype which defines an available service, its capabilities and
  * its parameters.
+ *
+ * @ingroup services_group
  */
 typedef struct Service
 {
@@ -301,6 +305,8 @@ typedef struct Service
  * A datatype for storing Services on a LinkedList.
  *
  * @extends ListItem
+ *
+ * @ingroup services_group
  */
 typedef struct
 {
@@ -314,6 +320,8 @@ typedef struct
 
 /**
  * A datatype for having a set of Services.
+ *
+ * @ingroup services_group
  */
 typedef struct ServicesArray
 {

@@ -40,6 +40,8 @@
 
 /**
  * An enumeration detailing how to combine different parameters upon submission to a web service.
+ *
+ * @ingroup services_group
  */
 typedef enum MatchType
 {
@@ -60,6 +62,8 @@ typedef enum MatchType
 /**
  * An enumeration of the different web-based
  * submission methods.
+ *
+ * @ingroup services_group
  */
 typedef enum SubmissionMethod
 {
@@ -90,6 +94,8 @@ typedef enum SubmissionMethod
  * web services.
  *
  * @extends ServiceData
+ *
+ * @ingroup services_group
  */
 typedef struct WebServiceData
 {

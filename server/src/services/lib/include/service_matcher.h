@@ -38,6 +38,8 @@ typedef void (*DestroyServiceMatcherCallback) (struct ServiceMatcher *matcher_p)
 
 /**
  * @brief A datatype used to find any Services that match given criteria.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceMatcher
 {
@@ -61,6 +63,8 @@ typedef struct ServiceMatcher
  * @brief A ServiceMatcher that matches a Service if it can run on a given Resource.
  *
  * @extends ServiceMatcher
+ *
+ * @ingroup services_group
  */
 typedef struct ResourceServiceMatcher
 {
@@ -79,6 +83,8 @@ typedef struct ResourceServiceMatcher
  * @brief A ServiceMatcher that matches a Service by its name.
  *
  * @extends ServiceMatcher
+ *
+ * @ingroup services_group
  */
 typedef struct NameServiceMatcher
 {
@@ -97,6 +103,8 @@ typedef struct NameServiceMatcher
  * This is used when working with a ReferredService.
  *
  * @extends ServiceMatcher
+ *
+ * @ingroup services_group
  */
 typedef struct PluginNameServiceMatcher
 {
@@ -115,6 +123,8 @@ typedef struct PluginNameServiceMatcher
  * a matching Service name too.
  *
  * @extends ServiceMatcher
+ *
+ * @ingroup services_group
  */
 typedef struct PluginOperationNameServiceMatcher
 {
@@ -130,6 +140,8 @@ typedef struct PluginOperationNameServiceMatcher
  * @brief A ServiceMatcher that will find any Service with a keyword parameter.
  *
  * @extends ServiceMatcher
+ *
+ * @ingroup services_group
  */
 typedef struct KeywordServiceMatcher
 {

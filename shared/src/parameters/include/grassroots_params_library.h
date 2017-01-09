@@ -20,7 +20,7 @@
  */
 /**
  * @file
- * @defgroup Parameters Parameters Library
+ * @defgroup parameters_group Parameters Library
  * @brief The datatypes and methods for dealing
  * with parameters.
  */

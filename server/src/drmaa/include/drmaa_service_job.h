@@ -40,6 +40,7 @@
  * running as Drmaa-based task.
  *
  * @extends ServiceJob
+ * @ingroup drmaa_group
  */
 typedef struct DrmaaServiceJob
 {

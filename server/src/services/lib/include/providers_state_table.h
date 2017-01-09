@@ -41,6 +41,8 @@
  * maintains a list of the Services already used on each Server. This is used
  * to, for instance, prevent deadlocks occurring where two Servers have connected
  * Services with each other.
+ *
+ * @ingroup services_group
  */
 typedef struct ProvidersStateTable
 {
