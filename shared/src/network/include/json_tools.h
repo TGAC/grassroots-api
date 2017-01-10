@@ -43,24 +43,6 @@ extern "C"
 
 
 /**
- * @brief Generate a request to get a list of of iRODS objects modified within a given period.
- *
- * This will generate the required json_t request to send from a Client to a Server to get a list of
- * modified iRODS data objects.
- * @param user_p An optional UserDetails.
- * @param from_s The start of the interval in the form YYYYMMDDhhmmss.
- * @param to_s The start of the interval in the form YYYYMMDDhhmmss.
- * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
- * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
- * current version of the running Grassroots system will be used.
- * @return The json_t object for this request or <code>NULL</code> upon error.
- *
- * @ingroup network_group
- */
-GRASSROOTS_NETWORK_API json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p);
-
-
-/**
  * Generate the JSON fragment to send to the Server for getting all available Services.
  *
  * @param user_p An optional UserDetails.

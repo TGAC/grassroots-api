@@ -68,6 +68,8 @@
 /**
  * The identifier for the named shared object cache to use for sharing ServiceJobs
  * between different httpd processes and threads.
+ *
+ * @ingroup httpd_server
  */
 APR_JOBS_MANAGER_PREFIX const char *APR_JOBS_MANAGER_CACHE_ID_S APR_JOBS_MANAGER_VAL("grassroots-jobs-socache");
 

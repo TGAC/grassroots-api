@@ -1490,10 +1490,18 @@ static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
 								{
 									if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
 										{
-											if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
+											if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence"))
 												{
-													return true;
-												}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+													if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
+														{
+															if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline"))
+																{
+																	return true;
+																}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence")) */
+
+														}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+
+												}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence")) */
 
 										}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
 

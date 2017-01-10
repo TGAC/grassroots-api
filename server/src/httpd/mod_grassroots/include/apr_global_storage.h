@@ -42,6 +42,7 @@
  *
  * @see APRJobsManager
  * @see APRServersManager
+ * @ingroup httpd_server
  */
 typedef struct APRGlobalStorage
 {

@@ -104,7 +104,7 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_EXPECT_THRESHOLD BLAST_SERVICE_VAL (S
  * @ingroup blast_service
  * @see BlastOutputFormat
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("outfmt", PT_UNSIGNED_INT));
+BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("outfmt", PT_STRING));
 
 
 /**
@@ -317,6 +317,16 @@ BLAST_SERVICE_LOCAL Parameter *SetUpOutputFormatParamater (const BlastServiceDat
  * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL char *CreateGroupName (const char *server_s);
+
+
+/**
+ * Get the output format code corresponding to the given string representation.
+ *
+ * @param output_format_s The output format string.
+ * @return Upon success the BlastOutputFormat cast to an int8. -1 if the string
+ * did not represent a valid output format string.
+ */
+BLAST_SERVICE_LOCAL int8 GetOutputFormatCodeForString (const char *output_format_s);
 
 
 #ifdef __cplusplus

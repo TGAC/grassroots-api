@@ -65,6 +65,8 @@
 /**
  * The identifier for the named shared object cache to use for sharing ExternalServer
  * definitions between different httpd processes and threads.
+ *
+ * @ingroup httpd_server
  */
 APR_SERVERS_MANAGER_PREFIX const char *APR_SERVERS_MANAGER_CACHE_ID_S APR_SERVERS_MANAGER_VAL("grassroots-servers-socache");
 

@@ -41,7 +41,22 @@
 class BLAST_SERVICE_LOCAL ThreadedBlastTool : public SystemBlastTool
 {
 public:
+
+	/**
+	 * Create a new ThreadedBlastTool.
+	 *
+	 * @param service_job_p The ServiceJob to associate with this ExternalBlastTool.
+	 * @param name_s The name to give to this ExternalBlastTool.
+	 * @param factory_s The name of the BlastToolFactory that is creating this ExternalBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this ExternalBlastTool.
+	 * @param blast_program_name_s The name of blast command line executable that this ExternalBlastTool
+	 * will call to run its blast job.
+	 */
 	ThreadedBlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s);
+
+	/**
+	 * The ThreadedBlastTool destructor.
+	 */
 	virtual ~ThreadedBlastTool ();
 
 	/**
@@ -74,8 +89,13 @@ public:
 	virtual OperationStatus GetStatus (bool update_flag = true);
 
 protected:
+	/** The pthread to run this BlastTool in. */
 	pthread_t *tbt_thread_p;
+
+	/** The mutex to use to moderate access to the pthread. */
 	pthread_mutex_t *tbt_mutex_p;
+
+	/** The id of the pthread to run this BlastTool in. */
 	int tbt_thread_id;
 };
 

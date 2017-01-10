@@ -488,7 +488,16 @@ ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char 
 
 			if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &param_value, true))
 				{
-					output_format_code = param_value.st_ulong_value;
+					int8 code = GetOutputFormatCodeForString (param_value.st_string_value_s);
+
+					if (code != -1)
+						{
+							output_format_code = (uint32) code;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't get requested output format from \"%s\", using " UINT32_FMT " instead", param_value.st_string_value_s, output_format_code);
+						}
 				}
 			else
 				{

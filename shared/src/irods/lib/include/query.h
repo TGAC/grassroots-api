@@ -18,12 +18,6 @@
  * @file
  * @brief
  */
-/**
- * @file
- * @addtogroup iRODS
- * @brief Routines to query data objects and collections
- * @{
- */
 #ifndef IRODS_QUERY_H
 #define IRODS_QUERY_H
 
@@ -243,8 +237,6 @@ IRODS_UTIL_LOCAL QueryResults *GetAllAttributeNames (struct IRodsConnection *con
  */
 IRODS_UTIL_API QueryResults *GetAllMetadataAttributeValues (struct IRodsConnection *connection_p, const int key_id, const char * const key_s, const int value_id);
 
-
-/** @} */
 
 
 #ifdef __cplusplus

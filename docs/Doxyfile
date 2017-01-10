@@ -2095,6 +2095,8 @@ PREDEFINED             = DOXYGEN_SHOULD_SKIP_THIS \
                          "BLAST_SERVICE_VAL(x)= =x" \
                          BLAST_SERVICE_API= \
                          BLAST_SERVICE_LOCAL= \
+                         COMPRESS_SERVICE_API \
+                         COMPRESS_SERVICE_LOCAL=/**@private*/ \
                          ENSEMBL_REST_SERVICE_API= \
                          "ENSEMBL_REST_SERVICE_LOCAL= /** @private */" \     
                          IRODS_SEARCH_SERVICE_API= \

@@ -39,6 +39,7 @@
  * all server messages into the standard logs.
  *
  * @extends OutputStream
+ * @ingroup httpd_server
  */
 typedef struct ApacheOutputStream
 {
@@ -60,6 +61,7 @@ typedef struct ApacheOutputStream
  * @param server_p The httpd server to use the OutputStream on.
  * @return The newly-allocated ApacheOutputStream or <code>NULL</code>
  * upon error.
+ * @memberof ApacheOutputStream
  */
 OutputStream *AllocateApacheOutputStream (server_rec *server_p);
 
@@ -68,6 +70,7 @@ OutputStream *AllocateApacheOutputStream (server_rec *server_p);
  * Free an ApacheOutputStream.
  *
  * @param stream_p The ApacheOutputStream to free.
+ * @memberof ApacheOutputStream
  */
 void DeallocateApacheOutputStream (OutputStream *stream_p);
 

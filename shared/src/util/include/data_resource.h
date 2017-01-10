@@ -34,6 +34,8 @@
  * a protocol of "http" and a value of "grassroots.tgac.ac.uk".
  * It can have a user-friendly title and an associated json
  * object if needed.
+ *
+ * @ingroup utility_group
  */
 typedef struct Resource
 {

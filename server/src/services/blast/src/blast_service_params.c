@@ -33,7 +33,6 @@
 
 
 
-
 static const char *s_output_formats_ss [BOF_NUM_TYPES] =
 {
 	"pairwise",
@@ -54,6 +53,7 @@ static const char *s_output_formats_ss [BOF_NUM_TYPES] =
 	"Single file JSON Blast output",
 	"Single file XML2 Blast output",
 	"Sequence Alignmnent/Map (SAM)",
+	"Organism report",
 	"Grassroots markup"
 };
 
@@ -187,6 +187,25 @@ Parameter *SetUpPreviousJobUUIDParamater (const BlastServiceData *service_data_p
 }
 
 
+int8 GetOutputFormatCodeForString (const char *output_format_s)
+{
+	int8 code = -1;
+	const char **formats_ss = s_output_formats_ss;
+	int8 i;
+
+	for (i = 0; i < BOF_NUM_TYPES; ++ i, ++ formats_ss)
+		{
+			if (strcmp (*formats_ss, output_format_s) == 0)
+				{
+					code = i;
+					i = BOF_NUM_TYPES; 	/* force exit from loop */
+				}
+		}
+
+	return code;
+}
+
+
 Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
 	Parameter *param_p = NULL;
@@ -200,15 +219,15 @@ Parameter *SetUpOutputFormatParamater (const BlastServiceData *service_data_p, P
 
 	for (i = 0; i < BOF_NUM_TYPES; ++ i)
 		{
-			values [i].st_ulong_value = i;
+			values [i].st_string_value_s = (char *) * (s_output_formats_ss + i);
 		}
 
-	options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_UNSIGNED_INT, true);
+	options_p = AllocateParameterMultiOptionArray (BOF_NUM_TYPES, s_output_formats_ss, values, PT_STRING, true);
 
 	if (options_p)
 		{
 			/* default to grassroots */
-			def.st_ulong_value = BOF_GRASSROOTS;
+			def.st_string_value_s = (char *) (* (s_output_formats_ss + BOF_GRASSROOTS));
 
 			param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> bsd_base_data), param_set_p, group_p, BS_OUTPUT_FORMAT.npt_type, false, BS_OUTPUT_FORMAT.npt_name_s, "Output format", "The output format for the results", options_p, def, NULL, NULL, PL_ALL, NULL);
 

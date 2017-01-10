@@ -45,6 +45,8 @@
  * to be the Grassroots JobsManager.
  *
  * @extends JobsManager
+ *
+ * @ingroup httpd_server
  */
 typedef struct APRJobsManager
 {
@@ -52,7 +54,7 @@ typedef struct APRJobsManager
 	JobsManager ajm_base_manager;
 
 	/**
-	 * The APRGlobalStorage implemntation where the
+	 * The APRGlobalStorage implementation where the
 	 * ServiceJobs will be stored.
 	 */
 	APRGlobalStorage *ajm_store_p;
@@ -65,6 +67,8 @@ typedef struct APRJobsManager
  *
  * @extends ServersManager
  *
+ *
+ * @ingroup httpd_server
  */
 typedef struct APRServersManager
 {
@@ -72,7 +76,7 @@ typedef struct APRServersManager
 	ServersManager asm_base_manager;
 
 	/**
-	 * The APRGlobalStorage implemntation where the
+	 * The APRGlobalStorage implementation where the
 	 * Server definitions will be stored.
 	 */
 	APRGlobalStorage *asm_store_p;
@@ -84,6 +88,8 @@ typedef struct APRServersManager
 
 /**
  * @brief The configuration for the Grassroots module.
+ *
+ * @ingroup httpd_server
  */
 typedef struct
 {
@@ -114,6 +120,8 @@ extern "C"
  * Get the Grassroots module.
  *
  * @return the GrassrootsModule.
+ *
+ * @ingroup httpd_server
  */
 const module *GetGrassrootsModule (void);
 

@@ -17,7 +17,6 @@
 /**
  * @file
  * @brief
- * @page Drmaa Drmaa Utility
 */ 
 
 #ifndef GRASSROOTS_MONGODB_LIBRARY_H

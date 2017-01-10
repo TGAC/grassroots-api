@@ -35,9 +35,6 @@
  */
 #define DEFAULT_SERVER_PORT	("9991")
 
-#define KEY_IRODS				("irods")
-
-#define KEY_INTERVAL	("interval")
 
 /*
 typedef json_t (*server_callback_fn) (json_t *req_p, json_t *credentials_p);

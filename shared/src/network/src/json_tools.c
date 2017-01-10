@@ -224,57 +224,6 @@ static json_t *LoadConfig (const char *path_s)
 
 
 
-/*
- * Obviously for a real system we'd be using encryption, tokens and the like
- */
-json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p)
-{
-	bool success_flag = false;
-	json_t *root_p = NULL; //GetOperationAsJSON (OP_IRODS_MODIFIED_DATA, sv_p);
-
-	if (root_p)
-		{
-			if (AddCredentialsToJson (root_p, user_p))
-				{
-					json_t *interval_p = json_object ();
-
-					if (interval_p)
-						{
-							json_t *irods_p = json_object_get (root_p, KEY_IRODS);
-
-							if (json_object_set_new (irods_p, "interval", interval_p) == 0)
-								{
-									success_flag = true;
-
-									if (from_s)
-										{
-											success_flag = AddKeyAndStringValue (interval_p, "from", from_s);
-										}
-
-									if (success_flag && to_s)
-										{
-											success_flag = AddKeyAndStringValue (interval_p, "to", to_s);
-										}
-
-								}	
-							else
-								{
-									json_decref (interval_p);
-								}
-						}
-				}
-
-			if (!success_flag)
-				{
-					json_object_clear (root_p);
-					json_decref (root_p);
-					root_p = NULL;
-				}
-		}		/* if (root_p) */
-
-	return root_p;
-}
-
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s)
 {

@@ -26,6 +26,7 @@
 #include "byte_buffer.h"
 
 
+
 typedef struct KeyValuePair
 {
   char *kvp_key_s;
@@ -49,6 +50,8 @@ extern "C"
  * @see GetRequestBodyAsJSON
  * @return The json representation of the request parameters
  * or <code>NULL</code> upon error.
+ *
+ * @ingroup httpd_server
  */
 json_t *GetAllRequestDataAsJSON (request_rec *req_p);
 
@@ -59,6 +62,8 @@ json_t *GetAllRequestDataAsJSON (request_rec *req_p);
  * @param req_p The request to get all of the data for.
  * @return The json representation of the request parameters
  * or <code>NULL</code> upon error.
+ *
+ * @ingroup httpd_server
  */
 json_t *GetGetRequestParameters (request_rec *req_p);
 
@@ -69,6 +74,8 @@ json_t *GetGetRequestParameters (request_rec *req_p);
  * @param req_p The request to get all of the data for.
  * @return The json representation of the request parameters
  * or <code>NULL</code> upon error.
+ *
+ * @ingroup httpd_server
  */
 json_t *GetRequestBodyAsJSON (request_rec *req_p);
 
@@ -79,6 +86,8 @@ json_t *GetRequestBodyAsJSON (request_rec *req_p);
  * @param req_p The request to get all of the data for.
  * @param buffer_p The ByteBuffer to write to the data into.
  * @return The number of characters read or -1 upon error.
+ *
+ * @ingroup httpd_server
  */
 int ReadBody (request_rec *req_p, ByteBuffer *buffer_p);
 

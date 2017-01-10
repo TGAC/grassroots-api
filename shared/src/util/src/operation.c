@@ -57,7 +57,7 @@ const char *GetOperationAsString (const Operation op)
 {
 	const char *op_s = NULL;
 
-	if ((op != OP_NUM_OPERATIONS) && (op != OP_NONE))
+	if ((op > OP_NONE) && (op < OP_NUM_OPERATIONS))
 		{
 			op_s = * (S_OPERATIONS_SS + op);
 		}
@@ -71,7 +71,7 @@ Operation GetOperationFromString (const char *op_s)
 {
 	Operation op;
 
-	for (op = OP_NONE; op < OP_NUM_OPERATIONS; ++ op)
+	for (op = OP_NONE + 1; op < OP_NUM_OPERATIONS; ++ op)
 		{
 			if (strcmp (* (S_OPERATIONS_SS + op), op_s) == 0)
 				{

@@ -85,6 +85,9 @@ extern "C"
 
 	PREFIX const char *HEADER_S VAL("header");
 
+	/**
+	 * The
+	 */
 	PREFIX const char *REQUEST_S VAL("request");
 	PREFIX const char *REQUEST_VERBOSE_S VAL("verbose");
 
@@ -447,10 +450,15 @@ extern "C"
 	 * for a client at the advanced level.
 	 */
 	PREFIX const char *PARAM_LEVEL_TEXT_ADVANCED_S  VAL("advanced");
+
 	PREFIX const char *PARAM_ERRORS_S  VAL("errors");
+
 	PREFIX const char *PARAM_SERVER_ID_S  VAL("server_id");
+
 	PREFIX const char *PARAM_REMOTE_URI_S  VAL("remote_uri");
+
 	PREFIX const char *PARAM_REMOTE_S  VAL("remote_details");
+
 	PREFIX const char *KEYWORDS_QUERY_S VAL("query");
 	/* End of doxygen member group */
 	/**@}*/

@@ -127,6 +127,8 @@ MONGODB_PREFIX const char *MONGO_CLAUSE_VALUE_S MONGODB_VAL("value");
 /**
  * A MongoTool is a datatype that allows access to the data stored within
  * a MongoDB instance.
+ *
+ * @ingroup mongodb_group
  */
 typedef struct MongoTool
 {
@@ -216,7 +218,7 @@ GRASSROOTS_MONGODB_API void FreeMongoTool (MongoTool *tool_p);
  * @param tool_p The MongoTool to use.
  * @param json_p The JSON fragment to insert.
  * @return A pointer to a newly-created BSON id or <code>NULL</code>
- * upon error. This value will need to be freed using FreeMemory to
+ * upon error. This value will need to be freed using FreeMemory() to
  * avoid a memory leak.
  * @memberof MongoTool
  */

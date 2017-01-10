@@ -59,9 +59,18 @@
 /* IRODS */
 
 /**
- * @defgroup iRODS iRODS Library
+ * @defgroup irods_group iRODS Library
  * @brief A collection of methods to access parts of an
  * iRODS system.
+ */
+
+
+/* MONGODB */
+
+/**
+ * @defgroup mongodb_group MongoDB Library
+ * @brief A collection of methods to use to access a MongoDB
+ * application.
  */
 
 
@@ -111,6 +120,15 @@
 /* HTTPD */
 
 /**
+ * @defgroup httpd_server The Apache HTTPD Module
+ * @brief A module allowing Grassroots to run as part of an Apache 2.4.x application.
+ */
+
+
+
+/* SERVICE IMPLEMENTATIONS */
+
+/**
  * @defgroup blast_service The BLAST Services Module
  * @brief Services for the BLAST suite of tools.
  *
@@ -119,9 +137,6 @@
  * and blastx. The BLAST jobs can be run locally or also on a computing
  * cluster using DRMAA.
  */
-
-
-/* SERVICE IMPLEMENTATIONS */
 
 /**
  * @defgroup ensembl_rest_service The Ensembl Services Module
@@ -134,6 +149,15 @@
  */
 
 /**
+ * @defgroup pathogenomics_service The Pathogenomics Services Module
+ * @brief A Service that can display location- and time-based views of field sample collection.
+ *
+ * This project is for storing sample data and metadata along with their phenotype and genotype data. As well as allowing
+ * text-based searches and results, a web-based map view allows user-friendly access to the information.
+ */
+
+
+/**
  * @defgroup samtools_service The SamTools Services Module
  * @brief Services for the SamTools suite of tools
  *
@@ -143,12 +167,13 @@
 
 /**
  * @defgroup web_service The Web Services Module
- * @brief
+ * @brief A reusable Service for using external web services.
  */
 
 /**
  * @defgroup web_search_service The Web Search Services Module
- * @brief
+ * @brief A reusable Service for using external web-based search
+ * services.
  */
 
 
@@ -168,7 +193,8 @@
 
 /**
  * @defgroup http_handler_group The HTTP Handler Module
- * @brief
+ * @brief The Handler resources that are accesible over
+ * HTTP(S) connections.
  */
 
 
@@ -176,6 +202,19 @@
  * @defgroup irods_handler_group The iRODS Handler Module
  * @brief The Handler for accessing objects and directories
  * stored on an iRODS system.s
+ */
+
+
+/* CLIENT IMPLEMENTATIONS */
+
+/**
+ * @defgroup standalone_client Standalone Client
+ * @brief A Client to connect to a Grassroots Server.
+ *
+ * This Client uses a plugin to choose how to interact with
+ * a user. This can be a Graphical User Interface (GUI) or
+ * via a command line for example. By default, a Qt-based
+ * GUI is used.
  */
 
 #ifndef SHARED_SRC_UTIL_INCLUDE_DOXYGEN_GROUPS_H_
