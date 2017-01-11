@@ -163,6 +163,8 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 			json_t *child_json_p;
 			const char *child_key_s;
 
+			child_node_p -> setIcon (0, QIcon ("images/braces"));
+
 			json_object_foreach (data_p, child_key_s, child_json_p)
 				{
 					InsertData (child_node_p, child_key_s, child_json_p);
@@ -207,6 +209,9 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 				}		/* if (strcmp (key_s, LINKED_SERVICES_S) == 0) */
 			else
 				{
+
+					child_node_p -> setIcon (0, QIcon ("images/brackets"));
+
 					json_array_foreach (data_p, i, child_json_p)
 						{
 							char *value_s = ConvertIntegerToString (i);
@@ -226,12 +231,15 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 		{
 			const char *value_s = json_string_value (data_p);
 
+			child_node_p -> setIcon (0, QIcon ("images/text"));
 			child_node_p -> setText (1, value_s);
 		}
 	else if (json_is_integer (data_p))
 		{
 			json_int_t i = json_integer_value (data_p);
 			char *value_s = ConvertIntegerToString (i);
+
+			child_node_p -> setIcon (0, QIcon ("images/numberdecmark"));
 
 			if (value_s)
 				{
@@ -244,6 +252,8 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 			double d = json_real_value (data_p);
 			char *value_s = ConvertDoubleToString (d);
 
+			child_node_p -> setIcon (0, QIcon ("images/numberdec"));
+
 			if (value_s)
 				{
 					child_node_p -> setText (1, value_s);
@@ -253,10 +263,12 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 	else if (json_is_true (data_p))
 		{
 			child_node_p -> setText (1, "true");
+			child_node_p -> setIcon (0, QIcon ("images/ok"));
 		}
 	else if (json_is_false (data_p))
 		{
 			child_node_p -> setText (1, "false");
+			child_node_p -> setIcon (0, QIcon ("images/cancel"));
 		}
 
 	return child_node_p;

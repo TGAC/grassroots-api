@@ -24,7 +24,7 @@
 #include "jobs_manager.h"
 
 #ifdef _DEBUG
-	#define SERVICE_JOB_DEBUG	(STM_LEVEL_FINER)
+	#define SERVICE_JOB_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define SERVICE_JOB_DEBUG	(STM_LEVEL_NONE)
 #endif

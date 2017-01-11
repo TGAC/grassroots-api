@@ -20,7 +20,7 @@
 
 
 #ifdef _DEBUG
-	#define PLUGIN_DEBUG	(STM_LEVEL_FINER)
+	#define PLUGIN_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define PLUGIN_DEBUG	(STM_LEVEL_NONE)
 #endif

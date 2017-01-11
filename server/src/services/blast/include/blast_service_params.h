@@ -325,6 +325,7 @@ BLAST_SERVICE_LOCAL char *CreateGroupName (const char *server_s);
  * @param output_format_s The output format string.
  * @return Upon success the BlastOutputFormat cast to an int8. -1 if the string
  * did not represent a valid output format string.
+ * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL int8 GetOutputFormatCodeForString (const char *output_format_s);
 

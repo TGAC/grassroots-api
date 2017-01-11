@@ -524,6 +524,45 @@ GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_s
 GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s);
 
 
+/**
+ * Make a copy of given key-value pair from one JSON object to another.
+ *
+ * The value is a string.
+ *
+ * @param src_p The JSON object to get the value from.
+ * @param dest_p The JSON object to copy the values to.
+ * @param key_s The key to search for in the input JSON and uses as the key in the output JSON.
+ * @param optional_flag If <code>true</code> the function will return <code>true</code> if the
+ * key was missing in the input object. If <code>false</code> then this will make the function
+ * return <code>false</code> when the input object does not contain the key.
+ * @return <code>true</code> upon success, <code>false</code> upon failure.
+ *
+ * @ingroup utility_group
+ */
+GRASSROOTS_UTIL_API bool CopyJSONKeyStringValuePair (const json_t *src_p, json_t *dest_p, const char * const key_s, bool optional_flag);
+
+
+
+
+/**
+ * Make a copy of given key-value pair from one JSON object to another.
+ *
+ * The value is an integer.
+ *
+ * @param src_p The JSON object to get the value from.
+ * @param dest_p The JSON object to copy the values to.
+ * @param key_s The key to search for in the input JSON and uses as the key in the output JSON.
+ * @param optional_flag If <code>true</code> the function will return <code>true</code> if the
+ * key was missing in the input object. If <code>false</code> then this will make the function
+ * return <code>false</code> when the input object does not contain the key.
+ * @return <code>true</code> upon success, <code>false</code> upon failure.
+ *
+ * @ingroup utility_group
+ */
+GRASSROOTS_UTIL_API bool CopyJSONKeyIntegerValuePair (const json_t *src_p, json_t *dest_p, const char * const key_s, bool optional_flag);
+
+
+
 #ifdef __cplusplus
 }
 #endif

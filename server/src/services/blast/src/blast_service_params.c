@@ -297,7 +297,7 @@ bool AddGeneralAlgorithmParams (BlastServiceData *data_p, ParameterSet *param_se
 	Parameter *param_p = NULL;
 	SharedType def;
 	uint8 level = PL_INTERMEDIATE | PL_ALL;
-	const char *param_name_s = "max_target_sequences";
+	const char *param_name_s = "max_target_seqs";
 	ParameterType pt = PT_UNSIGNED_INT;
 
 	ParameterGroup *group_p = CreateAndAddParameterGroupToParameterSet ("General Algorithm Parameters", NULL, & (data_p -> bsd_base_data), param_set_p);

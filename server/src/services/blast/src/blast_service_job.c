@@ -74,6 +74,10 @@ static bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hs
 
 static bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s);
 
+static bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p);
+
+static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p);
+
 
 static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p);
 
@@ -469,7 +473,6 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 
 												if (report_p)
 													{
-														json_t *hits_p = NULL;
 														const char *database_s = NULL;
 
 														json_t *db_p = GetCompoundJSONObject (report_p, "search_target.db");
@@ -492,61 +495,76 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 														if (success_flag)
 															{
 																/* Get the hits */
-																hits_p = GetCompoundJSONObject (report_p, "results.search.hits");
+																const json_t *blast_result_search_p = GetCompoundJSONObject (report_p, "results.search");
 
-																if (hits_p)
+																if (blast_result_search_p)
 																	{
-																		if (json_is_array (hits_p))
+																		const json_t *blast_hits_p =  json_object_get (blast_result_search_p, "hits");
+
+																		if (blast_hits_p)
 																			{
-																				size_t j = 0;
-																				const size_t num_hits = json_array_size (hits_p);
-
-																				while ((j < num_hits) && success_flag)
+																				if (json_is_array (blast_hits_p))
 																					{
-																						json_t *hit_p = json_array_get (hits_p, j);
+																						size_t j = 0;
+																						const size_t num_hits = json_array_size (blast_hits_p);
 
-																						json_t *output_p = GetInitialisedProcessedRequest ();
-
-																						if (output_p)
+																						while ((j < num_hits) && success_flag)
 																							{
-																								if (GetAndAddDatabaseDetails (output_p, database_s))
+																								const json_t *blast_hit_p = json_array_get (blast_hits_p, j);
+
+																								json_t *output_p = GetInitialisedProcessedRequest ();
+
+																								if (output_p)
 																									{
-																										if (MarkUpHit (hit_p, output_p, database_s))
+																										if (GetAndAddDatabaseDetails (output_p, database_s))
 																											{
-																												if (json_array_append_new (results_array_p, output_p) == 0)
+																												if (GetAndAddQueryMetadata (blast_result_search_p, output_p))
 																													{
-																														success_flag = true;
-																														++ j;
+																														if (MarkUpHit (blast_hit_p, output_p, database_s))
+																															{
+																																if (json_array_append_new (results_array_p, output_p) == 0)
+																																	{
+																																		success_flag = true;
+																																	}
+																																else
+																																	{
+																																		success_flag = false;
+																																	}
+																															}
+																														else
+																															{
+																																success_flag = false;
+																															}
+
 																													}
 																												else
 																													{
-																														success_flag = false;
+																														PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, blast_result_search_p, "Failed to add metadata");
 																													}
+
 																											}
 																										else
 																											{
-																												success_flag = false;
+																												success_flag = true;
 																											}
 
-																									}
-																								else
-																									{
-																										success_flag = true;
-																									}
+
+																										if (!success_flag)
+																											{
+																												json_decref (output_p);
+																											}
+
+																									}		/* if (output_p) */
+
+																								++ j;
+																							}		/* while ((j < num_hits) && success_flag) */
+
+																					}		/* if (json_is_array (hits_p)) */
+
+																			}		/* if (hits_p) */
+																	}		/* if (blast_result_search_p) */
 
 
-																								if (!success_flag)
-																									{
-																										json_decref (output_p);
-																									}
-
-																							}		/* if (output_p) */
-
-																					}		/* while ((j < num_hits) && success_flag) */
-
-																			}		/* if (json_is_array (hits_p)) */
-
-																	}		/* if (hits_p) */
 
 															}		/* if (success_flag) */
 
@@ -1424,58 +1442,149 @@ static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p
 
 	if (hsps_p)
 		{
-			json_t *marked_up_hsps_p = json_array ();
+			json_t *marked_up_hits_p = json_object_get (marked_up_result_p, "hits");
 
-			if (marked_up_hsps_p)
+			if (!marked_up_hits_p)
 				{
-					if (json_object_set_new (marked_up_result_p, "hit_details", marked_up_hsps_p) == 0)
+					marked_up_hits_p = json_array ();
+
+					if (marked_up_hits_p)
 						{
-
-							if (json_is_array (hsps_p))
+							if (json_object_set_new (marked_up_result_p, "hits", marked_up_hits_p) != 0)
 								{
-									size_t i;
-									json_t *hsp_p;
-
-									json_array_foreach (hsps_p, i, hsp_p)
-									{
-										json_t *marked_up_hit_p = json_object ();
-
-										if (marked_up_hit_p)
-											{
-												if (AddHsp (marked_up_hit_p, hsp_p))
-													{
-														if (json_array_append_new (marked_up_hsps_p, marked_up_hit_p) == 0)
-															{
-
-															}
-														else
-															{
-
-
-															}
-													}
-
-											}
-									}
-
-									success_flag = (json_array_size (hsps_p) == json_array_size (marked_up_hsps_p));
-								}		/* if (json_is_array (hsps_p)) */
-
-
-						}		/* if (json_object_set_new (marked_up_result_p, "hit_details", marked_up_hsps_p) == 0) */
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, marked_up_result_p, "Failed to add hits array to marked_up_result_p");
+									json_decref (marked_up_hits_p);
+									marked_up_hits_p = NULL;
+								}
+						}
 					else
 						{
-							json_decref (marked_up_hsps_p);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create hits array for marked_up_result_p");
+						}
+				}
+
+			if (marked_up_hits_p)
+				{
+					json_t *marked_up_hit_p = GetAndAddMarkedUpHit	(marked_up_hits_p, blast_hit_p);
+
+					if (marked_up_hit_p)
+						{
+							json_t *marked_up_hsps_p = json_object_get (marked_up_hit_p, "hsps");
+
+							if (marked_up_hsps_p)
+								{
+									if (json_is_array (hsps_p))
+										{
+											size_t i;
+											json_t *hsp_p;
+
+											json_array_foreach (hsps_p, i, hsp_p)
+												{
+													json_t *marked_up_hsp_p = json_object ();
+
+													if (marked_up_hsp_p)
+														{
+															bool added_flag = false;
+
+															if (AddHsp (marked_up_hsp_p, hsp_p))
+																{
+																	if (json_array_append_new (marked_up_hsps_p, marked_up_hsp_p) == 0)
+																		{
+																			added_flag = true;
+																		}
+																	else
+																		{
+																			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, marked_up_hsp_p, "Failed to add marked_up_hit to hits array");
+																		}
+
+																}		/* if (AddHsp (marked_up_hit_p, hsp_p)) */
+															else
+																{
+																	PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, hsp_p, "Failed to add hsp to hit");
+																}
+
+															if (!added_flag)
+																{
+																	json_decref (marked_up_hsp_p);
+																}
+
+														}		/* if (marked_up_hsp_p) */
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create marked up hsp");
+
+														}
+												}
+
+											success_flag = (json_array_size (hsps_p) == json_array_size (marked_up_hsps_p));
+										}		/* if (json_is_array (hsps_p)) */
+
+
+								}		/* if (json_object_set_new (marked_up_result_p, "hsps", marked_up_hsps_p) == 0) */
+							else
+								{
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, marked_up_hits_p, "Failed to set marked up hsps array for marked up hits");
+									json_decref (marked_up_hsps_p);
+								}
+
+						}		/* if (marked_up_hsps_p) */
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create hsps array for marked up hits");
 						}
 
-				}		/* if (marked_up_hsps_p) */
+				}		/* if (marked_up_hits_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get marked up hits");
+				}
 
 		}		/* if (hsps_p) */
-
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get source hsps from blast result");
+		}
 
 	return success_flag;
 }
 
+
+static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p)
+{
+	json_t *marked_up_hit_p = json_object ();
+
+	if (marked_up_hit_p)
+		{
+			int hit_num;
+
+			if (GetJSONInteger (blast_hit_p, "num", &hit_num))
+				{
+					if (json_object_set_new (marked_up_hit_p, "hit_num", json_integer (hit_num)) == 0)
+						{
+							json_t *marked_up_hsps_p = json_array ();
+
+							if (marked_up_hsps_p)
+								{
+									if (json_object_set_new (marked_up_hit_p, "hsps", marked_up_hsps_p) == 0)
+										{
+											if (json_array_append_new (marked_up_hits_array_p, marked_up_hit_p) == 0)
+												{
+													return marked_up_hit_p;
+												}
+										}
+									else
+										{
+											json_decref (marked_up_hsps_p);
+										}
+								}
+						}
+				}
+
+			json_decref (marked_up_hit_p);
+		}		/* if (marked_up_hit_p) */
+
+	return NULL;
+}
 
 
 static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
@@ -1486,32 +1595,72 @@ static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
 				{
 					if (GetAndAddIntScoreValue (marked_up_hit_p, hsp_p, "score", "score"))
 						{
-							if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "hseq", "hit_sequence"))
+							if (GetAndAddIntScoreValue (marked_up_hit_p, hsp_p, "num", "hsp_num"))
 								{
-									if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
+									if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "hseq", "hit_sequence"))
 										{
-											if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence"))
+											if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
 												{
-													if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
+													if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence"))
 														{
-															if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline"))
+															if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
 																{
-																	return true;
-																}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence")) */
+																	if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline"))
+																		{
+																			return true;
+																		}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline")) */
+																	else
+																		{
+																			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add midline");
+																		}
 
-														}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+																}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+															else
+																{
+																	PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add query location details");
+																}
 
-												}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence")) */
+														}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence")) */
+													else
+														{
+															PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add query_sequence");
+														}
 
-										}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
+												}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
+											else
+												{
+													PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add hit location details");
+												}
 
-								}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "sequence")) */
+										}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "hit_sequence")) */
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add hit_sequence");
+										}
+
+								}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "num", "num") */
+							else
+								{
+									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add num");
+								}
 
 						}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score") */
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add evalue");
+						}
 
 				}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue")) */
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add evalue");
+				}
 
 		}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score")) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add bit_score");
+		}
 
 	return false;
 }
@@ -1671,6 +1820,14 @@ static bool GetAndAddDoubleScoreValue (json_t *marked_up_result_p, const json_t 
 				{
 					success_flag = true;
 				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_result_p, "failed to add int value for %s=" DOUBLE64_FMT, hsp_key_s, value);
+				}
+		}
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, hsps_p, "failed to get real value for %s", hsp_key_s);
 		}
 
 	return success_flag;
@@ -1688,6 +1845,14 @@ static bool GetAndAddIntScoreValue (json_t *marked_up_result_p, const json_t *hs
 				{
 					success_flag = true;
 				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_result_p, "failed to add int value for %s=" INT32_FMT, hsp_key_s, value);
+				}
+		}
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, hsps_p, "failed to get int value for %s", hsp_key_s);
 		}
 
 	return success_flag;
@@ -1942,7 +2107,7 @@ static bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p)
 
 static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s)
 {
-	bool success_flag = true;
+	bool success_flag = false;
 
 	if (GetAndAddDatabaseDetails (mark_up_p, database_s))
 		{
@@ -1950,10 +2115,56 @@ static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *datab
 				{
 					if (AddHitDetails (mark_up_p, hit_p))
 						{
+							success_flag = true;
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mark_up_p, "Failed to add hit details");
 						}
 
 				}		/* if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p)) */
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mark_up_p, "Failed to add scaffolds");
+				}
 		}
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mark_up_p, "Failed to add database \"%s\"", database_s);
+		}
+
+	return success_flag;
+}
+
+
+static bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p)
+{
+	bool success_flag = false;
+
+
+	if (CopyJSONKeyStringValuePair (blast_search_p, mark_up_p, "query_id", false))
+		{
+			if (CopyJSONKeyStringValuePair (blast_search_p, mark_up_p, "query_title", false))
+				{
+					if (CopyJSONKeyIntegerValuePair (blast_search_p, mark_up_p, "query_len", false))
+						{
+							success_flag = true;
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, blast_search_p, "Failed to copy key \"%s\"", "query_len");
+						}
+				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, blast_search_p, "Failed to copy key \"%s\"", "query_title");
+				}
+		}
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, blast_search_p, "Failed to copy key \"%s\"", "query_id");
+		}
+
 
 	return success_flag;
 }
