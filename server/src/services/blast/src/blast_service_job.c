@@ -82,6 +82,12 @@ static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_
 static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p);
 
 
+static bool AddSubsequenceMarkup (json_t *parent_p, const char *key_s, const char *subsequence_start_s, const uint32 length);
+
+static bool GetAndAddNucleotidePolymorphisms (json_t *marked_up_hsp_p, const char *reference_sequence_s, const char *hit_sequence_s, const char *midline_s, uint32 hit_index, const int32 inc_value);
+
+static bool AddPolymorphism (json_t *marked_up_hsp_p, const char *hit_gap_start_p, const char *reference_gap_start_p, const uint32 start_of_region, const uint32 end_of_region);
+
 static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p);
 
 
@@ -1607,7 +1613,16 @@ static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
 																{
 																	if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline"))
 																		{
-																			return true;
+																			const char *midline_s = GetJSONString (hsp_p, "midline");
+																			const char *query_sequence_s = GetJSONString (hsp_p, "qseq");
+																			const char *hit_sequence_s = GetJSONString (hsp_p, "hseq");
+																			const uint32 hit_index = 0;
+																			const int inc_value = 1;
+
+																			if (GetAndAddNucleotidePolymorphisms (marked_up_hit_p, query_sequence_s, hit_sequence_s, midline_s, hit_index, inc_value))
+																				{
+																					return true;
+																				}
 																		}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline")) */
 																	else
 																		{
@@ -1666,6 +1681,36 @@ static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
 }
 
 
+static bool AddHitLocation (json_t *parent_p, const char *child_key_s, const int32 from, const int32 to, const bool forward_strand_flag)
+{
+	json_t *location_p = json_object ();
+
+	if (location_p)
+		{
+			if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag))
+				{
+					if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag))
+						{
+							if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0)
+								{
+									if (json_object_set_new (parent_p, child_key_s, location_p) == 0)
+										{
+											return true;
+										}		/* if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0) */
+
+								}		/* if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0) */
+
+						}		/* if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag)) */
+
+				}		/* if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag)) */
+
+			json_decref (location_p);
+		}		/* if (location_p) */
+
+	return false;
+}
+
+
 static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *strand_key_s, const char *child_key_s)
 {
 	bool success_flag = false;
@@ -1677,8 +1722,6 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 
 			if (GetJSONInteger (hsps_p, hsp_to_key_s, &to))
 				{
-					json_t *location_p = json_object ();
-
 
 					/*
 						"faldo:location": {
@@ -1694,42 +1737,25 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 						}
 					 */
 
-					if (location_p)
+					bool forward_strand_flag = true;
+					const char *strand_s = GetJSONString (hsps_p, strand_key_s);
+
+					if (strand_s)
 						{
-							bool forward_strand_flag = true;
-							const char *strand_s = GetJSONString (hsps_p, strand_key_s);
-
-							if (strand_s)
+							if (strcmp (strand_s, "Plus") == 0)
 								{
-									if (strcmp (strand_s, "Plus") == 0)
-										{
-											forward_strand_flag = true;
-										}
-									else if (strcmp (strand_s, "Minus") == 0)
-										{
-											forward_strand_flag = false;
-										}
-
-									if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag))
-										{
-											if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag))
-												{
-													if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0)
-														{
-															if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0)
-																{
-																	return true;
-																}		/* if (json_object_set_new (marked_up_result_p, child_key_s, location_p) == 0) */
-
-														}		/* if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0) */
-
-												}		/* if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag)) */
-
-										}		/* if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag)) */
+									forward_strand_flag = true;
+								}
+							else if (strcmp (strand_s, "Minus") == 0)
+								{
+									forward_strand_flag = false;
 								}
 
-							json_decref (location_p);
-						}		/* if (location_p) */
+							if (AddHitLocation (marked_up_result_p, child_key_s, from, to, forward_strand_flag))
+								{
+									success_flag = true;
+								}
+						}
 
 				}		/* if (GetJSONInteger (hsps_p, hsp_to_key_s, &to)) */
 
@@ -1974,9 +2000,15 @@ static json_t *GetInitialisedProcessedRequest (void)
 																		{
 																			if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by"))
 																				{
-																					if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																					if (AddTerm (context_p, "snp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000694"))
 																						{
-																							return root_p;
+																							if (AddTerm (context_p, "mnp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001013"))
+																								{
+																									if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																										{
+																											return root_p;
+																										}
+																								}
 																						}
 																				}
 																		}
@@ -2144,7 +2176,8 @@ static bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_u
 
 	if (CopyJSONKeyStringValuePair (blast_search_p, mark_up_p, "query_id", false))
 		{
-			if (CopyJSONKeyStringValuePair (blast_search_p, mark_up_p, "query_title", false))
+			/* Not all dbs have a query_title so make it optional */
+			if (CopyJSONKeyStringValuePair (blast_search_p, mark_up_p, "query_title", true))
 				{
 					if (CopyJSONKeyIntegerValuePair (blast_search_p, mark_up_p, "query_len", false))
 						{
@@ -2227,5 +2260,170 @@ static LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 	return scaffolds_p;
 }
 
+
+
+static bool GetAndAddNucleotidePolymorphisms (json_t *marked_up_hsp_p, const char *reference_sequence_s, const char *hit_sequence_s, const char *midline_s, uint32 hit_index, const int32 inc_value)
+{
+	bool success_flag = false;
+
+	if (*midline_s != '\0')
+		{
+			bool loop_flag;
+			uint32 start_of_region = hit_index;
+			const char *hit_gap_start_p = NULL;
+			const char *reference_gap_start_p = NULL;
+			bool match_flag = (*midline_s == '|');
+
+			++ midline_s;
+			hit_index += inc_value;
+			loop_flag = (*midline_s != '\0');
+
+			success_flag = true;
+
+			while (loop_flag && success_flag)
+				{
+					bool current_match_flag = (*midline_s == '|');
+
+					/* have we moved to a different region? */
+					if (match_flag != current_match_flag)
+						{
+							if (match_flag)
+								{
+									/* we've just started a gap */
+									start_of_region = hit_index;
+									hit_gap_start_p = hit_sequence_s + 1;
+									reference_gap_start_p = reference_sequence_s + 1;
+								}
+							else
+								{
+									/* we've just finished a gap */
+									const uint32 end_of_region = hit_index; // - inc_value;
+
+									if (!AddPolymorphism (marked_up_hsp_p, hit_gap_start_p, reference_gap_start_p, start_of_region, end_of_region))
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to the polymorphism starting at reference \"%s\"", reference_gap_start_p);
+											success_flag = false;
+										}
+								}
+
+							match_flag = current_match_flag;
+						}
+
+
+					hit_index += inc_value;
+					++ midline_s;
+					++ reference_sequence_s;
+					++ hit_sequence_s;
+
+					loop_flag = (*midline_s != '\0');
+				}
+
+		}
+
+	return success_flag;
+}
+
+
+static bool AddPolymorphism (json_t *marked_up_hsp_p, const char *hit_gap_start_p, const char *reference_gap_start_p, const uint32 start_of_region, const uint32 end_of_region)
+{
+	bool success_flag = false;
+	uint32 length;
+	bool forward_strand_flag;
+	json_t *polymorphisms_p = NULL;
+
+	if (start_of_region > end_of_region)
+		{
+			length = start_of_region - end_of_region;
+			forward_strand_flag = false;
+		}
+	else
+		{
+			length = end_of_region - start_of_region;
+			forward_strand_flag = true;
+		}
+
+	polymorphisms_p = json_object_get (marked_up_hsp_p, "polymorphisms");
+
+	if (!polymorphisms_p)
+		{
+			polymorphisms_p = json_array ();
+
+			if (polymorphisms_p)
+				{
+					if (json_object_set_new (marked_up_hsp_p, "polymorphisms", polymorphisms_p) != 0)
+						{
+							json_decref (polymorphisms_p);
+							polymorphisms_p = NULL;
+						}
+				}
+		}
+
+	if (polymorphisms_p)
+		{
+			json_t *polymorphism_p = json_object ();
+
+			if (polymorphism_p)
+				{
+					const char *type_s = (length == 1) ? "snp" : "mnp";
+
+					if (AddHitLocation (polymorphism_p, "faldo:location", start_of_region, end_of_region, forward_strand_flag))
+						{
+							if (json_object_set_new (polymorphism_p, "@type", json_string (type_s)) == 0)
+								{
+									if (AddSubsequenceMarkup (polymorphism_p, "query", reference_gap_start_p, length))
+										{
+											if (AddSubsequenceMarkup (polymorphism_p, "hit", hit_gap_start_p, length))
+												{
+													if (json_array_append_new (polymorphisms_p, polymorphism_p) == 0)
+														{
+															success_flag = true;
+														}
+												}
+
+										}
+
+								}
+
+						}
+
+					if (!success_flag)
+						{
+							json_decref (polymorphism_p);
+						}
+
+				}		/* if (polymorphism_p) */
+
+		}
+
+
+	return success_flag;
+}
+
+
+static bool AddSubsequenceMarkup (json_t *parent_p, const char *key_s, const char *subsequence_start_s, const uint32 length)
+{
+	bool success_flag = false;
+	char *diff_s = CopyToNewString (subsequence_start_s, length, false);
+
+	if (diff_s)
+		{
+			if (json_object_set_new (parent_p, key_s, json_string (diff_s)) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, parent_p, "Failed to add \"%s\": \"%s\"", key_s, diff_s);
+				}
+
+			FreeCopiedString (diff_s);
+		}		/* if (diff_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to the first " UINT32_FMT " characters of \"%s\" for subsequence for key \"%s\"", length, subsequence_start_s, key_s);
+		}
+
+	return success_flag;
+}
 
 
