@@ -62,7 +62,7 @@ public:
 	MainWindow (struct QTClientData *data_p);
 	virtual ~MainWindow ();
 
-	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
+	void CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p);
 
 
 	json_t *GetUserValuesAsJSON (bool all_flag) const;

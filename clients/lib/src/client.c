@@ -44,7 +44,7 @@ void InitialiseClient (Client * const client_p,
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, json_t *response_p),
-	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p),
+	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p),
 	bool (*free_client_fn) (Client *client_p),
 	ClientData *data_p,
 	Connection *connection_p)
@@ -73,9 +73,9 @@ json_t *RunClient (Client *client_p)
 }
 
 
-int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p)
+int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p)
 {
-	return (client_p -> cl_add_service_fn (client_p -> cl_data_p, service_name_s, service_description_s, service_info_uri_s, provider_p, params_p));
+	return (client_p -> cl_add_service_fn (client_p -> cl_data_p, service_name_s, service_description_s, service_info_uri_s, service_icon_uri_s, provider_p, params_p));
 }
 
 
@@ -587,8 +587,9 @@ int AddServiceDetailsToClient (Client *client_p, json_t *service_json_p, const j
 					if (params_p)
 						{
 							const char *service_info_uri_s = GetJSONString (service_json_p, OPERATION_INFORMATION_URI_S);
+							const char *service_icon_uri_s = GetJSONString (service_json_p, OPERATION_ICON_URI_S);
 
-							res = AddServiceToClient (client_p, op_name_s, service_description_s, service_info_uri_s, provider_p, params_p);
+							res = AddServiceToClient (client_p, op_name_s, service_description_s, service_info_uri_s, service_icon_uri_s,provider_p, params_p);
 						}		/* if (params_p) */
 
 				}		/* if (service_description_s) */

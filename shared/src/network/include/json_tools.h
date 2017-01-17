@@ -299,6 +299,75 @@ GRASSROOTS_NETWORK_API json_t *CallServices (json_t *client_results_p, const Use
 GRASSROOTS_NETWORK_API json_t *GetInitialisedMessage (const SchemaVersion * const sv_p);
 
 
+
+/**
+ * @brief Get the description of a Service
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The description or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
+
+
+/**
+ * @brief Get the name of a Service
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The name or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const char *GetServiceNameFromJSON (const json_t * const root_p);
+
+
+/**
+ * @brief Get the description of an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The description or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
+
+
+/**
+ * @brief Get the name of an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The name or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const char *GetOperationNameFromJSON (const json_t * const root_p);
+
+
+/**
+ * @brief Get the URI of an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The URI or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
+
+
+/**
+ * @brief Get the URI for an associated image icon an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The URI or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const char *GetOperationIconURIFromJSON (const json_t * const root_p);
+
+
+
+/**
+ * Get the JSON fragment specifying the Provider details
+ * from a JSON fragment representing a Service.
+ *
+ * @param service_json_p The JSON fragment representing a Service.
+ * @return The JSON fragment representing a Provider or <code>NULL</code>
+ * if it could not be found.
+ */
+GRASSROOTS_NETWORK_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -35,7 +35,7 @@
 #include "services_list.h"
 #include "services_tabs.h"
 
-#include "service.h"
+#include "json_tools.h"
 #include "string_utils.h"
 
 using namespace std;
@@ -93,9 +93,12 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 
 					if (params_p)
 						{
-							const char *service_info_uri_s = GetOperationInformationURIFromJSON (service_json_p);							
+							const char *service_info_uri_s = GetOperationInformationURIFromJSON (service_json_p);
+							const char *icon_data_s = GetJSONString (service_json_p, OPERATION_ICON_DATA_S);
 							const char *service_icon_uri_s = GetOperationIconURIFromJSON (service_json_p);
 							const json_t *provider_p = GetProviderFromServiceJSON (service_json_p);
+
+
 
 							CreateAndAddServicePage (service_name_s, service_description_s, service_info_uri_s, service_icon_uri_s, provider_p, params_p);
 						}		/* if (params_p) */
@@ -108,7 +111,7 @@ void PrefsWidget :: CreateAndAddServicePage (const json_t * const service_json_p
 
 void PrefsWidget :: CreateAndAddServicePage (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p)
 {
-	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, service_icon_uri_s, provider_p, params_p, this);
+	ServicePrefsWidget *service_widget_p = new ServicePrefsWidget (service_name_s, service_description_s, service_info_uri_s, service_icon_uri_s, provider_p, params_p, this -> pw_data_p, this);
 
 	pw_services_ui_p -> AddService (service_name_s, service_widget_p);
 	pw_service_widgets.append (service_widget_p);

@@ -84,11 +84,13 @@ typedef struct Client
 	 * This can be <code>NULL</code>.
 	 * @param service_info_uri_s An optional uri for the Service.
 	 * This can be <code>NULL</code>.
+	 * @param service_icon_uri_s An optional uri for an icon to use for the Service.
+	 * This can be <code>NULL</code>.
 	 * @param provider_p The JSON fragment with the details of the provider of the Service.
 	 * @param params_p The ParameterSet for the given Service.
 	 * @return 0 upon success, non-zero on error.
 	 */
-	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
+	int (*cl_add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p);
 
 	/**
 	 * @brief Launch the Client.
@@ -197,7 +199,7 @@ GRASSROOTS_CLIENT_API void InitialiseClient (Client * const client_p,
 	const char *(*get_client_description_fn) (ClientData *client_data_p),
 	json_t *(*run_fn) (ClientData *client_data_p),
 	json_t *(*display_results_fn) (ClientData *client_data_p, json_t *response_p),
-	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p),
+	int (*add_service_fn) (ClientData *client_data_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p),
 	bool (*free_client_fn) (Client *client_p),
 	ClientData *data_p,
 	Connection *connection_p);
@@ -234,13 +236,14 @@ GRASSROOTS_CLIENT_API json_t *DisplayResultsInClient (Client *client_p, json_t *
  * @param service_name_s The name of the Service.
  * @param service_description_s The description of the Service.
  * @param service_info_uri_s An optional URI for the Service. This can be <code>NULL</code>.
+ * @param service_icon_uri_s An optional URI for an image for the Service. This can be <code>NULL</code>.
  * @param provider_p The JSON fragment with the details of the provider of the Service.
  * @param params_p The ParameterSet for the Service.
  * @return 0 upon success, non-zero on error.
  * @memberof Client
  * @see cl_add_service_fn
  */
-GRASSROOTS_CLIENT_API	int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p);
+GRASSROOTS_CLIENT_API	int AddServiceToClient (Client *client_p, const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p);
 
 
 /**

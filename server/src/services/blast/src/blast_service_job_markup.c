@@ -26,6 +26,13 @@
 #include "string_utils.h"
 
 
+static bool AddSequenceOntologyTerms (json_t *context_p);
+
+static bool AddEdamOntologyTerms (json_t *context_p);
+
+static bool AddFaldoOntologyTerms (json_t *context_p);
+
+
 
 bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_s)
 {
@@ -39,32 +46,7 @@ bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_
 	return success_flag;
 }
 
-/*
-"hit": {
-		"hit_sequence": "GATCAAGTTGCCCCGCCTCCGATCTACCCGTTCCCGGCCACCCCAACCTCGCCTCGTCATTGGGCGCGCA",
-		"bit_score": 113.339,
-		"score": 140,
-		"evalue": 6.2069e-25,
-		"faldo:location": {
-			"@type": "faldo:Region",
-			"faldo:begin": {
-				"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
-				"faldo:position": "99"
-			},
-			"faldo:end": {
-				"@type": [ "faldo:Position", "faldo:ExactPosition", "faldo:ForwardStrandPosition" ],
-				"faldo:position": "168"
-			}
-			"contained_by": {
-				"scaffold": {
-					"title": {
-						"@context": "http://schema.org/Thing",
-						"name": "TRIAE_CS42_1AL_TGACv1_000001_AA0000020.1"
-					}
-				}
-			}
-		}
- */
+
 bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseType db_type)
 {
 	bool success_flag = false;
@@ -583,57 +565,8 @@ bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_
 }
 
 
-
 json_t *GetInitialisedProcessedRequest (void)
 {
-	/*
-"@context": {
-
-	 "gap_penalty": {
-		 "@id": "http://edamontology.org/data_2137",
-		 "@type": "@id"
-	 },
-
-    "database": {
-      "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505",
-      "@type": "@id"
-    }
-
-    "scaffold": {
-      "@id": "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148",
-      "@type": "@id"
-    }
-
-    "query_sequence": {
-      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
-      "@type": "@id"
-    },
-
-    "hit_sequence": {
-      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0000149",
-      "@type": "@id"
-    },
-
-
-    "bit_score": {
-      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001686",
-      "@type": "@id"
-    },
-
-    "evalue": {
-      "@id": "http://www.sequenceontology.org/miso/current_svn/term/SO:0001686",
-      "@type": "@id"
-    },
-
-    "contained_by": {
-      "@id": "http://www.sequenceontology.org/browser/current_svn/term/contained_by",
-      "@type": "@id"
-    },
-
-    "faldo": "http://biohackathon.org/resource/faldo"
-  }
-	 */
-
 	json_t *root_p = json_object ();
 
 	if (root_p)
@@ -644,49 +577,13 @@ json_t *GetInitialisedProcessedRequest (void)
 				{
 					if (json_object_set_new (root_p, "@context", context_p) == 0)
 						{
-							if (AddTerm (context_p, "database", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505", true))
+							if (AddEdamOntologyTerms (context_p))
 								{
-									if (AddTerm (context_p, "scaffold", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148", true))
+									if (AddFaldoOntologyTerms (context_p))
 										{
-											if (AddTerm (context_p, "query_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149", true))
+											if (AddSequenceOntologyTerms (context_p))
 												{
-													if (AddTerm (context_p, "hit_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149", true))
-														{
-															if (AddTerm (context_p, "evalue", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686", true))
-																{
-																	if (AddTerm (context_p, "bit_score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685", true))
-																		{
-																			if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by", true))
-																				{
-																					if (AddTerm (context_p, "snp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000694", false))
-																						{
-																							if (AddTerm (context_p, "mnp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001013", false))
-																								{
-																									if (AddTerm (context_p, "match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000039", false))
-																										{
-																											if (AddTerm (context_p, "nucleotide_match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000347", false))
-																												{
-																													if (AddTerm (context_p, "protein_match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000349", false))
-																														{
-																															if (AddTerm (context_p, "sequence_difference", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000413", true))
-																																{
-																																	if (AddTerm (context_p, "sequence_length", "http://edamontology.org/data_1249", false))
-																																		{
-																																			if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
-																																				{
-																																					return root_p;
-																																				}
-																																		}
-																																}
-																														}
-																												}
-																										}
-																								}
-																						}
-																				}
-																		}
-																}
-														}
+													return root_p;
 												}
 										}
 								}
@@ -704,7 +601,6 @@ json_t *GetInitialisedProcessedRequest (void)
 
 	return NULL;
 }
-
 
 
 
@@ -957,6 +853,39 @@ bool GetAndAddNucleotidePolymorphisms (json_t *marked_up_hsp_p, const char *refe
 }
 
 
+bool AddGaps (json_t *marked_up_hits_p, const json_t *blast_hit_p)
+{
+
+
+}
+
+
+bool AddGap (json_t *gaps_p, const json_t *blast_hit_p)
+{
+	bool success_flag = false;
+	json_t *gap_p = json_object ();
+
+	if (gap_p)
+		{
+			if (json_object_set_new (gap_p, "@type", json_string ("gap")) == 0)
+				{
+					int32 from;
+					int32 to;
+					bool forward_strand_flag = true;
+
+					if (AddHitLocation (gap_p, "faldo:location", from, to, forward_strand_flag))
+						{
+							success_flag = true;
+						}		/* if (AddHitLocation (gap_p, "faldo:location", from, to, forward_strand_flag)) */
+
+				}		/* if (json_object_set_new (gap_p, "@type", json_string ("gap")) == 0) */
+
+		}		/* if (gap_p) */
+
+	return success_flag;
+}
+
+
 bool AddPolymorphism (json_t *marked_up_hsp_p, const char *hit_gap_start_p, const char *reference_gap_start_p, const uint32 start_of_region, const uint32 end_of_region)
 {
 	bool success_flag = false;
@@ -1047,8 +976,6 @@ bool AddPolymorphism (json_t *marked_up_hsp_p, const char *hit_gap_start_p, cons
 }
 
 
-
-
 bool AddSubsequenceMarkup (json_t *parent_p, const char *key_s, const char *subsequence_start_s, const uint32 length)
 {
 	bool success_flag = false;
@@ -1114,5 +1041,86 @@ bool AddTerm (json_t *root_p, const char *key_s, const char *term_s, const bool 
 
 
 	return false;
+}
+
+
+
+static bool AddSequenceOntologyTerms (json_t *context_p)
+{
+	bool success_flag = false;
+
+	if (AddTerm (context_p, "database", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505", true))
+		{
+			if (AddTerm (context_p, "scaffold", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148", true))
+				{
+					if (AddTerm (context_p, "query_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149", true))
+						{
+							if (AddTerm (context_p, "hit_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149", true))
+								{
+									if (AddTerm (context_p, "evalue", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686", true))
+										{
+											if (AddTerm (context_p, "bit_score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685", true))
+												{
+													if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by", true))
+														{
+															if (AddTerm (context_p, "snp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000694", false))
+																{
+																	if (AddTerm (context_p, "mnp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001013", false))
+																		{
+																			if (AddTerm (context_p, "match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000039", false))
+																				{
+																					if (AddTerm (context_p, "nucleotide_match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000347", false))
+																						{
+																							if (AddTerm (context_p, "protein_match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000349", false))
+																								{
+																									if (AddTerm (context_p, "sequence_difference", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000413", true))
+																										{
+																											if (AddTerm (context_p, "gap", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000730", false))
+																												{
+																													success_flag = true;
+																												}
+																										}
+																								}
+																						}
+																				}
+																		}
+																}
+														}
+												}
+										}
+								}
+						}
+				}
+		}
+
+	return success_flag;
+}
+
+
+static bool AddEdamOntologyTerms (json_t *context_p)
+{
+	bool success_flag = false;
+
+	if (AddTerm (context_p, "sequence_length", "http://edamontology.org/data_1249", false))
+		{
+			success_flag = true;
+		}
+
+
+	return success_flag;
+}
+
+
+static bool AddFaldoOntologyTerms (json_t *context_p)
+{
+	bool success_flag = false;
+
+	if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+		{
+			success_flag = true;
+		}
+
+
+	return success_flag;
 }
 

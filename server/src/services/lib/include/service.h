@@ -652,68 +652,7 @@ GRASSROOTS_SERVICE_API  bool IsServiceLive (Service *service_p);
  */
 GRASSROOTS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserDetails *user_p, const bool add_id_flag);
 
-/**
- * @brief Get the description of a Service
- *
- * @param root_p The json_t representation of a Service.
- * @return The description or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
 
-
-/**
- * @brief Get the name of a Service
- *
- * @param root_p The json_t representation of a Service.
- * @return The name or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the description of an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The description or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the name of an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The name or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the URI of an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The URI or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the URI for an associated image icon an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The URI or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationIconURIFromJSON (const json_t * const root_p);
-
-
-
-/**
- * @brief Get the path to an icon for a Service.
-
- * @param root_p The json_t representation of a Service.
- * @return The path to the icon or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
 
 
 /**
@@ -828,18 +767,6 @@ GRASSROOTS_SERVICE_API OperationStatus GetCurrentServiceStatus (Service *service
  * @return The OperationStatus for the
  */
 GRASSROOTS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *service_p, const uuid_t service_id);
-
-
-/**
- * Get the JSON fragment specifying the Provider details
- * from a JSON fragment representing a Service.
- *
- * @param service_json_p The JSON fragment representing a Service.
- * @return The JSON fragment representing a Provider or <code>NULL</code>
- * if it could not be found.
- */
-GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
-
 
 
 /**

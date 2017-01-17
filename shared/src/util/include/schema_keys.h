@@ -227,7 +227,8 @@ extern "C"
 	PREFIX const char *OPERATION_S VAL("operation");
 	PREFIX const char *OPERATION_DESCRIPTION_S VAL("description");
 	PREFIX const char *OPERATION_INFORMATION_URI_S VAL("about_url");
-	PREFIX const char *OPERATION_ICON_PATH_S VAL("icon");
+	PREFIX const char *OPERATION_ICON_URI_S VAL("icon_uri");
+	PREFIX const char *OPERATION_ICON_DATA_S VAL("icon_data");
 	PREFIX const char *OPERATION_SYNCHRONOUS_S VAL("synchronous");
 	/* End of doxygen member group */
 	/**@}*/

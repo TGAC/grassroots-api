@@ -12,7 +12,7 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -D_DEBUG -DUNIX -D_DEBUG -DQT_NO_DEBUG_OUTPUT -DQT_QML_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_WEBCHANNEL_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
+DEFINES       = -D_DEBUG -DUNIX -D_DEBUG -DQT_NO_DEBUG_OUTPUT -DQT_QML_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_WEBCHANNEL_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++0x -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I../../../../clients/client-ui/qt/include -I/opt/grassroots-0/grassroots/extras/libuuid/include -I/opt/grassroots-0/grassroots/extras/jansson/include -I../../../../clients/lib/include -I../../../../shared/src/parameters/include -I../../../../shared/src/util/include -I../../../../shared/src/util/include/containers -I../../../../shared/src/util/include/io -I../../../../server/src/services/lib/include -I../../../../shared/src/network/include -I../../../../shared/src/handlers/lib/include -I/home/billy/Qt/5.6/gcc_64/include -I/home/billy/Qt/5.6/gcc_64/include/QtWebEngineWidgets -I/home/billy/Qt/5.6/gcc_64/include/QtWidgets -I/home/billy/Qt/5.6/gcc_64/include/QtWebEngineCore -I/home/billy/Qt/5.6/gcc_64/include/QtQuick -I/home/billy/Qt/5.6/gcc_64/include/QtGui -I/home/billy/Qt/5.6/gcc_64/include/QtQml -I/home/billy/Qt/5.6/gcc_64/include/QtNetwork -I/home/billy/Qt/5.6/gcc_64/include/QtWebChannel -I/home/billy/Qt/5.6/gcc_64/include/QtCore -I. -I/home/billy/Qt/5.6/gcc_64/mkspecs/linux-g++
@@ -736,7 +736,6 @@ compiler_rcc_clean:
 compiler_moc_header_make_all: moc_base_param_widget.cpp moc_file_chooser_widget.cpp moc_param_check_box.cpp moc_param_combo_box.cpp moc_param_double_spin_box.cpp moc_param_spin_box.cpp moc_param_text_box.cpp moc_param_line_edit.cpp moc_prefs_widget.cpp moc_qt_parameter_widget.cpp moc_service_prefs_widget.cpp moc_results_list.cpp moc_results_widget.cpp moc_json_list_widget_item.cpp moc_json_viewer.cpp moc_main_window.cpp moc_services_list.cpp moc_keyword_widget.cpp moc_param_group_box.cpp moc_param_table_widget.cpp moc_param_json_editor.cpp moc_matched_service_list_widget_item.cpp moc_standard_list_widget_item.cpp moc_results_page.cpp
 compiler_moc_header_clean:
 	-$(DEL_FILE) moc_base_param_widget.cpp moc_file_chooser_widget.cpp moc_param_check_box.cpp moc_param_combo_box.cpp moc_param_double_spin_box.cpp moc_param_spin_box.cpp moc_param_text_box.cpp moc_param_line_edit.cpp moc_prefs_widget.cpp moc_qt_parameter_widget.cpp moc_service_prefs_widget.cpp moc_results_list.cpp moc_results_widget.cpp moc_json_list_widget_item.cpp moc_json_viewer.cpp moc_main_window.cpp moc_services_list.cpp moc_keyword_widget.cpp moc_param_group_box.cpp moc_param_table_widget.cpp moc_param_json_editor.cpp moc_matched_service_list_widget_item.cpp moc_standard_list_widget_item.cpp moc_results_page.cpp
-<<<<<<< HEAD
 moc_base_param_widget.cpp: /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qwidget.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qwindowdefs.h \
@@ -844,108 +843,6 @@ moc_base_param_widget.cpp: /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QLabel \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlabel.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qframe.h \
-=======
-moc_base_param_widget.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qflags.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstring.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qchar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpair.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrect.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvector.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qregion.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qline.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qset.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfile.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLabel \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlabel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../shared/src/parameters/include/parameter.h \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
@@ -2821,7 +2718,6 @@ moc_results_widget.cpp: /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTabWidget \
 		../../../../clients/client-ui/qt/include/results_widget.h
 	/home/billy/Qt/5.6/gcc_64/bin/moc $(DEFINES) -I/home/billy/Qt/5.6/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots-api/build/linux/clients/qt -I/home/billy/Projects/grassroots-api/clients/client-ui/qt/include -I/opt/grassroots-0/grassroots/extras/libuuid/include -I/opt/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots-api/clients/lib/include -I/home/billy/Projects/grassroots-api/shared/src/parameters/include -I/home/billy/Projects/grassroots-api/shared/src/util/include -I/home/billy/Projects/grassroots-api/shared/src/util/include/containers -I/home/billy/Projects/grassroots-api/shared/src/util/include/io -I/home/billy/Projects/grassroots-api/server/src/services/lib/include -I/home/billy/Projects/grassroots-api/shared/src/network/include -I/home/billy/Projects/grassroots-api/shared/src/handlers/lib/include -I/home/billy/Qt/5.6/gcc_64/include -I/home/billy/Qt/5.6/gcc_64/include/QtWebEngineWidgets -I/home/billy/Qt/5.6/gcc_64/include/QtWidgets -I/home/billy/Qt/5.6/gcc_64/include/QtWebEngineCore -I/home/billy/Qt/5.6/gcc_64/include/QtQuick -I/home/billy/Qt/5.6/gcc_64/include/QtGui -I/home/billy/Qt/5.6/gcc_64/include/QtQml -I/home/billy/Qt/5.6/gcc_64/include/QtNetwork -I/home/billy/Qt/5.6/gcc_64/include/QtWebChannel -I/home/billy/Qt/5.6/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/results_widget.h -o moc_results_widget.cpp
 
-<<<<<<< HEAD
 moc_json_list_widget_item.cpp: /home/billy/Qt/5.6/gcc_64/include/QtCore/QObject \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qobject.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qobjectdefs.h \
@@ -3115,307 +3011,16 @@ moc_json_viewer.cpp: /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTreeWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qpen.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMenu \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmenu.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qaction.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qactiongroup.h \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
 		../../../../clients/client-ui/qt/include/json_viewer.h
 	/home/billy/Qt/5.6/gcc_64/bin/moc $(DEFINES) -I/home/billy/Qt/5.6/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots-api/build/linux/clients/qt -I/home/billy/Projects/grassroots-api/clients/client-ui/qt/include -I/opt/grassroots-0/grassroots/extras/libuuid/include -I/opt/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots-api/clients/lib/include -I/home/billy/Projects/grassroots-api/shared/src/parameters/include -I/home/billy/Projects/grassroots-api/shared/src/util/include -I/home/billy/Projects/grassroots-api/shared/src/util/include/containers -I/home/billy/Projects/grassroots-api/shared/src/util/include/io -I/home/billy/Projects/grassroots-api/server/src/services/lib/include -I/home/billy/Projects/grassroots-api/shared/src/network/include -I/home/billy/Projects/grassroots-api/shared/src/handlers/lib/include -I/home/billy/Qt/5.6/gcc_64/include -I/home/billy/Qt/5.6/gcc_64/include/QtWebEngineWidgets -I/home/billy/Qt/5.6/gcc_64/include/QtWidgets -I/home/billy/Qt/5.6/gcc_64/include/QtWebEngineCore -I/home/billy/Qt/5.6/gcc_64/include/QtQuick -I/home/billy/Qt/5.6/gcc_64/include/QtGui -I/home/billy/Qt/5.6/gcc_64/include/QtQml -I/home/billy/Qt/5.6/gcc_64/include/QtNetwork -I/home/billy/Qt/5.6/gcc_64/include/QtWebChannel -I/home/billy/Qt/5.6/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/json_viewer.h -o moc_json_viewer.cpp
-=======
-moc_json_list_widget_item.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qflags.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstring.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qchar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpair.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		../../../../clients/client-ui/qt/include/results_list.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrect.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvector.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qregion.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qline.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qset.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfile.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/QWebEngineView \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebengineview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainter.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/QSslConfiguration \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslconfiguration.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qtcpsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qabstractsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslerror.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslcertificate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcryptographichash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatetime.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qssl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QFlags \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QtGlobal \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QString \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QSharedDataPointer \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QMetaType \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qtwebenginewidgetsglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebenginepage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebenginecertificateerror.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qwebenginecallback.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
-		../../../../clients/client-ui/qt/include/standard_list_widget_item.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QListWidgetItem \
-		../../../../clients/client-ui/qt/include/json_list_widget_item.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/json_list_widget_item.h -o moc_json_list_widget_item.cpp
-
-moc_json_viewer.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTreeWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreeview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qflags.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstring.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qchar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpair.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrect.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvector.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qregion.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qline.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qset.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfile.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTextEdit \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtextedit.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextdocument.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		../../../../clients/client-ui/qt/include/viewable_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
-		../../../../clients/client-ui/qt/include/json_viewer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/bin/moc
-	/home/billy/Applications/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/billy/Projects/grassroots/build/linux/clients/qt -I/home/billy/Projects/grassroots/clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I/home/billy/Projects/grassroots/clients/lib/include -I/home/billy/Projects/grassroots/shared/src/parameters/include -I/home/billy/Projects/grassroots/shared/src/util/include -I/home/billy/Projects/grassroots/shared/src/util/include/containers -I/home/billy/Projects/grassroots/shared/src/util/include/io -I/home/billy/Projects/grassroots/server/src/services/lib/include -I/home/billy/Projects/grassroots/shared/src/network/include -I/home/billy/Projects/grassroots/shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I/usr/include/c++/4.8 -I/usr/include/x86_64-linux-gnu/c++/4.8 -I/usr/include/c++/4.8/backward -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/4.8/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../../../../clients/client-ui/qt/include/json_viewer.h -o moc_json_viewer.cpp
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 
 moc_main_window.cpp: /home/billy/Qt/5.6/gcc_64/include/QtGui/QDragEnterEvent \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qevent.h \
@@ -7442,7 +7047,6 @@ client_ui_api.o: ../../../../clients/client-ui/qt/src/client_ui_api.cpp /home/bi
 		../../../../clients/client-ui/qt/include/viewable_widget.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o client_ui_api.o ../../../../clients/client-ui/qt/src/client_ui_api.cpp
 
-<<<<<<< HEAD
 service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widget.cpp /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QHBoxLayout \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qboxlayout.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlayout.h \
@@ -7563,147 +7167,25 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/QString \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QVBoxLayout \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/QIcon \
-		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
-		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QCheckBox \
-		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qcheckbox.h \
-		../../../../shared/src/parameters/include/parameter_set.h \
-		/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-=======
-service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widget.cpp /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QHBoxLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qboxlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qflags.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstring.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qchar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpair.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlayoutitem.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrect.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qgridlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvector.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qregion.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qline.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qset.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfile.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QPushButton \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qpushbutton.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QScrollArea \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QString \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QVBoxLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QIcon \
 		../../../../clients/client-ui/qt/include/qt_client_data.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qeventloop.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qdesktopwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qguiapplication.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qinputmethod.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QLinkedList \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QApplication \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qapplication.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qcoreapplication.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qeventloop.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qguiapplication.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qinputmethod.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QLinkedList \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qlinkedlist.h \
 		../../../../clients/lib/include/client.h \
 		../../../../clients/lib/include/grassroots_client_library.h \
 		../../../../shared/src/util/include/library.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/parameters/include/parameter_set.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
+		/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
+		/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../shared/src/parameters/include/parameter.h \
 		/opt/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
 		../../../../shared/src/parameters/include/grassroots_params_library.h \
@@ -7725,51 +7207,50 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		../../../../shared/src/network/include/connection.h \
 		../../../../shared/src/network/include/curl_tools.h \
 		../../../../clients/client-ui/qt/include/main_window.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDragEnterEvent \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QDropEvent \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/QDragEnterEvent \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/QDropEvent \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMainWindow \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmainwindow.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../../../clients/client-ui/qt/include/keyword_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QLineEdit \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QLineEdit \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlineedit.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextcursor.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextformat.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qpen.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextoption.h \
 		../../../../clients/client-ui/qt/include/runnable_widget.h \
 		../../../../clients/client-ui/qt/include/prefs_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QStackedWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstackedwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QList \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QStackedWidget \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qstackedwidget.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTabWidget \
 		../../../../clients/client-ui/qt/include/services_list.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QStyledItemDelegate \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QListWidget \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlistwidget.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlistview.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qstyleoption.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qvalidator.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qregularexpression.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qslider.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qabstractslider.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qstyle.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtabbar.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qrubberband.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QStyledItemDelegate \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		../../../../clients/client-ui/qt/include/service_ui.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QObject \
 		../../../../clients/client-ui/qt/include/service_prefs_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QCheckBox \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qcheckbox.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QCheckBox \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qcheckbox.h \
 		../../../../clients/client-ui/qt/include/qt_parameter_widget.h \
-<<<<<<< HEAD
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QFormLayout \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qformlayout.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QGridLayout \
@@ -7777,10 +7258,7 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		/home/billy/Qt/5.6/gcc_64/include/QtWebEngineWidgets/QWebEngineView \
 		/home/billy/Qt/5.6/gcc_64/include/QtWebEngineWidgets/qwebengineview.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qpainter.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtGui/qpen.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtCore/QObject \
 		/home/billy/Qt/5.6/gcc_64/include/QtNetwork/QSslConfiguration \
 		/home/billy/Qt/5.6/gcc_64/include/QtNetwork/qsslconfiguration.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtNetwork/qsslsocket.h \
@@ -7804,73 +7282,37 @@ service_prefs_widget.o: ../../../../clients/client-ui/qt/src/service_prefs_widge
 		/home/billy/Qt/5.6/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QGroupBox \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qgroupbox.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtCore/QList \
-=======
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QFormLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qformlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QGridLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QHash \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/QWebEngineView \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebengineview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainter.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/QSslConfiguration \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslconfiguration.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qtcpsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qabstractsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslerror.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslcertificate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcryptographichash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatetime.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qssl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QFlags \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QtGlobal \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QSharedDataPointer \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QMetaType \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qtwebenginewidgetsglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebenginepage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebenginecertificateerror.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qwebenginecallback.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QGroupBox \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qgroupbox.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../clients/client-ui/qt/include/base_param_widget.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QLabel \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlabel.h \
 		../../../../clients/client-ui/qt/include/param_group_box.h \
 		../../../../clients/client-ui/qt/include/results_window.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QWindow \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindow.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QEvent \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QMargins \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QRect \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qsurface.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qsurfaceformat.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/QWindow \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qwindow.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QEvent \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QMargins \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QRect \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qsurface.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qsurfaceformat.h \
 		../../../../clients/client-ui/qt/include/results_widget.h \
 		../../../../clients/client-ui/qt/include/results_page.h \
 		../../../../clients/client-ui/qt/include/results_list.h \
 		../../../../clients/client-ui/qt/include/progress_window.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QTimer \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtimer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasictimer.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/QTimer \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qtimer.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qbasictimer.h \
 		../../../../clients/client-ui/qt/include/progress_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QProgressBar \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qprogressbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QMovie \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmovie.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimagereader.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimageiohandler.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qplugin.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsonobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfactoryinterface.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QProgressBar \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qprogressbar.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/QMovie \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qmovie.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qimagereader.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qimageiohandler.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qplugin.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qpointer.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qjsonobject.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qjsonvalue.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtCore/qfactoryinterface.h \
 		../../../../shared/src/util/include/operation.h \
 		../../../../clients/client-ui/qt/include/viewer_widget.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
@@ -8289,7 +7731,6 @@ results_widget.o: ../../../../clients/client-ui/qt/src/results_widget.cpp /home/
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o results_widget.o ../../../../clients/client-ui/qt/src/results_widget.cpp
 
 json_list_widget_item.o: ../../../../clients/client-ui/qt/src/json_list_widget_item.cpp ../../../../clients/client-ui/qt/include/json_list_widget_item.h \
-<<<<<<< HEAD
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/QObject \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qobject.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qobjectdefs.h \
@@ -8447,160 +7888,6 @@ json_list_widget_item.o: ../../../../clients/client-ui/qt/src/json_list_widget_i
 		/home/billy/Qt/5.6/gcc_64/include/QtWebEngineWidgets/qwebenginecertificateerror.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWebEngineCore/qwebenginecallback.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
-=======
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QObject \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qflags.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstring.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qchar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpair.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		../../../../clients/client-ui/qt/include/results_list.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrect.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvector.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qregion.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qline.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qset.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfile.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QListWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QList \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/QWebEngineView \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebengineview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainter.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qnetworkaccessmanager.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/QSslConfiguration \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslconfiguration.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qtcpsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qabstractsocket.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslerror.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslcertificate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcryptographichash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatetime.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qssl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QFlags \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/QSslPreSharedKeyAuthenticator \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork/qsslpresharedkeyauthenticator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QtGlobal \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QString \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QSharedDataPointer \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QMetaType \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qtwebenginewidgetsglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebenginepage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets/qwebenginecertificateerror.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qwebenginecallback.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore/qtwebenginecoreglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagelayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpagesize.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../clients/client-ui/qt/include/standard_list_widget_item.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QListWidgetItem \
 		../../../../clients/client-ui/qt/include/text_viewer.h \
@@ -8633,7 +7920,7 @@ json_list_widget_item.o: ../../../../clients/client-ui/qt/src/json_list_widget_i
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
 		../../../../shared/src/util/include/amiga_platform.h \
-<<<<<<< HEAD
+		../../../../shared/src/util/include/schema_keys.h \
 		../../../../clients/client-ui/qt/include/json_viewer.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTreeWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtreewidget.h \
@@ -8749,6 +8036,7 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qfiledevice.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qvector2d.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtouchdevice.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QVBoxLayout \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/QJsonDocument \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qjsondocument.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qjsonvalue.h \
@@ -8757,8 +8045,13 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qaction.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qicon.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qactiongroup.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMenu \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/QFontDatabase \
+		/home/billy/Qt/5.6/gcc_64/include/QtGui/qfontdatabase.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMenuBar \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmenubar.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmenu.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTabWidget \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../../../clients/client-ui/qt/include/json_viewer.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTreeWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtreewidget.h \
@@ -8777,7 +8070,6 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qabstractslider.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qstyle.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtabwidget.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qrubberband.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTextEdit \
@@ -8787,188 +8079,23 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qpen.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMenu \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
-=======
-		../../../../shared/src/util/include/schema_keys.h \
-		../../../../clients/client-ui/qt/include/json_viewer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTreeWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreeview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o json_list_widget_item.o ../../../../clients/client-ui/qt/src/json_list_widget_item.cpp
-
-json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QHBoxLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qboxlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qflags.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstring.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qchar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpair.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qlayoutitem.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qrect.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsize.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qgridlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvector.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qregion.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qline.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qimage.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qhash.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qevent.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qmap.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qset.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurl.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfile.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QVBoxLayout \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QJsonDocument \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsondocument.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QDebug \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QAction \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QFontDatabase \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontdatabase.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenuBar \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenubar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
-		../../../../clients/client-ui/qt/include/json_viewer.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTreeWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreeview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTextEdit \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtextedit.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextdocument.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
-		../../../../clients/client-ui/qt/include/viewable_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../shared/src/util/include/math_utils.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/string_utils.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
-<<<<<<< HEAD
 		/opt/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
-=======
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../shared/src/util/include/json_util.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
 		../../../../shared/src/util/include/amiga_platform.h \
-<<<<<<< HEAD
-=======
 		../../../../shared/src/util/include/schema_keys.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../shared/src/util/include/io/streams.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o json_viewer.o ../../../../clients/client-ui/qt/src/json_viewer.cpp
 
@@ -9087,7 +8214,6 @@ text_viewer.o: ../../../../clients/client-ui/qt/src/text_viewer.cpp /home/billy/
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qlayoutitem.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qgridlayout.h \
 		../../../../clients/client-ui/qt/include/text_viewer.h \
-<<<<<<< HEAD
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QPlainTextEdit \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qplaintextedit.h \
@@ -9109,37 +8235,13 @@ text_viewer.o: ../../../../clients/client-ui/qt/src/text_viewer.cpp /home/billy/
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmenu.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMenuBar \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmenubar.h \
-		../../../../clients/client-ui/qt/include/viewable_widget.h
-=======
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QPlainTextEdit \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qplaintextedit.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtextedit.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextdocument.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextlayout.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qglyphrun.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qrawfont.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTextEdit \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QMouseEvent \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenuBar \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenubar.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../shared/src/util/include/string_utils.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
+		/opt/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o text_viewer.o ../../../../clients/client-ui/qt/src/text_viewer.cpp
 
 viewer_widget.o: ../../../../clients/client-ui/qt/src/viewer_widget.cpp /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QHBoxLayout \
@@ -9267,17 +8369,13 @@ viewer_widget.o: ../../../../clients/client-ui/qt/src/viewer_widget.cpp /home/bi
 		/home/billy/Qt/5.6/gcc_64/include/QtCore/qsavefile.h \
 		../../../../clients/client-ui/qt/include/viewer_widget.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
-<<<<<<< HEAD
-		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget
-=======
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QWidget \
 		../../../../shared/src/util/include/string_utils.h \
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
 		../../../../shared/src/util/include/library.h \
 		../../../../shared/src/util/include/containers/linked_list.h \
-		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
+		/opt/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o viewer_widget.o ../../../../clients/client-ui/qt/src/viewer_widget.cpp
 
 viewable_widget.o: ../../../../clients/client-ui/qt/src/viewable_widget.cpp /home/billy/Qt/5.6/gcc_64/include/QtWidgets/QFileDialog \
@@ -11343,7 +10441,6 @@ progress_widget.o: ../../../../clients/client-ui/qt/src/progress_widget.cpp /hom
 		../../../../shared/src/util/include/user_details.h \
 		../../../../shared/src/util/include/schema_version.h \
 		../../../../clients/client-ui/qt/include/json_viewer.h \
-<<<<<<< HEAD
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTreeWidget \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtreewidget.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qtreeview.h \
@@ -11370,38 +10467,10 @@ progress_widget.o: ../../../../clients/client-ui/qt/src/progress_widget.cpp /hom
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Qt/5.6/gcc_64/include/QtGui/qpen.h \
-=======
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTreeWidget \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreeview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTextEdit \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtextedit.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextdocument.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextoption.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QMenu \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qmenu.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qaction.h \
+		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/qactiongroup.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../shared/src/util/include/alloc_failure.hpp \
 		../../../../shared/src/util/include/io/streams.h
@@ -12567,11 +11636,7 @@ results_page.o: ../../../../clients/client-ui/qt/src/results_page.cpp /home/bill
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson.h \
 		/opt/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/results_widget.h \
-<<<<<<< HEAD
 		/home/billy/Qt/5.6/gcc_64/include/QtWidgets/QTabWidget \
-=======
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 		../../../../shared/src/util/include/typedefs.h \
 		../../../../shared/src/util/include/json_util.h \
 		../../../../shared/src/util/include/grassroots_util_library.h \
@@ -12579,12 +11644,8 @@ results_page.o: ../../../../clients/client-ui/qt/src/results_page.cpp /home/bill
 		../../../../shared/src/util/include/containers/linked_list.h \
 		../../../../shared/src/util/include/containers/string_linked_list.h \
 		../../../../shared/src/util/include/memory_allocations.h \
-<<<<<<< HEAD
-		../../../../shared/src/util/include/amiga_platform.h
-=======
 		../../../../shared/src/util/include/amiga_platform.h \
 		../../../../shared/src/util/include/schema_keys.h
->>>>>>> 620dc2f242473cc6cd856399581975f817116b5c
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o results_page.o ../../../../clients/client-ui/qt/src/results_page.cpp
 
 moc_base_param_widget.o: moc_base_param_widget.cpp 

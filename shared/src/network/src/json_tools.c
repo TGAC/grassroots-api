@@ -627,3 +627,61 @@ bool GetUUIDFromJSON (const json_t *service_json_p, uuid_t uuid)
 	return success_flag;
 }
 
+
+const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, SERVICES_DESCRIPTION_S);
+}
+
+
+const char *GetServiceNameFromJSON (const json_t * const root_p)
+{
+	const char *name_s = GetJSONString (root_p, SERVICES_NAME_S);
+
+	if (!name_s)
+		{
+			name_s = GetJSONString (root_p, SERVICE_NAME_S);
+		}
+
+	return name_s;
+}
+
+
+const char *GetOperationDescriptionFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_DESCRIPTION_S);
+}
+
+
+const char *GetOperationNameFromJSON (const json_t * const root_p)
+{
+	const char *result_s = GetJSONString (root_p, OPERATION_ID_S);
+
+	if (!result_s)
+		{
+			result_s = GetJSONString (root_p, OPERATION_ID_OLD_S);
+		}
+
+	return result_s;
+}
+
+
+const char *GetOperationInformationURIFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_INFORMATION_URI_S);
+}
+
+
+const char *GetOperationIconURIFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_ICON_URI_S);
+}
+
+
+const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
+{
+	return json_object_get (service_json_p, SERVER_PROVIDER_S);
+}
+
+
+

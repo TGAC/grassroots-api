@@ -38,7 +38,7 @@ class ServicePrefsWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	explicit ServicePrefsWidget (const char * const service_name_s, const char * const service_description_s, const char * const service_info_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p, QWidget *parent_p = 0);
+	explicit ServicePrefsWidget (const char * const service_name_s, const char * const service_description_s, const char * const service_info_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p, QTClientData *data_p, QWidget *parent_p = 0);
 	~ServicePrefsWidget ();
 
 	bool GetRunFlag () const;
