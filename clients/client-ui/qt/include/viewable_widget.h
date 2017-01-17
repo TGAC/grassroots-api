@@ -27,7 +27,7 @@ class ViewableWidget
 {
 public:
 
-	virtual const char *GetText () const = 0;
+	virtual char *GetText () const = 0;
 	virtual QWidget *GetWidget () = 0;
 
 };

@@ -47,12 +47,12 @@ static bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps
 
 static LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
 
-static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s);
+static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s, const DatabaseType db_type);
 
 static json_t *GetInitialisedProcessedRequest (void);
 
 
-static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s);
+static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s, const bool add_id_flag);
 
 
 
@@ -76,10 +76,10 @@ static bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *da
 
 static bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p);
 
-static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p);
+static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
 
-static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p);
+static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
 
 static bool AddSubsequenceMarkup (json_t *parent_p, const char *key_s, const char *subsequence_start_s, const uint32 length);
@@ -526,7 +526,7 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 																											{
 																												if (GetAndAddQueryMetadata (blast_result_search_p, output_p))
 																													{
-																														if (MarkUpHit (blast_hit_p, output_p, database_s))
+																														if (MarkUpHit (blast_hit_p, output_p, database_s, data_p -> bsd_type))
 																															{
 																																if (json_array_append_new (results_array_p, output_p) == 0)
 																																	{
@@ -1441,7 +1441,7 @@ static bool AddSequence (json_t *root_p, const char *key_s, const char *query_se
 			}
 		}
  */
-static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p)
+static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseType db_type)
 {
 	bool success_flag = false;
 	const json_t *hsps_p = json_object_get (blast_hit_p, "hsps");
@@ -1471,7 +1471,7 @@ static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p
 
 			if (marked_up_hits_p)
 				{
-					json_t *marked_up_hit_p = GetAndAddMarkedUpHit	(marked_up_hits_p, blast_hit_p);
+					json_t *marked_up_hit_p = GetAndAddMarkedUpHit	(marked_up_hits_p, blast_hit_p, db_type);
 
 					if (marked_up_hit_p)
 						{
@@ -1555,36 +1555,56 @@ static bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p
 }
 
 
-static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p)
+static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p, const DatabaseType db_type)
 {
 	json_t *marked_up_hit_p = json_object ();
 
 	if (marked_up_hit_p)
 		{
 			int hit_num;
+			const char *hit_type_s = NULL;
 
-			if (GetJSONInteger (blast_hit_p, "num", &hit_num))
+			if (db_type == DT_NUCLEOTIDE)
 				{
-					if (json_object_set_new (marked_up_hit_p, "hit_num", json_integer (hit_num)) == 0)
-						{
-							json_t *marked_up_hsps_p = json_array ();
+					hit_type_s = "nucelotide_match";
+				}
+			else if (db_type == DT_PROTEIN)
+				{
+					hit_type_s = "protein_match";
+				}
 
-							if (marked_up_hsps_p)
+
+			if (hit_type_s)
+				{
+					if (json_object_set_new (marked_up_hit_p, "@type", json_string (hit_type_s)) == 0)
+						{
+							if (GetJSONInteger (blast_hit_p, "num", &hit_num))
 								{
-									if (json_object_set_new (marked_up_hit_p, "hsps", marked_up_hsps_p) == 0)
+									if (json_object_set_new (marked_up_hit_p, "hit_num", json_integer (hit_num)) == 0)
 										{
-											if (json_array_append_new (marked_up_hits_array_p, marked_up_hit_p) == 0)
+											json_t *marked_up_hsps_p = json_array ();
+
+											if (marked_up_hsps_p)
 												{
-													return marked_up_hit_p;
+													if (json_object_set_new (marked_up_hit_p, "hsps", marked_up_hsps_p) == 0)
+														{
+															if (json_array_append_new (marked_up_hits_array_p, marked_up_hit_p) == 0)
+																{
+																	return marked_up_hit_p;
+																}
+														}
+													else
+														{
+															json_decref (marked_up_hsps_p);
+														}
 												}
 										}
-									else
-										{
-											json_decref (marked_up_hsps_p);
-										}
 								}
-						}
-				}
+
+						}		/* if (json_object_set_new (marked_up_hit_p, "@type", json_string (hit_type_s)) == 0) */
+
+				}		/* if (hit_type_s) */
+
 
 			json_decref (marked_up_hit_p);
 		}		/* if (marked_up_hit_p) */
@@ -1593,88 +1613,95 @@ static json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_
 }
 
 
-static bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p)
+static bool AddHsp (json_t *marked_up_hsp_p, const json_t *hsp_p)
 {
-	if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsp_p, "bit_score", "bit_score"))
+	if (json_object_set_new (marked_up_hsp_p, "@type", json_string ("match")) == 0)
 		{
-			if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsp_p, "evalue", "evalue"))
+			if (GetAndAddDoubleScoreValue (marked_up_hsp_p, hsp_p, "bit_score", "bit_score"))
 				{
-					if (GetAndAddIntScoreValue (marked_up_hit_p, hsp_p, "score", "score"))
+					if (GetAndAddDoubleScoreValue (marked_up_hsp_p, hsp_p, "evalue", "evalue"))
 						{
-							if (GetAndAddIntScoreValue (marked_up_hit_p, hsp_p, "num", "hsp_num"))
+							if (GetAndAddIntScoreValue (marked_up_hsp_p, hsp_p, "score", "score"))
 								{
-									if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "hseq", "hit_sequence"))
+									if (GetAndAddIntScoreValue (marked_up_hsp_p, hsp_p, "num", "hsp_num"))
 										{
-											if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
+											if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "hseq", "hit_sequence"))
 												{
-													if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence"))
+													if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
 														{
-															if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
+															if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "qseq", "query_sequence"))
 																{
-																	if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline"))
+																	if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
 																		{
-																			const char *midline_s = GetJSONString (hsp_p, "midline");
-																			const char *query_sequence_s = GetJSONString (hsp_p, "qseq");
-																			const char *hit_sequence_s = GetJSONString (hsp_p, "hseq");
-																			const uint32 hit_index = 0;
-																			const int inc_value = 1;
-
-																			if (GetAndAddNucleotidePolymorphisms (marked_up_hit_p, query_sequence_s, hit_sequence_s, midline_s, hit_index, inc_value))
+																			if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "midline", "midline"))
 																				{
-																					return true;
+																					const char *midline_s = GetJSONString (hsp_p, "midline");
+																					const char *query_sequence_s = GetJSONString (hsp_p, "qseq");
+																					const char *hit_sequence_s = GetJSONString (hsp_p, "hseq");
+																					const uint32 hit_index = 0;
+																					const int inc_value = 1;
+
+																					if (GetAndAddNucleotidePolymorphisms (marked_up_hsp_p, query_sequence_s, hit_sequence_s, midline_s, hit_index, inc_value))
+																						{
+																							return true;
+																						}
+																				}		/* if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "midline", "midline")) */
+																			else
+																				{
+																					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add midline");
 																				}
-																		}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "midline", "midline")) */
+
+																		}		/* if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
 																	else
 																		{
-																			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add midline");
+																			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add query location details");
 																		}
 
-																}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+																}		/* if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "qseq", "query_sequence")) */
 															else
 																{
-																	PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add query location details");
+																	PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add query_sequence");
 																}
 
-														}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsp_p, "qseq", "query_sequence")) */
+														}		/* if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
 													else
 														{
-															PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add query_sequence");
+															PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add hit location details");
 														}
 
-												}		/* if (GetAndAddHitLocation (marked_up_hit_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
+												}		/* if (GetAndAddSequenceValue (marked_up_hsp_p, hsps_p, "hseq", "hit_sequence")) */
 											else
 												{
-													PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add hit location details");
+													PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add hit_sequence");
 												}
 
-										}		/* if (GetAndAddSequenceValue (marked_up_hit_p, hsps_p, "hseq", "hit_sequence")) */
+										}		/* if (GetAndAddIntScoreValue (marked_up_hsp_p, hsps_p, "num", "num") */
 									else
 										{
-											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add hit_sequence");
+											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add num");
 										}
 
-								}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "num", "num") */
+								}		/* if (GetAndAddIntScoreValue (marked_up_hsp_p, hsps_p, "score", "score") */
 							else
 								{
-									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add num");
+									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add evalue");
 								}
 
-						}		/* if (GetAndAddIntScoreValue (marked_up_hit_p, hsps_p, "score", "score") */
+						}		/* if (GetAndAddDoubleScoreValue (marked_up_hsp_p, hsps_p, "evalue", "evalue")) */
 					else
 						{
-							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add evalue");
+							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add evalue");
 						}
 
-				}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "evalue", "evalue")) */
+				}		/* if (GetAndAddDoubleScoreValue (marked_up_hsp_p, hsps_p, "bit_score", "bit_score")) */
 			else
 				{
-					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add evalue");
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add bit_score");
 				}
-
-		}		/* if (GetAndAddDoubleScoreValue (marked_up_hit_p, hsps_p, "bit_score", "bit_score")) */
+		}		/* if (json_object_set_new (marked_up_hsp_p, "@type", json_string ("match")) == 0) */
 	else
 		{
-			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hit_p, "failed to add bit_score");
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add @type: match");
 		}
 
 	return false;
@@ -1986,27 +2013,36 @@ static json_t *GetInitialisedProcessedRequest (void)
 				{
 					if (json_object_set_new (root_p, "@context", context_p) == 0)
 						{
-							if (AddTerm (context_p, "database", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505"))
+							if (AddTerm (context_p, "database", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001505", true))
 								{
-									if (AddTerm (context_p, "scaffold", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148"))
+									if (AddTerm (context_p, "scaffold", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000148", true))
 										{
-											if (AddTerm (context_p, "query_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149"))
+											if (AddTerm (context_p, "query_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149", true))
 												{
-													if (AddTerm (context_p, "hit_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149"))
+													if (AddTerm (context_p, "hit_sequence", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000149", true))
 														{
-															if (AddTerm (context_p, "evalue", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686"))
+															if (AddTerm (context_p, "evalue", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001686", true))
 																{
-																	if (AddTerm (context_p, "bit_score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685"))
+																	if (AddTerm (context_p, "bit_score", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001685", true))
 																		{
-																			if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by"))
+																			if (AddTerm (context_p, "contained_by", "http://www.sequenceontology.org/browser/current_svn/term/contained_by", true))
 																				{
-																					if (AddTerm (context_p, "snp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000694"))
+																					if (AddTerm (context_p, "snp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000694", false))
 																						{
-																							if (AddTerm (context_p, "mnp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001013"))
+																							if (AddTerm (context_p, "mnp", "http://www.sequenceontology.org/browser/current_svn/term/SO:0001013", false))
 																								{
-																									if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																									if (AddTerm (context_p, "match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000039", false))
 																										{
-																											return root_p;
+																											if (AddTerm (context_p, "nucleotide_match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000347", false))
+																												{
+																													if (AddTerm (context_p, "protein_match", "http://www.sequenceontology.org/browser/current_svn/term/SO:0000349", false))
+																														{
+																															if (json_object_set_new (context_p, "faldo", json_string ("http://biohackathon.org/resource/faldo")) == 0)
+																																{
+																																	return root_p;
+																																}
+																														}
+																												}
 																										}
 																								}
 																						}
@@ -2033,7 +2069,7 @@ static json_t *GetInitialisedProcessedRequest (void)
 }
 
 
-static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s)
+static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s, const bool add_id_flag)
 {
 	json_t *term_p = json_object ();
 
@@ -2041,7 +2077,7 @@ static bool AddTerm (json_t *root_p, const char *key_s, const char *term_s)
 		{
 			if (json_object_set_new (term_p, "@context", json_string (term_s)) == 0)
 				{
-					if (json_object_set_new (term_p, "@type", json_string ("@id")) == 0)
+					if ((!add_id_flag) || (json_object_set_new (term_p, "@type", json_string ("@id")) == 0))
 						{
 							if (json_object_set_new (root_p, key_s, term_p) == 0)
 								{
@@ -2137,7 +2173,7 @@ static bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p)
 }
 
 
-static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s)
+static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s, const DatabaseType db_type)
 {
 	bool success_flag = false;
 
@@ -2145,7 +2181,7 @@ static bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *datab
 		{
 			if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p))
 				{
-					if (AddHitDetails (mark_up_p, hit_p))
+					if (AddHitDetails (mark_up_p, hit_p, db_type))
 						{
 							success_flag = true;
 						}

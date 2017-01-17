@@ -37,18 +37,24 @@ public:
 
 	void SetText (const char *value_s);
 
-	virtual const char *GetText () const;
+	virtual char *GetText () const;
 	virtual QWidget *GetWidget ();
+
+public slots:
+	void SetSystemFont ();
+	void SetFixedFont ();
+
+
 
 protected:
 	QPlainTextEdit *tv_editor_p;
 	QMenuBar *tv_menubar_p;
 
+
+
+
 private:
 	void AddActions (QMenu *menu_p);
-
-	void SetSystemFont ();
-	void SetFixedFont ();
 
 
 };

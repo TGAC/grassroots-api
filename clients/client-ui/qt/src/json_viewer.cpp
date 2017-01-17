@@ -14,10 +14,12 @@
 ** limitations under the License.
 */
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QJsonDocument>
 #include <QDebug>
 #include <QAction>
-#include <QMenu>
+#include <QFontDatabase>
+#include <QMenuBar>
 
 #include "json_viewer.h"
 #include "math_utils.h"
@@ -35,18 +37,26 @@ Q_DECLARE_METATYPE (json_t *)
 JSONViewer ::	JSONViewer (QWidget *parent_p)
 : QWidget (parent_p)
 {
-	QHBoxLayout *layout_p = new QHBoxLayout;
+	QVBoxLayout *layout_p = new QVBoxLayout;
+	QMenuBar *menubar_p = new QMenuBar (this);
+	QMenu *menu_p = new QMenu ("View");
+	AddActions (menu_p);
+	menubar_p -> addMenu (menu_p);
+	layout_p -> addWidget (menubar_p);
+
+	QHBoxLayout *widgets_layout_p = new QHBoxLayout;
 
 	jv_tree_p = new QTreeWidget (this);
 	jv_tree_p -> setContextMenuPolicy (Qt :: CustomContextMenu);
 	connect (jv_tree_p, &QTreeWidget :: customContextMenuRequested, this, &JSONViewer :: PrepareMenu);
 
-	layout_p -> addWidget (jv_tree_p);
+	widgets_layout_p -> addWidget (jv_tree_p);
 
 	jv_viewer_p = new QTextEdit (this);
 	jv_viewer_p -> setReadOnly (true);
-	layout_p -> addWidget (jv_viewer_p);
+	widgets_layout_p -> addWidget (jv_viewer_p);
 
+	layout_p -> addLayout (widgets_layout_p);
 	setLayout (layout_p);
 
 	setWindowTitle ("JSON Viewer");
@@ -120,12 +130,12 @@ void JSONViewer :: RunLinkedService (bool checked_flag)
 }
 
 
-const char *JSONViewer :: GetText () const
+char *JSONViewer :: GetText () const
 {
 	QString s = jv_viewer_p ->  toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();
-
-	return ba.constData ();
+	const char *data_s = ba.constData ();
+	return CopyToNewString (data_s, 0, false);
 }
 
 
@@ -133,6 +143,35 @@ QWidget *JSONViewer :: GetWidget ()
 {
 	return this;
 }
+
+
+void JSONViewer :: AddActions (QMenu *menu_p)
+{
+	QMenu *sub_menu_p = new QMenu (tr ("Font"));
+	QActionGroup *font_types_p = new QActionGroup (this);
+
+	// Fixed Font
+	QAction *action_p = new QAction (tr ("Fixed"), this);
+	action_p -> setStatusTip (tr ("Use Fixed Font"));
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &JSONViewer :: SetFixedFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+
+	// System Font
+	action_p = new QAction (tr ("System"), this);
+	action_p -> setStatusTip (tr ("Use System Font"));
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &JSONViewer :: SetSystemFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+	action_p -> setChecked (true);
+
+
+	menu_p -> addMenu (sub_menu_p);
+}
+
+
 
 
 QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p)
@@ -313,6 +352,8 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			free (value_s);
 		}
 
+	jv_tree_p -> resizeColumnToContents (0);
+
 	jv_tree_p -> repaint ();
 }
 
@@ -323,5 +364,25 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 {
 	QTreeWidgetItem *top_level_node_p = InsertData (NULL, key_s, data_p);
 
+}
+
+
+
+
+void JSONViewer :: SetSystemFont ()
+{
+	QFont f = QFontDatabase :: systemFont (QFontDatabase :: GeneralFont);
+
+	jv_viewer_p -> setFont (f);
+	jv_tree_p -> setFont (f);
+}
+
+
+void JSONViewer :: SetFixedFont ()
+{
+	QFont f = QFontDatabase :: systemFont (QFontDatabase :: FixedFont);
+
+	jv_viewer_p -> setFont (f);
+	jv_tree_p -> setFont (f);
 }
 

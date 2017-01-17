@@ -18,6 +18,8 @@
 #include <QVBoxLayout>
 
 #include "text_viewer.h"
+#include "string_utils.h"
+
 
 TextViewer :: TextViewer (QWidget *parent_p)
 : QWidget (parent_p)
@@ -46,13 +48,13 @@ void TextViewer :: SetText (const char *value_s)
 }
 
 
-const char *TextViewer :: GetText () const
+ char *TextViewer :: GetText () const
 {
 	QString s = tv_editor_p -> toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();
-	const char *data_s = ba.constData ();
+	const char *data_s = ba.data ();
 
-	return data_s;
+	return CopyToNewString (data_s, 0, false);
 }
 
 

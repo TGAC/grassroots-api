@@ -23,6 +23,8 @@
 
 #include <QTreeWidget>
 #include <QTextEdit>
+#include <QMenu>
+
 
 #include "jansson.h"
 #include "viewable_widget.h"
@@ -37,7 +39,7 @@ public:
 
 	void SetJSONData (json_t *data_p);
 
-	virtual const char *GetText () const;
+	virtual char *GetText () const;
 
 	virtual QWidget *GetWidget ();
 
@@ -56,10 +58,15 @@ private:
 	QTreeWidgetItem *InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p);
 	void AddTopLevelNode (const char *key_s, json_t *data_p);
 
+	void AddActions (QMenu *menu_p);
+
 private slots:
 	void PrepareMenu (const QPoint &pos_r);
 	void RunLinkedService (bool checked_flag);
 
+
+	void SetSystemFont ();
+	void SetFixedFont ();
 };
 
 #endif // JSON_VIEWER_H
