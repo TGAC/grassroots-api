@@ -575,6 +575,16 @@ GRASSROOTS_SERVICE_API const char *GetOperationInformationURIFromJSON (const jso
 
 
 /**
+ * @brief Get the URI for an associated image icon an Operation
+ *
+ * @param root_p The json_t representation of a Service.
+ * @return The URI or <code>NULL</code> if it could not be found.
+ */
+GRASSROOTS_SERVICE_API const char *GetOperationIconURIFromJSON (const json_t * const root_p);
+
+
+
+/**
  * @brief Get the path to an icon for a Service.
 
  * @param root_p The json_t representation of a Service.
