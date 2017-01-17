@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * mongo_db_util.h
  *
@@ -32,12 +37,43 @@
 	extern "C" {
 #endif
 
+/**
+ * When the Grassroots system starts up, iniitialise
+ * and global MongoDB resources that it needs.
+ *
+ * @return <code>true</code> if the global MongoDB resources
+ * were acquired successfully,
+ * <code>false</code> otherwise.
+ * @ingroup server_group
+ */
 GRASSROOTS_SERVICE_MANAGER_API bool InitMongoDB (void);
 
+
+/**
+ * Free any MongoDB resources that the Grassroots system
+ * obtained when it was started.
+ * @ingroup server_group
+ */
 GRASSROOTS_SERVICE_MANAGER_API void ExitMongoDB (void);
 
+
+/**
+ * Get a new mongoc_client_t.
+ *
+ * @return The new mongoc_client_t or <code>NULL</code> upon error.
+ * @see ReleaseMongoClient
+ * @ingroup server_group
+ */
 GRASSROOTS_SERVICE_MANAGER_API mongoc_client_t *GetMongoClient (void);
 
+
+/**
+ * Free a dynamically-allocated mongoc_client_t.
+ *
+ * @param client_p The mongoc_client_t to free
+ * @see GetMongoClient
+ * @ingroup server_group
+ */
 GRASSROOTS_SERVICE_MANAGER_API void ReleaseMongoClient (mongoc_client_t *client_p);
 
 

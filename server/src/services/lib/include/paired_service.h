@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 
 /*
  * paired_service.h
@@ -40,6 +45,8 @@
  * A datatype for describing a remote Service
  * that can be used in conjuction with a local
  * Service.
+ *
+ * @ingroup services_group
  */
 typedef struct PairedService
 {
@@ -55,7 +62,7 @@ typedef struct PairedService
 	/** The URI of the ExternalServer's Grassroots service. */
 	char *ps_server_uri_s;
 
-
+	/** The JSON fragment detailing the Provider of this PairedService. */
 	json_t *ps_provider_p;
 
 	/** The ParameterSet for this PairedService. */
@@ -68,6 +75,7 @@ typedef struct PairedService
  * a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct PairedServiceNode
 {
@@ -93,6 +101,7 @@ extern "C"
  * @param server_uri_s The URI for the ExternalServer's Grassroots access.
  * @param server_name_s The name of the ExternalServer.
  * @param op_p The JSON fragment for the Service.
+ * @param provider_p The JSON fragment from the server configuration file detailing the Provider of this PairedService.
  * @return The new PairedService or <code>NULL</code> upon error.
  * @memberof PairedService
  */
@@ -126,6 +135,8 @@ GRASSROOTS_SERVICE_API PairedServiceNode *AllocatePairedServiceNode (PairedServi
  * @param server_uri_s The URI for the ExternalServer's Grassroots access.
  * @param server_name_s The name of the ExternalServer.
  * @param op_p The JSON fragment for the Service.
+ * @param provider_p The JSON fragment representing the Provider.
+ * @ref server_configuration.md
  * @return The new PairedServiceNode or <code>NULL</code> upon error.
  * @memberof PairedServiceNode
  * @see AllocatePairedService
@@ -148,6 +159,7 @@ GRASSROOTS_SERVICE_API void FreePairedServiceNode (ListItem *node_p);
  * @param service_name_s The name of the PairedServce to call.
  * @param params_p The ParameterSet to send to the PairedService.
  * @param paired_service_uri_s The URI of the ExternalServer to send the request to.
+ * @param providers_p The details of ExternalServers for any paired or external Services.
  * @return The JSON fragment of the results of the PairedService or <code>NULL</code> upon error.
  */
 GRASSROOTS_SERVICE_API json_t *MakeRemotePairedServiceCall (const char * const service_name_s, ParameterSet *params_p, const char * const paired_service_uri_s, ProvidersStateTable *providers_p);

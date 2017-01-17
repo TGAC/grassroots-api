@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * service_job.h
  *
@@ -44,6 +49,8 @@ struct LinkedService;
  * @brief A datatype to represent a running task.
  *
  * Each Service can run one or more ServiceJobs.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceJob
 {
@@ -111,6 +118,7 @@ typedef struct ServiceJob
  * a ServceJobSet using a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct ServiceJobNode
 {
@@ -125,6 +133,8 @@ typedef struct ServiceJobNode
 
 /**
  * A datatype to represent a collection of ServiceJobs.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceJobSet
 {
@@ -134,7 +144,6 @@ typedef struct ServiceJobSet
 	/** The ServiceJobs that are in use for the Service. */
 	LinkedList *sjs_jobs_p;
 
-	bool sjs_wait_on_jobs_flag;
 
 } ServiceJobSet;
 
@@ -394,7 +403,18 @@ GRASSROOTS_SERVICE_API json_t *GetServiceJobAsJSON (ServiceJob * const job_p);
 GRASSROOTS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p);
 
 
-
+/**
+ * Process all ServiceJobs within a ServiceJobSet.
+ *
+ * Each ServiceJob will have its status checked and updated if necessary along
+ * with setting up any LinkedServices if available.
+ *
+ * @param jobs_p The ServicoeJobSet to process.
+ * @param res_p The JSON array where are any results will get appended.
+ * @return <code>true</code> if all ServiceJobs within the ServiceJobSet
+ * were processed successfully, <code>false</code> otherwise.
+ * @memberof ServiceJobSet
+ */
 GRASSROOTS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p);
 
 
@@ -404,12 +424,12 @@ GRASSROOTS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t 
  * This will create a ServiceJob from a json_t object. It will
  * allocate a new ServiceJob and then call <code>SetServiceFromJSON</code>.
  *
- * @param json_p The json object reresenting a ServiceJob.
+ * @param json_p The json object representing a ServiceJob.
  * @return <code>true</code> if the ServiceJob was created successfully,
  * <code>false</code> otherwise.
  * @memberof ServiceJob
  * @see SetServiceJobFromJSON
- * @see
+ *
  */
 GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromJSON (const json_t *json_p);
 
@@ -589,7 +609,16 @@ GRASSROOTS_SERVICE_API ServiceJob *CreateServiceJobFromResultsJSON (const json_t
 GRASSROOTS_SERVICE_API bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, struct Service *service_p, const char *name_s, const char *description_s, OperationStatus status);
 
 
-
+/**
+ * Add a key-value pair error statement to a ServiceJob.
+ *
+ * @param job_p The ServiceJob to update.
+ * @param key_s The key for the error.
+ * @param value_s The value for the error.
+ * @return <code>true</code> if the ServiceJob was amended successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API bool AddErrorToServiceJob (ServiceJob *job_p, const char * const key_s, const char * const value_s);
 
 
@@ -606,15 +635,39 @@ GRASSROOTS_SERVICE_API bool AddResultToServiceJob (ServiceJob *job_p, json_t *re
 
 
 
-GRASSROOTS_SERVICE_API bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag);
-
-
+/**
+ * Set the current OperationStatus for a given ServiceJob.
+ *
+ * @param job_p The ServiceJob to update.
+ * @param status The new OperationStatus value.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API void SetServiceJobStatus (ServiceJob *job_p, OperationStatus status);
 
 
+/**
+ * Set the function that a ServiceJob will use to update itself.
+ *
+ * @param job_p The ServiceJob to amend.
+ * @param update_fn The new function that will be used for the ServiceJob to update itself.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API void SetServiceJobUpdateFunction (ServiceJob *job_p, bool (*update_fn) (ServiceJob *job_p));
 
 
+/**
+ * Update, if appropriate, a given ServiceJob.
+ *
+ * If the ServiceJob was previously in an unfinished state,
+ * then check to see whether it has finished running.
+ * If the ServiceJob had already finished, either successfully
+ * or with errors, this function is a no-op.
+ *
+ * @param job_p The ServiceJob to update.
+ * @return <code>true</code> if the ServiceJob was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API bool UpdateServiceJob (ServiceJob *job_p);
 
 
@@ -628,6 +681,16 @@ GRASSROOTS_SERVICE_API bool UpdateServiceJob (ServiceJob *job_p);
 GRASSROOTS_SERVICE_API uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p);
 
 
+/**
+ * Replace the set of results for a given ServiceJob.
+ *
+ * @param job_p The ServiceJob to amend.
+ * @param results_p The new JSON fragment which will be the ServiceJob's results.
+ * Any previous results will have the reference count decremented.
+ * @return <code>true</code> if the ServiceJob was updated successfully, <code>false</code>
+ * otherwise.
+ * @memberof ServiceJob
+ */
 GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p);
 
 
@@ -644,11 +707,15 @@ GRASSROOTS_SERVICE_API bool ReplaceServiceJobResults (ServiceJob *job_p, json_t 
  */
 GRASSROOTS_SERVICE_API bool AddLinkedServiceToServiceJob (ServiceJob *job_p, struct LinkedService *linked_service_p);
 
-
+/**
+ * Attempt to extract the relevant data for all LinkedServices that the ServiceJob's Service has and
+ * store them in the ServiceJob.
+ *
+ * @param job_p TheServiceJob to process.
+ * @memberof ServiceJob
+ * @see GenerateLinkedServiceResults
+ */
 GRASSROOTS_SERVICE_API void ProcessLinkedServices (ServiceJob *job_p);
-
-
-GRASSROOTS_SERVICE_API char *GenerateLinkedServiceResults (ServiceJob *job_p, struct LinkedService *linked_service_p);
 
 
 

@@ -1,5 +1,5 @@
 /*
- ** Copyright 2014-2015 The Genome Analysis Centre
+ ** Copyright 2014-2016 The Earlham Institute
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -224,57 +224,6 @@ static json_t *LoadConfig (const char *path_s)
 
 
 
-/*
- * Obviously for a real system we'd be using encryption, tokens and the like
- */
-json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p)
-{
-	bool success_flag = false;
-	json_t *root_p = GetOperationAsJSON (OP_IRODS_MODIFIED_DATA, sv_p);
-
-	if (root_p)
-		{
-			if (AddCredentialsToJson (root_p, user_p))
-				{
-					json_t *interval_p = json_object ();
-
-					if (interval_p)
-						{
-							json_t *irods_p = json_object_get (root_p, KEY_IRODS);
-
-							if (json_object_set_new (irods_p, "interval", interval_p) == 0)
-								{
-									success_flag = true;
-
-									if (from_s)
-										{
-											success_flag = AddKeyAndStringValue (interval_p, "from", from_s);
-										}
-
-									if (success_flag && to_s)
-										{
-											success_flag = AddKeyAndStringValue (interval_p, "to", to_s);
-										}
-
-								}	
-							else
-								{
-									json_decref (interval_p);
-								}
-						}
-				}
-
-			if (!success_flag)
-				{
-					json_object_clear (root_p);
-					json_decref (root_p);
-					root_p = NULL;
-				}
-		}		/* if (root_p) */
-
-	return root_p;
-}
-
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s)
 {
@@ -318,11 +267,11 @@ json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * co
 {
 	json_t *res_p = NULL;
 	json_error_t error;
-	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
+	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", RESOURCE_PROTOCOL_S, protocol_s, RESOURCE_VALUE_S, filename_s);
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, KEY_FILE_DATA, op_data_p, sv_p);
+			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, RESOURCE_S, op_data_p, sv_p);
 		}
 	else
 		{
@@ -453,21 +402,31 @@ json_t *GetOperationAsJSON (Operation op, const SchemaVersion * const sv_p)
 
 			if (op_p)
 				{
-					if (json_object_set_new (op_p, OPERATION_ID_S, json_integer (op)) == 0)
+					const char *op_s = GetOperationAsString (op);
+
+					if (op_s)
 						{
-							if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0)
+							if (json_object_set_new (op_p, OPERATION_S, json_string (op_s)) == 0)
 								{
-									return msg_p;
-								}		/* if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0) */
+									if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0)
+										{
+											return msg_p;
+										}		/* if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0) */
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add ops");
+										}
+
+								}		/* if (json_object_set (op_p, OPERATION_ID_S, json_integer (op)) == 0) */
 							else
 								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add ops");
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add op id");
 								}
 
-						}		/* if (json_object_set (op_p, OPERATION_ID_S, json_integer (op)) == 0) */
+						}		/* if (op_s) */
 					else
 						{
-							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add op id");
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to get op string for " UINT32_FMT, op);
 						}
 
 					json_decref (op_p);

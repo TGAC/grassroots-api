@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -95,6 +95,9 @@ static int Compress (Resource *input_resource_p, const char * const algorithm_s,
 static bool CloseCompressService (Service *service_p);
 
 
+static bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p, const int flush);
+
+
 /*
  * API FUNCTIONS
  */
@@ -152,7 +155,7 @@ static bool CloseCompressService (Service * UNUSED_PARAM (service_p))
 
 
 
-bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p, const int flush)
+static bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p, const int flush)
 {
 	int res;
 	bool success_flag = true;

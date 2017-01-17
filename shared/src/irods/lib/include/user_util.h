@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * user_util.h
  *
@@ -23,11 +28,7 @@
 #ifndef IRODS_LIB_INCLUDE_USER_UTIL_H_
 #define IRODS_LIB_INCLUDE_USER_UTIL_H_
 
-/**
- * @file user.h
- * @addtogroup iRODS
- * @{
- */
+
 
 #include "rcConnect.h"
 #include "irods_util_library.h"
@@ -42,6 +43,7 @@ extern "C"
  *
  * @param user_id The iRODS numeric user id.
  * @return The corresponding username or <code>NULL</code> upon error.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API const char *GetUsernameForId (const int64 user_id);
 
@@ -52,6 +54,7 @@ IRODS_UTIL_API const char *GetUsernameForId (const int64 user_id);
  * @param username_s The username to get the id for.
  * @param id_p Pointer to where the id will be stored if it can be found.
  * @return <code>true</code> if the id was found successfully, <code>false</code> otherwise.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API bool FindIdForUsername (rcComm_t *connection_p, const char * const username_s, int64 *id_p);
 
@@ -63,6 +66,7 @@ IRODS_UTIL_API bool FindIdForUsername (rcComm_t *connection_p, const char * cons
  * @param username_s The username to get the collections for.
  * @return The QueryResults for the matching collections. The results
  * have following columns: COL_COLL_ID & COL_COLL_NAME.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s);
 
@@ -75,6 +79,7 @@ IRODS_UTIL_API QueryResults *GetAllCollectionsForUsername (rcComm_t *connection_
  * @param user_id_s The user id to get the data objects for.
  * @return The QueryResults for the matching data objects. The results
  * have following columns: COL_D_DATA_ID, COL_COLL_ID & COL_DATA_NAME .
+ * @ingroup irods_group
  */
 IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, const char * const username_s, const char *user_id_s);
 
@@ -85,6 +90,7 @@ IRODS_UTIL_API QueryResults *GetAllDataForUsername (rcComm_t *connection_p, cons
  * @param connection_p The connection to the iRODS server.
  * @return The QueryResults for the matcshing data objects. The results
  * have the following columns: COL_ZONE_ID & COL_ZONE_NAME.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API QueryResults *GetAllZoneNames (rcComm_t *connection_p);
 
@@ -99,6 +105,7 @@ IRODS_UTIL_API QueryResults *GetAllZoneNames (rcComm_t *connection_p);
  * @return The QueryResults for the matching data objects. The results
  * have following columns: COL_D_DATA_ID, COL_COLL_ID, COL_DATA_NAME
  * & COL_D_MODIFY_TIME.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API QueryResults *GetAllModifiedDataForUsername (rcComm_t *connection_p, const char * const username_s, const time_t from, const time_t to);
 
@@ -110,10 +117,6 @@ IRODS_UTIL_LOCAL QueryResults *RunQuery (rcComm_t *connection_p, const int *sele
 #ifdef __cplusplus
 }
 #endif
-
-/**
- * @}
- */
 
 
 #endif /* IRODS_LIB_INCLUDE_USER_UTIL_H_ */

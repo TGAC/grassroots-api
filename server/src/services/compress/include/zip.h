@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef ZIP1_H
 #define ZIP1_H
 
@@ -30,11 +35,13 @@ extern "C"
 {
 #endif
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 COMPRESS_SERVICE_API int CompressAsZipNoHeader (Handler*in_p, Handler *out_p, int level);
 
 COMPRESS_SERVICE_API int CompressAsZip (Handler*in_p, Handler *out_p, int level);
 
-COMPRESS_SERVICE_API int CompressAsZip1 (Handler *in_p, Handler *out_p, int level);
+#endif
 
 #ifdef __cplusplus
 }

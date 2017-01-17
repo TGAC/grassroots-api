@@ -1,5 +1,5 @@
 /*
- ** Copyright 2014-2015 The Genome Analysis Centre
+ ** Copyright 2014-2016 The Earlham Institute
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -242,24 +242,24 @@ int main (int argc, char *argv [])
 										break;
 
 
-									case OP_IRODS_MODIFIED_DATA:
-										{
-											json_t *req_p = GetModifiedFilesRequest (user_p, from_s, to_s, sv_p);
-
-											if (req_p)
-												{
-													json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
-
-													if (response_p)
-														{
-
-															json_decref (response_p);
-														}
-
-													json_decref (req_p);
-												}		/* if (req_p) */
-										}
-										break;
+//									case OP_IRODS_MODIFIED_DATA:
+//										{
+//											json_t *req_p = GetModifiedFilesRequest (user_p, from_s, to_s, sv_p);
+//
+//											if (req_p)
+//												{
+//													json_t *response_p = MakeRemoteJsonCall (req_p, connection_p);
+//
+//													if (response_p)
+//														{
+//
+//															json_decref (response_p);
+//														}
+//
+//													json_decref (req_p);
+//												}		/* if (req_p) */
+//										}
+//										break;
 
 									case OP_LIST_INTERESTED_SERVICES:
 										{

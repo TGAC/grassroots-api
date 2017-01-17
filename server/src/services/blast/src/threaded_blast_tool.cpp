@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -82,14 +82,13 @@ OperationStatus ThreadedBlastTool :: Run ()
 	return status;
 }
 
-
-const char *ThreadedBlastTool :: GetResults ()
+char *ThreadedBlastTool :: GetResults (BlastFormatter *formatter_p)
 {
 	return NULL;
 }
 
 
-OperationStatus ThreadedBlastTool :: GetStatus ()
+OperationStatus ThreadedBlastTool :: GetStatus (bool update_flag)
 {
 	OperationStatus status = OS_ERROR;
 

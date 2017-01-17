@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * web_service_util.h
  *
@@ -35,6 +40,8 @@
 
 /**
  * An enumeration detailing how to combine different parameters upon submission to a web service.
+ *
+ * @ingroup services_group
  */
 typedef enum MatchType
 {
@@ -55,6 +62,8 @@ typedef enum MatchType
 /**
  * An enumeration of the different web-based
  * submission methods.
+ *
+ * @ingroup services_group
  */
 typedef enum SubmissionMethod
 {
@@ -85,6 +94,8 @@ typedef enum SubmissionMethod
  * web services.
  *
  * @extends ServiceData
+ *
+ * @ingroup services_group
  */
 typedef struct WebServiceData
 {
@@ -216,6 +227,7 @@ GRASSROOTS_SERVICE_API ServiceJobSet *RunWebSearchService (Service *service_p, P
 /**
  * Add a Parameter giving the choice of MatchTypes to a ParameterSet.
  *
+ * @param data_p The WebServiceData to to use for configuration details.
  * @param param_set_p The ParameterSet to add the MatchType parameter to.
  * @return <code>true</code> if successful, <code>false</code> otherwise.
  */

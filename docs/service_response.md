@@ -43,7 +43,7 @@ An array of ServiceJobs that have been requested to run by the Client.
 
 ~~~~{.json}
 {
-	"service": "Agris Web Search service",
+	"service_name": "Agris Web Search service",
 	"description": "An operation to obtain matching articles from Agris",
     "jobs": [
         {

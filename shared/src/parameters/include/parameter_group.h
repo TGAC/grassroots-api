@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 
 /*
  * parameter_group.h
@@ -47,6 +52,9 @@
  * including this header file. Currently this happens in
  * json_util.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_PARAMETER_GROUP_TAGS_H
 	#define PARAMETER_GROUP_PREFIX GRASSROOTS_PARAMS_API
 	#define PARAMETER_GROUP_VAL(x)	= x
@@ -55,10 +63,12 @@
 	#define PARAMETER_GROUP_VAL(x)
 #endif
 
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 
+/*
 PARAMETER_GROUP_PREFIX const char *PARAM_GROUP_DELIMITER_S PARAMETER_GROUP_VAL("/");
-
+*/
 
 /* forward declaration */
 struct ServiceData;
@@ -69,6 +79,8 @@ struct ParameterSet;
  * A datatype to tell the system that certain
  * parameters should be grouped together in the
  * client's user interface if possible.
+ *
+ * @ingroup parameters_group
  */
 typedef struct ParameterGroup
 {
@@ -119,6 +131,7 @@ typedef struct ParameterGroup
  * A datatype for storing a ParameterGroup on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct ParameterGroupNode
 {
@@ -138,28 +151,91 @@ extern "C"
 #endif
 
 
-
+/**
+ * Allocate a ParameterGroupNode that will take ownership of
+ * a given ParameterGroup.
+ *
+ * @param group_p The ParameterGroup that the ParameterGroupNode will reference.
+ * @return The new ParameterGroupNode or <code>NULL</code> upon error.
+ * @memberof ParameterGroupNode
+ */
 GRASSROOTS_PARAMS_API ParameterGroupNode *AllocateParameterGroupNode (ParameterGroup *group_p);
 
 
+/**
+ * Free a given ParameterGroupNode.
+ *
+ * This will also free the associated ParameterGroup.
+ *
+ * @param node_p The ParameterGroupNode to free.
+ * @memberof ParameterGroupNode
+ */
 GRASSROOTS_PARAMS_API void FreeParameterGroupNode (ListItem *node_p);
 
 
+/**
+ * Allocate a ParameterGroup.
+ *
+ * @param name_s The name of the ParameterGroup that will be displayed to the user.
+ * @param key_s An optional internal key to use by the owning Service. This can be <code>NULL</code>.
+ * @param service_data_p The ServiceData for the Service that generates this ParameterGroup.
+ * @return The new ParameterGroup or <code>NULL</code> upon error.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, struct ServiceData *service_data_p);
 
 
+/**
+ * Free a given ParameterGroup.
+ *
+ * @param param_group_p The ParameterGroup to free.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API void FreeParameterGroup (ParameterGroup *param_group_p);
 
 
+/**
+ * Get the JSON fragment detailing a given ParameterGroup.
+ *
+ * @param param_group_p The ParameterGroup to get the JSON for.
+ * @return The JSON fragment or <code>NULL</code> upon error.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API json_t *GetParameterGroupAsJSON (ParameterGroup *param_group_p);
 
 
+/**
+ * Add a ParameterGroup as a child to another ParameterGroup.
+ *
+ * @param parent_group_p The ParameterGroup to add the child ParameterGroup to.
+ * @param child_group_p The ParameterGroup to add.
+ * @return <code>true</code> if the ParameterGroup was added successfully, <code>false</code> otherwise.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *child_group_p);
 
 
+/**
+ * Add a Parameter to a ParameterGroup.
+ *
+ * @param parent_group_p The ParameterGroup to add the Parameter to.
+ * @param param_p The Parameter to add.
+ * @return <code>true</code> if the Parameter was added successfully, <code>false</code> otherwise.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API bool AddParameterToParameterGroup (ParameterGroup *parent_group_p, Parameter *param_p);
 
 
+/**
+ * Create a ParameterGroup and add it to a given ParameterSet.
+ *
+ * @param name_s The name of the ParameterGroup that will be displayed to the user.
+ * @param key_s An optional internal key to use by the owning Service. This can be <code>NULL</code>.
+ * @param service_data_p The ServiceData for the Service that generates this ParameterGroup.
+ * @param param_set_p The ParameterSet to add the ParameterGroup to.
+ * @return The new ParameterGroup or <code>NULL</code> upon error.
+ * @memberof ParameterGroup
+ */
 GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, struct ParameterSet *param_set_p);
 
 

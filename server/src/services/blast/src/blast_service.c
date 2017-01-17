@@ -1,5 +1,5 @@
 /*
- ** Copyright 2014-2015 The Genome Analysis Centre
+ ** Copyright 2014-2016 The Earlham Institute
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -488,7 +488,16 @@ ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char 
 
 			if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &param_value, true))
 				{
-					output_format_code = param_value.st_ulong_value;
+					int8 code = GetOutputFormatCodeForString (param_value.st_string_value_s);
+
+					if (code != -1)
+						{
+							output_format_code = (uint32) code;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't get requested output format from \"%s\", using " UINT32_FMT " instead", param_value.st_string_value_s, output_format_code);
+						}
 				}
 			else
 				{
@@ -572,12 +581,7 @@ bool AddBaseBlastServiceParameters (Service *blast_service_p, ParameterSet *para
 		{
 			uint16 num_dbs = AddDatabaseParams (blast_data_p, param_set_p, db_type);
 
-			num_dbs = AddPairedServiceParameters (blast_service_p, param_set_p, num_dbs);
-
-			if (num_dbs > 0)
-				{
-					success_flag = true;
-				}
+			success_flag = AddPairedServiceParameters (blast_service_p, param_set_p);
 		}
 
 	return success_flag;

@@ -1,4 +1,4 @@
-# Linked Services
+﻿# Linked Services
 
 ## Introduction 
 
@@ -15,7 +15,7 @@ The JSON for each Linked Service uses the following keys:
     
     * **input**: The name of the piece of data to get from the Input Service's results.
     * **output**: The name of the Output Service's Parameter whose value will be set to the *input* key's value specified above.
-    * **multiple**: Setting this to true tels the Grassroots system to create the data for as many calls to the Output Service as there are of the matching *input* keys. This defaults to ```false```.
+    * **multiple**: Setting this to true tells the Grassroots system to create the data for as many calls to the Output Service as there are of the matching *input* keys. This defaults to ```false```.
 
 An example configuration for linking results of calls to the BLAST Service to the SamTools Service for getting full scaffolds is given below.
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * running_services_table.h
  *
@@ -32,10 +37,29 @@
 /* forward declaration */
 struct JobsManager;
 
-
+/**
+ * A typedef'd function for serialising a ServiceJob into an
+ * array of raw bytes.
+ *
+ * @param job_p The ServiceJob to serialise.
+ * @param length_p If the serialisation is successful, the
+ * length of the resultant array will be stored here.
+ * @return The raw array or <code>NULL</code> upon error.
+ * @ingroup server_group
+ */
 typedef unsigned char *(*ServiceJobSerialiser) (ServiceJob *job_p, uint32 *length_p);
 
 
+/**
+ * A typedef'd function for deserialising a ServiceJob from an
+ * array of raw bytes.
+ *
+ * @param input_data_p The array of raw bytes from a previously serialised ServiceJob.
+ * @param config_p If the ServiceJobDeserialiser requires some configuration data, it
+ * can be passed in here. This can be <code>NULL</code>.
+ * @return The ServiceJob or <code>NULL</code> upon error.
+ * @ingroup server_group
+ */
 typedef ServiceJob *(*ServiceJobDeserialiser) (unsigned char *input_data_p, void *config_p);
 
 
@@ -44,6 +68,7 @@ typedef ServiceJob *(*ServiceJobDeserialiser) (unsigned char *input_data_p, void
  *
  * A JobsManager is used to store details of the ServiceJobs that are currently
  * running on a Server. ServiceJobs can be added, removed and searched for.
+ * @ingroup server_group
  */
 typedef struct JobsManager
 {
@@ -102,6 +127,7 @@ typedef struct JobsManager
  * Get the current Server-wide JobsManager.
  *
  * @return The JobsManager.
+ * @memberof JobsManager
  */
 GRASSROOTS_SERVICE_MANAGER_API JobsManager *GetJobsManager (void);
 
@@ -115,6 +141,7 @@ GRASSROOTS_SERVICE_MANAGER_API JobsManager *GetJobsManager (void);
  * @param add_job_fn The callback function to set for jm_add_job_fn for the given JobsManager.
  * @param get_job_fn The callback function to set for jm_get_job_fn for the given JobsManager.
  * @param remove_job_fn The callback function to set for jm_remove_job_fn for the given JobsManager.
+ * @memberof JobsManager
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitJobsManager (JobsManager *manager_p,
                       bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p),

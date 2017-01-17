@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,11 +13,10 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
  * @file
- * @addtogroup iRODS
- * @brief Routines to query data objects and collections
- * @{
+ * @brief
  */
 #ifndef IRODS_QUERY_H
 #define IRODS_QUERY_H
@@ -36,6 +35,7 @@ struct IRodsConnection;
 
 /**
  * A datatype for accessing a single result of a search on an iRODS server.
+ * @ingroup irods_group
  */
 typedef struct QueryResult
 {
@@ -57,6 +57,7 @@ typedef struct QueryResult
 
 /**
  * A datatype for holding an array of the results of a search on an iRODS server.
+ * @ingroup irods_group
  */
 typedef struct QueryResults
 {
@@ -80,6 +81,7 @@ extern "C"
  *
  * @param args_ss The array of strings to build query string from terminated by a NULL.
  * @return A newly-allocated string containing the query or <code>NULL</code> upon error.
+ * @ingroup irods_group
  */
 IRODS_UTIL_API char *BuildQueryString (const char **args_ss);
 
@@ -89,6 +91,7 @@ IRODS_UTIL_API char *BuildQueryString (const char **args_ss);
  *
  * @param query_s The string to free.
  * @see BuildQueryString
+ * @ingroup irods_group
  */
 IRODS_UTIL_API void FreeBuiltQueryString (char *query_s);
 
@@ -234,8 +237,6 @@ IRODS_UTIL_LOCAL QueryResults *GetAllAttributeNames (struct IRodsConnection *con
  */
 IRODS_UTIL_API QueryResults *GetAllMetadataAttributeValues (struct IRodsConnection *connection_p, const int key_id, const char * const key_s, const int value_id);
 
-
-/** @} */
 
 
 #ifdef __cplusplus

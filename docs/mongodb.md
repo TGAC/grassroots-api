@@ -5,7 +5,7 @@ One of the facilities that Grassroots system provides is an API to access a [Mon
 
 ## Inserting data
 
-The client would send a child "**insert**" key with a list of child key-value pairs. These can be in a single object if you just want to insert a single document or as an array if you want to insert multiple documents. For example, both of the following requests are valid:
+The client would send a child **insert** key with a list of child key-value pairs. These can be in a single object if you just want to insert a single document or as an array if you want to insert multiple documents. For example, both of the following requests are valid:
 
 ~~~{.json}
 {

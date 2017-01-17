@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef TEXT_VIEWER_H
 #define TEXT_VIEWER_H
 
@@ -32,18 +37,24 @@ public:
 
 	void SetText (const char *value_s);
 
-	virtual const char *GetText () const;
+	virtual char *GetText () const;
 	virtual QWidget *GetWidget ();
+
+public slots:
+	void SetSystemFont ();
+	void SetFixedFont ();
+
+
 
 protected:
 	QPlainTextEdit *tv_editor_p;
 	QMenuBar *tv_menubar_p;
 
+
+
+
 private:
 	void AddActions (QMenu *menu_p);
-
-	void SetSystemFont ();
-	void SetFixedFont ();
 
 
 };

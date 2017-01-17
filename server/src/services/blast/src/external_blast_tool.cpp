@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -240,7 +240,17 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 
 															if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &value, true))
 																{
-																	bt_output_format = value.st_ulong_value;
+																	int8 code = GetOutputFormatCodeForString (value.st_string_value_s);
+																	bt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
+
+																	if (code != -1)
+																		{
+																			bt_output_format = (uint32) code;
+																		}
+																	else
+																		{
+
+																		}
 
 																	if (bt_service_data_p -> bsd_formatter_p)
 																		{
@@ -255,9 +265,9 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 																			 * in json file format as that is the format that we will
 																			 * convert from.
 																			 */
-																			if (value.st_ulong_value == BOF_GRASSROOTS)
+																			if (bt_output_format == BOF_GRASSROOTS)
 																				{
-																					value.st_ulong_value = BOF_SINGLE_FILE_JSON_BLAST;
+																					bt_output_format = BOF_SINGLE_FILE_JSON_BLAST;
 																				}
 
 																			value_s = ConvertIntegerToString (bt_output_format);

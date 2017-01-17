@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -782,7 +782,7 @@ void PrintBSONToErrors (const int level, const char * const filename_s, const in
 }
 
 
-void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const prefix_s)
+void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const filename_s, const int line, const char * const prefix_s)
 {
 	char buffer_s [25];
 
@@ -790,11 +790,11 @@ void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const p
 
 	if (prefix_s)
 		{
-			PrintLog (level, __FILE__, __LINE__, "%s %s", prefix_s, buffer_s);
+			PrintLog (level, filename_s, line, "%s %s", prefix_s, buffer_s);
 		}
 	else
 		{
-			PrintLog (level, __FILE__, __LINE__, "%s", buffer_s);
+			PrintLog (level, filename_s, line, "%s", buffer_s);
 
 		}
 }
@@ -917,7 +917,7 @@ int32 GetAllMongoResultsForKeyValuePair (MongoTool *tool_p, json_t **docs_pp, co
 
 					num_results = 0;
 
-					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL))
+					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss))
 						{
 							*docs_pp = GetAllExistingMongoResultsAsJSON (tool_p);
 

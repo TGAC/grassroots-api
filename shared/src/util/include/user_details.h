@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
  * @file
- * @addtogroup User User authentication and authorization
- * @{
+ * @brief
  */
+
 #ifndef USER_DETAILS_H
 #define USER_DETAILS_H
 
@@ -30,6 +31,8 @@
 
 /**
  * @brief  A datatype to store user credentials for a single system.
+ *
+ * @ingroup utility_group
  */
 typedef struct UserAuthentication
 {
@@ -53,6 +56,7 @@ typedef struct UserAuthentication
 /**
  * @brief  A datatype to store UserAuthentications on a LinkedList
  * @extends ListItem
+ * @ingroup utility_group
  */
 typedef struct UserAuthenticationNode
 {
@@ -67,6 +71,7 @@ typedef struct UserAuthenticationNode
 
 /**
  * @brief  A datatype to store user credentials
+ * @ingroup utility_group
  */
 typedef struct UserDetails
 {
@@ -125,7 +130,6 @@ GRASSROOTS_UTIL_API const UserAuthentication *GetUserAuthenticationForSystem (co
  */
 GRASSROOTS_UTIL_API bool AddUserAuthentication (UserDetails *user_details_p, const char *system_s, const char *username_s, const char *password_s, const char *token_s);
 
-/** @} */
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * schema_version.h
  *
@@ -33,6 +38,8 @@
  * for the Grassroots JSON schema that is being used.
  * This allows backward compatibility code to be used
  * as the schema is upgraded.
+ *
+ * @ingroup utility_group
  */
 typedef struct SchemaVersion
 {
@@ -61,6 +68,9 @@ typedef struct SchemaVersion
  * including this header file. Currently this happens in
  * schema_version.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_SCHEMA_VERSION_TAGS
 	#define SV_PREFIX GRASSROOTS_UTIL_API
 	#define SV_VAL(x)	= x
@@ -69,7 +79,21 @@ typedef struct SchemaVersion
 	#define SV_VAL(x)
 #endif
 
+#endif		/* ifndef DOXYGEN_SHOULD_SKIP_THIS */
+
+/**
+ * The current major revision of the Grassroots schema.
+ *
+ * @ingroup utility_group
+ */
 SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MAJOR SV_VAL(0);
+
+
+/**
+ * The current minor revision of the Grassroots schema.
+ *
+ * @ingroup utility_group
+ */
 SV_PREFIX const uint32 CURRENT_SCHEMA_VERSION_MINOR SV_VAL(10);
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, 
 
 
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
-	: ExternalBlastTool (job_p, data_p, root_p), sbt_buffer_p (0), sbt_args_processor_p (0)
+	: ExternalBlastTool (job_p, data_p, root_p),  sbt_args_processor_p (0), sbt_buffer_p (0)
 {
 	if (!Init (ebt_blast_s))
 		{

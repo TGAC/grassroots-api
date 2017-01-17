@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * mapped_parameter.h
  *
@@ -41,6 +46,8 @@ struct ServiceJob;
  * This structure is used to store a relationship between
  * a value from the output of running one service to use
  * as an input parameter value for another service.
+ *
+ * @ingroup services_group
  */
 typedef struct MappedParameter
 {
@@ -76,6 +83,7 @@ typedef struct MappedParameter
  * on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup services_group
  */
 typedef struct MappedParameterNode
 {
@@ -97,7 +105,8 @@ extern "C"
  *
  * @param input_s The selector for the input Service's parameter. The new MappedParameter will make a deep copy of this value to store.
  * @param output_s The name of the output Service's parameter. The new MappedParameter will make a deep copy of this value to store.
- * @param required_flag Is this MappedParameter required or is optional to run the LinkedService?
+ * @param required_flag <code>true</code> if this MappedParameter required or <code>false</code> if it is optional to run the LinkedService.
+ * @param multi_flag <code>true</code> if this MappedParameter can have multiple input values or <code>false</code> if it just has a single value.
  * @return The newly-allocated MappedParameter or <code>NULL</code> upon error.
  * @memberof MappedParameter
  */
@@ -141,9 +150,6 @@ GRASSROOTS_SERVICE_API MappedParameterNode *AllocateMappedParameterNode (MappedP
  */
 GRASSROOTS_SERVICE_API void FreeMappedParameterNode (ListItem *node_p);
 
-
-
-GRASSROOTS_SERVICE_API bool ProcessMappedParameter (MappedParameter *mapped_param_p, struct ServiceJob *job_p, ParameterSet *output_params);
 
 
 #ifdef __cplusplus

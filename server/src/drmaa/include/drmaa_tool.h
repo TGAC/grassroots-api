@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,15 +13,10 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
- * drmaa_tool.h
- *
- *  Created on: 27 Apr 2015
- *      Author: billy
- *
- * @addtogroup Drmaa
- * @brief Routines for running server-based programs
- * @{
+ * @file
+ * @brief
  */
 
 #ifndef DRMAA_TOOL_H_
@@ -36,6 +31,11 @@
 //#include "drmaa.h"
 
 
+/**
+ * The default buffer size used for storing job ids
+ *
+ * @ingroup drmaa_group
+ */
 #define DRMAA_ID_BUFFER_SIZE (256)
 
 /* forward declaration */
@@ -48,6 +48,8 @@ struct drmaa_job_template_s;
  * Drmaa is a programmatic way of running jobs on grids, clusters or
  * cloud-based systems. It allows to specify things such as the job to
  * run, what resources it will use, whether to run asynchronously, <i>etc.</i>
+ *
+ * @ingroup drmaa_group
  */
 typedef struct DrmaaTool
 {
@@ -95,6 +97,7 @@ extern "C"
  * will use DRMAA calls
  *
  * @return <code>true</code> if the DRMAA session was initialised successfully, <code>false</code> upon error.
+ * @ingroup drmaa_group
  */
 GRASSROOTS_DRMAA_API bool InitDrmaa (void);
 
@@ -106,6 +109,7 @@ GRASSROOTS_DRMAA_API bool InitDrmaa (void);
  * will use DRMAA calls
  *
  * @return <code>true</code> if the DRMAA session was closed successfully, <code>false</code> upon error.
+ * @ingroup drmaa_group
  */
 GRASSROOTS_DRMAA_API bool ExitDrmaa (void);
 
@@ -355,7 +359,5 @@ GRASSROOTS_DRMAA_API DrmaaTool *DeserialiseDrmaaTool (const unsigned char * cons
 #ifdef __cplusplus
 }
 #endif
-
-/* @} */
 
 #endif /* DRMAA_TOOL_H_ */

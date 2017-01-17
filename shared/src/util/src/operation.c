@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -36,6 +36,51 @@ static const char * const S_FINISHED_S = "Finished";
 static const char * const S_PARTIALLY_SUCCEEDED_S = "Partially succeeded";
 static const char * const S_SUCCEEDED_S = "Succeeded";
 static const char * const S_CLEANED_UP_S = "Cleaned up";
+
+
+static const char *S_OPERATIONS_SS [OP_NUM_OPERATIONS] =
+{
+	"get_all_services",
+	"get_schema_version",
+	"get_interested_services",
+	"run_keyword_services",
+	"get_named_service",
+	"check_service_status",
+	"get_service_results",
+	"clean_up_jobs",
+	"get_resource"
+};
+
+
+
+const char *GetOperationAsString (const Operation op)
+{
+	const char *op_s = NULL;
+
+	if ((op > OP_NONE) && (op < OP_NUM_OPERATIONS))
+		{
+			op_s = * (S_OPERATIONS_SS + op);
+		}
+
+	return op_s;
+}
+
+
+
+Operation GetOperationFromString (const char *op_s)
+{
+	Operation op;
+
+	for (op = OP_NONE + 1; op < OP_NUM_OPERATIONS; ++ op)
+		{
+			if (strcmp (* (S_OPERATIONS_SS + op), op_s) == 0)
+				{
+					return op;
+				}
+		}
+
+	return OP_NONE;
+}
 
 
 const char *GetOperationStatusAsString (const OperationStatus status)

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -41,5 +41,5 @@ uint32 Snooze (uint32 milliseconds)
 {
 	Sleep (milliseconds);
 
-	return milliseconds;
+	return 0;
 }

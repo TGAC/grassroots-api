@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * servers_pool.h
  *
@@ -37,6 +42,7 @@
  *
  * This stores the information needed to consolidate the Services
  * available on other Grassroots Servers
+ * @ingroup server_group
  */
 typedef struct ExternalServer
 {
@@ -75,6 +81,7 @@ typedef struct ExternalServer
  * in a LinkedList.
  *
  * @extends ListItem
+ * @ingroup server_group
  */
 typedef struct ExternalServerNode
 {
@@ -103,6 +110,7 @@ struct ServersManager;
  *
  * @param data_p The raw binary data representation of the ExternalServer.
  * @return The newly created ExternalServer or <code>NULL</code> upon error.
+ * @ingroup server_group
  */
 typedef ExternalServer *(*ExternalServerDeserialiser) (const unsigned char *data_p);
 
@@ -116,6 +124,7 @@ typedef ExternalServer *(*ExternalServerDeserialiser) (const unsigned char *data
  * @param length_p Upon success, the length of the generated binary data
  * stream will be stored here.
  * @return The raw binary data or <code>NULL</code> upon error.
+ * @ingroup server_group
  */
 typedef unsigned char *(*ExternalServerSerialiser) (ExternalServer *server_p, uint32 *length_p);
 
@@ -125,6 +134,7 @@ typedef unsigned char *(*ExternalServerSerialiser) (ExternalServer *server_p, ui
  *
  * A ServersManager is used to store details of the ExternalServers that are currently
  * running on a Server. ExternalServers can be added, removed and searched for.
+ * @ingroup server_group
  */
 typedef struct ServersManager
 {
@@ -234,6 +244,7 @@ extern "C"
  * Get the current Server-wide ServersManager.
  *
  * @return The ServersManager.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
 
@@ -242,6 +253,7 @@ GRASSROOTS_SERVICE_MANAGER_API ServersManager *GetServersManager (void);
  * Get the current Server uuid.
  *
  * @return The pointer to the uuid.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API uuid_t *GetLocalServerId (void);
 
@@ -250,6 +262,7 @@ GRASSROOTS_SERVICE_MANAGER_API uuid_t *GetLocalServerId (void);
  * Get the current Server uuid as a c-style string.
  *
  * @return The c-style string of the uuid.
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
 
@@ -265,6 +278,7 @@ GRASSROOTS_SERVICE_MANAGER_API const char *GetLocalServerIdAsString (void);
  * @param remove_server_fn The callback function to set for sm_remove_server_fn for the given ServersManager.
  * @param get_all_servers_fn The callback function to set for sm_get_all_servers_fn for the given ServersManager.
  * @param free_servers_manager_fn The callback function to set for sm_free_servers_manager_fn for the given ServersManager.
+ * @memberof ServersManager
  */
 GRASSROOTS_SERVICE_MANAGER_API void InitServersManager (ServersManager *manager_p,
                       bool (*add_server_fn) (ServersManager *manager_p, ExternalServer *server_p, ExternalServerSerialiser serialise_fn),
@@ -360,7 +374,17 @@ GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllExternalServersFromServersManag
 GRASSROOTS_SERVICE_MANAGER_API bool FreeServersManager (ServersManager *manager_p);
 
 
-GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
+/**
+ * Get the JSON fragment which will form part of a response to other servers and
+ * clients. representing the capabilities available on for all
+ * available ExternalServers for a given Operation.
+ *
+ * @param manager_p The ServersManager containing the details of all of the ExternalServers.
+ * @param op The Operation to get the available facilities for.
+ * @return The JSON fragment containing all of the details or <code>NULL</code> upon error.
+ * @memberof ServersManager
+ */
+GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, Operation op);
 
 
 /**
@@ -386,8 +410,6 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServer *AllocateExternalServer (const cha
 GRASSROOTS_SERVICE_MANAGER_API void FreeExternalServer (ExternalServer *server_p);
 
 
-
-
 /**
  * Allocate an ExternalServerNode
  *
@@ -407,7 +429,6 @@ GRASSROOTS_SERVICE_MANAGER_API ExternalServerNode *AllocateExternalServerNode (E
  * @memberof ExternalServerNode
  */
 GRASSROOTS_SERVICE_MANAGER_API void FreeExternalServerNode (ListItem *node_p);
-
 
 
 /**
@@ -443,27 +464,15 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *MakeRemoteJSONCallToExternalServer (Exter
 GRASSROOTS_SERVICE_MANAGER_API bool AddExternalServerFromJSON (const json_t *json_p);
 
 
-
 /**
- * @brief Add operations from ExternalServers.
+ * Get the name of the remote paired service corresponding to a given local
+ * service name.
  *
- * This will iterate through all of the ExternalServers that a ServersManager has
- * and add JSON objects to an existing JSON object so that all operations appear
- * to be on this Server as far as the Client is concerned
- *
- * @param manager_p The ServersManager to add the ExternalServer to.
- * @param internal_services_p The LinkedList of ServerNodes on the local Server.
- * @param op The Operation to check on each of the ExternalServers.
- * @return the resultant JSON object.
- * @memberof ServersManager
+ * @param src_p The ExternalServer which has the remote Service.
+ * @param local_service_name_s The name of the local Service.
+ * @return The name of the remote paired service or <code>NULL</code>
+ * upon error.
  */
-GRASSROOTS_SERVICE_MANAGER_API json_t *AddExternalServerOperationsToJSON (ServersManager *manager_p, LinkedList *internal_services_p, Operation op);
-
-
-
-GRASSROOTS_SERVICE_MANAGER_API ExternalServer *CopyExternalServer (const ExternalServer * const src_p);
-
-
 GRASSROOTS_SERVICE_MANAGER_API const char *GetRemotePairedServiceName (const ExternalServer * const src_p, const char * const local_service_name_s);
 
 

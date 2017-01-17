@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 
 /*
  * blast_formatter.h
@@ -32,6 +37,8 @@
  * This class is for converting the output of a blast
  * job between the available different formats. The
  * input format must be "BLAST archive format (ASN.1)"
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL BlastFormatter
 {

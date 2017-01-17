@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ static bool SaveRemoteJobDetails (RemoteServiceJob *job_p, const BlastServiceDat
 /***********************************/
 
 
-bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p, uint16 db_counter)
+bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_params_p)
 {
 	bool success_flag = true;
 
@@ -121,7 +121,6 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 																}		/* if (!CopyRemoteParameterDetails (external_param_p, param_p)) */
 
 															++ num_added_dbs;
-															++ db_counter;
 														}		/* if (param_p) */
 
 													src_node_p = (ParameterNode *) (src_node_p -> pn_node.ln_next_p);

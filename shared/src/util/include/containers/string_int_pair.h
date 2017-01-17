@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * string_int_pair.h
  *
@@ -33,6 +38,8 @@
  * A datatype for holding a key-value pair where the
  * key is a c-style string and the value is an unsigned
  * integer.
+ *
+ * @ingroup utility_group
  */
 typedef struct StringIntPair
 {
@@ -49,6 +56,8 @@ typedef struct StringIntPair
 
 /**
  * A datatype for storing a set of StringIntPairs.
+ *
+ * @ingroup utility_group
  */
 typedef struct StringIntPairArray
 {
@@ -126,6 +135,8 @@ GRASSROOTS_UTIL_API void SortStringIntPairsByCount (StringIntPairArray *pairs_p)
 /**
  * Get the JSON fragment representing a StringIntPairArray.
  *
+ * This will call GetStringIntPairAsResourceJSON for each item in the array.
+ *
  * @param pairs_p The StringIntPairArray to get the JSON fragment for.
  * @param protocol_s The Protocol for the Resource.
  * @return The JSON fragment or <code>NULL</code> upon error.
@@ -134,14 +145,15 @@ GRASSROOTS_UTIL_API void SortStringIntPairsByCount (StringIntPairArray *pairs_p)
  * @see PROTOCOL_HTTPS_S
  * @see PROTOCOL_FILE_S
  * @see PROTOCOL_INLINE_S
+ * @see GetStringIntPairAsResourceJSON
  */
 GRASSROOTS_UTIL_API json_t *GetStringIntPairsAsResourceJSON (const StringIntPairArray *pairs_p, const char * const protocol_s);
 
 
 /**
- * Get the JSON fragment representing a StringIntPairArray.
+ * Get the JSON fragment representing a StringIntPair.
  *
- * @param pairs_p The StringIntPairArray to get the JSON fragment for.
+ * @param pair_p The StringIntPairArray to get the JSON fragment for.
  * @param protocol_s The Protocol for the Resource.
  * @return The JSON fragment or <code>NULL</code> upon error.
  * @see PROTOCOL_IRODS_S

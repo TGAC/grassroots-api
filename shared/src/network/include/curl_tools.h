@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,9 +13,10 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
- * @addtogroup Network
- * @{
+ * @file
+ * @brief
  */
 
 #ifndef GRASSROOTS_CURL_TOOLS_H
@@ -32,10 +33,20 @@
 #include "byte_buffer.h"
 
 
+/**
+ * An enum specifying where any resultant data from
+ * running a CurlTool will be stored
+ * @ingroup network_group
+ */
 typedef enum CurlMode
 {
+	/** The data will be stored in memory. */
 	CM_MEMORY,
+
+	/** The data will be written to disk. */
 	CM_FILE,
+
+	/** The number of available modes. */
 	CM_NUM_MODES
 } CurlMode;
 
@@ -44,6 +55,7 @@ typedef enum CurlMode
  *
  * A datatype that uses CURL to perform http(s) requests
  * and responses.
+ * @ingroup network_group
  */
 typedef struct CurlTool
 {
@@ -80,6 +92,7 @@ typedef struct CurlTool
 /**
  * Allocate a CurlTool.
  *
+ * @param mode The CurlMode that this CurlTool will use.
  * @return A newly-allocated CurlTool or <code>NULL</code> upon error.
  * @memberof CurlTool
  * @see FreeCurlTool
@@ -262,4 +275,3 @@ GRASSROOTS_NETWORK_API void FreeURLEscapedString (char *value_s);
 
 #endif		/* #ifndef GRASSROOTS_CURL_TOOLS_H */
 
-/* @} */

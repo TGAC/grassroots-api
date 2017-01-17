@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 
 
 #ifdef _DEBUG
-	#define PLUGIN_DEBUG	(STM_LEVEL_FINER)
+	#define PLUGIN_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define PLUGIN_DEBUG	(STM_LEVEL_NONE)
 #endif

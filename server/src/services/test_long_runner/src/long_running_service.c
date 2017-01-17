@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -23,49 +23,54 @@
 #include "service_job_set_iterator.h"
 
 
-/**
+/*
  * This service is an example to show how job data can be persisted between separate
  * requests. It mimics real world jobs by running a user-specified number of jobs that
  * are have a start and end times, each one an equivalent to a stopwatch.
  */
 
-/**
+/*
  * This datatype stores the start and end times to mimic a real job.
  */
 typedef struct TimeInterval
 {
-	/** The start time of the job. */
+	/* The start time of the job. */
 	time_t ti_start;
 
-	/** The finish time of the job. */
+	/* The finish time of the job. */
 	time_t ti_end;
 
-	/**
+	/*
 	 * The duration of the job, simply ti_end - ti_start.
 	 */
 	time_t ti_duration;
 } TimeInterval;
 
 
-/**
+/*
  * This is the subclassed ServiceJob that is used to store the information
  * for the mimicked jobs that this Service runs.
  */
 typedef struct TimedServiceJob
 {
-	/** The base ServiceJob */
+	/* The base ServiceJob */
 	ServiceJob tsj_job;
 
-	/**
+	/*
 	 * A pointer to the TimeInterval that is used to mimic the running of a real task.
 	 */
 	TimeInterval *tsj_interval_p;
 
-	/** Has the TimedServiceJob been added to the JobsManager yet? */
+	/* Has the TimedServiceJob been added to the JobsManager yet? */
 	bool tsj_added_flag;
 } TimedServiceJob;
 
 
+/*
+ * The ServiceData that this Service will use. Since we don't have any custom configuration
+ * we could just use the base structure, ServiceData, instead but we want to show how to
+ * extend it as that will be the common situation.
+ */
 typedef struct
 {
 	ServiceData lsd_base_data;
@@ -82,24 +87,32 @@ typedef struct
  * keys shown below.
  */
 
-/** This is the key used to specify the start time of the task. */
+/* This is the key used to specify the start time of the task. */
 static const char * const LRS_START_S = "start";
 
-/** This is the key used to specify the end time of the task. */
+/* This is the key used to specify the end time of the task. */
 static const char * const LRS_END_S = "end";
 
-/**
+/*
  * This is the key used to specify whether the task has been added
  * to the JobsManager yet.
  */
 static const char * const LRS_ADDED_FLAG_S = "added_to_job_manager";
 
 
+/*
+ * We will have a single parameter that specifies how many tasks we want to
+ * simulate.
+ */
 static NamedParameterType LRS_NUMBER_OF_JOBS = { "Number of Jobs", PT_UNSIGNED_INT };
 
 
 /*
  * STATIC PROTOTYPES
+ * =================
+ *
+ * These are the functions that the function pointers in our generated Service structure
+ * will point to.
  */
 
 static LongRunningServiceData *AllocateLongRunningServiceData (Service *service_p);
@@ -174,6 +187,10 @@ ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
 
 	if (service_p)
 		{
+			/*
+			 * Since we only have a single Service, create a ServicesArray with
+			 * 1 item.
+			 */
 			ServicesArray *services_p = AllocateServicesArray (1);
 			
 			if (services_p)
@@ -182,6 +199,9 @@ ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
 					
 					if (data_p)
 						{
+							/*
+							 * Set up our Service structure and ServiceData.
+							 */
 							InitialiseService (service_p,
 								GetLongRunningServiceName,
 								GetLongRunningServiceDesciption,
@@ -231,8 +251,6 @@ void ReleaseServices (ServicesArray *services_p)
  */
  
 
-
-
 static LongRunningServiceData *AllocateLongRunningServiceData (Service * UNUSED_PARAM (service_p))
 {
 	LongRunningServiceData *data_p = (LongRunningServiceData *) AllocMemory (sizeof (LongRunningServiceData));
@@ -260,6 +278,9 @@ static bool CloseLongRunningService (Service *service_p)
 	ServiceJob *job_p = NULL;
 	bool loop_flag = true;
 
+	/*
+	 * Check whether any jobs are still running.
+	 */
 	if (service_p -> se_jobs_p)
 		{
 			InitServiceJobSetIterator (&iterator, service_p -> se_jobs_p);
@@ -315,6 +336,9 @@ static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resour
 	
 	if (param_set_p)
 		{
+			/*
+			 * We will have a single parameter specifying the number of jobs to run.
+			 */
 			Parameter *param_p = NULL;
 			SharedType def;
 
@@ -385,8 +409,16 @@ static json_t *GetLongRunningResultsAsJSON (Service * UNUSED_PARAM (service_p), 
 }
 
 
+/*
+ * This is where we create our TimedServiceJob structures prior to running the Service.
+ */
 static ServiceJobSet *GetServiceJobSet (Service *service_p, const uint32 num_jobs)
 {
+	/*
+	 * If we were just runnig a single generic ServiceJob, we could use the
+	 * AllocateSimpleServiceJobSet() function. However we need multiple custom
+	 * ServiceJobs, so we need to build these.
+	 */
 	ServiceJobSet *jobs_p = AllocateServiceJobSet (service_p);
 
 	if (jobs_p)
@@ -582,45 +614,6 @@ static OperationStatus GetTimedServiceJobStatus (ServiceJob *job_p)
 }
 
 
-//
-//static bool CleanUpLongRunningJob (ServiceJob *job_p)
-//{
-//	bool cleaned_up_flag = true;
-//	Service *service_p = job_p -> sj_service_p;
-//
-//	if (service_p -> se_jobs_p)
-//		{
-//			if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id))
-//				{
-//					LongRunningServiceData *data_p = (LongRunningServiceData *) (service_p -> se_data_p);
-//					TimedTask *task_p = data_p -> lsd_tasks_p;
-//					uint32 i;
-//
-//					for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p)
-//						{
-//							if (task_p -> tt_job_p == job_p)
-//								{
-//									OperationStatus status = GetCurrentTimedTaskStatus (task_p);
-//
-//									if (status != OS_STARTED)
-//										{
-//											InitTimedTask (task_p);
-//											cleaned_up_flag = true;
-//
-//											job_p -> sj_status = OS_CLEANED_UP;
-//
-//											i = data_p -> lsd_num_tasks; 		/* force exit from loop */
-//										}
-//								}
-//						}		/* for (i = 0; i < data_p -> lsd_num_tasks; ++ i, ++ task_p) */
-//
-//				}		/* if (GetJobById (service_p -> se_jobs_p, job_p -> sj_id)) */
-//
-//		}		/* if (service_p -> se_jobs_p) */
-//
-//	return cleaned_up_flag;
-//}
-
 
 static bool UpdateTimedServiceJob (struct ServiceJob *job_p)
 {
@@ -674,6 +667,7 @@ static void FreeTimedServiceJob (ServiceJob *job_p)
 	ClearServiceJob (job_p);
 	FreeMemory (timed_job_p);
 }
+
 
 
 static json_t *GetTimedServiceJobAsJSON (TimedServiceJob *job_p)
@@ -804,7 +798,6 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 							 * We now need to get the start and end times for the TimeInterval
 							 * from the JSON.
 							 */
-
 							if (GetJSONLong (json_p, LRS_START_S, & (job_p -> tsj_interval_p -> ti_start)))
 								{
 									if (GetJSONLong (json_p, LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -859,7 +859,7 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
-json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const bool run_flag)
+json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const SchemaVersion *sv_p, const bool run_flag)
 {
 	json_t *service_json_p = NULL;
 	json_error_t err;
@@ -870,7 +870,6 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 		{
 			if (run_flag)
 				{
-					const SchemaVersion *sv_p = GetSchemaVersion ();
 					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, sv_p, false);
 
 					if (param_set_json_p)

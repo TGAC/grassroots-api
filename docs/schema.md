@@ -26,9 +26,8 @@ Any message can have a header, much like the \<head\> tag in a web page and alth
           "current_value": "study_accession",
           "type": "string",
           "default_value": "study_accession",
-          "grassroots_type": "xsd:string",
-          "level": 7,
-          "level_text": "all",
+          "parameter_type": "xsd:string",
+          "level": "all",
           "description": "The field to search",
           "enum": [
             {
@@ -58,9 +57,8 @@ Any message can have a header, much like the \<head\> tag in a web page and alth
           "type": "string",
           "current_value": "",
           "default_value": "",
-          "level_text": "all",
-          "level": 7,
-          "grassroots_type": "xsd:string",
+          "level": "all",
+          "parameter_type": "xsd:string",
           "description": "The term to search for in the given field"
         }
       ]
@@ -159,7 +157,7 @@ The current value of the parameter.
  4. boolean
  5. array 
      
-* **grassroots\_type** (required): 
+* **parameter\_type** (required): 
 A number to describe the type of the Parameter. The values, along with their C definition, are shown below:
 
 | C definition | JSON value | Description |
@@ -201,12 +199,15 @@ The elements in this array have two fields:
 to the user are "Use Raw", "Use Zip" and "Use GZip". 
 
 * **level**:
-This is a number used to determine whether to show a Parameter to a user. The system defines 3 levels of Parameter; beginner, intermediate and advanced. The user can then choose which level of variables that they want displayed in their interface of choice. The values for the 3 levels are:
- * *beginner* = 1
- * *intermediate* = 2
- * *advanced* = 4
+This is a number used to determine whether to show a Parameter to a user. The system defines 3 levels of Parameter; beginner, intermediate and advanced. The user can then choose which level of variables that they want displayed in their interface of choice. 
+The values for the 3 levels are:
+ * *beginner*
+ * *intermediate*
+ * *advanced*
  
- These values can be added or or'ed together. For example if you wanted a parameter to be displayed in just the beginner level then you would set this value to 1. If you wanted it displayed at the intermediate and advanced level, the value would be 2 + 4 = 6. If you wanted the Parameter to always be displayed then the value needed would be 1 + 2 + 4 = 7.
+If a Parameter is to displayed for all levels, then the level value can be set to **all**.
+
+ These values can be mixed together. For example if you wanted a parameter to be displayed in just the beginner level then you would set this value to "beginner". If you wanted it displayed at the intermediate and advanced level, the value would be "intermediate advanced"
  
 * **group**:
 If set, this specifies which of the groups listed in the [ParameterSet](#ParameterSet)'s groups that this Parameter belongs to and is detailed in the [ParameterGroup](#ParameterGroup) section below.
@@ -214,7 +215,8 @@ If set, this specifies which of the groups listed in the [ParameterSet](#Paramet
 
 ## [ParameterGroup](#parametergroup)
 
-A ParameterGroup is a way of classing parameters together in a logical set. For example, a ParameterGroup called *Address* could contain Parameters for a house number, road name and town. It is used to give a hint to the user interface to display these parameters together to be more user-friendly.
+A ParameterGroup is a way of classing parameters together in a logical set. For example, a ParameterGroup called *Address* could contain Parameters for a house number, road name and town. 
+It is used to give a hint to the user interface to display these parameters together to be more user-friendly.
 
 ## Credentials
 

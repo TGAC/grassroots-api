@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef GRASSROOTS_HTTP_HANDLER_H
 #define GRASSROOTS_HTTP_HANDLER_H
 
@@ -36,8 +41,14 @@ typedef struct HttpHandler
 	 */
 	Handler hh_base_handler;
 	
+	/**
+	 * The CurlTool that this HttpHandler will use to connect to a URI.
+	 */
 	CurlTool *hh_curl_p;
 
+	/**
+	 * The FILE where the data will be written to.
+	 */
 	FILE *hh_local_f;
 
 } HttpHandler;
@@ -49,8 +60,24 @@ extern "C"
 #endif
 
 
+/**
+ * Get a newly-created HttpHandler.
+ *
+ * @param user_p The UserDetails for the user requesting the HttpHandler.
+ * @return The newly-created HttpHandler or <code>NULL</code> upon error.
+ * @memberof HttpHandler
+ * @ingroup http_handler_group
+ */
 HTTP_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
+
+/**
+ * Free a HttpHandler.
+ *
+ * @param handler_p The HttpHandler to free.
+ * @memberof HttpHandler
+ * @ingroup http_handler_group
+ */
 HTTP_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus

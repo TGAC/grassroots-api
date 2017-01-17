@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * byte_buffer_args_processor.hpp
  *
@@ -29,6 +34,8 @@
 
 /**
  * An ArgsProcessor that adds all of its values to a given ByteBuffer.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL ByteBufferArgsProcessor : public ArgsProcessor
 {

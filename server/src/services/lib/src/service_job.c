@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 #include "jobs_manager.h"
 
 #ifdef _DEBUG
-	#define SERVICE_JOB_DEBUG	(STM_LEVEL_FINER)
+	#define SERVICE_JOB_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define SERVICE_JOB_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -303,40 +303,6 @@ uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p)
 }
 
 
-
-char *GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_service_p)
-{
-	char *result_s = NULL;
-
-	if (job_p)
-		{
-			if (linked_service_p)
-				{
-					Service *service_p = job_p -> sj_service_p;
-
-					if (service_p -> se_process_linked_services_fn)
-						{
-							result_s = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
-						}
-
-				}		/* if (input_s) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
-				}
-
-		}		/* if (job_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
-		}
-
-	return result_s;
-}
 
 
 void FreeServiceJob (ServiceJob *job_p)
@@ -1483,23 +1449,6 @@ bool AddErrorToServiceJob (ServiceJob *job_p, const char * const key_s, const ch
 		}
 
 	return false;
-}
-
-
-bool AddCompoundErrorToServiceJob (ServiceJob *job_p, const char * const key_s, json_t *values_p, const bool claim_flag)
-{
-	bool success_flag = false;
-
-	if (claim_flag)
-		{
-			success_flag = (json_object_set_new (job_p -> sj_errors_p, key_s, values_p) == 0);
-		}
-	else
-		{
-			success_flag = (json_object_set (job_p -> sj_errors_p, key_s, values_p) == 0);
-		}
-
-	return success_flag;
 }
 
 

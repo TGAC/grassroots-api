@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef GRASSROOTS_SERVICE_MANAGER_H
 #define GRASSROOTS_SERVICE_MANAGER_H
 
@@ -22,15 +27,14 @@
 #include "operation.h"
 
 
+/**
+ * This is the default port to run the Grassroots server on when it
+ * is running as a standalone server rather than as a module within
+ * Apache which is the recommended mode of operation.
+ * @ingroup server_group
+ */
 #define DEFAULT_SERVER_PORT	("9991")
 
-#define KEY_IRODS				("irods")
-#define	KEY_FILE_DATA		("file_data")
-
-#define KEY_FILENAME	("file")
-#define KEY_DIRNAME		("dir")
-#define KEY_PROTOCOL	("protocol")
-#define KEY_INTERVAL	("interval")
 
 /*
 typedef json_t (*server_callback_fn) (json_t *req_p, json_t *credentials_p);
@@ -49,12 +53,27 @@ typedef struct ServerOperations
 /**
  * Construct a response message based upon a client's message.
  *
+ * This will attempt to create a JSON object from the incoming message
+ * and call ProcessServerJSONMessage.
+ *
  * @param request_s The message from the client.
- * @return The response from the server.
+ * @param socket_fd The socket file descriptor used.
+ * @return The response from the server or <code>NULL</code> upon error.
+ * @see ProcessServerJSONMessage
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * const request_s, const int socket_fd);
 
 
+/**
+ * Process a given JSON request and produce the server response.
+ *
+ * @param req_p The incoming JSON request.
+ * @param socket_fd The socket file descriptor used.
+ * @param error_s A pointer to a variable where any error messages can be stored.
+ * @return
+ * @ingroup server_group
+ */
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_s);
 
 
@@ -68,6 +87,7 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, 
  * @param value_p The value to add to the generated response.
  * @return The response or <code>NULL</code> upon error.
  * @see GetInitialisedMessage
+ * @ingroup server_group
  */
 GRASSROOTS_SERVICE_MANAGER_API json_t *GetInitialisedResponseOnServer (const json_t *req_p, const char *key_s, json_t *value_p);
 
