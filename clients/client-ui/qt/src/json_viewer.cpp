@@ -20,6 +20,8 @@
 #include <QAction>
 #include <QFontDatabase>
 #include <QMenuBar>
+#include <QTabWidget>
+
 
 #include "json_viewer.h"
 #include "math_utils.h"
@@ -37,6 +39,7 @@ Q_DECLARE_METATYPE (json_t *)
 JSONViewer ::	JSONViewer (QWidget *parent_p)
 : QWidget (parent_p)
 {
+
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	QMenuBar *menubar_p = new QMenuBar (this);
 	QMenu *menu_p = new QMenu ("View");
@@ -44,22 +47,30 @@ JSONViewer ::	JSONViewer (QWidget *parent_p)
 	menubar_p -> addMenu (menu_p);
 	layout_p -> addWidget (menubar_p);
 
-	QHBoxLayout *widgets_layout_p = new QHBoxLayout;
+	QTabWidget *tabs_p = new QTabWidget;
+
 
 	jv_tree_p = new QTreeWidget (this);
 	jv_tree_p -> setContextMenuPolicy (Qt :: CustomContextMenu);
 	connect (jv_tree_p, &QTreeWidget :: customContextMenuRequested, this, &JSONViewer :: PrepareMenu);
-
-	widgets_layout_p -> addWidget (jv_tree_p);
+	connect (jv_tree_p, &QTreeView :: expanded, this, &JSONViewer :: ResizeColumns);
+	//connect (jv_tree_p, &QTreeView :: collapsed, this, &JSONViewer :: ResizeColumns);
+	tabs_p -> addTab (jv_tree_p, "Document tree");
 
 	jv_viewer_p = new QTextEdit (this);
 	jv_viewer_p -> setReadOnly (true);
-	widgets_layout_p -> addWidget (jv_viewer_p);
+	tabs_p -> addTab (jv_viewer_p, "Document text");
 
-	layout_p -> addLayout (widgets_layout_p);
+	layout_p -> addWidget (tabs_p);
 	setLayout (layout_p);
 
 	setWindowTitle ("JSON Viewer");
+}
+
+
+void JSONViewer :: ResizeColumns (const QModelIndex &index)
+{
+	jv_tree_p -> resizeColumnToContents (0);
 }
 
 
@@ -321,7 +332,12 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 	jv_tree_p -> clear ();
 	jv_viewer_p -> clear ();
 
+
 	jv_tree_p -> setColumnCount (2);
+
+	QStringList labels;
+	labels << tr ("Key") << tr ("Value");
+	jv_tree_p -> setHeaderLabels (labels);
 
 	if (json_is_array (data_p))
 		{
@@ -352,7 +368,7 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			free (value_s);
 		}
 
-	jv_tree_p -> resizeColumnToContents (0);
+	jv_tree_p -> resizeColumnToContents (1);
 
 	jv_tree_p -> repaint ();
 }

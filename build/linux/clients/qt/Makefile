@@ -12,7 +12,7 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -D_DEBUG -DUNIX -D_DEBUG -DQT_QML_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_WEBCHANNEL_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
+DEFINES       = -D_DEBUG -DUNIX -D_DEBUG -DQT_NO_DEBUG_OUTPUT -DQT_QML_DEBUG -DQT_WEBENGINEWIDGETS_LIB -DQT_WIDGETS_LIB -DQT_WEBENGINECORE_LIB -DQT_QUICK_LIB -DQT_GUI_LIB -DQT_WEBCHANNEL_LIB -DQT_QML_LIB -DQT_NETWORK_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I../../../../clients/client-ui/qt/include -I/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include -I/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include -I../../../../clients/lib/include -I../../../../shared/src/parameters/include -I../../../../shared/src/util/include -I../../../../shared/src/util/include/containers -I../../../../shared/src/util/include/io -I../../../../server/src/services/lib/include -I../../../../shared/src/network/include -I../../../../shared/src/handlers/lib/include -I/home/billy/Applications/Qt/5.7/gcc_64/include -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebEngineCore -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQuick -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtWebChannel -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtQml -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtNetwork -I/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore -I. -I/home/billy/Applications/Qt/5.7/gcc_64/mkspecs/linux-g++
@@ -2952,6 +2952,10 @@ moc_json_viewer.cpp: /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QT
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
 		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
 		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
@@ -7846,6 +7850,7 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QVBoxLayout \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/QJsonDocument \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsondocument.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qjsonvalue.h \
@@ -7854,8 +7859,13 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/QFontDatabase \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qfontdatabase.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenuBar \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenubar.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTabWidget \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		../../../../clients/client-ui/qt/include/json_viewer.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTreeWidget \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidget.h \
@@ -7874,7 +7884,6 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QTextEdit \
@@ -7884,6 +7893,7 @@ json_viewer.o: ../../../../clients/client-ui/qt/src/json_viewer.cpp /home/billy/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
 		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson.h \
 		/home/billy/Applications/grassroots-0/grassroots/extras/jansson/include/jansson_config.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
@@ -8032,7 +8042,13 @@ text_viewer.o: ../../../../clients/client-ui/qt/src/text_viewer.cpp /home/billy/
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenuBar \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenubar.h \
-		../../../../clients/client-ui/qt/include/viewable_widget.h
+		../../../../clients/client-ui/qt/include/viewable_widget.h \
+		../../../../shared/src/util/include/string_utils.h \
+		../../../../shared/src/util/include/typedefs.h \
+		../../../../shared/src/util/include/grassroots_util_library.h \
+		../../../../shared/src/util/include/library.h \
+		../../../../shared/src/util/include/containers/linked_list.h \
+		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o text_viewer.o ../../../../clients/client-ui/qt/src/text_viewer.cpp
 
 viewer_widget.o: ../../../../clients/client-ui/qt/src/viewer_widget.cpp /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QHBoxLayout \
@@ -8153,7 +8169,13 @@ viewer_widget.o: ../../../../clients/client-ui/qt/src/viewer_widget.cpp /home/bi
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtCore/qsavefile.h \
 		../../../../clients/client-ui/qt/include/viewer_widget.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
-		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QWidget \
+		../../../../shared/src/util/include/string_utils.h \
+		../../../../shared/src/util/include/typedefs.h \
+		../../../../shared/src/util/include/grassroots_util_library.h \
+		../../../../shared/src/util/include/library.h \
+		../../../../shared/src/util/include/containers/linked_list.h \
+		/home/billy/Applications/grassroots-0/grassroots/extras/libuuid/include/uuid/uuid.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o viewer_widget.o ../../../../clients/client-ui/qt/src/viewer_widget.cpp
 
 viewable_widget.o: ../../../../clients/client-ui/qt/src/viewable_widget.cpp /home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QFileDialog \
@@ -10180,6 +10202,10 @@ progress_widget.o: ../../../../clients/client-ui/qt/src/progress_widget.cpp /hom
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextcursor.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qtextformat.h \
 		/home/billy/Applications/Qt/5.7/gcc_64/include/QtGui/qpen.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/QMenu \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qmenu.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qaction.h \
+		/home/billy/Applications/Qt/5.7/gcc_64/include/QtWidgets/qactiongroup.h \
 		../../../../clients/client-ui/qt/include/viewable_widget.h \
 		../../../../shared/src/util/include/alloc_failure.hpp \
 		../../../../shared/src/util/include/io/streams.h

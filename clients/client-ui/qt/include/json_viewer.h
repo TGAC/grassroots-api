@@ -63,7 +63,7 @@ private:
 private slots:
 	void PrepareMenu (const QPoint &pos_r);
 	void RunLinkedService (bool checked_flag);
-
+	void ResizeColumns (const QModelIndex &index);
 
 	void SetSystemFont ();
 	void SetFixedFont ();
