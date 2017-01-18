@@ -207,15 +207,6 @@ BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *hit_p);
 BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *hit_p, const char * const database_s);
 
 
-/**
- * Get the Grassroots marked-up data from a BlastServiceJob.
- *
- * @param job_p The BlastServiceJob to get the marked-up result for.
- * @return The JSON fragment containing the marked-up data or <code>
- * NULL</code> upon error.
- * @memberof BlastServiceJob
- */
-BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
 
 
 /**

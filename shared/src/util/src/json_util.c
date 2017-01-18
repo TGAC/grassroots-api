@@ -1155,7 +1155,7 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 }
 
 
-json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s)
+json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s)
 {
 	json_t *compound_value_p = NULL;
 	char *copied_compound_s = CopyToNewString (compound_s, 0, false);

@@ -22,9 +22,23 @@
 #include <string.h>
 
 #include "blast_service_job_markup.h"
+#include "blast_service_job.h"
+#include "blast_service_params.h"
 
 #include "string_utils.h"
 
+
+/*
+ * STATIC VARIABLES
+ */
+
+
+const char * const S_REPORTS_S = "reports";
+const char * const S_HITS_S = "hits";
+
+/*
+ * STATIC FUNCTION PROTOTYPES
+ */
 
 static bool AddSequenceOntologyTerms (json_t *context_p);
 
@@ -32,7 +46,23 @@ static bool AddEdamOntologyTerms (json_t *context_p);
 
 static bool AddFaldoOntologyTerms (json_t *context_p);
 
+static bool AddGap (json_t *gaps_p, const int32 from, const int32 to, const bool forward_strand_flag);
 
+static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, const char *sequence_s);
+
+static bool IsGap (const char c);
+
+static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p);
+
+static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const char *database_s, const json_t *blast_result_search_p, const DatabaseType db_type);
+
+static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p);
+
+static const char *GetDatabaseNameFromResult (const json_t *blast_report_p, const BlastServiceData *data_p);
+
+/*
+ * FUNCTION DEFINITIONS
+ */
 
 bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_s)
 {
@@ -40,7 +70,15 @@ bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_
 
 	if (json_object_set_new (root_p, key_s, json_string (query_sequence_s)) == 0)
 		{
-			success_flag = true;
+			char *gaps_key_s = ConcatenateStrings (key_s, "_gaps");
+
+			if (gaps_key_s)
+				{
+					success_flag = AddGaps (root_p, gaps_key_s, query_sequence_s);
+
+					FreeCopiedString (gaps_key_s);
+				}
+
 		}
 
 	return success_flag;
@@ -565,6 +603,108 @@ bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_
 }
 
 
+
+
+json_t *MarkUpBlastResult (BlastServiceJob *job_p)
+{
+	json_t *markup_p = GetInitialisedProcessedRequest ();
+
+	if (markup_p)
+		{
+			bool success_flag = false;
+			BlastServiceData *data_p = (BlastServiceData *) (job_p -> bsj_job.sj_service_p -> se_data_p);
+			json_t *blast_job_output_p = GetBlastResult (job_p, data_p);
+
+			if (blast_job_output_p)
+				{
+					/*
+					 * We currently understand hits objects and database names
+					 */
+					const json_t *blast_output_p = json_object_get (blast_job_output_p, "BlastOutput2");
+
+					if (blast_output_p)
+						{
+							if (json_is_array (blast_output_p))
+								{
+									size_t i;
+									json_t *result_p;
+
+									json_t *markup_reports_p = json_object_get (markup_p, S_REPORTS_S);
+
+
+									json_array_foreach (blast_output_p, i, result_p)
+										{
+											json_t *blast_report_p = json_object_get (result_p, "report");
+
+											if (blast_report_p)
+												{
+													json_t *marked_up_report_p = AddAndGetMarkedUpReport (markup_reports_p);
+
+													if (marked_up_report_p)
+														{
+															const char *database_s = GetDatabaseNameFromResult (blast_report_p, data_p);
+
+															if (database_s)
+																{
+																	/* Get the hits */
+																	const json_t *blast_result_search_p = GetCompoundJSONObject (blast_report_p, "results.search");
+
+																	if (blast_result_search_p)
+																		{
+																			const json_t *blast_hits_p =  json_object_get (blast_result_search_p, "hits");
+
+																			if (blast_hits_p)
+																				{
+																					if (json_is_array (blast_hits_p))
+																						{
+																							size_t j = 0;
+																							const size_t num_hits = json_array_size (blast_hits_p);
+
+																							json_t *marked_up_hits_p = json_object_get (marked_up_report_p, S_HITS_S);
+
+																							while ((j < num_hits) && success_flag)
+																								{
+																									const json_t *blast_hit_p = json_array_get (blast_hits_p, j);
+
+																									if (AddMarkedUpHit (marked_up_hits_p, blast_hit_p, database_s, blast_result_search_p, data_p -> bsd_type))
+																										{
+																											++ j;
+																										}
+																									else
+																										{
+																											success_flag = false;
+																										}
+																								}		/* while ((j < num_hits) && success_flag) */
+
+
+																						}		/* if (json_is_array (hits_p)) */
+
+																				}		/* if (hits_p) */
+
+																		}		/* if (blast_result_search_p) */
+
+																}		/* if (success_flag) */
+
+														}		/* if (marked_up_report_p) */
+
+												}		/* if (report_p) */
+
+									}		/* json_array_foreach (root_p, i, output_p) */
+
+								}		/* if (json_is_array (root_p)) */
+
+						}		/* if (root_p) */
+
+					json_decref (blast_job_output_p);
+				}		/* if (blast_job_output_p) */
+
+		}		/* if (markup_p) */
+
+	return markup_p;
+}
+
+
+
 json_t *GetInitialisedProcessedRequest (void)
 {
 	json_t *root_p = json_object ();
@@ -583,7 +723,19 @@ json_t *GetInitialisedProcessedRequest (void)
 										{
 											if (AddSequenceOntologyTerms (context_p))
 												{
-													return root_p;
+													json_t *reports_p = json_array ();
+
+													if (reports_p)
+														{
+															if (json_object_set_new (root_p, S_REPORTS_S, reports_p) == 0)
+																{
+																	return root_p;
+																}
+															else
+																{
+																	json_decref (reports_p);
+																}
+														}
 												}
 										}
 								}
@@ -853,36 +1005,136 @@ bool GetAndAddNucleotidePolymorphisms (json_t *marked_up_hsp_p, const char *refe
 }
 
 
-bool AddGaps (json_t *marked_up_hits_p, const json_t *blast_hit_p)
+static bool IsGap (const char c)
 {
-
-
+	return ((c == '-') || (c == 'n') || (c == 'N'));
 }
 
 
-bool AddGap (json_t *gaps_p, const json_t *blast_hit_p)
+static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, const char *sequence_s)
 {
 	bool success_flag = false;
+	bool dec_flag = true;
+	json_t *gaps_p = json_array ();
+
+	if (gaps_p)
+		{
+			bool loop_flag = (*sequence_s != '\0');
+
+			if (loop_flag)
+				{
+					bool gap_flag = IsGap (*sequence_s);
+					int32 gap_start = -1;
+					int32 index = 2;
+
+					if (gap_flag)
+						{
+							gap_start = 0;
+						}
+
+					++ sequence_s;
+					loop_flag = (*sequence_s != '\0');
+
+					success_flag = true;
+
+					while (loop_flag && success_flag)
+						{
+							bool current_gap_flag = IsGap (*sequence_s);
+
+							if (gap_flag != current_gap_flag)
+								{
+									if (current_gap_flag)
+										{
+											/* we've just started a gap */
+											gap_start = index;
+										}
+									else
+										{
+											/* we've just finished a gap */
+											int32 gap_end = index - 1;
+
+											if (!AddGap (gaps_p, gap_start, gap_end, true))
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to the gap starting at reference \"%s\"", sequence_s);
+													success_flag = false;
+												}
+
+											gap_start = -1;
+										}
+
+									gap_flag = current_gap_flag;
+								}
+
+							++ sequence_s;
+							++ index;
+							loop_flag = (*sequence_s != '\0');
+						}
+
+					if (gap_start != -1)
+						{
+							/* we've just finished a gap */
+							int32 gap_end = index;
+
+							if (!AddGap (gaps_p, gap_start, gap_end, true))
+								{
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to the gap starting at reference \"%s\"", sequence_s);
+									success_flag = false;
+								}
+						}
+
+				}
+
+
+			if (success_flag)
+				{
+					if (json_array_size (gaps_p) > 0)
+						{
+							if (json_object_set_new (marked_up_hits_p, gaps_key_s, gaps_p) == 0)
+								{
+									dec_flag = false;
+								}
+							else
+								{
+									success_flag = false;
+								}		/* if (json_object_set_new (marked_up_hits_p, gaps_key_s, gaps_p) == 0) */
+						}
+				}
+
+			if (dec_flag)
+				{
+					json_decref (gaps_p);
+				}
+
+		}		/* if (gaps_p) */
+
+
+
+	return success_flag;
+}
+
+
+static bool AddGap (json_t *gaps_p, const int32 from, const int32 to, const bool forward_strand_flag)
+{
 	json_t *gap_p = json_object ();
 
 	if (gap_p)
 		{
 			if (json_object_set_new (gap_p, "@type", json_string ("gap")) == 0)
 				{
-					int32 from;
-					int32 to;
-					bool forward_strand_flag = true;
-
 					if (AddHitLocation (gap_p, "faldo:location", from, to, forward_strand_flag))
 						{
-							success_flag = true;
+							if (json_array_append_new (gaps_p, gap_p) == 0)
+								{
+									return true;
+								}
 						}		/* if (AddHitLocation (gap_p, "faldo:location", from, to, forward_strand_flag)) */
 
 				}		/* if (json_object_set_new (gap_p, "@type", json_string ("gap")) == 0) */
 
+			json_decref (gap_p);
 		}		/* if (gap_p) */
 
-	return success_flag;
+	return false;
 }
 
 
@@ -1122,5 +1374,140 @@ static bool AddFaldoOntologyTerms (json_t *context_p)
 
 
 	return success_flag;
+}
+
+
+
+static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const char *database_s, const json_t *blast_result_search_p, const DatabaseType db_type)
+{
+	bool success_flag = false;
+	json_t *output_p = json_object ();
+
+	if (output_p)
+		{
+			if (GetAndAddDatabaseDetails (output_p, database_s))
+				{
+					if (GetAndAddQueryMetadata (blast_result_search_p, output_p))
+						{
+							if (MarkUpHit (blast_hit_p, output_p, database_s, db_type))
+								{
+									if (json_array_append_new (marked_up_results_p, output_p) == 0)
+										{
+											success_flag = true;
+										}
+								}
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, blast_result_search_p, "Failed to add metadata");
+						}
+
+				}
+
+
+			if (!success_flag)
+				{
+					json_decref (output_p);
+				}
+
+		}		/* if (output_p) */
+
+	return success_flag;
+}
+
+
+
+/*
+ * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+ * available in blast 2.3+
+ */
+static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p)
+{
+	json_t *blast_output_p = NULL;
+
+	/*
+	 * Get the result. Ideally we'd like to get this in a format that we can parse, so to begin with we'll use the single json format
+	 * available in blast 2.3+
+	 */
+	char *raw_result_s = GetBlastResultByUUID (data_p, job_p -> bsj_job.sj_id, BOF_SINGLE_FILE_JSON_BLAST);
+
+	if (raw_result_s)
+		{
+			json_error_t err;
+			blast_output_p = json_loads (raw_result_s, 0, &err);
+
+			if (!blast_output_p)
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "error decoding blast result: \"%s\"\n\"%s\"\n%d %d %d\n%s\n", err.text, err.source, err.line, err.column, err.position, raw_result_s);
+				}
+
+			FreeCopiedString (raw_result_s);
+		}
+	else
+		{
+			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+			ConvertUUIDToString (job_p -> bsj_job.sj_id, uuid_s);
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get blast result for \"%s\"", uuid_s);
+
+		}
+
+	return blast_output_p;
+}
+
+
+static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p)
+{
+	json_t *report_p = json_object ();
+
+	if (report_p)
+		{
+
+			json_t *hits_p = json_array ();
+
+			if (hits_p)
+				{
+					if (json_object_set_new (report_p, S_HITS_S, hits_p) == 0)
+						{
+							if (json_array_append_new (markup_reports_p, report_p) == 0)
+								{
+									return report_p;
+								}
+						}
+					else
+						{
+							json_decref (hits_p);
+						}
+				}
+
+			json_decref (report_p);
+		}
+
+	return NULL;
+}
+
+
+
+static const char *GetDatabaseNameFromResult (const json_t *blast_report_p, const BlastServiceData *data_p)
+{
+	const char *database_s = NULL;
+
+	json_t *db_p = GetCompoundJSONObject (blast_report_p, "search_target.db");
+
+	/* Get the database name */
+	if (db_p)
+		{
+			if (json_is_string (db_p))
+				{
+					const char *database_filename_s = json_string_value (db_p);
+
+					if (database_filename_s)
+						{
+							database_s = GetMatchingDatabaseName (data_p, database_filename_s);
+						}		/* if (database_s) */
+				}
+		}
+
+	return database_s;
 }
 

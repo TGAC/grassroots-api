@@ -521,7 +521,7 @@ GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_s
  *
  * @ingroup utility_group
  */
-GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s);
+GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s);
 
 
 /**

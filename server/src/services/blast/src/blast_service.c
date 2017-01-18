@@ -37,6 +37,7 @@
 #include "jobs_manager.h"
 #include "blast_service_job.h"
 #include "blast_service_params.h"
+#include "blast_service_job_markup.h"
 
 #include "servers_pool.h"
 #include "remote_parameter_details.h"
@@ -776,7 +777,7 @@ void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const ParameterSet * con
 							/* Is the database selected to search against? */
 							if (param_p -> pa_current_value.st_boolean_value)
 								{
-									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p -> di_filename_s, db_p -> di_description_s, data_p);
+									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p -> di_name_s, db_p -> di_description_s, data_p);
 
 									if (job_p)
 										{
@@ -1372,7 +1373,7 @@ static void InitBlastService (Service *blast_service_p)
 
 
 
-const char *GetMatchingDatabaseFilename (BlastServiceData *data_p, const char *name_s)
+const char *GetMatchingDatabaseFilename (const BlastServiceData *data_p, const char *name_s)
 {
 	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 
@@ -1395,7 +1396,7 @@ const char *GetMatchingDatabaseFilename (BlastServiceData *data_p, const char *n
 }
 
 
-const char *GetMatchingDatabaseName (BlastServiceData *data_p, const char *filename_s)
+const char *GetMatchingDatabaseName (const BlastServiceData *data_p, const char *filename_s)
 {
 	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 

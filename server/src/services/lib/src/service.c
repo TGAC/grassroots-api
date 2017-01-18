@@ -1008,7 +1008,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 												}		/* if (providers_array_p) */
 											else
 												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create providers array for %s", value_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create providers array for %s", service_name_s);
 												}
 
 										}		/* if (service_p -> se_paired_services -> ll_size > 0) */

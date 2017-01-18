@@ -73,6 +73,18 @@ BLAST_SERVICE_LOCAL bool AddPolymorphism (json_t *marked_up_hsp_p, const char *h
 BLAST_SERVICE_LOCAL bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p);
 
 
+
+/**
+ * Get the Grassroots marked-up data from a BlastServiceJob.
+ *
+ * @param job_p The BlastServiceJob to get the marked-up result for.
+ * @return The JSON fragment containing the marked-up data or <code>
+ * NULL</code> upon error.
+ * @memberof BlastServiceJob
+ */
+BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
+
+
 #ifdef __cplusplus
 }
 #endif
