@@ -393,51 +393,6 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 
 
 
-static json_t *AddAndGetMarkedUpReport (json_t *output_array_p)
-{
-	json_t *marked_up_report_p = json_object ();
-
-	if (marked_up_report_p)
-		{
-			json_t *marked_up_results_p = json_object ();
-
-			if (marked_up_results_p)
-				{
-					if (json_object_set_new (marked_up_report_p, "results", marked_up_results_p) == 0)
-						{
-							json_t *marked_up_hits_p = json_array ();
-
-							if (marked_up_hits_p)
-								{
-									if (json_object_set_new (marked_up_results_p, "hits", marked_up_hits_p) == 0)
-										{
-											if (json_array_append_new (output_array_p, marked_up_report_p) == 0)
-												{
-													return marked_up_report_p;
-												}
-										}
-									else
-										{
-											json_decref (marked_up_hits_p);
-										}
-								}
-						}
-					else
-						{
-							json_decref (marked_up_results_p);
-						}
-				}
-
-			json_decref (marked_up_report_p);
-		}
-
-	return NULL;
-}
-
-
-
-
-
 
 bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)
 {
@@ -613,27 +568,3 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 
 
 
-const char *GetDatabase (const json_t *result_p)
-{
-	const char *database_s = NULL;
-
-	if (result_p)
-		{
-			database_s = GetJSONString (result_p, "database");
-		}
-
-	return database_s;
-}
-
-
-const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * const database_s)
-{
-	const json_t *scaffolds_p = NULL;
-
-	if (result_p)
-		{
-			scaffolds_p = json_object_get (result_p, "scaffolds");
-		}
-
-	return scaffolds_p;
-}

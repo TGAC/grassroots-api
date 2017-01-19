@@ -92,6 +92,12 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 	/** The description of the database to display to the user. */
 	const char *di_description_s;
 
+	/** The URI to download any associated resources for this database. */
+	const char *di_download_uri_s;
+
+	/** The URI to for any supplementary information about the database. */
+	const char *di_info_uri_s;
+
 	/**
 	 * Sets whether the database defaults to being searched against
 	 * or not.
@@ -470,6 +476,19 @@ BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseFilename (const BlastServiceD
  * not be found.
  */
 BLAST_SERVICE_LOCAL const char *GetMatchingDatabaseName (const BlastServiceData *data_p, const char *filename_s);
+
+
+
+
+/**
+ * For a given BLAST database filename, find the corresponding DatabaseInfo object.
+ *
+ * @param data_p The BlastServiceData with the service configuration details.
+ * @param filename_s The BLAST database filename.
+ * @return The corresponding DatabaseInfo object or <code>NULL</code> if it could
+ * not be found.
+ */
+const DatabaseInfo *GetMatchingDatabaseByFilename (const BlastServiceData *data_p, const char *filename_s);
 
 
 #ifdef __cplusplus

@@ -183,33 +183,6 @@ BLAST_SERVICE_LOCAL bool UpdateBlastServiceJob (ServiceJob *job_p);
 
 
 /**
- * After the blast job has ran, get the database that it ran against from a
- * hit from within SINGLE_JSON_FILE output formatted result.
- *
- * @param hit_p The JSON fragment for the hit.
- * @return The database name or <code>
- * NULL</code> upon error.
- * @memberof BlastServiceJob
- */
-BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *hit_p);
-
-
-/**
- * After the blast job has ran, get the scaffolds that it ran against from a
- * hit from within SINGLE_JSON_FILE output formatted result.
- *
- * @param hit_p The JSON fragment for the hit.
- * @param database_s The database name.
- * @return A JSON array where each element is an object with "scaffold" as the key
- * and the scaffold name as the value or <code>NULL</code> upon error.
- * @memberof BlastServiceJob
- */
-BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *hit_p, const char * const database_s);
-
-
-
-
-/**
  * Process a LinkedService for a given BlastServiceJob.
  *
  * @param service_p The BlastService that generated the BlastServiceJob.

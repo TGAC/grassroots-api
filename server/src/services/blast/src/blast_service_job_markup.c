@@ -55,13 +55,13 @@ static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, co
 
 static bool IsGap (const char c);
 
-static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const char *database_s, const json_t *blast_result_search_p);
+static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p);
 
 static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
 static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p);
 
-static const char *GetDatabaseNameFromResult (const json_t *blast_report_p, const BlastServiceData *data_p);
+static const DatabaseInfo *GetDatabaseFromResult (const json_t *blast_report_p, const BlastServiceData *data_p);
 
 static json_t *GetMarkupReports (json_t *markup_p);
 
@@ -528,15 +528,31 @@ bool AddDoubleScoreValue (json_t *parent_p, const char *key_s, double64 score_va
 }
 
 
-bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s)
+
+bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const DatabaseInfo *db_p)
 {
 	json_t *database_p = json_object ();
 
 	if (database_p)
 		{
-			if (json_object_set_new (database_p, "database_name", json_string (database_s)) == 0)
+			if (json_object_set_new (database_p, "database_name", json_string (db_p -> di_name_s)) == 0)
 				{
-					if (json_object_set_new (database_p, "database_uri", json_string (database_s)) == 0)
+					bool success_flag = true;
+
+					if (db_p -> di_download_uri_s)
+						{
+							success_flag = json_object_set_new (database_p, "database_download_uri", json_string (db_p -> di_download_uri_s)) == 0;
+						}
+
+					if (success_flag)
+						{
+							if (db_p -> di_info_uri_s)
+								{
+									success_flag = json_object_set_new (database_p, "database_information_uri", json_string (db_p -> di_info_uri_s)) == 0;
+								}
+						}
+
+					if (success_flag)
 						{
 							if (json_object_set_new (marked_up_result_p, "database", database_p) == 0)
 								{
@@ -550,6 +566,25 @@ bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_
 
 	return false;
 }
+
+
+void AddLinkedServiceData  (json_t *root_p, LinkedService *linked_service_p)
+{
+	/*
+	 * navigate to each of the hits arrays
+	 */
+	json_t *markup_reports_p = GetMarkupReports (root_p);
+
+	if (markup_reports_p)
+		{
+			if (json_is_array (markup_reports_p))
+				{
+
+				}
+		}
+}
+
+
 
 
 json_t *MarkUpBlastResult (BlastServiceJob *job_p)
@@ -584,16 +619,16 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 
 											if (blast_report_p)
 												{
-													const char *database_s = GetDatabaseNameFromResult (blast_report_p, data_p);
+													const DatabaseInfo *db_p = GetDatabaseFromResult (blast_report_p, data_p);
 
-													if (database_s)
+													if (db_p)
 														{
 															/* Get the hits */
 															const json_t *blast_result_search_p = GetCompoundJSONObject (blast_report_p, "results.search");
 
 															if (blast_result_search_p)
 																{
-																	json_t *marked_up_report_p = AddAndGetMarkedUpReport (markup_reports_p, database_s, blast_result_search_p);
+																	json_t *marked_up_report_p = AddAndGetMarkedUpReport (markup_reports_p, db_p, blast_result_search_p);
 
 																	if (marked_up_report_p)
 																		{
@@ -1104,18 +1139,15 @@ bool AddPolymorphism (json_t *marked_up_hsp_p, const char *hit_gap_start_p, cons
 {
 	bool success_flag = false;
 	uint32 length;
-	bool forward_strand_flag;
 	json_t *polymorphisms_p = NULL;
 
 	if (start_of_region > end_of_region)
 		{
 			length = 1 + start_of_region - end_of_region;
-			forward_strand_flag = false;
 		}
 	else
 		{
 			length = 1 + end_of_region - start_of_region;
-			forward_strand_flag = true;
 		}
 
 	polymorphisms_p = json_object_get (marked_up_hsp_p, "polymorphisms");
@@ -1257,6 +1289,33 @@ bool AddTerm (json_t *root_p, const char *key_s, const char *term_s, const bool 
 	return false;
 }
 
+
+
+
+const char *GetDatabase (const json_t *result_p)
+{
+	const char *database_s = NULL;
+
+	if (result_p)
+		{
+			database_s = GetJSONString (result_p, "database");
+		}
+
+	return database_s;
+}
+
+
+const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * const database_s)
+{
+	const json_t *scaffolds_p = NULL;
+
+	if (result_p)
+		{
+			scaffolds_p = json_object_get (result_p, "scaffolds");
+		}
+
+	return scaffolds_p;
+}
 
 
 static bool AddSequenceOntologyTerms (json_t *context_p)
@@ -1422,7 +1481,7 @@ static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p)
 }
 
 
-static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const char *database_s, const json_t *blast_result_search_p)
+static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p)
 {
 	json_t *report_p = json_object ();
 
@@ -1434,7 +1493,7 @@ static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const char *da
 				{
 					if (json_object_set_new (report_p, S_REPORT_RESULTS_S, results_p) == 0)
 						{
-							if (GetAndAddDatabaseDetails (report_p, database_s))
+							if (GetAndAddDatabaseDetails (report_p, database_p))
 								{
 									if (GetAndAddQueryMetadata (blast_result_search_p, report_p))
 										{
@@ -1459,27 +1518,27 @@ static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const char *da
 
 
 
-static const char *GetDatabaseNameFromResult (const json_t *blast_report_p, const BlastServiceData *data_p)
+static const DatabaseInfo *GetDatabaseFromResult (const json_t *blast_report_p, const BlastServiceData *data_p)
 {
-	const char *database_s = NULL;
+	const DatabaseInfo *db_p = NULL;
 
-	json_t *db_p = GetCompoundJSONObject (blast_report_p, "search_target.db");
+	json_t *db_json_p = GetCompoundJSONObject (blast_report_p, "search_target.db");
 
 	/* Get the database name */
-	if (db_p)
+	if (db_json_p)
 		{
-			if (json_is_string (db_p))
+			if (json_is_string (db_json_p))
 				{
-					const char *database_filename_s = json_string_value (db_p);
+					const char *database_filename_s = json_string_value (db_json_p);
 
 					if (database_filename_s)
 						{
-							database_s = GetMatchingDatabaseName (data_p, database_filename_s);
-						}		/* if (database_s) */
+							db_p = GetMatchingDatabaseByFilename (data_p, database_filename_s);
+						}		/* if (database_filename_s) */
 				}
 		}
 
-	return database_s;
+	return db_p;
 }
 
 

@@ -1241,10 +1241,14 @@ bool GetBlastServiceConfig (BlastServiceData *data_p)
 																	if (description_s)
 																		{
 																			const char *type_s = GetJSONString (db_json_p, "type");
+																			const char *download_uri_s = GetJSONString (db_json_p, "download_uri");
+																			const char *info_uri_s = GetJSONString (db_json_p, "info_uri");
 
 																			db_p -> di_name_s = name_s;
 																			db_p -> di_filename_s = filename_s;
 																			db_p -> di_description_s = description_s;
+																			db_p -> di_download_uri_s = download_uri_s;
+																			db_p -> di_info_uri_s = info_uri_s;
 																			db_p -> di_active_flag = true;
 																			db_p -> di_type = DT_NUCLEOTIDE;
 
@@ -1398,6 +1402,20 @@ const char *GetMatchingDatabaseFilename (const BlastServiceData *data_p, const c
 
 const char *GetMatchingDatabaseName (const BlastServiceData *data_p, const char *filename_s)
 {
+	const char *db_name_s = NULL;
+	const DatabaseInfo *db_p = GetMatchingDatabaseByFilename (data_p, filename_s);
+
+	if (db_p)
+		{
+			db_name_s = db_p -> di_name_s;
+		}		/* if (db_p) */
+
+	return db_name_s;
+}
+
+
+const DatabaseInfo *GetMatchingDatabaseByFilename (const BlastServiceData *data_p, const char *filename_s)
+{
 	const DatabaseInfo *db_p = data_p -> bsd_databases_p;
 
 	if (db_p)
@@ -1406,7 +1424,7 @@ const char *GetMatchingDatabaseName (const BlastServiceData *data_p, const char 
 				{
 					if (strcmp (filename_s, db_p -> di_filename_s) == 0)
 						{
-							return db_p -> di_name_s;
+							return db_p;
 						}
 
 					++ db_p;

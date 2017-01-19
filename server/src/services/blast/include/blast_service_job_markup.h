@@ -63,7 +63,7 @@ BLAST_SERVICE_LOCAL bool GetAndAddIntScoreValue (json_t *marked_up_result_p, con
 
 BLAST_SERVICE_LOCAL bool GetAndAddSequenceValue (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_key_s, const char *sequence_key_s);
 
-BLAST_SERVICE_LOCAL bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s);
+BLAST_SERVICE_LOCAL bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const DatabaseInfo *database_p);
 
 BLAST_SERVICE_LOCAL bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p);
 
@@ -79,6 +79,30 @@ BLAST_SERVICE_LOCAL bool AddPolymorphism (json_t *marked_up_hsp_p, const char *h
 
 BLAST_SERVICE_LOCAL bool AddHsp (json_t *marked_up_hit_p, const json_t *hsp_p);
 
+
+/**
+ * After the blast job has ran, get the database that it ran against from a
+ * hit from within SINGLE_JSON_FILE output formatted result.
+ *
+ * @param hit_p The JSON fragment for the hit.
+ * @return The database name or <code>
+ * NULL</code> upon error.
+ * @memberof BlastServiceJob
+ */
+BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *hit_p);
+
+
+/**
+ * After the blast job has ran, get the scaffolds that it ran against from a
+ * hit from within SINGLE_JSON_FILE output formatted result.
+ *
+ * @param hit_p The JSON fragment for the hit.
+ * @param database_s The database name.
+ * @return A JSON array where each element is an object with "scaffold" as the key
+ * and the scaffold name as the value or <code>NULL</code> upon error.
+ * @memberof BlastServiceJob
+ */
+BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *hit_p, const char * const database_s);
 
 
 /**
