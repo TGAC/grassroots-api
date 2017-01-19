@@ -51,7 +51,9 @@ JSONViewer ::	JSONViewer (QWidget *parent_p)
 
 
 	jv_tree_p = new QTreeWidget (this);
+	jv_tree_p -> setAlternatingRowColors (true);
 	jv_tree_p -> setContextMenuPolicy (Qt :: CustomContextMenu);
+
 	connect (jv_tree_p, &QTreeWidget :: customContextMenuRequested, this, &JSONViewer :: PrepareMenu);
 	connect (jv_tree_p, &QTreeView :: expanded, this, &JSONViewer :: ResizeColumns);
 	//connect (jv_tree_p, &QTreeView :: collapsed, this, &JSONViewer :: ResizeColumns);

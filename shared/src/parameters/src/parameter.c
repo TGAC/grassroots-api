@@ -31,7 +31,7 @@
 
 
 #ifdef _DEBUG
-	#define PARAMETER_DEBUG	(STM_LEVEL_FINE)
+	#define PARAMETER_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define PARAMETER_DEBUG	(STM_LEVEL_NONE)
 #endif

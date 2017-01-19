@@ -777,7 +777,7 @@ void PrepareBlastServiceJobs (const DatabaseInfo *db_p, const ParameterSet * con
 							/* Is the database selected to search against? */
 							if (param_p -> pa_current_value.st_boolean_value)
 								{
-									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p -> di_name_s, db_p -> di_description_s, data_p);
+									BlastServiceJob *job_p = AllocateBlastServiceJob (jobs_p -> sjs_service_p, db_p, data_p);
 
 									if (job_p)
 										{

@@ -50,7 +50,7 @@ static const char * const BSJ_JOB_S = "job";
  * API DEFINITIONS
  */
 
-BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, BlastServiceData *data_p)
+BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const DatabaseInfo *db_p, BlastServiceData *data_p)
 {
 	BlastServiceJob *blast_job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
 
@@ -59,9 +59,9 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_na
 			BlastTool *tool_p = NULL;
 			ServiceJob * const base_service_job_p = & (blast_job_p -> bsj_job);
 
-			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL, FreeBlastServiceJob);
+			InitServiceJob (base_service_job_p, service_p, db_p -> di_name_s, db_p -> di_description_s, NULL, FreeBlastServiceJob);
 
-			tool_p = CreateBlastToolFromFactory (data_p -> bsd_tool_factory_p, blast_job_p, job_name_s, data_p);
+			tool_p = CreateBlastToolFromFactory (data_p -> bsd_tool_factory_p, blast_job_p, db_p -> di_filename_s, data_p);
 
 			if (tool_p)
 				{

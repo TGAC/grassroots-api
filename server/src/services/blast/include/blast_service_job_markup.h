@@ -29,7 +29,7 @@ BLAST_SERVICE_LOCAL bool GetAndAddHitLocation (json_t *marked_up_result_p, const
 
 BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
 
-BLAST_SERVICE_LOCAL bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const char *database_s, const DatabaseType db_type);
+BLAST_SERVICE_LOCAL bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const DatabaseType db_type);
 
 BLAST_SERVICE_LOCAL json_t *GetInitialisedProcessedRequest (void);
 
@@ -57,8 +57,6 @@ BLAST_SERVICE_LOCAL bool GetAndAddSequenceValue (json_t *marked_up_result_p, con
 BLAST_SERVICE_LOCAL bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const char *database_s);
 
 BLAST_SERVICE_LOCAL bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p);
-
-BLAST_SERVICE_LOCAL json_t *GetAndAddMarkedUpHit (json_t *marked_up_hits_array_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
 
 BLAST_SERVICE_LOCAL bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseType db_type);
