@@ -47,7 +47,9 @@ static bool AddEdamOntologyTerms (json_t *context_p);
 
 static bool AddFaldoOntologyTerms (json_t *context_p);
 
-static bool AddGap (json_t *gaps_p, const int32 from, const int32 to, const bool forward_strand_flag);
+static bool AddGenomicFeatureAndVariationOntologyTerms (json_t *context_p);
+
+static bool AddGap (json_t *gaps_p, const int32 from, const int32 to);
 
 static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, const char *sequence_s);
 
@@ -274,15 +276,15 @@ bool AddHsp (json_t *marked_up_hsp_p, const json_t *hsp_p)
 }
 
 
-bool AddHitLocation (json_t *parent_p, const char *child_key_s, const int32 from, const int32 to, const bool forward_strand_flag)
+bool AddHitLocation (json_t *parent_p, const char *child_key_s, const int32 from, const int32 to, const Strand strand)
 {
 	json_t *location_p = json_object ();
 
 	if (location_p)
 		{
-			if (AddFaldoTerminus (location_p, "faldo:begin", from, forward_strand_flag))
+			if (AddFaldoTerminus (location_p, "faldo:begin", from, strand))
 				{
-					if (AddFaldoTerminus (location_p, "faldo:end", to, forward_strand_flag))
+					if (AddFaldoTerminus (location_p, "faldo:end", to, strand))
 						{
 							if (json_object_set_new (location_p, "@type", json_string ("faldo:Region")) == 0)
 								{
@@ -330,21 +332,21 @@ bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, con
 						}
 					 */
 
-					bool forward_strand_flag = true;
+					Strand strand = ST_NONE;
 					const char *strand_s = GetJSONString (hsps_p, strand_key_s);
 
 					if (strand_s)
 						{
 							if (strcmp (strand_s, "Plus") == 0)
 								{
-									forward_strand_flag = true;
+									strand = ST_FORWARD;
 								}
 							else if (strcmp (strand_s, "Minus") == 0)
 								{
-									forward_strand_flag = false;
+									strand = ST_REVERSE;
 								}
 
-							if (AddHitLocation (marked_up_result_p, child_key_s, from, to, forward_strand_flag))
+							if (AddHitLocation (marked_up_result_p, child_key_s, from, to, strand))
 								{
 									success_flag = true;
 								}
@@ -358,48 +360,57 @@ bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, con
 }
 
 
-bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, const int32 position, const bool forward_strand_flag)
+bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, const int32 position, const Strand strand)
 {
 	json_t *faldo_p = json_object ();
 
 	if (faldo_p)
 		{
-			json_t *type_array_p = json_array ();
+			bool success_flag = false;
 
-			if (type_array_p)
+			if (strand == ST_NONE)
 				{
-					if (json_object_set_new (faldo_p, "@type", type_array_p) == 0)
+					success_flag = (json_object_set_new (faldo_p, "@type", json_string ("faldo:ExactPosition")) == 0);
+				}
+			else
+				{
+					json_t *type_array_p = json_array ();
+
+					if (type_array_p)
 						{
-							if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0)
+							if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0)
 								{
-									if (json_array_append_new (type_array_p, json_string ("faldo:ExactPosition")) == 0)
+									const char *strand_s = (strand == ST_FORWARD) ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
+
+									if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
 										{
-											const char *strand_s = forward_strand_flag ? "faldo:ForwardStrandPosition" : "faldo:ReverseStrandPosition";
-
-											if (json_array_append_new (type_array_p, json_string (strand_s)) == 0)
+											if (json_object_set_new (faldo_p, "@type", type_array_p) == 0)
 												{
-													if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) == 0)
-														{
-															if (json_object_set_new (parent_json_p, child_key_s, faldo_p) == 0)
-																{
-																	return true;
-																}
+													success_flag = true;
+												}
+										}
+								}
 
-														}		/* if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) */
-
-												}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
-
-										}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
-
-								}		/* if (json_array_append_new (type_array_p, json_string ("faldo:Position")) == 0) */
-
-
-						}		/* if (json_object_set_new (faldo_p, "@type", type_array_p) == 0) */
-					else
-						{
-							json_decref (type_array_p);
+							if (!success_flag)
+								{
+									json_decref (type_array_p);
+								}
 						}
-				}		/* if (type_array_p) */
+				}
+
+			if (success_flag)
+				{
+					if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) == 0)
+						{
+							if (json_object_set_new (parent_json_p, child_key_s, faldo_p) == 0)
+								{
+									return true;
+								}
+
+						}		/* if (json_object_set_new (faldo_p, "faldo:position", json_integer (position)) */
+
+				}		/* if (json_array_append_new (type_array_p, json_string (strand_s)) == 0) */
+
 
 			json_decref (faldo_p);
 		}		/* if (faldo_p) */
@@ -648,32 +659,35 @@ json_t *GetInitialisedProcessedRequest (void)
 										{
 											if (AddSequenceOntologyTerms (context_p))
 												{
-													json_t *sequence_search_results_p = json_object ();
-
-													if (sequence_search_results_p)
+													if (AddGenomicFeatureAndVariationOntologyTerms (context_p))
 														{
-															if (json_object_set_new (root_p, S_RESULTS_S, sequence_search_results_p) == 0)
-																{
-																	json_t *reports_p = json_array ();
+															json_t *sequence_search_results_p = json_object ();
 
-																	if (reports_p)
+															if (sequence_search_results_p)
+																{
+																	if (json_object_set_new (root_p, S_RESULTS_S, sequence_search_results_p) == 0)
 																		{
-																			if (json_object_set_new (sequence_search_results_p, S_REPORTS_S, reports_p) == 0)
+																			json_t *reports_p = json_array ();
+
+																			if (reports_p)
 																				{
-																					return root_p;
+																					if (json_object_set_new (sequence_search_results_p, S_REPORTS_S, reports_p) == 0)
+																						{
+																							return root_p;
+																						}
+																					else
+																						{
+																							json_decref (reports_p);
+																						}
 																				}
-																			else
-																				{
-																					json_decref (reports_p);
-																				}
+
+																		}
+																	else
+																		{
+																			json_decref (sequence_search_results_p);
 																		}
 
 																}
-															else
-																{
-																	json_decref (sequence_search_results_p);
-																}
-
 														}
 												}
 										}
@@ -985,7 +999,7 @@ static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, co
 											/* we've just finished a gap */
 											int32 gap_end = index - 1;
 
-											if (!AddGap (gaps_p, gap_start, gap_end, true))
+											if (!AddGap (gaps_p, gap_start, gap_end))
 												{
 													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to the gap starting at reference \"%s\"", sequence_s);
 													success_flag = false;
@@ -1007,7 +1021,7 @@ static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, co
 							/* we've just finished a gap */
 							int32 gap_end = index;
 
-							if (!AddGap (gaps_p, gap_start, gap_end, true))
+							if (!AddGap (gaps_p, gap_start, gap_end))
 								{
 									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to the gap starting at reference \"%s\"", sequence_s);
 									success_flag = false;
@@ -1045,7 +1059,7 @@ static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, co
 }
 
 
-static bool AddGap (json_t *gaps_p, const int32 from, const int32 to, const bool forward_strand_flag)
+static bool AddGap (json_t *gaps_p, const int32 from, const int32 to)
 {
 	json_t *gap_p = json_object ();
 
@@ -1053,7 +1067,7 @@ static bool AddGap (json_t *gaps_p, const int32 from, const int32 to, const bool
 		{
 			if (json_object_set_new (gap_p, "@type", json_string ("gap")) == 0)
 				{
-					if (AddHitLocation (gap_p, "faldo:location", from, to, forward_strand_flag))
+					if (AddHitLocation (gap_p, "locus", from, to, ST_NONE))
 						{
 							if (json_array_append_new (gaps_p, gap_p) == 0)
 								{
@@ -1112,7 +1126,7 @@ bool AddPolymorphism (json_t *marked_up_hsp_p, const char *hit_gap_start_p, cons
 				{
 					const char *type_s = (length == 1) ? "snp" : "mnp";
 
-					if (AddHitLocation (polymorphism_p, "faldo:location", start_of_region, end_of_region, forward_strand_flag))
+					if (AddHitLocation (polymorphism_p, "locus", start_of_region, end_of_region, ST_NONE))
 						{
 							if (json_object_set_new (polymorphism_p, "@type", json_string (type_s)) == 0)
 								{
@@ -1294,6 +1308,19 @@ static bool AddEdamOntologyTerms (json_t *context_p)
 								}
 						}
 				}
+		}
+
+	return success_flag;
+}
+
+
+static bool AddGenomicFeatureAndVariationOntologyTerms (json_t *context_p)
+{
+	bool success_flag = false;
+
+	if (AddTerm (context_p, "locus", "http://www.biointerchange.org/gfvo#Locus",true))
+		{
+			success_flag = true;
 		}
 
 	return success_flag;

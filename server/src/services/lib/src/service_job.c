@@ -1381,10 +1381,19 @@ bool InitServiceJobFromResultsJSON (ServiceJob *job_p, const json_t *results_p, 
 													if (results_array_p)
 														{
 															char uuid_s [UUID_STRING_BUFFER_SIZE];
+															char *title_s = NULL;
 															json_t *resource_p = NULL;
 
 															ConvertUUIDToString (job_p -> sj_id, uuid_s);
-															resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, uuid_s, data_p);
+
+															title_s = ConcatenateVarargsStrings (job_p -> sj_name_s, " (", uuid_s, ")", NULL);
+
+															resource_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, title_s ? title_s : uuid_s, data_p);
+
+															if (title_s)
+																{
+																	FreeCopiedString (title_s);
+																}
 
 															if (resource_p)
 																{

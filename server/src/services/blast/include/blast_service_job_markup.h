@@ -19,6 +19,14 @@
 #include "jansson.h"
 
 
+typedef enum Strand
+{
+	ST_NONE,
+	ST_FORWARD,
+	ST_REVERSE
+} Strand;
+
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -26,6 +34,8 @@ extern "C"
 
 BLAST_SERVICE_LOCAL bool GetAndAddHitLocation (json_t *marked_up_result_p, const json_t *hsps_p, const char *hsp_from_key_s, const char *hsp_to_key_s, const char *strand_key_s, const char *child_key_s);
 
+
+BLAST_SERVICE_LOCAL bool AddHitLocation (json_t *parent_p, const char *child_key_s, const int32 from, const int32 to, const Strand strand);
 
 BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
 
@@ -40,8 +50,7 @@ BLAST_SERVICE_LOCAL bool AddTerm (json_t *root_p, const char *key_s, const char 
 
 BLAST_SERVICE_LOCAL bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_s);
 
-BLAST_SERVICE_LOCAL bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, const int32 position, const bool forward_strand_flag);
-
+BLAST_SERVICE_LOCAL bool AddFaldoTerminus (json_t *parent_json_p, const char *child_key_s, const int32 position, const Strand strand);
 
 BLAST_SERVICE_LOCAL bool AddIntScoreValue (json_t *parent_p, const char *key_s, int score_value);
 
