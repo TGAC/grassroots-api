@@ -67,6 +67,7 @@ static json_t *GetMarkupReports (json_t *markup_p);
 
 static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
+static bool AddQueryMasks (const json_t *blast_search_p, json_t *mark_up_p);
 
 
 /*
@@ -197,38 +198,49 @@ bool AddHsp (json_t *marked_up_hsp_p, const json_t *hsp_p)
 												{
 													if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location"))
 														{
-															if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "qseq", "query_sequence"))
-																{
-																	if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
-																		{
-																			if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "midline", "midline"))
-																				{
-																					const char *midline_s = GetJSONString (hsp_p, "midline");
-																					const char *query_sequence_s = GetJSONString (hsp_p, "qseq");
-																					const char *hit_sequence_s = GetJSONString (hsp_p, "hseq");
-																					const uint32 hit_index = 0;
-																					const int inc_value = 1;
+															const char *hit_sequence_s = GetJSONString (hsp_p, "hseq");
 
-																					if (GetAndAddNucleotidePolymorphisms (marked_up_hsp_p, query_sequence_s, hit_sequence_s, midline_s, hit_index, inc_value))
+															if (hit_sequence_s && AddSequence (marked_up_hsp_p, "hit_sequence", hit_sequence_s))
+																{
+																	const char *query_sequence_s = GetJSONString (hsp_p, "qseq");
+
+																	if (query_sequence_s && AddSequence (marked_up_hsp_p, "query_sequence", query_sequence_s))
+																		{
+																			const char *midline_s = GetJSONString (hsp_p, "midline");
+
+																			if (midline_s && AddSequence (marked_up_hsp_p, "midline", midline_s))
+																				{
+																					if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "query_from", "query_to", "query_strand", "query_location"))
 																						{
-																							return true;
+																							const uint32 hit_index = 0;
+																							const int inc_value = 1;
+
+																							if (GetAndAddNucleotidePolymorphisms (marked_up_hsp_p, query_sequence_s, hit_sequence_s, midline_s, hit_index, inc_value))
+																								{
+																									return true;
+																								}
 																						}
-																				}		/* if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "midline", "midline")) */
+																					else
+																						{
+																							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add query location details");
+																						}
+
+																				}		/* if (midline_s && AddSequence (marked_up_hsp_p, "midline", midline_s)) */
 																			else
 																				{
-																					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add midline");
+																					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add midline \"%s\"", midline_s ? midline_s : "NULL");
 																				}
 
-																		}		/* if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "query_from", "query_to", "query_strand", "query_location")) */
+																		}		/* if (query_sequence_s && AddSequence (marked_up_hsp_p, "query_sequence", query_sequence_s)) */
 																	else
 																		{
-																			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add query location details");
+																			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add query_sequence \"%s\"", query_sequence_s ? query_sequence_s : "NULL");
 																		}
 
-																}		/* if (GetAndAddSequenceValue (marked_up_hsp_p, hsp_p, "qseq", "query_sequence")) */
+																}		/* if (GetAndAddSequenceValue (marked_up_hsp_p, hsps_p, "hseq", "hit_sequence")) */
 															else
 																{
-																	PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add query_sequence");
+																	PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, marked_up_hsp_p, "failed to add hit_sequence \"%s\"", hit_sequence_s ? hit_sequence_s : "NULL");
 																}
 
 														}		/* if (GetAndAddHitLocation (marked_up_hsp_p, hsp_p, "hit_from", "hit_to", "hit_strand", "hit_location")) */
@@ -808,7 +820,10 @@ bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p)
 				{
 					if (CopyJSONKeyIntegerValuePair (blast_search_p, mark_up_p, "query_len", false))
 						{
-							success_flag = true;
+							if (AddQueryMasks (blast_search_p, mark_up_p))
+								{
+									success_flag = true;
+								}
 						}
 					else
 						{
@@ -828,6 +843,7 @@ bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p)
 
 	return success_flag;
 }
+
 
 
 
@@ -1298,13 +1314,16 @@ static bool AddEdamOntologyTerms (json_t *context_p)
 
 	if (AddTerm (context_p, "sequence_length", "http://edamontology.org/data_1249", false))
 		{
-			if (AddTerm (context_p, S_RESULTS_S, "http://edamontology.org/data_0857",true))
+			if (AddTerm (context_p, S_RESULTS_S, "http://edamontology.org/data_0857", true))
 				{
-					if (AddTerm (context_p, "database_metadata", "http://edamontology.org/data_0957",true))
+					if (AddTerm (context_p, "database_metadata", "http://edamontology.org/data_0957", true))
 						{
-							if (AddTerm (context_p, "database_name", "http://edamontology.org/data_1056",true))
+							if (AddTerm (context_p, "database_name", "http://edamontology.org/data_1056", true))
 								{
-									success_flag = true;
+									if (AddTerm (context_p, "query_masks", "http://edamontology.org/operation_0368", false))
+										{
+											success_flag = true;
+										}
 								}
 						}
 				}
@@ -1532,4 +1551,106 @@ static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hi
 	return success_flag;
 }
 
+
+static bool AddQueryMasks (const json_t *blast_search_p, json_t *mark_up_p)
+{
+	bool success_flag = false;
+	const json_t *blast_query_masking_p = json_object_get (blast_search_p, "query_masking");
+
+	if (blast_query_masking_p)
+		{
+			json_t *masks_p = json_array ();
+
+			if (masks_p)
+				{
+					if (json_is_array (blast_query_masking_p))
+						{
+							size_t i;
+							const size_t size = json_array_size (blast_query_masking_p);
+
+							success_flag = true;
+
+							for (i = 0; i < size; ++ i)
+								{
+									const json_t *blast_mask_p = json_array_get (blast_query_masking_p, i);
+									int32 from;
+
+									if (GetJSONInteger (blast_mask_p, "from", &from))
+										{
+											int32 to;
+
+											if (GetJSONInteger (blast_mask_p, "to", &to))
+												{
+													bool added_mask_flag = false;
+													json_t *mask_p = json_object ();
+
+													if (mask_p)
+														{
+															if (json_object_set_new (mask_p, "@type", json_string ("sequence_masking")) == 0)
+																{
+																	if (AddHitLocation (mask_p, "locus", from, to, ST_NONE))
+																		{
+																			if (json_array_append_new (masks_p, mask_p) == 0)
+																				{
+																					added_mask_flag = true;
+																				}
+																			else
+																				{
+																					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mask_p, "Failed append query mask to list of query masks");
+																				}
+
+																		}
+																	else
+																		{
+																			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mask_p, "Failed add query mask location data");
+																		}
+
+																}		/* if (json_object_set_new (mask_p, "@type", json_string ("sequence_masking")) == 0) */
+															else
+																{
+																	PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mask_p, "Failed to set type for query mask");
+																}
+
+															if (!added_mask_flag)
+																{
+																	json_decref (mask_p);
+																	success_flag = false;
+																	i = size;		/* force exit from loop */
+																}
+
+														}		/* if (mask_p) */
+													else
+														{
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create mask");
+														}
+
+												}		/* if (GetJSONInteger (blast_mask_p, "to", &to)) */
+
+										}		/* if (GetJSONInteger (blast_mask_p, "from", &from)) */
+								}
+
+							if (success_flag)
+								{
+									if (json_object_set (mark_up_p, "query_masks", masks_p) != 0)
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mark_up_p, "Failed to add masks array");
+											success_flag = false;
+										}
+								}
+
+						}
+
+					if (!success_flag)
+						{
+							json_decref (masks_p);
+						}
+				}
+		}
+	else
+		{
+			success_flag = true;
+		}
+
+	return success_flag;
+}
 
