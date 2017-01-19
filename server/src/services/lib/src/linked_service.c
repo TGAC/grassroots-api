@@ -189,53 +189,60 @@ LinkedService *CreateLinkedServiceFromJSON (const json_t *linked_service_json_p)
 
 			if (params_p)
 				{
-					if (json_is_array (params_p))
+					if (json_is_object (params_p))
 						{
 							const char *input_root_s = GetJSONString (params_p, MAPPED_PARAMS_ROOT_S);
-							linked_service_p = AllocateLinkedService (service_s, input_root_s);
+							json_t *mapped_params_json_p = json_object_get (params_p, MAPPED_PARAMS_LIST_S);
 
-							if (linked_service_p)
+							if (mapped_params_json_p)
 								{
-									bool success_flag = true;
-									const size_t size = json_array_size (params_p);
-									size_t i;
+									linked_service_p = AllocateLinkedService (service_s, input_root_s);
 
-									for (i = 0; i < size; ++ i)
+									if (linked_service_p)
 										{
-											const json_t *param_json_p = json_array_get (params_p, i);
-											MappedParameter *mapped_param_p = CreateMappedParameterFromJSON (param_json_p);
+											bool success_flag = true;
+											const size_t size = json_array_size (mapped_params_json_p);
+											size_t i;
 
-											if (mapped_param_p)
+											for (i = 0; i < size; ++ i)
 												{
-													if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p))
+													const json_t *mapped_param_json_p = json_array_get (mapped_params_json_p, i);
+													MappedParameter *mapped_param_p = CreateMappedParameterFromJSON (mapped_param_json_p);
+
+													if (mapped_param_p)
 														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add mapped param \"%s\":\"%s\" for \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_output_service_s);
+															if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p))
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add mapped param \"%s\":\"%s\" for \"%s\"", mapped_param_p -> mp_input_param_s, mapped_param_p -> mp_output_param_s, linked_service_p -> ls_output_service_s);
+																	i = size; 		/* force exit from loop */
+																	success_flag = false;
+																}		/* if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p)) */
+
+														}		/* if (mapped_param_p) */
+													else
+														{
+															PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, mapped_param_json_p, "Failed to create mapped parameter");
 															i = size; 		/* force exit from loop */
 															success_flag = false;
-														}		/* if (!AddMappedParameterToLinkedService (linked_service_p, mapped_param_p)) */
+														}
 
-												}		/* if (mapped_param_p) */
-											else
+												}		/* for (i = 0; i < size; ++ i) */
+
+											if (!success_flag)
 												{
-													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, param_json_p, "Failed to create mapped parameter");
-													i = size; 		/* force exit from loop */
-													success_flag = false;
+													FreeLinkedService (linked_service_p);
+													linked_service_p = NULL;
 												}
 
-										}		/* for (i = 0; i < size; ++ i) */
+										}		/* if (linked_service_p) */
 
-									if (!success_flag)
-										{
-											FreeLinkedService (linked_service_p);
-											linked_service_p = NULL;
-										}
+								}		/* if (mapped_params_json_p) */
 
-								}		/* if (linked_service_p) */
 
-						}		/* if (json_is_array (params_p)) */
+						}		/* if (json_is_object (params_p)) */
 					else
 						{
-							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, params_p, "Fragment is not a JSON array");
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, params_p, "Fragment is not a JSON object");
 						}
 
 				}		/* if (params_p) */
