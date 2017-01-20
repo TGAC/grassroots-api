@@ -44,8 +44,6 @@ static const char * const BSJ_JOB_S = "job";
 
 
 
-
-
 /*
  * API DEFINITIONS
  */
@@ -393,7 +391,6 @@ bool UpdateBlastServiceJob (ServiceJob *job_p)
 
 
 
-
 bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p)
 {
 	bool success_flag = false;
@@ -419,136 +416,71 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 									json_t *result_p;
 
 									json_array_foreach (results_p, i, result_p)
-									{
-										bool continue_flag = false;
+										{
+											bool continue_flag = false;
 
-										json_t *data_p = json_object_get (result_p, RESOURCE_DATA_S);
+											json_t *data_p = json_object_get (result_p, RESOURCE_DATA_S);
 
-										if (data_p)
-											{
-												if (json_is_array (data_p))
-													{
-														size_t k;
-														json_t *data_item_p;
-
-														json_array_foreach (data_p, k, data_item_p)
+											if (data_p)
+												{
+													if (json_is_array (data_p))
 														{
-															json_t *linked_services_array_p = json_array ();
+															size_t j;
+															json_t *data_item_p;
 
-															if (linked_services_array_p)
+															json_array_foreach (data_p, j, data_item_p)
 																{
-																	if (json_object_set_new (data_item_p, LINKED_SERVICES_S, linked_services_array_p) == 0)
+																	json_t *reports_p = GetMarkupReports (data_p);
+
+																	if (reports_p)
 																		{
-																			/*
-																			 * Database
-																			 */
-																			MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "database");
-																			const char *database_s = NULL;
+																			size_t k;
+																			json_t *report_p;
 
-																			if (mapped_param_p)
+
+																			json_array_foreach (reports_p, k, report_p)
 																				{
-																					database_s = GetDatabase (data_item_p);
+																					const char *database_s = NULL;
 
-																					if (database_s)
+																					if (GetAndAddDatabaseMappedParameter (linked_service_p, report_p, output_params_p, &database_s))
 																						{
-																							Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
+																							json_t *hits_p = GetHitsFromMarkedUpReport (report_p);
 
-																							if (param_p)
+																							if (hits_p)
 																								{
-																									if (SetParameterValueFromString (param_p, database_s))
+																									size_t l;
+																									json_t *hit_p;
+
+																									json_array_foreach (hits_p, l, hit_p)
 																										{
-																											continue_flag = true;
-																										}
-																								}		/* if (param_p) */
-																						}
+																											json_t *linked_services_array_p = json_array ();
 
-																				}		/* if (mapped_param_p) */
-																			else
-																				{
-																					continue_flag = true;
-																				}
-
-
-																			if (continue_flag)
-																				{
-																					mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
-
-																					if (mapped_param_p)
-																						{
-																							Parameter *param_p = GetParameterFromParameterSetByName (output_params_p, mapped_param_p -> mp_output_param_s);
-
-																							if (param_p)
-																								{
-																									const json_t *scaffolds_p = GetScaffoldsForDatabaseHits (data_item_p, database_s);
-
-																									if (scaffolds_p)
-																										{
-																											if (json_is_array (scaffolds_p))
-																												{
-																													size_t j;
-																													json_t *scaffold_p;
-
-																													json_array_foreach (scaffolds_p, j, scaffold_p)
-																													{
-																														const char *scaffold_s = GetJSONString (scaffold_p, "scaffold");
-
-																														if (scaffold_s)
-																															{
-																																if (SetParameterValueFromString (param_p, scaffold_s))
-																																	{
-																																		json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p, false);
-
-																																		if (run_service_p)
-																																			{
-																																				if (json_array_append_new (linked_services_array_p, run_service_p) == 0)
-																																					{
-
-																																					}
-																																				else
-																																					{
-																																						json_decref (run_service_p);
-																																					}
-
-																																			}		/* if (run_service_p) */
-
-																																	}		/* if (SetParameterValueFromString (param_p, scaffold_s)) */
-
-																															}		/* if (scaffold_s) */
-
-																													}		/* json_array_foreach (scaffolds_p, j, scaffold_p) */
-
-																												}		/* if (json_is_array (scaffolds_p)) */
-																											else
+																											if (linked_services_array_p)
 																												{
 
-																												}
 
-																										}		/* if (scaffolds_p) */
+																												}		/* if (linked_services_array_p) */
 
-																								}		/* if (param_p) */
+																										}		/* json_array_foreach (hits_p, l, hit_p) */
 
-																						}		/* if (mapped_param_p) */
+																								}		/* if (hits_p) */
 
-																				}		/* if (contune_flag) */
+																						}		/* if (GetAndAddDatabaseMappedParameter (linked_service_p, report_p, output_params_p, &database_s)) */
 
-																		}
-																	else
-																		{
-																			json_decref (linked_services_array_p);
-																		}
+																				}		/* json_array_foreach (reports_p, k, report_p) */
 
-																}		/* if (linked_services_array_p) */
+																		}		/* if (reports_p) */
 
-														}
+																}		/* json_array_foreach (data_p, j, data_item_p) */
 
-													}
+														}		/* if (json_is_array (data_p)) */
 
-											}		/* if (data_p) */
+												}		/* if (data_p) */
 
 
 
 
-									}		/* json_array_foreach (job_p -> sj_processed_results_p, i, result_p) */
+										}		/* json_array_foreach (job_p -> sj_processed_results_p, i, result_p) */
 
 								}		/* if (json_is_array (job_p -> sj_processed_results_p)) */
 
@@ -565,6 +497,7 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 
 	return success_flag;
 }
+
 
 
 
