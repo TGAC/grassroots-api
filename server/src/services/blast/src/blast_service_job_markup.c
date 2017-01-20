@@ -1327,6 +1327,7 @@ bool GetAndAddDatabaseMappedParameter (LinkedService *linked_service_p, const js
 							if (SetParameterValueFromString (param_p, value_s))
 								{
 									*database_ss = value_s;
+									success_flag = true;
 								}
 						}		/* if (param_p) */
 				}
@@ -1360,10 +1361,12 @@ bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t 
 							if (json_is_array (scaffolds_p))
 								{
 									size_t i;
-									json_t *scaffold_p;
+									size_t num_added = 0;
+									const size_t num_scaffolds = json_array_size (scaffolds_p);
 
-									json_array_foreach (scaffolds_p, i, scaffold_p)
+									for (i = 0; i < num_scaffolds; ++ i)
 										{
+											const json_t *scaffold_p = json_array_get (scaffolds_p, i);
 											const char *scaffold_s = GetJSONString (scaffold_p, "scaffold");
 
 											if (scaffold_s)
@@ -1376,7 +1379,7 @@ bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t 
 																{
 																	if (json_array_append_new (linked_services_array_p, run_service_p) == 0)
 																		{
-
+																			++ num_added;
 																		}
 																	else
 																		{
@@ -1389,7 +1392,9 @@ bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t 
 
 												}		/* if (scaffold_s) */
 
-										}		/* json_array_foreach (scaffolds_p, j, scaffold_p) */
+										}		/* for (i = 0; i < num_scaffolds; ++ i) */
+
+									success_flag = (num_added == num_scaffolds);
 
 								}		/* if (json_is_array (scaffolds_p)) */
 							else

@@ -42,6 +42,7 @@ static const char * const BSJ_TOOL_S = "tool";
 static const char * const BSJ_FACTORY_S = "factory";
 static const char * const BSJ_JOB_S = "job";
 
+static bool ProcessResultForLinkedService (json_t *data_p, LinkedService *linked_service_p, ParameterSet *output_params_p);
 
 
 /*
@@ -430,65 +431,14 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 
 															json_array_foreach (data_p, j, data_item_p)
 																{
-																	json_t *reports_p = GetMarkupReports (data_p);
-
-																	if (reports_p)
-																		{
-																			size_t k;
-																			json_t *report_p;
-
-																			json_array_foreach (reports_p, k, report_p)
-																				{
-																					const char *database_s = NULL;
-
-																					if (GetAndAddDatabaseMappedParameter (linked_service_p, report_p, output_params_p, &database_s))
-																						{
-																							json_t *hits_p = GetHitsFromMarkedUpReport (report_p);
-
-																							if (hits_p)
-																								{
-																									size_t l;
-																									json_t *hit_p;
-
-																									json_array_foreach (hits_p, l, hit_p)
-																										{
-																											json_t *linked_services_array_p = json_array ();
-
-																											if (linked_services_array_p)
-																												{
-																													bool added_flag = false;
-
-																													if (GetAndAddScaffoldsParameter (linked_service_p, hit_p, output_params_p, linked_services_array_p))
-																														{
-																															if (json_array_size (linked_services_array_p) > 0)
-																																{
-																																	if (json_object_set_new (hit_p, LINKED_SERVICES_S, linked_services_array_p) == 0)
-																																		{
-																																			added_flag = true;
-																																		}
-																																}
-																														}
-
-																													if (!added_flag)
-																														{
-																															json_decref (linked_services_array_p);
-																														}
-
-																												}		/* if (linked_services_array_p) */
-
-																										}		/* json_array_foreach (hits_p, l, hit_p) */
-
-																								}		/* if (hits_p) */
-
-																						}		/* if (GetAndAddDatabaseMappedParameter (linked_service_p, report_p, output_params_p, &database_s)) */
-
-																				}		/* json_array_foreach (reports_p, k, report_p) */
-
-																		}		/* if (reports_p) */
-
+																	ProcessResultForLinkedService (data_item_p, linked_service_p, output_params_p);
 																}		/* json_array_foreach (data_p, j, data_item_p) */
 
 														}		/* if (json_is_array (data_p)) */
+													else
+														{
+															ProcessResultForLinkedService (data_p, linked_service_p, output_params_p);
+														}
 
 												}		/* if (data_p) */
 
@@ -511,5 +461,66 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 }
 
 
+static bool ProcessResultForLinkedService (json_t *data_p, LinkedService *linked_service_p, ParameterSet *output_params_p)
+{
+	bool success_flag = false;
+	json_t *reports_p = GetMarkupReports (data_p);
 
+	if (reports_p)
+		{
+			size_t k;
+			json_t *report_p;
+
+			json_array_foreach (reports_p, k, report_p)
+				{
+					const char *database_s = NULL;
+
+					if (GetAndAddDatabaseMappedParameter (linked_service_p, report_p, output_params_p, &database_s))
+						{
+							json_t *hits_p = GetHitsFromMarkedUpReport (report_p);
+
+							if (hits_p)
+								{
+									size_t l;
+									json_t *hit_p;
+
+									json_array_foreach (hits_p, l, hit_p)
+										{
+											json_t *linked_services_array_p = json_array ();
+
+											if (linked_services_array_p)
+												{
+													bool added_flag = false;
+
+													if (GetAndAddScaffoldsParameter (linked_service_p, hit_p, output_params_p, linked_services_array_p))
+														{
+															if (json_array_size (linked_services_array_p) > 0)
+																{
+																	if (json_object_set_new (hit_p, LINKED_SERVICES_S, linked_services_array_p) == 0)
+																		{
+																			added_flag = true;
+																			success_flag = true;
+																		}
+																}
+														}
+
+													if (!added_flag)
+														{
+															json_decref (linked_services_array_p);
+														}
+
+												}		/* if (linked_services_array_p) */
+
+										}		/* json_array_foreach (hits_p, l, hit_p) */
+
+								}		/* if (hits_p) */
+
+						}		/* if (GetAndAddDatabaseMappedParameter (linked_service_p, report_p, output_params_p, &database_s)) */
+
+				}		/* json_array_foreach (reports_p, k, report_p) */
+
+		}		/* if (reports_p) */
+
+	return success_flag;
+}
 
