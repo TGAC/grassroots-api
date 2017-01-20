@@ -91,7 +91,7 @@ BLAST_SERVICE_LOCAL bool GetAndAddDatabaseMappedParameter (LinkedService *linked
 
 
 
-BLAST_SERVICE_LOCAL bool GetAndAddDatabaseScaffoldsParameter (LinkedService *linked_service_p, const json_t *hit_p, ParameterSet *output_params_p, json_t *linked_services_array_p);
+BLAST_SERVICE_LOCAL bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t *hit_p, ParameterSet *output_params_p, json_t *linked_services_array_p);
 
 
 /**
@@ -99,12 +99,11 @@ BLAST_SERVICE_LOCAL bool GetAndAddDatabaseScaffoldsParameter (LinkedService *lin
  * hit from within SINGLE_JSON_FILE output formatted result.
  *
  * @param hit_p The JSON fragment for the hit.
- * @param database_s The database name.
  * @return A JSON array where each element is an object with "scaffold" as the key
  * and the scaffold name as the value or <code>NULL</code> upon error.
  * @memberof BlastServiceJob
  */
-BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_p, const char * const database_s);
+BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_p);
 
 
 /**
@@ -121,6 +120,7 @@ BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
 BLAST_SERVICE_LOCAL json_t *GetMarkupReports (json_t *markup_p);
 
 
+BLAST_SERVICE_LOCAL json_t *GetHitsFromMarkedUpReport (json_t *report_p);
 
 #ifdef __cplusplus
 }

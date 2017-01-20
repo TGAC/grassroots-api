@@ -37,6 +37,10 @@ const char * const S_REPORTS_S = "reports";
 const char * const S_RESULTS_S = "blast_search_results";
 const char * const S_REPORT_RESULTS_S = "hits";
 
+const char * const S_DATATBASE_S = "database";
+const char * const S_DATATBASE_NAME_S = "database_name";
+
+
 /*
  * STATIC FUNCTION PROTOTYPES
  */
@@ -61,13 +65,14 @@ static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit
 
 static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p);
 
-static const DatabaseInfo *GetDatabaseFromResult (const json_t *blast_report_p, const BlastServiceData *data_p);
+static const DatabaseInfo *GetDatabaseFromBlastResult (const json_t *blast_report_p, const BlastServiceData *data_p);
 
-static json_t *GetMarkupReports (json_t *markup_p);
 
 static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
 static bool AddQueryMasks (const json_t *blast_search_p, json_t *mark_up_p);
+
+static const char *GetDatabaseName (const json_t *marked_up_report_p);
 
 
 /*
@@ -535,7 +540,7 @@ bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const DatabaseInfo *d
 
 	if (database_p)
 		{
-			if (json_object_set_new (database_p, "database_name", json_string (db_p -> di_name_s)) == 0)
+			if (json_object_set_new (database_p, S_DATATBASE_NAME_S, json_string (db_p -> di_name_s)) == 0)
 				{
 					bool success_flag = true;
 
@@ -554,7 +559,7 @@ bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, const DatabaseInfo *d
 
 					if (success_flag)
 						{
-							if (json_object_set_new (marked_up_result_p, "database", database_p) == 0)
+							if (json_object_set_new (marked_up_result_p, S_DATATBASE_S , database_p) == 0)
 								{
 									return true;
 								}
@@ -585,6 +590,18 @@ void AddLinkedServiceData  (json_t *root_p, LinkedService *linked_service_p)
 }
 
 
+
+json_t *GetHitsFromMarkedUpReport (json_t *report_p)
+{
+	json_t *hits_p = NULL;
+
+	if (report_p)
+		{
+			hits_p = json_object_get (report_p, S_REPORT_RESULTS_S);
+		}
+
+	return hits_p;
+}
 
 
 json_t *MarkUpBlastResult (BlastServiceJob *job_p)
@@ -619,7 +636,7 @@ json_t *MarkUpBlastResult (BlastServiceJob *job_p)
 
 											if (blast_report_p)
 												{
-													const DatabaseInfo *db_p = GetDatabaseFromResult (blast_report_p, data_p);
+													const DatabaseInfo *db_p = GetDatabaseFromBlastResult (blast_report_p, data_p);
 
 													if (db_p)
 														{
@@ -1299,7 +1316,7 @@ bool GetAndAddDatabaseMappedParameter (LinkedService *linked_service_p, const js
 
 	if (mapped_param_p)
 		{
-			const char *value_s = GetDatabase (report_p);
+			const char *value_s = GetDatabaseName (report_p);
 
 			if (value_s)
 				{
@@ -1325,7 +1342,7 @@ bool GetAndAddDatabaseMappedParameter (LinkedService *linked_service_p, const js
 
 
 
-bool GetAndAddDatabaseScaffoldsParameter (LinkedService *linked_service_p, const json_t *hit_p, ParameterSet *output_params_p, json_t *linked_services_array_p)
+bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t *hit_p, ParameterSet *output_params_p, json_t *linked_services_array_p)
 {
 	bool success_flag = false;
 	MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
@@ -1336,7 +1353,7 @@ bool GetAndAddDatabaseScaffoldsParameter (LinkedService *linked_service_p, const
 
 			if (param_p)
 				{
-					const json_t *scaffolds_p = GetScaffoldsForDatabaseHits (hit_p, database_s);
+					const json_t *scaffolds_p = GetScaffoldsForDatabaseHit (hit_p);
 
 					if (scaffolds_p)
 						{
@@ -1390,11 +1407,7 @@ bool GetAndAddDatabaseScaffoldsParameter (LinkedService *linked_service_p, const
 }
 
 
-
-
-
-
-const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_p, const char * const database_s)
+const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_p)
 {
 	const json_t *scaffolds_p = NULL;
 
@@ -1405,6 +1418,25 @@ const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_p, const char * cons
 
 	return scaffolds_p;
 }
+
+
+static const char *GetDatabaseName (const json_t *marked_up_report_p)
+{
+	const char *database_name_s = NULL;
+
+	if (marked_up_report_p)
+		{
+			const json_t *database_p = json_object_get (marked_up_report_p, S_DATATBASE_S);
+
+			if (database_p)
+				{
+					database_name_s = GetJSONString (database_p, S_DATATBASE_NAME_S);
+				}
+		}
+
+	return database_name_s;
+}
+
 
 
 static bool AddSequenceOntologyTerms (json_t *context_p)
@@ -1607,7 +1639,7 @@ static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const Database
 
 
 
-static const DatabaseInfo *GetDatabaseFromResult (const json_t *blast_report_p, const BlastServiceData *data_p)
+static const DatabaseInfo *GetDatabaseFromBlastResult (const json_t *blast_report_p, const BlastServiceData *data_p)
 {
 	const DatabaseInfo *db_p = NULL;
 

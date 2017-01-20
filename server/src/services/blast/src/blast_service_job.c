@@ -437,7 +437,6 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 																			size_t k;
 																			json_t *report_p;
 
-
 																			json_array_foreach (reports_p, k, report_p)
 																				{
 																					const char *database_s = NULL;
@@ -457,7 +456,23 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 
 																											if (linked_services_array_p)
 																												{
+																													bool added_flag = false;
 
+																													if (GetAndAddScaffoldsParameter (linked_service_p, hit_p, output_params_p, linked_services_array_p))
+																														{
+																															if (json_array_size (linked_services_array_p) > 0)
+																																{
+																																	if (json_object_set_new (hit_p, LINKED_SERVICES_S, linked_services_array_p) == 0)
+																																		{
+																																			added_flag = true;
+																																		}
+																																}
+																														}
+
+																													if (!added_flag)
+																														{
+																															json_decref (linked_services_array_p);
+																														}
 
 																												}		/* if (linked_services_array_p) */
 
@@ -476,9 +491,6 @@ bool ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJ
 														}		/* if (json_is_array (data_p)) */
 
 												}		/* if (data_p) */
-
-
-
 
 										}		/* json_array_foreach (job_p -> sj_processed_results_p, i, result_p) */
 
