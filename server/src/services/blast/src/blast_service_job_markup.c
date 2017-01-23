@@ -915,38 +915,38 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 							json_t *item_p;
 
 							json_array_foreach (description_p, k, item_p)
-							{
-								json_t *data_p = json_object ();
+								{
+									json_t *data_p = json_object ();
 
-								if (data_p)
-									{
-										const char *full_title_s = GetJSONString (item_p, "title");
+									if (data_p)
+										{
+											const char *full_title_s = GetJSONString (item_p, "title");
 
-										if (full_title_s)
-											{
-												/*
-												 * There may be more on this line than just the scaffold name
-												 * so lets get up until the first space or |
-												 */
-												const char *id_end_p = strpbrk (full_title_s, " |");
-												const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
-												char *scaffold_s = CopyToNewString (full_title_s, size, false);
+											if (full_title_s)
+												{
+													/*
+													 * There may be more on this line than just the scaffold name
+													 * so lets get up until the first space or |
+													 */
+													const char *id_end_p = strpbrk (full_title_s, " |");
+													const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
+													char *scaffold_s = CopyToNewString (full_title_s, size, false);
 
-												if (scaffold_s)
-													{
-														StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
+													if (scaffold_s)
+														{
+															StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
 
-														if (node_p)
-															{
-																LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
-															}		/* if (node_p) */
+															if (node_p)
+																{
+																	LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
+																}		/* if (node_p) */
 
-													}		/* if (scaffold_s) */
+														}		/* if (scaffold_s) */
 
-											}		/* if (full_title_s) */
+												}		/* if (full_title_s) */
 
-									}		/* if (data_p) */
-							}
+										}		/* if (data_p) */
+								}
 						}
 				}
 
