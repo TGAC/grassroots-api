@@ -936,7 +936,7 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 															{
 																++ c_p;
 															}
-														else if (*c_p == ' ')
+														else if ((*c_p == ' ') || (*c_p == '\0'))
 															{
 																loop_flag = false;
 															}
