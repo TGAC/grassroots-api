@@ -117,6 +117,11 @@ BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_
 BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
 
 
+
+BLAST_SERVICE_LOCAL json_t *ConvertBlastResultToGrassrootsMarkUp (const json_t *blast_job_output_p, BlastServiceData *data_p);
+
+
+
 BLAST_SERVICE_LOCAL json_t *GetMarkupReports (json_t *markup_p);
 
 

@@ -392,7 +392,7 @@ BLAST_SERVICE_LOCAL char *GetBlastResultByUUIDString (const BlastServiceData *da
  * ServiceJobs.
  * @param blast_data_p The BlastServiceData of the Blast Service that ran the job.
  * @param output_format_code The required output format code.
- * @return A newly-allocated ServiceJobSer containing the results in the requested format
+ * @return A newly-allocated ServiceJobSet containing the results in the requested format
  * or <code>NULL</code> upon error.
  * @see GetBlastResultByUUIDString
  * @see CreateJobsForPreviousResults

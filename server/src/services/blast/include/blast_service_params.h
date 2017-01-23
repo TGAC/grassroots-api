@@ -112,7 +112,7 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_VAL (SET_
  *
  * @ingroup blast_service
  */
-typedef enum
+typedef enum BlastOutputFormat
 {
 	/** Pairwise */
 	BOF_PAIRWISE,

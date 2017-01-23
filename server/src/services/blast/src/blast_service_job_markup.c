@@ -19,6 +19,7 @@
  *  Created on: 21 Jan 2016
  *      Author: tyrrells
  */
+#include <ctype.h>
 #include <string.h>
 
 #include "blast_service_job_markup.h"
@@ -53,13 +54,15 @@ static bool AddFaldoOntologyTerms (json_t *context_p);
 
 static bool AddGenomicFeatureAndVariationOntologyTerms (json_t *context_p);
 
+static bool AddSchemaOrgTerms (json_t *context_p);
+
 static bool AddGap (json_t *gaps_p, const int32 from, const int32 to);
 
 static bool AddGaps (json_t *marked_up_hits_p, const char * const gaps_key_s, const char *sequence_s);
 
 static bool IsGap (const char c);
 
-static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p);
+static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p, const json_t *blast_report_p);
 
 static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const DatabaseType db_type);
 
@@ -73,6 +76,10 @@ static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hi
 static bool AddQueryMasks (const json_t *blast_search_p, json_t *mark_up_p);
 
 static const char *GetDatabaseName (const json_t *marked_up_report_p);
+
+static bool AddSoftwareDetails (const json_t *blast_report_p, json_t *mark_up_p);
+
+static bool AddSoftwareVersion (const json_t *blast_report_p, json_t *software_mark_up_p);
 
 
 /*
@@ -604,101 +611,113 @@ json_t *GetHitsFromMarkedUpReport (json_t *report_p)
 }
 
 
-json_t *MarkUpBlastResult (BlastServiceJob *job_p)
+
+json_t *ConvertBlastResultToGrassrootsMarkUp (const json_t *blast_job_output_p, BlastServiceData *data_p)
 {
+	bool success_flag = false;
 	json_t *markup_p = GetInitialisedProcessedRequest ();
 
 	if (markup_p)
 		{
-			bool success_flag = false;
-			BlastServiceData *data_p = (BlastServiceData *) (job_p -> bsj_job.sj_service_p -> se_data_p);
-			json_t *blast_job_output_p = GetBlastResult (job_p, data_p);
+			const json_t *blast_output_p = json_object_get (blast_job_output_p, "BlastOutput2");
 
-			if (blast_job_output_p)
+			if (blast_output_p)
 				{
-					/*
-					 * We currently understand hits objects and database names
-					 */
-					const json_t *blast_output_p = json_object_get (blast_job_output_p, "BlastOutput2");
-
-					if (blast_output_p)
+					if (json_is_array (blast_output_p))
 						{
-							if (json_is_array (blast_output_p))
+							size_t i;
+							json_t *result_p;
+
+							json_t *markup_reports_p = GetMarkupReports (markup_p);
+
+							json_array_foreach (blast_output_p, i, result_p)
 								{
-									size_t i;
-									json_t *result_p;
+									json_t *blast_report_p = json_object_get (result_p, "report");
 
-									json_t *markup_reports_p = GetMarkupReports (markup_p);
-
-									json_array_foreach (blast_output_p, i, result_p)
+									if (blast_report_p)
 										{
-											json_t *blast_report_p = json_object_get (result_p, "report");
+											const DatabaseInfo *db_p = GetDatabaseFromBlastResult (blast_report_p, data_p);
 
-											if (blast_report_p)
+											if (db_p)
 												{
-													const DatabaseInfo *db_p = GetDatabaseFromBlastResult (blast_report_p, data_p);
+													/* Get the hits */
+													const json_t *blast_result_search_p = GetCompoundJSONObject (blast_report_p, "results.search");
 
-													if (db_p)
+													if (blast_result_search_p)
 														{
-															/* Get the hits */
-															const json_t *blast_result_search_p = GetCompoundJSONObject (blast_report_p, "results.search");
+															json_t *marked_up_report_p = AddAndGetMarkedUpReport (markup_reports_p, db_p, blast_result_search_p, blast_report_p);
 
-															if (blast_result_search_p)
+															if (marked_up_report_p)
 																{
-																	json_t *marked_up_report_p = AddAndGetMarkedUpReport (markup_reports_p, db_p, blast_result_search_p);
+																	const json_t *blast_hits_p =  json_object_get (blast_result_search_p, "hits");
 
-																	if (marked_up_report_p)
+																	if (blast_hits_p)
 																		{
-																			const json_t *blast_hits_p =  json_object_get (blast_result_search_p, "hits");
-
-																			if (blast_hits_p)
+																			if (json_is_array (blast_hits_p))
 																				{
-																					if (json_is_array (blast_hits_p))
+																					size_t j = 0;
+																					const size_t num_hits = json_array_size (blast_hits_p);
+
+																					json_t *marked_up_hits_p = json_object_get (marked_up_report_p, S_REPORT_RESULTS_S);
+
+																					success_flag = true;
+
+																					while ((j < num_hits) && success_flag)
 																						{
-																							size_t j = 0;
-																							const size_t num_hits = json_array_size (blast_hits_p);
+																							const json_t *blast_hit_p = json_array_get (blast_hits_p, j);
 
-																							json_t *marked_up_hits_p = json_object_get (marked_up_report_p, S_REPORT_RESULTS_S);
-
-																							success_flag = true;
-
-																							while ((j < num_hits) && success_flag)
+																							if (AddMarkedUpHit (marked_up_hits_p, blast_hit_p, data_p -> bsd_type))
 																								{
-																									const json_t *blast_hit_p = json_array_get (blast_hits_p, j);
-
-																									if (AddMarkedUpHit (marked_up_hits_p, blast_hit_p, data_p -> bsd_type))
-																										{
-																											++ j;
-																										}
-																									else
-																										{
-																											success_flag = false;
-																										}
-																								}		/* while ((j < num_hits) && success_flag) */
+																									++ j;
+																								}
+																							else
+																								{
+																									success_flag = false;
+																								}
+																						}		/* while ((j < num_hits) && success_flag) */
 
 
-																						}		/* if (json_is_array (blast_hits_p)) */
+																				}		/* if (json_is_array (blast_hits_p)) */
 
-																				}		/* if (blast_hits_p) */
+																		}		/* if (blast_hits_p) */
 
-																		}		/* if (marked_up_report_p) */
+																}		/* if (marked_up_report_p) */
 
-																}		/* if (blast_result_search_p) */
+														}		/* if (blast_result_search_p) */
 
-														}		/* if (database_s) */
+												}		/* if (db_p) */
 
-												}		/* if (report_p) */
+										}		/* if (blast_report_p) */
 
-									}		/* json_array_foreach (root_p, i, output_p) */
+								}		/* json_array_foreach (blast_output_p, i, result_p) */
 
-								}		/* if (json_is_array (root_p)) */
+						}		/* if (json_is_array (blast_output_p)) */
 
-						}		/* if (root_p) */
+				}		/* if (blast_output_p) */
 
-					json_decref (blast_job_output_p);
-				}		/* if (blast_job_output_p) */
-
+			if (!success_flag)
+				{
+					json_decref (markup_p);
+					markup_p = NULL;
+				}
 		}		/* if (markup_p) */
+
+	return markup_p;
+}
+
+
+json_t *MarkUpBlastResult (BlastServiceJob *job_p)
+{
+	json_t *markup_p = NULL;
+	BlastServiceData *data_p = (BlastServiceData *) (job_p -> bsj_job.sj_service_p -> se_data_p);
+	json_t *blast_job_output_p = GetBlastResult (job_p, data_p);
+
+	if (blast_job_output_p)
+		{
+			markup_p = ConvertBlastResultToGrassrootsMarkUp (blast_job_output_p, data_p);
+			json_decref (blast_job_output_p);
+		}		/* if (blast_job_output_p) */
+
 
 	return markup_p;
 }
@@ -723,32 +742,36 @@ json_t *GetInitialisedProcessedRequest (void)
 										{
 											if (AddSequenceOntologyTerms (context_p))
 												{
-													if (AddGenomicFeatureAndVariationOntologyTerms (context_p))
+													if (AddSchemaOrgTerms (context_p))
 														{
-															json_t *sequence_search_results_p = json_object ();
-
-															if (sequence_search_results_p)
+															if (AddGenomicFeatureAndVariationOntologyTerms (context_p))
 																{
-																	if (json_object_set_new (root_p, S_RESULTS_S, sequence_search_results_p) == 0)
-																		{
-																			json_t *reports_p = json_array ();
+																	json_t *sequence_search_results_p = json_object ();
 
-																			if (reports_p)
+																	if (sequence_search_results_p)
+																		{
+																			if (json_object_set_new (root_p, S_RESULTS_S, sequence_search_results_p) == 0)
 																				{
-																					if (json_object_set_new (sequence_search_results_p, S_REPORTS_S, reports_p) == 0)
+																					json_t *reports_p = json_array ();
+
+																					if (reports_p)
 																						{
-																							return root_p;
+																							if (json_object_set_new (sequence_search_results_p, S_REPORTS_S, reports_p) == 0)
+																								{
+																									return root_p;
+																								}
+																							else
+																								{
+																									json_decref (reports_p);
+																								}
 																						}
-																					else
-																						{
-																							json_decref (reports_p);
-																						}
+
+																				}
+																			else
+																				{
+																					json_decref (sequence_search_results_p);
 																				}
 
-																		}
-																	else
-																		{
-																			json_decref (sequence_search_results_p);
 																		}
 
 																}
@@ -1576,7 +1599,7 @@ static bool AddGenomicFeatureAndVariationOntologyTerms (json_t *context_p)
 {
 	bool success_flag = false;
 
-	if (AddTerm (context_p, "locus", "http://www.biointerchange.org/gfvo#Locus",true))
+	if (AddTerm (context_p, "locus", "http://www.biointerchange.org/gfvo#Locus", true))
 		{
 			success_flag = true;
 		}
@@ -1597,6 +1620,21 @@ static bool AddFaldoOntologyTerms (json_t *context_p)
 
 	return success_flag;
 }
+
+
+
+static bool AddSchemaOrgTerms (json_t *context_p)
+{
+	bool success_flag = false;
+
+	if (AddTerm (context_p, "software", "http://schema.org/SoftwareApplication", false))
+		{
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
 
 
 
@@ -1661,7 +1699,7 @@ static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p)
 }
 
 
-static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p)
+static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p, const json_t *blast_report_p)
 {
 	json_t *report_p = json_object ();
 
@@ -1677,9 +1715,12 @@ static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const Database
 								{
 									if (GetAndAddQueryMetadata (blast_result_search_p, report_p))
 										{
-											if (json_array_append_new (markup_reports_p, report_p) == 0)
+											if (AddSoftwareDetails (blast_report_p, report_p))
 												{
-													return report_p;
+													if (json_array_append_new (markup_reports_p, report_p) == 0)
+														{
+															return report_p;
+														}
 												}
 										}
 								}
@@ -1888,6 +1929,129 @@ static bool AddQueryMasks (const json_t *blast_search_p, json_t *mark_up_p)
 	else
 		{
 			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+static bool AddSoftwareDetails (const json_t *blast_report_p, json_t *mark_up_p)
+{
+	json_t *software_p = json_object ();
+
+	if (software_p)
+		{
+			if (json_object_set_new (software_p, "applicationSuite", json_string ("BLAST Command Line Applications")) == 0)
+				{
+					const char *value_s = GetJSONString (blast_report_p, "program");
+
+					if (value_s)
+						{
+							if (json_object_set_new (software_p, "name", json_string (value_s)) == 0)
+								{
+									if (AddSoftwareVersion (blast_report_p, software_p))
+										{
+											if (json_object_set_new (mark_up_p, "software", software_p) == 0)
+												{
+													return true;
+												}
+											else
+												{
+													PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, mark_up_p, "Failed to add software details to mark up");
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add version details to software mark up");
+										}
+								}
+							else
+								{
+									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, software_p, "Failed to set software name to \"%s\"", value_s);
+								}
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, blast_report_p, "Failed to get program");
+						}
+				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, software_p, "Failed to set \"applicationSuite\": \"BLAST Command Line Applications\"");
+				}
+
+			json_decref (software_p);
+		}		/* if (software_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create software json");
+		}
+
+	return false;
+}
+
+
+static bool AddSoftwareVersion (const json_t *blast_report_p, json_t *software_mark_up_p)
+{
+	bool success_flag = false;
+	const char *value_s = GetJSONString (blast_report_p, "version");
+
+	if (value_s)
+		{
+			/*
+			 * The version is in the format "BLASTN 2.5.0+" so we need to
+			 * parse it
+			 */
+			const char *start_p = value_s;
+			while ((*start_p != '\0') && (isdigit (*start_p) == 0))
+				{
+					++ start_p;
+				}
+
+			if (*start_p != '\0')
+				{
+					const char *end_p = start_p + 1;
+
+					while ((*end_p != '\0') && ((isdigit (*end_p)) || (*end_p == '.')))
+						{
+							++ end_p;
+						}
+
+					if (*end_p != '\0')
+						{
+							const size_t l = end_p - start_p;
+
+							if ((value_s = CopyToNewString (start_p, l, false)) != NULL)
+								{
+									if (json_object_set_new (software_mark_up_p, "softwareVersion", json_string (value_s)) == 0)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, software_mark_up_p, "Failed to add \"softwareVersion\": \"%s\"", value_s);
+										}
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy " SIZET_FMT " chars for string from \"%s\"", l, start_p);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find start of version from \"%s\"", start_p);
+						}
+
+				}		/* if (*start_p != '\0') */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to find start of version from \"%s\"", value_s);
+				}
+
+		}		/* if ((value_s = GetJSONString (blast_report_p, "version")) != NULL) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, blast_report_p, "Failed to get version");
 		}
 
 	return success_flag;

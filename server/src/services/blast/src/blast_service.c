@@ -505,9 +505,34 @@ ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char 
 					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Couldn't get requested output format code, using " UINT32_FMT " instead", output_format_code);
 				}
 
+
 			jobs_p = GetPreviousJobResults (ids_p, blast_data_p, output_format_code);
 
-			if (!jobs_p)
+			if (jobs_p)
+				{
+					if (output_format_code == BOF_GRASSROOTS)
+						{
+							ServiceJobNode *job_node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
+
+							while (job_node_p)
+								{
+									ServiceJob *job_p = job_node_p -> sjn_job_p;
+									json_t *results_p = MarkUpBlastResult ((BlastServiceJob *) job_p);
+
+									if (!ReplaceServiceJobResults (job_p, results_p))
+										{
+											char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+											ConvertUUIDToString (job_p -> sj_id, uuid_s);
+											PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, results_p, "Failed to replace job results for \"%s\" with id %s", job_p -> sj_name_s, uuid_s);
+										}
+
+									job_node_p = (ServiceJobNode *) (job_node_p -> sjn_node.ln_next_p);
+								}
+						}
+
+				}
+			else
 				{
 					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get ServiceJobSet for previously run blast job \"%s\"", param_value.st_string_value_s);
 				}
@@ -672,15 +697,33 @@ ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast
 
 							if (uuid_parse (job_id_s, job_id) == 0)
 								{
-									char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s, output_format_code);
+									char *result_s = GetBlastResultByUUIDString (blast_data_p, job_id_s, (output_format_code != BOF_GRASSROOTS) ? output_format_code : BOF_SINGLE_FILE_JSON_BLAST);
 									job_p -> sj_status = OS_FAILED;
 
 									if (result_s)
 										{
-											json_t *result_json_p = json_string (result_s);
+											json_error_t err;
+											json_t *result_json_p = json_loads (result_s, 0, &err);
 
 											if (result_json_p)
 												{
+													if (output_format_code == BOF_GRASSROOTS)
+														{
+															json_t *markup_p = ConvertBlastResultToGrassrootsMarkUp (result_json_p, blast_data_p);
+
+															json_decref (result_json_p);
+
+															if (markup_p)
+																{
+																	result_json_p = markup_p;
+																}
+															else
+																{
+																	result_json_p = NULL;
+																}
+														}
+
+
 													json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_id_s, result_json_p);
 
 													if (blast_result_json_p)
