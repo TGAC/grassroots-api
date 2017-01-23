@@ -920,30 +920,84 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 
 								if (data_p)
 									{
-										const char *full_title_s = GetJSONString (item_p, "title");
+										char *scaffold_s = NULL;
+										const char *id_s = GetJSONString (item_p, "id");
 
-										if (full_title_s)
+										if (id_s)
 											{
-												/*
-												 * There may be more on this line than just the scaffold name
-												 * so lets get up until the first space or |
-												 */
-												const char *id_end_p = strpbrk (full_title_s, " |");
-												const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
-												char *scaffold_s = CopyToNewString (full_title_s, size, false);
+												/* check for a valid scaffold name */
+												const char *c_p = id_s;
+												bool valid_flag = true;
+												bool loop_flag = (*c_p != '\0');
 
-												if (scaffold_s)
+												while (loop_flag)
 													{
-														StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
-
-														if (node_p)
+														if ((isalnum (*c_p)) || (*c_p == '.'))
 															{
-																LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
-															}		/* if (node_p) */
+																++ c_p;
+															}
+														else if (*c_p == ' ')
+															{
+																loop_flag = false;
+															}
+														else
+															{
+																loop_flag = false;
+																valid_flag = false;
+															}
+													}
 
-													}		/* if (scaffold_s) */
+												if (valid_flag && (c_p != id_s))
+													{
+														const size_t l = c_p - id_s - 1;
+														scaffold_s = CopyToNewString (id_s, l, false);
 
-											}		/* if (full_title_s) */
+														if (!scaffold_s)
+															{
+																PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy the first " SIZET_FMT " characters from \"%s\" to scaffold name", l, id_s);
+															}		/* if (!scaffold_s) */
+
+													}		/* if (valid_flag && (c_p != id_s) */
+
+											}		/* if (id_s) */
+
+										if (!scaffold_s)
+											{
+												const char *full_title_s = GetJSONString (item_p, "title");
+
+												if (full_title_s)
+													{
+														/*
+														 * There may be more on this line than just the scaffold name
+														 * so lets get up until the first space or |
+														 */
+														const char *id_end_p = strpbrk (full_title_s, " |");
+														const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
+														scaffold_s = CopyToNewString (full_title_s, size, false);
+
+														if (!scaffold_s)
+															{
+																PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy the first " UINT32_FMT " characters from \"%s\" to scaffold name", size, id_s);
+															}		/* if (!scaffold_s) */
+
+													}		/* if (full_title_s) */
+
+											}		/* if (!scaffold_s) */
+
+										if (scaffold_s)
+											{
+												StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
+
+												if (node_p)
+													{
+														LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
+													}		/* if (node_p) */
+												else
+													{
+														PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" to list of scaffold names", id_s);
+													}
+
+											}		/* if (scaffold_s) */
 
 									}		/* if (data_p) */
 							}
