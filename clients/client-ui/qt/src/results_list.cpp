@@ -61,7 +61,9 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 
 	if (our_item_p)
 		{
+			setCursor (Qt :: BusyCursor);
 			our_item_p -> ShowData ();
+			setCursor (Qt :: ArrowCursor);
 		}
 	else
 		{
