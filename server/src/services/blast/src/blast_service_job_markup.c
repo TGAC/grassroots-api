@@ -949,7 +949,7 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 
 												if (valid_flag && (c_p != id_s))
 													{
-														const size_t l = c_p - id_s - 1;
+														const size_t l = c_p - id_s;
 														scaffold_s = CopyToNewString (id_s, l, false);
 
 														if (!scaffold_s)
