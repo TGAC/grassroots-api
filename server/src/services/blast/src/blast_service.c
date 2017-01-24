@@ -706,28 +706,32 @@ ServiceJobSet *GetPreviousJobResults (LinkedList *ids_p, BlastServiceData *blast
 
 											if (result_s)
 												{
-													json_error_t err;
-													json_t *result_json_p = json_loads (result_s, 0, &err);
+													json_t *result_json_p = NULL;
+
+													if (output_format_code == BOF_GRASSROOTS)
+														{
+															json_error_t err;
+															json_t *temp_p  = json_loads (result_s, 0, &err);
+
+															/*
+															 * Convert the blast json to our markup and then
+															 * get the result
+															 */
+															if (temp_p)
+																{
+																	result_json_p = ConvertBlastResultToGrassrootsMarkUp (temp_p, blast_data_p);
+
+																	json_decref (temp_p);
+																}
+														}
+													else
+														{
+															result_json_p = json_string (result_s);
+														}
+
 
 													if (result_json_p)
 														{
-															if (output_format_code == BOF_GRASSROOTS)
-																{
-																	json_t *markup_p = ConvertBlastResultToGrassrootsMarkUp (result_json_p, blast_data_p);
-
-																	json_decref (result_json_p);
-
-																	if (markup_p)
-																		{
-																			result_json_p = markup_p;
-																		}
-																	else
-																		{
-																			result_json_p = NULL;
-																		}
-																}
-
-
 															json_t *blast_result_json_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, job_id_s, result_json_p);
 
 															if (blast_result_json_p)
