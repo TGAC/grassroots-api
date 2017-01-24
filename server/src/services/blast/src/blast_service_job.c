@@ -49,7 +49,13 @@ static bool ProcessResultForLinkedService (json_t *data_p, LinkedService *linked
  * API DEFINITIONS
  */
 
-BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const DatabaseInfo *db_p, BlastServiceData *data_p)
+BlastServiceJob *AllocateBlastServiceJobForDatabase (Service *service_p, const DatabaseInfo *db_p, BlastServiceData *data_p)
+{
+	return AllocateBlastServiceJob (service_p, db_p -> di_name_s, db_p -> di_description_s, db_p -> di_filename_s, data_p);
+}
+
+
+BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char *tool_name_s, BlastServiceData *data_p)
 {
 	BlastServiceJob *blast_job_p = (BlastServiceJob *) AllocMemory (sizeof (BlastServiceJob));
 
@@ -58,9 +64,9 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const DatabaseInfo
 			BlastTool *tool_p = NULL;
 			ServiceJob * const base_service_job_p = & (blast_job_p -> bsj_job);
 
-			InitServiceJob (base_service_job_p, service_p, db_p -> di_name_s, db_p -> di_description_s, NULL, FreeBlastServiceJob);
+			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL, FreeBlastServiceJob);
 
-			tool_p = CreateBlastToolFromFactory (data_p -> bsd_tool_factory_p, blast_job_p, db_p -> di_filename_s, data_p);
+			tool_p = CreateBlastToolFromFactory (data_p -> bsd_tool_factory_p, blast_job_p, tool_name_s, data_p);
 
 			if (tool_p)
 				{
@@ -75,6 +81,7 @@ BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const DatabaseInfo
 
 	return NULL;
 }
+
 
 
 void FreeBlastServiceJob (ServiceJob *job_p)

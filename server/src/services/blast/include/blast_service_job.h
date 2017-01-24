@@ -77,7 +77,19 @@ extern "C"
  * @param data_p The BlastServiceData.
  * @return The newly-allocated BlastServiceJob or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const DatabaseInfo *db_p, struct BlastServiceData *data_p);
+BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJobForDatabase (Service *service_p, const DatabaseInfo *db_p, struct BlastServiceData *data_p);
+
+
+/**
+ * Create a BlastServiceJob.
+ *
+ * @param service_p The Blast service.
+ * @param job_name_s The name of the BlastServiceJob.
+ * @param job_description_s The description of the BlastServiceJob. This can be <code>NULL</code>.
+ * @param data_p The BlastServiceData.
+ * @return The newly-allocated BlastServiceJob or <code>NULL</code> upon error.
+ */
+BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, const char *tool_name_s, BlastServiceData *data_p);
 
 
 /**
