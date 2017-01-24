@@ -493,30 +493,10 @@ static bool ProcessResultForLinkedService (json_t *data_p, LinkedService *linked
 
 									json_array_foreach (hits_p, l, hit_p)
 										{
-											json_t *linked_services_array_p = json_array ();
-
-											if (linked_services_array_p)
+											if (!GetAndAddScaffoldsParameter (linked_service_p, hit_p, output_params_p, hit_p))
 												{
-													bool added_flag = false;
-
-													if (GetAndAddScaffoldsParameter (linked_service_p, hit_p, output_params_p, linked_services_array_p))
-														{
-															if (json_array_size (linked_services_array_p) > 0)
-																{
-																	if (json_object_set_new (hit_p, LINKED_SERVICES_S, linked_services_array_p) == 0)
-																		{
-																			added_flag = true;
-																			success_flag = true;
-																		}
-																}
-														}
-
-													if (!added_flag)
-														{
-															json_decref (linked_services_array_p);
-														}
-
-												}		/* if (linked_services_array_p) */
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__,  "Failed to add linked service for hit");
+												}
 
 										}		/* json_array_foreach (hits_p, l, hit_p) */
 

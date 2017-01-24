@@ -1420,7 +1420,7 @@ bool GetAndAddDatabaseMappedParameter (LinkedService *linked_service_p, const js
 
 
 
-bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t *hit_p, ParameterSet *output_params_p, json_t *linked_services_array_p)
+bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t *hit_p, ParameterSet *output_params_p, json_t *request_p)
 {
 	bool success_flag = false;
 	MappedParameter *mapped_param_p = GetMappedParameterByInputParamName (linked_service_p, "scaffold");
@@ -1450,20 +1450,14 @@ bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t 
 												{
 													if (SetParameterValueFromString (param_p, scaffold_s))
 														{
-															json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p, false);
-
-															if (run_service_p)
+															if (AddLinkedServiceToRequestJSON (request_p, linked_service_p, output_params_p))
 																{
-																	if (json_array_append_new (linked_services_array_p, run_service_p) == 0)
-																		{
-																			++ num_added;
-																		}
-																	else
-																		{
-																			json_decref (run_service_p);
-																		}
-
-																}		/* if (run_service_p) */
+																	++ num_added;
+																}
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add linked service \%s\" for scaffold \"%s\"", linked_service_p -> ls_output_service_s, scaffold_s);
+																}
 
 														}		/* if (SetParameterValueFromString (param_p, scaffold_s)) */
 
