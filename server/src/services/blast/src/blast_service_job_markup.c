@@ -955,7 +955,7 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 
 												while (loop_flag)
 													{
-														if ((isalnum (*c_p)) || (*c_p == '.') || (*c_p == '_'))
+														if ((isalnum (*c_p)) || (*c_p == '.') || (*c_p == '_') || (*c_p == '-'))
 															{
 																++ c_p;
 															}

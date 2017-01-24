@@ -203,6 +203,11 @@ GRASSROOTS_SERVICE_API json_t *GetLinkedServiceAsJSON (LinkedService *linked_ser
  */
 GRASSROOTS_SERVICE_API bool ProcessLinkedService (LinkedService *linked_service_p, struct ServiceJob *job_p);
 
+
+
+GRASSROOTS_SERVICE_API bool AddLinkedServiceToRequestJSON (json_t *request_p, LinkedService *linked_service_p, ParameterSet *output_params_p);
+
+
 #ifdef __cplusplus
 }
 #endif

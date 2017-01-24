@@ -453,7 +453,27 @@ json_t *CallServices (json_t *client_params_json_p, const UserDetails *user_p, C
 
 	if (client_params_json_p)
 		{
-			json_t *new_req_p = json_object ();
+			json_t *new_req_p = NULL;
+
+			/* Is the request already wrapped? */
+			if (json_object_get (client_params_json_p, SERVICES_NAME_S))
+				{
+					new_req_p = client_params_json_p;
+				}
+			else
+				{
+					/* We need to wrap the request */
+					new_req_p = json_object ();
+
+					if (new_req_p)
+						{
+							if (json_object_set (new_req_p, SERVICES_NAME_S, client_params_json_p) != 0)
+								{
+									json_decref (new_req_p);
+									new_req_p = NULL;
+								}
+						}
+				}
 
 			if (new_req_p)
 				{
@@ -462,28 +482,28 @@ json_t *CallServices (json_t *client_params_json_p, const UserDetails *user_p, C
 							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add credentials to request");
 						}
 
-					if (json_object_set (new_req_p, SERVICES_NAME_S, client_params_json_p) == 0)
+					#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
+					PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, new_req_p, "Client sending: ");
+					#endif
+
+					services_json_p = MakeRemoteJsonCall (new_req_p, connection_p);
+
+					if (services_json_p)
 						{
 							#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
-							PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, new_req_p, "Client sending: ");
+							PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, services_json_p, "Client received: ");
 							#endif
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, new_req_p, "Empty response after client sent: ");
+						}
 
-							services_json_p = MakeRemoteJsonCall (new_req_p, connection_p);
+					if (new_req_p != client_params_json_p)
+						{
+							json_decref (new_req_p);
+						}
 
-							if (services_json_p)
-								{
-									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
-									PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, services_json_p, "Client received: ");
-									#endif
-								}
-							else
-								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, new_req_p, "Empty response after client sent: ");
-								}
-
-						}		/* if (json_object_set (new_req_p, SERVICES_S, client_results_p) */
-
-					json_decref (new_req_p);
 				}		/* if (new_req_p) */
 		}
 	else

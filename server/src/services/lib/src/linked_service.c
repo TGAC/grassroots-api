@@ -133,6 +133,7 @@ LinkedServiceNode *AllocateLinkedServiceNode (LinkedService *linked_service_p)
 }
 
 
+
 void FreeLinkedServiceNode (ListItem *node_p)
 {
 	LinkedServiceNode *ls_node_p = (LinkedServiceNode *) node_p;
@@ -141,6 +142,62 @@ void FreeLinkedServiceNode (ListItem *node_p)
 	FreeMemory (node_p);
 }
 
+
+bool AddLinkedServiceToRequestJSON (json_t *request_p, LinkedService *linked_service_p, ParameterSet *output_params_p)
+{
+	bool success_flag = false;
+	json_t *linked_services_array_p = json_object_get (request_p, LINKED_SERVICES_S);
+
+	if (!linked_services_array_p)
+		{
+			linked_services_array_p = json_array ();
+
+			if (linked_services_array_p)
+				{
+					if (json_object_set (request_p, LINKED_SERVICES_S, linked_services_array_p) != 0)
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, request_p, "Failed to add empty linked services array for \"%s\"", LINKED_SERVICES_S);
+							json_decref (linked_services_array_p);
+							linked_services_array_p = NULL;
+						}
+				}
+
+		}
+
+	if (linked_services_array_p)
+		{
+			json_t *wrapper_p = json_object ();
+
+			if (wrapper_p)
+				{
+					json_t *run_service_p = GetInterestedServiceJSON (linked_service_p -> ls_output_service_s, NULL, output_params_p, false);
+
+					if (run_service_p)
+						{
+							if (json_object_set_new (wrapper_p, SERVICES_NAME_S, run_service_p) == 0)
+								{
+									if (json_array_append_new (linked_services_array_p, wrapper_p) == 0)
+										{
+											success_flag = true;
+										}
+								}
+							else
+								{
+									json_decref (run_service_p);
+								}
+						}
+
+					if (!success_flag)
+						{
+							json_decref (wrapper_p);
+						}
+				}
+
+
+		}		/* if (linked_services_array_p) */
+
+	return success_flag;
+}
 
 
 MappedParameter *GetMappedParameterByInputParamName (const LinkedService *linked_service_p, const char * const name_s)
