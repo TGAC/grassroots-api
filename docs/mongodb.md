@@ -1,6 +1,6 @@
 ﻿# MongoDB Interaction
 
-One of the facilities that Grassroots system provides is an API to access a [MongoDB](https://www.mongodb.org/) instance through JSON-based messages. All of the MongoDB messages are accessed using a "**mongodb**" key. 
+One of the facilities that Grassroots system provides is an API to access a [MongoDB](https://www.mongodb.org/) instance through JSON-based messages. All of the MongoDB messages are accessed using a **mongodb** key. 
 
 
 ## Inserting data
@@ -36,7 +36,7 @@ The client would send a child "**insert**" key with a list of child key-value pa
 }
 ~~~
 
-The response from the Server will be a list of "**success**" values along with the document ids in the same order as they were specified in the incoming request 
+The response from the Server will be a list of **success** values along with the document ids in the same order as they were specified in the incoming request 
 
 ~~~{.json}
 {
@@ -70,6 +70,6 @@ To delete documents from a collection, a Client would send a list of the queries
 }
 ~~~
 
-## Updating docuements
+## Updating documents
 
 Documents that were previously added can be subsequently updated.

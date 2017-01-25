@@ -45,7 +45,7 @@ static const char *GetWebServiceDesciption (Service *service_p);
 
 static const char *GetWebServiceInformationUri (Service *service_p);
 
-static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetWebServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseWebServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -70,7 +70,7 @@ static bool CloseWebService (Service *service_p);
  */
  
 
-ServicesArray *GetServices (json_t *config_p)
+ServicesArray *GetServices (UserDetails *user_p, json_t *config_p)
 {
 	return GetReferenceServicesFromJSON (config_p, "web_service", GetWebService);
 }
@@ -195,7 +195,7 @@ static const char *GetWebServiceInformationUri (Service *service_p)
 
 
 
-static ParameterSet *GetWebServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetWebServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	WebServiceData *data_p = (WebServiceData *) (service_p -> se_data_p);
 

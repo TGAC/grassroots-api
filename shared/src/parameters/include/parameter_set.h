@@ -56,7 +56,7 @@ typedef struct ParameterSet
 	LinkedList *ps_params_p;
 
 	/**
-	 * A LinkedList of ParamneterGroupNode for this
+	 * A LinkedList of ParameterGroupNodes for this
 	 * ParameterSet.
 	 */
 	LinkedList *ps_grouped_params_p;
@@ -135,11 +135,18 @@ GRASSROOTS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, P
  * @return A newly-allocated Parameter or <code>NULL</code> upon error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterType type, const bool multi_valued_flag,
+GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, const bool multi_valued_flag,
   const char * const name_s, const char * const display_name_s, const char * const description_s,
 	ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p,
 	ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+
+
+
+
+GRASSROOTS_PARAMS_API Parameter *EasyCreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type,
+	const char * const name_s, const char * const display_name_s, const char * const description_s, SharedType default_value, uint8 level);
+
 
 
 /**
@@ -155,7 +162,7 @@ GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const stru
  * an error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag);
+GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const param_set_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 
 
@@ -178,7 +185,7 @@ GRASSROOTS_PARAMS_API json_t *GetParameterSetAsJSON (const ParameterSet * const 
  * an error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p));
+GRASSROOTS_PARAMS_API json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, const SchemaVersion * const sv_p, const bool full_definition_flag, void *data_p, bool (*add_param_fn) (const Parameter *param_p, void *data_p));
 
 
 /**
@@ -271,7 +278,12 @@ GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
  * otherwise.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API struct ParameterGroup *AddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+//GRASSROOTS_PARAMS_API ParameterGroup *CreateAndAddParameterGroupToParameterSet (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, struct ServiceData *service_data_p);
+
+
+
+//GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
+
 
 
 /**
@@ -287,19 +299,18 @@ GRASSROOTS_PARAMS_API struct ParameterGroup *AddParameterGroupToParameterSet (Pa
  * @memberof ParameterSet
  * @see AddParameterGroupToParameterSet
  */
-GRASSROOTS_PARAMS_API ParameterGroup *AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params, struct ServiceData *service_data_p);
+//GRASSROOTS_PARAMS_API ParameterGroup *AddParameterGroupToParameterSetByName (ParameterSet *param_set_p, const char *group_name_s, const char *group_key_s, const char ** const param_names_ss, const uint32 num_params, struct ServiceData *service_data_p);
 
 
 
 /**
- * Remove the Parameter with a given tag from a ParameterSet.
+ * Remove the Parameter with a given name from a ParameterSet.
  *
  * @param params_p The ParameterSet to search.
- * @param name_s The name of ther Parameter to try and match.
+ * @param name_s The name of the Parameter to try and match.
  * @return If found, the Parameter with the matching Tag will be be removed from the ParameterSet
  * and returned. If it could not be found <code>NULL</code> will be returned.
  * be found.
- * @see GetParameterFromParameterSetByTag
  * @memberof ParameterSet
  */
 GRASSROOTS_PARAMS_API Parameter *DetachParameterByName (ParameterSet *params_p, const char * const name_s);
@@ -316,6 +327,9 @@ GRASSROOTS_PARAMS_API Parameter *DetachParameterByName (ParameterSet *params_p, 
  */
 GRASSROOTS_PARAMS_API struct ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s);
 
+
+
+GRASSROOTS_PARAMS_API bool AddParameterGroupToParameterSet (ParameterSet *param_set_p, ParameterGroup *group_p);
 
 
 #ifdef __cplusplus

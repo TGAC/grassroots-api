@@ -13,11 +13,7 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
-/**
- * @file
- * @page Drmaa Drmaa Utility
- * See [md_readme](readme.md)
-*/ 
+
 
 #ifndef GRASSROOTS_DRMAA_LIBRARY_H
 #define GRASSROOTS_DRMAA_LIBRARY_H

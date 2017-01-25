@@ -116,8 +116,10 @@ static QTClientData *AllocateQTClientData (void)
 					 *
 					 * The solution is to use a theme that isn't broken on Ubuntu such as Plastique.
 					 */
-					QStyle *style_p = QStyleFactory :: create ("fusion");
+					QStyle *style_p = QStyleFactory :: create ("Fusion");
 					QApplication :: setStyle (style_p);
+
+					qDebug() << QStyleFactory::keys();
 
 					data_p -> qcd_app_p = new QApplication (s_dummy_argc, & (data_p -> qcd_dummy_arg_s));
 
@@ -180,13 +182,13 @@ static void FreeQTClientData (QTClientData *qt_data_p)
 
 static const char *GetQTClientName (ClientData *client_data_p)
 {
-	return "Qt-based WheatIS client";
+	return "Qt-based Grassroots client";
 }
 
 
 static const char *GetQTClientDescription (ClientData *client_data_p)
 {
-	return "A Qt-based WheatIS client user interface";
+	return "A Qt-based Grassroots client user interface";
 }
 
 
@@ -238,6 +240,5 @@ static json_t *DisplayResultsInQTClient (ClientData *client_data_p, json_t *resp
 
 	return res_p;
 }
-
 
 

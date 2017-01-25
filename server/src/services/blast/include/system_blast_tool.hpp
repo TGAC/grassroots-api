@@ -62,7 +62,7 @@ public:
 	 * otherwise.
 	 * @see BlastTool::ParseParameters
 	 */
-	virtual bool ParseParameters (ParameterSet *params_p);
+	virtual bool ParseParameters (ParameterSet *params_p, BlastAppParameters *app_params_p);
 
 
 	/**
@@ -73,6 +73,16 @@ public:
 	 */
 	virtual OperationStatus Run ();
 
+protected:
+	virtual ArgsProcessor *GetArgsProcessor ();
+
+	bool Init (const char *prog_s);
+
+
+private:
+	ArgsProcessor *sbt_args_processor_p;
+
+	ByteBuffer *sbt_buffer_p;
 };
 
 

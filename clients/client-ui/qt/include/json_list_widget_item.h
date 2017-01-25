@@ -16,6 +16,7 @@
 #ifndef JSON_LIST_WIDGET_ITEM_H
 #define JSON_LIST_WIDGET_ITEM_H
 
+#include <QObject>
 
 #include "jansson.h"
 #include "results_list.h"
@@ -24,6 +25,8 @@
 
 class JSONListWidgetItem : public StandardListWidgetItem
 {
+	Q_OBJECT
+
 public:
 	JSONListWidgetItem (const QString &text_r, QListWidget *parent_p = 0, int type = UserType);
 	virtual ~JSONListWidgetItem ();
@@ -35,6 +38,17 @@ public:
 
 protected:
 	json_t *jlwi_json_data_p;
+
+	void ParseLinkedServices (const json_t *data_p);
+
+	bool AddLinkedService (const json_t *linked_service_p);
+
+signals:
+	void RunServiceRequested (json_t *request_p);
+
+private slots:
+	void RunLinkedService (json_t *request_p);
+
 };
 
 #endif // JSON_LIST_WIDGET_ITEM_H

@@ -38,7 +38,7 @@ static json_t *LoadConfig (const char *path_s);
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s);
 
-static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection *connection_p);
+static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection *connection_p, const SchemaVersion * const sv_p);
 
 
 void WipeJSON (json_t *json_p)
@@ -88,71 +88,46 @@ json_t *MakeRemoteJsonCall (json_t *req_p, Connection *connection_p)
 }
 
 
-json_t *GetInitialisedMessage (void)
+json_t *GetInitialisedMessage (const SchemaVersion * const sv_p)
 {
-	json_error_t err;
-	json_t *res_p = json_pack_ex (&err, 0, "{s:{s:{s:i,s:i}}}", HEADER_S, SCHEMA_S, VERSION_MAJOR_S, GetSchemaMajorVersion (), VERSION_MINOR_S, GetSchemaMinorVersion ());
+	json_t *message_p = json_object ();
 
-	if (!res_p)
+	if (message_p)
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create schema json: \"%s\"\n\"%s\"\n%d %d %d\n", err.text, err.source, err.line, err.column, err.position);
-		}
+			json_t *header_p = json_object ();
 
-	return res_p;
-}
-
-
-json_t *GetInitialisedResponse (const json_t *req_p, const char *key_s, json_t *value_p)
-{
-	json_t *res_p = GetInitialisedMessage ();
-
-	if (res_p)
-		{
-			if (req_p)
+			if (header_p)
 				{
-					bool verbose_flag = false;
-
-					GetJSONBoolean (req_p, REQUEST_VERBOSE_S, &verbose_flag);
-
-					if (verbose_flag)
+					if (json_object_set_new (message_p, HEADER_S, header_p) == 0)
 						{
-							json_t *copied_req_p = json_deep_copy (req_p);
+							json_t *schema_p = GetSchemaVersionAsJSON (sv_p);
 
-							if (copied_req_p)
+							if (schema_p)
 								{
-									if (json_object_set_new (res_p, REQUEST_S, copied_req_p) != 0)
+									if (json_object_set_new (header_p, SCHEMA_S, schema_p) == 0)
 										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add request to response header");
-											json_decref (copied_req_p);
+											return message_p;
 										}
-
-								}		/* if (copied_req_p) */
-							else
-								{
-									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, req_p, "Failed to add request to response header");
+									else
+										{
+											json_decref (schema_p);
+										}
 								}
-
-						}		/* if (verbose_flag) */
-
-				}		/* if (req_p) */
-
-			if (key_s && value_p)
-				{
-					if (json_object_set_new (res_p, key_s, value_p) != 0)
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add %s to the response header", key_s);
-							json_decref (res_p);
 						}
-				}		/* if (key_s && value_p) */
+					else
+						{
+							json_decref (header_p);
+						}
 
-		}		/* if (res_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get initialised message");
-		}
+				}		/* if (header_p) */
 
-	return res_p;
+			json_decref (message_p);
+		}		/* if (message_p) */
+
+	return NULL;
 }
+
+
 
 
 
@@ -252,10 +227,10 @@ static json_t *LoadConfig (const char *path_s)
 /*
  * Obviously for a real system we'd be using encryption, tokens and the like
  */
-json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s)
+json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
-	json_t *root_p = GetOperationAsJSON (OP_IRODS_MODIFIED_DATA);
+	json_t *root_p = GetOperationAsJSON (OP_IRODS_MODIFIED_DATA, sv_p);
 
 	if (root_p)
 		{
@@ -322,9 +297,9 @@ static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, cons
 }
 
 
-json_t *GetAvailableServicesRequest (const UserDetails *user_p)
+json_t *GetAvailableServicesRequest (const UserDetails * UNUSED_PARAM (user_p), const SchemaVersion * const sv_p)
 {	
-	json_t *op_p = GetOperationAsJSON (OP_LIST_ALL_SERVICES);
+	json_t *op_p = GetOperationAsJSON (OP_LIST_ALL_SERVICES, sv_p);
 
 	if (op_p)
 		{
@@ -339,7 +314,7 @@ json_t *GetAvailableServicesRequest (const UserDetails *user_p)
 }
 
 
-json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * const protocol_s, const char * const filename_s)
+json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * const protocol_s, const char * const filename_s, const SchemaVersion * const sv_p)
 {
 	json_t *res_p = NULL;
 	json_error_t error;
@@ -347,7 +322,7 @@ json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * co
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, KEY_FILE_DATA, op_data_p);
+			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, KEY_FILE_DATA, op_data_p, sv_p);
 		}
 	else
 		{
@@ -359,7 +334,7 @@ json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * co
 
 
 
-json_t *GetKeywordServicesRequest (const UserDetails *user_p, const char * const keyword_s)
+json_t *GetKeywordServicesRequest (const UserDetails *user_p, const char * const keyword_s, const SchemaVersion * const sv_p)
 {
 	json_t *res_p = NULL;
 	json_error_t error;
@@ -367,7 +342,7 @@ json_t *GetKeywordServicesRequest (const UserDetails *user_p, const char * const
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_RUN_KEYWORD_SERVICES, KEYWORDS_QUERY_S, op_data_p);
+			res_p = GetServicesRequest (user_p, OP_RUN_KEYWORD_SERVICES, KEYWORDS_QUERY_S, op_data_p, sv_p);
 		}
 	else
 		{
@@ -378,7 +353,7 @@ json_t *GetKeywordServicesRequest (const UserDetails *user_p, const char * const
 }
 
 
-json_t *GetCheckServicesRequest (const UserDetails *user_p, const char * const service_uuid_s)
+json_t *GetCheckServicesRequest (const UserDetails *user_p, const char * const service_uuid_s, const SchemaVersion * const sv_p)
 {
 	json_t *res_p = NULL;
 	json_error_t error;
@@ -386,7 +361,7 @@ json_t *GetCheckServicesRequest (const UserDetails *user_p, const char * const s
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_CHECK_SERVICE_STATUS, SERVICES_NAME_S, op_data_p);
+			res_p = GetServicesRequest (user_p, OP_CHECK_SERVICE_STATUS, SERVICES_NAME_S, op_data_p, sv_p);
 		}
 	else
 		{
@@ -397,7 +372,7 @@ json_t *GetCheckServicesRequest (const UserDetails *user_p, const char * const s
 }
 
 
-json_t *GetNamedServicesRequest (const UserDetails *user_p, const char * const service_name_s)
+json_t *GetNamedServicesRequest (const UserDetails *user_p, const char * const service_name_s, const SchemaVersion * const sv_p)
 {
 	json_t *res_p = NULL;
 	json_error_t error;
@@ -405,7 +380,7 @@ json_t *GetNamedServicesRequest (const UserDetails *user_p, const char * const s
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_GET_NAMED_SERVICES, SERVICES_NAME_S, op_data_p);
+			res_p = GetServicesRequest (user_p, OP_GET_NAMED_SERVICES, SERVICES_NAME_S, op_data_p, sv_p);
 
 			if (!res_p)
 				{
@@ -423,9 +398,9 @@ json_t *GetNamedServicesRequest (const UserDetails *user_p, const char * const s
 }
 
 
-json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const char * const op_key_s, json_t * const op_data_p)
+json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const char * const op_key_s, json_t * const op_data_p, const SchemaVersion * const sv_p)
 {
-	json_t *root_p = GetOperationAsJSON (op);
+	json_t *root_p = GetOperationAsJSON (op, sv_p);
 
 	if (root_p)
 		{
@@ -468,9 +443,9 @@ bool GetUsernameAndPassword (const UserDetails * const user_p, const char *provi
 }
 
 
-json_t *GetOperationAsJSON (Operation op)
+json_t *GetOperationAsJSON (Operation op, const SchemaVersion * const sv_p)
 {
-	json_t *msg_p = GetInitialisedMessage ();
+	json_t *msg_p = GetInitialisedMessage (sv_p);
 
 	if (msg_p)
 		{
@@ -568,20 +543,20 @@ const char *GetUserUUIDStringFromJSON (const json_t *credentials_p)
 
 
 
-json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p)
+json_t *GetServicesStatusRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p, const SchemaVersion * const sv_p)
 {
-	return GetServicesInfoRequest (ids_pp, num_ids, OP_CHECK_SERVICE_STATUS, connection_p);
+	return GetServicesInfoRequest (ids_pp, num_ids, OP_CHECK_SERVICE_STATUS, connection_p, sv_p);
 }
 
 
-json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p)
+json_t *GetServicesResultsRequest (const uuid_t **ids_pp, const uint32 num_ids, Connection *connection_p, const SchemaVersion * const sv_p)
 {
-	return GetServicesInfoRequest (ids_pp, num_ids, OP_GET_SERVICE_RESULTS, connection_p);
+	return GetServicesInfoRequest (ids_pp, num_ids, OP_GET_SERVICE_RESULTS, connection_p, sv_p);
 }
 
 
 
-static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection * UNUSED_PARAM (connection_p))
+static json_t *GetServicesInfoRequest (const uuid_t **ids_pp, const uint32 num_ids, OperationStatus status, Connection * UNUSED_PARAM (connection_p), const SchemaVersion * const sv_p)
 {
 	json_error_t error;
 	json_t *req_p = json_pack_ex (&error, 0, "{s:{s:i}}", SERVER_OPERATIONS_S, OPERATION_ID_S, status);

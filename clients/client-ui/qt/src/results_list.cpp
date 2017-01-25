@@ -123,6 +123,8 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 						{
 							JSONListWidgetItem *item_p = new JSONListWidgetItem (title_s, rl_list_p);
 
+							connect (item_p, &JSONListWidgetItem :: RunServiceRequested, rl_parent_p, &ResultsPage :: RunService);
+
 							icon_path_s = "images/list_objects";
 
 							item_p -> SetJSONData (data_p);
@@ -140,6 +142,31 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 								}
 
 							success_flag = true;
+
+
+							/* Are ther any linked services? */
+							json_t *linked_services_p = json_object_get (data_p, LINKED_SERVICES_S);
+
+							if (linked_services_p)
+								{
+									if (json_is_array (linked_services_p))
+										{
+											size_t i;
+											json_t *linked_service_p;
+
+											json_array_foreach (linked_services_p, i, linked_service_p)
+												{
+													QWidget *parent_p = rl_parent_p -> parentWidget ();
+													ResultsWidget *rw_p = dynamic_cast <ResultsWidget *> (parent_p);
+
+													bool b = rw_p-> AddResultsPageFromJSON (linked_service_p, "service_name_s", "service_description_s", "service_uri_s");
+
+												}
+
+										}
+
+								}		/* if (linked_services_p) */
+
 						}
 				}
 			else

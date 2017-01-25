@@ -53,7 +53,7 @@ public:
 	 *
 	 * @param job_p The ServiceJob to associate with this ExternalBlastTool.
 	 * @param name_s The name to give to this ExternalBlastTool.
-	 * @param factory_s The name of the DrmaaBlastFactory that is creating this DrmaaBlastTool.
+	 * @param factory_s The name of the BlastToolFactory that is creating this ExternalBlastTool.
 	 * @param data_p The BlastServiceData for the Service that will run this ExternalBlastTool.
 	 * @param blast_program_name_s The name of blast command line executable that this ExternalBlastTool
 	 * will call to run its blast job.
@@ -62,6 +62,9 @@ public:
 
 
 	ExternalBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
+
+
+
 
 	/**
 	 * The ExternalBlastTool destructor.
@@ -78,7 +81,7 @@ public:
 	 * otherwise.
 	 * @see BlastTool::ParseParameters
 	 */
-	virtual bool ParseParameters (ParameterSet *params_p);
+	virtual bool ParseParameters (ParameterSet *param_set_p, BlastAppParameters *app_params_p);
 
 
 	/**
@@ -116,13 +119,6 @@ public:
 
 protected:
 	/**
-	 *
-	 * This is the buffer used to build all of the command line
-	 * arguments for the executable used to run the blast job.
-	 */
-	ByteBuffer *ebt_buffer_p;
-
-	/**
 	 * The filename which the Blast results will be written to if the
 	 * job runs successfully.
 	 */
@@ -144,11 +140,8 @@ protected:
 	const char *ebt_blast_s;
 
 
-	/**
-	 *
-	 * The output format code to use.
-	 */
-	uint32 ebt_output_format;
+
+	virtual ArgsProcessor *GetArgsProcessor () = 0;
 
 
 	/**
@@ -159,7 +152,7 @@ protected:
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArg (const char * const arg_s);
+	virtual bool AddBlastArg (const char * const arg_s, const bool hyphen_flag);
 
 
 	/**
@@ -171,25 +164,8 @@ protected:
 	 * @return <code>true</code> if the arguments were added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArgsPair (const char *key_s, const char *value_s);
+	virtual bool AddBlastArgsPair (const char *key_s, const char *value_s);
 
-
-	/**
-	 * Get the value of an integer-based Parameter and add it as key-value pair
-	 * to the command line arguments
-	 * that this BlastTool will run with.
-	 *
-	 * @param params_p The ParameterSet to get the Parameter from.
-	 * @param param_name_s The name of the desired Parameter.
-	 * @param key_s The key to use when creating the command line arguments.
-	 * @param unsigned_flag Is the parameter value unsigned or not?
-	 * @param required_flag If this is <code>true</code> then failure to find
-	 * the Parameter will cause this function to return <code>false</code>. If the
-	 * value is optional, then set this to <code>false</code>.
-	 * @return <code>true</code> if the arguments were added
-	 * successfully, <code>false</code> otherwise.
-	 */
-	virtual bool AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, const bool unsigned_flag, const bool required_flag);
 
 
 	/**
@@ -218,10 +194,10 @@ protected:
 	virtual bool AddToJSON (json_t *root_p);
 
 
+
 private:
 	static const char * const EBT_COMMAND_LINE_EXECUTABLE_S;
 	static const char * const EBT_WORKING_DIR_S;
-	static const char * const EBT_OUTPUT_FORMAT_S;
 	static const char * const EBT_RESULTS_FILE_S;
 };
 #endif /* EXTERNAL_BLAST_TOOL_HPP_ */

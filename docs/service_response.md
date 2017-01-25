@@ -16,7 +16,7 @@ An array of ServiceJobs that have been requested to run by the Client.
 
 * **status_text** / **status**: Each ServiceJob will have either one of these values which describe the current status of the given ServiceJob
 
- status | C varaiable | status_text | description
+ status | C variable | status_text | description
 --- | --- | --- | ---
 -3 | OS_FAILED | Failed | The ServiceJob failed
 -2 | OS_FAILED_TO_START | Failed to start | The ServiceJob was unable to start

@@ -43,7 +43,14 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceJob
 
 	/** The BlastTool. */
 	BlastTool *bsj_tool_p;
+
 } BlastServiceJob;
+
+
+
+BLAST_SERVICE_PREFIX const char *BSJ_LINKED_SERVICE_DATABASE_S BLAST_SERVICE_VAL ("database");
+BLAST_SERVICE_PREFIX const char *BSJ_LINKED_SERVICE_SCAFFOLD_S BLAST_SERVICE_VAL ("scaffold");
+
 
 
 #ifdef __cplusplus
@@ -61,7 +68,7 @@ extern "C"
  * @param data_p The BlastServiceData.
  * @return The newly-allocated BlastServiceJob or <code>NULL</code> upon error.
  */
-BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, BlastServiceData *data_p);
+BLAST_SERVICE_LOCAL BlastServiceJob *AllocateBlastServiceJob (Service *service_p, const char *job_name_s, const char *job_description_s, struct BlastServiceData *data_p);
 
 
 /**
@@ -95,6 +102,31 @@ BLAST_SERVICE_LOCAL bool AddErrorToBlastServiceJob (BlastServiceJob *job_p);
 
 
 BLAST_SERVICE_LOCAL bool UpdateBlastServiceJob (ServiceJob *job_p);
+
+
+BLAST_SERVICE_LOCAL bool ProduceMarkedUpResult (BlastServiceJob *job_p, const json_t *blast_result_p);
+
+
+/**
+ * After the blast job has ran, get the database that it ran against.
+ *
+ */
+BLAST_SERVICE_LOCAL const char *GetDatabase (const json_t *result_p);
+
+
+/**
+ * Get a json array of the scaffold names for the
+ * hits against a given database
+ */
+BLAST_SERVICE_LOCAL const json_t *GetScaffoldsForDatabaseHits (const json_t *result_p, const char * const database_s);
+
+
+BLAST_SERVICE_LOCAL json_t *MarkUpBlastResult (BlastServiceJob *job_p);
+
+
+
+BLAST_SERVICE_LOCAL char *ProcessLinkedServicesForBlastServiceJobOutput (Service *service_p, ServiceJob *job_p, LinkedService *linked_service_p);
+
 
 
 

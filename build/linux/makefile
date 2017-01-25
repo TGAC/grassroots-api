@@ -7,7 +7,7 @@ export DIR_SRC_ROOT = $(DIR_PKG_ROOT)/src
 
 export DIR_SHARED_SRC_ROOT = $(DIR_PKG_ROOT)/shared/src
 export DIR_SERVER_SRC_ROOT = $(DIR_PKG_ROOT)/server/src
-export DIR_CLIENTS_SRC_ROOT = $(DIR_PKG_ROOT)/clients/
+export DIR_CLIENTS_SRC_ROOT = $(DIR_PKG_ROOT)/clients
 
 export DIR_SHARED_BUILD_ROOT = $(DIR_BUILD_ROOT)/shared
 export DIR_SERVER_BUILD_ROOT = $(DIR_BUILD_ROOT)/server
@@ -334,14 +334,13 @@ install: install_init install_references install_images all install_irods_stuff
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/lib install
 	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/file install
 	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/irods install
-#	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/dropbox install
+	$(MAKE) -C $(DIR_HANDLER_ROOT_BUILD)/dropbox install
 	$(MAKE) -C $(DIR_CLIENTS_BUILD_ROOT)/lib install 
 	$(MAKE) -C $(DIR_CLIENTS_BUILD_ROOT)/standalone install 
-	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/httpd install
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/lib install
+	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/httpd install
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/standalone install
 	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/mongodb install
-	$(MAKE) -C $(DIR_SERVER_BUILD_ROOT)/drmaa install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/blast install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/compress install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/web install
@@ -405,7 +404,7 @@ install_init:
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/references
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/images
 	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/clients
-	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/HANDLER
+	@mkdir -p $(DIR_GRASSROOTS_INSTALL)/handlers
 
 
 install_deps: install_init install_jansson install_htmlcxx install_hcxselect install_oauth install_dropbox_c install_uuid install_mongodb_c install_samlib

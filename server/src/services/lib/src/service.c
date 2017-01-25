@@ -32,8 +32,10 @@
 #include "service_job.h"
 #include "grassroots_config.h"
 #include "paired_service.h"
+#include "linked_service.h"
 #include "servers_pool.h"
 #include "string_utils.h"
+#include "service_job.h"
 
 
 #ifdef _DEBUG
@@ -47,13 +49,17 @@ static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p);
 
 static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root_p);
 
-static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p);
+static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const SchemaVersion * const sv_p,  const bool full_definition_flag, Resource *resource_p, UserDetails *user_p);
 
 static bool AddOperationInformationURIToJSON (Service * const service_p, json_t *root_p);
 
 static bool AddServiceUUIDToJSON (Service * const service_p, json_t *root_p);
 
-static uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag);
+static uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, UserDetails *user_p, LinkedList *services_list_p, bool multiple_match_flag);
+
+static uint32 GetMatchingReferrableServices (const char * const services_path_s, ServiceMatcher *matcher_p, UserDetails *user_p, const json_t *reference_config_p, LinkedList *services_list_p, bool multiple_match_flag);
+
+static uint32 FindMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, UserDetails *user_p, const json_t *reference_config_p, LinkedList *services_list_p, bool multiple_match_flag, bool native_services_flag);
 
 static const char *GetPluginNameFromJSON (const json_t * const root_p);
 
@@ -62,13 +68,17 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 static void GenerateServiceUUID (Service *service_p);
 
 
+static  uint32 AddLinkedServices (Service *service_p);
+
+
+
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
 	const char *(*get_service_info_uri_fn) (struct Service *service_p),
 	ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p),
 	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
-	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
+	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, UserDetails *user_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
 	void (*customise_service_job_fn) (Service *service_p, ServiceJob *job_p),
@@ -91,6 +101,21 @@ void InitialiseService (Service * const service_p,
 	service_p -> se_is_specific_service_flag = specific_flag;
 	service_p -> se_synchronous_flag = synchronous_flag;
 
+
+	uuid_clear (service_p -> se_id);
+
+	service_p -> se_plugin_p = NULL;
+	service_p -> se_has_permissions_fn = NULL;
+
+	service_p -> se_deserialise_job_json_fn = NULL;
+	service_p -> se_serialise_job_json_fn = NULL;
+	service_p -> se_process_linked_services_fn = NULL;
+
+	service_p -> se_jobs_p = NULL;
+
+	InitLinkedList (& (service_p -> se_paired_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
+
 	if (service_p -> se_data_p)
 		{
 			const char *service_name_s = service_p -> se_get_service_name_fn (service_p);
@@ -103,18 +128,13 @@ void InitialiseService (Service * const service_p,
 				}
 		}
 
-	uuid_clear (service_p -> se_id);
 
-	service_p -> se_plugin_p = NULL;
-	service_p -> se_has_permissions_fn = NULL;
-
-	service_p -> se_deserialise_job_json_fn = NULL;
-	service_p -> se_serialise_job_json_fn = NULL;
-
-	service_p -> se_jobs_p = NULL;
-
-	InitLinkedList (& (service_p -> se_paired_services));
-	SetLinkedListFreeNodeFunction (& (service_p -> se_paired_services), FreePairedServiceNode);
+	/*
+	 * Add the LinkedServices
+	 */
+	InitLinkedList (& (service_p -> se_linked_services));
+	SetLinkedListFreeNodeFunction (& (service_p -> se_linked_services), FreeLinkedServiceNode);
+	AddLinkedServices (service_p);
 }
 
 
@@ -129,6 +149,8 @@ void FreeService (Service *service_p)
 		}
 
 	ClearLinkedList (& (service_p -> se_paired_services));
+
+	ClearLinkedList (& (service_p -> se_linked_services));
 
 	if (service_p -> se_data_p)
 		{
@@ -176,6 +198,46 @@ bool IsServiceLive (Service *service_p)
 		}
 
 	return is_live_flag;
+}
+
+
+bool SetUpLinkedServices (Service *service_p)
+{
+	bool success_flag = true;
+	const json_t *config_p = service_p -> se_data_p ? service_p -> se_data_p -> sd_config_p : NULL;
+
+	if (config_p)
+		{
+			const json_t *linked_services_json_p = json_object_get (config_p, LINKED_SERVICES_S);
+
+			if (linked_services_json_p)
+				{
+					if (json_is_array (linked_services_json_p))
+						{
+							size_t i;
+							const json_t *linked_service_json_p;
+
+							json_array_foreach (linked_services_json_p, i, linked_service_json_p)
+								{
+									LinkedService *linked_service_p = CreateLinkedServiceFromJSON (linked_service_json_p);
+
+									if (linked_service_p)
+										{
+											if (!AddLinkedService (service_p, linked_service_p))
+												{
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to add LinkedService \"%s\" to \"%s\"", linked_service_p -> ls_output_service_s, GetServiceName (service_p));
+												}
+ 										}
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_service_json_p, "Failed to create LinkedService");
+										}
+								}
+						}
+				}
+		}
+
+	return success_flag;
 }
 
 
@@ -227,7 +289,7 @@ void FreeServiceNode (ListItem * const node_p)
  * Load any json stubs for external services that are used to configure generic services, 
  * e.g. web services
  */
-void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, UserDetails * UNUSED_PARAM (user_p))
+void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, UserDetails *user_p)
 {
 	const char *root_path_s = GetServerRootDirectory ();
 	char *full_references_path_s = MakeFilename (root_path_s, references_path_s);
@@ -276,7 +338,7 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 																{
 																	SetPluginNameForServiceMatcher (matcher_p, plugin_name_s);		
 																	
-																	num_added_services = GetMatchingServices (services_path_s, (ServiceMatcher *) matcher_p, services_json_p, services_p, true);
+																	num_added_services = GetMatchingReferrableServices (services_path_s, (ServiceMatcher *) matcher_p, user_p, services_json_p, services_p, true);
 																}
 															else
 																{
@@ -322,63 +384,6 @@ void AddReferenceServices (LinkedList *services_p, const char * const references
 }
 
 
-bool GetService (const char * const plugin_name_s, Service **service_pp, ServiceMatcher *matcher_p, const json_t *config_p)
-{
-	Plugin *plugin_p = AllocatePlugin (plugin_name_s);
-	bool success_flag = false;
-	
-	if (plugin_p)
-		{
-			if (OpenPlugin (plugin_p))
-				{																							
-					ServicesArray *services_p = GetServicesFromPlugin (plugin_p, config_p);
-					
-					if (services_p)
-						{
-							uint32 i = services_p -> sa_num_services;
-							Service **s_pp = services_p -> sa_services_pp;
-							
-							for ( ; i > 0; -- i, ++ s_pp)
-								{
-									bool using_service_flag = true;
-							
-									if (matcher_p)
-										{
-											using_service_flag = RunServiceMatcher (matcher_p, *s_pp);
-										}
-										
-									if (using_service_flag)
-										{
-											*service_pp = *s_pp;
-										}
-									else
-										{
-											CloseService (*s_pp);
-											*s_pp = NULL;
-										}
-								}
-						}
-					else
-						{
-							/* failed to get service from plugin */
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get service from plugin with name \"%s\"", plugin_name_s);
-						}
-						
-				}		/* if (OpenPlugin (plugin_p)) */
-			else
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to open plugin with name \"%s\"", plugin_name_s);
-				}
-				
-		}		/* if (plugin_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate plugin with name \"%s\"", plugin_name_s);
-		}
-
-		
-	return success_flag;
-}
 
 
 void SetServiceJobCustomFunctions (Service *service_p, ServiceJob *job_p)
@@ -485,7 +490,19 @@ static uint32 AddMatchingServicesFromServicesArray (ServicesArray *services_p, L
 }
 
 
-uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, const json_t *config_p, LinkedList *services_list_p, bool multiple_match_flag)
+static uint32 GetMatchingReferrableServices (const char * const services_path_s, ServiceMatcher *matcher_p, UserDetails *user_p, const json_t *reference_config_p, LinkedList *services_list_p, bool multiple_match_flag)
+{
+	return FindMatchingServices (services_path_s, matcher_p, user_p, reference_config_p, services_list_p, multiple_match_flag, false);
+}
+
+
+static uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, UserDetails *user_p,  LinkedList *services_list_p, bool multiple_match_flag)
+{
+	return FindMatchingServices (services_path_s, matcher_p, user_p, NULL, services_list_p, multiple_match_flag, true);
+}
+
+
+static uint32 FindMatchingServices (const char * const services_path_s, ServiceMatcher *matcher_p, UserDetails *user_p, const json_t *reference_config_p, LinkedList *services_list_p, bool multiple_match_flag, bool native_services_flag)
 {
 	uint32 num_matched_services = 0;
 	const char *plugin_pattern_s = GetPluginPattern ();
@@ -517,7 +534,16 @@ uint32 GetMatchingServices (const char * const services_path_s, ServiceMatcher *
 													
 													if (OpenPlugin (plugin_p))
 														{																							
-															ServicesArray *services_p = GetServicesFromPlugin (plugin_p, config_p);
+															ServicesArray *services_p = NULL;
+
+															if (native_services_flag)
+																{
+																	services_p = GetServicesFromPlugin (plugin_p, user_p);
+																}
+															else
+																{
+																	services_p = GetReferrableServicesFromPlugin (plugin_p, user_p, reference_config_p);
+																}
 															
 															if (services_p)
 																{
@@ -735,9 +761,9 @@ char *GetServiceUUIDAsString (Service *service_p)
 
 
 
-ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
+ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p)
 {
-	return service_p -> se_get_params_fn (service_p, resource_p, json_p);
+	return service_p -> se_get_params_fn (service_p, resource_p, user_p);
 }
 
 
@@ -762,7 +788,7 @@ static void GenerateServiceUUID (Service *service_p)
 //
 //	Get Symbol
 //
-ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p)
+ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, UserDetails *user_p)
 {
 	if (!plugin_p -> pl_services_p)
 		{
@@ -770,9 +796,33 @@ ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *ser
 
 			if (symbol_p)
 				{
-					ServicesArray *(*fn_p) (const json_t *) = (ServicesArray *(*) (const json_t *)) symbol_p;
+					ServicesArray *(*fn_p) (UserDetails *) = (ServicesArray *(*) (UserDetails *)) symbol_p;
 
-					plugin_p -> pl_services_p = fn_p (service_config_p);
+					plugin_p -> pl_services_p = fn_p (user_p);
+
+					if (plugin_p -> pl_services_p)
+						{
+							AssignPluginForServicesArray (plugin_p -> pl_services_p, plugin_p);
+							plugin_p -> pl_type = PN_SERVICE;
+						}
+				}
+		}
+
+	return plugin_p -> pl_services_p;
+}
+
+
+ServicesArray *GetReferrableServicesFromPlugin (Plugin * const plugin_p, UserDetails *user_p, const json_t *service_config_p)
+{
+	if (!plugin_p -> pl_services_p)
+		{
+			void *symbol_p = GetSymbolFromPlugin (plugin_p, "GetServices");
+
+			if (symbol_p)
+				{
+					ServicesArray *(*fn_p) (UserDetails *, const json_t *) = (ServicesArray *(*) (UserDetails *, const json_t *)) symbol_p;
+
+					plugin_p -> pl_services_p = fn_p (user_p, service_config_p);
 
 					if (plugin_p -> pl_services_p)
 						{
@@ -820,7 +870,8 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 		{
 			if (run_flag)
 				{
-					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, false);
+					const SchemaVersion *sv_p = GetSchemaVersion ();
+					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, sv_p, false);
 
 					if (param_set_json_p)
 						{
@@ -858,12 +909,13 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 
 
 
-json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *config_p, const bool add_id_flag)
+json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserDetails *user_p, const bool add_id_flag)
 {
 	json_t *root_p = json_object ();
 	
 	if (root_p)
 		{
+			const SchemaVersion *sv_p = GetSchemaVersion ();
 			const char *value_s = GetServiceName (service_p);
 			bool success_flag = true;
 			
@@ -1004,7 +1056,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const
 										{
 											if (AddServiceDescriptionToJSON (service_p, operation_p))
 												{
-													if (AddServiceParameterSetToJSON (service_p, operation_p, true, resource_p, config_p))
+													if (AddServiceParameterSetToJSON (service_p, operation_p, sv_p, true, resource_p, user_p))
 														{
 															if (json_object_set_new (operation_p, OPERATION_SYNCHRONOUS_S, service_p -> se_synchronous_flag ? json_true () : json_false ()) == 0)
 																{
@@ -1194,14 +1246,14 @@ static bool AddOperationInformationURIToJSON (Service * const service_p, json_t 
 }
 
 
-static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const bool full_definition_flag, Resource *resource_p, const json_t *json_p)
+static bool AddServiceParameterSetToJSON (Service * const service_p, json_t *root_p, const SchemaVersion * const sv_p, const bool full_definition_flag, Resource *resource_p, UserDetails *user_p)
 {
 	bool success_flag = false;
-	ParameterSet *param_set_p = GetServiceParameters (service_p, resource_p, json_p);
+	ParameterSet *param_set_p = GetServiceParameters (service_p, resource_p, user_p);
 	
 	if (param_set_p)
 		{
-			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p, full_definition_flag);
+			json_t *param_set_json_p = GetParameterSetAsJSON (param_set_p, sv_p, full_definition_flag);
 			
 			if (param_set_json_p)
 				{
@@ -1261,7 +1313,89 @@ bool AddPairedService (Service *service_p, PairedService *paired_service_p)
 }
 
 
-json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p)
+
+static uint32 AddLinkedServices (Service *service_p)
+{
+	uint32 num_added_services = 0;
+
+	if (service_p -> se_data_p)
+		{
+			if (service_p -> se_data_p -> sd_config_p)
+				{
+					const json_t *linked_services_config_p = json_object_get (service_p -> se_data_p -> sd_config_p, LINKED_SERVICES_S);
+
+					if (linked_services_config_p)
+						{
+							if (json_is_array (linked_services_config_p))
+								{
+									json_t *link_config_p;
+									size_t i;
+
+									json_array_foreach (linked_services_config_p, i, link_config_p)
+										{
+											if (!CreateAndAddLinkedService (service_p, link_config_p))
+												{
+													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, link_config_p, "Failed to add LinkedService to \"%s\"", GetServiceName (service_p));
+												}
+										}
+
+
+								}		/* if (json_is_array (linked_services_config_p)) */
+							else
+								{
+									if (!CreateAndAddLinkedService (service_p, linked_services_config_p))
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, linked_services_config_p, "Failed to add LinkedService to \"%s\"", GetServiceName (service_p));
+										}
+								}
+
+						}		/* if (linked_services_config_p) */
+
+				}		/* if (service_p -> se_data_p -> sd_config_p) */
+
+		}		/* if (service_p -> se_data_p) */
+
+
+
+	return num_added_services;
+}
+
+
+bool CreateAndAddLinkedService (Service *service_p, const json_t *service_config_p)
+{
+	LinkedService *linked_service_p = CreateLinkedServiceFromJSON (service_config_p);
+
+	if (linked_service_p)
+		{
+			if (AddLinkedService (service_p, linked_service_p))
+				{
+					return true;
+				}
+
+			FreeLinkedService (linked_service_p);
+		}
+
+	return false;
+}
+
+
+bool AddLinkedService (Service *service_p, LinkedService *linked_service_p)
+{
+	bool success_flag = false;
+	LinkedServiceNode *node_p = AllocateLinkedServiceNode (linked_service_p);
+
+	if (node_p)
+		{
+			LinkedListAddTail (& (service_p -> se_linked_services), (ListItem *) node_p);
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+
+json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, UserDetails *user_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p)
 {
 	json_t *services_list_json_p = json_array ();
 
@@ -1273,7 +1407,7 @@ json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p
 
 					while (service_node_p)
 						{
-							json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, json_p, add_service_ids_flag);
+							json_t *service_json_p = GetServiceAsJSON (service_node_p -> sn_service_p, resource_p, user_p, add_service_ids_flag);
 
 							#if SERVICE_DEBUG >= STM_LEVEL_FINER
 							PrintJSONToLog (service_json_p, "service:\n", STM_LEVEL_FINER, __FILE__, __LINE__);
@@ -1582,7 +1716,7 @@ const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
 }
 
 
-json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p)
+json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p, const bool full_definition_flag)
 {
 	json_t *res_p = NULL;
 	json_error_t json_err;
@@ -1591,7 +1725,8 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 
 	if (res_p)
 		{
-			json_t *params_json_p = GetParameterSetAsJSON (params_p, true);
+			const SchemaVersion *sv_p = GetSchemaVersion ();
+			json_t *params_json_p = GetParameterSetAsJSON (params_p, sv_p, full_definition_flag);
 
 			if (params_json_p)
 				{
@@ -1617,4 +1752,10 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 
 	return res_p;
 }
+
+
+
+
+
+
 

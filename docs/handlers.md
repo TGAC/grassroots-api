@@ -16,7 +16,7 @@ The currently available Handlers are:
 
 ## Usage
 
-Handlers work upon data files represented by the *Resource* datatype. For accesing via a Handler, the fields of interest in this datatype are *re_protocol_s* and *re_value_s*.
+Handlers work upon data files represented by the *Resource* datatype. For accessing via a Handler, the fields of interest in this datatype are *re_protocol_s* and *re_value_s*.
 
 ~~~{.c}
 typedef struct Resource
@@ -56,7 +56,7 @@ Within the `handler_utils.h` file, there is a function `GetResourceHandler` that
 Handler *GetResourceHandler (const Resource *resource_p, const UserDetails *user_p);
 ~~~ 
 
-Once you have this Handler you can then perform common I/O tasks with routines analagous to those provided by the standard C library such as ```fread```, ```fwrite```, ```fseek```, *etc.*
+Once you have this Handler you can then perform common I/O tasks with routines analogous to those provided by the standard C library such as ```fread```, ```fwrite```, ```fseek```, *etc.*
 Further details are provided by the Handler API documentation.
 
 ## Examples

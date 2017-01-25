@@ -12,7 +12,7 @@ Any message can have a header, much like the \<head\> tag in a web page and alth
 
 ~~~.json
 {
-  "service": "TGAC Elastic Search service",
+  "service_name": "TGAC Elastic Search service",
   "description": "A service to access the TGAC Elastic Search data",
   "nickname": "TGAC Elastic Search service",
   "summary": "A service to access the TGAC Elastic Search data",
@@ -26,8 +26,7 @@ Any message can have a header, much like the \<head\> tag in a web page and alth
           "current_value": "study_accession",
           "type": "string",
           "default_value": "study_accession",
-          "grassroots_type": 5,
-          "grassroots_type_text": "string",
+          "grassroots_type": "xsd:string",
           "level": 7,
           "level_text": "all",
           "description": "The field to search",
@@ -61,8 +60,7 @@ Any message can have a header, much like the \<head\> tag in a web page and alth
           "default_value": "",
           "level_text": "all",
           "level": 7,
-          "grassroots_type": 5,
-          "grassroots_type_text": "string",
+          "grassroots_type": "xsd:string",
           "description": "The term to search for in the given field"
         }
       ]
@@ -100,7 +98,7 @@ The Operations tag is used to call an API on the Server.
  
 ## Service
 
-* **name** (required):
+* **service_name** (required):
 The user-friendly name of the Service which will be displayed to the user.
 
 * **about_uri**: 
@@ -163,22 +161,26 @@ The current value of the parameter.
      
 * **grassroots\_type** (required): 
 A number to describe the type of the Parameter. The values, along with their C definition, are shown below:
- 0. *PT_BOOLEAN*: The variable can be true or false.
- 1. *PT_SIGNED_INT*: The variable is a non-negative integer.
- 2. *PT_UNSIGNED_INT*: The variable is an integer.
- 3.	*PT_SIGNED_REAL*: The variable is a non-negative number.
- 4.	*PT_UNSIGNED_REAL*: The variable is a number
- 5.	*PT_STRING*: The parameter is a general string.
- 6.	*PT_FILE_TO_WRITE*: The parameter is the name of an output file.
- 7.	*PT_FILE_TO_READ*: The parameter is the name of an input file.
- 8.	 *PT_DIRECTORY*: The parameter is the name of a directory.
- 9.	 *PT_CHAR*: The parameter is a single ASCII character.
- 10.	 *PT_PASSWORD*: The parameter is a password.
- 11.	 *PT_KEYWORD*: The parameter is a keyword meaning it will be set of the user chooses to
- run a keyword search.
- 12. *PT_LARGE_STRING*: The parameter is a string that can potentially get large in size. This is a hint to the Client to use a multi-line text box as opposed to a single one.
- 13. *PT_JSON*: The parameter is a JSON fragment,
- 14. *PT_TABLE*: The parameter holds tabular data with configurable row and column delimiters. These default to a newline and a comma respectively.
+
+| C definition | JSON value | Description |
+|-------------------|-------------------|-------------------| 
+| *PT_BOOLEAN* | xsd:boolean | The variable can be true or false. |
+| *PT_SIGNED_INT* | params:signed_integer |The variable is a non-negative integer. |
+| *PT_UNSIGNED_INT* | params:unsigned_integer |The variable is an integer. |
+| *PT_NEGATIVE_INT* | params:negative_integer | The variable is a negtive integer. |
+| *PT_SIGNED_REAL* | xsd:double |The variable is a number. |
+| *PT_UNSIGNED_REAL* | params:unsigned_number |  The variable is a non-negative number |
+| *PT_STRING* | xsd:string | The parameter is a general string. |
+| *PT_FILE_TO_WRITE* | params:output_filename | The parameter is the name of an output file. |
+| *PT_FILE_TO_READ* | params:input_filename | The parameter is the name of an input file. |
+| *PT_DIRECTORY* | params:directory | The parameter is the name of a directory. |
+| *PT_CHAR* | params:character |The parameter is a single ASCII character. |
+| *PT_PASSWORD* | params:password | The parameter is a password. |
+| *PT_KEYWORD* | params:keyword |The parameter is a keyword meaning it will be set of the user chooses to run a keyword search. |
+| *PT_LARGE_STRING* | params:large_string |The parameter is a string that can potentially get large in size. This is a hint to the Client to use a multi-line text box as opposed to a single one. |
+| *PT_JSON* | params:json |The parameter is a JSON fragment. |
+| *PT_TABLE* | params:tabular |The parameter holds tabular data with configurable row and column delimiters. These default to a newline and a comma respectively. |
+
 
 * **enum**: 
 If the Parameter can take only take one of set of restricted values, these can be specified as an array here.
@@ -186,7 +188,7 @@ The elements in this array have two fields:
  * *value*: The programmatic value that the Parameter will be set to.
  * *description*: The user-friendly name of the parameter for displaying to a user. If this is not set, then the value for the *value* will be used instead.
 
-An example of this is: 
+ An example of this is: 
  ~~~.json
  "enum": 
  [
@@ -195,7 +197,7 @@ An example of this is:
       { "description": "Use GZip", "value": "gz" }
  ]
  ~~~
-which indicate that the Parameter can take 1 of 3 possible values, "z", "zip" or "gz", and the values to show 
+ which indicate that the Parameter can take 1 of 3 possible values, "z", "zip" or "gz", and the values to show 
 to the user are "Use Raw", "Use Zip" and "Use GZip". 
 
 * **level**:
@@ -204,7 +206,6 @@ This is a number used to determine whether to show a Parameter to a user. The sy
  * *intermediate* = 2
  * *advanced* = 4
  
-
  These values can be added or or'ed together. For example if you wanted a parameter to be displayed in just the beginner level then you would set this value to 1. If you wanted it displayed at the intermediate and advanced level, the value would be 2 + 4 = 6. If you wanted the Parameter to always be displayed then the value needed would be 1 + 2 + 4 = 7.
  
 * **group**:

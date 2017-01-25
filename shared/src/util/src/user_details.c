@@ -84,8 +84,7 @@ void FreeUserDetails (UserDetails *user_details_p)
 }
 
 
-
-bool GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s, const char **username_ss, const char **password_ss, const char **token_ss)
+const UserAuthentication *GetUserAuthenticationForSystem (const UserDetails *user_p, const char *system_s)
 {
 	bool success_flag = false;
 	UserAuthenticationNode *node_p = (UserAuthenticationNode *) (user_p -> ud_auth_list_p -> ll_head_p);
@@ -97,25 +96,20 @@ bool GetUserAuthenticationForSystem (const UserDetails *user_p, const char *syst
 
 			if (strcmp (auth_p -> ua_system_id_s, system_s) == 0)
 				{
-					*username_ss = auth_p -> ua_username_s;
-					*password_ss = auth_p -> ua_password_s;
-					*token_ss = auth_p -> ua_oath_totp_token_s;
-
-					success_flag = true;
+					return auth_p;
 				}
 
 			node_p = (UserAuthenticationNode *) (node_p -> uan_base_node.ln_next_p);
 		}
 
 
-	return success_flag;
+	return NULL;
 }
 
 
 
 bool AddUserAuthentication (UserDetails *user_details_p, const char *system_s, const char *username_s, const char *password_s, const char *token_s)
 {
-	bool success_flag = false;
 	UserAuthentication *auth_p = AllocateUserAuthentication (system_s, username_s, password_s, token_s);
 
 	if (auth_p)

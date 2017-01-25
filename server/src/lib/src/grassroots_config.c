@@ -27,12 +27,18 @@ static json_t *s_config_p = NULL;
 static bool s_load_config_tried_flag = false;
 
 
+
+
 static const json_t *GetConfig (void);
 static const char *GetProviderElement (const char * const element_s);
+static void InitSchemaVersionDetails (void);
+
 
 
 bool InitConfig (void)
 {
+	InitSchemaVersionDetails ();
+
 	return (GetConfig () != NULL);
 }
 
@@ -251,6 +257,7 @@ bool IsServiceEnabled (const char *service_name_s)
 
 
 
+
 static const json_t *GetConfig (void)
 {
 	if (!s_config_p)
@@ -292,4 +299,21 @@ static const char *GetProviderElement (const char * const element_s)
 		}
 
 	return result_s;
+}
+
+
+
+static void InitSchemaVersionDetails (void)
+{
+	uint32 major = CURRENT_SCHEMA_VERSION_MAJOR;
+	uint32 minor = CURRENT_SCHEMA_VERSION_MINOR;
+	const json_t *schema_p = GetGlobalConfigValue (SCHEMA_S);
+
+	if (schema_p)
+		{
+			GetJSONInteger (schema_p, VERSION_MAJOR_S, (int *) &major);
+			GetJSONInteger (schema_p, VERSION_MINOR_S, (int *) &minor);
+		}
+
+	SetSchemaVersionDetails (major, minor);
 }

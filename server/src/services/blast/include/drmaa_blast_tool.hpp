@@ -25,6 +25,8 @@
 
 #include "external_blast_tool.hpp"
 #include "drmaa_tool.h"
+#include "drmaa_tool_args_processor.hpp"
+
 
 /**
  * A class that will run Blast as a drmaa process.
@@ -124,6 +126,11 @@ public:
 
 protected:
 
+	DrmaaToolArgsProcessor *dbt_args_processor_p;
+
+
+	virtual ArgsProcessor *GetArgsProcessor ();
+
 	/**
 	 * Add the argument to the command line arguments
 	 * that this DrmaaBlastTool will run with.
@@ -132,7 +139,7 @@ protected:
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */
-	virtual bool AddArg (const char * const arg_s);
+	virtual bool AddBlastArg (const char * const arg_s, const bool hyphen_flag);
 
 
 
@@ -147,6 +154,10 @@ protected:
 	 * otherwise.
 	 */
 	virtual bool AddToJSON (json_t *root_p);
+
+
+	bool ConvertArgsToDrmaa ();
+
 
 private:
 

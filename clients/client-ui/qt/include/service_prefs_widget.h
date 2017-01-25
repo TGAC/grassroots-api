@@ -25,6 +25,10 @@
 
 #include "jansson.h"
 
+
+// forward declarations
+struct QTClientData;
+
 class ServicePrefsWidget : public QWidget
 {
 	Q_OBJECT
@@ -57,6 +61,7 @@ private:
 	QTParameterWidget *spw_params_widget_p;
 	const char *spw_service_name_s;
 	QCheckBox *spw_run_service_button_p;
+	const struct QTClientData *spw_client_data_p;
 };
 
 #endif // SERVICE_PREFS_WIDGET_H

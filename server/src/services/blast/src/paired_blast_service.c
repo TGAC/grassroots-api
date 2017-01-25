@@ -92,63 +92,42 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 
 							if (db_group_p)
 								{
-									if (db_group_p -> pg_num_params > 0)
+									const uint32 num_params = db_group_p -> pg_params_p -> ll_size;
+
+									if (num_params > 0)
 										{
-											Parameter **src_param_pp = db_group_p -> pg_params_pp;
-											Parameter **dest_params_pp = (Parameter **) AllocMemoryArray (1 + (db_group_p -> pg_num_params), sizeof (Parameter *));
+											ParameterNode *src_node_p = (ParameterNode *) (db_group_p -> pg_params_p -> ll_head_p);
+											ParameterGroup *dest_group_p = CreateAndAddParameterGroupToParameterSet (databases_group_s, paired_service_p -> ps_server_uri_s, service_p -> se_data_p, internal_params_p);
+											SharedType def;
+											uint32 num_added_dbs = 0;
 
-											if (dest_params_pp)
+											memset (&def, 0, sizeof (SharedType));
+
+											while (src_node_p)
 												{
-													SharedType def;
-													Parameter **dest_param_pp = dest_params_pp;
-													uint32 num_added_dbs = 0;
-													uint32 i = db_group_p -> pg_num_params;
+													/* Add the database to our list */
+													Parameter *external_param_p = src_node_p -> pn_parameter_p;
+													Parameter *param_p = NULL;
 
-													memset (&def, 0, sizeof (SharedType));
+													def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
 
-													while (i > 0)
+													param_p = CreateAndAddParameterToParameterSet (service_p -> se_data_p, internal_params_p, dest_group_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_display_name_s, external_param_p -> pa_description_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
+
+													if (param_p)
 														{
-															/* Add the database to our list */
-															Parameter *external_param_p = *src_param_pp;
-															Parameter *param_p = NULL;
-
-															def.st_boolean_value = external_param_p -> pa_current_value.st_boolean_value;
-
-															param_p = CreateAndAddParameterToParameterSet (service_p -> se_data_p, internal_params_p, PT_BOOLEAN, false, external_param_p -> pa_name_s, external_param_p -> pa_display_name_s, external_param_p -> pa_description_s, NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ALL, NULL);
-
-															if (param_p)
+															if (!CopyRemoteParameterDetails (external_param_p, param_p))
 																{
-																	if (CopyRemoteParameterDetails (external_param_p, param_p))
-																		{
-																			if (dest_param_pp)
-																				{
-																					*dest_param_pp = param_p;
-																					++ dest_param_pp;
-																				}		/* if (dest_param_pp) */
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy details from external parameter \"%s\" to param \"%s\"", external_param_p -> pa_name_s, param_p -> pa_name_s);
+																}		/* if (!CopyRemoteParameterDetails (external_param_p, param_p)) */
 
-																		}		/* if (CopyRemoteParameterDetails (external_param_p, param_p)) */
-																	else
-																		{
+															++ num_added_dbs;
+															++ db_counter;
+														}		/* if (param_p) */
 
-																		}
+													src_node_p = (ParameterNode *) (src_node_p -> pn_node.ln_next_p);
+												}		/* while (i > 0) */
 
-																	++ num_added_dbs;
-																	++ db_counter;
-																}		/* if (param_p) */
-
-															++ src_param_pp;
-															-- i;
-														}		/* while (i > 0) */
-
-													if (!AddParameterGroupToParameterSet (internal_params_p, databases_group_s, paired_service_p -> ps_server_uri_s, dest_params_pp, num_added_dbs, service_p -> se_data_p))
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s grouping", databases_group_s);
-															FreeMemory (dest_params_pp);
-														}
-
-												}		/* if (grouped_params_pp) */
-
-										}		/* if (num_dbs > 0) */
+										}		/* if (num_params > 0) */
 
 								}		/* if (db_group_p) */
 
@@ -167,19 +146,6 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 
 	return success_flag;
 }
-
-
-json_t *PrepareRemoteJobsForRunning (Service *service_p, ParameterSet *params_p, PairedService *paired_service_p)
-{
-	json_t *params_json_p = GetParameterSetSelectionAsJSON (params_p, false, paired_service_p, AddRemoteServiceParametersToJSON);
-
-	return params_json_p;
-}
-
-
-
-
-
 
 
 int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p)
@@ -230,16 +196,17 @@ char *GetPreviousRemoteBlastServiceJob (const char *local_job_id_s, const uint32
 									 * using this id
 									 */
 									ParameterSet *param_set_p = AllocateParameterSet ("Blast service parameters", "The parameters used for the Blast service");
+									ParameterGroup *group_p = NULL;
 
 									if (param_set_p)
 										{
-											Parameter *param_p = SetUpPreviousJobUUIDParamater (blast_data_p, param_set_p);
+											Parameter *param_p = SetUpPreviousJobUUIDParamater (blast_data_p, param_set_p, group_p);
 
 											if (param_p)
 												{
 													if (SetParameterValue (param_p, remote_job_id_s, true))
 														{
-															param_p = SetUpOutputFormatParamater (blast_data_p, param_set_p);
+															param_p = SetUpOutputFormatParamater (blast_data_p, param_set_p, group_p);
 
 															if (param_p)
 																{

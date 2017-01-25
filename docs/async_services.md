@@ -33,7 +33,7 @@ The **synchronous** key determines how the Service runs. If it is ```false``` th
 
 ## Job lifetime
 
-When a Service runs a job synchronously, all of the resources that it requires can be released as it sends the response back. With asynchronous services, this becomes more difficult as any required resources need to be accessible between different requests. Given that Httpd can run run as a multi-threaded and/or multi-process system, any data that needs to be persistent, *i.e.* stored between requests, has to be adaptable to any Httpd runtime configuration.
+When a Service runs a job synchronously, all of the resources that it requires can be released as it sends the response back. With asynchronous services, this becomes more difficult as any required resources need to be accessible between different requests. Given that Httpd can be run as a multi-threaded and/or multi-process system, any data that needs to be persistent, *i.e.* stored between requests, has to be adaptable to any Httpd runtime configuration.
 
 So the Grassroots system has an interface for interacting with asynchronous jobs this is an  called *JobsManager* which deals with sharing persistent data between requests. For Httpd, this interface is implemented in the *APRJobsManager*. The JobsManager is essentially a Hash Table where persistent data can be stored where the keys are UUIDs for the data that you wish to store and the values are JSON representations of the data. All of the needed data to recreate the ServiceJob must be stored in this JSON value.
 

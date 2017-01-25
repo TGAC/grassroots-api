@@ -369,9 +369,9 @@ bool AddProvidersStateTableToRequest (const ProvidersStateTable * providers_p, j
 }
 
 
-json_t *GetAvailableServicesRequestForAllProviders (const ProvidersStateTable *providers_p, UserDetails *user_p)
+json_t *GetAvailableServicesRequestForAllProviders (const ProvidersStateTable *providers_p, UserDetails *user_p, const SchemaVersion * const sv_p)
 {
-	json_t *op_p = GetAvailableServicesRequest (user_p);
+	json_t *op_p = GetAvailableServicesRequest (user_p, sv_p);
 
 	if (op_p)
 		{

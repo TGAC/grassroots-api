@@ -110,7 +110,7 @@ static const char *GetLongRunningServiceName (Service *service_p);
 
 static const char *GetLongRunningServiceDesciption (Service *service_p);
 
-static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseLongRunningServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -309,7 +309,7 @@ static const char *GetLongRunningServiceDesciption (Service * UNUSED_PARAM (serv
 }
 
 
-static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (config_p))
+static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("LongRunning service parameters", "The parameters used for the LongRunning service");
 	
@@ -320,7 +320,7 @@ static ParameterSet *GetLongRunningServiceParameters (Service *service_p, Resour
 
 			def.st_ulong_value = 3;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, LRS_NUMBER_OF_JOBS.npt_type, false, LRS_NUMBER_OF_JOBS.npt_name_s, "Number of jobs", "Number of jobs to run", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+			if ((param_p = CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, LRS_NUMBER_OF_JOBS.npt_type, false, LRS_NUMBER_OF_JOBS.npt_name_s, "Number of jobs", "Number of jobs to run", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 				{
 					return param_set_p;
 				}

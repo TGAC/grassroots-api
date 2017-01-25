@@ -26,6 +26,7 @@
 #include "grassroots_service_manager_library.h"
 #include "typedefs.h"
 #include "jansson.h"
+#include "schema_version.h"
 
 #ifdef __cplusplus
 	extern "C" {
@@ -63,6 +64,8 @@ GRASSROOTS_SERVICE_MANAGER_API const json_t *GetProviderAsJSON (void);
 
 
 GRASSROOTS_SERVICE_MANAGER_API  bool IsServiceEnabled (const char *service_name_s);
+
+
 
 
 #ifdef __cplusplus

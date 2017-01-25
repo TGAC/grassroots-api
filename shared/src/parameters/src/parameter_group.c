@@ -21,34 +21,31 @@
  *      Author: billy
  */
 
+#define ALLOCATE_PARAMETER_GROUP_TAGS_H
 #include "parameter_group.h"
+#include "parameter_set.h"
 #include "string_utils.h"
 #include "json_util.h"
 #include "service.h"
 
 
-ParameterGroupNode *AllocateParameterGroupNode (const char *name_s, const char *group_key_s, Parameter **params_pp, const uint32 num_params, ServiceData *service_data_p)
+
+ParameterGroupNode *AllocateParameterGroupNode (ParameterGroup *group_p)
 {
-	ParameterGroup *group_p = AllocateParameterGroup (name_s, group_key_s, params_pp, num_params, service_data_p);
+	ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
 
-	if (group_p)
+	if (param_group_node_p)
 		{
-			ParameterGroupNode *param_group_node_p = (ParameterGroupNode *) AllocMemory (sizeof (ParameterGroupNode));
+			param_group_node_p -> pgn_param_group_p = group_p;
+			param_group_node_p -> pgn_node.ln_prev_p = NULL;
+			param_group_node_p -> pgn_node.ln_next_p = NULL;
 
-			if (param_group_node_p)
-				{
-					param_group_node_p -> pgn_param_group_p = group_p;
-					param_group_node_p -> pgn_node.ln_prev_p = NULL;
-					param_group_node_p -> pgn_node.ln_next_p = NULL;
-
-					return param_group_node_p;
-				}		/* if (param_group_node_p) */
-
-			FreeParameterGroup (group_p);
-		}		/* if (group_p) */
+			return param_group_node_p;
+		}		/* if (param_group_node_p) */
 
 	return NULL;
 }
+
 
 
 void FreeParameterGroupNode (ListItem *node_p)
@@ -60,13 +57,13 @@ void FreeParameterGroupNode (ListItem *node_p)
 }
 
 
-ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, Parameter **params_pp, const uint32 num_params, ServiceData *service_data_p)
+ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, ServiceData *service_data_p)
 {
 	char *copied_name_s = CopyToNewString (name_s, 0, false);
 
 	if (copied_name_s)
 		{
-			ParameterGroup *param_group_p = NULL;
+			LinkedList *children_p = NULL;
 			char *copied_key_s = NULL;
 
 			if (key_s)
@@ -81,23 +78,47 @@ ParameterGroup *AllocateParameterGroup (const char *name_s, const char *key_s, P
 						}
 				}
 
-			param_group_p = (ParameterGroup *) AllocMemory (sizeof (ParameterGroup));
+			children_p = AllocateLinkedList (FreeParameterGroupNode);
 
-			if (param_group_p)
+			if (children_p)
 				{
-					param_group_p -> pg_name_s = copied_name_s;
-					param_group_p -> pg_key_s = copied_key_s;
-					param_group_p -> pg_params_pp = params_pp;
-					param_group_p -> pg_num_params = num_params;
-					param_group_p -> pg_visible_flag = true;
+					/*
+					 * The Parameters stored on this List are also known
+					 * to the ParameterSet which is where they will get
+					 * freed. So all we need to do on this LinkedList
+					 * is free the memory allocated for the nodes.
+					 */
+					LinkedList *params_p = AllocateLinkedList (NULL);
 
-					if (service_data_p)
+					if (params_p)
 						{
-							GetParameterGroupVisibility (service_data_p, name_s, & (param_group_p -> pg_visible_flag));
-						}
+							ParameterGroup *param_group_p = (ParameterGroup *) AllocMemory (sizeof (ParameterGroup));
 
-					return param_group_p;
+							if (param_group_p)
+								{
+									param_group_p -> pg_name_s = copied_name_s;
+									param_group_p -> pg_key_s = copied_key_s;
+									param_group_p -> pg_params_p = params_p;
+									param_group_p -> pg_visible_flag = true;
+
+									param_group_p -> pg_full_display_flag = true;
+									param_group_p -> pg_vertical_layout_flag = true;
+									param_group_p -> pg_child_groups_p = children_p;
+
+									if (service_data_p)
+										{
+											GetParameterGroupVisibility (service_data_p, name_s, & (param_group_p -> pg_visible_flag));
+										}
+
+									return param_group_p;
+								}
+
+							FreeLinkedList (params_p);
+						}		/* if (params_p) */
+
+					FreeLinkedList (children_p);
 				}
+
 
 			FreeCopiedString (copied_name_s);
 		}		/* if (copied_name_s) */
@@ -115,8 +136,33 @@ void FreeParameterGroup (ParameterGroup *param_group_p)
 			FreeCopiedString (param_group_p -> pg_key_s);
 		}
 
-	FreeMemory (param_group_p -> pg_params_pp);
+	FreeLinkedList (param_group_p -> pg_child_groups_p);
+
+	FreeLinkedList (param_group_p -> pg_params_p);
+
 	FreeMemory (param_group_p);
+}
+
+
+ParameterGroup *CreateAndAddParameterGroupToParameterSet (const char *name_s, const char *key_s, struct ServiceData *service_data_p, ParameterSet *param_set_p)
+{
+	ParameterGroup *group_p = AllocateParameterGroup (name_s, key_s, service_data_p);
+
+	if (group_p)
+		{
+			if (!AddParameterGroupToParameterSet (param_set_p, group_p))
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" group to \"%s\" param set", name_s, param_set_p -> ps_name_s);
+					FreeParameterGroup (group_p);
+					group_p = NULL;
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create \"%s\" group", name_s);
+		}
+
+	return group_p;
 }
 
 
@@ -131,5 +177,37 @@ json_t *GetParameterGroupAsJSON (ParameterGroup *param_group_p)
 		}
 
 	return value_p;
+}
+
+
+
+bool AddParameterToParameterGroup (ParameterGroup *group_p, Parameter *param_p)
+{
+	bool success_flag = false;
+	ParameterNode *node_p = AllocateParameterNode (param_p);
+
+	if (node_p)
+		{
+			LinkedListAddTail (group_p -> pg_params_p, & (node_p -> pn_node));
+			param_p -> pa_group_p = group_p;
+			success_flag = true;
+		}
+
+	return success_flag;
+}
+
+
+bool AddParameterGroupChild (ParameterGroup *parent_group_p, ParameterGroup *child_group_p)
+{
+	bool success_flag = false;
+	ParameterGroupNode *node_p = AllocateParameterGroupNode (child_group_p);
+
+	if (node_p)
+		{
+			LinkedListAddTail (parent_group_p -> pg_child_groups_p, & (node_p -> pgn_node));
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 

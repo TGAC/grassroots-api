@@ -80,7 +80,7 @@ static const char *GetCompressServiceName (Service *service_p);
 static const char *GetCompressServiceDesciption (Service *service_p);
 
 
-static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseCompressServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -307,7 +307,7 @@ static const char *GetCompressServiceDesciption (Service * UNUSED_PARAM (service
 }
 
 
-static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource *resource_p, UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Compress service parameters", "The parameters used for the Compress service");
 
@@ -318,7 +318,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 				
 			def.st_resource_value_p = resource_p;		
 
-			if (CreateAndAddParameterToParameterSet (service_data_p, param_set_p, CS_INPUT.npt_type, false, CS_INPUT.npt_name_s, "Input", "The input file to read", NULL, def, NULL, NULL, PL_ALL, NULL))
+			if (CreateAndAddParameterToParameterSet (service_data_p, param_set_p, NULL, CS_INPUT.npt_type, false, CS_INPUT.npt_name_s, "Input", "The input file to read", NULL, def, NULL, NULL, PL_ALL, NULL))
 				{
 					ParameterMultiOptionArray *options_p = NULL;
 					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Raw", "Use Zip", "Use GZip" };
@@ -334,7 +334,7 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 						{
 							def.st_string_value_s = values [0].st_string_value_s;
 
-							if (CreateAndAddParameterToParameterSet (service_data_p, param_set_p, CS_ALGORITHM.npt_type, false, CS_ALGORITHM.npt_name_s, "Compression algorithm", "The algorithm to use to compress the data with", options_p, def, NULL, NULL, PL_ALL, NULL))
+							if (CreateAndAddParameterToParameterSet (service_data_p, param_set_p, NULL, CS_ALGORITHM.npt_type, false, CS_ALGORITHM.npt_name_s, "Compression algorithm", "The algorithm to use to compress the data with", options_p, def, NULL, NULL, PL_ALL, NULL))
 								{
 									return param_set_p;
 								}

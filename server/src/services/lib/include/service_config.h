@@ -18,6 +18,7 @@
 
 #include "grassroots_service_library.h"
 #include "typedefs.h"
+#include "schema_version.h"
 
 
 #ifdef __cplusplus
@@ -53,6 +54,13 @@ GRASSROOTS_SERVICE_API bool SetServerRootDirectory (const char * const path_s);
  * @return The path to Grassroots
  */
 GRASSROOTS_SERVICE_API const char *GetServerRootDirectory (void);
+
+
+
+GRASSROOTS_SERVICE_API void SetSchemaVersionDetails (const uint32 major, const uint32 minor);
+
+
+GRASSROOTS_SERVICE_API const SchemaVersion *GetSchemaVersion (void);
 
 
 #ifdef __cplusplus

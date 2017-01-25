@@ -122,16 +122,19 @@ void ProgressWindow :: UpdateStatuses ()
 
 	if (ids_pp)
 		{
+			Connection *connection_p = pw_data_p -> qcd_base_data.cd_connection_p;
+			const SchemaVersion *schema_p = pw_data_p -> qcd_base_data.cd_schema_p;
+
 			for (size_t i = 0; i < size; ++ i)
 				{
 					* (ids_pp + i) = pw_widgets.at (i) -> GetUUID ();
 				}
 
-			req_p = GetServicesStatusRequest (ids_pp, size, pw_data_p -> qcd_base_data.cd_connection_p);
+			req_p = GetServicesStatusRequest (ids_pp, size, connection_p, schema_p);
 
 			if (req_p)
 				{
-					json_t *statuses_json_p = MakeRemoteJsonCall (req_p, pw_data_p -> qcd_base_data.cd_connection_p);
+					json_t *statuses_json_p = MakeRemoteJsonCall (req_p, connection_p);
 
 					if (statuses_json_p)
 						{
@@ -238,16 +241,19 @@ void ProgressWindow :: ViewResults ()
 
 	if (ids_pp)
 		{
+			Connection *connection_p = pw_data_p -> qcd_base_data.cd_connection_p;
+			const SchemaVersion *schema_p = pw_data_p -> qcd_base_data.cd_schema_p;
+
 			for (size_t i = 0; i < size; ++ i)
 				{
 					* (ids_pp + i) = pw_widgets.at (i) -> GetUUID ();
 				}
 
-			req_p = GetServicesResultsRequest (ids_pp, size, pw_data_p -> qcd_base_data.cd_connection_p);
+			req_p = GetServicesResultsRequest (ids_pp, size, connection_p, schema_p);
 
 			if (req_p)
 				{
-					json_t *results_json_p = MakeRemoteJsonCall (req_p, pw_data_p -> qcd_base_data.cd_connection_p);
+					json_t *results_json_p = MakeRemoteJsonCall (req_p, connection_p);
 
 					if (results_json_p)
 						{
@@ -332,7 +338,7 @@ json_t *ProgressWindow :: BuildResultsRequest ()
 					* (ids_pp + i) = pw_widgets.at (i) -> GetUUID ();
 				}
 
-			req_p = GetServicesStatusRequest (ids_pp, size, pw_data_p -> qcd_base_data.cd_connection_p);
+			req_p = GetServicesStatusRequest (ids_pp, size, pw_data_p -> qcd_base_data.cd_connection_p, pw_data_p -> qcd_base_data.cd_schema_p);
 
 			FreeMemory (ids_pp);
 		}		/* if (ids_pp) */

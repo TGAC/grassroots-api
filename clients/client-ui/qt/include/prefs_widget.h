@@ -27,12 +27,12 @@
 #include "jansson.h"
 
 #include "runnable_widget.h"
-#include "service_prefs_widget.h"
 #include "services_list.h"
 
 
 class MainWindow;
 class QTClientData;
+class ServicePrefsWidget;
 
 /**
  * @brief The PrefsWidget class
@@ -73,6 +73,8 @@ public:
 	ServicePrefsWidget *GetServicePrefsWidget (const char * const service_name_s);
 
 	bool SelectService (const char *service_name_s, const json_t * const params_p);
+
+
 
 private:
 

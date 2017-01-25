@@ -26,6 +26,7 @@
 #include "user_details.h"
 #include "operation.h"
 #include "paired_service.h"
+#include "linked_service.h"
 #include "uuid/uuid.h"
 
 #include "jansson.h"
@@ -49,7 +50,7 @@ struct ExternalServer;
  * 
  * ALLOCATE_JSON_TAGS must be defined only once prior to 
  * including this header file. Currently this happens in
- * json_util.c.
+ * service.c.
  */
 #ifdef ALLOCATE_PATH_TAGS
 	#define PATH_PREFIX GRASSROOTS_SERVICE_API
@@ -180,27 +181,7 @@ typedef struct Service
 	/**
 	 * Function to get the ParameterSet for this Service.
 	 */
-	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, const json_t *json_p);
-
-
-//	/**
-//	 * Get the JSON fragment for a given job that has been run by this Service.
-//	 *
-//	 * @param service_p A pointer to this Service.
-//	 * @param job_id The uuid_t of the ServiceJob.
-//	 * @return The JSON fragment or <code>NULL</code> upon error.
-//	 */
-	//json_t *(*se_get_results_fn) (struct Service *service_p, const uuid_t job_id);
-
-
-//	/**
-//	 * Get the OperationStatus for a given job that has been run by this Service.
-//	 *
-//	 * @param service_p A pointer to this Service.
-//	 * @param job_id The uuid_t of the ServiceJob.
-//	 * @return The OperationStatus for the given job.
-//	 */
-	//OperationStatus (*se_get_status_fn) (struct Service *service_p, const uuid_t job_id);
+	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 
 	void (*se_customise_service_job_fn) (struct Service *service_p, struct ServiceJob *job_p);
@@ -226,6 +207,8 @@ typedef struct Service
 	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
 
 
+	char *(*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
+
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return
 	 * until the job has completed. If <code>false</code>, then the Service will
@@ -243,9 +226,18 @@ typedef struct Service
 	LinkedList se_paired_services;
 
 	/**
+	 * Any LinkedServices that will  use the output from running this Service
+	 * as input for itself
+	 */
+	LinkedList se_linked_services;
+
+	/**
 	 * Any custom data that the service needs to store.
 	 */
 	ServiceData *se_data_p;
+
+
+
 
 } Service;
 
@@ -290,10 +282,20 @@ extern "C"
  * Get the ServicesArray from a given Plugin.
  *
  * @param plugin_p The Plugin to get the ServicesArray from.
- * @param service_config_p Any user configuration details.
+ * @param user_p Any user configuration details. This can be NULL.
+ * @param service_config_p Any service configuration details.
  * @return The ServicesArray or <code>NULL</code> upon error.
  */
-GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, const json_t *service_config_p);
+GRASSROOTS_SERVICE_API ServicesArray *GetReferrableServicesFromPlugin (Plugin * const plugin_p, UserDetails *user_p, const json_t *service_config_p);
+
+/**
+ * Get the ServicesArray from a given Plugin.
+ *
+ * @param plugin_p The Plugin to get the ServicesArray from.
+ * @param user_p Any user configuration details. This can be NULL.
+ * @return The ServicesArray or <code>NULL</code> upon error.
+ */
+GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, UserDetails *user_p);
 
 
 
@@ -303,7 +305,7 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
 	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p),
 	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
-	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, const json_t *json_p),
+	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, UserDetails *user_p),
 	void (*release_parameters_fn) (Service *service_p, ParameterSet *params_p),
 	bool (*close_fn) (struct Service *service_p),
 	void (*customise_service_job_fn) (Service *service_p, struct ServiceJob *job_p),
@@ -407,13 +409,13 @@ GRASSROOTS_SERVICE_API const char *GetServiceInformationURI (Service *service_p)
  *
  * @param service_p The Service to get the ParameterSet for.
  * @param resource_p This is the input to the Service and can be NULL.
- * @param config_p Any configuration details that the Service might need. This can be NULL.
+ * @param user_p Any user authorisation details that the Service might need. This can be NULL.
  * @return The newly-created ParameterSet or <code>NULL</code> upon error. This
  * ParameterSet will need to be freed once it is no longer needed by calling FreeParameterSet.
  * @see FreeParameterSet.
  * @memberof Service
  */
-GRASSROOTS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p, const json_t *config_p);
+GRASSROOTS_SERVICE_API ParameterSet *GetServiceParameters (Service *service_p, Resource *resource_p,  UserDetails *user_p);
 
 
 /**
@@ -512,31 +514,20 @@ GRASSROOTS_SERVICE_API bool CloseService (Service *service_p);
 GRASSROOTS_SERVICE_API  bool IsServiceLive (Service *service_p);
 
 
-///**
-// * Get the results from a Service for a given ServiceJOb UUID.
-// *
-// * @param service_p The Service to get the results for.
-// * @param service_id The UUID of the ServiceJob to get the results for.
-// * @return The results or <code>NULL</code> if they are not any.
-// * @memberof Service
-// */
-//GRASSROOTS_SERVICE_API json_t *GetServiceResults (Service *service_p, const uuid_t service_id);
-
 /**
  * Generate a json-based description of a Service.
  *
  * @param service_p The Service to generate the description for.
  * @param resource_p An optional Resource for the Service to run on. This can be <code>
  * NULL</code>.
- * @param json_p Optional user configuration details. This can be NULL.
+ * @param user_p Optional user configuration details. This can be NULL.
  * @param add_id_flag If this is <code>true</code> then the UUID of the Service will be added
  * to the returned JSON. If this is <code>false</code> then it will not.
  * @return The json-based representation of the Service or <code>NULL</code> if there was
  * an error.
  * @memberof Service
  */
-GRASSROOTS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, const json_t *json_p, const bool add_id_flag);
-
+GRASSROOTS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserDetails *user_p, const bool add_id_flag);
 
 /**
  * @brief Get the description of a Service
@@ -597,7 +588,7 @@ GRASSROOTS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 
 
-GRASSROOTS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, const json_t *json_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p);
+GRASSROOTS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, UserDetails *user_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p);
 
 
 /**
@@ -689,6 +680,7 @@ GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *s
  */
 GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struct ExternalServer *external_server_p, const char *remote_service_name_s, const json_t *op_p, const json_t *provider_p);
 
+
 /**
  * Add a PairedService to a Service.
  *
@@ -698,6 +690,29 @@ GRASSROOTS_SERVICE_API bool CreateAndAddPairedService (Service *service_p, struc
  * @memberof Service
  */
 GRASSROOTS_SERVICE_API bool AddPairedService (Service *service_p, PairedService *paired_service_p);
+
+
+/**
+ * Create and add a LinkedService to a Service.
+ *
+ * @param service_p The Service to add the LinkedService to.
+ * @param service_config_p The json fragement defining the LinkedService to add.
+ * @return <code>true</code> if the LinkedService was added successfully, <code>false</code> otherwise.
+ * @memberof Service
+ */
+GRASSROOTS_SERVICE_API bool CreateAndAddLinkedService (Service *service_p, const json_t *service_config_p);
+
+
+/**
+ * Add a LinkedService to a Service.
+ *
+ * @param service_p The Service to add the LinkedService to.
+ * @param paired_service_p The LinkedService to add.
+ * @return <code>true</code> if the LinkedService was added successfully, <code>false</code> otherwise.
+ * @memberof Service
+ */
+GRASSROOTS_SERVICE_API bool AddLinkedService (Service *service_p, LinkedService *paired_service_p);
+
 
 
 /**
@@ -730,11 +745,12 @@ GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_
  * @return The JSON fragment to send to the Server or <code>NULL</code> upon error.
  * @see IsServiceMatch
  */
-GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p);
+GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p,  const bool full_definition_flag);
 
 
 
 GRASSROOTS_SERVICE_API void SetServiceJobCustomFunctions (Service *service_p, struct ServiceJob *job_p);
+
 
 #ifdef __cplusplus
 }

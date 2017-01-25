@@ -40,7 +40,7 @@ ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const
 	QScrollArea *scroller_p = new QScrollArea;
 	scroller_p -> setBackgroundRole (QPalette :: Button);
 	scroller_p -> setSizePolicy (QSizePolicy :: Expanding, QSizePolicy :: Expanding);
-	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, service_info_uri_s, provider_p, params_p, NULL, PL_BASIC);
+	spw_params_widget_p = new QTParameterWidget (service_name_s, service_description_s, service_info_uri_s, provider_p, params_p, NULL, PL_BASIC, spw_client_data_p);
 
 	spw_params_widget_p -> setSizePolicy (QSizePolicy :: Expanding, QSizePolicy :: Expanding);
 	scroller_p -> setWidget (spw_params_widget_p);

@@ -91,6 +91,7 @@ public:
 	 * to run asynchronously, <code>false</code> otherwise.
 	 */
 	virtual bool AreToolsAsynchronous () const = 0;
+
 };
 
 

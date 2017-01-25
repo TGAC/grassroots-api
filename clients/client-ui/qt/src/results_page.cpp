@@ -22,6 +22,7 @@
 #include "results_page.h"
 #include "results_widget.h"
 
+#include "json_util.h"
 
 
 ResultsPage :: ResultsPage (ResultsWidget *parent_p)
@@ -66,6 +67,7 @@ void ResultsPage :: SetUp (ResultsWidget *parent_p, const char * const descripti
 	layout_p -> addWidget (rp_results_list_p);
 
 	connect (this, &ResultsPage :: ServiceRequested, parent_p, &ResultsWidget :: SelectService);
+	connect (this, &ResultsPage :: RunServiceRequested, parent_p, &ResultsWidget :: RunService);
 }
 
 
@@ -95,6 +97,15 @@ ResultsPage :: ~ResultsPage ()
 void ResultsPage :: SelectService (const char *service_name_s, const json_t *params_json_p)
 {
 	emit ServiceRequested (service_name_s, params_json_p);
+}
+
+
+void ResultsPage :: RunService (json_t *request_p)
+{
+	if (request_p)
+		{
+			emit RunServiceRequested (request_p);
+		}
 }
 
 

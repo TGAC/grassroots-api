@@ -47,7 +47,7 @@ struct drmaa_job_template_s;
  *
  * Drmaa is a programmatic way of running jobs on grids, clusters or
  * cloud-based systems. It allows to specify things such as the job to
- * run, what resources it will use, whether to run asychronously, <i>etc.</i>
+ * run, what resources it will use, whether to run asynchronously, <i>etc.</i>
  */
 typedef struct DrmaaTool
 {

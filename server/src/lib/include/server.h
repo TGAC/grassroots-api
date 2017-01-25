@@ -58,6 +58,20 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerRawMessage (const char * con
 GRASSROOTS_SERVICE_MANAGER_API json_t *ProcessServerJSONMessage (json_t *req_p, const int socket_fd, const char **error_s);
 
 
+/**
+ * Create a response object with a valid header and a given key and value.
+ *
+ * @param req_p If this object is not <code>NULL</code> and contains a "verbose" key set to true,
+ * then the request will be added to a "request" key within the "header" section of this response.
+ * This is to allow the tracking of requests to responses if needed.
+ * @param key_s The key to use to add the associated value to the generated response.
+ * @param value_p The value to add to the generated response.
+ * @return The response or <code>NULL</code> upon error.
+ * @see GetInitialisedMessage
+ */
+GRASSROOTS_SERVICE_MANAGER_API json_t *GetInitialisedResponseOnServer (const json_t *req_p, const char *key_s, json_t *value_p);
+
+
 #ifdef __cplusplus
 }
 #endif

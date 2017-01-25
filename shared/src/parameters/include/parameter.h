@@ -27,7 +27,7 @@
 #include "tags.h"
 #include "data_resource.h"
 #include "hash_table.h"
-
+#include "schema_version.h"
 
 #include "remote_parameter_details.h"
 
@@ -49,6 +49,11 @@ typedef enum ParameterType
 
 	/** A non-negative 32-bit integer */
 	PT_UNSIGNED_INT,
+
+
+	/** A non-positive 32-bit integer */
+	PT_NEGATIVE_INT,
+
 
 	/** A real number */
 	PT_SIGNED_REAL,
@@ -638,7 +643,7 @@ GRASSROOTS_PARAMS_API const char *GetParameterKeyValue (const Parameter * const 
  * upon error. When you no longer require the value you need to call json_decref upon it.
  * @memberof Parameter
  */
-GRASSROOTS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag);
+GRASSROOTS_PARAMS_API json_t *GetParameterAsJSON (const Parameter * const parameter_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
 
 /**
@@ -719,6 +724,13 @@ GRASSROOTS_PARAMS_API const char *GetUIName (const Parameter * const parameter_p
 GRASSROOTS_PARAMS_API char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_flag_p);
 
 
+
+GRASSROOTS_PARAMS_API bool SetParameterValueFromString (Parameter * const param_p, const char *value_s);
+
+
+GRASSROOTS_PARAMS_API bool SetSharedTypeFromString (SharedType * const value_p, const ParameterType pt, const char *value_s);
+
+
 /**
  * Allocate a SharedTypeNode set to the given value.
  *
@@ -750,17 +762,6 @@ GRASSROOTS_PARAMS_API void FreeSharedTypeNode (ListItem *node_p);
  * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag);
-
-
-/**
- * Get the remote Tag from a RemoteParameterDetails stored on a given Parameter.
- *
- * @param param_p The Parameter whose set of RemoteParameterDetails will be checked.
- * @param uri_s The uri to match.
- * @return A pointer to the Tag or <code>NULL</code> upon error.
- * @memberof Parameter
- */
-GRASSROOTS_PARAMS_API const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s);
 
 
 /**
@@ -811,6 +812,19 @@ GRASSROOTS_PARAMS_API bool GetParameterDisplayNameFromConfig (const struct Servi
 
 
 GRASSROOTS_PARAMS_API bool GetParameterLevelFromConfig (const struct ServiceData *service_data_p, const char *param_name_s, ParameterLevel *level_p);
+
+
+
+GRASSROOTS_PARAMS_API ParameterNode *AllocateParameterNode (Parameter *param_p);
+
+GRASSROOTS_PARAMS_API void FreeParameterNode (ListItem *node_p);
+
+
+
+
+
+GRASSROOTS_PARAMS_API json_t *GetRunnableParameterAsJSON (const char * const name_s, const SharedType * const value_p, const ParameterType param_type, const SchemaVersion * const sv_p, const bool full_definition_flag);
+
 
 
 #ifdef __cplusplus

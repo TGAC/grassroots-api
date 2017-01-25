@@ -721,7 +721,7 @@ bool SetDrmaaToolJobId (DrmaaTool *tool_p, const char *id_s)
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "%s is too long for id, " SIZET_FMT " max", id_s, DRMAA_ID_BUFFER_SIZE);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s is too long for id, " SIZET_FMT " max", id_s, DRMAA_ID_BUFFER_SIZE);
 				}
 		}
 	else
@@ -748,7 +748,7 @@ bool SetDrmaaToolJobOutId (DrmaaTool *tool_p, const char *id_s)
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, "%s is too long for out id, " SIZET_FMT " max", id_s, DRMAA_ID_BUFFER_SIZE);
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "%s is too long for out id, " SIZET_FMT " max", id_s, DRMAA_ID_BUFFER_SIZE);
 				}
 		}
 	else

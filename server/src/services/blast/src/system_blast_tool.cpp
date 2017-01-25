@@ -24,7 +24,7 @@
 #include "streams.h"
 #include "string_utils.h"
 #include "blast_service_job.h"
-
+#include "byte_buffer_args_processor.hpp"
 
 
 #ifdef _DEBUG
@@ -38,44 +38,75 @@
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s)
 : ExternalBlastTool (job_p, name_s, factory_s, data_p, blast_program_name_s)
 {
-	if (!AddArg (blast_program_name_s))
+	if (!Init (blast_program_name_s))
 		{
-			throw std::bad_alloc ();
+			throw std :: bad_alloc ();
 		}
 }
 
 
 SystemBlastTool :: SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
-	: ExternalBlastTool (job_p, data_p, root_p)
+	: ExternalBlastTool (job_p, data_p, root_p), sbt_buffer_p (0), sbt_args_processor_p (0)
 {
-	if (!AddArg (ebt_blast_s))
+	if (!Init (ebt_blast_s))
 		{
-			throw std::bad_alloc ();
+			throw std :: bad_alloc ();
 		}
+}
+
+
+bool SystemBlastTool :: Init (const char *prog_s)
+{
+	bool success_flag = false;
+	sbt_buffer_p = AllocateByteBuffer (1024);
+
+	if (sbt_buffer_p)
+		{
+			sbt_args_processor_p = new ByteBufferArgsProcessor (sbt_buffer_p);
+
+			if (AddBlastArg (prog_s, false))
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
 }
 
 
 
 SystemBlastTool :: ~SystemBlastTool ()
 {
+	if (sbt_buffer_p)
+		{
+			FreeByteBuffer (sbt_buffer_p);
+		}
+
+	if (sbt_args_processor_p)
+		{
+			delete sbt_args_processor_p;
+		}
 }
 
 
-bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
+bool SystemBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParameters *app_params_p)
 {
 	bool success_flag = false;
 
-	if (ExternalBlastTool :: ParseParameters (params_p))
+	if (ExternalBlastTool :: ParseParameters (params_p, app_params_p))
 		{
 			char *logfile_s = GetJobFilename (NULL, BS_LOG_SUFFIX_S);
 
 			if (logfile_s)
 				{
-					if (AddArgsPair (">>", logfile_s))
+					if (AddBlastArg (">>", false))
 						{
-							if (AddArg ("2>&1"))
+							if (AddBlastArg (logfile_s, false))
 								{
-									success_flag = true;
+									if (AddBlastArg ("2>&1", false))
+										{
+											success_flag = true;
+										}
 								}
 						}
 
@@ -88,9 +119,15 @@ bool SystemBlastTool :: ParseParameters (ParameterSet *params_p)
 }
 
 
+ArgsProcessor *SystemBlastTool :: GetArgsProcessor ()
+{
+	return sbt_args_processor_p;
+}
+
+
 OperationStatus SystemBlastTool :: Run ()
 {
-	const char *command_line_s = GetByteBufferData (ebt_buffer_p);
+	const char *command_line_s = GetByteBufferData (sbt_buffer_p);
 	int res;
 	OperationStatus status;
 

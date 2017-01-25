@@ -40,12 +40,19 @@ INCLUDES = \
 	
 SRCS 	= \
 	blast_service.c \
+	blastn_service.c \
+	blastp_service.c \
+	blastx_service.c \
 	blast_service_job.c \
 	blast_service_params.c \
 	paired_blast_service.c \
+	blast_util.c \
+	args_processor.cpp \
 	blast_formatter.cpp \
 	blast_tool.cpp \
+	blast_app_parameters.c \
 	blast_tool_factory.cpp \
+	byte_buffer_args_processor.cpp \
 	external_blast_tool.cpp \
 	external_blast_tool_factory.cpp \
 	system_blast_tool.cpp \
@@ -67,7 +74,8 @@ LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson \
 ifeq ($(DRMAA_ENABLED),1)
 SRCS += \
 	drmaa_blast_tool.cpp \
-	drmaa_blast_tool_factory.cpp 
+	drmaa_blast_tool_factory.cpp \
+	drmaa_tool_args_processor.cpp 
 	
 LDFLAGS += -L$(DIR_GRASSROOTS_DRMAA_LIB) -l$(GRASSROOTS_DRMAA_LIB_NAME) -L$(DIR_DRMAA_IMPLEMENTATION_LIB) -l$(DRMAA_IMPLEMENTATION_LIB_NAME)
 INCLUDES += -I$(DIR_LSF_DRMAA_INC) -I$(DIR_GRASSROOTS_DRMAA_INC)

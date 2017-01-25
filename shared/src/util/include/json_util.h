@@ -93,11 +93,11 @@ PREFIX const char *OPERATION_SYNCHRONOUS_S VAL("synchronous");
 PREFIX const char *SERVICES_NAME_S VAL("services");
 PREFIX const char *SERVICES_ID_S VAL("path");
 PREFIX const char *SERVICES_DESCRIPTION_S VAL("description");
-PREFIX const char *SERVICE_RUN_S VAL("run");
+PREFIX const char *SERVICE_RUN_S VAL("start_service");
 PREFIX const char *SERVICES_STATUS_S VAL("status");
 PREFIX const char *SERVICES_STATUS_DEFAULT_S VAL("default");
 
-PREFIX const char *SERVICE_NAME_S VAL("service");
+PREFIX const char *SERVICE_NAME_S VAL("service_name");
 PREFIX const char *SERVICE_UUID_S VAL("service_uuid");
 PREFIX const char *SERVICE_STATUS_VALUE_S VAL("status");
 PREFIX const char *SERVICE_STATUS_S VAL("status_text");
@@ -105,9 +105,17 @@ PREFIX const char *SERVICE_RESULTS_S VAL("results");
 PREFIX const char *SERVICE_METADATA_S VAL("metadata");
 PREFIX const char *SERVICE_JOBS_S VAL("jobs");
 
+PREFIX const char *LINKED_SERVICES_S VAL("linked_services");
+
+PREFIX const char *MAPPED_PARAM_INPUT_S VAL("input");
+PREFIX const char *MAPPED_PARAM_OUTPUT_S VAL("output");
+PREFIX const char *MAPPED_PARAM_REQUIRED_S VAL("required");
+PREFIX const char *MAPPED_PARAMS_ROOT_S VAL("input_root");
+PREFIX const char *MAPPED_PARAM_MULTI_VALUED_S VAL("multiple");
+
 
 PREFIX const char *JOB_NAME_S VAL("name");
-PREFIX const char *JOB_SERVICE_S VAL("service");
+PREFIX const char *JOB_SERVICE_S VAL("service_name");
 PREFIX const char *JOB_DESCRIPTION_S VAL("description");
 PREFIX const char *JOB_RESULTS_S VAL("results");
 PREFIX const char *JOB_ERRORS_S VAL("errors");
@@ -131,8 +139,13 @@ PREFIX const char *PARAM_DESCRIPTION_S VAL("description");
 PREFIX const char *PARAM_STORE_S VAL("store");
 PREFIX const char *PARAM_TAG_TEXT_S VAL("tag_text");
 PREFIX const char *PARAM_TYPE_S VAL("type");
-PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type");
-PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_TEXT_S VAL("grassroots_type_text");
+PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_S VAL("grassroots_type_number");
+PREFIX const char *PARAM_GRASSROOTS_TYPE_INFO_TEXT_S VAL("grassroots_type");
+
+PREFIX const char *PARAM_GRASSROOTS_S VAL("grassroots");
+PREFIX const char *PARAM_COMPOUND_TEXT_S VAL("text");
+PREFIX const char *PARAM_COMPOUND_VALUE_S VAL("value");
+
 PREFIX const char *PARAM_DEFAULT_VALUE_S  VAL("default_value");
 PREFIX const char *PARAM_CURRENT_VALUE_S  VAL("current_value");
 PREFIX const char *PARAM_OPTIONS_S  VAL("enum");
@@ -517,6 +530,9 @@ GRASSROOTS_UTIL_API bool SetLongFromJSON (const json_t *json_p, int64 *value_p);
 
 
 GRASSROOTS_UTIL_API bool SetStringFromJSON (const json_t *json_p, char **value_ss);
+
+
+GRASSROOTS_UTIL_API json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s);
 
 
 #ifdef __cplusplus

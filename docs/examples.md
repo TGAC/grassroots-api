@@ -11,7 +11,7 @@ All messages are sent as JSON-based messages.
 An *operation_id* of 0 is the one for asking for all of its possible Operations.
  
  ~~~{.json}
-{
+ {
 		"operations": {
 			"operation_id": 0
 		}
@@ -33,7 +33,7 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 		"summary": "A service to obtain contig information",
 		"description": "A service to obtain contig information using SNP names, contig names or generic search terms",    
 		"operations": [{
-			"operationId": "Foobar Contig Search service",
+			"operation_id": "Foobar Contig Search service",
 			"summary": "An operation to obtain contig information using SNP or Contig names",
 			"description": "An operation to obtain contig information using SNP or Contig names",
 			"uri": "http://foobar.com/search_by_contig",
@@ -44,7 +44,7 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 					"default_value": "BS00003643",
 					"current_value": "BS00003643",
 					"type": "string",
-					"grassroots_type": 11,
+					"grassroots_type": "params:keyword",
 					"description": "The SNP name (a 10 character alphanumeric beginning with 'BS' or 'BA'; e.g., BS00010624 or BA0033400) to find the contig to which it maps and all other putative SNPs, validated or not, that have been mapped to it. SNP names (IDs) may take different forms depending on the platform on which the assay was developed"
 				}, {
 					"param": "contig_name",
@@ -52,12 +52,12 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 					"default_value": "",
 					"current_value": "",
 					"type": "string",
-					"grassroots_type": 11,
+					"grassroots_type": "params:keyword",
 					"description": "The contig name (e.g. BC000000280)"
 				}]
 			}
 		}, {
-			"operationId": "Foobar Keyword Search service",
+			"operation_id": "Foobar Keyword Search service",
 			"summary": "An operation to obtain contig information using generic search terms",
 			"description": "An operation to obtain contig information generic search terms",
 			"uri": "http://foobar.com/search_by_keyword",
@@ -68,7 +68,7 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 					"default_value": "",
 					"current_value": "",
 					"type": "string",
-					"grassroots_type": 11,
+					"grassroots_type": "params:keyword",
 					"description": "Any keywords  (e.g., 'yellow rust', 'hot') "
 				}]			
 			}
@@ -82,18 +82,18 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 ~~~.json
 {
 	"services": [{
-		"service": "Foobar Keyword Contig service",
-		"run": true,
+		"service_name": "Foobar Keyword Contig service",
+		"start_service": true,
 		"parameter_set": {
 			"parameters": [{
 				"param": "contig_name",
 				"current_value": "BC000000100",
-				"grassroots_type": 11
+				"grassroots_type": "params:keyword"
 			}]
 		}
 	}, {
-		"service": "Foobar Keyword Search service",
-		"run": false
+		"service_name": "Foobar Keyword Search service",
+		"start_service": false
 	}]
 }
 ~~~
@@ -101,7 +101,7 @@ An *operation_id* of 0 is the one for asking for all of its possible Operations.
 4. The Server can run the requested Operations. In this case, the results are available straight away as the Operations run synchronously.
 ~~~.json
 {
-	"service": "Foobar Keyword Contig service",
+	"service_name": "Foobar Keyword Contig service",
 	"status": 3,
 	"description": "An operation to obtain contig information using SNP or Contig names",
 	"uri": "http://foobar.com/search_by_contig",

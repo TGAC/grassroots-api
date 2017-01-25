@@ -28,7 +28,8 @@
 #include "temp_file.hpp"
 #include "blast_service_job.h"
 #include "blast_service_params.h"
-
+#include "blast_util.h"
+#include "math_utils.h"
 
 const char * const ExternalBlastTool :: EBT_INPUT_SUFFIX_S = ".input";
 const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
@@ -36,7 +37,6 @@ const char * const ExternalBlastTool :: EBT_LOG_SUFFIX_S = ".log";
 
 const char * const ExternalBlastTool :: EBT_COMMAND_LINE_EXECUTABLE_S = "cli";
 const char * const ExternalBlastTool :: EBT_WORKING_DIR_S = "working_directory";
-const char * const ExternalBlastTool :: EBT_OUTPUT_FORMAT_S = "output_format";
 const char * const ExternalBlastTool :: EBT_RESULTS_FILE_S = "output_file";
 
 
@@ -108,26 +108,19 @@ char *ExternalBlastTool :: GetJobFilename (const char * const prefix_s, const ch
 	return job_filename_s;
 }
 
+
 ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char * const blast_program_name_s)
-: BlastTool (job_p, name_s, factory_s, data_p)
+: BlastTool (job_p, name_s, factory_s, data_p, BS_DEFAULT_OUTPUT_FORMAT)
 {
-	ebt_buffer_p = AllocateByteBuffer (1024);
-
-	if (!ebt_buffer_p)
-		{
-			throw std :: bad_alloc ();
-		}
-
 	ebt_results_filename_s = 0;
 	ebt_working_directory_s = data_p -> bsd_working_dir_s;
 	ebt_blast_s = blast_program_name_s;
-	ebt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
 }
 
 
 
 ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *root_p)
-	: BlastTool (job_p, data_p, root_p)
+	: BlastTool (job_p, data_p, root_p, BS_DEFAULT_OUTPUT_FORMAT)
 {
 	ebt_blast_s = GetJSONString (root_p, EBT_COMMAND_LINE_EXECUTABLE_S);
 	if (!ebt_blast_s)
@@ -139,12 +132,6 @@ ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const BlastServi
 	if (!ebt_working_directory_s)
 		{
 			throw std :: invalid_argument ("working directory not set");
-		}
-
-	ebt_buffer_p = AllocateByteBuffer (1024);
-	if (!ebt_buffer_p)
-		{
-			throw std :: bad_alloc ();
 		}
 
 	const char *result_s = GetJSONString (root_p, EBT_RESULTS_FILE_S);
@@ -161,8 +148,6 @@ ExternalBlastTool :: ExternalBlastTool (BlastServiceJob *job_p, const BlastServi
 		{
 			throw std :: invalid_argument ("results filename not set");
 		}
-
-	ebt_output_format = BS_DEFAULT_OUTPUT_FORMAT;
 }
 
 
@@ -172,51 +157,8 @@ ExternalBlastTool :: ~ExternalBlastTool ()
 		{
 			FreeCopiedString (ebt_results_filename_s);
 		}
-
-	FreeByteBuffer (ebt_buffer_p);
 }
 
-
-bool ExternalBlastTool :: AddArgsPair (const char *key_s, const char *value_s)
-{
-	bool success_flag = false;
-
-	if (AddArg (key_s))
-		{
-			if (AddArg (value_s))
-				{
-					success_flag = true;
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add value arg for \"%s\"=\"%s\"", key_s, value_s);
-				}
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add key arg for \"%s\"=\"%s\"", key_s, value_s);
-		}
-
-	return success_flag;
-}
-
-
-
-bool ExternalBlastTool :: AddArg (const char *arg_s)
-{
-	bool success_flag = true;
-
-	if (ebt_buffer_p -> bb_current_index > 0)
-		{
-			success_flag = AppendStringsToByteBuffer (ebt_buffer_p, " ", arg_s, NULL);
-		}
-	else
-		{
-			success_flag =  AppendStringToByteBuffer (ebt_buffer_p, arg_s);
-		}
-
-	return success_flag;
-}
 
 
 char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
@@ -225,16 +167,16 @@ char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 
 	if (ebt_results_filename_s)
 		{
-			if (formatter_p && (ebt_output_format != BS_DEFAULT_OUTPUT_FORMAT))
+			if (formatter_p && (bt_output_format != BS_DEFAULT_OUTPUT_FORMAT))
 				{
-					results_s = formatter_p -> GetConvertedOutput (ebt_results_filename_s, ebt_output_format);
+					results_s = formatter_p -> GetConvertedOutput (ebt_results_filename_s, bt_output_format);
 
 					if (!results_s)
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to format %s to " UINT32_FMT, ebt_results_filename_s, ebt_output_format);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to format %s to " UINT32_FMT, ebt_results_filename_s, bt_output_format);
 						}
 
-				}		/* if (formatter_p && (ebt_output_format != BS_DEFAULT_OUTPUT_FORMAT)) */
+				}		/* if (formatter_p && (bt_output_format != BS_DEFAULT_OUTPUT_FORMAT)) */
 			else
 				{
 					if (IsPathValid (ebt_results_filename_s))
@@ -266,191 +208,195 @@ char *ExternalBlastTool :: GetResults (BlastFormatter *formatter_p)
 }
 
 
-/*
-#define TAG_BLAST_INPUT_QUERY MAKE_TAG ('B', 'Q', 'U', 'Y')
-#define TAG_BLAST_INPUT_FILE MAKE_TAG ('B', 'I', 'N', 'F')
-#define TAG_BLAST_OUTPUT_FILE MAKE_TAG ('B', 'O', 'U', 'F')
-#define TAG_BLAST_MAX_SEQUENCES MAKE_TAG ('B', 'M', 'S', 'Q')
-#define TAG_BLAST_SHORT_QUERIES MAKE_TAG ('B', 'S', 'H', 'Q')
-#define TAG_BLAST_EXPECT_THRESHOLD MAKE_TAG ('B', 'E', 'X', 'T')
-#define TAG_BLAST_WORD_SIZE MAKE_TAG ('B', 'W', 'D', 'S')
-#define TAG_BLAST_MAX_RANGE_MATCHES MAKE_TAG ('B', 'M', 'R', 'G')
-#define TAG_BLAST_SUBRANGE_FROM MAKE_TAG ('B', 'Q', 'F', 'R')
-#define TAG_BLAST_SUBRANGE_TO MAKE_TAG ('B', 'Q', 'T', 'O')
-#define TAG_BLAST_MATCH_SCORE MAKE_TAG ('B', 'M', 'T', 'C')
-#define TAG_BLAST_MISMATCH_SCORE MAKE_TAG ('B', 'M', 'S', 'M')
-*/
-
-bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p)
+bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParameters *app_params_p)
 {
 	bool success_flag = false;
 	SharedType value;
 
 	memset (&value, 0, sizeof (SharedType));
 
-	if (AddArgsPair ("-task", "blastn"))
+	if (GetParameterValueFromParameterSet (params_p, BS_TASK.npt_name_s, &value, true))
 		{
-			if (AddArgsPair ("-num_alignments", "5"))
+			if (AddBlastArgsPair ("task", value.st_string_value_s))
 				{
-					if (bt_job_p -> bsj_job.sj_name_s)
+					ArgsProcessor *args_processor_p = GetArgsProcessor ();
+
+					if (GetAndAddBlastArgs (params_p, BS_MAX_SEQUENCES.npt_name_s, false, args_processor_p))
 						{
-							if (AddArgsPair ("-db", bt_job_p -> bsj_job.sj_name_s))
+							if (bt_job_p -> bsj_job.sj_name_s)
 								{
-									/* Reward */
-									if (AddArgsPairFromIntegerParameter (params_p, BS_MATCH_SCORE.npt_name_s, "-reward", false, false))
+									if (AddBlastArgsPair ("db", bt_job_p -> bsj_job.sj_name_s))
 										{
-											/* Penalty */
-											if (AddArgsPairFromIntegerParameter (params_p, BS_MISMATCH_SCORE.npt_name_s, "-penalty", false, false))
+											if (ParseBlastAppParameters (app_params_p, bt_service_data_p, params_p, args_processor_p))
 												{
 													/* Expect threshold */
-													if (AddArgsPairFromIntegerParameter (params_p, BS_EXPECT_THRESHOLD.npt_name_s, "-evalue", true, false))
+													if (GetAndAddBlastArgs (params_p, BS_EXPECT_THRESHOLD.npt_name_s, false, args_processor_p))
 														{
-															/* Word Size */
-															if (AddArgsPairFromIntegerParameter (params_p, BS_WORD_SIZE.npt_name_s, "-word_size", true, false))
+															/* Output Format
+															 * If we have a BlastFormatter then the output is always set to 11 which is ASN and
+															 * from that we can convert into any other format using a BlastFormatter tool
+															 */
+															memset (&value, 0, sizeof (SharedType));
+
+															if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &value, true))
 																{
-																	/* Output Format
-																	 * If we have a BlastFormatter then the output is always set to 11 which is ASN and
-																	 * from that we can convert into any other format using a BlastFormatter tool
-																	 */
-																	memset (&value, 0, sizeof (SharedType));
+																	bt_output_format = value.st_ulong_value;
 
-																	if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &value, true))
+																	if (bt_service_data_p -> bsd_formatter_p)
 																		{
-																			ebt_output_format = value.st_ulong_value;
+																			success_flag = AddBlastArgsPair (BS_OUTPUT_FORMAT.npt_name_s, BS_DEFAULT_OUTPUT_FORMAT_S);
+																		}
+																	else
+																		{
+																			char *value_s = NULL;
 
-																			if (bt_service_data_p -> bsd_formatter_p)
+																			/*
+																			 * If we are producing grassroots mark up, get the results
+																			 * in json file format as that is the format that we will
+																			 * convert from.
+																			 */
+																			if (value.st_ulong_value == BOF_GRASSROOTS)
 																				{
-																					success_flag = AddArgsPair ("-outfmt", BS_DEFAULT_OUTPUT_FORMAT_S);
+																					value.st_ulong_value = BOF_SINGLE_FILE_JSON_BLAST;
 																				}
+
+																			value_s = ConvertIntegerToString (bt_output_format);
+
+																			if (value_s)
+																				{
+																					success_flag = AddBlastArgsPair (BS_OUTPUT_FORMAT.npt_name_s, value_s);
+																					FreeCopiedString (value_s);
+																				}		/* if (value_s) */
 																			else
 																				{
-																					char *value_s = ConvertIntegerToString (ebt_output_format);
-
-																					if (value_s)
-																						{
-																							success_flag = AddArgsPair ("-outfmt", value_s);
-																							FreeCopiedString (value_s);
-																						}		/* if (value_s) */
-																					else
-																						{
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert output format \"" UINT32_FMT "\" to string", ebt_output_format);
-																						}
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert output format \"" UINT32_FMT "\" to string", bt_output_format);
 																				}
 
-																		}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true)) */
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output format");
-																		}
+																			}
 
-																	if (success_flag)
+																}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_OUTPUT_FORMAT, &value, true)) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get output format");
+																}
+
+															if (success_flag)
+																{
+																	/* Query Location */
+																	if (GetParameterValueFromParameterSet (params_p, BS_SUBRANGE_FROM.npt_name_s, &value, true))
 																		{
-																			/* Query Location */
-																			if (GetParameterValueFromParameterSet (params_p, BS_SUBRANGE_FROM.npt_name_s, &value, true))
+																			uint32 from = value.st_ulong_value;
+
+																			if (GetParameterValueFromParameterSet (params_p, BS_SUBRANGE_TO.npt_name_s, &value, true))
 																				{
-																					uint32 from = value.st_ulong_value;
+																					uint32 to = value.st_ulong_value;
 
-																					if (GetParameterValueFromParameterSet (params_p, BS_SUBRANGE_TO.npt_name_s, &value, true))
+																					if ((from != 0) && (to != 0))
 																						{
-																							uint32 to = value.st_ulong_value;
+																							ByteBuffer *buffer_p = AllocateByteBuffer (1024);
 
-																							if ((from != 0) && (to != 0))
+																							if (buffer_p)
 																								{
-																									ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+																									char *from_s = ConvertIntegerToString (from);
 
-																									if (buffer_p)
+																									if (from_s)
 																										{
-																											char *from_s = ConvertIntegerToString (from);
+																											char *to_s = ConvertIntegerToString (to);
 
-																											if (from_s)
+																											if (to_s)
 																												{
-																													char *to_s = ConvertIntegerToString (to);
-
-																													if (to_s)
+																													if (AppendStringsToByteBuffer (buffer_p, from_s, "-", to_s, NULL))
 																														{
-																															if (AppendStringsToByteBuffer (buffer_p, from_s, "-", to_s, NULL))
+																															const char *query_loc_s = GetByteBufferData (buffer_p);
+
+																															if (!AddBlastArgsPair ("query_loc", query_loc_s))
 																																{
-																																	const char *query_loc_s = GetByteBufferData (buffer_p);
-
-																																	if (!AddArgsPair ("-query_loc", query_loc_s))
-																																		{
-																																			success_flag = false;
-																																		}
+																																	success_flag = false;
 																																}
+																														}
 
-																															FreeCopiedString (to_s);
-																														}		/* if (to_s) */
+																													FreeCopiedString (to_s);
+																												}		/* if (to_s) */
 
-																													FreeCopiedString (from_s);
-																												}		/* if (from_s) */
+																											FreeCopiedString (from_s);
+																										}		/* if (from_s) */
 
-																											FreeByteBuffer (buffer_p);
-																										}		/* if (buffer_p) */
+																									FreeByteBuffer (buffer_p);
+																								}		/* if (buffer_p) */
 
-																								}		/* if ((from != 0) && (to != 0)) */
+																						}		/* if ((from != 0) && (to != 0)) */
 
-																						}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &to, true)) */
+																				}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_TO, &to, true)) */
 
-																				}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true)) */
+																		}		/* if (GetParameterValueFromParameterSet (params_p, TAG_BLAST_SUBRANGE_FROM, &value, true)) */
 
-																		}		/*  if (success_flag) */
-																	else
-																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output format");
-																		}
+																}		/*  if (success_flag) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set output format");
+																}
 
-																}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_WORD_SIZE, "-word_size", true)) */
 
-														}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_EXPECT_THRESHOLD, "-evalue", true)) */
+														}		/* if (AddBlastArgsPairFromIntegerParameter (params_p, TAG_BLAST_EXPECT_THRESHOLD, "-evalue", true)) */
 
-												}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MISMATCH_SCORE, "-penalty", false)) */
+												}		/* if (bt_app_params_p -> ParseParametersToByteBuffer (bt_service_data_p, params_p, ebt_buffer_p)) */
 
-										}		/* if (AddArgsPairFromIntegerParameter (params_p, TAG_BLAST_MATCH_SCORE, "-reward", false)) */
-
-								}		/* if (AddArgsPair ("-db", bt_job_p -> sj_name_s))*/
+										}		/* if (AddBlastArgsPair ("-db", bt_job_p -> sj_name_s))*/
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set database name");
+										}
+								}		/* if (bt_job_p -> sj_name_s) */
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to set database name");
+									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job name");
 								}
-						}		/* if (bt_job_p -> sj_name_s) */
+
+						}		/* if (AddABlastrgsPair ("-num_alignments", "5")) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get job name");
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add num_alignments parameter");
 						}
 
-				}		/* if (AddArgsPair ("-num_alignments", "5")) */
+				}		/* if (AddBlastArgsPair ("-task", BS_TASK.npt_name_s)) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add num_alignments parameter");
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add task parameter");
 				}
 
-		}		/* if (AddArgsPair ("-task", "blastn")) */
+		}		/* if (GetParameterValueFromParameterSet (params_p, BS_TASK.npt_name_s, &value, true)) */
 	else
 		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add task parameter");
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get task parameter value");
+		}
+
+
+	return success_flag;
+}
+
+
+bool ExternalBlastTool :: AddBlastArgsPair (const char *key_s, const char *value_s)
+{
+	bool success_flag = false;
+	ArgsProcessor *ap_p = GetArgsProcessor ();
+
+	if (ap_p)
+		{
+			success_flag = AddArgsPair (key_s, value_s, ap_p);
 		}
 
 	return success_flag;
 }
 
 
-bool ExternalBlastTool :: AddArgsPairFromIntegerParameter (const ParameterSet *params_p, const char * const param_name_s, const char *key_s, const bool unsigned_flag, const bool required_flag)
+bool ExternalBlastTool :: AddBlastArg (const char *arg_s, const bool hyphen_flag)
 {
-	bool success_flag = !required_flag;
-	SharedType value;
+	bool success_flag = false;
+	ArgsProcessor *ap_p = GetArgsProcessor ();
 
-	memset (&value, 0, sizeof (SharedType));
-
-	if (GetParameterValueFromParameterSet (params_p, param_name_s, &value, true))
+	if (ap_p)
 		{
-			int32 param_value = unsigned_flag ? ((int32) value.st_ulong_value) : (value.st_long_value);
-			char *value_s = ConvertIntegerToString (param_value);
-
-			if (value_s)
-				{
-					success_flag = AddArgsPair (key_s, value_s);
-					FreeCopiedString (value_s);
-				}		/* if (value_s) */
+			success_flag = ap_p -> AddArg (arg_s, hyphen_flag);
 		}
 
 	return success_flag;
@@ -473,7 +419,7 @@ bool ExternalBlastTool :: SetUpOutputFile ()
 
 			if (ebt_results_filename_s)
 				{
-					if (AddArgsPair ("-out", ebt_results_filename_s))
+					if (AddBlastArgsPair ("out", ebt_results_filename_s))
 						{
 							success_flag = true;
 						}
@@ -506,7 +452,7 @@ bool ExternalBlastTool :: SetInputFilename (const char * const filename_s)
 
 	if (filename_s)
 		{
-			success_flag = AddArgsPair ("-query", filename_s);
+			success_flag = AddBlastArgsPair ("query", filename_s);
 		}
 
 	return success_flag;
@@ -526,15 +472,7 @@ bool ExternalBlastTool :: AddToJSON (json_t *root_p)
 						{
 							if (json_object_set_new (root_p, EBT_WORKING_DIR_S, json_string (ebt_working_directory_s)) == 0)
 								{
-									if (json_object_set_new (root_p, EBT_OUTPUT_FORMAT_S, json_integer (ebt_output_format)) == 0)
-										{
-											success_flag = true;
-										}		/* if (json_object_set_new (root_p, EBT_OUTPUT_FORMAT_S, json_integer (ebt_output_format)) == 0) */
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add %s:%d to ExternalBlastTool json", EBT_OUTPUT_FORMAT_S, ebt_output_format);
-										}
-
+									success_flag = true;
 								}		/* if (json_object_set_new (root_p, BT_FACTORY_NAME_S, json_string (bt_factory_name_s)) == 0) */
 							else
 								{

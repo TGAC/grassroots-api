@@ -25,6 +25,8 @@
 #include "web_service_util.h"
 #include "string_utils.h"
 #include "math_utils.h"
+#include "service_config.h"
+
 
 #ifdef _DEBUG
 	#define WEB_SERVICE_UTIL_DEBUG	(STM_LEVEL_FINE)
@@ -291,7 +293,7 @@ bool AddMatchTypeParameter (WebServiceData *data_p, ParameterSet *param_set_p)
 
 			def.st_string_value_s = match_types_p [0].st_string_value_s;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> wsd_base_data), param_set_p, PT_STRING, false, "Query matching", NULL,
+			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> wsd_base_data), param_set_p, NULL, PT_STRING, false, "Query matching", NULL,
 			  "How the query will be interpreted by the service.",
 			  match_type_options_p, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
 				{
@@ -463,7 +465,8 @@ bool AddParametersToBodyWebService (WebServiceData *data_p, ParameterSet *param_
 {
 	bool success_flag = false;
 	ByteBuffer *buffer_p = data_p -> wsd_buffer_p;
-	json_t *json_p = GetParameterSetAsJSON (param_set_p, true);
+	const SchemaVersion *sv_p = GetSchemaVersion ();
+	json_t *json_p = GetParameterSetAsJSON (param_set_p, sv_p, true);
 
 	if (json_p)
 		{
@@ -533,6 +536,7 @@ static bool AppendParameterValue (ByteBuffer *buffer_p, const Parameter *param_p
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
 				alloc_value = AT_STANDARD;
 				break;

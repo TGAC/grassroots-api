@@ -13,13 +13,26 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+#include <unistd.h>
+
 #include "platform.h"
 
-BOOLEAN InitPlatform ()
+
+bool InitPlatform ()
 {
-	return TRUE;
+	return true;
 }
 
-void ExitPlatform ()
-{}
 
+void ExitPlatform ()
+{
+}
+
+
+uint32 Snooze (uint32 milliseconds)
+{
+	const unsigned int secs = milliseconds * 0.0010;
+
+	return sleep (secs);
+}

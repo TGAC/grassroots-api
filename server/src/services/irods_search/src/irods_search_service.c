@@ -63,10 +63,10 @@ static const char *GetIRodsSearchServiceName (Service *service_p);
 
 static const char *GetIRodsSearchServiceDesciption (Service *service_p);
 
-static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 
-static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p);
+static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
 static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *resource_p, Handler *handler_p);
 
@@ -74,7 +74,7 @@ static ParameterSet *IsFileForIRodsSearchService (Service *service_p, Resource *
 static bool CloseIRodsSearchService (Service *service_p);
 
 
-static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
+static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, ParameterGroup *group_p, const char *name_s, const char *display_name_s, const char *description_s);
 
 
 static int AddParams (ServiceData *data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s);
@@ -122,7 +122,7 @@ static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p
 									SharedType def;
 									def.st_string_value_s = NULL;
 
-									if (CreateAndAddParameterToParameterSet (NULL, params_p, PT_KEYWORD, false, S_IRODS_KEYWORD_S, "Search term", "Search for matching metadata values", NULL, def, NULL, NULL, PL_ALL, NULL))
+									if (CreateAndAddParameterToParameterSet (NULL, params_p, NULL, PT_KEYWORD, false, S_IRODS_KEYWORD_S, "Search term", "Search for matching metadata values", NULL, def, NULL, NULL, PL_ALL, NULL))
 										{
 
 											data_p -> issd_connection_p = connection_p;
@@ -403,41 +403,29 @@ static int AddParams (ServiceData *data_p, IRodsConnection *connection_p, Parame
 					QueryResult *result_p = results_p -> qr_values_p;
 					int i = result_p -> qr_num_values;
 					char **value_ss = result_p -> qr_values_pp;
-					Parameter **params_pp = (Parameter **) AllocMemoryArray (i, sizeof (Parameter *));
-					Parameter **param_pp = params_pp;
+					const char *heading_s = display_name_s;
+					ParameterGroup *group_p = NULL;
+
+					if (!heading_s)
+						{
+							heading_s = name_s;
+						}
+
+
+					group_p = CreateAndAddParameterGroupToParameterSet (heading_s, NULL, data_p, param_set_p);
+
 
 					for ( ; i > 0; --i, ++ value_ss)
 						{
-							Parameter *param_p = AddParam (data_p, connection_p, param_set_p, *value_ss, NULL, display_name_s);
+							Parameter *param_p = AddParam (data_p, connection_p, param_set_p, group_p, *value_ss, NULL, display_name_s);
 
 							if (param_p)
 								{
-									if (param_pp)
-										{
-											*param_pp = param_p;
-											++ param_pp;
-										}
-
 									++ res;
 								}
 							else
 								{
 									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get metadata values for \"%s\"\n", *value_ss);
-								}
-						}
-
-					if (params_pp)
-						{
-							const char *heading_s = display_name_s;
-
-							if (!heading_s)
-								{
-									heading_s = name_s;
-								}
-
-							if (!AddParameterGroupToParameterSet (param_set_p, heading_s, NULL, params_pp, result_p -> qr_num_values, data_p))
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add parameter group for \"%s\"\n", name_s);
 								}
 						}
 
@@ -469,7 +457,7 @@ static bool AddIdToParameterStore (Parameter *param_p, const char * const key_s,
 }
 
 
-static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, const char *name_s, const char *display_name_s, const char *description_s)
+static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connection_p, ParameterSet *param_set_p, ParameterGroup *group_p, const char *name_s, const char *display_name_s, const char *description_s)
 {
 	bool success_flag = false;
 	Parameter *param_p = NULL;
@@ -602,7 +590,7 @@ static const char *GetIRodsSearchServiceDesciption (Service *service_p)
 }
 
 
-static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p)
+static ParameterSet *GetIRodsSearchServiceParameters (Service *service_p, Resource *resource_p, UserDetails * UNUSED_PARAM (user_p))
 {
 	IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) (service_p -> se_data_p);
 
@@ -640,7 +628,7 @@ static bool GetColumnId (const Parameter * const param_p, const char *key_s, int
 }
 
 
-static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, json_t *credentials_p, ProvidersStateTable *providers_p)
+static ServiceJobSet *RunIRodsSearchService (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p)
 {
 	IRodsSearch *search_p = AllocateIRodsSearch ();
 

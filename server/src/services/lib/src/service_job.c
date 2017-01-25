@@ -37,6 +37,11 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
 
 static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p);
 
+static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p);
+
+static bool AddResultEntryToServiceJob (ServiceJob *job_p, json_t **results_pp, json_t *result_to_add_p);
+
+
 
 ServiceJob *AllocateEmptyServiceJob (void)
 {
@@ -119,85 +124,95 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Initialising Job: %.16x\n", job_p);
 	#endif
 
+	memset (job_p, 0, sizeof (ServiceJob));
+
+
 	job_p -> sj_service_p = service_p;
 	uuid_generate (job_p -> sj_id);
 	job_p -> sj_status = OS_IDLE;
-
-	if (job_name_s)
-		{
-			job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
-
-			if (! (job_p -> sj_name_s))
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job name \"%s\"", job_name_s);
-					return false;
-				}
-		}
-	else
-		{
-			job_p -> sj_name_s = NULL;
-		}
-
-	if (job_description_s)
-		{
-			job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
-
-			if (! (job_p -> sj_description_s))
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job description \"%s\"", job_description_s);
-
-					if (job_p -> sj_name_s)
-						{
-							FreeCopiedString (job_p -> sj_name_s);
-							job_p -> sj_name_s = NULL;
-						}
-
-					return false;
-				}
-		}
-	else
-		{
-			job_p -> sj_description_s = NULL;
-		}
 
 	job_p -> sj_errors_p = json_object ();
 
 	if (job_p -> sj_errors_p)
 		{
-			job_p -> sj_result_p = NULL;
-			job_p -> sj_metadata_p = NULL;
+			job_p -> sj_linked_services_p = json_array ();
 
-			job_p -> sj_update_fn = update_fn;
-			job_p -> sj_free_fn = free_job_fn;
-
-			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+			if (job_p -> sj_linked_services_p)
 				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
+					/* Set the name if valid */
+						if (job_name_s)
+							{
+								job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
 
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
+								if (! (job_p -> sj_name_s))
+									{
+										PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job name \"%s\"", job_name_s);
+										return false;
+									}
+							}
+						else
+							{
+								job_p -> sj_name_s = NULL;
+							}
+
+						/* set the description if valid */
+						if (job_description_s)
+							{
+								job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
+
+								if (! (job_p -> sj_description_s))
+									{
+										PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy job description \"%s\"", job_description_s);
+
+										if (job_p -> sj_name_s)
+											{
+												FreeCopiedString (job_p -> sj_name_s);
+												job_p -> sj_name_s = NULL;
+											}
+
+										return false;
+									}
+							}
+						else
+							{
+								job_p -> sj_description_s = NULL;
+							}
+
+
+
+					job_p -> sj_result_p = NULL;
+					job_p -> sj_metadata_p = NULL;
+
+					job_p -> sj_update_fn = update_fn;
+					job_p -> sj_free_fn = free_job_fn;
+
+					#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
+						{
+							char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+							ConvertUUIDToString (job_p -> sj_id, uuid_s);
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job: %s\n", uuid_s);
+						}
+					#endif
+
+					return  true;
+				}		/* if (job_p -> sj_linked_services_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job linked services array");
 				}
-			#endif
 
+			json_decref (job_p -> sj_errors_p);
+			job_p -> sj_errors_p = NULL;
 		}		/* if (job_p -> sj_errors_p) */
 	else
 		{
 			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job errors");
-
-			if (job_p -> sj_name_s)
-				{
-					FreeCopiedString (job_p -> sj_name_s);
-					job_p -> sj_name_s = NULL;
-				}
-
-			if (job_p -> sj_description_s)
-				{
-					FreeCopiedString (job_p -> sj_description_s);
-					job_p -> sj_description_s = NULL;
-				}
 		}
 
-	return true;
+	return false;
+
+
 }
 
 
@@ -241,6 +256,13 @@ void ClearServiceJob (ServiceJob *job_p)
 			job_p -> sj_errors_p = NULL;
 		}
 
+
+	if (job_p -> sj_linked_services_p)
+		{
+			json_decref (job_p -> sj_linked_services_p);
+			job_p -> sj_linked_services_p = NULL;
+		}
+
 	job_p -> sj_status = OS_CLEANED_UP;
 }
 
@@ -278,6 +300,42 @@ uint32 GetNumberOfServiceJobResults (const ServiceJob *job_p)
 		}		/* if (job_p -> sj_result_p) */
 
 	return size;
+}
+
+
+
+char *GenerateLinkedServiceResults (ServiceJob *job_p, LinkedService *linked_service_p)
+{
+	char *result_s = NULL;
+
+	if (job_p)
+		{
+			if (linked_service_p)
+				{
+					Service *service_p = job_p -> sj_service_p;
+
+					if (service_p -> se_process_linked_services_fn)
+						{
+							result_s = service_p -> se_process_linked_services_fn (service_p, job_p, linked_service_p);
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Service \"%s\" has no callback function to get job output value", GetServiceName (service_p));
+						}
+
+				}		/* if (input_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No input parameters specified to get output value from");
+				}
+
+		}		/* if (job_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No ServiceJob specified to get output value from");
+		}
+
+	return result_s;
 }
 
 
@@ -557,6 +615,19 @@ static bool AddStatusToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
 }
 
 
+static bool AddLinkedServicesToServiceJobJSON (ServiceJob *job_p, json_t *value_p)
+{
+	bool success_flag = true;
+
+	if ((job_p -> sj_linked_services_p) && (json_array_size (job_p -> sj_linked_services_p) > 0))
+		{
+
+		}
+
+	return success_flag;
+}
+
+
 static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, OperationStatus *status_p)
 {
 	bool success_flag = false;
@@ -800,6 +871,11 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p)
 																{
 																	if (AddValidJSONString (job_json_p, JOB_DESCRIPTION_S, job_p -> sj_description_s))
 																		{
+																			if (!AddLinkedServicesToServiceJobJSON (job_p, job_json_p))
+																				{
+																					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to Linked Services for %s to json", job_p -> sj_name_s ? job_p -> sj_name_s : "unnamed job");
+																				}
+
 																			success_flag = true;
 																		}
 																	else
@@ -871,7 +947,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 {
 	bool success_flag = true;
 	uint32 i = 0;
-	JobsManager *manager_p = GetJobsManager ();
 	ServiceJobNode *node_p = (ServiceJobNode *) (jobs_p -> sjs_jobs_p -> ll_head_p);
 
 	while (node_p)
@@ -880,7 +955,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 
 			json_t *job_json_p = NULL;
 			const OperationStatus job_status = GetServiceJobStatus (job_p);
-			bool clear_service_job_results_flag = false;
 
 			#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 			PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Job " UINT32_FMT ": status: %d", i, job_status);
@@ -889,43 +963,15 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 			if ((job_status == OS_SUCCEEDED) || (job_status == OS_PARTIALLY_SUCCEEDED))
 				{
 					job_json_p = GetServiceJobAsJSON (job_p);
-					clear_service_job_results_flag = true;
+
+					/*
+					 * If this service has any linked services, fill in the data here
+					 */
+					ProcessLinkedServices (job_p);
 				}
 			else
 				{
 					job_json_p = GetServiceJobStatusAsJSON (job_p);
-
-					/*
-					 * If the job is running asynchronously and still going
-					 * then we need to make sure that it is in the jobs table.
-					 * If the ServiceJob needs custom serialisation,
-					 */
-
-//					if (! (job_p -> sj_service_p -> se_synchronous_flag))
-//						{
-//							if ((job_status == OS_PENDING) || (job_status == OS_STARTED))
-//								{
-//									if (keep_service_p)
-//										{
-//											*keep_service_p = true;
-//										}
-//
-//									if (!AddServiceJobToJobsManager (manager_p, job_p -> sj_id, job_p, NULL))
-//										{
-//											char *uuid_s = GetUUIDAsString (job_p -> sj_id);
-//
-//											if (uuid_s)
-//												{
-//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", uuid_s);
-//													FreeCopiedString (uuid_s);
-//												}
-//											else
-//												{
-//													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add job %s to jobs manager", job_p -> sj_name_s);
-//												}
-//										}
-//								}
-//						}
 				}
 
 			if (job_json_p)
@@ -943,13 +989,6 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 							#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINE
 							PrintJSONRefCounts (STM_LEVEL_FINE, __FILE__, __LINE__, job_json_p, "after array adding, job json ");
 							#endif
-
-							/*
-							if (clear_service_job_results_flag)
-								{
-									ClearServiceJobResults (job_p, false);
-								}
-							 */
 						}
 					else
 						{
@@ -1002,6 +1041,33 @@ OperationStatus GetCachedServiceJobStatus (const ServiceJob *job_p)
 	return job_p -> sj_status;
 }
 
+
+void ProcessLinkedServices (ServiceJob *job_p)
+{
+	Service *service_p = job_p -> sj_service_p;
+
+	if (service_p -> se_linked_services.ll_size)
+		{
+			LinkedServiceNode *linked_service_node_p = (LinkedServiceNode *) (service_p -> se_linked_services.ll_head_p);
+
+			while (linked_service_node_p)
+				{
+					LinkedService *linked_service_p = linked_service_node_p -> lsn_linked_service_p;
+
+					if (ProcessLinkedService (linked_service_p, job_p))
+						{
+
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_p -> sj_result_p, "ProcessLinkedService failed for input service %s to output service %s", GetServiceName (job_p -> sj_service_p), linked_service_p -> ls_output_service_s);
+						}
+
+					linked_service_node_p = (LinkedServiceNode *) (linked_service_node_p -> lsn_node.ln_next_p);
+				}		/* while (linked_service_node_p) */
+
+		}		/* if (service_p -> se_linked_services.ll_size) */
+}
 
 OperationStatus GetServiceJobStatus (ServiceJob *job_p)
 {
@@ -1454,39 +1520,7 @@ void SetServiceJobUpdateFunction (ServiceJob *job_p, bool (*update_fn) (ServiceJ
 
 bool AddResultToServiceJob (ServiceJob *job_p, json_t *result_p)
 {
-	bool success_flag = false;
-
-	if (! (job_p -> sj_result_p))
-		{
-			job_p -> sj_result_p = json_array ();
-
-			if (! (job_p -> sj_result_p))
-				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate results array for %s", uuid_s);
-				}
-
-		}		/* if (! (job_p -> sj_result_p)) */
-
-	if (job_p -> sj_result_p)
-		{
-			if (json_array_append_new (job_p -> sj_result_p, result_p) == 0)
-				{
-					success_flag = true;
-				}
-			else
-				{
-					char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-					ConvertUUIDToString (job_p -> sj_id, uuid_s);
-					PrintJSONToErrors(STM_LEVEL_SEVERE, __FILE__, __LINE__, result_p, "Failed to add result to %s", uuid_s);
-				}
-
-		}		/* if (job_p -> sj_result_p) */
-
-	return success_flag;
+	return AddResultEntryToServiceJob (job_p, & (job_p -> sj_result_p), result_p);
 }
 
 
@@ -1520,3 +1554,76 @@ bool ReplaceServiceJobResults (ServiceJob *job_p, json_t *results_p)
 
 	return success_flag;
 }
+
+
+
+bool AddLinkedServiceToServiceJob (ServiceJob *job_p, LinkedService *linked_service_p)
+{
+	bool success_flag = false;
+	json_t *linked_service_json_p = GetLinkedServiceAsJSON (linked_service_p);
+
+	if (linked_service_json_p)
+		{
+			if (json_array_append_new (job_p -> sj_linked_services_p, linked_service_json_p) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add linked service json object to job \"%s\"", job_p -> sj_name_s);
+				}
+		}		/* if (linked_service_json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create linked service json objectjob \"%s\"", job_p -> sj_name_s);
+		}
+
+	return success_flag;
+}
+
+
+static bool AddResultEntryToServiceJob (ServiceJob *job_p, json_t **results_pp, json_t *result_to_add_p)
+{
+	bool success_flag = false;
+	json_t *results_p = *results_pp;
+
+	if (!results_p)
+		{
+			results_p = json_array ();
+
+			if (results_p)
+				{
+					*results_pp = results_p;
+				}
+			else
+				{
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_p -> sj_id, uuid_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate results array for %s", uuid_s);
+				}
+
+		}		/* if (! (job_p -> sj_result_p)) */
+
+	if (results_p)
+		{
+			if (json_array_append_new (results_p, result_to_add_p) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+					ConvertUUIDToString (job_p -> sj_id, uuid_s);
+					PrintJSONToErrors(STM_LEVEL_SEVERE, __FILE__, __LINE__, result_to_add_p, "Failed to add result to %s", uuid_s);
+				}
+
+		}		/* if (job_p -> sj_result_p) */
+
+	return success_flag;
+
+
+}
+
+

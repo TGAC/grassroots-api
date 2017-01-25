@@ -18,6 +18,7 @@
 
 #include <vector>
 
+#include "blast_app_parameters.h"
 #include "blast_service_api.h"
 
 #include "byte_buffer.h"
@@ -46,16 +47,19 @@ public:
 	 * @param factory_s The name of the BlastToolFactory that created this BlastTool.
 	 * @see BlastServiceJob
 	 */
-	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p);
+	BlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const uint32 output_format);
 
 
-	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
+	BlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p, const uint32 output_format);
 
 
 	/**
 	 * The BlastTool destructor,
 	 */
 	virtual ~BlastTool ();
+
+
+	uint32 GetOutputFormat () const;
 
 
 	/**
@@ -76,7 +80,7 @@ public:
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
 	 */
-	virtual bool ParseParameters (ParameterSet *params_p) = 0;
+	virtual bool ParseParameters (ParameterSet *param_set_p, BlastAppParameters *app_params_p) = 0;
 
 	/**
 	 * Set the input filename for the BlastTool to use.
@@ -187,6 +191,14 @@ protected:
 	const char *bt_factory_name_s;
 
 
+	/**
+	 *
+	 * The output format code to use.
+	 */
+	uint32 bt_output_format;
+
+
+
 
 	/**
 	 * @private
@@ -220,6 +232,9 @@ protected:
 private:
 	static const char * const BT_NAME_S;
 	static const char * const BT_FACTORY_NAME_S;
+	static const char * const BT_OUTPUT_FORMAT_S;
+
+
 };
 
 

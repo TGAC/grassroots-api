@@ -20,20 +20,41 @@
 #include <QTextEdit>
 
 #include "jansson.h"
+#include "viewable_widget.h"
 
-class JSONViewer : public QWidget
+
+class JSONViewer : public QWidget, public ViewableWidget
 {
 Q_OBJECT
 
 public:
 	JSONViewer (QWidget *parent_p = 0);
 
-	void SetJSONData (const json_t *data_p);
+	void SetJSONData (json_t *data_p);
+
+	virtual const char *GetText () const;
+
+	virtual QWidget *GetWidget ();
+
+	void MakeGrassrootsServicesRunnable ();
+
+
+signals:
+	void RunServiceRequested (json_t *request_p);
+
 
 private:
 	QTreeWidget *jv_tree_p;
 	QTextEdit *jv_viewer_p;
 	const json_t *jv_data_p;
+
+	QTreeWidgetItem *InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p);
+	void AddTopLevelNode (const char *key_s, json_t *data_p);
+
+private slots:
+	void PrepareMenu (const QPoint &pos_r);
+	void RunLinkedService (bool checked_flag);
+
 };
 
 #endif // JSON_VIEWER_H

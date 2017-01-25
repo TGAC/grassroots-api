@@ -25,9 +25,10 @@
 #include "string_hash_table.h"
 #include "parameter_set.h"
 #include "service.h"
-
+#include "schema_version.h"
 #include "json_tools.h"
 #include "json_util.h"
+
 
 #ifdef _DEBUG
 	#define PARAMETER_DEBUG	(STM_LEVEL_FINE)
@@ -38,56 +39,59 @@
 
 static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 {
-	"boolean",
-	"signed integer",
-	"unsigned integer",
-	"signed number",
-	"unsigned number",
-	"string",
-	"output filename",
-	"input filename",
-	"directory name",
-	"character",
-	"password",
-	"keyword",
-	"large string",
-	"json",
-	"tabular"
+	"xsd:boolean",
+	"params:signed_integer",
+	"params:unsigned_integer",
+	"params:negative_integer"
+	"xsd:double",
+	"params:unsigned_number",
+	"xsd:string",
+	"params:output_filename",
+	"params:input_filename",
+	"params:directory",
+	"params:character",
+	"params:password",
+	"params:keyword",
+	"params:large_string",
+	"params:json",
+	"params:tabular"
 };
 
 
 
 static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
 
-static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterNameToJSON (const char *name_s, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
-static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p);
-
-static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p);
-
-static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p);
-
-static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p);
-
-static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p);
-
-static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p);
-
-static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p);
-
-static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p);
-
-static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
 
-static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p);
+static bool AddParameterTypeToJSON (const ParameterType param_type, json_t *root_p, const SchemaVersion * const sv_p, const bool full_definition_flag);
+
+static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
+
+static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p);
+
+static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p);
+
+static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p);
+
+static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
+
+static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
+
+
+static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
 
 
 static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, const ParameterType param_type, SharedType *value_p);
 
 static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const SharedType *val_p, const char *key_s);
+
+
+static bool AddCurrentValueToJSON (const ParameterType param_type, const SharedType * const value_p, json_t *root_p, const SchemaVersion * const sv_p);
 
 
 static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBounds **bounds_pp, const ParameterType pt);
@@ -122,7 +126,7 @@ static bool SetParameterValueFromUnsignedInt (Parameter * const param_p, const u
 static bool SetParameterValueFromReal (Parameter * const param_p, const double64 d, const bool current_flag);
 
 
-static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s, const bool current_flag);
+static bool SetParameterValueFromStringValue (Parameter * const param_p, const char * const src_s, const bool current_flag);
 
 
 static bool SetParameterValueFromResource (Parameter * const param_p, const Resource * const src_p, const bool current_flag);
@@ -158,6 +162,17 @@ static bool SetSharedTypeJSONValue (SharedType *value_p, const json_t * const sr
 static const json_t *GetParameterFromConfig (const json_t *service_config_p, const char * const param_name_s);
 
 static bool GetParameterStringFromConfig (const json_t *service_config_p, const char * const param_name_s, const char * const key_s, char **value_ss);
+
+
+
+static bool AddCompoundGrassrootsType (json_t *value_p, const ParameterType pt);
+
+
+static bool GetParameterTypeFromCompoundObject (const json_t *root_p, ParameterType *pt_p);
+
+static bool AddSeparateGrassrootsTypes (json_t *value_p, const ParameterType pt);
+
+static bool GetParameterTypeFromSeparateObjects (const json_t * const json_p, ParameterType *param_type_p);
 
 
 /******************************************************/
@@ -326,6 +341,35 @@ void FreeParameter (Parameter *param_p)
 	FreeLinkedList (param_p -> pa_remote_parameter_details_p);
 
 	FreeMemory (param_p);
+}
+
+
+ParameterNode *AllocateParameterNode (Parameter *param_p)
+{
+	ParameterNode *node_p = (ParameterNode *) AllocMemory (sizeof (ParameterNode));
+
+	if (node_p)
+		{
+			node_p -> pn_node.ln_prev_p = NULL;
+			node_p -> pn_node.ln_next_p = NULL;
+
+			node_p -> pn_parameter_p = param_p;
+		}		/* if (node_p) */
+
+	return node_p;
+}
+
+
+void FreeParameterNode (ListItem *node_p)
+{
+	ParameterNode *param_node_p = (ParameterNode *) node_p;
+
+	if (param_node_p -> pn_parameter_p)
+		{
+			FreeParameter (param_node_p -> pn_parameter_p);
+		}
+
+	FreeMemory (param_node_p);
 }
 
 
@@ -637,6 +681,7 @@ bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedTyp
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				success_flag = SetParameterValueFromSignedInt (param_p, src_p -> st_long_value, current_value_flag);
 				break;
 
@@ -654,7 +699,7 @@ bool SetParameterValueFromSharedType (Parameter * const param_p, const SharedTyp
 			case PT_TABLE:
 			case PT_PASSWORD:
 			case PT_KEYWORD:
-				success_flag = SetParameterValueFromString (param_p, src_p -> st_string_value_s, current_value_flag);
+				success_flag = SetParameterValueFromStringValue (param_p, src_p -> st_string_value_s, current_value_flag);
 				break;
 
 			case PT_FILE_TO_WRITE:
@@ -698,6 +743,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p, const bo
 
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				{
 					const int32 i = * ((int32 *) value_p);
 					success_flag = SetParameterValueFromSignedInt (param_p, i, current_value_flag);
@@ -726,7 +772,7 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p, const bo
 			case PT_KEYWORD:
 				{
 					const char * const value_s = (const char *) value_p;
-					success_flag = SetParameterValueFromString (param_p, value_s, current_value_flag);
+					success_flag = SetParameterValueFromStringValue (param_p, value_s, current_value_flag);
 				}
 				break;
 
@@ -754,116 +800,116 @@ bool SetParameterValue (Parameter * const param_p, const void *value_p, const bo
 }
 
 
-json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full_definition_flag)
+
+json_t *GetRunnableParameterAsJSON (const char * const name_s, const SharedType * const value_p, const ParameterType param_type, const SchemaVersion * const sv_p, const bool full_definition_flag)
 {
 	json_t *root_p = json_object ();
 
 	if (root_p)
 		{
+			if (AddParameterNameToJSON (name_s, root_p, sv_p))
+				{
+					if (AddCurrentValueToJSON (param_type, value_p, root_p, sv_p))
+						{
+							if (AddParameterTypeToJSON (param_type, root_p, sv_p, full_definition_flag))
+								{
+									return root_p;
+								}
+						}
+				}
+
+			json_decref (root_p);
+		}
+
+	return NULL;
+}
+
+
+json_t *GetParameterAsJSON (const Parameter * const param_p, const SchemaVersion * const sv_p, const bool full_definition_flag)
+{
+	json_t *root_p = GetRunnableParameterAsJSON (param_p -> pa_name_s, & (param_p -> pa_current_value), param_p -> pa_type, sv_p, full_definition_flag);
+
+	if (root_p)
+		{
 			bool success_flag = false;
 
-			if (AddParameterNameToJSON (parameter_p, root_p))
+			if (AddParameterStoreToJSON (param_p, root_p, sv_p))
 				{
-					if (AddCurrentValueToJSON (parameter_p, root_p))
+					if (AddRemoteParameterDetailsToJSON (param_p, root_p, sv_p))
 						{
-							if (AddParameterTypeToJSON (parameter_p, root_p))
+							if (full_definition_flag)
 								{
-									if (AddParameterStoreToJSON (parameter_p, root_p))
+									if (AddParameterLevelToJSON (param_p, root_p, sv_p))
 										{
-											if (AddRemoteParameterDetailsToJSON (parameter_p, root_p))
+											if (AddParameterDescriptionToJSON (param_p, root_p, sv_p))
 												{
-													if (full_definition_flag)
+													if (AddParameterDisplayNameToJSON (param_p, root_p, sv_p))
 														{
-															if (AddParameterLevelToJSON (parameter_p, root_p))
+															if (AddDefaultValueToJSON (param_p, root_p, sv_p))
 																{
-																	if (AddParameterDescriptionToJSON (parameter_p, root_p))
+																	if (AddParameterOptionsToJSON (param_p, root_p, sv_p))
 																		{
-																			if (AddParameterDisplayNameToJSON (parameter_p, root_p))
+																			if (AddParameterBoundsToJSON (param_p, root_p, sv_p))
 																				{
-																					if (AddDefaultValueToJSON (parameter_p, root_p))
+																					if (AddParameterGroupToJSON (param_p, root_p, sv_p))
 																						{
-																							if (AddParameterOptionsToJSON (parameter_p, root_p))
-																								{
-																									if (AddParameterBoundsToJSON (parameter_p, root_p))
-																										{
-																											if (AddParameterGroupToJSON (parameter_p, root_p))
-																												{
-																													success_flag = true;
-																												}		/* if (AddParameterGroupToJSON (parameter_p, root_p)) */
-																											else
-																												{
-																													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterGroupToJSON for \"%s\"", parameter_p -> pa_name_s);
-																												}
-
-																										}		/* if (AddParameterBoundsToJSON (parameter_p, root_p)) */
-																									else
-																										{
-																											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterBoundsToJSON for \"%s\"", parameter_p -> pa_name_s);
-																										}
-
-																								}		/* if (AddParameterOptionsToJSON (parameter_p, root_p)) */
-																							else
-																								{
-																									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterOptionsToJSON for \"%s\"", parameter_p -> pa_name_s);
-																								}
-
-																						}		/* if (AddDefaultValueToJSON (parameter_p, root_p)) */
+																							success_flag = true;
+																						}		/* if (AddParameterGroupToJSON (param_p, root_p)) */
 																					else
 																						{
-																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddDefaultValueToJSON for \"%s\"", parameter_p -> pa_name_s);
+																							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterGroupToJSON for \"%s\"", param_p -> pa_name_s);
 																						}
 
-																				}		/* if (AddParameterDisplayNameToJSON (parameter_p, root_p)) */
+																				}		/* if (AddParameterBoundsToJSON (param_p, root_p)) */
 																			else
 																				{
-																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterDisplayNameToJSON for \"%s\"", parameter_p -> pa_name_s);
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterBoundsToJSON for \"%s\"", param_p -> pa_name_s);
 																				}
 
-																		}		/* if (AddParameterDescriptionToJSON (parameter_p, root_p)) */
+																		}		/* if (AddParameterOptionsToJSON (param_p, root_p)) */
 																	else
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterDescriptionToJSON for \"%s\"", parameter_p -> pa_name_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterOptionsToJSON for \"%s\"", param_p -> pa_name_s);
 																		}
-																}		/* if (AddParameterLevelToJSON (parameter_p, root_p)) */
+
+																}		/* if (AddDefaultValueToJSON (param_p, root_p)) */
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterLevelToJSON for \"%s\"", parameter_p -> pa_name_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddDefaultValueToJSON for \"%s\"", param_p -> pa_name_s);
 																}
-														}		/* if (full_definition_flag) */
+
+														}		/* if (AddParameterDisplayNameToJSON (param_p, root_p)) */
 													else
 														{
-															success_flag = true;
+															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterDisplayNameToJSON for \"%s\"", param_p -> pa_name_s);
 														}
 
-												}		/* if (AddParameterRemoteDetailsToJSON (parameter_p, root_p)) */
+												}		/* if (AddParameterDescriptionToJSON (param_p, root_p)) */
 											else
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterRemoteDetailsToJSON for \"%s\"", parameter_p -> pa_name_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterDescriptionToJSON for \"%s\"", param_p -> pa_name_s);
 												}
-
-										}		/* if (AddParameterStoreToJSON (parameter_p, root_p)) */
+										}		/* if (AddParameterLevelToJSON (param_p, root_p)) */
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterStoreToJSON for \"%s\"", parameter_p -> pa_name_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterLevelToJSON for \"%s\"", param_p -> pa_name_s);
 										}
-
-								}		/* if (AddParameterTypeToJSON (parameter_p, root_p)) */
+								}		/* if (full_definition_flag) */
 							else
 								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterTypeToJSON for \"%s\"", parameter_p -> pa_name_s);
+									success_flag = true;
 								}
 
-
-						}		/* if (AddCurrentValueToJSON (parameter_p, root_p)) */
+						}		/* if (AddParameterRemoteDetailsToJSON (param_p, root_p)) */
 					else
 						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddCurrentValueToJSON for \"%s\"", parameter_p -> pa_name_s);
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterRemoteDetailsToJSON for \"%s\"", param_p -> pa_name_s);
 						}
 
-				}		/* if (AddParameterNameToJSON (parameter_p, root_p)) */
+				}		/* if (AddParameterStoreToJSON (param_p, root_p)) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterNameToJSON for \"%s\"", parameter_p -> pa_name_s);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed: AddParameterStoreToJSON for \"%s\"", param_p -> pa_name_s);
 				}
 
 			if (!success_flag)
@@ -882,9 +928,9 @@ json_t *GetParameterAsJSON (const Parameter * const parameter_p, const bool full
 }
 
 
-static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterNameToJSON (const char *name_s, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
-	bool success_flag = (json_object_set_new (root_p, PARAM_NAME_S, json_string (param_p -> pa_name_s)) == 0);
+	bool success_flag = (json_object_set_new (root_p, PARAM_NAME_S, json_string (name_s)) == 0);
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
 	PrintJSONToLog (root_p, "AddParameterNameToJSON - root_p :: ", STM_LEVEL_FINER, __FILE__, __LINE__);
@@ -894,7 +940,8 @@ static bool AddParameterNameToJSON (const Parameter * const param_p, json_t *roo
 }
 
 
-static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p)
+
+static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 	
@@ -911,7 +958,7 @@ static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json
 }
 
 
-static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 
@@ -928,7 +975,7 @@ static bool AddParameterDescriptionToJSON (const Parameter * const param_p, json
 }
 
 
-static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 
@@ -986,7 +1033,7 @@ static bool AddRemoteParameterDetailsToJSON (const Parameter * const param_p, js
 }
 
 
-static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = false;
 
@@ -1067,7 +1114,7 @@ static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *ro
 }
 
 
-static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const UNUSED_PARAM (sv_p))
 {
 	bool success_flag = true;
 	uint32 i = GetHashTableSize (param_p -> pa_store_p);
@@ -1124,76 +1171,88 @@ static bool AddParameterStoreToJSON (const Parameter * const param_p, json_t *ro
 }
 
 
-static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddParameterTypeToJSON (const ParameterType param_type, json_t *root_p, const SchemaVersion * const sv_p, const bool full_definition_flag)
 {
 	bool success_flag = false;
 
-	/* Set the parameter type */
-	switch (param_p -> pa_type)
+	if (full_definition_flag)
 		{
-			case PT_BOOLEAN:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("boolean")) == 0);
-				break;
+			/* Set the parameter type */
+			switch (param_type)
+				{
+					case PT_BOOLEAN:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("boolean")) == 0);
+						break;
 
-			case PT_CHAR:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("character")) == 0);
-				break;
+					case PT_CHAR:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("character")) == 0);
+						break;
 
-			case PT_SIGNED_INT:
-			case PT_UNSIGNED_INT:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("integer")) == 0);
-				break;
+					case PT_SIGNED_INT:
+					case PT_NEGATIVE_INT:
+					case PT_UNSIGNED_INT:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("integer")) == 0);
+						break;
 
-			case PT_SIGNED_REAL:
-			case PT_UNSIGNED_REAL:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("number")) == 0);
-				break;
+					case PT_SIGNED_REAL:
+					case PT_UNSIGNED_REAL:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("number")) == 0);
+						break;
 
-			case PT_STRING:
-			case PT_TABLE:
-			case PT_LARGE_STRING:
-			case PT_PASSWORD:
-			case PT_FILE_TO_WRITE:
-			case PT_DIRECTORY:
-			case PT_KEYWORD:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
-				break;
+					case PT_STRING:
+					case PT_TABLE:
+					case PT_LARGE_STRING:
+					case PT_PASSWORD:
+					case PT_FILE_TO_WRITE:
+					case PT_DIRECTORY:
+					case PT_KEYWORD:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
+						break;
 
-			case PT_FILE_TO_READ:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
-				break;
+					case PT_FILE_TO_READ:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("string")) == 0);
+						break;
 
-			case PT_JSON:
-				success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("json")) == 0);
-				break;
+					case PT_JSON:
+						success_flag = (json_object_set_new (root_p, PARAM_TYPE_S, json_string ("json")) == 0);
+						break;
 
-			default:
-				break;
-		}		/* switch (param_p -> pa_type) */
+					default:
+						break;
+				}		/* switch (param_p -> pa_type) */
+
+		}		/* if (full_definition_flag) */
+	else
+		{
+			success_flag = true;
+		}
 
 	if (success_flag)
 		{
-			if (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (param_p -> pa_type)) == 0)
+			if ((sv_p -> sv_major == 0) && (sv_p -> sv_minor == 1))
 				{
-					const char *type_s = GetGrassrootsTypeAsString (param_p -> pa_type);
-
-					if (type_s)
-						{
-							if (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (type_s)) != 0)
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %s to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, type_s);
-								}
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", param_p -> pa_type);
-						}
+					success_flag = AddSeparateGrassrootsTypes (root_p, param_type);
+				}
+			else if ((sv_p -> sv_major == 0) && (sv_p -> sv_minor <= 9))
+				{
+					success_flag = AddCompoundGrassrootsType (root_p, param_type);
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %d to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_S, param_p -> pa_type);
-					success_flag = false;
+					const char *param_type_s = * (S_PARAM_TYPE_NAMES_SS + param_type);
+
+					success_flag = (json_object_set_new (root_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (param_type_s)) == 0);
 				}
+
+			if (!success_flag)
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, root_p, "Failed to add grassroots type for %d", param_type);
+				}		/* if (!AddCompoundGrassrootsType (root_p, param_p -> pa_type)) */
+
+		}		/* if (success_flag) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, root_p, "Failed to add type for %d", param_type);
 		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
@@ -1204,15 +1263,224 @@ static bool AddParameterTypeToJSON (const Parameter * const param_p, json_t *roo
 }
 
 
-static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddCompoundGrassrootsType (json_t *value_p, const ParameterType pt)
+{
+	bool success_flag = false;
+	json_t *grassroots_p = json_object ();
+
+	if (grassroots_p)
+		{
+			if (json_object_set_new (grassroots_p, PARAM_COMPOUND_VALUE_S, json_integer (pt)) == 0)
+				{
+					const char *type_s = GetGrassrootsTypeAsString (pt);
+
+					if (type_s)
+						{
+							if (json_object_set_new (grassroots_p, PARAM_COMPOUND_TEXT_S, json_string (type_s)) == 0)
+								{
+									if (json_object_set_new (value_p, PARAM_GRASSROOTS_S, grassroots_p) == 0)
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add compound %s: %s to the json definition", PARAM_COMPOUND_TEXT_S, type_s);
+										}
+
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add compound %s: %s to the json definition", PARAM_COMPOUND_TEXT_S, type_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", pt);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add compound %s: %d to the json definition", PARAM_GRASSROOTS_TYPE_INFO_S, pt);
+				}
+
+			if (!success_flag)
+				{
+					json_decref (grassroots_p);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to allocate json object for comppond grassroots type");
+		}
+
+	return success_flag;
+}
+
+
+static bool GetParameterTypeFromCompoundObject (const json_t *root_p, ParameterType *pt_p)
+{
+	bool success_flag = false;
+
+	const json_t *grassroots_p = json_object_get (root_p, PARAM_GRASSROOTS_S);
+
+	if (grassroots_p)
+		{
+			const json_t *value_p = json_object_get (grassroots_p, PARAM_COMPOUND_VALUE_S);
+
+			if (value_p)
+				{
+					if (json_is_integer (value_p))
+						{
+							json_int_t subtype = json_integer_value (value_p);
+
+							if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+								{
+									*pt_p = subtype;
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_COMPOUND_VALUE_S, json_typeof (value_p));
+						}
+				}
+			else if ((value_p = json_object_get (value_p, PARAM_COMPOUND_TEXT_S)) != NULL)
+				{
+					if (json_is_string (value_p))
+						{
+							const char *value_s = json_string_value (value_p);
+
+							if (value_s)
+								{
+									if (GetGrassrootsTypeFromString (value_s, pt_p))
+										{
+											success_flag = true;
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
+										}
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_COMPOUND_TEXT_S);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_COMPOUND_TEXT_S, json_typeof (value_p));
+						}
+				}
+
+				}		/* if (grassroots_p) */
+
+
+	return success_flag;
+}
+
+
+static bool AddSeparateGrassrootsTypes (json_t *value_p, const ParameterType pt)
+{
+	bool success_flag = false;
+
+	if (json_object_set_new (value_p, PARAM_GRASSROOTS_TYPE_INFO_S, json_integer (pt)) == 0)
+		{
+			const char *type_s = GetGrassrootsTypeAsString (pt);
+
+			if (type_s)
+				{
+					if (json_object_set_new (value_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_string (type_s)) != 0)
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %s to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, type_s);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get human-readable type string for %d", pt);
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add %s: %d to the json defintiion", PARAM_GRASSROOTS_TYPE_INFO_S, pt);
+			success_flag = false;
+		}
+
+
+	return success_flag;
+}
+
+
+static bool GetParameterTypeFromSeparateObjects (const json_t * const json_p, ParameterType *param_type_p)
+{
+	bool success_flag = false;
+	json_t *value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_S);
+
+	if (value_p)
+		{
+			if (json_is_integer (value_p))
+				{
+					json_int_t subtype = json_integer_value (value_p);
+
+					if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
+						{
+							*param_type_p = subtype;
+							success_flag = true;
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_GRASSROOTS_TYPE_INFO_S, json_typeof (value_p));
+				}
+		}
+	else if ((value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S)) != NULL)
+		{
+			if (json_is_string (value_p))
+				{
+					const char *value_s = json_string_value (value_p);
+
+					if (value_s)
+						{
+							if (GetGrassrootsTypeFromString (value_s, param_type_p))
+								{
+									success_flag = true;
+								}
+							else
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
+								}
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
+						}
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_typeof (value_p));
+				}
+		}
+
+	return success_flag;
+}
+
+
+static bool AddDefaultValueToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p)
 {
 	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_default), PARAM_DEFAULT_VALUE_S);
 }
 
 
-static bool AddCurrentValueToJSON (const Parameter * const param_p, json_t *root_p)
+static bool AddCurrentValueToJSON (const ParameterType param_type, const SharedType * const value_p, json_t *root_p, const SchemaVersion * const sv_p)
 {
-	return AddValueToJSON (root_p, param_p -> pa_type, & (param_p -> pa_current_value), PARAM_CURRENT_VALUE_S);
+	return AddValueToJSON (root_p, param_type, value_p, PARAM_CURRENT_VALUE_S);
 }
 
 
@@ -1240,6 +1508,7 @@ static bool AddValueToJSON (json_t *root_p, const ParameterType pt, const Shared
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				value_p = json_integer (val_p -> st_long_value);
 				break;
 
@@ -1418,6 +1687,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 						break;
 
 					case PT_SIGNED_INT:
+					case PT_NEGATIVE_INT:
 						if (json_is_integer (json_value_p))
 							{
 								value_p -> st_long_value = (int32) json_integer_value (json_value_p);
@@ -1548,7 +1818,7 @@ static bool GetValueFromJSON (const json_t * const root_p, const char *key_s, co
 
 
 
-static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p)
+static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
 
@@ -1583,6 +1853,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										break;
 
 									case PT_SIGNED_INT:
+									case PT_NEGATIVE_INT:
 										value_p = json_integer (option_p -> pmo_value.st_long_value);
 										break;
 
@@ -1680,7 +1951,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 }
 
 
-static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p)
+static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = false;
 	const ParameterBounds * const bounds_p = param_p -> pa_bounds_p;
@@ -1698,6 +1969,7 @@ static bool AddParameterBoundsToJSON (const Parameter * const param_p, json_t *j
 						break;
 
 					case PT_SIGNED_INT:
+					case PT_NEGATIVE_INT:
 						min_p = json_integer (bounds_p -> pb_lower.st_long_value);
 						max_p = json_integer (bounds_p -> pb_upper.st_long_value);
 						break;
@@ -1807,54 +2079,27 @@ static bool GetParameterLevelFromJSON (const json_t * const json_p, ParameterLev
 static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType *param_type_p)
 {
 	bool success_flag = false;
-	json_t *value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_S);
 
-	if (value_p)
+	const char *value_s = GetJSONString (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
+
+	if (value_s)
 		{
-			if (json_is_integer (value_p))
+			if (GetGrassrootsTypeFromString (value_s, param_type_p))
 				{
-					json_int_t subtype = json_integer_value (value_p);
+					success_flag = true;
+				}
+		}		/* if (value_s) */
+	else
+		{
+			/* Backward compatibility */
 
-					if ((subtype >= 0) && (subtype < PT_NUM_TYPES))
-						{
-							*param_type_p = subtype;
-							success_flag = true;
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type value from " JSON_INTEGER_FORMAT, subtype);
-						}
+			if (GetParameterTypeFromCompoundObject (json_p, param_type_p))
+				{
+					success_flag = true;
 				}
 			else
 				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a int ", PARAM_GRASSROOTS_TYPE_INFO_S, json_typeof (value_p));
-				}
-		}
-	else if ((value_p = json_object_get (json_p, PARAM_GRASSROOTS_TYPE_INFO_TEXT_S)) != NULL)
-		{
-			if (json_is_string (value_p))
-				{
-					const char *value_s = json_string_value (value_p);
-
-					if (value_s)
-						{
-							if (GetGrassrootsTypeFromString (value_s, param_type_p))
-								{
-									success_flag = true;
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get grassroots type from \"%s\"", value_s);
-								}
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get string from json value for %s", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S);
-						}
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "json value for %s is %d not a string ", PARAM_GRASSROOTS_TYPE_INFO_TEXT_S, json_typeof (value_p));
+					success_flag = GetParameterTypeFromSeparateObjects (json_p, param_type_p);
 				}
 		}
 
@@ -1988,6 +2233,7 @@ static bool GetParameterBoundsFromJSON (const json_t * const json_p, ParameterBo
 										break;
 
 									case PT_SIGNED_INT:
+									case PT_NEGATIVE_INT:
 										{
 											if (json_is_integer (min_p))
 												{
@@ -2163,6 +2409,7 @@ bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterTy
 			break;
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				dest_p -> st_long_value = src.st_long_value;
 				success_flag = true;
 				break;
@@ -2407,6 +2654,7 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				value_s = ConvertNumberToString ((double) (value_p -> st_long_value), 0);
 				*alloc_flag_p = true;
 				break;
@@ -2448,6 +2696,110 @@ char *GetParameterValueAsString (const Parameter * const param_p, bool *alloc_fl
 
 
 
+bool SetParameterValueFromString (Parameter * const param_p, const char *value_s)
+{
+	bool success_flag = SetSharedTypeFromString (& (param_p -> pa_current_value), param_p -> pa_type, value_s);
+
+	if (!success_flag)
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to set parameter \"%s\" with type " UINT32_FMT " to \"%s\"", param_p -> pa_name_s, param_p -> pa_type, value_s);
+		}
+
+	return success_flag;
+}
+
+
+
+bool SetSharedTypeFromString (SharedType * const value_p, const ParameterType pt, const char *value_s)
+{
+	bool success_flag = false;
+
+	switch (pt)
+		{
+			case PT_BOOLEAN:
+				{
+					if (Stricmp (value_s, "true") == 0)
+						{
+							value_p -> st_boolean_value = true;
+							success_flag = true;
+						}
+					else if (Stricmp (value_s, "false") == 0)
+						{
+							value_p -> st_boolean_value = false;
+							success_flag = true;
+						}
+				}
+				break;
+
+			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
+				{
+					int32 value;
+
+					if (sscanf (value_s, INT32_FMT, &value) > 0)
+						{
+							value_p -> st_long_value = value;
+							success_flag = true;
+						}
+				}
+				break;
+
+			case PT_UNSIGNED_INT:
+				{
+					uint32 value;
+
+					if (sscanf (value_s, UINT32_FMT, &value) > 0)
+						{
+							value_p -> st_ulong_value = value;
+							success_flag = true;
+						}
+				}
+				break;
+
+			case PT_SIGNED_REAL:
+			case PT_UNSIGNED_REAL:
+				{
+					double64 value;
+
+					if (sscanf (value_s, DOUBLE64_FMT, &value) > 0)
+						{
+							value_p -> st_data_value = value;
+							success_flag = true;
+						}
+				}
+				break;
+
+			case PT_DIRECTORY:
+			case PT_FILE_TO_READ:
+			case PT_FILE_TO_WRITE:
+				{
+					Resource *resource_p = ParseStringToResource (value_s);
+
+					if (resource_p)
+						{
+							success_flag = SetSharedTypeResourceValue (value_p, resource_p);
+							FreeResource (resource_p);
+						}
+				}
+				break;
+
+			case PT_TABLE:
+			case PT_LARGE_STRING:
+			case PT_STRING:
+			case PT_PASSWORD:
+			case PT_KEYWORD:
+				success_flag = SetSharedTypeStringValue (value_p, value_s);
+				break;
+
+			default:
+				break;
+		}		/* switch (param_p -> pa_type) */
+
+
+	return success_flag;
+}
+
+
 SharedTypeNode *AllocateSharedTypeNode (SharedType value)
 {
 	SharedTypeNode *node_p = (SharedTypeNode *) AllocMemory (sizeof (SharedTypeNode));
@@ -2485,34 +2837,13 @@ bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, 
 }
 
 
-const Tag *GetRemoteTagForURI (Parameter *param_p, const char * const uri_s)
-{
-	RemoteParameterDetailsNode *node_p = (RemoteParameterDetailsNode *) (param_p -> pa_remote_parameter_details_p -> ll_head_p);
-
-	while (node_p)
-		{
-			if (strcmp (node_p -> rpdn_details_p -> rpd_server_uri_s, uri_s) == 0)
-				{
-					return & (node_p -> rpdn_details_p -> rpd_tag);
-				}
-			else
-				{
-					node_p = (RemoteParameterDetailsNode *) (node_p -> rpdn_node.ln_next_p);
-				}
-
-		}		/* while (node_p) */
-
-	return NULL;
-}
-
-
 
 /*************************************************/
 /************** STATIC FUNCTIONS *****************/
 /*************************************************/
 
 
-static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p)
+static bool AddParameterGroupToJSON (const Parameter * const param_p, json_t *json_p, const SchemaVersion * const sv_p)
 {
 	bool success_flag = true;
 
@@ -2694,7 +3025,7 @@ static bool SetParameterValueFromReal (Parameter * const param_p, const double64
 
 
 
-static bool SetParameterValueFromString (Parameter * const param_p, const char * const src_s, const bool current_flag)
+static bool SetParameterValueFromStringValue (Parameter * const param_p, const char * const src_s, const bool current_flag)
 {
 	bool success_flag = false;
 
@@ -2971,6 +3302,7 @@ bool SetSharedTypeFromJSON (SharedType *value_p, const json_t *json_p, const Par
 				break;
 
 			case PT_SIGNED_INT:
+			case PT_NEGATIVE_INT:
 				{
 					success_flag = SetIntegerFromJSON (json_p, & (value_p -> st_long_value));
 				}

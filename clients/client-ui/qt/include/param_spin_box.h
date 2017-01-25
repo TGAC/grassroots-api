@@ -47,6 +47,10 @@ protected:
 	virtual QWidget *GetQWidget ();
 
 
+	static int PSB_DEFAULT_MIN;
+
+	static int PSB_DEFAULT_MAX;
+
 private:
 	QSpinBox *psb_spin_box_p;
 	bool psb_signed_flag;

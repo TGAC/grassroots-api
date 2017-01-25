@@ -25,8 +25,6 @@
 #include "curl_tools.h"
 #include "service_job.h"
 
-#define TAG_SEARCH_FIELD MAKE_TAG ('E', 'S', 'F', 'D')
-#define TAG_SEARCH_KEYWORD MAKE_TAG ('E', 'S', 'K', 'Y')
 
 /*
  * STATIC DATATYPES
@@ -74,7 +72,7 @@ static const char *GetElasticSearchRestServiceDesciption (Service *service_p);
 
 static const char *GetElasticSearchRestServiceURI (Service *service_p);
 
-static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource *resource_p, const json_t *json_p);
+static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 static void ReleaseElasticSearchRestServiceParameters (Service *service_p, ParameterSet *params_p);
 
@@ -214,7 +212,7 @@ static const char *GetElasticSearchRestServiceURI (Service * UNUSED_PARAM (servi
 }
 
 
-static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), const json_t * UNUSED_PARAM (json_p))
+static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, Resource * UNUSED_PARAM (resource_p), UserDetails * UNUSED_PARAM (user_p))
 {
 	ParameterSet *param_set_p = AllocateParameterSet ("Elastic Search service parameters", "The parameters used for the Elastic Search service");
 
@@ -244,11 +242,11 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 				{
 					def.st_string_value_s = values [0].st_string_value_s;
 
-					if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, TES_SEARCH_FIELD.npt_type, false, TES_SEARCH_FIELD.npt_name_s, NULL, "The field to search", options_p, def, NULL, NULL, PL_ALL, NULL))
+					if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, TES_SEARCH_FIELD.npt_type, false, TES_SEARCH_FIELD.npt_name_s, NULL, "The field to search", options_p, def, NULL, NULL, PL_ALL, NULL))
 						{
 							def.st_string_value_s = "";
 
-							if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, TES_SEARCH_FIELD.npt_type, false, TES_SEARCH_TERM.npt_name_s, NULL, "The term to search for in the given field", NULL, def, NULL, NULL, PL_ALL, NULL))
+							if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, TES_SEARCH_TERM.npt_type, false, TES_SEARCH_TERM.npt_name_s, NULL, "The term to search for in the given field", NULL, def, NULL, NULL, PL_ALL, NULL))
 								{
 									return param_set_p;
 								}

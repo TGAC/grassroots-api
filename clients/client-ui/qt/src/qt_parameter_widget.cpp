@@ -32,6 +32,8 @@
 #include "param_table_widget.h"
 #include "param_json_editor.h"
 
+#include "qt_client_data.h"
+
 // WHEATIS INCLUDES
 #include "parameter.h"
 #include "parameter_set.h"
@@ -43,11 +45,12 @@
 const int QTParameterWidget :: QPW_NUM_COLUMNS = 2;
 
 
-QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level)
+QTParameterWidget :: QTParameterWidget (const char *name_s, const char * const description_s, const char * const uri_s, const json_t *provider_p, ParameterSet *parameters_p, const PrefsWidget * const prefs_widget_p, const ParameterLevel initial_level, const QTClientData *client_data_p)
 :	qpw_params_p (parameters_p),
 	qpw_prefs_widget_p (prefs_widget_p),
 	qpw_widgets_map (QHash <Parameter *, BaseParamWidget *> ()),
-	qpw_level (initial_level)
+	qpw_level (initial_level),
+	qpw_client_data_p (client_data_p)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	QVBoxLayout *info_layout_p = new QVBoxLayout;
@@ -241,15 +244,17 @@ void QTParameterWidget :: AddParameters (ParameterSet *params_p)
 		{
 			ParameterGroup *group_p = param_group_node_p -> pgn_param_group_p;
 			ParamGroupBox *box_p = new ParamGroupBox (group_p -> pg_name_s, group_p -> pg_visible_flag);
-			Parameter **param_pp = group_p -> pg_params_pp;
+			ParameterNode *node_in_group_p = reinterpret_cast <ParameterNode *> (group_p -> pg_params_p -> ll_head_p);
 
-			for (uint32 i = group_p -> pg_num_params; i > 0; -- i, ++ param_pp)
+			while (node_in_group_p)
 				{
-					Parameter *param_p = const_cast <Parameter *> (*param_pp);
+					Parameter *param_p = node_in_group_p -> pn_parameter_p;
 
 					AddParameterWidget (param_p, box_p);
 
 					params_map.insert (param_p, param_p);
+
+					node_in_group_p = reinterpret_cast <ParameterNode *> (node_in_group_p -> pn_node.ln_next_p);
 				}
 
 			int row = qpw_layout_p -> rowCount ();
@@ -440,6 +445,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 						break;
 
 					case PT_SIGNED_INT:
+					case PT_NEGATIVE_INT:
 						widget_p = new ParamSpinBox (param_p, qpw_prefs_widget_p, true);
 						break;
 
@@ -478,7 +484,7 @@ BaseParamWidget *QTParameterWidget :: CreateWidgetForParameter (Parameter * cons
 			return widget_p;
 		}		/* if (widget_p) */
 
-	return NULL;
+	return 0;
 }
 
 
@@ -504,6 +510,5 @@ ParameterSet *QTParameterWidget :: GetParameterSet () const
 
 json_t *QTParameterWidget :: GetParameterValuesAsJSON () const
 {
-	GetParameterSet ();
-	return GetParameterSetAsJSON (qpw_params_p, false);
+	return GetParameterSetAsJSON (qpw_params_p, qpw_client_data_p -> qcd_base_data.cd_schema_p, false);
 }

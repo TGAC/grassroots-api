@@ -188,7 +188,7 @@ void ProgressWidget :: ShowResults (bool checked_flag)
 
 void ProgressWidget :: ShowErrors (bool checked_flag)
 {
-	const json_t *errors_p = json_object_get (pw_json_p, JOB_ERRORS_S);
+	json_t *errors_p = json_object_get (pw_json_p, JOB_ERRORS_S);
 
 	if (errors_p && (json_object_size (errors_p) > 0))
 		{
