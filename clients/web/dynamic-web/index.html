@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-gb">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv='cache-control' content='no-cache'>
+    <meta http-equiv='expires' content='0'>
+    <meta http-equiv='pragma' content='no-cache'>
+
+    <title>Grassroots Infrastructure</title>
+
+
+    <link rel="stylesheet" href="styles/style.css" type="text/css">
+    <!-- font awesome -->
+    <link href="scripts/fontawesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    <!-- jQuery -->
+    <script type="text/javascript" src="scripts/jquery/js/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="scripts/jquery/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="scripts/jquery/jquery-ui-1.11.4.custom/jquery-ui.min.css"
+          type="text/css">
+    <link rel="stylesheet" href="scripts/jquery/colorbox/colorbox.css"
+          type="text/css">
+
+    <!-- bootstrap -->
+    <script src="scripts/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <link href="scripts/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+    <!-- wis -->
+    <script type="text/javascript" src="scripts/gi_dynamic_web.js"></script>
+    <script type="text/javascript" src="scripts/wis.js"></script>
+    <script type="text/javascript" src="scripts/FileSaver.min.js"></script>
+
+    <!-- give $ back to prototype -->
+    <!--<script type="text/javascript">jQuery.noConflict();</script>-->
+
+
+</head>
+<body>
+
+<!-- Fixed navbar -->
+<nav class="navbar navbar-default navbar-static-top" role="navigation" style="background-color:white!important;">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Grassroots Infrastructure</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="">Home</a></li>
+                <li><a href="grassroots-portal/services">Services</a></li>
+                <li><a href="grassroots-portal/indexer">Search</a></li>
+                <li><a href="grassroots-portal/contact">Contact</a></li>
+                <li><a href="http://wheatis.tgac.ac.uk/grassroots/api/">Grassroots API</a></li>
+            </ul>
+            <img class="navbar-nav navbar-right" style="height:50px;" src="images/earlham-institure-logo.png"/>
+        </div>
+    </div>
+</nav>
+<!--content-->
+
+<div class="container center-block">
+    <h2 id="title"></h2>
+
+    <p id="description"></p>
+
+     <form id="form">
+
+    </form>
+    <div id="status"></div>
+    <div id="output_format_div" style="display:none; float:right;">
+        <p>Download job format
+            <select id="output_format" onchange="changeDownloadFormat();">
+                <option value="pairwise" selected="selected">Pairwise</option>
+                <option value="query-anchored showing identities">Query-anchored showing identities</option>
+                <option value="query-anchored no identities">Query-anchored no identities</option>
+                <option value="flat query-anchored, show identities">Flat query-anchored, show identities</option>
+                <option value="flat query-anchored, no identities">Flat query-anchored, no identities</option>
+                <option value="XML Blast output">XML Blast output</option>
+                <option value="tabular">Tabular</option>
+                <option value="tabular with comment lines">Tabular with comment lines</option>
+                <option value="Text ASN.1">Text ASN.1</option>
+                <option value="Binary ASN.1">Binary ASN.1</option>
+                <option value="Comma-separated values">Comma-separated values</option>
+                <option value="BLAST archive format (ASN.1)">BLAST archive format (ASN.1)</option>
+                <option value="JSON Seqalign output">JSON Seqalign output</option>
+                <option value="Multiple file JSON Blast output">Multiple file JSON Blast output</option>
+                <option value="Multiple file XML2 Blast output">Multiple file XML2 Blast output</option>
+                <option value="Single file JSON Blast output">Single file JSON Blast output</option>
+                <option value="Single file XML2 Blast output">Single file XML2 Blast output</option>
+                <option value="Sequence Alignmnent/Map (SAM)">Sequence Alignmnent/Map (SAM)</option>
+                <option value="Organism report">Organism report</option>
+                <option value="Grassroots markup">Grassroots markup</option>
+            </select>
+        </p>
+    </div>
+    <div style="clear:both;"></div>
+
+    <div id="result"></div>
+
+    <script type="text/javascript">
+        var server_url = "/grassroots-test/1/controller";
+        var services = '{"operations": {"operation":"get_all_services"}}';
+        var selected_service_name;
+        var response = null;
+        var parameters;
+        var groups;
+        $(document).ready(function () {
+            //  getBlastDBs();
+
+            $('#form').html("Getting service...");
+            $.ajax({
+                url: server_url,
+                data: services,
+                type: "POST",
+                dataType: "json",
+                success: function (json) {
+//                    console.info(json);
+                    var list_html = [];
+                    list_html.push('<h3>Click any of the service to load the form</h3>');
+                    list_html.push('<ul>');
+                    for (var j = 0; j < json['services'].length; j++) {
+                        var service_name = json['services'][j]['service_name'];
+                        list_html.push('<li onclick="populateService(\'' + service_name + '\')"><u>' + service_name + '</u></li>');
+                    }
+                    list_html.push('</ul>');
+                    $('#form').html(list_html.join(' '));
+                }
+            });
+
+        });
+
+
+    </script>
+</div>
+
+<!--footer-->
+<div id="footer">
+    <br/>
+
+    <p>
+        &copy; 2015 - 2016
+        Brought to you by <a href="http://www.earlham.ac.uk/" target="_blank">Earlham Institute</a><br/>
+        Powered by Grassroots API
+    </p>
+</div>
+</body>
+</html>
