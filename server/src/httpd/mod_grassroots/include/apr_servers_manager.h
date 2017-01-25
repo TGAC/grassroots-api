@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * apr_servers_manager.h
  *
@@ -35,15 +40,17 @@
  *
  * 		extern const char *SERVICE_NAME_S;
  *
- * however if ALLOCATE_JSON_TAGS is defined then it will
- * become
+ * however if ALLOCATE_APR_SERVERS_MANAGER_TAGS is defined
+ * then it will become
  *
  * 		const char *SERVICE_NAME_S = "path";
  *
  * ALLOCATE_RESOURCE_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
- * resource.c.
+ * apr_external_servers__manager.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_APR_SERVERS_MANAGER_TAGS
 	#define APR_SERVERS_MANAGER_PREFIX
 	#define APR_SERVERS_MANAGER_VAL(x)	= x
@@ -52,7 +59,15 @@
 	#define APR_SERVERS_MANAGER_VAL(x)
 #endif
 
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
+
+/**
+ * The identifier for the named shared object cache to use for sharing ExternalServer
+ * definitions between different httpd processes and threads.
+ *
+ * @ingroup httpd_server
+ */
 APR_SERVERS_MANAGER_PREFIX const char *APR_SERVERS_MANAGER_CACHE_ID_S APR_SERVERS_MANAGER_VAL("grassroots-servers-socache");
 
 
@@ -100,12 +115,29 @@ bool APRServersManagerChildInit (apr_pool_t *pool_p, server_rec *server_p);
 apr_status_t CleanUpAPRServersManager (void *value_p);
 
 
-
+/**
+ * Configure an APRServersManager in the Apache parent process before any child processes
+ * are launched.
+ *
+ * @param manager_p The APRServersManager to configure.
+ * @param config_pool_p The memory pool available to use.
+ * @param server_p The Apache server structure.
+ * @param provider_name_s The name of sharded object cache provider to use.
+ * @return <code>true</code> if successful or <code>false</code> if there was a problem.
+ * @memberof APRServersManager
+ */
 bool PostConfigAPRServersManager (APRServersManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
 
 
 
-
+/**
+ * Set up an APRServersManager prior to the configuration details being used.
+ *
+ * @param manager_p The APRServersManager to initialise.
+ * @param config_pool_p A memory pool to use if needed.
+ * @return <code>true</code> if the initialisation was successful or <code>false</code> if there was a problem.
+ * @memberof APRServersManager
+ */
 bool APRServersManagerPreConfigure (APRServersManager *manager_p, apr_pool_t *config_pool_p);
 
 

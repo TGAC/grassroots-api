@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef COMPRESS_SERVICE_H
 #define COMPRESS_SERVICE_H
 
@@ -27,13 +32,23 @@ extern "C"
 #endif
 
 
+/**
+ * Get the ServicesArray containing the Compress Service.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing the Compress Service or
+ * <code>NULL</code> upon error.
+ */
 COMPRESS_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
+/**
+ * Free the ServicesArray and its associated Compress Service.
+ *
+ * @param services_p The ServicesArray to free.
+ */
+COMPRESS_SERVICE_API void ReleaseServices (ServicesArray *services_p);
 
-COMPRESS_SERVICE_API void ReleaseServices (ServicesArray *service_p);
 
-
-COMPRESS_SERVICE_LOCAL bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *output_buffer_size_p, const int flush);
 
 #ifdef __cplusplus
 }

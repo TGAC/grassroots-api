@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <QVBoxLayout>
 #include <QIcon>
 
+#include "qt_client_data.h"
 #include "service_prefs_widget.h"
 #include "json_tools.h"
 #include "service.h"
@@ -32,9 +33,10 @@
 	#define SERVICE_PREFS_WIDGET_DEBUG (DEBUG_NONE)
 #endif
 
-ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const json_t *provider_p, ParameterSet *params_p, QWidget *parent_p)
+ServicePrefsWidget::ServicePrefsWidget (const char * const service_name_s, const char * const service_description_s, const char * const service_info_uri_s, const char * const service_icon_uri_s, const json_t *provider_p, ParameterSet *params_p, QTClientData *client_data_p, QWidget *parent_p)
 : QWidget (parent_p),
-	spw_service_name_s (service_name_s)
+	spw_service_name_s (service_name_s),
+	spw_client_data_p (client_data_p)
 {
 	QLayout *layout_p = new QVBoxLayout;
 	QScrollArea *scroller_p = new QScrollArea;
@@ -115,8 +117,10 @@ json_t *ServicePrefsWidget :: GetServiceParamsAsJSON (bool full_flag) const
 
 	if (params_p)
 		{
+			const SchemaVersion *sv_p = spw_client_data_p -> qcd_base_data.cd_schema_p;
+
 			const bool run_flag = GetRunFlag ();
-			res_p = GetServiceRunRequest (spw_service_name_s, params_p, run_flag);
+			res_p = GetServiceRunRequest (spw_service_name_s, params_p, sv_p, run_flag);
 		}
 
 	return res_p;

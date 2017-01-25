@@ -1,8 +1,8 @@
-# Service Configuration
+﻿# %Service Configuration
 
 Each Service upon a Grassroots Server can have a separate configuration file that allows the Server administrator to change certain features of a Service. 
 These configuration files are in the **config** directory within the Grassroots root directory and the names match the names of the Service. 
-For instance, for the example Reference Service given above the configuration file would be "*config/Foobar Search service*". 
+For instance, for the example Reference Service given above the configuration file would be *config/Foobar Search service*. 
 Any changes made within these files are set immediately and reflected by any subsequent requests to the Grassroots Server without any need to restart the application.
 Each Service will have specific values that can be put in this configuration file. Alongside all of these, any Parameters and ParameterGroups can be adjusted too. 
 The properties in these sections are described in the [schema guide](schema.md).
@@ -33,7 +33,7 @@ The default visibility of a ParameterGroup can be toggled by a boolean key calle
 
 ## Parameters
 
-Various settings for a Service's Parameters can be configured within our configuration file using the **parameters** key. Within this key, each Parameter can be configured by using its **param** value as a key. The following options will be demonstrated by using the [example Reference Service](services.md#reference-service) specified elsewhere which is
+Various settings for a %Service's Parameters can be configured within our configuration file using the **parameters** key. Within this key, each %Parameter can be configured by using its **param** value as a key. The following options will be demonstrated by using the [example Reference Service](services.md#reference-service) specified elsewhere which is
 
 ~~~{.json}
 {

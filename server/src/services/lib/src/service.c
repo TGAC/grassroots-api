@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -45,6 +45,10 @@
 #endif
 
 
+/*
+ * STATIC FUNCTION DECLARATIONS
+ */
+
 static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p);
 
 static bool AddServiceDescriptionToJSON (Service * const service_p, json_t *root_p);
@@ -70,7 +74,12 @@ static void GenerateServiceUUID (Service *service_p);
 
 static  uint32 AddLinkedServices (Service *service_p);
 
+static char *GetServiceIconData (const char *service_name_s);
 
+
+/*
+ * FUNCTION DEFINITIONS
+ */
 
 void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
@@ -859,7 +868,7 @@ bool DeallocatePluginService (Plugin * const plugin_p)
 }
 
 
-json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const bool run_flag)
+json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const SchemaVersion *sv_p, const bool run_flag)
 {
 	json_t *service_json_p = NULL;
 	json_error_t err;
@@ -870,7 +879,6 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 		{
 			if (run_flag)
 				{
-					const SchemaVersion *sv_p = GetSchemaVersion ();
 					json_t *param_set_json_p = GetParameterSetAsJSON (params_p, sv_p, false);
 
 					if (param_set_json_p)
@@ -908,7 +916,6 @@ json_t *GetServiceRunRequest (const char * const service_name_s, const Parameter
 }
 
 
-
 json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserDetails *user_p, const bool add_id_flag)
 {
 	json_t *root_p = json_object ();
@@ -916,13 +923,13 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 	if (root_p)
 		{
 			const SchemaVersion *sv_p = GetSchemaVersion ();
-			const char *value_s = GetServiceName (service_p);
+			const char *service_name_s = GetServiceName (service_p);
 			bool success_flag = true;
 			
 			/* Add the key-value pair */
-			if (value_s)
+			if (service_name_s)
 				{
-					success_flag = (json_object_set_new (root_p, SERVICE_NAME_S, json_string (value_s)) == 0);
+					success_flag = (json_object_set_new (root_p, SERVICE_NAME_S, json_string (service_name_s)) == 0);
 				}
 
 			if (success_flag)
@@ -1001,7 +1008,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 												}		/* if (providers_array_p) */
 											else
 												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create providers array for %s", value_s);
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create providers array for %s", service_name_s);
 												}
 
 										}		/* if (service_p -> se_paired_services -> ll_size > 0) */
@@ -1032,7 +1039,7 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 					PrintJSON (stderr, root_p, "GetServiceAsJSON - path :: ");
 					#endif
 					
-					value_s = GetServiceDescription (service_p);
+					const char *value_s = GetServiceDescription (service_p);
 					
 					if (value_s)
 						{
@@ -1074,7 +1081,21 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 
 																	if (b)
 																		{
+																			const char *icon_data_s = GetServiceIconData (service_name_s);
+
+																			if (icon_data_s)
+																				{
+																					if (json_object_set_new (service_p, OPERATION_ICON_DATA_S, json_string (icon_data_s)) != 0)
+																						{
+
+																						}
+
+																					FreeCopiedString (icon_data_s);
+																				}		/* if (icon_data_s) */
+
 																			AddOperationInformationURIToJSON (service_p, operation_p);
+
+
 
 																			success_flag = true;
 																		}		/* if (b) */
@@ -1120,55 +1141,6 @@ json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserD
 	return root_p;
 }
 
-
-const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
-{
-	return GetJSONString (root_p, SERVICES_DESCRIPTION_S);
-}
-
-
-const char *GetServiceNameFromJSON (const json_t * const root_p)
-{
-	const char *name_s = GetJSONString (root_p, SERVICES_NAME_S);
-
-	if (!name_s)
-		{
-			name_s = GetJSONString (root_p, SERVICE_NAME_S);
-		}
-
-	return name_s;
-}
-
-
-const char *GetOperationDescriptionFromJSON (const json_t * const root_p)
-{
-	return GetJSONString (root_p, OPERATION_DESCRIPTION_S);
-}
-
-
-const char *GetOperationNameFromJSON (const json_t * const root_p)
-{
-	const char *result_s = GetJSONString (root_p, OPERATION_ID_S);
-
-	if (!result_s)
-		{
-			result_s = GetJSONString (root_p, OPERATION_ID_OLD_S);
-		}
-
-	return result_s;
-}
-
-
-const char *GetOperationInformationURIFromJSON (const json_t * const root_p)
-{
-	return GetJSONString (root_p, OPERATION_INFORMATION_URI_S);
-}
-
-
-const char *GetIconPathFromJSON (const json_t * const root_p)
-{
-	return GetJSONString (root_p, OPERATION_ICON_PATH_S);
-}
 
 
 static bool AddServiceNameToJSON (Service * const service_p, json_t *root_p)
@@ -1710,11 +1682,6 @@ ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugi
 }
 
 
-const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
-{
-	return json_object_get (service_json_p, SERVER_PROVIDER_S);
-}
-
 
 json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p, const bool full_definition_flag)
 {
@@ -1754,7 +1721,42 @@ json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keywor
 }
 
 
+static char *GetServiceIconData (const char *service_name_s)
+{
+	char *icon_data_s = NULL;
+	const char *root_s = GetServerRootDirectory ();
 
+	char *images_dir_s = MakeFilename (root_s, "images");
+
+	if (images_dir_s)
+		{
+			char *service_image_filename_s = MakeFilename (images_dir_s, service_name_s);
+
+			if (service_image_filename_s)
+				{
+					icon_data_s = GetFileContentsAsStringByFilename (service_image_filename_s);
+
+					if (!icon_data_s)
+						{
+							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get raw data from filename for \"%s\"", service_image_filename_s);
+						}
+
+					FreeCopiedString (service_image_filename_s);
+				}		/* if (service_image_filename_s) */
+			else
+				{
+					PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to make filename for \"%s\" and \"%s\"", images_dir_s, service_name_s);
+				}
+
+			FreeCopiedString (images_dir_s);
+		}		/* if (images_dir_s) */
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to make filename for \"%s\" and \"images\"", root_s);
+		}
+
+	return icon_data_s;
+}
 
 
 

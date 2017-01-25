@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * blast_app_parameters.hpp
  *
@@ -32,9 +37,24 @@
 /* forward declaration */
 struct BlastServiceData;
 
-
+/**
+ * This datatype is used to parse a given ParameterSet in a method
+ * suitable for a particular BLAST configuration.
+ *
+ * @ingroup blast_service
+ */
 typedef struct BLAST_SERVICE_LOCAL BlastAppParameters
 {
+	/**
+	 * Parse a given ParameterSet in a method suitable for a particular BLAST configuration defined by a given
+	 * ArgsProcessor
+	 *
+	 * @param data_p The Blast service configuration data.
+	 * @param params_p The ParameterSet to parse.
+	 * @param ap_p The ArgsProcessor that will process the given ParameterSet and convert the values into a format
+	 * suitable for the underlying BlastTool.
+	 * @return <code>true</code> if the ParameterSet was parsed successfully, <code>false</code> otherwise.
+	 */
 	bool (*bap_parse_params_fn) (const struct BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 } BlastAppParameters;
 
@@ -45,6 +65,18 @@ extern "C"
 #endif
 
 
+/**
+ * Parse a given ParameterSet in a method suitable for a particular BLAST configuration defined by a given
+ * ArgsProcessor
+ *
+ * @param app_p The given BlastAppParameters to use.
+ * @param data_p The Blast service configuration data.
+ * @param params_p The ParameterSet to parse.
+ * @param ap_p The ArgsProcessor that will process the given ParameterSet and convert the values into a format
+ * suitable for the underlying BlastTool.
+ * @return <code>true</code> if the ParameterSet was parsed successfully, <code>false</code> otherwise.
+ * @memberof BlastAppParameters
+ */
 BLAST_SERVICE_LOCAL bool ParseBlastAppParameters (BlastAppParameters *app_p, const struct BlastServiceData *data_p, ParameterSet *params_p, ArgsProcessor *ap_p);
 
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,12 +13,10 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
- * @file connect.h
- * @addtogroup iRODS iRODS Utility Library
- * @brief Routines to handle connections to
- * iRODS systems.
- * @{
+ * @file
+ * @brief
  */
 #ifndef IRODS_CONNECT_H
 #define IRODS_CONNECT_H
@@ -42,6 +40,7 @@ extern "C"
  *
  * @param credentials_json_p The JSON fragment containing the iRODS user details.
  * @return The connection to the iRODS server or <code>NULL</code> upon error.
+ * @memberof IRodsConnection
  */
 IRODS_UTIL_API struct IRodsConnection *CreateIRodsConnectionFromJSON (const json_t *credentials_json_p);
 
@@ -51,6 +50,7 @@ IRODS_UTIL_API struct IRodsConnection *CreateIRodsConnectionFromJSON (const json
  * @param username_s The iRODS username.
  * @param password_s The iRODS password. FIXME! This needs to change to being encrypted.
  * @return The connection to the iRODS server or <code>NULL</code> upon error.
+ * @memberof IRodsConnection
  */
 IRODS_UTIL_API struct IRodsConnection *CreateIRodsConnection (const char *username_s, const char *password_s);
 
@@ -58,10 +58,10 @@ IRODS_UTIL_API struct IRodsConnection *CreateIRodsConnection (const char *userna
  * Close a connection to an iRODS server.
  *
  * @param connection_p The connection to close.
+ * @memberof IRodsConnection
  */
 IRODS_UTIL_API void FreeIRodsConnection (struct IRodsConnection *connection_p);
 
-/** @} */
 
 
 

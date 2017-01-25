@@ -44,6 +44,7 @@ SRCS 	= \
 	blastp_service.c \
 	blastx_service.c \
 	blast_service_job.c \
+	blast_service_job_markup.c \
 	blast_service_params.c \
 	paired_blast_service.c \
 	blast_util.c \

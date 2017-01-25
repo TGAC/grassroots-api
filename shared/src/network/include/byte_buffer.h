@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,10 +13,10 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
- * @file byte_buffer.h
- * @addtogroup Network
- * @{
+ * @file
+ * @brief
  */
 #ifndef BYTE_BUFFER_H
 #define BYTE_BUFFER_H
@@ -30,6 +30,7 @@
 /**
  * A datatype to allow an automatically growing buffer for appending
  * data to.
+ * @ingroup network_group
  */
 typedef struct ByteBuffer
 {
@@ -226,8 +227,6 @@ GRASSROOTS_NETWORK_API void ReplaceCharsInByteBuffer (ByteBuffer *buffer_p, char
 }
 #endif
 
-
-/* @} */
 
 
 #endif		/* #ifndef BYTE_BUFFER_H */

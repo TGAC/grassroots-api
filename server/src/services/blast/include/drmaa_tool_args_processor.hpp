@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * drmaa_tool_args_processor.hpp
  *
@@ -29,6 +34,8 @@
 
 /**
  * An ArgsProcessor that adds all of its values to a given DrmaaTool.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL DrmaaToolArgsProcessor : public ArgsProcessor
 {

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -173,6 +173,42 @@ char *GetCopiedJSONString (const json_t *json_p, const char * const key_s)
 		}
 
 	return dest_s;
+}
+
+
+
+
+bool CopyJSONKeyStringValuePair (const json_t *src_p, json_t *dest_p, const char * const key_s, bool optional_flag)
+{
+	bool success_flag = optional_flag;
+	const char *value_s = GetJSONString (src_p, key_s);
+
+	if (value_s)
+		{
+			if (json_object_set_new (dest_p, key_s, json_string (value_s)) == 0)
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
+}
+
+
+bool CopyJSONKeyIntegerValuePair (const json_t *src_p, json_t *dest_p, const char * const key_s, bool optional_flag)
+{
+	bool success_flag = optional_flag;
+	int value;
+
+	if (GetJSONInteger (src_p, key_s, &value))
+		{
+			if (json_object_set_new (dest_p, key_s, json_integer (value)) == 0)
+				{
+					success_flag = true;
+				}
+		}
+
+	return success_flag;
 }
 
 
@@ -1031,9 +1067,9 @@ bool SetRealFromJSON (const json_t *json_p, double *value_p)
 {
 	bool success_flag = false;
 
-	if (json_is_real (json_p))
+	if (json_is_number (json_p))
 		{
-			*value_p = json_real_value (json_p);
+			*value_p = json_number_value (json_p);
 			success_flag = true;
 		}
 	else
@@ -1119,7 +1155,7 @@ bool SetStringFromJSON (const json_t *json_p, char **value_ss)
 }
 
 
-json_t *GetCompoundJSONObject (json_t *input_p, const char * const compound_s)
+json_t *GetCompoundJSONObject (const json_t *input_p, const char * const compound_s)
 {
 	json_t *compound_value_p = NULL;
 	char *copied_compound_s = CopyToNewString (compound_s, 0, false);

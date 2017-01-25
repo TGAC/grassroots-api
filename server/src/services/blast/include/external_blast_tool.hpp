@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * external_blast_tool.hpp
  *
@@ -31,6 +36,8 @@
 /**
  * A class that will run Blast using an external application such as blastn
  * rather than calling Blast library routines directly.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL ExternalBlastTool : public BlastTool
 {
@@ -61,9 +68,15 @@ public:
 	ExternalBlastTool (BlastServiceJob *job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s);
 
 
+	/**
+	 * Create a ExternalBlastTool for a given ServiceJob using the configuration details from
+	 * a serialised JSON fragment.
+	 *
+	 * @param job_p The ServiceJob to associate with this ExternalBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this ExternalBlastTool.
+	 * @param json_p The JSON fragment to fill in the serialised values such as job name, etc.
+	 */
 	ExternalBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
-
-
 
 
 	/**
@@ -75,7 +88,9 @@ public:
 	 * Parse a ParameterSet to configure a ExternalBlastTool prior
 	 * to it being ran.
 	 *
-	 * @param params_p The ParameterSet to parse.
+	 * @param param_set_p The ParameterSet to parse.
+	 * @param app_params_p The BlastAppParameters to use process the
+	 * values from the given ParameterSet.
 	 * @return <code>true</code> if the BlastTool was configured
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
@@ -115,6 +130,15 @@ public:
 	virtual char *GetResults (BlastFormatter *formatter_p);
 
 
+	/**
+	 * Get a copy of the log data from the run of this ExternalBlastTool's
+	 * run.
+	 *
+	 * @return The log data or <code>0</code> upon error. If a valid value is
+	 * returned, this will need to be freed by <code>FreeCopiedString</code>
+	 * to avoid a memory leak.
+	 * @see FreeCopiedString
+	 */
 	virtual char *GetLog ();
 
 protected:
@@ -140,7 +164,14 @@ protected:
 	const char *ebt_blast_s;
 
 
-
+	/**
+	 * Get the ArgsProcessor that this BlastTool will use
+	 * to parse the input ParameterSet prior to running its
+	 * job.
+	 *
+	 * @return The ArgsProcessor for this BlastTool or
+	 * <code>0</code> upon error.
+	 */
 	virtual ArgsProcessor *GetArgsProcessor () = 0;
 
 
@@ -149,6 +180,10 @@ protected:
 	 * that this BlastTool will run with.
 	 *
 	 * @param arg_s The argument to add.
+	 * @param hyphen_flag If this is <code>true</code> then a hyphen
+	 * will be prefixed the given value e.g. turning "foo" into "-foo"
+	 * before being added, if this is <code>false</code> then the argument
+	 * is added unaltered.
 	 * @return <code>true</code> if the argument was added
 	 * successfully, <code>false</code> otherwise.
 	 */

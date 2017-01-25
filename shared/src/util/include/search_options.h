@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 
 /*
  * search_options.h
@@ -42,31 +47,86 @@
  * including this header file. Currently this happens in
  * search_options.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_SEARCH_TAGS
 	#define SEARCH_PREFIX GRASSROOTS_UTIL_API
-	#define VAL(x)	= x
+	#define SEARCH_VAL(x)	= x
 #else
 	#define SEARCH_PREFIX extern
-	#define VAL(x)
+	#define SEARCH_VAL(x)
 #endif
 
-SEARCH_PREFIX const char *SO_RANGE_S VAL("in");
+#endif		/* ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
-SEARCH_PREFIX const char *SO_EQUALS_S VAL("=");
+/**
+ * The identifier for specifying a search for any value
+ * within a given set of values.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_RANGE_S SEARCH_VAL("in");
 
-SEARCH_PREFIX const char *SO_LESS_THAN_S VAL("<");
 
-SEARCH_PREFIX const char *SO_LESS_THAN_OR_EQUALS_S VAL("<=");
+/**
+ * The identifier for equality search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_EQUALS_S SEARCH_VAL("=");
 
-SEARCH_PREFIX const char *SO_GREATER_THAN_S VAL(">");
 
-SEARCH_PREFIX const char *SO_GREATER_THAN_OR_EQUALS_S VAL(">=");
+/**
+ * The identifier for "less than" search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_LESS_THAN_S SEARCH_VAL("<");
 
-SEARCH_PREFIX const char *SO_NOT_EQUALS_S VAL("!=");
 
-SEARCH_PREFIX const char *SO_LIKE_S VAL("like");
+/**
+ * The identifier for "less than or equals" search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_LESS_THAN_OR_EQUALS_S SEARCH_VAL("<=");
 
-SEARCH_PREFIX const char *SO_CASE_INSENSITIVE_S VAL("insensitive");
+
+/**
+ * The identifier for "greater than" search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_GREATER_THAN_S SEARCH_VAL(">");
+
+/**
+ * The identifier for "greater than or equals" search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_GREATER_THAN_OR_EQUALS_S SEARCH_VAL(">=");
+
+/**
+ * The identifier for "not equals" search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_NOT_EQUALS_S SEARCH_VAL("!=");
+
+/**
+ * The identifier for "like" search operations.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_LIKE_S SEARCH_VAL("like");
+
+/**
+ * The identifier for specifying case-insensitive searches.
+ *
+ * @ingroup utility_group
+ */
+SEARCH_PREFIX const char *SO_CASE_INSENSITIVE_S SEARCH_VAL("insensitive");
 
 
 

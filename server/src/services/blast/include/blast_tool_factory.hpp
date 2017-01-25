@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * blast_tool_factory.h
  *
@@ -34,6 +39,8 @@
 
 /**
  * The base class for generating blast tools
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL BlastToolFactory
 {
@@ -104,15 +111,19 @@ extern "C"
 /**
  * Get a newly created BlastTool
  *
+ * @param factory_p The BlastToolFactory to use to create the BlastTool.
+ * @param job_p The ServiceJob to associate with the newly generated BlastTool.
+ * @param name_s The name to give to the new BlastTool.
+ * @param data_p The BlastServiceData for the Service that will use this BlastTool.
  * @return The BlastTool or <code>NULL</code> upon error.
  */
 BLAST_SERVICE_LOCAL BlastTool *CreateBlastToolFromFactory (BlastToolFactory *factory_p, BlastServiceJob *job_p, const char *name_s, const BlastServiceData *data_p);
 
 
 /**
- * Free a BlastTool
+ * Free a BlastToolFactory
  *
- * @param tool_p The BlastTool to deallocate.
+ * @param factory_p The BlastToolFactory to deallocate.
  */
 BLAST_SERVICE_LOCAL void FreeBlastToolFactory (BlastToolFactory *factory_p);
 
@@ -121,11 +132,12 @@ BLAST_SERVICE_LOCAL void FreeBlastToolFactory (BlastToolFactory *factory_p);
  * Are the BlastTools that this BlastToolFactory
  * create able to run asynchronously?
  *
+ * @param factory_p The BlastToolFactory to check.
  * @return <code>true</code> if the BlastTools are able
  * to run asynchronously, <code>false</code> otherwise.
  * @see BlastToolFactory::AreToolsAsynchronous
  */
-BLAST_SERVICE_LOCAL bool IsBlastToolFactorySynchronous (BlastToolFactory *tool_p);
+BLAST_SERVICE_LOCAL bool IsBlastToolFactorySynchronous (BlastToolFactory *factory_p);
 
 
 #ifdef __cplusplus

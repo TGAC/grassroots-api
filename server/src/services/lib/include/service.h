@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,15 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
+/**
+ * @file
+ * @brief
+ */
 #ifndef GRASSROOTS_SERVICE_H
 #define GRASSROOTS_SERVICE_H
 
@@ -32,7 +41,6 @@
 #include "jansson.h"
 
 #include "providers_state_table.h"
-#include "tag_item.h"
 
 struct ExternalServer;
 
@@ -48,10 +56,12 @@ struct ExternalServer;
  * 
  * 		const char *SERVICE_NAME_S = "path";
  * 
- * ALLOCATE_JSON_TAGS must be defined only once prior to 
+ * ALLOCATE_PATH_TAGS must be defined only once prior to
  * including this header file. Currently this happens in
  * service.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_PATH_TAGS
 	#define PATH_PREFIX GRASSROOTS_SERVICE_API
 	#define PATH_VAL(x)	= x
@@ -60,9 +70,19 @@ struct ExternalServer;
 	#define PATH_VAL(x)	
 #endif
 
+#endif
 
-
+/**
+ * This specifies the relative filesystem path to where the Service
+ * plugins are stored.
+ */
 PATH_PREFIX const char *SERVICES_PATH_S PATH_VAL("services");
+
+
+/**
+ * This specifies the relative filesystem path to where the Referred Service
+ * configuration files are stored.
+ */
 PATH_PREFIX const char *REFERENCES_PATH_S PATH_VAL("references");
 
 
@@ -82,6 +102,8 @@ struct ServiceJobSet;
 /**
  * A datatype for holding the configuration data for a Service. This is normally
  * used as a base class.
+ *
+ * @ingroup services_group
  */
 typedef struct ServiceData
 {
@@ -105,6 +127,8 @@ typedef struct ServiceData
 /**
  * A datatype which defines an available service, its capabilities and
  * its parameters.
+ *
+ * @ingroup services_group
  */
 typedef struct Service
 {
@@ -184,7 +208,18 @@ typedef struct Service
 	ParameterSet *(*se_get_params_fn) (struct Service *service_p, Resource *resource_p, UserDetails *user_p);
 
 
+	/**
+	 * This function is used to customise any ServiceJob objects that this Service creates.
+	 * It is often used to automatically set the <code>sj_update_fn</code> and <code>sj_free_fn</code>
+	 * members of a ServiceJob.
+	 *
+	 * @param service_p This Service.
+	 * @param job_p The ServiceJob to customise.
+	 * @see ServiceJob
+	 * @see SetServiceJobCustomFunctions
+	 */
 	void (*se_customise_service_job_fn) (struct Service *service_p, struct ServiceJob *job_p);
+
 
 	/**
 	 * Function to release the ParameterSet for this Service.
@@ -201,13 +236,40 @@ typedef struct Service
 	bool (*se_close_fn) (struct Service *service_p);
 
 
+	/**
+	 * Function to parse a JSON fragment from a previously serialised ServiceJob created by
+	 * this Service.
+	 *
+	 * @param service_p A Service of the same type that the serialised ServiceJob was run by.
+	 * @param service_job_json_p The JSON fragment representing the serialised ServiceJob.
+	 * @return The newly-constructed ServiceJob or <code>NULL</code> upon error.
+	 * @see CreateSerialisedServiceJobFromService
+	 */
 	struct ServiceJob *(*se_deserialise_job_json_fn) (struct Service *service_p, const json_t *service_job_json_p);
 
 
+	/**
+	 * Function to create a JSON fragment representing a serialised ServiceJob.
+	 *
+	 * @param service_p The Service that created the ServiceJob.
+	 * @param service_job_p The ServiceJob to serialise.
+	 * @return TThe JSON fragment representing the serialised ServiceJob or <code>NULL</code> upon error.
+	 * @see CreateSerialisedJSONFromServiceJob
+	 */
 	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
 
-
-	char *(*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
+	/**
+	 * Callback function used when processing the results from running ServiceJobs for this Service as
+	 * input for any LinkedServices for this Service.
+	 *
+	 * @param service_p This Service.
+	 * @param job_p The ServiceJob whose results will be processed.
+	 * @param linked_service_p The LinkedService defining how to generate the Parameters for the Service
+	 * to run based upon the given ServiceJob's results
+	 * @return <code>true</code> if the LinkedService was processed successfully,
+	 * <code>false</code> otherwise.
+	 */
+	bool (*se_process_linked_services_fn) (struct Service *service_p, struct ServiceJob *job_p, LinkedService *linked_service_p);
 
 	/**
 	 * If this is <code>true</code> then when the Service is ran, it will not return
@@ -236,9 +298,6 @@ typedef struct Service
 	 */
 	ServiceData *se_data_p;
 
-
-
-
 } Service;
 
 
@@ -246,6 +305,8 @@ typedef struct Service
  * A datatype for storing Services on a LinkedList.
  *
  * @extends ListItem
+ *
+ * @ingroup services_group
  */
 typedef struct
 {
@@ -259,6 +320,8 @@ typedef struct
 
 /**
  * A datatype for having a set of Services.
+ *
+ * @ingroup services_group
  */
 typedef struct ServicesArray
 {
@@ -298,11 +361,33 @@ GRASSROOTS_SERVICE_API ServicesArray *GetReferrableServicesFromPlugin (Plugin * 
 GRASSROOTS_SERVICE_API ServicesArray *GetServicesFromPlugin (Plugin * const plugin_p, UserDetails *user_p);
 
 
-
+/**
+ * Initialise the basic structure of a Service.
+ *
+ * @param service_p The Service to initialise.
+ * @param get_service_name_fn The callback function that the Service will call to get its name.
+ * @param get_service_description_fn The callback function that the Service will call to get its description.
+ * @param get_service_info_uri_fn The callback function that the Service will call to get a web address for more information about the
+ * Service. This can be <code>NULL</code>.
+ * @param run_fn The callback function that the Service will call to run itself.
+ * @param match_fn The callback function that the Service will call to check whether it is an appropriate Service for
+ * a given Resource.
+ * @param get_parameters_fn The callback function that the Service will call to get its ParameterSet.
+ * @param release_parameters_fn The callback function that the Service will call to free a ParameterSet returned from a previous call
+ * to get its ParameterSet.
+ * @param close_fn The callback function that the Service will call when the Service is closed.
+ * @param customise_service_job_fn If the ServiceJobs that this Service uses are extended from the Base ServiceJob datatype,
+ * this function is used to set them up. This can be <code>NULL</code>.
+ * @param specific_flag <code>true</code> if this Service performs a specific analysis. For Services used by scripted reference Services
+ * detailed by JSON configuration files, then this should be <code>false</code>.
+ * @param synchronous_flag <code>true</code> if this Service runs synchronously, <code>false</code> if it runs asynchronously.
+ * @param data_p The ServiceDat for this Service.
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
 	const char *(*get_service_name_fn) (Service *service_p),
 	const char *(*get_service_description_fn) (Service *service_p),
-	const char *(*se_get_service_info_uri_fn) (struct Service *service_p),
+	const char *(*get_service_info_uri_fn) (struct Service *service_p),
 	struct ServiceJobSet *(*run_fn) (Service *service_p, ParameterSet *param_set_p, UserDetails *user_p, ProvidersStateTable *providers_p),
 	ParameterSet *(*match_fn) (Service *service_p, Resource *resource_p, Handler *handler_p),
 	ParameterSet *(*get_parameters_fn) (Service *service_p, Resource *resource_p, UserDetails *user_p),
@@ -321,7 +406,8 @@ GRASSROOTS_SERVICE_API void InitialiseService (Service * const service_p,
  *
  * @param service_p The Service to run.
  * @param param_set_p The ParameterSet to run the Service with.
- * @param credentials_p An optional set of UserDetails as json.
+ * @param user_p An optional set of UserDetails as json.
+ * @param providers_p The ProvidersStateTable to be used by any RemoteServices.
  * @return A newly-allocated ServiceJobSet containing the details for the new jobs or
  * <code>NULL</code> upon error.
  * @memberof Service
@@ -332,7 +418,7 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 
 /**
  * Does the Service use the default ServiceJob serialisation/deserialisation when storing ServiceJobs in the
- * JobsManager or does it use itsown specialised routines?
+ * JobsManager or does it use its own specialised routines?
  *
  * @param service_p The Service to check.
  * @return <code>true</code> if the Service use custom routines, <code>false</code> if it uses the standard ones.
@@ -341,9 +427,27 @@ GRASSROOTS_SERVICE_API struct ServiceJobSet *RunService (Service *service_p, Par
 GRASSROOTS_SERVICE_API bool DoesServiceHaveCustomServiceJobSerialisation (struct Service *service_p);
 
 
+/**
+ * Function to parse a JSON fragment from a previously serialised ServiceJob.
+ *
+ * @param service_p A Service of the same type that the serialised ServiceJob was run by.
+ * @param service_job_json_p The JSON fragment representing the serialised ServiceJob.
+ * @return The newly-constructed ServiceJob or <code>NULL</code> upon error.
+ * @see se_deserialise_job_fn
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API struct ServiceJob *CreateSerialisedServiceJobFromService (struct Service *service_p, const json_t *service_job_json_p);
 
 
+/**
+ * Function to create a JSON fragment representing a serialised ServiceJob.
+ *
+ * @param service_p A Service of the same type that the serialised ServiceJob was run by.
+ * @param service_job_p The ServiceJob to serialise.
+ * @return TThe JSON fragment representing the serialised ServiceJob or <code>NULL</code> upon error.
+ * @see se_serialise_job_fn
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API json_t *CreateSerialisedJSONForServiceJobFromService (struct Service *service_p, const struct ServiceJob *service_job_p);
 
 
@@ -437,6 +541,15 @@ GRASSROOTS_SERVICE_API char *GetServiceUUIDAsString (Service *service_p);
 GRASSROOTS_SERVICE_API void FreeService (Service *service_p);
 
 
+/**
+ * Free and service-specific configuration data.
+ *
+ * If a Service has a separate configuration file this function will ensure
+ * there isn't a memory leak when the Service is freed.
+ *
+ * @param data_p
+ * @memberof ServiceData.
+ */
 GRASSROOTS_SERVICE_LOCAL void ReleaseServiceData (ServiceData *data_p);
 
 /**
@@ -461,13 +574,23 @@ GRASSROOTS_SERVICE_API void FreeServiceNode (ListItem *node_p);
 /**
  * Load the Service that matches a given service name
  *
- * @param services_p The List of Services that the named Services will get appended to if it is found succesfully.
+ * @param services_p The List of Services that the named Services will get appended to if it is found successfully.
  * @param services_path_s The directory where the Service modules are stored.
- * @param services_name_s The name of the Service to find.
- * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
+ * @param service_name_s The name of the Service to find.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
  */
 GRASSROOTS_SERVICE_API void LoadMatchingServicesByName (LinkedList *services_p, const char * const services_path_s, const char *service_name_s, UserDetails *user_p);
 
+
+/**
+ * Load the Services that are able to act upon a given Resource.
+ *
+ * @param services_p The List of Services that the named Services will get appended to if it is found successfully.
+ * @param services_path_s The directory where the Service modules are stored.
+ * @param resource_p The Resource to check for matching Services for.
+ * @param handler_p The Handler that is appropriate for the given Resource.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
+ */
 GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const char * const services_path_s, Resource *resource_p, Handler *handler_p, UserDetails *user_p);
 
 
@@ -476,7 +599,7 @@ GRASSROOTS_SERVICE_API void LoadMatchingServices (LinkedList *services_p, const 
  *
  * @param services_p The List of Services that any keyword-aware Services will get appended to.
  * @param services_path_s The directory where the Service modules are stored.
- * @param json_config_p Any runtime user-based configuration data. This can be <code>NULL</code>.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
  */
 GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const char * const services_path_s, UserDetails *user_p);
 
@@ -489,7 +612,7 @@ GRASSROOTS_SERVICE_API void LoadKeywordServices (LinkedList *services_p, const c
  * @param services_path_s The directory containing the Service plugins.
  * @param operation_name_s If this value is set, only referred Services that have an Operation with this name will be added
  * to Services list. If this is <code>NULL</code> then all possible reference Services will be added.
- * @param config_p Any user configuration details.
+ * @param user_p Any user configuration details, this can be <code>NULL</code>.
  */
 GRASSROOTS_SERVICE_API void AddReferenceServices (LinkedList *services_p, const char * const references_path_s, const char * const services_path_s, const char *operation_name_s, UserDetails *user_p);
 
@@ -529,65 +652,34 @@ GRASSROOTS_SERVICE_API  bool IsServiceLive (Service *service_p);
  */
 GRASSROOTS_SERVICE_API json_t *GetServiceAsJSON (Service * const service_p, Resource *resource_p, UserDetails *user_p, const bool add_id_flag);
 
+
+
+
 /**
- * @brief Get the description of a Service
+ * Close a Services-based Plugin and free all of the Services.
  *
- * @param root_p The json_t representation of a Service.
- * @return The description or <code>NULL</code> if it could not be found.
+ * @param plugin_p The Plugin to free the Services from.
+ * @return <code>true</code> if the Services were successfully released, <code>false</code> otherwise.
  */
-GRASSROOTS_SERVICE_API const char *GetServiceDescriptionFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the name of a Service
- *
- * @param root_p The json_t representation of a Service.
- * @return The name or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetServiceNameFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the description of an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The description or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationDescriptionFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the name of an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The name or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationNameFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the URI of an Operation
- *
- * @param root_p The json_t representation of a Service.
- * @return The URI or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetOperationInformationURIFromJSON (const json_t * const root_p);
-
-
-/**
- * @brief Get the path to an icon for a Service.
-
- * @param root_p The json_t representation of a Service.
- * @return The path to the icon or <code>NULL</code> if it could not be found.
- */
-GRASSROOTS_SERVICE_API const char *GetIconPathFromJSON (const json_t * const root_p);
-
-
-
 GRASSROOTS_SERVICE_API bool DeallocatePluginService (Plugin * const plugin_p);
 
 
-
+/**
+ * Get the JSON fragment for exposing a list of Services to any interested Clients
+ * or ExternalServcers.
+ *
+ * @param services_list_p A LinkedList of ServiceNodes detailing the Services to generate the fragment for
+ * @param resource_p The Resource of interest to run the Services with. This can be <code>NULL</code>.
+ * @param user_p Any UserDetails for access o potentially restricted Services. This can be <code>NULL</code> for only
+ * publicly accessible Services.
+ * @param add_service_ids_flag If this is <code>true</code> then the UUID of the Service will be added
+ * to the returned JSON. If this is <code>false</code> then it will not.
+ * @param providers_p This is used to keep track of which ExternalServers and their Services have already been processed
+ * when generating the JSON fragment.
+ * @return The json-based representation of the Service or <code>NULL</code> if there was
+ * an error.
+ * @see GetServiceAsJSON
+ */
 GRASSROOTS_SERVICE_API json_t *GetServicesListAsJSON (LinkedList *services_list_p, Resource *resource_p, UserDetails *user_p, const bool add_service_ids_flag, ProvidersStateTable *providers_p);
 
 
@@ -622,13 +714,37 @@ GRASSROOTS_SERVICE_API void FreeServicesArray (ServicesArray *services_p);
 GRASSROOTS_SERVICE_API ServicesArray *AllocateServicesArray (const uint32 num_services);
 
 
-
+/**
+ * Assign a given Plugin as the code that generated each Service within a ServicesArray.
+ *
+ * @param services_p The ServicesArray containing the Services to be amended.
+ * @param plugin_p The Plugin to be set for each Service.
+ * @memberof ServicesArray
+ */
 GRASSROOTS_SERVICE_LOCAL void AssignPluginForServicesArray (ServicesArray *services_p, Plugin *plugin_p);
 
 
+/**
+ * Add a JSON fragment to the response for a given Service that has been run.
+ *
+ * @param service_p The Service which will have its response amended.
+ * @param result_json_p The JSON fragment to add.
+ * @return <code>true</code> if the sService response was successfully updated, <code>false</code> otherwise.
+ * @memberof Service
+ */
 GRASSROOTS_SERVICE_API bool AddServiceResponseHeader (Service *service_p, json_t *result_json_p);
 
 
+/**
+ * Get the ServicesArray generated from a Services reference file.
+ *
+ * @param config_p The JSON fragment loaded from a referemce file.
+ * @param plugin_name_s The name of the Plugin to use.
+ * @param get_service_fn The function used to generate each Service that will be placed in the resultant
+ * ServicesArray.
+ * @return The ServicesArray containing the generated Services or <code>NULL</code> upon error.
+ * @memberof ServicesArray
+ */
 GRASSROOTS_SERVICE_API ServicesArray *GetReferenceServicesFromJSON (json_t *config_p, const char *plugin_name_s, Service *(*get_service_fn) (json_t *config_p, size_t i));
 
 
@@ -654,24 +770,14 @@ GRASSROOTS_SERVICE_LOCAL OperationStatus DefaultGetServiceStatus (Service *servi
 
 
 /**
- * Get the JSON fragment specifying the Provider details
- * from a JSON fragment representing a Service.
- *
- * @param service_json_p The JSON fragment representing a Service.
- * @return The JSON fragment representing a Provider or <code>NULL</code>
- * if it could not be found.
- */
-GRASSROOTS_SERVICE_API const json_t *GetProviderFromServiceJSON (const json_t *service_json_p);
-
-
-
-/**
  * Create a new PairedService and add it to a Service.
  *
  * @param service_p The Service to add the PairedService to.
  * @param external_server_p The ExternalServer that the PairedService runs on.
  * @param remote_service_name_s The name of the PairedService on the ExternalServer.
  * @param op_p The JSON fragment to create the PairedService's ParameterSet from.
+ * @param provider_p The JSON fragment representing the Provider.
+ * @ref server_configuration.md
  * @return <code>true</code> if the PairedService was created and added successfully, <code>false</code> otherwise.
  * @see AddPairedService.
  * @see AllocatePairedService.
@@ -720,13 +826,16 @@ GRASSROOTS_SERVICE_API bool AddLinkedService (Service *service_p, LinkedService 
  * wants a Service to run. This object needs to be within a JSON array which is what the Server
  * requires.
  *
- * @param service_p The Service to get the JSON fragment for.
- * @param params_p The ParameterSet to use. If run_flag is false, then this can be NULL.
+ * @param service_name_s The name of the Service to get the JSON fragment for.
+ * @param params_p The ParameterSet to use. If run_flag is false, then this can be <code>NULL</code>.
+ * @param sv_p If you wish to create a JSON fragment for a different version of the Grassroots system,
+ * then you can set this value to the version that you require. If this is <code>NULL</code>, then the
+ * current version of the running Grassroots system will be used.
  * @param run_flag Whether the Service should be run or not.
  * @return The JSON fragment to be added to an array to send to the Server or <code>NULL
  * </code> upon error.
  */
-GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const bool run_flag);
+GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_name_s, const ParameterSet *params_p, const SchemaVersion *sv_p, const bool run_flag);
 
 
 
@@ -742,13 +851,26 @@ GRASSROOTS_SERVICE_API json_t *GetServiceRunRequest (const char * const service_
  * @param keyword_s The keyword.
  * @param params_p The parameters to encode within the JSON fragment. This will be set up based upon the
  * keyword used to check whether the Service was interested.
+ * @param full_definition_flag This should be set to <code>true</code> when a Server is exposing its Services
+ * and <code>false</code> when a request to run a Service is being generated. See GetParameterAsJSON for more
+ * information.
  * @return The JSON fragment to send to the Server or <code>NULL</code> upon error.
  * @see IsServiceMatch
+ * @see GetParameterAsJSON
  */
-GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p,  const bool full_definition_flag);
+GRASSROOTS_SERVICE_API json_t *GetInterestedServiceJSON (const char *service_name_s, const char *keyword_s, const ParameterSet * const params_p, const bool full_definition_flag);
 
 
-
+/**
+ * This function is used to customise any ServiceJob objects that a given Service creates.
+ * It is often used to automatically set the <code>sj_update_fn</code> and <code>sj_free_fn</code>
+ * members of a ServiceJob.
+ *
+ * @param service_p The Service to set the custom ServiceJob functions for.
+ * @param job_p The ServiceJob to customise.
+ * @see ServiceJob
+ * @see se_customise_service_job_fn
+ */
 GRASSROOTS_SERVICE_API void SetServiceJobCustomFunctions (Service *service_p, struct ServiceJob *job_p);
 
 

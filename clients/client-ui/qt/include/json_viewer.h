@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,11 +13,18 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef JSON_VIEWER_H
 #define JSON_VIEWER_H
 
 #include <QTreeWidget>
 #include <QTextEdit>
+#include <QMenu>
+
 
 #include "jansson.h"
 #include "viewable_widget.h"
@@ -32,7 +39,7 @@ public:
 
 	void SetJSONData (json_t *data_p);
 
-	virtual const char *GetText () const;
+	virtual char *GetText () const;
 
 	virtual QWidget *GetWidget ();
 
@@ -51,10 +58,15 @@ private:
 	QTreeWidgetItem *InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p);
 	void AddTopLevelNode (const char *key_s, json_t *data_p);
 
+	void AddActions (QMenu *menu_p);
+
 private slots:
 	void PrepareMenu (const QPoint &pos_r);
 	void RunLinkedService (bool checked_flag);
+	void ResizeColumns (const QModelIndex &index);
 
+	void SetSystemFont ();
+	void SetFixedFont ();
 };
 
 #endif // JSON_VIEWER_H

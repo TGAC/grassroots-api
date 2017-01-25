@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef GRASSROOTS_RESOURCE_H
 #define GRASSROOTS_RESOURCE_H
 
@@ -29,6 +34,8 @@
  * a protocol of "http" and a value of "grassroots.tgac.ac.uk".
  * It can have a user-friendly title and an associated json
  * object if needed.
+ *
+ * @ingroup utility_group
  */
 typedef struct Resource
 {
@@ -85,6 +92,8 @@ typedef struct Resource
  * including this header file. Currently this happens in
  * resource.c.
  */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_RESOURCE_TAGS
 	#define RESOURCE_PREFIX GRASSROOTS_UTIL_API
 	#define RESOURCE_VAL(x)	= x
@@ -92,6 +101,8 @@ typedef struct Resource
 	#define RESOURCE_PREFIX extern
 	#define RESOURCE_VAL(x)
 #endif
+
+#endif		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 /**
  * @brief The string used to separate the protocol and values of a Resource.

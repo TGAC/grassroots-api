@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /**@file math_utils.h
 */ 
 
@@ -35,6 +40,8 @@
  * @param d2 The second double to compare.
  * @return -1 if d1 is less than d2, +1 if d1 is
  * greater than d2 and 0 if they are identical.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int CompareDoubles (const double d1, const double d2);
 
@@ -47,6 +54,8 @@ GRASSROOTS_UTIL_API int CompareDoubles (const double d1, const double d2);
  * @param f2 The second float to compare.
  * @return -1 if f1 is less than f2, +1 if f1 is
  * greater than f2 and 0 if they are identical.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int CompareFloats (const float f1, const float f2);
 
@@ -60,6 +69,8 @@ GRASSROOTS_UTIL_API int CompareFloats (const float f1, const float f2);
  * @param alternative_decimal_points_s An array of characters to consider as decimal points
  * which may be the case in different locales. If this is <code>NULL</code> then a "." will be used.
  * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data_p, const char * const alternative_decimal_points_s);
 
@@ -71,6 +82,8 @@ GRASSROOTS_UTIL_API bool GetValidRealNumber (const char **str_pp, double64 *data
  * @param str_pp Pointer to char * where we start getting the number from.
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return <code>true</code> if the conversion was successful, <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
 
@@ -82,6 +95,8 @@ GRASSROOTS_UTIL_API bool GetValidInteger (const char **str_pp, int *answer_p);
  * @param str_pp Pointer to char * where we start getting the number from.
  * @param answer_p Pointer where the number will be stored if the conversion was successful.
  * @return TRUE if the conversion was successful, FALSE otherwise.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p);
 
@@ -95,6 +110,8 @@ GRASSROOTS_UTIL_API bool GetValidLong (const char **str_pp, long *answer_p);
  * @return -1 if the first double is less than the second,
  * +1 if the first double is greater than the second
  * and 0 if they are identical.
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
 
@@ -110,6 +127,8 @@ GRASSROOTS_UTIL_API int SortDoubles (const void *v1_p, const void *v2_p);
  * <code>NULL</code> upon error. This string needs to be freed using <code>
  * FreeCopiedString</code> to avoid a memory leak.
  * @see FreeCopiedString
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *ConvertNumberToString (double d, int8 num_dps);
 

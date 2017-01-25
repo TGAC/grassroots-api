@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
 
 
 #ifdef _DEBUG
-	#define PARAMETER_DEBUG	(STM_LEVEL_FINE)
+	#define PARAMETER_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define PARAMETER_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -42,7 +42,7 @@ static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 	"xsd:boolean",
 	"params:signed_integer",
 	"params:unsigned_integer",
-	"params:negative_integer"
+	"params:negative_integer",
 	"xsd:double",
 	"params:unsigned_number",
 	"xsd:string",
@@ -543,7 +543,7 @@ bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_
 				{
 					const RemoteParameterDetails *src_details_p = src_node_p -> rpdn_details_p;
 
-					if (AddRemoteDetailsToParameter (dest_p, src_details_p -> rpd_server_uri_s, src_details_p -> rpd_tag))
+					if (AddRemoteDetailsToParameter (dest_p, src_details_p -> rpd_server_uri_s, src_details_p -> rpd_name_s))
 						{
 							src_node_p = (const RemoteParameterDetailsNode *) (src_node_p -> rpdn_node.ln_next_p);
 						}
@@ -1037,73 +1037,70 @@ static bool AddParameterLevelToJSON (const Parameter * const param_p, json_t *ro
 {
 	bool success_flag = false;
 
-	if (json_object_set_new (root_p, PARAM_LEVEL_S, json_integer (param_p -> pa_level)) == 0)
+	if ((param_p -> pa_level & PL_ALL) == PL_ALL)
 		{
-			if ((param_p -> pa_level & PL_ALL) == PL_ALL)
+			if (json_object_set_new (root_p, PARAM_LEVEL_S, json_string (PARAM_LEVEL_TEXT_ALL_S)) == 0)
 				{
-					if (json_object_set_new (root_p, PARAM_LEVEL_TEXT_S, json_string (PARAM_LEVEL_TEXT_ALL_S)) == 0)
+					success_flag = true;
+				}
+		}
+	else
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (256);
+
+			if (buffer_p)
+				{
+					int append_status = 0;
+
+					if ((param_p -> pa_level & PL_BASIC) == PL_BASIC)
 						{
-							success_flag = true;
+							append_status = AppendStringToByteBuffer (buffer_p, PARAM_LEVEL_TEXT_BASIC_S) ? 1 : -1;
 						}
-				}
-			else
-				{
-					ByteBuffer *buffer_p = AllocateByteBuffer (256);
 
-					if (buffer_p)
+					if (append_status != -1)
 						{
-							int append_status = 0;
-
-							if ((param_p -> pa_level & PL_BASIC) == PL_BASIC)
+							if ((param_p -> pa_level & PL_INTERMEDIATE) == PL_INTERMEDIATE)
 								{
-									append_status = AppendStringToByteBuffer (buffer_p, PARAM_LEVEL_TEXT_BASIC_S) ? 1 : -1;
-								}
-
-							if (append_status != -1)
-								{
-									if ((param_p -> pa_level & PL_INTERMEDIATE) == PL_INTERMEDIATE)
+									if (append_status == 1)
 										{
-											if (append_status == 1)
-												{
-													append_status = AppendStringsToByteBuffer (buffer_p, "|", PARAM_LEVEL_TEXT_INTERMEDIATE_S, NULL) ? 1 : -1;
-												}
-											else
-												{
-													append_status = AppendStringToByteBuffer (buffer_p, PARAM_LEVEL_TEXT_INTERMEDIATE_S) ? 1 : -1;
-												}
+											append_status = AppendStringsToByteBuffer (buffer_p, "|", PARAM_LEVEL_TEXT_INTERMEDIATE_S, NULL) ? 1 : -1;
+										}
+									else
+										{
+											append_status = AppendStringToByteBuffer (buffer_p, PARAM_LEVEL_TEXT_INTERMEDIATE_S) ? 1 : -1;
 										}
 								}
+						}
 
-							if (append_status != -1)
+					if (append_status != -1)
+						{
+							if ((param_p -> pa_level & PL_ADVANCED) == PL_ADVANCED)
 								{
-									if ((param_p -> pa_level & PL_ADVANCED) == PL_ADVANCED)
+									if (append_status == 1)
 										{
-											if (append_status == 1)
-												{
-													append_status = AppendStringsToByteBuffer (buffer_p, "|", PARAM_LEVEL_TEXT_ADVANCED_S, NULL) ? 1 : -1;
-												}
-											else
-												{
-													append_status = AppendStringToByteBuffer (buffer_p, PARAM_LEVEL_TEXT_ADVANCED_S) ? 1 : -1;
-												}
+											append_status = AppendStringsToByteBuffer (buffer_p, "|", PARAM_LEVEL_TEXT_ADVANCED_S, NULL) ? 1 : -1;
+										}
+									else
+										{
+											append_status = AppendStringToByteBuffer (buffer_p, PARAM_LEVEL_TEXT_ADVANCED_S) ? 1 : -1;
 										}
 								}
+						}
 
-							if (append_status == 1)
+					if (append_status == 1)
+						{
+							const char *data_s = GetByteBufferData (buffer_p);
+
+							if (json_object_set_new (root_p, PARAM_LEVEL_S, json_string (data_s)) == 0)
 								{
-									const char *data_s = GetByteBufferData (buffer_p);
-
-									if (json_object_set_new (root_p, PARAM_LEVEL_TEXT_S, json_string (data_s)) == 0)
-										{
-											success_flag = true;
-										}
+									success_flag = true;
 								}
+						}
 
-							success_flag = (append_status != -1);
+					success_flag = (append_status != -1);
 
-							FreeByteBuffer (buffer_p);
-						}		/* if (buffer_p) */
-				}
+					FreeByteBuffer (buffer_p);
+				}		/* if (buffer_p) */
 		}
 
 	#if SERVER_DEBUG >= STM_LEVEL_FINER
@@ -2822,10 +2819,10 @@ void FreeSharedTypeNode (ListItem *node_p)
 }
 
 
-bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const Tag tag)
+bool AddRemoteDetailsToParameter (Parameter *param_p, const char * const uri_s, const char * const name_s)
 {
 	bool success_flag = false;
-	RemoteParameterDetailsNode *node_p = AllocateRemoteParameterDetailsNodeByParts (uri_s, tag);
+	RemoteParameterDetailsNode *node_p = AllocateRemoteParameterDetailsNodeByParts (uri_s, name_s);
 
 	if (node_p)
 		{

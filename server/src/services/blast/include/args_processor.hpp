@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * args_processor.hpp
  *
@@ -30,6 +35,8 @@
  * An ArgsProcessor is a class to abstract out how a
  * particular BlastTool stores a value when an argument
  * is passed to it.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL ArgsProcessor
 {

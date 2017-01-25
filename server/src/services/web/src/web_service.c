@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ static bool CloseWebService (Service *service_p);
  */
  
 
-ServicesArray *GetServices (UserDetails *user_p, json_t *config_p)
+ServicesArray *GetServices (json_t *config_p)
 {
 	return GetReferenceServicesFromJSON (config_p, "web_service", GetWebService);
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * apr_jobs_manager.h
  *
@@ -46,6 +51,9 @@
  * including this header file. Currently this happens in
  * resource.c.
  */
+
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
 #ifdef ALLOCATE_APR_JOBS_MANAGER_TAGS
 	#define APR_JOBS_MANAGER_PREFIX
 	#define APR_JOBS_MANAGER_VAL(x)	= x
@@ -54,7 +62,15 @@
 	#define APR_JOBS_MANAGER_VAL(x)
 #endif
 
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
+
+/**
+ * The identifier for the named shared object cache to use for sharing ServiceJobs
+ * between different httpd processes and threads.
+ *
+ * @ingroup httpd_server
+ */
 APR_JOBS_MANAGER_PREFIX const char *APR_JOBS_MANAGER_CACHE_ID_S APR_JOBS_MANAGER_VAL("grassroots-jobs-socache");
 
 
@@ -102,14 +118,50 @@ bool APRJobsManagerChildInit (apr_pool_t *pool_p, server_rec *server_p);
 apr_status_t CleanUpAPRJobsManager (void *value_p);
 
 
-
+/**
+ * Configure an APRJobsManager in the Apache parent process before any child processes
+ * are launched.
+ *
+ * @param manager_p The APRJobsManager to configure.
+ * @param config_pool_p The memory pool available to use.
+ * @param server_p The Apache server structure.
+ * @param provider_name_s The name of sharded object cache provider to use.
+ * @return <code>true</code> if successful or <code>false</code> if there was a problem.
+ * @memberof APRJobsManager
+ */
 bool PostConfigAPRJobsManager (APRJobsManager *manager_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s);
 
+
+/**
+ * Set up an APRJobsManager prior to the configuration details being used.
+ *
+ * @param manager_p The APRJobsManager to initialise.
+ * @param config_pool_p A memory pool to use if needed.
+ * @return <code>true</code> if the initialisation was successful or <code>false</code> if there was a problem.
+ * @memberof APRJobsManager
+ */
 bool APRJobsManagerPreConfigure (APRJobsManager *manager_p, apr_pool_t *config_pool_p);
 
+/**
+ * Notify that a ServiceJob with a given UUID has finished and
+ * can be removed from the given JobsManager.
+ *
+ * @param jobs_manager_p The JobsManager to remove the ServiceJob from.
+ * @param job_key The UUID of the ServiceJob to be removed.
+ *
+ * @memberof APRJobsManager
+ */
 void APRServiceJobFinished (JobsManager *jobs_manager_p, uuid_t job_key);
 
 
+/**
+ * Free an APRJobsManager.
+ *
+ * @param jobs_manager_p The APRJobsManager to free.
+ * @return<code>true</code> if the APRJobsManager was freed successfully, ,
+ * <code>false</code> upon error.
+ * @memberof APRJobsManager
+ */
 bool DestroyAPRJobsManager (APRJobsManager *jobs_manager_p);
 
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@
 #include <QVBoxLayout>
 
 #include "text_viewer.h"
+#include "string_utils.h"
+
 
 TextViewer :: TextViewer (QWidget *parent_p)
 : QWidget (parent_p)
@@ -46,13 +48,13 @@ void TextViewer :: SetText (const char *value_s)
 }
 
 
-const char *TextViewer :: GetText () const
+ char *TextViewer :: GetText () const
 {
 	QString s = tv_editor_p -> toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();
-	const char *data_s = ba.constData ();
+	const char *data_s = ba.data ();
 
-	return data_s;
+	return CopyToNewString (data_s, 0, false);
 }
 
 

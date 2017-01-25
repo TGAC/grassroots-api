@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
  * @file
- * @defgroup Network Network Library
- * @brief The datatypes and methods for network functionality.
+ * @brief
  */
+
 #ifndef GRASSROOTS_NETWORK_LIBRARY_H
 #define GRASSROOTS_NETWORK_LIBRARY_H
 

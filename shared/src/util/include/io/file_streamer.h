@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef FILE_STREAMER_H
 #define FILE_STREAMER_H
 
@@ -46,7 +51,24 @@
 #endif /* #ifdef SHARED_LIBRARY */
 
 
+/**
+ * Allocate an OutputStreamerModule for writing log and error messages to named output files.
+ *
+ * @param config_manager_p The ConfigurationManager used to specify the details of the
+ * output filenames.
+ * @return A newly-allocated OutputStreamerModule or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
+ */
 FILE_STREAMER_API OutputStreamerModule *AllocateStreamer (const ConfigurationManager * const config_manager_p);
+
+/**
+ * Free an OutputStreamerModule.
+ *
+ * @param streamer_p The OutputStreamerModule to free.
+ *
+ * @ingroup utility_group
+ */
 FILE_STREAMER_API void DeallocateStreamer (OutputStreamerModule *streamer_p);
 
 

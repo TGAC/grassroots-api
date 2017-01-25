@@ -1,5 +1,5 @@
 /*
- ** Copyright 2014-2015 The Genome Analysis Centre
+ ** Copyright 2014-2016 The Earlham Institute
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -44,7 +44,6 @@
 #include "uuid/uuid.h"
 
 //#include "irods_handle.h"
-#include "json_tools.h"
 #include "providers_state_table.h"
 #include "grassroots_config.h"
 
@@ -253,13 +252,13 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 										res_p = GetAllServices (req_p, user_p);
 										break;
 
-									case OP_IRODS_MODIFIED_DATA:
-										{
-											#if IRODS_ENABLED == 1
-											res_p = GetAllModifiedData (req_p, user_p);
-											#endif
-										}
-										break;
+//									case OP_IRODS_MODIFIED_DATA:
+//										{
+//											#if IRODS_ENABLED == 1
+//											res_p = GetAllModifiedData (req_p, user_p);
+//											#endif
+//										}
+//										break;
 
 									case OP_LIST_INTERESTED_SERVICES:
 										res_p = GetInterestedServices (req_p, user_p);
@@ -656,29 +655,61 @@ static int8 RunServiceFromJSON (const json_t *service_req_p, const json_t *paire
 static Operation GetOperation (json_t *ops_p)
 {
 	Operation op = OP_NONE;
-	json_t *op_p = json_object_get (ops_p, OPERATION_ID_S);
-
-	if (!op_p)
-		{
-			op_p = json_object_get (ops_p, OPERATION_ID_OLD_S);
-		}
+	json_t *op_p = json_object_get (ops_p, OPERATION_S);
 
 	if (op_p)
 		{
-			if (json_is_integer (op_p))
+			if (json_is_string (op_p))
 				{
-					op = json_integer_value (op_p);
-				}
-			else if (json_is_string (op_p))
-				{
-					const char *value_s = json_string_value (op_p);
-					int i;
+					const char *op_s = json_string_value (op_p);
 
-					if (GetValidInteger (&value_s, &i))
+					if (op_s)
 						{
-							op = i;
+							op = GetOperationFromString (op_s);
+
+							if (op == OP_NONE)
+								{
+									PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, op_p, "Failed to get valid operation value");
+								}
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, ops_p, "%s value is NULL", OPERATION_S);
 						}
 				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, ops_p, "%s value is not a string", OPERATION_S);
+				}
+		}
+
+	if (op == OP_NONE)
+		{
+			op_p = json_object_get (ops_p, OPERATION_ID_S);
+
+			if (!op_p)
+				{
+					op_p = json_object_get (ops_p, OPERATION_ID_OLD_S);
+				}
+
+			if (op_p)
+				{
+					if (json_is_integer (op_p))
+						{
+							op = json_integer_value (op_p);
+						}
+					else if (json_is_string (op_p))
+						{
+							const char *value_s = json_string_value (op_p);
+							int i;
+
+							if (GetValidInteger (&value_s, &i))
+								{
+									op = i;
+								}
+						}
+				}
+
 		}
 
 	return op;
@@ -689,18 +720,17 @@ static Operation GetOperation (json_t *ops_p)
 static Resource *GetResourceOfInterest (const json_t * const req_p)
 {
 	Resource *resource_p = NULL;
-	json_t *file_data_p = json_object_get (req_p, KEY_FILE_DATA);
+	json_t *file_data_p = json_object_get (req_p, RESOURCE_S);
 
 	if (file_data_p)
 		{
-			json_t *protocol_p = json_object_get (file_data_p, KEY_PROTOCOL);
+			json_t *protocol_p = json_object_get (file_data_p, RESOURCE_PROTOCOL_S);
 
 			if (protocol_p)
 				{
 					if (json_is_string (protocol_p))
 						{
-							/* is it a single file or a dir? */
-							json_t *data_name_p = json_object_get (file_data_p, KEY_FILENAME);
+							json_t *data_name_p = json_object_get (file_data_p, RESOURCE_VALUE_S);
 
 							if (data_name_p && (json_is_string (data_name_p)))
 								{
@@ -1269,7 +1299,7 @@ static json_t *GetServicesAsJSON (const char * const services_path_s, UserDetail
 	else
 		{
 			ServersManager *servers_manager_p = GetServersManager ();
-			json_p = AddExternalServerOperationsToJSON (servers_manager_p, NULL, OP_LIST_ALL_SERVICES);
+			json_p = AddExternalServerOperationsToJSON (servers_manager_p, OP_LIST_ALL_SERVICES);
 		}
 
 	return json_p;

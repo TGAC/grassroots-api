@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,13 +13,10 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
 /**
- * @file io_utils.h
- * @defgroup io_util Miscellaneous I/O routines
- * 
- * 
- * @brief Various functions to do stuff
- * @details More details here
+ * @file
+ * @brief
  */
 
 
@@ -49,7 +46,8 @@ extern "C"
  * @param filename_s The file to check.
  * @return The type of location of the file or FILE_LOCATION_UNKNOWN if it could
  * not be determined.
- * @ingroup io_util
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API FileLocation GetFileLocation (const char * const filename_s);
 
@@ -59,7 +57,8 @@ GRASSROOTS_UTIL_API FileLocation GetFileLocation (const char * const filename_s)
  * 
  * @param filename_s The name of the the source file.
  * @return true on success, false on error with errno set to the appropriate value. 
- * @ingroup io_util 
+ *
+ * @ingroup utility_group
  */ 
 GRASSROOTS_UTIL_API char *CopyFileToLocalFilesystem (const char * const filename_s);
 
@@ -70,8 +69,9 @@ GRASSROOTS_UTIL_API char *CopyFileToLocalFilesystem (const char * const filename
  * @param filename_s The name of the the source file.
  * @param offset The byte offset to start copying from.
  * @param chunk_size The size of the chunk to copy.
- * @return true on success, false on error with errno set to the appropriate value. 
- * @ingroup io_util 
+ * @return <code>true</code> on success, <code>false</code> on error with errno set to the appropriate value.
+ *
+ * @ingroup utility_group
  */ 
 GRASSROOTS_UTIL_API char *CopyFileChunkToLocalFilesystem (const char * const filename_s, size_t offset, size_t chunk_size);
 
@@ -82,7 +82,8 @@ GRASSROOTS_UTIL_API char *CopyFileChunkToLocalFilesystem (const char * const fil
  * 
  * @param value The value to print into the the newly allocated string.
  * @return The string with the given value or <code>NULL</code> upon error.
- * @ingroup io_util 
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API char *GetIntAsString (int value);
 
@@ -103,7 +104,8 @@ GRASSROOTS_UTIL_API char *GetIntAsString (int value);
  * - LOG_DEBUG
  * 
  * @param message_s The string to write using standard c printf syntax.
- * @ingroup io_util
+ *
+ * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API void WriteToLog (const char *log_ident_s, const int log_level, const char *message_s, ...);
 

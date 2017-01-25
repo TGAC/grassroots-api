@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * typedefs.h
  *
@@ -25,17 +30,28 @@
 #ifdef HAVE_STDBOOL_H
 	#include <stdbool.h>
 #elif !defined __bool_true_false_are_defined
-	#ifndef HAVE__BOOL
-		#ifdef __cplusplus
-			typedef bool _Bool;
-		#else
-			#define _Bool signed char
+
+	#ifndef DOXYGEN_SHOULD_SKIP_THIS
+		#ifndef HAVE__BOOL
+			#ifdef __cplusplus
+				typedef bool _Bool;
+			#else
+				#define _Bool signed char
+			#endif
 		#endif
-	#endif
-	#define bool _Bool
+		#define bool _Bool
+	#endif		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
+
+	/** The value to use to signify false for bool datatypes. */
 	#define false (0)
+
+	/** The value to use to signify true for bool datatypes. */
 	#define true (1)
-	#define __bool_true_false_are_defined 1
+
+	#ifndef DOXYGEN_SHOULD_SKIP_THIS
+		#define __bool_true_false_are_defined 1
+	#endif
+
 #endif
 
 
@@ -53,23 +69,47 @@
 	typedef int16_t int16;
 	typedef uint16_t uint16;
 
-
+	/** The C I/O length field for uint32 datatypes. */
 	#define UINT32_FMT_IDENT "u"
+
+	/** The C I/O length field for int32 datatypes. */
 	#define INT32_FMT_IDENT "d"
+
+	/** The C I/O length field for double64 datatypes. */
 	#define DOUBLE64_FMT_IDENT "lf"
+
+	/** The C I/O length field for uint8 datatypes. */
 	#define UINT8_FMT_IDENT "cu"
+
+	/** The C I/O length field for int8 datatypes. */
 	#define INT8_FMT_IDENT "c"
+
+	/** The C I/O length field for uint16 datatypes. */
 	#define UINT16_FMT_IDENT "hu"
+
+	/** The C I/O length field for int16 datatypes. */
 	#define INT16_FMT_IDENT "hd"
+
+	/** The C I/O length field for sizet datatypes. */
 	#define SIZET_FMT_IDENT "lu"
 #endif
 
-
+/** The C I/O format specifier for uint32 datatypes. */
 #define UINT32_FMT "%" UINT32_FMT_IDENT
+
+/** The C I/O format specifier for int32 datatypes. */
 #define INT32_FMT "%" INT32_FMT_IDENT
+
+/** The C I/O format specifier for double64 datatypes. */
 #define DOUBLE64_FMT "%" DOUBLE64_FMT_IDENT
+
+/** The C I/O format specifier for uint8 datatypes. */
 #define UINT8_FMT "%" UINT8_FMT_IDENT
+
+/** The C I/O format specifier for int8 datatypes. */
 #define INT8_FMT "%" INT8_FMT_IDENT
+
+/** The C I/O format specifier for sizet datatypes. */
 #define SIZET_FMT "%" SIZET_FMT_IDENT
 
 
@@ -78,6 +118,7 @@
 /**
  * An enum specifying whether a file is located on a
  * local or remote filesystem.
+ * @ingroup utility_group
  */
 typedef enum FileLocation
 {

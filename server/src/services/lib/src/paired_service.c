@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@
 #include "connection.h"
 #include "json_tools.h"
 #include "service.h"
-
+#include "service_config.h"
 
 #ifdef USE_PTHREADS
 #include "pthread.h"
@@ -229,7 +229,8 @@ json_t *MakeRemotePairedServiceCall (const char * const service_name_s, Paramete
 					/*
 					 * Only send the databases that the external paired service knows about
 					 */
-					json_t *service_req_p = GetServiceRunRequest (service_name_s, params_p, true);
+					const SchemaVersion *sv_p = GetSchemaVersion ();
+					json_t *service_req_p = GetServiceRunRequest (service_name_s, params_p, sv_p, true);
 
 					if (service_req_p)
 						{

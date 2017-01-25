@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -61,7 +61,9 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 
 	if (our_item_p)
 		{
+			setCursor (Qt :: BusyCursor);
 			our_item_p -> ShowData ();
+			setCursor (Qt :: ArrowCursor);
 		}
 	else
 		{

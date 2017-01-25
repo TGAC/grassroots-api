@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
 ** limitations under the License.
 */
 
+/**
+ * @file
+ * @brief
+ */
+
 /*
  * remote_parameter_details.h
  *
@@ -26,13 +31,14 @@
 
 
 #include "grassroots_params_library.h"
-#include "tags.h"
 #include "linked_list.h"
 #include "jansson.h"
 
 /**
  * This datatype is used to denote that a Parameter is
  * for use on a PairedService.
+ *
+ * @ingroup parameters_group
  */
 typedef struct RemoteParameterDetails
 {
@@ -45,10 +51,11 @@ typedef struct RemoteParameterDetails
 
 	/**
 	 * If the Parameter belongs to a local Service, this will be
-	 * 0. If it is for an external Service, then this
-	 * is the tag for the ExternalServer's Parameter running that Service.
+	 * <code>NULL</code>. If it is for an external Service, then this
+	 * is the name for the ExternalServer's Parameter running that Service.
 	 */
-	Tag rpd_tag;
+	char *rpd_name_s;
+
 } RemoteParameterDetails;
 
 
@@ -57,6 +64,7 @@ typedef struct RemoteParameterDetails
  * on a LinkedList.
  *
  * @extends ListItem
+ * @ingroup parameters_group
  */
 typedef struct RemoteParameterDetailsNode
 {
@@ -77,11 +85,11 @@ extern "C" {
  * Allocate a RemoteParameterDetails.
  *
  * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
- * @param tag The tag for this Parameter on the PairedService.
+ * @param param_s The name for this Parameter on the PairedService.
  * @memberof RemoteParameterDetails
  * @return The new RemoteParameterDetails or <code>NULL</code> upon error.
  */
-GRASSROOTS_PARAMS_API	RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, Tag tag);
+GRASSROOTS_PARAMS_API	RemoteParameterDetails *AllocateRemoteParameterDetails (const char * const uri_s, const char * const param_s);
 
 
 /**
@@ -107,11 +115,11 @@ GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetails
  * Allocate a new RemoteParameterDetailsNode and a new RemoteParameterDetails to store in it.
  *
  * @param uri_s The URI of the ExternalServer that runs the PairedService that this RemoteParameter belongs to.
- * @param tag The tag for this Parameter on the PairedService.
+ * @param param_s The name for this Parameter on the PairedService.
  * @memberof RemoteParameterDetailsNode
  * @return The new RemoteParameterDetailsNode or <code>NULL</code> upon error.
  */
-GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s, Tag tag);
+GRASSROOTS_PARAMS_API	RemoteParameterDetailsNode *AllocateRemoteParameterDetailsNodeByParts (const char * const uri_s,  const char * const param_s);
 
 
 /**

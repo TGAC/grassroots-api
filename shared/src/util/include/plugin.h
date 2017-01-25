@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /**@file plugin.h
 */
 
@@ -36,6 +41,8 @@ struct Handler;
 
 /**
  * The current status of a Plugin
+ *
+ * @ingroup utility_group
  */
 typedef enum PluginStatus
 {
@@ -56,6 +63,8 @@ typedef enum PluginStatus
 
 /**
  * The type of module that the Plugin contains
+ *
+ * @ingroup utility_group
  */
 typedef enum PluginNature
 {
@@ -84,6 +93,7 @@ typedef enum PluginNature
  * platform-specific container e.g. a .dll on Windows,
  * a .so on Unix, etc.
  *
+ * @ingroup utility_group
  */
 typedef struct Plugin
 {
@@ -147,6 +157,8 @@ typedef struct Plugin
  * a plugin value.
  *
  * @extends ListItem
+ *
+ * @ingroup utility_group
  */
 typedef struct PluginListNode
 {

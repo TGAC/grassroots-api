@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@
 #include "streams.h"
 #include "json_util.h"
 #include "json_tools.h"
-#include "tag_item.h"
 #include "service.h"
 
 #ifdef _DEBUG

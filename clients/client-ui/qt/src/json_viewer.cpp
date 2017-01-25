@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -14,10 +14,14 @@
 ** limitations under the License.
 */
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QJsonDocument>
 #include <QDebug>
 #include <QAction>
-#include <QMenu>
+#include <QFontDatabase>
+#include <QMenuBar>
+#include <QTabWidget>
+
 
 #include "json_viewer.h"
 #include "math_utils.h"
@@ -35,21 +39,40 @@ Q_DECLARE_METATYPE (json_t *)
 JSONViewer ::	JSONViewer (QWidget *parent_p)
 : QWidget (parent_p)
 {
-	QHBoxLayout *layout_p = new QHBoxLayout;
+
+	QVBoxLayout *layout_p = new QVBoxLayout;
+	QMenuBar *menubar_p = new QMenuBar (this);
+	QMenu *menu_p = new QMenu ("View");
+	AddActions (menu_p);
+	menubar_p -> addMenu (menu_p);
+	layout_p -> addWidget (menubar_p);
+
+	QTabWidget *tabs_p = new QTabWidget;
+
 
 	jv_tree_p = new QTreeWidget (this);
+	jv_tree_p -> setAlternatingRowColors (true);
 	jv_tree_p -> setContextMenuPolicy (Qt :: CustomContextMenu);
-	connect (jv_tree_p, &QTreeWidget :: customContextMenuRequested, this, &JSONViewer :: PrepareMenu);
 
-	layout_p -> addWidget (jv_tree_p);
+	connect (jv_tree_p, &QTreeWidget :: customContextMenuRequested, this, &JSONViewer :: PrepareMenu);
+	connect (jv_tree_p, &QTreeView :: expanded, this, &JSONViewer :: ResizeColumns);
+	//connect (jv_tree_p, &QTreeView :: collapsed, this, &JSONViewer :: ResizeColumns);
+	tabs_p -> addTab (jv_tree_p, "Document tree");
 
 	jv_viewer_p = new QTextEdit (this);
 	jv_viewer_p -> setReadOnly (true);
-	layout_p -> addWidget (jv_viewer_p);
+	tabs_p -> addTab (jv_viewer_p, "Document text");
 
+	layout_p -> addWidget (tabs_p);
 	setLayout (layout_p);
 
 	setWindowTitle ("JSON Viewer");
+}
+
+
+void JSONViewer :: ResizeColumns (const QModelIndex &index)
+{
+	jv_tree_p -> resizeColumnToContents (0);
 }
 
 
@@ -120,12 +143,12 @@ void JSONViewer :: RunLinkedService (bool checked_flag)
 }
 
 
-const char *JSONViewer :: GetText () const
+char *JSONViewer :: GetText () const
 {
 	QString s = jv_viewer_p ->  toPlainText ();
 	QByteArray ba = s.toLocal8Bit ();
-
-	return ba.constData ();
+	const char *data_s = ba.constData ();
+	return CopyToNewString (data_s, 0, false);
 }
 
 
@@ -133,6 +156,35 @@ QWidget *JSONViewer :: GetWidget ()
 {
 	return this;
 }
+
+
+void JSONViewer :: AddActions (QMenu *menu_p)
+{
+	QMenu *sub_menu_p = new QMenu (tr ("Font"));
+	QActionGroup *font_types_p = new QActionGroup (this);
+
+	// Fixed Font
+	QAction *action_p = new QAction (tr ("Fixed"), this);
+	action_p -> setStatusTip (tr ("Use Fixed Font"));
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &JSONViewer :: SetFixedFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+
+	// System Font
+	action_p = new QAction (tr ("System"), this);
+	action_p -> setStatusTip (tr ("Use System Font"));
+	action_p -> setCheckable (true);
+	connect (action_p, &QAction :: triggered, this, &JSONViewer :: SetSystemFont);
+	sub_menu_p -> addAction (action_p);
+	font_types_p -> addAction (action_p);
+	action_p -> setChecked (true);
+
+
+	menu_p -> addMenu (sub_menu_p);
+}
+
+
 
 
 QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char *key_s, json_t *data_p)
@@ -162,6 +214,8 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 		{
 			json_t *child_json_p;
 			const char *child_key_s;
+
+			child_node_p -> setIcon (0, QIcon ("images/braces"));
 
 			json_object_foreach (data_p, child_key_s, child_json_p)
 				{
@@ -207,6 +261,9 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 				}		/* if (strcmp (key_s, LINKED_SERVICES_S) == 0) */
 			else
 				{
+
+					child_node_p -> setIcon (0, QIcon ("images/brackets"));
+
 					json_array_foreach (data_p, i, child_json_p)
 						{
 							char *value_s = ConvertIntegerToString (i);
@@ -226,12 +283,15 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 		{
 			const char *value_s = json_string_value (data_p);
 
+			child_node_p -> setIcon (0, QIcon ("images/text"));
 			child_node_p -> setText (1, value_s);
 		}
 	else if (json_is_integer (data_p))
 		{
 			json_int_t i = json_integer_value (data_p);
 			char *value_s = ConvertIntegerToString (i);
+
+			child_node_p -> setIcon (0, QIcon ("images/numberdecmark"));
 
 			if (value_s)
 				{
@@ -244,6 +304,8 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 			double d = json_real_value (data_p);
 			char *value_s = ConvertDoubleToString (d);
 
+			child_node_p -> setIcon (0, QIcon ("images/numberdec"));
+
 			if (value_s)
 				{
 					child_node_p -> setText (1, value_s);
@@ -253,10 +315,12 @@ QTreeWidgetItem *JSONViewer :: InsertData (QTreeWidgetItem *parent_p, const char
 	else if (json_is_true (data_p))
 		{
 			child_node_p -> setText (1, "true");
+			child_node_p -> setIcon (0, QIcon ("images/ok"));
 		}
 	else if (json_is_false (data_p))
 		{
 			child_node_p -> setText (1, "false");
+			child_node_p -> setIcon (0, QIcon ("images/cancel"));
 		}
 
 	return child_node_p;
@@ -270,7 +334,12 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 	jv_tree_p -> clear ();
 	jv_viewer_p -> clear ();
 
+
 	jv_tree_p -> setColumnCount (2);
+
+	QStringList labels;
+	labels << tr ("Key") << tr ("Value");
+	jv_tree_p -> setHeaderLabels (labels);
 
 	if (json_is_array (data_p))
 		{
@@ -301,6 +370,8 @@ void JSONViewer :: SetJSONData (json_t *data_p)
 			free (value_s);
 		}
 
+	jv_tree_p -> resizeColumnToContents (1);
+
 	jv_tree_p -> repaint ();
 }
 
@@ -311,5 +382,25 @@ void JSONViewer :: AddTopLevelNode (const char *key_s, json_t *data_p)
 {
 	QTreeWidgetItem *top_level_node_p = InsertData (NULL, key_s, data_p);
 
+}
+
+
+
+
+void JSONViewer :: SetSystemFont ()
+{
+	QFont f = QFontDatabase :: systemFont (QFontDatabase :: GeneralFont);
+
+	jv_viewer_p -> setFont (f);
+	jv_tree_p -> setFont (f);
+}
+
+
+void JSONViewer :: SetFixedFont ()
+{
+	QFont f = QFontDatabase :: systemFont (QFontDatabase :: FixedFont);
+
+	jv_viewer_p -> setFont (f);
+	jv_tree_p -> setFont (f);
 }
 

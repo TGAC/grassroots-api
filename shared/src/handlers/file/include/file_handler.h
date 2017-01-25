@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef GRASSROOTS_FILE_HANDLER_H
 #define GRASSROOTS_FILE_HANDLER_H
 
@@ -45,8 +50,24 @@ extern "C"
 #endif
 
 
+/**
+ * Get a FileHandler.
+ *
+ * @param user_p The UserDetails used to determine file access permissions. This can be <code>NULL</code>.
+ * @return The newly-allocated FileHandler or <code>NULL</code> upon error.
+ * @memberof FileHandler
+ * @ingroup file_handler_group
+ */
 FILE_HANDLER_API Handler *GetHandler (const UserDetails *user_p);
 
+
+/**
+ * Free a FileHandler.
+ *
+ * @param handler_p The FileHandler to free.
+ * @memberof FileHandler
+ * @ingroup file_handler_group
+ */
 FILE_HANDLER_API void ReleaseHandler (Handler *handler_p);
 
 #ifdef __cplusplus

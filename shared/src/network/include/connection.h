@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * connection.h
  *
@@ -20,7 +25,7 @@
  *      Author: billy
  *
  * @brief A datatype to encapsulate Server-Client connections.
- * @addtogroup Network
+ * @addto@group network_group
  * @{
  */
 
@@ -37,6 +42,8 @@
 
 /**
  * An enumeration listing the different types of Connections
+ *
+ * @ingroup network_group
  */
 typedef enum
 {
@@ -53,6 +60,8 @@ typedef enum
 
 /**
  * @brief The base class for building a Server-Client connection.
+ *
+ * @ingroup network_group
  */
 typedef struct Connection
 {
@@ -68,6 +77,8 @@ typedef struct Connection
  * @brief A Connection that uses raw socket-based communication.
  *
  * @extends Connection
+ *
+ * @ingroup network_group
  */
 typedef struct RawConnection
 {
@@ -104,6 +115,8 @@ typedef struct RawConnection
  * @brief A Connection that uses http(s) communication.
  *
  * @extends Connection
+ *
+ * @ingroup network_group
  */
 typedef struct WebConnection
 {

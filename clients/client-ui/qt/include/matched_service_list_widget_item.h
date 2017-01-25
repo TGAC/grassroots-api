@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef MATCHED_SERVICE_LIST_WIDGET_ITEM_H
 #define MATCHED_SERVICE_LIST_WIDGET_ITEM_H
 

@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * apache_output_stream.h
  *
@@ -34,6 +39,7 @@
  * all server messages into the standard logs.
  *
  * @extends OutputStream
+ * @ingroup httpd_server
  */
 typedef struct ApacheOutputStream
 {
@@ -55,6 +61,7 @@ typedef struct ApacheOutputStream
  * @param server_p The httpd server to use the OutputStream on.
  * @return The newly-allocated ApacheOutputStream or <code>NULL</code>
  * upon error.
+ * @memberof ApacheOutputStream
  */
 OutputStream *AllocateApacheOutputStream (server_rec *server_p);
 
@@ -63,6 +70,7 @@ OutputStream *AllocateApacheOutputStream (server_rec *server_p);
  * Free an ApacheOutputStream.
  *
  * @param stream_p The ApacheOutputStream to free.
+ * @memberof ApacheOutputStream
  */
 void DeallocateApacheOutputStream (OutputStream *stream_p);
 

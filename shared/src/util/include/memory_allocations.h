@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /**@file memory_allocations.h
 */
 
@@ -25,6 +30,8 @@
  * An enum specifying the particular status of a piece of dynamically allocated memory for
  * a particular object. Its use is to allow many objects to have a pointer to some memory
  * but only one takes care of deallocating it.
+ *
+ * @ingroup utility_group
  */
 typedef enum MEM_FLAG
 {
@@ -109,6 +116,8 @@ typedef enum MEM_FLAG
 
 		/** Free the memory pointed to by x */
 		#define FreeMemory(x)	free(x)
+
+		/** Is the current memory allocator suitable for use in a threaded environment> */
 		#define IsAllocatorThreadSafe() (1)
 	#endif
 
@@ -116,15 +125,55 @@ typedef enum MEM_FLAG
 
 
 
+/**
+ * Allocate some memory that can shared between different processes.
+ *
+ * @param id_s An identifier that will be used to access the shared memory segment
+ * if it is successfully allocated.
+ * @param size The size of the requested segment in bytes.
+ * @param flags The permissions for the owner, group and world permissions in
+ * standard unix format e.g. 0644 for owner to have read and write permissions whilst
+ * everyone else having read permissions.
+ * @return The segment identifier for the shared memory segment or -1 upon error.
+ *
+ * @ingroup utility_group
+ */
 int AllocateSharedMemory (const char *id_s, size_t size, int flags);
 
 
+/**
+ * Free the shared memory segment for a given id.
+ *
+ * @param id The segment identifier for the shared memory segment to free.
+ * @return <code>true</code> if the memory segment was freed successfully,
+ * <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
+ */
 bool FreeSharedMemory (int id);
 
 
+/**
+ * Open a shared memory segment.
+ *
+ * @param id The segment identifier for the shared memory segment to open.
+ * @param flags This can be SHM_RDONLY for read-only memory.
+ * @return The pointer to the shared memory to be used or <code>NULL</code> upon error.
+ *
+ * @ingroup utility_group
+ */
 void *OpenSharedMemory (int id, int flags);
 
 
+/**
+ * Close a shared memory segment.
+ *
+ * @param value_p The shared memory segment.
+ * @return <code>true</code> if the memory segment was closed successfully,
+ * <code>false</code> otherwise.
+ *
+ * @ingroup utility_group
+ */
 bool CloseSharedMemory (void *value_p);
 
 

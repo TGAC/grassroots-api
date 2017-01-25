@@ -1,5 +1,5 @@
 /*
- ** Copyright 2014-2015 The Genome Analysis Centre
+ ** Copyright 2014-2016 The Earlham Institute
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -1769,8 +1769,8 @@ static const char *AddToFieldsCollection (MongoTool *tool_p, json_t *values_p, c
 																bson_oid_copy (src_p, &doc_id);
 
 																#if SAMPLE_METADATA_DEBUG >= STM_LEVEL_FINE
-																LogBSONOid (src_p, STM_LEVEL_FINE, "src_p");
-																LogBSONOid (&doc_id, STM_LEVEL_FINE, "doc id");
+																LogBSONOid (src_p, STM_LEVEL_FINE, __FILE__, __LINE__, "src_p");
+																LogBSONOid (&doc_id, STM_LEVEL_FINE, __FILE__, __LINE__, "doc id");
 																#endif
 															}
 													}

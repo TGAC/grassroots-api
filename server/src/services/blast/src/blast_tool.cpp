@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -73,11 +73,12 @@ BlastTool :: BlastTool (BlastServiceJob *service_job_p, const char *name_s, cons
 	bt_factory_name_s = factory_s;
 	bt_output_format = output_format;
 
+/*
 	if (service_job_p)
 		{
 			SetServiceJobName (& (bt_job_p -> bsj_job), name_s);
 		}
-
+*/
 }
 
 

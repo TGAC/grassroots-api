@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * apr_global_storage.h
  *
@@ -37,6 +42,7 @@
  *
  * @see APRJobsManager
  * @see APRServersManager
+ * @ingroup httpd_server
  */
 typedef struct APRGlobalStorage
 {
@@ -113,9 +119,43 @@ extern "C"
 {
 #endif
 
+
+/**
+ * Initialise an APRGlobalStorage.
+ *
+ * @param storage_p The APRGlobalStorage to initialise.
+ * @param pool_p The memory pool used for any allocations.
+ * @param hash_fn The callback function used to determine the slot in the underlying shared object cache.
+ * to put or get any items.
+ * @param make_key_fn The callback function used to create the key that will be used by the hash function.
+ * @param free_key_and_value_fn The callback function used to free an entry in the underlying shared object cache.
+ * @param server_p The server_rec that will own the APRGlobalStorage.
+ * @param mutex_filename_s The filename used to store the mutex variable governing access to the APRGlobalStorage.
+ * @param cache_id_s The id used to identify this APRGlobalStorage.
+ * @param provider_name_s The name of the shared object cache provider to use.
+ * @return <code>true</code> if the initialisation was successful or <code>false</code> if there was a problem.
+ * @memberof APRGlobalStorage
+ */
 bool InitAPRGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), void (*free_key_and_value_fn) (unsigned char *key_p, void *value_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s);
 
 
+/**
+ * Allocate an APRGlobalStorage.
+ *
+ * @param pool_p The memory pool used for any allocations.
+ * @param hash_fn The callback function used to determine the slot in the underlying shared object cache.
+ * to put or get any items.
+ * @param make_key_fn The callback function used to create the key that will be used by the hash function.
+ * @param free_key_and_value_fn The callback function used to free an entry in the underlying shared object cache.
+ * @param server_p The server_rec that will own the APRGlobalStorage.
+ * @param mutex_filename_s The filename used to store the mutex variable governing access to the APRGlobalStorage.
+ * @param cache_id_s The id used to identify this APRGlobalStorage.
+ * @param provider_name_s The name of the shared object cache provider to use.
+ * @return The newly-allocated APRGlobalStorage or <code>NULL</code> upon error.
+ * @see InitAPRGlobalStorage.
+ * @see FreeAPRGlobalStorage.
+ * @memberof APRGlobalStorage
+ */
 APRGlobalStorage *AllocateAPRGlobalStorage (apr_pool_t *pool_p, apr_hashfunc_t hash_fn, unsigned char *(*make_key_fn) (const void *data_p, uint32 raw_key_length, uint32 *key_len_p), void (*free_key_and_value_fn) (unsigned char *key_p, void *value_p), server_rec *server_p, const char *mutex_filename_s, const char *cache_id_s, const char *provider_name_s);
 
 /**
@@ -142,8 +182,26 @@ apr_status_t FreeAPRGlobalStorage (void *data_p);
 void DestroyAPRGlobalStorage (APRGlobalStorage *storage_p);
 
 
-unsigned int HashUUIDForAPR (const char *key_s, apr_ssize_t *len_p);
+/**
+ * Calculate a hash code for a given string.
+ *
+ * @param uuid_s The raw UUID data to calculate the hashed value for.
+ * @param len_p The length of the data.
+ * @return The hash value.
+ */
+unsigned int HashUUIDForAPR (const char *uuid_s, apr_ssize_t *len_p);
 
+
+/**
+ * Get a string representation of a raw UUID value.
+ *
+ * @param data_p Pointer to the raw UUID value.
+ * @param raw_key_length The length of the raw value given by data_p.
+ * @param key_len_p POinter to where the length of the returned string
+ * will be stored.
+ * @return The string representation of the UUID value or <code>NULL</code>
+ * upon error.
+ */
 unsigned char *MakeKeyFromUUID (const void *data_p, uint32 raw_key_length, uint32 *key_len_p);
 
 
@@ -186,14 +244,62 @@ void *GetObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *ra
  */
 void *RemoveObjectFromAPRGlobalStorage (APRGlobalStorage *storage_p, const void *raw_key_p, unsigned int raw_key_length);
 
+
+/**
+ * Iterate over the data stored within an APRGlobalStorage.
+ *
+ * @param storage_p The APRGlobalStorage to iterate over.
+ * @param iterator_p The iterator to use.
+ * @param data_p An opitional custom data pointer that the iterator might want to use. This can be <code>NULL</code>.
+ * @return <code>true</code> if the iteration was successful or <code>false</code> if there was a problem.
+ * @memberof APRGlobalStorage
+ */
 bool IterateOverAPRGlobalStorage (APRGlobalStorage *storage_p, ap_socache_iterator_t *iterator_p, void *data_p);
 
+
+/**
+ * Initialise an APRGlobalStorage for usage in an Apache child process.
+ *
+ * @param storage_p The APRGlobalStorage to initialise.
+ * @param pool_p A memory pool to use if needed.
+ * @return <code>true</code> if the initialisation was successful or <code>false</code> if there was a problem.
+ * @memberof APRGlobalStorage
+ */
 bool InitAPRGlobalStorageForChild (APRGlobalStorage *storage_p, apr_pool_t *pool_p);
 
+
+/**
+ * Set up an APRGlobalStorage prior to the configuration details being used.
+ *
+ * @param storage_p The APRGlobalStorage to initialise.
+ * @param config_pool_p A memory pool to use if needed.
+ * @return <code>true</code> if the initialisation was successful or <code>false</code> if there was a problem.
+ * @memberof APRGlobalStorage
+ */
 bool PreConfigureGlobalStorage (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p);
 
+
+/**
+ * Configure an APRGlobalStorage in the Apache parent process before any child processes
+ * are launched.
+ *
+ * @param storage_p The APRGlobalStorage to configure.
+ * @param config_pool_p The memory pool available to use.
+ * @param server_p The Apache server structure.
+ * @param provider_name_s The name of sharded object cache provider to use.
+ * @param cache_hints_p A set of hints which may be used when initialising the shared object cache. Providers may ignore some or all of these hints.
+ * @return <code>true</code> if successful or <code>false</code> if there was a problem.
+ * @memberof APRGlobalStorage
+ */
 bool PostConfigureGlobalStorage  (APRGlobalStorage *storage_p, apr_pool_t *config_pool_p, server_rec *server_p, const char *provider_name_s, struct ap_socache_hints *cache_hints_p);
 
+
+/**
+ * Print the contents of an APRGlobalStorage object to the log OUtputStream.
+ *
+ * @param storage_p The APRGlobalStorage to print.
+ * @memberof APRGlobalStorage
+ */
 void PrintAPRGlobalStorage (APRGlobalStorage *storage_p);
 
 #ifdef __cplusplus

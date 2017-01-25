@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef WEB_SEARH_JSON_SERVICE_H
 #define WEB_SEARH_JSON_SERVICE_H
 
@@ -26,10 +31,23 @@ extern "C"
 #endif
 
 
-WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (UserDetails *user_p, json_t *config_p);
+/**
+ * Get the Services available for accessing the JSON-based Web Search Service.
+ *
+ * @param config_p The service configuration data.
+ * @return The ServicesArray containing the JSON-based Web Search Servic or
+ * <code>NULL</code> upon error.
+ */
+WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
 
 
+/**
+ * Free the ServicesArray and its associated JSON-based Web Search Service.
+ *
+ * @param services_p The ServicesArray to free.
+ */
 WEB_SEARCH_JSON_SERVICE_API void ReleaseServices (ServicesArray *services_p);
+
 
 
 #ifdef __cplusplus

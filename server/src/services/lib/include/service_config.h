@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 #ifndef SERVICE_CONFIG_H
 #define SERVICE_CONFIG_H
 
@@ -56,10 +61,20 @@ GRASSROOTS_SERVICE_API bool SetServerRootDirectory (const char * const path_s);
 GRASSROOTS_SERVICE_API const char *GetServerRootDirectory (void);
 
 
-
+/**
+ * Set the global SchemaVersion to use
+ *
+ * @param major The major version of the schema to use.
+ * @param minor The minor version of the schema to use.
+ */
 GRASSROOTS_SERVICE_API void SetSchemaVersionDetails (const uint32 major, const uint32 minor);
 
 
+/**
+ * Get the current global SchemaVersion in use.
+ *
+ * @return The global SchemaVersion.
+ */
 GRASSROOTS_SERVICE_API const SchemaVersion *GetSchemaVersion (void);
 
 

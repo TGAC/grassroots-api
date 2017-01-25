@@ -1,5 +1,5 @@
 /*
-** Copyright 2014-2015 The Genome Analysis Centre
+** Copyright 2014-2016 The Earlham Institute
 ** 
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 ** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
+
+/**
+ * @file
+ * @brief
+ */
 /*
  * system_blast_tool.hpp
  *
@@ -27,6 +32,8 @@
 
 /**
  * A class that will run Blast as a system process.
+ *
+ * @ingroup blast_service
  */
 class BLAST_SERVICE_LOCAL SystemBlastTool : public ExternalBlastTool
 {
@@ -44,6 +51,14 @@ public:
 	SystemBlastTool (BlastServiceJob *service_job_p, const char *name_s, const char *factory_s, const BlastServiceData *data_p, const char *blast_program_name_s);
 
 
+	/**
+	 * Create a SystemBlastTool for a given ServiceJob using the configuration details from
+	 * a serialised JSON fragment.
+	 *
+	 * @param job_p The ServiceJob to associate with this SystemBlastTool.
+	 * @param data_p The BlastServiceData for the Service that will run this SystemBlastTool.
+	 * @param json_p The JSON fragment to fill in the serialised values such as job name, etc.
+	 */
 	SystemBlastTool (BlastServiceJob *job_p, const BlastServiceData *data_p, const json_t *json_p);
 
 
@@ -57,6 +72,8 @@ public:
 	 * to it being ran.
 	 *
 	 * @param params_p The ParameterSet to parse.
+	 * @param app_params_p The BlastAppParameters to use process the
+	 * values from the given ParameterSet.
 	 * @return <code>true</code> if the BlastTool was configured
 	 * successfully and is ready to be ran, <code>false</code>
 	 * otherwise.
@@ -74,8 +91,24 @@ public:
 	virtual OperationStatus Run ();
 
 protected:
+
+	/**
+	 * Get the ArgsProcessor that this BlastTool will use
+	 * to parse the input ParameterSet prior to running its
+	 * job.
+	 *
+	 * @return The ArgsProcessor for this BlastTool or
+	 * <code>0</code> upon error.
+	 */
 	virtual ArgsProcessor *GetArgsProcessor ();
 
+	/**
+	 * Initialise the SystemBlastTool prior to it being run.
+	 *
+	 * @param prog_s The name of the BLAST program that this SystemBlastTool will run.
+	 * @return <code>true</code> if the SystemBlastTool was initialised successfully,
+	 * <code>false</code> otherwise.
+	 */
 	bool Init (const char *prog_s);
 
 

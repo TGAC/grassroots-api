@@ -1,5 +1,5 @@
 /*
- ** Copyright 2014-2015 The Genome Analysis Centre
+ ** Copyright 2014-2016 The Earlham Institute
  **
  ** Licensed under the Apache License, Version 2.0 (the "License");
  ** you may not use this file except in compliance with the License.
@@ -224,57 +224,6 @@ static json_t *LoadConfig (const char *path_s)
 
 
 
-/*
- * Obviously for a real system we'd be using encryption, tokens and the like
- */
-json_t *GetModifiedFilesRequest (const UserDetails *user_p, const char * const from_s, const char * const to_s, const SchemaVersion * const sv_p)
-{
-	bool success_flag = false;
-	json_t *root_p = GetOperationAsJSON (OP_IRODS_MODIFIED_DATA, sv_p);
-
-	if (root_p)
-		{
-			if (AddCredentialsToJson (root_p, user_p))
-				{
-					json_t *interval_p = json_object ();
-
-					if (interval_p)
-						{
-							json_t *irods_p = json_object_get (root_p, KEY_IRODS);
-
-							if (json_object_set_new (irods_p, "interval", interval_p) == 0)
-								{
-									success_flag = true;
-
-									if (from_s)
-										{
-											success_flag = AddKeyAndStringValue (interval_p, "from", from_s);
-										}
-
-									if (success_flag && to_s)
-										{
-											success_flag = AddKeyAndStringValue (interval_p, "to", to_s);
-										}
-
-								}	
-							else
-								{
-									json_decref (interval_p);
-								}
-						}
-				}
-
-			if (!success_flag)
-				{
-					json_object_clear (root_p);
-					json_decref (root_p);
-					root_p = NULL;
-				}
-		}		/* if (root_p) */
-
-	return root_p;
-}
-
 
 static bool AddKeyAndStringValue (json_t *json_p, const char * const key_s, const char * const value_s)
 {
@@ -318,11 +267,11 @@ json_t *GetInterestedServicesRequest (const UserDetails *user_p, const char * co
 {
 	json_t *res_p = NULL;
 	json_error_t error;
-	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", KEY_PROTOCOL, protocol_s, KEY_FILENAME, filename_s);
+	json_t *op_data_p = json_pack_ex (&error, 0, "{s:s, s:s}", RESOURCE_PROTOCOL_S, protocol_s, RESOURCE_VALUE_S, filename_s);
 
 	if (op_data_p)
 		{
-			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, KEY_FILE_DATA, op_data_p, sv_p);
+			res_p = GetServicesRequest (user_p, OP_LIST_INTERESTED_SERVICES, RESOURCE_S, op_data_p, sv_p);
 		}
 	else
 		{
@@ -453,21 +402,31 @@ json_t *GetOperationAsJSON (Operation op, const SchemaVersion * const sv_p)
 
 			if (op_p)
 				{
-					if (json_object_set_new (op_p, OPERATION_ID_S, json_integer (op)) == 0)
+					const char *op_s = GetOperationAsString (op);
+
+					if (op_s)
 						{
-							if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0)
+							if (json_object_set_new (op_p, OPERATION_S, json_string (op_s)) == 0)
 								{
-									return msg_p;
-								}		/* if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0) */
+									if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0)
+										{
+											return msg_p;
+										}		/* if (json_object_set_new (msg_p, SERVER_OPERATIONS_S, op_p) == 0) */
+									else
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add ops");
+										}
+
+								}		/* if (json_object_set (op_p, OPERATION_ID_S, json_integer (op)) == 0) */
 							else
 								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add ops");
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add op id");
 								}
 
-						}		/* if (json_object_set (op_p, OPERATION_ID_S, json_integer (op)) == 0) */
+						}		/* if (op_s) */
 					else
 						{
-							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to add op id");
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, op_p, "Failed to get op string for " UINT32_FMT, op);
 						}
 
 					json_decref (op_p);
@@ -494,7 +453,27 @@ json_t *CallServices (json_t *client_params_json_p, const UserDetails *user_p, C
 
 	if (client_params_json_p)
 		{
-			json_t *new_req_p = json_object ();
+			json_t *new_req_p = NULL;
+
+			/* Is the request already wrapped? */
+			if (json_object_get (client_params_json_p, SERVICES_NAME_S))
+				{
+					new_req_p = client_params_json_p;
+				}
+			else
+				{
+					/* We need to wrap the request */
+					new_req_p = json_object ();
+
+					if (new_req_p)
+						{
+							if (json_object_set (new_req_p, SERVICES_NAME_S, client_params_json_p) != 0)
+								{
+									json_decref (new_req_p);
+									new_req_p = NULL;
+								}
+						}
+				}
 
 			if (new_req_p)
 				{
@@ -503,28 +482,28 @@ json_t *CallServices (json_t *client_params_json_p, const UserDetails *user_p, C
 							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add credentials to request");
 						}
 
-					if (json_object_set (new_req_p, SERVICES_NAME_S, client_params_json_p) == 0)
+					#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
+					PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, new_req_p, "Client sending: ");
+					#endif
+
+					services_json_p = MakeRemoteJsonCall (new_req_p, connection_p);
+
+					if (services_json_p)
 						{
 							#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
-							PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, new_req_p, "Client sending: ");
+							PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, services_json_p, "Client received: ");
 							#endif
+						}
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, new_req_p, "Empty response after client sent: ");
+						}
 
-							services_json_p = MakeRemoteJsonCall (new_req_p, connection_p);
+					if (new_req_p != client_params_json_p)
+						{
+							json_decref (new_req_p);
+						}
 
-							if (services_json_p)
-								{
-									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
-									PrintJSONToLog (STM_LEVEL_FINER, __FILE__, __LINE__, services_json_p, "Client received: ");
-									#endif
-								}
-							else
-								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, new_req_p, "Empty response after client sent: ");
-								}
-
-						}		/* if (json_object_set (new_req_p, SERVICES_S, client_results_p) */
-
-					json_decref (new_req_p);
 				}		/* if (new_req_p) */
 		}
 	else
@@ -667,4 +646,62 @@ bool GetUUIDFromJSON (const json_t *service_json_p, uuid_t uuid)
 
 	return success_flag;
 }
+
+
+const char *GetServiceDescriptionFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, SERVICES_DESCRIPTION_S);
+}
+
+
+const char *GetServiceNameFromJSON (const json_t * const root_p)
+{
+	const char *name_s = GetJSONString (root_p, SERVICES_NAME_S);
+
+	if (!name_s)
+		{
+			name_s = GetJSONString (root_p, SERVICE_NAME_S);
+		}
+
+	return name_s;
+}
+
+
+const char *GetOperationDescriptionFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_DESCRIPTION_S);
+}
+
+
+const char *GetOperationNameFromJSON (const json_t * const root_p)
+{
+	const char *result_s = GetJSONString (root_p, OPERATION_ID_S);
+
+	if (!result_s)
+		{
+			result_s = GetJSONString (root_p, OPERATION_ID_OLD_S);
+		}
+
+	return result_s;
+}
+
+
+const char *GetOperationInformationURIFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_INFORMATION_URI_S);
+}
+
+
+const char *GetOperationIconURIFromJSON (const json_t * const root_p)
+{
+	return GetJSONString (root_p, OPERATION_ICON_URI_S);
+}
+
+
+const json_t *GetProviderFromServiceJSON (const json_t *service_json_p)
+{
+	return json_object_get (service_json_p, SERVER_PROVIDER_S);
+}
+
+
 
