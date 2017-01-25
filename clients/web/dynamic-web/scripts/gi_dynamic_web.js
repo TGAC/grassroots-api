@@ -126,10 +126,11 @@ function produce_one_parameter_form(parameter) {
         }
         //file
         else if (grassroots_type == "params:input_filename" || grassroots_type == "params:output_filename" || grassroots_type == "params:tabular") {
-            form_html.push('<div class="form-group">');
-            form_html.push('<label title="' + description + '">' + display_name + '</label>');
-            form_html.push('<input type="file" name="' + param + '^' + grassroots_type + '^' + type + '" id="' + param + '^' + grassroots_type + '" />');
-            form_html.push('</div>');
+            // form_html.push('<div class="form-group">');
+            // form_html.push('<label title="' + description + '">' + display_name + '</label>');
+            // form_html.push('<input type="file" name="' + param + '^' + grassroots_type + '^' + type + '" id="' + param + '^' + grassroots_type + '" />');
+            // form_html.push('</div>');
+
             //form_html.push('<div id="' + param + '^' + grassroots_type + 'drop" class="dropzone">Drop file here</div>');
             //form_html.push('<input type="hidden" name="' + param + '^' + grassroots_type + '" id="' + param + '^' + grassroots_type + '" />');
         }
@@ -381,7 +382,8 @@ function display_blast_result_grassroots_markup(json) {
         }
 
     }
-    // $('#form').html('');
+    $('#form').html('');
+    window.scrollTo(0,0);
     $('#result').html(result_html.join(' '));
 }
 
