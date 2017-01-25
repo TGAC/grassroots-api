@@ -37,9 +37,9 @@ BLAST_SERVICE_LOCAL bool GetAndAddHitLocation (json_t *marked_up_result_p, const
 
 BLAST_SERVICE_LOCAL bool AddHitLocation (json_t *parent_p, const char *child_key_s, const int32 from, const int32 to, const Strand strand);
 
-BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsFromHit (const json_t *hit_p);
+BLAST_SERVICE_LOCAL LinkedList *GetScaffoldsFromHit (const json_t *hit_p, const DatabaseInfo *db_p);
 
-BLAST_SERVICE_LOCAL bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const DatabaseType db_type);
+BLAST_SERVICE_LOCAL bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const DatabaseInfo *db_p);
 
 BLAST_SERVICE_LOCAL json_t *GetInitialisedProcessedRequest (void);
 
@@ -68,7 +68,7 @@ BLAST_SERVICE_LOCAL bool GetAndAddDatabaseDetails (json_t *marked_up_result_p, c
 BLAST_SERVICE_LOCAL bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p);
 
 
-BLAST_SERVICE_LOCAL bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseType db_type);
+BLAST_SERVICE_LOCAL bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseInfo *db_p);
 
 
 BLAST_SERVICE_LOCAL bool AddSubsequenceMarkup (json_t *parent_p, const char *key_s, const char *subsequence_start_s, const uint32 length);
@@ -126,6 +126,10 @@ BLAST_SERVICE_LOCAL json_t *GetMarkupReports (json_t *markup_p);
 
 
 BLAST_SERVICE_LOCAL json_t *GetHitsFromMarkedUpReport (json_t *report_p);
+
+
+BLAST_SERVICE_LOCAL bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p, const DatabaseInfo *db_p);
+
 
 #ifdef __cplusplus
 }

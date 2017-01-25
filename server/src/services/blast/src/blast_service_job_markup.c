@@ -64,14 +64,14 @@ static bool IsGap (const char c);
 
 static json_t *AddAndGetMarkedUpReport (json_t *markup_reports_p, const DatabaseInfo *database_p, const json_t *blast_result_search_p, const json_t *blast_report_p);
 
-static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const DatabaseType db_type);
+static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const DatabaseInfo *db_p);
 
 static json_t *GetBlastResult (BlastServiceJob *job_p, BlastServiceData *data_p);
 
 static const DatabaseInfo *GetDatabaseFromBlastResult (const json_t *blast_report_p, const BlastServiceData *data_p);
 
 
-static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hit_p, const DatabaseType db_type);
+static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hit_p, const DatabaseInfo *db_p);
 
 static bool AddQueryMasks (const json_t *blast_search_p, json_t *mark_up_p);
 
@@ -107,14 +107,14 @@ bool AddSequence (json_t *root_p, const char *key_s, const char *query_sequence_
 }
 
 
-bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseType db_type)
+bool AddHitDetails (json_t *marked_up_result_p, const json_t *blast_hit_p, const DatabaseInfo *db_p)
 {
 	bool success_flag = false;
 	const json_t *hsps_p = json_object_get (blast_hit_p, "hsps");
 
 	if (hsps_p)
 		{
-			if (PopulateMarkedUpHit	(marked_up_result_p, blast_hit_p, db_type))
+			if (PopulateMarkedUpHit	(marked_up_result_p, blast_hit_p, db_p))
 				{
 					json_t *marked_up_hsps_p = json_object_get (marked_up_result_p, "hsps");
 
@@ -666,7 +666,7 @@ json_t *ConvertBlastResultToGrassrootsMarkUp (const json_t *blast_job_output_p, 
 																						{
 																							const json_t *blast_hit_p = json_array_get (blast_hits_p, j);
 
-																							if (AddMarkedUpHit (marked_up_hits_p, blast_hit_p, data_p -> bsd_type))
+																							if (AddMarkedUpHit (marked_up_hits_p, blast_hit_p, db_p))
 																								{
 																									++ j;
 																								}
@@ -796,75 +796,14 @@ json_t *GetInitialisedProcessedRequest (void)
 
 
 
-bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p)
+
+bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p, const DatabaseInfo *db_p)
 {
 	bool success_flag = false;
 
-	LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p);
-
-	if (scaffolds_p)
+	if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p, db_p))
 		{
-			json_t *scaffolds_array_p = json_array ();
-
-			if (scaffolds_array_p)
-				{
-					if (json_object_set_new (mark_up_p, "scaffolds", scaffolds_array_p) == 0)
-						{
-							StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
-
-							success_flag = true;
-
-							while (node_p && success_flag)
-								{
-									json_t *scaffold_p = json_object ();
-
-									if (scaffold_p)
-										{
-											if (json_object_set_new (scaffold_p, "scaffold", json_string (node_p -> sln_string_s)) == 0)
-												{
-													if (json_array_append_new (scaffolds_array_p, scaffold_p) != 0)
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add scaffold object to scaffolds array for \"%s\"", node_p -> sln_string_s);
-															success_flag = false;
-														}
-												}
-											else
-												{
-													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add scaffold \"%s\" to scaffold object", node_p -> sln_string_s);
-													success_flag = false;
-												}
-
-											if (!success_flag)
-												{
-													json_decref (scaffold_p);
-												}
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create JSON scaffold object");
-											success_flag = false;
-										}
-
-									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-								}		/* while (node_p) */
-
-						}		/* if (json_object_set_new (mark_up_p, "scaffolds", scaffolds_array_p) == 0) */
-
-				}		/* if (scaffolds_array_p) */
-
-		}		/* if (scaffolds_p) */
-
-	return success_flag;
-}
-
-
-bool MarkUpHit (const json_t *hit_p, json_t *mark_up_p,  const DatabaseType db_type)
-{
-	bool success_flag = false;
-
-	if (GetAndAddScaffoldsFromHit (hit_p, mark_up_p))
-		{
-			if (AddHitDetails (mark_up_p, hit_p, db_type))
+			if (AddHitDetails (mark_up_p, hit_p, db_p))
 				{
 					success_flag = true;
 				}
@@ -922,7 +861,7 @@ bool GetAndAddQueryMetadata (const json_t *blast_search_p, json_t *mark_up_p)
 
 
 
-LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
+LinkedList *GetScaffoldsFromHit (const json_t *hit_p, const DatabaseInfo *db_p)
 {
 	LinkedList *scaffolds_p = AllocateStringLinkedList ();
 
@@ -938,94 +877,46 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p)
 							json_t *item_p;
 
 							json_array_foreach (description_p, k, item_p)
-							{
-								json_t *data_p = json_object ();
+								{
+									const char *value_s = GetJSONString (item_p, db_p -> di_scaffold_key_s);
 
-								if (data_p)
-									{
-										char *scaffold_s = NULL;
-										const char *id_s = GetJSONString (item_p, "id");
+									if (value_s)
+										{
+											json_t *data_p = json_object ();
+											bool alloc_flag = false;
 
-										if (id_s)
-											{
-												/* check for a valid scaffold name */
-												const char *c_p = id_s;
-												bool valid_flag = true;
-												bool loop_flag = (*c_p != '\0');
+											if (data_p)
+												{
+													StringListNode *node_p = NULL;
 
-												while (loop_flag)
-													{
-														if ((isalnum (*c_p)) || (*c_p == '.') || (*c_p == '_') || (*c_p == '-'))
-															{
-																++ c_p;
-															}
-														else if ((*c_p == ' ') || (*c_p == '\0'))
-															{
-																loop_flag = false;
-															}
-														else
-															{
-																loop_flag = false;
-																valid_flag = false;
-															}
-													}
+													if (db_p -> di_scaffold_regex_s)
+														{
 
-												if (valid_flag && (c_p != id_s))
-													{
-														const size_t l = c_p - id_s;
-														scaffold_s = CopyToNewString (id_s, l, false);
+														}
+													else
+														{
+															node_p = AllocateStringListNode (value_s, MF_DEEP_COPY);
+														}
 
-														if (!scaffold_s)
-															{
-																PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy the first " SIZET_FMT " characters from \"%s\" to scaffold name", l, id_s);
-															}		/* if (!scaffold_s) */
 
-													}		/* if (valid_flag && (c_p != id_s) */
+													if (node_p)
+														{
+															LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
+														}		/* if (node_p) */
+													else
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" to list of scaffold names", scaffold_s);
+														}
 
-											}		/* if (id_s) */
+												}		/* if (data_p) */
 
-										if (!scaffold_s)
-											{
-												const char *full_title_s = GetJSONString (item_p, "title");
+										}
 
-												if (full_title_s)
-													{
-														/*
-														 * There may be more on this line than just the scaffold name
-														 * so lets get up until the first space or |
-														 */
-														const char *id_end_p = strpbrk (full_title_s, " |");
-														const uint32 size  = id_end_p ? id_end_p - full_title_s : 0;
-														scaffold_s = CopyToNewString (full_title_s, size, false);
+								}		/* json_array_foreach (description_p, k, item_p) */
 
-														if (!scaffold_s)
-															{
-																PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy the first " UINT32_FMT " characters from \"%s\" to scaffold name", size, id_s);
-															}		/* if (!scaffold_s) */
+						}		/* if (json_is_array (description_p)) */
 
-													}		/* if (full_title_s) */
-
-											}		/* if (!scaffold_s) */
-
-										if (scaffold_s)
-											{
-												StringListNode *node_p = AllocateStringListNode (scaffold_s, MF_SHALLOW_COPY);
-
-												if (node_p)
-													{
-														LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
-													}		/* if (node_p) */
-												else
-													{
-														PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" to list of scaffold names", id_s);
-													}
-
-											}		/* if (scaffold_s) */
-
-										}		/* if (data_p) */
-								}
-						}
-				}
+				}		/* if (description_p) */
 
 		}		/* if (scaffolds_p) */
 
@@ -1483,6 +1374,69 @@ bool GetAndAddScaffoldsParameter (LinkedService *linked_service_p, const json_t 
 }
 
 
+bool GetAndAddScaffoldsFromHit (const json_t *hit_p, json_t *mark_up_p, const DatabaseInfo *db_p)
+{
+	bool success_flag = false;
+
+	LinkedList *scaffolds_p = GetScaffoldsFromHit (hit_p, db_p);
+
+	if (scaffolds_p)
+		{
+			json_t *scaffolds_array_p = json_array ();
+
+			if (scaffolds_array_p)
+				{
+					if (json_object_set_new (mark_up_p, "scaffolds", scaffolds_array_p) == 0)
+						{
+							StringListNode *node_p = (StringListNode *) (scaffolds_p -> ll_head_p);
+
+							success_flag = true;
+
+							while (node_p && success_flag)
+								{
+									json_t *scaffold_p = json_object ();
+
+									if (scaffold_p)
+										{
+											if (json_object_set_new (scaffold_p, "scaffold", json_string (node_p -> sln_string_s)) == 0)
+												{
+													if (json_array_append_new (scaffolds_array_p, scaffold_p) != 0)
+														{
+															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add scaffold object to scaffolds array for \"%s\"", node_p -> sln_string_s);
+															success_flag = false;
+														}
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add scaffold \"%s\" to scaffold object", node_p -> sln_string_s);
+													success_flag = false;
+												}
+
+											if (!success_flag)
+												{
+													json_decref (scaffold_p);
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create JSON scaffold object");
+											success_flag = false;
+										}
+
+									node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
+								}		/* while (node_p) */
+
+						}		/* if (json_object_set_new (mark_up_p, "scaffolds", scaffolds_array_p) == 0) */
+
+				}		/* if (scaffolds_array_p) */
+
+		}		/* if (scaffolds_p) */
+
+	return success_flag;
+}
+
+
+
 const json_t *GetScaffoldsForDatabaseHit (const json_t *hit_p)
 {
 	const json_t *scaffolds_p = NULL;
@@ -1632,13 +1586,13 @@ static bool AddSchemaOrgTerms (json_t *context_p)
 
 
 
-static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const DatabaseType db_type)
+static bool AddMarkedUpHit (json_t *marked_up_results_p, const json_t *blast_hit_p, const DatabaseInfo *db_p)
 {
 	json_t *output_p = json_object ();
 
 	if (output_p)
 		{
-			if (MarkUpHit (blast_hit_p, output_p, db_type))
+			if (MarkUpHit (blast_hit_p, output_p, db_p))
 				{
 					if (json_array_append_new (marked_up_results_p, output_p) == 0)
 						{
@@ -1771,17 +1725,17 @@ json_t *GetMarkupReports (json_t *markup_p)
 
 
 
-static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hit_p, const DatabaseType db_type)
+static bool PopulateMarkedUpHit (json_t *marked_up_hit_p, const json_t *blast_hit_p, const DatabaseInfo *db_p)
 {
 	bool success_flag = false;
 	int hit_num;
 	const char *hit_type_s = NULL;
 
-	if (db_type == DT_NUCLEOTIDE)
+	if (db_p -> di_type == DT_NUCLEOTIDE)
 		{
 			hit_type_s = "nucelotide_match";
 		}
-	else if (db_type == DT_PROTEIN)
+	else if (db_p -> di_type == DT_PROTEIN)
 		{
 			hit_type_s = "protein_match";
 		}
@@ -2050,4 +2004,5 @@ static bool AddSoftwareVersion (const json_t *blast_report_p, json_t *software_m
 
 	return success_flag;
 }
+
 
