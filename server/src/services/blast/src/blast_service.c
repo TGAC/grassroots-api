@@ -1299,6 +1299,8 @@ bool GetBlastServiceConfig (BlastServiceData *data_p)
 																		const char *type_s = GetJSONString (db_json_p, "type");
 																		const char *download_uri_s = GetJSONString (db_json_p, "download_uri");
 																		const char *info_uri_s = GetJSONString (db_json_p, "info_uri");
+																		const char *scaffold_regex_s = GetJSONString (db_json_p, "scaffold_regex");
+																		const char *scaffold_key_s = GetJSONString (db_json_p, "scaffold_key");
 
 																		db_p -> di_name_s = name_s;
 																		db_p -> di_filename_s = filename_s;
@@ -1307,6 +1309,8 @@ bool GetBlastServiceConfig (BlastServiceData *data_p)
 																		db_p -> di_info_uri_s = info_uri_s;
 																		db_p -> di_active_flag = true;
 																		db_p -> di_type = DT_NUCLEOTIDE;
+																		db_p -> di_scaffold_key_s = scaffold_key_s ? scaffold_key_s : "id";
+																		db_p -> di_scaffold_regex_s = scaffold_regex_s;
 
 																		GetJSONBoolean (db_json_p, "active", & (db_p -> di_active_flag));
 

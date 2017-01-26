@@ -53,6 +53,7 @@ SRCS 	= \
 	math_utils.c \
 	operation.c \
 	plugin.c \
+	regular_expressions.c \
 	resource.c \
 	schema_version.c \
 	search_options.c \
@@ -84,6 +85,7 @@ CPPFLAGS += -DGRASSROOTS_UTIL_LIBRARY_EXPORTS -DUNIX
 LDFLAGS += -ldl \
 	-L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_UUID_LIB) -luuid
+	-lpcre
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 

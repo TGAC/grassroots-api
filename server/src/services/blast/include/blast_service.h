@@ -107,6 +107,23 @@ typedef struct BLAST_SERVICE_LOCAL DatabaseInfo
 	/** The DatabaseType for this database. */
 	DatabaseType di_type;
 
+	/**
+	 * The key used to get the scaffold name for
+	 * any hits from BLAST searches from within the
+	 * "BlastOutput2.report.results.search.hits.description" field
+	 * of the search result in single file JSON format.
+	 * This defaults to "id".
+	 */
+	const char *di_scaffold_key_s;
+
+	/**
+	 * The regular expression used to get the scaffold name for the value
+	 * associated with the value retrieved from di_scaffold_key_s. This
+	 * defaults to NULL which means to treat the entire value as the
+	 * scaffold name.
+	 */
+	const char *di_scaffold_regex_s;
+
 } DatabaseInfo;
 
 
