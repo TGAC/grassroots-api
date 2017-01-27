@@ -177,6 +177,17 @@ export DIR_SAMTOOLS_LIB=$(DIR_SAMTOOLS)/lib
 # END SAMTOOLS CONFIGURATION
 
 
+# BEGIN PCRE CONFIGURATION
+ifneq ($(PCRE_HOME),)
+DIR_PCRE=$(PCRE_HOME)
+else
+DIR_PCRE=/usr/local
+endif
+export DIR_PCRE_INC=$(DIR_PCRE)/include
+export DIR_PCRE_LIB=$(DIR_PCRE)/lib
+# END PCRE CONFIGURATION
+
+
 
 include project.properties
 -include drmaa.properties
