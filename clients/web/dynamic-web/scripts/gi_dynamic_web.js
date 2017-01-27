@@ -9,7 +9,7 @@ function populateService(service_name) {
         dataType: "json",
         success: function (json) {
             response = json;
-            console.info(JSON.stringify(json));
+            // console.info(JSON.stringify(json));
             $('#title').html(response['services'][0]['service_name']);
             $('#description').html(response['services'][0]['description']);
             parameters = response['services'][0]['operations']['parameter_set']['parameters'];
@@ -234,6 +234,7 @@ function submit_form() {
     });
 }
 
+// deprecated
 function display_blast_result_jsonout(json) {
     var result_html = [];
     result_html.push('<br/><br/><hr/><br/>');
@@ -383,7 +384,7 @@ function display_blast_result_grassroots_markup(json) {
 
     }
     $('#form').html('');
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
     $('#result').html(result_html.join(' '));
 }
 
@@ -501,12 +502,11 @@ function downloadFile(text, filename) {
     saveAs(blob, filename + ".txt");
 }
 
-function generate_random_id()
-{
+function generate_random_id() {
     var id = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    for( var i=0; i < 10; i++ )
+    for (var i = 0; i < 10; i++)
         id += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return id;
