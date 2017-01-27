@@ -24,10 +24,12 @@
  * @brief
  */
 
+#include <string.h>
 
 #include "regular_expressions.h"
 #include "streams.h"
 #include "memory_allocations.h"
+#include "string_utils.h"
 
 
 RegExp *AllocateRegExp (uint32 num_vectors)
@@ -140,6 +142,8 @@ bool MatchPattern (RegExp *reg_ex_p, const char *value_s)
 				}
 			else
 				{
+					reg_ex_p -> re_num_matches  = 0;
+
 					switch (res)
 						{
 							case PCRE_ERROR_NOMATCH:
@@ -173,6 +177,13 @@ bool MatchPattern (RegExp *reg_ex_p, const char *value_s)
 
 				}
 
+			if (success_flag)
+				{
+					reg_ex_p -> re_target_s = value_s;
+				}
+
+			reg_ex_p -> re_current_substring_index = 0;
+
 		}		/* if (reg_ex_p -> re_compiled_expression_p) */
 
 	return success_flag;
@@ -187,12 +198,27 @@ uint32 GetNumberOfMatches (const RegExp *reg_ex_p)
 
 char *GetNextMatch (RegExp *reg_ex_p)
 {
+	char *value_s = NULL;
 
-  // char subStrMatchStr[1024];
-  // int i, j
-  // for(j=0,i=subStrVec[0];i<subStrVec[1];i++,j++)
-  //   subStrMatchStr[j] = (*aLineToMatch)[i];
-  // subStrMatchStr[subStrVec[1]-subStrVec[0]] = 0;
-  //printf("MATCHED SUBSTRING: '%s'\n", subStrMatchStr);
+	if (reg_ex_p -> re_current_substring_index < ((reg_ex_p -> re_num_matches) << 1))
+		{
+			const uint32 start = * ((reg_ex_p -> re_substring_vectors_p) + (reg_ex_p -> re_current_substring_index));
+			const uint32 end = * ((reg_ex_p -> re_substring_vectors_p) + (reg_ex_p -> re_current_substring_index + 1));
 
+			size_t l = end - start;
+
+			value_s = CopyToNewString ((reg_ex_p -> re_target_s) + start, l, false);
+
+			if (value_s)
+				{
+					reg_ex_p -> re_current_substring_index += 2;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__,
+						"Failed to copy " SIZET_FMT " characters of \"%s\" for regular expression match", l, (reg_ex_p -> re_target_s) + start);
+				}
+		}		/*  if (reg_ex_p -> re_current_substring_index < reg_ex_p -> re_num_matches) */
+
+	return value_s;
 }

@@ -40,10 +40,11 @@ typedef struct RegExp
 {
   pcre *re_compiled_expression_p;
   pcre_extra *re_extra_p;
-  int re_num_matches;
+  const char *re_target_s;
+  uint32 re_num_matches;
   int *re_substring_vectors_p;
   uint32 re_num_vectors;
-  int16 re_current_substring_index;
+  uint32 re_current_substring_index;
 } RegExp;
 
 
@@ -67,8 +68,7 @@ GRASSROOTS_UTIL_API void ClearRegExp (RegExp *reg_ex_p);
 GRASSROOTS_UTIL_API bool SetPattern (RegExp *reg_ex_p, const char *pattern_s, int options);
 
 
-GRASSROOTS_UTIL_API bool MatchPattern (RegExp *reg_ex_p);
-
+GRASSROOTS_UTIL_API bool MatchPattern (RegExp *reg_ex_p, const char *value_s);
 
 
 GRASSROOTS_UTIL_API uint32 GetNumberOfMatches (const RegExp *reg_ex_p);

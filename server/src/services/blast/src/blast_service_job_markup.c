@@ -27,6 +27,7 @@
 #include "blast_service_params.h"
 
 #include "string_utils.h"
+#include "regular_expressions.h"
 
 
 /*
@@ -891,11 +892,47 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p, const DatabaseInfo *db_p)
 
 													if (db_p -> di_scaffold_regex_s)
 														{
+															RegExp *reg_ex_p = AllocateRegExp (32);
+
+															if (reg_ex_p)
+																{
+																	if (SetPattern (reg_ex_p, db_p -> di_scaffold_regex_s, 0))
+																		{
+																			if (MatchPattern (reg_ex_p, value_s))
+																				{
+																					/*
+																					 * We only want the first match for the scaffold name
+																					 */
+																					char *match_s = GetNextMatch (reg_ex_p);
+
+																					if (match_s)
+																						{
+																							node_p = AllocateStringListNode (match_s, MF_SHALLOW_COPY);
+
+																							if (!node_p)
+																								{
+																									FreeCopiedString (match_s);
+																									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" to list of scaffold names", match_s);
+																								}
+																						}
+
+																				}
+																		}
+
+
+																	FreeRegExp (reg_ex_p);
+																}
 
 														}
 													else
 														{
 															node_p = AllocateStringListNode (value_s, MF_DEEP_COPY);
+
+															if (!node_p)
+																{
+																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" to list of scaffold names", value_s);
+																}
+
 														}
 
 
@@ -903,10 +940,7 @@ LinkedList *GetScaffoldsFromHit (const json_t *hit_p, const DatabaseInfo *db_p)
 														{
 															LinkedListAddTail (scaffolds_p, (ListItem *) node_p);
 														}		/* if (node_p) */
-													else
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add \"%s\" to list of scaffold names", scaffold_s);
-														}
+
 
 												}		/* if (data_p) */
 

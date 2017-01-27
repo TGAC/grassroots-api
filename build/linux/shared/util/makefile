@@ -84,8 +84,8 @@ CPPFLAGS += -DGRASSROOTS_UTIL_LIBRARY_EXPORTS -DUNIX
 
 LDFLAGS += -ldl \
 	-L$(DIR_JANSSON_LIB) -ljansson \
-	-L$(DIR_UUID_LIB) -luuid
-	-lpcre
+	-L$(DIR_UUID_LIB) -luuid \
+	-L$(DIR_PCRE_LIB) -lpcre
 
 #STATIC_LIBS += $(DIR_IRODS)/lib/core/obj/libRodsAPIs.a
 
