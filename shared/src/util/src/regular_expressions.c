@@ -82,10 +82,14 @@ void ClearRegExp (RegExp *reg_ex_p)
 	if (reg_ex_p -> re_compiled_expression_p)
 		{
 			pcre_free (reg_ex_p -> re_compiled_expression_p);
+			reg_ex_p -> re_compiled_expression_p = NULL;
 		}
 
-	reg_ex_p -> re_num_matches = -1;
+	reg_ex_p -> re_num_matches =  0;
+	reg_ex_p -> re_current_substring_index = 0;
+	memset (reg_ex_p -> re_substring_vectors_p, 0, (reg_ex_p -> re_num_vectors) * sizeof (int));
 
+	reg_ex_p -> re_target_s = NULL;
 }
 
 
