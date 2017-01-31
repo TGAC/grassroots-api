@@ -72,7 +72,7 @@ void ResultsList :: OpenItemLink (QListWidgetItem *item_p)
 }
 
 
-bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
+bool ResultsList :: SetListFromJSON (const char * const name_s, const json_t *results_list_json_p)
 {
 	bool success_flag = false;
 
@@ -90,7 +90,7 @@ bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 						{
 							json_t *value_p = json_array_get (results_list_json_p, i);
 
-							if (AddItemFromJSON (value_p))
+							if (AddItemFromJSON (name_s, value_p))
 								{
 									++ count;
 								}
@@ -106,7 +106,7 @@ bool ResultsList :: SetListFromJSON (const json_t *results_list_json_p)
 }
 
 
-bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
+bool ResultsList :: AddItemFromJSON (const char * const name_s, const json_t *resource_json_p)
 {
 	bool success_flag = false;
 	const char *protocol_s = GetJSONString (resource_json_p, RESOURCE_PROTOCOL_S);
@@ -123,7 +123,25 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 
 					if (data_p)
 						{
-							JSONListWidgetItem *item_p = new JSONListWidgetItem (title_s, rl_list_p);
+							QString s;
+
+							if (name_s)
+								{
+									s.append (name_s);
+
+									if (title_s)
+										{
+											s.append (" - ");
+											s.append (title_s);
+										}
+								}
+							else if (title_s)
+								{
+									s.append (title_s);
+								}
+
+
+							JSONListWidgetItem *item_p = new JSONListWidgetItem (s, rl_list_p);
 
 							connect (item_p, &JSONListWidgetItem :: RunServiceRequested, rl_parent_p, &ResultsPage :: RunService);
 
@@ -192,8 +210,14 @@ bool ResultsList :: AddItemFromJSON (const json_t *resource_json_p)
 									icon_path_s = "images/list_filelink";
 								}
 
+							const char *item_name_s = name_s;
 
-							item_p = new StandardListWidgetItem (title_s ? title_s : value_s, rl_list_p);
+							if (!item_name_s)
+								{
+									item_name_s = title_s ? title_s : value_s;
+								}
+
+							item_p = new StandardListWidgetItem (item_name_s, rl_list_p);
 
 							QString s (protocol_s);
 							s.append ("://");

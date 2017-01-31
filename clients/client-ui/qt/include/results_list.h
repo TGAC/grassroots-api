@@ -35,7 +35,7 @@ class ResultsList : public QWidget
 	Q_OBJECT
 
 public slots:
-	bool SetListFromJSON (const json_t *results_list_json_p);
+	bool SetListFromJSON (const char * const name_s, const json_t *results_list_json_p);
 
 private slots:
 	void OpenItemLink (QListWidgetItem *item_p);
@@ -50,7 +50,7 @@ public:
 
 	~ResultsList ();
 
-	bool AddItemFromJSON (const json_t *json_p);
+	bool AddItemFromJSON (const char * const name_s, const json_t *json_p);
 
 
 private:
