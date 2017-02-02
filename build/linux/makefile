@@ -331,6 +331,7 @@ all: lib_util lib_network lib_parameters lib_irods lib_handler lib_services hand
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/tgac_elastic_search 
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/test_long_runner 
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/pathogenomics 
+	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/polymarker 
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/samtools 
 
 
@@ -362,6 +363,7 @@ install: install_init install_references install_images all install_irods_stuff
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/tgac_elastic_search install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/test_long_runner install
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/pathogenomics install
+	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/polymarker install 
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/samtools install
 	git log -1 > $(DIR_GRASSROOTS_INSTALL)/grassroots.version
 	
@@ -392,6 +394,7 @@ clean:
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/tgac_elastic_search clean
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/test_long_runner clean
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/pathogenomics clean
+	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/polymarker clean
 	$(MAKE) -C $(DIR_SERVICES_ROOT_BUILD)/samtools clean
 
 build_docs:
