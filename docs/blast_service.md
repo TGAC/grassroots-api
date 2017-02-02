@@ -19,7 +19,7 @@ The [BLAST](http://blast.ncbi.nlm.nih.gov/Blast.cgi) Service allows BLAST querie
  	* **download_uri**: This is an optional key used to specify a URI where the database file(s) can be downloaded from.
  	* **info_uri**: This is an optional key used to specify a URI where the more information about this database can be found.
  	* **scaffold_key**: 	The key used to get the scaffold name for any hits from BLAST searches from within the ``BlastOutput2.report.results.search.hits.description`` field of the search result in single file JSON format. This defaults to ``id``.
- 	* **scaffold_regexp**: The regular expression used to get the scaffold name for the value associated with the value retrieved from using the scaffold_key. attribute above. If this key is omitted, then the entire value retrieved using the scffold_key is used as the scaffold name.
+ 	* **scaffold_regex**: The regular expression used to get the scaffold name for the value associated with the value retrieved from using the scaffold_key. attribute above. If this key is omitted, then the entire value retrieved using the scffold_key is used as the scaffold name. For instance to get the first string up to any whitespace, the regular expression to use will be `([^\\s]*)`. Note that the backslash character has had to be escaped.  
  * **blast_formatter**: This key determines how the output from the BLAST searches can be converted between the different available output formats. Currently the only available option for this is **system**. 
  * **blast_command**: This is the path to the executable used to perform the searches. 
  * **blast_tool**: This determines how the BLAST search will be run and currently has the following options:
