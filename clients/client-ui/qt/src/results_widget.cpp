@@ -104,7 +104,8 @@ bool ResultsWidget :: AddResultsPageFromJSON (const json_t *json_p, const char *
 
 	if (results_json_p)
 		{
-			QWidget *page_p = CreatePageFromJSON (results_json_p, service_description_s, service_uri_s);
+			const char *job_name_s = GetJSONString (json_p, JOB_NAME_S);
+			QWidget *page_p = CreatePageFromJSON (results_json_p, job_name_s, service_name_s, service_description_s, service_uri_s);
 
 			if (page_p)
 				{
@@ -171,7 +172,7 @@ bool ResultsWidget :: AddInterestedService (json_t *job_p, const char *service_n
 
 	if (services_list_p)
 		{
-			if (services_list_p -> AddItemFromJSON (job_p))
+			if (services_list_p -> AddItemFromJSON (service_name_s, job_p))
 				{
 					success_flag = true;
 				}
@@ -203,13 +204,13 @@ void ResultsWidget :: RunService (json_t *service_json_p)
 }
 
 
-ResultsPage *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const description_s, const char * const uri_s)
+ResultsPage *ResultsWidget :: CreatePageFromJSON (const json_t *results_json_p, const char * const job_name_s, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	ResultsPage *page_p = 0;
 
 	try
 		{
-			page_p = new ResultsPage (results_json_p, description_s, uri_s, this);
+			page_p = new ResultsPage (results_json_p, job_name_s, service_name_s, service_description_s, service_uri_s, this);
 		}
 	catch (std :: exception &ex_r)
 		{

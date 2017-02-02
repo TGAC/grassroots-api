@@ -99,7 +99,10 @@ void JSONListWidgetItem :: ShowData ()
 	if (viewer_p)
 		{
 			ViewerWidget *viewer_widget_p = new ViewerWidget (viewer_p, listWidget ());
+
+			viewer_widget_p -> setWindowTitle (text ());
 			viewer_widget_p -> show ();
+
 		}
 }
 

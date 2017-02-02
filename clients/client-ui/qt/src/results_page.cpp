@@ -15,6 +15,7 @@
 */
 
 #include <QDesktopServices>
+#include <QFormLayout>
 #include <QVBoxLayout>
 #include <QString>
 #include <QLabel>
@@ -29,40 +30,70 @@ ResultsPage :: ResultsPage (ResultsWidget *parent_p)
 	: QWidget (parent_p)
 {
 	rp_results_list_p = new ResultsList (this);
-	SetUp (parent_p);
+	SetUp (parent_p, 0, 0, 0, 0);
 }
 
 
+ResultsPage :: ResultsPage (const json_t *results_list_json_p, const char * const job_name_s, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s, ResultsWidget *parent_p)
+	: QWidget (parent_p)
+{
+	rp_results_list_p = new ResultsList (this);
 
-void ResultsPage :: SetUp (ResultsWidget *parent_p, const char * const description_s, const char * const uri_s)
+	if (rp_results_list_p -> SetListFromJSON (job_name_s, results_list_json_p))
+		{
+			SetUp (parent_p, job_name_s, service_name_s, service_description_s, service_uri_s);
+		}
+	else
+		{
+			throw std::bad_alloc ();
+		}
+}
+
+
+void ResultsPage :: SetUp (ResultsWidget *parent_p, const char * const job_name_s, const char * const service_name_s, const char * const service_description_s, const char * const service_uri_s)
 {
 	QVBoxLayout *layout_p = new QVBoxLayout;
 	setLayout (layout_p);
 
-	rp_description_label_p = new QLabel ();
+	QFormLayout *labels_layout_p = new QFormLayout;
 
-	if (description_s)
+	rp_job_name_s = job_name_s;
+
+	if (job_name_s)
 		{
-			rp_description_label_p -> setText (description_s);
+			QLabel *label_p = new QLabel (job_name_s);
+			labels_layout_p -> addRow ("Job:", label_p);
 		}
 
-	layout_p -> addWidget (rp_description_label_p);
 
-	rp_uri_label_p = new QLabel ();
-	layout_p -> addWidget (rp_uri_label_p);
+	if (service_name_s)
+		{
+			QLabel *label_p = new QLabel (service_name_s);
+			labels_layout_p -> addRow ("Service:", label_p);
+		}
 
 
-	if (uri_s)
+	if (service_description_s)
+		{
+			QLabel *label_p = new QLabel (service_description_s);
+			labels_layout_p -> addRow ("Description:", label_p);
+		}
+
+	if (service_uri_s)
 		{
 			QString s ("For more information, go to <a href=\"");
-			s.append (uri_s);
+			s.append (service_uri_s);
 			s.append ("\">");
-			s.append (uri_s);
+			s.append (service_uri_s);
 			s.append ("</a>");
 
-			rp_uri_label_p -> setText (s);
-			rp_uri_label_p -> setOpenExternalLinks (true);
+
+			QLabel *label_p = new QLabel (s);
+			label_p -> setOpenExternalLinks (true);
+			labels_layout_p -> addRow ("Further information:", label_p);
 		}
+
+	layout_p -> addLayout (labels_layout_p);
 
 	layout_p -> addWidget (rp_results_list_p);
 
@@ -70,21 +101,6 @@ void ResultsPage :: SetUp (ResultsWidget *parent_p, const char * const descripti
 	connect (this, &ResultsPage :: RunServiceRequested, parent_p, &ResultsWidget :: RunService);
 }
 
-
-ResultsPage :: ResultsPage (const json_t *results_list_json_p, const char * const description_s, const char * const uri_s, ResultsWidget *parent_p)
-	: QWidget (parent_p)
-{
-	rp_results_list_p = new ResultsList (this);
-
-	if (rp_results_list_p -> SetListFromJSON (results_list_json_p))
-		{
-			SetUp (parent_p, description_s, uri_s);
-		}
-	else
-		{
-			throw std::bad_alloc ();
-		}
-}
 
 
 

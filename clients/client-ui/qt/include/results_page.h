@@ -36,7 +36,7 @@ class ResultsPage: public QWidget
 
 public:
 	ResultsPage (ResultsWidget *parent_p = 0);
-	ResultsPage (const json_t *results_list_json_p, const char * const description_s, const char * const uri_s, ResultsWidget *parent_p = 0);
+	ResultsPage (const json_t *results_list_json_p, const char *job_name_s, const char * const service_name_s, const char * const description_s, const char * const uri_s, ResultsWidget *parent_p = 0);
   ~ResultsPage ();
 
   ResultsList *GetResultsList () const;
@@ -53,11 +53,9 @@ public slots:
 private:
   QList <QWebEngineView *> rp_browsers;
   ResultsList *rp_results_list_p;
-  QLabel *rp_description_label_p;
-  QLabel *rp_uri_label_p;
+	const char *rp_job_name_s;
 
-
-	void SetUp (ResultsWidget *parent_p, const char * const description_s = 0, const char * const uri_s = 0);
+	void SetUp (ResultsWidget *parent_p, const char * const job_name_s, const char *service_name_s, const char * const description_s, const char * const uri_s);
 };
 
 #endif // RESULTS_PAGE_H
