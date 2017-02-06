@@ -27,7 +27,7 @@
 #define SERVER_SRC_SERVICES_POLYMARKER_INCLUDE_SYSTEM_POLYMARKER_TOOL_HPP_
 
 #include "polymarker_tool.hpp"
-
+#include "temp_file.hpp"
 
 
 class POLYMARKER_SERVICE_LOCAL SystemPolymarkerTool : public PolymarkerTool
@@ -41,10 +41,15 @@ public:
 	virtual bool ParseParameters (const ParameterSet * const param_set_p);
 
 protected:
-	bool WriteInputFile (const char *gene_id_s, const char *target_chromosome_s, const char *sequence_s);
-	char *spt_gene_id;
-	char *spt_target_chromosome;
-	char *spt_sequence;
+	char *spt_contig_s;
+	char *spt_gene_id_s;
+	char *spt_target_chromosome_s;
+	char *spt_sequence_s;
+	char *spt_command_line_s;
+
+	TempFile *GetInputFile ();
+	char *GetOutputFolder ();
+	bool GetStringParameter (const ParameterSet * const params_p, const char *param_name_s, char **param_value_ss);
 };
 
 

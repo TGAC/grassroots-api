@@ -90,10 +90,13 @@ typedef struct PolymarkerServiceData
 	PolymarkerToolType psd_tool_type;
 
 	/**
-	 * The directory where the Blast input, output and log files
+	 * The directory where the Polymarker input, output and log files
 	 * will be stored.
 	 */
 	const char *psd_working_dir_s;
+
+
+	const char *psd_executable_s;
 
 } PolymarkerServiceData;
 
