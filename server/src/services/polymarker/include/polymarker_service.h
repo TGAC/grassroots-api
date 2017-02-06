@@ -47,6 +47,64 @@
 #endif /* #ifdef SHARED_LIBRARY */
 
 
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_JSON_TAGS is defined then it will
+ * become
+ *
+ * 		const char *SERVICE_NAME_S = "path";
+ *
+ * ALLOCATE_JSON_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * json_util.c.
+ */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+#ifdef ALLOCATE_POLYMARKER_TAGS
+	#define POLYMARKER_PREFIX GRASSROOTS_UTIL_API
+	#define POLYMARKER_VAL(x)	= x
+#else
+	#define POLYMARKER_PREFIX extern
+	#define POLYMARKER_VAL(x)
+#endif
+
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
+
+
+typedef enum
+{
+	PTT_WEB,
+	PTT_SYSTEM,
+	PTT_NUM_TYPES
+} PolymarkerToolType;
+
+
+typedef struct PolymarkerServiceData
+{
+	ServiceData psd_base_data;
+	PolymarkerToolType psd_tool_type;
+
+	/**
+	 * The directory where the Blast input, output and log files
+	 * will be stored.
+	 */
+	const char *psd_working_dir_s;
+
+} PolymarkerServiceData;
+
+
+
+POLYMARKER_PREFIX NamedParameterType PS_CONTIG_FILENAME POLYMARKER_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("Contig filename", PT_STRING));
+POLYMARKER_PREFIX NamedParameterType PS_GENE_ID POLYMARKER_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("Gene", PT_STRING));
+POLYMARKER_PREFIX NamedParameterType PS_TARGET_CHROMOSOME POLYMARKER_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("Chromosome", PT_STRING));
+POLYMARKER_PREFIX NamedParameterType PS_SEQUENCE POLYMARKER_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("Sequence", PT_LARGE_STRING));
+
+
 
 #ifdef __cplusplus
 extern "C"
