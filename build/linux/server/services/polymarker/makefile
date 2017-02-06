@@ -39,8 +39,9 @@ INCLUDES = \
 	-I$(DIR_HTSLIB_INC)
 	
 SRCS 	= \
-	polymarker_service.c \	
-	
+	polymarker_service.c \
+	polymarker_tool.cpp \
+	system_polymarker_tool.cpp
 
 CPPFLAGS += -DPOLYMARKER_LIBRARY_EXPORTS 
 
