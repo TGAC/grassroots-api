@@ -27,12 +27,26 @@
 #include "system_polymarker_tool.hpp"
 #include "string_utils.h"
 #include "process.h"
+#include "json_util.h"
+
+
+uint32 SystemPolymarkerTool :: SPT_NUM_ARGS = 8;
+
 
 
 SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
 	: PolymarkerTool (data_p, job_p)
 {
 	spt_command_line_args_ss = 0;
+	spt_asynchronous_flag = false;
+
+	json_t *conf_p = json_object_get (data_p -> psd_base_data.sd_config_p, "system");
+
+	if (conf_p)
+		{
+			GetJSONBoolean (conf_p, "asynchronous", &spt_asynchronous_flag);
+		}
+
 }
 
 
@@ -149,7 +163,7 @@ bool SystemPolymarkerTool :: CreateArgs (const char *input_s, char *output_s, ch
 										{
 											FreeCommandLineArgs ();
 
-											spt_command_line_args_ss = (char **) AllocMemoryArray (8, sizeof (char *));
+											spt_command_line_args_ss = (char **) AllocMemoryArray (SystemPolymarkerTool :: SPT_NUM_ARGS, sizeof (char *));
 
 											if (spt_command_line_args_ss)
 												{
@@ -195,14 +209,53 @@ bool SystemPolymarkerTool :: Run ()
 {
 	bool success_flag = false;
 
-	int32 process_id = CreateProcess ("/bin/bash", spt_command_line_args_ss, NULL);
-
-	if (process_id >= 0)
+	if (spt_asynchronous_flag)
 		{
-			pt_process_id = process_id;
-			success_flag = true;
-		}
+			int32 process_id = CreateProcess ("/bin/bash", spt_command_line_args_ss, NULL);
 
+			if (process_id >= 0)
+				{
+					pt_process_id = process_id;
+					success_flag = true;
+				}
+		}
+	else
+		{
+			ByteBuffer *buffer_p = AllocateByteBuffer (1024);
+
+			if (buffer_p)
+				{
+					size_t i;
+					bool made_args_flag = true;
+
+					for (i = 0; i < SystemPolymarkerTool :: SPT_NUM_ARGS; ++ i)
+						{
+							if (!AppendStringsToByteBuffer (buffer_p, * (spt_command_line_args_ss + i), " ", NULL))
+								{
+									i = SystemPolymarkerTool :: SPT_NUM_ARGS;
+									made_args_flag = false;
+								}
+						}
+
+					if (made_args_flag)
+						{
+							const char *command_s = GetByteBufferData (buffer_p);
+							int res = system (command_s);
+
+							if (res == 0)
+								{
+									success_flag = true;
+									SetServiceJobStatus (pt_service_job_p, OS_SUCCEEDED);
+								}
+							else
+								{
+									SetServiceJobStatus (pt_service_job_p, OS_FAILED);
+								}
+						}
+
+					FreeByteBuffer (buffer_p);
+				}
+		}
 
 	return success_flag;
 }
@@ -210,7 +263,17 @@ bool SystemPolymarkerTool :: Run ()
 
 OperationStatus SystemPolymarkerTool :: GetStatus (bool update_flag)
 {
-	OperationStatus status = GetProcessStatus (pt_process_id);
+	OperationStatus status;
+
+	if (spt_asynchronous_flag)
+		{
+			status = GetProcessStatus (pt_process_id);
+			SetServiceJobStatus (pt_service_job_p, status);
+		}
+	else
+		{
+			status = GetServiceJobStatus (pt_service_job_p);
+		}
 
 	return status;
 }

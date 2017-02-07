@@ -25,6 +25,9 @@
 #include "jobs_manager.h"
 #include "byte_buffer.h"
 #include "polymarker_service_job.h"
+#include "service_config.h"
+#include "grassroots_config.h"
+#include "provider.h"
 
 
 #ifdef _DEBUG
@@ -39,9 +42,9 @@
  */
 
 
-
-
-
+static const char * const BLASTDB_S = "Blast database";
+static const char * const FASTA_FILENAME_S = "Fasta";
+static const char * const PS_DATABASE_GROUP_NAME_S = "Available contigs";
 
 /*
  * STATIC PROTOTYPES
@@ -66,12 +69,16 @@ static  ParameterSet *IsFileForPolymarkerService (Service *service_p, Resource *
 static bool ClosePolymarkerService (Service *service_p);
 
 
+static uint16 AddDatabaseParams (PolymarkerServiceData *data_p, ParameterSet *param_set_p);
+
+
 static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p);
 
 
 static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), ServiceJob *job_p);
 
 
+static char *CreateGroupName (const char *server_s);
 
 /*
  * API FUNCTIONS
@@ -145,15 +152,76 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p)
 
 	if (polymarker_config_p)
 		{
-			const char *tool_s = GetJSONString (polymarker_config_p, "tool");
+			json_t *index_files_p;
+			const char *config_value_s = GetJSONString (polymarker_config_p, "tool");
+			const char * const WORKING_DIRECTORY_KEY_S = "working_directory";
 
-			if (tool_s)
+			if (config_value_s)
 				{
-					if (strcmp (tool_s, "web") == 0)
+					if (strcmp (config_value_s, "web") == 0)
 						{
 							data_p -> psd_tool_type = PTT_WEB;
 						}
 				}
+
+			config_value_s = GetJSONString (polymarker_config_p, WORKING_DIRECTORY_KEY_S);
+			if (config_value_s)
+				{
+					data_p -> psd_working_dir_s = config_value_s;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Polymarker Service requires a working directory specified by the %s", WORKING_DIRECTORY_KEY_S);
+					success_flag = false;
+				}
+
+
+			index_files_p = json_object_get (polymarker_config_p, "index_files");
+
+			if (index_files_p)
+				{
+					if (json_is_array (index_files_p))
+						{
+							size_t size = json_array_size (index_files_p);
+
+							data_p -> psd_index_data_p = (IndexData *) AllocMemoryArray (sizeof (IndexData), size);
+
+							if (data_p -> psd_index_data_p)
+								{
+									size_t i;
+									json_t *index_file_p;
+
+									json_array_foreach (index_files_p, i, index_file_p)
+										{
+											((data_p -> psd_index_data_p) + i) -> id_blast_db_name_s = GetJSONString (index_file_p, BLASTDB_S);
+											((data_p -> psd_index_data_p) + i) -> id_fasta_filename_s = GetJSONString (index_file_p, FASTA_FILENAME_S);
+										}
+
+									data_p -> psd_index_data_size = size;
+
+									success_flag = true;
+								}
+
+						}
+					else
+						{
+							if (json_is_object (index_files_p))
+								{
+									data_p -> psd_index_data_p = (IndexData *) AllocMemoryArray (sizeof (IndexData), 1);
+
+									if (data_p -> psd_index_data_p)
+										{
+											data_p -> psd_index_data_p -> id_blast_db_name_s = GetJSONString (index_files_p, BLASTDB_S);
+											data_p -> psd_index_data_p -> id_fasta_filename_s = GetJSONString (index_files_p, FASTA_FILENAME_S);
+
+											data_p -> psd_index_data_size = 1;
+
+											success_flag = true;
+										}
+								}
+						}
+
+				}		/* if (index_files_p) */
 
 		}		/* if (polymarker_config_p) */
 
@@ -259,6 +327,87 @@ static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), S
 	job_p -> sj_free_fn = FreePolymarkerServiceJob;
 }
 
+
+
+/*
+ * The list of databases that can be searched
+ */
+static uint16 AddDatabaseParams (PolymarkerServiceData *data_p, ParameterSet *param_set_p)
+{
+	uint16 num_added_databases = 0;
+	Parameter *param_p = NULL;
+	SharedType def;
+
+	if (data_p -> psd_index_data_size)
+		{
+			ParameterGroup *group_p = NULL;
+			char *group_s = NULL;
+			const json_t *provider_p = NULL;
+			const char *group_to_use_s = NULL;
+
+			provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
+
+			if (provider_p)
+				{
+					const char *provider_s = GetProviderName (provider_p);
+
+					if (provider_s)
+						{
+							group_s = CreateGroupName (provider_s);
+						}
+				}
+
+			group_to_use_s = group_s ? group_s : PS_DATABASE_GROUP_NAME_S;
+
+			group_p = CreateAndAddParameterGroupToParameterSet (group_to_use_s, NULL, & (data_p -> psd_base_data), param_set_p);
+
+			if (group_p)
+				{
+					const ServiceData *service_data_p = & (data_p -> psd_base_data);
+					const IndexData *db_p = data_p -> psd_index_data_p;
+					size_t i;
+
+
+					for (i = data_p -> psd_index_data_size; i > 0; -- i, ++ db_p)
+						{
+							if (!EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, PT_BOOLEAN, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, def, PL_ALL))
+								{
+									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> id_blast_db_name_s);
+								}
+						}
+
+				}		/* if (db_p) */
+
+			if (group_s)
+				{
+					FreeCopiedString (group_s);
+				}
+
+		}		/* if (num_group_params) */
+
+	return num_added_databases;
+}
+
+
+
+
+static char *CreateGroupName (const char *server_s)
+{
+	char *group_name_s = ConcatenateVarargsStrings (PS_DATABASE_GROUP_NAME_S, " provided by ", server_s, NULL);
+
+	if (group_name_s)
+		{
+			#if POLYMARKER_SERVICE_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Created group name \"%s\" for \"%s\" and \"%s\"", group_name_s, server_s);
+			#endif
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create group name for \"%s\"", group_name_s);
+		}
+
+	return group_name_s;
+}
 
 
 

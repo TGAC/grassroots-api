@@ -84,6 +84,15 @@ typedef enum
 } PolymarkerToolType;
 
 
+
+
+typedef struct IndexData
+{
+	const char *id_blast_db_name_s;
+	const char *id_fasta_filename_s;
+} IndexData;
+
+
 typedef struct PolymarkerServiceData
 {
 	ServiceData psd_base_data;
@@ -97,6 +106,10 @@ typedef struct PolymarkerServiceData
 
 
 	const char *psd_executable_s;
+
+	IndexData *psd_index_data_p;
+
+	size_t psd_index_data_size;
 
 } PolymarkerServiceData;
 
