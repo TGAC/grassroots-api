@@ -337,7 +337,6 @@ static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), S
 static uint16 AddDatabaseParams (PolymarkerServiceData *data_p, ParameterSet *param_set_p)
 {
 	uint16 num_added_databases = 0;
-	Parameter *param_p = NULL;
 	SharedType def;
 
 	if (data_p -> psd_index_data_size)
@@ -415,6 +414,45 @@ static char *CreateGroupName (const char *server_s)
 	return group_name_s;
 }
 
+
+static void PreparePolymarkerServiceJobs (const DatabaseInfo *db_p, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, PolymarkerServiceData *data_p)
+{
+	if (db_p)
+		{
+			while (db_p -> di_name_s)
+				{
+					Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+
+					/* Do we have a matching parameter? */
+					if (param_p)
+						{
+							/* Is the database selected to search against? */
+							if (param_p -> pa_current_value.st_boolean_value)
+								{
+									PolymarkerServiceJob *job_p = AllocatePolymarkerServiceJob (jobs_p -> sjs_service_p, db_p, data_p);
+
+									if (job_p)
+										{
+											if (!AddServiceJobToServiceJobSet (jobs_p, (ServiceJob *) job_p))
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ServiceJob to the ServiceJobSet for \"%s\"", db_p -> di_name_s);
+													FreePolymarkerServiceJob (& (job_p -> psj_base_job));
+												}
+										}
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob for \"%s\"", db_p -> di_name_s);
+										}
+
+								}		/* if (param_p -> pa_current_value.st_boolean_value) */
+
+						}		/* if (param_p) */
+
+					++ db_p;
+				}		/* while (db_p) */
+
+		}		/* if (db_p) */
+}
 
 
 

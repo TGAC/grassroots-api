@@ -84,62 +84,52 @@ void SystemPolymarkerTool :: FreeCommandLineArgs ()
 bool SystemPolymarkerTool :: ParseParameters (const ParameterSet * const param_set_p)
 {
 	bool success_flag = false;
-	char *contig_s;
+	char *gene_id_s;
 
-	if (GetStringParameter (param_set_p, PS_CONTIG_FILENAME.npt_name_s, &contig_s))
+	if (GetStringParameter (param_set_p, PS_GENE_ID.npt_name_s, &gene_id_s))
 		{
-			char *gene_id_s;
+			char *target_chromosome_s;
 
-			if (GetStringParameter (param_set_p, PS_GENE_ID.npt_name_s, &gene_id_s))
+			if (GetStringParameter (param_set_p, PS_TARGET_CHROMOSOME.npt_name_s, &target_chromosome_s))
 				{
-					char *target_chromosome_s;
+					char *sequence_s;
 
-					if (GetStringParameter (param_set_p, PS_TARGET_CHROMOSOME.npt_name_s, &target_chromosome_s))
+					if (GetStringParameter (param_set_p, PS_SEQUENCE.npt_name_s, &sequence_s))
 						{
-							char *sequence_s;
+							TempFile *input_file_p = GetInputFile (gene_id_s, target_chromosome_s, sequence_s);
 
-							if (GetStringParameter (param_set_p, PS_SEQUENCE.npt_name_s, &sequence_s))
+							if (input_file_p)
 								{
-									TempFile *input_file_p = GetInputFile (gene_id_s, target_chromosome_s, sequence_s);
+									const char *input_s = input_file_p -> GetFilename ();
+									char *output_s = GetOutputFolder ();
 
-									if (input_file_p)
+									if (output_s)
 										{
-											const char *input_s = input_file_p -> GetFilename ();
-											char *output_s = GetOutputFolder ();
-
-											if (output_s)
+											if (CreateArgs (input_s, output_s, contig_s))
 												{
-													if (CreateArgs (input_s, output_s, contig_s))
-														{
-															success_flag = true;
-														}
-													else
-														{
-															FreeCopiedString (output_s);
-														}
-
-													if (!success_flag)
-														{
-															FreeCopiedString (output_s);
-														}
+													success_flag = true;
+												}
+											else
+												{
+													FreeCopiedString (output_s);
 												}
 
-											delete input_file_p;
+											if (!success_flag)
+												{
+													FreeCopiedString (output_s);
+												}
 										}
 
-									FreeCopiedString (sequence_s);
+									delete input_file_p;
 								}
 
-							FreeCopiedString (target_chromosome_s);
+							FreeCopiedString (sequence_s);
 						}
 
-					FreeCopiedString (gene_id_s);
+					FreeCopiedString (target_chromosome_s);
 				}
 
-			if (!success_flag)
-				{
-					FreeCopiedString (contig_s);
-				}
+			FreeCopiedString (gene_id_s);
 		}
 
 	return success_flag;
