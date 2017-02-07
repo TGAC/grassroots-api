@@ -16,7 +16,10 @@
 #include <string.h>
 #include <time.h>
 
+
+#define ALLOCATE_POLYMARKER_TAGS (1)
 #include "polymarker_service.h"
+
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "jobs_manager.h"
@@ -30,30 +33,12 @@
 	#define POLYMARKER_SERVICE_DEBUG	(STM_LEVEL_NONE)
 #endif
 
-typedef enum
-{
-	PTT_WEB,
-	PTT_SYSTEM,
-	PTT_NUM_TYPES
-} PolymarkerToolType;
-
-
-typedef struct PolymarkerServiceData
-{
-	ServiceData psd_base_data;
-	PolymarkerToolType psd_tool_type;
-} PolymarkerServiceData;
-
 
 /*
  * bin/polymarker.rb --contigs ~/Applications/grassroots-0/grassroots/extras/blast/databases/Triticum_aestivum_CS42_TGACv1_all.fa --marker_list test/data/short_primer_design_test.csv --output ~/Desktop/polymarker_out
  */
 
 
-static NamedParameterType PS_CONTIG_FILENAME = { "Contig filename", PT_STRING };
-static NamedParameterType PS_GENE_ID = { "Gene", PT_STRING };
-static NamedParameterType PS_TARGET_CHROMOSOME = { "Chromosome", PT_STRING };
-static NamedParameterType PS_SEQUENCE = { "Sequence", PT_LARGE_STRING };
 
 
 
@@ -164,6 +149,14 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p)
 	if (polymarker_config_p)
 		{
 			const char *tool_s = GetJSONString (polymarker_config_p, "tool");
+
+			if (tool_s)
+				{
+					if (strcmp (tool_s, "web") == 0)
+						{
+							data_p -> psd_tool_type = PTT_WEB;
+						}
+				}
 
 		}		/* if (polymarker_config_p) */
 

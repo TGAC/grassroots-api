@@ -30,6 +30,7 @@
 
 #include "grassroots_util_library.h"
 #include "typedefs.h"
+#include "operation.h"
 
 
 #ifdef __cplusplus
@@ -38,9 +39,12 @@ extern "C"
 #endif
 
 
-GRASSROOTS_UTIL_API	int32 CreateProcess ();
+GRASSROOTS_UTIL_API	int32 CreateProcess (const char * const program_s, char **args_ss, char **environment_ss);
 
 GRASSROOTS_UTIL_API	bool TerminateProcess (int32 process_id);
+
+GRASSROOTS_UTIL_API	OperationStatus GetProcessStatus (int32 process_id);
+
 
 
 #ifdef __cplusplus

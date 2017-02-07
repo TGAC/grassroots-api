@@ -31,16 +31,19 @@
 #include <fstream>
 #include <cstdio>
 
-#include "blast_service_api.h"
+#include "uuid/uuid.h"
+
+#include "grassroots_util_library.h"
+#include "memory_allocations.h"
 
 using namespace std;
 
 /**
  * Create a temporary file to read and write data to.
  *
- * @ingroup blast_service
+ * @ingroup util
  */
-class BLAST_SERVICE_LOCAL TempFile
+class GRASSROOTS_UTIL_API TempFile
 {
 public:
 
@@ -189,7 +192,7 @@ extern "C"
  * upon error.
  * @memberof TempFile
  */
-BLAST_SERVICE_LOCAL char *GetTempFilenameBuffer (const char * const working_directory_s, const char * const prefix_s, const char * const temp_suffix_s);
+GRASSROOTS_UTIL_API char *GetTempFilenameBuffer (const char * const working_directory_s, const char * const prefix_s, const char * const temp_suffix_s);
 
 #ifdef __cplusplus
 }

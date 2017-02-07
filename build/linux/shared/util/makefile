@@ -63,6 +63,7 @@ SRCS 	= \
 	string_int_pair.c \
 	string_linked_list.c \
 	string_utils.c \
+	temp_file.cpp \
 	time_util.c \
 	unix_filesystem.c \
 	unix_plugin.c \
