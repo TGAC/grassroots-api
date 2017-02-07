@@ -28,7 +28,7 @@
 #include "string_utils.h"
 #include "process.h"
 #include "json_util.h"
-
+#include "alloc_failure.hpp"
 
 uint32 SystemPolymarkerTool :: SPT_NUM_ARGS = 8;
 
@@ -39,14 +39,21 @@ SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, Ser
 {
 	spt_command_line_args_ss = 0;
 	spt_asynchronous_flag = false;
+	spt_executable_s = 0;
 
 	json_t *conf_p = json_object_get (data_p -> psd_base_data.sd_config_p, "system");
 
 	if (conf_p)
 		{
 			GetJSONBoolean (conf_p, "asynchronous", &spt_asynchronous_flag);
+
+			data_p -> psd_executable_s = GetJSONString (conf_p, "program");
 		}
 
+	if (! (data_p -> psd_executable_s))
+		{
+			throw AllocFailure ("Failed to get program name for SystemPolymarkerTool");
+		}
 }
 
 

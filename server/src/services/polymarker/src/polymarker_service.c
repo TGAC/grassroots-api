@@ -42,8 +42,8 @@
  */
 
 
-static const char * const BLASTDB_S = "Blast database";
-static const char * const FASTA_FILENAME_S = "Fasta";
+static const char * const PS_BLASTDB_S = "Blast database";
+static const char * const PS_FASTA_FILENAME_S = "Fasta";
 static const char * const PS_DATABASE_GROUP_NAME_S = "Available contigs";
 
 /*
@@ -176,6 +176,8 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p)
 				}
 
 
+
+
 			index_files_p = json_object_get (polymarker_config_p, "index_files");
 
 			if (index_files_p)
@@ -193,8 +195,8 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p)
 
 									json_array_foreach (index_files_p, i, index_file_p)
 										{
-											((data_p -> psd_index_data_p) + i) -> id_blast_db_name_s = GetJSONString (index_file_p, BLASTDB_S);
-											((data_p -> psd_index_data_p) + i) -> id_fasta_filename_s = GetJSONString (index_file_p, FASTA_FILENAME_S);
+											((data_p -> psd_index_data_p) + i) -> id_blast_db_name_s = GetJSONString (index_file_p, PS_BLASTDB_S);
+											((data_p -> psd_index_data_p) + i) -> id_fasta_filename_s = GetJSONString (index_file_p, PS_FASTA_FILENAME_S);
 										}
 
 									data_p -> psd_index_data_size = size;
@@ -211,8 +213,8 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p)
 
 									if (data_p -> psd_index_data_p)
 										{
-											data_p -> psd_index_data_p -> id_blast_db_name_s = GetJSONString (index_files_p, BLASTDB_S);
-											data_p -> psd_index_data_p -> id_fasta_filename_s = GetJSONString (index_files_p, FASTA_FILENAME_S);
+											data_p -> psd_index_data_p -> id_blast_db_name_s = GetJSONString (index_files_p, PS_BLASTDB_S);
+											data_p -> psd_index_data_p -> id_fasta_filename_s = GetJSONString (index_files_p, PS_FASTA_FILENAME_S);
 
 											data_p -> psd_index_data_size = 1;
 
@@ -278,13 +280,13 @@ static ParameterSet *GetPolymarkerServiceParameters (Service *service_p, Resourc
 
 			def.st_string_value_s = NULL;
 
-			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_CONTIG_FILENAME.npt_type, PS_CONTIG_FILENAME.npt_name_s, "Reference", "The reference database to use", def, PL_ALL)) != NULL)
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_GENE_ID.npt_type, PS_GENE_ID.npt_name_s, "Gene ID", "An unique identifier for the assay", def, PL_ALL)) != NULL)
 				{
-					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_GENE_ID.npt_type, PS_GENE_ID.npt_name_s, "Gene ID", "An unique identifier for the assay", def, PL_ALL)) != NULL)
+					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_TARGET_CHROMOSOME.npt_type, PS_TARGET_CHROMOSOME.npt_name_s, "Target Chromosome", "The chromosome to use", def, PL_ALL)) != NULL)
 						{
-							if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_TARGET_CHROMOSOME.npt_type, PS_TARGET_CHROMOSOME.npt_name_s, "Target Chromosome", "The chromosome to use", def, PL_ALL)) != NULL)
+							if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_SEQUENCE.npt_type, PS_SEQUENCE.npt_name_s, "Sequence surrounding the polymorphisms", "The SNP must be marked in the format [A/T] for a varietal SNP with alternative bases, A or T",  def, PL_ALL)) != NULL)
 								{
-									if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_SEQUENCE.npt_type, PS_SEQUENCE.npt_name_s, "Sequence surrounding the polymorphisms", "The SNP must be marked in the format [A/T] for a varietal SNP with alternative bases, A or T",  def, PL_ALL)) != NULL)
+									if (AddDatabaseParams (data_p, param_set_p))
 										{
 											return param_set_p;
 										}
@@ -370,7 +372,11 @@ static uint16 AddDatabaseParams (PolymarkerServiceData *data_p, ParameterSet *pa
 
 					for (i = data_p -> psd_index_data_size; i > 0; -- i, ++ db_p)
 						{
-							if (!EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, PT_BOOLEAN, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, def, PL_ALL))
+							if (EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, PT_BOOLEAN, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, def, PL_ALL))
+								{
+									++ num_added_databases;
+								}
+							else
 								{
 									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> id_blast_db_name_s);
 								}

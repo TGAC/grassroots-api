@@ -43,6 +43,7 @@ public:
 	virtual bool ParseParameters (const ParameterSet * const param_set_p);
 
 protected:
+	char *spt_executable_s;
 	char **spt_command_line_args_ss;
 	bool spt_asynchronous_flag;
 
