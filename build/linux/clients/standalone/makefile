@@ -46,8 +46,9 @@ LDFLAGS += -L$(DIR_JANSSON_LIB) -ljansson \
 	-L/usr/lib/x86_64-linux-gnu/ \
 	-lcurl \
 	-ldl \
+	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
-	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx
+	-L$(DIR_PCRE_LIB) -lpcre
 
 .PHONY:	all 
 

@@ -36,7 +36,8 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_PARAMS_INC) \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC) \
-	-I$(DIR_BLAST_INC)
+	-I$(DIR_BLAST_INC) \
+	-I$(DIR_PCRE_INC)
 	
 SRCS 	= \
 	blast_service.c \

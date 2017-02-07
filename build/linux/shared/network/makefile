@@ -34,8 +34,8 @@ INCLUDES = \
 	-I$(DIR_HCXSELECT_INC) \
 	-I$(DIR_HTMLCXX_INC) \
 	-I$(DIR_JANSSON_INC) \
-	-I$(DIR_UUID_INC)
-	
+	-I$(DIR_UUID_INC) \
+	-I$(DIR_PCRE_INC)	
 	
 SRCS 	= \
 	byte_buffer.c \
@@ -50,9 +50,10 @@ SRCS 	= \
 BASE_LDFLAGS = -ldl -L$(DIR_JANSSON_LIB) -ljansson \
 	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 	-L$(DIR_HCXSELECT_LIB) -lhcxselect \
-	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx 
+	-L$(DIR_HTMLCXX_LIB) -lhtmlcxx \
 
-CPPFLAGS += -DGRASSROOTS_NETWORK_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I$(DIR_PKG_ROOT)/extras/hcxselect-1.1/src
+	
+CPPFLAGS += -DGRASSROOTS_NETWORK_LIBRARY_EXPORTS -I/usr/include -I/usr/local/include -I$(DIR_HTMLCXX_INC)
 
 LDFLAGS += $(BASE_LDFLAGS)
 

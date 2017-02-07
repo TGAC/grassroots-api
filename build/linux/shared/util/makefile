@@ -39,7 +39,8 @@ INCLUDES = \
 	-I$(DIR_SHARED_IRODS_INC)/server/re/include \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC) \
-	-I$(DIR_GRASSROOTS_NETWORK_INC)
+	-I$(DIR_GRASSROOTS_NETWORK_INC) \
+	-I$(DIR_PCRE_INC)
 	
 SRCS 	= \
 	alloc_failure.cpp \
@@ -96,6 +97,7 @@ include $(DIR_BUILD_ROOT)/generic_makefiles/shared_library.makefile
 
 
 util: all
+
 
 test:
 	$(COMP) $(CFLAGS) $(CPPFLAGS) -Wl,--no-as-needed -L$(DIR_OBJS)/ -l$(NAME) -lm  $(INCLUDES)  test.c -o test
