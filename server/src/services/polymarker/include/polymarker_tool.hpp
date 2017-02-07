@@ -43,7 +43,7 @@ public:
 
 	virtual bool Run () = 0;
 
-
+	virtual OperationStatus GetStatus (bool update_flag) = 0;
 
 protected:
 	const PolymarkerServiceData *pt_service_data_p;

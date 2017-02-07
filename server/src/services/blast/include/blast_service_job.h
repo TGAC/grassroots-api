@@ -184,7 +184,7 @@ BLAST_SERVICE_LOCAL bool AddErrorToBlastServiceJob (BlastServiceJob *job_p);
 
 
 /**
- * Update the running status of BlastServiceJob if neeeded.
+ * Update the running status of BlastServiceJob if needed.
  *
  * @param job_p The BlastServiceJob to check.
  * @return <code>true</code> if the BlastServiceJob was updated successfully,

@@ -256,7 +256,7 @@ typedef struct Service
 	 * @return TThe JSON fragment representing the serialised ServiceJob or <code>NULL</code> upon error.
 	 * @see CreateSerialisedJSONFromServiceJob
 	 */
-	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, const struct ServiceJob *service_job_p);
+	json_t *(*se_serialise_job_json_fn) (struct Service *service_p, struct ServiceJob *service_job_p);
 
 	/**
 	 * Callback function used when processing the results from running ServiceJobs for this Service as
@@ -448,7 +448,7 @@ GRASSROOTS_SERVICE_API struct ServiceJob *CreateSerialisedServiceJobFromService 
  * @see se_serialise_job_fn
  * @memberof Service
  */
-GRASSROOTS_SERVICE_API json_t *CreateSerialisedJSONForServiceJobFromService (struct Service *service_p, const struct ServiceJob *service_job_p);
+GRASSROOTS_SERVICE_API json_t *CreateSerialisedJSONForServiceJobFromService (struct Service *service_p, struct ServiceJob *service_job_p);
 
 
 /**

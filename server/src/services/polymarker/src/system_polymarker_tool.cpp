@@ -208,6 +208,14 @@ bool SystemPolymarkerTool :: Run ()
 }
 
 
+OperationStatus SystemPolymarkerTool :: GetStatus (bool update_flag)
+{
+	OperationStatus status = GetProcessStatus (pt_process_id);
+
+	return status;
+}
+
+
 TempFile *SystemPolymarkerTool :: GetInputFile (const char *gene_id_s, const char *target_chromosome_s, const char *sequence_s)
 {
 	bool success_flag = false;

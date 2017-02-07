@@ -54,6 +54,39 @@ POLYMARKER_SERVICE_LOCAL PolymarkerServiceJob *AllocatePolymarkerServiceJob (Ser
 POLYMARKER_SERVICE_LOCAL void FreePolymarkerServiceJob (ServiceJob *job_p);
 
 
+/**
+ * Update the running status of PolymarkerServiceJob if needed.
+ *
+ * @param job_p The PolymarkerServiceJob to check.
+ * @return <code>true</code> if the PolymarkerServiceJob was updated successfully,
+ * <code>false</code> otherwise.
+ * @memberof PolymarkerServiceJob
+ */
+POLYMARKER_SERVICE_LOCAL bool UpdatePolymarkerServiceJob (ServiceJob *job_p);
+
+
+
+/**
+ * Create a PolymarkerServiceJob from a JSON-based serialisation.
+ *
+ * @param service_p The type of Blast Service that previously created the BlastServiceJob.
+ * @param service_job_json_p The JSON fragment representing the PolymarkerServiceJob.
+ * @return The PolymarkerServiceJob or <code>NULL</code> upon error.
+ * @memberof PolymarkerServiceJob
+ */
+POLYMARKER_SERVICE_LOCAL ServiceJob *GetPolymarkerServiceJobFromJSON (struct Service *service_p, const json_t *service_job_json_p);
+
+
+/**
+ * Get the JSON representation of a PolymarkerServiceJob.
+ *
+ * @param service_p The Service that ran the PolymarkerServiceJob.
+ * @param service_job_p The PolymarkerServiceJob to serialise.
+ * @return The JSON fragment representing the PolymarkerServiceJob or <code>NULL</code>
+ * upon error.
+ * @memberof PolymarkerServiceJob
+ */
+POLYMARKER_SERVICE_LOCAL json_t *ConvertPolymarkerServiceJobToJSON (Service *service_p, ServiceJob *service_job_p);
 
 
 #ifdef __cplusplus

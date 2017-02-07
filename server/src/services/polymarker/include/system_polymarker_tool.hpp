@@ -38,6 +38,8 @@ public:
 
 	virtual bool Run ();
 
+	virtual OperationStatus GetStatus (bool update_flag);
+
 	virtual bool ParseParameters (const ParameterSet * const param_set_p);
 
 protected:

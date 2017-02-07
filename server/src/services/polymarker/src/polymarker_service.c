@@ -24,7 +24,7 @@
 #include "string_utils.h"
 #include "jobs_manager.h"
 #include "byte_buffer.h"
-
+#include "polymarker_service_job.h"
 
 
 #ifdef _DEBUG
@@ -72,12 +72,6 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p);
 static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), ServiceJob *job_p);
 
 
-static bool UpdatePolymarkerServiceJob (ServiceJob *job_p);
-
-
-static void FreePolymarkerServiceJob (ServiceJob *job_p);
-
-
 
 /*
  * API FUNCTIONS
@@ -114,6 +108,9 @@ ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
 							if (GetPolymarkerServiceConfig (data_p))
 								{
 									* (services_p -> sa_services_pp) = service_p;
+
+									service_p -> se_deserialise_job_json_fn = GetPolymarkerServiceJobFromJSON;
+									service_p -> se_serialise_job_json_fn = ConvertPolymarkerServiceJobToJSON;
 
 									return services_p;
 								}
@@ -265,18 +262,4 @@ static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), S
 
 
 
-
-static bool UpdatePolymarkerServiceJob (ServiceJob *job_p)
-{
-	bool success_flag = false;
-
-	return success_flag;
-}
-
-
-static void FreePolymarkerServiceJob (ServiceJob *job_p)
-{
-
-	FreeServiceJob (job_p);
-}
 

@@ -459,7 +459,7 @@ BLAST_SERVICE_LOCAL ServiceJob *BuildBlastServiceJob (struct Service *service_p,
  * @return The JSON fragment representing the BlastServiceJob or <code>NULL</code>
  * upon error.
  */
-BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *service_job_p);
+BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, ServiceJob *service_job_p);
 
 
 /**

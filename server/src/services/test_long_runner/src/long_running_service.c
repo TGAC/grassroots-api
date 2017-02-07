@@ -168,7 +168,7 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p);
 static ServiceJob *BuildTimedServiceJob (Service *service_p, const json_t *service_job_json_p);
 
 
-static json_t *BuildTimedServiceJobJSON ( Service *service_p, const ServiceJob *service_job_p);
+static json_t *BuildTimedServiceJobJSON ( Service *service_p, ServiceJob *service_job_p);
 
 
 static void CustomiseTimedServiceJob (Service *service_p, ServiceJob *job_p);
@@ -856,7 +856,7 @@ static ServiceJob *BuildTimedServiceJob (Service *service_p, const json_t *servi
 }
 
 
-static json_t *BuildTimedServiceJobJSON (Service *service_p, const ServiceJob *service_job_p)
+static json_t *BuildTimedServiceJobJSON (Service *service_p, ServiceJob *service_job_p)
 {
 	return GetTimedServiceJobAsJSON ((TimedServiceJob *) service_job_p);
 }
