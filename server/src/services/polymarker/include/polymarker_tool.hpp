@@ -52,5 +52,19 @@ protected:
 };
 
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p);
+
+
+void FreePolymarkerTool (PolymarkerTool *tool_p);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* SERVER_SRC_SERVICES_POLYMARKER_INCLUDE_POLYMARKER_TOOL_HPP_ */

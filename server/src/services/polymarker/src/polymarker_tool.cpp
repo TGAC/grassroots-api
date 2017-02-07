@@ -24,7 +24,32 @@
  */
 
 #include "polymarker_tool.hpp"
+#include "system_polymarker_tool.hpp"
 
+
+PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
+{
+	PolymarkerTool *tool_p = 0;
+
+	switch (data_p -> psd_tool_type)
+		{
+			case PTT_SYSTEM:
+				tool_p = new SystemPolymarkerTool (data_p, job_p);
+				break;
+
+			case PTT_WEB:
+			default:
+				break;
+		}
+
+	return tool_p;
+}
+
+
+void FreePolymarkerTool (PolymarkerTool *tool_p)
+{
+	delete tool_p;
+}
 
 
 PolymarkerTool :: PolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)

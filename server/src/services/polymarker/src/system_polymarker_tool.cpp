@@ -26,6 +26,7 @@
 
 #include "system_polymarker_tool.hpp"
 #include "string_utils.h"
+#include "process.h"
 
 
 SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
@@ -36,6 +37,12 @@ SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, Ser
 
 
 SystemPolymarkerTool ::  ~SystemPolymarkerTool ()
+{
+	FreeCommandLineArgs ();
+}
+
+
+void SystemPolymarkerTool :: FreeCommandLineArgs ()
 {
 	if (spt_command_line_args_ss)
 		{
@@ -48,6 +55,7 @@ SystemPolymarkerTool ::  ~SystemPolymarkerTool ()
 				}
 
 			FreeMemory (spt_command_line_args_ss);
+			spt_command_line_args_ss = 0;
 		}
 }
 
@@ -139,6 +147,8 @@ bool SystemPolymarkerTool :: CreateArgs (const char *input_s, char *output_s, ch
 
 									if (input_copy_s)
 										{
+											FreeCommandLineArgs ();
+
 											spt_command_line_args_ss = (char **) AllocMemoryArray (8, sizeof (char *));
 
 											if (spt_command_line_args_ss)
@@ -184,6 +194,15 @@ bool SystemPolymarkerTool :: CreateArgs (const char *input_s, char *output_s, ch
 bool SystemPolymarkerTool :: Run ()
 {
 	bool success_flag = false;
+
+	int32 process_id = CreateProcess ("/bin/bash", spt_command_line_args_ss, NULL);
+
+	if (process_id >= 0)
+		{
+			pt_process_id = process_id;
+			success_flag = true;
+		}
+
 
 	return success_flag;
 }

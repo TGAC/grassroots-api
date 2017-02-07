@@ -46,6 +46,7 @@ GRASSROOTS_UTIL_API	bool TerminateProcess (int32 process_id);
 GRASSROOTS_UTIL_API	OperationStatus GetProcessStatus (int32 process_id);
 
 
+
 #ifdef __cplusplus
 }
 #endif
