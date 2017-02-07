@@ -31,39 +31,23 @@
 SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
 	: PolymarkerTool (data_p, job_p)
 {
-	spt_contig_s = 0;
-	spt_gene_id_s = 0;
-	spt_target_chromosome_s = 0;
-	spt_sequence_s = 0;
-	spt_command_line_s = 0;
+	spt_command_line_args_ss = 0;
 }
 
 
 SystemPolymarkerTool ::  ~SystemPolymarkerTool ()
 {
-	if (spt_contig_s)
+	if (spt_command_line_args_ss)
 		{
-			FreeCopiedString (spt_contig_s);
-		}
+			char **arg_ss = spt_command_line_args_ss;
 
-	if (spt_gene_id_s)
-		{
-			FreeCopiedString (spt_gene_id_s);
-		}
+			while (*arg_ss)
+				{
+					FreeCopiedString (*arg_ss);
+					++ arg_ss;
+				}
 
-	if (spt_target_chromosome_s)
-		{
-			FreeCopiedString (spt_target_chromosome_s);
-		}
-
-	if (spt_sequence_s)
-		{
-			FreeCopiedString (spt_sequence_s);
-		}
-
-	if (spt_command_line_s)
-		{
-			FreeCopiedString (spt_command_line_s);
+			FreeMemory (spt_command_line_args_ss);
 		}
 }
 
@@ -71,16 +55,23 @@ SystemPolymarkerTool ::  ~SystemPolymarkerTool ()
 bool SystemPolymarkerTool :: ParseParameters (const ParameterSet * const param_set_p)
 {
 	bool success_flag = false;
+	char *contig_s;
 
-	if (GetStringParameter (param_set_p, PS_CONTIG_FILENAME.npt_name_s, &spt_contig_s))
+	if (GetStringParameter (param_set_p, PS_CONTIG_FILENAME.npt_name_s, &contig_s))
 		{
-			if (GetStringParameter (param_set_p, PS_GENE_ID.npt_name_s, &spt_gene_id_s))
+			char *gene_id_s;
+
+			if (GetStringParameter (param_set_p, PS_GENE_ID.npt_name_s, &gene_id_s))
 				{
-					if (GetStringParameter (param_set_p, PS_TARGET_CHROMOSOME.npt_name_s, &spt_target_chromosome_s))
+					char *target_chromosome_s;
+
+					if (GetStringParameter (param_set_p, PS_TARGET_CHROMOSOME.npt_name_s, &target_chromosome_s))
 						{
-							if (GetStringParameter (param_set_p, PS_SEQUENCE.npt_name_s, &spt_sequence_s))
+							char *sequence_s;
+
+							if (GetStringParameter (param_set_p, PS_SEQUENCE.npt_name_s, &sequence_s))
 								{
-									TempFile *input_file_p = GetInputFile ();
+									TempFile *input_file_p = GetInputFile (gene_id_s, target_chromosome_s, sequence_s);
 
 									if (input_file_p)
 										{
@@ -89,24 +80,104 @@ bool SystemPolymarkerTool :: ParseParameters (const ParameterSet * const param_s
 
 											if (output_s)
 												{
-													spt_command_line_s = ConcatenateVarargsStrings (pt_service_data_p -> psd_executable_s, " --marker_list ", input_s, " --output ", output_s, " --contigs ", spt_contig_s, NULL);
-
-													if (spt_command_line_s)
+													if (CreateArgs (input_s, output_s, contig_s))
 														{
 															success_flag = true;
 														}
+													else
+														{
+															FreeCopiedString (output_s);
+														}
 
-													FreeCopiedString (output_s);
+													if (!success_flag)
+														{
+															FreeCopiedString (output_s);
+														}
 												}
+
+											delete input_file_p;
 										}
+
+									FreeCopiedString (sequence_s);
 								}
+
+							FreeCopiedString (target_chromosome_s);
 						}
+
+					FreeCopiedString (gene_id_s);
+				}
+
+			if (!success_flag)
+				{
+					FreeCopiedString (contig_s);
 				}
 		}
 
 	return success_flag;
 }
 
+
+bool SystemPolymarkerTool :: CreateArgs (const char *input_s, char *output_s, char *contigs_s)
+{
+	char *program_name_s = CopyToNewString (pt_service_data_p -> psd_executable_s, 0, false);
+
+	if (program_name_s)
+		{
+			char *markers_key_s = CopyToNewString ("--marker_list", 0, false);
+
+			if (markers_key_s)
+				{
+					char *output_key_s = CopyToNewString ("--output", 0, false);
+
+					if (output_key_s)
+						{
+							char *contigs_key_s = CopyToNewString ("--contigs", 0, false);
+
+							if (contigs_key_s)
+								{
+									char *input_copy_s = CopyToNewString (input_s, 0, false);
+
+									if (input_copy_s)
+										{
+											spt_command_line_args_ss = (char **) AllocMemoryArray (8, sizeof (char *));
+
+											if (spt_command_line_args_ss)
+												{
+													char **arg_ss = spt_command_line_args_ss;
+
+													*arg_ss = program_name_s;
+
+													* (++ arg_ss) = markers_key_s;
+													* (++ arg_ss) = input_copy_s;
+
+													* (++ arg_ss) = output_key_s;
+													* (++ arg_ss) = output_s;
+
+													* (++ arg_ss) = contigs_key_s;
+													* (++ arg_ss) = contigs_s;
+
+													* (++ arg_ss) = NULL;
+
+													return true;
+												}
+
+											FreeCopiedString (input_copy_s);
+										}
+
+									FreeCopiedString (contigs_key_s);
+								}
+
+							FreeCopiedString (output_key_s);
+						}
+
+					FreeCopiedString (markers_key_s);
+				}
+
+			FreeCopiedString (program_name_s);
+		}
+
+	return false;
+}
 
 
 
@@ -118,7 +189,7 @@ bool SystemPolymarkerTool :: Run ()
 }
 
 
-TempFile *SystemPolymarkerTool :: GetInputFile ()
+TempFile *SystemPolymarkerTool :: GetInputFile (const char *gene_id_s, const char *target_chromosome_s, const char *sequence_s)
 {
 	bool success_flag = false;
 	TempFile *input_file_p = TempFile :: GetTempFile (pt_service_data_p -> psd_working_dir_s, pt_service_job_p -> sj_id, ".input");
@@ -127,7 +198,7 @@ TempFile *SystemPolymarkerTool :: GetInputFile ()
 		{
 			if (input_file_p -> Open ("a"))
 				{
-					char *line_s = ConcatenateVarargsStrings (spt_gene_id_s, ",", spt_target_chromosome_s, ", ", spt_sequence_s, "\n", NULL);
+					char *line_s = ConcatenateVarargsStrings (gene_id_s, ",", target_chromosome_s, ", ", sequence_s, "\n", NULL);
 
 					if (line_s)
 						{

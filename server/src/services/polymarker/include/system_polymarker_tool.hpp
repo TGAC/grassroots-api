@@ -41,13 +41,10 @@ public:
 	virtual bool ParseParameters (const ParameterSet * const param_set_p);
 
 protected:
-	char *spt_contig_s;
-	char *spt_gene_id_s;
-	char *spt_target_chromosome_s;
-	char *spt_sequence_s;
-	char *spt_command_line_s;
+	char **spt_command_line_args_ss;
 
-	TempFile *GetInputFile ();
+	bool CreateArgs (const char *input_s, char *output_s, char *contigs_s);
+	TempFile *GetInputFile (const char *gene_id_s, const char *target_chromosome_s, const char *sequence_s);
 	char *GetOutputFolder ();
 	bool GetStringParameter (const ParameterSet * const params_p, const char *param_name_s, char **param_value_ss);
 };
