@@ -30,6 +30,7 @@
 #include "polymarker_service.h"
 #include "parameter_set.h"
 #include "service_job.h"
+#include "polymarker_service_job.h"
 
 
 class POLYMARKER_SERVICE_LOCAL PolymarkerTool
@@ -47,7 +48,7 @@ public:
 
 protected:
 	const PolymarkerServiceData *pt_service_data_p;
-	ServiceJob *pt_service_job_p;
+	PolymarkerServiceJob *pt_service_job_p;
 	int32 pt_process_id;
 };
 

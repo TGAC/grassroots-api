@@ -28,6 +28,7 @@
 #include "service_config.h"
 #include "grassroots_config.h"
 #include "provider.h"
+#include "service_job_set_iterator.h"
 
 
 #ifdef _DEBUG
@@ -68,17 +69,14 @@ static  ParameterSet *IsFileForPolymarkerService (Service *service_p, Resource *
 
 static bool ClosePolymarkerService (Service *service_p);
 
-
-static uint16 AddDatabaseParams (PolymarkerServiceData *data_p, ParameterSet *param_set_p);
-
-
 static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p);
 
 
 static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), ServiceJob *job_p);
 
+static void PreparePolymarkerServiceJobs (const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, PolymarkerServiceData *data_p);
 
-static char *CreateGroupName (const char *server_s);
+static Parameter *SetUpDatabasesParamater (const PolymarkerServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
 /*
  * API FUNCTIONS
@@ -286,7 +284,7 @@ static ParameterSet *GetPolymarkerServiceParameters (Service *service_p, Resourc
 						{
 							if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_SEQUENCE.npt_type, PS_SEQUENCE.npt_name_s, "Sequence surrounding the polymorphisms", "The SNP must be marked in the format [A/T] for a varietal SNP with alternative bases, A or T",  def, PL_ALL)) != NULL)
 								{
-									if (AddDatabaseParams (data_p, param_set_p))
+									if (SetUpDatabasesParamater (data_p, param_set_p, NULL))
 										{
 											return param_set_p;
 										}
@@ -310,8 +308,20 @@ static void ReleasePolymarkerServiceParameters (Service * UNUSED_PARAM (service_
 static ServiceJobSet *RunPolymarkerService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
 {
 	PolymarkerServiceData *data_p = (PolymarkerServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Polymarker service job");
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p);
 
+	if (service_p -> se_jobs_p)
+		{
+			/* Get all of the selected databases and create a PolymarkerServiceJob for each one */
+			PreparePolymarkerServiceJobs (param_set_p, service_p -> se_jobs_p, data_p);
+
+
+			if (GetServiceJobSetSize (service_p -> se_jobs_p) == 0)
+				{
+					PrintErrors (STM_LEVEL_INFO, __FILE__, __LINE__, "No jobs specified");
+				}
+
+		}		/* if (service_p -> se_jobs_p) */
 
 	return service_p -> se_jobs_p;
 }
@@ -334,94 +344,63 @@ static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), S
 /*
  * The list of databases that can be searched
  */
-static uint16 AddDatabaseParams (PolymarkerServiceData *data_p, ParameterSet *param_set_p)
+static Parameter *SetUpDatabasesParamater (const PolymarkerServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
-	uint16 num_added_databases = 0;
-	SharedType def;
+	Parameter *param_p = NULL;
 
-	if (data_p -> psd_index_data_size)
+	if (service_data_p -> psd_index_data_size)
 		{
-			ParameterGroup *group_p = NULL;
-			char *group_s = NULL;
-			const json_t *provider_p = NULL;
-			const char *group_to_use_s = NULL;
+			SharedType *values_p = (SharedType *) AllocMemoryArray (service_data_p -> psd_index_data_size, sizeof (SharedType));
 
-			provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
-
-			if (provider_p)
+			if (values_p)
 				{
-					const char *provider_s = GetProviderName (provider_p);
-
-					if (provider_s)
-						{
-							group_s = CreateGroupName (provider_s);
-						}
-				}
-
-			group_to_use_s = group_s ? group_s : PS_DATABASE_GROUP_NAME_S;
-
-			group_p = CreateAndAddParameterGroupToParameterSet (group_to_use_s, NULL, & (data_p -> psd_base_data), param_set_p);
-
-			if (group_p)
-				{
-					const ServiceData *service_data_p = & (data_p -> psd_base_data);
-					const IndexData *db_p = data_p -> psd_index_data_p;
+					ParameterMultiOptionArray *options_p = NULL;
 					size_t i;
+					SharedType def;
+					IndexData *id_p = service_data_p -> psd_index_data_p;
+					SharedType *value_p = values_p;
 
+					memset (&def, 0, sizeof (def));
 
-					for (i = data_p -> psd_index_data_size; i > 0; -- i, ++ db_p)
+					for (i = service_data_p -> psd_index_data_size; i > 0; -- i, ++ id_p, ++ value_p)
 						{
-							if (EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, group_p, PT_BOOLEAN, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, db_p -> id_blast_db_name_s, def, PL_ALL))
-								{
-									++ num_added_databases;
-								}
-							else
-								{
-									PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to add database \"%s\"", db_p -> id_blast_db_name_s);
-								}
+							value_p -> st_string_value_s = (char *) (id_p -> id_blast_db_name_s);
 						}
 
-				}		/* if (db_p) */
+					options_p = AllocateParameterMultiOptionArray (service_data_p -> psd_index_data_size, NULL, values_p, PT_STRING, true);
 
-			if (group_s)
-				{
-					FreeCopiedString (group_s);
-				}
+					if (options_p)
+						{
+							/* default to grassroots */
+							def.st_string_value_s = (char *) (service_data_p -> psd_index_data_p -> id_blast_db_name_s);
 
-		}		/* if (num_group_params) */
+							param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> psd_base_data), param_set_p, group_p, PS_CONTIG_FILENAME.npt_type, false, PS_CONTIG_FILENAME.npt_name_s, "Available Contigs", "The Contigs to use", options_p, def, NULL, NULL, PL_ALL, NULL);
 
-	return num_added_databases;
+							if (!param_p)
+								{
+									FreeParameterMultiOptionArray (options_p);
+								}
+						}		/* if (options_p) */
+
+					FreeMemory (values_p);
+				}		/* if (values_p) */
+
+		}		/* if (service_data_p -> psd_index_data_size) */
+
+	return param_p;
 }
 
 
-
-
-static char *CreateGroupName (const char *server_s)
+static void PreparePolymarkerServiceJobs (const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, PolymarkerServiceData *data_p)
 {
-	char *group_name_s = ConcatenateVarargsStrings (PS_DATABASE_GROUP_NAME_S, " provided by ", server_s, NULL);
-
-	if (group_name_s)
+	if (data_p -> psd_index_data_p)
 		{
-			#if POLYMARKER_SERVICE_DEBUG >= STM_LEVEL_FINER
-			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Created group name \"%s\" for \"%s\" and \"%s\"", group_name_s, server_s);
-			#endif
-		}
-	else
-		{
-			PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to create group name for \"%s\"", group_name_s);
-		}
+			IndexData *id_p = data_p -> psd_index_data_p;
+			size_t i = data_p -> psd_index_data_size;
 
-	return group_name_s;
-}
-
-
-static void PreparePolymarkerServiceJobs (const DatabaseInfo *db_p, const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, PolymarkerServiceData *data_p)
-{
-	if (db_p)
-		{
-			while (db_p -> di_name_s)
+			for ( ; i > 0; -- i, ++ id_p)
 				{
-					Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, db_p -> di_name_s);
+					Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, id_p -> id_blast_db_name_s);
 
 					/* Do we have a matching parameter? */
 					if (param_p)
@@ -429,29 +408,29 @@ static void PreparePolymarkerServiceJobs (const DatabaseInfo *db_p, const Parame
 							/* Is the database selected to search against? */
 							if (param_p -> pa_current_value.st_boolean_value)
 								{
-									PolymarkerServiceJob *job_p = AllocatePolymarkerServiceJob (jobs_p -> sjs_service_p, db_p, data_p);
+									PolymarkerServiceJob *job_p = AllocatePolymarkerServiceJob (jobs_p -> sjs_service_p, id_p -> id_fasta_filename_s, data_p);
 
 									if (job_p)
 										{
 											if (!AddServiceJobToServiceJobSet (jobs_p, (ServiceJob *) job_p))
 												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ServiceJob to the ServiceJobSet for \"%s\"", db_p -> di_name_s);
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ServiceJob to the ServiceJobSet for \"%s\"", id_p -> id_blast_db_name_s);
 													FreePolymarkerServiceJob (& (job_p -> psj_base_job));
 												}
 										}
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob for \"%s\"", db_p -> di_name_s);
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob for \"%s\"", id_p -> id_blast_db_name_s);
 										}
 
 								}		/* if (param_p -> pa_current_value.st_boolean_value) */
 
 						}		/* if (param_p) */
 
-					++ db_p;
-				}		/* while (db_p) */
+				}		/* for ( ; i > 0; -- i, ++ id_p) */
 
-		}		/* if (db_p) */
+		}		/* if (data_p -> psd_index_data_p) */
+
 }
 
 

@@ -213,6 +213,8 @@ bool SystemPolymarkerTool :: Run ()
 			if (process_id >= 0)
 				{
 					pt_process_id = process_id;
+
+					AddServiceJobToJobsManager (pt_service_job_p);
 					success_flag = true;
 				}
 		}
