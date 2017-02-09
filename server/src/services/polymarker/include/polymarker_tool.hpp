@@ -58,7 +58,7 @@ extern "C"
 {
 #endif
 
-PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p);
+PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p, PolymarkerToolType ptt);
 
 
 void FreePolymarkerTool (PolymarkerTool *tool_p);

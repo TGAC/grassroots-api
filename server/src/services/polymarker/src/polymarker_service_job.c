@@ -83,7 +83,68 @@ bool UpdatePolymarkerServiceJob (ServiceJob *job_p)
 
 ServiceJob *GetPolymarkerServiceJobFromJSON (struct Service *service_p, const json_t *service_job_json_p)
 {
+	json_t *job_json_p = json_object_get (service_job_json_p, PSJ_JOB_S);
+
+	if (job_json_p)
+		{
+			PolymarkerServiceJob *polymarker_job_p = (PolymarkerServiceJob *) AllocMemory (sizeof (PolymarkerServiceJob));
+
+			if (polymarker_job_p)
+				{
+					polymarker_job_p -> psj_tool_p = NULL;
+					polymarker_job_p -> psj_process_id = -1;
+
+					if (InitServiceJobFromJSON (& (polymarker_job_p -> psj_base_job), job_json_p))
+						{
+							const char *tool_type_s = GetJSONString (service_job_json_p, PSJ_TOOL_TYPE_S);
+
+							if (tool_type_s)
+								{
+									PolymarkerTool *tool_p = NULL;
+
+									switch (tool_type_s)
+										{
+
+										}
+
+									if (tool_p)
+										{
+											blast_job_p -> bsj_tool_p = tool_p;
+
+											return blast_job_p;
+										}		/* if (tool_p) */
+									else
+										{
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for BlastTool");
+										}
+
+								}		/* if (tool_json_p) */
+							else
+								{
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Failed to get tool from json");
+								}		/* if (tool_type_s) */
+
+						}		/* if (InitServiceJobFromJSON (& (polymarker_job_p -> psj_base_job), job_json_p)) */
+					else
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "InitServiceJobFromJSON failed");
+						}
+
+					FreePolymarkerServiceJob ((ServiceJob *) polymarker_job_p);
+				}		/* if (polymarker_job_p) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for BlastServiceJob");
+				}
+
+		}		/* if (job_json_p) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Failed to get job from json");
+		}
+
 	return NULL;
+
 }
 
 

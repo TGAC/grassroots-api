@@ -63,7 +63,13 @@ typedef struct TimedServiceJob
 
 	/* Has the TimedServiceJob been added to the JobsManager yet? */
 	bool tsj_added_flag;
+
+	/* The process */
+	int32 tsj_process_id;
 } TimedServiceJob;
+
+
+
 
 
 /*
@@ -662,7 +668,10 @@ static void FreeTimedServiceJob (ServiceJob *job_p)
 {
 	TimedServiceJob *timed_job_p = (TimedServiceJob *) job_p;
 
-	FreeMemory (timed_job_p -> tsj_interval_p);
+	if (timed_job_p -> tsj_interval_p)
+		{
+			FreeMemory (timed_job_p -> tsj_interval_p);
+		}
 
 	ClearServiceJob (job_p);
 	FreeMemory (timed_job_p);
