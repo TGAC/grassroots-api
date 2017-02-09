@@ -27,11 +27,11 @@
 #include "system_polymarker_tool.hpp"
 
 
-PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
+PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, PolymarkerServiceJob *job_p, PolymarkerToolType ptt)
 {
 	PolymarkerTool *tool_p = 0;
 
-	switch (data_p -> psd_tool_type)
+	switch (ptt)
 		{
 			case PTT_SYSTEM:
 				tool_p = new SystemPolymarkerTool (data_p, job_p);
@@ -52,9 +52,10 @@ void FreePolymarkerTool (PolymarkerTool *tool_p)
 }
 
 
-PolymarkerTool :: PolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
+PolymarkerTool :: PolymarkerTool (PolymarkerServiceData *data_p, PolymarkerServiceJob *job_p)
 	: pt_service_data_p  (data_p), pt_service_job_p (job_p)
 {
+	job_p -> psj_tool_p = this;
 	pt_process_id = 0;
 }
 

@@ -74,9 +74,8 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p);
 
 static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), ServiceJob *job_p);
 
-static void PreparePolymarkerServiceJobs (const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, PolymarkerServiceData *data_p);
 
-static Parameter *SetUpDatabasesParamater (const PolymarkerServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
+static Parameter *SetUpDatabasesParameter (const PolymarkerServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
 /*
  * API FUNCTIONS
@@ -151,12 +150,12 @@ static bool GetPolymarkerServiceConfig (PolymarkerServiceData *data_p)
 	if (polymarker_config_p)
 		{
 			json_t *index_files_p;
-			const char *config_value_s = GetJSONString (polymarker_config_p, "tool");
+			const char *config_value_s = GetJSONString (polymarker_config_p, PS_TOOL_S);
 			const char * const WORKING_DIRECTORY_KEY_S = "working_directory";
 
 			if (config_value_s)
 				{
-					if (strcmp (config_value_s, "web") == 0)
+					if (strcmp (config_value_s, PS_TOOL_WEB_S) == 0)
 						{
 							data_p -> psd_tool_type = PTT_WEB;
 						}
@@ -284,7 +283,7 @@ static ParameterSet *GetPolymarkerServiceParameters (Service *service_p, Resourc
 						{
 							if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, PS_SEQUENCE.npt_type, PS_SEQUENCE.npt_name_s, "Sequence surrounding the polymorphisms", "The SNP must be marked in the format [A/T] for a varietal SNP with alternative bases, A or T",  def, PL_ALL)) != NULL)
 								{
-									if (SetUpDatabasesParamater (data_p, param_set_p, NULL))
+									if (SetUpDatabasesParameter (data_p, param_set_p, NULL))
 										{
 											return param_set_p;
 										}
@@ -313,7 +312,7 @@ static ServiceJobSet *RunPolymarkerService (Service *service_p, ParameterSet *pa
 	if (service_p -> se_jobs_p)
 		{
 			/* Get all of the selected databases and create a PolymarkerServiceJob for each one */
-			PreparePolymarkerServiceJobs (param_set_p, service_p -> se_jobs_p, data_p);
+		//	PreparePolymarkerServiceJobs (param_set_p, service_p -> se_jobs_p, data_p);
 
 
 			if (GetServiceJobSetSize (service_p -> se_jobs_p) == 0)
@@ -344,7 +343,7 @@ static void CustomisePolymarkerServiceJob (Service * UNUSED_PARAM (service_p), S
 /*
  * The list of databases that can be searched
  */
-static Parameter *SetUpDatabasesParamater (const PolymarkerServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
+static Parameter *SetUpDatabasesParameter (const PolymarkerServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
 	Parameter *param_p = NULL;
 
@@ -389,49 +388,4 @@ static Parameter *SetUpDatabasesParamater (const PolymarkerServiceData *service_
 
 	return param_p;
 }
-
-
-static void PreparePolymarkerServiceJobs (const ParameterSet * const param_set_p, ServiceJobSet *jobs_p, PolymarkerServiceData *data_p)
-{
-	if (data_p -> psd_index_data_p)
-		{
-			IndexData *id_p = data_p -> psd_index_data_p;
-			size_t i = data_p -> psd_index_data_size;
-
-			for ( ; i > 0; -- i, ++ id_p)
-				{
-					Parameter *param_p = GetParameterFromParameterSetByName (param_set_p, id_p -> id_blast_db_name_s);
-
-					/* Do we have a matching parameter? */
-					if (param_p)
-						{
-							/* Is the database selected to search against? */
-							if (param_p -> pa_current_value.st_boolean_value)
-								{
-									PolymarkerServiceJob *job_p = AllocatePolymarkerServiceJob (jobs_p -> sjs_service_p, id_p -> id_fasta_filename_s, data_p);
-
-									if (job_p)
-										{
-											if (!AddServiceJobToServiceJobSet (jobs_p, (ServiceJob *) job_p))
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add ServiceJob to the ServiceJobSet for \"%s\"", id_p -> id_blast_db_name_s);
-													FreePolymarkerServiceJob (& (job_p -> psj_base_job));
-												}
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob for \"%s\"", id_p -> id_blast_db_name_s);
-										}
-
-								}		/* if (param_p -> pa_current_value.st_boolean_value) */
-
-						}		/* if (param_p) */
-
-				}		/* for ( ; i > 0; -- i, ++ id_p) */
-
-		}		/* if (data_p -> psd_index_data_p) */
-
-}
-
-
 

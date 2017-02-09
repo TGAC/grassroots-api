@@ -29,12 +29,14 @@
 #include "process.h"
 #include "json_util.h"
 #include "alloc_failure.hpp"
+#include "jobs_manager.h"
+
 
 uint32 SystemPolymarkerTool :: SPT_NUM_ARGS = 8;
 
 
 
-SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p)
+SystemPolymarkerTool :: SystemPolymarkerTool (PolymarkerServiceData *data_p, PolymarkerServiceJob *job_p)
 	: PolymarkerTool (data_p, job_p)
 {
 	spt_command_line_args_ss = 0;
@@ -84,53 +86,60 @@ void SystemPolymarkerTool :: FreeCommandLineArgs ()
 bool SystemPolymarkerTool :: ParseParameters (const ParameterSet * const param_set_p)
 {
 	bool success_flag = false;
-	char *gene_id_s;
+	char *contig_s;
 
-	if (GetStringParameter (param_set_p, PS_GENE_ID.npt_name_s, &gene_id_s))
+	if (GetStringParameter (param_set_p, PS_CONTIG_FILENAME.npt_name_s, &contig_s))
 		{
-			char *target_chromosome_s;
+			char *gene_id_s;
 
-			if (GetStringParameter (param_set_p, PS_TARGET_CHROMOSOME.npt_name_s, &target_chromosome_s))
+			if (GetStringParameter (param_set_p, PS_GENE_ID.npt_name_s, &gene_id_s))
 				{
-					char *sequence_s;
+					char *target_chromosome_s;
 
-					if (GetStringParameter (param_set_p, PS_SEQUENCE.npt_name_s, &sequence_s))
+					if (GetStringParameter (param_set_p, PS_TARGET_CHROMOSOME.npt_name_s, &target_chromosome_s))
 						{
-							TempFile *input_file_p = GetInputFile (gene_id_s, target_chromosome_s, sequence_s);
+							char *sequence_s;
 
-							if (input_file_p)
+							if (GetStringParameter (param_set_p, PS_SEQUENCE.npt_name_s, &sequence_s))
 								{
-									const char *input_s = input_file_p -> GetFilename ();
-									char *output_s = GetOutputFolder ();
+									TempFile *input_file_p = GetInputFile (gene_id_s, target_chromosome_s, sequence_s);
 
-									if (output_s)
+									if (input_file_p)
 										{
-											if (CreateArgs (input_s, output_s, contig_s))
+											const char *input_s = input_file_p -> GetFilename ();
+											char *output_s = GetOutputFolder ();
+
+											if (output_s)
 												{
-													success_flag = true;
-												}
-											else
-												{
-													FreeCopiedString (output_s);
+													if (CreateArgs (input_s, output_s, contig_s))
+														{
+															success_flag = true;
+														}
+													else
+														{
+															FreeCopiedString (output_s);
+														}
+
+													if (!success_flag)
+														{
+															FreeCopiedString (output_s);
+														}
 												}
 
-											if (!success_flag)
-												{
-													FreeCopiedString (output_s);
-												}
+											delete input_file_p;
 										}
 
-									delete input_file_p;
+									FreeCopiedString (sequence_s);
 								}
 
-							FreeCopiedString (sequence_s);
+							FreeCopiedString (target_chromosome_s);
 						}
 
-					FreeCopiedString (target_chromosome_s);
+					FreeCopiedString (gene_id_s);
 				}
 
-			FreeCopiedString (gene_id_s);
-		}
+		}		/* if (GetStringParameter (param_set_p, PS_CONTIG_FILENAME.npt_name_s, &contig_s)) */
+
 
 	return success_flag;
 }
@@ -205,6 +214,7 @@ bool SystemPolymarkerTool :: CreateArgs (const char *input_s, char *output_s, ch
 bool SystemPolymarkerTool :: Run ()
 {
 	bool success_flag = false;
+	ServiceJob *base_job_p = & (pt_service_job_p -> psj_base_job);
 
 	if (spt_asynchronous_flag)
 		{
@@ -214,7 +224,7 @@ bool SystemPolymarkerTool :: Run ()
 				{
 					pt_process_id = process_id;
 
-					AddServiceJobToJobsManager (pt_service_job_p);
+					AddServiceJobToJobsManager (GetJobsManager (), base_job_p -> sj_id, base_job_p);
 					success_flag = true;
 				}
 		}
@@ -244,11 +254,11 @@ bool SystemPolymarkerTool :: Run ()
 							if (res == 0)
 								{
 									success_flag = true;
-									SetServiceJobStatus (pt_service_job_p, OS_SUCCEEDED);
+									SetServiceJobStatus (base_job_p, OS_SUCCEEDED);
 								}
 							else
 								{
-									SetServiceJobStatus (pt_service_job_p, OS_FAILED);
+									SetServiceJobStatus (base_job_p, OS_FAILED);
 								}
 						}
 
@@ -267,11 +277,11 @@ OperationStatus SystemPolymarkerTool :: GetStatus (bool update_flag)
 	if (spt_asynchronous_flag)
 		{
 			status = GetProcessStatus (pt_process_id);
-			SetServiceJobStatus (pt_service_job_p, status);
+			SetServiceJobStatus (& (pt_service_job_p -> psj_base_job), status);
 		}
 	else
 		{
-			status = GetServiceJobStatus (pt_service_job_p);
+			status = GetServiceJobStatus (& (pt_service_job_p -> psj_base_job));
 		}
 
 	return status;
@@ -281,7 +291,7 @@ OperationStatus SystemPolymarkerTool :: GetStatus (bool update_flag)
 TempFile *SystemPolymarkerTool :: GetInputFile (const char *gene_id_s, const char *target_chromosome_s, const char *sequence_s)
 {
 	bool success_flag = false;
-	TempFile *input_file_p = TempFile :: GetTempFile (pt_service_data_p -> psd_working_dir_s, pt_service_job_p -> sj_id, ".input");
+	TempFile *input_file_p = TempFile :: GetTempFile (pt_service_data_p -> psd_working_dir_s, pt_service_job_p -> psj_base_job.sj_id, ".input");
 
 	if (input_file_p)
 		{
@@ -319,7 +329,7 @@ char *SystemPolymarkerTool :: GetOutputFolder ()
 	char uuid_s [UUID_STRING_BUFFER_SIZE];
 	char *parent_s;
 
-	ConvertUUIDToString (pt_service_job_p -> sj_id, uuid_s);
+	ConvertUUIDToString (pt_service_job_p -> psj_base_job.sj_id, uuid_s);
 
 	parent_s = MakeFilename (pt_service_data_p -> psd_working_dir_s, uuid_s);
 

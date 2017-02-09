@@ -6,6 +6,8 @@
  */
 
 
+#include <string.h>
+
 #include "polymarker_service_job.h"
 #include "polymarker_tool.hpp"
 
@@ -15,9 +17,9 @@
  * STATIC DECLARATIONS
  */
 
-static const char * const PSJ_TOOL_S = "tool";
 static const char * const PSJ_JOB_S = "job";
 static const char * const PSJ_PROCESS_ID_S = "process_id";
+
 
 
 
@@ -32,12 +34,10 @@ PolymarkerServiceJob *AllocatePolymarkerServiceJob (Service *service_p, const ch
 
 			InitServiceJob (base_service_job_p, service_p, job_name_s, job_description_s, NULL, FreePolymarkerServiceJob);
 
-			tool_p = CreatePolymarkerTool (data_p, base_service_job_p);
+			tool_p = CreatePolymarkerTool (data_p, poly_job_p, data_p -> psd_tool_type);
 
 			if (tool_p)
 				{
-					poly_job_p -> psj_tool_p = tool_p;
-
 					return poly_job_p;
 				}		/* if (tool_p) */
 
@@ -96,29 +96,38 @@ ServiceJob *GetPolymarkerServiceJobFromJSON (struct Service *service_p, const js
 
 					if (InitServiceJobFromJSON (& (polymarker_job_p -> psj_base_job), job_json_p))
 						{
-							const char *tool_type_s = GetJSONString (service_job_json_p, PSJ_TOOL_TYPE_S);
+							const char *tool_type_s = GetJSONString (job_json_p, PS_TOOL_S);
 
 							if (tool_type_s)
 								{
-									PolymarkerTool *tool_p = NULL;
+									PolymarkerToolType tool_type = PTT_NUM_TYPES;
+									PolymarkerServiceData *data_p = (PolymarkerServiceData *) (service_p -> se_data_p);
 
-									switch (tool_type_s)
+									if (strcmp (tool_type_s, PS_TOOL_SYSTEM_S) == 0)
 										{
-
+											tool_type = PTT_SYSTEM;
+										}
+									else if (strcmp (tool_type_s, PS_TOOL_WEB_S) == 0)
+										{
+											tool_type = PTT_WEB;
 										}
 
-									if (tool_p)
+									if (tool_type != PTT_NUM_TYPES)
 										{
-											blast_job_p -> bsj_tool_p = tool_p;
+											PolymarkerTool *tool_p = CreatePolymarkerTool (data_p, polymarker_job_p, tool_type);
 
-											return blast_job_p;
-										}		/* if (tool_p) */
+											if (tool_p)
+												{
+													return (& (polymarker_job_p -> psj_base_job));
+												}
+
+										}		/* if (tool_type != PTT_NUM_TYPES) */
 									else
 										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for BlastTool");
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get tool type of \"%s\"", tool_type_s);
 										}
 
-								}		/* if (tool_json_p) */
+								}		/* if (tool_type_s) */
 							else
 								{
 									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Failed to get tool from json");

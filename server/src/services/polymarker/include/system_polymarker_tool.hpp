@@ -33,7 +33,7 @@
 class POLYMARKER_SERVICE_LOCAL SystemPolymarkerTool : public PolymarkerTool
 {
 public:
-	SystemPolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p);
+	SystemPolymarkerTool (PolymarkerServiceData *data_p, PolymarkerServiceJob *job_p);
 	virtual ~SystemPolymarkerTool ();
 
 	virtual bool Run ();

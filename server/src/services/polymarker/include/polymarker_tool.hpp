@@ -36,7 +36,7 @@
 class POLYMARKER_SERVICE_LOCAL PolymarkerTool
 {
 public:
-	PolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p);
+	PolymarkerTool (PolymarkerServiceData *data_p, PolymarkerServiceJob *job_p);
 	virtual ~PolymarkerTool ();
 
 
@@ -58,7 +58,7 @@ extern "C"
 {
 #endif
 
-PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, ServiceJob *job_p, PolymarkerToolType ptt);
+PolymarkerTool *CreatePolymarkerTool (PolymarkerServiceData *data_p, PolymarkerServiceJob *job_p, PolymarkerToolType ptt);
 
 
 void FreePolymarkerTool (PolymarkerTool *tool_p);
