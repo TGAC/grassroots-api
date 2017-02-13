@@ -39,6 +39,14 @@
 #include "grassroots_service_library.h"
 
 #include "providers_state_table.h"
+#include "parameter_set.h"
+#include "service_job.h"
+
+
+/* forward declarations */
+struct Service;
+struct ServiceData;
+struct RemoteServiceJob;
 
 
 /**
@@ -163,6 +171,14 @@ GRASSROOTS_SERVICE_API void FreePairedServiceNode (ListItem *node_p);
  * @return The JSON fragment of the results of the PairedService or <code>NULL</code> upon error.
  */
 GRASSROOTS_SERVICE_API json_t *MakeRemotePairedServiceCall (const char * const service_name_s, ParameterSet *params_p, const char * const paired_service_uri_s, ProvidersStateTable *providers_p);
+
+
+
+
+GRASSROOTS_SERVICE_API int32 RunPairedServices (struct Service *service_p, ParameterSet *param_set_p, ProvidersStateTable *providers_p, bool (*save_job_fn) (struct RemoteServiceJob *job_p, const struct ServiceData *service_data_p));
+
+
+GRASSROOTS_SERVICE_API int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, const char * const remote_service_s, const char * const remote_uri_s, const struct ServiceData *service_data_p, bool (*save_job_fn) (struct RemoteServiceJob *job_p, const struct ServiceData *service_data_p));
 
 
 

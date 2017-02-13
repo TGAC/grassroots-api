@@ -333,45 +333,8 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 						}		/* if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0) */
 
-					/* Are there any remote jobs to run? */
-					if (service_p -> se_paired_services.ll_size > 0)
-						{
-							const char *service_name_s = GetServiceName (service_p);
 
-							if (service_name_s)
-								{
-									PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
-
-									while (node_p)
-										{
-											PairedService *paired_service_p = node_p -> psn_paired_service_p;
-
-											if (!IsServiceInProvidersStateTable (providers_p, paired_service_p -> ps_server_uri_s, service_name_s))
-												{
-													int32 res = RunRemoteBlastJobs (service_p, service_p -> se_jobs_p, param_set_p, paired_service_p, providers_p);
-
-													if (res >= 0)
-														{
-#if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINER
-															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Got " UINT32_FMT " results from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s);
-#endif
-														}		/* if (res < 0) */
-													else
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Got " UINT32_FMT " error from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s);
-														}
-
-
-												}		/* if (IsServiceInProvidersStateTable (providers_p, paired_service_p -> ps_server_uri_s, service_name_s)) */
-
-											node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
-										}		/* while (node_p) */
-
-								}		/* if (service_name_s) */
-
-
-						}		/* if (service_p -> se_paired_services.ll_size > 0) */
-
+					RunPairedServices (service_p, param_set_p, providers_p, SaveRemoteBlastJobDetails);
 
 					if (GetServiceJobSetSize (service_p -> se_jobs_p) == 0)
 						{
@@ -380,7 +343,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 				}		/* if (service_p -> se_jobs_p) */
 
-		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) else */
+		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, t rue)) && (!IsStringEmpty (param_value.st_string_value_s))) else */
 
 	return service_p -> se_jobs_p;
 }

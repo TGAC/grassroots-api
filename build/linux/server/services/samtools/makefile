@@ -39,6 +39,7 @@ INCLUDES = \
 	-I$(DIR_HTSLIB_INC)
 	
 SRCS 	= \
+	paired_samtools_service.c \
 	samtools_service.c \	
 	
 
