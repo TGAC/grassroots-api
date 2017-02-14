@@ -427,7 +427,7 @@ int32 AddRemoteResultsToServiceJobs (const json_t *server_response_p, ServiceJob
 
 																																			if (AddServiceJobToServiceJobSet (jobs_p, & (job_p -> rsj_job)))
 																																				{
-																																					if (!save_job_fn (job_p, service_data_p))
+																																					if ((save_job_fn != NULL) && (!save_job_fn (job_p, service_data_p)))
 																																						{
 																																							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to save remote info file for \"%s\"", remote_id_s);
 																																						}

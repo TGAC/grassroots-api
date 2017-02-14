@@ -32,89 +32,15 @@
 #include "data_resource.h"
 #include "hash_table.h"
 #include "schema_version.h"
-
+#include "parameter_option.h"
+#include "parameter_type.h"
 #include "remote_parameter_details.h"
+#include "shared_type.h"
 
 
 /******* FORWARD DECLARATION *******/
 struct Parameter;
 struct ServiceData;
-
-/**
- * The different types that a Parameter can take.
- * @ingroup parameters_group
- */
-typedef enum ParameterType
-{
-	/** A boolean parameter */
-	PT_BOOLEAN,
-
-	/** A 32-bit integer */
-	PT_SIGNED_INT,
-
-	/** A non-negative 32-bit integer */
-	PT_UNSIGNED_INT,
-
-
-	/** A non-positive 32-bit integer */
-	PT_NEGATIVE_INT,
-
-
-	/** A real number */
-	PT_SIGNED_REAL,
-
-	/** An unsigned real number */
-	PT_UNSIGNED_REAL,
-
-	/** A c-style string */
-	PT_STRING,
-
-	/** An output filename string */
-	PT_FILE_TO_WRITE,
-
-	/** An input filename string*/
-	PT_FILE_TO_READ,
-
-	/** A directory string */
-	PT_DIRECTORY,
-
-	/** A single 1-byte character */
-	PT_CHAR,
-
-	/**
-	 * A sensitive c-style string that shouldn't
-	 * be displayed explicitly to the user.
-	 */
-	PT_PASSWORD,
-
-	/**
-	 * A value that a Service can use without any other parameters
-	 * being set to produce results.
-	 */
-	PT_KEYWORD,
-
-
-	/**
-	 * A potentially large c-style string. This is used by clients to determine
-	 * the appropriate editor to show to the user. E.g. a multi-line text bos
-	 * as opposed to a single-line text box for a PT_STRING.
-	 */
-	PT_LARGE_STRING,
-
-	/**
-	 * A JSON fragment.
-	 */
-	PT_JSON,
-
-	/**
-	 * A c-style string of tabular data.
-	 */
-	PT_TABLE,
-
-	/** The number of possible ParameterType values. */
-	PT_NUM_TYPES
-} ParameterType;
-
 
 
 /**
@@ -162,98 +88,6 @@ typedef uint8 ParameterLevel;
  */
 #define PL_ALL (PL_BASIC | PL_INTERMEDIATE | PL_ADVANCED)
 
-
-/**
- * A datatype to store values for a Parameter.
- * Use the ParameterType to access the correct
- * value.
- *
- * @ingroup parameters_group
- */
-typedef union SharedType
-{
-	/** A Boolean value */
-	bool st_boolean_value;
-
-	/** A signed integer */
-	int32 st_long_value;
-
-	/** An unsigned integer */
-	uint32 st_ulong_value;
-
-	/** A real number */
-	double64 st_data_value;
-
-	/** A c-style string */
-	char *st_string_value_s;
-
-	/** A single character */
-	char st_char_value;
-
-	/** A Resource */
-	Resource *st_resource_value_p;
-
-	/** A LinkedList of multiple values */
-	LinkedList *st_multiple_values_p;
-
-	/** A JSON fragment */
-	json_t *st_json_p;
-} SharedType;
-
-
-/**
- * A datatype allowing a SharedType to be stored
- * on a LinkedList.
- *
- * @extends ListItem
- * @ingroup parameters_group
- */
-typedef struct SharedTypeNode
-{
-	/** The basic ListItem */
-	ListItem stn_node;
-
-	/** The SharedType value */
-	SharedType stn_value;
-} SharedTypeNode;
-
-
-/**
- * A ParameterMultiOption is used when a Parameter
- * wants to constrain the possible values to one from
- * a fixed set.
- *
- * @see ParameterMultiOptionArray
- * @ingroup parameters_group
- */
-typedef struct ParameterMultiOption
-{
-	/** The user-friendly description for this value */
-	char *pmo_description_s;
-
-	/** The internal value for this option */
-	SharedType pmo_value;
-} ParameterMultiOption;
-
-
-/**
- * A ParameterMultiOptionArray is a set of ParameterMultiOptions
- * that a user can choose one of.
- *
- * @see ParameterMultiOption
- * @ingroup parameters_group
- */
- typedef struct ParameterMultiOptionArray
-{
-	/** The array of possible options that the user can choose from */
-	ParameterMultiOption *pmoa_options_p;
-
-	/** The number of options pointed to by pmoa_options_p */
-	uint32 pmoa_num_options;
-
-	/** The ParameterType for these options */
-	ParameterType pmoa_values_type;
-} ParameterMultiOptionArray;
 
 
 /**
@@ -306,7 +140,7 @@ typedef struct NamedParameterType
 #define SET_NAMED_PARAMETER_TYPE_TAGS(a,b) {a, b}
 
 /* forward declaration */
-struct ParamerterGroup;
+struct ParameterGroup;
 
 
 /**
@@ -345,10 +179,11 @@ typedef struct Parameter
 	/**
 	 * If the parameter can only take one of a
 	 * constrained set of values, this will be
-	 * an array of the possible options. If it's
+	 * a LinkedList of ParameterOptionNodes
+	 * of the possible options. If it's
 	 * NULL, then any value can be taken.
 	 */
-	ParameterMultiOptionArray *pa_options_p;
+	LinkedList *pa_options_p;
 
 	/**
 	 * Does the parameter have any upper or lower limits?
@@ -377,8 +212,6 @@ typedef struct Parameter
 	 */
 	SharedType pa_current_value;
 
-	/** A tag representing this Parameter */
-	//Tag pa_tag;
 
 	/**
 	 * A map allowing the Parameter to store an arbitrary set of key-value
@@ -428,46 +261,6 @@ typedef struct ParameterNode
 #endif
 
 
-/**
- * Allocate a ParameterMultiOptionArray.
- *
- * @param num_options The number of ParameterMultiOptions in this ParameterMultiOptionArray.
- * @param descriptions_ss An array of strings of num_options size to use the ParameterMultiOption descriptions.
- * @param values_p An array of SharedTypes of num_options size to use the ParameterMultiOption values.
- * @param pt The ParameterType for the values in this ParameterMultiOptionArray.
- * @param copy_values_flag If this is <code>true</code>, the entry will make a deep copy of value. If this
- * is <code>false</code> then it will take ownership of the value and use it directly. Note that this
- * means that the data stored by value will be freed when the ParameterMultiOptionArray is freed.
- * @return The newly-allocated ParameterMultiOptionArray or <code>NULL</code> upon error.
- * @memberof ParameterMultiOptionArray
- */
-GRASSROOTS_PARAMS_API ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_ss, SharedType *values_p, ParameterType pt, bool copy_values_flag);
-
-
-/**
- * Free a ParameterMultiOptionArray.
- *
- * @param options_p The ParameterMultiOptionArray to free.
- * @memberof ParameterMultiOptionArray
- */
-GRASSROOTS_PARAMS_API void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p);
-
-
-/**
- * Set an entry in a ParameterMultiOptionArray.
- *
- * @param options_p The ParameterMultiOptionArray to free.
- * @param index The index of ParameterMultiOption to adjust in this ParameterMultiOptionArray.
- * @param description_s The description to set for the given ParameterMultiOption.
- * @param value  The SharedType value to set for the given ParameterMultiOption.
- * @param copy_value_flag If this is <code>true</code>, the entry will make a deep copy of value. If this
- * is <code>false</code> then it will take ownership of the value and use it directly. Note that this
- * means that the data stored by value will be freed when the ParameterMultiOptionArray is freed.
- * @return <code>true</code> if the ParameterMultiOption was updated successfully, <code>false</code> otherwise
- * @memberof ParameterMultiOptionArray
- */
-GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 index, const char * const description_s, SharedType value, bool copy_value_flag);
-
 
 /**
  * Allocate a Parameter
@@ -490,7 +283,7 @@ GRASSROOTS_PARAMS_API bool SetParameterMultiOption (ParameterMultiOptionArray *o
  * @return A newly-allocated Parameter or <code>NULL</code> upon error.
  * @memberof Parameter
  */
-GRASSROOTS_PARAMS_API Parameter *AllocateParameter (const struct ServiceData *service_data_p, ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+GRASSROOTS_PARAMS_API Parameter *AllocateParameter (const struct ServiceData *service_data_p, ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, LinkedList *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
 /**
@@ -677,27 +470,6 @@ GRASSROOTS_PARAMS_API Parameter *CreateParameterFromJSON (const json_t * const j
  */
 GRASSROOTS_PARAMS_API bool IsJSONParameterConcise (const json_t * const json_p);
 
-
-/**
- * Clear the value of a SharedType.
- *
- * @param st_p The SharedType to clear.
- * @param pt The ParameterType for this SharedType
- * @memberof SharedType
- */
-GRASSROOTS_PARAMS_API void ClearSharedType (SharedType *st_p, const ParameterType pt);
-
-
-/**
- * Make a deep copy of the value of one SharedType to another.
- *
- * @param src The SharedType to copy the value from.
- * @param dest_p The SharedType to copy the value to.
- * @param pt The ParameterType for this SharedType
- * @return <code>true</code> if the value was copied successfully, <code>false</code> otherwise.
- * @memberof SharedType
- */
-GRASSROOTS_PARAMS_API bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterType pt);
 
 
 /**
@@ -936,6 +708,14 @@ GRASSROOTS_PARAMS_API void FreeParameterNode (ListItem *node_p);
  */
 GRASSROOTS_PARAMS_API json_t *GetRunnableParameterAsJSON (const char * const name_s, const SharedType * const value_p, const ParameterType param_type, const SchemaVersion * const sv_p, const bool full_definition_flag);
 
+
+
+
+GRASSROOTS_PARAMS_API bool CreateAndAddParameterOption (Parameter *param_p, SharedType *value_p, const char * const description_s, bool copy_value_flag);
+
+
+
+GRASSROOTS_PARAMS_API LinkedList *GetMultiOptions (Parameter *param_p);
 
 
 #ifdef __cplusplus

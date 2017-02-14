@@ -66,7 +66,7 @@ BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, Paramet
  * @return The number of successfully remote ServiceJobs ran or -1 on error.
  * @ingroup blast_service
  */
-BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p);
+//BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p);
 
 
 /**

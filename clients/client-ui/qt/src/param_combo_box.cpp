@@ -29,7 +29,7 @@ ParamComboBox *ParamComboBox :: Create (Parameter * const param_p, const PrefsWi
 {
 	ParamComboBox *combo_box_p = new ParamComboBox (param_p, options_widget_p, parent_p);
 
-	ParameterMultiOption *option_p = combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_options_p;
+	ParameterOption *option_p = combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_options_p;
 	const int num_options = static_cast <const int> (combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_num_options);
 	int i = 0;
 	bool loop_flag = (i < num_options);
@@ -40,7 +40,7 @@ ParamComboBox *ParamComboBox :: Create (Parameter * const param_p, const PrefsWi
 
 	while (loop_flag && success_flag)
 		{
-			if (combo_box_p -> AddOption (& (option_p -> pmo_value), option_p -> pmo_description_s, current_value_p))
+			if (combo_box_p -> AddOption (& (option_p -> po_value), option_p -> po_description_s, current_value_p))
 				{
 					++ i;
 

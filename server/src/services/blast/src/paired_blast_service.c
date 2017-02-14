@@ -142,20 +142,21 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 }
 
 
-int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p)
-{
-	int32 num_successful_runs = -1;
-	json_t *res_p = MakeRemotePairedServiceCall (GetServiceName (service_p), params_p, paired_service_p -> ps_server_uri_s, providers_p);
 
-	if (res_p)
-		{
-			num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s, service_p -> se_data_p, SaveRemoteBlastJobDetails);
-
-			json_decref (res_p);
-		}		/* if (res_p) */
-
-	return num_successful_runs;
-}
+//int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p)
+//{
+//	int32 num_successful_runs = -1;
+//	json_t *res_p = MakeRemotePairedServiceCall (GetServiceName (service_p), params_p, paired_service_p -> ps_server_uri_s, providers_p);
+//
+//	if (res_p)
+//		{
+//			num_successful_runs = AddRemoteResultsToServiceJobs (res_p, jobs_p, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s, service_p -> se_data_p, SaveRemoteBlastJobDetails);
+//
+//			json_decref (res_p);
+//		}		/* if (res_p) */
+//
+//	return num_successful_runs;
+//}
 
 
 
