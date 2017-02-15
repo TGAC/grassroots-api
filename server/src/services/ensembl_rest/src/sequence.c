@@ -215,61 +215,66 @@ bool AddSequenceParameters (ServiceData *data_p, ParameterSet *param_set_p)
 
 	def.st_string_value_s = NULL;
 
-	if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_SEQUENCE_ID.npt_type, false, ES_SEQUENCE_ID.npt_name_s, "Sequence ID", "An Ensembl stable ID", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_SEQUENCE_ID.npt_type, ES_SEQUENCE_ID.npt_name_s, "Sequence ID", "An Ensembl stable ID", def, PL_ALL)) != NULL)
 		{
-			ParameterMultiOptionArray *output_type_options_p = NULL;
-			SharedType output_types_p [ST_NUM_TYPES];
-			uint32 i;
+			LinkedList *options_p = CreateProgramOptionsList ();
 
-			for (i = 0; i < ST_NUM_TYPES; ++ i)
+			if (options_p)
 				{
-					(* (output_types_p + i)).st_string_value_s = (char *) (* (S_SEQ_SEQUENCE_TYPES_PP + i));
-				}
+					uint32 i;
 
-			output_type_options_p = AllocateParameterMultiOptionArray (ST_NUM_TYPES, NULL, output_types_p, PT_STRING, true);
+					success_flag = true;
 
-			if (output_type_options_p)
-				{
-					def.st_string_value_s = output_types_p [0].st_string_value_s;
-
-					if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_SEQUENCE_TYPE.npt_type, false, ES_SEQUENCE_TYPE.npt_name_s, "Type",
-					  "Type of sequence. Defaults to genomic where applicable, i.e. not translations. cdna refers to the spliced transcript sequence with UTR; cds refers to the spliced transcript sequence without UTR.",
-					  output_type_options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					for (i = 0; i < ST_NUM_TYPES; ++ i)
 						{
-							ParameterMultiOptionArray *output_format_options_p = NULL;
-							SharedType output_formats_p [SO_NUM_FORMATS];
+							def.st_string_value_s = (char *) (* (S_SEQ_SEQUENCE_TYPES_PP + i));
 
-							for (i = 0; i < SO_NUM_FORMATS; ++ i)
+							if (!CreateAndAddParameterOption (options_p, def, NULL, PT_STRING))
 								{
-									(* (output_formats_p + i)).st_string_value_s = (char *) (* (S_SEQ_FORMAT_NAMES_PP + i));
+									i = ST_NUM_TYPES;
+									success_flag = false;
 								}
-
-							output_format_options_p = AllocateParameterMultiOptionArray (SO_NUM_FORMATS, NULL, output_formats_p, PT_STRING, true);
-
-							if (output_format_options_p)
-								{
-									def.st_string_value_s = output_formats_p [0].st_string_value_s;
-
-									if ((param_p = CreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_CONTENT_TYPE.npt_type, false, ES_CONTENT_TYPE.npt_name_s, "Output Format",
-									  "The filetype that any results will be in",
-									  output_format_options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
-										{
-											success_flag = true;
-										}
-									else
-										{
-											FreeParameterMultiOptionArray (output_format_options_p);
-										}
-								}		/* if (output_format_options_p) */
-
 						}
 
-					if (!success_flag)
+					if (success_flag)
 						{
-							FreeParameterMultiOptionArray (output_type_options_p);
+							def.st_string_value_s = (char *) (*S_SEQ_SEQUENCE_TYPES_PP);
+
+							if ((param_p = EasyCreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_SEQUENCE_TYPE.npt_type, ES_SEQUENCE_TYPE.npt_name_s, "Type",
+							  "Type of sequence. Defaults to genomic where applicable, i.e. not translations. cdna refers to the spliced transcript sequence with UTR; cds refers to the spliced transcript sequence without UTR.",
+								def, PL_ALL)) != NULL)
+								{
+
+									def.st_string_value_s = (char *) (*S_SEQ_FORMAT_NAMES_PP);
+
+									if ((param_p = EasyCreateAndAddParameterToParameterSet (data_p, param_set_p, group_p, ES_CONTENT_TYPE.npt_type, ES_CONTENT_TYPE.npt_name_s, "Output Format",
+									  "The filetype that any results will be in",
+									 def, PL_ALL)) != NULL)
+
+									for (i = 0; i < SO_NUM_FORMATS; ++ i)
+										{
+											def.st_string_value_s = (char *) (* (S_SEQ_FORMAT_NAMES_PP + i));
+
+											if (!CreateAndAddParameterOptionToParameter (param_p, def, NULL))
+												{
+													i = SO_NUM_FORMATS;
+													success_flag = false;
+												}
+										}
+
+								}
+							else
+								{
+									FreeLinkedList (options_p);
+								}
+						}
+					else
+						{
+							FreeLinkedList (options_p);
 						}
 
-				}		/* if (output_type_options_p) */
+					FreeLinkedList (options_p);
+				}
 		}
 
 	return success_flag;

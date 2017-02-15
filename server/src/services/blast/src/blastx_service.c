@@ -128,8 +128,9 @@ static ParameterSet *GetBlastXServiceParameters (Service *service_p, Resource * 
 
 static bool AddBlastXQuerySequenceParameters (BlastServiceData *data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
 {
+	Parameter *param_p = NULL;
 	bool success_flag = false;
-	ParameterMultiOptionArray *options_p = NULL;
+	SharedType def;
 	const uint32 NUM_GENETIC_CODES = 20;
 	SharedType param_values [NUM_GENETIC_CODES];
 	uint32 i;
@@ -161,35 +162,39 @@ static bool AddBlastXQuerySequenceParameters (BlastServiceData *data_p, Paramete
 	const uint32 values_p [NUM_GENETIC_CODES] = { 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26 };
 
 
-	for (i = 0; i < NUM_GENETIC_CODES; ++ i)
+
+	memset (&def, 0, sizeof (def));
+
+	/* default to Standard */
+	def.st_ulong_value = 1;
+
+	param_p = EasyCreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_GENETIC_CODE.npt_type, S_GENETIC_CODE.npt_name_s, "Genetic code", "Genetic code to use to translate query", def, PL_ALL);
+
+	if (param_p)
 		{
-			param_values [i].st_ulong_value = * (values_p + i);
+			success_flag = true;
+
+			for (i = 0; i < NUM_GENETIC_CODES; ++ i)
+				{
+					def.st_ulong_value = * (values_p + i);
+
+					if (!CreateAndAddParameterOptionToParameter (param_p, def, * (descriptions_ss + i)))
+						{
+							i = NUM_GENETIC_CODES;
+							success_flag = false;
+						}
+				}
+
+			if (!success_flag)
+				{
+					DetachParameter (param_set_p, param_p);
+					FreeParameter (param_p);
+				}
 		}
-
-
-	options_p = AllocateParameterMultiOptionArray (NUM_GENETIC_CODES, descriptions_ss, param_values, PT_UNSIGNED_INT, true);
-
-	if (options_p)
+	else
 		{
-			Parameter *param_p = NULL;
-			SharedType def;
 
-			memset (&def, 0, sizeof (def));
-
-			/* default to Standard */
-			def.st_ulong_value = 1;
-
-			param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_GENETIC_CODE.npt_type, false, S_GENETIC_CODE.npt_name_s, "Genetic code", "Genetic code to use to translate query", options_p, def, NULL, NULL, PL_ALL, NULL);
-
-			if (param_p)
-				{
-					success_flag = true;
-				}
-			else
-				{
-					FreeParameterMultiOptionArray (options_p);
-				}
-		}		/* if (options_p) */
+		}
 
 	return success_flag;
 

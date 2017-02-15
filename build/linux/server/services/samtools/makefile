@@ -1,7 +1,7 @@
 NAME 		= samtools
 DIR_SRC = $(DIR_SERVICES_ROOT_SRC)/samtools/src
 DIR_INCLUDE = $(DIR_SERVICES_ROOT_SRC)/samtools/include
-CC		= g++
+CC		= gcc
 CXX		= g++
 MAKEDEPEND 	= gcc -MM -MF
 

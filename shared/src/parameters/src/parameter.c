@@ -467,34 +467,14 @@ LinkedList *GetMultiOptions (Parameter *param_p)
 
 
 
-bool CreateAndAddParameterOption (Parameter *param_p, SharedType *value_p, const char * const description_s, bool copy_value_flag)
+bool CreateAndAddParameterOptionToParameter (Parameter *param_p, SharedType value, const char * const description_s)
 {
 	bool success_flag = false;
 	LinkedList *options_p = GetMultiOptions (param_p);
 
 	if (options_p)
 		{
-			ParameterOption *option_p = AllocateParameterOption (value_p, description_s, param_p -> pa_type);
-
-			if (option_p)
-				{
-					ParameterOptionNode *node_p = AllocateParameterOptionNode (option_p);
-
-					if (node_p)
-						{
-							LinkedListAddTail (options_p, & (node_p -> pon_node));
-							success_flag = true;
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate option node with description \"%s\" for parameter \"%s\"", description_s, param_p -> pa_name_s);
-						}
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate option with description \"%s\" for parameter \"%s\"", description_s, param_p -> pa_name_s);
-				}
-
+			success_flag = CreateAndAddParameterOption (options_p, value, description_s, param_p -> pa_type);
 		}		/* if (options_p) */
 	else
 		{
@@ -2051,71 +2031,40 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, LinkedList
 			if (json_is_array (options_json_p))
 				{
 					const size_t num_options = json_array_size (options_json_p);
+					size_t i = 0;
 					
-					const char **descriptions_ss = (const char **) AllocMemoryArray (num_options, sizeof (const char *));
-					
-					if (descriptions_ss)
-						{
-							SharedType *values_p = (SharedType *) AllocMemoryArray (num_options, sizeof (SharedType));
-							
-							if (values_p)
-								{
-									/* fill in the values */
-									const char **description_ss = descriptions_ss;
-									SharedType *value_p = values_p;
-									size_t i = 0;
-									
-									success_flag = true;
-															
-									while (success_flag && (i < num_options))
-										{
-											json_t *json_value_p = json_array_get (options_json_p, i);
-											
-											if (json_value_p)
-												{
-													success_flag = GetValueFromJSON (json_value_p, SHARED_TYPE_VALUE_S, pt, value_p);
+					success_flag = true;
 
-													if (success_flag)
-														{
-															json_t *desc_p = json_object_get (json_value_p, SHARED_TYPE_DESCRIPTION_S);
-															
-															if (desc_p && json_is_string (desc_p))
-																{
-																	*description_ss = json_string_value (desc_p);
-																}
-														}
-												}
-																						
-											if (success_flag)
-												{
-													++ i;
-													++ description_ss;
-													++ value_p;
-												}
-												
-										}		/* while (success_flag && (i > 0)) */
-									
-									if (success_flag)
+					while (success_flag && (i < num_options))
+						{
+							json_t *json_value_p = json_array_get (options_json_p, i);
+							
+							if (json_value_p)
+								{
+									SharedType def;
+
+									if (GetValueFromJSON (json_value_p, SHARED_TYPE_VALUE_S, pt, &def))
 										{
-/*
-											ParameterMultiOptionArray *options_array_p = AllocateParameterMultiOptionArray (num_options, descriptions_ss, values_p, pt, false);
+											const char *desc_s = GetJSONString (json_value_p, SHARED_TYPE_DESCRIPTION_S);
 											
-											if (options_array_p)
-												{
-													*options_pp = options_array_p;
-												}
-											else
+											if (!CreateAndAddParameterOption (*options_pp, def, desc_s, pt))
 												{
 													success_flag = false;
 												}
-*/
 										}
+									else
+										{
+											success_flag = false;
+										}
+								}
 
-									FreeMemory (values_p);
-								}		/* if (values_p) */
-							
-							FreeMemory (descriptions_ss);
-						}		/* if (descriptions_ss) */
+							if (success_flag)
+								{
+									++ i;
+								}
+
+						}		/* while (success_flag && (i < num_options)) */
+
 				}
 		}
 	

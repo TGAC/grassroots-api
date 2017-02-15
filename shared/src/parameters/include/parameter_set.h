@@ -135,7 +135,6 @@ GRASSROOTS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, P
  * @param display_name_s An optional name to display for the Parameter for use in Clients. The Parameter will store a copy of this string so this value does not need to remain in scope.
  * This can be <code>NULL</code>.
  * @param description_s The description of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
- * @param options_p This can be used to constrain the Parameter to a fixed set of values. If this is <code>NULL</code> then the Parameter can be set to any value.
  * @param default_value The default value for this Parameter.
  * @param current_value_p If this is not <code>NULL</code>, then copy this value as the current value of the Parameter. If this is <code>NULL</code>, then current value for this Parameter
  * will be set to be a copy of its default value.
@@ -146,10 +145,9 @@ GRASSROOTS_PARAMS_API bool AddParameterToParameterSet (ParameterSet *params_p, P
  * @return A newly-allocated Parameter or <code>NULL</code> upon error.
  * @memberof ParameterSet
  */
-GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, const bool multi_valued_flag,
-  const char * const name_s, const char * const display_name_s, const char * const description_s,
-	LinkedList *options_p, SharedType default_value, SharedType *current_value_p,
-	ParameterBounds *bounds_p, uint8 level,
+GRASSROOTS_PARAMS_API Parameter *CreateAndAddParameterToParameterSet (const struct ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, bool multi_valued_flag,
+	const char * const name_s, const char * const display_name_s, const char * const description_s, LinkedList *options_p,
+	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
 
 
@@ -307,12 +305,25 @@ GRASSROOTS_PARAMS_API void FreeParameterSetNode (ListItem *node_p);
  *
  * @param params_p The ParameterSet to search.
  * @param name_s The name of the Parameter to try and match.
- * @return If found, the Parameter with the matching Tag will be be removed from the ParameterSet
+ * @return If found, the Parameter with the matching name will be removed from the ParameterSet
  * and returned. If it could not be found <code>NULL</code> will be returned.
  * be found.
  * @memberof ParameterSet
  */
 GRASSROOTS_PARAMS_API Parameter *DetachParameterByName (ParameterSet *params_p, const char * const name_s);
+
+
+
+/**
+ * Remove the Parameter with from a ParameterSet.
+ *
+ * @param params_p The ParameterSet to search.
+ * @param name_s The name of the Parameter to try and match.
+ * @return <code>true</code> if the Parameter was found and removed from the ParameterSet,
+ * <code>false</code> otherwise.
+ * @memberof ParameterSet
+ */
+GRASSROOTS_PARAMS_API bool DetachParameter (ParameterSet *params_p, Parameter *param_p);
 
 
 /**

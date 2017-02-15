@@ -16,6 +16,7 @@
 #include <string.h>
 #include <time.h>
 
+#define ALLOCATE_SAMTOOLS_TAGS (1)
 #include "samtools_service.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
@@ -55,7 +56,6 @@ static const char * const FASTA_FILENAME_S = "Fasta";
 
 
 
-static NamedParameterType SS_INDEX = { "Index", PT_STRING };
 static NamedParameterType SS_SCAFFOLD = { "Scaffold", PT_STRING };
 static NamedParameterType SS_SCAFFOLD_LINE_BREAK = { "Scaffold line break index", PT_SIGNED_INT };
 
@@ -652,51 +652,41 @@ static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data
 	Parameter *param_p = NULL;
 	const size_t num_dbs = service_data_p ->  stsd_index_data_size;
 
-	if (service_data_p ->  stsd_index_data_size > 0)
+	if (num_dbs > 0)
 		{
-			char **descriptions_ss = (char **) AllocMemory (num_dbs * sizeof (char *));
+			IndexData *index_data_p = service_data_p -> stsd_index_data_p;
+			SharedType def;
 
-			if (descriptions_ss)
+			def.st_string_value_s = (char *) (index_data_p -> id_blast_db_name_s);
+
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, SS_INDEX.npt_name_s, "Output format", "The output format for the results", def, PL_ALL)) != NULL)
 				{
-					SharedType *values_p = (SharedType *) AllocMemory (num_dbs * sizeof (SharedType));
+					bool success_flag = true;
+					size_t i;
 
-					if (values_p)
+					for (i = 0 ; i < num_dbs; ++ i, ++ index_data_p)
 						{
-							ParameterMultiOptionArray *options_p = NULL;
-							IndexData *index_data_p = service_data_p -> stsd_index_data_p;
-							SharedType *value_p = values_p;
-							char **description_ss = descriptions_ss;
-							size_t i;
+							def.st_string_value_s = (char *) (index_data_p -> id_fasta_filename_s);
 
-							for (i = 0 ; i < num_dbs; ++ i, ++ index_data_p, ++ value_p, ++ description_ss)
+							if (!CreateAndAddParameterOptionToParameter (param_p, def, index_data_p -> id_blast_db_name_s))
 								{
-									value_p -> st_string_value_s = (char *) (index_data_p -> id_fasta_filename_s);
-									*description_ss = (char *) (index_data_p -> id_blast_db_name_s);
+									success_flag = false;
+									i = num_dbs;
 								}
+						}
 
-							options_p = AllocateParameterMultiOptionArray (num_dbs, (const char **) descriptions_ss, values_p, PT_STRING, true);
+					if (success_flag)
+						{
+							AddPairedIndexParameters (service_data_p -> stsd_base_data.sd_service_p, param_p, param_set_p);
+						}
 
-							if (options_p)
-								{
-									SharedType def;
+					if (!success_flag)
+						{
+							FreeParameter (param_p);
+							param_p = NULL;
+						}
 
-									def.st_string_value_s = (char *) (service_data_p -> stsd_index_data_p -> id_blast_db_name_s);
-
-									param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, false, SS_INDEX.npt_name_s, "Output format", "The output format for the results", options_p, def, NULL, NULL, PL_ALL, NULL);
-
-									if (!param_p)
-										{
-											FreeParameterMultiOptionArray (options_p);
-										}
-								}		/* if (options_p) */
-
-
-
-							FreeMemory (values_p);
-						}		/* if (values_p)  */
-
-					FreeMemory (descriptions_ss);
-				}		/* if (descriptions_ss) */
+				}
 
 		}		/* if (service_data_p ->  stsd_index_data_size > 0) */
 

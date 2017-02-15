@@ -294,31 +294,6 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 }
 
 
-
-
-//uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p)
-//{
-//	uint32 matched_count = 0;
-//	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
-//
-//	while (node_p)
-//		{
-//			Parameter *param_p = node_p -> pn_parameter_p;
-//			TagItem *tag_p = FindMatchingTag (tags_p, param_p -> pa_tag);
-//
-//			if (tag_p)
-//				{
-//					tag_p -> ti_value = param_p -> pa_current_value;
-//					++ matched_count;
-//				}
-//
-//			node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-//		}		/* while (node_p) */
-//
-//	return matched_count;
-//}
-
-
 ParameterNode *GetParameterNodeFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s)
 {
 	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
@@ -338,8 +313,8 @@ ParameterNode *GetParameterNodeFromParameterSetByName (const ParameterSet * cons
 		}		/* while (node_p) */
 
 	return NULL;
-
 }
+
 
 Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s)
 {
@@ -599,6 +574,29 @@ Parameter *DetachParameterByName (ParameterSet *params_p, const char * const nam
 
 	return param_p;
 }
+
+
+bool DetachParameter (ParameterSet *params_p, Parameter *param_p)
+{
+	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+
+	while (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+
+			if (node_p -> pn_parameter_p == param_p)
+				{
+					return true;
+				}
+			else
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+				}
+		}		/* while (node_p) */
+
+	return false;
+}
+
 
 
 ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)

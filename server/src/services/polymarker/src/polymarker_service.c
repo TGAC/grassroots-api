@@ -349,40 +349,40 @@ static Parameter *SetUpDatabasesParameter (const PolymarkerServiceData *service_
 
 	if (service_data_p -> psd_index_data_size)
 		{
-			SharedType *values_p = (SharedType *) AllocMemoryArray (service_data_p -> psd_index_data_size, sizeof (SharedType));
+			SharedType def;
+			IndexData *id_p = service_data_p -> psd_index_data_p;
 
-			if (values_p)
+
+			/* default to grassroots */
+			def.st_string_value_s = (char *) (id_p -> id_blast_db_name_s);
+
+			param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> psd_base_data), param_set_p, group_p, PS_CONTIG_FILENAME.npt_type, PS_CONTIG_FILENAME.npt_name_s, "Available Contigs", "The Contigs to use", def, PL_ALL);
+
+			if (param_p)
 				{
-					ParameterMultiOptionArray *options_p = NULL;
 					size_t i;
-					SharedType def;
-					IndexData *id_p = service_data_p -> psd_index_data_p;
-					SharedType *value_p = values_p;
 
-					memset (&def, 0, sizeof (def));
+					bool success_flag = true;
 
-					for (i = service_data_p -> psd_index_data_size; i > 0; -- i, ++ id_p, ++ value_p)
+					for (i = 0; i < service_data_p -> psd_index_data_size; ++ i, ++ id_p)
 						{
-							value_p -> st_string_value_s = (char *) (id_p -> id_blast_db_name_s);
+							def.st_string_value_s = (char *) (id_p -> id_blast_db_name_s);
+
+							if (!CreateAndAddParameterOptionToParameter (param_p, def, NULL))
+								{
+									i = service_data_p -> psd_index_data_size;
+									success_flag = false;
+								}
 						}
 
-					options_p = AllocateParameterMultiOptionArray (service_data_p -> psd_index_data_size, NULL, values_p, PT_STRING, true);
-
-					if (options_p)
+					if (!success_flag)
 						{
-							/* default to grassroots */
-							def.st_string_value_s = (char *) (service_data_p -> psd_index_data_p -> id_blast_db_name_s);
+							FreeParameter (param_p);
+							param_p = NULL;
+						}
 
-							param_p = CreateAndAddParameterToParameterSet (& (service_data_p -> psd_base_data), param_set_p, group_p, PS_CONTIG_FILENAME.npt_type, false, PS_CONTIG_FILENAME.npt_name_s, "Available Contigs", "The Contigs to use", options_p, def, NULL, NULL, PL_ALL, NULL);
 
-							if (!param_p)
-								{
-									FreeParameterMultiOptionArray (options_p);
-								}
-						}		/* if (options_p) */
-
-					FreeMemory (values_p);
-				}		/* if (values_p) */
+				}		/* if (param_p) */
 
 		}		/* if (service_data_p -> psd_index_data_size) */
 

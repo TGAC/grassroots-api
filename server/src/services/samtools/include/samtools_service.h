@@ -48,6 +48,38 @@
 
 
 
+/*
+ * The following preprocessor macros allow us to declare
+ * and define the variables in the same place. By default,
+ * they will expand to
+ *
+ * 		extern const char *SERVICE_NAME_S;
+ *
+ * however if ALLOCATE_JSON_TAGS is defined then it will
+ * become
+ *
+ * 		const char *SERVICE_NAME_S = "path";
+ *
+ * ALLOCATE_JSON_TAGS must be defined only once prior to
+ * including this header file. Currently this happens in
+ * json_util.c.
+ */
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
+
+#ifdef ALLOCATE_SAMTOOLS_TAGS
+	#define SAMTOOLS_PREFIX SAMTOOLS_SERVICE_API
+	#define SAMTOOLS_VAL(x,y)	= { x, y}
+#else
+	#define SAMTOOLS_PREFIX extern
+	#define SAMTOOLS_VAL(x,y)
+#endif
+
+#endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
+
+
+SAMTOOLS_PREFIX NamedParameterType SS_INDEX SAMTOOLS_VAL ("input_file", PT_FILE_TO_READ);
+
+
 #ifdef __cplusplus
 extern "C"
 {

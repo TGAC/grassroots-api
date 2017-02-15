@@ -137,7 +137,7 @@ typedef struct NamedParameterType
  *
  * @ingroup parameters_group
  */
-#define SET_NAMED_PARAMETER_TYPE_TAGS(a,b) {a, b}
+#define SET_NAMED_PARAMETER_TYPE_TAGS(a,b) ({ .npt_name_s = a, .npt_type = b})
 
 /* forward declaration */
 struct ParameterGroup;
@@ -265,7 +265,7 @@ typedef struct ParameterNode
 /**
  * Allocate a Parameter
  *
- * @param service_data_p The ServiceData for the Service that is allocating this Parmeter.
+ * @param service_data_p The ServiceData for the Service that is allocating this Parameter.
  * @param type The ParameterType for this Parameter.
  * @param multi_valued_flag If this is <code>true</code> then the Parameter can hold multiple values. For single value Parameters, set this to <code>false</code>.
  * @param name_s The name of the Parameter. The Parameter will store a copy of this string so this value does not need to remain in scope.
@@ -284,6 +284,8 @@ typedef struct ParameterNode
  * @memberof Parameter
  */
 GRASSROOTS_PARAMS_API Parameter *AllocateParameter (const struct ServiceData *service_data_p, ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, LinkedList *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p));
+
+
 
 
 /**
@@ -711,7 +713,7 @@ GRASSROOTS_PARAMS_API json_t *GetRunnableParameterAsJSON (const char * const nam
 
 
 
-GRASSROOTS_PARAMS_API bool CreateAndAddParameterOption (Parameter *param_p, SharedType *value_p, const char * const description_s, bool copy_value_flag);
+GRASSROOTS_PARAMS_API bool CreateAndAddParameterOptionToParameter (Parameter *param_p, SharedType value, const char * const description_s);
 
 
 

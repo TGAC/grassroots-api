@@ -422,42 +422,44 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 
 			def.st_json_p = NULL;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_UPDATE.npt_type, false, PGS_UPDATE.npt_name_s, "Update", "Add data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_UPDATE.npt_type, PGS_UPDATE.npt_name_s, "Update", "Add data to the system", def, PL_ADVANCED)) != NULL)
 				{
-					if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_QUERY.npt_type, false, PGS_QUERY.npt_name_s, "Search", "Find data to the system", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_QUERY.npt_type, PGS_QUERY.npt_name_s, "Search", "Find data to the system", def, PL_ALL)) != NULL)
 						{
-							if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_REMOVE.npt_type, false, PGS_REMOVE.npt_name_s, "Delete", "Delete data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+							if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_REMOVE.npt_type, PGS_REMOVE.npt_name_s, "Delete", "Delete data to the system", def, PL_ADVANCED)) != NULL)
 								{
 									def.st_boolean_value = false;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_DUMP.npt_type, false, PGS_DUMP.npt_name_s, "Dump", "Get all of the data in the system", NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+									if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_DUMP.npt_type, PGS_DUMP.npt_name_s, "Dump", "Get all of the data in the system", def, PL_INTERMEDIATE | PL_ADVANCED)) != NULL)
 										{
-											if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_PREVIEW.npt_type, false, PGS_PREVIEW.npt_name_s, "Preview", "Ignore the live dates", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+											if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_PREVIEW.npt_type, PGS_PREVIEW.npt_name_s, "Preview", "Ignore the live dates", def, PL_ADVANCED)) != NULL)
 												{
-													ParameterMultiOptionArray *options_p = NULL;
-													SharedType values [PD_NUM_TYPES];
-													uint32 i;
+													def.st_string_value_s = (char *) *s_data_names_pp;
 
-													for (i = 0; i < PD_NUM_TYPES; ++ i)
+													if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_COLLECTION.npt_type, PGS_COLLECTION.npt_name_s, "Collection", "The collection to act upon", def, PL_ALL)) != NULL)
 														{
-															values [i].st_string_value_s = (char *) s_data_names_pp [i];
-														}
+															bool success_flag = true;
+															uint32 i;
 
-													options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING, true);
+															for (i = 0; i < PD_NUM_TYPES; ++ i)
+																{
+																	def.st_string_value_s = (char *) s_data_names_pp [i];
 
-													if (options_p)
-														{
-															def.st_string_value_s = values [0].st_string_value_s;
+																	if (!CreateAndAddParameterOptionToParameter (param_p, def, NULL))
+																		{
+																			i = PD_NUM_TYPES;
+																			success_flag = false;
+																		}
+																}
 
-															if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_COLLECTION.npt_type, false, PGS_COLLECTION.npt_name_s, "Collection", "The collection to act upon", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+															if (success_flag)
 																{
 																	if (AddUploadParams (service_p -> se_data_p, params_p))
 																		{
 																			return params_p;
 																		}
-																}
 
-															FreeParameterMultiOptionArray (options_p);
+																}
 														}
 												}
 										}

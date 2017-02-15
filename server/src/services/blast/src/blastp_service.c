@@ -276,33 +276,37 @@ static bool AddMatrixParameter (BlastServiceData *data_p, ParameterSet *param_se
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	SharedType matrix_values_p [S_NUM_MATRICES];
 	uint32 i;
-	ParameterMultiOptionArray *options_p = NULL;
 
-	for (i = 0; i < S_NUM_MATRICES; ++ i)
+	/* set BLOSUM62 as default */
+	def.st_string_value_s = (char *) (* (S_MATRICES_SS + 4));
+
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_MATRIX.npt_type, S_MATRIX.npt_name_s, "Matrix", "The Scoring matrix to use", def, PL_ALL)) != NULL)
 		{
-			(matrix_values_p + i) -> st_string_value_s = (char *) * (S_MATRICES_SS + i);
+			success_flag = true;
+
+			for (i = 0; i < S_NUM_MATRICES; ++ i)
+				{
+					def.st_string_value_s = (char *) (* (S_MATRICES_SS + i));
+
+					if (!CreateAndAddParameterOptionToParameter (param_p, def, NULL))
+						{
+							i = S_NUM_MATRICES;
+							success_flag = false;
+						}
+				}
+
+			if (!success_flag)
+				{
+					DetachParameter (param_set_p, param_p);
+					FreeParameter (param_p);
+				}
+		}
+	else
+		{
+
 		}
 
-	memset (&def, 0, sizeof (SharedType));
-
-	options_p = AllocateParameterMultiOptionArray (S_NUM_MATRICES, NULL, matrix_values_p, PT_STRING, true);
-
-	if (options_p)
-		{
-			/* set BLOSUM62 as default */
-			def.st_string_value_s = (matrix_values_p + 4) -> st_string_value_s;
-
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_MATRIX.npt_type, false, S_MATRIX.npt_name_s, "Matrix", "The Scoring matrix to use", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
-				{
-					success_flag = true;
-				}
-			else
-				{
-					FreeParameterMultiOptionArray (options_p);
-				}
-		}
 
 	return success_flag;
 }
@@ -314,9 +318,6 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 	bool success_flag = false;
 	Parameter *param_p = NULL;
 	SharedType def;
-	SharedType comp_values_p [S_NUM_COMP_BASED_STATS];
-	uint32 i;
-	ParameterMultiOptionArray *options_p = NULL;
 	const char *descriptions_ss [] =
 		{
 			"No composition-based statistics",
@@ -325,27 +326,34 @@ static bool AddCompositionalAdjustmentsParameter (BlastServiceData *data_p, Para
 			"Composition-based score adjustment as in Bioinformatics 21:902-911, 2005, unconditionally"
 		};
 
-	for (i = 0; i < S_NUM_COMP_BASED_STATS; ++ i)
+
+	def.st_ulong_value = 2;
+
+	if ((param_p = EasyCreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_COMP_BASED_STATS.npt_type, S_COMP_BASED_STATS.npt_name_s, "Compositional adjustments", "Matrix adjustment method to compensate for amino acid composition of sequences.", def, PL_ALL)) != NULL)
 		{
-			(comp_values_p + i) -> st_ulong_value = i;
+			uint32 i;
+
+			success_flag = true;
+
+			for (i = 0; i < S_NUM_COMP_BASED_STATS; ++ i)
+				{
+					def.st_ulong_value = i;
+
+					if (!CreateAndAddParameterOptionToParameter (param_p, def, * (descriptions_ss + i)))
+						{
+							i = S_NUM_COMP_BASED_STATS;
+							success_flag = false;
+						}
+				}
+
+			if (!success_flag)
+				{
+					DetachParameter (param_set_p, param_p);
+					FreeParameter (param_p);
+				}
 		}
-
-	memset (&def, 0, sizeof (SharedType));
-
-	options_p = AllocateParameterMultiOptionArray (S_NUM_COMP_BASED_STATS, descriptions_ss, comp_values_p, PT_UNSIGNED_INT, true);
-
-	if (options_p)
+	else
 		{
-			def.st_ulong_value = 2;
-
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> bsd_base_data), param_set_p, group_p, S_COMP_BASED_STATS.npt_type, false, S_COMP_BASED_STATS.npt_name_s, "Compositional adjustments", "Matrix adjustment method to compensate for amino acid composition of sequences.", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
-				{
-					success_flag = true;
-				}
-			else
-				{
-					FreeParameterMultiOptionArray (options_p);
-				}
 		}
 
 	return success_flag;

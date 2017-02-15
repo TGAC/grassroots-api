@@ -323,26 +323,26 @@ static ParameterSet *GetCompressServiceParameters (Service *service_p, Resource 
 
 			if (CreateAndAddParameterToParameterSet (service_data_p, param_set_p, NULL, CS_INPUT.npt_type, false, CS_INPUT.npt_name_s, "Input", "The input file to read", NULL, def, NULL, NULL, PL_ALL, NULL))
 				{
-					ParameterMultiOptionArray *options_p = NULL;
-					const char *descriptions_pp [CA_NUM_ALGORITHMS] = { "Use Raw", "Use Zip", "Use GZip" };
-					SharedType values [CA_NUM_ALGORITHMS];
+					Parameter *param_p;
 
-					values [CA_Z].st_string_value_s = (char *) s_algorithm_names_pp [CA_Z];
-					values [CA_ZIP].st_string_value_s = (char *) s_algorithm_names_pp [CA_ZIP];
-					values [CA_GZIP].st_string_value_s = (char *) s_algorithm_names_pp [CA_GZIP];
+					def.st_string_value_s = (char *) s_algorithm_names_pp [CA_Z];
 
-					options_p = AllocateParameterMultiOptionArray (CA_NUM_ALGORITHMS, descriptions_pp, values, PT_STRING, true);
-
-					if (options_p)
+					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, param_set_p, NULL, CS_ALGORITHM.npt_type, CS_ALGORITHM.npt_name_s, "Compression algorithm", "The algorithm to use to compress the data with", def, PL_ALL)) != NULL)
 						{
-							def.st_string_value_s = values [0].st_string_value_s;
-
-							if (CreateAndAddParameterToParameterSet (service_data_p, param_set_p, NULL, CS_ALGORITHM.npt_type, false, CS_ALGORITHM.npt_name_s, "Compression algorithm", "The algorithm to use to compress the data with", options_p, def, NULL, NULL, PL_ALL, NULL))
+							if (CreateAndAddParameterOptionToParameter (param_p, def, "Use Raw"))
 								{
-									return param_set_p;
-								}
+									def.st_string_value_s = (char *) s_algorithm_names_pp [CA_ZIP];
 
-							FreeParameterMultiOptionArray (options_p);
+									if (CreateAndAddParameterOptionToParameter (param_p, def, "Use Zip"))
+										{
+											def.st_string_value_s = (char *) s_algorithm_names_pp [CA_GZIP];
+
+											if (CreateAndAddParameterOptionToParameter (param_p, def, "Use GZip"))
+												{
+													return param_set_p;
+												}
+										}
+								}
 						}
 				}
 
