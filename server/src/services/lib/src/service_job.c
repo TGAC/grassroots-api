@@ -724,11 +724,29 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 																{
 																	if (CopyValidJSON (job_json_p, JOB_ERRORS_S, & (job_p -> sj_errors_p)))
 																		{
+																			SetServiceJobStatus (job_p, status);
+
 																			success_flag = true;
 																		}
+																	else
+																		{
+																			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Couldn't copy %s from job representation", JOB_ERRORS_S);
+																		}
+																}
+															else
+																{
+																	PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Couldn't copy %s from job representation", JOB_METADATA_S);
 																}
 														}
+													else
+														{
+															PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Couldn't copy %s from job representation", JOB_RESULTS_S);
+														}
 
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "InitServiceJob failed for job \"%s\"", uuid_s);
 												}
 
 										}		/* if (service_p) */

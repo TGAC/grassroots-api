@@ -812,6 +812,7 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 									if (GetJSONLong (json_p, LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))
 										{
 											bool b;
+											OperationStatus old_status = GetServiceJobStatus (& (job_p -> tsj_job));
 
 											if (GetJSONBoolean (json_p, LRS_ADDED_FLAG_S, &b))
 												{
@@ -820,6 +821,17 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 											else
 												{
 													job_p -> tsj_added_flag = false;
+												}
+
+											/* Update the job status */
+											if (old_status == OS_STARTED)
+												{
+													OperationStatus new_status = GetTimedServiceJobStatus (& (job_p -> tsj_job));
+
+													if (new_status != old_status)
+														{
+															RemoveServiceJobFromJobsManager (GetJobsManager (), job_p -> tsj_job.sj_id, false);
+														}
 												}
 
 											return job_p;
