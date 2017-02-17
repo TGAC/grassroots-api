@@ -54,6 +54,8 @@ ParameterOption *AllocateParameterOption (SharedType value, const char * const d
 
 			if (option_p)
 				{
+					memset (& (option_p -> po_value), 0, sizeof (SharedType));
+
 					if (CopySharedType (value, & (option_p -> po_value), param_type))
 						{
 							option_p -> po_description_s = new_description_s;

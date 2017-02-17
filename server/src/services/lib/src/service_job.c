@@ -88,7 +88,7 @@ ServiceJob *AllocateServiceJob (Service *service_p, const char *job_name_s, cons
 
 	if (job_p)
 		{
-			if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, update_fn, free_job_fn))
+			if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, update_fn, free_job_fn, NULL))
 				{
 					return job_p;
 				}
@@ -118,7 +118,7 @@ ServiceJob *CreateAndAddServiceJobToServiceJobSet (ServiceJobSet *job_set_p, con
 }
 
 
-bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, const char *job_description_s, bool (*update_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p))
+bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name_s, const char *job_description_s, bool (*update_fn) (struct ServiceJob *job_p), void (*free_job_fn) (struct ServiceJob *job_p), uuid_t *id_p)
 {
 	#if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "Initialising Job: %.16x\n", job_p);
@@ -128,7 +128,16 @@ bool InitServiceJob (ServiceJob *job_p, Service *service_p, const char *job_name
 
 
 	job_p -> sj_service_p = service_p;
-	uuid_generate (job_p -> sj_id);
+
+	if (id_p)
+		{
+			uuid_copy (job_p -> sj_id, *id_p);
+		}
+	else
+		{
+			uuid_generate (job_p -> sj_id);
+		}
+
 	job_p -> sj_status = OS_IDLE;
 
 	job_p -> sj_errors_p = json_object ();
@@ -651,7 +660,6 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Starting InitServiceJobFromJSON for \"%s\"  at %16X", job_json_s, job_json_p);
 			#endif
 
-
 			if (service_name_s)
 				{
 					const char *uuid_s = GetJSONString (job_json_p, JOB_UUID_S);
@@ -660,9 +668,6 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 						{
 							const char *job_name_s = GetJSONString (job_json_p, JOB_NAME_S);
 							const char *job_description_s  = GetJSONString (job_json_p, JOB_DESCRIPTION_S);
-							json_t *job_results_p = json_object_get (job_json_p, JOB_RESULTS_S);
-							json_t *job_metadata_p = json_object_get (job_json_p, JOB_METADATA_S);
-							json_t *job_errors_p = json_object_get (job_json_p, JOB_ERRORS_S);
 							OperationStatus status;
 
 							if (GetOperationStatusFromServiceJobJSON (job_json_p, &status))
@@ -671,50 +676,48 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 
 									if (service_p)
 										{
-											if (uuid_parse (uuid_s, job_p -> sj_id) == 0)
+											uuid_t *id_p = NULL;
+											uuid_t id;
+
+											if (uuid_s)
 												{
-													if (job_name_s)
+													if (uuid_parse (uuid_s, id) == 0)
 														{
-															job_p -> sj_name_s = CopyToNewString (job_name_s, 0, false);
-
-															if (! (job_p -> sj_name_s))
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy name \"%s\" to job", job_name_s);
-																}
+															id_p = &id;
 														}
 													else
 														{
-															job_p -> sj_name_s = NULL;
+
 														}
+												}
 
-													if (job_description_s)
-														{
-															job_p -> sj_description_s = CopyToNewString (job_description_s, 0, false);
 
-															if (! (job_p -> sj_description_s))
-																{
-																	PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to copy description \"%s\" to job", job_description_s);
-																}
-														}
-													else
-														{
-															job_p -> sj_description_s = NULL;
-														}
-
-													job_p -> sj_errors_p = job_errors_p;
-													job_p -> sj_metadata_p = job_metadata_p;
-													job_p -> sj_result_p = job_results_p;
-													job_p -> sj_service_p = service_p;
-													job_p -> sj_status = status;
-
-													SetServiceJobCustomFunctions (service_p, job_p);
+											if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, NULL, NULL, id_p))
+												{
+													json_t *job_results_p = json_object_get (job_json_p, JOB_RESULTS_S);
 
 													success_flag = true;
 
-												}		/* if (uuid_parse (uuid_s, job_p -> sj_id) == 0) */
-											else
-												{
-													PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Couldn't parse uuid \"%s\" as valid uuid", uuid_s);
+													if (job_results_p)
+														{
+															size_t i;
+															json_t *value_p;
+
+															json_array_foreach (job_results_p, i, value_p)
+																{
+																	if (!AddResultToServiceJob (job_p, value_p))
+																		{
+																			success_flag = false;
+																			i = json_array_size (job_results_p);
+																		}
+																}
+														}
+
+													if (success_flag)
+														{
+
+														}
+
 												}
 
 
@@ -759,6 +762,7 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 
 	return success_flag;
 }
+
 
 
 ServiceJob *CreateServiceJobFromJSON (const json_t *job_json_p)

@@ -77,7 +77,7 @@
 #endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
 
 
-SAMTOOLS_PREFIX NamedParameterType SS_INDEX SAMTOOLS_VAL ("input_file", PT_FILE_TO_READ);
+SAMTOOLS_PREFIX NamedParameterType SS_INDEX SAMTOOLS_VAL ("input_file", PT_STRING);
 
 
 #ifdef __cplusplus

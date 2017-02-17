@@ -2032,7 +2032,26 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, LinkedList
 				{
 					const size_t num_options = json_array_size (options_json_p);
 					size_t i = 0;
-					
+
+					if (num_options > 0)
+						{
+							LinkedList *options_p = *options_pp;
+
+							if (!options_p)
+								{
+									options_p = CreateProgramOptionsList ();
+
+									if (!options_p)
+										{
+											return false;
+										}
+									else
+										{
+											*options_pp = options_p;
+										}
+								}
+						}
+
 					success_flag = true;
 
 					while (success_flag && (i < num_options))

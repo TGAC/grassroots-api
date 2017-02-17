@@ -55,10 +55,8 @@ DrmaaServiceJob *AllocateDrmaaServiceJob (const char *drmaa_program_name_s, Serv
 
 void InitDrmaaServiceJob (DrmaaServiceJob *job_p, Service *service_p, const char *job_name_s)
 {
-	InitServiceJob (& (job_p -> dsj_job), service_p, job_name_s);
+	InitServiceJob (& (job_p -> dsj_job), service_p, job_name_s, NULL, NULL, NULL, NULL);
 }
-
-
 
 
 

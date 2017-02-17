@@ -27,37 +27,33 @@
 
 ParamComboBox *ParamComboBox :: Create (Parameter * const param_p, const PrefsWidget * const options_widget_p, QWidget *parent_p)
 {
+	bool success_flag = true;
 	ParamComboBox *combo_box_p = new ParamComboBox (param_p, options_widget_p, parent_p);
 
-	ParameterOption *option_p = combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_options_p;
-	const int num_options = static_cast <const int> (combo_box_p -> bpw_param_p -> pa_options_p -> pmoa_num_options);
-	int i = 0;
-	bool loop_flag = (i < num_options);
-	bool success_flag = true;
-
-	SharedType *current_value_p = & (param_p -> pa_current_value);
-
-
-	while (loop_flag && success_flag)
+	if (combo_box_p -> bpw_param_p -> pa_options_p)
 		{
-			if (combo_box_p -> AddOption (& (option_p -> po_value), option_p -> po_description_s, current_value_p))
-				{
-					++ i;
+			ParameterOptionNode *option_node_p = (ParameterOptionNode *) (combo_box_p -> bpw_param_p -> pa_options_p -> ll_head_p);
+			bool loop_flag = (option_node_p != 0);
 
-					if (i < num_options)
+			while (loop_flag && success_flag)
+				{
+					ParameterOption *option_p = option_node_p -> pon_option_p;
+					SharedType *current_value_p = & (param_p -> pa_current_value);
+
+					if (combo_box_p -> AddOption (& (option_p -> po_value), option_p -> po_description_s, current_value_p))
 						{
-							++ option_p;
+							option_node_p = (ParameterOptionNode *) (option_node_p -> pon_node.ln_next_p);
+
+							loop_flag = (option_node_p != 0);
 						}
 					else
 						{
-							loop_flag = false;
+							success_flag = false;
 						}
-				}
-			else
-				{
-					success_flag = false;
-				}
-		}
+				}		/* while (loop_flag && success_flag) */
+
+		}		/* combo_box_p -> bpw_param_p -> pa_options_p */
+
 
 	if (!success_flag)
 		{

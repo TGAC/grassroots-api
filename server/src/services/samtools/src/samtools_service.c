@@ -659,7 +659,7 @@ static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data
 
 			def.st_string_value_s = (char *) (index_data_p -> id_blast_db_name_s);
 
-			if ((param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, SS_INDEX.npt_name_s, "Output format", "The output format for the results", def, PL_ALL)) != NULL)
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, SS_INDEX.npt_name_s, "Indexes", "The avaiable databases", def, PL_ALL)) != NULL)
 				{
 					bool success_flag = true;
 					size_t i;

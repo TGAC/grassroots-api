@@ -645,7 +645,7 @@ static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char 
 					job_p -> tsj_interval_p = interval_p;
 					job_p -> tsj_added_flag = false;
 
-					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, job_description_s, UpdateTimedServiceJob, FreeTimedServiceJob);
+					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, job_description_s, UpdateTimedServiceJob, FreeTimedServiceJob, NULL);
 
 				}		/* if (job_p) */
 			else
