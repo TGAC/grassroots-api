@@ -30,6 +30,7 @@
 #endif
 
 
+static bool CopyValidJSON (const json_t *src_p, const char *src_key_s, json_t **dest_pp);
 
 static bool AddValidJSON (json_t *parent_p, const char * const key_s, json_t *child_p, bool set_as_new_flag);
 
@@ -646,6 +647,29 @@ static bool GetOperationStatusFromServiceJobJSON (const json_t *value_p, Operati
 }
 
 
+static bool CopyValidJSON (const json_t *src_p, const char *src_key_s, json_t **dest_pp)
+{
+	bool success_flag = true;
+	json_t *value_p = json_object_get (src_p, src_key_s);
+
+
+	if (value_p)
+		{
+			*dest_pp = json_deep_copy (value_p);
+
+			if (!dest_pp)
+				{
+					success_flag = false;
+				}
+		}
+	else
+		{
+			dest_pp = NULL;
+		}
+
+	return success_flag;
+}
+
 
 bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 {
@@ -694,32 +718,18 @@ bool InitServiceJobFromJSON (ServiceJob *job_p, const json_t *job_json_p)
 
 											if (InitServiceJob (job_p, service_p, job_name_s, job_description_s, NULL, NULL, id_p))
 												{
-													json_t *job_results_p = json_object_get (job_json_p, JOB_RESULTS_S);
-
-													success_flag = true;
-
-													if (job_results_p)
+													if (CopyValidJSON (job_json_p, JOB_RESULTS_S, & (job_p -> sj_result_p)))
 														{
-															size_t i;
-															json_t *value_p;
-
-															json_array_foreach (job_results_p, i, value_p)
+															if (CopyValidJSON (job_json_p, JOB_METADATA_S, & (job_p -> sj_metadata_p)))
 																{
-																	if (!AddResultToServiceJob (job_p, value_p))
+																	if (CopyValidJSON (job_json_p, JOB_ERRORS_S, & (job_p -> sj_errors_p)))
 																		{
-																			success_flag = false;
-																			i = json_array_size (job_results_p);
+																			success_flag = true;
 																		}
 																}
 														}
 
-													if (success_flag)
-														{
-
-														}
-
 												}
-
 
 										}		/* if (service_p) */
 									else
