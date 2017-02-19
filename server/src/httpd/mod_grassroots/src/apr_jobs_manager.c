@@ -71,6 +71,11 @@ static ServiceJob *GetServiceJobFromAprJobsManager (JobsManager *manager_p, cons
 static ServiceJob *RemoveServiceJobFromAprJobsManager (JobsManager *manager_p, const uuid_t job_key, bool get_job_flag);
 
 
+static LinkedList *GetAllServiceJobsFromAprJobsManager (struct JobsManager *manager_p);
+
+static apr_status_t AddServiceJobFromSOCache (ap_socache_instance_t *instance_p, server_rec *server_p, void *user_data_p, const unsigned char *id_s, unsigned int id_length, const unsigned char *data_p, unsigned int data_length, apr_pool_t *pool_p);
+
+static ServiceJob *RebuildServiceJob (char *value_s);
 
 /**************************/
 
@@ -97,7 +102,7 @@ APRJobsManager *InitAPRJobsManager (server_rec *server_p, apr_pool_t *pool_p, co
 				{
 					manager_p -> ajm_store_p = storage_p;
 
-					InitJobsManager (& (manager_p -> ajm_base_manager), AddServiceJobToAPRJobsManager, GetServiceJobFromAprJobsManager, RemoveServiceJobFromAprJobsManager);
+					InitJobsManager (& (manager_p -> ajm_base_manager), AddServiceJobToAPRJobsManager, GetServiceJobFromAprJobsManager, RemoveServiceJobFromAprJobsManager, GetAllServiceJobsFromAprJobsManager);
 
 					apr_pool_cleanup_register (pool_p, manager_p, CleanUpAPRJobsManager, apr_pool_cleanup_null);
 
@@ -265,32 +270,15 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 
 	if (value_p)
 		{
-			json_error_t err;
-			json_t *job_json_p = NULL;
-
 			#if APR_JOBS_MANAGER_DEBUG >= STM_LEVEL_FINER
 			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "For job %s, got: \"%s\"", uuid_s, value_p);
 			#endif
 
-			job_json_p = json_loads ((char *) value_p, 0, &err);
+			job_p = RebuildServiceJob ((char *) value_p);
 
-			if (job_json_p)
+			if (!job_p)
 				{
-					job_p = CreateServiceJobFromJSON (job_json_p);
-
-					if (job_p)
-						{
-
-						}
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateServiceJobFromJSON failed for \"%s\"", uuid_s);
-						}
-
-				}		/* if (job_json_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to json for uuid \"%s\", err \"%s\" at line %d, column %d", value_p, uuid_s, err.text, err.line, err.column);
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CreateServiceJobFromJSON failed for \"%s\"", uuid_s);
 				}
 
 			FreeMemory (value_p);
@@ -303,6 +291,36 @@ static ServiceJob *QueryServiceJobFromAprJobsManager (JobsManager *jobs_manager_
 	return job_p;
 }
 
+
+
+static ServiceJob *RebuildServiceJob (char *value_s)
+{
+	json_error_t err;
+	json_t *job_json_p = NULL;
+
+	job_json_p = json_loads (value_s, 0, &err);
+
+	if (job_json_p)
+		{
+			ServiceJob *job_p = CreateServiceJobFromJSON (job_json_p);
+
+			if (job_p)
+				{
+					return job_p;
+				}
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create ServiceJob from \"%s\"", value_s);
+				}
+
+		}		/* if (job_json_p) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert \"%s\" to json err \"%s\" at line %d, column %d", value_s, err.text, err.line, err.column);
+		}
+
+	return NULL;
+}
 
 
 static void FreeAPRServerJob (unsigned char *key_p, void *value_p)
@@ -340,5 +358,55 @@ apr_status_t CleanUpAPRJobsManager (void *value_p)
 	return (DestroyAPRJobsManager (manager_p) ? APR_SUCCESS : APR_EGENERAL);
 }
 
+
+
+static LinkedList *GetAllServiceJobsFromAprJobsManager (struct JobsManager *manager_p)
+{
+	LinkedList *servers_p = AllocateLinkedList (FreeServiceJobNode);
+
+	if (servers_p)
+		{
+			APRJobsManager *manager_p = (APRJobsManager *) manager_p;
+			ap_socache_iterator_t *iterator_p = AddServiceJobFromSOCache;
+
+			IterateOverAPRGlobalStorage (manager_p -> ajm_store_p, iterator_p, servers_p);
+
+			if (servers_p -> ll_size == 0)
+				{
+					FreeLinkedList (servers_p);
+					servers_p = NULL;
+				}
+		}		/* if (servers_p) */
+
+	return servers_p;
+}
+
+
+static apr_status_t AddServiceJobFromSOCache (ap_socache_instance_t *instance_p, server_rec *server_p, void *user_data_p, const unsigned char *id_s, unsigned int id_length, const unsigned char *data_p, unsigned int data_length, apr_pool_t *pool_p)
+{
+	apr_status_t status = APR_SUCCESS;
+	LinkedList *jobs_p = (LinkedList *) user_data_p;
+	ServiceJob *job_p = RebuildServiceJob ((char *) data_p);
+
+	if (job_p)
+		{
+			ServiceJobNode *node_p = AllocateServiceJobNode (job_p);
+
+			if (node_p)
+				{
+					LinkedListAddTail (jobs_p, (ListItem *) node_p);
+				}
+			else
+				{
+					status = APR_ENOMEM;
+				}
+		}
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create external server from \"%s\"", (char *) data_p);
+		}
+
+	return status;
+}
 
 

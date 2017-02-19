@@ -36,11 +36,13 @@ JobsManager *GetJobsManager (void)
 void InitJobsManager (JobsManager *manager_p,
                       bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p),
                       ServiceJob *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key),
-                      ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key, bool get_job_flag))
+                      ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key, bool get_job_flag),
+											LinkedList *(*get_all_jobs_fn) (struct JobsManager *manager_p))
 {
 	manager_p -> jm_add_job_fn = add_job_fn;
 	manager_p -> jm_get_job_fn = get_job_fn;
 	manager_p -> jm_remove_job_fn = remove_job_fn;
+	manager_p -> jm_get_all_jobs_fn = get_all_jobs_fn;
 
 	s_jobs_manager_p = manager_p;
 }
@@ -70,4 +72,19 @@ ServiceJob *NullDeserialiser (unsigned char *data_p, void *config_p)
 {
 	return NULL;
 }
+
+
+LinkedList *GetAllServiceJobsFromJobsManager (struct JobsManager *manager_p)
+{
+	LinkedList *jobs_p = NULL;
+
+	if (manager_p -> jm_get_all_jobs_fn)
+		{
+			jobs_p = manager_p -> jm_get_all_jobs_fn (manager_p);
+		}
+
+
+	return jobs_p;
+}
+
 
