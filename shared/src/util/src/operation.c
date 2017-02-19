@@ -48,7 +48,8 @@ static const char *S_OPERATIONS_SS [OP_NUM_OPERATIONS] =
 	"check_service_status",
 	"get_service_results",
 	"clean_up_jobs",
-	"get_resource"
+	"get_resource",
+	"get_server_status"
 };
 
 
