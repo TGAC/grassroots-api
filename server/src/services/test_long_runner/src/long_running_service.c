@@ -488,7 +488,7 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 {
 	SharedType param_value;
 
-	memset (&param_value, 0, sizeof (SharedType));
+	InitSharedType (&param_value);
 
 	if (GetParameterValueFromParameterSet (param_set_p, LRS_NUMBER_OF_JOBS.npt_name_s, &param_value, true))
 		{

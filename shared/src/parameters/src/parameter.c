@@ -229,8 +229,8 @@ Parameter *AllocateParameter (const ServiceData *service_data_p, ParameterType t
 
 													param_p -> pa_remote_parameter_details_p = remote_params_p;
 
-													memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
-													memset (& (param_p -> pa_default), 0, sizeof (SharedType));
+													InitSharedType (& (param_p -> pa_current_value));
+													InitSharedType (& (param_p -> pa_default));
 
 													if (multi_valued_flag)
 														{
@@ -2062,6 +2062,8 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, LinkedList
 								{
 									SharedType def;
 
+									InitSharedType (&def);
+
 									if (GetValueFromJSON (json_value_p, SHARED_TYPE_VALUE_S, pt, &def))
 										{
 											const char *desc_s = GetJSONString (json_value_p, SHARED_TYPE_DESCRIPTION_S);
@@ -2346,6 +2348,14 @@ bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterTy
 }
 
 
+
+void InitSharedType (SharedType *st_p)
+{
+	memset (st_p, 0, sizeof (SharedType));
+}
+
+
+
 void ClearSharedType (SharedType *st_p, const ParameterType pt)
 {
 	switch (pt)
@@ -2388,7 +2398,7 @@ void ClearSharedType (SharedType *st_p, const ParameterType pt)
 				break;
 		}
 
-	memset (st_p, 0, sizeof (SharedType));
+	InitSharedType (st_p);
 }
 
 
@@ -2429,7 +2439,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p, const bool conc
 				{
 					SharedType current_value;
 
-					memset (&current_value, 0, sizeof (SharedType));
+					InitSharedType (&current_value);
 
 					if (GetValueFromJSON (root_p, PARAM_CURRENT_VALUE_S, pt, &current_value))
 						{
@@ -2445,7 +2455,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p, const bool conc
 							ParameterLevel level = PL_ALL;
 							bool success_flag = false;
 
-							memset (&def, 0, sizeof (SharedType));
+							InitSharedType (&def);
 
 							if (GetParameterLevelFromJSON (root_p, &level))
 								{

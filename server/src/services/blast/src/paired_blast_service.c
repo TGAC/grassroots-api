@@ -96,7 +96,7 @@ bool AddPairedServiceParameters (Service *service_p, ParameterSet *internal_para
 											SharedType def;
 											uint32 num_added_dbs = 0;
 
-											memset (&def, 0, sizeof (SharedType));
+											InitSharedType (&def);
 
 											while (src_node_p)
 												{

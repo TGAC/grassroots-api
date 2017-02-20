@@ -310,7 +310,7 @@ static void ReleaseSamToolsServiceParameters (Service * UNUSED_PARAM (service_p)
 static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable *providers_p)
 {
 	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Samtools service job");
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p);
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: RunSamToolsService - enter");
@@ -318,11 +318,8 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 			Parameter *param_p = NULL;
 			IndexData *selected_index_data_p = GetSelectedIndexData (data_p, param_set_p);
-
-			job_p -> sj_status = OS_FAILED_TO_START;
 
 			if (selected_index_data_p)
 				{
@@ -338,81 +335,90 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 									if (buffer_p)
 										{
-											int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
-											param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLD_LINE_BREAK.npt_name_s);
+											ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (service_p -> se_jobs_p, scaffold_s, selected_index_data_p -> id_blast_db_name_s, NULL, NULL);
 
-											if (param_p)
+											if (job_p)
 												{
-													break_index = param_p -> pa_current_value.st_long_value;
-												}
+													int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
 
-											job_p -> sj_status = OS_FAILED;
+													param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLD_LINE_BREAK.npt_name_s);
 
-											// temporarily don't pass break index
-											break_index = 0;
-											if (GetScaffoldData (selected_index_data_p -> id_fasta_filename_s, scaffold_s, break_index, buffer_p))
-												{
-													json_t *result_p = NULL;
-													const char *sequence_s = GetByteBufferData (buffer_p);
-
-													if (sequence_s)
+													if (param_p)
 														{
-															json_t *sequence_p = json_string (sequence_s);
+															break_index = param_p -> pa_current_value.st_long_value;
+														}
 
-															if (sequence_p)
+													job_p -> sj_status = OS_FAILED_TO_START;
+
+
+													// temporarily don't pass break index
+													break_index = 0;
+													if (GetScaffoldData (selected_index_data_p -> id_fasta_filename_s, scaffold_s, break_index, buffer_p))
+														{
+															json_t *result_p = NULL;
+															const char *sequence_s = GetByteBufferData (buffer_p);
+
+															if (sequence_s)
 																{
-																	result_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, scaffold_s, sequence_p);
+																	json_t *sequence_p = json_string (sequence_s);
 
-																	if (!result_p)
+																	if (sequence_p)
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get json result for %s", sequence_s);
+																			result_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, scaffold_s, sequence_p);
+
+																			if (!result_p)
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get json result for %s", sequence_s);
+																				}
+
+																			json_decref (sequence_p);
 																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json sequence from %s", sequence_s);
+																		}
+																}		/* if (sequence_s) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get sequence from buffer for %s from %s", scaffold_s, selected_index_data_p -> id_fasta_filename_s);
+																}
 
-																	json_decref (sequence_p);
+
+															if (result_p)
+																{
+																	if (AddResultToServiceJob (job_p, result_p))
+																		{
+																			job_p -> sj_status = OS_SUCCEEDED;
+																		}
+																	else
+																		{
+																			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+																			json_decref (result_p);
+																			AddErrorToServiceJob (job_p, ERROR_S, "Failed to add result");
+
+																			ConvertUUIDToString (job_p -> sj_id, uuid_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add result for %s", uuid_s);
+																		}
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json sequence from %s", sequence_s);
-																}
-														}		/* if (sequence_s) */
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get sequence from buffer for %s from %s", scaffold_s, selected_index_data_p -> id_fasta_filename_s);
-														}
-
-
-													if (result_p)
-														{
-															if (AddResultToServiceJob (job_p, result_p))
-																{
-																	job_p -> sj_status = OS_SUCCEEDED;
-																}
-															else
-																{
-																	char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-																	json_decref (result_p);
-																	AddErrorToServiceJob (job_p, ERROR_S, "Failed to add result");
-
-																	ConvertUUIDToString (job_p -> sj_id, uuid_s);
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add result for %s", uuid_s);
+																	if (!AddErrorToServiceJob (job_p, "Create sequence error", scaffold_s))
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, selected_index_data_p -> id_fasta_filename_s);
+																		}
 																}
 														}
 													else
 														{
-															if (!AddErrorToServiceJob (job_p, "Create sequence error", scaffold_s))
+															if (!AddErrorToServiceJob (job_p, "Get scaffold error", "Failed to get scaffold data"))
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, selected_index_data_p -> id_fasta_filename_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add error to job");
 																}
 														}
-												}
-											else
-												{
-													if (!AddErrorToServiceJob (job_p, "Get scaffold error", "Failed to get scaffold data"))
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add error to job");
-														}
-												}
+
+												}		/* if (job_p) */
+
 
 											FreeByteBuffer (buffer_p);
 
@@ -438,9 +444,12 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 			else
 				{
 					/* The requested index data may be on a paired service so try those */
-					RunPairedServices (service_p, param_set_p, providers_p, SaveRemoteSamtoolsJobDetails);
+					int32 num_jobs_ran = RunPairedServices (service_p, param_set_p, providers_p, SaveRemoteSamtoolsJobDetails);
 
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
+					if (num_jobs_ran == 0)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
+						}
 				}
 
 		}		/* if (service_p -> se_jobs_p) */
@@ -659,18 +668,48 @@ static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data
 
 			def.st_string_value_s = (char *) (index_data_p -> id_blast_db_name_s);
 
-			if ((param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, SS_INDEX.npt_name_s, "Indexes", "The avaiable databases", def, PL_ALL)) != NULL)
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, SS_INDEX.npt_name_s, "Indexes", "The available databases", def, PL_ALL)) != NULL)
 				{
 					bool success_flag = true;
 					size_t i;
+					char *provider_s = NULL;
+
+					/* have we got any paired services? */
+					if (service_data_p -> stsd_base_data.sd_service_p -> se_paired_services.ll_size > 0)
+						{
+							json_t *provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
+
+							if (provider_p)
+								{
+									provider_s = GetProviderName (provider_p);
+								}
+						}
 
 					for (i = 0 ; i < num_dbs; ++ i, ++ index_data_p)
 						{
 							def.st_string_value_s = (char *) (index_data_p -> id_fasta_filename_s);
 
-							if (!CreateAndAddParameterOptionToParameter (param_p, def, index_data_p -> id_blast_db_name_s))
+							if (provider_s)
 								{
-									success_flag = false;
+									char *db_s = CreateDatabaseName (index_data_p -> id_blast_db_name_s, provider_s);
+
+									if (db_s)
+										{
+											success_flag = CreateAndAddParameterOptionToParameter (param_p, def, db_s);
+											FreeCopiedString (db_s);
+										}
+									else
+										{
+											success_flag = CreateAndAddParameterOptionToParameter (param_p, def, index_data_p -> id_blast_db_name_s);
+										}
+								}
+							else
+								{
+									success_flag = CreateAndAddParameterOptionToParameter (param_p, def, index_data_p -> id_blast_db_name_s);
+								}
+
+							if (!success_flag)
+								{
 									i = num_dbs;
 								}
 						}

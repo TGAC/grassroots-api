@@ -100,13 +100,25 @@ extern "C"
 
 
 /**
- * Clear the value of a SharedType.
+ * Clear the value of a SharedType releasing any allocated memory
+ * for the value.
  *
  * @param st_p The SharedType to clear.
  * @param pt The ParameterType for this SharedType
  * @memberof SharedType
  */
 GRASSROOTS_PARAMS_API void ClearSharedType (SharedType *st_p, const ParameterType pt);
+
+
+
+/**
+ * Initialise a SharedType ready for use.
+ *
+ * @param st_p The SharedType to initialise.
+ * @memberof SharedType
+ */
+GRASSROOTS_PARAMS_API void InitSharedType (SharedType *st_p);
+
 
 
 /**

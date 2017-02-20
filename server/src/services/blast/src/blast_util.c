@@ -138,7 +138,7 @@ bool AddArgsPairFromStringParameter (const ParameterSet *params_p, const char * 
 	bool success_flag = !required_flag;
 	SharedType value;
 
-	memset (&value, 0, sizeof (SharedType));
+	InitSharedType (&value);
 
 	if (GetParameterValueFromParameterSet (params_p, param_name_s, &value, true))
 		{

@@ -31,7 +31,7 @@
 #include "parameter_set.h"
 
 
-static char *CreateDatabaseName (const char *database_s, const char *server_s);
+
 
 
 bool SaveRemoteSamtoolsJobDetails (RemoteServiceJob *job_p, const ServiceData *service_data_p)
@@ -106,10 +106,9 @@ bool AddPairedIndexParameters (Service *service_p, Parameter *internal_dbs_param
 
 
 
-static char *CreateDatabaseName (const char *database_s, const char *server_s)
+char *CreateDatabaseName (const char *database_s, const char *server_s)
 {
 	char *database_name_s = ConcatenateVarargsStrings (database_s, " provided by ", server_s, NULL);
-
 
 	return database_name_s;
 }

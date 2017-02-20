@@ -35,11 +35,14 @@ extern "C"
 {
 #endif
 
+
 SAMTOOLS_SERVICE_LOCAL bool SaveRemoteSamtoolsJobDetails (RemoteServiceJob *job_p, const ServiceData *service_data_p);
 
 
 SAMTOOLS_SERVICE_LOCAL bool AddPairedIndexParameters (Service *service_p, Parameter *internal_dbs_param_p, ParameterSet *internal_params_p);
 
+
+SAMTOOLS_SERVICE_LOCAL char *CreateDatabaseName (const char *database_s, const char *server_s);
 
 
 #ifdef __cplusplus

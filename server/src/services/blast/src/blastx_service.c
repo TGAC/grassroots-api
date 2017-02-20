@@ -162,8 +162,7 @@ static bool AddBlastXQuerySequenceParameters (BlastServiceData *data_p, Paramete
 	const uint32 values_p [NUM_GENETIC_CODES] = { 1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 13, 14, 15, 16, 21, 22, 23, 24, 25, 26 };
 
 
-
-	memset (&def, 0, sizeof (def));
+	InitSharedType (&def);
 
 	/* default to Standard */
 	def.st_ulong_value = 1;

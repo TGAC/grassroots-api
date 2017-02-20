@@ -151,7 +151,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	SharedType param_value;
 
-	memset (&param_value, 0, sizeof (SharedType));
+	InitSharedType (&param_value);
 
 	/*
 	 * We will check for all of our parameters, such as previous job ids, etc. first, until
@@ -448,7 +448,7 @@ ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char 
 			SharedType param_value;
 			uint32 output_format_code = BS_DEFAULT_OUTPUT_FORMAT;
 
-			memset (&param_value, 0, sizeof (SharedType));
+			InitSharedType (&param_value);
 
 			if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &param_value, true))
 				{
@@ -583,7 +583,7 @@ TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_di
 	TempFile *input_file_p = NULL;
 	SharedType value;
 
-	memset (&value, 0, sizeof (SharedType));
+	InitSharedType (&value);
 
 	/* Input query */
 	if (GetParameterValueFromParameterSet (params_p, BS_INPUT_QUERY.npt_name_s, &value, true))
