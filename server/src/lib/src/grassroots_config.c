@@ -220,6 +220,25 @@ const json_t *GetProviderAsJSON (void)
 }
 
 
+const char *GetJobLoggingURI (void)
+{
+	const char *uri_s = NULL;
+	const json_t *config_p = GetConfig ();
+
+	if (config_p)
+		{
+			const json_t *jobs_p = GetCompoundJSONObject (config_p, "admin.jobs");
+
+			if (jobs_p)
+				{
+					uri_s = GetJSONString (jobs_p, "uri");
+				}
+		}
+
+	return uri_s;
+}
+
+
 bool IsServiceEnabled (const char *service_name_s)
 {
 	bool enabled_flag = true;

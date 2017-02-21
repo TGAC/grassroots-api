@@ -108,6 +108,9 @@ static json_t *GetServerStatus (const json_t * const req_p, UserDetails *user_p)
 static LinkedList *GetServicesList (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, ProvidersStateTable *providers_p);
 
 
+
+
+
 /***************************/
 /***** API DEFINITIONS *****/
 /***************************/

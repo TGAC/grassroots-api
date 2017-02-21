@@ -36,6 +36,7 @@
 #include "search_options.h"
 #include "time_util.h"
 #include "io_utils.h"
+#include "audit.h"
 
 
 #ifdef _DEBUG
@@ -616,6 +617,9 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 
 									SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
 
+									job_p -> sj_status = OS_STARTED;
+									LogServiceJob (job_p);
+
 									/* Do we want to get a dump of the entire collection? */
 									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
 										{
@@ -909,6 +913,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 			PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, job_p -> sj_metadata_p, "metadata 3: ");
 #endif
 
+			LogServiceJob (job_p);
 		}		/* if (service_p -> se_jobs_p) */
 
 	return service_p -> se_jobs_p;

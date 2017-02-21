@@ -25,7 +25,7 @@
 #include "paired_samtools_service.h"
 #include "grassroots_config.h"
 #include "provider.h"
-
+#include "audit.h"
 
 #include "htslib/faidx.h"
 
@@ -351,8 +351,13 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 															break_index = param_p -> pa_current_value.st_long_value;
 														}
 
-													job_p -> sj_status = OS_FAILED_TO_START;
+													job_p -> sj_status = OS_STARTED;
 
+													LogServiceJob (job_p);
+
+
+													/* Assume failure */
+													job_p -> sj_status = OS_FAILED;
 
 													// temporarily don't pass break index
 													break_index = 0;
@@ -419,6 +424,9 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add error to job");
 																}
 														}
+
+
+													LogServiceJob (job_p);
 
 												}		/* if (job_p) */
 

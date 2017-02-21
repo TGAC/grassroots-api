@@ -215,6 +215,8 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 															job_p -> bsj_job.sj_status = OS_FAILED_TO_START;
 
+															LogServiceJob (job_p);
+
 															if (tool_p)
 																{
 																	if (tool_p -> SetInputFilename (input_filename_s))
@@ -230,6 +232,9 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 																										{
 																											job_p -> bsj_job.sj_status = tool_p -> GetStatus ();
 																										}
+
+																									LogServiceJob (job_p);
+
 
 																									switch (job_p -> bsj_job.sj_status)
 																									{
