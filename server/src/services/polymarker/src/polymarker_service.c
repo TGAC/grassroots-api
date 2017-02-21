@@ -235,6 +235,11 @@ static PolymarkerServiceData *AllocatePolymarkerServiceData (Service * UNUSED_PA
 
 	data_p -> psd_tool_type = PTT_SYSTEM;
 
+	data_p -> psd_executable_s = NULL;
+	data_p -> psd_index_data_p = NULL;
+	data_p -> psd_index_data_size = 0;
+	data_p -> psd_working_dir_s = NULL;
+
 	return data_p;
 }
 

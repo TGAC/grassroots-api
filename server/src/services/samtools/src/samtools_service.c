@@ -23,6 +23,9 @@
 #include "jobs_manager.h"
 #include "byte_buffer.h"
 #include "paired_samtools_service.h"
+#include "grassroots_config.h"
+#include "provider.h"
+
 
 #include "htslib/faidx.h"
 
@@ -603,7 +606,6 @@ static  ParameterSet *IsFileForSamToolsService (Service * UNUSED_PARAM (service_
 }
 
 
-
 static IndexData *GetSelectedIndexData (const SamToolsServiceData * const data_p, const ParameterSet *params_p)
 {
 	SharedType def;
@@ -627,7 +629,8 @@ static IndexData *GetSelectedIndexData (const SamToolsServiceData * const data_p
 									return index_data_p;
 								}
 						}
-					else if (index_data_p -> id_fasta_filename_s)
+
+					if (index_data_p -> id_blast_db_name_s)
 						{
 							#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
 							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Checking for \"%s\" against blast database \"%s\"", value_s, index_data_p -> id_blast_db_name_s);
