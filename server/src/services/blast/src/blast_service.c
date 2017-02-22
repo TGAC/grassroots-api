@@ -41,7 +41,7 @@
 
 #include "servers_pool.h"
 #include "remote_parameter_details.h"
-
+#include "audit.h"
 
 
 
@@ -215,7 +215,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 															job_p -> bsj_job.sj_status = OS_FAILED_TO_START;
 
-															LogServiceJob (job_p);
+															LogServiceJob (& (job_p -> bsj_job));
 
 															if (tool_p)
 																{
@@ -233,7 +233,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 																											job_p -> bsj_job.sj_status = tool_p -> GetStatus ();
 																										}
 
-																									LogServiceJob (job_p);
+																									LogServiceJob (& (job_p -> bsj_job));
 
 
 																									switch (job_p -> bsj_job.sj_status)

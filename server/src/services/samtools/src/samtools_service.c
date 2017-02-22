@@ -351,8 +351,10 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 															break_index = param_p -> pa_current_value.st_long_value;
 														}
 
-													job_p -> sj_status = OS_STARTED;
 
+													LogParameterSet (param_set_p, job_p);
+
+													job_p -> sj_status = OS_STARTED;
 													LogServiceJob (job_p);
 
 

@@ -30,6 +30,8 @@
 
 #include "grassroots_service_manager_library.h"
 #include "service_job.h"
+#include "parameter_set.h"
+
 
 
 #ifdef __cplusplus
@@ -39,6 +41,9 @@ extern "C"
 
 
 GRASSROOTS_SERVICE_MANAGER_API bool LogServiceJob (ServiceJob *job_p);
+
+
+GRASSROOTS_SERVICE_MANAGER_API bool LogParameterSet (ParameterSet *params_p, ServiceJob *job_p);
 
 
 #ifdef __cplusplus

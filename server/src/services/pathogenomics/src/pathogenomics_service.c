@@ -592,6 +592,9 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 		{
 			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
+
+			LogParameterSet (param_set_p, job_p);
+
 			job_p -> sj_status = OS_FAILED_TO_START;
 
 			if (param_set_p)
