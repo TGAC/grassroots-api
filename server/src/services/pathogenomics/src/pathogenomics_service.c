@@ -36,6 +36,7 @@
 #include "search_options.h"
 #include "time_util.h"
 #include "io_utils.h"
+#include "audit.h"
 
 
 #ifdef _DEBUG
@@ -422,42 +423,44 @@ static ParameterSet *GetPathogenomicsServiceParameters (Service *service_p, Reso
 
 			def.st_json_p = NULL;
 
-			if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_UPDATE.npt_type, false, PGS_UPDATE.npt_name_s, "Update", "Add data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_UPDATE.npt_type, PGS_UPDATE.npt_name_s, "Update", "Add data to the system", def, PL_ADVANCED)) != NULL)
 				{
-					if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_QUERY.npt_type, false, PGS_QUERY.npt_name_s, "Search", "Find data to the system", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_QUERY.npt_type, PGS_QUERY.npt_name_s, "Search", "Find data to the system", def, PL_ALL)) != NULL)
 						{
-							if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_REMOVE.npt_type, false, PGS_REMOVE.npt_name_s, "Delete", "Delete data to the system", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+							if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_REMOVE.npt_type, PGS_REMOVE.npt_name_s, "Delete", "Delete data to the system", def, PL_ADVANCED)) != NULL)
 								{
 									def.st_boolean_value = false;
 
-									if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_DUMP.npt_type, false, PGS_DUMP.npt_name_s, "Dump", "Get all of the data in the system", NULL, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+									if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_DUMP.npt_type, PGS_DUMP.npt_name_s, "Dump", "Get all of the data in the system", def, PL_INTERMEDIATE | PL_ADVANCED)) != NULL)
 										{
-											if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_PREVIEW.npt_type, false, PGS_PREVIEW.npt_name_s, "Preview", "Ignore the live dates", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
+											if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_PREVIEW.npt_type, PGS_PREVIEW.npt_name_s, "Preview", "Ignore the live dates", def, PL_ADVANCED)) != NULL)
 												{
-													ParameterMultiOptionArray *options_p = NULL;
-													SharedType values [PD_NUM_TYPES];
-													uint32 i;
+													def.st_string_value_s = (char *) *s_data_names_pp;
 
-													for (i = 0; i < PD_NUM_TYPES; ++ i)
+													if ((param_p = EasyCreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_COLLECTION.npt_type, PGS_COLLECTION.npt_name_s, "Collection", "The collection to act upon", def, PL_ALL)) != NULL)
 														{
-															values [i].st_string_value_s = (char *) s_data_names_pp [i];
-														}
+															bool success_flag = true;
+															uint32 i;
 
-													options_p = AllocateParameterMultiOptionArray (PD_NUM_TYPES, s_data_names_pp, values, PT_STRING, true);
+															for (i = 0; i < PD_NUM_TYPES; ++ i)
+																{
+																	def.st_string_value_s = (char *) s_data_names_pp [i];
 
-													if (options_p)
-														{
-															def.st_string_value_s = values [0].st_string_value_s;
+																	if (!CreateAndAddParameterOptionToParameter (param_p, def, NULL))
+																		{
+																			i = PD_NUM_TYPES;
+																			success_flag = false;
+																		}
+																}
 
-															if ((param_p = CreateAndAddParameterToParameterSet (service_data_p, params_p, NULL, PGS_COLLECTION.npt_type, false, PGS_COLLECTION.npt_name_s, "Collection", "The collection to act upon", options_p, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+															if (success_flag)
 																{
 																	if (AddUploadParams (service_p -> se_data_p, params_p))
 																		{
 																			return params_p;
 																		}
-																}
 
-															FreeParameterMultiOptionArray (options_p);
+																}
 														}
 												}
 										}
@@ -589,6 +592,9 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 		{
 			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 
+
+			LogParameterSet (param_set_p, job_p);
+
 			job_p -> sj_status = OS_FAILED_TO_START;
 
 			if (param_set_p)
@@ -613,6 +619,9 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 									param_p = GetParameterFromParameterSetByName (param_set_p, PGS_DUMP.npt_name_s);
 
 									SetMongoToolCollection (tool_p, data_p -> psd_database_s, collection_name_s);
+
+									job_p -> sj_status = OS_STARTED;
+									LogServiceJob (job_p);
 
 									/* Do we want to get a dump of the entire collection? */
 									if (param_p && (param_p -> pa_type == PT_BOOLEAN) && (param_p -> pa_current_value.st_boolean_value == true))
@@ -907,6 +916,7 @@ static ServiceJobSet *RunPathogenomicsService (Service *service_p, ParameterSet 
 			PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, job_p -> sj_metadata_p, "metadata 3: ");
 #endif
 
+			LogServiceJob (job_p);
 		}		/* if (service_p -> se_jobs_p) */
 
 	return service_p -> se_jobs_p;

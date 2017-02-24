@@ -38,6 +38,7 @@ INCLUDES = \
 SRCS 	= \
 	parameter.c \
 	parameter_group.c \
+	parameter_option.c \
 	parameter_set.c \
 	remote_parameter_details.c \
 

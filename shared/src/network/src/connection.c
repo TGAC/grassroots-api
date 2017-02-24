@@ -299,7 +299,11 @@ int SendJsonRequestViaRawConnection (RawConnection *connection_p, const json_t *
 static void FreeWebConnection (WebConnection *connection_p)
 {
 	FreeCurlTool (connection_p -> wc_curl_p);
-	FreeCopiedString (connection_p -> wc_uri_s);
+
+	if (connection_p -> wc_uri_s)
+		{
+			FreeCopiedString (connection_p -> wc_uri_s);
+		}
 }
 
 

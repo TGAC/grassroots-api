@@ -157,6 +157,15 @@ GRASSROOTS_SERVICE_MANAGER_API bool IsServiceEnabled (const char *service_name_s
 
 
 
+/**
+ * Get the job logging URI for this Grassroots Server.
+ *
+ * @return The job logging URI.
+ * @ingroup server_group
+ */
+GRASSROOTS_SERVICE_MANAGER_API const char *GetJobLoggingURI (void);
+
+
 
 #ifdef __cplusplus
 }

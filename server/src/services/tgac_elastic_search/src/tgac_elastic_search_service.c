@@ -218,9 +218,9 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 
 	if (param_set_p)
 		{
+			Parameter *param_p;
+			bool success_flag = true;
 			SharedType def;
-			ParameterMultiOptionArray *options_p = NULL;
-			SharedType values [SF_NUM_FIELDS];
 			uint32 i;
 			const char *descriptions_pp [SF_NUM_FIELDS] =
 				{
@@ -231,28 +231,31 @@ static ParameterSet *GetElasticSearchRestServiceParameters (Service *service_p, 
 					"Study Title"
 				};
 
-			for (i = 0; i < SF_NUM_FIELDS; ++ i)
+
+			def.st_string_value_s = (char *) (*s_field_names_pp);
+
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, TES_SEARCH_FIELD.npt_type, TES_SEARCH_FIELD.npt_name_s, NULL, "The field to search", def, PL_ALL)) != NULL)
 				{
-					values [i].st_string_value_s = (char *) (* (s_field_names_pp + i));
-				}
+					for (i = 0; i < SF_NUM_FIELDS; ++ i)
+						{
+							def.st_string_value_s = (char *) (* (s_field_names_pp + i));
 
-			options_p = AllocateParameterMultiOptionArray (SF_NUM_FIELDS, descriptions_pp, values, PT_STRING, true);
+							if (!CreateAndAddParameterOptionToParameter (param_p, def, * (descriptions_pp + i)))
+								{
+									i = SF_NUM_FIELDS;
+									success_flag = false;
+								}
+						}
 
-			if (options_p)
-				{
-					def.st_string_value_s = values [0].st_string_value_s;
-
-					if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, TES_SEARCH_FIELD.npt_type, false, TES_SEARCH_FIELD.npt_name_s, NULL, "The field to search", options_p, def, NULL, NULL, PL_ALL, NULL))
+					if (success_flag)
 						{
 							def.st_string_value_s = "";
 
-							if (CreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, TES_SEARCH_TERM.npt_type, false, TES_SEARCH_TERM.npt_name_s, NULL, "The term to search for in the given field", NULL, def, NULL, NULL, PL_ALL, NULL))
+							if (EasyCreateAndAddParameterToParameterSet (service_p -> se_data_p, param_set_p, NULL, TES_SEARCH_TERM.npt_type, TES_SEARCH_TERM.npt_name_s, NULL, "The term to search for in the given field", def, PL_ALL))
 								{
 									return param_set_p;
 								}
 						}
-
-					FreeParameterMultiOptionArray (options_p);
 				}
 
 			FreeParameterSet (param_set_p);

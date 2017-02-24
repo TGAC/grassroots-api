@@ -36,7 +36,8 @@ INCLUDES = \
 	-I$(DIR_GRASSROOTS_PARAMS_INC) \
 	-I$(DIR_JANSSON_INC) \
 	-I$(DIR_UUID_INC) \
-	-I$(DIR_BLAST_INC)
+	-I$(DIR_BLAST_INC) \
+	-I$(DIR_PCRE_INC)
 	
 SRCS 	= \
 	blast_service.c \
@@ -58,8 +59,7 @@ SRCS 	= \
 	external_blast_tool_factory.cpp \
 	system_blast_tool.cpp \
 	system_blast_tool_factory.cpp \
-	threaded_blast_tool.cpp \
-	temp_file.cpp
+	threaded_blast_tool.cpp 
 	
 
 CPPFLAGS += -DBLAST_LIBRARY_EXPORTS  -std=c++0x 

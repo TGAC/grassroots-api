@@ -78,6 +78,9 @@ typedef enum Operation {
 	 */
 	OP_GET_RESOURCE,
 
+
+	OP_SERVER_STATUS,
+
 	/** The number of available Operations. */
 	OP_NUM_OPERATIONS
 } Operation;

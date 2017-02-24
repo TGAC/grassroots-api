@@ -42,14 +42,14 @@
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_FILE BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("input_file", PT_FILE_TO_READ));
+BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_FILE BLAST_SERVICE_STRUCT_VAL ("input_file", PT_FILE_TO_READ);
 
 /**
  * The Blast Service NamedParameterType for specifying previous job UUIDs.
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("job_id", PT_STRING));
+BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_STRUCT_VAL ("job_id", PT_STRING);
 
 /*
  * These become the -query_loc parameter with the value "<subrange_from>-<subrange_to>"
@@ -59,14 +59,14 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_JOB_ID BLAST_SERVICE_VAL (SET_NAMED_P
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_FROM BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("subrange_from", PT_UNSIGNED_INT));
+BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_FROM BLAST_SERVICE_STRUCT_VAL ("subrange_from", PT_UNSIGNED_INT);
 
 /**
  * The Blast Service NamedParameterType for specifying the end of a subrange.
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_TO BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("subrange_to", PT_UNSIGNED_INT));
+BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_TO BLAST_SERVICE_STRUCT_VAL ("subrange_to", PT_UNSIGNED_INT);
 
 /* General Blast params */
 /**
@@ -74,21 +74,21 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_SUBRANGE_TO BLAST_SERVICE_VAL (SET_NA
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_TASK BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("task", PT_STRING));
+BLAST_SERVICE_PREFIX NamedParameterType BS_TASK BLAST_SERVICE_STRUCT_VAL ("task", PT_STRING);
 
 /**
  * The Blast Service NamedParameterType for specifying the input query.
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_QUERY BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("query", PT_LARGE_STRING));
+BLAST_SERVICE_PREFIX NamedParameterType BS_INPUT_QUERY BLAST_SERVICE_STRUCT_VAL ("query", PT_LARGE_STRING);
 
 /**
  * The Blast Service NamedParameterType for specifying the maximum number of sequences to return.
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_MAX_SEQUENCES BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("max_target_seqs", PT_UNSIGNED_INT));
+BLAST_SERVICE_PREFIX NamedParameterType BS_MAX_SEQUENCES BLAST_SERVICE_STRUCT_VAL ("max_target_seqs", PT_UNSIGNED_INT);
 
 
 /**
@@ -96,7 +96,7 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_MAX_SEQUENCES BLAST_SERVICE_VAL (SET_
  *
  * @ingroup blast_service
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_EXPECT_THRESHOLD BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("evalue", PT_UNSIGNED_REAL));
+BLAST_SERVICE_PREFIX NamedParameterType BS_EXPECT_THRESHOLD BLAST_SERVICE_STRUCT_VAL ("evalue", PT_UNSIGNED_REAL);
 
 /**
  * The Blast Service NamedParameterType for specifying the output format to use.
@@ -104,7 +104,7 @@ BLAST_SERVICE_PREFIX NamedParameterType BS_EXPECT_THRESHOLD BLAST_SERVICE_VAL (S
  * @ingroup blast_service
  * @see BlastOutputFormat
  */
-BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_VAL (SET_NAMED_PARAMETER_TYPE_TAGS ("outfmt", PT_STRING));
+BLAST_SERVICE_PREFIX NamedParameterType BS_OUTPUT_FORMAT BLAST_SERVICE_STRUCT_VAL ("outfmt", PT_STRING);
 
 
 /**

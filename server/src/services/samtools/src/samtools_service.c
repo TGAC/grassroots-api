@@ -16,11 +16,16 @@
 #include <string.h>
 #include <time.h>
 
+#define ALLOCATE_SAMTOOLS_TAGS (1)
 #include "samtools_service.h"
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "jobs_manager.h"
 #include "byte_buffer.h"
+#include "paired_samtools_service.h"
+#include "grassroots_config.h"
+#include "provider.h"
+#include "audit.h"
 
 #include "htslib/faidx.h"
 
@@ -54,8 +59,6 @@ static const char * const FASTA_FILENAME_S = "Fasta";
 
 
 
-static NamedParameterType SS_INPUT_FILENAME = { "Index filename", PT_STRING };
-static NamedParameterType SS_BLASTDB_FILENAME = { "Blast database", PT_STRING };
 static NamedParameterType SS_SCAFFOLD = { "Scaffold", PT_STRING };
 static NamedParameterType SS_SCAFFOLD_LINE_BREAK = { "Scaffold line break index", PT_SIGNED_INT };
 
@@ -89,6 +92,10 @@ static bool GetScaffoldData (const char * const filename_s, const char * const s
 
 static bool GetSamToolsServiceConfig (SamToolsServiceData *data_p);
 
+
+static IndexData *GetSelectedIndexData (const SamToolsServiceData * const data_p, const ParameterSet *params_p);
+
+static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p);
 
 
 /*
@@ -269,46 +276,23 @@ static ParameterSet *GetSamToolsServiceParameters (Service *service_p, Resource 
 		{
 			SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
 			Parameter *param_p = NULL;
-			SharedType def;
-			const char *filename_s = NULL;
 
-			if (data_p -> stsd_index_data_p)
+			if ((param_p = SetUpIndexesParamater (data_p, param_set_p, NULL)) != NULL)
 				{
-					if (data_p -> stsd_index_data_p -> id_fasta_filename_s)
-						{
-							filename_s = data_p -> stsd_index_data_p -> id_fasta_filename_s;
-						}
-					else
-						{
-							filename_s = data_p -> stsd_index_data_p -> id_blast_db_name_s;
-						}
-				}
+					SharedType def;
 
-
-			if (filename_s)
-				{
 					def.st_string_value_s = NULL;
 
-					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_INPUT_FILENAME.npt_type, false, SS_INPUT_FILENAME.npt_name_s, "Fasta Index filename", "Fasta Index filename", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+					if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_SCAFFOLD.npt_type, false, SS_SCAFFOLD.npt_name_s, "Scaffold name", "The name of the scaffold to find", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
 						{
-							def.st_string_value_s = NULL;
+							def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
 
-							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_BLASTDB_FILENAME.npt_type, false, SS_BLASTDB_FILENAME.npt_name_s, "Blast database", "The path to the Blast database", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
+							if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_SCAFFOLD_LINE_BREAK.npt_type, false, SS_SCAFFOLD_LINE_BREAK.npt_name_s, "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
 								{
-									def.st_string_value_s = NULL;
-
-									if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_SCAFFOLD.npt_type, false, SS_SCAFFOLD.npt_name_s, "Scaffold name", "The name of the scaffold to find", NULL, def, NULL, NULL, PL_ALL, NULL)) != NULL)
-										{
-											def.st_long_value = ST_DEFAULT_LINE_BREAK_INDEX;
-
-											if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> stsd_base_data), param_set_p, NULL, SS_SCAFFOLD_LINE_BREAK.npt_type, false, SS_SCAFFOLD_LINE_BREAK.npt_name_s, "Max Line Length", "If this is greater than 0, then add a newline after each block of this many letters", NULL, def, NULL, NULL, PL_ADVANCED, NULL)) != NULL)
-												{
-													return param_set_p;
-												}
-										}
+									return param_set_p;
 								}
 						}
-				}		/* if (filename_s) */
+				}
 
 			FreeParameterSet (param_set_p);
 		}		/* if (param_set_p) */
@@ -323,10 +307,13 @@ static void ReleaseSamToolsServiceParameters (Service * UNUSED_PARAM (service_p)
 }
 
 
-static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable * UNUSED_PARAM (providers_p))
+
+
+
+static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *param_set_p, UserDetails * UNUSED_PARAM (user_p), ProvidersStateTable *providers_p)
 {
 	SamToolsServiceData *data_p = (SamToolsServiceData *) (service_p -> se_data_p);
-	service_p -> se_jobs_p = AllocateSimpleServiceJobSet (service_p, NULL, "Samtools service job");
+	service_p -> se_jobs_p = AllocateServiceJobSet (service_p);
 
 	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
 	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "SamToolsService :: RunSamToolsService - enter");
@@ -334,111 +321,10 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 	if (service_p -> se_jobs_p)
 		{
-			ServiceJob *job_p = GetServiceJobFromServiceJobSet (service_p -> se_jobs_p, 0);
 			Parameter *param_p = NULL;
-			const char *filename_s = NULL;
+			IndexData *selected_index_data_p = GetSelectedIndexData (data_p, param_set_p);
 
-			job_p -> sj_status = OS_FAILED_TO_START;
-
-			/* Try to get the fasta filename */
-			param_p = GetParameterFromParameterSetByName (param_set_p, SS_INPUT_FILENAME.npt_name_s);
-			if (param_p)
-				{
-					if (!IsStringEmpty (param_p -> pa_current_value.st_string_value_s))
-						{
-							filename_s = param_p -> pa_current_value.st_string_value_s;
-						}
-					else
-						{
-							PrintLog (STM_LEVEL_WARNING, __FILE__, __LINE__, "param \"%s\" has an empty value", param_p -> pa_name_s);
-						}
-				}
-			else
-				{
-					#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-					PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Could not find \"%s\" parameter, trying \"%s\" instead", SS_INPUT_FILENAME.npt_name_s, SS_BLASTDB_FILENAME.npt_name_s);
-					#endif
-				}
-
-			/* If the fasta filename is empty, try and get the blastdb name */
-			if (!filename_s)
-				{
-					param_p = GetParameterFromParameterSetByName (param_set_p, SS_BLASTDB_FILENAME.npt_name_s);
-
-					if (param_p)
-						{
-							const char *blast_db_s = param_p -> pa_current_value.st_string_value_s;
-
-							if (!IsStringEmpty (blast_db_s))
-								{
-									#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-									PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Looking to match database \"%s\"", blast_db_s);
-									#endif
-
-									if (data_p -> stsd_index_data_p)
-										{
-											IndexData *index_data_p = data_p -> stsd_index_data_p;
-											size_t i = data_p ->  stsd_index_data_size;
-
-											#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Checking against " SIZET_FMT " databases", i);
-											#endif
-
-											while (i > 0)
-												{
-													if (index_data_p -> id_blast_db_name_s)
-														{
-															#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Checking against database \"%s\"", index_data_p -> id_blast_db_name_s);
-															#endif
-
-															if (strcmp (index_data_p -> id_blast_db_name_s, blast_db_s) == 0)
-																{
-																	filename_s = index_data_p -> id_fasta_filename_s;
-
-																	#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-																	PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "matched \"%s\" and using filename \"%s\"", blast_db_s, filename_s);
-																	#endif
-																	i = 0;
-																}
-															else
-																{
-																	++ index_data_p;
-																	-- i;
-																}
-														}
-													else
-														{
-															++ index_data_p;
-															-- i;
-														}
-												}
-
-											#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
-											PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Finished checking against databases, filename_s = \"%s\"", filename_s ? filename_s : "NULL");
-											#endif
-
-										}		/* if (data_p -> stsd_index_data_p) */
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "No databases available");
-										}
-
-								}		/* if (!IsStringEmpty (blast_db_s)) */
-							else
-								{
-									PrintLog (STM_LEVEL_WARNING, __FILE__, __LINE__, "param \"%s\" has an empty value", param_p -> pa_name_s);
-								}
-
-						}		/* if (param_p) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Could not find param \"%s\"", BLASTDB_S);
-						}
-
-				}		/* if (!filename_s) */
-
-			if (filename_s)
+			if (selected_index_data_p)
 				{
 					param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLD.npt_name_s);
 
@@ -452,81 +338,100 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 
 									if (buffer_p)
 										{
-											int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
-											param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLD_LINE_BREAK.npt_name_s);
+											ServiceJob *job_p = CreateAndAddServiceJobToServiceJobSet (service_p -> se_jobs_p, scaffold_s, selected_index_data_p -> id_blast_db_name_s, NULL, NULL);
 
-											if (param_p)
+											if (job_p)
 												{
-													break_index = param_p -> pa_current_value.st_long_value;
-												}
+													int break_index = ST_DEFAULT_LINE_BREAK_INDEX;
 
-											job_p -> sj_status = OS_FAILED;
+													param_p = GetParameterFromParameterSetByName (param_set_p, SS_SCAFFOLD_LINE_BREAK.npt_name_s);
 
-											// temporarily don't pass break index
-											break_index = 0;
-											if (GetScaffoldData (filename_s, scaffold_s, break_index, buffer_p))
-												{
-													json_t *result_p = NULL;
-													const char *sequence_s = GetByteBufferData (buffer_p);
-
-													if (sequence_s)
+													if (param_p)
 														{
-															json_t *sequence_p = json_string (sequence_s);
+															break_index = param_p -> pa_current_value.st_long_value;
+														}
 
-															if (sequence_p)
+
+													LogParameterSet (param_set_p, job_p);
+
+													job_p -> sj_status = OS_STARTED;
+													LogServiceJob (job_p);
+
+
+													/* Assume failure */
+													job_p -> sj_status = OS_FAILED;
+
+													// temporarily don't pass break index
+													break_index = 0;
+													if (GetScaffoldData (selected_index_data_p -> id_fasta_filename_s, scaffold_s, break_index, buffer_p))
+														{
+															json_t *result_p = NULL;
+															const char *sequence_s = GetByteBufferData (buffer_p);
+
+															if (sequence_s)
 																{
-																	result_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, scaffold_s, sequence_p);
+																	json_t *sequence_p = json_string (sequence_s);
 
-																	if (!result_p)
+																	if (sequence_p)
 																		{
-																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get json result for %s", sequence_s);
+																			result_p = GetResourceAsJSONByParts (PROTOCOL_INLINE_S, NULL, scaffold_s, sequence_p);
+
+																			if (!result_p)
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get json result for %s", sequence_s);
+																				}
+
+																			json_decref (sequence_p);
 																		}
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json sequence from %s", sequence_s);
+																		}
+																}		/* if (sequence_s) */
+															else
+																{
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get sequence from buffer for %s from %s", scaffold_s, selected_index_data_p -> id_fasta_filename_s);
+																}
 
-																	json_decref (sequence_p);
+
+															if (result_p)
+																{
+																	if (AddResultToServiceJob (job_p, result_p))
+																		{
+																			job_p -> sj_status = OS_SUCCEEDED;
+																		}
+																	else
+																		{
+																			char uuid_s [UUID_STRING_BUFFER_SIZE];
+
+																			json_decref (result_p);
+																			AddErrorToServiceJob (job_p, ERROR_S, "Failed to add result");
+
+																			ConvertUUIDToString (job_p -> sj_id, uuid_s);
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add result for %s", uuid_s);
+																		}
 																}
 															else
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create json sequence from %s", sequence_s);
-																}
-														}		/* if (sequence_s) */
-													else
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get sequence from buffer for %s from %s", scaffold_s, filename_s);
-														}
-
-
-													if (result_p)
-														{
-															if (AddResultToServiceJob (job_p, result_p))
-																{
-																	job_p -> sj_status = OS_SUCCEEDED;
-																}
-															else
-																{
-																	char uuid_s [UUID_STRING_BUFFER_SIZE];
-
-																	json_decref (result_p);
-																	AddErrorToServiceJob (job_p, ERROR_S, "Failed to add result");
-
-																	ConvertUUIDToString (job_p -> sj_id, uuid_s);
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add result for %s", uuid_s);
+																	if (!AddErrorToServiceJob (job_p, "Create sequence error", scaffold_s))
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, selected_index_data_p -> id_fasta_filename_s);
+																		}
 																}
 														}
 													else
 														{
-															if (!AddErrorToServiceJob (job_p, "Create sequence error", scaffold_s))
+															if (!AddErrorToServiceJob (job_p, "Get scaffold error", "Failed to get scaffold data"))
 																{
-																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to create job result sequence data for scaffold name %s from %s", scaffold_s, filename_s);
+																	PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add error to job");
 																}
 														}
-												}
-											else
-												{
-													if (!AddErrorToServiceJob (job_p, "Get scaffold error", "Failed to get scaffold data"))
-														{
-															PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add error to job");
-														}
-												}
+
+
+													LogServiceJob (job_p);
+
+												}		/* if (job_p) */
+
 
 											FreeByteBuffer (buffer_p);
 
@@ -548,10 +453,16 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get %s parameter", SS_SCAFFOLD.npt_name_s);
 						}
 
-				}		/* if (filename_s) */
+				}		/* if (selected_index_data_p) */
 			else
 				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
+					/* The requested index data may be on a paired service so try those */
+					int32 num_jobs_ran = RunPairedServices (service_p, param_set_p, providers_p, SaveRemoteSamtoolsJobDetails);
+
+					if (num_jobs_ran == 0)
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get input filename");
+						}
 				}
 
 		}		/* if (service_p -> se_jobs_p) */
@@ -704,3 +615,132 @@ static  ParameterSet *IsFileForSamToolsService (Service * UNUSED_PARAM (service_
 	return NULL;
 }
 
+
+static IndexData *GetSelectedIndexData (const SamToolsServiceData * const data_p, const ParameterSet *params_p)
+{
+	SharedType def;
+
+	if (GetParameterValueFromParameterSet (params_p, SS_INDEX.npt_name_s, &def, true))
+		{
+			IndexData *index_data_p = data_p -> stsd_index_data_p;
+			size_t i = data_p ->  stsd_index_data_size;
+			const char *value_s = def.st_string_value_s;
+
+			while (i > 0)
+				{
+					if (index_data_p -> id_fasta_filename_s)
+						{
+							#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Checking for \"%s\" against fasta file \"%s\"", value_s, index_data_p -> id_fasta_filename_s);
+							#endif
+
+							if (strcmp (index_data_p -> id_fasta_filename_s, value_s) == 0)
+								{
+									return index_data_p;
+								}
+						}
+
+					if (index_data_p -> id_blast_db_name_s)
+						{
+							#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Checking for \"%s\" against blast database \"%s\"", value_s, index_data_p -> id_blast_db_name_s);
+							#endif
+
+							if (strcmp (index_data_p -> id_blast_db_name_s, value_s) == 0)
+								{
+									return index_data_p;
+								}
+						}
+
+					-- i;
+					++ index_data_p;
+				}
+		}
+	else
+		{
+			#if SAMTOOLS_SERVICE_DEBUG >= STM_LEVEL_FINER
+			PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Could not find parameter for \"%s\"", SS_INDEX.npt_name_s);
+			#endif
+		}
+
+	return NULL;
+}
+
+
+
+
+static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data_p, ParameterSet *param_set_p, ParameterGroup *group_p)
+{
+	Parameter *param_p = NULL;
+	const size_t num_dbs = service_data_p ->  stsd_index_data_size;
+
+	if (num_dbs > 0)
+		{
+			IndexData *index_data_p = service_data_p -> stsd_index_data_p;
+			SharedType def;
+
+			def.st_string_value_s = (char *) (index_data_p -> id_blast_db_name_s);
+
+			if ((param_p = EasyCreateAndAddParameterToParameterSet (& (service_data_p -> stsd_base_data), param_set_p, group_p, SS_INDEX.npt_type, SS_INDEX.npt_name_s, "Indexes", "The available databases", def, PL_ALL)) != NULL)
+				{
+					bool success_flag = true;
+					size_t i;
+					char *provider_s = NULL;
+
+					/* have we got any paired services? */
+					if (service_data_p -> stsd_base_data.sd_service_p -> se_paired_services.ll_size > 0)
+						{
+							json_t *provider_p = GetGlobalConfigValue (SERVER_PROVIDER_S);
+
+							if (provider_p)
+								{
+									provider_s = GetProviderName (provider_p);
+								}
+						}
+
+					for (i = 0 ; i < num_dbs; ++ i, ++ index_data_p)
+						{
+							def.st_string_value_s = (char *) (index_data_p -> id_fasta_filename_s);
+
+							if (provider_s)
+								{
+									char *db_s = CreateDatabaseName (index_data_p -> id_blast_db_name_s, provider_s);
+
+									if (db_s)
+										{
+											success_flag = CreateAndAddParameterOptionToParameter (param_p, def, db_s);
+											FreeCopiedString (db_s);
+										}
+									else
+										{
+											success_flag = CreateAndAddParameterOptionToParameter (param_p, def, index_data_p -> id_blast_db_name_s);
+										}
+								}
+							else
+								{
+									success_flag = CreateAndAddParameterOptionToParameter (param_p, def, index_data_p -> id_blast_db_name_s);
+								}
+
+							if (!success_flag)
+								{
+									i = num_dbs;
+								}
+						}
+
+					if (success_flag)
+						{
+							AddPairedIndexParameters (service_data_p -> stsd_base_data.sd_service_p, param_p, param_set_p);
+						}
+
+					if (!success_flag)
+						{
+							FreeParameter (param_p);
+							param_p = NULL;
+						}
+
+				}
+
+		}		/* if (service_data_p ->  stsd_index_data_size > 0) */
+
+	return param_p;
+}

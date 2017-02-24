@@ -59,8 +59,6 @@ static const char *S_PARAM_TYPE_NAMES_SS [PT_NUM_TYPES] =
 
 
 
-static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options);
-
 static bool AddParameterNameToJSON (const char *name_s, json_t *root_p, const SchemaVersion * const sv_p);
 
 static bool AddParameterDisplayNameToJSON (const Parameter * const param_p, json_t *root_p, const SchemaVersion * const sv_p);
@@ -178,7 +176,7 @@ static bool GetParameterTypeFromSeparateObjects (const json_t * const json_p, Pa
 /******************************************************/
 
 
-Parameter *AllocateParameter (const ServiceData *service_data_p, ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, ParameterMultiOptionArray *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
+Parameter *AllocateParameter (const ServiceData *service_data_p, ParameterType type, bool multi_valued_flag, const char * const name_s, const char * const display_name_s, const char * const description_s, LinkedList *options_p, SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, ParameterLevel level, const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
 	char *new_name_s = CopyToNewString (name_s, 0, true);
 
@@ -231,8 +229,8 @@ Parameter *AllocateParameter (const ServiceData *service_data_p, ParameterType t
 
 													param_p -> pa_remote_parameter_details_p = remote_params_p;
 
-													memset (& (param_p -> pa_current_value), 0, sizeof (SharedType));
-													memset (& (param_p -> pa_default), 0, sizeof (SharedType));
+													InitSharedType (& (param_p -> pa_current_value));
+													InitSharedType (& (param_p -> pa_default));
 
 													if (multi_valued_flag)
 														{
@@ -325,7 +323,7 @@ void FreeParameter (Parameter *param_p)
 
 	if (param_p -> pa_options_p)
 		{
-			FreeParameterMultiOptionArray (param_p -> pa_options_p);
+			FreeLinkedList (param_p -> pa_options_p);
 		}
 
 	if (param_p -> pa_bounds_p)
@@ -339,6 +337,7 @@ void FreeParameter (Parameter *param_p)
 	FreeHashTable (param_p -> pa_store_p);
 
 	FreeLinkedList (param_p -> pa_remote_parameter_details_p);
+
 
 	FreeMemory (param_p);
 }
@@ -449,86 +448,43 @@ void FreeParameterBounds (ParameterBounds *bounds_p, const ParameterType pt)
 }
 
 
-static ParameterMultiOptionArray *AllocateEmptyParameterMultiOptionArray (const uint32 num_options)
+
+
+LinkedList *GetMultiOptions (Parameter *param_p)
 {
-	ParameterMultiOption *options_p = (ParameterMultiOption *) AllocMemoryArray (num_options, sizeof (ParameterMultiOption));
+	if (! (param_p -> pa_options_p))
+		{
+			param_p -> pa_options_p = AllocateLinkedList (FreeParameterOptionNode);
+
+			if (! (param_p -> pa_options_p))
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate options list for parameter \"%s\"", param_p -> pa_name_s);
+				}
+		}
+
+	return (param_p -> pa_options_p);
+}
+
+
+
+bool CreateAndAddParameterOptionToParameter (Parameter *param_p, SharedType value, const char * const description_s)
+{
+	bool success_flag = false;
+	LinkedList *options_p = GetMultiOptions (param_p);
 
 	if (options_p)
 		{
-			ParameterMultiOptionArray *array_p = (ParameterMultiOptionArray *) AllocMemory (sizeof (ParameterMultiOptionArray));
-
-			if (array_p)
-				{
-					array_p -> pmoa_num_options = num_options;
-					array_p -> pmoa_options_p = options_p;
-
-					return array_p;
-				}		/* if (array_p) */
-
-			FreeMemory (options_p);
+			success_flag = CreateAndAddParameterOption (options_p, value, description_s, param_p -> pa_type);
 		}		/* if (options_p) */
-
-	return NULL;
-}
-
-
-ParameterMultiOptionArray *AllocateParameterMultiOptionArray (const uint32 num_options, const char ** const descriptions_pp, SharedType *values_p, ParameterType pt, bool copy_values_flag)
-{
-	ParameterMultiOptionArray *array_p = AllocateEmptyParameterMultiOptionArray (num_options);
-
-	if (array_p)
+	else
 		{
-			uint32 i;
-			ParameterMultiOption *option_p = array_p -> pmoa_options_p;
-			const char **description_pp = descriptions_pp;
-			SharedType *value_p = values_p;
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to get options list for parameter \"%s\"", param_p -> pa_name_s);
+		}
 
-			array_p -> pmoa_values_type = pt;
 
-			for (i = 0; i < num_options; ++ i, ++ option_p, ++ value_p)
-				{
-					const char *description_s = NULL;
-
-					if (description_pp)
-						{
-							description_s = *description_pp;
-							++ description_pp;
-						}
-
-					if (!SetParameterMultiOption (array_p, i, description_s, *value_p, copy_values_flag))
-						{
-							FreeParameterMultiOptionArray (array_p);
-							array_p = NULL;
-							i = num_options;
-						}		/* if (!SetParameterMultiOption (array_p, i, *description_pp, *value_pp)) */
-
-				}		/* for ( ; i > 0; -- i, ++ option_p) */
-
-			return array_p;
-		}		/* if (array_p) */
-
-	return NULL;
+	return success_flag;
 }
 
-
-void FreeParameterMultiOptionArray (ParameterMultiOptionArray *options_p)
-{
-	uint32 i = options_p -> pmoa_num_options;
-	ParameterMultiOption *option_p = options_p -> pmoa_options_p;
-
-	for ( ; i > 0; -- i, ++ option_p)
-		{
-			if (option_p -> pmo_description_s)
-				{
-					FreeCopiedString (option_p -> pmo_description_s);
-				}
-
-			ClearSharedType (& (option_p -> pmo_value), options_p -> pmoa_values_type);
-		}		/* for ( ; i > 0; -- i, ++ option_p) */
-
-	FreeMemory (options_p -> pmoa_options_p);
-	FreeMemory (options_p);
-}
 
 
 bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_p)
@@ -560,50 +516,6 @@ bool CopyRemoteParameterDetails (const Parameter * const src_p, Parameter *dest_
 
 	return success_flag;
 }
-
-
-bool SetParameterMultiOption (ParameterMultiOptionArray *options_p, const uint32 i, const char * const description_s, SharedType value, bool copy_value_flag)
-{
-	ParameterMultiOption *option_p = (options_p -> pmoa_options_p) + i;
-	bool success_flag = true;
-
-	if (description_s)
-		{
-			char *new_description_s = CopyToNewString (description_s, 0, true);
-
-			if (new_description_s)
-				{
-					if (option_p -> pmo_description_s)
-						{
-							FreeCopiedString (option_p -> pmo_description_s);
-						}
-
-					option_p -> pmo_description_s = new_description_s;
-				}
-			else
-				{
-					success_flag = false;
-				}
-		}
-
-	if (success_flag)
-		{
-			if (copy_value_flag)
-				{
-					if (!CopySharedType (value, & (option_p -> pmo_value), options_p -> pmoa_values_type))
-						{
-							success_flag = false;
-						}
-				}
-			else
-				{
-					option_p -> pmo_value = value;
-				}
-		}
-
-	return success_flag;
-}
-
 
 
 const char *CheckForSignedReal (const Parameter * const UNUSED_PARAM (parameter_p), const void *value_p)
@@ -1825,24 +1737,24 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 			if (json_options_p)
 				{
-					uint32 i = param_p -> pa_options_p -> pmoa_num_options;
-					const ParameterMultiOption *option_p = param_p -> pa_options_p -> pmoa_options_p;
+					ParameterOptionNode *node_p = (ParameterOptionNode *) (param_p -> pa_options_p -> ll_head_p);
 
-					for ( ; i > 0; -- i, ++ option_p)
+					while (node_p)
 						{
+							ParameterOption *option_p = node_p -> pon_option_p;
 							json_t *value_p = NULL;
 
 							switch (param_p -> pa_type)
 								{
 									case PT_BOOLEAN:
-										value_p = (option_p -> pmo_value.st_boolean_value) ? json_true () : json_false ();
+										value_p = (option_p -> po_value.st_boolean_value) ? json_true () : json_false ();
 										break;
 
 									case PT_CHAR:
 										{
 											char buffer_s [2];
 
-											*buffer_s = option_p -> pmo_value.st_char_value;
+											*buffer_s = option_p -> po_value.st_char_value;
 											* (buffer_s + 1) = '\0';
 
 											value_p = json_string (buffer_s);
@@ -1851,16 +1763,16 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 
 									case PT_SIGNED_INT:
 									case PT_NEGATIVE_INT:
-										value_p = json_integer (option_p -> pmo_value.st_long_value);
+										value_p = json_integer (option_p -> po_value.st_long_value);
 										break;
 
 									case PT_UNSIGNED_INT:
-										value_p = json_integer (option_p -> pmo_value.st_ulong_value);
+										value_p = json_integer (option_p -> po_value.st_ulong_value);
 										break;
 
 									case PT_SIGNED_REAL:
 									case PT_UNSIGNED_REAL:
-										value_p = json_real (option_p -> pmo_value.st_data_value);
+										value_p = json_real (option_p -> po_value.st_data_value);
 										break;
 
 									case PT_TABLE:
@@ -1868,7 +1780,7 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 									case PT_LARGE_STRING:
 									case PT_PASSWORD:
 									case PT_KEYWORD:
-										value_p = json_string (option_p -> pmo_value.st_string_value_s);
+										value_p = json_string (option_p -> po_value.st_string_value_s);
 										break;
 
 									case PT_FILE_TO_WRITE:
@@ -1897,9 +1809,9 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 										{
 											bool res_flag = true;
 
-											if (option_p -> pmo_description_s)
+											if (option_p -> po_description_s)
 												{
-													res_flag = (json_object_set_new (item_p, SHARED_TYPE_DESCRIPTION_S, json_string (option_p -> pmo_description_s)) == 0);
+													res_flag = (json_object_set_new (item_p, SHARED_TYPE_DESCRIPTION_S, json_string (option_p -> po_description_s)) == 0);
 												}
 
 											if (res_flag)
@@ -1917,7 +1829,9 @@ static bool AddParameterOptionsToJSON (const Parameter * const param_p, json_t *
 												}													
 										}
 								}
-						}
+
+							node_p = (ParameterOptionNode *) (node_p -> pon_node.ln_next_p);
+						}		/* while (node_p) */
 
 					if (success_flag)
 						{
@@ -2104,7 +2018,7 @@ static bool GetParameterTypeFromJSON (const json_t * const json_p, ParameterType
 }
 
 
-static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterMultiOptionArray **options_pp, const ParameterType pt)
+static bool GetParameterOptionsFromJSON (const json_t * const json_p, LinkedList **options_pp, const ParameterType pt)
 {
 	bool success_flag = true;
 
@@ -2117,69 +2031,61 @@ static bool GetParameterOptionsFromJSON (const json_t * const json_p, ParameterM
 			if (json_is_array (options_json_p))
 				{
 					const size_t num_options = json_array_size (options_json_p);
-					
-					const char **descriptions_ss = (const char **) AllocMemoryArray (num_options, sizeof (const char *));
-					
-					if (descriptions_ss)
-						{
-							SharedType *values_p = (SharedType *) AllocMemoryArray (num_options, sizeof (SharedType));
-							
-							if (values_p)
-								{
-									/* fill in the values */
-									const char **description_ss = descriptions_ss;
-									SharedType *value_p = values_p;
-									size_t i = 0;
-									
-									success_flag = true;
-															
-									while (success_flag && (i < num_options))
-										{
-											json_t *json_value_p = json_array_get (options_json_p, i);
-											
-											if (json_value_p)
-												{
-													success_flag = GetValueFromJSON (json_value_p, SHARED_TYPE_VALUE_S, pt, value_p);
+					size_t i = 0;
 
-													if (success_flag)
-														{
-															json_t *desc_p = json_object_get (json_value_p, SHARED_TYPE_DESCRIPTION_S);
-															
-															if (desc_p && json_is_string (desc_p))
-																{
-																	*description_ss = json_string_value (desc_p);
-																}
-														}
-												}
-																						
-											if (success_flag)
-												{
-													++ i;
-													++ description_ss;
-													++ value_p;
-												}
-												
-										}		/* while (success_flag && (i > 0)) */
-									
-									if (success_flag)
+					if (num_options > 0)
+						{
+							LinkedList *options_p = *options_pp;
+
+							if (!options_p)
+								{
+									options_p = CreateProgramOptionsList ();
+
+									if (!options_p)
 										{
-											ParameterMultiOptionArray *options_array_p = AllocateParameterMultiOptionArray (num_options, descriptions_ss, values_p, pt, false);
+											return false;
+										}
+									else
+										{
+											*options_pp = options_p;
+										}
+								}
+						}
+
+					success_flag = true;
+
+					while (success_flag && (i < num_options))
+						{
+							json_t *json_value_p = json_array_get (options_json_p, i);
+							
+							if (json_value_p)
+								{
+									SharedType def;
+
+									InitSharedType (&def);
+
+									if (GetValueFromJSON (json_value_p, SHARED_TYPE_VALUE_S, pt, &def))
+										{
+											const char *desc_s = GetJSONString (json_value_p, SHARED_TYPE_DESCRIPTION_S);
 											
-											if (options_array_p)
-												{
-													*options_pp = options_array_p;
-												}
-											else
+											if (!CreateAndAddParameterOption (*options_pp, def, desc_s, pt))
 												{
 													success_flag = false;
 												}
 										}
+									else
+										{
+											success_flag = false;
+										}
+								}
 
-									FreeMemory (values_p);
-								}		/* if (values_p) */
-							
-							FreeMemory (descriptions_ss);
-						}		/* if (descriptions_ss) */
+							if (success_flag)
+								{
+									++ i;
+								}
+
+						}		/* while (success_flag && (i < num_options)) */
+
 				}
 		}
 	
@@ -2442,6 +2348,14 @@ bool CopySharedType (const SharedType src, SharedType *dest_p, const ParameterTy
 }
 
 
+
+void InitSharedType (SharedType *st_p)
+{
+	memset (st_p, 0, sizeof (SharedType));
+}
+
+
+
 void ClearSharedType (SharedType *st_p, const ParameterType pt)
 {
 	switch (pt)
@@ -2484,7 +2398,7 @@ void ClearSharedType (SharedType *st_p, const ParameterType pt)
 				break;
 		}
 
-	memset (st_p, 0, sizeof (SharedType));
+	InitSharedType (st_p);
 }
 
 
@@ -2525,7 +2439,7 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p, const bool conc
 				{
 					SharedType current_value;
 
-					memset (&current_value, 0, sizeof (SharedType));
+					InitSharedType (&current_value);
 
 					if (GetValueFromJSON (root_p, PARAM_CURRENT_VALUE_S, pt, &current_value))
 						{
@@ -2536,12 +2450,12 @@ Parameter *CreateParameterFromJSON (const json_t * const root_p, const bool conc
 							const char *display_name_s = NULL;
 							bool multi_valued_flag = false;
 							SharedType def;
-							ParameterMultiOptionArray *options_p = NULL;
+							LinkedList *options_p = NULL;
 							ParameterBounds *bounds_p = NULL;
 							ParameterLevel level = PL_ALL;
 							bool success_flag = false;
 
-							memset (&def, 0, sizeof (SharedType));
+							InitSharedType (&def);
 
 							if (GetParameterLevelFromJSON (root_p, &level))
 								{

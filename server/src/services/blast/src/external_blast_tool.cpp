@@ -213,7 +213,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 	bool success_flag = false;
 	SharedType value;
 
-	memset (&value, 0, sizeof (SharedType));
+	InitSharedType (&value);
 
 	if (GetParameterValueFromParameterSet (params_p, BS_TASK.npt_name_s, &value, true))
 		{
@@ -234,7 +234,7 @@ bool ExternalBlastTool :: ParseParameters (ParameterSet *params_p, BlastAppParam
 													 * If we have a BlastFormatter then the output is always set to 11 which is ASN and
 													 * from that we can convert into any other format using a BlastFormatter tool
 													 */
-													memset (&value, 0, sizeof (SharedType));
+													InitSharedType (&value);
 
 													if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &value, true))
 														{

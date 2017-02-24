@@ -275,29 +275,35 @@ bool AddParametersToGetWebService (WebServiceData *data_p, ParameterSet *param_s
 bool AddMatchTypeParameter (WebServiceData *data_p, ParameterSet *param_set_p)
 {
 	bool success_flag = false;
-	ParameterMultiOptionArray *match_type_options_p = NULL;
-	SharedType match_types_p [MT_NUM_MATCH_TYPES];
-	uint32 i;
+	SharedType def;
+	Parameter *param_p = NULL;
 
-	for (i = 0; i < MT_NUM_MATCH_TYPES; ++ i)
+	def.st_string_value_s = (char *) (*S_MATCH_TYPE_VALUES_SS);
+
+
+	if ((param_p = EasyCreateAndAddParameterToParameterSet(& (data_p -> wsd_base_data), param_set_p, NULL, PT_STRING, "Query matching", NULL,
+		"How the query will be interpreted by the service.",
+		def, PL_INTERMEDIATE | PL_ADVANCED)) != NULL)
 		{
-			(* (match_types_p + i)).st_string_value_s = (char *) (* (S_MATCH_TYPE_VALUES_SS + i));
-		}
+			uint32 i;
 
-	match_type_options_p = AllocateParameterMultiOptionArray (MT_NUM_MATCH_TYPES, NULL, match_types_p, PT_STRING, true);
+			success_flag = true;
 
-	if (match_type_options_p)
-		{
-			SharedType def;
-			Parameter *param_p = NULL;
-
-			def.st_string_value_s = match_types_p [0].st_string_value_s;
-
-			if ((param_p = CreateAndAddParameterToParameterSet (& (data_p -> wsd_base_data), param_set_p, NULL, PT_STRING, false, "Query matching", NULL,
-			  "How the query will be interpreted by the service.",
-			  match_type_options_p, def, NULL, NULL, PL_INTERMEDIATE | PL_ADVANCED, NULL)) != NULL)
+			for (i = 0; i < MT_NUM_MATCH_TYPES; ++ i)
 				{
-					success_flag = true;
+					def.st_string_value_s = (char *) (* (S_MATCH_TYPE_VALUES_SS + i));
+
+					if (!CreateAndAddParameterOptionToParameter (param_p, def, NULL))
+						{
+							i = MT_NUM_MATCH_TYPES;
+							success_flag = false;
+						}
+				}
+
+			if (!success_flag)
+				{
+					DetachParameter (param_set_p, param_p);
+					FreeParameter (param_p);
 				}
 		}
 

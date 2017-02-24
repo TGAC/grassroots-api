@@ -283,6 +283,8 @@ extern "C"
 	 */
 	PREFIX const char *JOB_NAME_S VAL("name");
 
+	PREFIX const char *JOB_S VAL("job");
+
 	/**
 	 * The JSON key of the Service name for a ServiceJob.
 	 */

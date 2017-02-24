@@ -691,7 +691,7 @@ ServiceJob *CreateSerialisedServiceJobFromService (struct Service *service_p, co
 }
 
 
-json_t *CreateSerialisedJSONForServiceJobFromService (struct Service *service_p, const struct ServiceJob *service_job_p)
+json_t *CreateSerialisedJSONForServiceJobFromService (struct Service *service_p, struct ServiceJob *service_job_p)
 {
 	json_t *job_json_p = NULL;
 	const char *service_name_s = GetServiceName (service_p);

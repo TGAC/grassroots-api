@@ -27,7 +27,7 @@
 #include "blast_service_api.h"
 #include "blast_formatter.h"
 #include "blast_app_parameters.h"
-#include "blast_service_api.h"
+
 
 #include "parameter_set.h"
 #include "temp_file.hpp"
@@ -175,11 +175,11 @@ typedef struct BLAST_SERVICE_LOCAL BlastServiceData
 #ifdef ALLOCATE_BLAST_SERVICE_CONSTANTS
 	#define BLAST_SERVICE_PREFIX BLAST_SERVICE_LOCAL
 	#define BLAST_SERVICE_VAL(x)	= x
-	#define BLAST_SERVICE_STRUCT_INITIALIZER(x) x
+	#define BLAST_SERVICE_STRUCT_VAL(x,y)	= { x, y}
 #else
 	#define BLAST_SERVICE_PREFIX extern
 	#define BLAST_SERVICE_VAL(x)
-	 #define BLAST_SERVICE_STRUCT_INITIALIZER(x)
+	#define BLAST_SERVICE_STRUCT_VAL(x,y)
 #endif
 
 #endif 		/* #ifndef DOXYGEN_SHOULD_SKIP_THIS */
@@ -459,7 +459,7 @@ BLAST_SERVICE_LOCAL ServiceJob *BuildBlastServiceJob (struct Service *service_p,
  * @return The JSON fragment representing the BlastServiceJob or <code>NULL</code>
  * upon error.
  */
-BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, const ServiceJob *service_job_p);
+BLAST_SERVICE_LOCAL json_t *BuildBlastServiceJobJSON (Service *service_p, ServiceJob *service_job_p);
 
 
 /**

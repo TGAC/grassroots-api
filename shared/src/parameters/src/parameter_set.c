@@ -109,7 +109,7 @@ Parameter *EasyCreateAndAddParameterToParameterSet (const ServiceData *service_d
 
 
 Parameter *CreateAndAddParameterToParameterSet (const ServiceData *service_data_p, ParameterSet *params_p, ParameterGroup *group_p, ParameterType type, bool multi_valued_flag,
-	const char * const name_s, const char * const display_name_s, const char * const description_s, ParameterMultiOptionArray *options_p,
+	const char * const name_s, const char * const display_name_s, const char * const description_s, LinkedList *options_p,
 	SharedType default_value, SharedType *current_value_p, ParameterBounds *bounds_p, uint8 level,
 	const char *(*check_value_fn) (const Parameter * const parameter_p, const void *value_p))
 {
@@ -294,31 +294,6 @@ json_t *GetParameterSetSelectionAsJSON (const ParameterSet * const param_set_p, 
 }
 
 
-
-
-//uint32 GetCurrentParameterValues (const ParameterSet * const params_p, TagItem *tags_p)
-//{
-//	uint32 matched_count = 0;
-//	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
-//
-//	while (node_p)
-//		{
-//			Parameter *param_p = node_p -> pn_parameter_p;
-//			TagItem *tag_p = FindMatchingTag (tags_p, param_p -> pa_tag);
-//
-//			if (tag_p)
-//				{
-//					tag_p -> ti_value = param_p -> pa_current_value;
-//					++ matched_count;
-//				}
-//
-//			node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
-//		}		/* while (node_p) */
-//
-//	return matched_count;
-//}
-
-
 ParameterNode *GetParameterNodeFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s)
 {
 	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
@@ -338,8 +313,8 @@ ParameterNode *GetParameterNodeFromParameterSetByName (const ParameterSet * cons
 		}		/* while (node_p) */
 
 	return NULL;
-
 }
+
 
 Parameter *GetParameterFromParameterSetByName (const ParameterSet * const params_p, const char * const name_s)
 {
@@ -599,6 +574,29 @@ Parameter *DetachParameterByName (ParameterSet *params_p, const char * const nam
 
 	return param_p;
 }
+
+
+bool DetachParameter (ParameterSet *params_p, Parameter *param_p)
+{
+	ParameterNode *node_p = (ParameterNode *) (params_p -> ps_params_p -> ll_head_p);
+
+	while (node_p)
+		{
+			Parameter *param_p = node_p -> pn_parameter_p;
+
+			if (node_p -> pn_parameter_p == param_p)
+				{
+					return true;
+				}
+			else
+				{
+					node_p = (ParameterNode *) (node_p -> pn_node.ln_next_p);
+				}
+		}		/* while (node_p) */
+
+	return false;
+}
+
 
 
 ParameterGroup *GetParameterGroupFromParameterSetByGroupName (const ParameterSet * const params_p, const char * const name_s)

@@ -81,7 +81,7 @@ JobsManager *GetJobsManager (void)
 		{
 			s_manager_p = (ServicesListManager *) AllocMemory (sizeof (ServicesListManager));
 
-			InitJobsManager (& (s_manager_p -> slm_base_manager), AddServiceJobToServicesListManager, GetServiceJobFromServicesListManager, RemoveServiceJobFromServicesListManager);
+			InitJobsManager (& (s_manager_p -> slm_base_manager), AddServiceJobToServicesListManager, GetServiceJobFromServicesListManager, RemoveServiceJobFromServicesListManager, NULL);
 			InitLinkedList (& (s_manager_p -> slm_running_services));
 		}
 

@@ -27,6 +27,9 @@
 #include "temp_file.hpp"
 #include "string_utils.h"
 #include "streams.h"
+#include "byte_buffer.h"
+#include "filesystem_utils.h"
+
 
 
 #ifdef _DEBUG
@@ -282,9 +285,6 @@ TempFile :: ~TempFile ()
 				}
 		}
 }
-
-
-
 
 
 /* need a buffer where the final 6 chars are XXXXXX, see mkstemp */

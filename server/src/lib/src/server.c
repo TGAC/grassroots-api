@@ -103,8 +103,12 @@ static int32 AddPairedServices (Service *internal_service_p, UserDetails *user_p
 
 static int32 AddAllPairedServices (LinkedList *internal_services_p, UserDetails *user_p, ProvidersStateTable *providers_p);
 
+static json_t *GetServerStatus (const json_t * const req_p, UserDetails *user_p);
 
 static LinkedList *GetServicesList (const char * const services_path_s, UserDetails *user_p, Resource *resource_p, Handler *handler_p, ProvidersStateTable *providers_p);
+
+
+
 
 
 /***************************/
@@ -316,6 +320,11 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 									case OP_GET_RESOURCE:
 										res_p = GetRequestedResource (req_p, user_p);
 										break;
+
+									case OP_SERVER_STATUS:
+										res_p = GetServerStatus (req_p, user_p);
+										break;
+
 
 									default:
 										break;
@@ -1042,6 +1051,82 @@ static json_t *GetRequestedResource (const json_t * const req_p, UserDetails *us
 	return res_p;
 }
 
+
+static json_t *GetServerStatus (const json_t * const req_p, UserDetails *user_p)
+{
+	json_t *res_p = json_object ();
+
+	if (res_p)
+		{
+			JobsManager *jobs_manager_p = GetJobsManager ();
+
+			if (jobs_manager_p)
+				{
+					LinkedList *jobs_list_p = GetAllServiceJobsFromJobsManager (jobs_manager_p);
+
+					if (jobs_list_p)
+						{
+							if (jobs_list_p -> ll_size > 0)
+								{
+									json_t *jobs_array_p = json_array ();
+
+									if (jobs_array_p)
+										{
+											ServiceJobNode *job_node_p = (ServiceJobNode *) (jobs_list_p -> ll_head_p);
+											bool success_flag = true;
+
+											while ((success_flag == true) && (job_node_p != NULL))
+												{
+													json_t *job_json_p = GetServiceJobAsJSON (job_node_p -> sjn_job_p);
+
+													if (job_json_p)
+														{
+															if (json_array_append_new (jobs_array_p, job_json_p) == 0)
+																{
+																	job_node_p = (ServiceJobNode *) (job_node_p -> sjn_node.ln_next_p);
+																}
+															else
+																{
+																	success_flag = false;
+																	json_decref (job_json_p);
+																}
+
+														}		/* if (job_json_p) */
+													else
+														{
+															success_flag = false;
+														}
+
+												}		/* while ((success_flag == true) && (job_node_p != NULL)) */
+
+											if (success_flag)
+												{
+													if (json_object_set (res_p, SERVICE_JOBS_S, jobs_array_p) != 0)
+														{
+															success_flag = false;
+															json_decref (jobs_array_p);
+														}
+												}
+											else
+												{
+													json_decref (jobs_array_p);
+												}
+
+										}		/* if (jobs_array_p) */
+
+								}		/* if (jobs_list_p -> ll_size > 0) */
+
+							FreeLinkedList (jobs_list_p);
+						}		/* if (jobs_list_p) */
+
+				}		/* if (jobs_manager_p) */
+
+		}		/* if (res_p) */
+
+
+
+	return res_p;
+}
 
 static bool AddServiceCleanUpToJSON (json_t *services_p, uuid_t service_id, const char *uuid_s)
 {

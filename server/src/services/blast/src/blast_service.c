@@ -41,7 +41,7 @@
 
 #include "servers_pool.h"
 #include "remote_parameter_details.h"
-
+#include "audit.h"
 
 
 
@@ -151,7 +151,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 	BlastServiceData *blast_data_p = (BlastServiceData *) (service_p -> se_data_p);
 	SharedType param_value;
 
-	memset (&param_value, 0, sizeof (SharedType));
+	InitSharedType (&param_value);
 
 	/*
 	 * We will check for all of our parameters, such as previous job ids, etc. first, until
@@ -215,6 +215,8 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 															job_p -> bsj_job.sj_status = OS_FAILED_TO_START;
 
+															LogServiceJob (& (job_p -> bsj_job));
+
 															if (tool_p)
 																{
 																	if (tool_p -> SetInputFilename (input_filename_s))
@@ -230,6 +232,9 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 																										{
 																											job_p -> bsj_job.sj_status = tool_p -> GetStatus ();
 																										}
+
+																									LogServiceJob (& (job_p -> bsj_job));
+
 
 																									switch (job_p -> bsj_job.sj_status)
 																									{
@@ -333,45 +338,8 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 						}		/* if (GetServiceJobSetSize (service_p -> se_jobs_p) > 0) */
 
-					/* Are there any remote jobs to run? */
-					if (service_p -> se_paired_services.ll_size > 0)
-						{
-							const char *service_name_s = GetServiceName (service_p);
 
-							if (service_name_s)
-								{
-									PairedServiceNode *node_p = (PairedServiceNode *) (service_p -> se_paired_services.ll_head_p);
-
-									while (node_p)
-										{
-											PairedService *paired_service_p = node_p -> psn_paired_service_p;
-
-											if (!IsServiceInProvidersStateTable (providers_p, paired_service_p -> ps_server_uri_s, service_name_s))
-												{
-													int32 res = RunRemoteBlastJobs (service_p, service_p -> se_jobs_p, param_set_p, paired_service_p, providers_p);
-
-													if (res >= 0)
-														{
-#if BLAST_SERVICE_DEBUG >= STM_LEVEL_FINER
-															PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "Got " UINT32_FMT " results from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s);
-#endif
-														}		/* if (res < 0) */
-													else
-														{
-															PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Got " UINT32_FMT " error from \"%s\" at \"%s\"", res, paired_service_p -> ps_name_s, paired_service_p -> ps_server_uri_s);
-														}
-
-
-												}		/* if (IsServiceInProvidersStateTable (providers_p, paired_service_p -> ps_server_uri_s, service_name_s)) */
-
-											node_p = (PairedServiceNode *) (node_p -> psn_node.ln_next_p);
-										}		/* while (node_p) */
-
-								}		/* if (service_name_s) */
-
-
-						}		/* if (service_p -> se_paired_services.ll_size > 0) */
-
+					RunPairedServices (service_p, param_set_p, providers_p, SaveRemoteBlastJobDetails);
 
 					if (GetServiceJobSetSize (service_p -> se_jobs_p) == 0)
 						{
@@ -380,7 +348,7 @@ ServiceJobSet *RunBlastService (Service *service_p, ParameterSet *param_set_p, U
 
 				}		/* if (service_p -> se_jobs_p) */
 
-		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, true)) && (!IsStringEmpty (param_value.st_string_value_s))) else */
+		}		/* if ((GetParameterValueFromParameterSet (param_set_p, TAG_BLAST_JOB_ID, &param_value, t rue)) && (!IsStringEmpty (param_value.st_string_value_s))) else */
 
 	return service_p -> se_jobs_p;
 }
@@ -485,7 +453,7 @@ ServiceJobSet *CreateJobsForPreviousResults (ParameterSet *params_p, const char 
 			SharedType param_value;
 			uint32 output_format_code = BS_DEFAULT_OUTPUT_FORMAT;
 
-			memset (&param_value, 0, sizeof (SharedType));
+			InitSharedType (&param_value);
 
 			if (GetParameterValueFromParameterSet (params_p, BS_OUTPUT_FORMAT.npt_name_s, &param_value, true))
 				{
@@ -620,7 +588,7 @@ TempFile *GetInputTempFile (const ParameterSet *params_p, const char *working_di
 	TempFile *input_file_p = NULL;
 	SharedType value;
 
-	memset (&value, 0, sizeof (SharedType));
+	InitSharedType (&value);
 
 	/* Input query */
 	if (GetParameterValueFromParameterSet (params_p, BS_INPUT_QUERY.npt_name_s, &value, true))
@@ -1174,7 +1142,7 @@ char *GetBlastResultByUUIDString (const BlastServiceData *data_p, const char *jo
 }
 
 
-json_t *BuildBlastServiceJobJSON (Service * UNUSED_PARAM (service_p), const ServiceJob *service_job_p)
+json_t *BuildBlastServiceJobJSON (Service * UNUSED_PARAM (service_p), ServiceJob *service_job_p)
 {
 	return ConvertBlastServiceJobToJSON ((BlastServiceJob *) service_job_p);
 }

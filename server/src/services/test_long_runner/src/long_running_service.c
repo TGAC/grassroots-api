@@ -63,7 +63,13 @@ typedef struct TimedServiceJob
 
 	/* Has the TimedServiceJob been added to the JobsManager yet? */
 	bool tsj_added_flag;
+
+	/* The process */
+	int32 tsj_process_id;
 } TimedServiceJob;
+
+
+
 
 
 /*
@@ -168,7 +174,7 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p);
 static ServiceJob *BuildTimedServiceJob (Service *service_p, const json_t *service_job_json_p);
 
 
-static json_t *BuildTimedServiceJobJSON ( Service *service_p, const ServiceJob *service_job_p);
+static json_t *BuildTimedServiceJobJSON ( Service *service_p, ServiceJob *service_job_p);
 
 
 static void CustomiseTimedServiceJob (Service *service_p, ServiceJob *job_p);
@@ -482,7 +488,7 @@ static ServiceJobSet *RunLongRunningService (Service *service_p, ParameterSet *p
 {
 	SharedType param_value;
 
-	memset (&param_value, 0, sizeof (SharedType));
+	InitSharedType (&param_value);
 
 	if (GetParameterValueFromParameterSet (param_set_p, LRS_NUMBER_OF_JOBS.npt_name_s, &param_value, true))
 		{
@@ -639,7 +645,7 @@ static TimedServiceJob *AllocateTimedServiceJob (Service *service_p, const char 
 					job_p -> tsj_interval_p = interval_p;
 					job_p -> tsj_added_flag = false;
 
-					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, job_description_s, UpdateTimedServiceJob, FreeTimedServiceJob);
+					InitServiceJob (& (job_p -> tsj_job), service_p, job_name_s, job_description_s, UpdateTimedServiceJob, FreeTimedServiceJob, NULL);
 
 				}		/* if (job_p) */
 			else
@@ -662,7 +668,10 @@ static void FreeTimedServiceJob (ServiceJob *job_p)
 {
 	TimedServiceJob *timed_job_p = (TimedServiceJob *) job_p;
 
-	FreeMemory (timed_job_p -> tsj_interval_p);
+	if (timed_job_p -> tsj_interval_p)
+		{
+			FreeMemory (timed_job_p -> tsj_interval_p);
+		}
 
 	ClearServiceJob (job_p);
 	FreeMemory (timed_job_p);
@@ -803,6 +812,7 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 									if (GetJSONLong (json_p, LRS_END_S, & (job_p -> tsj_interval_p -> ti_end)))
 										{
 											bool b;
+											OperationStatus old_status = GetServiceJobStatus (& (job_p -> tsj_job));
 
 											if (GetJSONBoolean (json_p, LRS_ADDED_FLAG_S, &b))
 												{
@@ -811,6 +821,17 @@ static TimedServiceJob *GetTimedServiceJobFromJSON (const json_t *json_p)
 											else
 												{
 													job_p -> tsj_added_flag = false;
+												}
+
+											/* Update the job status */
+											if (old_status == OS_STARTED)
+												{
+													OperationStatus new_status = GetTimedServiceJobStatus (& (job_p -> tsj_job));
+
+													if (new_status != old_status)
+														{
+															RemoveServiceJobFromJobsManager (GetJobsManager (), job_p -> tsj_job.sj_id, false);
+														}
 												}
 
 											return job_p;
@@ -856,7 +877,7 @@ static ServiceJob *BuildTimedServiceJob (Service *service_p, const json_t *servi
 }
 
 
-static json_t *BuildTimedServiceJobJSON (Service *service_p, const ServiceJob *service_job_p)
+static json_t *BuildTimedServiceJobJSON (Service *service_p, ServiceJob *service_job_p)
 {
 	return GetTimedServiceJobAsJSON ((TimedServiceJob *) service_job_p);
 }

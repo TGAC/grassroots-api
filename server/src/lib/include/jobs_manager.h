@@ -116,6 +116,20 @@ typedef struct JobsManager
 	 */
 	ServiceJob *(*jm_remove_job_fn) (struct JobsManager *manager_p, const uuid_t key, bool get_job_flag);
 
+
+
+	/**
+ 	 * @brief Get all ServiceJobs
+	 *
+	 * Get a LinkedList of ServiceJobs that are currently stored in the JobsManager.
+	 *
+	 * @param manager_p The JobsManager to get the ServiceJobs from.
+	 * @return A LinkedList of ServiceJobNodes of all of the ServiceJobs or <code>NULL</code> if there are not any.
+	 * @see GetAllServiceJobsFromJobsManager
+	 */
+	LinkedList *(*jm_get_all_jobs_fn) (struct JobsManager *manager_p);
+
+
 } JobsManager;
 
 
@@ -146,7 +160,8 @@ GRASSROOTS_SERVICE_MANAGER_API JobsManager *GetJobsManager (void);
 GRASSROOTS_SERVICE_MANAGER_API void InitJobsManager (JobsManager *manager_p,
                       bool (*add_job_fn) (JobsManager *manager_p, uuid_t job_key, ServiceJob *job_p),
                       ServiceJob *(*get_job_fn)  (JobsManager *manager_p, const uuid_t key),
-                      ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key, bool get_job_flag));
+                      ServiceJob *(*remove_job_fn) (JobsManager *manager_p, const uuid_t key, bool get_job_flag),
+											LinkedList *(*get_all_jobs_fn) (struct JobsManager *manager_p));
 
 
 /**
@@ -201,6 +216,20 @@ GRASSROOTS_SERVICE_MANAGER_API ServiceJob *GetServiceJobFromJobsManager (JobsMan
  * @see jm_remove_job_fn
  */
 GRASSROOTS_SERVICE_MANAGER_API ServiceJob *RemoveServiceJobFromJobsManager (JobsManager *manager_p, const uuid_t key, bool get_job_flag);
+
+
+/**
+ * @brief Get all ServiceJobs
+ *
+ * Get a LinkedList of ServiceJobs that are currently stored in the JobsManager.
+ *
+ * @param manager_p The JobsManager to get the ServiceJobs from.
+ * @return A LinkedList of ServiceJobNodes of all of the ServiceJobs or <code>NULL</code> if there are not any.
+ * @see GetAllServiceJobsFromJobsManager
+ * @memberof JobsManager
+ * @see jm_get_all_jobs_fn
+ */
+GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllServiceJobsFromJobsManager (struct JobsManager *manager_p);
 
 
 

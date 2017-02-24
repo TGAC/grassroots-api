@@ -55,7 +55,7 @@ public slots:
 	void RunService (json_t *service_json_p);
 
 private:
-	ResultsPage *CreatePageFromJSON (const json_t *json_p, const char * const description_s, const char * const uri_s);
+	ResultsPage *CreatePageFromJSON (const json_t *json_p, const char * const job_name_s, const char * const service_name_s, const char * const description_s, const char * const uri_s);
 
 	static const char *RW_SERVICES_TAB_TITLE_S;
 

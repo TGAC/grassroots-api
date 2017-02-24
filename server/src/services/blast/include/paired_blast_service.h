@@ -34,6 +34,7 @@
 #include "paired_service.h"
 #include "blast_service.h"
 #include "providers_state_table.h"
+#include "remote_service_job.h"
 
 
 #ifdef __cplusplus
@@ -65,7 +66,7 @@ BLAST_SERVICE_LOCAL bool AddPairedServiceParameters (Service *service_p, Paramet
  * @return The number of successfully remote ServiceJobs ran or -1 on error.
  * @ingroup blast_service
  */
-BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p);
+//BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet *jobs_p, ParameterSet *params_p, PairedService *paired_service_p, ProvidersStateTable *providers_p);
 
 
 /**
@@ -78,6 +79,13 @@ BLAST_SERVICE_LOCAL int32 RunRemoteBlastJobs (Service *service_p, ServiceJobSet 
  * @ingroup blast_service
  */
 BLAST_SERVICE_LOCAL char *GetPreviousRemoteBlastServiceJob (const char *local_job_id_s, const uint32 output_format_code, const BlastServiceData *blast_data_p);
+
+
+
+BLAST_SERVICE_LOCAL int32 AddRemoteResultsToBlastServiceJobs (const json_t *server_response_p, ServiceJobSet *jobs_p, const char * const remote_service_s, const char * const remote_uri_s, const ServiceData *service_data_p);
+
+
+BLAST_SERVICE_LOCAL bool SaveRemoteBlastJobDetails (RemoteServiceJob *job_p, const ServiceData *blast_data_p);
 
 
 #ifdef __cplusplus
