@@ -171,7 +171,7 @@ function produce_one_parameter_form(parameter) {
 }
 
 function submit_form() {
-    $('#status').html('<img src=\"../images/ajax-loader.gif\"/>');
+    $('#status').html('<img src="images/ajax-loader.gif"/>');
     Utils.ui.disableButton('submit_button');
     var form = jQuery('#form').serializeArray();
     var submission = {};
@@ -434,7 +434,7 @@ function changeDownloadFormat() {
 }
 
 function downloadJobFromServer(id) {
-    $('#' + id + 'status').html('<img src=\"../images/ajax-loader.gif\"/>');
+    $('#' + id + 'status').html('<img src="images/ajax-loader.gif"/>');
     $('#' + id + 'dl').removeAttr('onclick');
     var outfmt = $('#output_format').val();
 
@@ -473,7 +473,7 @@ function downloadJobFromServer(id) {
 
 
 function run_linked_service(id) {
-    $('#' + id + 'status').html('<img src=\"../images/ajax-loader.gif\"/>');
+    $('#' + id + 'status').html('<img src="images/ajax-loader.gif"/>');
     $('#' + id).removeAttr('onclick');
 
     var lined_service_request_json = linked_services_global[id];
