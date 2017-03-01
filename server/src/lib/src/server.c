@@ -1290,11 +1290,11 @@ static json_t *GetAllModifiedData (const json_t * const req_p, UserDetails *user
 			/* "to" defaults to now */
 			time_t to = time (NULL);
 
-			json_t *group_p = json_object_get (req_p, KEY_IRODS);
+			json_t *group_p = json_object_get (req_p, "");
 
 			if (group_p)
 				{
-					json_t *interval_p = json_object_get (group_p, KEY_INTERVAL);
+					json_t *interval_p = json_object_get (group_p, "");
 
 					if (interval_p)
 						{

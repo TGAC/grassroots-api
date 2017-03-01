@@ -17,19 +17,21 @@
 
 #include "query.h"
 #include "connect.h"
-#include "user.h"
+#include "user_util.h"
 
 /*** STATIC PROTOTYPES ***/
 
-static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s);
+static void TestGetAllCollectionsForUsername (struct IRodsConnection *connection_p, const char * const username_s);
 
-static void TestGetAllDataForUsername (rcComm_t *connection_p, const char * const username_s);
+static void TestGetAllDataForUsername (struct IRodsConnection *connection_p, const char * const username_s);
 
-static void TestGetAllZonenames (rcComm_t *connection_p);
+static void TestGetAllZonenames (struct IRodsConnection *connection_p);
 
-static void TestExecuteQueryString (rcComm_t *connection_p);
+static void TestExecuteQueryString (struct IRodsConnection *connection_p);
 
-static void TestGetAllModifiedDataForUsername (rcComm_t *connection_p, const char * const username_s, const time_t from , const time_t to);
+
+static void TestGetAllModifiedDataForUsername (struct IRodsConnection *connection_p, const char * const username_s, const time_t from, const time_t to);
+
 
 /*** METHODS ***/
 
@@ -38,7 +40,7 @@ int main (int argc, char *argv [])
 	int result = 0;
 	char *username_s = NULL;
 	char *password_s = NULL;
-	rcComm_t *connection_p = NULL;
+	struct IRodsConnection *connection_p = NULL;
 
 	if (argc >= 3)
 		{
@@ -46,7 +48,7 @@ int main (int argc, char *argv [])
 			password_s = argv [2];
 		}
 
-	connection_p = CreateIRODSConnection (username_s, password_s);
+	connection_p = CreateIRodsConnection (username_s, password_s);
 
 	if (connection_p)
 		{
@@ -87,7 +89,7 @@ int main (int argc, char *argv [])
 
 			//TestExecuteQueryString (connection_p);
 
-			CloseIRODSConnection (connection_p);
+			FreeIRodsConnection (connection_p);
 		}		/* if (connection_p) */
 
 	return result;
@@ -96,8 +98,8 @@ int main (int argc, char *argv [])
 
 
 /*** STATIC METHODS ***/
-
-static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char * const username_s)
+/*
+static void TestGetAllCollectionsForUsername (struct IRodsConnection *connection_p, const char * const username_s)
 {
 	QueryResults *results_p = GetAllCollectionsForUsername (connection_p, username_s);
 
@@ -110,7 +112,7 @@ static void TestGetAllCollectionsForUsername (rcComm_t *connection_p, const char
 }
 
 
-static void TestGetAllDataForUsername (rcComm_t *connection_p, const char * const username_s)
+static void TestGetAllDataForUsername (struct IRodsConnection *connection_p, const char * const username_s)
 {
 	QueryResults *results_p = GetAllDataForUsername (connection_p, username_s, "10039");
 
@@ -122,7 +124,7 @@ static void TestGetAllDataForUsername (rcComm_t *connection_p, const char * cons
 		}
 }
 
-static void TestGetAllZonenames (rcComm_t *connection_p)
+static void TestGetAllZonenames (struct IRodsConnection *connection_p)
 {
 	QueryResults *results_p = GetAllZoneNames (connection_p);
 
@@ -146,9 +148,10 @@ static void TestGetAllModifiedDataForUsername (rcComm_t *connection_p, const cha
 			FreeQueryResults (results_p);
 		}
 }
+*/
 
-
-static void TestExecuteQueryString (rcComm_t *connection_p)
+/*
+static void TestExecuteQueryString (struct IRodsConnection *connection_p)
 {
 	const char **query_args_pp = (const char **) AllocMemoryArray (6, sizeof (const char *));
 
@@ -172,15 +175,15 @@ static void TestExecuteQueryString (rcComm_t *connection_p)
 					if (query_result_p)
 						{
 							PrintQueryOutput (stdout, query_result_p);
-						}		/* if (query_result_p) */
+						}	
 
 					FreeBuiltQueryString (full_query_s);
-				}		/* if (full_query_s) */
+				}	
 
 			FreeMemory (query_args_pp);
-		}		/* if (query_args_pp) */
+		}		
 }
-
+*/
 
 
 char *ReadFileChunk (const char * const filename_s)
@@ -240,89 +243,6 @@ char *ReadFileChunk (const char * const filename_s)
 		}
 
 	return NULL;
-}
-
-
-char *ReadFileChunk (const char * const filename_s)
-{
-	/* The value that we will return */
-	char *result_s = NULL;
-
-	/*
-	 * Allocate the Resource.
-	 * We know that it's a file so we use the protocol for a file,
-	 * PROTOCOL_FILE_S, and we do not need a title for the Resource
-	 * so we send it NULL.
-	 */
-	Resource res_p = AllocateResource (PROTOCOL_FILE_S, filename_s, NULL);
-
-	if (res_p)
-		{
-			/*
-			 * Now that we have the Resource, let the Grassroots system find
-			 * the appropriate Handler.
-			 */
-			Handler *handler_p = GetResourceHandler (res_p, NULL);
-
-			if (handler_p)
-				{
-					/* Scroll 20 bytes into the file */
-					if (SeekHandler (handler_p, 20, SEEK_SET))
-						{
-							/*
-							 * We are going to try and read in 16 bytes so allocate
-							 * the memory needed including the extra byte for the
-							 * terminating \0
-							 */
-							const size_t buffer_size = 16;
-							char *buffer_s = (char *) AllocMemory ((buffer_size + 1) * sizeof (char));
-
-							if (buffer_s)
-								{
-									/* Read in the data */
-									if (ReadFromHandler (handler_p, buffer_s, buffer_size) == buffer_size)
-										{
-											/* Add the terminating \0 */
-											* (buffer_s + buffer_size) = '\0';
-
-											/* Store the value for returning */
-											result_s = buffer_s;
-										}		/* if (fread (buffer_s, 1, buffer_size, in_f) == buffer_size) */
-									else
-										{
-											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to read value from %s", filename_s);
-
-											/* We failed to read in the value so we can release the buffer memory */
-											FreeMemory (buffer_s);
-										}
-
-								}		/* if (buffer_s) */
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate memory for buffer when reading %s", filename_s);
-								}
-
-						}		/* if (SeekHandler (handler_p, 20, SEEK_SET)) */
-					else
-						{
-							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to seek in %s", filename_s);
-						}
-
-					CloseHandler (handler_p);
-				}		/* if (handler_p) */
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to find a Handler for %s", filename_s);
-				}
-
-			FreeResource (res_p);
-		}		/* if (res_p) */
-	else
-		{
-			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate Resource for %s", filename_s);
-		}
-
-	return result_s;
 }
 
 

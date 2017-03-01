@@ -362,7 +362,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 													job_p -> sj_status = OS_FAILED;
 
 													// temporarily don't pass break index
-													break_index = 0;
+													//break_index = 0;
 													if (GetScaffoldData (selected_index_data_p -> id_fasta_filename_s, scaffold_s, break_index, buffer_p))
 														{
 															json_t *result_p = NULL;

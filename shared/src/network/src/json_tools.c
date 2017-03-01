@@ -151,7 +151,26 @@ bool AddCredentialsToJson (json_t *root_p, const UserDetails *user_p)
 
 	if (credentials_p)
 		{
-			json_t *config_p = LoadConfig (".grassroots");
+			json_t *config_p = NULL;
+			char *home_s = GetHomeDirectory ();
+
+			if (home_s)
+				{
+					char *config_path_s = MakeFilename (home_s, ".grassroots");
+
+					if (config_path_s)
+						{
+							config_p = LoadConfig (config_path_s);
+
+							FreeCopiedString (config_path_s);
+						}		/* if (config_path_s) */
+
+					FreeCopiedString (home_s);
+				}
+			else
+				{
+
+				}
 
 			if (config_p)
 				{

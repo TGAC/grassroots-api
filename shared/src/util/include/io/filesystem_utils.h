@@ -288,6 +288,17 @@ GRASSROOTS_UTIL_API bool SetCurrentWorkingDirectory (const char * const path_s);
 GRASSROOTS_UTIL_API char *GetCurrentWorkingDirectory (void);
 
 
+
+/**
+ * Get the current user's home directory.
+ *
+ * @return The current  user's home directory or <code>NULL</code> upon error.
+ * When no longer needed, this value should be freed using FreeCopiedString ().
+ *
+ * @ingroup utility_group
+ */
+GRASSROOTS_UTIL_API char *GetHomeDirectory (void);
+
 /**
  * Check whether the given path refers to a directory.
  *

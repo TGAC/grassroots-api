@@ -69,12 +69,13 @@ endif
 
 ifeq ($(IRODS_ENABLED), 1)
 LDFLAGS += -L$(DIR_GRASSROOTS_IRODS_LIB) -l$(GRASSROOTS_IRODS_LIB_NAME)
+include $(DIR_BUILD_ROOT)/irods.mk
+LDFLAGS +=$(IRODS_EXTRA_LIBS)
+
 endif
 
 
-include $(DIR_BUILD_ROOT)/irods.mk
 
-LDFLAGS +=$(IRODS_EXTRA_LIBS)
 
 include $(DIR_BUILD_ROOT)/generic_makefiles/executable.makefile
 
