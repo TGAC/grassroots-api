@@ -53,7 +53,7 @@ static void FreeSearchTermNode (ListItem *node_p);
 
 
 
-IRodsSearch *AllocateIrodsSearch (void)
+IRodsSearch *AllocateIRodsSearch (void)
 {
 	LinkedList *list_p = AllocateLinkedList (FreeSearchTermNode);
 
@@ -75,20 +75,20 @@ IRodsSearch *AllocateIrodsSearch (void)
 }
 
 
-void FreeIrodsSearch (IRodsSearch *search_p)
+void FreeIRodsSearch (IRodsSearch *search_p)
 {
 	FreeLinkedList (search_p -> is_search_terms_p);
 	FreeMemory (search_p);
 }
 
 
-void ClearIrodsSearch (IRodsSearch *search_p)
+void ClearIRodsSearch (IRodsSearch *search_p)
 {
 	ClearLinkedList (search_p -> is_search_terms_p);
 }
 
 
-QueryResults *DoIrodsSearch (IRodsSearch *search_p, IRodsConnection *connection_p)
+QueryResults *DoIRodsSearch (IRodsSearch *search_p, IRodsConnection *connection_p)
 {
 	QueryResults *results_p = NULL;
 	ByteBuffer *buffer_p = AllocateByteBuffer (1024);

@@ -187,7 +187,7 @@ static bool UpdateTimedServiceJob (struct ServiceJob *job_p);
 /*
  * API FUNCTIONS
  */
-ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
+ServicesArray *GetServices (UserDetails *user_p)
 {
 	Service *service_p = (Service *) AllocMemory (sizeof (Service));
 

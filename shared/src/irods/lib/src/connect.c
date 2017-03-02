@@ -64,43 +64,14 @@ static bool ReleaseIRodsConnection (rcComm_t *connection_p)
 }
 
 
-IRodsConnection *CreateIRodsConnectionFromJSON (const json_t *config_p)
+IRodsConnection *CreateIRodsConnectionFromJSON (UserDetails *user_p)
 {
 	IRodsConnection *connection_p = NULL;
-	const json_t *irods_credentials_p = NULL;
-	/*
-	 * The config might have the credentials child or it might be the
-	 * credentials object itself so check for both
-	 */
-	const json_t *credentials_p = json_object_get (config_p, CREDENTIALS_S);
+	const UserAuthentication *auth_p = GetUserAuthenticationForSystem (user_p, "irods");
 
-	if (!credentials_p)
+	if (auth_p)
 		{
-			credentials_p = config_p;
-		}
-
-	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINER
-		{
-			PrintJSONToLog (credentials_p, "connection credentials:\n", STM_LEVEL_FINE, __FILE__, __LINE__);
-		}
-	#endif
-
-
-	irods_credentials_p = json_object_get (credentials_p, "irods");
-
-	if (irods_credentials_p)
-		{
-			const char *username_s = GetJSONString (irods_credentials_p, CREDENTIALS_USERNAME_S);
-
-			if (username_s)
-				{
-					const char *password_s = GetJSONString (irods_credentials_p, CREDENTIALS_PASSWORD_S);
-
-					if (password_s)
-						{
-							connection_p = CreateIRodsConnection (username_s, password_s);
-						}
-				}
+			connection_p = CreateIRodsConnection (auth_p -> ua_username_s, auth_p -> ua_password_s);
 		}
 
 	return connection_p;

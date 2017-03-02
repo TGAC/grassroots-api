@@ -54,7 +54,7 @@ static void InitBlastService (Service *blast_service_p);
 /*
  * API FUNCTIONS
  */
-ServicesArray *GetServices (const json_t *  UNUSED_PARAM (config_p))
+ServicesArray *GetServices (UserDetails *user_p)
 {
 	ServicesArray *services_array_p = NULL;
 	const uint32 NUM_SERVICES = 3;

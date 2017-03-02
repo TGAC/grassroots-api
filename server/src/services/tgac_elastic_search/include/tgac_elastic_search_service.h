@@ -38,7 +38,7 @@ extern "C"
  * @return The ServicesArray containing the ElasticSearch Service(s) or
  * <code>NULL</code> upon error.
  */
-TGAC_ELASTIC_SEARCH_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+TGAC_ELASTIC_SEARCH_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 
 /**

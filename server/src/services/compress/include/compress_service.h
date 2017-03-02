@@ -39,7 +39,7 @@ extern "C"
  * @return The ServicesArray containing the Compress Service or
  * <code>NULL</code> upon error.
  */
-COMPRESS_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+COMPRESS_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 /**
  * Free the ServicesArray and its associated Compress Service.

@@ -21,7 +21,7 @@
 #include "streams.h"
 #include "string_utils.h"
 #include "schema_version.h"
-
+#include "filesystem_utils.h"
 #include "providers_state_table.h"
 
 
@@ -144,82 +144,39 @@ json_t *GetInitialisedMessage (const SchemaVersion * const sv_p)
 }
  * */
 
-bool AddCredentialsToJson (json_t *root_p, const UserDetails *user_p)
+bool AddClientConfigToJSON (json_t *root_p, const UserDetails *user_p)
 {
 	bool success_flag = false;
-	json_t *credentials_p = json_object ();
+	char *home_s = GetHomeDirectory ();
 
-	if (credentials_p)
+	if (home_s)
 		{
-			json_t *config_p = NULL;
-			char *home_s = GetHomeDirectory ();
+			char *config_path_s = MakeFilename (home_s, ".grassroots");
 
-			if (home_s)
+			if (config_path_s)
 				{
-					char *config_path_s = MakeFilename (home_s, ".grassroots");
+					json_t *config_p = LoadConfig (config_path_s);
 
-					if (config_path_s)
+					if (config_p)
 						{
-							config_p = LoadConfig (config_path_s);
-
-							FreeCopiedString (config_path_s);
-						}		/* if (config_path_s) */
-
-					FreeCopiedString (home_s);
-				}
-			else
-				{
-
-				}
-
-			if (config_p)
-				{
-					json_t *loaded_credentials_p = json_object_get (config_p, CREDENTIALS_S);
-
-					if (loaded_credentials_p)
-						{
-							if (json_object_set (credentials_p, CREDENTIALS_S, loaded_credentials_p) == 0)
+							if (json_object_set (root_p, CONFIG_S, config_p) == 0)
 								{
-									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, credentials_p, "credentials: ");
-									#endif
-
-									json_object_del (config_p, CREDENTIALS_S);
-
-									#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-									PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, credentials_p, "credentials: ");
-									#endif
+									success_flag = true;
 								}
-							else
-								{
-									PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add loaded credentials  to credentials json");
-								}
-						}
 
-					json_decref (config_p);
-				}		/* if (config_p) */
+							json_decref (config_p);
+						}		/* if (config_p) */
 
+					FreeCopiedString (config_path_s);
+				}		/* if (config_path_s) */
 
-
-#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-			PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, credentials_p, "credentials: ");
-#endif
-
-
-			if (json_object_set_new (root_p, CREDENTIALS_S, credentials_p) == 0)
-				{
-					success_flag = true;
-				}								
-			else
-				{
-					json_decref (credentials_p);
-				}
+			FreeCopiedString (home_s);
 		}
 
 
-#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
-	PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, root_p, "root_p: ");
-#endif
+	#if JSON_TOOLS_DEBUG >= STM_LEVEL_FINE
+		PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, root_p, "root_p: ");
+	#endif
 
 	return success_flag;
 }
@@ -376,7 +333,7 @@ json_t *GetServicesRequest (const UserDetails *user_p, const Operation op, const
 
 			if (user_p)
 				{
-					if (!AddCredentialsToJson (root_p, user_p))
+					if (!AddClientConfigToJSON (root_p, user_p))
 						{
 							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to add user details");
 						}		/* if (!AddCredentialsToJson (root_p, user_p)) */
@@ -496,7 +453,7 @@ json_t *CallServices (json_t *client_params_json_p, const UserDetails *user_p, C
 
 			if (new_req_p)
 				{
-					if (!AddCredentialsToJson (new_req_p, user_p))
+					if (!AddClientConfigToJSON (new_req_p, user_p))
 						{
 							PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "failed to add credentials to request");
 						}

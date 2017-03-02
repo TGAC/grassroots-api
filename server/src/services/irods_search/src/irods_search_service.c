@@ -96,13 +96,18 @@ static OperationStatus DoKeywordSearch (const char *keyword_s, ServiceJob *job_p
 
 
 
-static IRodsSearchServiceData *GetIRodsSearchServiceData (const json_t *config_p)
+static IRodsSearchServiceData *GetIRodsSearchServiceData (UserDetails *user_p)
 {
 	IRodsSearchServiceData *data_p = (IRodsSearchServiceData *) AllocMemory (sizeof (IRodsSearchServiceData));
 
 	if (data_p)
 		{
-			IRodsConnection *connection_p = CreateIRodsConnectionFromJSON (config_p);
+			IRodsConnection *connection_p = NULL;
+
+			memset (& (data_p -> issd_base_data), 0, sizeof (ServiceData));
+
+			connection_p = CreateIRodsConnectionFromJSON (user_p);
+
 
 			if (connection_p)
 				{
@@ -167,7 +172,7 @@ static void FreeIRodsSearchServiceData (IRodsSearchServiceData *data_p)
  * API FUNCTIONS
  */
 
-ServicesArray *GetServices (const json_t *config_p)
+ServicesArray *GetServices (UserDetails *user_p)
 {
 	Service *irods_service_p = (Service *) AllocMemory (sizeof (Service));
 
@@ -177,7 +182,7 @@ ServicesArray *GetServices (const json_t *config_p)
 
 			if (services_p)
 				{
-					ServiceData *data_p = (ServiceData *) GetIRodsSearchServiceData (config_p);
+					ServiceData *data_p = (ServiceData *) GetIRodsSearchServiceData (user_p);
 					
 					if (data_p)
 						{
@@ -260,41 +265,50 @@ static OperationStatus DoKeywordSearch (const char *keyword_s, ServiceJob *job_p
 									 */
 									for ( ; i > 0; --i, ++ attribute_name_ss)
 										{
-											if (AddMetadataDataAttributeSearchTerm (search_p, NULL, *attribute_name_ss, "=", keyword_s))
+											char *value_s = ConcatenateStrings (keyword_s, "%");
+
+											if (value_s)
 												{
-													QueryResults *attr_search_results_p = DoIrodsMetaSearch (search_p, data_p);
-
-													if (attr_search_results_p)
+													if (AddMetadataDataAttributeSearchTerm (search_p, NULL, *attribute_name_ss, "like", value_s))
 														{
-															LinkedList *matching_results_p = GetQueryResultsPaths (attr_search_results_p);
+															QueryResults *attr_search_results_p = DoIrodsMetaSearch (search_p, data_p);
 
-															if (matching_results_p)
+															if (attr_search_results_p)
 																{
-																	StringListNode *node_p = (StringListNode *) (matching_results_p -> ll_head_p);
+																	LinkedList *matching_results_p = GetQueryResultsPaths (attr_search_results_p);
 
-																	while (node_p)
+																	if (matching_results_p)
 																		{
-																			int count = 1;
-																			char *key_s = node_p -> sln_string_s;
-																			const int *count_p = (const int *) GetFromHashTable (store_p, key_s);
+																			StringListNode *node_p = (StringListNode *) (matching_results_p -> ll_head_p);
 
-																			if (count_p)
+																			while (node_p)
 																				{
-																					count = 1 + (*count_p);
+																					int count = 1;
+																					char *key_s = node_p -> sln_string_s;
+																					const int *count_p = (const int *) GetFromHashTable (store_p, key_s);
+
+																					if (count_p)
+																						{
+																							count = 1 + (*count_p);
+																						}
+
+																					PutInHashTable (store_p, key_s, &count);
+
+																					node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
 																				}
 
-																			PutInHashTable (store_p, key_s, &count);
-
-																			node_p = (StringListNode *) (node_p -> sln_node.ln_next_p);
-																		}
-
-																	FreeLinkedList (matching_results_p);
-																}		/* if (matching_results_p) */
+																			FreeLinkedList (matching_results_p);
+																		}		/* if (matching_results_p) */
 
 
-															FreeQueryResults (attr_search_results_p);
-														}		/* if (attr_search_results_p) */
-												}
+																	FreeQueryResults (attr_search_results_p);
+																}		/* if (attr_search_results_p) */
+
+														}		/* if (AddMetadataDataAttributeSearchTerm (search_p, NULL, *attribute_name_ss, "like", keyword_s)) */
+
+													FreeCopiedString (value_s);
+												}		/* if (value_s) */
+
 
 											ClearIRodsSearch (search_p);
 										}		/* for ( ; i > 0; --i, ++ attribute_name_ss) */
@@ -471,97 +485,70 @@ static Parameter *AddParam (ServiceData *service_data_p, IRodsConnection *connec
 		{
 			if (results_p -> qr_num_results == 1)
 				{
-					QueryResult *result_p = results_p -> qr_values_p;
-					const int num_opts = (result_p -> qr_num_values) + 1;
-					SharedType *param_options_p = (SharedType *) AllocMemoryArray (num_opts, sizeof (SharedType));
+					LinkedList *options_p = CreateProgramOptionsList ();
 
-					if (param_options_p)
+					if (options_p)
 						{
+							QueryResult *result_p = results_p -> qr_values_p;
+							const int num_opts = (result_p -> qr_num_values) + 1;
 							char **value_ss = result_p -> qr_values_pp;
-							SharedType *option_p = param_options_p;
-							ParameterMultiOptionArray *options_array_p = NULL;
+							SharedType def;
 							int i = num_opts;
-							success_flag = true;
+							bool added_options_flag = false;
 
-							/* Copy all of the values into our options array */
+							success_flag = true;
+							InitSharedType (&def);
+
+							/* Add all of the values into our options list */
 							while (success_flag && (i > 1))
 								{
-									option_p -> st_string_value_s = CopyToNewString (*value_ss, 0, false);
+									def.st_string_value_s = CopyToNewString (*value_ss, 0, false);
 
-									if (option_p -> st_string_value_s)
+									if (CreateAndAddParameterOption (options_p, def, NULL, PT_STRING))
 										{
 											-- i;
 											++ value_ss;
-											++ option_p;
 										}
 									else
 										{
 											success_flag = false;
 										}
-								}
+								}		/* while (success_flag && (i > 1)) */
 
 							/* Add the empty option */
 							if (success_flag)
 								{
-									option_p -> st_string_value_s = CopyToNewString (S_UNSET_VALUE_S, 0, false);
+									def.st_string_value_s = CopyToNewString (S_UNSET_VALUE_S, 0, false);
 
-									success_flag = (option_p -> st_string_value_s != NULL);
-								}
-
-
-							if (success_flag)
-								{
-									success_flag = false;
-									options_array_p = AllocateParameterMultiOptionArray (num_opts, NULL, param_options_p, PT_STRING, false);
-
-									if (options_array_p)
+									if (CreateAndAddParameterOption (options_p, def, NULL, PT_STRING))
 										{
-											SharedType def;
+											ParameterOption *first_option_p = ((ParameterOptionNode *) options_p -> ll_head_p) -> pon_option_p;
 
-											def.st_string_value_s = param_options_p -> st_string_value_s;
-
-											param_p = AllocateParameter (service_data_p, PT_KEYWORD, false, name_s, display_name_s, description_s, options_array_p, def, NULL, NULL, PL_ALL, NULL);
+											param_p = AllocateParameter (service_data_p, PT_KEYWORD, false, name_s, display_name_s, description_s, options_p, first_option_p -> po_value, NULL, NULL, PL_ALL, NULL);
 
 											if (param_p)
 												{
-//													if (AddIdToParameterStore (param_p, S_KEY_ID_S, key_col_id))
-//														{
-//															if (AddIdToParameterStore (param_p, S_VALUE_ID_S, value_col_id))
-//																{
-																	if (AddParameterToParameterSet (param_set_p, param_p))
-																		{
-																			success_flag = true;
-																		}
-//																}
-//														}
+													added_options_flag = true;
 
-													if (!success_flag)
+													if (!AddParameterToParameterSet (param_set_p, param_p))
 														{
 															FreeParameter (param_p);
 															param_p = NULL;
+															success_flag = false;
 														}
+
 												}		/* if (param_p) */
-											else
-												{
-													FreeParameterMultiOptionArray (options_array_p);
-												}
-										}
 
-									if (!success_flag)
-										{
-											FreeMemory (param_options_p);
-										}
-								}
-							else
+										}		/* if (CreateAndAddParameterOptionToParameter (param_p, def, NULL)) */
+
+								}		/* if (success_flag) */
+
+							if (!added_options_flag)
 								{
-									/* If we failed to fill the array, clean up */
-									for ( ; i > 0; -- i, -- option_p)
-										{
-											FreeCopiedString (option_p -> st_string_value_s);
-										}
+									FreeLinkedList (options_p);
 								}
 
-						}		/* if (param_options_p) */
+						}		/* if (options_p) */
 
 				}		/* if (results_p -> qr_num_results == 1) */
 

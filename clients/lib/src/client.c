@@ -256,7 +256,7 @@ void GetAllServicesInClient (Client *client_p, UserDetails *user_p)
 		{
 			json_t *response_p = NULL;
 
-			if (!AddCredentialsToJson (req_p, user_p))
+			if (!AddClientConfigToJSON (req_p, user_p))
 				{
 					printf ("Failed to add credentials\n");
 				}
