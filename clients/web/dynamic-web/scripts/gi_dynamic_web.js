@@ -1,4 +1,5 @@
 var linked_services_global = {};
+var textareas = [];
 
 function populateService(service_name) {
     selected_service_name = service_name;
@@ -15,6 +16,10 @@ function populateService(service_name) {
             parameters = response['services'][0]['operations']['parameter_set']['parameters'];
             groups = response['services'][0]['operations']['parameter_set']['groups'];
             produce_form('form', parameters, groups);
+            for (var i=0; i<textareas.length;i++){
+                document.getElementById(textareas[i]).addEventListener('dragover', handleDragOver, false);
+                document.getElementById(textareas[i]).addEventListener('drop', handleFileSelect, false);
+            }
         }
     });
 }
@@ -122,6 +127,7 @@ function produce_one_parameter_form(parameter) {
             form_html.push('<label title="' + description + '">' + display_name + '</label>');
             form_html.push('<textarea class="form-control" name="' + param + '^' + grassroots_type + '^' + type + '" id="' + param + '^' + grassroots_type + '" rows="3">' + default_value + '</textarea>');
             form_html.push('</div>');
+            textareas.push(param + '^' + grassroots_type);
 
         }
         //file
@@ -512,4 +518,70 @@ function generate_random_id() {
         id += possible.charAt(Math.floor(Math.random() * possible.length));
 
     return id;
+}
+
+
+function validateFasta(fasta) {
+
+    if (!fasta) { // check there is something first of all
+        return false;
+    }
+
+    // immediately remove trailing spaces
+    fasta = fasta.trim();
+
+    // split on newlines...
+    var lines = fasta.split('\n');
+
+    // check for header
+    if (fasta[0] == '>') {
+        // remove one line, starting at the first position
+        lines.splice(0, 1);
+    }
+
+    // join the array back into a single string without newlines and
+    // trailing or leading spaces
+    fasta = lines.join('').trim();
+
+    if (!fasta) { // is it empty whatever we collected ? re-check not efficient
+        return false;
+    }
+
+    // note that the empty string is caught above
+    // allow for Selenocysteine (U)
+    return /^[ACDEFGHIKLMNPQRSTUVWY\s]+$/i.test(fasta);
+}
+
+function handleFileSelect(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files; // FileList object.
+
+    // files is a FileList of File objects. List some properties.
+    var output = [];
+    var f = files[0];
+    output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a', ') - ',
+        f.size, ' bytes, last modified: ',
+        f.lastModifiedDate ? f.lastModifiedDate.toLocaleDateString() : 'n/a',
+        '</li>');
+    // document.getElementById('list').innerHTML = '<ul>' + output.join('') + '</ul>';
+    //var f = files[0];
+    if (f) {
+        var r = new FileReader();
+        r.onload = function (e) {
+            var contents = e.target.result;
+            document.getElementById(evt.target.id).value = contents;
+        }
+        r.readAsText(f);
+    }
+    else {
+        alert("Failed to load file");
+    }
+}
+
+function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
