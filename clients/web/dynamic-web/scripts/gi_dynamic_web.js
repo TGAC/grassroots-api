@@ -10,13 +10,13 @@ function populateService(service_name) {
         dataType: "json",
         success: function (json) {
             response = json;
-            // console.info(JSON.stringify(json));
+            console.info(JSON.stringify(json));
             $('#title').html(response['services'][0]['service_name']);
             $('#description').html(response['services'][0]['description']);
             parameters = response['services'][0]['operations']['parameter_set']['parameters'];
             groups = response['services'][0]['operations']['parameter_set']['groups'];
             produce_form('form', parameters, groups);
-            for (var i=0; i<textareas.length;i++){
+            for (var i = 0; i < textareas.length; i++) {
                 document.getElementById(textareas[i]).addEventListener('dragover', handleDragOver, false);
                 document.getElementById(textareas[i]).addEventListener('drop', handleFileSelect, false);
             }
@@ -38,13 +38,17 @@ function produce_form(div, parameters, groups) {
                 }
                 form_html.push('</fieldset>');
             } else {
+                var random_id = generate_random_id();
                 form_html.push('<fieldset>');
-                form_html.push('<legend>' + groups[j]['group'] + '</legend>');
+                form_html.push('<legend><a href="#'+random_id+'"  data-toggle="collapse">' + groups[j]['group'] + '</a></legend>');
+
+                form_html.push('<div id="'+random_id+'"  class="collapse">');
                 for (var i = 0; i < parameters.length; i++) {
                     if (groups[j]['group'] == parameters[i]['group']) {
                         form_html.push(produce_one_parameter_form(parameters[i]));
                     }
                 }
+                form_html.push('</div>');
                 form_html.push('</fieldset>');
             }
         }
