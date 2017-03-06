@@ -143,7 +143,7 @@ static bool AddErrorMessage (ServiceJob *job_p, const json_t *value_p, const cha
  */
 
 
-ServicesArray *GetServices (json_t *config_p)
+ServicesArray *GetServices (UserDetails *user_p)
 {
 	ServicesArray *services_p = AllocateServicesArray (1);
 

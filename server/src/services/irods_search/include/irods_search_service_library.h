@@ -56,7 +56,7 @@ extern "C"
  * <code>NULL</code> upon error.
  * @ingroup irods_search_service
  */
-IRODS_SEARCH_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+IRODS_SEARCH_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 
 /**

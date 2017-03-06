@@ -24,7 +24,7 @@
 
 #include "jansson.h"
 #include "irods_util_library.h"
-
+#include "user_details.h"
 
 /* forward declaration */
 struct IRodsConnection;
@@ -42,7 +42,7 @@ extern "C"
  * @return The connection to the iRODS server or <code>NULL</code> upon error.
  * @memberof IRodsConnection
  */
-IRODS_UTIL_API struct IRodsConnection *CreateIRodsConnectionFromJSON (const json_t *credentials_json_p);
+IRODS_UTIL_API struct IRodsConnection *CreateIRodsConnectionFromJSON (UserDetails *user_p);
 
 /**
  * Create a connection to a local iRODS server.

@@ -72,7 +72,7 @@ extern "C"
 
 
 
-LONG_RUNNING_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+LONG_RUNNING_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 
 LONG_RUNNING_SERVICE_API void ReleaseServices (ServicesArray *services_p);

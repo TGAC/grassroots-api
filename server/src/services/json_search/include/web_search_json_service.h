@@ -38,7 +38,7 @@ extern "C"
  * @return The ServicesArray containing the JSON-based Web Search Servic or
  * <code>NULL</code> upon error.
  */
-WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+WEB_SEARCH_JSON_SERVICE_API ServicesArray *GetServices (UserDetails *user_p, json_t *config_p);
 
 
 /**

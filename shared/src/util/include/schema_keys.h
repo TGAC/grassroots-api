@@ -530,13 +530,16 @@ extern "C"
 	/**@}*/
 
 
-	/** @name The Schema definitions for specifying Parameters. */
+	PREFIX const char *CONFIG_S VAL("config");
+
+
+	/** @name The Schema definitions for specifying user credentials. */
 	/* Start of doxygen member group */
 	/**@{*/
 	PREFIX const char *CREDENTIALS_S VAL("credentials");
 	PREFIX const char *CREDENTIALS_NAME_S VAL("name");
-	PREFIX const char *CREDENTIALS_USERNAME_S VAL("user");
-	PREFIX const char *CREDENTIALS_PASSWORD_S VAL("pass");
+	PREFIX const char *CREDENTIALS_USERNAME_S VAL("username");
+	PREFIX const char *CREDENTIALS_PASSWORD_S VAL("password");
 	PREFIX const char *CREDENTIALS_UUID_S VAL("user_uuid");
 	PREFIX const char *CREDENTIALS_TOKEN_KEY_S VAL("token_key");
 	PREFIX const char *CREDENTIALS_TOKEN_SECRET_S VAL("token_secret");

@@ -102,7 +102,7 @@ static bool CompressData (z_stream *strm_p, Bytef **output_buffer_pp, size_t *ou
  * API FUNCTIONS
  */
 
-ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
+ServicesArray *GetServices (UserDetails *user_p)
 {
 	Service *compress_service_p = (Service *) AllocMemory (sizeof (Service));
 

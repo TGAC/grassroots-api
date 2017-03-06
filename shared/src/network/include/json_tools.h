@@ -149,7 +149,7 @@ GRASSROOTS_NETWORK_API json_t *GetCheckServicesRequest (const UserDetails *user_
  *
  * @ingroup network_group
  */
-GRASSROOTS_NETWORK_API bool AddCredentialsToJson (json_t *root_p, const UserDetails *user_p);
+GRASSROOTS_NETWORK_API bool AddClientConfigToJSON (json_t *root_p, const UserDetails *user_p);
 
 
 /**

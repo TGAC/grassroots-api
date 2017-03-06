@@ -241,7 +241,7 @@ extern "C"
  * @return The ServicesArray containing all of the BLAST Services or
  * <code>NULL</code> upon error.
  */
-BLAST_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+BLAST_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 
 /**

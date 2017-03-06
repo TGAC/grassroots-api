@@ -24,7 +24,7 @@
 #include <dirent.h>
 #include <fnmatch.h>
 #include <fcntl.h>
-
+#include <pwd.h>
 
 #include "filesystem_utils.h"
 #include "linked_list.h"
@@ -311,6 +311,39 @@ bool CopyToNewFile (const char * const src_filename_s, const char * const dest_f
 	return success_flag;
 }
 
+
+char *GetHomeDirectory (void)
+{
+	char *result_s = NULL;
+	const char *home_s = getenv ("HOME");
+
+	if (home_s == NULL)
+		{
+			uid_t user = getuid ();
+
+			if (user)
+				{
+					struct passwd *password_p =  getpwuid (user);
+
+					if (password_p)
+						{
+							home_s = password_p -> pw_dir;
+						}
+				}
+		}
+
+	if (home_s)
+		{
+			result_s = CopyToNewString (home_s, 0, false);
+
+			if (!result_s)
+				{
+
+				}
+		}
+
+	return result_s;
+}
 
 
 bool SetCurrentWorkingDirectory (const char * const path)

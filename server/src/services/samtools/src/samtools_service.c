@@ -101,7 +101,7 @@ static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data
 /*
  * API FUNCTIONS
  */
-ServicesArray *GetServices (const json_t * UNUSED_PARAM (config_p))
+ServicesArray *GetServices (UserDetails *user_p)
 {
 	Service *service_p = (Service *) AllocMemory (sizeof (Service));
 
@@ -362,7 +362,7 @@ static ServiceJobSet *RunSamToolsService (Service *service_p, ParameterSet *para
 													job_p -> sj_status = OS_FAILED;
 
 													// temporarily don't pass break index
-													break_index = 0;
+													//break_index = 0;
 													if (GetScaffoldData (selected_index_data_p -> id_fasta_filename_s, scaffold_s, break_index, buffer_p))
 														{
 															json_t *result_p = NULL;
@@ -685,7 +685,7 @@ static Parameter *SetUpIndexesParamater (const SamToolsServiceData *service_data
 				{
 					bool success_flag = true;
 					size_t i;
-					char *provider_s = NULL;
+					const char *provider_s = NULL;
 
 					/* have we got any paired services? */
 					if (service_data_p -> stsd_base_data.sd_service_p -> se_paired_services.ll_size > 0)

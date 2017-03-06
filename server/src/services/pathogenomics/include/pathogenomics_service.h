@@ -283,7 +283,7 @@ extern "C"
  *
  * @ingroup pathogenomics_service
  */
-PATHOGENOMICS_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+PATHOGENOMICS_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 
 /**

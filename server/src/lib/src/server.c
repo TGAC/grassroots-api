@@ -155,18 +155,23 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 					json_t *op_p = NULL;
 					UserDetails *user_p = NULL;
 					json_t *uri_p = NULL;
-					json_t *credentials_p = json_object_get (req_p, CREDENTIALS_S);
+					json_t *config_p = json_object_get (req_p, CONFIG_S);
 
-					/*
-					 * Create the UserDetails from the JSON details.
-					 */
-					if (credentials_p)
+					if (config_p)
 						{
-							user_p = AllocateUserDetails (credentials_p);
+							json_t *credentials_p = json_object_get (config_p, CREDENTIALS_S);
 
-							if (!user_p)
+							/*
+							 * Create the UserDetails from the JSON details.
+							 */
+							if (credentials_p)
 								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, credentials_p, "Failed to create UserDetails");
+									user_p = AllocateUserDetails (credentials_p);
+
+									if (!user_p)
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, credentials_p, "Failed to create UserDetails");
+										}
 								}
 						}
 
@@ -341,16 +346,8 @@ json_t *ProcessServerJSONMessage (json_t *req_p, const int UNUSED_PARAM (socket_
 							if (service_results_p)
 								{
 									uuid_t user_uuid;
-									const char *user_uuid_s = GetUserUUIDStringFromJSON (credentials_p);
 
-									if (user_uuid_s)
-										{
-											uuid_parse (user_uuid_s, user_uuid);
-										}
-									else
-										{
-											uuid_clear (user_uuid);
-										}
+									uuid_clear (user_uuid);
 
 									res_p = GetInitialisedResponseOnServer (req_p, SERVICE_RESULTS_S, service_results_p);
 
@@ -1290,11 +1287,11 @@ static json_t *GetAllModifiedData (const json_t * const req_p, UserDetails *user
 			/* "to" defaults to now */
 			time_t to = time (NULL);
 
-			json_t *group_p = json_object_get (req_p, KEY_IRODS);
+			json_t *group_p = json_object_get (req_p, "");
 
 			if (group_p)
 				{
-					json_t *interval_p = json_object_get (group_p, KEY_INTERVAL);
+					json_t *interval_p = json_object_get (group_p, "");
 
 					if (interval_p)
 						{

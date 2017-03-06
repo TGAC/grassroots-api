@@ -142,7 +142,7 @@ extern "C"
  * <code>NULL</code> upon error.
  * @ingroup polymarker_service
  */
-POLYMARKER_SERVICE_API ServicesArray *GetServices (const json_t *config_p);
+POLYMARKER_SERVICE_API ServicesArray *GetServices (UserDetails *user_p);
 
 
 /**
